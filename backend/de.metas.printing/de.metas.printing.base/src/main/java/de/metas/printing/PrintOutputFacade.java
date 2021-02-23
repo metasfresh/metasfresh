@@ -32,10 +32,10 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.printingdata.PrintingData;
 import de.metas.printing.printingdata.PrintingDataFactory;
 import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
-import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.archive.api.ArchivePrintOutStatus;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -80,7 +80,7 @@ public class PrintOutputFacade
 					continue;
 				}
 				final ImmutableList<PrintingData> printingData = printingDataFactory.createPrintingDataForQueueItem(item);
-				for (PrintingData printingDataItem : printingData)
+				for (final PrintingData printingDataItem : printingData)
 				{
 					final PrintingData printingDataToStore = printingDataItem.onlyWithType(OutputType.Store);
 					final boolean hasSegmentsToStoreOnDisk = !printingDataToStore.getSegments().isEmpty();
@@ -126,7 +126,7 @@ public class PrintOutputFacade
 					source.getProcessingInfo().getAD_User_PrintJob_ID(),
 					printerName,
 					IArchiveEventManager.COPIES_ONE,
-					IArchiveEventManager.STATUS_Success);
+					ArchivePrintOutStatus.Success);
 		}
 	}
 }

@@ -1,4 +1,6 @@
-DROP VIEW IF EXISTS "de_metas_acct".accountable_docs_and_lines_v;
+DROP VIEW IF EXISTS "de_metas_acct".accountable_docs_and_lines_v
+;
+
 CREATE OR REPLACE VIEW "de_metas_acct".accountable_docs_and_lines_v AS
 (
     SELECT 'C_Order'                                                                   AS TableName,
@@ -154,22 +156,42 @@ UNION ALL
 )
 UNION ALL
 (
-    SELECT 'PP_Cost_Collector'                                                         AS TableName,
-           80::integer                                                                 AS tablename_prio,
-           cc.pp_cost_collector_id                                                     AS Record_ID,
-           cc.reversal_id                                                              AS reversal_id,
-           NULL                                                                        AS Line_ID,
-           NULL                                                                        AS reversalline_id,
-           NULL                                                                        AS issotrx,
-           cc.docstatus                                                                AS docstatus,
-           cc.posted,
-           cc.dateacct                                                                 AS dateacct,
+    SELECT 'PP_Order'      AS TableName,
+           80::integer     AS tablename_prio,
+           mo.pp_order_id  AS Record_ID,
+           NULL            AS reversal_id,
+           NULL            AS Line_ID,
+           NULL            AS reversalline_id,
+           NULL            AS issotrx,
+           mo.docstatus    AS docstatus,
+           mo.posted       AS posted,
+           mo.dateordered  AS dateacct,
            --
-           cc.m_product_id,
-           NULL                                                                        AS c_currency_id,
-           NULL                                                                        AS price,
-           (SELECT p.c_uom_id FROM m_product p WHERE p.m_product_id = cc.m_product_id) AS c_uom_id,
-           cc.movementqty                                                              AS qty
+           mo.m_product_id AS m_product_id,
+           NULL            AS c_currency_id,
+           NULL            AS price,
+           mo.c_uom_id     AS c_uom_id,
+           mo.qtyordered   AS qty
+    FROM pp_order mo
+)
+UNION ALL
+(
+    SELECT 'PP_Cost_Collector'     AS TableName,
+           90::integer             AS tablename_prio,
+           cc.pp_cost_collector_id AS Record_ID,
+           cc.reversal_id          AS reversal_id,
+           NULL                    AS Line_ID,
+           NULL                    AS reversalline_id,
+           NULL                    AS issotrx,
+           cc.docstatus            AS docstatus,
+           cc.posted               AS posted,
+           cc.dateacct             AS dateacct,
+           --
+           cc.m_product_id         AS m_product_id,
+           NULL                    AS c_currency_id,
+           NULL                    AS price,
+           cc.c_uom_id             AS c_uom_id,
+           cc.movementqty          AS qty
     FROM pp_cost_collector cc
 )
 ;

@@ -4,17 +4,21 @@ import renderer from 'react-test-renderer';
 import nock from 'nock';
 
 import quickInputData from '../../../../test_setup/fixtures/table/table_quickinput.json';
-import TableQuickInput from '../../../components/table/TableQuickInput';
+import { TableQuickInput } from '../../../components/table/TableQuickInput';
 
 const initialProps = {
   ...quickInputData.basicProps,
+  modalVisible: false,
+  timeZone: 'Europe/Berlin',
   addNotification: jest.fn(),
+  allowShortcut: jest.fn(),
+  disableShortcut: jest.fn(),
 };
 
 // leaving this so that I won't have to look it up again in case we need it
 // nock.recorder.rec({
 //   output_objects: true,
-// }) 
+// })
 
 describe('TableQuickInput', () => {
   beforeEach(() => {
@@ -28,13 +32,12 @@ describe('TableQuickInput', () => {
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
       .get(`/window/${docType}/${docId}/${tabId}/quickInput/layout`)
-      .reply(200, quickInputData.layout1); 
+      .reply(200, quickInputData.layout1);
   });
 
   it('renders without errors', () => {
-    const wrapperTableCMenu = shallow(
-      <TableQuickInput {...initialProps} />
-    );
+    const wrapperTableCMenu = shallow(<TableQuickInput {...initialProps} />);
+
     expect(wrapperTableCMenu.find('.quick-input-container').length).toBe(1);
 
     // const nockCalls = nock.recorder.play() // "play" the recording into a variable
@@ -44,9 +47,9 @@ describe('TableQuickInput', () => {
   });
 
   it('renders without error 22s', () => {
-    const wrapperTableCMenu = render(
-      <TableQuickInput {...initialProps} />
+    const wrapperTableCMenu = render(<TableQuickInput {...initialProps} />);
+    expect(wrapperTableCMenu.find('.hint').text()).toBe(
+      `(Press 'Enter' to add)`
     );
-    expect(wrapperTableCMenu.find('.hint').text()).toBe(`(Press 'Enter' to add)`);
   });
 });

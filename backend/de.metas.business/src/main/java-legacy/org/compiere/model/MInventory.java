@@ -23,6 +23,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -44,7 +45,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Physical Inventory Model
@@ -331,7 +331,7 @@ public class MInventory extends X_M_Inventory implements IDocument
 		final I_C_DocType docType = MDocType.get(getCtx(), getC_DocType_ID());
 		if (docType.isOverwriteDateOnComplete())
 		{
-			setMovementDate(SystemTime.asTimestamp());
+			setMovementDate(de.metas.common.util.time.SystemTime.asTimestamp());
 		}
 		if (docType.isOverwriteSeqOnComplete())
 		{

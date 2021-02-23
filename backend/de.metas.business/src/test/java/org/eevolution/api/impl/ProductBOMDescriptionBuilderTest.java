@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import de.metas.product.ProductId;
+import de.metas.uom.X12DE355;
 import de.metas.uom.impl.UOMTestHelper;
 
 /*
@@ -52,7 +53,7 @@ public class ProductBOMDescriptionBuilderTest
 		AdempiereTestHelper.get().init();
 		uomConversionHelper = new UOMTestHelper(Env.getCtx());
 
-		millimeter = uomConversionHelper.createUOM("Millimeter", 2, 0, "mm");
+		millimeter = uomConversionHelper.createUOM("Millimeter", 2, 0, X12DE355.ofCode("mm"));
 	}
 
 	/**

@@ -1,8 +1,27 @@
 package de.metas.shipping.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.ITranslatableString;
+import de.metas.organization.OrgId;
+import de.metas.shipping.IShipperDAO;
+import de.metas.shipping.ShipperId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_M_Shipper;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -26,22 +45,10 @@ import java.util.Optional;
  * #L%
  */
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_M_Shipper;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.i18n.ITranslatableString;
-import de.metas.organization.OrgId;
-import de.metas.shipping.IShipperDAO;
-import de.metas.shipping.ShipperId;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 public class ShipperDAO implements IShipperDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public I_M_Shipper getById(@NonNull final ShipperId id)
 	{
@@ -51,7 +58,7 @@ public class ShipperDAO implements IShipperDAO
 	@Override
 	public ShipperId getShipperIdByShipperPartnerId(@NonNull final BPartnerId shipperPartnerId)
 	{
-		final ShipperId shipperId = Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_Shipper.class)
+		final ShipperId shipperId = queryBL.createQueryBuilderOutOfTrx(I_M_Shipper.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Shipper.COLUMNNAME_C_BPartner_ID, shipperPartnerId)
 				.orderByDescending(I_M_Shipper.COLUMNNAME_IsDefault)
@@ -68,7 +75,7 @@ public class ShipperDAO implements IShipperDAO
 	@Override
 	public ShipperId getDefault(final ClientId clientId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_M_Shipper.class)
 				.addInArrayFilter(I_M_Shipper.COLUMNNAME_AD_Client_ID, clientId, ClientId.SYSTEM)
 				.addEqualsFilter(I_M_Shipper.COLUMN_IsDefault, true)
@@ -88,7 +95,7 @@ public class ShipperDAO implements IShipperDAO
 	@Override
 	public Optional<ShipperId> getShipperIdByValue(final String value, final OrgId orgId)
 	{
-		final ShipperId shipperId = Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_M_Shipper.class)
+		final ShipperId shipperId = queryBL.createQueryBuilderOutOfTrx(I_M_Shipper.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Shipper.COLUMNNAME_Value, value)
 				.addInArrayFilter(I_M_Shipper.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
@@ -97,5 +104,39 @@ public class ShipperDAO implements IShipperDAO
 				.firstIdOnly(ShipperId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(shipperId);
+	}
+
+	@NonNull
+	public Map<ShipperId,I_M_Shipper> getByIds(@NonNull final Set<ShipperId> shipperIds)
+	{
+		if (Check.isEmpty(shipperIds))
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<I_M_Shipper> shipperList = queryBL.createQueryBuilder(I_M_Shipper.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Shipper.COLUMNNAME_M_Shipper_ID, shipperIds)
+				.create()
+				.list();
+
+		return Maps.uniqueIndex(shipperList, (shipper) -> ShipperId.ofRepoId(shipper.getM_Shipper_ID()));
+	}
+
+	@NonNull
+	public ImmutableMap<String,I_M_Shipper> getByInternalName(@NonNull final Set<String> internalNameSet)
+	{
+		if (Check.isEmpty(internalNameSet))
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<I_M_Shipper> shipperList = queryBL.createQueryBuilder(I_M_Shipper.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Shipper.COLUMNNAME_InternalName, internalNameSet)
+				.create()
+				.list();
+
+		return Maps.uniqueIndex(shipperList, I_M_Shipper::getInternalName);
 	}
 }

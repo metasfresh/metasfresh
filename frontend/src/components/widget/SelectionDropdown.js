@@ -312,6 +312,8 @@ export default class SelectionDropdown extends Component {
     </ReactCSSTransitionGroup>
   );
 
+  setRef = (ref) => (this.wrapper = ref);
+
   /**
    * @method render
    * @summary ToDo: Describe the method.
@@ -329,11 +331,7 @@ export default class SelectionDropdown extends Component {
     }
 
     return (
-      <div
-        ref={(ref) => (this.wrapper = ref)}
-        className="input-dropdown-list"
-        style={style}
-      >
+      <div ref={this.setRef} className="input-dropdown-list" style={style}>
         {loading ? this.loading : (empty || forceEmpty) && this.renderEmpty()}
         {options.map(this.renderOption)}
       </div>

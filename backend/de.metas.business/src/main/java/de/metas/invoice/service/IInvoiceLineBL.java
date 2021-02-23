@@ -23,11 +23,15 @@ package de.metas.invoice.service;
  */
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.compiere.model.MInvoiceLine;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.location.CountryId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
@@ -47,11 +51,10 @@ public interface IInvoiceLineBL extends ISingletonService
 	 * <p/>
 	 * <b>IMPORTANT:</b> if the il has M_InoutLine_ID<=0, the method does nothing!
 	 *
-	 * @param ctx
 	 * @param il
 	 * @param getTrxName
 	 */
-	boolean setTax(Properties ctx, org.compiere.model.I_C_InvoiceLine il, String getTrxName);
+	boolean setTaxBasedOnShipment(org.compiere.model.I_C_InvoiceLine il, String getTrxName);
 
 	/**
 	 * @param invoiceLine
@@ -98,4 +101,6 @@ public interface IInvoiceLineBL extends ISingletonService
 	void updateLineNetAmt(I_C_InvoiceLine line, BigDecimal qtyEntered);
 
 	void updatePrices(I_C_InvoiceLine invoiceLine);
+
+	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, BPartnerLocationId taxPartnerLocationId, boolean isSOTrx);
 }

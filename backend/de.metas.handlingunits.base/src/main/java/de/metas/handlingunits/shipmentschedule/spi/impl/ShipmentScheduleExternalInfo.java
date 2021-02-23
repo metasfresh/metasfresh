@@ -37,17 +37,17 @@ public class ShipmentScheduleExternalInfo
 	String documentNo;
 
 	@Nullable
-	List<String> trackingNumbers;
+	List<PackageInfo> packageInfoList;
 
 	@Builder
-	public ShipmentScheduleExternalInfo(@Nullable final String documentNo, @Nullable final List<String> trackingNumbers)
+	public ShipmentScheduleExternalInfo(@Nullable final String documentNo, @Nullable final List<PackageInfo> packageInfoList)
 	{
-		if (Check.isBlank(documentNo) && Check.isEmpty(trackingNumbers))
+		if (Check.isBlank(documentNo) && Check.isEmpty(packageInfoList))
 		{
 			throw new AdempiereException("Empty ShipmentScheduleExternalInfo are not allowed!");
 		}
 
 		this.documentNo = documentNo;
-		this.trackingNumbers = trackingNumbers;
+		this.packageInfoList = packageInfoList;
 	}
 }

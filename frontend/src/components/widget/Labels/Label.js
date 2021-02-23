@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
 const noOp = () => {};
@@ -8,7 +8,7 @@ const noOp = () => {};
  * @module Label
  * @extends Component
  */
-class Label extends Component {
+class Label extends PureComponent {
   /**
    * @method handleClick
    * @summary ToDo: Describe the method
@@ -25,8 +25,11 @@ class Label extends Component {
    * @summary ToDo: Describe the method
    * @todo Write the documentation
    */
-  handleRemove = () => {
-    const { onRemove, label } = this.props;
+  handleRemove = (e) => {
+    e.stopPropagation();
+    const { onRemove, label, readonly } = this.props;
+
+    if (readonly) return false;
 
     onRemove(label);
   };
@@ -64,6 +67,7 @@ Label.propTypes = {
   }).isRequired,
   onClick: PropTypes.func,
   onRemove: PropTypes.func,
+  readonly: PropTypes.bool,
 };
 
 Label.defaultProps = {

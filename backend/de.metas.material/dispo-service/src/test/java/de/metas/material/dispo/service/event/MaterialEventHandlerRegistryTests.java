@@ -1,28 +1,6 @@
 package de.metas.material.dispo.service.event;
 
-import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.warehouse.WarehouseId;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
 import de.metas.material.dispo.commons.DispoTestUtils;
@@ -56,6 +34,26 @@ import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -81,9 +79,6 @@ import de.metas.material.event.transactions.TransactionCreatedEvent;
 
 /**
  * This is kind of a bunch of "module tests".
- *
- * @author metas-dev <dev@metasfresh.com>
- *
  */
 @ExtendWith(AdempiereTestWatcher.class)
 public class MaterialEventHandlerRegistryTests
@@ -116,16 +111,18 @@ public class MaterialEventHandlerRegistryTests
 				candidateRepositoryRetrieval,
 				candidateRepositoryCommands);
 
+		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(
+				candidateRepositoryCommands,
+				stockCandidateService);
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
 				new DemandCandiateHandler(
 						candidateRepositoryRetrieval,
 						candidateRepositoryCommands,
 						postMaterialEventService,
 						availableToPromiseRepository,
-						stockCandidateService),
-				new SupplyCandidateHandler(
-						candidateRepositoryCommands,
-						stockCandidateService)));
+						stockCandidateService,
+						supplyCandidateHandler),
+				supplyCandidateHandler));
 
 		final DDOrderAdvisedHandler distributionAdvisedEventHandler = new DDOrderAdvisedHandler(
 				candidateRepositoryRetrieval,
@@ -180,6 +177,8 @@ public class MaterialEventHandlerRegistryTests
 	@Test
 	public void test_shipmentScheduleCreatedEvent_then_distributionAdvisedEvent()
 	{
+		//
+		// given
 		final ShipmentScheduleCreatedEvent shipmentScheduleEvent = ShipmentScheduleCreatedHandlerTests.createShipmentScheduleTestEvent();
 		final MaterialDescriptor orderedMaterial = shipmentScheduleEvent.getMaterialDescriptor();
 
@@ -192,8 +191,8 @@ public class MaterialEventHandlerRegistryTests
 
 		materialEventListener.onEvent(shipmentScheduleEvent);
 
-		// guard - we expect one for the shipment-schedule demand, two for the distribution demand + supply and 2 stocks (one of them shared between shipment-demand and distr-supply)
-		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(2);
+		// guard - we expect one pair for the demand and one for the corresponding (not-yet-specific) supply
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(4);
 
 		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
 		Mockito.verify(postMaterialEventService)
@@ -223,20 +222,30 @@ public class MaterialEventHandlerRegistryTests
 						.build())
 				.build();
 		ddOrderAdvisedEvent.validate();
+
+		//
+		// when
 		materialEventListener.onEvent(ddOrderAdvisedEvent);
 
-		// verify
-		// one for the shipment-schedule demand, two for the distribution demand + supply and 3 stocks (!!one for each, stock candidates are not shared anymore!!)
-		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(6);
+		//
+		// then
+		// one for the shipment-schedule demand, one for shipment-schedule-supply that is now updated from the ddOrder even; then a new demand + supply; and one stock for each
+		assertThat(DispoTestUtils.retrieveAllRecords()).hasSize(8);
 
+		// demand created before we processed the ddOrderAdvisedEvent
 		final I_MD_Candidate toWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, toWarehouseId).get(0);
-		final I_MD_Candidate toWarehouseDemandStock = DispoTestUtils.filter(CandidateType.STOCK, toWarehouseId).get(0);
+		final I_MD_Candidate toWarehouseDemandStock = DispoTestUtils.retrieveStockCandidate(toWarehouseDemand);
 
-		final I_MD_Candidate toWarehouseSupplyStock = DispoTestUtils.filter(CandidateType.STOCK, toWarehouseId).get(1);
+		// supply created "unspecific" before we processed the ddOrderAdvisedEvent, and then enriched with the ddOrderAdvisedEvent's data
 		final I_MD_Candidate toWarehouseSupply = DispoTestUtils.filter(CandidateType.SUPPLY, toWarehouseId).get(0);
+		final I_MD_Candidate toWarehouseSupplyStock = DispoTestUtils.retrieveStockCandidate(toWarehouseSupply);
 
+		// demand  created when we processed the ddOrderAdvisedEvent
 		final I_MD_Candidate fromWarehouseDemand = DispoTestUtils.filter(CandidateType.DEMAND, fromWarehouseId).get(0);
-		final I_MD_Candidate toWarehouseStock = DispoTestUtils.filter(CandidateType.STOCK, fromWarehouseId).get(0);
+		final I_MD_Candidate fromWarehouseDemandStock = DispoTestUtils.retrieveStockCandidate(fromWarehouseDemand);
+
+		final I_MD_Candidate fromWarehouseSupply = DispoTestUtils.filter(CandidateType.SUPPLY, fromWarehouseId).get(0);
+		final I_MD_Candidate fromWarehouseSupplyStock = DispoTestUtils.retrieveStockCandidate(fromWarehouseSupply);
 
 		final List<I_MD_Candidate> allRecordsBySeqNo = DispoTestUtils.sortBySeqNo(DispoTestUtils.retrieveAllRecords());
 		assertThat(allRecordsBySeqNo).containsOnly(
@@ -245,18 +254,24 @@ public class MaterialEventHandlerRegistryTests
 				toWarehouseSupplyStock,
 				toWarehouseSupply,
 				fromWarehouseDemand,
-				toWarehouseStock);
+				fromWarehouseDemandStock,
+				fromWarehouseSupply,
+				fromWarehouseSupplyStock);
 		assertThat(allRecordsBySeqNo).containsSubsequence(
 				toWarehouseDemand,
 				toWarehouseSupply,
-				fromWarehouseDemand);
+				fromWarehouseDemand,
+				fromWarehouseSupply);
 
 		assertThat(toWarehouseDemand.getQty()).isEqualByComparingTo("10");
 		assertThat(toWarehouseDemandStock.getQty()).isEqualByComparingTo("-10");
 		assertThat(toWarehouseSupplyStock.getQty()).isEqualByComparingTo("0");
 		assertThat(toWarehouseSupply.getQty()).isEqualByComparingTo("10");
+
 		assertThat(fromWarehouseDemand.getQty()).isEqualByComparingTo("10");
-		assertThat(toWarehouseStock.getQty()).isEqualByComparingTo("-10");
+		assertThat(fromWarehouseDemandStock.getQty()).isEqualByComparingTo("-10");
+		assertThat(fromWarehouseSupply.getQty()).isEqualByComparingTo("10");
+		assertThat(fromWarehouseSupplyStock.getQty()).isEqualByComparingTo("0");
 	}
 
 	@Test

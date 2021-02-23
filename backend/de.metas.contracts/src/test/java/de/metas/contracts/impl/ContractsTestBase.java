@@ -28,6 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import java.util.Date;
 import java.util.Properties;
 
+import de.metas.common.util.time.TimeSource;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -40,7 +41,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import de.metas.contracts.IContractsDAO;
 import de.metas.util.Services;
-import de.metas.util.time.TimeSource;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class ContractsTestBase

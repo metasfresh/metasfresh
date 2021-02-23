@@ -34,7 +34,7 @@ import org.slf4j.Logger;
 import java.sql.Timestamp;
 import java.util.Optional;
 
-public final class OrderCreateNewFromProposal extends JavaProcess  implements IProcessPrecondition
+public final class OrderCreateNewFromProposal extends JavaProcess implements IProcessPrecondition
 {
 	private static final Logger log = LogManager.getLogger(OrderCreateNewFromProposal.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -108,7 +108,9 @@ public final class OrderCreateNewFromProposal extends JavaProcess  implements IP
 		getResult().setRecordToOpen(
 				TableRecordReference.of(newOrder),
 				orderWindowId.get().getRepoId(), // adWindowId
-				ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument);
+				ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument,
+				ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB
+		);
 
 		return newOrder.getDocumentNo();
 	}
@@ -205,5 +207,5 @@ public final class OrderCreateNewFromProposal extends JavaProcess  implements IP
 		}
 
 		return ProcessPreconditionsResolution.accept();
-	}  
+	}
 }

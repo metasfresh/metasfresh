@@ -23,6 +23,7 @@ class MenuOverlayItem extends Component {
       handleNewRedirect,
       openModal,
       caption,
+      breadcrumb,
     } = this.props;
 
     if (e) {
@@ -33,7 +34,11 @@ class MenuOverlayItem extends Component {
     if (type === 'newRecord') {
       handleNewRedirect(elementId);
     } else if (type === 'window' || type === 'board') {
-      this.handleClick(elementId, type);
+      if (breadcrumb[1] && breadcrumb[1].nodeId === nodeId) {
+        window.location.reload();
+      } else {
+        this.handleClick(elementId, type);
+      }
     } else if (type === 'group') {
       handleClickOnFolder(e, nodeId);
     } else if (type === 'report' || type === 'process') {
@@ -264,6 +269,12 @@ MenuOverlayItem.propTypes = {
   onUpdateData: PropTypes.func,
   transparentBookmarks: PropTypes.bool,
   children: PropTypes.node,
+  breadcrumb: PropTypes.array,
 };
 
-export default connect()(MenuOverlayItem);
+const mapStateToProps = (state) => {
+  return {
+    breadcrumb: state.menuHandler.breadcrumb,
+  };
+};
+export default connect(mapStateToProps)(MenuOverlayItem);

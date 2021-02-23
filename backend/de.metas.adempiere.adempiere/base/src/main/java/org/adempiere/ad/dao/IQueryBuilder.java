@@ -1,5 +1,15 @@
 package org.adempiere.ad.dao;
 
+import java.util.Collection;
+import java.util.Date;
+import java.util.Properties;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.model.ModelColumn;
+import org.compiere.model.IQuery;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -25,14 +35,6 @@ package org.adempiere.ad.dao;
 import de.metas.process.PInstanceId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.model.ModelColumn;
-import org.compiere.model.IQuery;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Properties;
 
 /**
  * @param <T> model type
@@ -87,7 +89,13 @@ public interface IQueryBuilder<T>
 
 	ICompositeQueryFilter<T> getCompositeFilter();
 
-	IQueryBuilder<T> setLimit(int limit);
+	IQueryBuilder<T> setLimit(QueryLimit limit);
+
+	@Deprecated
+	default IQueryBuilder<T> setLimit(final int limit)
+	{
+		return setLimit(QueryLimit.ofInt(limit));
+	}
 
 	/**
 	 * Sets a query option which will be used while building the query or while executing the query.
@@ -103,7 +111,7 @@ public interface IQueryBuilder<T>
 	 */
 	IQueryBuilder<T> setOption(String name);
 
-	int getLimit();
+	QueryLimit getLimit();
 
 	/**
 	 * Make sure this instance now has an order-by-builder and return it.
@@ -144,7 +152,7 @@ public interface IQueryBuilder<T>
 	 * Filters using the given string as a <b>substring</b>.
 	 * If this "substring" behavior is too opinionated for your case, consider using e.g. {@link #addCompareFilter(String, Operator, Object)}.
 	 *
-	 * @param substring  will be complemented with {@code %} at both the string's start and end, if the given string doesn't have them yet.
+	 * @param substring will be complemented with {@code %} at both the string's start and end, if the given string doesn't have them yet.
 	 * @param ignoreCase if {@code true}, then {@code ILIKE} is used as operator instead of {@code LIKE}
 	 */
 	IQueryBuilder<T> addStringLikeFilter(String columnname, String substring, boolean ignoreCase);
@@ -242,9 +250,9 @@ public interface IQueryBuilder<T>
 	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, IQueryFilterModifier modifier, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
-	 * @param columnName         the key column from the "main" query
+	 * @param columnName the key column from the "main" query
 	 * @param subQueryColumnName the key column from the "sub" query
-	 * @param subQuery           the actual sub query
+	 * @param subQuery the actual sub query
 	 * @return this
 	 */
 	<ST> IQueryBuilder<T> addInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
@@ -252,9 +260,9 @@ public interface IQueryBuilder<T>
 	<ST> IQueryBuilder<T> addNotInSubQueryFilter(String columnName, String subQueryColumnName, IQuery<ST> subQuery);
 
 	/**
-	 * @param column         the key column from the "main" query
+	 * @param column the key column from the "main" query
 	 * @param subQueryColumn the key column from the "sub" query
-	 * @param subQuery       the actual sub query
+	 * @param subQuery the actual sub query
 	 * @return this
 	 */
 	<ST> IQueryBuilder<T> addInSubQueryFilter(ModelColumn<T, ?> column, ModelColumn<ST, ?> subQueryColumn, IQuery<ST> subQuery);
@@ -303,7 +311,7 @@ public interface IQueryBuilder<T>
 	 * </pre>
 	 *
 	 * @param linkColumnNameInChildTable the column in child model which will be used to join the child records to current record's primary key
-	 * @param childType                  child model to be used
+	 * @param childType child model to be used
 	 * @return query build for <code>ChildType</code>
 	 */
 	<ChildType> IQueryBuilder<ChildType> andCollectChildren(String linkColumnNameInChildTable, Class<ChildType> childType);

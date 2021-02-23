@@ -203,7 +203,7 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   handlePatch = (prop, value, id, cb) => {
-    const { attributeType, onBlur } = this.props;
+    const { attributeType } = this.props;
     const { data, loading } = this.state;
 
     if (!loading && data) {
@@ -230,7 +230,6 @@ export default class Attributes extends Component {
               }),
               () => {
                 cb && cb();
-                onBlur && onBlur();
               }
             );
           });

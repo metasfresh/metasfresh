@@ -54,6 +54,7 @@
 				</executions>
 				<configuration>
 					<packageName>${jaxb.packageName}</packageName>
+					<outputDirectory>target/generated-sources/jaxb</outputDirectory>
 				</configuration>
 			</plugin>
 		</plugins>

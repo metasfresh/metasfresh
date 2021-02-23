@@ -1,117 +1,78 @@
-/**********************************************************************
- * This file is part of Adempiere ERP Bazaar *
- * http://www.adempiere.org *
- * *
- * Copyright (C) Trifon Trifonov. *
- * Copyright (C) Contributors *
- * *
- * This program is free software, you can redistribute it and/or *
- * modify it under the terms of the GNU General Public License *
- * as published by the Free Software Foundation, either version 2 *
- * of the License, or (at your option) any later version. *
- * *
- * This program is distributed in the hope that it will be useful, *
- * but WITHOUT ANY WARRANTY, without even the implied warranty of *
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the *
- * GNU General Public License for more details. *
- * *
- * You should have received a copy of the GNU General Public License *
- * along with this program, if not, write to the Free Software *
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, *
- * MA 02110-1301, USA. *
- * *
- * Contributors: *
- * - Trifon Trifonov (trifonnt@users.sourceforge.net) *
- * - Teo Sarca (teo.sarca@arhipac.ro) *
- * *
- * Sponsors: *
- * - Company (http://www.d3-soft.com) *
- * - ARHIPAC (http://www.arhipac.ro) *
- **********************************************************************/
-
 package org.adempiere.ad.persistence.modelgen;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.ad.persistence.EntityTypesCache;
 import org.adempiere.model.ModelColumn;
 import org.adempiere.util.ClassnameScanner;
 import org.compiere.model.MQuery;
-import org.compiere.model.MTable;
-import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.reflections.Reflections;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 import org.slf4j.Logger;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author Trifon Trifonov
- * @version $Id$
- * 
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL
- *         <li>BF [ 1781629 ] Don't use Env.NL in model class/interface generators
- *         <li>FR [ 1781630 ] Generated class/interfaces have a lot of unused imports
- *         <li>BF [
- *         1781632 ] Generated class/interfaces should be UTF-8
- *         <li>better formating of generated source
- *         <li>BF [ 1787833 ] ModelInterfaceGenerator: don't write timestamp
- *         <li>FR [ 1803309 ] Model
- *         generator: generate get method for Search cols
- *         <li>BF [ 1817768 ] Isolate hardcoded table direct columns https://sourceforge.net/tracker/?func=detail&atid=879332&aid=1817768&group_id=176962
- *         <li>FR [ 2343096 ] Model Generator: Improve Reference Class Detection
- *         <li>BF [ 2528434 ] ModelInterfaceGenerator: generate getters for common fields
- *         <li>--
- *         <li>FR [ 2848449 ]
- *         ModelClassGenerator: Implement model getters https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2848449&group_id=176962
+ * <li>BF [ 1781629 ] Don't use Env.NL in model class/interface generators
+ * <li>FR [ 1781630 ] Generated class/interfaces have a lot of unused imports
+ * <li>BF [
+ * 1781632 ] Generated class/interfaces should be UTF-8
+ * <li>better formating of generated source
+ * <li>BF [ 1787833 ] ModelInterfaceGenerator: don't write timestamp
+ * <li>FR [ 1803309 ] Model
+ * generator: generate get method for Search cols
+ * <li>BF [ 1817768 ] Isolate hardcoded table direct columns https://sourceforge.net/tracker/?func=detail&atid=879332&aid=1817768&group_id=176962
+ * <li>FR [ 2343096 ] Model Generator: Improve Reference Class Detection
+ * <li>BF [ 2528434 ] ModelInterfaceGenerator: generate getters for common fields
+ * <li>--
+ * <li>FR [ 2848449 ]
+ * ModelClassGenerator: Implement model getters https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2848449&group_id=176962
  * @author Teo Sarca, teo.sarca@gmail.com
- *         <li>FR [ 3020635 ] Model Generator should use FQ class names https://sourceforge.net/tracker/?func=detail&aid=3020635&group_id=176962&atid=879335
+ * <li>FR [ 3020635 ] Model Generator should use FQ class names https://sourceforge.net/tracker/?func=detail&aid=3020635&group_id=176962&atid=879335
  * @author Victor Perez, e-Evolution
- *         <li>FR [ 1785001 ] Using ModelPackage of EntityType to Generate Model Class
+ * <li>FR [ 1785001 ] Using ModelPackage of EntityType to Generate Model Class
+ * @version $Id$
  */
 public class ModelInterfaceGenerator
 {
-	private String packageName = "";
-
 	public static final String NL = "\n";
 
-	/** File Header */
-	public static final String COPY = "";
+	/**
+	 * File Header
+	 */
 	// NOTE: we are not appending ANY license to generated files because we assume this will be done automatically by a maven plugin.
+	public static final String COPY = "";
 
-	/** Logger */
+	public static final String PROPERTY_Legacy = "generate.legacy";
+
 	private static final transient Logger log = LogManager.getLogger(ModelInterfaceGenerator.class);
 
 	private static final String DEPRECATED_MSG_SetterForVirtualColumn = "Please don't use it because this is a virtual column";
 	private static final String DEPRECATED_MSG_GetterForLazyLoadingColumn = "Please don't use it because this is a lazy loading column and it might affect the performances";
 
-	private static final ImmutableSet<String> SKIP_InterfaceModelGettersForColumnNames = ImmutableSet.<String> builder()
+	private static final ImmutableSet<String> SKIP_InterfaceModelGettersForColumnNames = ImmutableSet.<String>builder()
 			.add("AD_Client_ID")
 			.add("AD_Org_ID")
 			.add("CreatedBy")
 			.add("UpdatedBy")
 			.build();
 
-	private static final ImmutableSet<String> SKIP_ModelGettersAndSettersForReferencedClassNames = ImmutableSet.<String> builder()
+	private static final ImmutableSet<String> SKIP_ModelGettersAndSettersForReferencedClassNames = ImmutableSet.<String>builder()
 			.add("org.compiere.model.I_AD_Client")
 			.add("org.compiere.model.I_AD_Org")
 			//
@@ -149,6 +110,8 @@ public class ModelInterfaceGenerator
 			//
 			.add("org.compiere.model.I_AD_Note")
 			.add("org.compiere.model.I_AD_Table")
+			.add("org.compiere.model.I_AD_Message")
+			.add("org.compiere.model.I_AD_Issue")
 			.add("org.compiere.model.I_C_Activity")
 			.add("org.compiere.model.I_C_Charge")
 			//
@@ -159,24 +122,43 @@ public class ModelInterfaceGenerator
 			.add("org.compiere.model.I_C_BP_BankAccount")
 			.add("org.compiere.model.I_C_Bank")
 			//
+			.add("org.compiere.model.I_AD_WF_Activity")
+			.add("org.compiere.model.I_AD_WF_ActivityResult")
+			.add("org.compiere.model.I_AD_WF_Block")
+			.add("org.compiere.model.I_AD_WF_EventAudit")
+			.add("org.compiere.model.I_AD_WF_NextCondition")
+			.add("org.compiere.model.I_AD_Workflow")
+			.add("org.compiere.model.I_AD_WF_Node")
+			.add("org.compiere.model.I_AD_WF_Node_Para")
+			.add("org.compiere.model.I_AD_WF_Node_Template")
+			.add("org.compiere.model.I_AD_WF_NodeNext")
+			.add("org.compiere.model.I_AD_WF_Process")
+			.add("org.compiere.model.I_AD_WF_ProcessData")
+			.add("org.compiere.model.I_AD_WF_Responsible")
+			//
 			.build();
 
-	public ModelInterfaceGenerator(final TableInfo tableInfo, String directory, String packageName)
+	private final TableAndColumnInfoRepository repository;
+	private final String packageName;
+
+	public ModelInterfaceGenerator(
+			@NonNull final TableAndColumnInfoRepository repository,
+			@NonNull final TableInfo tableInfo,
+			String directory,
+			final String packageName)
 	{
-		// this.repository = repository;
+		this.repository = repository;
 		this.packageName = packageName;
 
 		// create column access methods
-		final StringBuilder mandatory = new StringBuilder();
-		final StringBuilder sb = createColumns(tableInfo, mandatory);
+		final StringBuilder sb = createColumns(tableInfo);
 
 		// Header
-		String tableName = createHeader(tableInfo, sb, mandatory);
+		final String tableName = createHeader(tableInfo, sb);
 
 		// Save
 		if (directory.endsWith("/") || directory.endsWith("\\"))
 		{
-
 		}
 		else
 		{
@@ -185,20 +167,16 @@ public class ModelInterfaceGenerator
 		writeToFile(sb, directory + tableName + ".java");
 	}
 
-	/**
-	 * Add Header info to buffer
-	 * 
-	 * @param mandatory init call for mandatory columns
-	 * @return class name
-	 */
-	private String createHeader(final TableInfo tableInfo, final StringBuilder sb, final StringBuilder mandatory)
+	private String createHeader(
+			@NonNull final TableInfo tableInfo,
+			@NonNull final StringBuilder sb)
 	{
 		final String tableName = tableInfo.getTableName();
 
 		//
-		String className = "I_" + tableName;
+		final String className = "I_" + tableName;
 		//
-		StringBuilder start = new StringBuilder()
+		final StringBuilder start = new StringBuilder()
 				.append(COPY)
 				.append("package ").append(packageName).append(";").append(NL);
 
@@ -207,45 +185,48 @@ public class ModelInterfaceGenerator
 		start.append("/** Generated Interface for ").append(tableName).append("\n")
 				.append(" *  @author metasfresh (generated) \n")
 				.append(" */\n")
-				.append("@SuppressWarnings(\"javadoc\")\n") // metas
+				//.append("@SuppressWarnings(\"javadoc\")\n")  // commented out because it gives warnings in intelliJ
 				.append("public interface ").append(className).append(" {").append("\n")
 
-				.append("    /** TableName=").append(tableName).append(" */\n")
-				.append("    public static final String Table_Name = \"").append(tableName).append("\";\n")
+				.append("\tString Table_Name = \"").append(tableName).append("\";\n");
 
-				.append("    /** AD_Table_ID=").append(tableInfo.getAD_Table_ID()).append(" */\n")
-				.append(isGenerateLegacy() ? "" : "//") // metas
-				.append("    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);\n")
-		;
-
-		StringBuilder end = new StringBuilder("}");
 		//
+		// AD_Table_ID
+		start
+				.append(isGenerateLegacy() ? "" : "//") // metas
+				.append("\t/** AD_Table_ID=").append(tableInfo.getAdTableId()).append(" */\n")
+				.append(isGenerateLegacy() ? "" : "//") // metas
+				.append("\tint Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);\n");
+
 		sb.insert(0, start);
-		sb.append(end);
+		sb.append("}");
 
 		return className;
 	}
 
 	/**
 	 * Create Column access methods
-	 * 
-	 * @param mandatory init call for mandatory columns
+	 *
 	 * @return set/get method
 	 */
-	private StringBuilder createColumns(final TableInfo tableInfo, final StringBuilder mandatory)
+	private StringBuilder createColumns(
+			final TableInfo tableInfo)
 	{
 		final StringBuilder sb = new StringBuilder();
 
 		final List<ColumnInfo> columnInfos = tableInfo.getColumnInfos();
 		for (final ColumnInfo columnInfo : columnInfos)
 		{
-			sb.append(createColumnMethods(mandatory, columnInfo));
+			sb.append(createColumnMethods(columnInfo));
 		}
 
 		return sb;
 	}
 
-	private final String createColumnConstants(final String tableName, final String columnName, final String referenceClassName)
+	private String createColumnConstants(
+			@NonNull final String tableName,
+			@NonNull final String columnName,
+			@Nullable final String referenceClassName)
 	{
 		final String modelClassname = "I_" + tableName;
 
@@ -255,19 +236,15 @@ public class ModelInterfaceGenerator
 		// Add: COLUMN_ColumnName = new ModelColumn...
 		if (!SKIP_ModelGettersAndSettersForReferencedClassNames.contains(referenceClassName))
 		{
-			// e.g. ModelColumn<I_C_Invoice, I_C_BPartner>
-			final StringBuilder modelColumnClassname = new StringBuilder()
-					.append(ModelColumn.class.getName())
-					.append("<")
-					.append(modelClassname)
-					.append(", ").append(referenceClassName == null ? "Object" : referenceClassName)
-					.append(">");
+			addImportClass(ModelColumn.class);
 
-			sb.append("    /** Column definition for ").append(columnName).append(" */\n")
-					.append("    public static final ").append(modelColumnClassname).append(" COLUMN_").append(columnName)
+			// e.g. ModelColumn<I_C_Invoice, I_C_BPartner>
+			final String modelColumnClassname = ModelColumn.class.getSimpleName() + "<" + modelClassname + ", " + (referenceClassName == null ? "Object" : referenceClassName) + ">";
+
+			sb.append("\t").append(modelColumnClassname).append(" COLUMN_").append(columnName)
 					//
 					// e.g. new ModelColumn<I_C_Invoice, I_C_BPartner>
-					.append(" = new ").append(modelColumnClassname)
+					.append(" = new ").append(ModelColumn.class.getSimpleName()).append("<>")
 					//
 					// e.g. (I_C_Invoice.class, columnName, I_C_BPartner.class);
 					.append("(")
@@ -279,8 +256,7 @@ public class ModelInterfaceGenerator
 
 		//
 		// Add: COLUMNNAME_ColumnName = ...
-		sb.append("    /** Column name ").append(columnName).append(" */\n")
-				.append("    public static final String COLUMNNAME_").append(columnName)
+		sb.append("\tString COLUMNNAME_").append(columnName)
 				.append(" = \"").append(columnName).append("\";");
 
 		return sb.toString();
@@ -288,15 +264,13 @@ public class ModelInterfaceGenerator
 
 	/**
 	 * Create set/get methods for column
-	 * 
-	 * @param mandatory init call for mandatory columns
-	 * @param columnInfo column info
+	 *
 	 * @return set/get method
 	 */
-	private String createColumnMethods(final StringBuilder mandatory, final ColumnInfo columnInfo)
+	@NonNull
+	private String createColumnMethods(@NonNull final ColumnInfo columnInfo)
 	{
-		final Class<?> clazz = getClass(columnInfo);
-		final String dataType = getDataTypeName(clazz, columnInfo.getDisplayType());
+		final DataTypeInfo dataTypeInfo = DataTypeInfo.ofColumnInfo(columnInfo);
 
 		final StringBuilder sb = new StringBuilder();
 
@@ -310,11 +284,15 @@ public class ModelInterfaceGenerator
 				deprecatedSetter = DEPRECATED_MSG_SetterForVirtualColumn;
 			}
 
-			// Create Java Comment
+			final NullableType nullableType = dataTypeInfo.getNullableValueSetter();
+			addImportClasses(nullableType.getClassesToImport());
+			addImportClass(dataTypeInfo);
+
 			generateJavaComment(sb, columnInfo, "Set", deprecatedSetter);
 			appendDeprecatedIfNotNull(sb, deprecatedSetter);
-			sb.append("\tpublic void set").append(columnInfo.getColumnName()).append(" (")
-					.append(dataType).append(" ").append(columnInfo.getColumnName()).append(");");
+			sb.append("\tvoid set").append(columnInfo.getColumnName()).append(" (")
+					.append(nullableType.getJavaCode())
+					.append(dataTypeInfo.getJavaCode()).append(" ").append(columnInfo.getColumnName()).append(");");
 		}
 
 		//
@@ -326,10 +304,16 @@ public class ModelInterfaceGenerator
 				deprecatedGetter = DEPRECATED_MSG_GetterForLazyLoadingColumn;
 			}
 
+			final NullableType nullableType = dataTypeInfo.getNullableValueGetter();
+			addImportClasses(nullableType.getClassesToImport());
+			addImportClass(dataTypeInfo);
+
 			generateJavaComment(sb, columnInfo, "Get", deprecatedGetter);
 			appendDeprecatedIfNotNull(sb, deprecatedGetter);
-			sb.append("\tpublic ").append(dataType);
-			if (clazz.equals(Boolean.class))
+			sb.append("\t")
+					.append(nullableType.getJavaCode())
+					.append(dataTypeInfo.getJavaCode());
+			if (dataTypeInfo.isBoolean())
 			{
 				sb.append(" is");
 				if (columnInfo.getColumnName().toLowerCase().startsWith("is"))
@@ -351,43 +335,52 @@ public class ModelInterfaceGenerator
 
 		//
 		// Model Getter & Setter
-		final String referenceClassName = getReferenceClassName(columnInfo);
+		final String referenceClassName = getReferenceClassName(columnInfo, repository);
 		if (isGenerateInterfaceModelGetterForColumnName(columnInfo.getColumnName())
 				&& isGenerateModelGetterOrSetterForReferencedClassName(referenceClassName)
 				&& DisplayType.isID(columnInfo.getDisplayType())
 				&& !columnInfo.isKey())
 		{
 			final String fieldName = getFieldName(columnInfo.getColumnName());
+
 			//
-			if (fieldName != null && referenceClassName != null)
+			// Model getter
 			{
-				//
-				// Model getter
+				String deprecatedGetter = null;
+				if (columnInfo.isVirtualColumn() && columnInfo.isLazyLoading())
 				{
-					String deprecatedGetter = null;
-					if (columnInfo.isVirtualColumn() && columnInfo.isLazyLoading())
-					{
-						deprecatedGetter = DEPRECATED_MSG_GetterForLazyLoadingColumn;
-					}
-					sb.append("\n");
-					appendDeprecatedIfNotNull(sb, deprecatedGetter);
-					sb.append("\tpublic " + referenceClassName + " get").append(fieldName).append("();");
+					deprecatedGetter = DEPRECATED_MSG_GetterForLazyLoadingColumn;
 				}
 
-				//
-				// Model setter
-				if (isGenerateSetter(columnInfo.getColumnName()))
-				{
-					String deprecatedSetter = null;
-					if (columnInfo.isVirtualColumn())
-					{
-						deprecatedSetter = DEPRECATED_MSG_SetterForVirtualColumn;
-					}
+				final NullableType nullableType = dataTypeInfo.getNullableValueObject();
+				addImportClasses(nullableType.getClassesToImport());
 
-					sb.append("\n");
-					appendDeprecatedIfNotNull(sb, deprecatedSetter);
-					sb.append("\tpublic void set" + fieldName + "(" + referenceClassName + " " + fieldName + ");");
+				sb.append("\n");
+				appendDeprecatedIfNotNull(sb, deprecatedGetter);
+				sb.append("\t")
+						.append(nullableType.getJavaCode())
+						.append(referenceClassName).append(" get").append(fieldName).append("();");
+			}
+
+			//
+			// Model setter
+			if (isGenerateSetter(columnInfo.getColumnName()))
+			{
+				String deprecatedSetter = null;
+				if (columnInfo.isVirtualColumn())
+				{
+					deprecatedSetter = DEPRECATED_MSG_SetterForVirtualColumn;
 				}
+
+				final NullableType nullableType = dataTypeInfo.getNullableValueObject();
+				addImportClasses(nullableType.getClassesToImport());
+
+				sb.append("\n");
+				appendDeprecatedIfNotNull(sb, deprecatedSetter);
+				sb.append("\tvoid set").append(fieldName).append("(")
+						.append(nullableType.getJavaCode())
+						.append(referenceClassName).append(" ").append(fieldName)
+						.append(");");
 			}
 		}
 
@@ -396,9 +389,9 @@ public class ModelInterfaceGenerator
 		if (!Check.isEmpty(columnInfo.getTableIdColumnName(), true))
 		{
 			final String fieldName = getFieldName(columnInfo.getColumnName());
-			sb.append("\n").append("\tpublic <ReferenceType> ReferenceType get").append(fieldName).append("(Class<ReferenceType> referenceType);");
+			sb.append("\n").append("\t<ReferenceType> ReferenceType get").append(fieldName).append("(Class<ReferenceType> referenceType);");
 
-			sb.append("\n").append("\tpublic <ReferenceType> void set").append(fieldName).append("(ReferenceType referenceModel);");
+			sb.append("\n").append("\t<ReferenceType> void set").append(fieldName).append("(ReferenceType referenceModel);");
 		}
 
 		//
@@ -409,12 +402,11 @@ public class ModelInterfaceGenerator
 		return sb.toString();
 	}
 
-	// ****** Set/Get Comment ******
 	private void generateJavaComment(
-			final StringBuilder result //
-			, final ColumnInfo columnInfo //
-			, final String startOfComment //
-			, final String deprecated //
+			@NonNull final StringBuilder result,
+			@NonNull final ColumnInfo columnInfo,
+			@NonNull final String startOfComment,
+			@Nullable final String deprecated
 	)
 	{
 		final String propertyName = columnInfo.getName();
@@ -458,7 +450,9 @@ public class ModelInterfaceGenerator
 		result.append("\n\t */\n");
 	}
 
-	private void appendDeprecatedIfNotNull(final StringBuilder result, final String deprecated)
+	private void appendDeprecatedIfNotNull(
+			@NonNull final StringBuilder result,
+			@Nullable final String deprecated)
 	{
 		if (deprecated == null)
 		{
@@ -470,23 +464,24 @@ public class ModelInterfaceGenerator
 
 	/*
 	 * Write to file
-	 * 
+	 *
 	 * @param sb string buffer
-	 * 
+	 *
 	 * @param fileName file name
 	 */
-	private void writeToFile(StringBuilder sb, String fileName)
+	private void writeToFile(
+			final StringBuilder sb,
+			final String fileName)
 	{
 		try
 		{
-			File out = new File(fileName);
-			// metas: begin: make sure directory exists
-			out.getParentFile().mkdirs();
-			// metas: end
-			Writer fw = new OutputStreamWriter(new FileOutputStream(out, false), "UTF-8");
+			final File out = new File(fileName);
+			out.getParentFile().mkdirs(); // make sure directory exists
+
+			final Writer fw = new OutputStreamWriter(new FileOutputStream(out, false), StandardCharsets.UTF_8);
 			for (int i = 0; i < sb.length(); i++)
 			{
-				char c = sb.charAt(i);
+				final char c = sb.charAt(i);
 				// after
 				if (c == ';' || c == '}')
 				{
@@ -518,22 +513,22 @@ public class ModelInterfaceGenerator
 			size /= 1024;
 			log.info(out.getAbsolutePath() + " - " + size + " kB");
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			log.error(fileName, ex);
 			throw new RuntimeException(ex);
 		}
 	}
 
-	/** Import classes */
-	private Collection<String> s_importClasses = new TreeSet<>();
+	/**
+	 * Import classes
+	 */
+	private final Collection<String> s_importClasses = new TreeSet<>();
 
 	/**
 	 * Add class name to class import list
-	 * 
-	 * @param className
 	 */
-	private void addImportClass(String className)
+	private void addImportClass(final String className)
 	{
 		if (className == null
 				|| (className.startsWith("java.lang.") && !className.startsWith("java.lang.reflect."))
@@ -541,7 +536,7 @@ public class ModelInterfaceGenerator
 		{
 			return;
 		}
-		for (String name : s_importClasses)
+		for (final String name : s_importClasses)
 		{
 			if (className.equals(name))
 			{
@@ -550,39 +545,65 @@ public class ModelInterfaceGenerator
 		}
 		if (className.equals("byte[]"))
 		{
-			log.warn("Invalid type - " + className);
+			log.warn("Invalid type: {}", className);
 			return;
 		}
 		s_importClasses.add(className);
 	}
 
-	/**
-	 * Add class to class import list
-	 * 
-	 * @param cl
-	 */
-	@SuppressWarnings("unused")
-	private void addImportClass(Class<?> cl)
+	private void addImportClasses(@Nullable final Collection<Class<?>> classes)
 	{
-		if (cl.isArray())
-		{
-			cl = cl.getComponentType();
-		}
-		if (cl.isPrimitive())
+		if (classes == null || classes.isEmpty())
 		{
 			return;
 		}
-		addImportClass(cl.getCanonicalName());
+
+		for (final Class<?> clazz : classes)
+		{
+			if (clazz == null)
+			{
+				continue;
+			}
+
+			addImportClass(clazz);
+		}
+	}
+
+	private void addImportClass(@NonNull final Class<?> clazz)
+	{
+		Class<?> actualClass = clazz;
+		if (actualClass.isArray())
+		{
+			actualClass = actualClass.getComponentType();
+		}
+		if (actualClass.isPrimitive())
+		{
+			return;
+		}
+
+		addImportClass(actualClass.getCanonicalName());
+	}
+
+	private void addImportClass(@NonNull final DataTypeInfo dataTypeInfo)
+	{
+		if(dataTypeInfo.isJavaCodeFullyQualified())
+		{
+			return;
+		}
+		if(dataTypeInfo.isPrimitiveType())
+		{
+			return;
+		}
+
+		addImportClass(dataTypeInfo.getTypeClass());
 	}
 
 	/**
 	 * Generate java imports
-	 * 
-	 * @param sb
 	 */
-	private void createImports(StringBuilder sb)
+	private void createImports(final StringBuilder sb)
 	{
-		for (String name : s_importClasses)
+		for (final String name : s_importClasses)
 		{
 			sb.append("import ").append(name).append(";"); // .append(NL);
 		}
@@ -590,87 +611,9 @@ public class ModelInterfaceGenerator
 	}
 
 	/**
-	 * Get class for given display type and reference
-	 * 
-	 * @return class
-	 */
-	public static Class<?> getClass(final ColumnInfo columnInfo)
-	{
-		final int displayType = columnInfo.getDisplayType();
-		final int AD_Reference_ID = columnInfo.getAdReferenceId();
-		return getClass(columnInfo, displayType, AD_Reference_ID);
-	}
-
-	private static Class<?> getClass(final ColumnInfo columnInfo, int displayType, int AD_Reference_ID)
-	{
-		final String columnName = columnInfo.getColumnName();
-
-		// Handle Posted
-		// TODO: hardcoded
-		if (columnName.equalsIgnoreCase("Posted")
-				|| columnName.equalsIgnoreCase("Processed")
-				|| columnName.equalsIgnoreCase("Processing"))
-		{
-			return Boolean.class;
-		}
-		// Record_ID
-		// TODO: hardcoded
-		else if (Services.get(IColumnBL.class).isRecordIdColumnName(columnName))
-		{
-			return Integer.class;
-		}
-		// Reference Table
-		else if ((DisplayType.Table == displayType || DisplayType.Search == displayType)
-				&& AD_Reference_ID > 0)
-		{
-			final Optional<TableReferenceInfo> tableReferenceInfoOrNull = columnInfo.getTableReferenceInfo();
-			if (tableReferenceInfoOrNull.isPresent())
-			{
-				final TableReferenceInfo tableReferenceInfo = tableReferenceInfoOrNull.get();
-				displayType = tableReferenceInfo.getRefDisplayType();
-				AD_Reference_ID = tableReferenceInfo.getKeyReferenceValueId();
-			}
-			else
-			{
-				throw new IllegalStateException("Not found AD_Ref_Table/AD_Column for " + columnInfo);
-			}
-			//
-			return getClass(columnInfo, displayType, AD_Reference_ID); // recursive call with new parameters
-		}
-		else
-		{
-			return DisplayType.getClass(displayType, true);
-		}
-	}
-
-	public static String getDataTypeName(Class<?> cl, int displayType)
-	{
-		String dataType = cl.getName();
-		dataType = dataType.substring(dataType.lastIndexOf('.') + 1);
-		if (dataType.equals("Boolean"))
-		{
-			dataType = "boolean";
-		}
-		else if (dataType.equals("Integer"))
-		{
-			dataType = "int";
-		}
-		else if (displayType == DisplayType.Binary || displayType == DisplayType.Image)
-		{
-			dataType = "byte[]";
-		}
-		else
-		{
-			dataType = cl.getName(); // metas: always use FQ names
-		}
-		return dataType;
-	}
-
-	/**
-	 * @param columnName
 	 * @return true if a setter method should be generated
 	 */
-	public static boolean isGenerateSetter(String columnName)
+	public static boolean isGenerateSetter(final String columnName)
 	{
 		return !"AD_Client_ID".equals(columnName)
 				// && !"AD_Org_ID".equals(columnName)
@@ -682,7 +625,6 @@ public class ModelInterfaceGenerator
 	}
 
 	/**
-	 * @param columnName
 	 * @return true if a model getter method (method that is returning referenced PO) should be generated
 	 */
 	private static boolean isGenerateInterfaceModelGetterForColumnName(@NonNull final String columnName)
@@ -701,33 +643,32 @@ public class ModelInterfaceGenerator
 	}
 
 	/**
-	 * 
-	 * @param AD_Table_ID
-	 * @param toEntityType
 	 * @return true if a model getter method (method that is returning referenced PO) should be generated
 	 */
-	public static boolean isGenerateModelGetterForEntity(int AD_Table_ID, String toEntityType)
+	private static boolean isGenerateModelGetterForEntity(
+			final int AD_Table_ID,
+			final String toEntityType,
+			@NonNull final TableAndColumnInfoRepository repository)
 	{
-		final String fromEntityType = DB.getSQLValueString(null, "SELECT EntityType FROM AD_Table where AD_Table_ID=?", AD_Table_ID);
+		final TableInfo tableInfo = repository.getTableInfo(AD_Table_ID);
+		final String fromEntityType = tableInfo.getEntityType();
 		final boolean fromEntity_SystemMaintained = EntityTypesCache.instance.isSystemMaintained(fromEntityType);
 		final boolean toEntity_SystemMaintained = EntityTypesCache.instance.isSystemMaintained(toEntityType);
 		return
-		// Same entities
-		fromEntityType.equals(toEntityType)
-				// Both are system entities
-				|| (fromEntity_SystemMaintained && toEntity_SystemMaintained)
-				// Not Sys Entity referencing a Sys Entity
-				|| (!fromEntity_SystemMaintained && toEntity_SystemMaintained);
+				// Same entities
+				fromEntityType.equals(toEntityType)
+						// Both are system entities
+						|| (fromEntity_SystemMaintained && toEntity_SystemMaintained)
+						// Not Sys Entity referencing a Sys Entity
+						|| (!fromEntity_SystemMaintained && toEntity_SystemMaintained);
 	}
 
 	/**
 	 * Get EntityType Model Package.
-	 * 
+	 *
 	 * @author Victor Perez - [ 1785001 ] Using ModelPackage of EntityType to Generate Model Class
-	 * @param entityType
-	 * @return
 	 */
-	public static final String getModelPackage(final String entityType)
+	public static String getModelPackage(final String entityType)
 	{
 		if ("D".equals(entityType))
 		{
@@ -737,7 +678,8 @@ public class ModelInterfaceGenerator
 		return EntityTypesCache.instance.getModelPackage(entityType);
 	}
 
-	private static String getModelPackageForClassName(final String referenceClassName)
+	@Nullable
+	private static String getModelPackageForClassName(@NonNull final String referenceClassName)
 	{
 		Check.assumeNotEmpty(referenceClassName, "referenceClassName not empty");
 
@@ -762,8 +704,7 @@ public class ModelInterfaceGenerator
 			return "";
 		}
 
-		final String packageName = classNameFQ.substring(0, idx);
-		return packageName;
+		return classNameFQ.substring(0, idx);
 	}
 
 	private static Reflections getReflections()
@@ -779,9 +720,10 @@ public class ModelInterfaceGenerator
 
 	private static Reflections reflections = null;
 
-	static String getFieldName(String columnName)
+	@NonNull
+	static String getFieldName(@NonNull final String columnName)
 	{
-		String fieldName;
+		final String fieldName;
 		if (columnName.endsWith("_ID_To"))
 		{
 			fieldName = columnName.substring(0, columnName.length() - 6) + "_To";
@@ -793,7 +735,10 @@ public class ModelInterfaceGenerator
 		return fieldName;
 	}
 
-	static String getReferenceClassName(final ColumnInfo columnInfo)
+	@Nullable
+	static String getReferenceClassName(
+			@NonNull final ColumnInfo columnInfo,
+			@NonNull final TableAndColumnInfoRepository repository)
 	{
 		final int columnTableId = columnInfo.getAdTableId();
 		final String columnName = columnInfo.getColumnName();
@@ -808,7 +753,7 @@ public class ModelInterfaceGenerator
 			final String refTableName = MQuery.getZoomTableName(columnName); // teo_sarca: BF [ 1817768 ] Isolate hardcoded table direct columns
 			referenceClassName = "I_" + refTableName;
 
-			final MTable refTable = MTable.get(Env.getCtx(), refTableName);
+			final TableInfo refTable = repository.getTableInfo(refTableName);
 			if (refTable != null)
 			{
 				final String refEntityType = refTable.getEntityType();
@@ -821,7 +766,7 @@ public class ModelInterfaceGenerator
 				{
 					referenceClassName = modelpackage + "." + referenceClassName;
 				}
-				if (!isGenerateModelGetterForEntity(columnTableId, refEntityType))
+				if (!isGenerateModelGetterForEntity(columnTableId, refEntityType, repository))
 				{
 					referenceClassName = null;
 				}
@@ -842,7 +787,7 @@ public class ModelInterfaceGenerator
 				//
 			}
 
-			final TableReferenceInfo tableReferenceInfo = columnInfo.getTableReferenceInfo().orNull();
+			final TableReferenceInfo tableReferenceInfo = columnInfo.getTableReferenceInfo().orElse(null);
 			if (tableReferenceInfo != null)
 			{
 				final String refTableName = tableReferenceInfo.getRefTableName();
@@ -861,7 +806,7 @@ public class ModelInterfaceGenerator
 					{
 						referenceClassName = modelpackage + "." + referenceClassName;
 					}
-					if (!isGenerateModelGetterForEntity(columnTableId, refTableEntityType))
+					if (!isGenerateModelGetterForEntity(columnTableId, refTableEntityType, repository))
 					{
 						referenceClassName = null;
 					}
@@ -888,30 +833,11 @@ public class ModelInterfaceGenerator
 		{
 			referenceClassName = "org.compiere.model.I_AD_Image";
 		}
-		else
-		{
-			// TODO - Handle other types
-			// sb.append("\tpublic I_"+columnName+" getI_").append(columnName).append("(){return null; };");
-		}
-		//
+
 		return referenceClassName;
 	}
 
-	/**
-	 * String representation
-	 * 
-	 * @return string representation
-	 */
-	@Override
-	public String toString()
-	{
-		final StringBuilder sb = new StringBuilder(getClass().getSimpleName()).append("[").append("]");
-		return sb.toString();
-	}
-
-	public static final String PROPERTY_Legacy = "generate.legacy";
-
-	public static final boolean isGenerateLegacy()
+	public static boolean isGenerateLegacy()
 	{
 		return "true".equals(System.getProperty(PROPERTY_Legacy));
 	}

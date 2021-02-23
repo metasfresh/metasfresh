@@ -2,11 +2,6 @@ import axios from 'axios';
 
 import * as types from '../constants/MenuTypes';
 
-// REQUESTS
-
-let breadcrumbsRequested = false;
-let breadcrumbsId = null;
-
 export function pathRequest(nodeId) {
   return axios.get(
     config.API_URL + '/menu/' + nodeId + '/path/' + '&inclusive=true'
@@ -80,55 +75,40 @@ export function getRootBreadcrumb() {
   }));
 }
 
+/**
+ * Removed the logic that checked for the local variables as it is deprecated - those were added in https://github.com/metasfresh/metasfresh-webui-frontend-legacy/issues/979
+ * @param {string} id -> windowId
+ */
 export function getWindowBreadcrumb(id) {
   return (dispatch) => {
-    if (!breadcrumbsRequested && breadcrumbsId !== id) {
-      breadcrumbsRequested = true;
-
-      elementPathRequest('window', id)
-        .then((response) => {
-          let pathData = flattenOneLine(response.data);
-          return pathData;
-        })
-        .then((item) => {
-          dispatch(setBreadcrumb(item.reverse()));
-
-          breadcrumbsId = id;
-          breadcrumbsRequested = false;
-        })
-        .catch(() => {
-          dispatch(setBreadcrumb([]));
-
-          breadcrumbsId = null;
-          breadcrumbsRequested = false;
-        });
-    }
+    elementPathRequest('window', id)
+      .then((response) => {
+        let pathData = flattenOneLine(response.data);
+        return pathData;
+      })
+      .then((item) => {
+        dispatch(setBreadcrumb(item.reverse()));
+      })
+      .catch(() => {
+        dispatch(setBreadcrumb([]));
+      });
+    // }
   };
 }
 
 export function getElementBreadcrumb(entity, id) {
   return (dispatch) => {
-    if (!breadcrumbsRequested && breadcrumbsId !== id) {
-      breadcrumbsRequested = true;
-
-      elementPathRequest(entity, id)
-        .then((response) => {
-          let pathData = flattenOneLine(response.data);
-          return pathData;
-        })
-        .then((item) => {
-          dispatch(setBreadcrumb(item.reverse()));
-
-          breadcrumbsId = id;
-          breadcrumbsRequested = false;
-        })
-        .catch(() => {
-          dispatch(setBreadcrumb([]));
-
-          breadcrumbsId = null;
-          breadcrumbsRequested = false;
-        });
-    }
+    elementPathRequest(entity, id)
+      .then((response) => {
+        let pathData = flattenOneLine(response.data);
+        return pathData;
+      })
+      .then((item) => {
+        dispatch(setBreadcrumb(item.reverse()));
+      })
+      .catch(() => {
+        dispatch(setBreadcrumb([]));
+      });
   };
 }
 

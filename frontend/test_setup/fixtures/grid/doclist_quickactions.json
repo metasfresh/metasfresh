@@ -1,0 +1,382 @@
+{
+  "parent_quickactions1": {
+    "actions": [
+      {
+        "processId": "ADP_540900",
+        "caption": "WEBUI_TestParentChildViewParams",
+        "description": "Process used to test parent and child views informations provided by webui frontend.\nSee task https://github.com/metasfresh/metasfresh-webui-api/issues/755.",
+        "displayPlaces": [
+          "ViewQuickActions"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "evaluateDuration": "180.2 μs",
+        "internalName": "WEBUI_TestParentChildViewParams"
+      },
+      {
+        "processId": "ADP_540874",
+        "caption": "Take out HU",
+        "description": "",
+        "displayPlaces": [
+          "ViewQuickActions"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Keine Zeilen ausgewählt",
+        "evaluateDuration": "125.3 μs",
+        "internalName": "WEBUI_PickingSlotsClearingView_TakeOutHU"
+      }
+    ]
+  },
+  "parent_quickactions2": {
+    "actions": [
+      {
+        "processId": "ADP_540900",
+        "caption": "WEBUI_TestParentChildViewParams",
+        "description": "Process used to test parent and child views informations provided by webui frontend.\nSee task https://github.com/metasfresh/metasfresh-webui-api/issues/755.",
+        "displayPlaces": [
+          "ViewQuickActions"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "evaluateDuration": "132.8 μs",
+        "internalName": "WEBUI_TestParentChildViewParams"
+      }
+    ]
+  },
+  "included_quickactions": {
+    "actions": [
+      {
+        "processId": "ADP_540904",
+        "caption": "Add to Transportation Order, Ship and Invoice",
+        "description": "",
+        "displayPlaces": [
+          "ViewQuickActions"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "evaluateDuration": "9.764 μs",
+        "internalName": "WEBUI_PackingHUsView_AddHUsToShipperTransportationShipAndInvoice"
+      },
+      {
+        "processId": "ADP_540750",
+        "caption": "Wareneingang erst.",
+        "description": "Erstellt einen Wareneingang",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": true,
+        "disabled": true,
+        "disabledReason": "Keine Zeilen ausgewählt",
+        "evaluateDuration": "145.8 μs",
+        "internalName": "WEBUI_M_HU_CreateReceipt_NoParams"
+      },
+      {
+        "processId": "ADP_540898",
+        "caption": "Add CUs with Serial Numbers",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Keine Zeilen ausgewählt",
+        "evaluateDuration": "87.30 μs",
+        "internalName": "WEBUI_Add_Batch_SerialNo_To_CUs"
+      },
+      {
+        "processId": "ADP_540899",
+        "caption": "Add to Transportation Order",
+        "description": "",
+        "displayPlaces": [
+          "ViewQuickActions"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Keine Zeilen ausgewählt",
+        "evaluateDuration": "163.8 μs",
+        "internalName": "WEBUI_PackingHUsView_AddHUsToShipperTransportation"
+      },
+      {
+        "processId": "ADP_541103",
+        "caption": "Datamatrix abscannen",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Keine Zeilen ausgewählt",
+        "evaluateDuration": "81.45 μs",
+        "internalName": "WEBUI_M_HU_SecurPharmScan"
+      },
+      {
+        "processId": "ADP_540796",
+        "caption": "Entsorgen",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Nur mit oberster HU-Ebene",
+        "evaluateDuration": "59.35 μs",
+        "internalName": "WEBUI_M_HU_MoveToGarbage"
+      },
+      {
+        "processId": "ADP_540757",
+        "caption": "Korrektur",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Keine Zeilen ausgewählt",
+        "evaluateDuration": "70.60 μs",
+        "internalName": "WEBUI_M_HU_ReverseReceipt"
+      },
+      {
+        "processId": "ADP_541122",
+        "caption": "Kunden RÃ¼cklieferung (pharma)",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Nur mit oberster HU-Ebene",
+        "evaluateDuration": "143.4 μs",
+        "internalName": "WEBUI_M_HU_ReturnFromCustomer_Pharma"
+      },
+      {
+        "processId": "ADP_540797",
+        "caption": "Kunden Rücklieferung",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Nur mit oberster HU-Ebene",
+        "evaluateDuration": "70.51 μs",
+        "internalName": "WEBUI_M_HU_ReturnFromCustomer"
+      },
+      {
+        "processId": "ADP_540820",
+        "caption": "Lagerbewegung",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Nur mit oberster HU-Ebene",
+        "evaluateDuration": "160.8 μs",
+        "internalName": "WEBUI_M_HU_MoveToAnotherWarehouse"
+      },
+      {
+        "processId": "ADP_541006",
+        "caption": "Lagerbewegung (inkl. Quarantäne)",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Nur mit oberster HU-Ebene",
+        "evaluateDuration": "178.7 μs",
+        "internalName": "WEBUI_M_HU_MoveToAnotherWarehouse_QA"
+      },
+      {
+        "processId": "ADP_540795",
+        "caption": "Lieferanten Rücklieferung",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Nur mit oberster HU-Ebene",
+        "evaluateDuration": "59.87 μs",
+        "internalName": "WEBUI_M_HU_ReturnToVendor"
+      },
+      {
+        "processId": "ADP_540828",
+        "caption": "Lieferanten Rücklieferung (partial)",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Nur eine Zeile soll ausgewählt sein",
+        "evaluateDuration": "91.26 μs",
+        "internalName": "WEBUI_M_HU_ReturnTUsToVendor"
+      },
+      {
+        "processId": "ADP_541129",
+        "caption": "Mass Disposal",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Nur mit oberster HU-Ebene",
+        "evaluateDuration": "119.2 μs",
+        "internalName": "WEBUI_M_HU_MassDisposal"
+      },
+      {
+        "processId": "ADP_540541",
+        "caption": "Materialentnahme",
+        "description": "Erstellt für den aktuell selektierten HU-Datensatz eine Warenbewegung ins \"Materialentnahme\"-Lager",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Keine Zeilen ausgewählt",
+        "evaluateDuration": "66.49 μs",
+        "internalName": "WEBUI_M_HU_MoveToDirectWarehouse"
+      },
+      {
+        "processId": "ADP_540822",
+        "caption": "Materialentnahme (partial)",
+        "description": "Erstellt für den aktuell selektierten HU-Datensatz eine Warenbewegung ins \"Materialentnahme\"-Lager",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Nur eine Zeile soll ausgewählt sein",
+        "evaluateDuration": "90.50 μs",
+        "internalName": "WEBUI_M_HU_MoveTUsToDirectWarehouse"
+      },
+      {
+        "processId": "ADP_540793",
+        "caption": "Nach Sperrlager verschieben",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Nur mit oberster HU-Ebene",
+        "evaluateDuration": "111.7 μs",
+        "internalName": "WEBUI_M_HU_MoveToQualityWarehouse"
+      },
+      {
+        "processId": "ADP_584703",
+        "caption": "Produkte umlagern",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Keine Zeilen ausgewählt",
+        "evaluateDuration": "115.3 μs",
+        "internalName": "Produkte_umlagern"
+      },
+      {
+        "processId": "ADP_540763",
+        "caption": "Transformieren",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Nur eine Zeile soll ausgewählt sein",
+        "evaluateDuration": "151.7 μs",
+        "internalName": "WEBUI_M_HU_Transform"
+      },
+      {
+        "processId": "ADP_540766",
+        "caption": "WE Etikett drucken",
+        "description": "Ein Wareneingangsetikett für die HU ausdrucken",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "No (single) row selected",
+        "evaluateDuration": "111.6 μs",
+        "internalName": "WEBUI_M_HU_PrintReceiptLabel"
+      },
+      {
+        "processId": "ADP_540992",
+        "caption": "Wareneingang mit Einlagerung erst.",
+        "description": "",
+        "displayPlaces": [
+          "SingleDocumentActionsMenu",
+          "ViewQuickActions",
+          "ViewActionsMenu"
+        ],
+        "quickAction": true,
+        "defaultQuickAction": false,
+        "disabled": true,
+        "disabledReason": "Keine Zeilen ausgewählt",
+        "evaluateDuration": "152.1 μs",
+        "internalName": "WEBUI_M_HU_CreateReceipt_LocatorParams"
+      }
+    ]
+  }
+}

@@ -3,6 +3,7 @@ package de.metas.inventory.event;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.Env;
@@ -59,7 +60,7 @@ public class InventoryUserNotificationsProducer
 
 	/** M_Inventory internal use */
 	private static final int WINDOW_INTERNAL_INVENTORY = 341; // FIXME: HARDCODED
-	private static final String MSG_Event_InventoryGenerated = "Event_InventoryGenerated";
+	private static final AdMessageKey MSG_Event_InventoryGenerated = AdMessageKey.of("Event_InventoryGenerated");
 
 	private InventoryUserNotificationsProducer()
 	{

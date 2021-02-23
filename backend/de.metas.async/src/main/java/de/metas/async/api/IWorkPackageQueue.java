@@ -80,7 +80,6 @@ public interface IWorkPackageQueue
 	 * to have the right AD_Client_ID, AD_Org_ID and AD_User_ID.
 	 * </ul>
 	 *
-	 * @param ctx
 	 * @param timeoutMillis if there is no workpackage available and timeoutMillis > 0 this method will try to poll for given timeout until it will return null (nothing found)
 	 * @return {@link I_C_Queue_WorkPackage} or <code>null</code> if there either is no package or the calling process is too slow (compared with other concurrent processes also looking for work with
 	 *         the same adProcessId) to select and then lock an available package after *many* tries.
@@ -150,7 +149,6 @@ public interface IWorkPackageQueue
 	 *
 	 * NOTE: the workpackage WILL NOT be marked as ready for processing.
 	 *
-	 * @param block
 	 * @param priority priority strategy to be used. <b>But</b> note that if the queue will also invoke {@link IWorkpackageProcessorContextFactory#getThreadInheritedPriority()} and will prefer that
 	 *            priority (if any!) over this parameter.
 	 * @return I_C_Queue_WorkPackage (created workPackage)
@@ -162,19 +160,12 @@ public interface IWorkPackageQueue
 	/**
 	 * Adds an element to the given <code>workPackage</code>.
 	 *
-	 * @param workPackage
-	 * @param adTableId
-	 * @param recordId
 	 * @return I_C_Queue_Element (created element)
 	 */
 	I_C_Queue_Element enqueueElement(I_C_Queue_WorkPackage workPackage, int adTableId, int recordId);
 
 	/**
 	 * Adds elements to the given <code>workPackage</code>.
-	 *
-	 * @param workPackage
-	 * @param adTableId
-	 * @param recordIds
 	 */
 	void enqueueElements(I_C_Queue_WorkPackage workPackage, int adTableId, List<Integer> recordIds);
 
@@ -191,25 +182,18 @@ public interface IWorkPackageQueue
 	/**
 	 * Convenient method for quickly enqueuing an element
 	 *
-	 * @param ctx
-	 * @param adTableId
-	 * @param recordId
-	 * @return element
 	 * @see #enqueueElement(Object)
 	 */
 	I_C_Queue_Element enqueueElement(Properties ctx, int adTableId, int recordId);
 
 	/**
 	 * Indicates that all queue elements have been added to the given <code>workPackge</code>.
-	 *
-	 * @param workPackge
 	 */
 	void markReadyForProcessing(I_C_Queue_WorkPackage workPackage);
 
 	/**
 	 * Indicates that all queue elements have been added to the given <code>workPackge</code>.
 	 *
-	 * @param workPackge
 	 * @param callback callback to be called after workpackage gets processed (sucessful or not).
 	 */
 	void markReadyForProcessing(I_C_Queue_WorkPackage workPackage, IQueueProcessorListener callback);
@@ -217,7 +201,6 @@ public interface IWorkPackageQueue
 	/**
 	 * Indicates that all queue elements have been added to the given <code>workpackge</code> and it's ready for processing.
 	 *
-	 * @param workPackge
 	 * @return future {@link IWorkpackageProcessorExecutionResult}
 	 */
 	Future<IWorkpackageProcessorExecutionResult> markReadyForProcessingAndReturn(I_C_Queue_WorkPackage workPackage);
@@ -227,8 +210,6 @@ public interface IWorkPackageQueue
 	 *
 	 * If transaction is {@link ITrx#TRXNAME_None} the marking will be performed immediately.
 	 *
-	 * @param workPackage
-	 * @param trxName
 	 * @return future {@link IWorkpackageProcessorExecutionResult}
 	 */
 	Future<IWorkpackageProcessorExecutionResult> markReadyForProcessingAfterTrxCommit(I_C_Queue_WorkPackage workPackage, String trxName);
@@ -242,7 +223,6 @@ public interface IWorkPackageQueue
 	 * For queues that were created with {@link IWorkPackageQueueFactory#getQueueForEnqueuing(Properties, Class)}, this method returns the <code>InternalName</code> value of the queue's
 	 * {@link I_C_Queue_PackageProcessor}. If the queue doesn't have an internal name, it returns the <code>ClassName</code> value.
 	 *
-	 * @return
 	 * @throws {@link UnsupportedOperationException} if this queue was not created with {@link IWorkPackageQueueFactory#getQueueForEnqueuing(Properties, Class)}.
 	 */
 	String getEnquingPackageProcessorInternalName();

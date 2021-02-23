@@ -1,13 +1,26 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.GLN;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.impex.model.I_AD_InputDataSource;
+import de.metas.location.CountryId;
+import de.metas.location.LocationId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.rules.IPricingRule;
+import de.metas.pricing.rules.PriceListVersion;
+import de.metas.shipping.ShipperId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.pricing.model.I_C_PricingRule;
@@ -28,26 +41,12 @@ import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.junit.Ignore;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.GLN;
-import de.metas.document.DocBaseAndSubType;
-import de.metas.impex.model.I_AD_InputDataSource;
-import de.metas.location.CountryId;
-import de.metas.location.LocationId;
-import de.metas.money.CurrencyId;
-import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.rules.IPricingRule;
-import de.metas.pricing.rules.PriceListVersion;
-import de.metas.shipping.ShipperId;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.uom.UomId;
-import lombok.Builder;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -74,6 +73,8 @@ import lombok.NonNull;
 @Ignore
 final class TestMasterdata
 {
+	public static final String RESOURCE_PATH = "/de/metas/rest_api/ordercandidates/impl/";
+
 	public void createDataSource(final String internalName)
 	{
 		final I_AD_InputDataSource dataSourceRecord = newInstance(I_AD_InputDataSource.class);
@@ -91,6 +92,7 @@ final class TestMasterdata
 
 	@Builder(builderMethodName = "prepareBPartnerAndLocation", builderClassName = "_BPartnerAndLocationBuilder")
 	private BPartnerLocationId createBPartnerAndLocation(
+			@Nullable final OrgId orgId,
 			@NonNull final String bpValue,
 			@Nullable final String bpExternalId,
 			@Nullable final PricingSystemId salesPricingSystemId,
@@ -102,10 +104,18 @@ final class TestMasterdata
 
 		final I_C_BP_Group groupRecord = newInstance(I_C_BP_Group.class);
 		groupRecord.setName(bpValue + "-name");
+		if (orgId != null)
+		{
+			groupRecord.setAD_Org_ID(orgId.getRepoId());
+		}
 		saveRecord(groupRecord);
 
 		final I_C_BPartner bpRecord = newInstance(I_C_BPartner.class);
 		POJOWrapper.setInstanceName(bpRecord, bpValue);
+		if (orgId != null)
+		{
+			bpRecord.setAD_Org_ID(orgId.getRepoId());
+		}
 		bpRecord.setValue(bpValue);
 		bpRecord.setName(bpValue + "-name");
 		bpRecord.setExternalId(bpExternalId);
@@ -118,6 +128,7 @@ final class TestMasterdata
 		saveRecord(bpRecord);
 
 		return prepareBPartnerLocation()
+				.orgId(orgId)
 				.bpartnerId(BPartnerId.ofRepoId(bpRecord.getC_BPartner_ID()))
 				.countryId(countryId)
 				.gln(gln)
@@ -127,6 +138,7 @@ final class TestMasterdata
 
 	@Builder(builderMethodName = "prepareBPartner", builderClassName = "_BPartnerBuilder")
 	private BPartnerId createBPartner(
+			@Nullable final OrgId orgId,
 			@NonNull final String bpValue,
 			@Nullable final String bpExternalId,
 			@Nullable final String bpGroupExistingName,
@@ -142,10 +154,18 @@ final class TestMasterdata
 		{
 			groupRecord = newInstance(I_C_BP_Group.class);
 			groupRecord.setName(bpValue + "-name");
+			if (orgId != null)
+			{
+				groupRecord.setAD_Org_ID(orgId.getRepoId());
+			}
 			saveRecord(groupRecord);
 		}
 		final I_C_BPartner bpRecord = newInstance(I_C_BPartner.class);
 		POJOWrapper.setInstanceName(bpRecord, bpValue);
+		if (orgId != null)
+		{
+			bpRecord.setAD_Org_ID(orgId.getRepoId());
+		}
 		bpRecord.setValue(bpValue);
 		bpRecord.setName(bpValue + "-name");
 		bpRecord.setExternalId(bpExternalId);
@@ -161,6 +181,7 @@ final class TestMasterdata
 
 	@Builder(builderMethodName = "prepareBPartnerLocation", builderClassName = "_BPartnerLocationBuilder")
 	private BPartnerLocationId createBPartnerLocation(
+			@Nullable final OrgId orgId,
 			@NonNull final BPartnerId bpartnerId,
 			@NonNull final CountryId countryId,
 			@Nullable final GLN gln,
@@ -173,7 +194,10 @@ final class TestMasterdata
 		final LocationId locationId = createLocation(countryId);
 
 		final I_C_BPartner_Location bplRecord = newInstance(I_C_BPartner_Location.class);
-
+		if (orgId != null)
+		{
+			bplRecord.setAD_Org_ID(orgId.getRepoId());
+		}
 		bplRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bplRecord.setC_Location_ID(locationId.getRepoId());
 		bplRecord.setGLN(gln != null ? gln.getCode() : null);

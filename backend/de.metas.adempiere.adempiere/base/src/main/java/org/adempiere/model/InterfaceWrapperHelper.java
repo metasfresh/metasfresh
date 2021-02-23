@@ -293,7 +293,7 @@ public class InterfaceWrapperHelper
 		return create(model, cl, useOldValues);
 	}
 
-	public static <T> T create(final Properties ctx, final Class<T> cl, final String trxName)
+	public static <T> T create(final Properties ctx, final Class<T> cl, @Nullable final String trxName)
 	{
 		if (getInMemoryDatabaseForModel(cl) != null)
 		{
@@ -560,8 +560,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Sets trxName to {@link ITrx#TRXNAME_ThreadInherited}.
-	 *
-	 * @param model
 	 */
 	public static void setThreadInheritedTrxName(final Object model)
 	{
@@ -570,8 +568,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * Set current thread inerited transaction name to given models.
-	 *
-	 * @param models
 	 */
 	public static void setThreadInheritedTrxName(final Collection<?> models)
 	{
@@ -879,7 +875,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Checks static variable "Table_Name" of given interface and returns it's content.
 	 *
-	 * @param clazz
 	 * @return tableName associated with given interface
 	 * @throws AdempiereException if "Table_Name" static variable is not defined or is not accessible
 	 */
@@ -896,7 +891,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Checks static variable "Table_Name" of given interface and returns it's content.
 	 *
-	 * @param clazz
 	 * @return tableName associated with given interface or null if interface has no Table_Name
 	 */
 	public static String getTableNameOrNull(final Class<?> clazz)
@@ -1379,9 +1373,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * <b>IMPORTANT:</b> Please consider using {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor} instead if this method. It's typesafe.
 	 *
-	 * @param model
-	 * @param attributeName
-	 * @param value
 	 * @return old value or null
 	 */
 	public static Object setDynAttribute(final Object model, final String attributeName, final Object value)
@@ -1391,10 +1382,6 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * <b>IMPORTANT:</b> Please consider using {@link org.adempiere.ad.persistence.ModelDynAttributeAccessor} instead if this method. It's typesafe.
-	 *
-	 * @param model
-	 * @param attributeName
-	 * @return
 	 */
 	public static <T> T getDynAttribute(final Object model, final String attributeName)
 	{
@@ -1404,8 +1391,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Check if given <code>model</code> can be casted to <code>interfaceClass</code>. NOTE: by casted we mean using create(...) methods.
 	 *
-	 * @param model
-	 * @param interfaceClass
 	 * @return true if we can cast the model to given interface.
 	 */
 	public static boolean isInstanceOf(final Object model, final Class<?> interfaceClass)
@@ -1591,14 +1576,21 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param model
-	 * @param columnNames
 	 * @return true if <i>any</i> of the given column names where changed
 	 */
 	public static boolean isValueChanged(final Object model, final Set<String> columnNames)
 	{
 		return helpers.isValueChanged(model, columnNames);
 	}
+
+	/**
+	 * @return true if <i>any</i> of the given column names where changed
+	 */
+	public static boolean isValueChanged(final Object model, final String... columnNames)
+	{
+		return helpers.isValueChanged(model, ImmutableSet.copyOf(columnNames));
+	}
+
 
 	@Deprecated
 	public static boolean isPOValueChanged(final Object model, final String columnName)

@@ -9,10 +9,12 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
@@ -21,6 +23,7 @@ import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
@@ -435,7 +438,7 @@ import lombok.NonNull;
 
 		final String parentLinkFieldName = isParentLinkColumn ? entityBindings.getSqlParentLinkColumnName() : null;
 		final int fieldMaxLength = widgetType.isStrictText() && gridFieldVO.getFieldLength() > 0 ? gridFieldVO.getFieldLength() : 0;
-		
+
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(sqlColumnName)
 				.setCaption(gridFieldVO.getHeaderTrls(), gridFieldVO.getHeader())
 				.setDescription(gridFieldVO.getDescriptionTrls(), gridFieldVO.getDescription())
@@ -480,7 +483,7 @@ import lombok.NonNull;
 
 	/**
 	 * @return true if the given {@code gridFieldVO} is flagged as parent link and also matches the parent-link columName.
-	 *         Logically there can be only one parent link field.
+	 * Logically there can be only one parent link field.
 	 */
 	private static boolean isCurrentlyUsedParentLinkField(
 			@NonNull final GridFieldVO gridFieldVO,
@@ -610,9 +613,14 @@ import lombok.NonNull;
 			return null;
 		}
 		else if (widgetType.isDateOrTime()
-				&& DocumentFieldDefaultFilterDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW.equalsIgnoreCase(autoFilterInitialValueStr.trim()))
+				&& DocumentFilterParamDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW.equalsIgnoreCase(autoFilterInitialValueStr.trim()))
 		{
-			return DocumentFieldDefaultFilterDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW;
+			return DocumentFilterParamDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW;
+		}
+		else if(widgetType.isLookup()
+				&& DocumentFilterParamDescriptor.AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER.equalsIgnoreCase(autoFilterInitialValueStr.trim()))
+		{
+			return DocumentFilterParamDescriptor.AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER;
 		}
 		else
 		{
@@ -646,8 +654,9 @@ import lombok.NonNull;
 		{
 			// FIXME: hardcoded, exclude field when considering ProcessButton widget
 			// because it's AD_Process_ID it's a placeholder-ish one.
-			if (WindowConstants.FIELDNAME_DocAction.equals(fieldName)
-					|| WindowConstants.FIELDNAME_Processing.equals(fieldName))
+			if (
+				//WindowConstants.FIELDNAME_DocAction.equals(fieldName) ||
+					WindowConstants.FIELDNAME_Processing.equals(fieldName))
 			{
 				return null;
 			}
@@ -715,10 +724,16 @@ import lombok.NonNull;
 				// .setReadonlyLogic(readonlyLogic)
 				// .setAlwaysUpdateable(alwaysUpdateable)
 				// .setMandatoryLogic(gridFieldVO.isMandatory() ? ConstantLogicExpression.TRUE : gridFieldVO.getMandatoryLogic())
-				// .setDisplayLogic(gridFieldVO.getDisplayLogic())
+
 				//
 				.setDefaultFilterInfo(createLabelsDefaultFilterInfo(labelsUIElement))
 				.setDataBinding(fieldBinding);
+
+		final String labelDisplayLogic = getLabelDisplayLogic(labelsUIElement);
+		if (!Check.isBlank(labelDisplayLogic))
+		{
+			fieldBuilder.setDisplayLogic(labelDisplayLogic);
+		}
 
 		//
 		// Add Field builder to document entity
@@ -727,6 +742,15 @@ import lombok.NonNull;
 		//
 		// Collect special field
 		collectSpecialField(fieldBuilder);
+	}
+
+	private String getLabelDisplayLogic(final I_AD_UI_Element labelsUIElement)
+	{
+		final I_AD_Field labelField = labelsUIElement.getLabels_Selector_Field();
+
+		Check.assumeNotNull(labelField, I_AD_UI_Element.COLUMNNAME_Labels_Selector_Field_ID + " shall not be null for UI Element {} !", labelsUIElement);
+
+		return labelField.getDisplayLogic();
 	}
 
 	private static final LabelsLookup createLabelsLookup(final I_AD_UI_Element labelsUIElement, final String tableName)
@@ -754,16 +778,38 @@ import lombok.NonNull;
 			labelsLinkColumnName = linkColumnName;
 		}
 
-		final I_AD_Column labelsValueColumn = labelsUIElement.getLabels_Selector_Field().getAD_Column();
+		final I_AD_Field labelsSelectorField = labelsUIElement.getLabels_Selector_Field();
+		
+		final I_AD_Column labelsValueColumn = labelsSelectorField.getAD_Column();
 		final String labelsValueColumnName = labelsValueColumn.getColumnName();
-		final LookupDescriptor labelsValuesLookupDescriptor = SqlLookupDescriptor.builder()
+		
+		final int referenceIDToUse = labelsSelectorField.getAD_Reference_ID() > 0
+				? labelsSelectorField.getAD_Reference_ID()
+				: labelsValueColumn.getAD_Reference_ID();
+
+		final int referenceValueIDToUse = labelsSelectorField.getAD_Reference_Value_ID() > 0
+				? labelsSelectorField.getAD_Reference_Value_ID()
+				: labelsValueColumn.getAD_Reference_Value_ID();
+
+		final int valRuleIDToUse = labelsSelectorField.getAD_Val_Rule_ID() > 0
+				? labelsSelectorField.getAD_Val_Rule_ID()
+				: labelsValueColumn.getAD_Val_Rule_ID();
+
+		final SqlLookupDescriptor.Builder labelsValuesLookupDescriptorBuilder = SqlLookupDescriptor.builder()
 				.setCtxTableName(labelsTableName)
 				.setCtxColumnName(labelsValueColumnName)
-				.setDisplayType(labelsValueColumn.getAD_Reference_ID())
-				.setWidgetType(DescriptorsFactoryHelper.extractWidgetType(labelsValueColumnName, labelsValueColumn.getAD_Reference_ID()))
-				.setAD_Reference_Value_ID(labelsValueColumn.getAD_Reference_Value_ID())
-				.setAD_Val_Rule_ID(labelsValueColumn.getAD_Val_Rule_ID())
-				.buildForDefaultScope();
+				.setDisplayType(referenceIDToUse)
+				.setWidgetType(DescriptorsFactoryHelper.extractWidgetType(labelsValueColumnName, referenceIDToUse))
+				.setAD_Reference_Value_ID(referenceValueIDToUse)
+				.setAD_Val_Rule_ID(valRuleIDToUse);
+
+		if (Check.isNotBlank(labelsTab.getWhereClause()))
+		{
+			final IValidationRuleFactory validationRuleFactory = Services.get(IValidationRuleFactory.class);
+			labelsValuesLookupDescriptorBuilder.addValidationRule(validationRuleFactory.createSQLValidationRule(labelsTab.getWhereClause()));
+		}
+
+		final LookupDescriptor labelsValuesLookupDescriptor = labelsValuesLookupDescriptorBuilder.buildForDefaultScope();
 
 		return LabelsLookup.builder()
 				.labelsTableName(labelsTableName)

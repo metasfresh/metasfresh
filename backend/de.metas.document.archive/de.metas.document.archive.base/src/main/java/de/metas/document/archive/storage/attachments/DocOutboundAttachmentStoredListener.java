@@ -2,10 +2,12 @@ package de.metas.document.archive.storage.attachments;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 
 import java.net.URI;
 
+import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.springframework.stereotype.Component;
 
@@ -18,7 +20,6 @@ import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -68,7 +69,7 @@ public class DocOutboundAttachmentStoredListener implements AttachmentStoredList
 		for (final I_C_Doc_Outbound_Log docOutboundLogRecord : docOutboundLogRecords)
 		{
 			final I_C_Doc_Outbound_Log_Line docOutboundLogLineRecord = DocOutboundUtils.createOutboundLogLineRecord(docOutboundLogRecord);
-			docOutboundLogLineRecord.setAction(X_C_Doc_Outbound_Log_Line.ACTION_AttachmentStored);
+			docOutboundLogLineRecord.setAction(ArchiveAction.ATTACHMENT_STORED.getCode());
 			docOutboundLogLineRecord.setStoreURI(storageIdentifier.toString());
 
 			saveRecord(docOutboundLogLineRecord);

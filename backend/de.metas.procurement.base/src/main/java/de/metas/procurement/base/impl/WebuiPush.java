@@ -1,17 +1,6 @@
 package de.metas.procurement.base.impl;
 
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.slf4j.Logger;
-import org.springframework.jmx.export.annotation.ManagedOperation;
-import org.springframework.jmx.export.annotation.ManagedResource;
-import org.springframework.stereotype.Service;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IAgentSyncBL;
@@ -27,7 +16,17 @@ import de.metas.procurement.sync.protocol.SyncProduct;
 import de.metas.procurement.sync.protocol.SyncProductsRequest;
 import de.metas.procurement.sync.protocol.SyncRfQ;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.slf4j.Logger;
+import org.springframework.jmx.export.annotation.ManagedOperation;
+import org.springframework.jmx.export.annotation.ManagedResource;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /*
  * #%L
@@ -52,7 +51,7 @@ import de.metas.util.time.SystemTime;
  */
 
 @Service
-@ManagedResource(objectName = "de.metas.procurement:type=WebuiPush", description = "Allows to push data from emtasfresh to the procurement webUI")
+@ManagedResource(objectName = "de.metas.procurement:type=WebuiPush", description = "Allows to push data from metasfresh to the procurement webUI")
 public class WebuiPush implements IWebuiPush
 {
 	private static final Logger logger = LogManager.getLogger(WebuiPush.class);
@@ -60,8 +59,6 @@ public class WebuiPush implements IWebuiPush
 	/**
 	 * Return an instance of {@link IAgentSync} that can be used to communicate with the procurement webUI.
 	 * If no such client endpoint is available, return <code>null</code>.
-	 *
-	 * @return
 	 */
 	private IAgentSync getAgentSyncOrNull()
 	{

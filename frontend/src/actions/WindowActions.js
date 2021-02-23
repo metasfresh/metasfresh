@@ -3,6 +3,7 @@ import counterpart from 'counterpart';
 import { push, replace } from 'react-router-redux';
 import currentDevice from 'current-device';
 import { Set } from 'immutable';
+import { openInNewTab } from '../utils/index';
 
 import {
   ACTIVATE_TAB,
@@ -14,17 +15,11 @@ import {
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
-  DELETE_QUICK_ACTIONS,
-  DELETE_TOP_ACTIONS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
   INIT_WINDOW,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
-  FETCHED_QUICK_ACTIONS,
-  FETCH_TOP_ACTIONS,
-  FETCH_TOP_ACTIONS_FAILURE,
-  FETCH_TOP_ACTIONS_SUCCESS,
   NO_CONNECTION,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
@@ -45,20 +40,28 @@ import {
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
+  UPDATE_TAB_LAYOUT,
+  SET_PRINTING_OPTIONS,
+  RESET_PRINTING_OPTIONS,
+  TOGGLE_PRINTING_OPTION,
 } from '../constants/ActionTypes';
 import { PROCESS_NAME } from '../constants/Constants';
+import { toggleFullScreen, preFormatPostDATA } from '../utils';
+import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
 import {
   getData,
   patchRequest,
   getLayout,
-  topActionsRequest,
   getProcessData,
   getTabRequest,
   startProcess,
   formatParentUrl,
+  getTabLayoutRequest,
 } from '../api';
+
 import { getTableId } from '../reducers/tables';
+import { findViewByViewId } from '../reducers/viewHandler';
 import {
   addNotification,
   setNotificationProgress,
@@ -67,7 +70,7 @@ import {
   deleteNotification,
 } from './AppActions';
 import { openFile } from './GenericActions';
-import { setListIncludedView } from './ListActions';
+import { unsetIncludedView, setIncludedView } from './ViewActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import {
   updateCommentsPanel,
@@ -80,41 +83,6 @@ import {
   updateTableSelection,
   updateTableRowProperty,
 } from './TableActions';
-import { toggleFullScreen, preFormatPostDATA } from '../utils';
-import { getScope, parseToDisplay } from '../utils/documentListHelper';
-
-/*
- * Action creator called when quick actions are successfully fetched
- */
-export function fetchedQuickActions(windowId, id, data) {
-  return {
-    type: FETCHED_QUICK_ACTIONS,
-    payload: {
-      data,
-      windowId,
-      id,
-    },
-  };
-}
-
-/*
- * Action creator to delete quick actions from the store
- */
-export function deleteQuickActions(windowId, id) {
-  return {
-    type: DELETE_QUICK_ACTIONS,
-    payload: {
-      windowId,
-      id,
-    },
-  };
-}
-
-export function deleteTopActions() {
-  return {
-    type: DELETE_TOP_ACTIONS,
-  };
-}
 
 export function toggleOverlay(data) {
   return {
@@ -228,6 +196,20 @@ export function unselectTab(scope) {
   };
 }
 
+/**
+ * @method setUpdatedTabLayout
+ * @summary Action creator to update tab's layout data in the store
+ *
+ * @param {string} tabId
+ * @param {object} layoutData
+ */
+function setUpdatedTabLayout(tabId, layoutData) {
+  return {
+    type: UPDATE_TAB_LAYOUT,
+    payload: { tabId, layoutData },
+  };
+}
+
 export function initLayoutSuccess(layout, scope) {
   return {
     type: INIT_LAYOUT_SUCCESS,
@@ -333,23 +315,23 @@ export function noConnection(status) {
   };
 }
 
-export function openModal(
-  title,
+export function openModal({
+  title = '',
   windowId,
   modalType,
-  tabId,
-  rowId,
-  isAdvanced,
-  viewId,
-  viewDocumentIds,
-  dataId,
-  triggerField,
-  parentViewId,
-  parentViewSelectedIds,
-  childViewId,
-  childViewSelectedIds,
-  staticModalType
-) {
+  tabId = null,
+  rowId = null,
+  isAdvanced = false,
+  viewId = null,
+  viewDocumentIds = null,
+  dataId = null,
+  triggerField = null,
+  parentViewId = null,
+  parentViewSelectedIds = null,
+  childViewId = null,
+  childViewSelectedIds = null,
+  staticModalType = null,
+}) {
   const isMobile =
     currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
@@ -359,21 +341,23 @@ export function openModal(
 
   return {
     type: OPEN_MODAL,
-    windowType: windowId,
-    tabId: tabId,
-    rowId: rowId,
-    viewId: viewId,
-    dataId: dataId,
-    title: title,
-    isAdvanced: isAdvanced,
-    viewDocumentIds: viewDocumentIds,
-    triggerField: triggerField,
-    modalType,
-    staticModalType,
-    parentViewId,
-    parentViewSelectedIds,
-    childViewId,
-    childViewSelectedIds,
+    payload: {
+      windowId,
+      tabId,
+      rowId,
+      viewId,
+      dataId,
+      title,
+      isAdvanced,
+      viewDocumentIds,
+      triggerField,
+      modalType,
+      staticModalType,
+      parentViewId,
+      parentViewSelectedIds,
+      childViewId,
+      childViewSelectedIds,
+    },
   };
 }
 
@@ -396,8 +380,6 @@ export function updateModal(rowId, dataId) {
     dataId,
   };
 }
-
-// INDICATOR ACTIONS
 
 export function indicatorState(state) {
   return {
@@ -425,6 +407,27 @@ export function fetchTab({ tabId, windowId, docId, query }) {
       })
       .catch((error) => {
         //show error message ?
+        return Promise.reject(error);
+      });
+  };
+}
+
+/*
+ * @method updateTabLayout
+ * @summary Action creator for fetching and updating single tab's layout
+ *
+ * @param {number} windowId
+ * @param {string} tabId
+ */
+export function updateTabLayout(windowId, tabId) {
+  return (dispatch) => {
+    return getTabLayoutRequest(windowId, tabId)
+      .then(({ data }) => {
+        dispatch(setUpdatedTabLayout(tabId, data));
+
+        return Promise.reject(tabId);
+      })
+      .catch((error) => {
         return Promise.reject(error);
       });
   };
@@ -654,31 +657,6 @@ export function fetchChangeLog(windowId, docId, tabId, rowId) {
   };
 }
 
-export function fetchTopActions(windowType, docId, tabId) {
-  return (dispatch) => {
-    dispatch({
-      type: FETCH_TOP_ACTIONS,
-    });
-
-    return topActionsRequest(windowType, docId, tabId)
-      .then((response) => {
-        dispatch({
-          type: FETCH_TOP_ACTIONS_SUCCESS,
-          payload: response.data.actions,
-        });
-
-        return Promise.resolve(response.data.actions);
-      })
-      .catch((e) => {
-        dispatch({
-          type: FETCH_TOP_ACTIONS_FAILURE,
-        });
-
-        return Promise.reject(e);
-      });
-  };
-}
-
 /**
  * this is 'generic' window action that allows calling APIs that do follow a specific pattern
  * in their path like /rest/api/documentView/{windowId}/{viewId}/{target}
@@ -753,8 +731,9 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
 }
 
 /*
- *  Wrapper for patch request of widget elements
- *  when responses should merge store
+ * Wrapper for patch request of widget elements
+ * when responses should merge store
+ * @todo TODO: This should return a promise
  */
 export function patch(
   entity,
@@ -859,7 +838,6 @@ export function fireUpdateData({
   rowId,
   isModal,
   fetchAdvancedFields,
-  doNotFetchIncludedTabs,
 }) {
   return (dispatch) => {
     getData({
@@ -869,7 +847,6 @@ export function fireUpdateData({
       tabId: tabId,
       rowId: rowId,
       fetchAdvancedFields: fetchAdvancedFields,
-      doNotFetchIncludedTabs: doNotFetchIncludedTabs,
     }).then((response) => {
       dispatch(
         mapDataToState(
@@ -1071,7 +1048,7 @@ export function createProcess({
   processType,
   rowId,
   tabId,
-  type,
+  documentType,
   viewId,
   selectedTab,
   childViewId,
@@ -1081,7 +1058,14 @@ export function createProcess({
 }) {
   let pid = null;
 
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
+    // creation of processes can be done only if there isn't any pending process
+    // https://github.com/metasfresh/metasfresh/issues/10116
+    const { processStatus } = getState().appHandler;
+    if (processStatus === 'pending') {
+      return false;
+    }
+
     await dispatch(setProcessPending());
 
     let response;
@@ -1092,7 +1076,7 @@ export function createProcess({
         processId: processType,
         rowId,
         tabId,
-        type,
+        documentType,
         viewId,
         selectedTab,
         childViewId,
@@ -1119,7 +1103,14 @@ export function createProcess({
         try {
           response = await startProcess(processType, pid);
 
-          await dispatch(handleProcessResponse(response, processType, pid));
+          // processes opening included views need the id of the parent view
+          const id = parentViewId ? parentViewId : viewId;
+          const parentView = id && findViewByViewId(getState(), id);
+          const parentId = parentView ? parentView.windowId : documentType;
+
+          await dispatch(
+            handleProcessResponse(response, processType, pid, parentId)
+          );
         } catch (error) {
           await dispatch(closeModal());
           await dispatch(setProcessSaved());
@@ -1157,7 +1148,7 @@ export function createProcess({
   };
 }
 
-export function handleProcessResponse(response, type, id) {
+export function handleProcessResponse(response, type, id, parentId) {
   return async (dispatch) => {
     const { error, summary, action } = response.data;
 
@@ -1171,23 +1162,28 @@ export function handleProcessResponse(response, type, id) {
       let keepProcessModal = false;
 
       if (action) {
+        const { windowId, viewId, documentId, targetTab } = action;
+        let urlPath;
+
         switch (action.type) {
           case 'displayQRCode':
             dispatch(toggleOverlay({ type: 'qr', data: action.code }));
             break;
           case 'openView': {
-            const { windowId, viewId } = action;
-
             await dispatch(closeModal());
-
-            if (!action.modalOverlay) {
-              window.open(`/window/${windowId}/?viewId=${viewId}`);
-
+            urlPath = `/window/${windowId}/?viewId=${viewId}`;
+            if (targetTab === 'NEW_TAB') {
+              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
+              return;
+            }
+            if (targetTab === 'SAME_TAB') {
+              window.open(urlPath, '_self');
               return;
             }
 
-            await dispatch(openRawModal(windowId, viewId, action.profileId));
-
+            if (targetTab === 'SAME_TAB_OVERLAY') {
+              await dispatch(openRawModal(windowId, viewId, action.profileId));
+            }
             break;
           }
           case 'openReport':
@@ -1196,24 +1192,30 @@ export function handleProcessResponse(response, type, id) {
             break;
           case 'openDocument':
             await dispatch(closeModal());
+            urlPath = `/window/${windowId}/${documentId}`;
 
-            if (action.modal) {
+            if (targetTab === 'NEW_TAB') {
+              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
+              return false;
+            }
+
+            if (targetTab === 'SAME_TAB') {
+              window.open(urlPath, '_self');
+              return false;
+            }
+
+            if (action.modal || targetTab === 'SAME_TAB_OVERLAY') {
               // Do not close process modal,
               // since it will be re-used with document view
               keepProcessModal = true;
 
               await dispatch(
-                openModal(
-                  '',
-                  action.windowId,
-                  'window',
-                  null,
-                  null,
-                  action.advanced ? action.advanced : false,
-                  '',
-                  '',
-                  action.documentId
-                )
+                openModal({
+                  windowId: action.windowId,
+                  modalType: 'window',
+                  isAdvanced: action.advanced ? action.advanced : false,
+                  dataId: action.documentId,
+                })
               );
             } else {
               await dispatch(
@@ -1223,18 +1225,19 @@ export function handleProcessResponse(response, type, id) {
             break;
           case 'openIncludedView':
             await dispatch(
-              setListIncludedView({
-                windowType: action.windowId,
+              setIncludedView({
+                windowId: action.windowId,
                 viewId: action.viewId,
                 viewProfileId: action.profileId,
+                parentId,
               })
             );
 
             break;
           case 'closeIncludedView':
             await dispatch(
-              setListIncludedView({
-                windowType: action.windowId,
+              unsetIncludedView({
+                windowId: action.windowId,
                 viewId: action.viewId,
               })
             );
@@ -1248,7 +1251,14 @@ export function handleProcessResponse(response, type, id) {
             const { windowId, viewId, rowIds } = action;
             const tableId = getTableId({ windowId, viewId });
 
-            dispatch(updateTableSelection(tableId, rowIds));
+            dispatch(
+              updateTableSelection({
+                id: tableId,
+                selection: rowIds,
+                windowId,
+                viewId,
+              })
+            );
 
             break;
           }
@@ -1265,5 +1275,39 @@ export function handleProcessResponse(response, type, id) {
         await dispatch(closeProcessModal());
       }
     }
+  };
+}
+
+/**
+ * @method setPrintingOptions
+ * @summary - action. It updates the store with the printing options fetched from /rest/api/window/{windowId}/{documentId}/printingOptions
+ * @param {object} data
+ */
+export function setPrintingOptions(data) {
+  return {
+    type: SET_PRINTING_OPTIONS,
+    payload: data,
+  };
+}
+
+/**
+ * @method resetPrintingOptions
+ * @summary - action. It reets the printing options in the store
+ */
+export function resetPrintingOptions() {
+  return {
+    type: RESET_PRINTING_OPTIONS,
+  };
+}
+
+/**
+ * @method togglePrintingOption
+ * @summary - action. It toggles in the store the printing option truth value
+ * @param {object} data
+ */
+export function togglePrintingOption(target) {
+  return {
+    type: TOGGLE_PRINTING_OPTION,
+    payload: target,
   };
 }

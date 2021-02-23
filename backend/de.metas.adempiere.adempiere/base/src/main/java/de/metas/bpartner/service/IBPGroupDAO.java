@@ -32,6 +32,12 @@ public interface IBPGroupDAO extends ISingletonService
 {
 	I_C_BP_Group getById(BPGroupId bpGroupId);
 
+	/**
+	 * Loading within currently inherited trx.
+	 * Use case: this method ca be called when the BPGroup in question was only just created, and that trx was not yet committed.
+	 */
+	I_C_BP_Group getByIdInInheritedTrx(BPGroupId bpGroupId);
+
 	I_C_BP_Group getByBPartnerId(BPartnerId bpartnerId);
 
 	BPGroupId getBPGroupByBPartnerId(BPartnerId bpartnerId);

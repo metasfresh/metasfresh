@@ -1,27 +1,7 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.time.ZoneId;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-
-import javax.annotation.Nullable;
-
-import de.metas.rest_api.common.SyncAdvise;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -48,7 +28,7 @@ import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
 import de.metas.rest_api.bpartner.response.JsonResponseContact;
 import de.metas.rest_api.bpartner.response.JsonResponseLocation;
-
+import de.metas.rest_api.common.SyncAdvise;
 import de.metas.rest_api.exception.InvalidIdentifierException;
 import de.metas.rest_api.exception.MissingPropertyException;
 import de.metas.rest_api.exception.MissingResourceException;
@@ -66,6 +46,21 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -251,26 +246,27 @@ final class MasterdataProvider
 			final boolean billTo,
 			@Nullable final OrgId orgId)
 	{
-		return bpartnerEndpointAdapter.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, billTo, orgDAO.retrieveOrgValue(orgId));
+		final String orgCode = orgId != null ? orgDAO.retrieveOrgValue(orgId) : null;
+		return bpartnerEndpointAdapter.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, billTo, orgCode);
 	}
 
-	public JsonResponseBPartner getJsonBPartnerById(@NonNull final BPartnerId bpartnerId)
+	public JsonResponseBPartner getJsonBPartnerById(@Nullable String orgCode, @NonNull final BPartnerId bpartnerId)
 	{
-		return bpartnerEndpointAdapter.getJsonBPartnerById(bpartnerId);
+		return bpartnerEndpointAdapter.getJsonBPartnerById(orgCode, bpartnerId);
 	}
 
-	public JsonResponseLocation getJsonBPartnerLocationById(final BPartnerLocationId bpartnerLocationId)
+	public JsonResponseLocation getJsonBPartnerLocationById(@Nullable String orgCode, @NonNull final BPartnerLocationId bpartnerLocationId)
 	{
-		return bpartnerEndpointAdapter.getJsonBPartnerLocationById(bpartnerLocationId);
+		return bpartnerEndpointAdapter.getJsonBPartnerLocationById(orgCode, bpartnerLocationId);
 	}
 
-	public JsonResponseContact getJsonBPartnerContactById(@Nullable final BPartnerContactId bpartnerContactId)
+	public JsonResponseContact getJsonBPartnerContactById(@Nullable String orgCode, @Nullable final BPartnerContactId bpartnerContactId)
 	{
 		if (bpartnerContactId == null)
 		{
 			return null;
 		}
-		return bpartnerEndpointAdapter.getJsonBPartnerContactById(bpartnerContactId);
+		return bpartnerEndpointAdapter.getJsonBPartnerContactById(orgCode, bpartnerContactId);
 	}
 
 	public ProductInfo getCreateProductInfo(

@@ -1,27 +1,9 @@
 package de.metas.ui.web.handlingunits;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -31,6 +13,7 @@ import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.report.HUEditorRowAsHUToReport;
 import de.metas.ui.web.view.IViewRow;
@@ -49,12 +32,27 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -138,6 +136,22 @@ public final class HUEditorRow implements IViewRow
 	})
 	private final JSONLookupValue product;
 
+	public static final String FIELDNAME_SerialNo = "SerialNo";
+	@ViewColumn(fieldName = FIELDNAME_SerialNo, widgetType = DocumentFieldWidgetType.Text, sorting = false,
+			layouts = {
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 23, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 23, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+			})
+	private final String serialNo;
+
+	public static final String FIELDNAME_ServiceContract = "ServiceContract";
+	@ViewColumn(fieldName = FIELDNAME_ServiceContract, widgetType = DocumentFieldWidgetType.Text, sorting = false,
+			layouts = {
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 23, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 23, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+			})
+	private final String serviceContract;
+
 	public static final String FIELDNAME_IsOwnPalette = I_M_HU.COLUMNNAME_HUPlanningReceiptOwnerPM;
 	@ViewColumn(fieldName = FIELDNAME_IsOwnPalette, widgetType = DocumentFieldWidgetType.YesNo, sorting = false, layouts = {
 			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 25)
@@ -167,7 +181,8 @@ public final class HUEditorRow implements IViewRow
 	public static final String FIELDNAME_QtyCU = "QtyCU";
 	@ViewColumn(fieldName = FIELDNAME_QtyCU, //
 			widgetType = DocumentFieldWidgetType.Quantity,//
-			widgetSize = WidgetSize.Small, sorting = false, layouts = {
+			widgetSize = WidgetSize.Small, sorting = false,
+			layouts = {
 					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50),
 					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 50)
 			})
@@ -187,8 +202,8 @@ public final class HUEditorRow implements IViewRow
 			widgetType = DocumentFieldWidgetType.Lookup, //
 			widgetSize = WidgetSize.Small,//
 			sorting = false, layouts = {
-					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
-			})
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70),
+	})
 	private final JSONLookupValue huStatusDisplay;
 
 	public static final String FIELDNAME_IsReserved = I_M_HU.COLUMNNAME_IsReserved;
@@ -264,6 +279,23 @@ public final class HUEditorRow implements IViewRow
 		{
 			attributesSupplier = Optional.empty();
 		}
+
+		if (attributesSupplier.isPresent() && attributesSupplier.get().get().hasAttribute(AttributeConstants.ATTR_SerialNo))
+		{
+			serialNo = attributesSupplier.get().get().getValueAsString(AttributeConstants.ATTR_SerialNo);
+		}
+		else
+		{
+			serialNo = null;
+		}
+
+		serviceContract = null;
+	}
+
+	@Override
+	public boolean hasAttributes()
+	{
+		return attributesSupplier.isPresent();
 	}
 
 	@Override
@@ -320,12 +352,6 @@ public final class HUEditorRow implements IViewRow
 	}
 
 	@Override
-	public boolean hasAttributes()
-	{
-		return attributesSupplier.isPresent();
-	}
-
-	@Override
 	public HUEditorRowAttributes getAttributes() throws EntityNotFoundException
 	{
 		if (!attributesSupplier.isPresent())
@@ -361,13 +387,11 @@ public final class HUEditorRow implements IViewRow
 				.findFirst();
 	}
 
-	public boolean hasDirectChild(final DocumentId childId)
+	public boolean hasDirectChild(@NonNull final DocumentId childId)
 	{
 		return getIncludedRows()
 				.stream()
-				.filter(row -> childId.equals(row.getId()))
-				.findAny()
-				.isPresent();
+				.anyMatch(row -> childId.equals(row.getId()));
 	}
 
 	public HuId getHuId()
@@ -378,6 +402,7 @@ public final class HUEditorRow implements IViewRow
 	/**
 	 * @return the wrapped HU or {@code null} if there is none.
 	 */
+	@Nullable
 	public I_M_HU getM_HU()
 	{
 		final HuId huId = getHuId();
@@ -512,12 +537,14 @@ public final class HUEditorRow implements IViewRow
 		return product;
 	}
 
+	@Nullable
 	public ProductId getProductId()
 	{
 		final JSONLookupValue productLV = getProduct();
 		return productLV != null ? ProductId.ofRepoId(productLV.getKeyAsInt()) : null;
 	}
 
+	@Nullable
 	public String getM_Product_DisplayName()
 	{
 		final JSONLookupValue productLV = getProduct();
@@ -537,31 +564,50 @@ public final class HUEditorRow implements IViewRow
 	/**
 	 * @return the ID of the wrapped UOM or {@code -1} if there is none.
 	 */
-	public int getC_UOM_ID()
+	@Nullable
+	public UomId getUomId()
 	{
 		final JSONLookupValue uomLV = getUOM();
-		return uomLV == null ? -1 : uomLV.getKeyAsInt();
+		return uomLV == null ? null : UomId.ofRepoIdOrNull(uomLV.getKeyAsInt());
 	}
 
 	/**
 	 * @return the wrapped UOM or {@code null} if there is none.
 	 */
+	@Nullable
 	public I_C_UOM getC_UOM()
 	{
-		final int uomId = getC_UOM_ID();
-		if (uomId <= 0)
-		{
-			return null;
-		}
-		return InterfaceWrapperHelper.create(Env.getCtx(), uomId, I_C_UOM.class, ITrx.TRXNAME_None);
+		final UomId uomId = getUomId();
+		return uomId != null
+				? Services.get(IUOMDAO.class).getById(uomId)
+				: null;
 	}
 
 	/**
 	 * The CU qty of this line. Generally {@code null}, unless this line represents exactly one {@link IHUProductStorage}.
 	 */
+	@Nullable
 	public BigDecimal getQtyCU()
 	{
 		return qtyCU;
+	}
+
+	@Nullable
+	public Quantity getQtyCUAsQuantity()
+	{
+		final BigDecimal qtyCU = getQtyCU();
+		if (qtyCU == null)
+		{
+			return null;
+		}
+
+		final I_C_UOM uom = getC_UOM();
+		if (uom == null)
+		{
+			return null;
+		}
+
+		return Quantity.of(qtyCU, uom);
 	}
 
 	public LookupValue toLookupValue()
@@ -570,8 +616,6 @@ public final class HUEditorRow implements IViewRow
 	}
 
 	/**
-	 * @param stringFilter
-	 * @param adLanguage AD_Language (used to get the right row's string representation)
 	 * @return true if the row is matching the string filter
 	 */
 	public boolean matchesStringFilter(final String stringFilter)
@@ -694,7 +738,7 @@ public final class HUEditorRow implements IViewRow
 			}
 			else
 			{
-				return processed.booleanValue();
+				return processed;
 			}
 		}
 
@@ -855,11 +899,10 @@ public final class HUEditorRow implements IViewRow
 	@lombok.Value
 	public static class HUEditorRowHierarchy
 	{
-		@NonNull
-		private final HUEditorRow cuRow;
+		@NonNull HUEditorRow cuRow;
 		@Nullable
-		private final HUEditorRow parentRow;
+		HUEditorRow parentRow;
 		@Nullable
-		private final HUEditorRow topLevelRow;
+		HUEditorRow topLevelRow;
 	}
 }

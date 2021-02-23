@@ -22,59 +22,18 @@
 
 package de.metas.ui.web.window.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.ILogicExpression;
-import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
-import org.adempiere.model.CopyRecordSupport;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.PO;
-import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.i18n.AdMessageKey;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
 import de.metas.logging.LogManager;
-import de.metas.process.AdProcessId;
-import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessInfo;
-import de.metas.report.server.OutputType;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.WindowConstants;
@@ -98,9 +57,41 @@ import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
+import org.adempiere.model.CopyRecordSupport;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.PO;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 
 @Component
 public class DocumentCollection
@@ -111,21 +102,22 @@ public class DocumentCollection
 	private static final Logger logger = LogManager.getLogger(DocumentCollection.class);
 	public static final AdMessageKey MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW = AdMessageKey.of("de.metas.ui.web.window.model.DocumentCollection.CloningNotAllowedForCurrentWindow");
 
-	@Autowired
-	private DocumentDescriptorFactory documentDescriptorFactory;
-
-	@Autowired
-	private UserSession userSession;
-
-	@Autowired
-	private DocumentWebsocketPublisher websocketPublisher;
+	private final DocumentDescriptorFactory documentDescriptorFactory;
+	private final UserSession userSession;
+	private final DocumentWebsocketPublisher websocketPublisher;
 
 	private final Cache<DocumentKey, Document> rootDocuments;
-
 	private final ConcurrentHashMap<String, Set<WindowId>> tableName2windowIds = new ConcurrentHashMap<>();
 
-	/* package */ DocumentCollection()
+	/* package */ DocumentCollection(
+			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
+			@NonNull final UserSession userSession,
+			@NonNull final DocumentWebsocketPublisher websocketPublisher)
 	{
+		this.documentDescriptorFactory = documentDescriptorFactory;
+		this.userSession = userSession;
+		this.websocketPublisher = websocketPublisher;
+
 		// setup the cache
 		final int cacheSize = Services
 				.get(ISysConfigBL.class)
@@ -145,7 +137,6 @@ public class DocumentCollection
 	/**
 	 * Delegates to the {@link DocumentDescriptorFactory#isWindowIdSupported(WindowId)} of this instance's {@code documentDescriptorFactory}.
 	 */
-	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isWindowIdSupported(@Nullable final WindowId windowId)
 	{
 		return documentDescriptorFactory.isWindowIdSupported(windowId);
@@ -232,8 +223,7 @@ public class DocumentCollection
 	{
 		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath.getRootDocumentPath());
 
-		try (@SuppressWarnings("unused")
-		final IAutoCloseable readLock = getOrLoadDocument(rootDocumentKey).lockForReading())
+		try (@SuppressWarnings("unused") final IAutoCloseable readLock = getOrLoadDocument(rootDocumentKey).lockForReading())
 		{
 			final Document rootDocument = getOrLoadDocument(rootDocumentKey).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
 			DocumentPermissionsHelper.assertCanView(rootDocument, UserSession.getCurrentPermissions());
@@ -297,8 +287,7 @@ public class DocumentCollection
 			isNewRootDocument = false;
 		}
 
-		try (@SuppressWarnings("unused")
-		final IAutoCloseable writeLock = lockHolder.lockForWriting())
+		try (@SuppressWarnings("unused") final IAutoCloseable writeLock = lockHolder.lockForWriting())
 		{
 			final Document rootDocument;
 			if (isNewRootDocument)
@@ -352,8 +341,7 @@ public class DocumentCollection
 		assertNewDocumentAllowed(entityDescriptor);
 
 		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
-		@SuppressWarnings("UnnecessaryLocalVariable")
-		final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
+		@SuppressWarnings("UnnecessaryLocalVariable") final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
 		// NOTE: we assume document is writable
 		// NOTE: we are not adding it to index. That shall be done on "commit".
 		return document;
@@ -628,36 +616,6 @@ public class DocumentCollection
 		}
 	}
 
-	public DocumentPrint createDocumentPrint(final DocumentPath documentPath)
-	{
-		final Document document = getDocumentReadonly(documentPath);
-		final int windowNo = document.getWindowNo();
-		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
-
-		final AdProcessId printProcessId = entityDescriptor.getPrintProcessId();
-		final TableRecordReference recordRef = getTableRecordReference(documentPath);
-
-		final ProcessExecutionResult processExecutionResult = ProcessInfo.builder()
-				.setCtx(Env.getCtx())
-				.setAD_Process_ID(printProcessId)
-				.setWindowNo(windowNo) // important: required for ProcessInfo.findReportingLanguage
-				.setRecord(recordRef)
-				.setPrintPreview(true)
-				.setJRDesiredOutputType(OutputType.PDF)
-				//
-				.buildAndPrepareExecution()
-				.onErrorThrowException()
-				.switchContextWhenRunning()
-				.executeSync()
-				.getResult();
-
-		return DocumentPrint.builder()
-				.filename(processExecutionResult.getReportFilename())
-				.reportContentType(processExecutionResult.getReportContentType())
-				.reportData(processExecutionResult.getReportData())
-				.build();
-	}
-
 	public DocumentWebsocketPublisher getWebsocketPublisher()
 	{
 		return websocketPublisher;
@@ -706,7 +664,12 @@ public class DocumentCollection
 		rootDocuments.invalidateAll(documentKeys);
 	}
 
-	public void invalidate(final DocumentToInvalidate documentToInvalidate)
+	public void invalidateAll(final Collection<DocumentToInvalidate> documentToInvalidateList)
+	{
+		documentToInvalidateList.forEach(this::invalidate);
+	}
+
+	private void invalidate(final DocumentToInvalidate documentToInvalidate)
 	{
 		final ImmutableList<DocumentEntityDescriptor> entityDescriptors = getCachedWindowIdsForTableName(documentToInvalidate.getTableName())
 				.stream()
@@ -726,8 +689,7 @@ public class DocumentCollection
 			final Document rootDocument = rootDocuments.getIfPresent(rootDocumentKey);
 			if (rootDocument != null)
 			{
-				try (@SuppressWarnings("unused")
-				final IAutoCloseable lock = rootDocument.lockForWriting())
+				try (final IAutoCloseable ignored = rootDocument.lockForWriting())
 				{
 					for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
 					{
@@ -761,8 +723,8 @@ public class DocumentCollection
 	}
 
 	private void sendWebsocketChangeEvents(
-			final DocumentToInvalidate documentToInvalidate,
-			final DocumentEntityDescriptor entityDescriptor)
+			@NonNull final DocumentToInvalidate documentToInvalidate,
+			@NonNull final DocumentEntityDescriptor entityDescriptor)
 	{
 		final WindowId windowId = entityDescriptor.getWindowId();
 		final DocumentId rootDocumentId = documentToInvalidate.getDocumentId();
@@ -911,19 +873,6 @@ public class DocumentCollection
 	}
 
 	@Immutable
-	@Value
-	@Builder
-	public static class DocumentPrint
-	{
-		@NonNull
-		String filename;
-		@NonNull
-		String reportContentType;
-		@NonNull
-		byte[] reportData;
-	}
-
-	@Immutable
 	private static final class DocumentKey
 	{
 		public static DocumentKey of(final Document document)
@@ -958,7 +907,6 @@ public class DocumentCollection
 
 		private DocumentKey(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId)
 		{
-			super();
 			this.documentType = Preconditions.checkNotNull(documentType, "documentType");
 			this.documentTypeId = Preconditions.checkNotNull(documentTypeId, "documentTypeId");
 			this.documentId = Preconditions.checkNotNull(documentId, "documentId");

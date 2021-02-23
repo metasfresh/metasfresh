@@ -1,16 +1,9 @@
 package de.metas.material.dispo.commons;
 
-import java.time.Instant;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -32,8 +25,13 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.List;
 
 /*
  * #%L
@@ -116,7 +114,7 @@ public class RequestMaterialOrderService
 	 *
 	 * @param group a non-empty list of candidates that all have {@link CandidateBusinessCase#PRODUCTION},
 	 *            all have the same {@link Candidate#getGroupId()}
-	 *            and all have appropriate not-null {@link Candidate#getProductionDetail()}s.
+	 *            and all have appropriate not-null {@link Candidate#getBusinessCaseDetail()}s that need to be {@link ProductionDetail} instances.
 	 */
 	private void createAndFirePPOrderRequestedEvent(@NonNull final List<Candidate> group)
 	{
@@ -184,7 +182,7 @@ public class RequestMaterialOrderService
 
 		return PPOrderRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(firstGroupMember.getClientAndOrgId()))
-				.dateOrdered(SystemTime.asInstant())
+				.dateOrdered(de.metas.common.util.time.SystemTime.asInstant())
 				.ppOrder(ppOrderBuilder.build())
 				.build();
 	}
@@ -265,14 +263,14 @@ public class RequestMaterialOrderService
 
 	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final List<Candidate> group)
 	{
-		final Candidate createdCandidate = CollectionUtils.singleElement(group);
+		final Candidate singleCandidate = CollectionUtils.singleElement(group);
 
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(createdCandidate.getClientAndOrgId()))
-				.purchaseMaterialDescriptor(createdCandidate.getMaterialDescriptor())
-				.supplyCandidateRepoId(createdCandidate.getId().getRepoId())
-				.salesOrderLineRepoId(createdCandidate.getAdditionalDemandDetail().getOrderLineId())
-				.salesOrderRepoId(createdCandidate.getAdditionalDemandDetail().getOrderId())
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(singleCandidate.getClientAndOrgId()))
+				.purchaseMaterialDescriptor(singleCandidate.getMaterialDescriptor())
+				.supplyCandidateRepoId(singleCandidate.getId().getRepoId())
+				.salesOrderLineRepoId(singleCandidate.getAdditionalDemandDetail().getOrderLineId())
+				.salesOrderRepoId(singleCandidate.getAdditionalDemandDetail().getOrderId())
 				.build();
 
 		return purchaseCandidateRequestedEvent;

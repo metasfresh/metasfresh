@@ -1,41 +1,8 @@
-package de.metas.ui.web.pporder.process;
-
-import java.math.BigDecimal;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.model.I_PP_Order_BOMLine;
-
-import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_PP_Order;
-import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.printing.esb.base.util.Check;
-import de.metas.process.IProcessDefaultParameter;
-import de.metas.process.IProcessDefaultParametersProvider;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.Param;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
-import de.metas.ui.web.pporder.PPOrderLineRow;
-import de.metas.ui.web.pporder.PPOrderLineType;
-import de.metas.ui.web.pporder.PPOrderLinesView;
-import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -53,18 +20,57 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.ui.web.pporder.process;
+
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_PP_Order;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.printing.esb.base.util.Check;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.process.RunOutOfTrx;
+import de.metas.product.IProductDAO;
+import de.metas.ui.web.pporder.PPOrderLineRow;
+import de.metas.ui.web.pporder.PPOrderLineType;
+import de.metas.ui.web.pporder.PPOrderLinesView;
+import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
 public class WEBUI_PP_Order_Receipt
 		extends WEBUI_PP_Order_Template
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	// services
 	private final transient IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IHUAttributesBL attributesBL = Services.get(IHUAttributesBL.class);
 
 	// parameters
 	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
 	private I_M_HU_PI_Item_Product p_M_HU_PI_Item_Product;
 
-	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID, mandatory = false)
+	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID)
 	private I_M_HU_PI_Item p_M_HU_PI_Item;
 
 	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyCU, mandatory = true)
@@ -73,15 +79,13 @@ public class WEBUI_PP_Order_Receipt
 	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyTU, mandatory = true)
 	private BigDecimal p_QtyTU;
 
-	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyLU, mandatory = false)
+	@Param(parameterName = PackingInfoProcessParams.PARAM_QtyLU)
 	private BigDecimal p_QtyLU;
 
 	private transient PackingInfoProcessParams _packingInfoParams;
 
 	/**
 	 * Makes sure that an instance exists and is in sync with this processe's parameters.
-	 * 
-	 * @return
 	 */
 	private PackingInfoProcessParams getPackingInfoParams()
 	{
@@ -184,7 +188,6 @@ public class WEBUI_PP_Order_Receipt
 	}
 
 	/**
-	 *
 	 * @return a list of PI item products that match the selected CU's product and partner, sorted by name.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, dependsOn = {}, numericKey = true, lookupTableName = I_M_HU_PI_Item_Product.Table_Name)
@@ -195,8 +198,6 @@ public class WEBUI_PP_Order_Receipt
 
 	/**
 	 * For the currently selected pip this method loads att
-	 *
-	 * @return
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_ID, dependsOn = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, numericKey = true, lookupTableName = I_M_HU_PI_Item.Table_Name)
 	public LookupValuesList getM_HU_PI_Item_IDs()
@@ -213,22 +214,47 @@ public class WEBUI_PP_Order_Receipt
 
 		newReceiptCandidatesProducer()
 				.packUsingLUTUConfiguration(lutuConfig)
+				.bestBeforeDate(computeBestBeforeDate())
 				.createDraftReceiptCandidatesAndPlanningHUs();
 
 		return MSG_OK;
 	}
 
 	@Override
-	protected void postProcess(boolean success)
+	protected void postProcess(final boolean success)
 	{
 		// Invalidate the view because for sure we have changes
 		final PPOrderLinesView ppOrderLinesView = getView();
 		ppOrderLinesView.invalidateAll();
 
-		getViewsRepo().notifyRecordChanged(I_PP_Order.Table_Name, ppOrderLinesView.getPpOrderId().getRepoId());
+		getViewsRepo().notifyRecordsChangedAsync(I_PP_Order.Table_Name, ppOrderLinesView.getPpOrderId().getRepoId());
 	}
 
-	private final IPPOrderReceiptHUProducer newReceiptCandidatesProducer()
+	@Nullable
+	LocalDate computeBestBeforeDate()
+	{
+		if (attributesBL.isAutomaticallySetBestBeforeDate())
+		{
+			final PPOrderLineRow row = getSingleSelectedRow();
+
+			final int guaranteeDaysMin = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(row.getProductId());
+			if (guaranteeDaysMin <= 0)
+			{
+				return null;
+			}
+
+			final I_PP_Order ppOrderPO = huPPOrderBL.getById(row.getOrderId());
+			final LocalDate datePromised = TimeUtil.asLocalDate(ppOrderPO.getDatePromised());
+
+			return datePromised.plusDays(guaranteeDaysMin);
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	private IPPOrderReceiptHUProducer newReceiptCandidatesProducer()
 	{
 		final PPOrderLineRow row = getSingleSelectedRow();
 

@@ -603,7 +603,6 @@ public class MRequest extends X_R_Request
 			// Reset
 			setConfidentialTypeEntry(getConfidentialType());
 			// setStartDate(null); //red1 - bug [ 1743159 ] Requests - Start Date is not retained.
-			setEndTime(null);
 			setR_StandardResponse_ID(0);
 			setR_MailText_ID(0);
 			setResult(null);

@@ -232,4 +232,6 @@ public interface IOrderLineBL extends ISingletonService
 	void updateProductDescriptionFromProductBOMIfConfigured(org.compiere.model.I_C_OrderLine orderLine);
 
 	void updateProductDocumentNote(I_C_OrderLine orderLine);
+
+	BigDecimal computeQtyNetPriceFromOrderLine(org.compiere.model.I_C_OrderLine orderLine, Quantity qty);
 }

@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
@@ -69,7 +70,6 @@ import de.metas.security.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 
@@ -389,7 +389,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 	}
 
 	@VisibleForTesting
-	ImmutableMap<String, String> extractTags(@Nullable final List<String> tagKeyValuePairs)
+	static ImmutableMap<String, String> extractTags(@Nullable final List<String> tagKeyValuePairs)
 	{
 		if (tagKeyValuePairs == null)
 		{

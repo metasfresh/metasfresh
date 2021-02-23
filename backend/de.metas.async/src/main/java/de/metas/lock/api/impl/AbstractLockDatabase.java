@@ -126,17 +126,15 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	/**
 	 * Lock all records specified by {@link LockCommand#getSelectionToLock_AD_PInstance_ID()}.
 	 *
-	 * @param lockCommand
 	 * @return how many records were locked
 	 */
-	protected abstract int lockBySelection(final ILockCommand lockCommand);
+	protected abstract int lockBySelection(ILockCommand lockCommand);
 
 	protected abstract int lockByFilters(ILockCommand lockCommand);
 
 	/**
 	 * Lock all records specified by {@link LockCommand#getRecordsToLockIterator()}.
 	 *
-	 * @param lockCommand
 	 * @return how many records were locked
 	 */
 	private final int lockByIterator(final ILockCommand lockCommand)

@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -123,7 +124,6 @@ import de.metas.testsupport.AbstractTestSupport;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Getter;
 
 public class AbstractICTestSupport extends AbstractTestSupport

@@ -1,26 +1,7 @@
 package de.metas.ui.web.process.adprocess;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Supplier;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.MimeType;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.references.RecordZoomWindowFinder;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
@@ -31,6 +12,7 @@ import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessInfo;
+import de.metas.report.ReportResultData;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ProcessInstanceResult.DisplayQRCodeAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
@@ -52,6 +34,23 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.MimeType;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -192,37 +191,17 @@ public class ADProcessPostProcessService
 	{
 		//
 		// If we are not dealing with a report, stop here
-		final byte[] reportData = processExecutionResult.getReportData();
-		if (reportData == null || reportData.length <= 0)
+		final ReportResultData reportData = processExecutionResult.getReportData();
+		if (reportData == null || reportData.isEmpty())
 		{
 			return null;
 		}
 
-		//
-		// Create report temporary file
-		File reportFile = null;
-		try
-		{
-			final String reportFilePrefix = "report_" + processExecutionResult.getPinstanceId().getRepoId() + "_";
-
-			final String reportContentType = processExecutionResult.getReportContentType();
-			final String reportFileExtension = MimeType.getExtensionByType(reportContentType);
-			final String reportFileSuffix = Check.isEmpty(reportFileExtension, true) ? "" : reportFileExtension.trim();
-			reportFile = File.createTempFile(reportFilePrefix, reportFileSuffix);
-		}
-		catch (final IOException e)
-		{
-			throw new AdempiereException("Failed creating report temporary file " + reportFile);
-		}
-
-		//
-		// Write report data to our temporary report file
-		Util.writeBytes(reportFile, reportData);
-
-		return reportFile;
+		final String reportFilePrefix = "report_" + processExecutionResult.getPinstanceId().getRepoId() + "_";
+		return reportData.writeToTemporaryFile(reportFilePrefix);
 	}
 
-	private static final DocumentPath extractSingleDocumentPath(final RecordsToOpen recordsToOpen)
+	private static DocumentPath extractSingleDocumentPath(final RecordsToOpen recordsToOpen)
 	{
 		final TableRecordReference recordRef = recordsToOpen.getFirstRecord();
 		final int documentId = recordRef.getRecord_ID();
@@ -236,7 +215,7 @@ public class ADProcessPostProcessService
 		return DocumentPath.rootDocumentPath(windowId, documentId);
 	}
 
-	private static final Set<DocumentPath> extractReferencingDocumentPaths(final ProcessInfo processInfo)
+	private static Set<DocumentPath> extractReferencingDocumentPaths(final ProcessInfo processInfo)
 	{
 		final String tableName = processInfo.getTableNameOrNull();
 		if (tableName == null)
@@ -355,6 +334,7 @@ public class ADProcessPostProcessService
 
 			return OpenViewAction.builder()
 					.viewId(view.getViewId())
+					.targetTab(recordsToOpen.getTargetTab())
 					.build();
 		}
 		//
@@ -377,7 +357,7 @@ public class ADProcessPostProcessService
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
 						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
-						.modalOverlay(true)
+						.targetTab(recordsToOpen != null ? recordsToOpen.getTargetTab() : RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 						.build();
 			}
 			else if (ViewOpenTarget.NewBrowserTab.equals(target))
@@ -385,7 +365,7 @@ public class ADProcessPostProcessService
 				return OpenViewAction.builder()
 						.viewId(ViewId.ofViewIdString(viewToOpen.getViewId()))
 						.profileId(ViewProfileId.fromJson(viewToOpen.getProfileId()))
-						.modalOverlay(false)
+						.targetTab(recordsToOpen != null ? recordsToOpen.getTargetTab() : RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 						.build();
 			}
 
@@ -399,9 +379,10 @@ public class ADProcessPostProcessService
 		else if (recordsToOpen != null && recordsToOpen.getTarget() == OpenTarget.SingleDocument)
 		{
 			final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
+
 			return OpenSingleDocument.builder()
 					.documentPath(documentPath)
-					.modal(false)
+					.targetTab(recordsToOpen.getTargetTab() != RecordsToOpen.TargetTab.SAME_TAB_OVERLAY ? recordsToOpen.getTargetTab() : RecordsToOpen.TargetTab.SAME_TAB)
 					.build();
 		}
 		//
@@ -411,7 +392,7 @@ public class ADProcessPostProcessService
 			final DocumentPath documentPath = extractSingleDocumentPath(recordsToOpen);
 			return OpenSingleDocument.builder()
 					.documentPath(documentPath)
-					.modal(true)
+					.targetTab(recordsToOpen.getTargetTab())
 					.build();
 		}
 		//

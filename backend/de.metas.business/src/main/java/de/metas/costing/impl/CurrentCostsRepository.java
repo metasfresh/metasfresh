@@ -1,30 +1,7 @@
 package de.metas.costing.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Consumer;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Cost;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.MOrg;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -52,6 +29,28 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.MOrg;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -123,6 +122,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		return toCurrentCost(costRecord);
 	}
 
+	@Nullable
 	private I_M_Cost getCostRecordOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
 		return queryCostRecords(costSegmentAndElement)
@@ -162,7 +162,9 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	}
 
 	@Override
-	public Optional<AggregatedCostPrice> getAggregatedCostPriceByCostSegmentAndCostingMethod(@NonNull final CostSegment costSegment, final CostingMethod costingMethod)
+	public Optional<AggregatedCostPrice> getAggregatedCostPriceByCostSegmentAndCostingMethod(
+			@NonNull final CostSegment costSegment,
+			@NonNull final CostingMethod costingMethod)
 	{
 		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costingMethod);
 		if (costElementIds.isEmpty())
@@ -190,7 +192,9 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	}
 
 	@Override
-	public ImmutableList<CurrentCost> getByCostSegmentAndCostingMethod(@NonNull final CostSegment costSegment, final CostingMethod costingMethod)
+	public ImmutableList<CurrentCost> getByCostSegmentAndCostingMethod(
+			@NonNull final CostSegment costSegment,
+			final CostingMethod costingMethod)
 	{
 		final Set<CostElementId> costElementIds = costElementRepo.getIdsByCostingMethod(costingMethod);
 		if (costElementIds.isEmpty())
@@ -203,7 +207,9 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 	}
 
 	@Override
-	public ImmutableList<CurrentCost> getByCostSegmentAndCostElements(@NonNull final CostSegment costSegment, @NonNull final Set<CostElementId> costElementIds)
+	public ImmutableList<CurrentCost> getByCostSegmentAndCostElements(
+			@NonNull final CostSegment costSegment,
+			@NonNull final Set<CostElementId> costElementIds)
 	{
 		Check.assumeNotEmpty(costElementIds, "costElementIds is not empty");
 		return queryCostRecords(costSegment)
@@ -301,7 +307,9 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 				.build();
 	}
 
-	private void updateCostRecord(final I_M_Cost cost, final CurrentCost from)
+	private void updateCostRecord(
+			final I_M_Cost cost,
+			final CurrentCost from)
 	{
 		final CostSegment costSegment = from.getCostSegment();
 		cost.setAD_Org_ID(costSegment.getOrgId().getRepoId());
@@ -339,7 +347,9 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 		});
 	}
 
-	private void forEachCostSegmentAndElement(final I_M_Product product, final Consumer<CostSegmentAndElement> consumer)
+	private void forEachCostSegmentAndElement(
+			final I_M_Product product,
+			final Consumer<CostSegmentAndElement> consumer)
 	{
 		final ClientId clientId = ClientId.ofRepoId(product.getAD_Client_ID());
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
@@ -395,7 +405,7 @@ public class CurrentCostsRepository implements ICurrentCostsRepository
 			{
 				logger.warn("{}'s costing Level {} not supported", product.getName(), costingLevel);
 			}
-		}	// accounting schema loop
+		}    // accounting schema loop
 	}
 
 	@Override

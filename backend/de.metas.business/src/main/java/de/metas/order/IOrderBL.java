@@ -22,9 +22,16 @@
 
 package de.metas.order;
 
-import java.time.ZoneId;
-import java.util.Properties;
-
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocTypeId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.exceptions.PriceListNotFoundException;
+import de.metas.project.ProjectId;
+import de.metas.request.RequestTypeId;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -34,15 +41,9 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
 
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.document.DocTypeId;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.exceptions.PriceListNotFoundException;
-import de.metas.project.ProjectId;
-import de.metas.util.ISingletonService;
+import java.time.ZoneId;
+import java.util.Optional;
+import java.util.Properties;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -50,7 +51,7 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Sets price list if there is a price list for the given location and pricing system.
-	 *
+	 * <p>
 	 * This method does nothing if:
 	 * <ul>
 	 * <li>pricing system is not set
@@ -68,9 +69,6 @@ public interface IOrderBL extends ISingletonService
 	 * <li>the date being taken from order/order's <code>DatePromised</code>, falling back to <code>DateOrdered</code>, if <code>DatePromised</code> is <code>null</code></li>
 	 * </ul>
 	 * Note: if the given order is <code>null</code>, then the method returns <code>null</code>; also note that there is sort of a sibling method in IOrderLineBL.
-	 *
-	 * @param order
-	 * @return
 	 */
 	I_M_PriceList_Version getPriceListVersion(I_C_Order order);
 
@@ -78,24 +76,19 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Returns the given order's <code>AD_User</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_User</code>.
-	 *
-	 * @param order
-	 * @return
 	 */
 	I_AD_User getShipToUser(I_C_Order order);
 
-	BPartnerLocationId getBillToLocationIdOrNull(I_C_Order order);
+	BPartnerLocationId getBillToLocationId(I_C_Order order);
 
 	@NonNull BPartnerContactId getBillToContactId(I_C_Order order);
 
 	/**
 	 * Check if there is a price list for the given location and pricing system.
-	 *
+	 * <p>
 	 * In case there is any error, this method will throw an exception.
-	 *
+	 * <p>
 	 * NOTE: in case the bpartner location or the pricing system is not set, this method will skip the validation and no exception will be thrown.
-	 *
-	 * @param order
 	 */
 	void checkForPriceList(I_C_Order order);
 
@@ -114,7 +107,6 @@ public interface IOrderBL extends ISingletonService
 	 * <li>location's <code>C_Country</code>, see {@link #retrievePriceListId(I_C_Order)}
 	 * </ul>
 	 *
-	 * @param order
 	 * @param overridePricingSystem true if pricing system shall be set even if is already set
 	 */
 	void setM_PricingSystem_ID(I_C_Order order, boolean overridePricingSystem);
@@ -125,15 +117,12 @@ public interface IOrderBL extends ISingletonService
 	 * Set Target Sales Document Type.
 	 * This method is also setting IsSOTrx to true.
 	 *
-	 * @param order
 	 * @param soDocSubType sales DocSubType
 	 */
 	void setDocTypeTargetId(I_C_Order order, String soDocSubType);
 
 	/**
 	 * Sets Target Document Type based on {@link I_C_Order#isSOTrx()} (Standard Order or PO)
-	 *
-	 * @param order
 	 */
 	void setDocTypeTargetId(I_C_Order order);
 
@@ -147,16 +136,11 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Updates the addresses in the order lines from the order. Also sets the header info in the lines.
-	 *
-	 * @param order
 	 */
 	void updateAddresses(I_C_Order order);
 
 	/**
-	 * retrieve deliveryVIaRule from order if the rule is already set, is retrieving the one set in order, if not, retrieves the deliveryViaRule from partner
-	 *
-	 * @param order
-	 * @return
+	 * Retrieve deliveryVIaRule from order if the rule is already set, is retrieving the one set in order, if not, retrieves the deliveryViaRule from partner
 	 */
 	DeliveryViaRule evaluateOrderDeliveryViaRule(I_C_Order order);
 
@@ -178,9 +162,6 @@ public interface IOrderBL extends ISingletonService
 
 	/**
 	 * Set C_BPartner_Location in order
-	 *
-	 * @param order
-	 * @param bp
 	 */
 	void setBPLocation(I_C_Order order, I_C_BPartner bp);
 
@@ -193,33 +174,28 @@ public interface IOrderBL extends ISingletonService
 	/**
 	 * Is Tax Included in Amount.
 	 *
-	 * @param order
-	 * @param tax optional
+	 * @param tax   optional
 	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, for the given
-	 *         <code>order</code> the value of {@link I_C_Order#isTaxIncluded()} is returned.
+	 * <code>order</code> the value of {@link I_C_Order#isTaxIncluded()} is returned.
 	 */
 	boolean isTaxIncluded(I_C_Order order, I_C_Tax tax);
 
 	/**
 	 * Close given order line by setting the line's <code>QtyOrdered</code> to the current <code>QtyDelviered</code>.
 	 * Also update the order line's reservation via {@link IOrderPA#reserveStock(I_C_Order, I_C_OrderLine...)}.
-	 *
+	 * <p>
 	 * This method is saving the order line.
-	 *
+	 * <p>
 	 * This is the counter-part of {@link #reopenLine(I_C_OrderLine)}.
-	 *
-	 * @param orderLine
 	 */
 	void closeLine(I_C_OrderLine orderLine);
 
 	/**
 	 * Re-open closed line (i.e. set QtyOrdered=QtyEntered converted to product stocking UOM) and update reservations.
-	 *
+	 * <p>
 	 * This method is saving the order line.
-	 *
+	 * <p>
 	 * This is the counter-part of {@link #closeLine(I_C_OrderLine)}.
-	 *
-	 * @param orderLine
 	 */
 	void reopenLine(I_C_OrderLine orderLine);
 
@@ -234,8 +210,8 @@ public interface IOrderBL extends ISingletonService
 	 * </ul>
 	 * from the sums of the order's lines.
 	 *
-	 * @param orderLine
-	 * @task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
+	 * @param order
+	 * task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */
 	void updateOrderQtySums(I_C_Order order);
 
@@ -260,6 +236,10 @@ public interface IOrderBL extends ISingletonService
 
 	ProjectId getProjectIdOrNull(OrderLineId orderLineId);
 
-	/** @return organization's timezone or system timezone; never returns null */
+	Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(I_C_Order order);
+
+	/**
+	 * @return organization's timezone or system timezone; never returns null
+	 */
 	ZoneId getTimeZone(I_C_Order order);
 }

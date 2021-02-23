@@ -33,6 +33,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -87,7 +88,6 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -101,7 +101,7 @@ class BankStatementPaymentBLTest
 
 	private final String metasfreshIban = "123456";
 	private final LocalDate statementDate = SystemTime.asLocalDate();
-	private final LocalDate valutaDate = SystemTime.asLocalDate();
+	private final LocalDate valutaDate = de.metas.common.util.time.SystemTime.asLocalDate();
 
 	private CurrencyId euroCurrencyId;
 	private BankAccountId euroOrgBankAccountId;

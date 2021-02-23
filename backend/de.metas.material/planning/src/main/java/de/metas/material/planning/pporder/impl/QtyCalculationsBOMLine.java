@@ -1,22 +1,13 @@
 package de.metas.material.planning.pporder.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_C_UOM;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.ProductBOMQtys;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UOMConversionRate;
+import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -26,6 +17,13 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.ProductBOMQtys;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /*
  * #%L
@@ -67,7 +65,7 @@ public final class QtyCalculationsBOMLine
 	private final ProductId productId;
 	private final I_C_UOM uom;
 	private final boolean qtyPercentage;
-	private final BigDecimal qtyForOneFinishedGood;
+	private final Quantity qtyForOneFinishedGood;
 	private final Percent percentOfFinishedGood;
 	private final Percent scrap;
 
@@ -85,12 +83,12 @@ public final class QtyCalculationsBOMLine
 			@NonNull final ProductId productId,
 			@NonNull final I_C_UOM uom,
 			final boolean qtyPercentage,
-			final BigDecimal qtyForOneFinishedGood,
-			final Percent percentOfFinishedGood,
+			@Nullable final BigDecimal qtyForOneFinishedGood,
+			@Nullable final Percent percentOfFinishedGood,
 			//
 			@Nullable final Percent scrap,
 			//
-			@Nullable PPOrderBOMLineId orderBOMLineId)
+			@Nullable final PPOrderBOMLineId orderBOMLineId)
 	{
 		this.bomProductId = bomProductId;
 		this.bomProductUOM = bomProductUOM;
@@ -101,14 +99,14 @@ public final class QtyCalculationsBOMLine
 		this.qtyPercentage = qtyPercentage;
 		if (qtyPercentage)
 		{
-			Check.assumeNotNull(percentOfFinishedGood, "Parameter qtyBatch is not null");
+			Check.assumeNotNull(percentOfFinishedGood, "Parameter percentOfFinishedGood is not null");
 			this.qtyForOneFinishedGood = null;
 			this.percentOfFinishedGood = percentOfFinishedGood;
 		}
 		else
 		{
-			Check.assumeNotNull(qtyForOneFinishedGood, "Parameter qtyBOM is not null");
-			this.qtyForOneFinishedGood = qtyForOneFinishedGood;
+			Check.assumeNotNull(qtyForOneFinishedGood, "Parameter qtyForOneFinishedGood is not null");
+			this.qtyForOneFinishedGood = Quantity.of(qtyForOneFinishedGood, uom);
 			this.percentOfFinishedGood = null;
 		}
 
@@ -117,35 +115,40 @@ public final class QtyCalculationsBOMLine
 		this.orderBOMLineId = orderBOMLineId;
 	}
 
-	public Quantity computeQtyRequired(@NonNull final Quantity qtyFinishedGood)
+	/**
+	 * @deprecated consider using {@link #computeQtyRequired(Quantity)}
+	 */
+	@Deprecated
+	public Quantity computeQtyRequired(@NonNull final BigDecimal qtyOfFinishedGood)
 	{
-		Check.assumeEquals(qtyFinishedGood.getUomId().getRepoId(), bomProductUOM.getC_UOM_ID(), "{} shall have uom={}", qtyFinishedGood, bomProductUOM);
-
-		return computeQtyRequired(qtyFinishedGood.toBigDecimal());
+		return computeQtyRequired(Quantity.of(qtyOfFinishedGood, bomProductUOM));
 	}
 
-	public Quantity computeQtyRequired(@NonNull final BigDecimal qtyFinishedGood)
+	public Quantity computeQtyRequired(@NonNull final Quantity qtyOfFinishedGood)
 	{
-		final BigDecimal multiplier = getFinishedGoodQtyMultiplier();
+		Check.assumeEquals(qtyOfFinishedGood.getUomId().getRepoId(), bomProductUOM.getC_UOM_ID(), "{} shall have uom={}", qtyOfFinishedGood, bomProductUOM);
 
-		final BigDecimal qtyRequired;
+		final Quantity qtyRequiredForOneFinishedGood = getQtyRequiredForOneFinishedGood();
+
+		final Quantity qtyRequired;
 		if (componentType.isTools())
 		{
-			qtyRequired = multiplier;
+			qtyRequired = qtyRequiredForOneFinishedGood;
 		}
 		else
 		{
-			qtyRequired = qtyFinishedGood.multiply(multiplier).setScale(8, RoundingMode.UP);
+			qtyRequired = qtyRequiredForOneFinishedGood
+					.multiply(qtyOfFinishedGood.toBigDecimal())
+					.setScale(UOMPrecision.ofInt(8), RoundingMode.UP);
 		}
 
 		//
 		// Adjust the qtyRequired by adding the scrap percentage to it.
-		final BigDecimal qtyRequiredPlusScrap = ProductBOMQtys.computeQtyWithScrap(qtyRequired, scrap);
-		return Quantity.of(qtyRequiredPlusScrap, uom);
+		return ProductBOMQtys.computeQtyWithScrap(qtyRequired, scrap);
 	}
 
 	@VisibleForTesting
-	BigDecimal getFinishedGoodQtyMultiplier()
+	Quantity getQtyRequiredForOneFinishedGood()
 	{
 		if (qtyPercentage)
 		{
@@ -156,7 +159,9 @@ public final class QtyCalculationsBOMLine
 					UomId.ofRepoId(bomProductUOM.getC_UOM_ID()),
 					UomId.ofRepoId(uom.getC_UOM_ID()));
 			final BigDecimal bomToLineUOMMultiplier = bomToLineRate.getFromToMultiplier();
-			return percentOfFinishedGood.computePercentageOf(bomToLineUOMMultiplier, 12);
+			return Quantity.of(
+					percentOfFinishedGood.computePercentageOf(bomToLineUOMMultiplier, 12),
+					uom);
 		}
 		else
 		{
@@ -164,6 +169,7 @@ public final class QtyCalculationsBOMLine
 		}
 	}
 
+	@Deprecated
 	public Quantity computeQtyOfFinishedGoodsForComponentQty(@NonNull final BigDecimal componentsQty)
 	{
 		return computeQtyOfFinishedGoodsForComponentQty(Quantity.of(componentsQty, uom));
@@ -171,7 +177,7 @@ public final class QtyCalculationsBOMLine
 
 	public Quantity computeQtyOfFinishedGoodsForComponentQty(@NonNull final Quantity componentsQty)
 	{
-		final BigDecimal qtyForOneFinishedGoodMultiplier = getFinishedGoodQtyMultiplier();
+		final Quantity qtyRequiredForOneFinishedGood = getQtyRequiredForOneFinishedGood();
 
 		final Quantity componentsQtyConverted = uomConversionService.convertQuantityTo(componentsQty,
 				UOMConversionContext.of(productId),
@@ -180,7 +186,7 @@ public final class QtyCalculationsBOMLine
 		final BigDecimal qtyOfFinishedGoodsBD = componentsQtyConverted
 				.toBigDecimal()
 				.divide(
-						qtyForOneFinishedGoodMultiplier,
+						qtyRequiredForOneFinishedGood.toBigDecimal(),
 						bomProductUOM.getStdPrecision(),
 						RoundingMode.DOWN); // IMPORTANT to round DOWN because we need complete products.
 

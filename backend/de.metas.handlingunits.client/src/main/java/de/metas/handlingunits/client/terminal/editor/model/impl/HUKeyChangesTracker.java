@@ -23,11 +23,11 @@ package de.metas.handlingunits.client.terminal.editor.model.impl;
  */
 
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.service.ISysConfigBL;
 
 import de.metas.handlingunits.client.terminal.editor.model.IHUKey;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Track {@link IHUKey} changes.
@@ -69,7 +69,7 @@ import de.metas.util.time.SystemTime;
 	 */
 	public void set(final IHUKey key)
 	{
-		setTimestampMillis = SystemTime.millis();
+		setTimestampMillis = de.metas.common.util.time.SystemTime.millis();
 	}
 
 	/**

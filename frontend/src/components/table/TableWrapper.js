@@ -4,11 +4,13 @@ import classnames from 'classnames';
 import currentDevice from 'current-device';
 import counterpart from 'counterpart';
 
+import { DROPDOWN_OFFSET_SMALL } from '../../constants/Constants';
 import { handleOpenNewTab, componentPropTypes } from '../../utils/tableHelpers';
-
-import Prompt from '../app/Prompt';
 import DocumentListContextShortcuts from '../keyshortcuts/DocumentListContextShortcuts';
 import TableContextShortcuts from '../keyshortcuts/TableContextShortcuts';
+import { getTableId } from '../../reducers/tables';
+
+import Prompt from '../app/Prompt';
 import TableContextMenu from './TableContextMenu';
 import TableFilter from './TableFilter';
 import Table from './Table';
@@ -37,6 +39,7 @@ class TableWrapper extends PureComponent {
   }
 
   closeContextMenu = () => {
+    this.fwdUpdateHeight(DROPDOWN_OFFSET_SMALL);
     this.setState({
       contextMenu: {
         ...this.state.contextMenu,
@@ -200,21 +203,21 @@ class TableWrapper extends PureComponent {
 
   handleClickOutside = (event) => {
     const {
-      showIncludedView,
-      viewId,
-      windowId,
       inBackground,
       allowOutsideClick,
       limitOnClickOutside,
       onDeselectAll,
       isModal,
+      parentView,
+      deselectTableRows,
     } = this.props;
     const parentNode = event.target.parentNode;
     const closeIncluded =
-      limitOnClickOutside &&
-      (parentNode.className.includes('document-list-wrapper') ||
-        event.target.className.includes('document-list-wrapper'))
-        ? parentNode.className.includes('document-list-has-included')
+      // is modal
+      limitOnClickOutside
+        ? // user is clicking within the document list component
+          parentNode.className.includes('document-list-wrapper') ||
+          event.target.className.includes('document-list-wrapper')
         : true;
 
     if (
@@ -242,15 +245,23 @@ class TableWrapper extends PureComponent {
 
       onDeselectAll();
 
-      const identifier = isModal ? viewId : windowId;
+      // if view is an included view, we should deselect parent's selection as the included
+      // view is only visible when an item is selected. At the same time we'll hide the
+      // included view.
+      if (parentView) {
+        const {
+          windowId: parentWindowId,
+          viewId: parentViewId,
+        } = this.props.parentView;
 
-      showIncludedView({
-        id: identifier,
-        showIncludedView: false,
-        windowId,
-        viewId,
-        isModal,
-      });
+        deselectTableRows({
+          id: getTableId({ windowId: parentWindowId, viewId: parentViewId }),
+          selection: [],
+          windowId: parentWindowId,
+          viewId: parentViewId,
+          isModal,
+        });
+      }
     }
   };
 
@@ -279,6 +290,16 @@ class TableWrapper extends PureComponent {
         );
       });
     }
+  };
+
+  /**
+   * @method fwdUpdateHeight
+   * @summary - Forward the update height to the child component Table.
+   *            This is needed to call the table height update from within TableContextMenu
+   * @param {integer} height
+   */
+  fwdUpdateHeight = (height) => {
+    this.table.updateHeight(height);
   };
 
   render() {
@@ -317,7 +338,7 @@ class TableWrapper extends PureComponent {
 
     const { contextMenu, promptOpen, isBatchEntry } = this.state;
 
-    let showPagination = page && pageLength;
+    let showPagination = !!(page && pageLength);
     if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
       showPagination = false;
     }
@@ -360,6 +381,7 @@ class TableWrapper extends PureComponent {
                   : null
               }
               handleZoomInto={onHandleZoomInto}
+              updateTableHeight={this.fwdUpdateHeight}
             />
           )}
           {!readonly && (
@@ -397,7 +419,7 @@ class TableWrapper extends PureComponent {
             this.props.children
           }
         </div>
-        {showPagination && (
+        {showPagination ? (
           <div onClick={this.handleClickOutside}>
             <TablePagination
               {...{
@@ -417,7 +439,7 @@ class TableWrapper extends PureComponent {
               onDeselectAll={onDeselectAll}
             />
           </div>
-        )}
+        ) : null}
         {promptOpen && (
           <Prompt
             title="Delete"

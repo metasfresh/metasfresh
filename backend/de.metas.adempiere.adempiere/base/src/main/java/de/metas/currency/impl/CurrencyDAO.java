@@ -12,6 +12,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -37,6 +38,8 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -75,10 +78,6 @@ public class CurrencyDAO implements ICurrencyDAO
 			.tableName(I_C_ConversionType.Table_Name)
 			.tableName(I_C_ConversionType_Default.Table_Name)
 			.build();
-
-	// private final CCache<ConversionTypeMethod, CurrencyConversionTypeId> conversionTypeIdsByType = CCache.<ConversionTypeMethod, CurrencyConversionTypeId> builder()
-	// .tableName(I_C_ConversionType.Table_Name)
-	// .build();
 
 	@Override
 	public Currency getById(@NonNull final CurrencyId currencyId)
@@ -190,6 +189,7 @@ public class CurrencyDAO implements ICurrencyDAO
 	}
 
 	@Override
+	@NonNull
 	public CurrencyConversionTypeId getDefaultConversionTypeId(
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId,
@@ -206,6 +206,11 @@ public class CurrencyDAO implements ICurrencyDAO
 		return getConversionTypesMap().getByMethod(method).getId();
 	}
 
+	@Override
+	public @NonNull ConversionTypeMethod getConversionTypeMethodById(@NonNull final CurrencyConversionTypeId id)
+	{
+		return getConversionTypesMap().getById(id).getMethod();
+	}
 	/**
 	 * @return query which is finding the best matching {@link I_C_Conversion_Rate} for given parameters.
 	 */
@@ -219,6 +224,7 @@ public class CurrencyDAO implements ICurrencyDAO
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_Conversion_Rate.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_Currency_ID, currencyFromId)
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_Currency_ID_To, currencyToId)
 				.addEqualsFilter(I_C_Conversion_Rate.COLUMN_C_ConversionType_ID, conversionTypeId)
@@ -233,18 +239,18 @@ public class CurrencyDAO implements ICurrencyDAO
 				.addColumn(I_C_Conversion_Rate.COLUMN_ValidFrom, Direction.Descending, Nulls.Last)
 				.endOrderBy()
 				//
-				.setLimit(1) // first only
-		;
+				.setLimit(QueryLimit.ONE) // first only
+				;
 	}
 
 	@Override
-	public BigDecimal retrieveRateOrNull(
+	public @Nullable BigDecimal retrieveRateOrNull(
 			final CurrencyConversionContext conversionCtx,
 			final CurrencyId currencyFromId,
 			final CurrencyId currencyToId)
 	{
 		final List<Map<String, Object>> recordsList = retrieveRateQuery(conversionCtx, currencyFromId, currencyToId)
-				.setLimit(1)
+				.setLimit(QueryLimit.ONE)
 				.create()
 				.listColumns(I_C_Conversion_Rate.COLUMNNAME_MultiplyRate);
 

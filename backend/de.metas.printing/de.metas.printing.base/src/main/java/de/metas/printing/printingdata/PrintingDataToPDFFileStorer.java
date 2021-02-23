@@ -24,6 +24,7 @@ package de.metas.printing.printingdata;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMultimap;
+import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.printing.HardwarePrinter;
@@ -33,7 +34,6 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;

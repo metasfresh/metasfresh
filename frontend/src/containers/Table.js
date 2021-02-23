@@ -1,21 +1,19 @@
-import update from 'immutability-helper';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import { getZoomIntoWindow, deleteRequest } from '../api';
-import { getTableId, getTable } from '../reducers/tables';
+import { containerPropTypes } from '../utils/tableHelpers';
+import { mapIncluded } from '../utils/documentListHelper';
 
+import { getTableId, getTable } from '../reducers/tables';
 import {
   updateTableSelection,
-  deselectTableItems,
+  deselectTableRows,
   collapseTableRow,
   setActiveSort,
 } from '../actions/TableActions';
 import { showIncludedView } from '../actions/ViewActions';
 import { openModal, updatePropertyValue } from '../actions/WindowActions';
-
-import { containerPropTypes } from '../utils/tableHelpers';
-import { mapIncluded } from '../utils/documentListHelper';
 
 import Table from '../components/table/TableWrapper';
 
@@ -50,6 +48,8 @@ class TableContainer extends PureComponent {
       docId,
       tabId,
       keyProperty,
+      isModal,
+      parentView,
     } = this.props;
     let newSelected = [];
 
@@ -61,15 +61,17 @@ class TableContainer extends PureComponent {
       }
     }
 
-    updateTableSelection(
-      getTableId({ windowId, viewId, docId, tabId }),
-      newSelected,
-      keyProperty
-    ).then(() => {
+    updateTableSelection({
+      id: getTableId({ windowId, viewId, docId, tabId }),
+      selection: newSelected,
+      keyProperty,
+      windowId,
+      viewId,
+      isModal,
+      parentView,
+    }).then(() => {
       cb && cb();
     });
-
-    return newSelected;
   };
 
   handleSelectAll = () => {
@@ -81,34 +83,44 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselect = (id) => {
-    const { deselectTableItems, windowId, viewId, selected } = this.props;
-    const tableId = getTableId({ windowId, viewId });
-    const index = selected.indexOf(id);
+    const {
+      deselectTableRows,
+      windowId,
+      viewId,
+      docId,
+      tabId,
+      isModal,
+    } = this.props;
+    const tableId = getTableId({ windowId, viewId, docId, tabId });
 
-    // TODO: Do we need this returned value ? Maybe we can handle
-    // this in redux only?
-    const newSelected = update(selected, { $splice: [[index, 1]] });
-
-    if (!newSelected.length) {
-      deselectTableItems(tableId, [id]);
-    }
-
-    return newSelected;
+    deselectTableRows({
+      id: tableId,
+      selection: [id],
+      windowId,
+      viewId,
+      isModal,
+    });
   };
 
   handleDeselectAll = (callback) => {
-    const { deselectTableItems, windowId, viewId, docId, tabId } = this.props;
+    const {
+      deselectTableRows,
+      windowId,
+      viewId,
+      docId,
+      tabId,
+      isModal,
+    } = this.props;
 
     callback && callback();
 
-    deselectTableItems(getTableId({ windowId, viewId, docId, tabId }), []);
-  };
-
-  // TODO: This reallydoesn't do anything. Check if it's still a valid solution
-  handleItemChange = () => {
-    const { onRowEdited } = this.props;
-
-    onRowEdited && onRowEdited(true);
+    deselectTableRows({
+      id: getTableId({ windowId, viewId, docId, tabId }),
+      selection: [],
+      windowId,
+      viewId,
+      isModal,
+    });
   };
 
   /**
@@ -118,7 +130,13 @@ class TableContainer extends PureComponent {
   openTableModal = () => {
     const { openModal, windowId, tabId } = this.props;
 
-    openModal('Add new', windowId, 'window', tabId, 'NEW');
+    openModal({
+      title: 'Add new',
+      windowId,
+      modalType: 'window',
+      tabId,
+      rowId: 'NEW',
+    });
   };
 
   /**
@@ -130,7 +148,14 @@ class TableContainer extends PureComponent {
     const { openModal, windowId, tabId, docId, selected } = this.props;
 
     if (docId) {
-      openModal('Advanced edit', windowId, 'window', tabId, selected[0], true);
+      openModal({
+        title: 'Advanced edit',
+        windowId,
+        modalType: 'window',
+        tabId,
+        rowId: selected[0],
+        isAdvanced: true,
+      });
     }
   };
 
@@ -214,7 +239,6 @@ class TableContainer extends PureComponent {
         {...this.props}
         onHandleZoomInto={this.handleZoomInto}
         onPromptSubmit={this.handlePromptSubmit}
-        onItemChange={this.handleItemChange}
         onSelect={this.handleSelect}
         onSelectAll={this.handleSelectAll}
         onDeselectAll={this.handleDeselectAll}
@@ -272,7 +296,7 @@ export default connect(
   mapStateToProps,
   {
     collapseTableRow,
-    deselectTableItems,
+    deselectTableRows,
     openModal,
     updateTableSelection,
     updatePropertyValue,

@@ -1,7 +1,27 @@
 package de.metas.inout;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.lang.SOTrx;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -25,27 +45,6 @@ import java.util.Collection;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.lang.SOTrx;
-import de.metas.product.ProductId;
-import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
-
 public interface IInOutDAO extends ISingletonService
 {
 	I_M_InOut getById(InOutId inoutId);
@@ -54,6 +53,8 @@ public interface IInOutDAO extends ISingletonService
 	<T extends I_M_InOut> T getById(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
 
 	I_M_InOutLine getLineById(InOutLineId inoutLineId);
+
+	<T extends I_M_InOutLine> List<T> getLinesByIds(Set<InOutLineId> inoutLineIds, Class<T> returnType);
 
 	List<I_M_InOutLine> retrieveLines(I_M_InOut inOut);
 
@@ -113,4 +114,8 @@ public interface IInOutDAO extends ISingletonService
 	void setExportedInCustomsInvoice(InOutId shipmentId);
 
 	void unsetLineNos(ImmutableList<InOutLineId> inOutLineIdsToUnset);
+
+	I_M_InOut getInOutByDocumentNumber(String documentNo, DocTypeId docTypeId, OrgId orgId);
+
+	ImmutableMap<InOutLineId,I_M_InOut> retrieveInOutByLineIds(Set<InOutLineId> inOutLineIds);
 }

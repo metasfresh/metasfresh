@@ -1,9 +1,13 @@
-import { reduce, cloneDeep } from 'lodash';
+import { reduce, cloneDeep, get, find } from 'lodash';
 
+import { createCollapsedMap, flattenRows } from '../utils/documentListHelper';
 import * as types from '../constants/ActionTypes';
+
+import { fetchQuickActions } from '../actions/Actions';
+import { showIncludedView } from '../actions/ViewActions';
+
 import { getView } from '../reducers/viewHandler';
 import { getTable } from '../reducers/tables';
-import { createCollapsedMap, flattenRows } from '../utils/documentListHelper';
 
 /**
  * @method createTable
@@ -66,17 +70,6 @@ export function setActiveSort(id, active) {
 }
 
 /**
- * @method deselectTableItems
- * @summary deselect items or deselect all if an empty `ids` array is provided
- */
-export function deselectTableItems(id, selection) {
-  return {
-    type: types.DESELECT_TABLE_ITEMS,
-    payload: { id, selection },
-  };
-}
-
-/**
  * @method collapseRows
  * @summary Toggle table rows
  *
@@ -123,7 +116,7 @@ export function updateTabRowsData(id, rows) {
 
 /**
  * @method updateTableRowProperty
- * @summary Update table selection - select items
+ * @summary Update single row
  *
  * @param {string} id - table id
  * @param {number} rowId - rowId
@@ -184,8 +177,6 @@ export function createTableData(rawData) {
       ? rawData.defaultOrderBys
       : undefined,
     expandedDepth: rawData.expandedDepth,
-
-    // TODO: We have both `supportTree` and `collapsible` in the layout response.
     collapsible: rawData.collapsible,
     indentSupported: rawData.supportTree,
   };
@@ -241,11 +232,18 @@ export function updateGridTable(tableId, tableResponse) {
     // this check is only for unit tests purposes
     if (state.tables) {
       const tableExists = state.tables[tableId];
+      const isModal = !!tableResponse.modalId;
+      const windowId = isModal
+        ? tableResponse.modalId
+        : tableResponse.windowType || tableResponse.windowId;
+
+      const tableLayout = getView(getState(), windowId, isModal).layout;
 
       if (tableExists) {
         const { indentSupported } = tableExists;
         const tableData = createTableData({
           ...tableResponse,
+          ...tableLayout,
           headerElements: tableResponse.columnsByFieldName,
           keyProperty: 'id',
         });
@@ -273,12 +271,6 @@ export function updateGridTable(tableId, tableResponse) {
 
         return Promise.resolve(true);
       } else {
-        const isModal = !!tableResponse.modalId;
-        const windowId = isModal
-          ? tableResponse.modalId
-          : tableResponse.windowType || tableResponse.windowId;
-
-        const tableLayout = getView(getState(), windowId, isModal).layout;
         const tableData = createTableData({
           ...tableResponse,
           ...tableLayout,
@@ -546,14 +538,146 @@ export function collapseTableRow({ tableId, collapse, node }) {
  * @param {array} selection - array of selected items. This will be validated
  * for existence in the rows data by the reducer, but not for duplication
  * @param {string} keyProperty=id - `id` or `rowId` depending on the table type
+ * @param {number} windowId
+ * @param {string} viewId
+ * @param {boolean} isModal
  */
-export function updateTableSelection(id, selection, keyProperty = 'id') {
+export function updateTableSelection({
+  id,
+  selection,
+  keyProperty = 'id',
+  windowId,
+  viewId,
+  isModal,
+}) {
   return (dispatch) => {
     dispatch({
       type: types.UPDATE_TABLE_SELECTION,
       payload: { id, selection, keyProperty },
     });
 
+    if (viewId) {
+      return Promise.all([
+        // show included view
+        dispatch(
+          handleToggleIncludedView({
+            windowId,
+            tableId: id,
+            selection,
+            isModal,
+          })
+        ),
+        // update quick actions
+        dispatch(fetchQuickActions({ windowId, viewId, isModal })),
+      ]);
+    }
+
     return Promise.resolve(selection);
+  };
+}
+
+/**
+ * @method deselectTableRows
+ * @summary deselect rows or deselect all if an empty `ids` array is provided
+ *
+ * @param {string} id - table id
+ * @param {array} selection - array of items to deselect
+ * @param {number} windowId
+ * @param {string} viewId
+ * @param {boolean} isModal
+ */
+export function deselectTableRows({
+  id,
+  selection,
+  windowId,
+  viewId,
+  isModal,
+}) {
+  return (dispatch) => {
+    dispatch({
+      type: types.DESELECT_TABLE_ROWS,
+      payload: { id, selection },
+    });
+
+    if (viewId) {
+      return Promise.all([
+        dispatch(
+          handleToggleIncludedView({
+            windowId,
+            tableId: id,
+            selection,
+            isModal,
+          })
+        ),
+        dispatch(fetchQuickActions({ windowId, viewId, isModal })),
+      ]);
+    }
+
+    return Promise.resolve(selection);
+  };
+}
+
+/**
+ * @method handleToggleIncludedView
+ * @summary Depending on the parameters call the AC responsible for toggling
+ * the included view.
+ *
+ * @param {number} windowId
+ * @param {string} tableId
+ * @param {array} selection - array of selected/deselected items
+ * @param {boolean} isModal
+ */
+function handleToggleIncludedView({ windowId, tableId, selection, isModal }) {
+  return (dispatch, getState) => {
+    const state = getState();
+    const includedView = state.viewHandler.includedView;
+    const view = getView(state, windowId, isModal);
+    const layout = view.layout;
+    const { selected, keyProperty, rows } = getTable(state, tableId);
+    let forceClose = false;
+    let showIncluded = true;
+    let openIncludedViewOnSelect = true;
+    let includedWindowId = null;
+    let includedViewId = null;
+    let item = {};
+
+    // selection is empty, so we're closing the included view
+    if (selected.length === 0 && includedView.parentId === windowId) {
+      showIncluded = false;
+      forceClose = true;
+      includedWindowId = includedView.windowId;
+      includedViewId = includedView.viewId;
+    } else {
+      const itemId = selection[selection.length - 1];
+      item = find(rows, (row) => row[keyProperty] === itemId);
+
+      showIncluded = get(item, ['supportIncludedViews'], false);
+      includedWindowId = showIncluded
+        ? get(item, ['includedView', 'windowId'], null)
+        : null;
+      includedViewId = showIncluded
+        ? get(item, ['includedView', 'viewId'], null)
+        : null;
+      openIncludedViewOnSelect = get(
+        layout,
+        ['includedView', 'openOnSelect'],
+        false
+      );
+    }
+
+    if (openIncludedViewOnSelect) {
+      dispatch(
+        showIncludedView({
+          id: windowId,
+          showIncludedView: showIncluded,
+          forceClose,
+          windowId: includedWindowId,
+          viewId: includedViewId,
+          isModal,
+        })
+      );
+    }
+
+    return Promise.resolve(openIncludedViewOnSelect);
   };
 }

@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_DesadvLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 325323234L;
+	private static final long serialVersionUID = -182511967L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (Properties ctx, int EDI_DesadvLine_ID, String trxName)
@@ -47,6 +47,32 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setC_UOM_Invoice_ID (int C_UOM_Invoice_ID)
+	{
+		if (C_UOM_Invoice_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_Invoice_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_Invoice_ID, Integer.valueOf(C_UOM_Invoice_ID));
+	}
+
+	@Override
+	public int getC_UOM_Invoice_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_Invoice_ID);
+	}
+
+	@Override
+	public void setEanCom_Invoice_UOM (java.lang.String EanCom_Invoice_UOM)
+	{
+		throw new IllegalArgumentException ("EanCom_Invoice_UOM is virtual column");	}
+
+	@Override
+	public java.lang.String getEanCom_Invoice_UOM() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_EanCom_Invoice_UOM);
 	}
 
 	@Override
@@ -189,6 +215,30 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
+	public void setOrderLine (int OrderLine)
+	{
+		set_Value (COLUMNNAME_OrderLine, Integer.valueOf(OrderLine));
+	}
+
+	@Override
+	public int getOrderLine() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OrderLine);
+	}
+
+	@Override
+	public void setOrderPOReference (java.lang.String OrderPOReference)
+	{
+		set_Value (COLUMNNAME_OrderPOReference, OrderPOReference);
+	}
+
+	@Override
+	public java.lang.String getOrderPOReference() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_OrderPOReference);
+	}
+
+	@Override
 	public void setPriceActual (java.math.BigDecimal PriceActual)
 	{
 		set_Value (COLUMNNAME_PriceActual, PriceActual);
@@ -223,6 +273,19 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	public java.lang.String getProductNo() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_ProductNo);
+	}
+
+	@Override
+	public void setQtyDeliveredInInvoiceUOM (java.math.BigDecimal QtyDeliveredInInvoiceUOM)
+	{
+		set_Value (COLUMNNAME_QtyDeliveredInInvoiceUOM, QtyDeliveredInInvoiceUOM);
+	}
+
+	@Override
+	public java.math.BigDecimal getQtyDeliveredInInvoiceUOM() 
+	{
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDeliveredInInvoiceUOM);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -261,6 +324,19 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	public java.math.BigDecimal getQtyEntered() 
 	{
 		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity)
+	{
+		set_Value (COLUMNNAME_QtyItemCapacity, QtyItemCapacity);
+	}
+
+	@Override
+	public java.math.BigDecimal getQtyItemCapacity() 
+	{
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyItemCapacity);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

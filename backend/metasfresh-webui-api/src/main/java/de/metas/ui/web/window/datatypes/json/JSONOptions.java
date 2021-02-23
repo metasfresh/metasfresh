@@ -5,6 +5,7 @@ import java.time.ZoneId;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 
+import de.metas.common.util.time.SystemTime;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -15,7 +16,6 @@ import de.metas.i18n.Language;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.session.UserSession;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

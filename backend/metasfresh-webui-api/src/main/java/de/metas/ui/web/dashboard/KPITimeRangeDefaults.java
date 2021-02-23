@@ -2,9 +2,9 @@ package de.metas.ui.web.dashboard;
 
 import java.time.Duration;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Value;
 

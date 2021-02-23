@@ -219,18 +219,13 @@ export class RawLookup extends Component {
     this.handleBlur();
 
     dispatch(
-      openModal(
-        newRecordCaption,
-        newRecordWindowId,
-        'window',
-        null,
-        null,
-        null,
-        null,
-        null,
-        'NEW',
-        filterWidget ? parameterName : mainProperty[0].field
-      )
+      openModal({
+        title: newRecordCaption,
+        windowId: newRecordWindowId,
+        modalType: 'window',
+        dataId: 'NEW',
+        triggerField: filterWidget ? parameterName : mainProperty[0].field,
+      })
     );
   };
 
@@ -355,7 +350,6 @@ export class RawLookup extends Component {
 
   handleChange = (handleChangeOnFocus, allowEmpty) => {
     const {
-      recent,
       handleInputEmptyStatus,
       enableAutofocus,
       isOpen,
@@ -394,7 +388,7 @@ export class RawLookup extends Component {
       this.setState({
         isInputEmpty: true,
         query: inputValue,
-        list: recent,
+        list: [],
       });
 
       handleInputEmptyStatus && handleInputEmptyStatus(true);

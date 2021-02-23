@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.IQuery;
@@ -28,7 +29,6 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -198,7 +198,7 @@ public class ContactPersonRepository
 		}
 		else if (syncResult instanceof RemoteToLocalSyncResult)
 		{
-			contactPersonRecord.setLastSyncOfRemoteToLocal(SystemTime.asTimestamp());
+			contactPersonRecord.setLastSyncOfRemoteToLocal(de.metas.common.util.time.SystemTime.asTimestamp());
 
 			final RemoteToLocalSyncResult remoteToLocalSyncResult = (RemoteToLocalSyncResult)syncResult;
 			contactPersonRecord.setLastSyncStatus(remoteToLocalSyncResult.getRemoteToLocalStatus().toString());
@@ -309,7 +309,7 @@ public class ContactPersonRepository
 		consent.setAD_User_ID(UserId.toRepoIdOr(contactPerson.getUserId(), -1));
 		consent.setC_BPartner_ID(BPartnerId.toRepoIdOr(contactPerson.getBPartnerId(), 0));
 
-		consent.setConsentDeclaredOn(SystemTime.asTimestamp());
+		consent.setConsentDeclaredOn(de.metas.common.util.time.SystemTime.asTimestamp());
 		consent.setMKTG_ContactPerson_ID(contactPerson.getContactPersonId().getRepoId());
 
 		saveRecord(consent);
@@ -322,7 +322,7 @@ public class ContactPersonRepository
 
 		if (consent != null)
 		{
-			consent.setConsentRevokedOn(SystemTime.asTimestamp());
+			consent.setConsentRevokedOn(de.metas.common.util.time.SystemTime.asTimestamp());
 			saveRecord(consent);
 		}
 	}

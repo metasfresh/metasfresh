@@ -29,7 +29,10 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.RepoIdAware;
 
 /**
  * Generic readonly parameters. Use {@link IParamsBL#createParams(java.util.Map)} to get yours.
@@ -53,6 +56,9 @@ public interface IParams
 
 	/** @return int value or <code>defaultValue</code> if parameter is missing or cannot be converted to integer */
 	int getParameterAsInt(String parameterName, int defaultValue);
+	
+	@Nullable
+	<T extends RepoIdAware> T getParameterAsId(String parameterName, Class<T> type);
 
 	/** @return boolean value or <code>false</code> if parameter is missing */
 	boolean getParameterAsBool(String parameterName);

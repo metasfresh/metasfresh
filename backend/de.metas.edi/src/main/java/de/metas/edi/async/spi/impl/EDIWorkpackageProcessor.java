@@ -30,6 +30,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.edi.model.I_EDI_Document_Extension;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -45,6 +48,7 @@ import de.metas.edi.process.export.IExport;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.Env;
 
 public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 {
@@ -93,10 +97,15 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 			}
 			else
 			{
+				// there might be no exception thrown by export, but just an error message
 				final String errorMessage = ediDocumentBL.buildFeedback(exportFeedback);
 				Loggables.addLog("Did not export ediDocument because of validation error(s); ediDocumentNo={}; errorMsg={}",
 						ediDocument.getDocumentNo(), errorMessage);
 				feedback.addAll(exportFeedback);
+
+				ediDocument.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_Error);
+				ediDocument.setEDIErrorMsg(errorMessage);
+				InterfaceWrapperHelper.save(ediDocument);
 			}
 		}
 
@@ -110,7 +119,6 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	}
 
 	/**
-	 * @param ediDocument
 	 * @return document record ID, decided for the EDI document OR -1 if document cannot be applied
 	 */
 	private TableRecordIdPair getDocumentTableRecordId(final I_EDI_Document ediDocument)

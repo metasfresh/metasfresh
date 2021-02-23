@@ -1,12 +1,13 @@
 package de.metas.contracts.refund;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.compiere.util.TimeUtil;
+import de.metas.common.util.time.SystemTime;
+import lombok.NonNull;
 import org.junit.jupiter.api.Test;
 
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
+import java.time.LocalDate;
+import java.time.ZoneId;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -33,7 +34,9 @@ import lombok.NonNull;
 public class RefundTestToolsTest
 {
 
-	/** make sure that RefundTestTools#computeInvoiceScheduleDayOfMonth() is always between 1 and 28 */
+	/**
+	 * make sure that RefundTestTools#computeInvoiceScheduleDayOfMonth() is always between 1 and 28
+	 */
 	@Test
 	public void computeInvoiceScheduleDayOfMonth()
 	{
@@ -55,8 +58,8 @@ public class RefundTestToolsTest
 			@NonNull final String date,
 			final int expected)
 	{
-		final long millis = TimeUtil.parseTimestamp(date).getTime();
-		SystemTime.setTimeSource(() -> millis);
+		SystemTime.setFixedTimeSource(LocalDate.parse(date)
+				.atStartOfDay(ZoneId.systemDefault()));
 
 		final int result = RefundTestTools.computeInvoiceScheduleDayOfMonth();
 		assertThat(result).isEqualTo(expected);

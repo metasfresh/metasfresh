@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -116,7 +117,8 @@ public class CalloutInOut extends CalloutEngine
 
 		inout.setC_BPartner_ID(order.getC_BPartner_ID());
 		inout.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
-		inout.setAD_User_ID(new Integer(order.getAD_User_ID()));
+		final BPartnerContactId bpartnerContactId = BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
+		inout.setAD_User_ID(BPartnerContactId.toRepoId(bpartnerContactId));
 
 		return NO_ERROR;
 	} // order

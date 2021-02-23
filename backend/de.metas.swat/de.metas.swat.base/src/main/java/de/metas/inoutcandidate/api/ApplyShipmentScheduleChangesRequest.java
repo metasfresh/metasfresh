@@ -25,6 +25,7 @@ package de.metas.inoutcandidate.api;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.DeliveryRule;
+import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -58,12 +59,22 @@ public class ApplyShipmentScheduleChangesRequest
 	@Nullable
 	DeliveryRule deliveryRule;
 
+	@Nullable
+	ShipperId shipperId;
+
+	/**
+	 * If true, then don't invalidate the shipment candidate record when it's saved
+	 */
+	@Builder.Default
+	boolean doNotInvalidateOnChange = false;
+
 	public boolean isEmptyRequest()
 	{
 		return bPartnerLocationIdOverride == null
 				&& qtyToDeliverStockingUOM == null
 				&& Check.isEmpty(attributes)
 				&& deliveryDate == null
-				&& deliveryRule == null;
+				&& deliveryRule == null
+				&& shipperId == null;
 	}
 }

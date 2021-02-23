@@ -1,45 +1,7 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnable;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -49,8 +11,21 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
-import de.metas.util.time.FixedTimeSource;
-import de.metas.util.time.SystemTime;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 {
@@ -78,7 +53,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 		// Setup
 		// registerModelInterceptors(); // got a lot of errors if i am registering it, so i keep it simple
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-		SystemTime.setTimeSource(new FixedTimeSource(2015, 1, 1, 0, 0, 0));
+		SystemTime.setFixedTimeSource("2015-01-01T00:00:00+01:00");
 
 		//
 		// Create invoice candidates
@@ -121,7 +96,7 @@ public class InvoiceCandidateEnqueuerTest extends AbstractICTestSupport
 		final PInstanceId selectionId = POJOLookupMap.get().createSelectionFromModels(ic1, ic2);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final IMutable<IInvoiceCandidateEnqueueResult> enqueueResultRef = new Mutable<>();
-		trxManager.runInNewTrx((TrxRunnable)localTrxName -> {
+		trxManager.runInNewTrx(localTrxName -> {
 			final IInvoiceCandidateEnqueueResult result = new InvoiceCandidateEnqueuer()
 					.setContext(Env.getCtx())
 					.setInvoicingParams(createDefaultInvoicingParams())

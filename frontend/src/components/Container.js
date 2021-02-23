@@ -22,12 +22,9 @@ import Header from './header/Header';
 class Container extends PureComponent {
   render() {
     const {
-      docActionElem,
-      docStatusData,
       docNoData,
       docId,
       processStatus,
-      docSummaryData,
       dataId,
       windowId,
       breadcrumb,
@@ -55,7 +52,6 @@ class Container extends PureComponent {
       closeModalCallback,
       editmode,
       handleEditModeToggle,
-      activeTab,
       masterDocumentList,
       pluginComponents,
       setRawModalTitle,
@@ -86,14 +82,11 @@ class Container extends PureComponent {
         {!hideHeader && (
           // Forcing refresh component
           <Header
-            docStatus={docActionElem}
             windowId={windowId}
             showIndicator={modalHidden}
             {...{
               entity,
-              docStatusData,
               docNoData,
-              docSummaryData,
               handleDeletedStatus,
               isDocumentNotSaved,
               viewId,
@@ -109,7 +102,6 @@ class Container extends PureComponent {
               docId,
               editmode,
               handleEditModeToggle,
-              activeTab,
               hasComments,
             }}
           />
@@ -126,11 +118,11 @@ class Container extends PureComponent {
           {!modalHidden && (
             <Modal
               {...modal}
-              windowId={modal.type}
+              windowId={modal.windowId}
               dataId={modal.dataId ? modal.dataId : dataId}
               modalTitle={modal.title}
               viewId={modal.viewId}
-              parentWindowId={windowId}
+              documentType={windowId}
               rawModalWindowId={rawModal.windowId}
               parentDataId={dataId}
               parentViewId={viewId}
@@ -167,36 +159,26 @@ class Container extends PureComponent {
                   viewProfileId={rawModal.profileId}
                   setModalTitle={setRawModalTitle}
                   setModalDescription={setRawModalDescription}
-                  fetchQuickActionsOnInit={
-                    !(
-                      includedView &&
-                      includedView.windowType &&
-                      includedView.viewId
-                    )
-                  }
                   modalDescription={rawModal.description}
                   isModal
                   processStatus={processStatus}
                   includedView={includedView}
                   inBackground={
-                    includedView &&
-                    includedView.windowType &&
-                    includedView.viewId
+                    includedView && includedView.windowId && includedView.viewId
                   }
                   inModal={modal.visible}
                 />
 
                 {includedView &&
-                  includedView.windowType &&
+                  includedView.windowId &&
                   includedView.viewId && (
                     <DocumentList
                       type="includedView"
-                      windowId={includedView.windowType}
+                      windowId={includedView.windowId}
                       viewProfileId={includedView.viewProfileId}
                       defaultViewId={includedView.viewId}
                       parentDefaultViewId={rawModal.viewId}
                       parentWindowType={rawModal.windowId}
-                      fetchQuickActionsOnInit
                       isModal
                       isIncluded
                       processStatus={processStatus}
@@ -228,18 +210,14 @@ class Container extends PureComponent {
 /**
  * @typedef {object} Props Component props
  * @prop {*} actions
- * @prop {*} activeTab
  * @prop {*} attachments
  * @prop {*} breadcrumb
  * @prop {*} children
  * @prop {bool} connectionError
  * @prop {*} closeModalCallback
  * @prop {string} dataId
- * @prop {*} docActionElem
- * @prop {*} docStatusData
  * @prop {*} docNoData
  * @prop {string} docId
- * @prop {*} docSummaryData
  * @prop {*} dropzoneFocused
  * @prop {*} editmode
  * @prop {*} entity
@@ -271,18 +249,14 @@ class Container extends PureComponent {
  */
 Container.propTypes = {
   actions: PropTypes.any,
-  activeTab: PropTypes.any,
   attachments: PropTypes.any,
   breadcrumb: PropTypes.any,
   children: PropTypes.any,
   closeModalCallback: PropTypes.any,
   connectionError: PropTypes.bool,
   dataId: PropTypes.any,
-  docActionElem: PropTypes.any,
   docId: PropTypes.any,
   docNoData: PropTypes.any,
-  docSummaryData: PropTypes.any,
-  docStatusData: PropTypes.any,
   dropzoneFocused: PropTypes.any,
   editmode: PropTypes.any,
   entity: PropTypes.any,

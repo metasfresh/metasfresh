@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -62,8 +63,6 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import de.metas.logging.LogManager;
 
 /**
  * @author tsa
@@ -490,7 +489,7 @@ public class TableMViewBL implements ITableMViewBL
 		if (!mview.isStaled())
 		{
 			mview.setIsStaled(true);
-			mview.setStaledSinceDate(SystemTime.asTimestamp());
+			mview.setStaledSinceDate(de.metas.common.util.time.SystemTime.asTimestamp());
 			InterfaceWrapperHelper.save(mview);
 		}
 		else

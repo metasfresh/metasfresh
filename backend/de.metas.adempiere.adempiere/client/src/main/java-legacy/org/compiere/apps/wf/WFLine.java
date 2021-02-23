@@ -16,194 +16,162 @@
  *****************************************************************************/
 package org.compiere.apps.wf;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Point;
-import java.awt.Polygon;
-import java.awt.Rectangle;
+import de.metas.util.Check;
+import de.metas.workflow.WFNodeId;
+import lombok.NonNull;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.font.TextLayout;
 
-import javax.swing.SwingConstants;
-
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-import org.compiere.wf.MWFNodeNext;
-
-
 /**
- *	Work Flow Line between Nodes.
- *	Coordinates based on WFContentPanel.
+ * Work Flow Line between Nodes.
+ * Coordinates based on WFContentPanel.
  *
- * 	@author 	Jorg Janke
- * 	@version 	$Id: WFLine.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
+ * @author Jorg Janke
+ * @version $Id: WFLine.java,v 1.2 2006/07/30 00:51:28 jjanke Exp $
  */
 public class WFLine extends Component
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 7599996355185021897L;
 
-	/**
-	 * 	Create Line
-	 * 	@param next model
-	 */
-	public WFLine (MWFNodeNext next)
+	private final WorkflowNodeTransitionModel model;
+	private Boolean _toJoinAnd;
+
+	public WFLine(@NonNull final WorkflowNodeTransitionModel model)
 	{
-		m_next = next;
-	//	setOpaque(false);
+		this.model = model;
+		//	setOpaque(false);
 		setFocusable(false);
 		//
-		m_description = next.getDescription();
+		m_description = model.getDescription();
 		if (m_description != null && m_description.length() > 0)
-			m_description = "{" + String.valueOf(next.getSeqNo()) 
-				+ ": " + m_description + "}";
-	}	//	WFLine
-
-	/**	Model					*/
-	private MWFNodeNext 	m_next = null;
-	/**	From Node				*/
-	private Rectangle		m_from = null;
-	/**	To Node					*/
-	private Rectangle		m_to = null;
-	/**	Descriprion				*/
-	private String 			m_description = null;
-	/** Visited value			*/
-	private boolean			m_visited = false;
-	/**	Logger					*/
-	private static Logger	log = LogManager.getLogger(WFLine.class);
-	
-	/**
-	 * 	Get From rectangle
-	 * 	@return from node rectangle
-	 */
-	public Rectangle getFrom()
-	{
-		return m_from;
-	}	//	getFrom
+			m_description = "{" + model.getSeqNo() + ": " + m_description + "}";
+	}    //	WFLine
 
 	/**
-	 * 	Get To rectangle
-	 * 	@return to node rectangle
+	 * From Node
 	 */
-	public Rectangle getTo()
-	{
-		return m_to;
-	}	//	getTo
+	private Rectangle m_from = null;
+	/**
+	 * To Node
+	 */
+	private Rectangle m_to = null;
+	/**
+	 * Description
+	 */
+	private String m_description;
+	/**
+	 * Visited value
+	 */
+	private boolean m_visited = false;
 
 	/**
-	 * 	Set From/To rectangle.
-	 * 	Called from WFLayoutManager.layoutContainer
-	 * 	@param from from node rectangle
-	 * 	@param to to node rectangle
+	 * Set From/To rectangle.
+	 * Called from WFLayoutManager.layoutContainer
+	 *
+	 * @param from from node rectangle
+	 * @param to   to node rectangle
 	 */
-	public void setFromTo (Rectangle from, Rectangle to)
+	public void setFromTo(final Rectangle from, final Rectangle to)
 	{
 		m_from = from;
 		m_to = to;
-	}	//	setFrom
+	}
 
-	/**
-	 * 	Get From Node ID
-	 * 	@return from node id
-	 */
-	public int getAD_WF_Node_ID()
+	public WFNodeId getFromNodeId()
 	{
-		return m_next.getAD_WF_Node_ID();	//	Node ->
-	}	//	getAD_WF_Node_ID
+		return model.getFromNodeId();    //	Node ->
+	}
 
-	/**
-	 * 	Get To Node ID
-	 * 	@return to node id
-	 */
-	public int getAD_WF_Next_ID()
+	public WFNodeId getToNodeId()
 	{
-		return m_next.getAD_WF_Next_ID();	//	-> Next
-	}	//	getAD_WF_Next_ID
+		return model.getNextNodeId();    //	-> Next
+	}
 
 	/**
-	 * 	Set Visited.
-	 *	@param visited visited
+	 * Set Visited.
+	 *
+	 * @param visited visited
 	 */
-	public void setVisited (boolean visited)
+	public void setVisited(final boolean visited)
 	{
 		m_visited = visited;
-	}	//	setVisited
+	}    //	setVisited
 
 	/**
-	 * 	From: Right - To: Top		= left \ down
+	 * From: Right - To: Top		= left \ down
 	 */
-	private boolean isRightTop()					//	\
+	private boolean isRightTop()                    //	\
 	{
-		return (m_from.x+m_from.width <= m_to.x		//	right.bottom - left.top
-			&& m_from.y+m_from.height  <= m_to.y);	
+		return (m_from.x + m_from.width <= m_to.x        //	right.bottom - left.top
+				&& m_from.y + m_from.height <= m_to.y);
 	}
+
 	/**
-	 *	From: Bottom - To: Top		= top | down 	
+	 * From: Bottom - To: Top		= top | down
 	 */
-	private boolean isBottomTop()					//	|
+	private boolean isBottomTop()                    //	|
 	{
-		return (m_from.y+m_from.height <= m_to.y);
+		return (m_from.y + m_from.height <= m_to.y);
 	}
+
 	/**
-	 * 	From: Top - To: Bottom		= bottom / up
+	 * From: Top - To: Bottom		= bottom / up
 	 */
-	private boolean isTopBottom()					//	|
+	private boolean isTopBottom()                    //	|
 	{
-		return (m_to.y+m_to.height <= m_from.y);
+		return (m_to.y + m_to.height <= m_from.y);
 	}
+
 	/**
-	 *	From: Left - To: Right		=	right o <- o left
- 	 */
-	private boolean isLeftRight()					// 	->
+	 * From: Left - To: Right		=	right o <- o left
+	 */
+	private boolean isLeftRight()                    // 	->
 	{
-		return (m_to.x+m_to.width <= m_from.x);
+		return (m_to.x + m_to.width <= m_from.x);
 	}
-	
-	
+
 	/**************************************************************************
 	 * 	Paint it.
 	 *	Coordinates based on WFContentPanel.
-	 * 	@param g Graph
+	 *    @param g Graph
 	 */
-	public void paint (Graphics g)
+	public void paint(final Graphics g)
 	{
 		if (m_from == null || m_to == null)
 			return;
-		
-		Polygon arrow = new Polygon();
+
+		final Polygon arrow = new Polygon();
 		Point from = null;
 		Point to = null;
-		
+
 		//	
 		if (isRightTop())
 		{
-			from = addPoint (arrow, m_from, SwingConstants.RIGHT, true);
-			to = addPoint (arrow, m_to, SwingConstants.TOP, false);
+			from = addPoint(arrow, m_from, SwingConstants.RIGHT, true);
+			to = addPoint(arrow, m_to, SwingConstants.TOP, false);
 		}
 		else if (isBottomTop())
 		{
-			from = addPoint (arrow, m_from, SwingConstants.BOTTOM, true);
-			to = addPoint (arrow, m_to, SwingConstants.TOP, false);
+			from = addPoint(arrow, m_from, SwingConstants.BOTTOM, true);
+			to = addPoint(arrow, m_to, SwingConstants.TOP, false);
 		}
 		//	
 		else if (isTopBottom())
 		{
-			from = addPoint (arrow, m_from, SwingConstants.TOP, true);
-			to = addPoint (arrow, m_to, SwingConstants.BOTTOM, false);
+			from = addPoint(arrow, m_from, SwingConstants.TOP, true);
+			to = addPoint(arrow, m_to, SwingConstants.BOTTOM, false);
 		}
 		else if (isLeftRight())
 		{
-			from = addPoint (arrow, m_from, SwingConstants.LEFT, true);
-			to = addPoint (arrow, m_to, SwingConstants.RIGHT, false);
+			from = addPoint(arrow, m_from, SwingConstants.LEFT, true);
+			to = addPoint(arrow, m_to, SwingConstants.RIGHT, false);
 		}
 		else //	if (isRightLeft())
 		{
-			from = addPoint (arrow, m_from, SwingConstants.RIGHT, true);
-			to = addPoint (arrow, m_to, SwingConstants.LEFT, false);
+			from = addPoint(arrow, m_from, SwingConstants.RIGHT, true);
+			to = addPoint(arrow, m_to, SwingConstants.LEFT, false);
 		}
 
 		/**
@@ -214,41 +182,41 @@ public class WFLine extends Component
 		 *	NotVisited: black line
 		 *	Split/Join: AND: Magenta Dot -- XOR: -
 		 */
-		if (!m_next.isUnconditional())
+		if (!model.isUnconditional())
 		{
-			g.setColor(Color.red);	
-			g.fillPolygon(arrow);		//	fill
+			g.setColor(Color.red);
+			g.fillPolygon(arrow);        //	fill
 		}
 		if (m_visited)
 			g.setColor(Color.green);
 		else
 			g.setColor(Color.black);
-		g.drawPolygon(arrow);			//	line
-		
+		g.drawPolygon(arrow);            //	line
+
 		//	Paint Dot for AND From
-		if (m_next.isFromSplitAnd())
+		if (model.getFromSplitType().isAND())
 		{
 			g.setColor(Color.magenta);
-			g.fillOval(from.x-3, from.y-3, 6, 6);
+			g.fillOval(from.x - 3, from.y - 3, 6, 6);
 		}
 		//	Paint Dot for AND To
-		if (m_next.isToJoinAnd())
+		if (isToJoinAnd())
 		{
 			g.setColor(Color.magenta);
-			g.fillOval(to.x-3, to.y-3, 6, 6);
+			g.fillOval(to.x - 3, to.y - 3, 6, 6);
 		}
-		
+
 		//	Paint Description in red
-		if (m_description != null)
+		if (!Check.isBlank(m_description))
 		{
 			Graphics2D g2D = (Graphics2D)g;
 			Font font = new Font("Dialog", Font.PLAIN, 9);
-			if (m_next.isUnconditional())
+			if (model.isUnconditional())
 				g2D.setColor(Color.black);
 			else
 				g2D.setColor(Color.red);
-			TextLayout layout = new TextLayout (m_description, font, g2D.getFontRenderContext());
-			
+			TextLayout layout = new TextLayout(m_description, font, g2D.getFontRenderContext());
+
 			//	Mid Point
 			int x = 0;
 			if (from.x < to.x)
@@ -262,27 +230,28 @@ public class WFLine extends Component
 				y = to.y + ((from.y - to.y) / 2);
 
 			//	Adjust |
-			y -= (layout.getAscent() - 3);		//	above center
-			
+			y -= (layout.getAscent() - 3);        //	above center
+
 			//	Adjust -
-			x -= (layout.getAdvance() / 2);		//	center
+			x -= (layout.getAdvance() / 2);        //	center
 			if (x < 2)
 				x = 2;
-			
+
 			layout.draw(g2D, x, y);
 		}
-		
-	}	//	paintComponent
+
+	}    //	paintComponent
 
 	/**
-	 * 	Get Point of Rectangle
-	 * 	@param arrow Polygon to draw arrow
-	 * 	@param rect Rectangle (icon)
-	 * 	@param pos SwingConstants.BOTTOM / TOP / RIGHT / LEFT
-	 * 	@param from if true from (base) else to (tip) of arrow
-	 * 	@return point docking position two point away
+	 * Get Point of Rectangle
+	 *
+	 * @param arrow Polygon to draw arrow
+	 * @param rect  Rectangle (icon)
+	 * @param pos   SwingConstants.BOTTOM / TOP / RIGHT / LEFT
+	 * @param from  if true from (base) else to (tip) of arrow
+	 * @return point docking position two point away
 	 */
-	private Point addPoint (Polygon arrow, Rectangle rect, int pos, boolean from)
+	private Point addPoint(Polygon arrow, Rectangle rect, int pos, boolean from)
 	{
 		int x = rect.x;
 		int y = rect.y;
@@ -290,67 +259,74 @@ public class WFLine extends Component
 
 		if (pos == SwingConstants.TOP)
 		{
-			x += rect.width/2;
+			x += rect.width / 2;
 			if (from)
 			{
-				arrow.addPoint(x-2, y);
-				arrow.addPoint(x+2, y);
+				arrow.addPoint(x - 2, y);
+				arrow.addPoint(x + 2, y);
 			}
 			else
 				arrow.addPoint(x, y);
-			point = new Point (x, y-2);
+			point = new Point(x, y - 2);
 		}
 		else if (pos == SwingConstants.RIGHT)
 		{
 			x += rect.width;
-			y += rect.height/2;
+			y += rect.height / 2;
 			if (from)
 			{
-				arrow.addPoint(x, y-2);
-				arrow.addPoint(x, y+2);
+				arrow.addPoint(x, y - 2);
+				arrow.addPoint(x, y + 2);
 			}
 			else
 				arrow.addPoint(x, y);
-			point = new Point (x+2, y);
+			point = new Point(x + 2, y);
 		}
 		else if (pos == SwingConstants.LEFT)
 		{
-			y += rect.height/2;
+			y += rect.height / 2;
 			if (from)
 			{
-				arrow.addPoint(x, y-2);
-				arrow.addPoint(x, y+2);
+				arrow.addPoint(x, y - 2);
+				arrow.addPoint(x, y + 2);
 			}
 			else
 				arrow.addPoint(x, y);
-			point = new Point (x-2, y);
+			point = new Point(x - 2, y);
 		}
 		else //	if (pos == SwingConstants.BOTTOM)
 		{
-			x += rect.width/2;
+			x += rect.width / 2;
 			y += rect.height;
 			if (from)
 			{
-				arrow.addPoint(x-2, y);
-				arrow.addPoint(x+2, y);
+				arrow.addPoint(x - 2, y);
+				arrow.addPoint(x + 2, y);
 			}
 			else
 				arrow.addPoint(x, y);
-			point = new Point (x, y+2);
+			point = new Point(x, y + 2);
 		}
 		return point;
-	}	//	getPoint
+	}    //	getPoint
 
-	/**
-	 * 	String Representation
-	 * 	@return info
-	 */
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("WFLine[");
-		sb.append(getAD_WF_Node_ID()).append("->").append(getAD_WF_Next_ID());
-		sb.append("]");
-		return sb.toString();
-	}	//	toString
+		return "WFLine[" + getFromNodeId() + "->" + getToNodeId() + "]";
+	}
 
-}	//	WFLine
+	private boolean isToJoinAnd()
+	{
+		if (_toJoinAnd == null)
+		{
+			final WorkflowNodeModel next = model.getNextNode();
+			_toJoinAnd = next.getJoinType().isAnd();
+		}
+		if (_toJoinAnd != null)
+		{
+			return _toJoinAnd;
+		}
+		return false;
+	}
+
+}    //	WFLine

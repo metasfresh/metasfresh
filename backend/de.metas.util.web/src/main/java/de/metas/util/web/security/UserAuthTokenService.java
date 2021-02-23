@@ -2,6 +2,7 @@ package de.metas.util.web.security;
 
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
@@ -20,7 +21,6 @@ import de.metas.security.UserNotAuthorizedException;
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
