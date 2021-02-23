@@ -23,6 +23,7 @@
 package de.metas.rest_api.process.impl;
 
 import de.metas.Profiles;
+import de.metas.common.rest_api.CreatePInstanceLogRequest;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.issue.JsonCreateIssueResponse;
 import de.metas.logging.LogManager;
@@ -161,6 +162,21 @@ public class ProcessRestController
 	{
 		final JsonCreateIssueResponse issueResponse = processService.createIssue(request, PInstanceId.ofRepoId(AD_PInstance_ID));
 		return ResponseEntity.ok(issueResponse);
+	}
+
+	@ApiOperation("Store external AD_PInstance logs")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully stored external AD_PInstance logs"),
+			@ApiResponse(code = 401, message = "You are not authorized to store AD_PInstance logs"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
+			@ApiResponse(code = 422, message = "The request body could not be processed")
+	})
+
+	@PostMapping(path = "{AD_PInstance_ID}/externalstatus/message", consumes = "application/json")
+	public ResponseEntity<?> handleLogs(@RequestBody @NonNull final CreatePInstanceLogRequest request, @PathVariable final Integer AD_PInstance_ID)
+	{
+		processService.storeExternalPinstanceLog(request, PInstanceId.ofRepoId(AD_PInstance_ID));
+		return ResponseEntity.ok().build();
 	}
 
 	private ResponseEntity<?> getResponse(@NonNull final ProcessExecutionResult processExecutionResult)
