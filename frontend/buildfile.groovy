@@ -38,7 +38,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 		}
 
 		// set nodejs version defined in tool name of NodeJS installations located in Jenkins global plugins
-		final NODEJS_TOOL_NAME="nodejs-13"
+		final NODEJS_TOOL_NAME="nodejs-14"
 		echo "Setting NODEJS_TOOL_NAME=$NODEJS_TOOL_NAME"
 		
 		String BUILD_ARTIFACT_URL
