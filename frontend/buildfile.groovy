@@ -53,7 +53,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 		env.PATH = "${nodeHome}/bin:${env.PATH}"
 
 		sh 'yarn install'
-		sh 'yarn lint --quiet'
+		// sh 'yarn lint --quiet'
 							
 		if(params.MF_MF_SKIP_UNIT_TESTS)
 		{
