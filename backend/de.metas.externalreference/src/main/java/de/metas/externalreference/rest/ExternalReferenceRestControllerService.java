@@ -65,8 +65,8 @@ public class ExternalReferenceRestControllerService
 		this.externalReferenceTypes = externalReferenceTypes;
 	}
 
-	JsonExternalReferenceLookupResponse performLookup(
-			@NonNull final String orgCode,
+	public JsonExternalReferenceLookupResponse performLookup(
+			@Nullable final String orgCode,
 			@NonNull final JsonExternalReferenceLookupRequest request)
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);

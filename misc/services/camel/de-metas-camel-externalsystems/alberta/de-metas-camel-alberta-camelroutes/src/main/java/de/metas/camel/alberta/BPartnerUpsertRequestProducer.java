@@ -48,6 +48,7 @@ import io.swagger.client.model.NursingService;
 import io.swagger.client.model.Patient;
 import io.swagger.client.model.PatientBillingAddress;
 import io.swagger.client.model.PatientDeliveryAddress;
+import io.swagger.client.model.Payer;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -82,6 +83,8 @@ public class BPartnerUpsertRequestProducer
 	private final NursingHome nursingHome;
 	@Nullable
 	private final Doctor doctor;
+	@Nullable
+	private final Payer payer;
 
 	@NonNull
 	private final Map<String, JsonBPRelationRole> bPartnerIdentifier2RelationRole;
@@ -97,7 +100,8 @@ public class BPartnerUpsertRequestProducer
 			@Nullable final Hospital hospital,
 			@Nullable final NursingService nursingService,
 			@Nullable final NursingHome nursingHome,
-			@Nullable final Doctor doctor)
+			@Nullable final Doctor doctor,
+			@Nullable final Payer payer)
 	{
 		if (patient.getId() == null)
 		{
@@ -110,6 +114,7 @@ public class BPartnerUpsertRequestProducer
 		this.doctor = doctor;
 		this.orgCode = orgCode;
 		this.patient = patient;
+		this.payer = payer;
 		this.externalId2MetasfreshId = externalId2MetasfreshId;
 		this.bPartnerIdentifier2RelationRole = new HashMap<>();
 		this.requestProducerResultBuilder = BPartnerRequestProducerResult.builder();
@@ -135,6 +140,7 @@ public class BPartnerUpsertRequestProducer
 		mapNursingService().ifPresent(upsertBPartnersRequest::requestItem);
 		mapNursingHome().ifPresent(upsertBPartnersRequest::requestItem);
 		mapDoctor().ifPresent(upsertBPartnersRequest::requestItem);
+		mapPayer().ifPresent(upsertBPartnersRequest::requestItem);
 
 		return requestProducerResultBuilder
 				.patientBPartnerIdentifier(patientUpsertItem.getBpartnerIdentifier())
@@ -306,7 +312,6 @@ public class BPartnerUpsertRequestProducer
 		bPartner.setName(careGiver.getFirstName() + " " + careGiver.getLastName());
 		bPartner.setPhone(careGiver.getPhone());
 		bPartner.setCustomer(true);
-		//bPartner.setMemo(patient.getComment()); TODO
 
 		final JsonRequestLocation location = new JsonRequestLocation();
 		location.setAddress1(careGiver.getAddress());
@@ -331,7 +336,7 @@ public class BPartnerUpsertRequestProducer
 		contact.setPhone(careGiver.getPhone());
 		contact.setMobilePhone(careGiver.getMobilePhone());
 		contact.setDefaultContact(true);
-		// contact.setTitle(patient.getTitle()); TODO: to be seen
+		// contact.setTitle(careGiver.getTitle()); TODO: to be seen
 
 		final JsonRequestContactUpsert contactUpsertReq = JsonRequestContactUpsert.builder()
 				.requestItem(JsonRequestContactUpsertItem.builder()
@@ -491,7 +496,7 @@ public class BPartnerUpsertRequestProducer
 		jsonRequestBPartner.setName(nursingHome.getName());
 		jsonRequestBPartner.setPhone(nursingHome.getPhone());
 		jsonRequestBPartner.setCustomer(true);
-		// jsonRequestBPartner.setEmail(nursingService.getEmail()); //todo
+		// jsonRequestBPartner.setEmail(nursingHome.getEmail()); //todo
 
 		final JsonRequestLocation requestLocation = new JsonRequestLocation();
 		requestLocation.setExternalId(JsonExternalId.of(nursingHome.getId()));
@@ -550,7 +555,6 @@ public class BPartnerUpsertRequestProducer
 		jsonRequestBPartner.setName(doctor.getFirstName() + " " + doctor.getLastName());
 		jsonRequestBPartner.setPhone(doctor.getPhone());
 		jsonRequestBPartner.setCustomer(true);
-		// jsonRequestBPartner.setEmail(nursingService.getEmail()); //todo
 
 		final JsonRequestContact requestContact = new JsonRequestContact();
 		requestContact.setExternalId(JsonExternalId.of(doctor.getId()));
@@ -558,6 +562,7 @@ public class BPartnerUpsertRequestProducer
 		requestContact.setLastName(doctor.getLastName());
 		requestContact.setPhone(doctor.getPhone());
 		requestContact.setFax(doctor.getFax());
+		// requestContact.setGender(doctor.getGender());  //TODO
 
 		final JsonRequestLocation requestLocation = new JsonRequestLocation();
 		requestLocation.setExternalId(JsonExternalId.of(doctor.getId()));
@@ -581,6 +586,61 @@ public class BPartnerUpsertRequestProducer
 
 		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(doctor.getId())
+				: null;
+
+		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
+				.bpartner(jsonRequestBPartner)
+				.locations(jsonRequestLocationUpsert)
+				.orgCode(orgCode)
+				.bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
+				.build();
+
+		return Optional.of(JsonRequestBPartnerUpsertItem
+								   .builder()
+								   .bpartnerIdentifier(bpartnerIdentifier)
+								   .bpartnerComposite(jsonRequestComposite)
+								   .build());
+	}
+
+	private Optional<JsonRequestBPartnerUpsertItem> mapPayer()
+	{
+		if (payer == null)
+		{
+			return Optional.empty();
+		}
+
+		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(payer.getId());
+		final String bpartnerIdentifier = actualMFBPartnerId != null
+				? String.valueOf(actualMFBPartnerId.getValue())
+				: EXTERNAL_ID_PREFIX + payer.getId();
+
+		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.Payer);
+
+		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
+		jsonRequestBPartner.setExternalId(JsonExternalId.of(payer.getId()));
+		jsonRequestBPartner.setName(payer.getName());
+		jsonRequestBPartner.setCode(payer.getIkNumber());
+		jsonRequestBPartner.setCustomer(true);
+
+		final JsonRequestLocation requestLocation = new JsonRequestLocation();
+		requestLocation.setExternalId(JsonExternalId.of(payer.getId()));
+		requestLocation.setCountryCode(COUNTRY_CODE_DE);
+		requestLocation.setBillTo(true);
+		requestLocation.setBillToDefault(true);
+		requestLocation.setShipTo(true);
+		requestLocation.setShipToDefault(true);
+
+		final JsonRequestLocationUpsertItem jsonRequestLocationUpsertItem = JsonRequestLocationUpsertItem.builder()
+				.locationIdentifier(EXTERNAL_ID_PREFIX + payer.getId())
+				.location(requestLocation)
+				.build();
+
+		final JsonRequestLocationUpsert jsonRequestLocationUpsert = JsonRequestLocationUpsert.builder()
+				.requestItem(jsonRequestLocationUpsertItem)
+				.build();
+
+		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+				? createInsertExternalReferenceReq(payer.getId())
 				: null;
 
 		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()

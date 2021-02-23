@@ -35,12 +35,15 @@ import io.swagger.client.api.DoctorApi;
 import io.swagger.client.api.HospitalApi;
 import io.swagger.client.api.NursingHomeApi;
 import io.swagger.client.api.NursingServiceApi;
+import io.swagger.client.api.PayerApi;
 import io.swagger.client.model.Doctor;
 import io.swagger.client.model.Hospital;
 import io.swagger.client.model.NursingHome;
 import io.swagger.client.model.NursingService;
 import io.swagger.client.model.Patient;
 import io.swagger.client.model.PatientHospital;
+import io.swagger.client.model.PatientPayer;
+import io.swagger.client.model.Payer;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -89,6 +92,7 @@ public class CreateBPartnerReqProcessor implements Processor
 				.nursingHome(getNursingHomeOrNull(connectionDetails, patient.getNursingHomeId()))
 				.nursingService(getNursingServiceOrNull(connectionDetails, patient.getNursingServiceId()))
 				.hospital(getHospital(connectionDetails, patient.getHospital()))
+				.payer(getPayerOrNull(connectionDetails, patient.getPayer()))
 				.build();
 
 		final BPartnerUpsertRequestProducer.BPartnerRequestProducerResult result = bPartnerUpsertRequestProducer.run();
@@ -201,4 +205,25 @@ public class CreateBPartnerReqProcessor implements Processor
 
 		return hospital;
 	}
+
+	@Nullable
+	private Payer getPayerOrNull(@NonNull final AlbertaConnectionDetails albertaConnectionDetails, @Nullable final PatientPayer patientPayer) throws ApiException
+	{
+		if (patientPayer == null || EmptyUtil.isBlank(patientPayer.getPayerId()))
+		{
+			return null;
+		}
+		final var apiClient = new ApiClient().setBasePath(albertaConnectionDetails.getBasePath());
+		final PayerApi payerApi = new PayerApi(apiClient);
+
+		final Payer payer = payerApi.getPayer(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), patientPayer.getPayerId());
+
+		if (payer == null)
+		{
+			throw new RuntimeException("No info returned for payer: " + patientPayer.getPayerId());
+		}
+
+		return payer;
+	}
+
 }
