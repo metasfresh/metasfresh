@@ -145,7 +145,7 @@ public class C_Invoice_Candidate
 		groupsRepo.saveGroup(group, orderLinesStorage);
 	}
 
-	@CalloutMethod(columnNames = { I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced })
+	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced )
 	public void updateFromDateInvoiced(final I_C_Invoice_Candidate invoice, final ICalloutField field)
 	{
 		invoice.setDateAcct(invoice.getDateInvoiced());

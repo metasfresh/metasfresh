@@ -147,7 +147,7 @@ public class C_Invoice
 		Services.get(IInvoiceBL.class).updateDescriptionFromDocTypeTargetId(invoice, null, null);
 	}
 
-	@CalloutMethod(columnNames = { I_C_Invoice.COLUMNNAME_DateInvoiced })
+	@CalloutMethod(columnNames = I_C_Invoice.COLUMNNAME_DateInvoiced )
 	public void updateFromDateInvoiced(final I_C_Invoice invoice, final ICalloutField field)
 	{
 		invoice.setDateAcct(invoice.getDateInvoiced());
