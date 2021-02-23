@@ -76,7 +76,9 @@ public class JsonRequestComposite
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestBankAccountsUpsert bankAccounts;
 
-	@ApiModelProperty(value = "Ids of the business partner from external systems", position = 60)
+	@ApiModelProperty(value = "The Id of the business partner from an external systems. "
+			+ "Note that JsonExternalReferenceCreateRequest.items can have only one element as we currently don't support multiple external ids"
+			+ " for one record from the same external system. ", position = 60)
 	@JsonInclude(Include.NON_NULL)
 	JsonExternalReferenceCreateRequest bPartnerReferenceCreateRequest;
 

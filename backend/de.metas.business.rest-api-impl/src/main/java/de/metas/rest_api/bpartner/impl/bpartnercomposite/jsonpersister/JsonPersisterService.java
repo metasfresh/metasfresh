@@ -43,6 +43,8 @@ import de.metas.common.bpartner.response.JsonResponseUpsertItem.JsonResponseUpse
 import de.metas.common.bpartner.response.JsonResponseUpsertItem.SyncOutcome;
 import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
+import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
+import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.SyncAdvise;
 import de.metas.common.rest_api.SyncAdvise.IfExists;
@@ -204,10 +206,7 @@ public class JsonPersisterService
 		if (jsonRequestComposite.getBPartnerReferenceCreateRequest() != null
 				&& !Check.isEmpty(jsonRequestComposite.getBPartnerReferenceCreateRequest().getItems()))
 		{
-			final JsonExternalReferenceCreateRequest createRequest =
-					buildExternalReferenceCreateRequestWithBPId(jsonRequestComposite.getBPartnerReferenceCreateRequest(), bpartnerComposite);
-
-			externalReferenceRestControllerService.performInsert(orgCode, createRequest);
+			insertExternalReferenceIfMissing(jsonRequestComposite.getBPartnerReferenceCreateRequest(), bpartnerComposite, orgCode);
 		}
 
 		return resultBuilder.build();
@@ -220,7 +219,7 @@ public class JsonPersisterService
 	{
 		if (bPartnerComposite.getBpartner() == null || bPartnerComposite.getBpartner().getId() == null)
 		{
-			throw new AdempiereException("bPartnerComposite.getBpartner().getId() shound never be null at this stage!")
+			throw new AdempiereException("bPartnerComposite.getBpartner().getId() should never be null at this stage!")
 					.appendParametersToMessage()
 					.setParameter("BPartnerComposite", bPartnerComposite);
 		}
@@ -1712,5 +1711,49 @@ public class JsonPersisterService
 		}
 
 		return locationType.build();
+	}
+
+	private void insertExternalReferenceIfMissing(
+			@NonNull final JsonExternalReferenceCreateRequest jsonExternalReferenceCreateRequest,
+			@NonNull final BPartnerComposite bpartnerComposite,
+			@Nullable final String orgCode)
+	{
+		if (Check.isEmpty(jsonExternalReferenceCreateRequest.getItems())
+				||  jsonExternalReferenceCreateRequest.getItems().size() > 1)
+		{
+			throw new AdempiereException("Unexpected jsonExternalReferenceCreateRequest! jsonExternalReferenceCreateRequest.items must always have one element!")
+					.appendParametersToMessage()
+					.setParameter("JsonExternalReferenceCreateRequest", jsonExternalReferenceCreateRequest);
+		}
+
+		final JsonExternalReferenceItem refToBeInserted = jsonExternalReferenceCreateRequest.getItems().get(0);
+
+		final JsonExternalReferenceCreateRequest createRequest =
+				buildExternalReferenceCreateRequestWithBPId(jsonExternalReferenceCreateRequest, bpartnerComposite);
+
+		final JsonExternalReferenceLookupRequest externalRefLookupReq = JsonExternalReferenceLookupRequest.builder()
+				.systemName(createRequest.getSystemName())
+				.item(refToBeInserted.getLookupItem())
+				.build();
+
+		final JsonExternalReferenceLookupResponse lookupResponse = externalReferenceRestControllerService.performLookup(orgCode, externalRefLookupReq);
+
+		if (lookupResponse != null)
+		{
+			final boolean isExternalRefAlreadyCreated = lookupResponse.getItems()
+					.stream()
+					.filter(item -> item.getLookupItem().equals(refToBeInserted.getLookupItem()))
+					.findFirst()
+					.map(externalRefItem -> externalRefItem.getMetasfreshId() != null)
+					.orElse(false);
+
+			if (isExternalRefAlreadyCreated)
+			{
+				logger.debug("insertExternalReferenceIfMissing: There is already an external reference stored for: " + refToBeInserted);
+				return; // nothing to do for now, but it might be a good idea to support updates on external ref
+			}
+		}
+
+		externalReferenceRestControllerService.performInsert(orgCode, createRequest);
 	}
 }
