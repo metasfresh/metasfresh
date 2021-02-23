@@ -86,7 +86,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	{
 		final Timestamp sinceEff = extractEffectiveSinceTimestamp();
 
-		addLog("Calling with params: childConfigId {}, since {}, command {}", childConfigId, sinceEff.toInstant(), externalRequest);
+		addLog("Calling with params: childConfigId {}, since {}, command {}", childConfigId, sinceEff != null ?  sinceEff.toInstant() : null, externalRequest);
 		try (final CloseableHttpClient aDefault = HttpClients.createDefault())
 		{
 			return aDefault.execute(getRequest(), response -> {

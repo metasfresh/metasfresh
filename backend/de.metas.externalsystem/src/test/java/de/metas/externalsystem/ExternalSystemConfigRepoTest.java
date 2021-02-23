@@ -25,7 +25,9 @@ package de.metas.externalsystem;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
+import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -83,6 +85,32 @@ class ExternalSystemConfigRepoTest
 
 		// when
 		final ExternalSystemAlbertaConfigId id = ExternalSystemAlbertaConfigId.ofRepoId(childRecord.getExternalSystem_Config_Alberta_ID());
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Shopware6()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setCamelURL("camelUrl");
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_Shopware6);
+		saveRecord(parentRecord);
+
+		final I_ExternalSystem_Config_Shopware6 childRecord = newInstance(I_ExternalSystem_Config_Shopware6.class);
+		childRecord.setBaseURL("baseUrl");
+		childRecord.setClient_Secret("secret");
+		childRecord.setClient_Id("id");
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		// when
+		final ExternalSystemShopware6ConfigId id = ExternalSystemShopware6ConfigId.ofRepoId(childRecord.getExternalSystem_Config_Shopware6_ID());
 		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
 
 		// then

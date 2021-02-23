@@ -14,3 +14,20 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     }
   }
 ]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6=[
+  {
+    "id": 100001,
+    "type": "Shopware6",
+    "camelUrl": "camelUrl",
+    "name": "name",
+    "childConfig": {
+      "id": 100001,
+      "parentId": 100001,
+      "baseUrl": "baseUrl",
+      "clientId": "id",
+      "clientSecret": "secret"
+    }
+  }
+]

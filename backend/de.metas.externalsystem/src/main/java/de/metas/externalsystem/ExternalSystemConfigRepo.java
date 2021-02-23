@@ -26,6 +26,9 @@ import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
+import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
+import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -40,6 +43,8 @@ public class ExternalSystemConfigRepo
 		{
 			case Alberta:
 				return getById(ExternalSystemAlbertaConfigId.cast(id));
+			case Shopware6:
+				return getById(ExternalSystemShopware6ConfigId.cast(id));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 		}
@@ -58,6 +63,25 @@ public class ExternalSystemConfigRepo
 				.baseUrl(config.getBaseURL())
 				.name(config.getName())
 				.tenant(config.getTenant())
+				.build();
+
+		return getById(parentConfigId)
+				.childConfig(child)
+				.build();
+	}
+
+	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemShopware6ConfigId id)
+	{
+		final I_ExternalSystem_Config_Shopware6 config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_Shopware6.class);
+
+		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
+
+		final ExternalSystemShopware6Config child = ExternalSystemShopware6Config.builder()
+				.id(ExternalSystemShopware6ConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.parentId(parentConfigId)
+				.baseUrl(config.getBaseURL())
+				.clientSecret(config.getClient_Secret())
+				.clientId(config.getClient_Id())
 				.build();
 
 		return getById(parentConfigId)

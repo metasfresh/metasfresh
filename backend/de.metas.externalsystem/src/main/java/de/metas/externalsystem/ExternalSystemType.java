@@ -35,7 +35,8 @@ import java.util.Arrays;
 
 public enum ExternalSystemType implements ReferenceListAwareEnum
 {
-	Alberta(X_ExternalSystem_Config.TYPE_Alberta, "Alberta");
+	Alberta(X_ExternalSystem_Config.TYPE_Alberta, "Alberta"),
+	Shopware6(X_ExternalSystem_Config.TYPE_Shopware6, "Shopware6");
 
 	@Getter
 	private final String code;
