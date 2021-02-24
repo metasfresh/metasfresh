@@ -46,7 +46,7 @@ public class Hierarchy
 {
 	private final ImmutableMap<HierarchyNode, HierarchyNode> child2Parent;
 	private final ImmutableListMultimap<HierarchyNode, HierarchyNode> parent2Children;
-	private ImmutableMap<Beneficiary, HierarchyNode> beneficiary2Node;
+	private final ImmutableMap<Beneficiary, HierarchyNode> beneficiary2Node;
 
 	public static HierarchyBuilder builder()
 	{
@@ -67,7 +67,7 @@ public class Hierarchy
 		this.child2Parent = childAndParentBuilder.build();
 	}
 
-	public Optional<HierarchyNode> getParent(HierarchyNode child)
+	public Optional<HierarchyNode> getParent(final HierarchyNode child)
 	{
 		return Optional.ofNullable(child2Parent.get(child));
 	}
@@ -82,7 +82,7 @@ public class Hierarchy
 		private final ImmutableListMultimap.Builder<HierarchyNode, HierarchyNode> parent2Children = ImmutableListMultimap.builder();
 		private final HashMap<Beneficiary, HierarchyNode> beneficiary2Node = new HashMap<>();
 
-		public HierarchyBuilder addChildren(HierarchyNode parent, Collection<HierarchyNode> children)
+		public HierarchyBuilder addChildren(final HierarchyNode parent, final Collection<HierarchyNode> children)
 		{
 			beneficiary2Node.put(parent.getBeneficiary(), parent);
 			children.forEach(child -> beneficiary2Node.put(child.getBeneficiary(), child));
@@ -105,14 +105,7 @@ public class Hierarchy
 	public Iterable<HierarchyNode> getUpStream(@NonNull final Beneficiary beneficiary)
 	{
 		final HierarchyNode node = beneficiary2Node.get(beneficiary);
-		return new Iterable<HierarchyNode>()
-		{
-			@Override
-			public Iterator<HierarchyNode> iterator()
-			{
-				return new ParentNodeIterator(child2Parent, node);
-			}
-		};
+		return () -> new ParentNodeIterator(child2Parent, node);
 	}
 
 	public static class ParentNodeIterator implements Iterator<HierarchyNode>
