@@ -68,5 +68,5 @@ class PurchaseCandidateImmutableFields
 
 	@Nullable ForecastLineId forecastLineId;
 
-	Dimension dimension;
+	@Nullable Dimension dimension;
 }
