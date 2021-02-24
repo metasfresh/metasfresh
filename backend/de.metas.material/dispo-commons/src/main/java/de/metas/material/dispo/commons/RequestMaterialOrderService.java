@@ -284,9 +284,9 @@ public class RequestMaterialOrderService
 				.forecastId(singleCandidate.getAdditionalDemandDetail().getForecastId())
 				.forecastLineId(singleCandidate.getAdditionalDemandDetail().getForecastLineId())
 
-				.projectId(dimension.getProjectId().getRepoId())
+				.projectId(dimension.getProjectId() == null ? -1 : dimension.getProjectId().getRepoId())
 				.campaignId(dimension.getCampaignId())
-				.activityId(dimension.getActivityId().getRepoId())
+				.activityId(dimension.getActivityId() == null ? -1 : dimension.getActivityId().getRepoId())
 				.userElementId1(dimension.getUserElement1Id())
 				.userElementId2(dimension.getUserElement2Id())
 				.userElementString1(dimension.getUserElementString1())
