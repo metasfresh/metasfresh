@@ -389,10 +389,7 @@ public class CandidateRepositoryWriteService
 				final I_M_ForecastLine forecastLine = forecastRepo.getForecastLineById(forecastLineId);
 
 				final Dimension forecastLineDimension = dimensionService.getFromRecord(forecastLine);
-				if (forecastLineDimension != null)
-				{
-					dimensionService.updateRecord(candidateRecord, forecastLineDimension);
-				}
+				dimensionService.updateRecord(candidateRecord, forecastLineDimension);
 			}
 		}
 
@@ -712,7 +709,7 @@ public class CandidateRepositoryWriteService
 				.date(TimeUtil.asInstant(candidateRecord.getDateProjected()))
 				.seqNo(candidateRecord.getSeqNo())
 				.build(),
-														   candidateRecord.getQty());
+				candidateRecord.getQty());
 
 		deleteRecord(candidateRecord);
 		return deleteResult;

@@ -43,12 +43,13 @@ import de.metas.util.Services;
  * InOut Line
  *
  * @author Jorg Janke
- * @author Teo Sarca, www.arhipac.ro
- * <ul>
- * <li>BF [ 2784194 ] Check Warehouse-Locator conflict https://sourceforge.net/tracker/?func=detail&aid=2784194&group_id=176962&atid=879332
- * <li>BF [ 2797938 ] Receipt should not allow lines with Qty=0 https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2797938&group_id=176962
- * </ul>
  * @version $Id: MInOutLine.java,v 1.5 2006/07/30 00:51:03 jjanke Exp $
+ *
+ * @author Teo Sarca, www.arhipac.ro
+ *         <ul>
+ *         <li>BF [ 2784194 ] Check Warehouse-Locator conflict https://sourceforge.net/tracker/?func=detail&aid=2784194&group_id=176962&atid=879332
+ *         <li>BF [ 2797938 ] Receipt should not allow lines with Qty=0 https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2797938&group_id=176962
+ *         </ul>
  */
 public class MInOutLine extends X_M_InOutLine
 {
@@ -75,19 +76,19 @@ public class MInOutLine extends X_M_InOutLine
 			setIsInvoiced(false);
 			setIsDescription(false);
 		}
-	}    // MInOutLine
+	}	// MInOutLine
 
 	/**
 	 * Load Constructor
 	 *
-	 * @param ctx     context
-	 * @param rs      result set record
+	 * @param ctx context
+	 * @param rs result set record
 	 * @param trxName transaction
 	 */
 	public MInOutLine(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}    // MInOutLine
+	}	// MInOutLine
 
 	/**
 	 * Parent Constructor
@@ -101,15 +102,11 @@ public class MInOutLine extends X_M_InOutLine
 		setM_InOut(inout);
 		setM_Warehouse_ID(inout.getM_Warehouse_ID());
 		setC_Project_ID(inout.getC_Project_ID());
-	}    // MInOutLine
+	}	// MInOutLine
 
-	/**
-	 * Product
-	 */
+	/** Product */
 	private MProduct m_product = null;
-	/**
-	 * Warehouse
-	 */
+	/** Warehouse */
 	private int m_M_Warehouse_ID = 0;
 
 	/**
@@ -127,9 +124,9 @@ public class MInOutLine extends X_M_InOutLine
 	 * Set Order Line.
 	 * Does not set Quantity!
 	 *
-	 * @param oLine        order line
+	 * @param oLine order line
 	 * @param M_Locator_ID locator
-	 * @param Qty          used only to find suitable locator
+	 * @param Qty used only to find suitable locator
 	 */
 	public void setOrderLine(I_C_OrderLine oLine, int M_Locator_ID, BigDecimal Qty)
 	{
@@ -166,7 +163,7 @@ public class MInOutLine extends X_M_InOutLine
 			{
 				if (M_Locator_ID <= 0)
 				{
-					setM_Locator_ID(Qty);    // requires warehouse, product, asi
+					setM_Locator_ID(Qty);	// requires warehouse, product, asi
 				}
 				else
 				{
@@ -188,19 +185,16 @@ public class MInOutLine extends X_M_InOutLine
 		setAD_OrgTrx_ID(oLine.getAD_OrgTrx_ID());
 
 		final Dimension orderLineDimensions = dimensionService.getFromRecord(oLine);
-		if (orderLineDimensions != null)
-		{
-			dimensionService.updateRecord(this, orderLineDimensions);
-		}
-	}    // setOrderLine
+		dimensionService.updateRecord(this, orderLineDimensions);
+	}	// setOrderLine
 
 	/**
 	 * Set Invoice Line.
 	 * Does not set Quantity!
 	 *
-	 * @param iLine        invoice line
+	 * @param iLine invoice line
 	 * @param M_Locator_ID locator
-	 * @param Qty          qty only fo find suitable locator
+	 * @param Qty qty only fo find suitable locator
 	 */
 	public void setInvoiceLine(MInvoiceLine iLine, int M_Locator_ID, BigDecimal Qty)
 	{
@@ -222,7 +216,7 @@ public class MInOutLine extends X_M_InOutLine
 			setM_AttributeSetInstance_ID(iLine.getM_AttributeSetInstance_ID());
 			if (M_Locator_ID == 0)
 			{
-				setM_Locator_ID(Qty);    // requires warehouse, product, asi
+				setM_Locator_ID(Qty);	// requires warehouse, product, asi
 			}
 			else
 			{
@@ -239,12 +233,9 @@ public class MInOutLine extends X_M_InOutLine
 		setAD_OrgTrx_ID(iLine.getAD_OrgTrx_ID());
 
 		final Dimension invoiceLineDimension = dimensionService.getFromRecord(iLine);
-		if (invoiceLineDimension != null)
-		{
-			dimensionService.updateRecord(this, invoiceLineDimension);
-		}
+		dimensionService.updateRecord(this,invoiceLineDimension);
 
-	}    // setInvoiceLine
+	}	// setInvoiceLine
 
 	/**
 	 * Get Warehouse
@@ -258,7 +249,7 @@ public class MInOutLine extends X_M_InOutLine
 			m_M_Warehouse_ID = getParent().getM_Warehouse_ID();
 		}
 		return m_M_Warehouse_ID;
-	}    // getM_Warehouse_ID
+	}	// getM_Warehouse_ID
 
 	/**
 	 * Set Warehouse
@@ -268,7 +259,7 @@ public class MInOutLine extends X_M_InOutLine
 	public void setM_Warehouse_ID(int warehouse_ID)
 	{
 		m_M_Warehouse_ID = warehouse_ID;
-	}    // setM_Warehouse_ID
+	}	// setM_Warehouse_ID
 
 	/**
 	 * Set M_Locator_ID
@@ -284,7 +275,7 @@ public class MInOutLine extends X_M_InOutLine
 		}
 		// set to 0 explicitly to reset
 		set_Value(COLUMNNAME_M_Locator_ID, new Integer(M_Locator_ID));
-	}    // setM_Locator_ID
+	}	// setM_Locator_ID
 
 	/**
 	 * Set (default) Locator based on qty.
@@ -308,15 +299,15 @@ public class MInOutLine extends X_M_InOutLine
 
 		// Get existing Location
 		int M_Locator_ID = MStorage.getM_Locator_ID(getM_Warehouse_ID(),
-													getM_Product_ID(), getM_AttributeSetInstance_ID(),
-													Qty, get_TrxName());
+				getM_Product_ID(), getM_AttributeSetInstance_ID(),
+				Qty, get_TrxName());
 		// Get default Location
 		if (M_Locator_ID <= 0)
 		{
 			M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(getM_Warehouse_ID())).getRepoId();
 		}
 		setM_Locator_ID(M_Locator_ID);
-	}    // setM_Locator_ID
+	}	// setM_Locator_ID
 
 	/**
 	 * Set Movement/Movement Qty
@@ -327,7 +318,7 @@ public class MInOutLine extends X_M_InOutLine
 	{
 		setQtyEntered(Qty);
 		setMovementQty(getQtyEntered());
-	}    // setQtyInvoiced
+	}	// setQtyInvoiced
 
 	/**
 	 * Set Qty Entered - enforce entered UOM
@@ -343,7 +334,7 @@ public class MInOutLine extends X_M_InOutLine
 			QtyEntered = QtyEntered.setScale(precision, BigDecimal.ROUND_HALF_UP);
 		}
 		super.setQtyEntered(QtyEntered);
-	}    // setQtyEntered
+	}	// setQtyEntered
 
 	/**
 	 * Set Movement Qty - enforce Product UOM
@@ -360,7 +351,7 @@ public class MInOutLine extends X_M_InOutLine
 			MovementQty = MovementQty.setScale(precision, BigDecimal.ROUND_HALF_UP);
 		}
 		super.setMovementQty(MovementQty);
-	}    // setMovementQty
+	}	// setMovementQty
 
 	/**
 	 * Get Product
@@ -374,7 +365,7 @@ public class MInOutLine extends X_M_InOutLine
 			m_product = MProduct.get(getCtx(), getM_Product_ID());
 		}
 		return m_product;
-	}    // getProduct
+	}	// getProduct
 
 	/**
 	 * Set Product
@@ -395,13 +386,13 @@ public class MInOutLine extends X_M_InOutLine
 			setC_UOM_ID(0);
 		}
 		setM_AttributeSetInstance_ID(0);
-	}    // setProduct
+	}	// setProduct
 
 	/**
 	 * Set M_Product_ID
 	 *
 	 * @param M_Product_ID product
-	 * @param setUOM       also set UOM from product
+	 * @param setUOM also set UOM from product
 	 */
 	public void setM_Product_ID(int M_Product_ID, boolean setUOM)
 	{
@@ -414,13 +405,13 @@ public class MInOutLine extends X_M_InOutLine
 			super.setM_Product_ID(M_Product_ID);
 		}
 		setM_AttributeSetInstance_ID(0);
-	}    // setM_Product_ID
+	}	// setM_Product_ID
 
 	/**
 	 * Set Product and UOM
 	 *
 	 * @param M_Product_ID product
-	 * @param C_UOM_ID     uom
+	 * @param C_UOM_ID uom
 	 */
 	public void setM_Product_ID(int M_Product_ID, int C_UOM_ID)
 	{
@@ -431,7 +422,7 @@ public class MInOutLine extends X_M_InOutLine
 		super.setC_UOM_ID(C_UOM_ID);
 		setM_AttributeSetInstance_ID(0);
 		m_product = null;
-	}    // setM_Product_ID
+	}	// setM_Product_ID
 
 	/**
 	 * Add to Description
@@ -449,7 +440,7 @@ public class MInOutLine extends X_M_InOutLine
 		{
 			setDescription(desc + " | " + description);
 		}
-	}    // addDescription
+	}	// addDescription
 
 	/**
 	 * Get C_Project_ID
@@ -465,7 +456,7 @@ public class MInOutLine extends X_M_InOutLine
 			ii = getParent().getC_Project_ID();
 		}
 		return ii;
-	}    // getC_Project_ID
+	}	// getC_Project_ID
 
 	/**
 	 * Get C_Activity_ID
@@ -481,7 +472,7 @@ public class MInOutLine extends X_M_InOutLine
 			ii = getParent().getC_Activity_ID();
 		}
 		return ii;
-	}    // getC_Activity_ID
+	}	// getC_Activity_ID
 
 	/**
 	 * Get C_Campaign_ID
@@ -497,7 +488,7 @@ public class MInOutLine extends X_M_InOutLine
 			ii = getParent().getC_Campaign_ID();
 		}
 		return ii;
-	}    // getC_Campaign_ID
+	}	// getC_Campaign_ID
 
 	/**
 	 * Get User2_ID
@@ -513,7 +504,7 @@ public class MInOutLine extends X_M_InOutLine
 			ii = getParent().getUser1_ID();
 		}
 		return ii;
-	}    // getUser1_ID
+	}	// getUser1_ID
 
 	/**
 	 * Get User2_ID
@@ -529,7 +520,7 @@ public class MInOutLine extends X_M_InOutLine
 			ii = getParent().getUser2_ID();
 		}
 		return ii;
-	}    // getUser2_ID
+	}	// getUser2_ID
 
 	/**
 	 * Get AD_OrgTrx_ID
@@ -545,7 +536,7 @@ public class MInOutLine extends X_M_InOutLine
 			ii = getParent().getAD_OrgTrx_ID();
 		}
 		return ii;
-	}    // getAD_OrgTrx_ID
+	}	// getAD_OrgTrx_ID
 
 	/**************************************************************************
 	 * Before Save
@@ -589,38 +580,38 @@ public class MInOutLine extends X_M_InOutLine
 			int ii = DB.getSQLValueEx(get_TrxName(), sql, getM_InOut_ID());
 			setLine(ii);
 		}
-		// UOM
-		// if we don't have an UOM at this stage, there is a problem! *do not try to guess!*
-		//		if (getC_UOM_ID() == 0)
-		//		{
-		//			setC_UOM_ID(Env.getContextAsInt(getCtx(), "#C_UOM_ID"));
-		//		}
-		//		if (getC_UOM_ID() == 0)
-		//		{
-		//			int C_UOM_ID = MUOM.getDefault_UOM_ID(getCtx());
-		//			if (C_UOM_ID > 0)
-		//			{
-		//				setC_UOM_ID(C_UOM_ID);
-		//			}
-		//		}
+// UOM
+// if we don't have an UOM at this stage, there is a problem! *do not try to guess!*
+//		if (getC_UOM_ID() == 0)
+//		{
+//			setC_UOM_ID(Env.getContextAsInt(getCtx(), "#C_UOM_ID"));
+//		}
+//		if (getC_UOM_ID() == 0)
+//		{
+//			int C_UOM_ID = MUOM.getDefault_UOM_ID(getCtx());
+//			if (C_UOM_ID > 0)
+//			{
+//				setC_UOM_ID(C_UOM_ID);
+//			}
+//		}
 		// Qty Precision
 		if (newRecord || is_ValueChanged("QtyEntered"))
 		{
 			setQtyEntered(getQtyEntered());
 		}
 		if (newRecord || is_ValueChanged("MovementQty"))
-		{
+		 {
 			setMovementQty(getMovementQty());
-			//
-			// // Order/RMA Line
-			// if (getC_OrderLine_ID() == 0 && getM_RMALine_ID() == 0)
-			// {
-			// if (getParent().isSOTrx())
-			// {
-			// log.error("FillMandatory", Msg.translate(getCtx(), "C_Order_ID"));
-			// return false;
-			// }
-			// }
+		//
+		// // Order/RMA Line
+		// if (getC_OrderLine_ID() == 0 && getM_RMALine_ID() == 0)
+		// {
+		// if (getParent().isSOTrx())
+		// {
+		// log.error("FillMandatory", Msg.translate(getCtx(), "C_Order_ID"));
+		// return false;
+		// }
+		// }
 		}
 
 		// Validate Locator/Warehouse - teo_sarca, BF [ 2784194 ]
@@ -672,7 +663,7 @@ public class MInOutLine extends X_M_InOutLine
 		 **/
 
 		return true;
-	}    // beforeSave
+	}	// beforeSave
 
 	/**
 	 * Before Delete
@@ -689,7 +680,7 @@ public class MInOutLine extends X_M_InOutLine
 			return true;
 		}
 		throw new AdempiereException("@CannotDelete@");
-	}    // beforeDelete
+	}	// beforeDelete
 
 	/**
 	 * String Representation
@@ -706,7 +697,7 @@ public class MInOutLine extends X_M_InOutLine
 				.append(",M_AttributeSetInstance_ID=").append(getM_AttributeSetInstance_ID())
 				.append("]");
 		return sb.toString();
-	}    // toString
+	}	// toString
 
 	/**
 	 * Get Base value for Cost Distribution
@@ -757,7 +748,7 @@ public class MInOutLine extends X_M_InOutLine
 		//
 		log.error("Invalid Criteria: " + CostDistribution);
 		return Env.ZERO;
-	}    // getBase
+	}	// getBase
 
 	public boolean sameOrderLineUOM()
 	{
@@ -777,4 +768,4 @@ public class MInOutLine extends X_M_InOutLine
 		return true;
 	}
 
-}    // MInOutLine
+}	// MInOutLine
