@@ -172,10 +172,10 @@ public class ProcessRestController
 			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
 
-	@PostMapping(path = "{AD_PInstance_ID}/externalstatus/message", consumes = "application/json")
-	public ResponseEntity<?> handleLogs(@RequestBody @NonNull final CreatePInstanceLogRequest request, @PathVariable final Integer AD_PInstance_ID)
+	@PostMapping(path = "{adPInstanceId}/externalstatus/message", consumes = "application/json")
+	public ResponseEntity<?> handleLogs(@RequestBody @NonNull final CreatePInstanceLogRequest request, @PathVariable final Integer adPInstanceId)
 	{
-		processService.storeExternalPinstanceLog(request, PInstanceId.ofRepoId(AD_PInstance_ID));
+		processService.storeExternalPinstanceLog(request, PInstanceId.ofRepoId(adPInstanceId));
 		return ResponseEntity.ok().build();
 	}
 
