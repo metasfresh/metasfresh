@@ -379,7 +379,10 @@ public class CalloutInOut extends CalloutEngine
 			inoutLine.setAD_OrgTrx_ID(ol.getAD_OrgTrx_ID());
 
 			final Dimension orderLineDimensions = dimensionService.getFromRecord(ol);
-			dimensionService.updateRecord(inoutLine, orderLineDimensions);
+			if (orderLineDimensions != null)
+			{
+				dimensionService.updateRecord(inoutLine, orderLineDimensions);
+			}
 		}
 
 		return NO_ERROR;
@@ -700,6 +703,7 @@ public class CalloutInOut extends CalloutEngine
 
 	/**
 	 * M_InOutLine - ASI.
+	 *
 	 * @return error message or ""
 	 */
 	public String asi(final ICalloutField calloutField)

@@ -363,15 +363,18 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		Dimension inOutLineDimension = dimensionService.getFromRecord(inOutLineRecord);
 
-		if (inOutLineDimension.getActivityId() == null)
+		if (inOutLineDimension != null)
 		{
-			//
-			// Set C_Activity from Product (07442)
-			final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
-			inOutLineDimension = inOutLineDimension.withActivityId(activityId);
-		}
+			if (inOutLineDimension.getActivityId() == null)
+			{
+				//
+				// Set C_Activity from Product (07442)
+				final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
+				inOutLineDimension = inOutLineDimension.withActivityId(activityId);
+			}
 
-		dimensionService.updateRecord(icRecord, inOutLineDimension);
+			dimensionService.updateRecord(icRecord, inOutLineDimension);
+		}
 
 		//
 		// Set C_Tax from Product (07442)

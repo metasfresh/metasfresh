@@ -33,9 +33,9 @@ import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 
 /**
- *  Creates Order from RMA document
+ * Creates Order from RMA document
  *
- *  @author Ashley Ramdass
+ * @author Ashley Ramdass
  */
 
 public class RMACreateOrder extends JavaProcess
@@ -44,109 +44,113 @@ public class RMACreateOrder extends JavaProcess
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	private int rmaId = 0;
-    @Override
-    protected void prepare()
-    {
-        rmaId = getRecord_ID();
-    }
 
-    @Override
-    protected String doIt() throws Exception
-    {
-        // Load RMA
-        MRMA rma = new MRMA(getCtx(), rmaId, get_TrxName());
+	@Override
+	protected void prepare()
+	{
+		rmaId = getRecord_ID();
+	}
 
-        // Load Original Order
-        // metas c.ghita@metas.ro
-        // load the original metas order
-//        MOrder originalOrder = rma.getOriginalOrder();
-        I_C_Order originalOrder = InterfaceWrapperHelper.create(rma.getOriginalOrder(), I_C_Order.class);
+	@Override
+	protected String doIt() throws Exception
+	{
+		// Load RMA
+		MRMA rma = new MRMA(getCtx(), rmaId, get_TrxName());
 
-        if (rma.get_ID() == 0)
-        {
-            throw new Exception("No RMA defined");
-        }
+		// Load Original Order
+		// metas c.ghita@metas.ro
+		// load the original metas order
+		//        MOrder originalOrder = rma.getOriginalOrder();
+		I_C_Order originalOrder = InterfaceWrapperHelper.create(rma.getOriginalOrder(), I_C_Order.class);
 
-        if (originalOrder == null)
-        {
-            throw new Exception("Could not load the original order");
-        }
+		if (rma.get_ID() == 0)
+		{
+			throw new Exception("No RMA defined");
+		}
 
-        // Create new order and set the different values based on original order/RMA doc
-        MOrder order = new MOrder(getCtx(), 0, get_TrxName());
-        order.setAD_Org_ID(rma.getAD_Org_ID());
-        order.setC_BPartner_ID(originalOrder.getC_BPartner_ID());
-        order.setC_BPartner_Location_ID(originalOrder.getC_BPartner_Location_ID());
-        order.setAD_User_ID(originalOrder.getAD_User_ID());
-        order.setBill_BPartner_ID(originalOrder.getBill_BPartner_ID());
-        order.setBill_Location_ID(originalOrder.getBill_Location_ID());
-        order.setBill_User_ID(originalOrder.getBill_User_ID());
-        order.setSalesRep_ID(rma.getSalesRep_ID());
-        order.setM_PriceList_ID(originalOrder.getM_PriceList_ID());
-        order.setM_Warehouse_ID(originalOrder.getM_Warehouse_ID());
+		if (originalOrder == null)
+		{
+			throw new Exception("Could not load the original order");
+		}
+
+		// Create new order and set the different values based on original order/RMA doc
+		MOrder order = new MOrder(getCtx(), 0, get_TrxName());
+		order.setAD_Org_ID(rma.getAD_Org_ID());
+		order.setC_BPartner_ID(originalOrder.getC_BPartner_ID());
+		order.setC_BPartner_Location_ID(originalOrder.getC_BPartner_Location_ID());
+		order.setAD_User_ID(originalOrder.getAD_User_ID());
+		order.setBill_BPartner_ID(originalOrder.getBill_BPartner_ID());
+		order.setBill_Location_ID(originalOrder.getBill_Location_ID());
+		order.setBill_User_ID(originalOrder.getBill_User_ID());
+		order.setSalesRep_ID(rma.getSalesRep_ID());
+		order.setM_PriceList_ID(originalOrder.getM_PriceList_ID());
+		order.setM_Warehouse_ID(originalOrder.getM_Warehouse_ID());
 		orderBL.setDocTypeTargetIdAndUpdateDescription(order, originalOrder.getC_DocTypeTarget_ID());
-        order.setC_PaymentTerm_ID(originalOrder.getC_PaymentTerm_ID());
-        order.setDeliveryRule(originalOrder.getDeliveryRule());
-        // start: metas c.ghita@metas.ro : set fields for metas order
-        I_C_Order mOrder = InterfaceWrapperHelper.create(order, I_C_Order.class);   // metas c.ghita@metas.ro : metas order
-        order.setM_Shipper_ID(originalOrder.getM_Shipper_ID());
-        orderBL.setDocTypeTargetIdAndUpdateDescription(order, originalOrder.getC_DocTypeTarget_ID());
-        mOrder.setBPartnerAddress(originalOrder.getBPartnerAddress());
-        mOrder.setBillToAddress(originalOrder.getBillToAddress());
-        mOrder.setFreightCostRule(originalOrder.getFreightCostRule());
-        mOrder.setDeliveryViaRule(originalOrder.getDeliveryViaRule());
-        mOrder.setFreightAmt(originalOrder.getFreightAmt());
-        mOrder.setM_Warehouse_ID(originalOrder.getM_Warehouse_ID());
-        mOrder.setM_PricingSystem_ID(originalOrder.getM_PricingSystem_ID());
-        mOrder.setC_PaymentTerm_ID(originalOrder.getC_PaymentTerm_ID());
-        mOrder.setRef_RMA_ID(rmaId);
-        // end: metas c.ghita@metas.ro
+		order.setC_PaymentTerm_ID(originalOrder.getC_PaymentTerm_ID());
+		order.setDeliveryRule(originalOrder.getDeliveryRule());
+		// start: metas c.ghita@metas.ro : set fields for metas order
+		I_C_Order mOrder = InterfaceWrapperHelper.create(order, I_C_Order.class);   // metas c.ghita@metas.ro : metas order
+		order.setM_Shipper_ID(originalOrder.getM_Shipper_ID());
+		orderBL.setDocTypeTargetIdAndUpdateDescription(order, originalOrder.getC_DocTypeTarget_ID());
+		mOrder.setBPartnerAddress(originalOrder.getBPartnerAddress());
+		mOrder.setBillToAddress(originalOrder.getBillToAddress());
+		mOrder.setFreightCostRule(originalOrder.getFreightCostRule());
+		mOrder.setDeliveryViaRule(originalOrder.getDeliveryViaRule());
+		mOrder.setFreightAmt(originalOrder.getFreightAmt());
+		mOrder.setM_Warehouse_ID(originalOrder.getM_Warehouse_ID());
+		mOrder.setM_PricingSystem_ID(originalOrder.getM_PricingSystem_ID());
+		mOrder.setC_PaymentTerm_ID(originalOrder.getC_PaymentTerm_ID());
+		mOrder.setRef_RMA_ID(rmaId);
+		// end: metas c.ghita@metas.ro
 
-        if (!order.save())
-        {
-            throw new IllegalStateException("Could not create order");
-        }
+		if (!order.save())
+		{
+			throw new IllegalStateException("Could not create order");
+		}
 
-        MRMALine lines[] = rma.getLines(true);
+		MRMALine lines[] = rma.getLines(true);
 
-        for (MRMALine line : lines)
-        {
-            if (line.getShipLine() != null && line.getShipLine().getC_OrderLine_ID() != 0)
-            {
-                // Create order lines if the RMA Doc line has a shipment line
-                MOrderLine orderLine = new MOrderLine(order);
-                MOrderLine originalOLine = new MOrderLine(getCtx(), line.getShipLine().getC_OrderLine_ID(), null);
-                orderLine.setAD_Org_ID(line.getAD_Org_ID());
-                orderLine.setM_Product_ID(originalOLine.getM_Product_ID());
-                orderLine.setM_AttributeSetInstance_ID(originalOLine.getM_AttributeSetInstance_ID());
-                orderLine.setC_UOM_ID(originalOLine.getC_UOM_ID());
-                orderLine.setC_Tax_ID(originalOLine.getC_Tax_ID());
-                orderLine.setC_TaxCategory_ID(originalOLine.getC_TaxCategory_ID());
-                orderLine.setM_Warehouse_ID(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(originalOLine).getRepoId());
-                orderLine.setC_Currency_ID(originalOLine.getC_Currency_ID());
-                orderLine.setQty(line.getQty());
+		for (MRMALine line : lines)
+		{
+			if (line.getShipLine() != null && line.getShipLine().getC_OrderLine_ID() != 0)
+			{
+				// Create order lines if the RMA Doc line has a shipment line
+				MOrderLine orderLine = new MOrderLine(order);
+				MOrderLine originalOLine = new MOrderLine(getCtx(), line.getShipLine().getC_OrderLine_ID(), null);
+				orderLine.setAD_Org_ID(line.getAD_Org_ID());
+				orderLine.setM_Product_ID(originalOLine.getM_Product_ID());
+				orderLine.setM_AttributeSetInstance_ID(originalOLine.getM_AttributeSetInstance_ID());
+				orderLine.setC_UOM_ID(originalOLine.getC_UOM_ID());
+				orderLine.setC_Tax_ID(originalOLine.getC_Tax_ID());
+				orderLine.setC_TaxCategory_ID(originalOLine.getC_TaxCategory_ID());
+				orderLine.setM_Warehouse_ID(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(originalOLine).getRepoId());
+				orderLine.setC_Currency_ID(originalOLine.getC_Currency_ID());
+				orderLine.setQty(line.getQty());
 
-                orderLine.setPrice();
-                orderLine.setPrice(line.getAmt());
+				orderLine.setPrice();
+				orderLine.setPrice(line.getAmt());
 
-                final Dimension originalDimension = dimensionService.getFromRecord(originalOLine);
+				final Dimension originalDimension = dimensionService.getFromRecord(originalOLine);
 
-                dimensionService.updateRecord(orderLine, originalDimension);
+				if (originalDimension != null)
+				{
+					dimensionService.updateRecord(orderLine, originalDimension);
+				}
 
-                if (!orderLine.save())
-                {
-                    throw new IllegalStateException("Could not create Order Line");
-                }
-            }
-        }
+				if (!orderLine.save())
+				{
+					throw new IllegalStateException("Could not create Order Line");
+				}
+			}
+		}
 
-        rma.setC_Order_ID(order.getC_Order_ID());
-        if (!rma.save())
-        {
-            throw new IllegalStateException("Could not update RMA document");
-        }
+		rma.setC_Order_ID(order.getC_Order_ID());
+		if (!rma.save())
+		{
+			throw new IllegalStateException("Could not update RMA document");
+		}
 
-        return "Order Created: " + order.getDocumentNo();
-    }
+		return "Order Created: " + order.getDocumentNo();
+	}
 
 }

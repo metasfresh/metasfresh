@@ -215,7 +215,10 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Dimension
 		Dimension orderLineDimension = extractDimension(orderLine);
-		dimensionService.updateRecord(icRecord, orderLineDimension);
+		if(orderLineDimension != null)
+		{
+			dimensionService.updateRecord(icRecord, orderLineDimension);
+		}
 
 		//
 		// Tax

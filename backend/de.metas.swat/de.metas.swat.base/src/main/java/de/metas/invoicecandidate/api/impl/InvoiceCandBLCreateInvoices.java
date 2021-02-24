@@ -659,7 +659,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceLine.setExternalIds(ExternalIdsUtil.joinExternalIds(externalIds));
 
 				final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(cand);
-				dimensionService.updateRecord(invoiceLine, invoiceCandidateDimension);
+
+				if(invoiceCandidateDimension != null)
+				{
+					dimensionService.updateRecord(invoiceLine, invoiceCandidateDimension);
+				}
 
 				//
 				// Notify listeners that we created a new invoice line and we are about to save it

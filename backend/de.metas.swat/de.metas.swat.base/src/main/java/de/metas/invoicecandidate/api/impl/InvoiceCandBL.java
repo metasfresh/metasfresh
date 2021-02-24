@@ -1152,7 +1152,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setExternalLineId(ic.getExternalLineId());
 
 		final Dimension icDimension = dimensionService.getFromRecord(ic);
-		dimensionService.updateRecord(splitCand, icDimension);
+		if (icDimension != null)
+		{
+			dimensionService.updateRecord(splitCand, icDimension);
+		}
 
 		return splitCand;
 	}

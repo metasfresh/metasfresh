@@ -411,11 +411,14 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 			Dimension sLineDimension = dimensionService.getFromRecord(sLine);
 
-			if (sLineDimension.getProjectId() == null)
+			if (sLineDimension != null)
 			{
-				sLineDimension = sLineDimension.withProjectId(ProjectId.ofRepoIdOrNull(oLine.getC_Project_ID()));
+				if (sLineDimension.getProjectId() == null)
+				{
+					sLineDimension = sLineDimension.withProjectId(ProjectId.ofRepoIdOrNull(oLine.getC_Project_ID()));
+				}
+				dimensionService.updateRecord(this, sLineDimension);
 			}
-			dimensionService.updateRecord(this, sLineDimension);
 		}
 		// Check if shipment line is based on RMA
 		else if (sLine.getM_RMALine_ID() != 0)
