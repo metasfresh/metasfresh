@@ -75,7 +75,7 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private Quantity qtyToPurchaseInitial;
 
-	private PurchaseProfitInfo profitInfoOrNull;
+	@Nullable private PurchaseProfitInfo profitInfoOrNull;
 
 	@NonNull
 	private ZonedDateTime purchaseDatePromised;
@@ -234,16 +234,19 @@ public class PurchaseCandidate
 		return getImmutableFields().getGroupReference();
 	}
 
+	@Nullable
 	public OrderAndLineId getSalesOrderAndLineIdOrNull()
 	{
 		return getImmutableFields().getSalesOrderAndLineIdOrNull();
 	}
 
+	@Nullable
 	public ForecastLineId getForecastLineId()
 	{
 		return getImmutableFields().getForecastLineId();
 	}
 
+	@Nullable
 	public Dimension getDimension ()
 	{
 		return getImmutableFields().getDimension();
@@ -382,12 +385,6 @@ public class PurchaseCandidate
 			innerBuilder = PurchaseOrderItem.builder().purchaseCandidate(parent);
 		}
 
-		public OrderItemBuilder purchaseItemId(final PurchaseItemId purchaseItemId)
-		{
-			innerBuilder.purchaseItemId(purchaseItemId);
-			return this;
-		}
-
 		public OrderItemBuilder datePromised(@NonNull final ZonedDateTime datePromised)
 		{
 			innerBuilder.datePromised(datePromised);
@@ -440,7 +437,7 @@ public class PurchaseCandidate
 		Check.assumeNotNull(id, "purchase candidate shall be saved: {}", this);
 
 		Check.assumeEquals(id, purchaseOrderItem.getPurchaseCandidateId(),
-				"The given purchaseOrderItem's purchaseCandidateId needs to be equan to this instance's id; purchaseOrderItem={}; this={}",
+				"The given purchaseOrderItem's purchaseCandidateId needs to be equal to this instance's id; purchaseOrderItem={}; this={}",
 				purchaseOrderItem, this);
 
 		purchaseOrderItems.add(purchaseOrderItem);

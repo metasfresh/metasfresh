@@ -349,7 +349,10 @@ public class PurchaseCandidateRepository
 		record.setM_Forecast_ID(forecastLineId == null ? -1 : forecastLineId.getForecastId().getRepoId());
 		record.setM_ForecastLine_ID(forecastLineId == null ? -1 : forecastLineId.getRepoId());
 
-		dimensionService.updateRecord(record, purchaseCandidate.getDimension());
+		if(purchaseCandidate.getDimension() != null)
+		{
+			dimensionService.updateRecord(record, purchaseCandidate.getDimension());
+		}
 
 		updateRecordFromPurchaseProfitInfo(record, purchaseCandidate.getProfitInfoOrNull());
 
