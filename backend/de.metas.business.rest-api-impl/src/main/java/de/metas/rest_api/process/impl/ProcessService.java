@@ -26,21 +26,25 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
+import de.metas.RestUtils;
+import de.metas.common.rest_api.CreatePInstanceLogRequest;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.JsonErrorItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.JsonPInstanceLog;
 import de.metas.common.rest_api.issue.JsonCreateIssueResponse;
 import de.metas.common.rest_api.issue.JsonCreateIssueResponseItem;
+import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.i18n.IModelTranslationMap;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgQuery;
+import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
+import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessBasicInfo;
+import de.metas.process.ProcessInfoLog;
 import de.metas.process.ProcessParamBasicInfo;
 import de.metas.process.ProcessType;
 import de.metas.reflist.ReferenceId;
@@ -56,25 +60,26 @@ import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Reference;
-import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class ProcessService
 {
+	private static final transient Logger logger = LogManager.getLogger(ProcessService.class);
+
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IADElementDAO elementDAO = Services.get(IADElementDAO.class);
 	private final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
 
 	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
 
@@ -179,8 +184,29 @@ public class ProcessService
 				.build();
 	}
 
+	public void storeExternalPinstanceLog(@NonNull final CreatePInstanceLogRequest request, @NonNull final PInstanceId pInstanceId)
+	{
+		try
+		{
+			final List<ProcessInfoLog> processInfoLogList = request.getLogs()
+					.stream()
+					.map(JsonPInstanceLog::getMessage)
+					.map(ProcessInfoLog::ofMessage)
+					.collect(Collectors.toList());
+
+			instanceDAO.saveProcessInfoLogs(pInstanceId, processInfoLogList);
+		}
+		catch (final Exception e)
+		{
+			final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(e);
+			logger.error("Could not save the given model; message={}; AD_Issue_ID={}", e.getLocalizedMessage(), issueId);
+			throw e;
+		}
+	}
+
 	@NonNull
-	private InsertRemoteIssueRequest createInsertRemoteIssueRequest(final JsonErrorItem jsonErrorItem, final PInstanceId pInstanceId){
+	private InsertRemoteIssueRequest createInsertRemoteIssueRequest(final JsonErrorItem jsonErrorItem, final PInstanceId pInstanceId)
+	{
 		return InsertRemoteIssueRequest.builder()
 				.issueCategory(jsonErrorItem.getIssueCategory())
 				.issueSummary(StringUtils.isEmpty(jsonErrorItem.getMessage()) ? DEFAULT_ISSUE_SUMMARY : jsonErrorItem.getMessage())
@@ -188,22 +214,7 @@ public class ProcessService
 				.sourceMethodName(jsonErrorItem.getSourceMethodName())
 				.stacktrace(jsonErrorItem.getStackTrace())
 				.pInstance_ID(pInstanceId)
-				.orgId(retrieveOrgId(jsonErrorItem.getOrgCode()))
+				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
 				.build();
-	}
-
-	@NonNull
-	private OrgId retrieveOrgId(@Nullable final String orgCode)
-	{
-		if(StringUtils.isEmpty(orgCode))
-		{
-			return Env.getOrgId();
-		}
-
-		final OrgQuery query = OrgQuery.builder()
-				.orgValue(orgCode)
-				.build();
-
-		return orgDAO.retrieveOrgIdBy(query).orElse(Env.getOrgId());
 	}
 }
