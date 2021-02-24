@@ -165,7 +165,8 @@ public class CommissionConfigFactory
 
 			final ArrayList<HierarchyConfig> hierarchyConfigs = new ArrayList<>();
 
-			// i know the nesting is way too deep here; however if i extract methods, i end up with a lot of parameters per method. or with big "request"-classes that i use as params.
+			// i know the nesting is way too deep here; however if i extract methods, i end up with a lot of parameters per method
+			// or with big "request"-classes that i use as params.
 			for (final Entry<Integer, Collection<Integer>> settingsId2TermsIds : settingsIdWithTermId)
 			{
 				final Integer settingsId = settingsId2TermsIds.getKey();
@@ -173,7 +174,7 @@ public class CommissionConfigFactory
 				final I_C_HierarchyCommissionSettings settingsRecord = stagingData.getId2SettingsRecord().get(settingsId);
 				try (final MDCCloseable ignore2 = TableRecordMDC.putTableRecordReference(settingsRecord))
 				{
-					final HierarchyConfigBuilder builder = HierarchyConfig
+					final HierarchyConfigBuilder configBuilder = HierarchyConfig
 							.builder()
 							.id(HierarchyConfigId.ofRepoId(settingsRecord.getC_HierarchyCommissionSettings_ID()))
 							.commissionProductId(ProductId.ofRepoId(settingsRecord.getCommission_Product_ID()))
@@ -197,6 +198,9 @@ public class CommissionConfigFactory
 										.id(termId)
 										.isSimulation(termRecord.isSimulation())
 										.pointsPrecision(settingsRecord.getPointsPrecision());
+
+								// TODO: in case the end customer is a sales rep,
+								// we shall set contractBuilder.commissionPercent(Percent.ZERO)
 
 								boolean foundMatchingSettingsLine = false;
 								final ImmutableListMultimap<Integer, Integer> settingsId2settingsLineIds = stagingData.getSettingsId2settingsLineIds();
@@ -223,13 +227,13 @@ public class CommissionConfigFactory
 								}
 								if (foundMatchingSettingsLine)
 								{
-									builder.beneficiary2HierarchyContract(Beneficiary.of(bPartnerId), contractBuilder);
+									configBuilder.beneficiary2HierarchyContract(Beneficiary.of(bPartnerId), contractBuilder);
 								}
 							}
 						}
 					}
 
-					final HierarchyConfig config = builder.build();
+					final HierarchyConfig config = configBuilder.build();
 					if (config.containsContracts()) // discard it if there aren't any beneficiaries/contracts
 					{
 						hierarchyConfigs.add(config);

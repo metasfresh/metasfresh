@@ -1,22 +1,21 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
-import java.util.Optional;
-
-import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForNewInstance;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -45,15 +44,18 @@ public class CommissionInstanceRequestFactory
 {
 	private static final Logger logger = LogManager.getLogger(CommissionInstanceRequestFactory.class);
 
+	private final IBPartnerBL bpartnerBL;
 	private final CommissionConfigFactory commissionConfigFactory;
 	private final CommissionHierarchyFactory commissionHierarchyFactory;
 	private final CommissionTriggerFactory commissionTriggerFactory;
 
 	public CommissionInstanceRequestFactory(
+			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final CommissionConfigFactory commissionConfigFactory,
 			@NonNull final CommissionHierarchyFactory commissionHierarchyFactory,
 			@NonNull final CommissionTriggerFactory commissionTriggerFactory)
 	{
+		this.bpartnerBL = bpartnerBL;
 		this.commissionConfigFactory = commissionConfigFactory;
 		this.commissionHierarchyFactory = commissionHierarchyFactory;
 		this.commissionTriggerFactory = commissionTriggerFactory;
@@ -65,12 +67,16 @@ public class CommissionInstanceRequestFactory
 	 */
 	public Optional<CreateCommissionSharesRequest> createRequestFor(@NonNull final CommissionTriggerDocument commissionTriggerDocument)
 	{
-		final BPartnerId salesRepBPartnerId = commissionTriggerDocument.getSalesRepBPartnerId();
+		final BPartnerId customerBPartnerId = commissionTriggerDocument.getCustomerBPartnerId();
+		final BPartnerId salesRepBPartnerId = bpartnerBL.isSalesRep(customerBPartnerId)
+				? customerBPartnerId
+				: commissionTriggerDocument.getSalesRepBPartnerId();
+
 		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(salesRepBPartnerId);
 
 		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
 				.commissionHierarchy(hierarchy)
-				.customerBPartnerId(commissionTriggerDocument.getCustomerBPartnerId())
+				.customerBPartnerId(customerBPartnerId)
 				.salesRepBPartnerId(salesRepBPartnerId)
 				.commissionDate(commissionTriggerDocument.getCommissionDate())
 				.salesProductId(commissionTriggerDocument.getProductId())

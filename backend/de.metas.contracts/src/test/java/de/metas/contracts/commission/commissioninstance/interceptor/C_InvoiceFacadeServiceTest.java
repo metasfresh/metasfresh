@@ -11,6 +11,8 @@ import static org.assertj.core.api.Assertions.tuple;
 
 import java.util.List;
 
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.user.UserRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -110,7 +112,11 @@ class C_InvoiceFacadeServiceTest
 		final CommissionInstanceRepository commissionInstanceRepository = new CommissionInstanceRepository(commissionConfigFactory, commissionInstanceRecordStagingService);
 		final CommissionHierarchyFactory commissionHierarchyFactory = new CommissionHierarchyFactory();
 		final CommissionTriggerFactory commissionTriggerFactory = new CommissionTriggerFactory();
-		final CommissionInstanceRequestFactory commissionInstanceRequestFactory = new CommissionInstanceRequestFactory(commissionConfigFactory, commissionHierarchyFactory, commissionTriggerFactory);
+		final CommissionInstanceRequestFactory commissionInstanceRequestFactory = new CommissionInstanceRequestFactory(
+				new BPartnerBL(new UserRepository()),
+				commissionConfigFactory,
+				commissionHierarchyFactory,
+				commissionTriggerFactory);
 		final CommissionAlgorithmInvoker commissionAlgorithmInvoker = new CommissionAlgorithmInvoker();
 		final CommissionInstanceService commissionInstanceService = new CommissionInstanceService(commissionInstanceRequestFactory, commissionAlgorithmInvoker);
 
