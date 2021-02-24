@@ -1,18 +1,7 @@
 package de.metas.order;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.math.BigDecimal;
-import java.util.Objects;
-
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -127,7 +116,10 @@ public class OrderLineBuilder
 			orderLine.setDiscount(manualDiscount);
 		}
 
-		dimensionService.updateRecord(orderLine,dimension);
+		if(dimension != null)
+		{
+			dimensionService.updateRecord(orderLine, dimension);
+		}
 
 		orderLineBL.updatePrices(orderLine);
 		saveRecord(orderLine);
