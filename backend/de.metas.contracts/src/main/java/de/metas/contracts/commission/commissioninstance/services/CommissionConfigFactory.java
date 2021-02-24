@@ -33,15 +33,11 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
-import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product_Category;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -81,10 +77,9 @@ import java.util.stream.StreamSupport;
 @Service
 public class CommissionConfigFactory
 {
-
 	private static final Logger logger = LogManager.getLogger(CommissionConfigFactory.class);
 
-	private CommissionConfigStagingDataService commissionConfigStagingDataService;
+	private final CommissionConfigStagingDataService commissionConfigStagingDataService;
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -243,7 +238,7 @@ public class CommissionConfigFactory
 			}
 
 			// finally index the configs by contract-Id
-			final ImmutableMap.Builder<FlatrateTermId, CommissionConfig> result = ImmutableMap.<FlatrateTermId, CommissionConfig>builder();
+			final ImmutableMap.Builder<FlatrateTermId, CommissionConfig> result = ImmutableMap.builder();
 			for (final HierarchyConfig hierarchyConfig : hierarchyConfigs)
 			{
 				final int settingsRepoId = hierarchyConfig.getId().getRepoId();
@@ -263,7 +258,7 @@ public class CommissionConfigFactory
 			@NonNull final I_C_CommissionSettingsLine settingsLineRecord)
 	{
 		final ProductCategoryId settingsProductCategoryId = ProductCategoryId.ofRepoIdOrNull(settingsLineRecord.getM_Product_Category_ID());
-		String logMessagePrefix = new StringBuilder("SeqNo ").append(settingsLineRecord.getSeqNo()).append(": ").toString();
+		final String logMessagePrefix = new StringBuilder("SeqNo ").append(settingsLineRecord.getSeqNo()).append(": ").toString();
 		final boolean productMatches;
 		if (settingsProductCategoryId == null)
 		{
