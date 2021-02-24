@@ -1,43 +1,39 @@
 package de.metas.security.permissions.record_access;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_User_Record_Access;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
+import de.metas.cache.CCache;
 import de.metas.security.Principal;
 import de.metas.security.RoleId;
 import de.metas.security.permissions.Access;
 import de.metas.security.permissions.record_access.RecordAccess.RecordAccessBuilder;
-import de.metas.security.permissions.record_access.handlers.RecordAccessChangeEvent;
-import de.metas.security.permissions.record_access.handlers.RecordAccessChangeEventDispatcher;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_AD_User_Record_Access;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -66,22 +62,19 @@ public class RecordAccessService
 {
 	private final RecordAccessConfigService configs;
 	private final UserGroupRepository userGroupsRepo;
-	private final IEventBus eventBus;
+
+	private final CCache<Integer, ImmutableSet<String>> handledTableNamesCache = CCache.<Integer, ImmutableSet<String>>builder()
+			.tableName(I_AD_User_Record_Access.Table_Name)
+			.initialCapacity(1)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.build();
 
 	public RecordAccessService(
 			@NonNull final RecordAccessConfigService configs,
-			@NonNull final UserGroupRepository userGroupsRepo,
-			@NonNull final IEventBusFactory eventBusFactory)
+			@NonNull final UserGroupRepository userGroupsRepo)
 	{
 		this.userGroupsRepo = userGroupsRepo;
 		this.configs = configs;
-
-		eventBus = eventBusFactory.getEventBus(RecordAccessChangeEventDispatcher.TOPIC);
-	}
-
-	public boolean isFeatureEnabled(@NonNull final RecordAccessFeature feature)
-	{
-		return configs.isFeatureEnabled(feature);
 	}
 
 	public void grantAccess(@NonNull final RecordAccessGrantRequest request)
@@ -100,8 +93,6 @@ public class RecordAccessService
 
 		final List<RecordAccess> accessesToSave = toUserGroupRecordAccessesList(request);
 		saveNew(accessesToSave);
-
-		fireEvent(RecordAccessChangeEvent.accessGrants(accessesToSave));
 	}
 
 	private static List<RecordAccess> toUserGroupRecordAccessesList(@NonNull final RecordAccessGrantRequest request)
@@ -137,14 +128,6 @@ public class RecordAccessService
 
 		final Set<RecordAccessId> existingAccessRecordIds = extractIds(existingAccessRecords);
 		deleteByIds(existingAccessRecordIds, request.getRequestedBy());
-
-		final ImmutableSet<RecordAccess> accesses = toUserGroupRecordAccessesSet(existingAccessRecords);
-		fireEvent(RecordAccessChangeEvent.accessRevokes(accesses));
-	}
-
-	public void copyAccess(@NonNull final RecordAccessCopyRequest request)
-	{
-		new RecordAccessCopyCommand(this, request).run();
 	}
 
 	void saveNew(@NonNull final Collection<RecordAccess> accessList)
@@ -162,7 +145,7 @@ public class RecordAccessService
 		final I_AD_User_Record_Access accessRecord = newInstance(I_AD_User_Record_Access.class);
 		updateRecord(accessRecord, access);
 
-		try (final IAutoCloseable c = Env.temporaryChangeLoggedUserId(access.getCreatedBy()))
+		try (final IAutoCloseable ignored = Env.temporaryChangeLoggedUserId(access.getCreatedBy()))
 		{
 			saveRecord(accessRecord);
 		}
@@ -178,17 +161,6 @@ public class RecordAccessService
 		}
 	}
 
-	void fireEvent(@NonNull final RecordAccessChangeEvent event)
-	{
-		if (event.isEmpty())
-		{
-			return;
-		}
-
-		Services.get(ITrxManager.class)
-				.runAfterCommit(() -> eventBus.postObject(event));
-	}
-
 	public ImmutableList<RecordAccess> getAccessesByRecordAndIssuer(
 			@NonNull final TableRecordReference recordRef,
 			@NonNull final PermissionIssuer issuer)
@@ -201,7 +173,7 @@ public class RecordAccessService
 		return query(query)
 				.create()
 				.stream()
-				.map(record -> toUserGroupRecordAccess(record))
+				.map(RecordAccessService::toUserGroupRecordAccess)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -253,7 +225,7 @@ public class RecordAccessService
 				}
 				else
 				{
-					throw new AdempiereException("Invalid pricipal: " + principal); // shall not happen
+					throw new AdempiereException("Invalid principal: " + principal); // shall not happen
 				}
 			}
 
@@ -305,7 +277,7 @@ public class RecordAccessService
 			return;
 		}
 
-		try (final IAutoCloseable c = Env.temporaryChangeLoggedUserId(requestedBy))
+		try (final IAutoCloseable ignored = Env.temporaryChangeLoggedUserId(requestedBy))
 		{
 			Services.get(IQueryBL.class)
 					.createQueryBuilder(I_AD_User_Record_Access.class)
@@ -313,13 +285,6 @@ public class RecordAccessService
 					.create()
 					.delete();
 		}
-	}
-
-	private static ImmutableSet<RecordAccess> toUserGroupRecordAccessesSet(final Collection<I_AD_User_Record_Access> accessRecords)
-	{
-		return accessRecords.stream()
-				.map(record -> toUserGroupRecordAccess(record))
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@VisibleForTesting
@@ -364,7 +329,7 @@ public class RecordAccessService
 	private static ImmutableSet<RecordAccessId> extractIds(final Collection<I_AD_User_Record_Access> accessRecords)
 	{
 		return accessRecords.stream()
-				.map(record -> extractId(record))
+				.map(RecordAccessService::extractId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -373,6 +338,7 @@ public class RecordAccessService
 		return RecordAccessId.ofRepoId(record.getAD_User_Record_Access_ID());
 	}
 
+	@Nullable
 	public String buildUserGroupRecordAccessSqlWhereClause(
 			final String tableName,
 			final int adTableId,
@@ -387,15 +353,11 @@ public class RecordAccessService
 		}
 
 		final StringBuilder sql = new StringBuilder();
-		sql.append(" EXISTS (SELECT 1 FROM " + I_AD_User_Record_Access.Table_Name + " z "
-				+ " WHERE "
-				+ " z.AD_Table_ID = " + adTableId
-				+ " AND z.Record_ID=" + keyColumnNameFQ
-				+ " AND z.IsActive='Y'");
+		sql.append(" EXISTS (SELECT 1 FROM " + I_AD_User_Record_Access.Table_Name + " z " + " WHERE " + " z.AD_Table_ID = ").append(adTableId).append(" AND z.Record_ID=").append(keyColumnNameFQ).append(" AND z.IsActive='Y'");
 
 		//
 		// User or User Group
-		sql.append(" AND (AD_User_ID=" + userId.getRepoId());
+		sql.append(" AND (AD_User_ID=").append(userId.getRepoId());
 		if (!userGroupIds.isEmpty())
 		{
 			sql.append(" OR ").append(DB.buildSqlList("z.AD_UserGroup_ID", userGroupIds));
@@ -409,10 +371,12 @@ public class RecordAccessService
 		return sql.toString();
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	private boolean isApplyUserGroupRecordAccess(
 			@NonNull final RoleId roleId,
 			@NonNull final String tableName)
 	{
+
 		return configs
 				.getByRoleId(roleId)
 				.isTableHandled(tableName);
@@ -452,5 +416,18 @@ public class RecordAccessService
 		}
 
 		return principals.build();
+	}
+
+	public ImmutableSet<String> getHandledTableNames()
+	{
+		return handledTableNamesCache.getOrLoad(0, this::retrieveHandledTableNames);
+	}
+
+	private ImmutableSet<String> retrieveHandledTableNames()
+	{
+		final String sql = "SELECT DISTINCT t.TableName FROM " + I_AD_User_Record_Access.Table_Name + " a "
+				+ " INNER JOIN " + I_AD_Table.Table_Name + " t on t.AD_Table_ID=a.AD_Table_ID";
+		final List<String> tableNames = DB.retrieveRows(sql, ImmutableList.of(), rs -> rs.getString(1));
+		return ImmutableSet.copyOf(tableNames);
 	}
 }
