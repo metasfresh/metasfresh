@@ -24,13 +24,17 @@ package de.metas.order.process;
 
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.CreateSalesOrderFromProposalCommand;
 import de.metas.process.Param;
+import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 
 import java.sql.Timestamp;
@@ -84,4 +88,22 @@ public final class C_Order_CreateFromProposal extends C_Order_CreationProcess
 		return newSalesOrder.getDocumentNo();
 	}
 
+	private void openOrder(@NonNull final I_C_Order order)
+	{
+		final AdWindowId orderWindowId = RecordWindowFinder
+				.findAdWindowId(TableRecordReference.of(order))
+				.orElse(null);
+
+		if (orderWindowId == null)
+		{
+			log.warn("Skip opening {} because no window found for it", order);
+			return;
+		}
+
+		getResult().setRecordToOpen(
+				TableRecordReference.of(order),
+				orderWindowId.getRepoId(),
+				ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument,
+				ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB);
+	}
 }
