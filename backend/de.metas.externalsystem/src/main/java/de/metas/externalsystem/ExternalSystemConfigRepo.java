@@ -99,4 +99,11 @@ public class ExternalSystemConfigRepo
 				.camelUrl(externalSystemConfigRecord.getCamelURL())
 				.name(externalSystemConfigRecord.getName());
 	}
+
+	public String getTypeById(final @NonNull ExternalSystemParentConfigId id)
+	{
+		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
+
+		return externalSystemConfigRecord.getType();
+	}
 }

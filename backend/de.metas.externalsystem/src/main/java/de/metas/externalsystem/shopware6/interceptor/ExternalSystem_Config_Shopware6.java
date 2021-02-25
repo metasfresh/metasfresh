@@ -22,6 +22,8 @@
 
 package de.metas.externalsystem.shopware6.interceptor;
 
+import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6;
@@ -36,10 +38,21 @@ import org.springframework.stereotype.Component;
 public class ExternalSystem_Config_Shopware6
 {
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public final ExternalSystemConfigRepo externalSystemConfigDAO;
+
+	public ExternalSystem_Config_Shopware6(final ExternalSystemConfigRepo externalSystemConfigDAO)
+	{
+		this.externalSystemConfigDAO = externalSystemConfigDAO;
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_ExternalSystem_Config_Shopware6.COLUMNNAME_ExternalSystem_Config_ID})
 	public void checkType(final X_ExternalSystem_Config_Shopware6 config)
 	{
-		if (!ExternalSystemType.Shopware6.getCode().equals(config.getExternalSystem_Config().getType()))
+		final String parentConfigType =
+				externalSystemConfigDAO.getTypeById(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()));
+
+		if (!ExternalSystemType.Shopware6.getCode().equals(parentConfigType))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}

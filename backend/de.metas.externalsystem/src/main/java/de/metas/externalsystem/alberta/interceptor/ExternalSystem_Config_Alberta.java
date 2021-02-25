@@ -22,6 +22,8 @@
 
 package de.metas.externalsystem.alberta.interceptor;
 
+import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.X_ExternalSystem_Config_Alberta;
@@ -35,10 +37,20 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExternalSystem_Config_Alberta
 {
+	public final ExternalSystemConfigRepo externalSystemConfigDAO;
+
+	public ExternalSystem_Config_Alberta(final ExternalSystemConfigRepo externalSystemConfigDAO)
+	{
+		this.externalSystemConfigDAO = externalSystemConfigDAO;
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void checkType(final X_ExternalSystem_Config_Alberta config)
 	{
-		if (!ExternalSystemType.Alberta.getCode().equals(config.getExternalSystem_Config().getType()))
+		final String parentConfigType =
+				externalSystemConfigDAO.getTypeById(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()));
+
+		if (!ExternalSystemType.Alberta.getCode().equals(parentConfigType))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}
