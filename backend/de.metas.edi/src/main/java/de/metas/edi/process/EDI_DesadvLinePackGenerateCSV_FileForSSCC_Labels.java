@@ -23,7 +23,10 @@
 package de.metas.edi.process;
 
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 
@@ -31,6 +34,17 @@ import java.util.List;
 
 public class EDI_DesadvLinePackGenerateCSV_FileForSSCC_Labels extends EDI_GenerateCSV_FileForSSCC_Labels
 {
+
+	@Override public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull IProcessPreconditionsContext context)
+	{
+		if (context.getSelectionSize().isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
+
 	@Override protected String doIt() throws Exception
 	{
 		final IQueryFilter<I_EDI_DesadvLine_Pack> selectedRecordsFilter = getProcessInfo()
