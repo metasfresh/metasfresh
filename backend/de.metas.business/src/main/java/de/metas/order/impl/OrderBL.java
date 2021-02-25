@@ -268,9 +268,15 @@ public class OrderBL implements IOrderBL
 	@Override
 	public boolean setBill_User_ID(final org.compiere.model.I_C_Order order)
 	{
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID());
+		if(billBPartnerId == null)
+		{
+			return false;
+		}
+
 		// First try: if order and bill partner and location are the same, and the contact is set
 		// we can use the same contact
-		final BPartnerLocationId billToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
+		final BPartnerLocationId billToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, order.getBill_Location_ID());
 		final BPartnerLocationId shipToBPLocationId = extractBPartnerLocationOrNull(order);
 		final BPartnerContactId shipToContactId = BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
 		if (BPartnerLocationId.equals(shipToBPLocationId, billToBPLocationId) && shipToContactId != null)
@@ -279,16 +285,16 @@ public class OrderBL implements IOrderBL
 			return true;
 		}
 
-		final RetrieveContactRequestBuilder retrieveBillContanctRequest = RetrieveContactRequest.builder()
-				.bpartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()));
+		final RetrieveContactRequestBuilder retrieveBillContactRequest = RetrieveContactRequest.builder()
+				.bpartnerId(billBPartnerId);
 		if (billToBPLocationId != null)
 		{
 			// Case: Bill Location is set, we can use it to retrieve the contact for that location
-			retrieveBillContanctRequest.bPartnerLocationId(billToBPLocationId);
+			retrieveBillContactRequest.bPartnerLocationId(billToBPLocationId);
 
 		}
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-		final User billContact = bpartnerBL.retrieveContactOrNull(retrieveBillContanctRequest.build());
+		final User billContact = bpartnerBL.retrieveContactOrNull(retrieveBillContactRequest.build());
 		if (billContact == null)
 		{
 			return false;

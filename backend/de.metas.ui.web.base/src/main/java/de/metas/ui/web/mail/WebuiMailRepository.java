@@ -127,8 +127,6 @@ public class WebuiMailRepository
 
 	/**
 	 * Called when the email was removed from our internal cache.
-	 *
-	 * @param email
 	 */
 	private void onEmailRemoved(final WebuiEmail email)
 	{
