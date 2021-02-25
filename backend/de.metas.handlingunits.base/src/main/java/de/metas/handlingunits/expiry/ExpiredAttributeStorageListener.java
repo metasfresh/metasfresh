@@ -1,16 +1,5 @@
 package de.metas.handlingunits.expiry;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-import org.springframework.stereotype.Component;
-
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
@@ -19,10 +8,21 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 /*
  * #%L
@@ -54,6 +54,7 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 		Services.get(IAttributeStorageFactoryService.class).addAttributeStorageListener(this);
 	}
 	final IProductDAO productDAO = Services.get(IProductDAO.class);
+	final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public void onAttributeValueChanged(
@@ -120,9 +121,15 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 			}
 			else
 			{
-				final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
-				final I_M_Product_Category productCategoryRecord = productDAO.getProductCategoryById(productCategoryId);
-				currentDays = productCategoryRecord.getGuaranteeDaysMin();
+				if (productRecord.getGuaranteeMonths() != null && !productRecord.getGuaranteeMonths().isEmpty()) {
+					currentDays = productBL.getGuaranteeMonthsInDays(productRecord);
+				}
+				else
+				{
+					final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
+					final I_M_Product_Category productCategoryRecord = productDAO.getProductCategoryById(productCategoryId);
+					currentDays = productCategoryRecord.getGuaranteeDaysMin();
+				}
 			}
 			expiryWarningLeadTimeDays = Integer.min(currentDays, expiryWarningLeadTimeDays);
 		}

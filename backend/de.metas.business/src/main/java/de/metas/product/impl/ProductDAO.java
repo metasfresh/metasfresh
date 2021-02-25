@@ -44,6 +44,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.product.IProductBL;
 import de.metas.product.ProductPlanningSchemaSelector;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -81,6 +82,7 @@ import lombok.NonNull;
 public class ProductDAO implements IProductDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId>builder()
 			.tableName(I_M_Product_Category.Table_Name)
@@ -508,6 +510,9 @@ public class ProductDAO implements IProductDAO
 		if (productRecord.getGuaranteeDaysMin() > 0)
 		{
 			return productRecord.getGuaranteeDaysMin();
+		}
+		else if (productRecord.getGuaranteeMonths() != null && !productRecord.getGuaranteeMonths().isEmpty()) {
+			return productBL.getGuaranteeMonthsInDays(productRecord);
 		}
 		else
 		{
