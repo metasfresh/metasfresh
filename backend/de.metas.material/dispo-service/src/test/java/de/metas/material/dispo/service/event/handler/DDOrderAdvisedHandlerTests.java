@@ -150,7 +150,7 @@ public class DDOrderAdvisedHandlerTests
 				candidateRepositoryCommands,
 				candidateChangeService,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepository, postMaterialEventService, dimensionService));
+				new RequestMaterialOrderService(candidateRepository, postMaterialEventService));
 	}
 
 	/**
