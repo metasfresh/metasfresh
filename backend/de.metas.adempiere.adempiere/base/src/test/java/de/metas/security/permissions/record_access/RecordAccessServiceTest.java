@@ -73,6 +73,7 @@ public class RecordAccessServiceTest
 		this.configs = new RecordAccessConfigService(Optional.empty());
 
 		recordAccessService = new RecordAccessService(
+				new RecordAccessRepository(),
 				configs,
 				new UserGroupRepository());
 	}

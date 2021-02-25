@@ -1,12 +1,10 @@
 package de.metas.security.permissions.bpartner_hierarchy;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.security.permissions.record_access.RecordAccess;
 import de.metas.security.permissions.record_access.RecordAccessFeature;
-import de.metas.security.permissions.record_access.RecordAccessService;
+import de.metas.security.permissions.record_access.RecordAccessRepository;
 import de.metas.security.permissions.record_access.handlers.RecordAccessHandler;
 import lombok.NonNull;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -36,12 +34,12 @@ import java.util.Set;
 @Component
 public class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 {
-	private final RecordAccessService service;
+	private final RecordAccessRepository recordAccessRepository;
 
 	public BPartnerHierarchyRecordAccessHandler(
-			@NonNull @Lazy final RecordAccessService service)
+			@NonNull final RecordAccessRepository recordAccessRepository)
 	{
-		this.service = service;
+		this.recordAccessRepository = recordAccessRepository;
 	}
 
 	@Override
@@ -51,5 +49,5 @@ public class BPartnerHierarchyRecordAccessHandler implements RecordAccessHandler
 	}
 
 	@Override
-	public Set<String> getHandledTableNames() { return service.getHandledTableNames(); }
+	public Set<String> getHandledTableNames() { return recordAccessRepository.getHandledTableNames(); }
 }

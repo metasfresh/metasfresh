@@ -61,6 +61,7 @@ public class UserGroupRecordAccessServiceTest
 		SpringContextHolder.registerJUnitBean(new EventLogService(mock(EventLogsRepository.class)));
 
 		userGroupRecordAccessService = new RecordAccessService(
+				new RecordAccessRepository(),
 				new RecordAccessConfigService(Optional.empty()),
 				new UserGroupRepository());
 	}
