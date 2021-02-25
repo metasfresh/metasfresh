@@ -291,3 +291,60 @@ de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactor
   },
   "commissionType" : "HIERARCHY_COMMISSION"
 } ] ]
+
+
+de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactoryTest.createForNewCommissionInstances_multiple_contracts_shareOnOwnRevenue=[ [ {
+  "id" : 100019,
+  "commissionProductId" : 100002,
+  "subtractLowerLevelCommissionFromBase" : true,
+  "bpartnerId2HierarchyContracts" : {
+    "100014" : {
+      "@type" : "HierarchyContract",
+      "id" : 100024,
+      "pointsPrecision" : 3,
+      "commissionSettingsLineId" : 100021,
+      "commissionPercent" : 10,
+      "simulation" : false
+    },
+    "100017" : {
+      "@type" : "HierarchyContract",
+      "id" : 100025,
+      "pointsPrecision" : 3,
+      "commissionSettingsLineId" : 100021,
+      "commissionPercent" : 10,
+      "simulation" : false
+    }
+  },
+  "commissionType" : "HIERARCHY_COMMISSION"
+}, {
+  "id" : 100006,
+  "commissionProductId" : 100001,
+  "subtractLowerLevelCommissionFromBase" : true,
+  "bpartnerId2HierarchyContracts" : {
+    "100011" : {
+      "@type" : "HierarchyContract",
+      "id" : 100012,
+      "pointsPrecision" : 3,
+      "commissionSettingsLineId" : 100008,
+      "commissionPercent" : 0,
+      "simulation" : false
+    },
+    "100014" : {
+      "@type" : "HierarchyContract",
+      "id" : 100015,
+      "pointsPrecision" : 3,
+      "commissionSettingsLineId" : 100008,
+      "commissionPercent" : 10,
+      "simulation" : false
+    },
+    "100017" : {
+      "@type" : "HierarchyContract",
+      "id" : 100018,
+      "pointsPrecision" : 3,
+      "commissionSettingsLineId" : 100008,
+      "commissionPercent" : 10,
+      "simulation" : false
+    }
+  },
+  "commissionType" : "HIERARCHY_COMMISSION"
+} ] ]

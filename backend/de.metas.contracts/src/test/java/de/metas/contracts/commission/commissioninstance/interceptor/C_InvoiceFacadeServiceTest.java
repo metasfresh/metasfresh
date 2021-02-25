@@ -113,7 +113,6 @@ class C_InvoiceFacadeServiceTest
 		final CommissionHierarchyFactory commissionHierarchyFactory = new CommissionHierarchyFactory();
 		final CommissionTriggerFactory commissionTriggerFactory = new CommissionTriggerFactory();
 		final CommissionInstanceRequestFactory commissionInstanceRequestFactory = new CommissionInstanceRequestFactory(
-				new BPartnerBL(new UserRepository()),
 				commissionConfigFactory,
 				commissionHierarchyFactory,
 				commissionTriggerFactory);

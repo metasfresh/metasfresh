@@ -44,18 +44,15 @@ public class CommissionInstanceRequestFactory
 {
 	private static final Logger logger = LogManager.getLogger(CommissionInstanceRequestFactory.class);
 
-	private final IBPartnerBL bpartnerBL;
 	private final CommissionConfigFactory commissionConfigFactory;
 	private final CommissionHierarchyFactory commissionHierarchyFactory;
 	private final CommissionTriggerFactory commissionTriggerFactory;
 
 	public CommissionInstanceRequestFactory(
-			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final CommissionConfigFactory commissionConfigFactory,
 			@NonNull final CommissionHierarchyFactory commissionHierarchyFactory,
 			@NonNull final CommissionTriggerFactory commissionTriggerFactory)
 	{
-		this.bpartnerBL = bpartnerBL;
 		this.commissionConfigFactory = commissionConfigFactory;
 		this.commissionHierarchyFactory = commissionHierarchyFactory;
 		this.commissionTriggerFactory = commissionTriggerFactory;
@@ -68,11 +65,11 @@ public class CommissionInstanceRequestFactory
 	public Optional<CreateCommissionSharesRequest> createRequestFor(@NonNull final CommissionTriggerDocument commissionTriggerDocument)
 	{
 		final BPartnerId customerBPartnerId = commissionTriggerDocument.getCustomerBPartnerId();
-		final BPartnerId salesRepBPartnerId = bpartnerBL.isSalesRep(customerBPartnerId)
-				? customerBPartnerId
-				: commissionTriggerDocument.getSalesRepBPartnerId();
+		final BPartnerId salesRepBPartnerId = commissionTriggerDocument.getSalesRepBPartnerId();
 
-		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(salesRepBPartnerId);
+		// note: we include the end-customer in the hierarchy because they might be a salesrep 
+		// and their contract might indicated that metasfresh shall create a 0% commission share for them
+		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(customerBPartnerId);
 
 		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
 				.commissionHierarchy(hierarchy)
@@ -99,12 +96,11 @@ public class CommissionInstanceRequestFactory
 			@NonNull final ImmutableList<CommissionConfig> configs,
 			@NonNull final CommissionTrigger trigger)
 	{
-		final CreateCommissionSharesRequest request = CreateCommissionSharesRequest.builder()
+		return CreateCommissionSharesRequest.builder()
 				.configs(configs)
 				.hierarchy(hierarchy)
 				.trigger(trigger)
 				.startingHierarchyLevel(HierarchyLevel.ZERO)
 				.build();
-		return request;
 	}
 }

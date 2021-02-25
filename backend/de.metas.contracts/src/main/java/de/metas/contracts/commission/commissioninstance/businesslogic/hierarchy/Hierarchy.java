@@ -17,6 +17,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.contracts.commission.Beneficiary;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -105,6 +106,12 @@ public class Hierarchy
 	public Iterable<HierarchyNode> getUpStream(@NonNull final Beneficiary beneficiary)
 	{
 		final HierarchyNode node = beneficiary2Node.get(beneficiary);
+		if (node == null)
+		{
+			throw new AdempiereException("Beneficiary with C_BPartner_ID=" + beneficiary.getBPartnerId().getRepoId() + " is not part of this hierarchy")
+					.appendParametersToMessage()
+					.setParameter("this", this);
+		}
 		return () -> new ParentNodeIterator(child2Parent, node);
 	}
 
