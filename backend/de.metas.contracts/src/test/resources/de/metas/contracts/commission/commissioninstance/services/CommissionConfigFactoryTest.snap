@@ -3,17 +3,9 @@ de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactor
   "commissionProductId" : 100001,
   "subtractLowerLevelCommissionFromBase" : true,
   "bpartnerId2HierarchyContracts" : {
-    "100010" : {
+    "100011" : {
       "@type" : "HierarchyContract",
-      "id" : 100011,
-      "pointsPrecision" : 3,
-      "commissionSettingsLineId" : 100009,
-      "commissionPercent" : 20,
-      "simulation" : false
-    },
-    "100012" : {
-      "@type" : "HierarchyContract",
-      "id" : 100013,
+      "id" : 100012,
       "pointsPrecision" : 3,
       "commissionSettingsLineId" : 100009,
       "commissionPercent" : 20,
@@ -26,6 +18,14 @@ de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactor
       "commissionSettingsLineId" : 100009,
       "commissionPercent" : 20,
       "simulation" : false
+    },
+    "100017" : {
+      "@type" : "HierarchyContract",
+      "id" : 100018,
+      "pointsPrecision" : 3,
+      "commissionSettingsLineId" : 100009,
+      "commissionPercent" : 20,
+      "simulation" : false
     }
   },
   "commissionType" : "HIERARCHY_COMMISSION"
@@ -33,118 +33,110 @@ de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactor
 
 
 de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactoryTest.createForExisingInstance=[ {
-  "100020" : {
-    "id" : 100016,
+  "100023" : {
+    "id" : 100019,
     "commissionProductId" : 100002,
     "subtractLowerLevelCommissionFromBase" : true,
     "bpartnerId2HierarchyContracts" : {
-      "100010" : {
+      "100011" : {
         "@type" : "HierarchyContract",
-        "id" : 100020,
+        "id" : 100023,
         "pointsPrecision" : 3,
-        "commissionSettingsLineId" : 100019,
-        "commissionPercent" : 20,
-        "simulation" : false
-      },
-      "100012" : {
-        "@type" : "HierarchyContract",
-        "id" : 100021,
-        "pointsPrecision" : 3,
-        "commissionSettingsLineId" : 100019,
+        "commissionSettingsLineId" : 100022,
         "commissionPercent" : 20,
         "simulation" : false
       },
       "100014" : {
         "@type" : "HierarchyContract",
-        "id" : 100022,
+        "id" : 100024,
         "pointsPrecision" : 3,
-        "commissionSettingsLineId" : 100019,
+        "commissionSettingsLineId" : 100022,
+        "commissionPercent" : 20,
+        "simulation" : false
+      },
+      "100017" : {
+        "@type" : "HierarchyContract",
+        "id" : 100025,
+        "pointsPrecision" : 3,
+        "commissionSettingsLineId" : 100022,
         "commissionPercent" : 20,
         "simulation" : false
       }
     },
     "commissionType" : "HIERARCHY_COMMISSION"
   },
-  "100021" : {
-    "id" : 100016,
+  "100024" : {
+    "id" : 100019,
     "commissionProductId" : 100002,
     "subtractLowerLevelCommissionFromBase" : true,
     "bpartnerId2HierarchyContracts" : {
-      "100010" : {
+      "100011" : {
         "@type" : "HierarchyContract",
-        "id" : 100020,
+        "id" : 100023,
         "pointsPrecision" : 3,
-        "commissionSettingsLineId" : 100019,
-        "commissionPercent" : 20,
-        "simulation" : false
-      },
-      "100012" : {
-        "@type" : "HierarchyContract",
-        "id" : 100021,
-        "pointsPrecision" : 3,
-        "commissionSettingsLineId" : 100019,
+        "commissionSettingsLineId" : 100022,
         "commissionPercent" : 20,
         "simulation" : false
       },
       "100014" : {
         "@type" : "HierarchyContract",
-        "id" : 100022,
+        "id" : 100024,
         "pointsPrecision" : 3,
-        "commissionSettingsLineId" : 100019,
+        "commissionSettingsLineId" : 100022,
+        "commissionPercent" : 20,
+        "simulation" : false
+      },
+      "100017" : {
+        "@type" : "HierarchyContract",
+        "id" : 100025,
+        "pointsPrecision" : 3,
+        "commissionSettingsLineId" : 100022,
         "commissionPercent" : 20,
         "simulation" : false
       }
     },
     "commissionType" : "HIERARCHY_COMMISSION"
   },
-  "100022" : {
-    "id" : 100016,
+  "100025" : {
+    "id" : 100019,
     "commissionProductId" : 100002,
     "subtractLowerLevelCommissionFromBase" : true,
     "bpartnerId2HierarchyContracts" : {
-      "100010" : {
+      "100011" : {
         "@type" : "HierarchyContract",
-        "id" : 100020,
+        "id" : 100023,
         "pointsPrecision" : 3,
-        "commissionSettingsLineId" : 100019,
-        "commissionPercent" : 20,
-        "simulation" : false
-      },
-      "100012" : {
-        "@type" : "HierarchyContract",
-        "id" : 100021,
-        "pointsPrecision" : 3,
-        "commissionSettingsLineId" : 100019,
+        "commissionSettingsLineId" : 100022,
         "commissionPercent" : 20,
         "simulation" : false
       },
       "100014" : {
         "@type" : "HierarchyContract",
-        "id" : 100022,
+        "id" : 100024,
         "pointsPrecision" : 3,
-        "commissionSettingsLineId" : 100019,
+        "commissionSettingsLineId" : 100022,
+        "commissionPercent" : 20,
+        "simulation" : false
+      },
+      "100017" : {
+        "@type" : "HierarchyContract",
+        "id" : 100025,
+        "pointsPrecision" : 3,
+        "commissionSettingsLineId" : 100022,
         "commissionPercent" : 20,
         "simulation" : false
       }
     },
     "commissionType" : "HIERARCHY_COMMISSION"
   },
-  "100011" : {
+  "100012" : {
     "id" : 100006,
     "commissionProductId" : 100001,
     "subtractLowerLevelCommissionFromBase" : true,
     "bpartnerId2HierarchyContracts" : {
-      "100010" : {
+      "100011" : {
         "@type" : "HierarchyContract",
-        "id" : 100011,
-        "pointsPrecision" : 3,
-        "commissionSettingsLineId" : 100009,
-        "commissionPercent" : 20,
-        "simulation" : false
-      },
-      "100012" : {
-        "@type" : "HierarchyContract",
-        "id" : 100013,
+        "id" : 100012,
         "pointsPrecision" : 3,
         "commissionSettingsLineId" : 100009,
         "commissionPercent" : 20,
@@ -157,34 +149,10 @@ de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactor
         "commissionSettingsLineId" : 100009,
         "commissionPercent" : 20,
         "simulation" : false
-      }
-    },
-    "commissionType" : "HIERARCHY_COMMISSION"
-  },
-  "100013" : {
-    "id" : 100006,
-    "commissionProductId" : 100001,
-    "subtractLowerLevelCommissionFromBase" : true,
-    "bpartnerId2HierarchyContracts" : {
-      "100010" : {
-        "@type" : "HierarchyContract",
-        "id" : 100011,
-        "pointsPrecision" : 3,
-        "commissionSettingsLineId" : 100009,
-        "commissionPercent" : 20,
-        "simulation" : false
       },
-      "100012" : {
+      "100017" : {
         "@type" : "HierarchyContract",
-        "id" : 100013,
-        "pointsPrecision" : 3,
-        "commissionSettingsLineId" : 100009,
-        "commissionPercent" : 20,
-        "simulation" : false
-      },
-      "100014" : {
-        "@type" : "HierarchyContract",
-        "id" : 100015,
+        "id" : 100018,
         "pointsPrecision" : 3,
         "commissionSettingsLineId" : 100009,
         "commissionPercent" : 20,
@@ -198,17 +166,9 @@ de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactor
     "commissionProductId" : 100001,
     "subtractLowerLevelCommissionFromBase" : true,
     "bpartnerId2HierarchyContracts" : {
-      "100010" : {
+      "100011" : {
         "@type" : "HierarchyContract",
-        "id" : 100011,
-        "pointsPrecision" : 3,
-        "commissionSettingsLineId" : 100009,
-        "commissionPercent" : 20,
-        "simulation" : false
-      },
-      "100012" : {
-        "@type" : "HierarchyContract",
-        "id" : 100013,
+        "id" : 100012,
         "pointsPrecision" : 3,
         "commissionSettingsLineId" : 100009,
         "commissionPercent" : 20,
@@ -221,6 +181,46 @@ de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactor
         "commissionSettingsLineId" : 100009,
         "commissionPercent" : 20,
         "simulation" : false
+      },
+      "100017" : {
+        "@type" : "HierarchyContract",
+        "id" : 100018,
+        "pointsPrecision" : 3,
+        "commissionSettingsLineId" : 100009,
+        "commissionPercent" : 20,
+        "simulation" : false
+      }
+    },
+    "commissionType" : "HIERARCHY_COMMISSION"
+  },
+  "100018" : {
+    "id" : 100006,
+    "commissionProductId" : 100001,
+    "subtractLowerLevelCommissionFromBase" : true,
+    "bpartnerId2HierarchyContracts" : {
+      "100011" : {
+        "@type" : "HierarchyContract",
+        "id" : 100012,
+        "pointsPrecision" : 3,
+        "commissionSettingsLineId" : 100009,
+        "commissionPercent" : 20,
+        "simulation" : false
+      },
+      "100014" : {
+        "@type" : "HierarchyContract",
+        "id" : 100015,
+        "pointsPrecision" : 3,
+        "commissionSettingsLineId" : 100009,
+        "commissionPercent" : 20,
+        "simulation" : false
+      },
+      "100017" : {
+        "@type" : "HierarchyContract",
+        "id" : 100018,
+        "pointsPrecision" : 3,
+        "commissionSettingsLineId" : 100009,
+        "commissionPercent" : 20,
+        "simulation" : false
       }
     },
     "commissionType" : "HIERARCHY_COMMISSION"
@@ -229,31 +229,31 @@ de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactor
 
 
 de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactoryTest.createForNewCommissionInstances_multiple_contracts=[ [ {
-  "id" : 100016,
+  "id" : 100019,
   "commissionProductId" : 100002,
   "subtractLowerLevelCommissionFromBase" : true,
   "bpartnerId2HierarchyContracts" : {
-    "100010" : {
+    "100011" : {
       "@type" : "HierarchyContract",
-      "id" : 100020,
+      "id" : 100023,
       "pointsPrecision" : 3,
-      "commissionSettingsLineId" : 100019,
-      "commissionPercent" : 20,
-      "simulation" : false
-    },
-    "100012" : {
-      "@type" : "HierarchyContract",
-      "id" : 100021,
-      "pointsPrecision" : 3,
-      "commissionSettingsLineId" : 100019,
+      "commissionSettingsLineId" : 100022,
       "commissionPercent" : 20,
       "simulation" : false
     },
     "100014" : {
       "@type" : "HierarchyContract",
-      "id" : 100022,
+      "id" : 100024,
       "pointsPrecision" : 3,
-      "commissionSettingsLineId" : 100019,
+      "commissionSettingsLineId" : 100022,
+      "commissionPercent" : 20,
+      "simulation" : false
+    },
+    "100017" : {
+      "@type" : "HierarchyContract",
+      "id" : 100025,
+      "pointsPrecision" : 3,
+      "commissionSettingsLineId" : 100022,
       "commissionPercent" : 20,
       "simulation" : false
     }
@@ -264,17 +264,9 @@ de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactor
   "commissionProductId" : 100001,
   "subtractLowerLevelCommissionFromBase" : true,
   "bpartnerId2HierarchyContracts" : {
-    "100010" : {
+    "100011" : {
       "@type" : "HierarchyContract",
-      "id" : 100011,
-      "pointsPrecision" : 3,
-      "commissionSettingsLineId" : 100009,
-      "commissionPercent" : 20,
-      "simulation" : false
-    },
-    "100012" : {
-      "@type" : "HierarchyContract",
-      "id" : 100013,
+      "id" : 100012,
       "pointsPrecision" : 3,
       "commissionSettingsLineId" : 100009,
       "commissionPercent" : 20,
@@ -283,6 +275,14 @@ de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactor
     "100014" : {
       "@type" : "HierarchyContract",
       "id" : 100015,
+      "pointsPrecision" : 3,
+      "commissionSettingsLineId" : 100009,
+      "commissionPercent" : 20,
+      "simulation" : false
+    },
+    "100017" : {
+      "@type" : "HierarchyContract",
+      "id" : 100018,
       "pointsPrecision" : 3,
       "commissionSettingsLineId" : 100009,
       "commissionPercent" : 20,
