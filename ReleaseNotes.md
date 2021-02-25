@@ -10,33 +10,33 @@ Additional notes:
 Here come the actual release notes:
 
 # Current master - metasfresh 5.162 - WIP
-
-## Reatures
+## Features
 
 
 # Current RC - metasfresh 5.161 - WIP
-
-https://github.com/metasfresh/metasfresh/issues/10595
-https://github.com/metasfresh/metasfresh/pull/10659
-  https://github.com/metasfresh/metasfresh/issues/10540
-
 ## Features
-* [#10683](https://github.com/metasfresh/metasfresh/issues/10683) AD_Issue - Insert REST Endpoint
-https://github.com/metasfresh/metasfresh/issues/10676
-https://github.com/metasfresh/metasfresh/issues/10676
-  https://github.com/metasfresh/metasfresh/issues/10566
+* metasfresh
+  * [#10249](https://github.com/metasfresh/metasfresh/issues/10249) Printing Options: WebUI frontend panel
+  * [#10389](https://github.com/metasfresh/metasfresh/issues/10389) Guarantee/Service Cases: Set `WarrantyStartDate` when shipping HUs
+  * [#10393](https://github.com/metasfresh/metasfresh/issues/10393) Add 'Show Less' and 'Show More' `ad_messages`
+  * [#10419](https://github.com/metasfresh/metasfresh/issues/10419) Create a function that should say if a country is in EU or not
+  * [#10424](https://github.com/metasfresh/metasfresh/issues/10424) Service Orders: Kickstart Service/Repair Project window
+  * [#10426](https://github.com/metasfresh/metasfresh/issues/10426) Only add `SerialNo` Attribute to Manufacturing
+  * [#10524](https://github.com/metasfresh/metasfresh/issues/10524) Customize Auftragsdisposition (Sales Order Candidates) Window
   * [#10535](https://github.com/metasfresh/metasfresh/issues/10535) Additional String Accounting Dimensions
-  https://github.com/metasfresh/metasfresh/issues/10555
-  https://github.com/metasfresh/metasfresh/issues/10624
-  https://github.com/metasfresh/metasfresh/pull/10645
-  https://github.com/metasfresh/metasfresh/issues/10524
-  https://github.com/metasfresh/metasfresh/issues/10573
-  https://github.com/metasfresh/metasfresh/issues/10249
-  https://github.com/metasfresh/metasfresh/issues/10426
-https://github.com/metasfresh/metasfresh/issues/10424
-https://github.com/metasfresh/metasfresh/issues/10419
-https://github.com/metasfresh/metasfresh/issues/10393
-https://github.com/metasfresh/metasfresh/issues/10389
+  * [#10540](https://github.com/metasfresh/metasfresh/issues/10540) Changes to `C_Invoice_Rejection_Detail` now published to `C_Invoice`
+  * [#10555](https://github.com/metasfresh/metasfresh/issues/10555) Add Mass Print PDF process to Outbound Documents
+  * [#10566](https://github.com/metasfresh/metasfresh/issues/10566) Add Document Sub Type = Requisition
+  * [#10573](https://github.com/metasfresh/metasfresh/issues/10573) Increase Product eff. size, decrease Replication Transaction size
+  * [#10595](https://github.com/metasfresh/metasfresh/issues/10595) Remittance advice document
+  * [#10624](https://github.com/metasfresh/metasfresh/issues/10624) Print Selection of Doc Outbound logs
+  * [#10644](https://github.com/metasfresh/metasfresh/issues/10644) Manufacturing REST API: Search HUs to Issue by HUValue and SerialNo
+  * [#10676](https://github.com/metasfresh/metasfresh/issues/10676) Alberta Patients Import
+  * [#10683](https://github.com/metasfresh/metasfresh/issues/10683) `AD_Issue` - Insert REST Endpoint
+
+
+
+
 https://github.com/metasfresh/metasfresh/pull/10301
 https://github.com/metasfresh/metasfresh/issues/10269
 https://github.com/metasfresh/metasfresh/pull/10432
@@ -78,7 +78,12 @@ https://github.com/metasfresh/metasfresh/issues/10642
 
 ## Fixes
 * metasfresh
-  * [#10652](https://github.com/metasfresh/metasfresh/issues/10652) Incorrect breadcrumb after logout & login
+  * [#10656](https://github.com/metasfresh/metasfresh/issues/10656) Inventory import w/o HU aggregation type: Use multiple as default
+
+
+
+
+  [#10652](https://github.com/metasfresh/metasfresh/issues/10652) Incorrect breadcrumb after logout & login
   https://github.com/metasfresh/metasfresh/issues/10649
   https://github.com/metasfresh/metasfresh/issues/10149
   https://github.com/metasfresh/metasfresh/issues/10422
