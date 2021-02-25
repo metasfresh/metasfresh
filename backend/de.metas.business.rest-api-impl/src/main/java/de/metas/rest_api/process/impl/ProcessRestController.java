@@ -23,6 +23,7 @@
 package de.metas.rest_api.process.impl;
 
 import de.metas.Profiles;
+import de.metas.common.rest_api.CreatePInstanceLogRequest;
 import de.metas.common.rest_api.JsonError;
 import de.metas.common.rest_api.issue.JsonCreateIssueResponse;
 import de.metas.logging.LogManager;
@@ -46,6 +47,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
@@ -70,6 +72,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * This is the rest controller used when processes are invoked via REST-API on the app-server (ServerRoot).
+ */
 @RestController
 @RequestMapping(ProcessRestController.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
@@ -89,12 +94,12 @@ public class ProcessRestController
 		this.processService = processService;
 	}
 
+	@ApiOperation("Invoke a process from the list returned by the `available` endpoint")
 	@PostMapping("{value}/invoke")
 	public ResponseEntity<?> invokeProcess(
-			@NonNull @PathVariable("value") final String processValue,
+			@NonNull @PathVariable("value") @ApiParam("Translates to `AD_Process.Value`") final String processValue,
 			@Nullable @RequestBody(required = false) final RunProcessRequest request)
 	{
-
 		final Optional<AdProcessId> processId = getProcessIdIfRunnable(processValue);
 
 		if (!processId.isPresent())
@@ -148,19 +153,33 @@ public class ProcessRestController
 				.body(response);
 	}
 
-	@ApiOperation("Create an AD_Issue")
+	@ApiOperation("Create an AD_Issue. Note: it's not necessary that the process in question was started by the `invoke` endpoint.")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully created issue"),
 			@ApiResponse(code = 401, message = "You are not authorized to create new issue"),
 			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
 			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
-
-	@PostMapping(path = "{AD_PInstance_ID}/externalstatus/error",consumes = "application/json", produces = "application/json")
+	@PostMapping(path = "{AD_PInstance_ID}/externalstatus/error", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JsonCreateIssueResponse> handleError(@RequestBody @NonNull final JsonError request, @PathVariable final Integer AD_PInstance_ID)
 	{
 		final JsonCreateIssueResponse issueResponse = processService.createIssue(request, PInstanceId.ofRepoId(AD_PInstance_ID));
 		return ResponseEntity.ok(issueResponse);
+	}
+
+	@ApiOperation("Store external AD_PInstance logs")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully stored external AD_PInstance logs"),
+			@ApiResponse(code = 401, message = "You are not authorized to store AD_PInstance logs"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
+			@ApiResponse(code = 422, message = "The request body could not be processed")
+	})
+
+	@PostMapping(path = "{adPInstanceId}/externalstatus/message", consumes = "application/json")
+	public ResponseEntity<?> handleLogs(@RequestBody @NonNull final CreatePInstanceLogRequest request, @PathVariable final Integer adPInstanceId)
+	{
+		processService.storeExternalPinstanceLog(request, PInstanceId.ofRepoId(adPInstanceId));
+		return ResponseEntity.ok().build();
 	}
 
 	private ResponseEntity<?> getResponse(@NonNull final ProcessExecutionResult processExecutionResult)
@@ -184,7 +203,7 @@ public class ProcessRestController
 
 			return ResponseEntity.ok()
 					.contentType(MediaType.parseMediaType(contentType))
-					.header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\"" + processExecutionResult.getReportFilename() + "\"")
+					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + processExecutionResult.getReportFilename() + "\"")
 					.body(processExecutionResult.getReportDataAsByteArray());
 		}
 		else

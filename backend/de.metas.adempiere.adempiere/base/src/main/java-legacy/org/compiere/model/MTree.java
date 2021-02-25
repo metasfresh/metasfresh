@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.sql.RowSet;
 
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -743,7 +744,7 @@ public class MTree extends MTree_Base
 		private boolean editable;
 		private boolean clientTree;
 		private boolean allNodes = false;
-		private String trxName = ITrx.TRXNAME_None;
+		@Nullable private String trxName = ITrx.TRXNAME_None;
 		private String adLanguage = null;
 		private IUserRolePermissions userRolePermissions;
 
@@ -802,12 +803,13 @@ public class MTree extends MTree_Base
 			return AD_Tree_ID;
 		}
 
-		public Builder setTrxName(final String trxName)
+		public Builder setTrxName(@Nullable final String trxName)
 		{
 			this.trxName = trxName;
 			return this;
 		}
 
+		@Nullable
 		public String getTrxName()
 		{
 			return trxName;

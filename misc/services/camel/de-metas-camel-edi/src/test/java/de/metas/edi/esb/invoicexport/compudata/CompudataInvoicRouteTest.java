@@ -86,12 +86,12 @@ class CompudataInvoicRouteTest extends CamelTestSupport
 	}
 
 	@Test
-	void nonEmpty_invoic() throws Exception
+	void invoic_as_ordered() throws Exception
 	{
 		// given
 		SystemTime.setTimeSource(() -> Instant.parse("2021-02-07T20:35:30.00Z").toEpochMilli());
 
-		final var inputStr = CompudataInvoicRouteTest.class.getResourceAsStream("/de/metas/edi/esb/invoicexport/compudata/INVOIC.xml");
+		final var inputStr = CompudataInvoicRouteTest.class.getResourceAsStream("/de/metas/edi/esb/invoicexport/compudata/INVOIC_as_ordered.xml");
 		assertThat(inputStr).isNotNull();
 
 		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
@@ -117,6 +117,41 @@ class CompudataInvoicRouteTest extends CamelTestSupport
 		fileOutputEndpoint.assertIsSatisfied(1000);
 		final var invoicOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
 		assertThat(invoicOutput)
-				.isEqualTo(contentOf(new File("./src/test/resources/de/metas/edi/esb/invoicexport/compudata/INVOIC_expected_output.txt")));
+				.isEqualTo(contentOf(new File("./src/test/resources/de/metas/edi/esb/invoicexport/compudata/INVOIC_as_ordered_expected_output.txt")));
+	}
+
+	@Test
+	void invoic_differing_qties() throws Exception
+	{
+		// given
+		SystemTime.setTimeSource(() -> Instant.parse("2021-02-07T20:35:30.00Z").toEpochMilli());
+
+		final var inputStr = CompudataInvoicRouteTest.class.getResourceAsStream("/de/metas/edi/esb/invoicexport/compudata/INVOIC_differing_qties.xml");
+		assertThat(inputStr).isNotNull();
+
+		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+		final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+		final JAXBElement<EDICctopInvoicVType> inputXml = (JAXBElement)unmarshaller.unmarshal(inputStr);
+
+		final Exchange exchange = new DefaultExchange(template.getCamelContext());
+
+		final var numberFormat = NumberFormat.getInstance(Locale.GERMANY); // in the output file we still need .
+		numberFormat.setGroupingUsed(false);
+
+		exchange.setProperty(Constants.DECIMAL_FORMAT, numberFormat);
+		exchange.getIn().setBody(inputXml.getValue());
+		exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_OriginalXMLBody, inputXml.getValue());
+
+		// when
+		template.send(
+				CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOIC_CONSUMER /*endpoint-URI*/,
+				exchange);
+
+		// then
+		fileOutputEndpoint.expectedMessageCount(1);
+		fileOutputEndpoint.assertIsSatisfied(1000);
+		final var invoicOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
+		assertThat(invoicOutput)
+				.isEqualTo(contentOf(new File("./src/test/resources/de/metas/edi/esb/invoicexport/compudata/INVOIC_differing_qties_expected_output.txt")));
 	}
 }

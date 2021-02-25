@@ -1,7 +1,11 @@
 package de.metas.material.cockpit.view.eventhandler;
 
+import java.time.ZoneId;
 import java.util.Collection;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -64,7 +68,8 @@ public class ShipmentScheduleEventHandler
 
 	private final MainDataRequestHandler dataUpdateRequestHandler;
 	private final DetailDataRequestHandler detailRequestHandler;
-
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	
 	public ShipmentScheduleEventHandler(
 			@NonNull final MainDataRequestHandler dataUpdateRequestHandler,
 			@NonNull final DetailDataRequestHandler detailRequestHandler)
@@ -91,8 +96,11 @@ public class ShipmentScheduleEventHandler
 	@Override
 	public void handleEvent(@NonNull final AbstractShipmentScheduleEvent event)
 	{
+		final OrgId orgId = event.getEventDescriptor().getOrgId();
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		
 		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
-		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.createForMaterial(materialDescriptor);
+		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.createForMaterial(materialDescriptor, timeZone);
 
 		createAndHandleMainDataRequest(event, identifier);
 		createAndHandleDetailRequest(event, identifier);

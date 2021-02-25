@@ -319,7 +319,8 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		}
 	}
 
-	private void saveProcessInfoLogs(final PInstanceId pinstanceId, final List<ProcessInfoLog> logs)
+	@Override
+	public void saveProcessInfoLogs(final PInstanceId pinstanceId, final List<ProcessInfoLog> logs)
 	{
 		if (pinstanceId == null)
 		{

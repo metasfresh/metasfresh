@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.purchasecandidate.PurchaseCandidateReminder;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.ui.web.config.WebConfig;
@@ -60,7 +60,7 @@ public class PurchaseCandidateReminderSchedulerRestController
 	{
 		userSession.assertLoggedIn();
 
-		final AdWindowId purchaseCandidatesWindowId = RecordZoomWindowFinder.findAdWindowId(I_C_PurchaseCandidate.Table_Name).get();
+		final AdWindowId purchaseCandidatesWindowId = RecordWindowFinder.findAdWindowId(I_C_PurchaseCandidate.Table_Name).get();
 		if (!userSession.getUserRolePermissions().checkWindowPermission(purchaseCandidatesWindowId).hasWriteAccess())
 		{
 			throw new AdempiereException("No read/write access to purchase candidates window");
