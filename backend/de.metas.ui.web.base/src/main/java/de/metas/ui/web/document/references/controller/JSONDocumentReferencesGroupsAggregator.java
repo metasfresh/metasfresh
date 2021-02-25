@@ -1,12 +1,6 @@
 package de.metas.ui.web.document.references.controller;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.document.references.DocumentReference;
@@ -20,6 +14,10 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.lang.UIDStringUtil;
 import lombok.Builder;
 import lombok.NonNull;
+
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 
 /*
  * #%L
@@ -44,7 +42,7 @@ import lombok.NonNull;
  */
 
 /**
- * Aggregates {@link DocumentReferences} to {@link JSONDocumentReferencesGroupList}s.
+ * Aggregates {@link DocumentReference}s to {@link JSONDocumentReferencesGroupList}s.
  */
 final class JSONDocumentReferencesGroupsAggregator
 {
@@ -105,14 +103,6 @@ final class JSONDocumentReferencesGroupsAggregator
 		return this;
 	}
 
-	public JSONDocumentReferencesGroupList flush()
-	{
-		final List<JSONDocumentReferencesGroup> groups = flushGroups();
-		return !groups.isEmpty()
-				? new JSONDocumentReferencesGroupList(groups)
-				: JSONDocumentReferencesGroupList.EMPTY;
-	}
-
 	private ImmutableList<JSONDocumentReferencesGroup> flushGroups()
 	{
 		if (groupsBuilders.isEmpty())
@@ -122,7 +112,7 @@ final class JSONDocumentReferencesGroupsAggregator
 
 		final ImmutableList<JSONDocumentReferencesGroup> groups = groupsBuilders.values()
 				.stream()
-				.map(groupBuilder -> groupBuilder.build())
+				.map(JSONDocumentReferencesGroupBuilder::build)
 				.filter(group -> !group.isEmpty())
 				.sorted(sorting)
 				.collect(ImmutableList.toImmutableList());
