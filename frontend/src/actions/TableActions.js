@@ -320,7 +320,12 @@ export function updateGridTableData(tableId, rows) {
 
     if (state.tables) {
       const table = state.tables[tableId];
-      const { indentSupported, expandedDepth, keyProperty, collapsible } = table;
+      const {
+        indentSupported,
+        expandedDepth,
+        keyProperty,
+        collapsible,
+      } = table;
 
       if (rows.length && indentSupported) {
         rows = flattenRows(rows);
