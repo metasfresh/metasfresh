@@ -85,10 +85,9 @@ public class CommissionInstanceRequestFactory
 			return Optional.empty();
 		}
 
-		final CommissionTrigger trigger = commissionTriggerFactory.createForDocument(commissionTriggerDocument, false /* candidateDeleted */);
+		final CommissionTrigger commissionTrigger = commissionTriggerFactory.createForDocument(commissionTriggerDocument, false /* candidateDeleted */);
 
-		return Optional.of(createRequest(hierarchy, configs, trigger));
-
+		return Optional.of(createRequest(hierarchy, configs, commissionTrigger));
 	}
 
 	private CreateCommissionSharesRequest createRequest(

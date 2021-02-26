@@ -40,10 +40,19 @@ public class CreateCommissionSharesRequest
 	@NonNull
 	CommissionTrigger trigger;
 
+	/**
+	 * Contains the bpartners and their commission configs (contracts/settings).
+	 * Not every bpartner from the {@link #hierarchy} needs to have one.
+	 */
 	@NonNull
 	@Singular
 	ImmutableList<CommissionConfig> configs;
 
+	/** 
+	 * Contains the bpartners for which we might create commission shares. 
+	 * Does not tell if they will or won't get a share, but tells at which level they will get it.
+	 * The root node is supposed to be the actual endcustomer, because it might have a a contract indicating that metasfresh shall create a 0% commission share for it.
+	 */
 	@NonNull
 	Hierarchy hierarchy;
 
