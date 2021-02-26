@@ -2,6 +2,8 @@ package de.metas.ui.web.order.products_proposal.view;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -10,7 +12,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -19,7 +20,9 @@ import de.metas.bpartner.product.stats.BPartnerProductStats;
 import de.metas.bpartner.product.stats.BPartnerProductStats.LastInvoiceInfo;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
+import de.metas.order.OrderId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.product.ProductId;
 import de.metas.ui.web.order.products_proposal.model.ProductProposalPrice;
@@ -28,6 +31,8 @@ import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsData;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_AddProductFromBasePriceList;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers;
+import de.metas.ui.web.order.products_proposal.service.Order;
+import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
@@ -70,15 +75,18 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 
 	// services
 	private final BPartnerProductStatsService bpartnerProductStatsService;
+	private final OrderProductProposalsService orderProductProposalsService;
 	private final MoneyService moneyService;
 
 	protected OtherSalePricesProductsProposalViewFactory(
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
+			@NonNull final OrderProductProposalsService orderProductProposalsService,
 			@NonNull final MoneyService moneyService)
 	{
 		super(WINDOW_ID);
 
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
+		this.orderProductProposalsService = orderProductProposalsService;
 		this.moneyService = moneyService;
 	}
 
@@ -109,12 +117,27 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 				.map(ProductsProposalRow::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
 
+		final CurrencyId currencyId;
+
+		final Optional<OrderId> orderId = parentView.getOrderId();
+
+		if (orderId.isPresent())
+		{
+			final Order order = orderProductProposalsService.getOrderById(orderId.get());
+			currencyId = order.getCurrency().getId();
+		}
+		else
+		{
+			currencyId = null;
+		}
+
 		final ProductsProposalRowsData rowsData = RowsLoader.builder()
 				.bpartnerProductStatsService(bpartnerProductStatsService)
 				.moneyService(moneyService)
 				//
 				.excludeBPartnerId(parentView.getBpartnerId().orElse(null))
 				.productIds(productIds)
+				.curencyId(currencyId)
 				//
 				.build()
 				.load();
@@ -157,13 +180,16 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 
 		private final Set<ProductId> productIds;
 
+		private final CurrencyId currencyId;
+
 		@Builder
 		private RowsLoader(
 				@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
 				@NonNull final MoneyService moneyService,
 				//
 				@Nullable final BPartnerId excludeBPartnerId,
-				@NonNull final Set<ProductId> productIds)
+				@NonNull final Set<ProductId> productIds,
+				@Nullable CurrencyId curencyId)
 		{
 			Check.assumeNotEmpty(productIds, "productIds is not empty");
 
@@ -172,11 +198,13 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 
 			this.excludeBPartnerId = excludeBPartnerId;
 			this.productIds = ImmutableSet.copyOf(productIds);
+
+			this.currencyId = curencyId;
 		}
 
 		public ProductsProposalRowsData load()
 		{
-			final List<ProductsProposalRow> rows = bpartnerProductStatsService.getByProductIds(productIds)
+			final List<ProductsProposalRow> rows = bpartnerProductStatsService.getByProductIds(productIds, currencyId)
 					.stream()
 					// .filter(stats -> excludeBPartnerId == null || !BPartnerId.equals(stats.getBpartnerId(), excludeBPartnerId))
 					.map(this::toProductsProposalRowOrNull)
@@ -189,6 +217,7 @@ public class OtherSalePricesProductsProposalViewFactory extends ProductsProposal
 					.nextRowIdSequence(nextRowIdSequence)
 					.rows(rows)
 					.soTrx(SOTrx.SALES)
+					.currencyId(currencyId)
 					.build();
 		}
 

@@ -1,22 +1,12 @@
 package de.metas.quantity;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_C_UOM;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionBL;
@@ -27,6 +17,11 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -53,12 +48,26 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class Quantitys
 {
+	public Quantity create(@NonNull final String qty, @NonNull final UomId uomId)
+	{
+		return create(new BigDecimal(qty), uomId);
+	}
+
 	public Quantity create(@NonNull final BigDecimal qty, @NonNull final UomId uomId)
 	{
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 		final I_C_UOM uomRecord = uomDao.getById(uomId);
 
 		return Quantity.of(qty, uomRecord);
+	}
+
+	public Quantity create(
+			@NonNull final String qty, @NonNull final UomId uomId,
+			@NonNull final String sourceQty, @NonNull final UomId sourceUomId)
+	{
+		return create(
+				new BigDecimal(qty), uomId,
+				new BigDecimal(sourceQty), sourceUomId);
 	}
 
 	public Quantity create(
@@ -80,7 +89,7 @@ public class Quantitys
 		return Quantity.zero(uomRecord);
 	}
 
-	public static Quantity createZero(@NonNull final ProductId productId)
+	public Quantity createZero(@NonNull final ProductId productId)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final I_C_UOM stockUomRecord = productBL.getStockUOM(productId);
@@ -106,8 +115,7 @@ public class Quantitys
 		if (nonStockUomId == null)
 		{
 			final I_C_UOM stockUOMRecord = productBL.getStockUOM(productId);
-			final Quantity stockQty = Quantity.of(qty, stockUOMRecord);
-			return stockQty;
+			return Quantity.of(qty, stockUOMRecord);
 		}
 
 		final UomId stockUomId = productBL.getStockUOMId(productId);
@@ -115,11 +123,10 @@ public class Quantitys
 		final I_C_UOM nonStockUomRecord = uomDao.getById(nonStockUomId);
 
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final Quantity stockQty = uomConversionBL.convertQuantityTo(
+		return uomConversionBL.convertQuantityTo(
 				Quantity.of(qty, nonStockUomRecord),
 				UOMConversionContext.of(productId, Rounding.PRESERVE_SCALE),
 				stockUomId);
-		return stockQty;
 	}
 
 	/**
@@ -150,15 +157,14 @@ public class Quantitys
 	public Quantity create(
 			@NonNull final Quantity qty,
 			@NonNull final UOMConversionContext conversionCtx,
-			@NonNull final UomId targedUomId)
+			@NonNull final UomId targetUomId)
 	{
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-		final Quantity converted = uomConversionBL.convertQuantityTo(qty, conversionCtx, targedUomId);
 
-		return converted;
+		return uomConversionBL.convertQuantityTo(qty, conversionCtx, targetUomId);
 	}
 
-	public static Quantity create(final int qty, final UomId repoId)
+	public Quantity create(final int qty, final UomId repoId)
 	{
 		return create(BigDecimal.valueOf(qty), repoId);
 	}
@@ -173,18 +179,18 @@ public class Quantitys
 		}
 
 		@Override
-		public Quantity deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException
+		public Quantity deserialize(final JsonParser p, final DeserializationContext ctx) throws IOException
 		{
-			JsonNode node = p.getCodec().readTree(p);
+			final JsonNode node = p.getCodec().readTree(p);
 			final String qtyStr = node.get("qty").asText();
-			final int uomRepoId = (Integer)((IntNode)node.get("uomId")).numberValue();
+			final int uomRepoId = (Integer)node.get("uomId").numberValue();
 
 			final String sourceQtyStr;
 			final int sourceUomRepoId;
 			if (node.has("sourceQty"))
 			{
 				sourceQtyStr = node.get("sourceQty").asText();
-				sourceUomRepoId = (Integer)((IntNode)node.get("sourceUomId")).numberValue();
+				sourceUomRepoId = (Integer)node.get("sourceUomId").numberValue();
 			}
 			else
 			{
@@ -207,7 +213,7 @@ public class Quantitys
 		}
 
 		@Override
-		public void serialize(Quantity value, JsonGenerator gen, SerializerProvider provider) throws IOException
+		public void serialize(final Quantity value, final JsonGenerator gen, final SerializerProvider provider) throws IOException
 		{
 			gen.writeStartObject();
 

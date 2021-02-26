@@ -1,0 +1,16 @@
+{
+  "processResponse": {
+    "response": {
+      "action": {
+        "type": "openIncludedView",
+        "viewId": "540189-B3",
+        "viewType": "includedView",
+        "windowId": "540189"
+      },
+      "error": false,
+      "pinstanceId": "1488835"
+    },
+    "type": "ADP_540871",
+    "id": "1488835"
+  }
+}

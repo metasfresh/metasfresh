@@ -10,8 +10,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-08-30T17:13:01.042
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_Table','ALTER TABLE public.AD_Table ADD COLUMN IsEnableRemoteCacheInvalidation CHAR(1) DEFAULT ''N'' CHECK (IsEnableRemoteCacheInvalidation IN (''Y'',''N'')) NOT NULL')
-;
+-- moved to 5500280_sys_gh4536_AD_Table_IsEnableRemoteCacheInvalidation_DDL.sql
+--/* DDL */ SELECT public.db_alter_table('AD_Table','ALTER TABLE public.AD_Table ADD COLUMN IsEnableRemoteCacheInvalidation CHAR(1) DEFAULT ''N'' CHECK (IsEnableRemoteCacheInvalidation IN (''Y'',''N'')) NOT NULL')
+--;
 
 -- 2018-08-30T17:13:23.312
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

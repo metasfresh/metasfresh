@@ -11,7 +11,7 @@ import java.util.Properties;
 public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1097443979L;
+	private static final long serialVersionUID = 1588880971L;
 
     /** Standard Constructor */
     public X_AD_Process (Properties ctx, int AD_Process_ID, String trxName)
@@ -430,6 +430,28 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public java.lang.String getName() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * PostgrestResponseFormat AD_Reference_ID=541210
+	 * Reference name: PostgrestResponseFormat
+	 */
+	public static final int POSTGRESTRESPONSEFORMAT_AD_Reference_ID=541210;
+	/** csv = csv */
+	public static final String POSTGRESTRESPONSEFORMAT_Csv = "csv";
+	/** json = json */
+	public static final String POSTGRESTRESPONSEFORMAT_Json = "json";
+	@Override
+	public void setPostgrestResponseFormat (java.lang.String PostgrestResponseFormat)
+	{
+
+		set_Value (COLUMNNAME_PostgrestResponseFormat, PostgrestResponseFormat);
+	}
+
+	@Override
+	public java.lang.String getPostgrestResponseFormat() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_PostgrestResponseFormat);
 	}
 
 	@Override

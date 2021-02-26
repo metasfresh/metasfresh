@@ -489,12 +489,7 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	 */
 	public File createPDF(File file)
 	{
-		ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.ORDER, 0);
-		if (re == null)
-		{
-			return null;
-		}
-		return re.getPDF(file);
+		throw new UnsupportedOperationException();
 	}	// createPDF
 
 	/**

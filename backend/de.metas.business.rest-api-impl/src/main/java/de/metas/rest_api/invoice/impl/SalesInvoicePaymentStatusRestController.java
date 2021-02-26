@@ -61,26 +61,20 @@ public class SalesInvoicePaymentStatusRestController
 		this.salesInvoicePaymentStatusRepository = salesInvoicePaymentStatusRepository;
 	}
 
-	@ApiOperation(value = "Gets regular sales invoice(s) for the given org and document number, together with their payment status.", notes = "Does *not* get ales credit memos and all kinds of purchase invoices.")
-	@GetMapping("{orgCode}/{invoiceDocumentNo}")
+	@ApiOperation(value = "Gets regular sales invoice(s) for the given org and document number prefix, together with their payment status.", notes = "Does *not* get sales credit memos and all kinds of purchase invoices.")
+	@GetMapping("{orgCode}/{invoiceDocumentNoPrefix}")
 	public ResponseEntity<SalesInvoicePaymentStatusResponse> retrievePaymentStatus(
 			@ApiParam(required = true, value = "Organisation for which we retrieve the payment status.<br>Either `AD_Org.Value` or the GLN of a location of the org's business partner.") //
 			@PathVariable("orgCode") final String orgCode,
 
-			@ApiParam(required = true, value = "Invoice document number of the invoice(s) for which we retrieve the payment status") //
-			@PathVariable("invoiceDocumentNo") final String invoiceDocumentNo)
+			@ApiParam(required = true, value = "Invoice document number prefix of the invoice(s) for which we retrieve the payment status") //
+			@PathVariable("invoiceDocumentNoPrefix") final String invoiceDocumentNoPrefix)
 	{
-		if (Check.isEmpty(orgCode, true) || Check.isEmpty(invoiceDocumentNo, true))
-		{
-			return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-		}
-
 		final PaymentStatusQuery query = PaymentStatusQuery
 				.builder()
 				.orgValue(orgCode)
-				.invoiceDocumentNo(invoiceDocumentNo)
+				.invoiceDocumentNoPrefix(invoiceDocumentNoPrefix)
 				.build();
-
 		try
 		{
 			final ImmutableList<SalesInvoicePaymentStatus> result = salesInvoicePaymentStatusRepository.getBy(query);

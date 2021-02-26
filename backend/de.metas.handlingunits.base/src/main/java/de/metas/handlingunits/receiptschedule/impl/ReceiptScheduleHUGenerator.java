@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -48,7 +49,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -374,9 +374,6 @@ public class ReceiptScheduleHUGenerator
 	/**
 	 * Create Handling Units for not allocated qty of line.
 	 *
-	 * @param ctx
-	 * @param maxLUsToCreate
-	 * @param trxName
 	 * @return generated HUs
 	 */
 	private List<I_M_HU> generateLUTUHandlingUnitsForQtyToAllocate0(@NonNull final IAllocationRequest request)

@@ -1,18 +1,20 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.temporal.TemporalUnit;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.time.DurationUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.temporal.TemporalUnit;
+import java.util.function.UnaryOperator;
 
 /*
  * #%L
@@ -39,39 +41,48 @@ import lombok.Value;
 @Value
 public class CostPrice
 {
-	public static CostPrice ownCostPrice(@NonNull final CostAmount ownCostPrice)
+	public static CostPrice ownCostPrice(
+			@NonNull final CostAmount ownCostPrice,
+			@NonNull final UomId uomId)
 	{
 		final CostAmount zero = ownCostPrice.toZero();
 		return CostPrice.builder()
 				.ownCostPrice(ownCostPrice)
 				.componentsCostPrice(zero)
+				.uomId(uomId)
 				.build();
 	}
 
-	public static CostPrice zero(final CurrencyId currencyId)
+	public static CostPrice zero(
+			@NonNull final CurrencyId currencyId,
+			@NonNull final UomId uomId)
 	{
 		final CostAmount zero = CostAmount.zero(currencyId);
 		return CostPrice.builder()
 				.ownCostPrice(zero)
 				.componentsCostPrice(zero)
+				.uomId(uomId)
 				.build();
 	}
 
-	CurrencyId currenyId;
+	CurrencyId currencyId;
 	CostAmount ownCostPrice;
 	CostAmount componentsCostPrice;
+	UomId uomId;
 
 	@Builder(toBuilder = true)
 	private CostPrice(
 			@NonNull final CostAmount ownCostPrice,
-			@NonNull final CostAmount componentsCostPrice)
+			@NonNull final CostAmount componentsCostPrice,
+			@NonNull final UomId uomId)
 	{
 		Check.assumeEquals(ownCostPrice.getCurrencyId(), componentsCostPrice.getCurrencyId());
 
-		currenyId = ownCostPrice.getCurrencyId();
+		currencyId = ownCostPrice.getCurrencyId();
 
 		this.ownCostPrice = ownCostPrice;
 		this.componentsCostPrice = componentsCostPrice;
+		this.uomId = uomId;
 	}
 
 	public CostAmount toCostAmount()
@@ -129,20 +140,49 @@ public class CostPrice
 
 	public CostPrice add(final CostPrice costPrice)
 	{
+		if (!UomId.equals(this.getUomId(), costPrice.getUomId()))
+		{
+			throw new AdempiereException("UOM does not match: " + this + ", " + costPrice);
+		}
+
 		return builder()
 				.ownCostPrice(getOwnCostPrice().add(costPrice.getOwnCostPrice()))
 				.componentsCostPrice(getComponentsCostPrice().add(costPrice.getComponentsCostPrice()))
+				.uomId(getUomId())
 				.build();
 	}
 
 	public CostAmount multiply(@NonNull final Quantity quantity)
 	{
+		if (!UomId.equals(uomId, quantity.getUomId()))
+		{
+			throw new AdempiereException("UOM does not match: " + this + ", " + quantity);
+		}
+
 		return toCostAmount().multiply(quantity);
 	}
 
-	public CostAmount multiply(@NonNull final Duration duration, @NonNull final TemporalUnit durationUnit)
+	public CostAmount multiply(
+			@NonNull final Duration duration,
+			@NonNull final TemporalUnit durationUnit)
 	{
 		final BigDecimal durationBD = DurationUtils.toBigDecimal(duration, durationUnit);
 		return toCostAmount().multiply(durationBD);
+	}
+
+	public CostPrice convertAmounts(
+			@NonNull final UomId toUomId,
+			@NonNull final UnaryOperator<CostAmount> converter)
+	{
+		if (UomId.equals(this.uomId, toUomId))
+		{
+			return this;
+		}
+
+		return toBuilder()
+				.uomId(toUomId)
+				.ownCostPrice(converter.apply(getOwnCostPrice()))
+				.componentsCostPrice(converter.apply(getComponentsCostPrice()))
+				.build();
 	}
 }

@@ -1,7 +1,13 @@
 package de.metas.material.event.eventbus;
 
-import java.util.Properties;
-
+import de.metas.event.Event;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventListener;
+import de.metas.logging.LogManager;
+import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.MaterialEventHandlerRegistry;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
@@ -12,14 +18,7 @@ import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 
-import de.metas.event.Event;
-import de.metas.event.IEventBus;
-import de.metas.event.IEventListener;
-import de.metas.logging.LogManager;
-import de.metas.material.event.MaterialEvent;
-import de.metas.material.event.MaterialEventHandlerRegistry;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Properties;
 
 /*
  * #%L
@@ -71,7 +70,7 @@ public class MetasfreshEventListener
 				Env.setClientId(temporaryCtx, lightWeightEvent.getEventDescriptor().getClientId());
 				Env.setOrgId(temporaryCtx, lightWeightEvent.getEventDescriptor().getOrgId());
 
-				try (final IAutoCloseable ctx = Env.switchContext(temporaryCtx))
+				try (final IAutoCloseable ignore = Env.switchContext(temporaryCtx))
 				{
 					invokeListenerInTrx(lightWeightEvent);
 				}

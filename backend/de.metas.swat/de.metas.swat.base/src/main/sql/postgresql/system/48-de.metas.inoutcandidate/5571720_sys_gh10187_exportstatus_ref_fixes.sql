@@ -1,0 +1,10 @@
+-- 2020-11-07T17:07:51.780Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_Value_ID=541161,Updated=TO_TIMESTAMP('2020-11-07 18:07:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=572077
+;
+
+-- 2020-11-07T17:08:04.179Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_Value_ID=541161,Updated=TO_TIMESTAMP('2020-11-07 18:08:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=572073
+;
+

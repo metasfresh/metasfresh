@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -109,7 +110,6 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 
@@ -518,7 +518,7 @@ public class SubscriptionBL implements ISubscriptionBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(term);
 		final int daysInPast = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_CREATE_SUBSCRIPTIONPROGRESS_IN_PAST_DAYS, 0, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 
-		final Timestamp minimumEventDate = TimeUtil.addDays(SystemTime.asDayTimestamp(), -daysInPast);
+		final Timestamp minimumEventDate = TimeUtil.addDays(de.metas.common.util.time.SystemTime.asDayTimestamp(), -daysInPast);
 		final Timestamp eventDate = term.getStartDate();
 
 		if (minimumEventDate.after(eventDate))

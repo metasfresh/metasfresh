@@ -22,14 +22,15 @@
 
 package de.metas.common.rest_api;
 
+import java.math.BigDecimal;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.math.BigDecimal;
 
 @Value
 public class JsonQuantity
@@ -38,8 +39,7 @@ public class JsonQuantity
 	BigDecimal qty;
 
 	@ApiModelProperty(position = 20, required = true, //
-			value = "Unit of measurement; this translates to `C_UOM.X12DE355`.\n"
-					+ "The respective UOM needs to exist in metasfresh and its ID is set as `C_Invoice_candidate.C_UOM_ID`.")
+			value = "Unit of measurement; this translates to `C_UOM.X12DE355`.")
 	String uomCode;
 
 	@JsonCreator

@@ -26,6 +26,7 @@ package de.metas.inoutcandidate.spi;
 import java.util.List;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.async.api.IWorkPackageQueue;
@@ -35,13 +36,15 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 public class AsyncReceiptScheduleProducer extends AbstractReceiptScheduleProducer
 {
 
 	@Override
-	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
+	@Nullable
+	public List<I_M_ReceiptSchedule> createOrUpdateReceiptSchedules(@NonNull final Object model, final List<I_M_ReceiptSchedule> previousSchedules)
 	{
-		Check.assumeNotNull(model, "model not null");
 		Check.assume(previousSchedules.isEmpty(), "Calling async receipt schedule producer is allowed only when there are no other schedules produced previously");
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(model);
@@ -55,13 +58,13 @@ public class AsyncReceiptScheduleProducer extends AbstractReceiptScheduleProduce
 	}
 	
 	@Override
-	public void updateReceiptSchedules(Object model)
+	public void updateReceiptSchedules(final Object model)
 	{
 		throw new IllegalStateException("Update receipt schedules is supported to run synchronously");
 	}
 
 	@Override
-	public void inactivateReceiptSchedules(Object model)
+	public void inactivateReceiptSchedules(final Object model)
 	{
 		throw new IllegalStateException("Inactivation is supported to run synchronously");
 	}

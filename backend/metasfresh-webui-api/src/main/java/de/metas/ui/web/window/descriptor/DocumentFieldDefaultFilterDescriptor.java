@@ -39,7 +39,6 @@ public class DocumentFieldDefaultFilterDescriptor
 	private final int defaultFilterSeqNo;
 	private final boolean rangeFilter;
 	private final boolean showFilterIncrementButtons;
-	public static final String AUTOFILTER_INITIALVALUE_DATE_NOW = DocumentFilterParamDescriptor.AUTOFILTER_INITIALVALUE_DATE_NOW;
 	private final Object autoFilterInitialValue;
 
 	private final boolean facetFilter;

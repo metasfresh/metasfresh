@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table;
@@ -24,7 +25,6 @@ import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -164,7 +164,7 @@ public class PurchaseCandidateTest
 
 		candidate1.createOrderItem()
 				.purchasedQty(TEN)
-				.datePromised(SystemTime.asZonedDateTime())
+				.datePromised(de.metas.common.util.time.SystemTime.asZonedDateTime())
 				.remotePurchaseOrderId("remotePurchaseOrderId")
 				.transactionReference(TableRecordReference.of(I_AD_Table.Table_Name, 30))
 				.buildAndAddToParent();

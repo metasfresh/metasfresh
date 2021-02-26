@@ -165,6 +165,13 @@ Cypress.Commands.add('selectDateViaPicker', (fieldName, modal) => {
     .click();
 
   confirmCalendarDay();
+
+  cy.get(`${path} input`).should($input => {
+    const val = $input.val();
+
+    assert.isOk(val, 'date set');
+  });
+
   cy.get(path)
     .find('.form-control-label')
     .click();

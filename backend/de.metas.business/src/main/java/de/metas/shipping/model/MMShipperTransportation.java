@@ -47,6 +47,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.ModelValidationEngine;
@@ -60,7 +61,6 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.shipping.api.IShipperTransportationBL;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Shipper Transportation model

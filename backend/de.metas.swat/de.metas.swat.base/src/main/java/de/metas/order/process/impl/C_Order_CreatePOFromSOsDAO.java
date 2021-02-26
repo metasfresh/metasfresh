@@ -101,8 +101,8 @@ public class C_Order_CreatePOFromSOsDAO implements IC_Order_CreatePOFromSOsDAO
 			{
 				final ICompositeQueryFilter<I_C_BPartner_Product> bpProductFilter = queryBL.createCompositeQueryFilter(I_C_BPartner_Product.class)
 						.setJoinOr()
-						.addEqualsFilter(I_C_BPartner_Product.COLUMN_C_BPartner_ID, vendor_ID)
-						.addEqualsFilter(I_C_BPartner_Product.COLUMN_C_BPartner_Vendor_ID, vendor_ID);
+						.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, vendor_ID)
+						.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_Vendor_ID, vendor_ID);
 
 				final IQuery<I_M_Product> productFilter = queryBL.createQueryBuilder(I_C_BPartner_Product.class, context)
 						.addOnlyActiveRecordsFilter()

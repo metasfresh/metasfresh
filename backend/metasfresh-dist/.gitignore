@@ -31,3 +31,5 @@ private
 # JRebel files
 **/src/main/resources/rebel.xml
 **/jrebel-classpath-*.jar
+/dist/src/main/docker/db/postgresql_data_dir/data/
+/dist/src/main/docker/postgresql_data/

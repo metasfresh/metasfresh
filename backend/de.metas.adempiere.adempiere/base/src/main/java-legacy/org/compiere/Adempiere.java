@@ -751,16 +751,15 @@ public class Adempiere
 		String className = null;
 		try
 		{
-			className = "org.compiere.wf.DocWorkflowManager";
-			Class.forName(className);
 			// Initialize Archive Engine
 			className = "org.compiere.print.ArchiveEngine";
 			Class.forName(className);
 		}
 		catch (Exception e)
 		{
-			logger.warn("Not started: " + className + " - " + e.getMessage());
+			logger.warn("Not started: {}", className, e);
 		}
+
 		return true;
 	}	// startupEnvironment
 

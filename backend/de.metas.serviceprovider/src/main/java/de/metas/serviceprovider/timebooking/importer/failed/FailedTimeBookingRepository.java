@@ -23,6 +23,7 @@
 package de.metas.serviceprovider.timebooking.importer.failed;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.model.I_S_FailedTimeBooking;
 import lombok.NonNull;
@@ -32,6 +33,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 @Repository
 public class FailedTimeBookingRepository
@@ -45,7 +47,16 @@ public class FailedTimeBookingRepository
 
 	public FailedTimeBookingId save(@NonNull final FailedTimeBooking failedTimeBooking)
 	{
-		final I_S_FailedTimeBooking record = InterfaceWrapperHelper.loadOrNew(failedTimeBooking.getFailedTimeBookingId(), I_S_FailedTimeBooking.class);
+		final Supplier<FailedTimeBookingId> failedIdByExternalIdAndSystemSupplier = () ->
+				getOptionalByExternalIdAndSystem(failedTimeBooking.getExternalSystem(), failedTimeBooking.getExternalId())
+				.map(FailedTimeBooking::getFailedTimeBookingId)
+				.orElse(null);
+
+		final FailedTimeBookingId failedTimeBookingId = CoalesceUtil.coalesceSuppliers(
+				failedTimeBooking::getFailedTimeBookingId,
+				failedIdByExternalIdAndSystemSupplier);
+
+		final I_S_FailedTimeBooking record = InterfaceWrapperHelper.loadOrNew(failedTimeBookingId, I_S_FailedTimeBooking.class);
 
 		record.setExternalId(failedTimeBooking.getExternalId());
 		record.setExternalSystem(failedTimeBooking.getExternalSystem().getValue());

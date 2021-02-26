@@ -330,4 +330,31 @@ public interface I_M_Shipper
     public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "Value", null);
     /** Column name Value */
     public static final String COLUMNNAME_Value = "Value";
+
+
+	/**
+	 * Set Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setInternalName (java.lang.String InternalName);
+
+	/**
+	 * Get Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getInternalName();
+
+	/** Column definition for InternalName */
+	public static final org.adempiere.model.ModelColumn<I_M_Shipper, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<I_M_Shipper, Object>(I_M_Shipper.class, "InternalName", null);
+	/** Column name InternalName */
+	public static final String COLUMNNAME_InternalName = "InternalName";
+
 }

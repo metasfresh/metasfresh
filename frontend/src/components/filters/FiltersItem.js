@@ -8,14 +8,20 @@ import _ from 'lodash';
 import Moment from 'moment-timezone';
 
 import keymap from '../../shortcuts/keymap';
+import { DATE_FIELD_FORMATS } from '../../constants/Constants';
+
+import {
+  openFilterBox,
+  closeFilterBox,
+  allowShortcut,
+  disableShortcut,
+} from '../../actions/WindowActions';
+
 import OverlayField from '../app/OverlayField';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import RawWidget from '../widget/RawWidget';
-import { openFilterBox, closeFilterBox } from '../../actions/WindowActions';
-import { DATE_FIELD_FORMATS } from '../../constants/Constants';
-
-import { parseDateToReadable } from './Filters';
+import { convertDateToReadable } from '../../utils/dateHelpers';
 
 /**
  * @file Class based component.
@@ -97,13 +103,13 @@ class FiltersItem extends PureComponent {
   }
 
   componentWillUnmount() {
-    const { dispatch } = this.props;
+    const { closeFilterBox } = this.props;
 
     if (this.widgetsContainer) {
       this.widgetsContainer.removeEventListener('scroll', this.handleScroll);
     }
 
-    dispatch(closeFilterBox());
+    closeFilterBox();
   }
 
   /**
@@ -271,8 +277,8 @@ class FiltersItem extends PureComponent {
         if (value !== null && value !== '') {
           parametersArray.push({
             ...param,
-            value: parseDateToReadable(param.widgetType, activeValue),
-            valueTo: parseDateToReadable(param.widgetType, activeValueTo),
+            value: convertDateToReadable(param.widgetType, activeValue),
+            valueTo: convertDateToReadable(param.widgetType, activeValueTo),
             defaultValue: null,
             defaultValueTo: null,
           });
@@ -315,8 +321,8 @@ class FiltersItem extends PureComponent {
           if (value !== null && value !== '') {
             return {
               ...param,
-              value: parseDateToReadable(param.widgetType, value),
-              valueTo: parseDateToReadable(param.widgetType, valueTo),
+              value: convertDateToReadable(param.widgetType, value),
+              valueTo: convertDateToReadable(param.widgetType, valueTo),
             };
           }
           return {
@@ -339,7 +345,7 @@ class FiltersItem extends PureComponent {
    * @todo Write the documentation
    */
   handleScroll = () => {
-    const { dispatch } = this.props;
+    const { openFilterBox } = this.props;
     const {
       top,
       left,
@@ -347,7 +353,7 @@ class FiltersItem extends PureComponent {
       right,
     } = this.widgetsContainer.getBoundingClientRect();
 
-    dispatch(openFilterBox({ top, left, bottom, right }));
+    openFilterBox({ top, left, bottom, right });
   };
 
   /**
@@ -445,6 +451,10 @@ class FiltersItem extends PureComponent {
       closeFilterMenu,
       captionValue,
       openedFilter,
+      modalVisible,
+      timeZone,
+      allowShortcut,
+      disableShortcut,
     } = this.props;
     const { filter, isTooltipShow, maxWidth, maxHeight } = this.state;
     const style = {};
@@ -549,6 +559,10 @@ class FiltersItem extends PureComponent {
                           windowType,
                           onShow,
                           onHide,
+                          allowShortcut,
+                          disableShortcut,
+                          timeZone,
+                          modalVisible,
                         }}
                       />
                     );
@@ -609,9 +623,17 @@ class FiltersItem extends PureComponent {
   }
 }
 
+const mapStateToProps = (state) => {
+  const { appHandler, windowHandler } = state;
+
+  return {
+    modalVisible: windowHandler.modal.visible,
+    timeZone: appHandler.me.timeZone,
+  };
+};
+
 /**
  * @typedef {object} Props Component props
- * @prop {func} dispatch
  * @prop {func} applyFilters
  * @prop {func} [resetInitialValues]
  * @prop {func} [clearFilters]
@@ -630,10 +652,14 @@ class FiltersItem extends PureComponent {
  * @prop {*} captionValue
  * @prop {*} openedFilter
  * @prop {*} returnBackToDropdown
- * @todo Check props. Which proptype? Required or optional?
+ * @prop {bool} modalVisible
+ * @prop {string} timeZone
+ * @prop {func} allowShortcut
+ * @prop {func} disableShortcut
+ * @prop {func} openFilterBox
+ * @prop {func} closeFilterBox
  */
 FiltersItem.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   applyFilters: PropTypes.func.isRequired,
   resetInitialValues: PropTypes.func,
   clearFilters: PropTypes.func,
@@ -652,6 +678,20 @@ FiltersItem.propTypes = {
   captionValue: PropTypes.any,
   openedFilter: PropTypes.any,
   returnBackToDropdown: PropTypes.any,
+  modalVisible: PropTypes.bool.isRequired,
+  timeZone: PropTypes.string.isRequired,
+  allowShortcut: PropTypes.func.isRequired,
+  disableShortcut: PropTypes.func.isRequired,
+  openFilterBox: PropTypes.func.isRequired,
+  closeFilterBox: PropTypes.func.isRequired,
 };
 
-export default connect()(FiltersItem);
+export default connect(
+  mapStateToProps,
+  {
+    allowShortcut,
+    disableShortcut,
+    openFilterBox,
+    closeFilterBox,
+  }
+)(FiltersItem);

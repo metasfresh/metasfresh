@@ -1,12 +1,11 @@
 package de.metas.material.planning;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -14,6 +13,12 @@ import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * MRP working context.
@@ -48,21 +53,22 @@ public interface IMaterialPlanningContext extends IContextAware
 	//
 	// Planning Segment
 	//@formatter:off
-	int getAD_Client_ID();
+	ClientId getClientId();
 
 	int getPlant_ID();
 	I_S_Resource getPlant();
 
-	int getAD_Org_ID();
+	OrgId getOrgId();
 	I_AD_Org getAD_Org();
 
-	int getM_Warehouse_ID();
+	WarehouseId getWarehouseId();
 	I_M_Warehouse getM_Warehouse();
 
-	int getM_Product_ID();
+	ProductId getProductId();
+	// int getM_Product_ID();
 	I_M_Product getM_Product();
 
-	int getM_AttributeSetInstance_ID();
+	AttributeSetInstanceId getAttributeSetInstanceId();
 	//@formatter:on
 
 	Date getDate();
@@ -113,8 +119,6 @@ public interface IMaterialPlanningContext extends IContextAware
 	 *
 	 * In case it's <code>true</code> the cleanup will be performed in transaction because we assume that the MRP executor caller already did some cleanups out of transaction so we need to avoid
 	 * database deadlocks.
-	 *
-	 * @return
 	 */
 	boolean isSubsequentMRPExecutorCall();
 

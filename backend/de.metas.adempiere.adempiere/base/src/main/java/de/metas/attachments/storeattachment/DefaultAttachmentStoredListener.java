@@ -2,12 +2,12 @@ package de.metas.attachments.storeattachment;
 
 import java.net.URI;
 
+import de.metas.common.util.time.SystemTime;
 import org.springframework.stereotype.Component;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentTags;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*

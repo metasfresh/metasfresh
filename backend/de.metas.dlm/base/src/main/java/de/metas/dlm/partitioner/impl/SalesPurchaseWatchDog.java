@@ -1,19 +1,18 @@
 package de.metas.dlm.partitioner.impl;
 
-import java.util.Date;
-
+import ch.qos.logback.classic.Level;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
+import de.metas.dlm.partitioner.IIterateResultHandler;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import ch.qos.logback.classic.Level;
-import de.metas.dlm.partitioner.IIterateResultHandler;
-import de.metas.logging.LogManager;
-import de.metas.util.Loggables;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
+import java.util.Date;
 
 /*
  * #%L
@@ -42,7 +41,6 @@ import de.metas.util.time.SystemTime;
  * If there was a record with {@code SOTrx='Y'} and then a record with {@code SOTrx='N'} is coming along (or vice versa, ofc), then it will use {@link Loggables} to log an informative message and return {@link AddResult#STOP}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class SalesPurchaseWatchDog implements IIterateResultHandler
 {
@@ -58,7 +56,9 @@ public class SalesPurchaseWatchDog implements IIterateResultHandler
 	private Date lastHUReferenceSeen;
 
 	@Override
-	public AddResult onRecordAdded(final ITableRecordReference r, final AddResult preliminaryResult)
+	public AddResult onRecordAdded(
+			final ITableRecordReference r,
+			final AddResult preliminaryResult)
 	{
 		final PlainContextAware ctx = PlainContextAware.newWithThreadInheritedTrx(Env.getCtx());
 		final Object model = r.getModel(ctx);
@@ -67,7 +67,7 @@ public class SalesPurchaseWatchDog implements IIterateResultHandler
 		if (tableName.startsWith("M_HU") && !tableName.startsWith("M_HU_Assign"))
 		{
 			lastHUReference = r;
-			lastHUReferenceSeen = SystemTime.asDate();
+			lastHUReferenceSeen = de.metas.common.util.time.SystemTime.asDate();
 		}
 		else
 		{
@@ -76,10 +76,10 @@ public class SalesPurchaseWatchDog implements IIterateResultHandler
 		if (getNotNullReferenceCount() > 1)
 		{
 			Loggables.withLogger(logger, Level.WARN).addLog("Records which do not fit together are added to the same result.\n"
-					+ "Signaling the crawler to stop! The records are:\n"
-					+ "IsSOTrx=true, seen at {}: {}\n"
-					+ "IsSOTrx=false, seen at {}: {}\n"
-					+ "HU-record, seen at {}: {}\n",
+							+ "Signaling the crawler to stop! The records are:\n"
+							+ "IsSOTrx=true, seen at {}: {}\n"
+							+ "IsSOTrx=false, seen at {}: {}\n"
+							+ "HU-record, seen at {}: {}\n",
 					lastSalesReferenceSeen, lastSalesReference, lastPurchaseReferenceSeen, lastPurchaseReference, lastHUReferenceSeen, lastHUReference);
 
 			return AddResult.STOP;
@@ -112,7 +112,9 @@ public class SalesPurchaseWatchDog implements IIterateResultHandler
 	 * @param r
 	 * @param model
 	 */
-	private void setSalesOrPurchaseReference(final ITableRecordReference r, final Object model)
+	private void setSalesOrPurchaseReference(
+			final ITableRecordReference r,
+			final Object model)
 	{
 		final String soTrxColName1 = "IsSOTrx";
 		final String soTrxColName2 = "SOTrx";
@@ -122,9 +124,9 @@ public class SalesPurchaseWatchDog implements IIterateResultHandler
 			return;
 		}
 
-		final Boolean soTrx = CoalesceUtil.coalesce(
-				InterfaceWrapperHelper.getValueOrNull(model, soTrxColName1),
-				InterfaceWrapperHelper.getValueOrNull(model, soTrxColName2));
+		final Boolean soTrx = CoalesceUtil.coalesceSuppliers(
+				() -> InterfaceWrapperHelper.getValueOrNull(model, soTrxColName1),
+				() -> InterfaceWrapperHelper.getValueOrNull(model, soTrxColName2));
 
 		if (soTrx == null)
 		{
@@ -134,7 +136,7 @@ public class SalesPurchaseWatchDog implements IIterateResultHandler
 		if (soTrx)
 		{
 			lastSalesReference = r;
-			lastSalesReferenceSeen = SystemTime.asDate();
+			lastSalesReferenceSeen = de.metas.common.util.time.SystemTime.asDate();
 		}
 		else
 		{

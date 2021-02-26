@@ -18,13 +18,39 @@
 	<parameter name="ad_language" class="java.lang.String" isForPrompting="false">
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
+	<parameter name="PRINTER_OPTS_IsPrintLogo" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="PRINTER_OPTS_IsPrintTotals" class="java.lang.String">
+		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root($P{RECORD_ID},$P{ad_language});]]>
 	</queryString>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="docstatus" class="java.lang.String"/>
-	<field name="printname" class="java.lang.String"/>
-	<field name="displayhu" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="docstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
+	</field>
+	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="printname"/>
+	</field>
+	<field name="c_currency_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="c_currency_id"/>
+	</field>
+	<field name="poreference" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="poreference"/>
+	</field>
+	<field name="displayhu" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="displayhu"/>
+	</field>
+	<field name="isoffer" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isoffer"/>
+	</field>
+	<field name="isprepay" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="isprepay"/>
+	</field>
 	<variable name="V_CURRENT_PAGE_NUMBER" class="java.lang.Integer" resetType="Page">
 		<variableExpression><![CDATA[1]]></variableExpression>
 		<initialValueExpression><![CDATA[$V{PAGE_NUMBER}]]></initialValueExpression>
@@ -58,6 +84,7 @@
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-4" x="0" y="0" width="595" height="85" uuid="1774ba6e-e895-4a71-8239-d4da3bf6e1b3">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintLogo}.equals("Y")]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
@@ -143,6 +170,7 @@
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-5" x="0" y="0" width="595" height="85" uuid="7e3af522-ad6c-42b3-ab90-6733b69715ac">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintLogo}.equals("Y")]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="org_id">
 					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
@@ -236,7 +264,9 @@
 		</band>
 		<band height="24">
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-3" x="0" y="12" width="595" height="12" uuid="f4aecc68-d647-409b-bde5-65f943103dc3"/>
+				<reportElement key="subreport-3" x="0" y="12" width="595" height="12" uuid="f4aecc68-d647-409b-bde5-65f943103dc3">
+					<printWhenExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}.equals("Y")]]></printWhenExpression>
+				</reportElement>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
 				</subreportParameter>

@@ -85,4 +85,6 @@ public interface IHUMovementBL extends ISingletonService
 	 * @see IHUAssignmentBL#assignHU(Object, I_M_HU, boolean, String)
 	 */
 	void assignHU(org.compiere.model.I_M_MovementLine movementLine, I_M_HU hu, boolean isTransferPackingMaterials, String trxName);
+
+	void moveHandlingUnits(I_M_Movement movement, boolean doReversal);
 }

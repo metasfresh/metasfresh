@@ -36,6 +36,8 @@ public class ImpDataParserFactory
 		return ImpDataParser.builder()
 				.multiline(impFormat.isMultiLine())
 				.lineParser(lineParser)
+				.charset(impFormat.getCharset())
+				.skipFirstNRows(impFormat.getSkipFirstNRows())
 				.build();
 	}
 

@@ -1,25 +1,9 @@
 package de.metas.costing.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -61,6 +45,20 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -164,13 +162,6 @@ public class CostingService implements ICostingService
 						CostDetailCreateResult::getAmt, // valueMapper
 						CostAmount::add)); // mergeFunction
 
-		final Map<CostElement, Quantity> qtysByCostElement = costElementResults
-				.stream()
-				.collect(Collectors.toMap(
-						CostDetailCreateResult::getCostElement, // keyMapper
-						CostDetailCreateResult::getQty, // valueMapper
-						Quantity::add)); // mergeFunction
-
 		return AggregatedCostAmount.builder()
 				.costSegment(costSegment)
 				.amounts(amountsByCostElement)
@@ -182,7 +173,18 @@ public class CostingService implements ICostingService
 		final CostElement costElement = request.getCostElement();
 		return getCostingMethodHandlers(costElement.getCostingMethod(), request.getDocumentRef())
 				.stream()
-				.map(handler -> handler.createOrUpdateCost(request))
+				.map(handler -> {
+					try
+					{
+						return handler.createOrUpdateCost(request);
+					}
+					catch (final Exception ex)
+					{
+						throw AdempiereException.wrapIfNeeded(ex)
+								.setParameter("request", request)
+								.appendParametersToMessage();
+					}
+				})
 				.filter(Optional::isPresent)
 				.map(Optional::get);
 	}
@@ -224,7 +226,9 @@ public class CostingService implements ICostingService
 				.forEach(costDetail -> voidAndDelete(costDetail, documentRef));
 	}
 
-	private void voidAndDelete(final CostDetail costDetail, final CostingDocumentRef documentRef)
+	private void voidAndDelete(
+			final CostDetail costDetail,
+			final CostingDocumentRef documentRef)
 	{
 		if (costDetail.isChangingCosts())
 		{
@@ -313,7 +317,7 @@ public class CostingService implements ICostingService
 	{
 		return request.isAllCostElements()
 				? getAllCostElements(request.getClientId())
-				: ImmutableList.of(request.getCostElement());
+				: ImmutableList.of(Objects.requireNonNull(request.getCostElement()));
 	}
 
 	private List<CostElement> getAllCostElements(@NonNull final ClientId clientId)
@@ -333,9 +337,11 @@ public class CostingService implements ICostingService
 		return costingMethodHandlers;
 	}
 
-	private Set<CostingMethodHandler> getCostingMethodHandlers(final CostingMethod costingMethod, final CostingDocumentRef documentRef)
+	private Set<CostingMethodHandler> getCostingMethodHandlers(
+			final CostingMethod costingMethod,
+			final CostingDocumentRef documentRef)
 	{
-		Set<CostingMethodHandler> allCostingMethodHandlers = getCostingMethodHandlers(costingMethod);
+		final Set<CostingMethodHandler> allCostingMethodHandlers = getCostingMethodHandlers(costingMethod);
 		final Set<CostingMethodHandler> costingMethodHandlers = allCostingMethodHandlers
 				.stream()
 				.filter(handler -> isHandledBy(handler, documentRef))
@@ -347,7 +353,9 @@ public class CostingService implements ICostingService
 		return costingMethodHandlers;
 	}
 
-	private boolean isHandledBy(final CostingMethodHandler handler, final CostingDocumentRef documentRef)
+	private boolean isHandledBy(
+			final CostingMethodHandler handler,
+			final CostingDocumentRef documentRef)
 	{
 		final Set<String> handledTableNames = handler.getHandledTableNames();
 		return handledTableNames.contains(CostingMethodHandler.ANY)
@@ -355,7 +363,10 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final CostingMethod costingMethod, final OrderLineId orderLineId)
+	public Optional<CostAmount> calculateSeedCosts(
+			final CostSegment costSegment,
+			final CostingMethod costingMethod,
+			final OrderLineId orderLineId)
 	{
 		return getCostingMethodHandlers(costingMethod)
 				.stream()
@@ -429,7 +440,7 @@ public class CostingService implements ICostingService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static final CostDetailCreateRequest toCostDetailCreateRequestFromReversalRequest(
+	private static CostDetailCreateRequest toCostDetailCreateRequestFromReversalRequest(
 			@NonNull final CostDetailReverseRequest reversalRequest,
 			@NonNull final CostDetail costDetail,
 			@NonNull final CostElement costElement)
@@ -452,7 +463,9 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public Optional<CostPrice> getCurrentCostPrice(final CostSegment costSegment, final CostingMethod costingMethod)
+	public Optional<CostPrice> getCurrentCostPrice(
+			final CostSegment costSegment,
+			final CostingMethod costingMethod)
 	{
 		return currentCostsRepo.getAggregatedCostPriceByCostSegmentAndCostingMethod(costSegment, costingMethod)
 				.map(AggregatedCostPrice::getTotalPrice);

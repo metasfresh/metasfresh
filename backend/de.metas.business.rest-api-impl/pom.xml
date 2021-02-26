@@ -17,6 +17,7 @@
     <properties>
         <migration-sql-basedir></migration-sql-basedir>
         <metasfresh.version>10.0.0</metasfresh.version>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
 
     <dependencies>
@@ -41,7 +42,7 @@
         <dependency>
             <groupId>de.metas.common.shipping</groupId>
             <artifactId>de-metas-common-shipping</artifactId>
-            <version>${metasfresh.version}</version>
+            <version>${metasfresh-common.version}</version>
         </dependency>
 
         <!-- needed for shipment schedules -->

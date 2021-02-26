@@ -1,40 +1,5 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getModelTranslationMap;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.mm.attributes.api.impl.AttributeSetDescriptionBuilderCommand;
-import org.adempiere.model.I_M_FreightCost;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.MLookupFactory;
-import org.compiere.model.MLookupFactory.LanguageInfo;
-import org.compiere.util.CtxName;
-import org.compiere.util.CtxNames;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
@@ -42,8 +7,9 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -73,13 +39,44 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.mm.attributes.api.impl.AttributeSetDescriptionBuilderCommand;
+import org.adempiere.model.I_M_FreightCost;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.MLookupFactory;
+import org.compiere.model.MLookupFactory.LanguageInfo;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getModelTranslationMap;
 
 /*
  * #%L
@@ -105,7 +102,7 @@ import lombok.Value;
 
 /**
  * Product lookup.
- *
+ * <p>
  * It is searching by product's Value, Name, UPC and bpartner's ProductNo.
  *
  * @author metas-dev <dev@metasfresh.com>
@@ -131,6 +128,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private final CtxName param_PricingDate;
 	private final CtxName param_AvailableStockDate;
 
+	@Getter
+	private boolean hideDiscontinued = false;
+
 	private static final CtxName param_M_PriceList_ID = CtxNames.ofNameAndDefaultValue("M_PriceList_ID", "-1");
 	private static final CtxName param_AD_Org_ID = CtxNames.ofNameAndDefaultValue(WindowConstants.FIELDNAME_AD_Org_ID, "-1");
 
@@ -151,10 +151,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final String pricingDateParamName,
 			@NonNull final String availableStockDateParamName,
 			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter,
+			boolean hideDiscontinued,
 			final boolean excludeBOMProducts)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
+
+		this.hideDiscontinued = hideDiscontinued;
 
 		param_AvailableStockDate = CtxNames.ofNameAndDefaultValue(availableStockDateParamName, "NULL");
 		this.availableToPromiseAdapter = availableToPromiseAdapter;
@@ -171,10 +174,12 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private ProductLookupDescriptor(
 			@NonNull final String bpartnerParamName,
 			@NonNull final String pricingDateParamName,
+			boolean hideDiscontinued,
 			final boolean excludeBOMProducts)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
+		this.hideDiscontinued = hideDiscontinued;
 
 		param_AvailableStockDate = null;
 		availableToPromiseAdapter = null;
@@ -304,6 +309,10 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final StringBuilder sqlWhereClause = new StringBuilder();
 		final SqlParamsCollector sqlWhereClauseParams = SqlParamsCollector.newInstance();
 		appendFilterByIsActive(sqlWhereClause, sqlWhereClauseParams);
+		if (this.isHideDiscontinued())
+		{
+			appendFilterByDiscontinued(sqlWhereClause, sqlWhereClauseParams);
+		}
 		appendFilterBySearchString(sqlWhereClause, sqlWhereClauseParams, evalCtx.getFilter(), isFullTextSearchEnabled());
 		appendFilterById(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByBPartner(sqlWhereClause, sqlWhereClauseParams, evalCtx);
@@ -328,6 +337,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_BPartnerProductName
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_AD_Org_ID
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsActive
+				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Discontinued
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Value
 				+ "\n, p." + I_M_Product_Lookup_V.COLUMNNAME_Name
@@ -355,6 +365,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private static StringBuilder appendFilterByIsActive(final StringBuilder sqlWhereClause, final SqlParamsCollector sqlWhereClauseParams)
 	{
 		return sqlWhereClause.append("\n p.").append(I_M_Product_Lookup_V.COLUMNNAME_IsActive).append("=").append(sqlWhereClauseParams.placeholder(true));
+	}
+
+	private static StringBuilder appendFilterByDiscontinued(final StringBuilder sqlWhereClause, final SqlParamsCollector sqlWhereClauseParams)
+	{
+		return sqlWhereClause.append("\n AND p.").append(I_M_Product_Lookup_V.COLUMNNAME_Discontinued).append("=").append(sqlWhereClauseParams.placeholder(false));
 	}
 
 	private static void appendFilterBySearchString(
@@ -886,6 +901,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		String COLUMNNAME_BPartnerProductNo = "BPartnerProductNo";
 		String COLUMNNAME_BPartnerProductName = "BPartnerProductName";
 		String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+		String COLUMNNAME_Discontinued = "Discontinued";
 
 		String COLUMNNAME_IsBOM = "IsBOM";
 	}

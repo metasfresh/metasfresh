@@ -458,7 +458,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public BigDecimal getValueAsBigDecimal(final AttributeCode attributeCode)
+	public BigDecimal getValueAsBigDecimal(final @NonNull AttributeCode attributeCode)
 	{
 		// assertNotDisposed(); // checked in next called method
 

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 
 /*
@@ -30,6 +31,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_M_Attribute;
@@ -51,11 +53,13 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	@Override
 	public I_M_HU getM_HU_OrNull(@Nullable final IAttributeSet attributeSet)
 	{
@@ -155,4 +159,15 @@ public class HUAttributesBL implements IHUAttributesBL
 		return attributeStorage;
 	}
 
+	@Override
+	public boolean isAutomaticallySetLotNumber()
+	{
+		return sysConfigBL.getBooleanValue("de.metas.handlingunits.attributes.AutomaticallySetLotNumber", false);
+	}
+
+	@Override
+	public boolean isAutomaticallySetBestBeforeDate()
+	{
+		return sysConfigBL.getBooleanValue("de.metas.handlingunits.attributes.AutomaticallySetBestBeforeDate", false);
+	}
 }

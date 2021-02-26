@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.tuple;
 import java.time.Instant;
 import java.time.LocalDate;
 
+import de.metas.common.util.time.SystemTime;
 import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -34,7 +35,6 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -160,7 +160,7 @@ class HierachyAlgorithmTest
 		final CommissionTriggerData triggerData = CommissionTriggerData.builder()
 				.orgId(orgId)
 				.triggerType(CommissionTriggerType.InvoiceCandidate)
-				.timestamp(SystemTime.asInstant())
+				.timestamp(de.metas.common.util.time.SystemTime.asInstant())
 				.triggerDocumentId(new SalesInvoiceLineDocumentId(InvoiceLineId.ofRepoId(10, 15)))
 				.triggerDocumentDate(LocalDate.of(2020, 03, 22))
 				.forecastedBasePoints(CommissionPoints.of("30.00"))
@@ -187,12 +187,12 @@ class HierachyAlgorithmTest
 						.fact(SalesCommissionFact.builder()
 								.points(CommissionPoints.of("30.00"))
 								.state(SalesCommissionState.FORECASTED)
-								.timestamp(SystemTime.asInstant())
+								.timestamp(de.metas.common.util.time.SystemTime.asInstant())
 								.build())
 						.fact(SalesCommissionFact.builder()
 								.points(CommissionPoints.of("20.00"))
 								.state(SalesCommissionState.INVOICEABLE)
-								.timestamp(SystemTime.asInstant())
+								.timestamp(de.metas.common.util.time.SystemTime.asInstant())
 								.build())
 						.fact(SalesCommissionFact.builder()
 								.points(CommissionPoints.of("10.00"))
@@ -343,7 +343,7 @@ class HierachyAlgorithmTest
 		final CommissionTriggerData triggerData = CommissionTriggerData.builder()
 				.orgId(orgId)
 				.triggerType(CommissionTriggerType.InvoiceCandidate)
-				.timestamp(SystemTime.asInstant())
+				.timestamp(de.metas.common.util.time.SystemTime.asInstant())
 				.triggerDocumentDate(LocalDate.of(2020, 03, 22))
 				.triggerDocumentId(new SalesInvoiceCandidateDocumentId(invoiceCandiateId))
 				.forecastedBasePoints(CommissionPoints.of("1000.00"))

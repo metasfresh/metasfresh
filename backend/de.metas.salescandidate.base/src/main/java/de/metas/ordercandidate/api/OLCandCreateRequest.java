@@ -95,6 +95,7 @@ public class OLCandCreateRequest
 	CurrencyId currencyId; // mandatory if price is provided
 	Percent discount;
 
+	WarehouseId warehouseId;
 	WarehouseId warehouseDestId;
 
 	ShipperId shipperId;
@@ -133,6 +134,7 @@ public class OLCandCreateRequest
 			final BigDecimal price,
 			final CurrencyId currencyId,
 			final Percent discount,
+			@Nullable final WarehouseId warehouseId,
 			@Nullable final WarehouseId warehouseDestId,
 			@Nullable final ShipperId shipperId,
 			@Nullable final BPartnerId salesRepId,
@@ -177,6 +179,7 @@ public class OLCandCreateRequest
 		this.shipperId = shipperId;
 		this.salesRepId = salesRepId;
 
+		this.warehouseId = warehouseId;
 		this.warehouseDestId = warehouseDestId;
 
 		this.paymentRule = paymentRule;

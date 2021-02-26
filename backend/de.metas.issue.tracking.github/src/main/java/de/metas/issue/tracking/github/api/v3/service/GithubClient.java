@@ -33,6 +33,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
@@ -72,7 +73,7 @@ public class GithubClient
 
 		if (retrieveIssuesRequest.getDateFrom() != null)
 		{
-			final String since = DateTimeFormatter.ISO_LOCAL_DATE.format(retrieveIssuesRequest.getDateFrom());
+			final String since = DateTimeFormatter.ISO_ZONED_DATE_TIME.format(retrieveIssuesRequest.getDateFrom().atStartOfDay(ZoneOffset.UTC));
 
 			queryParams.add(SINCE.getValue(), since);
 		}

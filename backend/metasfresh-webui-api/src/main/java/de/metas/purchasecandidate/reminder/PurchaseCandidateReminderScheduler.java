@@ -11,6 +11,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ScheduledFuture;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
@@ -88,7 +89,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 	private final IBPartnerBL bpartnersService;
 
 	private static final NotificationGroupName NOTIFICATION_GROUP_NAME = NotificationGroupName.of("de.metas.purchasecandidate.UserNotifications.Due");
-	private static final String MSG_PurchaseCandidatesDue = "de.metas.purchasecandidates.PurchaseCandidatesDueNotification";
+	private static final AdMessageKey MSG_PurchaseCandidatesDue = AdMessageKey.of("de.metas.purchasecandidates.PurchaseCandidatesDueNotification");
 
 	private final RemindersQueue reminders = new RemindersQueue();
 	private NextDispatch nextDispatch;
@@ -220,7 +221,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 				.contentADMessageParam(count)
 				.contentADMessageParam(TableRecordReference.of(I_C_BPartner.Table_Name, reminder.getVendorBPartnerId().getRepoId()))
 				.targetAction(TargetViewAction.builder()
-						.adWindowId(viewId.getWindowId().toIntOr(-1))
+						.adWindowId(viewId.getWindowId().toAdWindowIdOrNull())
 						.viewId(viewId.toJson())
 						.build())
 				.build();

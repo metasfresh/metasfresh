@@ -1,5 +1,6 @@
 package de.metas.lock.exceptions;
 
+import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.lock.api.IUnlockCommand;
@@ -59,7 +60,7 @@ public class UnlockFailedException extends LockException
 	}
 
 	@Override
-	public UnlockFailedException setParameter(String name, Object value)
+	public UnlockFailedException setParameter(@NonNull String name, Object value)
 	{
 		super.setParameter(name, value);
 		return this;

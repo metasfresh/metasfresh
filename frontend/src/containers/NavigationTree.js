@@ -79,7 +79,14 @@ class NavigationTree extends Component {
   openModal = (windowType, type, caption, isAdvanced) => {
     const { dispatch } = this.props;
 
-    dispatch(openModal(caption, windowType, type, null, null, isAdvanced));
+    dispatch(
+      openModal({
+        title: caption,
+        windowId: windowType,
+        moadlType: type,
+        isAdvanced,
+      })
+    );
   };
 
   handleQuery = async (event) => {

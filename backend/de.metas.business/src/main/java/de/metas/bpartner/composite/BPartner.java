@@ -1,14 +1,6 @@
 package de.metas.bpartner.composite;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.util.Check.isEmpty;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.RecordChangeLog;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
@@ -18,6 +10,12 @@ import de.metas.order.InvoiceRule;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Data;
+import org.adempiere.ad.table.RecordChangeLog;
+
+import javax.annotation.Nullable;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.util.Check.isEmpty;
 
 /*
  * #%L
@@ -62,6 +60,7 @@ public class BPartner
 	public static final String GROUP_ID = "groupId";
 	public static final String VENDOR = "vendor";
 	public static final String CUSTOMER = "customer";
+	public static final String COMPANY = "company";
 	public static final String VAT_ID = "vatId";
 
 	/** May be null if the bpartner was not yet saved. */
@@ -95,14 +94,18 @@ public class BPartner
 
 	private boolean vendor;
 	private boolean customer;
+	private boolean company;
 
 	private InvoiceRule invoiceRule;
 
 	private String globalId;
-	
+
 	private String vatId;
 
 	private final RecordChangeLog changeLog;
+
+	/** Can be {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First} or {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First}. */
+	private final String shipmentAllocationBestBeforePolicy;
 
 	/** They are all nullable because we can create a completely empty instance which we then fill. */
 	@Builder(toBuilder = true)
@@ -126,8 +129,10 @@ public class BPartner
 			@Nullable final InvoiceRule invoiceRule,
 			@Nullable final Boolean vendor,
 			@Nullable final Boolean customer,
+			@Nullable final Boolean company,
 			@Nullable final String vatId,
-			@Nullable final RecordChangeLog changeLog)
+			@Nullable final RecordChangeLog changeLog,
+			@Nullable final String shipmentAllocationBestBeforePolicy)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -148,12 +153,16 @@ public class BPartner
 		this.invoiceRule = invoiceRule;
 		this.vendor = coalesce(vendor, false);
 		this.customer = coalesce(customer, false);
+		this.company = coalesce(company, false);
 		this.vatId = vatId;
 
 		this.changeLog = changeLog;
+		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
 	}
 
-	/** Only active bpartners are actually validated. Empty list means "valid" */
+	/**
+	 * Only active bpartners are actually validated. Empty list means "valid"
+	 */
 	public ImmutableList<ITranslatableString> validate()
 	{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();

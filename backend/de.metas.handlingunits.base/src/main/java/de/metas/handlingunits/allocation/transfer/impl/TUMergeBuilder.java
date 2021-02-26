@@ -27,6 +27,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUContext;
@@ -45,7 +46,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class TUMergeBuilder implements ITUMergeBuilder
 {

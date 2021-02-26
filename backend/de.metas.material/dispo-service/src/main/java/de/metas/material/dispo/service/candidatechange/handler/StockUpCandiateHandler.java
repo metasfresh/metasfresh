@@ -1,14 +1,7 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -20,6 +13,12 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseReposito
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.Collection;
 
 /*
  * #%L
@@ -81,8 +80,17 @@ public class StockUpCandiateHandler implements CandidateHandler
 	}
 
 	@Override
-	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
+	public Candidate onCandidateNewOrChange(
+			@NonNull final Candidate candidate,
+			@NonNull final OnNewOrChangeAdvise advise)
 	{
+		if (!advise.isAttemptUpdate())
+		{
+			throw new AdempiereException("This handler does not how to deal with isAttemptUpdate=false").appendParametersToMessage()
+					.setParameter("handler", candidate)
+					.setParameter("candidate", candidate);
+		}
+
 		assertCorrectCandidateType(candidate);
 
 		final SaveResult candidateSaveResult = candidateRepositoryWriteService
@@ -104,7 +112,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 		if (requiredAdditionalQty.signum() > 0)
 		{
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
-					.createSupplyRequiredEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty);
+					.createSupplyRequiredEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty, null);
 			materialEventService.postEventNow(supplyRequiredEvent);
 		}
 

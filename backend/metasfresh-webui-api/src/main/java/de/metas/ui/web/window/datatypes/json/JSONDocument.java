@@ -116,14 +116,10 @@ public final class JSONDocument extends JSONDocumentBase
 
 		//
 		// Included tabs info
-		if (!options.isDoNotFetchIncludedTabs())
-		{
-			document.getIncludedDocumentsCollections()
-					.stream()
-					.map(JSONDocument::createIncludedTabInfo)
-					.peek(jsonIncludedTabInfo -> options.getDocumentPermissions().apply(document, jsonIncludedTabInfo))
-					.forEach(jsonDocument::addIncludedTabInfo);
-		}
+		document.getIncludedDocumentsCollections()
+				.stream()
+				.map(includedDocumentsCollection -> createIncludedTabInfo(includedDocumentsCollection, document, options))
+				.forEach(jsonDocument::addIncludedTabInfo);
 
 		//
 		// Available standard actions
@@ -147,7 +143,11 @@ public final class JSONDocument extends JSONDocumentBase
 		return jsonDocument;
 	}
 
-	private static JSONIncludedTabInfo createIncludedTabInfo(final IIncludedDocumentsCollection includedDocumentsCollection)
+	@NonNull
+	private static JSONIncludedTabInfo createIncludedTabInfo(
+			@NonNull final IIncludedDocumentsCollection includedDocumentsCollection,
+			@NonNull final Document document,
+			@NonNull final JSONDocumentOptions options)
 	{
 		final JSONIncludedTabInfo tabInfo = JSONIncludedTabInfo.newInstance(includedDocumentsCollection.getDetailId());
 		if (includedDocumentsCollection.isStale())
@@ -166,6 +166,10 @@ public final class JSONDocument extends JSONDocumentBase
 		{
 			tabInfo.setAllowDelete(allowDelete.booleanValue(), allowDelete.getName());
 		}
+
+		//
+		// Apply user permissions
+		options.getDocumentPermissions().apply(document, tabInfo);
 
 		return tabInfo;
 	}
@@ -326,13 +330,6 @@ public final class JSONDocument extends JSONDocumentBase
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String websocketEndpoint;
 
-	/**
-	 * Event's timestamp. Usually set when this event shall be sent via websocket
-	 */
-	@JsonProperty("timestamp")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private String timestamp;
-
 	@JsonProperty("hasComments")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Nullable
@@ -343,13 +340,6 @@ public final class JSONDocument extends JSONDocumentBase
 		super(documentPath);
 		setUnboxPasswordFields();
 		this.websocketEndpoint = buildWebsocketEndpointOrNull(getWindowId(), getId());
-	}
-
-	private JSONDocument(final WindowId windowId, final DocumentId id, final String tabId, final DocumentId rowId)
-	{
-		super(windowId, id, tabId, rowId);
-		setUnboxPasswordFields();
-		this.websocketEndpoint = null; // NOTE: this constructor is used when creating websocket events and there we don't need the websocket endpoint
 	}
 
 	@Nullable

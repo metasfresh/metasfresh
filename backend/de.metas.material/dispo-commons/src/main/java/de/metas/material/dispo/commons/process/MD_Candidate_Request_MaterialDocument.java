@@ -2,6 +2,7 @@ package de.metas.material.dispo.commons.process;
 
 import java.util.function.Predicate;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.SpringContextHolder;
 
@@ -40,7 +41,7 @@ import de.metas.util.Services;
  */
 
 /**
- * Invokes {@link RequestMaterialOrderService#requestMaterialOrderForCandidates(Integer)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
+ * Invokes {@link RequestMaterialOrderService#requestMaterialOrderForCandidates(MaterialDispoGroupId)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -88,7 +89,7 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 	}
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
 		if (context.isNoSelection())
 		{

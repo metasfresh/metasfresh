@@ -1,5 +1,6 @@
 package de.metas.vertical.pharma.model.interceptor;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -11,7 +12,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import de.metas.vertical.pharma.PharmaCustomerPermission;
 import de.metas.vertical.pharma.PharmaCustomerPermissions;
 import de.metas.vertical.pharma.PharmaModulo11Validator;
@@ -68,12 +68,12 @@ public class C_BPartner
 		else if (permissions.hasPermission(PharmaCustomerPermission.PHARMA_NARCOTICS))
 		{
 			customer.setShipmentPermissionPharma(I_C_BPartner.ShipmentPermissionPharma_TypeC);
-			customer.setShipmentPermissionChangeDate(SystemTime.asTimestamp());
+			customer.setShipmentPermissionChangeDate(de.metas.common.util.time.SystemTime.asTimestamp());
 		}
 		else if (permissions.hasAtLeastOnePermission())
 		{
 			customer.setShipmentPermissionPharma(I_C_BPartner.ShipmentPermissionPharma_TypeA);
-			customer.setShipmentPermissionChangeDate(SystemTime.asTimestamp());
+			customer.setShipmentPermissionChangeDate(de.metas.common.util.time.SystemTime.asTimestamp());
 		}
 		else
 		{
@@ -105,7 +105,7 @@ public class C_BPartner
 		else if (permissions.hasAtLeastOnePermission())
 		{
 			vendor.setReceiptPermissionPharma(I_C_BPartner.ReceiptPermissionPharma_TypeA);
-			vendor.setReceiptPermissionChangeDate(SystemTime.asTimestamp());
+			vendor.setReceiptPermissionChangeDate(de.metas.common.util.time.SystemTime.asTimestamp());
 		}
 		else
 		{

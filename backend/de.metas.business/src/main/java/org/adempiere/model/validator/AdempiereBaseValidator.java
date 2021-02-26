@@ -1,7 +1,25 @@
 package org.adempiere.model.validator;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.async.api.IAsyncBatchListeners;
+import de.metas.async.spi.impl.NotifyAsyncBatch;
+import de.metas.bpartner.product.callout.C_BPartner_Product;
+import de.metas.cache.CCache.CacheMapType;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.TableNamesGroup;
+import de.metas.cache.model.ColumnSqlCacheInvalidateRequestInitializer;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.cache.model.ITableCacheConfig;
+import de.metas.cache.model.ITableCacheConfig.TrxLevel;
+import de.metas.cache.model.WindowBasedCacheInvalidateRequestInitializer;
+import de.metas.event.EventBusAdempiereInterceptor;
+import de.metas.event.Topic;
+import de.metas.notification.INotificationGroupNameRepository;
+import de.metas.notification.NotificationGroupName;
+import de.metas.reference.model.interceptor.AD_Ref_Table;
+import de.metas.util.Services;
+import de.metas.workflow.interceptors.AD_Workflow;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.element.model.interceptor.AD_Element;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
@@ -46,26 +64,7 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.async.api.IAsyncBatchListeners;
-import de.metas.async.spi.impl.NotifyAsyncBatch;
-import de.metas.bpartner.product.callout.C_BPartner_Product;
-import de.metas.cache.CCache.CacheMapType;
-import de.metas.cache.CacheMgt;
-import de.metas.cache.TableNamesGroup;
-import de.metas.cache.model.ColumnSqlCacheInvalidateRequestInitializer;
-import de.metas.cache.model.IModelCacheService;
-import de.metas.cache.model.ITableCacheConfig;
-import de.metas.cache.model.ITableCacheConfig.TrxLevel;
-import de.metas.cache.model.WindowBasedCacheInvalidateRequestInitializer;
-import de.metas.event.EventBusAdempiereInterceptor;
-import de.metas.event.Topic;
-import de.metas.notification.INotificationGroupNameRepository;
-import de.metas.notification.NotificationGroupName;
-import de.metas.reference.model.interceptor.AD_Ref_Table;
-import de.metas.util.Services;
+import java.util.List;
 
 /*
  * #%L
@@ -93,7 +92,6 @@ import de.metas.util.Services;
  * ADempiere Base Module Activator
  *
  * @author tsa
- *
  */
 public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 {
@@ -133,7 +131,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new org.adempiere.model.validator.AD_InfoColumn());
 		engine.addModelValidator(new org.adempiere.server.rpl.model.validator.IMP_Processor());
 
-		engine.addModelValidator(new org.compiere.wf.model.validator.AD_Workflow());
+		engine.addModelValidator(new AD_Workflow());
 
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass()); // 04599
 		engine.addModelValidator(new de.metas.javaclasses.model.interceptor.AD_JavaClass_Type()); // 04599

@@ -51,13 +51,11 @@ import de.metas.util.StringUtils;
 		"org.adempiere.ad.modelvalidator" // FIXME: workaround needed for ModuleActivatorDescriptorsRepository to be discovered
 })
 @ServletComponentScan(value = { "de.metas.adempiere.report.jasper.servlet" })
-@Profile(ReportServiceMain.PROFILE_ReportService_Standalone)
+@Profile(Profiles.PROFILE_ReportService_Standalone)
 public class ReportServiceMain
 {
 	@Autowired
 	private ApplicationContext applicationContext;
-
-	static final String PROFILE_ReportService_Standalone = Profiles.PROFILE_ReportService + "-standalone";
 
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
@@ -77,7 +75,7 @@ public class ReportServiceMain
 			new SpringApplicationBuilder(ReportServiceMain.class)
 					.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
 					.web(true)
-					.profiles(Profiles.PROFILE_ReportService, PROFILE_ReportService_Standalone)
+					.profiles(Profiles.PROFILE_ReportService, Profiles.PROFILE_ReportService_Standalone)
 					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}

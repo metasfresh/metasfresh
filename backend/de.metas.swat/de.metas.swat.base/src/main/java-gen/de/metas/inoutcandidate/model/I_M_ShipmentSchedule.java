@@ -163,6 +163,48 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
 
 	/**
+	 * Set Bill Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_Location_ID (int Bill_Location_ID);
+
+	/**
+	 * Get Bill Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBill_Location_ID();
+
+    /** Column name Bill_Location_ID */
+    public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
+
+	/**
+	 * Set Bill Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_User_ID (int Bill_User_ID);
+
+	/**
+	 * Get Bill Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBill_User_ID();
+
+    /** Column name Bill_User_ID */
+    public static final String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+
+	/**
 	 * Set Address.
 	 *
 	 * <br>Type: Text
@@ -961,7 +1003,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
 
 	/**
-	 * Set zu Akt..
+	 * Set Recompute.
 	 * Wert wird bei einer Benutzer-Änderung am Rechnungskandidaten vom System automatisch auf "Ja" gesetzt.
 	 *
 	 * <br>Type: YesNo
@@ -973,7 +1015,7 @@ public interface I_M_ShipmentSchedule
 	public void setIsToRecompute (boolean IsToRecompute);
 
 	/**
-	 * Get zu Akt..
+	 * Get Recompute.
 	 * Wert wird bei einer Benutzer-Änderung am Rechnungskandidaten vom System automatisch auf "Ja" gesetzt.
 	 *
 	 * <br>Type: YesNo
@@ -1013,8 +1055,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
-	 * Set Ausprägung Merkmals-Satz.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -1023,8 +1065,8 @@ public interface I_M_ShipmentSchedule
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Ausprägung Merkmals-Satz.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -1265,6 +1307,29 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_M_Warehouse_Override_ID = "M_Warehouse_Override_ID";
 
 	/**
+	 * Set Nr of order line candidates with the same PO ref.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setNrOfOLCandsWithSamePOReference (int NrOfOLCandsWithSamePOReference);
+
+	/**
+	 * Get Nr of order line candidates with the same PO ref.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getNrOfOLCandsWithSamePOReference();
+
+    /** Column definition for NrOfOLCandsWithSamePOReference */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_NrOfOLCandsWithSamePOReference = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "NrOfOLCandsWithSamePOReference", null);
+    /** Column name NrOfOLCandsWithSamePOReference */
+    public static final String COLUMNNAME_NrOfOLCandsWithSamePOReference = "NrOfOLCandsWithSamePOReference";
+
+	/**
 	 * Set Pick From Order.
 	 *
 	 * <br>Type: Search
@@ -1297,10 +1362,8 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setPOReference (java.lang.String POReference);
 
 	/**
@@ -1309,10 +1372,8 @@ public interface I_M_ShipmentSchedule
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public java.lang.String getPOReference();
 
     /** Column definition for POReference */

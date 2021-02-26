@@ -1,17 +1,21 @@
 package de.metas.edi.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.util.Optional;
-
+import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.edi.model.DocOutboundLogId;
+import de.metas.edi.model.I_C_Doc_Outbound_Log;
+import de.metas.edi.model.I_C_Invoice;
+import de.metas.invoice.InvoiceId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.archive.ArchiveId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
-import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.edi.model.I_C_Doc_Outbound_Log;
-import de.metas.edi.model.I_C_Invoice;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -41,7 +45,7 @@ public class EDIDocOutBoundLogService
 	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
 
 	/**
-	 * @param record if this in an {@link I_C_Invoice}, then set the {@code C_Doc_Outbound_Log.EDI_ExportStatus} of all referencing log records to the invoice's current status.
+	 * @param recordReference if this in an {@link I_C_Invoice}, then set the {@code C_Doc_Outbound_Log.EDI_ExportStatus} of all referencing log records to the invoice's current status.
 	 * @return changed log record or {@code null}
 	 */
 	public Optional<I_C_Doc_Outbound_Log> setEdiExportStatusFromInvoiceRecord(@NonNull final TableRecordReference recordReference)
@@ -58,5 +62,20 @@ public class EDIDocOutBoundLogService
 			logRecord.setEDI_ExportStatus(invoiceRecord.getEDI_ExportStatus());
 		}
 		return Optional.ofNullable(logRecord);
+	}
+
+	public I_C_Doc_Outbound_Log retreiveById(@NonNull final DocOutboundLogId docOutboundLogId)
+	{
+		return load(docOutboundLogId, I_C_Doc_Outbound_Log.class);
+	}
+
+	public I_C_Invoice retreiveById(@NonNull final InvoiceId invoiceId)
+	{
+		return load(invoiceId, I_C_Invoice.class);
+	}
+
+	public void save(@NonNull final de.metas.edi.model.I_C_Doc_Outbound_Log docOutboundLog)
+	{
+		InterfaceWrapperHelper.save(docOutboundLog);
 	}
 }

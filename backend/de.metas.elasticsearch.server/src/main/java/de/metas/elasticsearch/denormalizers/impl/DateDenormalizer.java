@@ -5,13 +5,13 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.Temporal;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
 import de.metas.elasticsearch.denormalizers.IESDenormalizer;
 import de.metas.elasticsearch.types.ESIndexType;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.ToString;
 

@@ -1,12 +1,7 @@
 package de.metas.rest_api.ordercandidates.request;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
-import static de.metas.util.Check.isEmpty;
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
 import de.metas.rest_api.bpartner.request.JsonRequestContact;
 import de.metas.rest_api.bpartner.request.JsonRequestLocation;
@@ -16,6 +11,10 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+import static de.metas.util.Check.isEmpty;
 
 /*
  * #%L
@@ -39,15 +38,23 @@ import lombok.Value;
  * #L%
  */
 
-@ApiModel(description = "A BPartner with one contact (optional) and one location. Used in many scenarios multiple times in each order line candidate.<br>" //
-		+ "Note that given the respective use-case, either `bpartner.code`, `bpartner.externalId` or `location.gln` might be `null`, but not both at once.")
+@ApiModel(description = "A BPartner with one contact (optional) and one location.\n"
+		+ "Can be used multiple times in each order line candidate, for billTo-partner, shipTo-partner etc.\n" //
+		+ "Note that given the respective use-case, either `bpartner.code`, `bpartner.externalId` or `location.gln` might be `null`, but not all at once.")
 @Value
-public final class JsonRequestBPartnerLocationAndContact
+public class JsonRequestBPartnerLocationAndContact
 {
+	@ApiModelProperty(required = true)
 	JsonRequestBPartner bpartner;
 
+	@ApiModelProperty(required = true, value = "This model object is also used in the bpartner-Rest endpoint."
+			+ "However, the location's \"inner\"/own sync advise is not only applied to the location's own fields, but also to the whole location.\n"
+			+ "Therefore, you can e.g. create a missing location by specifying `IfNotExists/CREATE` within this location")
 	JsonRequestLocation location;
 
+	@ApiModelProperty(value = "This model object is also used in the bpartner-Rest endpoint."
+			+ "However, the contact's \"inner\"/own sync advise is not only applied to the contact's own fields, but also to the whole contact.\n"
+			+ "Therefore, you can e.g. create a missing contact by specifying `IfNotExists/CREATE` within this contact")
 	JsonRequestContact contact;
 
 	@ApiModelProperty(value = "Specifies how to lookup the BPartner in metasfresh. If not set and there are multiple possibilities, then:\n"
@@ -56,7 +63,7 @@ public final class JsonRequestBPartnerLocationAndContact
 			+ "* there is also no `GLN`, then `code` is used")
 	BPartnerLookupAdvise bpartnerLookupAdvise;
 
-	@ApiModelProperty(required = false, value = READ_ONLY_SYNC_ADVISE_DOC)
+	@ApiModelProperty(value = READ_ONLY_SYNC_ADVISE_DOC)
 	SyncAdvise syncAdvise;
 
 	@Builder(toBuilder = true)

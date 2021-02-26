@@ -24,7 +24,6 @@ package de.metas.pricing.service;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.pricing.PriceListId;
@@ -37,9 +36,11 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 
 import javax.annotation.Nullable;
@@ -77,9 +78,9 @@ public interface IPriceListDAO extends ISingletonService
 	 * The method returns both price lists with the given country and without any country. The price list
 	 * which has a country (if any) is ordered first.
 	 *
-	 * @param pricingSystem
+	 * @param pricingSystemId
 	 * @param countryId
-	 * @param soTrx         sales, purchase or null to return both
+	 * @param soTrx           sales, purchase or null to return both
 	 */
 	List<I_M_PriceList> retrievePriceLists(PricingSystemId pricingSystemId, CountryId countryId, SOTrx soTrx);
 
@@ -188,4 +189,6 @@ public interface IPriceListDAO extends ISingletonService
 	Optional<TaxCategoryId> getDefaultTaxCategoryByPriceListVersionId(final PriceListVersionId priceListVersionId);
 
 	PricingSystemId getPricingSystemId(PriceListId priceListId);
+
+	void updateProductPricesIsActive(@NonNull final IQueryFilter<I_M_Product> productFilter, @NonNull final LocalDate date, final boolean newIsActiveValue);
 }

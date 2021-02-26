@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.api;
 
+import de.metas.i18n.AdMessageKey;
 import org.springframework.stereotype.Service;
 
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -10,7 +11,7 @@ import lombok.NonNull;
 public class OLCandValidatorService
 {
 	/** AD_Message to be used by users of this implementation. */
-	public static final String MSG_ERRORS_FOUND = "de.metas.ordercandidate.spi.impl.OLCandPriceValidator.FoundErrors";
+	public static final AdMessageKey MSG_ERRORS_FOUND = AdMessageKey.of("de.metas.ordercandidate.spi.impl.OLCandPriceValidator.FoundErrors");
 
 	private final ThreadLocal<Boolean> validationProcessInProgress = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
@@ -44,9 +45,7 @@ public class OLCandValidatorService
 	{
 		final Boolean isUpdateProcess = validationProcessInProgress.get();
 
-		return isUpdateProcess == null
-				? false
-				: isUpdateProcess.booleanValue();
+		return isUpdateProcess != null && isUpdateProcess;
 	}
 
 	/**
@@ -54,7 +53,7 @@ public class OLCandValidatorService
 	 */
 	public boolean setValidationProcessInProgress(final boolean value)
 	{
-		final Boolean isUpdateProcess = isValidationProcessInProgress();
+		final boolean isUpdateProcess = isValidationProcessInProgress();
 		validationProcessInProgress.set(value);
 
 		return isUpdateProcess;

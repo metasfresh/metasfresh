@@ -63,7 +63,7 @@ public class AD_Ref_List_GenerateJavaConstants
 
 		//
 		// Get the AD_Reference list info
-		final ListInfo listInfo = repository.getListInfo(adReferenceId).orNull();
+		final ListInfo listInfo = repository.getListInfo(adReferenceId).orElse(null);
 		if (listInfo == null)
 		{
 			throw new AdempiereException("No list info found for AD_Reference_ID=" + adReferenceId);

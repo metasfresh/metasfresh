@@ -7,6 +7,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 import org.compiere.util.Evaluatee;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -58,6 +59,7 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 	}
 
 	@Override
+	@Nullable
 	LookupValue findById(Object id);
 
 	/**

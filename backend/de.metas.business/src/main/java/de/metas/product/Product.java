@@ -2,6 +2,7 @@ package de.metas.product;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -48,8 +49,13 @@ public class Product
 	@NonNull
 	ITranslatableString name;
 
-	@Nullable
-	ITranslatableString description;
+	@NonNull
+	@Builder.Default
+	ITranslatableString description = TranslatableStrings.empty();
+
+	@NonNull
+	@Builder.Default
+	ITranslatableString documentNote = TranslatableStrings.empty();
 
 	@Nullable
 	BPartnerId manufacturerId;
@@ -59,4 +65,9 @@ public class Product
 
 	@Nullable
 	BigDecimal weight;
+
+	boolean stocked;
+
+	@Nullable
+	CommodityNumberId commodityNumberId;
 }

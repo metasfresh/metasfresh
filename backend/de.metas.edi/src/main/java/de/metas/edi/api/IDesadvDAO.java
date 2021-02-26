@@ -1,10 +1,8 @@
-package de.metas.edi.api;
-
 /*
  * #%L
  * de.metas.edi
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,18 +11,21 @@ package de.metas.edi.api;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package de.metas.edi.api;
+
 import java.math.BigDecimal;
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.edi.model.I_C_Order;
@@ -47,6 +48,8 @@ public interface IDesadvDAO extends ISingletonService
 	 * @return the desadv for the given <code>poReference</code>, or <code>null</code> if none exists.
 	 */
 	I_EDI_Desadv retrieveMatchingDesadvOrNull(String poReference, IContextAware ctxAware);
+
+	I_EDI_Desadv retrieveById(@NonNull EDIDesadvId ediDesadvId);
 
 	/**
 	 * Retrieves the desadv line that has the given <code>desadv</code> and <code>line</code> number.
@@ -140,4 +143,6 @@ public interface IDesadvDAO extends ISingletonService
 	 * Get the value of the minimum sum percentage from the sysconfig 'de.metas.esb.edi.DefaultMinimumPercentage'
 	 */
 	BigDecimal retrieveMinimumSumPercentage();
+
+	void save(@NonNull I_EDI_Desadv ediDesadv);
 }

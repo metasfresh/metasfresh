@@ -1,17 +1,6 @@
 package de.metas.rfq.impl;
 
-import java.sql.Timestamp;
-
-import org.adempiere.archive.api.IArchiveEventManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_User;
-
 import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
@@ -22,6 +11,7 @@ import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailTextBuilder;
+import de.metas.report.PrintFormatId;
 import de.metas.rfq.IRfqDAO;
 import de.metas.rfq.RfQResponsePublisherRequest;
 import de.metas.rfq.RfQResponsePublisherRequest.PublishingType;
@@ -29,6 +19,18 @@ import de.metas.rfq.exceptions.RfQPublishException;
 import de.metas.rfq.model.I_C_RfQResponse;
 import de.metas.rfq.model.I_C_RfQ_Topic;
 import de.metas.util.Services;
+import org.adempiere.archive.api.ArchiveEmailSentStatus;
+import org.adempiere.archive.api.ArchiveResult;
+import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
+import org.compiere.Adempiere;
+import org.compiere.model.I_AD_User;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -54,7 +56,7 @@ import de.metas.util.Services;
 
 /* package */class MailRfqResponsePublisherInstance
 {
-	public static final MailRfqResponsePublisherInstance newInstance()
+	public static MailRfqResponsePublisherInstance newInstance()
 	{
 		return new MailRfqResponsePublisherInstance();
 	}
@@ -88,7 +90,7 @@ import de.metas.util.Services;
 		{
 			publish0(request, rfqReportType);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			throw RfQPublishException.wrapIfNeeded(e)
 					.setRequest(request);
@@ -118,14 +120,13 @@ import de.metas.util.Services;
 		//
 		final String subject = mailTextBuilder.getMailHeader();
 		final String message = mailTextBuilder.getFullMailText();
-		final DefaultModelArchiver archiver = DefaultModelArchiver.of(rfqResponse)
-				.setAD_PrintFormat_ID(getAD_PrintFormat_ID(rfqResponse, rfqReportType));
-		final I_AD_Archive pdfArchive = archiver.archive();
-		final byte[] pdfData = archiver.getPdfData();
+		final PrintFormatId printFormatId = getPrintFormatId(rfqResponse, rfqReportType);
+		final DefaultModelArchiver archiver = DefaultModelArchiver.of(rfqResponse, printFormatId);
+		final ArchiveResult pdfArchive = archiver.archive();
 
 		final ClientId adClientId = ClientId.ofRepoId(rfqResponse.getAD_Client_ID());
 		final ClientEMailConfig tenantEmailConfig = clientsRepo.getEMailConfigById(adClientId);
-		
+
 		//
 		// Send it
 		final EMail email = mailService.createEMail(
@@ -136,7 +137,7 @@ import de.metas.util.Services;
 				subject, // subject
 				message,  // message
 				mailTextBuilder.isHtml()); // html
-		email.addAttachment("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfData);
+		email.addAttachment("RfQ_" + rfqResponse.getC_RfQResponse_ID() + ".pdf", pdfArchive.getData());
 		final EMailSentStatus emailSentStatus = email.send();
 
 		//
@@ -145,14 +146,13 @@ import de.metas.util.Services;
 			final EMailAddress from = email.getFrom();
 			final EMailAddress to = email.getTo();
 			archiveEventManager.fireEmailSent(
-					pdfArchive, // archive
-					X_C_Doc_Outbound_Log_Line.ACTION_EMail, // action
+					pdfArchive.getArchiveRecord(), // archive
 					(UserEMailConfig)null, // user
 					from, // from
 					to, // to
 					(EMailAddress)null, // cc
 					(EMailAddress)null, // bcc
-					emailSentStatus.getSentMsg() // status
+					ArchiveEmailSentStatus.ofEMailSentStatus(emailSentStatus) // status
 			);
 		}
 
@@ -201,25 +201,26 @@ import de.metas.util.Services;
 		}
 	}
 
-	private int getAD_PrintFormat_ID(final I_C_RfQResponse rfqResponse, final RfQReportType rfqReportType)
+	@Nullable
+	private PrintFormatId getPrintFormatId(final I_C_RfQResponse rfqResponse, final RfQReportType rfqReportType)
 	{
 		final I_C_RfQ_Topic rfqTopic = rfqResponse.getC_RfQ().getC_RfQ_Topic();
 
 		if (rfqReportType == RfQReportType.Invitation)
 		{
-			return rfqTopic.getRfQ_Invitation_PrintFormat_ID();
+			return PrintFormatId.ofRepoIdOrNull(rfqTopic.getRfQ_Invitation_PrintFormat_ID());
 		}
 		else if (rfqReportType == RfQReportType.InvitationWithoutQtyRequired)
 		{
-			return rfqTopic.getRfQ_InvitationWithoutQty_PrintFormat_ID();
+			return PrintFormatId.ofRepoIdOrNull(rfqTopic.getRfQ_InvitationWithoutQty_PrintFormat_ID());
 		}
 		else if (rfqReportType == RfQReportType.Won)
 		{
-			return rfqTopic.getRfQ_Win_PrintFormat_ID();
+			return PrintFormatId.ofRepoIdOrNull(rfqTopic.getRfQ_Win_PrintFormat_ID());
 		}
 		else if (rfqReportType == RfQReportType.Lost)
 		{
-			return rfqTopic.getRfQ_Lost_PrintFormat_ID();
+			return PrintFormatId.ofRepoIdOrNull(rfqTopic.getRfQ_Lost_PrintFormat_ID());
 		}
 		else
 		{

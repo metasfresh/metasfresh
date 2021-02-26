@@ -24,6 +24,7 @@ package de.metas.dunning.api.impl;
 
 import java.sql.Timestamp;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
@@ -35,7 +36,6 @@ import de.metas.dunning.api.IDunningConfig;
 import de.metas.dunning.exception.DunningException;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.impl.PlainDunningConfigurator;
-import de.metas.util.time.SystemTime;
 
 public class DunningBLTest extends DunningTestBase
 {
@@ -125,7 +125,7 @@ public class DunningBLTest extends DunningTestBase
 		final I_C_Dunning_Candidate candidate = db.newInstance(I_C_Dunning_Candidate.class);
 		candidate.setProcessed(true);
 		candidate.setIsDunningDocProcessed(true);
-		candidate.setDunningDateEffective(SystemTime.asTimestamp());
+		candidate.setDunningDateEffective(de.metas.common.util.time.SystemTime.asTimestamp());
 
 		candidate.setIsActive(false);
 		dunningBL.validate(candidate);

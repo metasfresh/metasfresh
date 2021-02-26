@@ -1,15 +1,11 @@
 package org.adempiere.mm.attributes.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.Optional;
-
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.AttributesKeyPart;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
@@ -24,10 +20,14 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.rules.TestWatcher;
 
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.AttributesKeyPart;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -53,7 +53,9 @@ import lombok.NonNull;
 
 public class AttributesKeysTest
 {
-	/** Watches the current tests and dumps the database to console in case of failure */
+	/**
+	 * Watches the current tests and dumps the database to console in case of failure
+	 */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
@@ -77,12 +79,15 @@ public class AttributesKeysTest
 		final I_M_Attribute attr2 = createStorageRelevantAttribute("test2");
 		final AttributeListValue attributeValue2 = attributesTestHelper.createM_AttributeValue(attr2, "testValue2");
 
+		final I_M_Attribute attr3 = createStorageRelevantAttribute("test3_shallbeignored_bc_blank_value"); // shall be
+
 		final I_M_AttributeSetInstance asi = newInstance(I_M_AttributeSetInstance.class);
 		saveRecord(asi);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 
 		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeValue1);
 		attributeSetInstanceBL.getCreateAttributeInstance(asiId, attributeValue2);
+		attributeSetInstanceBL.setAttributeInstanceValue(asiId, AttributeId.ofRepoId(attr3.getM_Attribute_ID()), "");
 
 		// invoke the method under test
 		final Optional<AttributesKey> result = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId);
@@ -162,6 +167,16 @@ public class AttributesKeysTest
 		final ImmutableAttributeSet attributeSet2 = AttributesKeys.toImmutableAttributeSet(attributesKey);
 
 		assertThat(attributeSet2).isEqualTo(attributeSet);
+	}
+
+	@Test
+	void pruneEmptyParts()
+	{
+		final AttributesKey attributesKey = AttributesKey.ofString("540044=§&§540047=");
+
+		final AttributesKey pruned = AttributesKeys.pruneEmptyParts(attributesKey);
+
+		assertThat(pruned).isEqualTo(AttributesKey.NONE);
 	}
 
 	@Nested

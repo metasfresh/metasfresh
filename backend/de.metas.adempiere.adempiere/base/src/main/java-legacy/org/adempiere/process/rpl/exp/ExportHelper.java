@@ -37,6 +37,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
@@ -744,6 +745,10 @@ public class ExportHelper
 		else if (DisplayType.isDate(displayType))
 		{
 			valueString = encodeDate((Timestamp)value, formatLine, displayType);
+		}
+		else if (DisplayType.isYesNo(displayType))
+		{
+			valueString = StringUtils.ofBoolean((Boolean)value,"N");
 		}
 		else
 		{

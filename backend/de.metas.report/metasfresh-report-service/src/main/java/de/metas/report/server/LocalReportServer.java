@@ -1,16 +1,8 @@
 package de.metas.report.server;
 
-import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.io.Files;
-
 import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
@@ -18,20 +10,31 @@ import de.metas.report.jasper.JasperEngine;
 import de.metas.report.xls.engine.XlsReportEngine;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.Properties;
 
 public class LocalReportServer implements IReportServer
 {
 	private static final Logger logger = LogManager.getLogger(LocalReportServer.class);
 
 	@Override
-	public ReportResult report(int processId, int pinstanceRepoId, final String adLanguage, final OutputType outputType)
+	public ReportResult report(
+			final int processId,
+			final int pinstanceRepoId,
+			final String adLanguage,
+			final OutputType outputType)
 	{
 		//
 		// Load process info
 		final ProcessInfo processInfo = ProcessInfo.builder()
 				.setCtx(Env.newTemporaryCtx())
 				.setCreateTemporaryCtx()
-				.setAD_Process_ID(processId)
+				.setAD_Process_ID(AdProcessId.ofRepoIdOrNull(processId))
 				.setPInstanceId(PInstanceId.ofRepoIdOrNull(pinstanceRepoId))
 				.setReportLanguage(adLanguage)
 				.setJRDesiredOutputType(outputType)
@@ -41,7 +44,8 @@ public class LocalReportServer implements IReportServer
 		// If there is no AD_PInstance already, we need to create it now
 		if (processInfo.getPinstanceId() == null)
 		{
-			Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(processInfo);
+			final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+			adPInstanceDAO.saveProcessInfoOnly(processInfo);
 		}
 
 		// Override the context using the values from record (if any)
@@ -66,7 +70,7 @@ public class LocalReportServer implements IReportServer
 
 		//
 		// Create the report
-		try (final IAutoCloseable contextRestorer = Env.switchContext(reportContext.getCtx()))
+		try (final IAutoCloseable ignored = Env.switchContext(reportContext.getCtx()))
 		{
 			final IReportEngine engine = createReportEngine(reportContext);
 			return engine.report(reportContext);
@@ -102,12 +106,8 @@ public class LocalReportServer implements IReportServer
 
 	/**
 	 * Populate given context (AD_Client_ID, AD_Org_ID) from given record.
-	 *
-	 * @param ctx
-	 * @param adTableId record's AD_Table_ID
-	 * @param recordId record's ID
 	 */
-	private static final void updateContextFromRecord(final ProcessInfo processInfo)
+	private static void updateContextFromRecord(final ProcessInfo processInfo)
 	{
 		if (!processInfo.isRecordSet())
 		{

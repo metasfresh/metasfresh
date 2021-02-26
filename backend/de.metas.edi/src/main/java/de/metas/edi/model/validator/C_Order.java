@@ -24,15 +24,6 @@ package de.metas.edi.model.validator;
  * #L%
  */
 
-import de.metas.impex.model.I_AD_InputDataSource;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.model.I_C_BPartner;
@@ -40,6 +31,13 @@ import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Order.class)
 @Component
@@ -131,8 +129,7 @@ public class C_Order
 	}
 
 	/**
-	 * @param order
-	 * @task http://dewiki908/mediawiki/index.php/08926_EDI-Ausschalten_f%C3%BCr_bestimmte_Belege_%28109751792947%29
+	 * task http://dewiki908/mediawiki/index.php/08926_EDI-Ausschalten_f%C3%BCr_bestimmte_Belege_%28109751792947%29
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_AD_InputDataSource_ID)
 	public void updateEdiEnabled(final I_C_Order order)
@@ -172,5 +169,4 @@ public class C_Order
 			order.setIsEdiEnabled(false);
 		}
 	}
-
 }

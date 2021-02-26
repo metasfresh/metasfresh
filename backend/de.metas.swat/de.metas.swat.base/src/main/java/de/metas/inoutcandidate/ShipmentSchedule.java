@@ -26,10 +26,11 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
-import de.metas.order.OrderId;
+import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -49,19 +50,30 @@ public class ShipmentSchedule
 	private final OrgId orgId;
 
 	@NonNull
-	private final BPartnerId customerId;
+	private final BPartnerId shipBPartnerId;
 
 	@NonNull
-	private final BPartnerLocationId locationId;
+	private final BPartnerLocationId shipLocationId;
 
 	@Nullable
-	private final BPartnerContactId contactId;
+	private final BPartnerContactId shipContactId;
 
 	@Nullable
-	private final OrderId orderId;
+	private final BPartnerId billBPartnerId;
+
+	@Nullable
+	private final BPartnerLocationId billLocationId;
+
+	@Nullable
+	private final BPartnerContactId billContactId;
+
+	@Nullable
+	private final OrderAndLineId orderAndLineId;
 
 	@Nullable
 	private final LocalDateTime dateOrdered;
+
+	private int numberOfItemsForSameShipment;
 
 	@NonNull
 	private final ProductId productId;
@@ -69,9 +81,18 @@ public class ShipmentSchedule
 	@NonNull
 	private final Quantity quantityToDeliver;
 
+	@NonNull
+	private final Quantity orderedQuantity;
+
+	@NonNull
+	private final Quantity deliveredQuantity;
+
 	@Nullable
 	private final AttributeSetInstanceId attributeSetInstanceId;
 
 	@NonNull
 	private APIExportStatus exportStatus;
+
+	@Nullable
+	private ShipperId shipperId;
 }

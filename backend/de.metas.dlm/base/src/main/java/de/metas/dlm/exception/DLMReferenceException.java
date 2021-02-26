@@ -5,6 +5,8 @@ import org.adempiere.exceptions.DBException;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-dlm
@@ -41,7 +43,8 @@ public class DLMReferenceException extends DBException
 	private final TableRecordIdDescriptor tableReferenceDescriptor;
 
 	@VisibleForTesting
-	public DLMReferenceException(final Throwable cause,
+	public DLMReferenceException(
+			@Nullable final Throwable cause,
 			final TableRecordIdDescriptor tableReferenceDescriptor,
 			final boolean referencingTableHasDLMLevel)
 	{

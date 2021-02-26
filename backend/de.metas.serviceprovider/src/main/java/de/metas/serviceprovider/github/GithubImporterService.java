@@ -46,6 +46,8 @@ import de.metas.serviceprovider.external.project.GetExternalProjectRequest;
 import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
 import de.metas.serviceprovider.external.reference.ExternalReferenceType;
 import de.metas.serviceprovider.external.reference.GetReferencedIdRequest;
+import de.metas.serviceprovider.github.label.LabelService;
+import de.metas.serviceprovider.github.label.ProcessedLabel;
 import de.metas.serviceprovider.github.link.GithubIssueLink;
 import de.metas.serviceprovider.github.link.GithubIssueLinkMatcher;
 import de.metas.serviceprovider.issue.IssueEntity;
@@ -73,17 +75,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.regex.Matcher;
 
 import static de.metas.serviceprovider.github.GithubImporterConstants.CHUNK_SIZE;
 import static de.metas.serviceprovider.github.GithubImporterConstants.HOUR_UOM_ID;
-import static de.metas.serviceprovider.github.GithubImporterConstants.LabelType.BUDGET;
-import static de.metas.serviceprovider.github.GithubImporterConstants.LabelType.DELIVERY_PLATFORM;
-import static de.metas.serviceprovider.github.GithubImporterConstants.LabelType.ESTIMATION;
-import static de.metas.serviceprovider.github.GithubImporterConstants.LabelType.PLANNED_UAT;
-import static de.metas.serviceprovider.github.GithubImporterConstants.LabelType.ROUGH_EST;
-import static de.metas.serviceprovider.github.GithubImporterConstants.LabelType.STATUS;
-import static de.metas.serviceprovider.github.GithubImporterConstants.PLANNED_UAT_DATE_FORMAT;
+import static de.metas.serviceprovider.github.GithubImporterConstants.LABEL_DATE_FORMAT;
 import static de.metas.serviceprovider.issue.importer.ImportConstants.IMPORT_LOG_MESSAGE_PREFIX;
 
 @Service
@@ -98,14 +93,16 @@ public class GithubImporterService implements IssueImporter
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final IssueRepository issueRepository;
 	private final ExternalProjectRepository externalProjectRepository;
+	private final LabelService labelService;
 
-	public GithubImporterService(final ImportQueue<ImportIssueInfo> importIssuesQueue, final GithubClient githubClient, final ExternalReferenceRepository externalReferenceRepository, final IssueRepository issueRepository, final ExternalProjectRepository externalProjectRepository)
+	public GithubImporterService(final ImportQueue<ImportIssueInfo> importIssuesQueue, final GithubClient githubClient, final ExternalReferenceRepository externalReferenceRepository, final IssueRepository issueRepository, final ExternalProjectRepository externalProjectRepository, final LabelService labelService)
 	{
 		this.importIssuesQueue = importIssuesQueue;
 		this.githubClient = githubClient;
 		this.externalReferenceRepository = externalReferenceRepository;
 		this.issueRepository = issueRepository;
 		this.externalProjectRepository = externalProjectRepository;
+		this.labelService = labelService;
 	}
 
 	public void start(@NonNull final ImmutableList<ImportIssuesRequest> requestList)
@@ -271,102 +268,21 @@ public class GithubImporterService implements IssueImporter
 				.build();
 	}
 
-
-	private void processLabels(final List<Label> labelList,
-			@NonNull final ImportIssueInfo.ImportIssueInfoBuilder importIssueInfoBuilder,
-			@NonNull final OrgId orgId)
-	{
-		final List<IssueLabel> issueLabelList = new ArrayList<>();
-		final List<String> deliveryPlatformList = new ArrayList<>();
-		BigDecimal budget = BigDecimal.ZERO;
-		BigDecimal estimation = BigDecimal.ZERO;
-		BigDecimal roughEstimation = BigDecimal.ZERO;
-		Optional<Status> status = Optional.empty();
-		Optional<LocalDate> plannedUATDate = Optional.empty();
-
-		if (!Check.isEmpty(labelList))
-		{
-			for (final Label label : labelList)
-			{
-				budget = budget.add(getValueFromLabel(label, BUDGET));
-
-				estimation = estimation.add(getValueFromLabel(label, ESTIMATION));
-
-				roughEstimation = roughEstimation.add(getValueFromLabel(label, ROUGH_EST));
-
-				status = status.isPresent() ? status : getStatusFromLabel(label);
-
-				plannedUATDate = plannedUATDate.isPresent() ? plannedUATDate : getPlannedUATDateFromLabel(label);
-
-				getDeliveryPlatformFromLabel(label).ifPresent(deliveryPlatformList::add);
-
-				final IssueLabel issueLabel =
-						IssueLabel.builder().value(label.getName()).orgId(orgId).build();
-
-				issueLabelList.add(issueLabel);
-			}
-		}
-
-		importIssueInfoBuilder.budget(budget);
-		importIssueInfoBuilder.estimation(estimation);
-		importIssueInfoBuilder.roughEstimation(roughEstimation);
-		importIssueInfoBuilder.issueLabels(ImmutableList.copyOf(issueLabelList));
-
-		status.ifPresent(importIssueInfoBuilder::status);
-		plannedUATDate.ifPresent(importIssueInfoBuilder::plannedUATDate);
-
-		if (!deliveryPlatformList.isEmpty())
-		{
-			importIssueInfoBuilder.deliveryPlatform(Joiner.on(",").join(deliveryPlatformList));
-		}
-	}
-
 	@NonNull
-	private BigDecimal getValueFromLabel(final Label label, final GithubImporterConstants.LabelType labelType)
+	private Optional<LocalDate> getDateFromLabel(@NonNull final String labelDateStr)
 	{
-		final Matcher matcher = labelType.getPattern().matcher(label.getName());
-
-		return matcher.matches() ? NumberUtils.asBigDecimal(matcher.group(labelType.getGroupName())) : BigDecimal.ZERO;
-	}
-
-	@NonNull
-	private Optional<Status> getStatusFromLabel(final Label label)
-	{
-		final Matcher matcher = STATUS.getPattern().matcher(label.getName());
-
-		return matcher.matches() ? Status.ofCodeOptional(matcher.group(STATUS.getGroupName())) : Optional.empty();
-	}
-
-	@NonNull
-	private Optional<String> getDeliveryPlatformFromLabel(final Label label)
-	{
-		final Matcher matcher = DELIVERY_PLATFORM.getPattern().matcher(label.getName());
-
-		return matcher.matches() ? Optional.of(matcher.group(DELIVERY_PLATFORM.getGroupName())) : Optional.empty();
-	}
-
-	@NonNull
-	private Optional<LocalDate> getPlannedUATDateFromLabel(final Label label)
-	{
-		final Matcher matcher = PLANNED_UAT.getPattern().matcher(label.getName());
-
-		if (!matcher.matches())
-		{
-			return Optional.empty();
-		}
-
-		LocalDate plannedUATDate = null;
+		LocalDate date = null;
 		try
 		{
-			plannedUATDate = LocalDate.from(PLANNED_UAT_DATE_FORMAT.parse(matcher.group(PLANNED_UAT.getGroupName())));
+			date = LocalDate.from(LABEL_DATE_FORMAT.parse(labelDateStr));
 		}
 		catch (final Exception e)
 		{
-			log.error("{} : cannot extract planned UAT date from : {}",
-					IMPORT_LOG_MESSAGE_PREFIX, label.getName(), e);
+			log.error("{} : cannot extract date from : {}",
+					IMPORT_LOG_MESSAGE_PREFIX, labelDateStr, e);
 		}
 
-		return Optional.ofNullable(plannedUATDate);
+		return Optional.ofNullable(date);
 	}
 
 	@Nullable
@@ -514,5 +430,68 @@ public class GithubImporterService implements IssueImporter
 		lock.unlock();
 
 		log.debug(" {} GithubImporterService: lock released!", IMPORT_LOG_MESSAGE_PREFIX);
+	}
+
+	private void processLabels(final List<Label> labelList,
+			@NonNull final ImportIssueInfo.ImportIssueInfoBuilder importIssueInfoBuilder,
+			@NonNull final OrgId orgId)
+	{
+		final ImmutableList<ProcessedLabel> processedLabels = labelService.processLabels(labelList);
+
+		final List<IssueLabel> issueLabelList = new ArrayList<>();
+		final List<String> deliveryPlatformList = new ArrayList<>();
+		BigDecimal budget = BigDecimal.ZERO;
+		BigDecimal estimation = BigDecimal.ZERO;
+		BigDecimal roughEstimation = BigDecimal.ZERO;
+		Optional<Status> status = Optional.empty();
+		Optional<LocalDate> plannedUATDate = Optional.empty();
+		Optional<LocalDate> deliveredDate = Optional.empty();
+
+		for (final ProcessedLabel label : processedLabels)
+		{
+			switch (label.getLabelType())
+			{
+				case ESTIMATION:
+					estimation = estimation.add(NumberUtils.asBigDecimal(label.getExtractedValue(), BigDecimal.ZERO));
+					break;
+				case ROUGH_EST:
+					roughEstimation = roughEstimation.add(NumberUtils.asBigDecimal(label.getExtractedValue(), BigDecimal.ZERO));
+					break;
+				case BUDGET:
+					budget = budget.add(NumberUtils.asBigDecimal(label.getExtractedValue(), BigDecimal.ZERO));
+					break;
+				case STATUS:
+					status = status.isPresent() ? status : Status.ofCodeOptional(label.getExtractedValue());
+					break;
+				case DELIVERY_PLATFORM:
+					deliveryPlatformList.add(label.getExtractedValue());
+					break;
+				case PLANNED_UAT:
+					plannedUATDate = plannedUATDate.isPresent() ? plannedUATDate : getDateFromLabel(label.getExtractedValue());
+					break;
+				case DELIVERED_DATE:
+					deliveredDate = deliveredDate.isPresent() ? deliveredDate : getDateFromLabel(label.getExtractedValue());
+					break;
+				default:
+					// nothing to do for UNKNOWN label types
+			}
+
+			issueLabelList.add(IssueLabel.builder().value(label.getLabel()).orgId(orgId).build());
+
+		}
+
+		importIssueInfoBuilder.budget(budget);
+		importIssueInfoBuilder.estimation(estimation);
+		importIssueInfoBuilder.roughEstimation(roughEstimation);
+		importIssueInfoBuilder.issueLabels(ImmutableList.copyOf(issueLabelList));
+
+		status.ifPresent(importIssueInfoBuilder::status);
+		plannedUATDate.ifPresent(importIssueInfoBuilder::plannedUATDate);
+		deliveredDate.ifPresent(importIssueInfoBuilder::deliveredDate);
+
+		if (!deliveryPlatformList.isEmpty())
+		{
+			importIssueInfoBuilder.deliveryPlatform(Joiner.on(",").join(deliveryPlatformList));
+		}
 	}
 }
