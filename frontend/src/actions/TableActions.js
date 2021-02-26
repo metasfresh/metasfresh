@@ -675,20 +675,17 @@ function handleToggleIncludedView({
       );
     }
 
-    if (openIncludedViewOnSelect) {
-      dispatch(
-        showIncludedView({
-          id: windowId,
-          showIncludedView: showIncluded,
-          forceClose,
-          windowId: includedWindowId,
-          viewId: includedViewId,
-          isModal,
-        })
-      );
-    } else {
-      dispatch(fetchQuickActions({ windowId, viewId, isModal }));
-    }
+    dispatch(
+      showIncludedView({
+        id: windowId,
+        showIncludedView: showIncluded,
+        forceClose,
+        windowId: includedWindowId,
+        viewId: includedViewId,
+        isModal,
+      })
+    );
+    dispatch(fetchQuickActions({ windowId, viewId, isModal }));
 
     return Promise.resolve(openIncludedViewOnSelect);
   };
