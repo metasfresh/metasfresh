@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalreference
+ * de-metas-camel-shopware6
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,34 +20,14 @@
  * #L%
  */
 
-package de.metas.externalreference;
+package de.metas.camel.externalsystems.shopware6.api;
 
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-@Service
-public class ExternalSystems
+public class UnauthorizedException extends RuntimeException
 {
-	public ExternalSystems()
+	public UnauthorizedException(@NonNull final String errorMessage)
 	{
-		registerExternalSystem(NullExternalSystem.NULL);
-		registerExternalSystem(AlbertaExternalSystem.ALBERTA);
-		registerExternalSystem(Shopware6ExternalSystem.SHOPWARE6);
-	}
-
-	private final Map<String, IExternalSystem> systemsByCode = new HashMap<>();
-
-	public void registerExternalSystem(@NonNull final IExternalSystem system)
-	{
-		systemsByCode.put(system.getCode(), system);
-	}
-
-	public Optional<IExternalSystem> ofCode(final String code)
-	{
-		return Optional.ofNullable(systemsByCode.get(code));
+		super(errorMessage);
 	}
 }

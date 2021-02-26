@@ -77,7 +77,7 @@ public class ExternalSystemConfigRepo
 		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
 
 		final ExternalSystemShopware6Config child = ExternalSystemShopware6Config.builder()
-				.id(ExternalSystemShopware6ConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.id(ExternalSystemShopware6ConfigId.ofRepoId(config.getExternalSystem_Config_Shopware6_ID()))
 				.parentId(parentConfigId)
 				.baseUrl(config.getBaseURL())
 				.clientSecret(config.getClient_Secret())
@@ -100,7 +100,7 @@ public class ExternalSystemConfigRepo
 				.name(externalSystemConfigRecord.getName());
 	}
 
-	public String getTypeById(final @NonNull ExternalSystemParentConfigId id)
+	public String getParentTypeById(final @NonNull ExternalSystemParentConfigId id)
 	{
 		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
 

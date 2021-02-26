@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-alberta-camelroutes
+ * de-metas-camel-shopware6
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,18 +20,16 @@
  * #L%
  */
 
-package de.metas.camel.alberta;
+package de.metas.camel.externalsystems.shopware6;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import de.metas.camel.alberta.processor.CreateBPRelationReqProcessor;
-import de.metas.camel.alberta.processor.CreateBPartnerReqProcessor;
-import de.metas.camel.alberta.processor.CreateESRQueryProcessor;
-import de.metas.camel.alberta.processor.RetrievePatientsProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsert;
+import de.metas.camel.externalsystems.shopware6.processor.CreateBPartnerESRQueryProcessor;
+import de.metas.camel.externalsystems.shopware6.processor.CreateBPartnerUpsertReqProcessor;
+import de.metas.camel.externalsystems.shopware6.processor.GetOrdersProcessor;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
@@ -44,51 +42,41 @@ import org.springframework.stereotype.Component;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 
 @Component
-public class GetAlbertaPatientsRouteBuilder extends RouteBuilder
+public class GetOrdersRouteBuilder extends RouteBuilder
 {
-	public static final String GET_PATIENTS_ROUTE_ID = "Alberta-getPatients";
-	public static final String PROCESS_PATIENT_ROUTE_ID = "Alberta-processPatient";
+	public static final String GET_ORDERS_ROUTE_ID = "Shopware6-getOrders";
+	public static final String PROCESS_ORDER_ROUTE_ID = "Shopware6-processOrder";
 
 	@Override
-	public void configure()
+	public void configure() throws Exception
 	{
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
 				.to(StaticEndpointBuilders.direct(MF_ERROR_ROUTE_ID));
 
 		//@formatter:off
-		// this EP's name is matching the JsonExternalSystemRequest's ExternalSystem and Command
-		from(StaticEndpointBuilders.direct(GET_PATIENTS_ROUTE_ID))
-				.routeId(GET_PATIENTS_ROUTE_ID)
+		from(StaticEndpointBuilders.direct(GET_ORDERS_ROUTE_ID))
+				.routeId(GET_ORDERS_ROUTE_ID)
 				.streamCaching()
-				.process(new RetrievePatientsProcessor())
+				.process(new GetOrdersProcessor())
 				.split(body())
-					.to(StaticEndpointBuilders.direct(PROCESS_PATIENT_ROUTE_ID))
+					.to(StaticEndpointBuilders.direct(PROCESS_ORDER_ROUTE_ID))
 				.end();
 
-		from(StaticEndpointBuilders.direct(PROCESS_PATIENT_ROUTE_ID))
-				.routeId(PROCESS_PATIENT_ROUTE_ID)
-				.process(new CreateESRQueryProcessor())
+		from(StaticEndpointBuilders.direct(PROCESS_ORDER_ROUTE_ID))
+				.routeId(PROCESS_ORDER_ROUTE_ID)
+				.process(new CreateBPartnerESRQueryProcessor())
 
 				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to query ESR records: ${body}")
 				.to("{{" + ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI + "}}")
 
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonExternalReferenceLookupResponse.class))
-				.process(new CreateBPartnerReqProcessor())
-
-				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPartners: ${body}")
-				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_CAMEL_URI + "}}")
-
-				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
-				.process(new CreateBPRelationReqProcessor())
-
-				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPRelations: ${body}")
-				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPRELATION_CAMEL_URI + "}}");
+				.process(new CreateBPartnerUpsertReqProcessor());
 		//@formatter:on
 	}
 
 	@NonNull
-	public JacksonDataFormat setupJacksonDataFormatFor(
+	private JacksonDataFormat setupJacksonDataFormatFor(
 			@NonNull final CamelContext context,
 			@NonNull final Class<?> unmarshalType)
 	{

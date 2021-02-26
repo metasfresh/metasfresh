@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalreference
+ * de-metas-camel-shopware6
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,34 +20,44 @@
  * #L%
  */
 
-package de.metas.externalreference;
+package de.metas.camel.externalsystems.shopware6.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
+import lombok.Value;
 
-import java.util.HashMap;
+import javax.annotation.Nullable;
 import java.util.Map;
-import java.util.Optional;
 
-@Service
-public class ExternalSystems
+@Value
+@Builder
+@JsonDeserialize(builder = JsonQuery.JsonQueryBuilder.class)
+public class JsonQuery
 {
-	public ExternalSystems()
-	{
-		registerExternalSystem(NullExternalSystem.NULL);
-		registerExternalSystem(AlbertaExternalSystem.ALBERTA);
-		registerExternalSystem(Shopware6ExternalSystem.SHOPWARE6);
-	}
+	@NonNull
+	@JsonProperty("field")
+	String field;
 
-	private final Map<String, IExternalSystem> systemsByCode = new HashMap<>();
+	@NonNull
+	@JsonProperty("type")
+	QueryType queryType;
 
-	public void registerExternalSystem(@NonNull final IExternalSystem system)
-	{
-		systemsByCode.put(system.getCode(), system);
-	}
+	@Nullable
+	@JsonProperty("parameters")
+	Map<String, String> parameters;
 
-	public Optional<IExternalSystem> ofCode(final String code)
+	@AllArgsConstructor
+	@Getter
+	public enum QueryType
 	{
-		return Optional.ofNullable(systemsByCode.get(code));
+		RANGE("range");
+
+		@JsonValue
+		private final String value;
 	}
 }

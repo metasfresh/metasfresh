@@ -44,7 +44,6 @@ import de.metas.process.PInstanceId;
 import de.metas.process.Param;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.apache.http.client.methods.HttpPut;
@@ -86,7 +85,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	{
 		final Timestamp sinceEff = extractEffectiveSinceTimestamp();
 
-		addLog("Calling with params: childConfigId {}, since {}, command {}", childConfigId, sinceEff != null ?  sinceEff.toInstant() : null, externalRequest);
+		addLog("Calling with params: childConfigId {}, since {}, command {}", childConfigId, sinceEff.toInstant(), externalRequest);
 		try (final CloseableHttpClient aDefault = HttpClients.createDefault())
 		{
 			return aDefault.execute(getRequest(), response -> {
@@ -156,10 +155,10 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	}
 
 	/** Needed so we also have a "since" when the process is run via AD_Scheduler */
-	@Nullable
+	@NonNull
 	protected Timestamp extractEffectiveSinceTimestamp()
 	{
-		return CoalesceUtil.coalesceSuppliers(() -> since, () -> retrieveSinceValue());
+		return CoalesceUtil.coalesceSuppliers(() -> since, () -> retrieveSinceValue(), () -> Timestamp.from(Instant.ofEpochSecond(0)));
 	}
 	
 	private Timestamp retrieveSinceValue()

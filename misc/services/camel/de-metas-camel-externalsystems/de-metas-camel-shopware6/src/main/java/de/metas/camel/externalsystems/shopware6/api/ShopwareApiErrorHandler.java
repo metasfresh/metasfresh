@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-core
+ * de-metas-camel-shopware6
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,23 +20,29 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core;
+package de.metas.camel.externalsystems.shopware6.api;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.web.client.DefaultResponseErrorHandler;
 
-@SpringBootApplication(scanBasePackages = {"de.metas.camel.externalsystems.core",
-		"de.metas.camel.alberta", "de.metas.camel.externalsystems.shopware6"})
-public class ESBCamelApplication
+import java.io.IOException;
+
+public class ShopwareApiErrorHandler extends DefaultResponseErrorHandler
 {
-
-	/**
-	 * Main method to start this application.
-	 */
-	public static void main(String[] args)
+	public ShopwareApiErrorHandler()
 	{
-		SpringApplication.run(ESBCamelApplication.class, args);
+		super();
 	}
 
-}
+	@Override
+	public void handleError(final ClientHttpResponse response) throws IOException
+	{
+		if (response.getStatusCode().equals(HttpStatus.UNAUTHORIZED))
+		{
+			throw new UnauthorizedException(response.getBody().toString());
+		}
 
+		super.handleError(response);
+	}
+}

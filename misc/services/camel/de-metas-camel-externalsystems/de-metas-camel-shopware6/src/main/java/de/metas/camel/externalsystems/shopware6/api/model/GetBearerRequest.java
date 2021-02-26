@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalreference
+ * de-metas-camel-shopware6
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,34 +20,28 @@
  * #L%
  */
 
-package de.metas.externalreference;
+package de.metas.camel.externalsystems.shopware6.api.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Builder;
 import lombok.NonNull;
-import org.springframework.stereotype.Service;
+import lombok.Value;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-@Service
-public class ExternalSystems
+@Value
+@Builder
+@JsonDeserialize(builder = GetBearerRequest.GetBearerRequestBuilder.class)
+public class GetBearerRequest
 {
-	public ExternalSystems()
-	{
-		registerExternalSystem(NullExternalSystem.NULL);
-		registerExternalSystem(AlbertaExternalSystem.ALBERTA);
-		registerExternalSystem(Shopware6ExternalSystem.SHOPWARE6);
-	}
+	@NonNull
+	@JsonProperty("grant_type")
+	String grantType;
 
-	private final Map<String, IExternalSystem> systemsByCode = new HashMap<>();
+	@NonNull
+	@JsonProperty("client_id")
+	String clientId;
 
-	public void registerExternalSystem(@NonNull final IExternalSystem system)
-	{
-		systemsByCode.put(system.getCode(), system);
-	}
-
-	public Optional<IExternalSystem> ofCode(final String code)
-	{
-		return Optional.ofNullable(systemsByCode.get(code));
-	}
+	@NonNull
+	@JsonProperty("client_secret")
+	String clientSecret;
 }

@@ -23,10 +23,10 @@
 package de.metas.externalsystem.alberta.interceptor;
 
 import de.metas.externalsystem.ExternalSystemConfigRepo;
-import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
-import de.metas.externalsystem.model.X_ExternalSystem_Config_Alberta;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -37,20 +37,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class ExternalSystem_Config_Alberta
 {
-	public final ExternalSystemConfigRepo externalSystemConfigDAO;
+	public final ExternalSystemConfigRepo externalSystemConfigRepo;
 
-	public ExternalSystem_Config_Alberta(final ExternalSystemConfigRepo externalSystemConfigDAO)
+	public ExternalSystem_Config_Alberta(final ExternalSystemConfigRepo externalSystemConfigRepo)
 	{
-		this.externalSystemConfigDAO = externalSystemConfigDAO;
+		this.externalSystemConfigRepo = externalSystemConfigRepo;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void checkType(final X_ExternalSystem_Config_Alberta config)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_ExternalSystem_Config_Alberta.COLUMNNAME_ExternalSystem_Config_ID })
+	public void checkType(final I_ExternalSystem_Config_Alberta albertaConfig)
 	{
-		final String parentConfigType =
-				externalSystemConfigDAO.getTypeById(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()));
+		final ExternalSystemParentConfig parentConfig =
+				externalSystemConfigRepo.getById(ExternalSystemAlbertaConfigId.ofRepoId(albertaConfig.getExternalSystem_Config_Alberta_ID()));
 
-		if (!ExternalSystemType.Alberta.getCode().equals(parentConfigType))
+		if (!ExternalSystemType.Alberta.getCode().equals(parentConfig.getType().getCode()))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}

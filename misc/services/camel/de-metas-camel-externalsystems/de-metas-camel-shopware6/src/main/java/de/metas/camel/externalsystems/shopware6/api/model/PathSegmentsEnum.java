@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-core
+ * de-metas-camel-shopware6
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,23 +20,23 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core;
+package de.metas.camel.externalsystems.shopware6.api.model;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@SpringBootApplication(scanBasePackages = {"de.metas.camel.externalsystems.core",
-		"de.metas.camel.alberta", "de.metas.camel.externalsystems.shopware6"})
-public class ESBCamelApplication
+@AllArgsConstructor
+@Getter
+public enum PathSegmentsEnum
 {
+	API("api"),
+	V3("v3"),
+	SEARCH("search"),
+	ORDER("order"),
+	DELIVERIES("deliveries"),
+	ORDER_ADDRESS("order-address"),
+	OATH("oauth"),
+	TOKEN("token");
 
-	/**
-	 * Main method to start this application.
-	 */
-	public static void main(String[] args)
-	{
-		SpringApplication.run(ESBCamelApplication.class, args);
-	}
-
+	private final String value;
 }
-

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-core
+ * de-metas-camel-shopware6
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,23 +20,28 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core;
+package de.metas.camel.externalsystems.shopware6;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication(scanBasePackages = {"de.metas.camel.externalsystems.core",
-		"de.metas.camel.alberta", "de.metas.camel.externalsystems.shopware6"})
-public class ESBCamelApplication
+public interface Shopware6Constants
 {
+	String SHOPWARE6_SYSTEM_NAME = "Shopware6";
+	String ESR_TYPE_BPARTNER_LOCATION = "BPartnerLocation";
+	String ESR_TYPE_BPARTNER = "BPartner";
 
-	/**
-	 * Main method to start this application.
-	 */
-	public static void main(String[] args)
-	{
-		SpringApplication.run(ESBCamelApplication.class, args);
-	}
+	String FIELD_UPDATED_AT = "updatedAt";
+	String FIELD_CREATED_AT = "createdAt";
+
+	String PARAMETERS_DATE_GTE =  "gte";
+
+	//camel route properties
+	String ROUTE_PROPERTY_SHOPWARE_CLIENT = "shopware-client";
+	String ROUTE_PROPERTY_CURRENT_ORDER = "slack";
+
+	//nodes
+	String JSON_NODE_DATA = "data";
+
+	//shopware client
+	int CONNECTION_TIMEOUT_SECONDS = 600;
+	int READ_TIMEOUT_SECONDS = 600;
 
 }
-
