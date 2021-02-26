@@ -1,5 +1,3 @@
-DROP VIEW IF EXISTS C_Commission_Overview_V
-;
 
 CREATE OR REPLACE VIEW C_Commission_Overview_V AS
 SELECT

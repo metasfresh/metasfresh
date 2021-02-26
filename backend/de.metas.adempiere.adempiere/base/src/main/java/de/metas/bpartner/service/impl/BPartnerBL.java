@@ -684,4 +684,10 @@ public class BPartnerBL implements IBPartnerBL
 	{
 		return bpartnersRepo.getPrintFormats(bpartnerId);
 	}
+
+	@Override
+	public boolean isSalesRep(@NonNull final BPartnerId bpartnerId)
+	{
+		return getById(bpartnerId).isSalesRep();
+	}
 }
