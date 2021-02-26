@@ -39,7 +39,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.MAttributeSet;
 import org.compiere.model.X_C_UOM;
-import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -65,10 +64,6 @@ public final class ProductBL implements IProductBL
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
-
-	final static int ONE_YEAR_DAYS = 365;
-	final static int TWO_YEAR_DAYS = 730;
-	final static int THREE_YEAR_DAYS = 1095;
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -498,17 +493,4 @@ public final class ProductBL implements IProductBL
 		return product.isHaddexCheck();
 	}
 
-	@Override
-	public int getGuaranteeMonthsInDays(@NonNull final I_M_Product product)
-	{
-		if (product.getGuaranteeMonths() != null && !product.getGuaranteeMonths().isEmpty()) {
-			switch (product.getGuaranteeMonths()) {
-				case X_M_Product.GUARANTEEMONTHS_12: return ONE_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_24: return TWO_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_36: return THREE_YEAR_DAYS;
-				default: return 0;
-			}
-		}
-		return 0;
-	}
 }

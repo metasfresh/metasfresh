@@ -194,5 +194,4 @@ public interface IProductBL extends ISingletonService
 
 	boolean isHaddexProduct(ProductId productId);
 
-	int getGuaranteeMonthsInDays(I_M_Product product);
 }

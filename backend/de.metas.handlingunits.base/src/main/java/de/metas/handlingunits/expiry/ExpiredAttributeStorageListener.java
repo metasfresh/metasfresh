@@ -8,7 +8,6 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageListener;
 import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
-import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.util.Services;
@@ -54,7 +53,6 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 		Services.get(IAttributeStorageFactoryService.class).addAttributeStorageListener(this);
 	}
 	final IProductDAO productDAO = Services.get(IProductDAO.class);
-	final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public void onAttributeValueChanged(
@@ -122,7 +120,7 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 			else
 			{
 				if (productRecord.getGuaranteeMonths() != null && !productRecord.getGuaranteeMonths().isEmpty()) {
-					currentDays = productBL.getGuaranteeMonthsInDays(productRecord);
+					currentDays = productDAO.getGuaranteeMonthsInDays(productRecord);
 				}
 				else
 				{

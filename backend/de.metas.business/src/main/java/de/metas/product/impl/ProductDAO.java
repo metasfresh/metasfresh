@@ -58,6 +58,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableSet;
@@ -82,7 +83,10 @@ import lombok.NonNull;
 public class ProductDAO implements IProductDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	final IProductBL productBL = Services.get(IProductBL.class);
+
+	final static int ONE_YEAR_DAYS = 365;
+	final static int TWO_YEAR_DAYS = 730;
+	final static int THREE_YEAR_DAYS = 1095;
 
 	private final CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId>builder()
 			.tableName(I_M_Product_Category.Table_Name)
@@ -512,7 +516,7 @@ public class ProductDAO implements IProductDAO
 			return productRecord.getGuaranteeDaysMin();
 		}
 		else if (productRecord.getGuaranteeMonths() != null && !productRecord.getGuaranteeMonths().isEmpty()) {
-			return productBL.getGuaranteeMonthsInDays(productRecord);
+			return getGuaranteeMonthsInDays(productRecord);
 		}
 		else
 		{
@@ -520,5 +524,19 @@ public class ProductDAO implements IProductDAO
 			final I_M_Product_Category productCategoryRecord = getProductCategoryById(productCategoryId);
 			return productCategoryRecord.getGuaranteeDaysMin();
 		}
+	}
+
+	@Override
+	public int getGuaranteeMonthsInDays(@NonNull final I_M_Product product)
+	{
+		if (product.getGuaranteeMonths() != null && !product.getGuaranteeMonths().isEmpty()) {
+			switch (product.getGuaranteeMonths()) {
+				case X_M_Product.GUARANTEEMONTHS_12: return ONE_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_24: return TWO_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_36: return THREE_YEAR_DAYS;
+				default: return 0;
+			}
+		}
+		return 0;
 	}
 }
