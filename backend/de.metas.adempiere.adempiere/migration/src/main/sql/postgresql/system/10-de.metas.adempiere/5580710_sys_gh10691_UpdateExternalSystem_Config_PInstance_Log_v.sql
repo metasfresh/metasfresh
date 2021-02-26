@@ -1,3 +1,5 @@
+DROP VIEW IF EXISTS ExternalSystem_Config_PInstance_Log_v;
+
 CREATE OR REPLACE VIEW ExternalSystem_Config_PInstance_Log_v AS
 SELECT pi.ad_process_id,
        pil.AD_PInstance_Log_ID                                                               AS ExternalSystem_Config_PInstance_Log_v_ID,
