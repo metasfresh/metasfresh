@@ -23,10 +23,9 @@
 package de.metas.externalsystem.shopware6.interceptor;
 
 import de.metas.externalsystem.ExternalSystemConfigRepo;
-import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
-import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
@@ -45,13 +44,13 @@ public class ExternalSystem_Config_Shopware6
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_ExternalSystem_Config_Shopware6.COLUMNNAME_ExternalSystem_Config_ID})
+			ifColumnsChanged = { I_ExternalSystem_Config_Shopware6.COLUMNNAME_ExternalSystem_Config_ID })
 	public void checkType(final I_ExternalSystem_Config_Shopware6 config)
 	{
-		final ExternalSystemParentConfig parentConfig =
-				externalSystemConfigRepo.getById(ExternalSystemShopware6ConfigId.ofRepoId(config.getExternalSystem_Config_Shopware6_ID()));
+		final String parentType =
+				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.Shopware6.getCode().equals(parentConfig.getType().getCode()))
+		if (!ExternalSystemType.Shopware6.getCode().equals(parentType))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}

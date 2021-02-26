@@ -23,9 +23,8 @@
 package de.metas.externalsystem.alberta.interceptor;
 
 import de.metas.externalsystem.ExternalSystemConfigRepo;
-import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -48,10 +47,10 @@ public class ExternalSystem_Config_Alberta
 			ifColumnsChanged = { I_ExternalSystem_Config_Alberta.COLUMNNAME_ExternalSystem_Config_ID })
 	public void checkType(final I_ExternalSystem_Config_Alberta albertaConfig)
 	{
-		final ExternalSystemParentConfig parentConfig =
-				externalSystemConfigRepo.getById(ExternalSystemAlbertaConfigId.ofRepoId(albertaConfig.getExternalSystem_Config_Alberta_ID()));
+		final String parentType =
+				externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(albertaConfig.getExternalSystem_Config_ID()));
 
-		if (!ExternalSystemType.Alberta.getCode().equals(parentConfig.getType().getCode()))
+		if (!ExternalSystemType.Alberta.getCode().equals(parentType))
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}
