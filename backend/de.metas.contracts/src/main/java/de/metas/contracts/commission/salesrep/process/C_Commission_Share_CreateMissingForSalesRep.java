@@ -384,7 +384,8 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 		}
 
 		final I_AD_User superSalesRepUser = userDAO.getById(superSalesRepUserId);
-		if (superSalesRepUser.getC_BPartner_ID() <= 0)
+		final BPartnerId superSalesRepBPartnerId = BPartnerId.ofRepoIdOrNull(superSalesRepUser.getC_BPartner_ID());
+		if (superSalesRepBPartnerId == null)
 		{
 			// this might be OK; we did not take care to assign a bpartner the user if there were no actial commission instance with base-points > 0
 			logger.debug("*** WARN during calculation for bPartnerId={} salesRepUserId={} doesn't have a bPartner! Skipping.. ",
@@ -393,19 +394,17 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 		}
 		else
 		{
-			final I_C_BPartner superSalesRepBPartner = bPartnerDAO.getById(superSalesRepUser.getC_BPartner_ID());
-
-			if (!superSalesRepBPartner.isSalesRep())
+			if(!bPartnerBL.isSalesRep(superSalesRepBPartnerId))
 			{
 				Loggables.withLogger(logger, Level.WARN)
 						.addLog("*** WARN during calculation for salesRepId={}: missing 'isSalesRep' flag on regional manager id={}! Skipping.. ",
-								RepoIdAwares.toRepoId(salesRepId), superSalesRepBPartner.getC_BPartner_ID());
+								RepoIdAwares.toRepoId(salesRepId), superSalesRepBPartnerId);
 
 				return Optional.empty();
 			}
 			else
 			{
-				return Optional.of(BPartnerId.ofRepoId(superSalesRepBPartner.getC_BPartner_ID()));
+				return Optional.of(superSalesRepBPartnerId);
 			}
 		}
 	}
