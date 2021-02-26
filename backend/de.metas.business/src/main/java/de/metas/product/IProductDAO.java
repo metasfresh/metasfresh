@@ -173,5 +173,5 @@ public interface IProductDAO extends ISingletonService
 
 	int getProductGuaranteeDaysMinFallbackProductCategory(@NonNull final ProductId productId);
 
-	int getGuaranteeMonthsInDays(I_M_Product product);
+	int getGuaranteeMonthsInDays(ProductId productId);
 }

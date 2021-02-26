@@ -75,13 +75,13 @@ public class ProductDAOTest
 
 	@Test
 	public void testGetGuaranteeMonthsInDays() {
-		int expectedGuaranteeDays = productDAO.getGuaranteeMonthsInDays(productWithMinGuarantee12Months);
+		int expectedGuaranteeDays = productDAO.getGuaranteeMonthsInDays(ProductId.ofRepoId(productWithMinGuarantee12Months.getM_Product_ID()));
 		assertThat(expectedGuaranteeDays).isEqualTo(ProductDAO.ONE_YEAR_DAYS);
 
-		expectedGuaranteeDays = productDAO.getGuaranteeMonthsInDays(productWithMinGuarantee24Months);
+		expectedGuaranteeDays = productDAO.getGuaranteeMonthsInDays(ProductId.ofRepoId(productWithMinGuarantee24Months.getM_Product_ID()));
 		assertThat(expectedGuaranteeDays).isEqualTo(ProductDAO.TWO_YEAR_DAYS);
 
-		expectedGuaranteeDays = productDAO.getGuaranteeMonthsInDays(productWithMinGuarantee36Months);
+		expectedGuaranteeDays = productDAO.getGuaranteeMonthsInDays(ProductId.ofRepoId(productWithMinGuarantee36Months.getM_Product_ID()));
 		assertThat(expectedGuaranteeDays).isEqualTo(ProductDAO.THREE_YEAR_DAYS);
 	}
 

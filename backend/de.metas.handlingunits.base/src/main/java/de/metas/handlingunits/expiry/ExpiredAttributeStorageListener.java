@@ -10,6 +10,7 @@ import de.metas.handlingunits.attribute.storage.impl.AbstractHUAttributeStorage;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -120,7 +121,7 @@ public class ExpiredAttributeStorageListener implements IAttributeStorageListene
 			else
 			{
 				if (productRecord.getGuaranteeMonths() != null && !productRecord.getGuaranteeMonths().isEmpty()) {
-					currentDays = productDAO.getGuaranteeMonthsInDays(productRecord);
+					currentDays = productDAO.getGuaranteeMonthsInDays(ProductId.ofRepoId(productRecord.getM_Product_ID()));
 				}
 				else
 				{

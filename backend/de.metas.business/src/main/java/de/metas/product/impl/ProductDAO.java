@@ -44,7 +44,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
-import de.metas.product.IProductBL;
 import de.metas.product.ProductPlanningSchemaSelector;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -515,8 +514,9 @@ public class ProductDAO implements IProductDAO
 		{
 			return productRecord.getGuaranteeDaysMin();
 		}
-		else if (productRecord.getGuaranteeMonths() != null && !productRecord.getGuaranteeMonths().isEmpty()) {
-			return getGuaranteeMonthsInDays(productRecord);
+		else if (Check.isNotBlank(productRecord.getGuaranteeMonths()))
+		{
+			return getGuaranteeMonthsInDays(productId);
 		}
 		else
 		{
@@ -527,9 +527,11 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public int getGuaranteeMonthsInDays(@NonNull final I_M_Product product)
+	public int getGuaranteeMonthsInDays(@NonNull final ProductId productId)
 	{
-		if (product.getGuaranteeMonths() != null && !product.getGuaranteeMonths().isEmpty()) {
+		final I_M_Product product = getById(productId);
+		if(product != null && Check.isNotBlank(product.getGuaranteeMonths()))
+		{
 			switch (product.getGuaranteeMonths()) {
 				case X_M_Product.GUARANTEEMONTHS_12: return ONE_YEAR_DAYS;
 				case X_M_Product.GUARANTEEMONTHS_24: return TWO_YEAR_DAYS;
