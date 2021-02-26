@@ -35,6 +35,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -74,6 +75,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.UnaryOperator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -319,7 +321,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		final List<InventoryLineHU> inventoryLineHUs;
 		if (!hus.isEmpty())
 		{
-			inventoryLineHUs = toInventoryLineHUs(hus);
+			inventoryLineHUs = toInventoryLineHUs(hus, productId, qtyCount.getUomId());
 		}
 		else
 		{
@@ -342,10 +344,15 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		importRecord.setM_InventoryLine_ID(inventoryLineRecord.getM_InventoryLine_ID());
 	}
 
-	private List<InventoryLineHU> toInventoryLineHUs(final List<HuForInventoryLine> hus)
+	private List<InventoryLineHU> toInventoryLineHUs(
+			@NonNull final List<HuForInventoryLine> hus,
+			@NonNull final ProductId productId,
+			@NonNull final UomId targetUomId)
 	{
+		final UnaryOperator<Quantity> uomConverter = qty -> uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
 		return hus.stream()
 				.map(DraftInventoryLinesCreator::toInventoryLineHU)
+				.map(inventoryLineHU -> inventoryLineHU.convertQuantities(uomConverter))
 				.collect(ImmutableList.toImmutableList());
 	}
 
