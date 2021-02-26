@@ -68,7 +68,7 @@ public class CommissionInstanceRequestFactory
 		final BPartnerId salesRepBPartnerId = commissionTriggerDocument.getSalesRepBPartnerId();
 
 		// note: we include the end-customer in the hierarchy because they might be a salesrep 
-		// and their contract might indicated that metasfresh shall create a 0% commission share for them
+		// and their contract might indicate that metasfresh shall create a 0% commission share for them
 		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(customerBPartnerId);
 
 		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()

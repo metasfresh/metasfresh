@@ -1,8 +1,26 @@
-DROP VIEW IF EXISTS C_Commission_Overview_V
+-- 2021-02-26T04:44:47.226Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2021-02-26 05:44:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=578397
 ;
 
-CREATE OR REPLACE VIEW C_Commission_Overview_V AS
-SELECT
+-- 2021-02-26T04:44:47.231Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2021-02-26 05:44:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=563731
+;
+
+-- 2021-02-26T04:44:47.237Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2021-02-26 05:44:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=563244
+;
+
+-- 2021-02-26T04:44:47.242Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2021-02-26 05:44:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=563243
+;
+
+-----
+
+select db_alter_view('C_Commission_Overview_V','SELECT
     -- Make sure that every view record has a unique and stable ID
     CASE
         WHEN ila_settlement.C_Invoice_Line_Alloc_ID IS NOT NULL THEN (ila_settlement.C_Invoice_Line_Alloc_ID * 10) + 1
@@ -32,7 +50,7 @@ SELECT
     ci.Bill_BPartner_ID,
     ci.C_Invoice_Candidate_ID,
     ci.C_Order_ID,
-    CASE WHEN ic_sales.AD_Table_ID = get_table_id('C_OrderLine') THEN ic_sales.Record_ID ELSE NULL END AS C_OrderLine_ID,
+    CASE WHEN ic_sales.AD_Table_ID = get_table_id(''C_OrderLine'') THEN ic_sales.Record_ID ELSE NULL END AS C_OrderLine_ID,
     ci.C_Invoice_ID,
     ci.C_InvoiceLine_ID,
     cs.C_Commission_Share_ID,
@@ -53,12 +71,10 @@ SELECT
     il_settlement.C_Invoice_ID                                                                         AS C_Invoice_Commission_ID
 
 FROM C_Commission_Instance ci
-         LEFT JOIN C_Invoice_Candidate ic_sales ON ic_sales.C_Invoice_Candidate_ID = ci.C_Invoice_Candidate_ID AND ic_sales.isactive = 'Y'
-         LEFT JOIN C_InvoiceLine il_sales ON il_sales.C_InvoiceLine_ID = ci.C_InvoiceLine_ID AND il_sales.isactive = 'Y'
-         LEFT JOIN C_Commission_Share cs ON cs.C_Commission_Instance_ID = ci.C_Commission_Instance_ID AND cs.isactive = 'Y'
-         LEFT JOIN C_Invoice_Candidate ic_settlement ON ic_settlement.Record_ID = cs.C_Commission_Share_ID AND ic_settlement.AD_Table_ID = get_table_id('C_Commission_Share') AND ic_settlement.isactive = 'Y'
-         LEFT JOIN C_Invoice_Line_Alloc ila_settlement ON ila_settlement.C_Invoice_Candidate_ID = ic_settlement.C_Invoice_Candidate_ID AND ila_settlement.isactive = 'Y'
-         LEFT JOIN C_InvoiceLine il_settlement ON il_settlement.C_InvoiceLine_ID = ila_settlement.C_InvoiceLine_ID AND il_settlement.isactive = 'Y'
---LIMIT 10
-;
---select * from C_Commission_Overview_V
+         LEFT JOIN C_Invoice_Candidate ic_sales ON ic_sales.C_Invoice_Candidate_ID = ci.C_Invoice_Candidate_ID AND ic_sales.isactive = ''Y''
+         LEFT JOIN C_InvoiceLine il_sales ON il_sales.C_InvoiceLine_ID = ci.C_InvoiceLine_ID AND il_sales.isactive = ''Y''
+         LEFT JOIN C_Commission_Share cs ON cs.C_Commission_Instance_ID = ci.C_Commission_Instance_ID AND cs.isactive = ''Y''
+         LEFT JOIN C_Invoice_Candidate ic_settlement ON ic_settlement.Record_ID = cs.C_Commission_Share_ID AND ic_settlement.AD_Table_ID = get_table_id(''C_Commission_Share'') AND ic_settlement.isactive = ''Y''
+         LEFT JOIN C_Invoice_Line_Alloc ila_settlement ON ila_settlement.C_Invoice_Candidate_ID = ic_settlement.C_Invoice_Candidate_ID AND ila_settlement.isactive = ''Y''
+         LEFT JOIN C_InvoiceLine il_settlement ON il_settlement.C_InvoiceLine_ID = ila_settlement.C_InvoiceLine_ID AND il_settlement.isactive = ''Y''
+;');
