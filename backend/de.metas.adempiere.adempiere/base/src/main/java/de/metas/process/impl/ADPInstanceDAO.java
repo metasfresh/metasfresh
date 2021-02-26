@@ -585,7 +585,9 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		{
 			queryBuilder.addNotEqualsFilter(I_AD_PInstance.COLUMN_AD_PInstance_ID, pinstanceToExclude);
 		}
-		return queryBuilder.create().first().getCreated();
+
+		final I_AD_PInstance pInstance = queryBuilder.create().first();
+		return pInstance != null ? pInstance.getCreated() : null;
 	}
 
 	@Override
