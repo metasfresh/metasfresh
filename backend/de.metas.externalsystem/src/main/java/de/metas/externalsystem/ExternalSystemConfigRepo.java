@@ -30,13 +30,19 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public class ExternalSystemConfigRepo
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	public ExternalSystemParentConfig getById(final @NonNull IExternalSystemChildConfigId id)
 	{
 		switch (id.getType())
@@ -50,12 +56,58 @@ public class ExternalSystemConfigRepo
 		}
 	}
 
+	public ExternalSystemParentConfig getByTypeAndValue(@NonNull final ExternalSystemType type, @NonNull final String value)
+	{
+		switch (type)
+		{
+			case Alberta:
+				final I_ExternalSystem_Config_Alberta albertaConfig = getAlbertaConfigByValue(value)
+						.orElseThrow(() -> Check.fail("Not found I_ExternalSystem_Config_Alberta.value={}", value));
+
+				return getExternalSystemParentConfig(albertaConfig);
+
+			case Shopware6:
+				final I_ExternalSystem_Config_Shopware6 shopwareConfig = getShopware6ConfigByValue(value)
+						.orElseThrow(() -> Check.fail("Not found I_ExternalSystem_Config_Shopware6.value={}", value));
+
+				return getExternalSystemParentConfig(shopwareConfig);
+
+			default:
+				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
+		}
+	}
+
+	@NonNull
+	public Optional<I_ExternalSystem_Config_Alberta> getAlbertaConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Alberta.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_Alberta.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_Alberta.class);
+	}
+
+	@NonNull
+	public Optional<I_ExternalSystem_Config_Shopware6> getShopware6ConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_Shopware6.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_Shopware6.class);
+	}
+
 	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemAlbertaConfigId id)
 	{
 		final I_ExternalSystem_Config_Alberta config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_Alberta.class);
 
+		return getExternalSystemParentConfig(config);
+	}
+
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_Alberta config)
+	{
 		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
-		
+
 		final ExternalSystemAlbertaConfig child = ExternalSystemAlbertaConfig.builder()
 				.id(ExternalSystemAlbertaConfigId.ofRepoId(config.getExternalSystem_Config_Alberta_ID()))
 				.parentId(parentConfigId)
@@ -74,6 +126,11 @@ public class ExternalSystemConfigRepo
 	{
 		final I_ExternalSystem_Config_Shopware6 config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_Shopware6.class);
 
+		return getExternalSystemParentConfig(config);
+	}
+
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_Shopware6 config)
+	{
 		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
 
 		final ExternalSystemShopware6Config child = ExternalSystemShopware6Config.builder()
@@ -92,7 +149,7 @@ public class ExternalSystemConfigRepo
 	private ExternalSystemParentConfig.ExternalSystemParentConfigBuilder getById(final @NonNull ExternalSystemParentConfigId id)
 	{
 		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
-		
+
 		return ExternalSystemParentConfig.builder()
 				.type(ExternalSystemType.ofCode(externalSystemConfigRecord.getType()))
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))

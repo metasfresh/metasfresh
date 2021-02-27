@@ -1,40 +1,18 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.externalsystem.model;
 
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Config_Shopware6
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_Shopware6 
+public interface I_ExternalSystem_Config_Shopware6
 {
 
 	String Table_Name = "ExternalSystem_Config_Shopware6";
 
-//	/** AD_Table_ID=541585 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=541585 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -204,6 +182,27 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_ExternalSystem_Config_Shopware6_ID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "ExternalSystem_Config_Shopware6_ID", null);
 	String COLUMNNAME_ExternalSystem_Config_Shopware6_ID = "ExternalSystem_Config_Shopware6_ID";
+
+	/**
+	 * Set Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystemValue (java.lang.String ExternalSystemValue);
+
+	/**
+	 * Get Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getExternalSystemValue();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "ExternalSystemValue", null);
+	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
 
 	/**
 	 * Set Active.

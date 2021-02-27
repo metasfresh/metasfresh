@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,27 +20,23 @@
  * #L%
  */
 
-package de.metas.rest_api.process.response;
+package de.metas.rest_api.externlasystem.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.JsonError;
+import de.metas.externalsystem.ExternalSystemType;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = RunProcessResponse.RunProcessResponseBuilder.class)
-public class RunProcessResponse
+public class InvokeExternalSystemProcessRequest
 {
-	@JsonProperty(value = "pinstanceID")
-	String pInstanceID;
+	@NonNull
+	ExternalSystemType externalSystemType;
 
-	@JsonProperty(value = "summary")
-	String summary;
+	@NonNull
+	String childSystemConfigValue;
 
-	@JsonProperty(value = "errors")
-	JsonError errors;
+	@NonNull
+	String request;
 }

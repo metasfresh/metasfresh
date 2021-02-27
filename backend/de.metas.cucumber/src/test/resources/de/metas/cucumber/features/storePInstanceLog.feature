@@ -7,7 +7,7 @@ Feature: pInstanceLog store using metasfresh api
     And I_AD_PInstance with id '321321' is created
 
   Scenario: The request is good and the pInstanceLog is stored
-    When the metasfresh REST-API endpoint path 'api/process/321321/externalstatus/message' receives a 'POST' request with the payload
+    When the metasfresh REST-API endpoint path 'api/externalsystem/321321/externalstatus/message' receives a 'POST' request with the payload
   """
 {
 	"logs": [
