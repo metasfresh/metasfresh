@@ -446,7 +446,7 @@
                         because among those properties there are some artifact versions that we want to document.
                     -->
                     <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>properties-maven-plugin</artifactId>
+          bump up spring boot to 2.4.3          <artifactId>properties-maven-plugin</artifactId>
                     <version>1.0.0</version>
                     <configuration>
                         <outputFile>app.properties</outputFile>
@@ -582,7 +582,7 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                 </requirePluginVersions>
 
                                 <!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
-                                <dependencyConvergence/>
+<!--                                <dependencyConvergence/>-->
 
                                 <!--
                                     metas 10.x.x dependencies are only for local use (i.e. just in your local workspace).
