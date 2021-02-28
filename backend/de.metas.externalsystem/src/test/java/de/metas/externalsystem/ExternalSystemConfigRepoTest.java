@@ -28,20 +28,20 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class ExternalSystemConfigRepoTest
 {
@@ -143,7 +143,8 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6,value);
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6,value)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
 		assertThat(result).isNotNull();
@@ -172,7 +173,8 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Alberta, value);
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Alberta, value)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
 		assertThat(result).isNotNull();
@@ -201,6 +203,8 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		Assertions.assertThrows(AdempiereException.class, () -> externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value));
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
+
+		assertThat(externalSystemParentConfig).isEmpty();
 	}
 }

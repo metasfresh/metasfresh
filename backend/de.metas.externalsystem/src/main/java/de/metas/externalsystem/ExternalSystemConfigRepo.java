@@ -43,6 +43,7 @@ public class ExternalSystemConfigRepo
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	@NonNull
 	public ExternalSystemParentConfig getById(final @NonNull IExternalSystemChildConfigId id)
 	{
 		switch (id.getType())
@@ -56,29 +57,25 @@ public class ExternalSystemConfigRepo
 		}
 	}
 
-	public ExternalSystemParentConfig getByTypeAndValue(@NonNull final ExternalSystemType type, @NonNull final String value)
+	@NonNull
+	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final ExternalSystemType type, @NonNull final String value)
 	{
 		switch (type)
 		{
 			case Alberta:
-				final I_ExternalSystem_Config_Alberta albertaConfig = getAlbertaConfigByValue(value)
-						.orElseThrow(() -> Check.fail("Not found I_ExternalSystem_Config_Alberta.value={}", value));
-
-				return getExternalSystemParentConfig(albertaConfig);
+				return getAlbertaConfigByValue(value)
+						.map(this::getExternalSystemParentConfig);
 
 			case Shopware6:
-				final I_ExternalSystem_Config_Shopware6 shopwareConfig = getShopware6ConfigByValue(value)
-						.orElseThrow(() -> Check.fail("Not found I_ExternalSystem_Config_Shopware6.value={}", value));
-
-				return getExternalSystemParentConfig(shopwareConfig);
-
+				return getShopware6ConfigByValue(value)
+						.map(this::getExternalSystemParentConfig);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 		}
 	}
 
 	@NonNull
-	public Optional<I_ExternalSystem_Config_Alberta> getAlbertaConfigByValue(@NonNull final String value)
+	private Optional<I_ExternalSystem_Config_Alberta> getAlbertaConfigByValue(@NonNull final String value)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Alberta.class)
 				.addOnlyActiveRecordsFilter()
@@ -88,7 +85,7 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	public Optional<I_ExternalSystem_Config_Shopware6> getShopware6ConfigByValue(@NonNull final String value)
+	private Optional<I_ExternalSystem_Config_Shopware6> getShopware6ConfigByValue(@NonNull final String value)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6.class)
 				.addOnlyActiveRecordsFilter()

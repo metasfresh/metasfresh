@@ -62,46 +62,44 @@ public class ExternalSystem_Config_StepDef
 	}
 
 	@Given("external system with type code {string} has an external system child with value {string}")
-	public void new_externalSystemChild_is_created(final String externalSystemTypeCode, final String externalSystemChildValue)
+	public void new_externalSystemChild_is_created_if_missing(final String externalSystemTypeCode, final String externalSystemChildValue)
 	{
 		final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemTypeCode);
 
+		if (externalSystemConfigRepo.getByTypeAndValue(externalSystemType, externalSystemChildValue).isPresent())
+		{
+			//nothing to do as the child config is already there
+			return;
+		}
+
 		final I_ExternalSystem_Config externalSystemParentConfig = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config.class);
 		externalSystemParentConfig.setType(externalSystemType.getCode());
-		externalSystemParentConfig.setCamelURL("test");
-		externalSystemParentConfig.setName("test");
-		externalSystemParentConfig.setType(externalSystemType.getCode());
+		externalSystemParentConfig.setCamelURL("notImportant");
+		externalSystemParentConfig.setName("notImportant");
 		InterfaceWrapperHelper.save(externalSystemParentConfig);
 
 		switch (externalSystemType)
 		{
 			case Alberta:
-				if (!externalSystemConfigRepo.getAlbertaConfigByValue(externalSystemChildValue).isPresent())
-				{
-					final I_ExternalSystem_Config_Alberta externalSystemConfigAlberta = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_Alberta.class);
-					externalSystemConfigAlberta.setExternalSystem_Config_ID(externalSystemParentConfig.getExternalSystem_Config_ID());
-					externalSystemConfigAlberta.setExternalSystemValue(externalSystemChildValue);
-					externalSystemConfigAlberta.setApiKey("test");
-					externalSystemConfigAlberta.setBaseURL("test.com");
-					externalSystemConfigAlberta.setName("test");
-					externalSystemConfigAlberta.setTenant("test");
-					externalSystemConfigAlberta.setIsActive(true);
-					InterfaceWrapperHelper.save(externalSystemConfigAlberta);
-				}
-
+				final I_ExternalSystem_Config_Alberta externalSystemConfigAlberta = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_Alberta.class);
+				externalSystemConfigAlberta.setExternalSystem_Config_ID(externalSystemParentConfig.getExternalSystem_Config_ID());
+				externalSystemConfigAlberta.setExternalSystemValue(externalSystemChildValue);
+				externalSystemConfigAlberta.setApiKey("notImportant");
+				externalSystemConfigAlberta.setBaseURL("notImportant.com");
+				externalSystemConfigAlberta.setName("notImportant");
+				externalSystemConfigAlberta.setTenant("notImportant");
+				externalSystemConfigAlberta.setIsActive(true);
+				InterfaceWrapperHelper.save(externalSystemConfigAlberta);
 				break;
 			case Shopware6:
-				if (!externalSystemConfigRepo.getShopware6ConfigByValue(externalSystemChildValue).isPresent())
-				{
-					final I_ExternalSystem_Config_Shopware6 externalSystemConfigShopware6 = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_Shopware6.class);
-					externalSystemConfigShopware6.setExternalSystem_Config_ID(externalSystemParentConfig.getExternalSystem_Config_ID());
-					externalSystemConfigShopware6.setExternalSystemValue(externalSystemChildValue);
-					externalSystemConfigShopware6.setClient_Secret("test");
-					externalSystemConfigShopware6.setClient_Id("test");
-					externalSystemConfigShopware6.setBaseURL("test");
-					externalSystemConfigShopware6.setIsActive(true);
-					InterfaceWrapperHelper.save(externalSystemConfigShopware6);
-				}
+				final I_ExternalSystem_Config_Shopware6 externalSystemConfigShopware6 = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_Shopware6.class);
+				externalSystemConfigShopware6.setExternalSystem_Config_ID(externalSystemParentConfig.getExternalSystem_Config_ID());
+				externalSystemConfigShopware6.setExternalSystemValue(externalSystemChildValue);
+				externalSystemConfigShopware6.setClient_Secret("notImportant");
+				externalSystemConfigShopware6.setClient_Id("notImportant");
+				externalSystemConfigShopware6.setBaseURL("notImportant.com");
+				externalSystemConfigShopware6.setIsActive(true);
+				InterfaceWrapperHelper.save(externalSystemConfigShopware6);
 				break;
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
@@ -109,7 +107,7 @@ public class ExternalSystem_Config_StepDef
 	}
 
 	@Then("a new metasfresh AD_PInstance_Log is stored for the external system {string} invocation")
-	public void new_metasfresh_ad_pinstance_log_is_stored_for_external_system_process(final String externalSystemCode) throws JsonProcessingException, JSONException
+	public void new_metasfresh_ad_pinstance_log_is_stored_for_external_system_process(final String externalSystemCode) throws JSONException
 	{
 		final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemCode);
 		final AdProcessId adProcessId =

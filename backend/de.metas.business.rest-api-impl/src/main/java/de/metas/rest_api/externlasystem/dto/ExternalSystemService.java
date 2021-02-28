@@ -35,8 +35,6 @@ import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
-import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
-import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
@@ -45,9 +43,9 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoLog;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -55,13 +53,15 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_CONFIG_ID;
+import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_EXTERNAL_REQUEST;
+
 @Service
 public class ExternalSystemService
 {
 	private static final transient Logger logger = LogManager.getLogger(ExternalSystemService.class);
 	private static final String DEFAULT_ISSUE_SUMMARY = "No summary provided.";
-	private static final String PARAM_CONFIG_ID = "ChildConfigId";
-	private static final String PARAM_EXTERNAL_REQUEST = "External_Request";
+
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
@@ -79,7 +79,10 @@ public class ExternalSystemService
 
 		final ExternalSystemParentConfig externalSystemParentConfig =
 				externalSystemConfigRepo.getByTypeAndValue(invokeExternalSystemProcessRequest.getExternalSystemType(),
-														   invokeExternalSystemProcessRequest.getChildSystemConfigValue());
+														   invokeExternalSystemProcessRequest.getChildSystemConfigValue())
+				.orElseThrow(() -> new AdempiereException("ExternalSystemParentConfig @NotFound@")
+						.appendParametersToMessage()
+						.setParameter("invokeExternalSystemProcessRequest", invokeExternalSystemProcessRequest));
 
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(invokeExternalSystemProcessRequest
 																							.getExternalSystemType()
@@ -89,7 +92,7 @@ public class ExternalSystemService
 		processInfoBuilder.setAD_Process_ID(processId.getRepoId());
 
 		processInfoBuilder.addParameter(PARAM_EXTERNAL_REQUEST, invokeExternalSystemProcessRequest.getRequest());
-		processInfoBuilder.addParameter(PARAM_CONFIG_ID, getExternalSystemConfigChildId(externalSystemParentConfig));
+		processInfoBuilder.addParameter(PARAM_CONFIG_ID, externalSystemParentConfig.getChildConfig().getId().getRepoId());
 
 		final ProcessExecutionResult processExecutionResult = processInfoBuilder
 				.buildAndPrepareExecution()
@@ -150,18 +153,4 @@ public class ExternalSystemService
 				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
 				.build();
 	}
-
-	private int getExternalSystemConfigChildId(@NonNull final ExternalSystemParentConfig externalSystemParentConfig)
-	{
-		switch (externalSystemParentConfig.getType())
-		{
-			case Alberta:
-				return ExternalSystemAlbertaConfig.cast(externalSystemParentConfig.getChildConfig()).getId().getRepoId();
-			case Shopware6:
-				return ExternalSystemShopware6Config.cast(externalSystemParentConfig.getChildConfig()).getId().getRepoId();
-			default:
-				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemParentConfig.getType());
-		}
-	}
-
 }
