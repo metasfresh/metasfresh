@@ -12,7 +12,7 @@
 	<artifactId>metasfresh-invoice_gateway.spi</artifactId>
 
 	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
+		<migration-sql-basedir/>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
@@ -24,6 +24,19 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+<!--		&lt;!&ndash; https://mvnrepository.com/artifact/javax.annotation/javax.annotation-api &ndash;&gt;-->
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+
+<!--		<dependency>-->
+<!--			<groupId>com.google.code.findbugs</groupId>-->
+<!--			<artifactId>jsr305</artifactId>-->
+<!--			<version>3.0.2</version>-->
+<!--		</dependency>-->
+		
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -40,6 +53,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jetbrains</groupId>
+			<artifactId>annotations</artifactId>
+			<version>RELEASE</version>
+			<scope>compile</scope>
 		</dependency>
 
 	</dependencies>

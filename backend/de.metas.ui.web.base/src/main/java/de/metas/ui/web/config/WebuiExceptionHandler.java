@@ -15,7 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.web.ErrorAttributes;
+// import org.springframework.boot.autoconfigure.web.ErrorAttributes;
+import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -62,7 +64,7 @@ import de.metas.util.GuavaCollectors;
  * Handles all REST API exceptions
  *
  * @author metas-dev <dev@metasfresh.com>
- * @author based on {@link org.springframework.boot.autoconfigure.web.DefaultErrorAttributes}
+ * //@author based on {@link org.springframework.boot.autoconfigure.web.DefaultErrorAttributes}
  */
 @Component
 // Order: IMPORTANT: because we want to call this handler before any other. Else, if it's the last one added, it might be that it will be never called
@@ -97,8 +99,9 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		return JSONOptions.newInstance();
 	}
 
-	@Override
-	public ModelAndView resolveException(final HttpServletRequest request, final HttpServletResponse response, final Object handler, final Exception ex)
+
+	@java.lang.Override
+	public ModelAndView resolveException(final HttpServletRequest request, final HttpServletResponse response, final java.lang.Object handler, final java.lang.Exception ex)
 	{
 		logExceptionIfNeeded(ex, handler);
 
@@ -106,9 +109,9 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		request.setAttribute(REQUEST_ATTR_EXCEPTION, cause);
 		response.setHeader("Cache-Control", "no-cache");
 
-		return null; // don't forward, go with default processing
+		return null; // don't forward, go with}
 	}
-
+	
 	private void logExceptionIfNeeded(final Exception ex, final Object handler)
 	{
 		if (!logExceptions)
@@ -139,18 +142,18 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		return false;
 	}
 
-	@Override
-	public Map<String, Object> getErrorAttributes(final RequestAttributes requestAttributes, final boolean includeStackTrace)
-	{
-		final Map<String, Object> errorAttributes = new LinkedHashMap<>();
-		errorAttributes.put(ATTR_Timestamp, ZonedDateTime.now());
-		addStatus(errorAttributes, requestAttributes);
-		addErrorDetails(errorAttributes, requestAttributes, includeStackTrace);
-		addPath(errorAttributes, requestAttributes);
-		return errorAttributes;
-	}
+	// @Override
+	// public Map<String, Object> getErrorAttributes(final RequestAttributes requestAttributes, final boolean includeStackTrace)
+	// {
+	// 	final Map<String, Object> errorAttributes = new LinkedHashMap<>();
+	// 	errorAttributes.put(ATTR_Timestamp, ZonedDateTime.now());
+	// 	addStatus(errorAttributes, requestAttributes);
+	// 	addErrorDetails(errorAttributes, requestAttributes, includeStackTrace);
+	// 	addPath(errorAttributes, requestAttributes);
+	// 	return errorAttributes;
+	// }
 
-	private void addStatus(final Map<String, Object> errorAttributes, final RequestAttributes requestAttributes)
+	private void addStatus(final Map<String, Object> errorAttributes, final WebRequest requestAttributes)
 	{
 		Integer status = null;
 
@@ -198,7 +201,7 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		return baseClass.isAssignableFrom(clazz);
 	}
 
-	private void addErrorDetails(final Map<String, Object> errorAttributes, final RequestAttributes requestAttributes, final boolean includeStackTrace)
+	private void addErrorDetails(final Map<String, Object> errorAttributes, final WebRequest requestAttributes, final boolean includeStackTrace)
 	{
 		//
 		// Get exception and
@@ -268,13 +271,14 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 		}
 	}
 
-	@Override
-	public Throwable getError(final RequestAttributes requestAttributes)
+
+	@java.lang.Override
+	public java.lang.Throwable getError(final WebRequest webRequest)
 	{
-		Throwable exception = getAttribute(requestAttributes, REQUEST_ATTR_EXCEPTION);
+		Throwable exception = (Throwable)webRequest.getAttribute(REQUEST_ATTR_EXCEPTION, RequestAttributes.SCOPE_REQUEST);
 		if (exception == null)
 		{
-			exception = getAttribute(requestAttributes, RequestDispatcher.ERROR_EXCEPTION);
+			exception = (Throwable)webRequest.getAttribute(RequestDispatcher.ERROR_EXCEPTION, RequestAttributes.SCOPE_REQUEST);
 		}
 
 		if (exception != null)
@@ -284,6 +288,23 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 
 		return exception;
 	}
+	
+	// @Override
+	// public Throwable getError(final RequestAttributes requestAttributes)
+	// {
+	// 	Throwable exception = getAttribute(requestAttributes, REQUEST_ATTR_EXCEPTION);
+	// 	if (exception == null)
+	// 	{
+	// 		exception = getAttribute(requestAttributes, RequestDispatcher.ERROR_EXCEPTION);
+	// 	}
+	//
+	// 	if (exception != null)
+	// 	{
+	// 		exception = AdempiereException.extractCause(exception);
+	// 	}
+	//
+	// 	return exception;
+	// }
 
 	@SuppressWarnings("unchecked")
 	private static <T> T getAttribute(final RequestAttributes requestAttributes, final String name)

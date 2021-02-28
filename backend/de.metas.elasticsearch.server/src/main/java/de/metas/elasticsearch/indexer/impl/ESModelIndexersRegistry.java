@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -59,7 +60,7 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 	private final ConcurrentHashMap<String, ImmutableList<IESModelIndexer>> indexersByModelTableName = new ConcurrentHashMap<>();
 
 	@Autowired
-	private Client elasticsearchClient;
+	private RestHighLevelClient elasticsearchClient;
 
 	@Autowired
 	private ObjectMapper jsonObjectMapper;
@@ -71,7 +72,7 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 		logger.info("Elastic search client: {}", elasticsearchClient);
 	}
 
-	/* package */Client getElasticsearchClient()
+	/* package */RestHighLevelClient getElasticsearchClient()
 	{
 		return elasticsearchClient;
 	}

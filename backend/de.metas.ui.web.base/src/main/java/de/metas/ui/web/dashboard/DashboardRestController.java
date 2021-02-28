@@ -2,9 +2,9 @@ package de.metas.ui.web.dashboard;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 
-import org.elasticsearch.client.Client;
+
+import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -74,8 +74,11 @@ public class DashboardRestController
 	private UserSession userSession;
 	@Autowired
 	private UserDashboardRepository userDashboardRepo;
+	// @Autowired
+	// private Client elasticsearchClient;
 	@Autowired
-	private Client elasticsearchClient;
+	private RestHighLevelClient elasticsearchClient;
+	
 	@Autowired
 	private WebsocketSender websocketSender;
 

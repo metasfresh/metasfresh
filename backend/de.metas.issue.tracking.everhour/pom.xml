@@ -13,7 +13,7 @@
     <artifactId>de.metas.issue.tracking.everhour</artifactId>
 
     <properties>
-        <migration-sql-basedir></migration-sql-basedir>
+        <migration-sql-basedir/>
         <metasfresh.version>[1,10.0.0]</metasfresh.version>
     </properties>
 

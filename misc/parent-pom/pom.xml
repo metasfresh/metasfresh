@@ -34,15 +34,16 @@
         <metasfresh.java.version>1.8</metasfresh.java.version>
 
         <!-- please keep in sync with spring-boot's jackson-version-->
-        <jackson.version>2.9.9</jackson.version>
+        <jackson.version>2.11.4</jackson.version>
 
         <jasperreports.version>6.7.0</jasperreports.version>
 
         <itext.version>2.1.7.js6</itext.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
-        <spring-boot-admin.version>1.5.0</spring-boot-admin.version>
-
+<!--        <spring-boot-admin.version>1.5.0</spring-boot-admin.version>-->
+        <spring-boot-admin.version>2.3.1</spring-boot-admin.version>
+        
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
         <springfox-swagger.version>2.9.2</springfox-swagger.version>

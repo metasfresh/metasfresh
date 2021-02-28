@@ -17,7 +17,7 @@
 	<version>1.0.0</version>
 
 	<properties>
-		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
+		<spring-boot.version>2.4.3.RELEASE</spring-boot.version>
 		<start-class>de.metas.admin.SpringBootAdminApplication</start-class>
 	</properties>
 

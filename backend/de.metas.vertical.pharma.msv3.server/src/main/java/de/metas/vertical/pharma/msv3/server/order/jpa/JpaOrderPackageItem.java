@@ -31,7 +31,7 @@ import lombok.ToString;
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program. If not, se
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
@@ -49,6 +49,7 @@ public class JpaOrderPackageItem extends AbstractEntity
 {
 	@ManyToOne(fetch = FetchType.EAGER)
 	@NotNull
+	
 	private JpaOrderPackage orderPackage;
 	private long pzn;
 	private int qty;

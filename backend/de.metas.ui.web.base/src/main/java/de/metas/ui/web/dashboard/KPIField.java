@@ -7,6 +7,7 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
@@ -25,6 +26,7 @@ import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -120,7 +122,8 @@ public class KPIField
 			}
 		}
 
-		return (containingAggName, bucket) -> bucket.getProperty(containingAggName, path);
+		//return (containingAggName, bucket) -> bucket.getProperty(containingAggName, path);
+		throw new AdempiereException("unsupported path name " + path);
 	}
 
 	public final Object convertValueToJson(final Object value, @NonNull final JSONOptions jsonOpts)

@@ -1,7 +1,7 @@
 package de.metas.elasticsearch;
 
-import org.elasticsearch.common.logging.ESLoggerFactory;
-import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
+// import org.elasticsearch.common.logging.ESLoggerFactory;
+// import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
 
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.impl.IESServer;
@@ -36,11 +36,11 @@ public class ESServer implements IESServer
 	{
 		// Make sure slf4j is used.
 		// (by default, log4j is used)
-		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
+		// ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory()); // FIXME: shall we use log4j-over-slf4j?!
 	}
 	@Override
 	public void installConfig(final ESModelIndexerConfigBuilder config)
 	{
-		Services.get(IESModelIndexersRegistry.class).addModelIndexer(config);
+		// Services.get(IESModelIndexersRegistry.class).addModelIndexer(config);
 	}
 }

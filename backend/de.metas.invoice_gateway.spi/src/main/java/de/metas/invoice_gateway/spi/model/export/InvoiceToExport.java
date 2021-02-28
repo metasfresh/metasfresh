@@ -20,7 +20,7 @@ import lombok.Singular;
 import lombok.Value;
 
 /*
- * #%L
+ * #%L 
  * metasfresh-invoice.gateway.commons
  * %%
  * Copyright (C) 2018 metas GmbH

@@ -98,7 +98,7 @@ public class DataTableUtil
 
 	public int extractIntForIndex(
 			@NonNull final List<String> dataTableRow,
-			@NonNull final int index)
+			final int index)
 	{
 		final String string = extractStringForIndex(dataTableRow, index);
 		try

@@ -16,7 +16,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
+		<migration-sql-basedir/>
 	</properties>
 
 	<dependencies>
@@ -41,10 +41,11 @@
 			<artifactId>spring-integration-mail</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.integration</groupId>
-			<artifactId>spring-integration-java-dsl</artifactId>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.integration</groupId>-->
+<!--			<artifactId>spring-integration-java-dsl</artifactId>-->
+<!--			<version>1.2.1.RELEASE</version>-->
+<!--		</dependency>-->
 
 		<!-- Lombok See https://github.com/metasfresh/metasfresh/issues/1125 NOTE: 
 			if you don't need fancy things like @SneakyThrows then scope 'provided' it's 
