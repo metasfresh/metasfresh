@@ -446,7 +446,7 @@
                         because among those properties there are some artifact versions that we want to document.
                     -->
                     <groupId>org.codehaus.mojo</groupId>
-          bump up spring boot to 2.4.3          <artifactId>properties-maven-plugin</artifactId>
+                    <artifactId>properties-maven-plugin</artifactId>
                     <version>1.0.0</version>
                     <configuration>
                         <outputFile>app.properties</outputFile>
@@ -458,7 +458,7 @@
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <!-- 3.0.0-M2 gives me "Some plugins are missing valid versions"
                          when building downstream projects (i.e. metasfresh),
-                         although I set the version here in build/pluginManagenemt management.
+                         although I set the version here in build/pluginManagenemt management.<id>enforcer-profile</id>
                         Example:
                         org.apache.maven.plugins:maven-clean-plugin.    The version currently in use is 3.0.0
 
