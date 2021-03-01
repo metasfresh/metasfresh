@@ -55,7 +55,7 @@ BEGIN
                        AND contract.docstatus = 'CO'
                        AND contract.startdate <= NOW()
                        AND (contract.enddate IS NULL OR contract.enddate >= NOW()))
-        --
+              --
         UNION ALL
         --
         SELECT parent.root_bpartner_id,
