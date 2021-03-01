@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-import org.elasticsearch.client.Client;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +26,7 @@ import de.metas.elasticsearch.indexer.SqlESModelIndexerDataSource;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /*
  * #%L
@@ -60,6 +60,7 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 	private final ConcurrentHashMap<String, ImmutableList<IESModelIndexer>> indexersByModelTableName = new ConcurrentHashMap<>();
 
 	@Autowired
+	@Qualifier("metasfreshRestHighLevelClientconfig")
 	private RestHighLevelClient elasticsearchClient;
 
 	@Autowired

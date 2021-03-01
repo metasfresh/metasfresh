@@ -5,8 +5,9 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.element.api.AdTabId;
-import org.elasticsearch.client.Client;
+
 import org.elasticsearch.client.RestHighLevelClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import de.metas.elasticsearch.indexer.IESModelIndexer;
@@ -59,8 +60,7 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 
 	private static final AdMessageKey MSG_FULL_TEXT_SEARCH_CAPTION = AdMessageKey.of("Search");
 
-	public FullTextSearchDocumentFilterDescriptorsProviderFactory(
-			@NonNull final RestHighLevelClient elasticsearchClient)
+	public FullTextSearchDocumentFilterDescriptorsProviderFactory(@Qualifier("metasfreshRestHighLevelClientconfig") @NonNull final RestHighLevelClient elasticsearchClient)
 	{
 		this.elasticsearchClient = elasticsearchClient;
 	}
