@@ -1,6 +1,6 @@
 -- 2021-02-25T08:22:03.264Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,148,542288,TO_TIMESTAMP('2021-02-25 10:22:02','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Rahmenvertrag',TO_TIMESTAMP('2021-02-25 10:22:02','YYYY-MM-DD HH24:MI:SS'),100,'FA','Rahmenvertrag')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,148,542288,TO_TIMESTAMP('2021-02-25 10:22:02','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Rahmenvertrag',TO_TIMESTAMP('2021-02-25 10:22:02','YYYY-MM-DD HH24:MI:SS'),100,'FA','Frame Agrement')
 ;
 
 -- 2021-02-25T08:22:03.274Z
@@ -10,7 +10,7 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 
 -- 2021-02-25T08:22:27.479Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,148,542289,TO_TIMESTAMP('2021-02-25 10:22:27','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Abrufbestätigung',TO_TIMESTAMP('2021-02-25 10:22:27','YYYY-MM-DD HH24:MI:SS'),100,'OC','Abrufbestätigung')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,148,542289,TO_TIMESTAMP('2021-02-25 10:22:27','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Abrufbestätigung',TO_TIMESTAMP('2021-02-25 10:22:27','YYYY-MM-DD HH24:MI:SS'),100,'OC','Order Call')
 ;
 
 -- 2021-02-25T08:22:27.481Z
