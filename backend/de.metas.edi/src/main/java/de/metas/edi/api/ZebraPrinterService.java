@@ -24,14 +24,15 @@ package de.metas.edi.api;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.ZebraConfigId;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.process.PInstanceId;
 import de.metas.report.ReportResultData;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Zebra_Config;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
@@ -39,18 +40,16 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-
-import static de.metas.edi.api.ZebraPrinterSysConfigType.*;
 
 @Service
 public class ZebraPrinterService
 {
-	private static final String ZEBRA_PRINTER_SYS_CONFIG_PREFIX = "de.metas.handlingunit.sscc18Label.zebra";
 	private static final String SSCC18_FILE_NAME_TEMPLATE = "sscc_lables_:timestamp.csv";
 	private static final String TIMESTAMP_PLACEHOLDER = ":timestamp";
 	private static final String CSV_FORMAT = "text/csv";
+
+	private final ZebraConfigRepository zebraConfigRepository = SpringContextHolder.instance.getBean(ZebraConfigRepository.class);
 
 	/**
 	 * Creates a CSV file for SSCC18 labels based on given {@link I_EDI_DesadvLine_Pack} IDs.
@@ -58,21 +57,21 @@ public class ZebraPrinterService
 	 * @return {@link ReportResultData} containing information required for SSCC18 labels in CSV format.
 	 */
 	public ReportResultData createCSV_FileForSSCC18_Labels( final Collection<Integer> desadvLinePack_IDs_ToPrint,
-															final int clientId,
-															final int adOrgId,
+															final ZebraConfigId zebraConfigId,
 															final PInstanceId pInstanceId )
 	{
-		final Map<String, String> zebraConfigsByName = retrieveZebraPrinterConfigs(clientId, adOrgId);
+		final ZebraConfigId zebraConfigToUse = zebraConfigId != null ? zebraConfigId : zebraConfigRepository.getDefaultZebraConfigId();
+		final I_AD_Zebra_Config zebraConfig = zebraConfigRepository.getById(zebraConfigToUse);
 
 		DB.createT_Selection(pInstanceId, desadvLinePack_IDs_ToPrint, ITrx.TRXNAME_ThreadInherited);
 
-		final ImmutableList<List<String>> resultRows = DB.getSQL_ResultRowsAsListsOfStrings(zebraConfigsByName.get(SQL_SELECT.getSysConfigName()),
-				Collections.singletonList(pInstanceId), ITrx.TRXNAME_ThreadInherited);
+		final ImmutableList<List<String>> resultRows = DB.getSQL_ResultRowsAsListsOfStrings(zebraConfig.getSQL_Select(),
+																							Collections.singletonList(pInstanceId), ITrx.TRXNAME_ThreadInherited);
 
 		Check.assumeNotEmpty(resultRows, "SSCC information records must be available!");
 
-		final StringBuilder ssccLabelsInformationAsCSV = new StringBuilder(zebraConfigsByName.get(HEADER_LINE_1.getSysConfigName()));
-		ssccLabelsInformationAsCSV.append("\n").append(zebraConfigsByName.get(HEADER_LINE_2.getSysConfigName()));
+		final StringBuilder ssccLabelsInformationAsCSV = new StringBuilder(zebraConfig.getHeader_Line1());
+		ssccLabelsInformationAsCSV.append("\n").append(zebraConfig.getHeader_Line2());
 
 		final Joiner joiner = Joiner.on(",");
 
@@ -81,20 +80,7 @@ public class ZebraPrinterService
 				.map(joiner::join)
 				.forEach(row -> ssccLabelsInformationAsCSV.append("\n").append(row));
 
-		return buildResult(ssccLabelsInformationAsCSV.toString(), zebraConfigsByName.get(FILE_ENCODING.getSysConfigName()));
-	}
-
-	private Map<String, String> retrieveZebraPrinterConfigs(final int clientId, final int adOrgId)
-	{
-		//TODO: when moving Zebra configs to a dedicated table make sure to follow a DDD design.
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-		final Map<String, String> zebraConfigsByName = sysConfigBL.getValuesForPrefix(ZEBRA_PRINTER_SYS_CONFIG_PREFIX, clientId, adOrgId);
-
-		ZebraPrinterSysConfigType.listMandatoryConfigs()
-				.forEach(configType -> Check.assumeNotEmpty(zebraConfigsByName.get(configType.getSysConfigName()), "ZebraSysConfig {} must be present!", configType.getSysConfigName()));
-
-		return zebraConfigsByName;
+		return buildResult(ssccLabelsInformationAsCSV.toString(), zebraConfig.getEncoding());
 	}
 
 	private String escapeCSV(final String valueToEscape)
