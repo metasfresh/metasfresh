@@ -2,6 +2,7 @@ package de.metas.externalsystem;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.process.InvokeAlbertaAction;
 import de.metas.externalsystem.process.InvokeShopware6Action;
@@ -72,5 +73,12 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 		return type;
 	}
 
+	@Nullable
+	public static ExternalSystemType ofCodeOrNameOrNull(@NonNull final String codeOrName)
+	{
+		return CoalesceUtil.coalesceSuppliers(() -> typesByCode.get(codeOrName), () -> typesByName.get(codeOrName));
+	}
+
 	private static final ImmutableMap<String, ExternalSystemType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ExternalSystemType::getCode);
+	private static final ImmutableMap<String, ExternalSystemType> typesByName = Maps.uniqueIndex(Arrays.asList(values()), ExternalSystemType::getName);
 }

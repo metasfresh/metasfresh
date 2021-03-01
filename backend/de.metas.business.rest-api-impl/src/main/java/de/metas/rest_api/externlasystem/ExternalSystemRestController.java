@@ -39,6 +39,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.MediaType;
@@ -74,13 +75,19 @@ public class ExternalSystemRestController
 			@ApiResponse(code = 422, message = "The request could not be processed")
 	})
 	@PostMapping(path = "{externalSystemConfigType}/{externalSystemChildConfigValue}/{request}")
-	public ResponseEntity<?> invokeExternalSystem(@PathVariable final String externalSystemConfigType,
+	public ResponseEntity<?> invokeExternalSystem(
+			@PathVariable final String externalSystemConfigType,
 			@PathVariable final String externalSystemChildConfigValue,
 			@PathVariable final String request)
 	{
+		final ExternalSystemType externalSystemType = ExternalSystemType.ofCodeOrNameOrNull(externalSystemConfigType);
+		if (externalSystemType == null)
+		{
+			throw new AdempiereException("Unsupported externalSystemConfigType=" + externalSystemConfigType);
+		}
 		final InvokeExternalSystemProcessRequest invokeExternalSystemProcessRequest =
 				InvokeExternalSystemProcessRequest.builder()
-						.externalSystemType(ExternalSystemType.ofCode(externalSystemConfigType))
+						.externalSystemType(externalSystemType)
 						.childSystemConfigValue(externalSystemChildConfigValue)
 						.request(request)
 						.build();
@@ -124,8 +131,8 @@ public class ExternalSystemRestController
 		runProcessResponse = RunProcessResponse.builder()
 				.pInstanceID(String.valueOf(processExecutionResult.getPinstanceId().getRepoId()))
 				.errors(processExecutionResult.getThrowable() != null ?
-								JsonError.ofSingleItem(JsonErrors.ofThrowable(processExecutionResult.getThrowable(), Env.getADLanguageOrBaseLanguage()))
-								: null)
+						JsonError.ofSingleItem(JsonErrors.ofThrowable(processExecutionResult.getThrowable(), Env.getADLanguageOrBaseLanguage()))
+						: null)
 				.build();
 
 		return ResponseEntity
