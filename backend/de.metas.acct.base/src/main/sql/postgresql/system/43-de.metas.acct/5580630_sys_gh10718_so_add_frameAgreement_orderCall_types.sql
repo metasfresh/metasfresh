@@ -32,7 +32,7 @@ INSERT INTO public.ad_sequence (ad_sequence_id, ad_client_id, ad_org_id, isactiv
 
 -- 2021-02-25T08:47:35.355Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,AD_PrintFormat_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocSubType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,0,1000010,541010,TO_TIMESTAMP('2021-02-25 10:47:35','YYYY-MM-DD HH24:MI:SS'),100,'SOO',1000219,'FA',0,'D',1000001,'N','N','Y','Y','N','N','N','Y','Y','N','N','N','N','N','Y','N','Rahmenvertrag','Rahmenvertrag',TO_TIMESTAMP('2021-02-25 10:47:35','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,AD_PrintFormat_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocSubType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,0,1000010,541010,TO_TIMESTAMP('2021-02-25 10:47:35','YYYY-MM-DD HH24:MI:SS'),100,'SOO',1000219,'FA',0,'D',1000001,'N','N','N','Y','N','N','N','Y','Y','N','N','N','N','N','Y','N','Rahmenvertrag','Rahmenvertrag',TO_TIMESTAMP('2021-02-25 10:47:35','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-25T08:47:35.358Z
@@ -52,7 +52,7 @@ UPDATE C_DocType_Trl SET IsTranslated='Y', Name='Frame Agreement', PrintName='Fr
 
 -- 2021-02-25T08:49:01.626Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,AD_PrintFormat_ID,C_DocType_ID,C_DocTypeInvoice_ID,C_DocTypeShipment_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocSubType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,0,1000010,541011,1000002,1000011,TO_TIMESTAMP('2021-02-25 10:49:01','YYYY-MM-DD HH24:MI:SS'),100,'SOO',545479,'OC',0,'D',1000001,'N','N','Y','Y','N','N','N','Y','Y','N','N','N','N','N','Y','N','Abrufbestätigung','Abrufbestätigung',TO_TIMESTAMP('2021-02-25 10:49:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,AD_PrintFormat_ID,C_DocType_ID,C_DocTypeInvoice_ID,C_DocTypeShipment_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocSubType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,0,1000010,541011,1000002,1000011,TO_TIMESTAMP('2021-02-25 10:49:01','YYYY-MM-DD HH24:MI:SS'),100,'SOO',545479,'OC',0,'D',1000001,'N','N','N','Y','N','N','N','Y','Y','N','N','N','N','N','Y','N','Abrufbestätigung','Abrufbestätigung',TO_TIMESTAMP('2021-02-25 10:49:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-25T08:49:01.627Z
@@ -578,3 +578,4 @@ UPDATE AD_Column SET MandatoryLogic='@C_DocType_ID/0@=541010',Updated=TO_TIMESTA
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_RelationType SET Name='C_Order(SO) -> C_Order(FrameAgreement)',Updated=TO_TIMESTAMP('2021-02-25 17:07:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_RelationType_ID=540278
 ;
+
