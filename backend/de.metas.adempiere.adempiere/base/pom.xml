@@ -57,18 +57,15 @@
             <artifactId>jolokia-core</artifactId>
         </dependency>
 
-
         <!-- we use javax.mail to actually send mails. In order to encode/decode base64, we recommend to use guava instead -->
         <dependency>
             <groupId>com.sun.mail</groupId>
             <artifactId>javax.mail</artifactId>
-            <version>1.5.6</version>
         </dependency>
 
         <dependency>
-            <groupId>javax.activation</groupId>
-            <artifactId>activation</artifactId>
-            <version>1.1</version>
+            <groupId>jakarta.activation</groupId>
+            <artifactId>jakarta.activation-api</artifactId>
         </dependency>
 
         <dependency>
