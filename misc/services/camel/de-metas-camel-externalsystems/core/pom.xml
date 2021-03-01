@@ -279,8 +279,7 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <!-- don't try to build&push the docker image if we only run mvn install locally-->
-                        <phase>deploy</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>build</goal>
                         </goals>
