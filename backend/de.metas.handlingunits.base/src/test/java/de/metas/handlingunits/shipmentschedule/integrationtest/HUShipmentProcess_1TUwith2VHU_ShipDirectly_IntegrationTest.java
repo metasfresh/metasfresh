@@ -29,6 +29,7 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
+import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
@@ -46,6 +47,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.inout.IInOutDAO;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import org.junit.jupiter.api.Assertions;
 
 /**
  * Test case:
@@ -57,8 +59,10 @@ import de.metas.util.collections.CollectionUtils;
  * </ul>
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/08715_Kennzeichen_Gebinde_ausblenden_auf_Lsch._%28Gastro%29%2C_TU_auf_LKW_Verdichtung_%28109809505901%29
+ *
+ * Task http://dewiki908/mediawiki/index.php/08715_Kennzeichen_Gebinde_ausblenden_auf_Lsch._%28Gastro%29%2C_TU_auf_LKW_Verdichtung_%28109809505901%29
  */
+
 public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends AbstractHUShipmentProcessIntegrationTest
 {
 	private ShipmentScheduleQtyPickedExpectations afterPick_ShipmentScheduleQtyPickedExpectations = null;
@@ -170,7 +174,7 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 	{
 		//
 		// Get generated shipment
-		Assert.assertEquals("Invalid generated shipments count", 1, generatedShipments.size());
+		Assertions.assertEquals(1, generatedShipments.size(), "Invalid generated shipments count");
 		final I_M_InOut shipment = generatedShipments.get(0);
 
 		//
@@ -203,7 +207,7 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 	{
 		//
 		// Get LUs Package
-		Assert.assertEquals("Invalid generated LU packages count", 1, mpackagesForAggregatedHUs.size());
+		Assertions.assertEquals(1, mpackagesForAggregatedHUs.size(), "Invalid generated LU packages count");
 		final I_M_Package mpackage_TU = mpackagesForAggregatedHUs.get(0);
 
 		//
@@ -214,8 +218,8 @@ public class HUShipmentProcess_1TUwith2VHU_ShipDirectly_IntegrationTest extends 
 		// Shipper Transportation: Make sure TU's M_Package is updated
 		{
 			InterfaceWrapperHelper.refresh(mpackage_TU);
-			Assert.assertEquals("Aggregated HU's M_Package does not have the right M_InOut_ID",
-					shipment.getM_InOut_ID(), mpackage_TU.getM_InOut_ID());
+			Assertions.assertEquals(shipment.getM_InOut_ID(), mpackage_TU.getM_InOut_ID(),
+					"Aggregated HU's M_Package does not have the right M_InOut_ID");
 		}
 	}
 

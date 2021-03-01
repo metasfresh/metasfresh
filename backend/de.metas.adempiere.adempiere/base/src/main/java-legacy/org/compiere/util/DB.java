@@ -1181,6 +1181,7 @@ public class DB
 		{
 			pstmt = prepareStatement(sql, trxName);
 			setParameters(pstmt, params);
+			pstmt.setMaxRows(1);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{

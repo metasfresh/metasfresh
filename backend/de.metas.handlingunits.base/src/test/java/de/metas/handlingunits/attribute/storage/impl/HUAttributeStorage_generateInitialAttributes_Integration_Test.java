@@ -61,7 +61,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * This test is making sure current {@link IAttributeValueGenerator} implementations are not failing when {@link HUAttributeStorage#generateInitialAttributes()} is invoked.
+ * This test is making sure current {@link IAttributeValueGenerator} implementations are not failing when {@link HUAttributeStorage#generateInitialAttributes(Map)} is invoked.
  *
  * @author tsa
  *
@@ -110,12 +110,12 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 			final I_M_HU_PI huPI,
 			final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass)
 	{
-		IAttributeValueGenerator attributeValueGenerator;
+		final IAttributeValueGenerator attributeValueGenerator;
 		try
 		{
 			attributeValueGenerator = attributeValueGeneratorClass.newInstance();
 		}
-		catch (InstantiationException | IllegalAccessException ex)
+		catch (final InstantiationException | IllegalAccessException ex)
 		{
 			throw new AssertionError("Cannot instantiate " + attributeValueGeneratorClass, ex);
 		}
@@ -183,7 +183,7 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 		}
 	}
 
-	private static final Set<Class<? extends IAttributeValueGenerator>> retrieveAttributeValueGeneratorClassnames()
+	private static Set<Class<? extends IAttributeValueGenerator>> retrieveAttributeValueGeneratorClassnames()
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final Reflections reflections = new Reflections(new ConfigurationBuilder()
@@ -219,24 +219,17 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 		}
 
 		// Skip abstract classes
-		if (Modifier.isAbstract(attributeValueGeneratorClass.getModifiers()))
-		{
-			return true;
-		}
-
-		return false;
+		return Modifier.isAbstract(attributeValueGeneratorClass.getModifiers());
 	}
 
 	/**
 	 * Create a new {@link I_M_HU_PI_Attribute} configuration for given <code>attributeValueGeneratorClass</code>.
 	 *
-	 * The create a new {@link HUAttributeStorage} instance and invoke {@link HUAttributeStorage#generateInitialAttributes()}.
-	 *
-	 * @param attributeValueGeneratorClass
+	 * The create a new {@link HUAttributeStorage} instance and invoke {@link HUAttributeStorage#generateInitialAttributes(Map)}.
 	 */
 	public void test(final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass)
 	{
-		testWatcher.putContext(attributeValueGeneratorClass);
+		// testWatcher.putContext(attributeValueGeneratorClass);
 
 		System.out.println("Testing: " + attributeValueGeneratorClass);
 

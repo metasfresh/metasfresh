@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
+import org.adempiere.ad.service.TableRefInfo;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -108,7 +108,7 @@ public final class POInfoColumn implements Serializable
 
 		int displayTypeToSet = displayType;
 
-		ITableRefInfo tableRefInfo = null;
+		TableRefInfo tableRefInfo = null;
 
 		// task #500: For DisplayType=Table or Search and AD_Reference_Value_ID > 0, retrieve the ITableRefInfo
 		if (ad_Reference_Value_ID > 0 && (isTableDisplayType(displayType) || isSearchDisplayType(displayType)))
