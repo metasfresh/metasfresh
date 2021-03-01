@@ -147,7 +147,7 @@ public class StepComXMLOrdersBean extends AbstractEDIOrdersBean
 				divisor = new BigDecimal(dpric1.getPRICEBASIS());
 			}
 			price = new BigDecimal(dpric1.getPRICE())
-					.setScale(3)
+					.setScale(3, RoundingMode.HALF_UP) // guard against pricess that come with more than 3 digits to start with
 					.divide(divisor, RoundingMode.HALF_UP);
 		}
 		p100.setBuyerPrice(price.toString());
