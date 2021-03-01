@@ -22,18 +22,26 @@
 
 package de.metas.edi.process;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.edi.api.ZebraConfigRepository;
+import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.compiere.SpringContextHolder;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class EDI_DesadvLinePackGenerateCSV_FileForSSCC_Labels extends EDI_GenerateCSV_FileForSSCC_Labels
 {
+	private static final AdMessageKey MSG_DIFFERENT_ZEBRA_CONFIG_NOT_SUPPORTED = AdMessageKey.of("WEBUI_ZebraConfigError");
+	private final ZebraConfigRepository zebraConfigRepository = SpringContextHolder.instance.getBean(ZebraConfigRepository.class);
 
 	@Override public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull IProcessPreconditionsContext context)
 	{
@@ -41,7 +49,28 @@ public class EDI_DesadvLinePackGenerateCSV_FileForSSCC_Labels extends EDI_Genera
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
+		else  if (context.getSelectionSize().isMoreThanOneSelected())
+		{
+			final IQueryFilter<I_EDI_DesadvLine_Pack> selectedRecordsFilter = context.getQueryFilter(I_EDI_DesadvLine_Pack.class);
 
+			final int differentConfigsSize = queryBL
+					.createQueryBuilder(I_EDI_DesadvLine_Pack.class)
+					.filter(selectedRecordsFilter)
+					.andCollect(I_EDI_Desadv.COLUMN_EDI_Desadv_ID, I_EDI_Desadv.class)
+					.create()
+					.list()
+					.stream()
+					.map(ediDesadv -> BPartnerId.ofRepoId(ediDesadv.getC_BPartner_ID()))
+					.map(bpartnerId -> zebraConfigRepository.retrieveZebraConfigId(bpartnerId, zebraConfigRepository.getDefaultZebraConfigId()))
+					.collect(Collectors.toSet())
+					.size();
+
+
+			if (differentConfigsSize > 1)
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_DIFFERENT_ZEBRA_CONFIG_NOT_SUPPORTED));
+			}
+		}
 		return ProcessPreconditionsResolution.accept();
 	}
 
