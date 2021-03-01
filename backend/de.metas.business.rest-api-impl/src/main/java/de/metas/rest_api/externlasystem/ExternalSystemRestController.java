@@ -58,7 +58,6 @@ public class ExternalSystemRestController
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/externalsystem";
 
 	private final ExternalSystemService externalSystemService;
-	private final ProcessService processService;
 
 	public ExternalSystemRestController(final ExternalSystemService externalSystemService, final ProcessService processService)
 	{
