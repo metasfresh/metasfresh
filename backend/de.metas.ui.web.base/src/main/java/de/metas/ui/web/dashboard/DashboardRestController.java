@@ -2,7 +2,7 @@ package de.metas.ui.web.dashboard;
 
 import java.util.Collection;
 import java.util.Comparator;
-
+import java.util.List;
 
 import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
