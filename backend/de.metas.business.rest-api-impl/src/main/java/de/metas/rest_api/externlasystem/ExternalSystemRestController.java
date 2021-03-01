@@ -31,7 +31,6 @@ import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.rest_api.externlasystem.dto.ExternalSystemService;
 import de.metas.rest_api.externlasystem.dto.InvokeExternalSystemProcessRequest;
-import de.metas.rest_api.process.impl.ProcessService;
 import de.metas.rest_api.process.response.RunProcessResponse;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -59,10 +58,9 @@ public class ExternalSystemRestController
 
 	private final ExternalSystemService externalSystemService;
 
-	public ExternalSystemRestController(final ExternalSystemService externalSystemService, final ProcessService processService)
+	public ExternalSystemRestController(final ExternalSystemService externalSystemService)
 	{
 		this.externalSystemService = externalSystemService;
-		this.processService = processService;
 	}
 
 	@ApiOperation("Invoke an external system.")
