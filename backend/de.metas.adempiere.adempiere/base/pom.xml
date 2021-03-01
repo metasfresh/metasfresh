@@ -57,10 +57,11 @@
             <artifactId>jolokia-core</artifactId>
         </dependency>
 
-        <!-- we use javax.mail to actually send mails. In order to encode/decode base64, we recommend to use guava instead -->
+        <!-- we use jakarta.mail to actually send mails. In order to encode/decode base64, we recommend to use guava instead -->
         <dependency>
             <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
+            <artifactId>jakarta.mail</artifactId>
+            <version>1.6.5</version>
         </dependency>
 
         <dependency>
@@ -82,7 +83,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        
+
         <!-- Persistence -->
         <dependency>
             <groupId>com.mchange</groupId>
