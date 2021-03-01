@@ -1,48 +1,110 @@
 {
-  "data1": {
-    "actions": [
-      {
-        "processId": "ID_1",
-        "caption": "Pick",
-        "description": "",
-        "quickAction": true,
-        "defaultQuickAction": false,
-        "disabled": true,
-        "disabledReason": "No items selected",
-        "evaluateDuration": "188.8 μs",
-        "internalName": "OpenProductsToPick"
-      }
-    ]
+  "props": {
+    "processStatus": "saved",
+    "selected": [
+      "1001147"
+    ],
+    "viewId": "540485-G",
+    "windowId": "540485",
+    "disabled": null,
+    "shouldNotUpdate": false,
+    "inBackground": false,
+    "inModal": false,
+    "stopShortcutPropagation": false,
+    "childView": {},
+    "parentView": {}
   },
-  "data2": {
-    "actions": [
-      {
-        "processId": "ID_1",
-        "caption": "Pick",
-        "description": "",
-        "quickAction": true,
-        "defaultQuickAction": false,
-        "evaluateDuration": "188.1 μs",
-        "internalName": "OpenProductsToPick"
-      },
-      {
-        "processId": "ID_2",
-        "caption": "Unlock",
-        "description": "",
-        "quickAction": true,
-        "defaultQuickAction": false,
-        "evaluateDuration": "483.7 μs",
-        "internalName": "Unlock"
-      },
-      {
-        "processId": "ID_3",
-        "caption": "Unlock all",
-        "description": "",
-        "quickAction": true,
-        "defaultQuickAction": false,
-        "evaluateDuration": "299.1 μs",
-        "internalName": "UnlockAll"
-      }
-    ]
-  }
+  "data": [
+    {
+      "processId": "ADP_541007",
+      "caption": "Pick",
+      "description": "",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "evaluateDuration": "1.670 ms",
+      "internalName": "PackageablesView_OpenProductsToPick"
+    },
+    {
+      "processId": "ADP_541203",
+      "caption": "Print Pick list",
+      "description": "",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "evaluateDuration": "4.737 ms",
+      "internalName": "PackageablesView_PrintPicklist"
+    },
+    {
+      "processId": "ADP_541013",
+      "caption": "Unlock",
+      "description": "",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "evaluateDuration": "1.503 ms",
+      "internalName": "PackageablesView_UnlockFromLoggedUser"
+    },
+    {
+      "processId": "ADP_541014",
+      "caption": "Unlock all",
+      "description": "",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "evaluateDuration": "1.557 ms",
+      "internalName": "PackageablesView_UnlockAll"
+    }
+  ],
+  "props2": {
+    "processStatus": "saved",
+    "selected": [],
+    "viewId": "540485-G",
+    "windowId": "540485",
+    "disabled": null,
+    "shouldNotUpdate": false,
+    "inBackground": false,
+    "inModal": false,
+    "stopShortcutPropagation": false,
+    "childView": {},
+    "parentView": {}
+  },
+  "data2": [
+    {
+      "processId": "ADP_541007",
+      "caption": "Pick",
+      "description": "",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "disabled": true,
+      "disabledReason": "No items selected",
+      "evaluateDuration": "201.6 μs",
+      "internalName": "PackageablesView_OpenProductsToPick"
+    },
+    {
+      "processId": "ADP_541203",
+      "caption": "Print Pick list",
+      "description": "",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "disabled": true,
+      "disabledReason": "No items selected",
+      "evaluateDuration": "377.2 μs",
+      "internalName": "PackageablesView_PrintPicklist"
+    }
+  ]
 }

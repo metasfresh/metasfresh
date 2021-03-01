@@ -33,6 +33,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 
+import javax.annotation.Nullable;
+
 /**
  * Dedicated exception to handle the case that the DB detected a deadlock and killed one of the participants.
  * 
@@ -53,13 +55,13 @@ public class DBDeadLockDetectedException extends DBException
 	 * @param e the "orginal" exception from which we know that it is a deadlock. Note that this is usually a SQLException.
 	 * @param connection the connection that was used. may be <code>null</code>.
 	 */
-	public DBDeadLockDetectedException(final Throwable e, final Connection connection)
+	public DBDeadLockDetectedException(final Throwable e, @Nullable final Connection connection)
 	{
 		super(e);
 		setDeadLockInfo(connection);
 	}
 
-	private void setDeadLockInfo(final Connection connection)
+	private void setDeadLockInfo(@Nullable final Connection connection)
 	{
 		if (DB.isPostgreSQL() && connection != null)
 		{

@@ -1,29 +1,11 @@
 package de.metas.printing.async.spi.impl;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_AD_PInstance;
-import org.compiere.model.PrintInfo;
-
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
@@ -42,47 +24,66 @@ import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.report.DocumentReportFlavor;
 import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.archive.api.ArchiveRequest;
+import org.adempiere.archive.api.ArchiveResult;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.collections4.IteratorUtils;
+import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_AD_PInstance;
+
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.UUID;
 
 /**
  * This processor process the enqueued <code>C_Print_Job_Instructions</code>
- * 
+ *
  * <ul> for each C_Print_Job_Instructions, take the job line</ul>
  * <ul> then fetches the print package</ul>
  * <ul> calibrate the pdf from print package</ul>
  * <ul> concatenates all pdf from print packages in one big pdf file per <code>C_Print_Job_Instructions</code></ul>
- * 
+ *
  * @author cg
- * 
  */
 public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 {
 	// services
 	private final IPrintingDAO dao = Services.get(IPrintingDAO.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	
+
 	private final String PDFArchiveName = "PDFDocPrintingWorkpackageProcessor_ArchiveName";
 	private final String PDFPrintJob_Done = "PDFPrintingAsyncBatchListener_PrintJob_Done_2";
-	
+
 	public static final AdProcessId SummaryPdfPrinting_AD_Process_ID = AdProcessId.ofRepoId(540661);
 
 	private I_C_Async_Batch asyncBatch;
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName) 
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName_NOTUSED)
 	{
 		this.asyncBatch = workpackage.getC_Async_Batch();
 		Check.assumeNotNull(asyncBatch, "Async batch is not null");
 
-		final List<I_C_Print_Job_Instructions> list = queueDAO.retrieveItems(workpackage, I_C_Print_Job_Instructions.class, localTrxName);
+		final List<I_C_Print_Job_Instructions> list = queueDAO.retrieveItems(workpackage, I_C_Print_Job_Instructions.class, ITrx.TRXNAME_ThreadInherited);
 		for (final I_C_Print_Job_Instructions printjobInstructions : list)
 		{
-			InterfaceWrapperHelper.refresh(printjobInstructions, localTrxName);
-			createPrintPackage(printjobInstructions, localTrxName);
+			InterfaceWrapperHelper.refresh(printjobInstructions, ITrx.TRXNAME_ThreadInherited);
+			createPrintPackage(printjobInstructions);
 			if (X_C_Print_Job_Instructions.STATUS_Error.equals(printjobInstructions.getStatus()))
 			{
 				throw new AdempiereException(printjobInstructions.getErrorMsg());
@@ -90,7 +91,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 
 			try
 			{
-				print(printjobInstructions, workpackage, localTrxName);
+				print(printjobInstructions, workpackage);
 			}
 			catch (Exception e)
 			{
@@ -100,7 +101,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		return Result.SUCCESS;
 	}
 
-	private void print(final I_C_Print_Job_Instructions jobInstructions, final I_C_Queue_WorkPackage workpackage, final String trxName) throws Exception
+	private void print(final I_C_Print_Job_Instructions jobInstructions, final I_C_Queue_WorkPackage workpackage) throws Exception
 	{
 		//
 		// Extract print packages
@@ -111,8 +112,8 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		// needs to be on true in order to have summary which currently in not working 
 		// FIXME in a next working increment see gh2128
 		// TODO in https://github.com/metasfresh/metasfresh/issues/2128
-		boolean isCreateSummary = false; 
-		
+		boolean isCreateSummary = false;
+
 		for (final I_C_Print_Job_Line jobLine : IteratorUtils.asIterable(jobLines))
 		{
 			final int printPackageId = jobLine.getC_Print_Package_ID();
@@ -128,7 +129,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 				continue;
 			}
 			printPackages.put(printPackageId, jobLine.getC_Print_Package());
-			
+
 			if (jobLine.getC_Printing_Queue_ID() > 0)
 			{
 				final I_C_Printing_Queue pq = jobLine.getC_Printing_Queue();
@@ -155,7 +156,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 			{
 				final int countExpected = asyncBatch.getCountExpected();
 				final byte[] summary = createSummaryPage(jobInstructions, currentIndex, countExpected, countLines);
-	
+
 				mergedPDF = new MergePdfByteArrays()
 						.add(summary)
 						.add(pdfScaled)
@@ -167,10 +168,9 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 						.add(pdfScaled)
 						.getMergedPdfByteArray();
 			}
-			
 
 			// save in archive
-			createArchive(printPackage, mergedPDF, asyncBatch, currentIndex, trxName);
+			createArchive(printPackage, mergedPDF, asyncBatch, currentIndex);
 		}
 
 	}
@@ -179,21 +179,20 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
 		final Language language = Services.get(ILanguageBL.class).getOrgLanguage(ctx, jobInstructions.getAD_Org_ID());
-		
+
 		final I_AD_PInstance pinstance = Services.get(IADPInstanceDAO.class).createAD_PInstance(SummaryPdfPrinting_AD_Process_ID);
 		pinstance.setIsProcessing(true);
 		InterfaceWrapperHelper.save(pinstance);
-		
+
 		final StringBuffer msg = new StringBuffer();
 		msg.append(Services.get(IMsgBL.class)
-				.getMsg(ctx, PDFPrintJob_Done, new Object[] {index, countExpected, noInvoices}));
-		
-		
+				.getMsg(ctx, PDFPrintJob_Done, new Object[] { index, countExpected, noInvoices }));
+
 		final List<ProcessInfoParameter> piParams = new ArrayList<>();
 		piParams.add(ProcessInfoParameter.ofValueObject(X_C_Print_Job_Instructions.COLUMNNAME_C_Print_Job_Instructions_ID, jobInstructions.getC_Print_Job_Instructions_ID()));
 		piParams.add(ProcessInfoParameter.ofValueObject("Title", msg.toString()));
 		Services.get(IADPInstanceDAO.class).saveParameterToDB(PInstanceId.ofRepoId(pinstance.getAD_PInstance_ID()), piParams);
-		
+
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setAD_Process_ID(SummaryPdfPrinting_AD_Process_ID)
@@ -201,24 +200,34 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 				.setReportLanguage(language)
 				.setJRDesiredOutputType(OutputType.PDF)
 				.build();
-		
+
 		final ReportsClient reportsClient = ReportsClient.get();
 		final ReportResult reportResult = reportsClient.report(jasperProcessInfo);
-		
+
 		return reportResult.getReportContent();
 
 	}
 
-	private void createArchive(I_C_Print_Package printPackage, byte[] data, final I_C_Async_Batch asyncBatch, final int current, final String trxName)
+	private void createArchive(
+			final I_C_Print_Package printPackage,
+			final byte[] data,
+			final I_C_Async_Batch asyncBatch,
+			final int current)
 	{
-		final String tableName = InterfaceWrapperHelper.getModelTableName(printPackage);
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
-		final int recordId = InterfaceWrapperHelper.getId(printPackage);
+		final TableRecordReference printPackageRef = TableRecordReference.of(printPackage);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
 
 		final org.adempiere.archive.api.IArchiveBL archiveService = Services.get(org.adempiere.archive.api.IArchiveBL.class);
-		final PrintInfo printInfo = new PrintInfo(printPackage.getTransactionID() + "_" + printPackage.getBinaryFormat(), adTableId, recordId);
-		final I_AD_Archive archive = archiveService.archive(data, printInfo, true, trxName);
+		final ArchiveResult archiveResult = archiveService.archive(ArchiveRequest.builder()
+				.flavor(DocumentReportFlavor.PRINT)
+				.data(data)
+				.trxName(ITrx.TRXNAME_ThreadInherited)
+				.archiveName(printPackage.getTransactionID() + "_" + printPackage.getBinaryFormat())
+				.recordRef(printPackageRef)
+				.build());
+
+		final I_AD_Archive archive = archiveResult.getArchiveRecord();
+
 		final de.metas.printing.model.I_AD_Archive directArchive = InterfaceWrapperHelper.create(archive, de.metas.printing.model.I_AD_Archive.class);
 		directArchive.setIsDirectEnqueue(true);
 
@@ -227,7 +236,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final String name = Services.get(IMsgBL.class).getMsg(ctx, PDFArchiveName) + "_" + dt.format(today) + "_PDF_" + current
 				+ "_von_" + asyncBatch.getCountExpected() + "_" + asyncBatch.getC_Async_Batch_ID();
 		directArchive.setName(name);
-		
+
 		//
 		// set async batch
 		InterfaceWrapperHelper.setDynAttribute(archive, Async_Constants.C_Async_Batch, asyncBatch);
@@ -235,17 +244,17 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 
 	}
 
-	private void createPrintPackage(final I_C_Print_Job_Instructions printjobInstructions, final String trxName)
+	private void createPrintPackage(final I_C_Print_Job_Instructions printjobInstructions)
 	{
 		final IPrintPackageBL printPackageBL = Services.get(IPrintPackageBL.class);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printjobInstructions);
-		final I_C_Print_Package printPackage = InterfaceWrapperHelper.create(ctx, I_C_Print_Package.class, trxName);
+		final I_C_Print_Package printPackage = InterfaceWrapperHelper.create(ctx, I_C_Print_Package.class, ITrx.TRXNAME_ThreadInherited);
 
 		// Creating the Print Package template (request):
 		final String transactionId = UUID.randomUUID().toString();
 		printPackage.setTransactionID(transactionId);
-		InterfaceWrapperHelper.save(printPackage, trxName);
+		InterfaceWrapperHelper.save(printPackage, ITrx.TRXNAME_ThreadInherited);
 
 		final PrintPackageCtx printCtx = (PrintPackageCtx)printPackageBL.createEmptyInitialCtx();
 		printCtx.setHostKey(printjobInstructions.getHostKey());

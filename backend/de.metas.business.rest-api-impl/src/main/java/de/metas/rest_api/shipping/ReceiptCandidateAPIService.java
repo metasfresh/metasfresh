@@ -313,13 +313,16 @@ class ReceiptCandidateAPIService
 	{
 		final OrgId orgId = receiptSchedule.getOrgId();
 
-		auditBuilder.item(
-				receiptSchedule.getId(),
-				ReceiptScheduleExportAuditItem.builder()
-						.exportStatus(APIExportStatus.Exported)
-						.repoIdAware(receiptSchedule.getId())
-						.orgId(orgId)
-						.build());
+		auditBuilder
+				.orgId(orgId)
+				.exportStatus(APIExportStatus.Exported)
+				.item(
+						receiptSchedule.getId(),
+						ReceiptScheduleExportAuditItem.builder()
+								.exportStatus(APIExportStatus.Exported)
+								.repoIdAware(receiptSchedule.getId())
+								.orgId(orgId)
+								.build());
 	}
 
 	private void createExportErrorAuditItem(
@@ -336,14 +339,17 @@ class ReceiptCandidateAPIService
 				.summary(e.getMessage())
 				.build());
 
-		auditBuilder.item(
-				receiptSchedule.getId(),
-				ReceiptScheduleExportAuditItem.builder()
-						.exportStatus(APIExportStatus.ExportError)
-						.repoIdAware(receiptSchedule.getId())
-						.issueId(adIssueId)
-						.orgId(orgId)
-						.build());
+		auditBuilder
+				.orgId(orgId)
+				.exportStatus(APIExportStatus.ExportError)
+				.item(
+						receiptSchedule.getId(),
+						ReceiptScheduleExportAuditItem.builder()
+								.exportStatus(APIExportStatus.ExportError)
+								.repoIdAware(receiptSchedule.getId())
+								.issueId(adIssueId)
+								.orgId(orgId)
+								.build());
 	}
 
 	@Value

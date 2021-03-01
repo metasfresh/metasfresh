@@ -6,6 +6,7 @@ import static de.metas.impexp.format.ImpFormatColumnDataType.YesNo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -172,20 +173,21 @@ public class FlexImpDataLineParserTest
 					.dataType(columnDataType)
 					.build());
 		}
-		final ImpFormat importFormat = ImpFormat.builder()
+		return ImpFormat.builder()
 				.id(ImpFormatId.ofRepoId(123))
 				.name("test")
 				.formatType(ImpFormatType.SEMICOLON_SEPARATED)
 				.importTableDescriptor(createDummyImportTableDescriptor())
 				.columns(columns)
+				.charset(StandardCharsets.UTF_8)
+				.skipFirstNRows(0)
 				.build();
-		return importFormat;
 	}
 
 	private static List<Object> extractValues(final List<ImpDataCell> cells)
 	{
 		return cells.stream()
-				.map(cell -> extractValueOrFailIfError(cell))
+				.map(FlexImpDataLineParserTest::extractValueOrFailIfError)
 				.collect(Collectors.toList());
 	}
 

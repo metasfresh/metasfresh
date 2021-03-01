@@ -48,7 +48,7 @@ public class ArchiveSetDataHandlerConverter implements Converter<I_AD_Archive, I
 		final byte[] data = tempArchive.getBinaryData();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(tempArchive);
-		final IArchiveStorage fsStorage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctx, IArchiveStorageFactory.STORAGETYPE_Filesystem);
+		final IArchiveStorage fsStorage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctx, IArchiveStorageFactory.StorageType.Filesystem);
 		fsStorage.setBinaryData(tempArchive, data);
 		InterfaceWrapperHelper.save(tempArchive);
 

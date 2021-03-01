@@ -146,7 +146,7 @@ class OLCandOrderFactory
 
 	}
 
-	private I_C_Order newOrder(final OLCand candidateOfGroup)
+	private I_C_Order newOrder(@NonNull final OLCand candidateOfGroup)
 	{
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setDocStatus(DocStatus.Drafted.getCode());
@@ -232,7 +232,6 @@ class OLCandOrderFactory
 		}
 
 		final BPartnerId salesRepId = candidateOfGroup.getSalesRepId();
-
 		if (salesRepId != null)
 		{
 			order.setC_BPartner_SalesRep_ID(salesRepId.getRepoId());
@@ -240,7 +239,6 @@ class OLCandOrderFactory
 			final I_C_BPartner salesPartner = bpartnerDAO.getById(salesRepId);
 
 			order.setSalesPartnerCode(salesPartner.getSalesPartnerCode());
-
 		}
 
 		// Save to SO the external header id, so that on completion it can be linked with its payment

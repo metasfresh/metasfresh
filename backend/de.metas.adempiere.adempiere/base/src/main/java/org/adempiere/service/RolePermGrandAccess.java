@@ -21,6 +21,8 @@ import de.metas.security.requests.CreateWorkflowAccessRequest;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.workflow.WorkflowId;
+import de.metas.workflow.service.IADWorkflowBL;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -177,7 +179,7 @@ public class RolePermGrandAccess
 
 	private void grantWorkflowAccess(@NonNull final I_AD_Role_PermRequest request)
 	{
-		final int AD_Workflow_ID = request.getAD_Workflow_ID();
+		final WorkflowId workflowId = WorkflowId.ofRepoId(request.getAD_Workflow_ID());
 
 		final RoleId roleId = RoleId.ofRepoId(request.getAD_Role_ID());
 		final Role role = Services.get(IRoleDAO.class).getById(roleId);
@@ -187,12 +189,12 @@ public class RolePermGrandAccess
 						.roleId(role.getId())
 						.clientId(role.getClientId())
 						.orgId(role.getOrgId())
-						.adWorkflowId(AD_Workflow_ID)
+						.adWorkflowId(workflowId.getRepoId())
 						.readWrite(request.isReadWrite())
 						.build());
 
-		final I_AD_Workflow wf = InterfaceWrapperHelper.loadOutOfTrx(AD_Workflow_ID, I_AD_Workflow.class);
-		logGranted(I_AD_Workflow.COLUMNNAME_AD_Workflow_ID, wf.getName());
+		final String workflowName = Services.get(IADWorkflowBL.class).getWorkflowName(workflowId);
+		logGranted(I_AD_Workflow.COLUMNNAME_AD_Workflow_ID, workflowName);
 	}
 
 	private void grantTaskAccess(@NonNull final I_AD_Role_PermRequest request)

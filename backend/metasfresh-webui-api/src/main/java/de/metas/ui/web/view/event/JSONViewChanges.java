@@ -1,22 +1,8 @@
-package de.metas.ui.web.view.event;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.WindowId;
-import lombok.NonNull;
-
-import java.io.Serializable;
-import java.util.Set;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,9 +20,26 @@ import java.util.Set;
  * #L%
  */
 
-@SuppressWarnings("serial")
+package de.metas.ui.web.view.event;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.ui.web.websocket.WebsocketEndpointAware;
+import de.metas.ui.web.websocket.WebsocketTopicName;
+import de.metas.ui.web.websocket.WebsocketTopicNames;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.util.Set;
+
+@Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JSONViewChanges implements Serializable
+public class JSONViewChanges implements WebsocketEndpointAware
 {
 	public static JSONViewChanges of(@NonNull final ViewChanges changes)
 	{
@@ -44,26 +47,27 @@ public final class JSONViewChanges implements Serializable
 	}
 
 	@JsonProperty("viewId")
-	private final String viewId;
+	String viewId;
 	@JsonProperty("windowId")
-	private final WindowId windowId;
+	WindowId windowId;
 
 	@JsonProperty("fullyChanged")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Boolean fullyChanged;
+	Boolean fullyChanged;
 
 	@JsonProperty("changedIds")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final Set<String> changedIds;
+	Set<String> changedIds;
 
 	@JsonProperty("headerPropertiesChanged")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final Boolean headerPropertiesChanged;
+	Boolean headerPropertiesChanged;
+
+	@JsonIgnore
+	WebsocketTopicName websocketEndpoint;
 
 	private JSONViewChanges(@NonNull final ViewChanges changes)
 	{
-		super();
-
 		viewId = changes.getViewId().getViewId();
 		windowId = changes.getViewId().getWindowId();
 
@@ -85,33 +89,8 @@ public final class JSONViewChanges implements Serializable
 			this.changedIds = changedRowIds.toJsonSet();
 		}
 		headerPropertiesChanged = changes.isHeaderPropertiesChanged() ? true : null;
-	}
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("viewId", viewId)
-				.add("windowId", windowId)
-				.add("fullyChanged", fullyChanged)
-				.add("headerPropertiesChanged", headerPropertiesChanged)
-				.add("changedIds", changedIds)
-				.toString();
-	}
-
-	public String getViewId()
-	{
-		return viewId;
-	}
-
-	public WindowId getWindowId()
-	{
-		return windowId;
-	}
-
-	public Boolean getFullyChanged()
-	{
-		return fullyChanged;
+		websocketEndpoint = WebsocketTopicNames.buildViewNotificationsTopicName(viewId);
 	}
 }
+

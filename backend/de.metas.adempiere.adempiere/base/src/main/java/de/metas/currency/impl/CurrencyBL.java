@@ -345,6 +345,12 @@ public class CurrencyBL implements ICurrencyBL
 		return currencyRate;
 	}
 
+	@Override
+	public @NonNull CurrencyCode getCurrencyCodeById(@NonNull final CurrencyId currencyId)
+	{
+		return currencyDAO.getCurrencyCodeById(currencyId);
+	}
+
 	private static CurrencyConversionResultBuilder prepareCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)
 	{
 		return CurrencyConversionResult.builder()

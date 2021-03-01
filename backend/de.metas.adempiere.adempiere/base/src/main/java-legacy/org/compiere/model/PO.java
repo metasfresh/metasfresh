@@ -76,6 +76,7 @@ import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
+import de.metas.workflow.execution.DocWorkflowManager;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -153,20 +154,6 @@ public abstract class PO
 
 	private static final int QUERY_TIME_OUT = 10;
 
-	/**
-	 * Set Document Value Workflow Manager
-	 *
-	 * @param docWFMgr mgr
-	 */
-	public static void setDocWorkflowMgr(final DocWorkflowMgr docWFMgr)
-	{
-		s_docWFMgr = docWFMgr;
-		s_log.info("Document workflow manager set to {}", s_docWFMgr);
-	}	// setDocWorkflowMgr
-
-	/** Document Value Workflow Manager */
-	private static DocWorkflowMgr s_docWFMgr = null;
-
 	/** User Maintained Entity Type */
 	static protected final String ENTITYTYPE_UserMaintained = "U";
 	/** Dictionary Maintained Entity Type */
@@ -189,7 +176,7 @@ public abstract class PO
 	 * @param ctx context
 	 * @param trxName transaction name
 	 */
-	public PO(final Properties ctx, final int ID, final String trxName)
+	public PO(final Properties ctx, final int ID, @Nullable final String trxName)
 	{
 		this(ctx, ID, trxName, null);
 	}   // PO
@@ -202,7 +189,7 @@ public abstract class PO
 	 *            if null, a new record is created.
 	 * @param trxName transaction name
 	 */
-	public PO(final Properties ctx, final ResultSet rs, final String trxName)
+	public PO(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
 	{
 		this(ctx, 0, trxName, rs);
 	}	// PO
@@ -227,13 +214,8 @@ public abstract class PO
 	 * @param trxName transaction name
 	 * @param rs optional - load from current result set position (no navigation, not closed)
 	 */
-	public PO(final Properties ctx, final int ID, final String trxName, final ResultSet rs)
+	public PO(@NonNull final Properties ctx, final int ID, @Nullable final String trxName, @Nullable final ResultSet rs)
 	{
-
-		if (ctx == null)
-		{
-			throw new IllegalArgumentException("No Context");
-		}
 		p_ctx = ctx;
 		m_trxName = trxName;
 
@@ -606,9 +588,8 @@ public abstract class PO
 	 *
 	 * @param ctx
 	 */
-	protected final void setCtx(final Properties ctx)
+	protected final void setCtx(@NonNull final Properties ctx)
 	{
-		Check.assumeNotNull(ctx, "ctx not null");
 		this.p_ctx = ctx;
 	}
 
@@ -1337,7 +1318,7 @@ public abstract class PO
 	 * @param value
 	 * @returns boolean indicating success or failure
 	 */
-	public final boolean set_ValueOfColumn(final String columnName, final Object value)
+	public final boolean set_ValueOfColumn(final String columnName, @Nullable final Object value)
 	{
 		final int columnIndex = p_info.getColumnIndex(columnName);
 		if (columnIndex < 0)
@@ -3151,22 +3132,9 @@ public abstract class PO
 		return success;
 	}	// saveFinish
 
-	private final void fireDocWorkflowManager()
+	private void fireDocWorkflowManager()
 	{
-		if (s_docWFMgr == null)
-		{
-			try
-			{
-				Class.forName("org.compiere.wf.DocWorkflowManager");
-			}
-			catch (final Exception e)
-			{
-			}
-		}
-		if (s_docWFMgr != null)
-		{
-			s_docWFMgr.process(this);
-		}
+		DocWorkflowManager.get().fireDocValueWorkflows(this);
 	}
 
 	/**

@@ -22,147 +22,160 @@ package org.adempiere.archive.api.impl;
  * #L%
  */
 
-import java.io.InputStream;
-import java.util.Properties;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.i18n.Language;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessInfo;
+import de.metas.report.DocumentReportFlavor;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.archive.api.ArchiveInfo;
+import org.adempiere.archive.api.ArchiveRequest;
+import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.pdf.Document;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Process;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.PrintInfo;
 import org.compiere.model.X_AD_Client;
-import org.compiere.print.layout.LayoutEngine;
 import org.compiere.util.Env;
 
-import de.metas.bpartner.service.IBPartnerAware;
-import de.metas.process.PInstanceId;
-import de.metas.process.ProcessInfo;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 public class ArchiveBL implements IArchiveBL
 {
 	@Override
-	public int archive(final byte[] data, final PrintInfo printInfo)
-	{
-		final boolean force = false;
-		final I_AD_Archive archive = archive(data, printInfo, force);
-		return archive == null ? -1 : archive.getAD_Archive_ID();
-	}
-
-	@Override
-	public I_AD_Archive archive(final byte[] data, final PrintInfo printInfo, final boolean force)
-	{
-		return archive(data, printInfo, force, ITrx.TRXNAME_None);
-	}
-
-	@Override
+	@Nullable
 	public I_AD_Archive archive(final byte[] data,
-			final PrintInfo printInfo,
-			final boolean force,
-			final String trxName)
+								final ArchiveInfo archiveInfo,
+								final boolean force,
+								final boolean save,
+								final String trxName)
 	{
-		final boolean save = true;
-		return archive(data, printInfo, force, save, trxName);
+		final ArchiveRequest request = createArchiveRequest(data, archiveInfo, force, save, trxName);
+		return archive(request).getArchiveRecord();
 	}
 
 	@Override
-	public I_AD_Archive archive(final byte[] data,
-			final PrintInfo printInfo,
-			final boolean force,
-			final boolean save,
-			final String trxName)
+	public @NonNull ArchiveResult archive(@NonNull final ArchiveRequest request)
 	{
-		final Properties ctx = Env.getCtx();
-		if (force || isToArchive(ctx, printInfo))
+		if (request.isForce() || isToArchive(request))
 		{
-			return archive0(ctx, data, printInfo, save, trxName);
+			return archive0(request);
+		}
+		else
+		{
+			return ArchiveResult.EMPTY;
 		}
 
-		return null;
 	}
 
-	@Override
-	public I_AD_Archive archive(final LayoutEngine layout,
-			final PrintInfo printInfo,
-			final boolean force,
-			final String trxName)
-	{
-		final Properties ctx = layout.getCtx();
-		if (force || isToArchive(ctx, printInfo))
-		{
-			final byte[] data = Document.getPDFAsArray(layout.getPageable(false));	// No Copy
-			if (data == null)
-			{
-				return null;
-			}
-
-			return archive0(ctx, data, printInfo, true, trxName);
-		}
-
-		return null;
-	}
-
-	private I_AD_Archive archive0(final Properties ctx,
+	private static ArchiveRequest createArchiveRequest(
 			final byte[] data,
-			final PrintInfo info,
+			final ArchiveInfo archiveInfo,
+			final boolean force,
 			final boolean save,
 			final String trxName)
+	{
+		final ArchiveRequest.ArchiveRequestBuilder requestBuilder = ArchiveRequest.builder()
+				.ctx(Env.getCtx())
+				.data(data)
+				.force(force)
+				.save(save)
+				.trxName(trxName);
+
+		if (archiveInfo != null)
+		{
+			requestBuilder
+					.isReport(archiveInfo.isReport())
+					.recordRef(archiveInfo.getRecordRef())
+					.processId(archiveInfo.getProcessId())
+					.pinstanceId(archiveInfo.getPInstanceId())
+					.archiveName(archiveInfo.getName())
+					.bpartnerId(archiveInfo.getBpartnerId());
+		}
+
+		return requestBuilder.build();
+	}
+
+	private ArchiveResult archive0(@NonNull final ArchiveRequest request)
 	{
 		// t.schoemeberg@metas.de, 03787: using the client/org of the archived PO, if possible
-		final Properties ctxToUse = createContext(ctx, info, trxName);
+		final Properties ctxToUse = createContext(request);
 
 		final IArchiveStorage storage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctxToUse);
-		final I_AD_Archive archive = storage.newArchive(ctxToUse, trxName);
+		final I_AD_Archive archive = storage.newArchive(ctxToUse, request.getTrxName());
+		archive.setDocumentFlavor(DocumentReportFlavor.toCode(request.getFlavor()));
 
 		// FRESH-218: extract and set the language to the archive
-		final String language = getLanguageFromReport(ctxToUse, info, trxName);
+		final String language = getLanguageFromReport(ctxToUse, request);
 		archive.setAD_Language(language);
 
-		archive.setName(info.getName());
-		archive.setIsReport(info.isReport());
+		archive.setName(request.getArchiveName());
+		archive.setIsReport(request.isReport());
 		//
-		archive.setAD_Process_ID(info.getAD_Process_ID());
-		archive.setAD_Table_ID(info.getAD_Table_ID());
-		archive.setRecord_ID(info.getRecord_ID());
-		archive.setC_BPartner_ID(info.getC_BPartner_ID());
+		archive.setAD_Process_ID(AdProcessId.toRepoId(request.getProcessId()));
+
+		final TableRecordReference recordRef = request.getRecordRef();
+		archive.setAD_Table_ID(recordRef != null ? recordRef.getAD_Table_ID() : -1);
+		archive.setRecord_ID(recordRef != null ? recordRef.getRecord_ID() : -1);
+
+		archive.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
+
+		final byte[] data = request.getData();
 		storage.setBinaryData(archive, data);
 
 		//FRESH-349: Set ad_pinstance
-		
-		archive.setAD_PInstance_ID(PInstanceId.toRepoId(info.getAD_PInstance_ID()));
+		archive.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPinstanceId()));
 
-		if (save)
+		if (request.isSave())
 		{
 			InterfaceWrapperHelper.save(archive);
 		}
-		return archive;
+
+		return ArchiveResult.builder()
+				.archiveRecord(archive)
+				.data(data)
+				.build();
 	}
 
 	/**
-	 * Return the BPartner's language, in case the info has a jasper report set and this jasper report is a process that uses the BPartner language. If it was not found, fall back to the language set
+	 * Return the BPartner's language, in case the request has a jasper report set and this jasper report is a process that uses the BPartner language. If it was not found, fall back to the language set
 	 * in the given context
-	 *
-	 * @param ctx
-	 * @param info
-	 * @param trxName
-	 * @return
-	 * @task https://metasfresh.atlassian.net/browse/FRESH-218
+	 * <p>
+	 * Task https://metasfresh.atlassian.net/browse/FRESH-218
 	 */
-	private String getLanguageFromReport(Properties ctx, PrintInfo info, String trxName)
+	private String getLanguageFromReport(
+			@NonNull final Properties ctx,
+			@NonNull final ArchiveRequest request)
 	{
+		if (request.getLanguage() != null)
+		{
+			return request.getLanguage().getAD_Language();
+		}
+
 		// the language from the given context. In case there will be no other language to fit the logic, this is the value to be returned.
 		final String initialLanguage = Env.getAD_Language(ctx);
 
-		final I_AD_Process process = InterfaceWrapperHelper.create(ctx, info.getAD_Process_ID(), I_AD_Process.class, ITrx.TRXNAME_None);
+		final AdProcessId processId = request.getProcessId();
+		final I_AD_Process process = processId != null
+				? Services.get(IADProcessDAO.class).getById(processId)
+				: null;
 
 		// make sure there is a process set in the PrintInfo
 		if (process == null)
@@ -172,74 +185,39 @@ public class ArchiveBL implements IArchiveBL
 
 		// in case the found process does not have the isUseBPartnerLanguage on true, there is no reason to search more
 		final boolean isUseBPartnerLanguage = process.isUseBPartnerLanguage();
-
 		if (!isUseBPartnerLanguage)
 		{
 			return initialLanguage;
 		}
 
-		final int tableID = info.getAD_Table_ID();
-		final int recordID = info.getRecord_ID();
-
-		if (tableID <= 0)
+		final TableRecordReference recordRef = request.getRecordRef();
+		if (recordRef == null)
 		{
 			return initialLanguage;
 		}
 
-		if (recordID <= 0)
-		{
-			return initialLanguage;
-		}
-
-		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableID);
-
-		// make sure the record linked with the PrintInfo is bpartner aware (has a C_BPartner_ID column)
-		final IBPartnerAware bpRecord = InterfaceWrapperHelper.create(ctx, tableName, recordID, IBPartnerAware.class, trxName);
-
-		if (bpRecord == null)
-		{
-			// Act like before
-			return initialLanguage;
-		}
-
-		// if the record really is BPartner aware, we should be able to load the bpartner
-		final I_C_BPartner partner = bpRecord.getC_BPartner();
-
-		// this shall not happen
-		if (partner == null)
-		{
-			// Act like before
-			return initialLanguage;
-		}
-
-		// return the language of the linked bpartner
-		return partner.getAD_Language();
-
+		final Object record = recordRef.getModel(PlainContextAware.newWithTrxName(ctx, request.getTrxName()), Object.class);
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		return bpartnerBL.getLanguageForModel(record).map(Language::getAD_Language).orElse(initialLanguage);
 	}
 
-	private final Properties createContext(final Properties ctx, final PrintInfo info, final String trxName)
+	private Properties createContext(@NonNull final ArchiveRequest request)
 	{
-		final int adTableId = info.getAD_Table_ID();
-
-		if (adTableId <= 0)
+		final TableRecordReference recordRef = request.getRecordRef();
+		if (recordRef == null)
 		{
-			return ctx;
+			return request.getCtx();
 		}
 
-		final int recordId = info.getRecord_ID();
-		if (recordId <= 0)
-		{
-			return ctx;
-		}
-
-		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
-		final IClientOrgAware record = InterfaceWrapperHelper.create(ctx, tableName, recordId, IClientOrgAware.class, trxName);
+		final IClientOrgAware record = recordRef.getModel(
+				PlainContextAware.newWithTrxName(request.getCtx(), request.getTrxName()),
+				IClientOrgAware.class);
 		if (record == null)
 		{
 			// attached record was not found. return the initial context (an error was already logged by loader)
-			return ctx;
+			return request.getCtx();
 		}
-		final Properties ctxToUse = Env.deriveCtx(ctx);
+		final Properties ctxToUse = Env.deriveCtx(request.getCtx());
 		Env.setContext(ctxToUse, Env.CTXNAME_AD_Client_ID, record.getAD_Client_ID());
 		Env.setContext(ctxToUse, Env.CTXNAME_AD_Org_ID, record.getAD_Org_ID());
 		// setClientOrg(archivedPO);
@@ -248,16 +226,9 @@ public class ArchiveBL implements IArchiveBL
 
 	}
 
-	@Override
-	public boolean isToArchive(final PrintInfo printInfo)
+	private boolean isToArchive(@NonNull final ArchiveRequest request)
 	{
-		final Properties ctx = Env.getCtx();
-		return isToArchive(ctx, printInfo);
-	}
-
-	public boolean isToArchive(final Properties ctx, final PrintInfo printInfo)
-	{
-		final String autoArchive = getAutoArchiveType(ctx);
+		final String autoArchive = getAutoArchiveType(request.getCtx());
 
 		// Nothing to Archive
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_None))
@@ -267,8 +238,7 @@ public class ArchiveBL implements IArchiveBL
 		// Archive External only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_ExternalDocuments))
 		{
-			if (printInfo == null // avoid NPE when exporting to PDF from the print preview window
-					|| printInfo.isReport())
+			if (request.isReport())
 			{
 				return false;
 			}
@@ -276,20 +246,12 @@ public class ArchiveBL implements IArchiveBL
 		// Archive Documents only
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_Documents))
 		{
-			if (printInfo == null // avoid NPE when exporting to PDF from the print preview window
-					|| printInfo.isReport())
+			if (request.isReport())
 			{
 				return false;
 			}
 		}
 		return true;
-	}
-
-	@Override
-	public boolean isToArchive(final ProcessInfo processInfo)
-	{
-		final Properties ctx = Env.getCtx();
-		return isToArchive(ctx, processInfo);
 	}
 
 	public boolean isToArchive(final Properties ctx, final ProcessInfo processInfo)
@@ -320,7 +282,7 @@ public class ArchiveBL implements IArchiveBL
 		return true;
 	}
 
-	private String getAutoArchiveType(final Properties ctx)
+	private static String getAutoArchiveType(final Properties ctx)
 	{
 		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx, Env.getAD_Client_ID(ctx));
 		final String aaClient = client.getAutoArchive();
@@ -338,7 +300,7 @@ public class ArchiveBL implements IArchiveBL
 			}
 			else if (aaRole.equals(X_AD_Client.AUTOARCHIVE_Documents)
 					&& !aaClient
-							.equals(X_AD_Client.AUTOARCHIVE_AllReportsDocuments))
+					.equals(X_AD_Client.AUTOARCHIVE_AllReportsDocuments))
 			{
 				aa = aaRole;
 			}
@@ -369,5 +331,27 @@ public class ArchiveBL implements IArchiveBL
 	public InputStream getBinaryDataAsStream(final I_AD_Archive archive)
 	{
 		return Services.get(IArchiveStorageFactory.class).getArchiveStorage(archive).getBinaryDataAsStream(archive);
+	}
+
+	@Override
+	public Optional<I_AD_Archive> getLastArchive(@NonNull final TableRecordReference reference)
+	{
+		final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+		final List<I_AD_Archive> lastArchives = archiveDAO.retrieveLastArchives(Env.getCtx(), reference, QueryLimit.ONE);
+
+		if (lastArchives.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else
+		{
+			return Optional.of(lastArchives.get(0));
+		}
+	}
+
+	@Override
+	public Optional<byte[]> getLastArchiveBinaryData(@NonNull final TableRecordReference reference)
+	{
+		return getLastArchive(reference).map(this::getBinaryData);
 	}
 }

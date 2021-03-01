@@ -36,8 +36,9 @@ import {
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
 import { getView } from '../reducers/viewHandler';
-import { createFilter, deleteFilter } from './FiltersActions';
 import { createGridTable, updateGridTable, deleteTable } from './TableActions';
+import { createFilter, deleteFilter } from './FiltersActions';
+import { fetchQuickActions, deleteQuickActions } from './Actions';
 
 /**
  * @method resetView
@@ -63,12 +64,17 @@ export function deleteView(id, isModal) {
 
 /**
  * @method fetchDocumentPending
- * @summary
+ * @summary request data for the document and set the pending flag to true
+ *
+ * @param {string} id - viewId
+ * @param {boolean} isModal
+ * @param {boolean} websocketRefresh - in case of data fetches caused by
+ * ws we won't set the pending flag to true
  */
-function fetchDocumentPending(id, isModal) {
+function fetchDocumentPending(id, isModal, websocketRefresh) {
   return {
     type: FETCH_DOCUMENT_PENDING,
-    payload: { id, isModal },
+    payload: { id, isModal, websocketRefresh },
   };
 }
 
@@ -267,10 +273,11 @@ export function setIncludedView({
   windowId,
   viewId,
   viewProfileId = null,
+  parentId = null,
 } = {}) {
   return {
     type: SET_INCLUDED_VIEW,
-    payload: { id: windowId, viewId, viewProfileId },
+    payload: { id: windowId, viewId, viewProfileId, parentId },
   };
 }
 
@@ -312,9 +319,10 @@ export function fetchDocument({
   pageLength,
   orderBy,
   isModal = false,
+  websocketRefresh = false,
 }) {
   return (dispatch, getState) => {
-    dispatch(fetchDocumentPending(windowId, isModal));
+    dispatch(fetchDocumentPending(windowId, isModal, websocketRefresh));
 
     return browseViewRequest({
       windowId,
@@ -325,8 +333,10 @@ export function fetchDocument({
     })
       .then((response) => {
         // remove the old filter from the store
-        const entityRelatedId = getEntityRelatedId({ windowId, viewId });
-        dispatch(deleteFilter(entityRelatedId));
+        if (!websocketRefresh) {
+          const entityRelatedId = getEntityRelatedId({ windowId, viewId });
+          dispatch(deleteFilter(entityRelatedId));
+        }
 
         dispatch(fetchDocumentSuccess(windowId, response.data, isModal));
 
@@ -344,26 +354,31 @@ export function fetchDocument({
         const state = getState();
         const view = getView(state, windowId, isModal);
 
-        const filterId = getEntityRelatedId({ windowId, viewId });
-        const activeFiltersCaptions = populateFiltersCaptions({
-          filterData: view.layout.filters,
-          filtersActive: response.data.filters,
-        });
-        const filtersActive = formatFilters({
-          filtersData: view.layout.filters,
-          filtersActive: response.data.filters,
-        });
+        if (!websocketRefresh) {
+          const filterId = getEntityRelatedId({ windowId, viewId });
+          const activeFiltersCaptions = populateFiltersCaptions({
+            filterData: view.layout.filters,
+            filtersActive: response.data.filters,
+          });
+          const filtersActive = formatFilters({
+            filtersData: view.layout.filters,
+            filtersActive: response.data.filters,
+          });
 
-        dispatch(
-          createFilter({
-            filterId,
-            data: {
-              filterData: view.layout.filters, // set the proper layout for the filters
-              filtersActive,
-              activeFiltersCaptions,
-            },
-          })
-        );
+          dispatch(
+            createFilter({
+              filterId,
+              data: {
+                filterData: view.layout.filters, // set the proper layout for the filters
+                filtersActive,
+                activeFiltersCaptions,
+              },
+            })
+          );
+        }
+
+        let shouldFetchQuickActions = true;
+        let viewProfileId = null;
 
         // set the Layout for the view
         const openIncludedViewOnSelect =
@@ -376,23 +391,49 @@ export function fetchDocument({
           response.data.result &&
           response.data.result.length
         ) {
-          const row = response.data.result[0];
-          const includedWindowId = row.supportIncludedViews
+          const {
+            includedView,
+            supportIncludedViews,
+          } = response.data.result[0];
+          const includedWindowId = supportIncludedViews
             ? state.viewHandler.includedView.windowId ||
-              row.includedView.windowType ||
-              row.includedView.windowId
+              includedView.windowType ||
+              includedView.windowId
             : null;
-          const includedViewId = row.supportIncludedViews
-            ? state.viewHandler.includedView.viewId || row.includedView.viewId
+          const includedViewId = supportIncludedViews
+            ? state.viewHandler.includedView.viewId || includedView.viewId
             : null;
+          viewProfileId =
+            includedView.viewProfileId ||
+            state.viewHandler.includedView.viewProfileId;
 
           dispatch(
             showIncludedView({
               id: windowId,
-              showIncludedView: row.supportIncludedViews,
+              showIncludedView: supportIncludedViews,
               windowId: includedWindowId,
               viewId: includedViewId,
+              viewProfileId,
               isModal,
+            })
+          );
+
+          // don't fetch quick actions for parent view as we don't have
+          // the included view in the store yet. They will be fetched with the
+          // included view.
+          if (includedWindowId) {
+            shouldFetchQuickActions = false;
+          }
+        }
+
+        // get quickactions
+        if (viewId && shouldFetchQuickActions) {
+          dispatch(
+            fetchQuickActions({
+              windowId,
+              viewId,
+              isModal,
+              viewProfileId,
             })
           );
         }
@@ -502,6 +543,8 @@ export function filterView(windowId, viewId, filters, isModal = false) {
         // remove table, so that we won't add filtered rows to the previous data
         const tableId = getTableId({ windowId, viewId });
         dispatch(deleteTable(tableId));
+        // delete quick actions as they will be re-fetched
+        dispatch(deleteQuickActions(windowId, viewId));
 
         return Promise.resolve(response.data);
       })
@@ -542,6 +585,7 @@ export function showIncludedView({
   viewId,
   forceClose,
   isModal,
+  viewProfileId,
 } = {}) {
   return (dispatch) => {
     if (id) {
@@ -549,7 +593,9 @@ export function showIncludedView({
     }
 
     if (showIncludedView) {
-      dispatch(setIncludedView({ windowId, viewId }));
+      dispatch(
+        setIncludedView({ windowId, viewId, parentId: id, viewProfileId })
+      );
     }
 
     if (!showIncludedView) {
@@ -564,8 +610,6 @@ export function showIncludedView({
  */
 export function fetchHeaderProperties({ windowId, viewId, isModal = false }) {
   return (dispatch) => {
-    dispatch(fetchDocumentPending(windowId, isModal));
-
     return headerPropertiesRequest({ windowId, viewId })
       .then((response) => {
         const updatedData = {

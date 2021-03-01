@@ -262,7 +262,7 @@ public interface IAttributeStorage extends IAttributeSet
 	Object getValue(AttributeCode attributeCode);
 
 	@Override
-	BigDecimal getValueAsBigDecimal(AttributeCode attributeCode);
+	BigDecimal getValueAsBigDecimal(@NonNull AttributeCode attributeCode);
 
 	@Override
 	Date getValueAsDate(AttributeCode attributeCode);

@@ -41,6 +41,8 @@ import java.util.function.UnaryOperator;
 
 public interface IPPOrderBOMBL extends ISingletonService
 {
+	I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId);
+
 	PPOrderQuantities getQuantities(
 			@NonNull I_PP_Order ppOrder,
 			@NonNull UomId targetUOMId);
@@ -105,15 +107,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	Percent getCoProductCostDistributionPercent(I_PP_Order_BOMLine orderBOMLine);
 
-	/**
-	 * Returns the negated value of the given <code>qty</code>.
-	 * <p>
-	 * Note: In case of Co/By-Products, we need to issue negative Qtys
-	 */
-	BigDecimal adjustCoProductQty(BigDecimal qty);
-
-	Quantity adjustCoProductQty(Quantity qty);
-
 	void addQty(OrderBOMLineQtyChangeRequest request);
 
 	/**
@@ -129,8 +122,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @return qty to issue (in given <code>targetUOM</code>)
 	 */
 	Quantity computeQtyToIssueBasedOnFinishedGoodReceipt(
-			I_PP_Order_BOMLine orderBOMLine,
-			I_C_UOM targetUOM);
+			@NonNull I_PP_Order_BOMLine orderBOMLine,
+			@NonNull I_C_UOM targetUOM);
 
 	void voidBOMLine(I_PP_Order_BOMLine line);
 

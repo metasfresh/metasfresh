@@ -1,32 +1,27 @@
 package de.metas.ui.web.view.event;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.websocket.WebsocketSender;
-import de.metas.ui.web.websocket.WebsocketTopicName;
-import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.SpringContextHolder;
-import org.compiere.util.Util;
+import org.compiere.util.Trace;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
@@ -51,10 +46,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * #L%
  */
 
+/**
+ * Collects view changes and sends them to frontend via WebSocket or to a parent collector.
+ */
 public class ViewChangesCollector implements IAutoCloseable
 {
 	@Nullable
-	public static ViewChangesCollector getCurrentOrNull()
+	private static ViewChangesCollector getCurrentOrNull()
 	{
 		//
 		// Try getting thread level collector
@@ -80,14 +78,10 @@ public class ViewChangesCollector implements IAutoCloseable
 		final ITrx currentTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 		if (!trxManager.isNull(currentTrx))
 		{
-			return currentTrx
-					.getProperty(TRXPROPERTY_Name, trx -> {
-						final ViewChangesCollector collector = new ViewChangesCollector();
-						trx.getTrxListenerManager()
-								.newEventListener(TrxEventTiming.AFTER_COMMIT)
-								.registerHandlingMethod(innerTrx -> collector.close());
-						return collector;
-					});
+			return currentTrx.getPropertyAndProcessAfterCommit(
+					ViewChangesCollector.class.getName(),
+					ViewChangesCollector::new,
+					ViewChangesCollector::close);
 		}
 
 		//
@@ -128,19 +122,17 @@ public class ViewChangesCollector implements IAutoCloseable
 	private static final transient Logger logger = LogManager.getLogger(ViewChangesCollector.class);
 
 	private static final transient ThreadLocal<ViewChangesCollector> THREADLOCAL = new ThreadLocal<>();
-	private static final String TRXPROPERTY_Name = ViewChangesCollector.class.getName();
 
-	@Autowired
-	@Lazy
-	private WebsocketSender websocketSender;
+	private transient WebsocketSender _websocketSender; // lazy
 
 	private final boolean autoflush;
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
-	private final Map<ViewId, ViewChanges> viewChangesMap = new LinkedHashMap<>();
+	private final LinkedHashMap<ViewId, ViewChanges> viewChangesMap = new LinkedHashMap<>();
 
-	private final String createdStackTrace;
-	private String closedStackTrace;
+	private static final boolean DEBUG = false;
+	@Nullable private final String createdStackTrace;
+	@Nullable private String closedStackTrace;
 
 	private ViewChangesCollector()
 	{
@@ -149,11 +141,8 @@ public class ViewChangesCollector implements IAutoCloseable
 
 	private ViewChangesCollector(final boolean autoflush)
 	{
-		SpringContextHolder.instance.autowire(this);
-
 		this.autoflush = autoflush;
-
-		this.createdStackTrace = Util.dumpStackTraceToString(new Exception());
+		this.createdStackTrace = DEBUG ? Trace.toOneLineStackTraceString() : null;
 	}
 
 	@Override
@@ -166,7 +155,7 @@ public class ViewChangesCollector implements IAutoCloseable
 			return;
 		}
 
-		closedStackTrace = Util.dumpStackTraceToString(new Exception());
+		closedStackTrace = DEBUG ? Trace.toOneLineStackTraceString() : null;
 
 		flush();
 	}
@@ -181,8 +170,8 @@ public class ViewChangesCollector implements IAutoCloseable
 		if (closed.get())
 		{
 			throw new IllegalStateException("Collector " + this + " was already closed"
-					+ "\n\nCreated stacktrace: " + createdStackTrace
-					+ "\n\nClosed stacktrace: " + closedStackTrace);
+					+ "\n\nCreated stacktrace: " + CoalesceUtil.coalesce(createdStackTrace, "?")
+					+ "\n\nClosed stacktrace: " + CoalesceUtil.coalesce(closedStackTrace, "?"));
 		}
 	}
 
@@ -244,7 +233,7 @@ public class ViewChangesCollector implements IAutoCloseable
 		autoflushIfEnabled();
 	}
 
- 	@Nullable
+	@Nullable
 	private ViewChangesCollector getParentOrNull()
 	{
 		final ViewChangesCollector threadLocalCollector = getCurrentOrNull();
@@ -258,7 +247,7 @@ public class ViewChangesCollector implements IAutoCloseable
 
 	private void flush()
 	{
-		final List<ViewChanges> changesList = getAndClean();
+		final ImmutableList<ViewChanges> changesList = getAndClean();
 		if (changesList.isEmpty())
 		{
 			return;
@@ -277,10 +266,12 @@ public class ViewChangesCollector implements IAutoCloseable
 		else
 		{
 			logger.trace("Flushing {} to websocket", this);
-			changesList.stream()
+			final ImmutableList<JSONViewChanges> jsonChangeEvents = changesList.stream()
 					.filter(ViewChanges::hasChanges)
 					.map(JSONViewChanges::of)
-					.forEach(this::sendToWebsocket);
+					.collect(ImmutableList.toImmutableList());
+
+			sendToWebsocket(jsonChangeEvents);
 		}
 	}
 
@@ -294,29 +285,39 @@ public class ViewChangesCollector implements IAutoCloseable
 		flush();
 	}
 
-	private List<ViewChanges> getAndClean()
+	private ImmutableList<ViewChanges> getAndClean()
 	{
 		if (viewChangesMap.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		final List<ViewChanges> changesList = ImmutableList.copyOf(viewChangesMap.values());
+		final ImmutableList<ViewChanges> changesList = ImmutableList.copyOf(viewChangesMap.values());
 		viewChangesMap.clear();
 		return changesList;
 	}
 
-	private void sendToWebsocket(final JSONViewChanges jsonChangeEvent)
+	private void sendToWebsocket(@NonNull final List<JSONViewChanges> jsonChangeEvents)
 	{
-		final WebsocketTopicName endpoint = WebsocketTopicNames.buildViewNotificationsTopicName(jsonChangeEvent.getViewId());
+		if (jsonChangeEvents.isEmpty())
+		{
+			return;
+		}
+
+		WebsocketSender websocketSender = _websocketSender;
+		if (websocketSender == null)
+		{
+			websocketSender = this._websocketSender = SpringContextHolder.instance.getBean(WebsocketSender.class);
+		}
+
 		try
 		{
-			websocketSender.convertAndSend(endpoint, jsonChangeEvent);
-			logger.debug("Send to websocket {}: {}", endpoint, jsonChangeEvent);
+			websocketSender.convertAndSend(jsonChangeEvents);
+			logger.debug("Sent to websocket: {}", jsonChangeEvents);
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed sending to websocket {}: {}", endpoint, jsonChangeEvent, ex);
+			logger.warn("Failed sending to websocket {}: {}", jsonChangeEvents, ex);
 		}
 	}
 }

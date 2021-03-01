@@ -1,21 +1,5 @@
 package de.metas.ui.web.window.invalidation;
 
-import java.util.UUID;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
-import javax.annotation.PostConstruct;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.slf4j.Logger;
-import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
-import org.springframework.stereotype.Component;
-
 import de.metas.cache.CacheMgt;
 import de.metas.cache.ICacheResetListener;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -24,7 +8,22 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
+import de.metas.util.async.Debouncer;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
+import java.util.List;
+import java.util.UUID;
 
 /*
  * #%L
@@ -52,7 +51,6 @@ import lombok.NonNull;
  * This component listens to all cache invalidation events (see {@link CacheMgt}) and invalidates the right documents or included documents from {@link DocumentCollection}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Component
 public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
@@ -60,7 +58,7 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 	private static final Logger logger = LogManager.getLogger(DocumentCacheInvalidationDispatcher.class);
 	private final DocumentCollection documents;
 	private final IViewsRepository viewsRepository;
-	private final Executor async;
+	private final Debouncer<DocumentToInvalidateMap> debouncer;
 
 	public DocumentCacheInvalidationDispatcher(
 			@NonNull final DocumentCollection documents,
@@ -68,15 +66,15 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 	{
 		this.documents = documents;
 		this.viewsRepository = viewsRepository;
-		async = createAsyncExecutor();
-	}
 
-	private static Executor createAsyncExecutor()
-	{
-		final CustomizableThreadFactory asyncThreadFactory = new CustomizableThreadFactory(DocumentCacheInvalidationDispatcher.class.getSimpleName());
-		asyncThreadFactory.setDaemon(true);
-
-		return Executors.newSingleThreadExecutor(asyncThreadFactory);
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		this.debouncer = Debouncer.<DocumentToInvalidateMap>builder()
+				.name(DocumentCacheInvalidationDispatcher.class.getSimpleName() + "-debouncer")
+				.bufferMaxSize(sysConfigBL.getIntValue("webui.DocumentCacheInvalidationDispatcher.debouncer.bufferMaxSize", 500))
+				.delayInMillis(sysConfigBL.getIntValue("webui.DocumentCacheInvalidationDispatcher.debouncer.delayInMillis", 10))
+				.consumer(this::resetNow)
+				.build();
+		logger.info("debouncer: {}", debouncer);
 	}
 
 	@PostConstruct
@@ -113,36 +111,38 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 	private void resetAsync(@NonNull final DocumentToInvalidateMap documentsToInvalidate)
 	{
 		logger.trace("resetAsync: {}", documentsToInvalidate);
-		async.execute(() -> resetNow(documentsToInvalidate));
+		if (documentsToInvalidate.isEmpty())
+		{
+			return;
+		}
+
+		debouncer.add(documentsToInvalidate);
 	}
 
-	private void resetNow(@NonNull final DocumentToInvalidateMap documentsToInvalidate)
+	private void resetNow(@NonNull final List<DocumentToInvalidateMap> documentsToInvalidateList)
 	{
-		logger.trace("resetNow: {}", documentsToInvalidate);
+		final DocumentToInvalidateMap documentsToInvalidate = DocumentToInvalidateMap.combine(documentsToInvalidateList);
+		logger.trace("resetNow: {} DocumentToInvalidate items", documentsToInvalidate.size());
 
-		try (final IAutoCloseable c = documents.getWebsocketPublisher().temporaryCollectOnThisThread())
+		try (final IAutoCloseable ignored = documents.getWebsocketPublisher().temporaryCollectOnThisThread())
 		{
-			documentsToInvalidate.toCollection().forEach(documents::invalidate);
+			documents.invalidateAll(documentsToInvalidate.toCollection());
 		}
 
 		//
 		final TableRecordReferenceSet rootRecords = documentsToInvalidate.getRootRecords();
-		viewsRepository.notifyRecordsChanged(rootRecords);
+		viewsRepository.notifyRecordsChangedNow(rootRecords);
 	}
 
 	private final class CacheInvalidateMultiRequestsCollector
 	{
 		private final String name; // used for debugging
+		@Nullable
 		private DocumentToInvalidateMap documents = new DocumentToInvalidateMap();
 
 		private CacheInvalidateMultiRequestsCollector(final String name)
 		{
 			this.name = name;
-		}
-
-		private CacheInvalidateMultiRequestsCollector()
-		{
-			this.name = "-";
 		}
 
 		public CacheInvalidateMultiRequestsCollector collect(@NonNull final CacheInvalidateMultiRequest multiRequest)
@@ -214,6 +214,11 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 		{
 			final DocumentToInvalidateMap documents = this.documents;
 			this.documents = null; // just to prevent adding more events
+			if (documents == null)
+			{
+				// it was already executed
+				return;
+			}
 
 			logger.trace("Flushing {} collected requests for on `{}`", documents.size(), name);
 

@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import de.metas.util.lang.RepoIdAware;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.compiere.util.Evaluatee;
@@ -149,7 +150,7 @@ import lombok.NonNull;
 		return descriptor;
 	}
 
-	private LookupDataSource getLookupDataSourceOrNull()
+	@Nullable private LookupDataSource getLookupDataSourceOrNull()
 	{
 		return _lookupDataSource.orElse(null);
 	}
@@ -172,9 +173,6 @@ import lombok.NonNull;
 		return _initialValue;
 	}
 
-	/**
-	 * @param initialValue
-	 */
 	@Override
 	public void setInitialValue(final Object initialValue, final IDocumentChangesCollector changesCollector)
 	{
@@ -430,6 +428,16 @@ import lombok.NonNull;
 	}
 
 	@Override
+	public Optional<LookupValue> getLookupValueById(@NonNull final RepoIdAware id)
+	{
+		final LookupDataSource lookupDataSource = getLookupDataSource();
+		final LookupValue value = lookupDataSource.findById(id);
+		lookupValuesStaled = false;
+		return Optional.ofNullable(value);
+	}
+
+
+	@Override
 	public ICalloutField asCalloutField()
 	{
 		if (_calloutField == null)
@@ -458,7 +466,7 @@ import lombok.NonNull;
 	 *
 	 * IMPORTANT: this method is not updating the status, it's only computing it.
 	 */
-	private final DocumentValidStatus computeValidStatus()
+	private DocumentValidStatus computeValidStatus()
 	{
 		// Consider virtual fields as valid because there is nothing we can do about them
 		if (isVirtualField())

@@ -1,15 +1,14 @@
 package de.metas.ui.web.view;
 
-import java.util.List;
-import java.util.Objects;
-
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -37,7 +36,6 @@ import lombok.NonNull;
  * {@link IView}s repository.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IViewsRepository
 {
@@ -47,10 +45,14 @@ public interface IViewsRepository
 
 	ViewLayout getViewLayout(WindowId windowId, JSONViewDataType viewDataType, final ViewProfileId profileId);
 
-	/** @return view or <code>null</code> */
+	/**
+	 * @return view or <code>null</code>
+	 */
 	IView getViewIfExists(ViewId viewId);
 
-	/** @return view; never returns null */
+	/**
+	 * @return view; never returns null
+	 */
 	IView getView(String viewId);
 
 	default IView getView(@NonNull final ViewId viewId)
@@ -69,10 +71,11 @@ public interface IViewsRepository
 		return view;
 	}
 
-	default <T extends IView> T getView(final ViewId viewId, final Class<T> type)
+	default <T extends IView> T getView(
+			final ViewId viewId,
+			@SuppressWarnings("unused") final Class<T> type)
 	{
-		@SuppressWarnings("unchecked")
-		final T view = (T)getView(viewId);
+		@SuppressWarnings("unchecked") final T view = (T)getView(viewId);
 		return view;
 	}
 
@@ -93,12 +96,15 @@ public interface IViewsRepository
 	/**
 	 * Notify all views that given records was changed (asynchronously).
 	 */
-	void notifyRecordsChanged(TableRecordReferenceSet recordRefs);
+	void notifyRecordsChangedAsync(@NonNull TableRecordReferenceSet recordRefs);
 
-	default void notifyRecordChanged(final String tableName, final int recordId)
+	default void notifyRecordsChangedAsync(@NonNull final String tableName, final int recordId)
 	{
-		notifyRecordsChanged(TableRecordReferenceSet.of(tableName, recordId));
+		notifyRecordsChangedAsync(TableRecordReferenceSet.of(tableName, recordId));
 	}
 
+	void notifyRecordsChangedNow(@NonNull TableRecordReferenceSet recordRefs);
+
 	boolean isWatchedByFrontend(ViewId viewId);
+
 }

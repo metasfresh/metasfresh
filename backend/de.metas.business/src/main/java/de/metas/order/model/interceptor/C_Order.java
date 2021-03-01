@@ -200,15 +200,31 @@ public class C_Order
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void unlinkSalesOrders(final I_C_Order order)
 	{
-		final List<I_C_Order> referencingOrderLines = Services.get(IQueryBL.class)
+		final List<I_C_Order> referencingOrders = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order.class, order)
 				.addEqualsFilter(org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID, order.getC_Order_ID())
 				.create()
 				.list(I_C_Order.class);
-		for (final I_C_Order referencingOrderLine : referencingOrderLines)
+		for (final I_C_Order referencingOrder : referencingOrders)
 		{
-			referencingOrderLine.setLink_Order(null);
-			InterfaceWrapperHelper.save(referencingOrderLine);
+			referencingOrder.setLink_Order_ID(-1);
+			InterfaceWrapperHelper.save(referencingOrder);
+		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void unlinkRefProposals(final I_C_Order order)
+	{
+		final List<I_C_Order> referencingOrders = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order.class, order)
+				.addEqualsFilter(org.compiere.model.I_C_Order.COLUMNNAME_Ref_Proposal_ID, order.getC_Order_ID())
+				.create()
+				.list(I_C_Order.class);
+
+		for (final I_C_Order referencingOrder : referencingOrders)
+		{
+			referencingOrder.setRef_Proposal_ID(-1);
+			InterfaceWrapperHelper.save(referencingOrder);
 		}
 	}
 

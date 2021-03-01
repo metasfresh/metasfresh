@@ -1,24 +1,7 @@
 package de.metas.ui.web.window.datatypes;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.upload.WebuiImageId;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -29,9 +12,26 @@ import de.metas.ui.web.window.datatypes.json.JSONRange;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
 
 /*
  * #%L
@@ -65,10 +65,6 @@ public final class DataTypes
 	 * <ul>
 	 * <li>{@link BigDecimal}s are compared excluding the scale (so "1.00" equals with "1.0")
 	 * </ul>
-	 *
-	 * @param value1
-	 * @param value2
-	 * @return
 	 */
 	public static <T> boolean equals(final T value1, final T value2)
 	{
@@ -95,13 +91,14 @@ public final class DataTypes
 	/**
 	 * Converts given value to target class.
 	 *
-	 * @param fieldName field name, needed only for logging purposes
-	 * @param value value to be converted
-	 * @param widgetType widget type (optional)
-	 * @param targetType target type
+	 * @param fieldName        field name, needed only for logging purposes
+	 * @param value            value to be converted
+	 * @param widgetType       widget type (optional)
+	 * @param targetType       target type
 	 * @param lookupDataSource optional Lookup data source, if needed
 	 * @return converted value
 	 */
+	@Nullable
 	public static <T> T convertToValueClass(
 			@NonNull final String fieldName,
 			@Nullable final Object value,
@@ -244,12 +241,14 @@ public final class DataTypes
 	}
 
 	@SuppressWarnings("unchecked")
-	private static <T> T cast(final Object value)
+	@Nullable
+	private static <T> T cast(@Nullable final Object value)
 	{
 		return (T)value;
 	}
 
-	private static String convertToString(final Object value)
+	@Nullable
+	private static String convertToString(@Nullable final Object value)
 	{
 		if (value == null)
 		{
@@ -276,6 +275,7 @@ public final class DataTypes
 		}
 	}
 
+	@Nullable
 	public static Integer convertToInteger(final Object value)
 	{
 		if (value == null)
@@ -311,8 +311,7 @@ public final class DataTypes
 		}
 		else if (value instanceof Map)
 		{
-			@SuppressWarnings("unchecked")
-			final Map<String, Object> map = (Map<String, Object>)value;
+			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 			final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 			return lookupValue.getIdAsInt();
 		}
@@ -328,6 +327,7 @@ public final class DataTypes
 		}
 	}
 
+	@Nullable
 	private static BigDecimal convertToBigDecimal(final Object value)
 	{
 		if (value == null)
@@ -347,6 +347,10 @@ public final class DataTypes
 		{
 			final int valueInt = (int)value;
 			return BigDecimal.valueOf(valueInt);
+		}
+		else if(value instanceof Quantity)
+		{
+			return ((Quantity)value).toBigDecimal();
 		}
 		else
 		{
@@ -384,12 +388,14 @@ public final class DataTypes
 		}
 	}
 
+	@Nullable
 	public static IntegerLookupValue convertToIntegerLookupValue(@Nullable final Object value)
 	{
 		final LookupValueByIdSupplier lookupDataSource = null;
 		return convertToIntegerLookupValue(value, lookupDataSource);
 	}
 
+	@Nullable
 	private static IntegerLookupValue convertToIntegerLookupValue(
 			@Nullable final Object value,
 			@Nullable final LookupValueByIdSupplier lookupDataSource)
@@ -410,8 +416,7 @@ public final class DataTypes
 		}
 		else if (value instanceof Map)
 		{
-			@SuppressWarnings("unchecked")
-			final Map<String, Object> map = (Map<String, Object>)value;
+			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 			final IntegerLookupValue lookupValue = JSONLookupValue.integerLookupValueFromJsonMap(map);
 
 			if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
@@ -491,6 +496,7 @@ public final class DataTypes
 		}
 	}
 
+	@Nullable
 	private static IntegerLookupValue toIntegerLookupValue(final LookupValue lookupValue)
 	{
 		if (lookupValue == null)
@@ -513,12 +519,14 @@ public final class DataTypes
 		}
 	}
 
+	@Nullable
 	public static StringLookupValue convertToStringLookupValue(final Object value)
 	{
 		final LookupValueByIdSupplier lookupDataSource = null;
 		return convertToStringLookupValue(value, lookupDataSource);
 	}
 
+	@Nullable
 	private static StringLookupValue convertToStringLookupValue(
 			@Nullable final Object value,
 			@Nullable final LookupValueByIdSupplier lookupDataSource)
@@ -539,8 +547,7 @@ public final class DataTypes
 		}
 		else if (value instanceof Map)
 		{
-			@SuppressWarnings("unchecked")
-			final Map<String, Object> map = (Map<String, Object>)value;
+			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 			final StringLookupValue lookupValue = JSONLookupValue.stringLookupValueFromJsonMap(map);
 
 			if (Check.isEmpty(lookupValue.getDisplayName(), true) && lookupDataSource != null)
@@ -559,34 +566,51 @@ public final class DataTypes
 		else if (value instanceof String)
 		{
 			final String valueStr = (String)value;
-			if (valueStr.isEmpty())
-			{
-				return null;
-			}
-
-			if (lookupDataSource != null)
-			{
-				final LookupValue lookupValue = lookupDataSource.findById(valueStr);
-				// TODO: what if lookupValue was not found, i.e. is null?
-				return toStringLookupValue(lookupValue);
-			}
-			else
-			{
-				throw new ValueConversionException()
-						.setFromValue(value)
-						.setTargetType(IntegerLookupValue.class)
-						.setLookupDataSource(lookupDataSource);
-			}
+			return convertToStringLookupValue_fromString(valueStr, lookupDataSource);
+		}
+		else if (value instanceof Boolean)
+		{
+			// corner case: happens for Posted field which is generated as Boolean but is defined as List of "_Posted Status".
+			// approach: convert the boolean to Y or N string. We assume our list contains entries for Y and N.
+			final Boolean valueBoolean = (Boolean)value;
+			final String valueStr = StringUtils.ofBoolean(valueBoolean);
+			return convertToStringLookupValue_fromString(valueStr, lookupDataSource);
 		}
 		else
 		{
 			throw new ValueConversionException()
 					.setFromValue(value)
-					.setTargetType(IntegerLookupValue.class)
+					.setTargetType(StringLookupValue.class)
 					.setLookupDataSource(lookupDataSource);
 		}
 	}
 
+	@Nullable
+	private static StringLookupValue convertToStringLookupValue_fromString(
+			@Nullable final String valueStr,
+			@Nullable final LookupValueByIdSupplier lookupDataSource)
+	{
+		if (valueStr == null || valueStr.isEmpty())
+		{
+			return null;
+		}
+
+		if (lookupDataSource != null)
+		{
+			final LookupValue lookupValue = lookupDataSource.findById(valueStr);
+			// TODO: what if lookupValue was not found, i.e. is null?
+			return toStringLookupValue(lookupValue);
+		}
+		else
+		{
+			throw new ValueConversionException()
+					.setFromValue(valueStr)
+					.setTargetType(StringLookupValue.class)
+					.setLookupDataSource(lookupDataSource);
+		}
+	}
+
+	@Nullable
 	private static StringLookupValue toStringLookupValue(final LookupValue lookupValue)
 	{
 		if (lookupValue == null)
@@ -608,6 +632,7 @@ public final class DataTypes
 		}
 	}
 
+	@Nullable
 	private static LookupValuesList convertToLookupValuesList(final Object value)
 	{
 		if (value == null)
@@ -620,13 +645,11 @@ public final class DataTypes
 		}
 		else if (value instanceof LookupValuesList)
 		{
-			final LookupValuesList lookupValuesList = (LookupValuesList)value;
-			return lookupValuesList;
+			return (LookupValuesList)value;
 		}
 		else if (value instanceof Map)
 		{
-			@SuppressWarnings("unchecked")
-			final Map<String, Object> map = (Map<String, Object>)value;
+			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
 			final LookupValuesList lookupValuesList = JSONLookupValuesList.lookupValuesListFromJsonMap(map);
 			if (lookupValuesList.isEmpty())
 			{
@@ -652,6 +675,7 @@ public final class DataTypes
 		}
 	}
 
+	@Nullable
 	private static DateRangeValue convertToDateRangeValue(final Object value)
 	{
 		if (value == null)
@@ -664,8 +688,7 @@ public final class DataTypes
 		}
 		else if (value instanceof Map)
 		{
-			@SuppressWarnings("unchecked")
-			final Map<String, String> map = (Map<String, String>)value;
+			@SuppressWarnings("unchecked") final Map<String, String> map = (Map<String, String>)value;
 			return JSONRange.dateRangeFromJSONMap(map);
 		}
 		else
@@ -674,6 +697,7 @@ public final class DataTypes
 		}
 	}
 
+	@Nullable
 	private static ColorValue convertToColorValue(final Object value)
 	{
 		if (value == null)
@@ -732,32 +756,32 @@ public final class DataTypes
 			appendParametersToMessage();
 		}
 
-		public ValueConversionException setFieldName(final String fieldName)
+		public ValueConversionException setFieldName(@Nullable final String fieldName)
 		{
 			setParameter("fieldName", fieldName);
 			return this;
 		}
 
-		public ValueConversionException setWidgetType(final DocumentFieldWidgetType widgetType)
+		public ValueConversionException setWidgetType(@Nullable final DocumentFieldWidgetType widgetType)
 		{
 			setParameter("widgetType", widgetType);
 			return this;
 		}
 
-		public ValueConversionException setFromValue(final Object fromValue)
+		public ValueConversionException setFromValue(@Nullable final Object fromValue)
 		{
 			setParameter("value", fromValue);
 			setParameter("valueClass", fromValue != null ? fromValue.getClass() : null);
 			return this;
 		}
 
-		public ValueConversionException setTargetType(final Class<?> targetType)
+		public ValueConversionException setTargetType(@Nullable final Class<?> targetType)
 		{
 			setParameter("targetType", targetType);
 			return this;
 		}
 
-		public ValueConversionException setLookupDataSource(final LookupValueByIdSupplier lookupDataSource)
+		public ValueConversionException setLookupDataSource(@Nullable final LookupValueByIdSupplier lookupDataSource)
 		{
 			setParameter("lookupDataSource", lookupDataSource);
 			return this;

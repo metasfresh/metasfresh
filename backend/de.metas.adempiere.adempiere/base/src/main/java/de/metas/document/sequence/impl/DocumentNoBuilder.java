@@ -1,30 +1,29 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.document.sequence.impl;
 
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Supplier;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.MSequence;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
-import org.slf4j.Logger;
-
 import com.google.common.base.Suppliers;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.DocumentSequenceInfo;
@@ -42,12 +41,32 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.SimpleDateFormatThreadLocal;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.MSequence;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Increment and builds document numbers. Use {@link IDocumentNoBuilderFactory} to get an instance.
  *
  * @author tsa
- *
  */
 class DocumentNoBuilder implements IDocumentNoBuilder
 {
@@ -75,11 +94,12 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	}
 
 	@Override
-	public String build() throws DocumentNoBuilderException
+	public @Nullable
+	String build() throws DocumentNoBuilderException
 	{
 		try
 		{
-			return build0();
+			return build0(buildParts());
 		}
 		catch (final Exception e)
 		{
@@ -102,72 +122,105 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		return NO_DOCUMENTNO;
 	}
 
-	private final String build0() throws Exception
+	@Nullable
+	@Override
+	public DocumentNoParts buildParts()
 	{
+		final DocumentSequenceInfo docSeqInfo = getDocumentSequenceInfo();
+
 		//
-		// Get the sequence number that we shall use
-		final String sequenceNo = getSequenceNoToUse();
-		if (Objects.equals(NO_DOCUMENTNO, sequenceNo))
+		// SequenceNo
+		final String sequenceNoEvaluated;
+		{
+			final String sequenceNo = getSequenceNoToUse();
+			if (sequenceNo == null)
+			{
+				return null;
+			}
+
+			final String decimalPattern = docSeqInfo.getDecimalPattern();
+			if (!Check.isEmpty(decimalPattern) && stringCanBeParsedAsInt(sequenceNo))
+			{
+				try
+				{
+					final int seqNoAsInt = Integer.parseInt(sequenceNo);
+					sequenceNoEvaluated = new DecimalFormat(decimalPattern).format(seqNoAsInt);
+				}
+				catch (final Exception e)
+				{
+					throw new DocumentNoBuilderException("Failed formatting sequenceNo '" + sequenceNo + "' using format '" + decimalPattern + "'");
+				}
+			}
+			else
+			{
+				sequenceNoEvaluated = sequenceNo;
+			}
+		}
+
+		//
+		// Prefix
+		final String prefixEvaluated;
+		{
+			final IStringExpression prefix = docSeqInfo.getPrefix();
+			if (!prefix.isNullExpression())
+			{
+				prefixEvaluated = prefix.evaluate(getEvaluationContext(), OnVariableNotFound.Fail);
+			}
+			else
+			{
+				prefixEvaluated = "";
+			}
+		}
+
+		//
+		// Suffix
+		final String suffixEvaluated;
+		{
+			final IStringExpression suffix = docSeqInfo.getSuffix();
+			if (!suffix.isNullExpression())
+			{
+				suffixEvaluated = suffix.evaluate(getEvaluationContext(), OnVariableNotFound.Fail);
+			}
+			else
+			{
+				suffixEvaluated = "";
+			}
+		}
+
+		return DocumentNoParts.builder()
+				.prefix(prefixEvaluated)
+				.suffix(suffixEvaluated)
+				.sequenceNumber(sequenceNoEvaluated)
+				.build();
+
+	}
+
+	@Nullable
+	private String build0(@Nullable final DocumentNoParts documentNoParts)
+	{
+		if (documentNoParts == null)
 		{
 			return NO_DOCUMENTNO;
 		}
 
 		//
 		// Build DocumentNo
-		final StringBuilder documentNo = new StringBuilder();
-
-		//
-		// DocumentNo - Prefix
-		final DocumentSequenceInfo docSeqInfo = getDocumentSequenceInfo();
-		final IStringExpression prefix = docSeqInfo.getPrefix();
-		if (!prefix.isNullExpression())
-		{
-			final String prefixEvaluated = prefix.evaluate(getEvaluationContext(), OnVariableNotFound.Fail);
-			documentNo.append(prefixEvaluated);
-		}
-
-		//
-		// DocumentNo - SequenceNo
-		final String decimalPattern = docSeqInfo.getDecimalPattern();
-		final String sequenceNoFinal;
-		if (!Check.isEmpty(decimalPattern) && stringCanBeParsedAsInt(sequenceNo))
-		{
-			try
-			{
-				final int seqNoAsInt = Integer.parseInt(sequenceNo);
-				sequenceNoFinal = new DecimalFormat(decimalPattern).format(seqNoAsInt);
-			}
-			catch (final Exception e)
-			{
-				throw new DocumentNoBuilderException("Failed formatting sequenceNo '" + sequenceNo + "' using format '" + decimalPattern + "'");
-			}
-		}
-		else
-		{
-			sequenceNoFinal = String.valueOf(sequenceNo);
-		}
-		documentNo.append(sequenceNoFinal);
-
-		//
-		// DocumentNo - Suffix
-		final IStringExpression suffix = docSeqInfo.getSuffix();
-		if (!suffix.isNullExpression())
-		{
-			final String suffixEvaluated = suffix.evaluate(getEvaluationContext(), OnVariableNotFound.Fail);
-			documentNo.append(suffixEvaluated);
-		}
+		final StringBuilder finalDocumentNo = new StringBuilder()
+				.append(documentNoParts.getPrefix())
+				.append(documentNoParts.getSequenceNumber())
+				.append(documentNoParts.getSuffix());
 
 		//
 		// Append preliminary markers if needed
 		if (isUsePreliminaryDocumentNo())
 		{
-			documentNo
+			finalDocumentNo
 					.insert(0, IPreliminaryDocumentNoBuilder.DOCUMENTNO_MARKER_BEGIN)
 					.append(IPreliminaryDocumentNoBuilder.DOCUMENTNO_MARKER_END);
 		}
 
 		//
-		return documentNo.toString();
+		return finalDocumentNo.toString();
 	}
 
 	private String getCalendarYear(final String dateColumn)
@@ -189,12 +242,13 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	/**
 	 * @return sequenceNo to be used or <code>-1</code> in case the DocumentNo generation shall be skipped.
 	 */
+	@Nullable
 	private String getSequenceNoToUse()
 	{
 		// If manual sequenceNo was provided, then uset
 		if (_sequenceNo != null)
 		{
-			logger.debug("getSequenceNoToUse - return sequenceNo={} which was provided via setter");
+			logger.debug("getSequenceNoToUse - return sequenceNo={} which was provided via setter", _sequenceNo);
 			return _sequenceNo;
 		}
 
@@ -204,7 +258,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		final CustomSequenceNoProvider customSequenceNoProvider = docSeqInfo.getCustomSequenceNoProvider();
 		if (customSequenceNoProvider != null)
 		{
-			logger.debug("getSequenceNoToUse - going to invoke customSequenceNoProvider={}" + customSequenceNoProvider);
+			logger.debug("getSequenceNoToUse - going to invoke customSequenceNoProvider={}", customSequenceNoProvider);
 
 			final Evaluatee evalContext = getEvaluationContext();
 			if (!customSequenceNoProvider.isApplicable(evalContext))
@@ -307,10 +361,10 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 		final IMutable<Integer> currentSeq = new Mutable<>(-1);
 		DB.executeUpdateEx(sql,
-				sqlParams.toArray(),
-				trxName,
-				QUERY_TIME_OUT,
-				rs -> currentSeq.setValue(rs.getInt(1)));
+						   sqlParams.toArray(),
+						   trxName,
+						   QUERY_TIME_OUT,
+						   rs -> currentSeq.setValue(rs.getInt(1)));
 
 		return currentSeq.getValue();
 	}
@@ -339,12 +393,13 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		}
 	}
 
+	@Nullable
 	private String getTrxName()
 	{
 		return ITrx.TRXNAME_None;
 	}
 
-	private final boolean isAdempiereSys()
+	private boolean isAdempiereSys()
 	{
 		if (_isAdempiereSys != null)
 		{
@@ -365,7 +420,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	}
 
 	@NonNull
-	private final ClientId getClientId()
+	private ClientId getClientId()
 	{
 		if (_adClientId != null)
 		{
@@ -386,7 +441,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		throw new DocumentNoBuilderException("Cannot find AD_Client_ID");
 	}
 
-	private final OrgId getOrgId()
+	private OrgId getOrgId()
 	{
 		final Evaluatee evalCtx = getEvaluationContext();
 		if (evalCtx != null)
@@ -476,8 +531,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			}
 
 		}
-		final DocumentSequenceInfo documentSeqInfo = documentSequenceDAO.retriveDocumentSequenceInfo(docSequenceId);
-		return documentSeqInfo;
+		return documentSequenceDAO.retriveDocumentSequenceInfo(docSequenceId);
 
 	}
 
@@ -487,7 +541,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	}
 
 	@Override
-	public IDocumentNoBuilder setEvaluationContext(@NonNull Evaluatee evalContext)
+	public IDocumentNoBuilder setEvaluationContext(@NonNull final Evaluatee evalContext)
 	{
 		this._evalContext = evalContext;
 		return this;
@@ -512,7 +566,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		return this;
 	}
 
-	private final boolean isFailOnError()
+	private boolean isFailOnError()
 	{
 		return _failOnError;
 	}

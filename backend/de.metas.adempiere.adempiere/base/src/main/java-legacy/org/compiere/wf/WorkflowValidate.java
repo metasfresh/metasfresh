@@ -16,25 +16,27 @@
  *****************************************************************************/
 package org.compiere.wf;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Workflow;
-import org.compiere.wf.api.IADWorkflowBL;
-
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.workflow.WorkflowId;
+import de.metas.workflow.service.IADWorkflowBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Workflow;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /**
  * Validate Workflow Process
- * 
+ *
  * @author Jorg Janke
  * @version $Id: WorkflowValidate.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
 public class WorkflowValidate extends JavaProcess
 {
-	private int p_AD_Worlflow_ID;
+	private final IADWorkflowBL workflowBL = Services.get(IADWorkflowBL.class);
+
+	private WorkflowId p_AD_Worlflow_ID;
 
 	/**
 	 * Prepare
@@ -42,7 +44,7 @@ public class WorkflowValidate extends JavaProcess
 	@Override
 	protected void prepare()
 	{
-		p_AD_Worlflow_ID = getRecord_ID();
+		p_AD_Worlflow_ID = WorkflowId.ofRepoId(getRecord_ID());
 	}
 
 	@Override
@@ -51,7 +53,7 @@ public class WorkflowValidate extends JavaProcess
 		final I_AD_Workflow workflow = load(p_AD_Worlflow_ID, I_AD_Workflow.class);
 		Check.assumeNotNull(workflow, "Parameter workflow is not null");
 
-		final String errorMsg = Services.get(IADWorkflowBL.class).validateAndGetErrorMsg(workflow);
+		final String errorMsg = workflowBL.validateAndGetErrorMsg(workflow);
 		// Make sure IsValid state is saved
 		InterfaceWrapperHelper.save(workflow);
 

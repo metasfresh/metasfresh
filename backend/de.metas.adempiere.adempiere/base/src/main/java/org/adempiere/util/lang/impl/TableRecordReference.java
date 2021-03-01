@@ -192,6 +192,14 @@ public final class TableRecordReference implements ITableRecordReference
 		return new TableRecordReference(adTableId, recordId);
 	}
 
+	@Nullable
+	public static TableRecordReference ofOrNull(final int adTableId, final int recordId)
+	{
+		return adTableId > 0 && recordId >= 0
+			? new TableRecordReference(adTableId, recordId)
+			: null;
+	}
+
 	@JsonCreator
 	public static TableRecordReference of(@JsonProperty("tableName") final String tableName, @JsonProperty("recordId") final int recordId)
 	{

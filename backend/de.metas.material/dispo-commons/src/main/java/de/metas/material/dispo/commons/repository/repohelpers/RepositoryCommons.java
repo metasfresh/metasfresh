@@ -1,24 +1,6 @@
 package de.metas.material.dispo.commons.repository.repohelpers;
 
-import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
-import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
-
-import java.sql.Timestamp;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.compiere.model.IQuery;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.material.commons.attributes.AttributesKeyPatterns;
 import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -39,6 +21,21 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.compiere.model.IQuery;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.List;
+
+import static de.metas.material.dispo.commons.candidate.IdConstants.UNSPECIFIED_REPO_ID;
+import static de.metas.material.dispo.commons.candidate.IdConstants.toRepoId;
 
 /*
  * #%L
@@ -301,9 +298,6 @@ public class RepositoryCommons
 
 	/**
 	 * filter by demand detail, ignore if there is none!
-	 *
-	 * @param candidate
-	 * @param builder
 	 */
 	private void addDemandDetailToBuilder(
 			@Nullable final DemandDetailsQuery demandDetailsQuery,
@@ -421,9 +415,8 @@ public class RepositoryCommons
 			@NonNull final Class<T> modelClass)
 	{
 		final IQuery<T> candidateDetailQueryBuilder = createCandidateDetailQueryBuilder(candidateRecord, modelClass);
-		final T existingDetail = candidateDetailQueryBuilder
+		return candidateDetailQueryBuilder
 				.firstOnly(modelClass);
-		return existingDetail;
 	}
 
 	public <T> IQuery<T> createCandidateDetailQueryBuilder(

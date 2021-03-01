@@ -286,9 +286,4 @@ public interface AdempiereDatabase
 	 *            are already exception handling and just want to use this method to get whatever info you can (and not to throw yet another exception).
 	 */
 	String getConnectionBackendId(Connection connection, boolean throwDBException);
-
-	/**
-	 * @return SQL code for getting the ROW ID of a given table.
-	 */
-	String getRowIdSql(final String tableName);
 }   // AdempiereDatabase

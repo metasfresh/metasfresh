@@ -11,6 +11,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-material-planning
@@ -53,7 +55,7 @@ public class PPOrderId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final PPOrderId PPOrderId)
+	public static int toRepoId(@Nullable final PPOrderId PPOrderId)
 	{
 		return PPOrderId != null ? PPOrderId.getRepoId() : -1;
 	}

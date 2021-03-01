@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
 
 import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.Env;
@@ -371,6 +372,7 @@ public final class Language implements Serializable
 	 * @return Base Language
 	 * @throws AdempiereException if the base language was not already configured
 	 */
+	@NonNull
 	public static String getBaseAD_Language()
 	{
 		// return s_languages[0].getAD_Language();

@@ -8,6 +8,7 @@ import { completeRequest, createInstance } from '../../actions/GenericActions';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
 
 import { parseToDisplay } from '../../utils/documentListHelper';
+
 import RawWidget from '../widget/RawWidget';
 
 class TableQuickInput extends Component {

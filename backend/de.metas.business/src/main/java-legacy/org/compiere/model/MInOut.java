@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Properties;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.report.DocumentReportService;
+import de.metas.report.ReportResultData;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
@@ -39,7 +41,8 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.apache.commons.collections4.comparators.ComparatorChain;
 import org.compiere.Adempiere;
-import org.compiere.print.ReportEngine;
+import org.compiere.SpringContextHolder;
+import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -639,41 +642,13 @@ public class MInOut extends X_M_InOut implements IDocument
 		return dt.getName() + " " + getDocumentNo();
 	} // getDocumentInfo
 
-	/**
-	 * Create PDF
-	 *
-	 * @return File or null
-	 */
 	@Override
 	public File createPDF()
 	{
-		try
-		{
-			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
-			return createPDF(temp);
-		}
-		catch (final Exception e)
-		{
-			log.error("Could not create PDF", e);
-		}
-		return null;
-	} // getPDF
-
-	/**
-	 * Create PDF file
-	 *
-	 * @param file output file
-	 * @return file if success
-	 */
-	public File createPDF(final File file)
-	{
-		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.SHIPMENT, getM_InOut_ID(), get_TrxName());
-		if (re == null)
-		{
-			return null;
-		}
-		return re.getPDF(file);
-	} // createPDF
+		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
+		final ReportResultData report = documentReportService.createStandardDocumentReportData(getCtx(), StandardDocumentReportType.SHIPMENT, getM_InOut_ID());
+		return report.writeToTemporaryFile(get_TableName() + get_ID());
+	}
 
 	/**
 	 * Get Lines of Shipment

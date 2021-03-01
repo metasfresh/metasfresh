@@ -85,11 +85,11 @@ class MasterWidget extends PureComponent {
       patch,
       rowId,
       tabId,
-      onChange,
       relativeDocId,
       isAdvanced = false,
       viewId,
       updatePropertyValue,
+      updateRow,
     } = this.props;
     value = formatValueByWidgetType({ widgetType, value });
 
@@ -133,8 +133,10 @@ class MasterWidget extends PureComponent {
       viewId,
       isEdit
     );
+
+    // flash the row to indicate a change
+    updateRow && updateRow();
     this.setState({ edited: false });
-    onChange && onChange(ret); //callback
 
     return ret;
   };
@@ -208,7 +210,13 @@ class MasterWidget extends PureComponent {
   handleProcess = (caption, buttonProcessId, tabId, rowId) => {
     const { openModal } = this.props;
 
-    openModal(caption, buttonProcessId, 'process', tabId, rowId, false, false);
+    openModal({
+      title: caption,
+      windowId: buttonProcessId,
+      modalType: 'process',
+      tabId,
+      rowId,
+    });
   };
 
   /**
@@ -217,17 +225,23 @@ class MasterWidget extends PureComponent {
    * @param {*} field
    */
   handleZoomInto = (field) => {
-    const { dataId, windowId, tabId, rowId } = this.props;
+    const { dataId, windowId, tabId, rowId, entity } = this.props;
+    const fallBackEntity = entity ? entity : 'window';
 
-    getZoomIntoWindow('window', windowId, dataId, tabId, rowId, field).then(
-      (res) => {
-        const url = `/window/${res.data.documentPath.windowId}/${
-          res.data.documentPath.documentId
-        }`;
+    getZoomIntoWindow(
+      fallBackEntity,
+      windowId,
+      dataId,
+      tabId,
+      rowId,
+      field
+    ).then((res) => {
+      const url = `/${fallBackEntity}/${res.data.documentPath.windowId}/${
+        res.data.documentPath.documentId
+      }`;
 
-        res && res.data && window.open(url, '_blank');
-      }
-    );
+      res && res.data && window.open(url, '_blank');
+    });
   };
 
   /**
@@ -297,12 +311,12 @@ MasterWidget.propTypes = {
   widgetData: PropTypes.array,
   widgetType: PropTypes.string,
   patch: PropTypes.func,
-  onChange: PropTypes.func,
   relativeDocId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isAdvanced: PropTypes.bool,
   entity: PropTypes.string,
   precision: PropTypes.bool,
   clearValue: PropTypes.bool,
+  updateRow: PropTypes.func,
 };
 
 export default MasterWidget;

@@ -60,6 +60,12 @@ public class DDOrderBL implements IDDOrderBL
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
 	@Override
+	public I_DD_Order getById(final int ddOrderId)
+	{
+		return Services.get(IDDOrderDAO.class).getById(ddOrderId);
+	}
+
+	@Override
 	public BigDecimal getQtyToReceive(final I_DD_OrderLine ddOrderLine)
 	{
 		final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt = InterfaceWrapperHelper.create(ddOrderLine, I_DD_OrderLine_Or_Alternative.class);

@@ -2,6 +2,7 @@ package de.metas.impexp;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import org.adempiere.ad.table.api.AdTableId;
@@ -54,6 +55,7 @@ class ImportFormatBuilder
 
 	private String name;
 	private boolean manualImport;
+	private Charset charset;
 
 	private final ArrayList<I_AD_ImpFormat_Row> columnRecords = new ArrayList<>();
 
@@ -69,6 +71,7 @@ class ImportFormatBuilder
 		impFormatRecord.setAD_Table_ID(importTableId.getRepoId());
 		impFormatRecord.setFormatType(ImpFormatType.COMMA_SEPARATED.getCode());
 		impFormatRecord.setIsManualImport(manualImport);
+		impFormatRecord.setFileCharset(charset.name());
 		saveRecord(impFormatRecord);
 
 		for (I_AD_ImpFormat_Row colRecord : columnRecords)
@@ -89,6 +92,12 @@ class ImportFormatBuilder
 	public ImportFormatBuilder manualImport(boolean manualImport)
 	{
 		this.manualImport = manualImport;
+		return this;
+	}
+
+	public ImportFormatBuilder charset(final Charset charset)
+	{
+		this.charset = charset;
 		return this;
 	}
 

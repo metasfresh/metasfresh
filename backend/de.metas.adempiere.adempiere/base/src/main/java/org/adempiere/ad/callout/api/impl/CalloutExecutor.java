@@ -67,15 +67,12 @@ public final class CalloutExecutor implements ICalloutExecutor
 
 	private CalloutExecutor(
 			final String tableName,
-			final TableCalloutsMap tableCalloutsMap,
+			@NonNull final TableCalloutsMap tableCalloutsMap,
 			final Set<String> executionBlackListIds)
 	{
-		super();
-
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 		this.tableName = tableName;
 
-		Check.assumeNotNull(tableCalloutsMap, "Parameter tableCalloutsMap is not null");
 		this.tableCalloutsMap = tableCalloutsMap;
 
 		if (executionBlackListIds == null)
@@ -122,10 +119,8 @@ public final class CalloutExecutor implements ICalloutExecutor
 	}
 
 	@Override
-	public void executeAll(final Function<String, ICalloutField> calloutFieldsSupplier)
+	public void executeAll(@NonNull final Function<String, ICalloutField> calloutFieldsSupplier)
 	{
-		Check.assumeNotNull(calloutFieldsSupplier, "Parameter calloutFieldsSupplier is not null");
-
 		logger.trace("executeAll: Begin executing all callouts for {} using fields supplier: {}", this, calloutFieldsSupplier);
 
 		//

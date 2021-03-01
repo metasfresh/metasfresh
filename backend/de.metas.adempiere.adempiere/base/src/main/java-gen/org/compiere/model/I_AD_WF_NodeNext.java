@@ -1,221 +1,308 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_WF_NodeNext
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
+ *  @author metasfresh (generated) 
  */
 public interface I_AD_WF_NodeNext 
 {
 
-    /** TableName=AD_WF_NodeNext */
-    public static final String Table_Name = "AD_WF_NodeNext";
+	String Table_Name = "AD_WF_NodeNext";
 
-    /** AD_Table_ID=131 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=131 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 6 - System - Client 
-     */
-    BigDecimal accessLevel = BigDecimal.valueOf(6);
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Client_ID();
 
-    /** Load Meta Data */
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set Nächster Knoten.
+	 * Next Node in workflow
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_WF_Next_ID (int AD_WF_Next_ID);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get Nächster Knoten.
+	 * Next Node in workflow
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_WF_Next_ID();
 
-    /** Column name AD_WF_Next_ID */
-    public static final String COLUMNNAME_AD_WF_Next_ID = "AD_WF_Next_ID";
+	String COLUMNNAME_AD_WF_Next_ID = "AD_WF_Next_ID";
 
-	/** Set Next Node.
-	  * Next Node in workflow
-	  */
-	public void setAD_WF_Next_ID (int AD_WF_Next_ID);
+	/**
+	 * Set Knoten.
+	 * Workflow Node (activity), step or process
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_WF_Node_ID (int AD_WF_Node_ID);
 
-	/** Get Next Node.
-	  * Next Node in workflow
-	  */
-	public int getAD_WF_Next_ID();
+	/**
+	 * Get Knoten.
+	 * Workflow Node (activity), step or process
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_WF_Node_ID();
 
-	public I_AD_WF_Node getAD_WF_Next() throws RuntimeException;
+	String COLUMNNAME_AD_WF_Node_ID = "AD_WF_Node_ID";
 
-    /** Column name AD_WF_Node_ID */
-    public static final String COLUMNNAME_AD_WF_Node_ID = "AD_WF_Node_ID";
+	/**
+	 * Set Node Transition.
+	 * Workflow Node Transition
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_WF_NodeNext_ID (int AD_WF_NodeNext_ID);
 
-	/** Set Node.
-	  * Workflow Node (activity), step or process
-	  */
-	public void setAD_WF_Node_ID (int AD_WF_Node_ID);
+	/**
+	 * Get Node Transition.
+	 * Workflow Node Transition
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_WF_NodeNext_ID();
 
-	/** Get Node.
-	  * Workflow Node (activity), step or process
-	  */
-	public int getAD_WF_Node_ID();
+	ModelColumn<I_AD_WF_NodeNext, Object> COLUMN_AD_WF_NodeNext_ID = new ModelColumn<>(I_AD_WF_NodeNext.class, "AD_WF_NodeNext_ID", null);
+	String COLUMNNAME_AD_WF_NodeNext_ID = "AD_WF_NodeNext_ID";
 
-	public I_AD_WF_Node getAD_WF_Node() throws RuntimeException;
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
 
-    /** Column name AD_WF_NodeNext_ID */
-    public static final String COLUMNNAME_AD_WF_NodeNext_ID = "AD_WF_NodeNext_ID";
+	ModelColumn<I_AD_WF_NodeNext, Object> COLUMN_Created = new ModelColumn<>(I_AD_WF_NodeNext.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
-	/** Set Node Transition.
-	  * Workflow Node Transition
-	  */
-	public void setAD_WF_NodeNext_ID (int AD_WF_NodeNext_ID);
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
 
-	/** Get Node Transition.
-	  * Workflow Node Transition
-	  */
-	public int getAD_WF_NodeNext_ID();
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	ModelColumn<I_AD_WF_NodeNext, Object> COLUMN_Description = new ModelColumn<>(I_AD_WF_NodeNext.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
-
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
-
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription (String Description);
-
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
-
-    /** Column name EntityType */
-    public static final String COLUMNNAME_EntityType = "EntityType";
-
-	/** Set Entity Type.
-	  * Dictionary Entity Type;
+	/**
+	 * Set Entitäts-Art.
+	 * Dictionary Entity Type;
  Determines ownership and synchronization
-	  */
-	public void setEntityType (String EntityType);
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setEntityType (java.lang.String EntityType);
 
-	/** Get Entity Type.
-	  * Dictionary Entity Type;
+	/**
+	 * Get Entitäts-Art.
+	 * Dictionary Entity Type;
  Determines ownership and synchronization
-	  */
-	public String getEntityType();
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getEntityType();
 
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_AD_WF_NodeNext, Object> COLUMN_EntityType = new ModelColumn<>(I_AD_WF_NodeNext.class, "EntityType", null);
+	String COLUMNNAME_EntityType = "EntityType";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
 
-    /** Column name IsStdUserWorkflow */
-    public static final String COLUMNNAME_IsStdUserWorkflow = "IsStdUserWorkflow";
+	ModelColumn<I_AD_WF_NodeNext, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_WF_NodeNext.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Std User Workflow.
-	  * Standard Manual User Approval Workflow
-	  */
-	public void setIsStdUserWorkflow (boolean IsStdUserWorkflow);
+	/**
+	 * Set Std User Workflow.
+	 * Standard Manual User Approval Workflow
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsStdUserWorkflow (boolean IsStdUserWorkflow);
 
-	/** Get Std User Workflow.
-	  * Standard Manual User Approval Workflow
-	  */
-	public boolean isStdUserWorkflow();
+	/**
+	 * Get Std User Workflow.
+	 * Standard Manual User Approval Workflow
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isStdUserWorkflow();
 
-    /** Column name SeqNo */
-    public static final String COLUMNNAME_SeqNo = "SeqNo";
+	ModelColumn<I_AD_WF_NodeNext, Object> COLUMN_IsStdUserWorkflow = new ModelColumn<>(I_AD_WF_NodeNext.class, "IsStdUserWorkflow", null);
+	String COLUMNNAME_IsStdUserWorkflow = "IsStdUserWorkflow";
 
-	/** Set Sequence.
-	  * Method of ordering records;
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
  lowest number comes first
-	  */
-	public void setSeqNo (int SeqNo);
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
 
-	/** Get Sequence.
-	  * Method of ordering records;
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
  lowest number comes first
-	  */
-	public int getSeqNo();
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
 
-    /** Column name TransitionCode */
-    public static final String COLUMNNAME_TransitionCode = "TransitionCode";
+	ModelColumn<I_AD_WF_NodeNext, Object> COLUMN_SeqNo = new ModelColumn<>(I_AD_WF_NodeNext.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
-	/** Set Transition Code.
-	  * Code resulting in TRUE of FALSE
-	  */
-	public void setTransitionCode (String TransitionCode);
+	/**
+	 * Set Transition Code.
+	 * Code resulting in TRUE of FALSE
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTransitionCode (@Nullable java.lang.String TransitionCode);
 
-	/** Get Transition Code.
-	  * Code resulting in TRUE of FALSE
-	  */
-	public String getTransitionCode();
+	/**
+	 * Get Transition Code.
+	 * Code resulting in TRUE of FALSE
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTransitionCode();
 
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_AD_WF_NodeNext, Object> COLUMN_TransitionCode = new ModelColumn<>(I_AD_WF_NodeNext.class, "TransitionCode", null);
+	String COLUMNNAME_TransitionCode = "TransitionCode";
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	ModelColumn<I_AD_WF_NodeNext, Object> COLUMN_Updated = new ModelColumn<>(I_AD_WF_NodeNext.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

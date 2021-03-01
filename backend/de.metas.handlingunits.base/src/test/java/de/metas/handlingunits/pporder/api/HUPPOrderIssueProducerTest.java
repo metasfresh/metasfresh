@@ -1,5 +1,70 @@
 package de.metas.handlingunits.pporder.api;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.engine.IDocument;
+import de.metas.event.log.EventLogService;
+import de.metas.event.log.EventLogsRepository;
+import de.metas.handlingunits.AbstractHUTest;
+import de.metas.handlingunits.HUTestHelper;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.StaticHUAssert;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.model.I_PP_Cost_Collector;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
+import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
+import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import de.metas.material.planning.pporder.PPOrderId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.api.CostCollectorType;
+import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderPlanningStatus;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.mrp.api.impl.MRPTestDataSimple;
+import org.eevolution.mrp.api.impl.MRPTestHelper;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.List;
+
 import static de.metas.business.BusinessTestHelper.createProduct;
 import static de.metas.business.BusinessTestHelper.createUOM;
 import static de.metas.business.BusinessTestHelper.createUOMConversion;
@@ -31,79 +96,9 @@ import static org.mockito.Mockito.mock;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.List;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.event.log.EventLogService;
-import de.metas.event.log.EventLogsRepository;
-import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.eevolution.api.CostCollectorType;
-import org.eevolution.api.IPPCostCollectorDAO;
-import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.api.PPCostCollectorId;
-import org.eevolution.api.PPOrderPlanningStatus;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.X_PP_Product_BOMLine;
-import org.eevolution.mrp.api.impl.MRPTestDataSimple;
-import org.eevolution.mrp.api.impl.MRPTestHelper;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.document.engine.IDocument;
-import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.HuPackingInstructionsVersionId;
-import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.StaticHUAssert;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI;
-import de.metas.handlingunits.model.I_M_HU_Storage;
-import de.metas.handlingunits.model.I_PP_Cost_Collector;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 @ExtendWith(AdempiereTestWatcher.class)
 public class HUPPOrderIssueProducerTest extends AbstractHUTest
 {
-	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 
 	private MRPTestDataSimple masterData;
@@ -177,9 +172,9 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	}
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29#Result_of_IT1
-	 * @task http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
-	 * @task http://dewiki908/mediawiki/index.php/07758_Tweak_of_Issueing_Method_Folie_%28100023269700%29
+	 * Task http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29#Result_of_IT1
+	 * Task http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
+	 * Task http://dewiki908/mediawiki/index.php/07758_Tweak_of_Issueing_Method_Folie_%28100023269700%29
 	 */
 	@Test
 	public void test_IssueOnlyForReceived()
@@ -192,7 +187,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 					.product(pFolie).uom(uomMillimeter)
 					.setQtyBOM(new BigDecimal(260))
 					.setScrap(new BigDecimal("10"))
-					.setIssueMethod(X_PP_Product_BOMLine.ISSUEMETHOD_IssueOnlyForReceived)
+					.setIssueMethod(BOMComponentIssueMethod.IssueOnlyForReceived)
 					.endLine()
 				.build();
 		//@formatter:on
@@ -261,7 +256,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 					.product(pFolie).uom(uomMillimeter)
 					.setQtyBOM(new BigDecimal(260))
 					.setScrap(new BigDecimal("10"))
-					.setIssueMethod(X_PP_Product_BOMLine.ISSUEMETHOD_IssueOnlyForReceived)
+					.setIssueMethod(BOMComponentIssueMethod.IssueOnlyForReceived)
 					.endLine()
 				.build();
 		//@formatter:on
@@ -374,7 +369,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 
 			if (candidate != null)
 			{
-				final PPCostCollectorId costCollectorId = PPCostCollectorId.ofRepoIdOrNull(candidate.getPP_Cost_Collector_ID());
+				final PPCostCollectorId costCollectorId = PPCostCollectorId.ofRepoId(candidate.getPP_Cost_Collector_ID());
 				final I_PP_Cost_Collector costCollector = Services.get(IPPCostCollectorDAO.class).getById(costCollectorId, I_PP_Cost_Collector.class);
 				costCollectors = ImmutableList.of(costCollector);
 			}
@@ -439,7 +434,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 					.product(pFolie).uom(uomMillimeter)
 					.setQtyBOM(new BigDecimal(260))
 					.setScrap(new BigDecimal("10"))
-					.setIssueMethod(X_PP_Product_BOMLine.ISSUEMETHOD_Backflush)
+					.setIssueMethod(BOMComponentIssueMethod.Backflush)
 					.endLine()
 				.build();
 		//@formatter:on
@@ -533,7 +528,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 					.product(pFolie).uom(uomMillimeter)
 					.setQtyBOM(new BigDecimal(260))
 					.setScrap(new BigDecimal("10"))
-					.setIssueMethod(X_PP_Product_BOMLine.ISSUEMETHOD_Backflush)
+					.setIssueMethod(BOMComponentIssueMethod.Backflush)
 					.endLine()
 				.build();
 		//@formatter:on
@@ -592,7 +587,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			assertThat(ppOrderQty.getC_UOM_ID()).isEqualTo(uomMillimeter.getC_UOM_ID());
 		});
 
-		hus.forEach(hu -> refresh(hu));
+		hus.forEach(InterfaceWrapperHelper::refresh);
 		assertThat(hus).allSatisfy(hu -> assertThat(hu.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Issued));
 	}
 
@@ -628,7 +623,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 			assertThat(ppOrderQty.getC_UOM_ID()).isEqualTo(uomMillimeter.getC_UOM_ID());
 		});
 
-		hus.forEach(hu -> refresh(hu));
+		hus.forEach(InterfaceWrapperHelper::refresh);
 		assertThat(hus).allSatisfy(hu -> assertThat(hu.getHUStatus()).isEqualTo(X_M_HU.HUSTATUS_Issued));
 	}
 
@@ -642,13 +637,12 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 					.product(pFolie).uom(uomMillimeter)
 					.setQtyBOM(new BigDecimal(260))
 					.setScrap(new BigDecimal("10"))
-					.setIssueMethod(X_PP_Product_BOMLine.ISSUEMETHOD_Issue)
+					.setIssueMethod(BOMComponentIssueMethod.Issue)
 					.endLine()
 				.build();
 		//@formatter:on
 
-		final I_PP_Order ppOrder = createPP_OrderAndValidateBomLine("5000", productBOM);
-		return ppOrder;
+		return createPP_OrderAndValidateBomLine("5000", productBOM);
 	}
 
 	private I_M_HU createSimpleHuWithFolie(final String qtyOfFolie)

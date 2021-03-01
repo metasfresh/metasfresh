@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
-import de.metas.rest_api.bpartner.ContactRestEndpoint;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
 import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
@@ -66,19 +65,18 @@ import lombok.NonNull;
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API + "/contact")
 @RestController
 @Profile(Profiles.PROFILE_App)
-public class ContactRestController implements ContactRestEndpoint
+public class ContactRestController
 {
-
 	private final BPartnerEndpointService bpartnerEndpointService;
 	private final JsonServiceFactory jsonServiceFactory;
 	private final JsonRequestConsolidateService jsonRequestConsolidateService;
 
 	public ContactRestController(
-			@NonNull final BPartnerEndpointService bpIbPartnerEndpointservice,
+			@NonNull final BPartnerEndpointService bpIbPartnerEndpointService,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService)
 	{
-		this.bpartnerEndpointService = bpIbPartnerEndpointservice;
+		this.bpartnerEndpointService = bpIbPartnerEndpointService;
 		this.jsonServiceFactory = jsonServiceFactory;
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
 	}
@@ -90,7 +88,6 @@ public class ContactRestController implements ContactRestEndpoint
 			@ApiResponse(code = 404, message = "The resource you were trying to reach is not found")
 	})
 	@GetMapping("{contactIdentifier}")
-	@Override
 	public ResponseEntity<JsonResponseContact> retrieveContact(
 			@ApiParam(required = true, value = CONTACT_IDENTIFIER_DOC) //
 			@PathVariable("contactIdentifier") //
@@ -109,7 +106,6 @@ public class ContactRestController implements ContactRestEndpoint
 			@ApiResponse(code = 404, message = "There is no page for the given 'next' value")
 	})
 	@GetMapping
-	@Override
 	public ResponseEntity<JsonResponseContactList> retrieveContactsSince(
 
 			@ApiParam(value = SINCE_DOC, allowEmptyValue = true) //
@@ -131,7 +127,6 @@ public class ContactRestController implements ContactRestEndpoint
 	})
 	@ApiOperation("Create of update a contact for a particular bpartner. If the contact exists, then the properties that are *not* specified are left untouched.")
 	@PutMapping
-	@Override
 	public ResponseEntity<JsonResponseUpsert> createOrUpdateContact(
 			@RequestBody @NonNull final JsonRequestContactUpsert contacts)
 	{
@@ -156,7 +151,7 @@ public class ContactRestController implements ContactRestEndpoint
 	private static <T> ResponseEntity<T> toResponseEntity(@NonNull final Optional<T> optionalResult)
 	{
 		return optionalResult
-				.map(result -> ResponseEntity.ok(result))
+				.map(ResponseEntity::ok)
 				.orElseGet(() -> ResponseEntity.notFound().build());
 	}
 }
