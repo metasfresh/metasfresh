@@ -143,7 +143,7 @@ import de.metas.util.Check;
 				if (optionsCtx.getSoTrx().isSales()
 						&& (X_C_DocType.DOCSUBTYPE_Quotation.equals(orderType)
 						|| X_C_DocType.DOCSUBTYPE_Proposal.equals(orderType)
-						|| (X_C_DocType.DOCSUBTYPE_Rahmenvertrag.equals(orderType))))
+						|| (X_C_DocType.DOCSUBTYPE_FrameAgrement.equals(orderType))))
 				{
 					optionsCtx.setDocActionToUse(IDocument.ACTION_Prepare);
 				}
