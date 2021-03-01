@@ -41,7 +41,6 @@
         <itext.version>2.1.7.js6</itext.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
-<!--        <spring-boot-admin.version>1.5.0</spring-boot-admin.version>-->
         <spring-boot-admin.version>2.3.1</spring-boot-admin.version>
         
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
