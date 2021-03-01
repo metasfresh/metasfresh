@@ -82,14 +82,14 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 
 		{
 			//
-			// Excluding docTypes. We ignore for Proposals, Quotations, POS-Orders (SO) or delivery RMAs (PO)
+			// Excluding docTypes. We ignore for Proposals, Quotations,Frame Agreement, POS-Orders (SO) or delivery RMAs (PO)
 			final ICompositeQueryFilter<I_C_DocType> docTypeFilter = queryBL.createCompositeQueryFilter(I_C_DocType.class);
 			docTypeFilter.setJoinOr();
 
 			final ICompositeQueryFilter<I_C_DocType> docTypeFilterSO = queryBL.createCompositeQueryFilter(I_C_DocType.class);
 			docTypeFilterSO.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, X_C_DocType.DOCBASETYPE_SalesOrder);
 			docTypeFilterSO.addFilter(NotQueryFilter.of(new InArrayQueryFilter<I_C_DocType>(I_C_DocType.COLUMNNAME_DocSubType, X_C_DocType.DOCSUBTYPE_Proposal,
-					X_C_DocType.DOCSUBTYPE_Quotation, X_C_DocType.DOCSUBTYPE_POSOrder)));
+					X_C_DocType.DOCSUBTYPE_Quotation, X_C_DocType.DOCSUBTYPE_POSOrder, X_C_DocType.DOCSUBTYPE_FrameAgrement)));
 			docTypeFilter.addFilter(docTypeFilterSO);
 
 			final ICompositeQueryFilter<I_C_DocType> docTypeFilterPO = queryBL.createCompositeQueryFilter(I_C_DocType.class);
