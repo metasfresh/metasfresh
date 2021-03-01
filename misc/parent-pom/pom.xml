@@ -605,22 +605,19 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                         <!-- itext-2.1.7 has two different versions as dependences -->
                                         <ignoreClass>org.bouncycastle.*</ignoreClass>
 
-                                        <!-- org.jboss.client:jbossall-client and partially geronimo specs -->
                                         <ignoreClass>javax.annotation.*</ignoreClass>
                                         <ignoreClass>javax.ejb.*</ignoreClass>
                                         <ignoreClass>javax.management.j2ee.*</ignoreClass>
                                         <ignoreClass>javax.xml.*</ignoreClass>
                                         <ignoreClass>javax.transaction.*</ignoreClass>
-
+                                        <ignoreClass>javax.activation.*</ignoreClass>
+                                        
                                         <ignoreClass>org.apache.*</ignoreClass>
                                         <ignoreClass>org.codehaus.*</ignoreClass>
                                         <ignoreClass>hidden.org.codehaus.*</ignoreClass>
                                         <ignoreClass>org.junit.*</ignoreClass>
                                         <ignoreClass>org.w3c.*</ignoreClass>
                                         <ignoreClass>org.xml.*</ignoreClass>
-
-                                        <!-- this class originates from org.zkoss.calendar:calendar:jar:1.0.0-RC -->
-                                        <ignoreClass>org.zkoss.calendar.render.CalendarsDefault</ignoreClass>
 
                                         <!-- the following are camel/servicemix related dependencies -->
                                         <!-- Found in, both are dependencies of mylin-smooks-all org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile
