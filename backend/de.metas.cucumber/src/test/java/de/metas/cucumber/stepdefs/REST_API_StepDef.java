@@ -63,6 +63,15 @@ public class REST_API_StepDef
 		testContext.setApiResponse(apiResponse);
 	}
 
+	@When("the metasfresh REST-API endpoint path {string} receives a {string} request")
+	public void metasfresh_rest_api_endpoint_api_external_ref_receives_get_request_without_payload(
+			final String endpointPath,
+			final String verb) throws IOException
+	{
+		apiResponse = RESTUtil.performHTTPRequest(endpointPath, verb, null, userAuthToken);
+		testContext.setApiResponse(apiResponse);
+	}
+
 	@Then("the metasfresh REST-API responds with")
 	public void the_metasfresh_REST_API_responds_with(@NonNull final String expectedResponse) throws JSONException
 	{

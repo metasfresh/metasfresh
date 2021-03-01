@@ -1,14 +1,14 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 /** Generated Interface for M_Product
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
-public interface I_M_Product
+@SuppressWarnings("unused")
+public interface I_M_Product 
 {
 
 	String Table_Name = "M_Product";
@@ -451,6 +451,29 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_GuaranteeDaysMin = new ModelColumn<>(I_M_Product.class, "GuaranteeDaysMin", null);
 	String COLUMNNAME_GuaranteeDaysMin = "GuaranteeDaysMin";
+
+	/**
+	 * Set GuaranteeMonths.
+	 * Guarantee time in months
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGuaranteeMonths (@Nullable java.lang.String GuaranteeMonths);
+
+	/**
+	 * Get GuaranteeMonths.
+	 * Guarantee time in months
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getGuaranteeMonths();
+
+	ModelColumn<I_M_Product, Object> COLUMN_GuaranteeMonths = new ModelColumn<>(I_M_Product.class, "GuaranteeMonths", null);
+	String COLUMNNAME_GuaranteeMonths = "GuaranteeMonths";
 
 	/**
 	 * Set Haddex Check.

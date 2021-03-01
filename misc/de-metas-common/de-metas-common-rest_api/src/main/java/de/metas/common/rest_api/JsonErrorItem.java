@@ -22,10 +22,6 @@
 
 package de.metas.common.rest_api;
 
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -42,7 +38,10 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
-@ApiModel(description = "Error informations")
+import javax.annotation.Nullable;
+import java.util.Map;
+
+@ApiModel(description = "Error information")
 @Value
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonDeserialize(builder = JsonErrorItem.JsonErrorItemBuilder.class)
