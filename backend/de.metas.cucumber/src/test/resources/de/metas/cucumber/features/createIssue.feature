@@ -7,7 +7,7 @@ Feature: issue creation using metasfresh api
     And I_AD_PInstance with id '123123' is created
 
   Scenario: The request is good and the issue is created
-    When the metasfresh REST-API endpoint path 'api/process/123123/externalstatus/error' receives a 'POST' request with the payload
+    When the metasfresh REST-API endpoint path 'api/externalsystem/123123/externalstatus/error' receives a 'POST' request with the payload
 """
 {
 	"errors": [

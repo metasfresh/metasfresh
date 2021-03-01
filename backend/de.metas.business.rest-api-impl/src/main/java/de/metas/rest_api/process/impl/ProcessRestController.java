@@ -23,13 +23,9 @@
 package de.metas.rest_api.process.impl;
 
 import de.metas.Profiles;
-import de.metas.common.rest_api.CreatePInstanceLogRequest;
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.issue.JsonCreateIssueResponse;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
-import de.metas.process.PInstanceId;
 import de.metas.process.ProcessBasicInfo;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
@@ -48,8 +44,6 @@ import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Process;
@@ -151,35 +145,6 @@ public class ProcessRestController
 				.ok()
 				.contentType(MediaType.APPLICATION_JSON_UTF8)
 				.body(response);
-	}
-
-	@ApiOperation("Create an AD_Issue. Note: it's not necessary that the process in question was started by the `invoke` endpoint.")
-	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully created issue"),
-			@ApiResponse(code = 401, message = "You are not authorized to create new issue"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request body could not be processed")
-	})
-	@PostMapping(path = "{AD_PInstance_ID}/externalstatus/error", consumes = "application/json", produces = "application/json")
-	public ResponseEntity<JsonCreateIssueResponse> handleError(@RequestBody @NonNull final JsonError request, @PathVariable final Integer AD_PInstance_ID)
-	{
-		final JsonCreateIssueResponse issueResponse = processService.createIssue(request, PInstanceId.ofRepoId(AD_PInstance_ID));
-		return ResponseEntity.ok(issueResponse);
-	}
-
-	@ApiOperation("Store external AD_PInstance logs")
-	@ApiResponses(value = {
-			@ApiResponse(code = 200, message = "Successfully stored external AD_PInstance logs"),
-			@ApiResponse(code = 401, message = "You are not authorized to store AD_PInstance logs"),
-			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
-			@ApiResponse(code = 422, message = "The request body could not be processed")
-	})
-
-	@PostMapping(path = "{adPInstanceId}/externalstatus/message", consumes = "application/json")
-	public ResponseEntity<?> handleLogs(@RequestBody @NonNull final CreatePInstanceLogRequest request, @PathVariable final Integer adPInstanceId)
-	{
-		processService.storeExternalPinstanceLog(request, PInstanceId.ofRepoId(adPInstanceId));
-		return ResponseEntity.ok().build();
 	}
 
 	private ResponseEntity<?> getResponse(@NonNull final ProcessExecutionResult processExecutionResult)
