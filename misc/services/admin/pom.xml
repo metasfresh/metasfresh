@@ -51,6 +51,16 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                    <source>14</source>
+                    <target>14</target>
+                </configuration>
+            </plugin>
+            
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
@@ -102,8 +112,7 @@
                     </to>
                     <from>
                         <!-- specify the exact base image for a reproducible build-->
-                        <!--						<image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>-->
-                        <image>adoptopenjdk:openjdk8:x86_64-ubuntu-jre8u275-b01</image>
+                        <image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>
                     </from>
                 </configuration>
                 <executions>
