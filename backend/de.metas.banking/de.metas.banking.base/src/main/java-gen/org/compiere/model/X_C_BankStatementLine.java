@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BankStatementLine
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_BankStatementLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 809337976L;
+	private static final long serialVersionUID = 1230132644L;
 
     /** Standard Constructor */
-    public X_C_BankStatementLine (Properties ctx, int C_BankStatementLine_ID, String trxName)
+    public X_C_BankStatementLine (final Properties ctx, final int C_BankStatementLine_ID, @Nullable final String trxName)
     {
       super (ctx, C_BankStatementLine_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_BankStatementLine (Properties ctx, ResultSet rs, String trxName)
+    public X_C_BankStatementLine (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,31 +30,31 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setBankFeeAmt (java.math.BigDecimal BankFeeAmt)
+	public void setBankFeeAmt (final BigDecimal BankFeeAmt)
 	{
 		set_Value (COLUMNNAME_BankFeeAmt, BankFeeAmt);
 	}
 
 	@Override
-	public java.math.BigDecimal getBankFeeAmt() 
+	public BigDecimal getBankFeeAmt() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_BankFeeAmt);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_BankFeeAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setC_BankStatement_ID (int C_BankStatement_ID)
+	public void setC_BankStatement_ID (final int C_BankStatement_ID)
 	{
 		if (C_BankStatement_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BankStatement_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BankStatement_ID, Integer.valueOf(C_BankStatement_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BankStatement_ID, C_BankStatement_ID);
 	}
 
 	@Override
@@ -63,12 +64,12 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setC_BankStatementLine_ID (int C_BankStatementLine_ID)
+	public void setC_BankStatementLine_ID (final int C_BankStatementLine_ID)
 	{
 		if (C_BankStatementLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BankStatementLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BankStatementLine_ID, Integer.valueOf(C_BankStatementLine_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BankStatementLine_ID, C_BankStatementLine_ID);
 	}
 
 	@Override
@@ -78,39 +79,12 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public org.compiere.model.I_C_BP_BankAccount getC_BP_BankAccountTo()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_BankAccountTo_ID, org.compiere.model.I_C_BP_BankAccount.class);
-	}
-
-	@Override
-	public void setC_BP_BankAccountTo(org.compiere.model.I_C_BP_BankAccount C_BP_BankAccountTo)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_BankAccountTo_ID, org.compiere.model.I_C_BP_BankAccount.class, C_BP_BankAccountTo);
-	}
-
-	@Override
-	public void setC_BP_BankAccountTo_ID (int C_BP_BankAccountTo_ID)
-	{
-		if (C_BP_BankAccountTo_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_BankAccountTo_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_BankAccountTo_ID, Integer.valueOf(C_BP_BankAccountTo_ID));
-	}
-
-	@Override
-	public int getC_BP_BankAccountTo_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccountTo_ID);
-	}
-
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
 	@Override
@@ -120,12 +94,27 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setC_Charge_ID (int C_Charge_ID)
+	public void setC_BP_BankAccountTo_ID (final int C_BP_BankAccountTo_ID)
+	{
+		if (C_BP_BankAccountTo_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_BankAccountTo_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_BankAccountTo_ID, C_BP_BankAccountTo_ID);
+	}
+
+	@Override
+	public int getC_BP_BankAccountTo_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccountTo_ID);
+	}
+
+	@Override
+	public void setC_Charge_ID (final int C_Charge_ID)
 	{
 		if (C_Charge_ID < 1) 
 			set_Value (COLUMNNAME_C_Charge_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
+			set_Value (COLUMNNAME_C_Charge_ID, C_Charge_ID);
 	}
 
 	@Override
@@ -135,12 +124,12 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setC_Currency_ID (int C_Currency_ID)
+	public void setC_Currency_ID (final int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
 			set_Value (COLUMNNAME_C_Currency_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
 	}
 
 	@Override
@@ -150,24 +139,37 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setChargeAmt (final BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	@Override
+	public BigDecimal getChargeAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public org.compiere.model.I_C_Invoice getC_Invoice()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class);
 	}
 
 	@Override
-	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice)
+	public void setC_Invoice(final org.compiere.model.I_C_Invoice C_Invoice)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
 	}
 
 	@Override
-	public void setC_Invoice_ID (int C_Invoice_ID)
+	public void setC_Invoice_ID (final int C_Invoice_ID)
 	{
 		if (C_Invoice_ID < 1) 
 			set_Value (COLUMNNAME_C_Invoice_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+			set_Value (COLUMNNAME_C_Invoice_ID, C_Invoice_ID);
 	}
 
 	@Override
@@ -183,18 +185,18 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setC_Order(org.compiere.model.I_C_Order C_Order)
+	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
 	}
 
 	@Override
-	public void setC_Order_ID (int C_Order_ID)
+	public void setC_Order_ID (final int C_Order_ID)
 	{
 		if (C_Order_ID < 1) 
 			set_Value (COLUMNNAME_C_Order_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
+			set_Value (COLUMNNAME_C_Order_ID, C_Order_ID);
 	}
 
 	@Override
@@ -204,12 +206,12 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setC_Payment_ID (int C_Payment_ID)
+	public void setC_Payment_ID (final int C_Payment_ID)
 	{
 		if (C_Payment_ID < 1) 
 			set_Value (COLUMNNAME_C_Payment_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Payment_ID, Integer.valueOf(C_Payment_ID));
+			set_Value (COLUMNNAME_C_Payment_ID, C_Payment_ID);
 	}
 
 	@Override
@@ -219,33 +221,20 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	@Override
-	public java.math.BigDecimal getChargeAmt() 
-	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setCurrencyRate (java.math.BigDecimal CurrencyRate)
+	public void setCurrencyRate (final @Nullable BigDecimal CurrencyRate)
 	{
 		set_Value (COLUMNNAME_CurrencyRate, CurrencyRate);
 	}
 
 	@Override
-	public java.math.BigDecimal getCurrencyRate() 
+	public BigDecimal getCurrencyRate() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrencyRate);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CurrencyRate);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setDateAcct (java.sql.Timestamp DateAcct)
+	public void setDateAcct (final java.sql.Timestamp DateAcct)
 	{
 		set_Value (COLUMNNAME_DateAcct, DateAcct);
 	}
@@ -257,7 +246,19 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDebitorOrCreditorId (final int DebitorOrCreditorId)
+	{
+		set_Value (COLUMNNAME_DebitorOrCreditorId, DebitorOrCreditorId);
+	}
+
+	@Override
+	public int getDebitorOrCreditorId() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DebitorOrCreditorId);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -265,24 +266,24 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	@Override
 	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override
-	public void setEftAmt (java.math.BigDecimal EftAmt)
+	public void setEftAmt (final @Nullable BigDecimal EftAmt)
 	{
 		set_Value (COLUMNNAME_EftAmt, EftAmt);
 	}
 
 	@Override
-	public java.math.BigDecimal getEftAmt() 
+	public BigDecimal getEftAmt() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_EftAmt);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_EftAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setEftCheckNo (java.lang.String EftCheckNo)
+	public void setEftCheckNo (final @Nullable java.lang.String EftCheckNo)
 	{
 		set_Value (COLUMNNAME_EftCheckNo, EftCheckNo);
 	}
@@ -290,11 +291,11 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	@Override
 	public java.lang.String getEftCheckNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EftCheckNo);
+		return get_ValueAsString(COLUMNNAME_EftCheckNo);
 	}
 
 	@Override
-	public void setEftCurrency (java.lang.String EftCurrency)
+	public void setEftCurrency (final @Nullable java.lang.String EftCurrency)
 	{
 		set_Value (COLUMNNAME_EftCurrency, EftCurrency);
 	}
@@ -302,11 +303,11 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	@Override
 	public java.lang.String getEftCurrency() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EftCurrency);
+		return get_ValueAsString(COLUMNNAME_EftCurrency);
 	}
 
 	@Override
-	public void setEftMemo (java.lang.String EftMemo)
+	public void setEftMemo (final @Nullable java.lang.String EftMemo)
 	{
 		set_Value (COLUMNNAME_EftMemo, EftMemo);
 	}
@@ -314,11 +315,11 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	@Override
 	public java.lang.String getEftMemo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EftMemo);
+		return get_ValueAsString(COLUMNNAME_EftMemo);
 	}
 
 	@Override
-	public void setEftPayee (java.lang.String EftPayee)
+	public void setEftPayee (final @Nullable java.lang.String EftPayee)
 	{
 		set_Value (COLUMNNAME_EftPayee, EftPayee);
 	}
@@ -326,11 +327,11 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	@Override
 	public java.lang.String getEftPayee() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EftPayee);
+		return get_ValueAsString(COLUMNNAME_EftPayee);
 	}
 
 	@Override
-	public void setEftPayeeAccount (java.lang.String EftPayeeAccount)
+	public void setEftPayeeAccount (final @Nullable java.lang.String EftPayeeAccount)
 	{
 		set_Value (COLUMNNAME_EftPayeeAccount, EftPayeeAccount);
 	}
@@ -338,11 +339,11 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	@Override
 	public java.lang.String getEftPayeeAccount() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EftPayeeAccount);
+		return get_ValueAsString(COLUMNNAME_EftPayeeAccount);
 	}
 
 	@Override
-	public void setEftReference (java.lang.String EftReference)
+	public void setEftReference (final @Nullable java.lang.String EftReference)
 	{
 		set_Value (COLUMNNAME_EftReference, EftReference);
 	}
@@ -350,11 +351,11 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	@Override
 	public java.lang.String getEftReference() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EftReference);
+		return get_ValueAsString(COLUMNNAME_EftReference);
 	}
 
 	@Override
-	public void setEftStatementLineDate (java.sql.Timestamp EftStatementLineDate)
+	public void setEftStatementLineDate (final @Nullable java.sql.Timestamp EftStatementLineDate)
 	{
 		set_Value (COLUMNNAME_EftStatementLineDate, EftStatementLineDate);
 	}
@@ -366,7 +367,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setEftTrxID (java.lang.String EftTrxID)
+	public void setEftTrxID (final @Nullable java.lang.String EftTrxID)
 	{
 		set_Value (COLUMNNAME_EftTrxID, EftTrxID);
 	}
@@ -374,11 +375,11 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	@Override
 	public java.lang.String getEftTrxID() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EftTrxID);
+		return get_ValueAsString(COLUMNNAME_EftTrxID);
 	}
 
 	@Override
-	public void setEftTrxType (java.lang.String EftTrxType)
+	public void setEftTrxType (final @Nullable java.lang.String EftTrxType)
 	{
 		set_Value (COLUMNNAME_EftTrxType, EftTrxType);
 	}
@@ -386,11 +387,11 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	@Override
 	public java.lang.String getEftTrxType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EftTrxType);
+		return get_ValueAsString(COLUMNNAME_EftTrxType);
 	}
 
 	@Override
-	public void setEftValutaDate (java.sql.Timestamp EftValutaDate)
+	public void setEftValutaDate (final @Nullable java.sql.Timestamp EftValutaDate)
 	{
 		set_Value (COLUMNNAME_EftValutaDate, EftValutaDate);
 	}
@@ -402,7 +403,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setImportedBillPartnerIBAN (java.lang.String ImportedBillPartnerIBAN)
+	public void setImportedBillPartnerIBAN (final @Nullable java.lang.String ImportedBillPartnerIBAN)
 	{
 		set_Value (COLUMNNAME_ImportedBillPartnerIBAN, ImportedBillPartnerIBAN);
 	}
@@ -410,11 +411,11 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	@Override
 	public java.lang.String getImportedBillPartnerIBAN() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ImportedBillPartnerIBAN);
+		return get_ValueAsString(COLUMNNAME_ImportedBillPartnerIBAN);
 	}
 
 	@Override
-	public void setImportedBillPartnerName (java.lang.String ImportedBillPartnerName)
+	public void setImportedBillPartnerName (final @Nullable java.lang.String ImportedBillPartnerName)
 	{
 		set_Value (COLUMNNAME_ImportedBillPartnerName, ImportedBillPartnerName);
 	}
@@ -422,26 +423,26 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	@Override
 	public java.lang.String getImportedBillPartnerName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ImportedBillPartnerName);
+		return get_ValueAsString(COLUMNNAME_ImportedBillPartnerName);
 	}
 
 	@Override
-	public void setInterestAmt (java.math.BigDecimal InterestAmt)
+	public void setInterestAmt (final BigDecimal InterestAmt)
 	{
 		set_Value (COLUMNNAME_InterestAmt, InterestAmt);
 	}
 
 	@Override
-	public java.math.BigDecimal getInterestAmt() 
+	public BigDecimal getInterestAmt() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InterestAmt);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InterestAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setIsManual (boolean IsManual)
+	public void setIsManual (final boolean IsManual)
 	{
-		set_Value (COLUMNNAME_IsManual, Boolean.valueOf(IsManual));
+		set_Value (COLUMNNAME_IsManual, IsManual);
 	}
 
 	@Override
@@ -451,9 +452,9 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setIsMultiplePayment (boolean IsMultiplePayment)
+	public void setIsMultiplePayment (final boolean IsMultiplePayment)
 	{
-		set_Value (COLUMNNAME_IsMultiplePayment, Boolean.valueOf(IsMultiplePayment));
+		set_Value (COLUMNNAME_IsMultiplePayment, IsMultiplePayment);
 	}
 
 	@Override
@@ -463,9 +464,9 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setIsMultiplePaymentOrInvoice (boolean IsMultiplePaymentOrInvoice)
+	public void setIsMultiplePaymentOrInvoice (final boolean IsMultiplePaymentOrInvoice)
 	{
-		set_Value (COLUMNNAME_IsMultiplePaymentOrInvoice, Boolean.valueOf(IsMultiplePaymentOrInvoice));
+		set_Value (COLUMNNAME_IsMultiplePaymentOrInvoice, IsMultiplePaymentOrInvoice);
 	}
 
 	@Override
@@ -475,9 +476,9 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setIsReconciled (boolean IsReconciled)
+	public void setIsReconciled (final boolean IsReconciled)
 	{
-		set_Value (COLUMNNAME_IsReconciled, Boolean.valueOf(IsReconciled));
+		set_Value (COLUMNNAME_IsReconciled, IsReconciled);
 	}
 
 	@Override
@@ -487,9 +488,9 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setIsReversal (boolean IsReversal)
+	public void setIsReversal (final boolean IsReversal)
 	{
-		set_Value (COLUMNNAME_IsReversal, Boolean.valueOf(IsReversal));
+		set_Value (COLUMNNAME_IsReversal, IsReversal);
 	}
 
 	@Override
@@ -499,9 +500,9 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setLine (int Line)
+	public void setLine (final int Line)
 	{
-		set_Value (COLUMNNAME_Line, Integer.valueOf(Line));
+		set_Value (COLUMNNAME_Line, Line);
 	}
 
 	@Override
@@ -511,12 +512,12 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setLink_BankStatementLine_ID (int Link_BankStatementLine_ID)
+	public void setLink_BankStatementLine_ID (final int Link_BankStatementLine_ID)
 	{
 		if (Link_BankStatementLine_ID < 1) 
 			set_Value (COLUMNNAME_Link_BankStatementLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_Link_BankStatementLine_ID, Integer.valueOf(Link_BankStatementLine_ID));
+			set_Value (COLUMNNAME_Link_BankStatementLine_ID, Link_BankStatementLine_ID);
 	}
 
 	@Override
@@ -526,7 +527,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setMemo (java.lang.String Memo)
+	public void setMemo (final @Nullable java.lang.String Memo)
 	{
 		set_Value (COLUMNNAME_Memo, Memo);
 	}
@@ -534,13 +535,13 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	@Override
 	public java.lang.String getMemo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Memo);
+		return get_ValueAsString(COLUMNNAME_Memo);
 	}
 
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
 	@Override
@@ -550,7 +551,7 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setReferenceNo (java.lang.String ReferenceNo)
+	public void setReferenceNo (final @Nullable java.lang.String ReferenceNo)
 	{
 		set_Value (COLUMNNAME_ReferenceNo, ReferenceNo);
 	}
@@ -558,11 +559,11 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	@Override
 	public java.lang.String getReferenceNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ReferenceNo);
+		return get_ValueAsString(COLUMNNAME_ReferenceNo);
 	}
 
 	@Override
-	public void setStatementLineDate (java.sql.Timestamp StatementLineDate)
+	public void setStatementLineDate (final java.sql.Timestamp StatementLineDate)
 	{
 		set_Value (COLUMNNAME_StatementLineDate, StatementLineDate);
 	}
@@ -574,33 +575,33 @@ public class X_C_BankStatementLine extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setStmtAmt (java.math.BigDecimal StmtAmt)
+	public void setStmtAmt (final BigDecimal StmtAmt)
 	{
 		set_Value (COLUMNNAME_StmtAmt, StmtAmt);
 	}
 
 	@Override
-	public java.math.BigDecimal getStmtAmt() 
+	public BigDecimal getStmtAmt() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_StmtAmt);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_StmtAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setTrxAmt (java.math.BigDecimal TrxAmt)
+	public void setTrxAmt (final BigDecimal TrxAmt)
 	{
 		set_Value (COLUMNNAME_TrxAmt, TrxAmt);
 	}
 
 	@Override
-	public java.math.BigDecimal getTrxAmt() 
+	public BigDecimal getTrxAmt() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TrxAmt);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TrxAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setValutaDate (java.sql.Timestamp ValutaDate)
+	public void setValutaDate (final java.sql.Timestamp ValutaDate)
 	{
 		set_Value (COLUMNNAME_ValutaDate, ValutaDate);
 	}

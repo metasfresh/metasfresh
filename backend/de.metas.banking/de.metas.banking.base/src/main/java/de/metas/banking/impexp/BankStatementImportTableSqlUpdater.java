@@ -224,18 +224,25 @@ public class BankStatementImportTableSqlUpdater
 	private void updateC_BPartner(final ImportRecordsSelection selection)
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE I_BankStatement i "
-				+ "SET " + I_I_BankStatement.COLUMNNAME_C_BPartner_ID
-				+ " = (SELECT " + I_C_BPartner.COLUMNNAME_C_BPartner_ID
-				+ " FROM " + I_C_BPartner.Table_Name + " bp "
-				+ " WHERE " + "(i." + I_I_BankStatement.COLUMNNAME_Bill_BPartner_Name
-				+ " = bp." + I_C_BPartner.COLUMNNAME_Name
-				+ " OR i." + I_I_BankStatement.COLUMNNAME_BPartnerValue
-				+ " = bp." + I_C_BPartner.COLUMNNAME_Value
-				+ " )) "
-				+ "WHERE i." + I_I_BankStatement.COLUMNNAME_C_BPartner_ID + " IS NULL "
-				+ "AND i.I_IsImported<>'Y' "
-				+ "OR i.I_IsImported IS NULL")
-						.append(selection.toSqlWhereClause("i"));
+															+ "SET " + I_I_BankStatement.COLUMNNAME_C_BPartner_ID
+															+ " = (SELECT " + I_C_BPartner.COLUMNNAME_C_BPartner_ID
+															+ " FROM " + I_C_BPartner.Table_Name + " bp "
+															+ " WHERE " + "(i." + I_I_BankStatement.COLUMNNAME_Bill_BPartner_Name
+															+ " = bp." + I_C_BPartner.COLUMNNAME_Name
+															+ " OR i." + I_I_BankStatement.COLUMNNAME_BPartnerValue
+															+ " = bp." + I_C_BPartner.COLUMNNAME_Value
+															+ " OR i." + I_I_BankStatement.COLUMNNAME_DebitorOrCreditorId
+															+ " = bp." + I_C_BPartner.COLUMNNAME_DebtorId
+															+ " OR i." + I_I_BankStatement.COLUMNNAME_DebitorOrCreditorId
+															+ " = bp." + I_C_BPartner.COLUMNNAME_CreditorId
+															+ " ) "
+															+ " AND i." + I_I_BankStatement.COLUMNNAME_AD_Org_ID
+															+ " = bp. " + I_C_BPartner.COLUMNNAME_AD_Org_ID
+															+ ") "
+															+ "WHERE i." + I_I_BankStatement.COLUMNNAME_C_BPartner_ID + " IS NULL "
+															+ "AND i.I_IsImported<>'Y' "
+															+ "OR i.I_IsImported IS NULL")
+				.append(selection.toSqlWhereClause("i"));
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
