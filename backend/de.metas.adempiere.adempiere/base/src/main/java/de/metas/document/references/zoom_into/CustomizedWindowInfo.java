@@ -38,4 +38,5 @@ public class CustomizedWindowInfo
 	@NonNull AdWindowId customizationWindowId;
 	@NonNull @Builder.Default ImmutableList<AdWindowId> previousCustomizationWindowIds = ImmutableList.of();
 	@NonNull AdWindowId baseWindowId;
+	boolean overrideInMenu;
 }
