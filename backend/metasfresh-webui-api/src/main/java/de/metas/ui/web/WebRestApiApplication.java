@@ -63,6 +63,8 @@ import org.springframework.http.MediaType;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -156,6 +158,7 @@ public class WebRestApiApplication
 	{
 		return servletContainer -> {
 			final TomcatServletWebServerFactory tomcatContainerFactory = (TomcatServletWebServerFactory)servletContainer;
+			
 			tomcatContainerFactory.addConnectorCustomizers(connector -> {
 				final AbstractHttp11Protocol<?> httpProtocol = (AbstractHttp11Protocol<?>)connector.getProtocolHandler();
 				httpProtocol.setCompression("on");

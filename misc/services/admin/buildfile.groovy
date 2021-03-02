@@ -7,6 +7,7 @@
 import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
 import de.metas.jenkins.MvnConf
+import de.metas.jenkins.Nexus
 
 def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = false) {
     final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
