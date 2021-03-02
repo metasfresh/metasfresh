@@ -237,7 +237,7 @@ public class PPOrderLineRow implements IViewRow
 
 		this.qty = includedRows.stream()
 				.map(PPOrderLineRow::getQty)
-				.reduce(Quantity.zero(getUom()), (partialQty, lineQty) -> Quantitys.add(uomConversionCtx, partialQty, lineQty));
+				.reduce(Quantity.zero(getUom()), (existingQty, newRowQty) -> Quantitys.add(uomConversionCtx, existingQty, newRowQty));
 
 
 		this.documentPath = computeDocumentPath();
