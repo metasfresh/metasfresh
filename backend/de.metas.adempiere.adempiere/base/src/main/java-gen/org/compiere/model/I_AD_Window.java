@@ -385,6 +385,27 @@ public interface I_AD_Window
 	String COLUMNNAME_IsExcludeFromZoomTargets = "IsExcludeFromZoomTargets";
 
 	/**
+	 * Set Override In Menu.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsOverrideInMenu (boolean IsOverrideInMenu);
+
+	/**
+	 * Get Override In Menu.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isOverrideInMenu();
+
+	ModelColumn<I_AD_Window, Object> COLUMN_IsOverrideInMenu = new ModelColumn<>(I_AD_Window.class, "IsOverrideInMenu", null);
+	String COLUMNNAME_IsOverrideInMenu = "IsOverrideInMenu";
+
+	/**
 	 * Set Sales Transaction.
 	 * This is a Sales Transaction
 	 *
