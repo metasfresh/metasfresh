@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.adempiere.ad.element.api.AdWindowId;
@@ -282,7 +283,6 @@ class UserRolePermissions implements IUserRolePermissions
 	/**************************************************************************
 	 * Get Client Where Clause Value
 	 *
-	 * @param rw read write
 	 * @return "AD_Client_ID=0" or "AD_Client_ID IN(0,1)"
 	 */
 	@Override
@@ -304,8 +304,6 @@ class UserRolePermissions implements IUserRolePermissions
 	/**
 	 * Access to Client
 	 *
-	 * @param AD_Client_ID client
-	 * @param rw read write access
 	 * @return true if access
 	 */
 	private boolean isClientAccess(@NonNull final ClientId clientId, @NonNull final Access access)
@@ -333,7 +331,7 @@ class UserRolePermissions implements IUserRolePermissions
 		return menuInfo;
 	}
 
-	private Set<OrgId> getOrgAccess(final String tableName, final Access access)
+	private Set<OrgId> getOrgAccess(@Nullable final String tableName, final Access access)
 	{
 		if (isAccessAllOrgs())
 		{
@@ -413,8 +411,6 @@ class UserRolePermissions implements IUserRolePermissions
 	/**
 	 * Access to Org
 	 *
-	 * @param AD_Org_ID org
-	 * @param rw read write access
 	 * @return true if access
 	 */
 	@Override
@@ -570,7 +566,7 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public ElementPermission checkProcessPermission(int AD_Process_ID)
+	public ElementPermission checkProcessPermission(final int AD_Process_ID)
 	{
 		return processPermissions.getPermission(AD_Process_ID);
 	}
@@ -596,7 +592,7 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public ElementPermission checkTaskPermission(int AD_Task_ID)
+	public ElementPermission checkTaskPermission(final int AD_Task_ID)
 	{
 		return taskPermissions.getPermission(AD_Task_ID);
 	}
@@ -648,7 +644,7 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public ElementPermission checkWorkflowPermission(int AD_Workflow_ID)
+	public ElementPermission checkWorkflowPermission(final int AD_Workflow_ID)
 	{
 		return workflowPermissions.getPermission(AD_Workflow_ID);
 	}
@@ -674,8 +670,6 @@ class UserRolePermissions implements IUserRolePermissions
 	 * 						__O	001		1	Organization info
 	 *  </code>
 	 *
-	 * @param ctx context
-	 * @param tableAcessLevel AccessLevel
 	 * @return true/false
 	 *         Access error info (AccessTableNoUpdate, AccessTableNoView) is saved in the log
 	 *         see org.compiere.model.MTabVO#loadTabDetails(MTabVO, ResultSet)
@@ -692,8 +686,9 @@ class UserRolePermissions implements IUserRolePermissions
 
 		// Notification
 		// TODO: consider deleting it because it's not used
-		final String tableAcessLevelTrl = Services.get(IMsgBL.class).getMsg(Env.getCtx(), tableAcessLevel.getAD_Message());
-		final String userAccessLevelTrl = Services.get(IMsgBL.class).getMsg(Env.getCtx(), userAccessLevel.getAD_Message());
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		final String tableAcessLevelTrl = msgBL.getMsg(Env.getCtx(), tableAcessLevel.getAD_Message());
+		final String userAccessLevelTrl = msgBL.getMsg(Env.getCtx(), userAccessLevel.getAD_Message());
 		MetasfreshLastError.saveWarning(logger, "AccessTableNoView", "Required=" + tableAcessLevel + "(" + tableAcessLevelTrl + ") != UserLevel=" + userAccessLevelTrl);
 		return false;
 	}	// canView
@@ -744,7 +739,8 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	/** @return error message or <code>null</code> if OK */
-	private final String checkCanAccessRecord(
+	@Nullable
+	private String checkCanAccessRecord(
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
 			final int AD_Table_ID,
@@ -831,9 +827,6 @@ class UserRolePermissions implements IUserRolePermissions
 
 	/**
 	 * Retains only those DocActions on which current role has access.
-	 *
-	 * @param optionsCtx
-	 * @param adClientId
 	 */
 	private void retainDocActionsWithAccess(final DocActionOptionsContext optionsCtx)
 	{
@@ -858,13 +851,13 @@ class UserRolePermissions implements IUserRolePermissions
 		optionsCtx.setDocActions(ImmutableSet.copyOf(docActionsAllowed));
 	}
 
-	private final Set<String> getAllowedDocActions(final ClientId adClientId, final DocTypeId docTypeId)
+	private Set<String> getAllowedDocActions(final ClientId adClientId, final DocTypeId docTypeId)
 	{
 		final ArrayKey key = Util.mkKey(adClientId, docTypeId);
 		return docActionsAllowed.computeIfAbsent(key, (k) -> retrieveAllowedDocActions(adClientId, docTypeId));
 	}
 
-	private final Set<String> retrieveAllowedDocActions(final ClientId adClientId, final DocTypeId docTypeId)
+	private Set<String> retrieveAllowedDocActions(final ClientId adClientId, final DocTypeId docTypeId)
 	{
 		final List<Object> sqlParams = new ArrayList<>();
 		sqlParams.add(adClientId);
@@ -898,8 +891,6 @@ class UserRolePermissions implements IUserRolePermissions
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 	}
 
@@ -965,83 +956,5 @@ class UserRolePermissions implements IUserRolePermissions
 		//
 		whereClause.insert(0, roleColumnSQL + " IN (").append(")");
 		return whereClause.toString();
-	}
-
-	@Override
-	public boolean isAllow_Info_Product()
-	{
-		return hasPermission(PERMISSION_InfoWindow_Product);
-	}
-
-	@Override
-	public boolean isAllow_Info_BPartner()
-	{
-		return hasPermission(PERMISSION_InfoWindow_BPartner);
-	}
-
-	@Override
-	public boolean isAllow_Info_Account()
-	{
-		return hasPermission(PERMISSION_InfoWindow_Account);
-	}
-
-	@Override
-	public boolean isAllow_Info_Schedule()
-	{
-		return hasPermission(PERMISSION_InfoWindow_Schedule);
-	}
-
-	@Override
-	public boolean isAllow_Info_MRP()
-	{
-		return hasPermission(PERMISSION_InfoWindow_MRP);
-	}
-
-	@Override
-	public boolean isAllow_Info_CRP()
-	{
-		return hasPermission(PERMISSION_InfoWindow_CRP);
-	}
-
-	@Override
-	public boolean isAllow_Info_Order()
-	{
-		return hasPermission(PERMISSION_InfoWindow_Order);
-	}
-
-	@Override
-	public boolean isAllow_Info_Invoice()
-	{
-		return hasPermission(PERMISSION_InfoWindow_Invoice);
-	}
-
-	@Override
-	public boolean isAllow_Info_InOut()
-	{
-		return hasPermission(PERMISSION_InfoWindow_InOut);
-	}
-
-	@Override
-	public boolean isAllow_Info_Payment()
-	{
-		return hasPermission(PERMISSION_InfoWindow_Payment);
-	}
-
-	@Override
-	public boolean isAllow_Info_CashJournal()
-	{
-		return hasPermission(PERMISSION_InfoWindow_CashJournal);
-	}
-
-	@Override
-	public boolean isAllow_Info_Resource()
-	{
-		return hasPermission(PERMISSION_InfoWindow_Resource);
-	}
-
-	@Override
-	public boolean isAllow_Info_Asset()
-	{
-		return hasPermission(PERMISSION_InfoWindow_Asset);
 	}
 }
