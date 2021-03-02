@@ -22,41 +22,9 @@ package de.metas.security.impl;
  * #L%
  */
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IRolePermLoggingBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocument;
@@ -91,6 +59,35 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IRolePermLoggingBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.KeyNamePair;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Immutable
 @ToString(of = { "name", "roleId", "userId", "clientId" })
@@ -100,7 +97,9 @@ class UserRolePermissions implements IUserRolePermissions
 
 	private static final Set<OrgId> ORGACCESS_ALL = Collections.unmodifiableSet(new HashSet<>()); // NOTE: new instance to make sure it's unique
 
-	/** Permissions name (i.e. role name) */
+	/**
+	 * Permissions name (i.e. role name)
+	 */
 	@Getter
 	private final String name;
 	@Getter
@@ -109,7 +108,9 @@ class UserRolePermissions implements IUserRolePermissions
 	private final UserRolePermissionsIncludesList includes;
 	@Getter
 	private final ImmutableSet<RoleId> allRoleIds;
-	/** User */
+	/**
+	 * User
+	 */
 	@Getter
 	private final UserId userId;
 	@Getter
@@ -117,33 +118,51 @@ class UserRolePermissions implements IUserRolePermissions
 	@Getter
 	private final TableAccessLevel userLevel;
 
-	/** Positive List of Organizational Access */
+	/**
+	 * Positive List of Organizational Access
+	 */
 	@Getter(AccessLevel.PACKAGE)
 	private final OrgPermissions orgPermissions;
 
-	/** List of Table Access */
+	/**
+	 * List of Table Access
+	 */
 	@Getter(AccessLevel.PACKAGE)
 	private final TablePermissions tablePermissions;
-	/** List of Column Access */
+	/**
+	 * List of Column Access
+	 */
 	@Getter(AccessLevel.PACKAGE)
 	private final TableColumnPermissions columnPermissions;
 
-	/** Table Access Info */
+	/**
+	 * Table Access Info
+	 */
 	private final TablesAccessInfo tablesAccessInfo = TablesAccessInfo.instance;
 
-	/** Window Access */
+	/**
+	 * Window Access
+	 */
 	@Getter(AccessLevel.PACKAGE)
 	private final ElementPermissions windowPermissions;
-	/** Process Access */
+	/**
+	 * Process Access
+	 */
 	@Getter(AccessLevel.PACKAGE)
 	private final ElementPermissions processPermissions;
-	/** Task Access */
+	/**
+	 * Task Access
+	 */
 	@Getter(AccessLevel.PACKAGE)
 	private final ElementPermissions taskPermissions;
-	/** Workflow Access */
+	/**
+	 * Workflow Access
+	 */
 	@Getter(AccessLevel.PACKAGE)
 	private final ElementPermissions workflowPermissions;
-	/** Form Access */
+	/**
+	 * Form Access
+	 */
 	@Getter(AccessLevel.PACKAGE)
 	private final ElementPermissions formPermissions;
 
@@ -152,7 +171,9 @@ class UserRolePermissions implements IUserRolePermissions
 
 	private final ConcurrentHashMap<ArrayKey, Set<String>> docActionsAllowed = new ConcurrentHashMap<>();
 
-	/** Permission constraints */
+	/**
+	 * Permission constraints
+	 */
 	@Getter(AccessLevel.PACKAGE)
 	private final Constraints constraints;
 
@@ -187,6 +208,12 @@ class UserRolePermissions implements IUserRolePermissions
 		menuInfo = builder.getMenuInfo();
 	}
 
+	private RecordAccessService recordAccessService() { return SpringContextHolder.instance.getBean(RecordAccessService.class); }
+
+	private IRolePermLoggingBL rolePermLoggingBL() { return Services.get(IRolePermLoggingBL.class); }
+
+	private ISecurityRuleEngine securityRuleEngine() { return Services.get(ISecurityRuleEngine.class); }
+
 	@Override
 	public String toStringX()
 	{
@@ -210,12 +237,12 @@ class UserRolePermissions implements IUserRolePermissions
 		Joiner.on(Env.NL + Env.NL)
 				.skipNulls()
 				.appendTo(sb, miscPermissions, constraints, orgPermissions, tablePermissions, columnPermissions
-				// don't show followings because they could be to big, mainly when is not a manual role:
-				// , windowPermissions
-				// , processPermissions
-				// , taskPermissions
-				// , formPermissions
-				// , workflowPermissions
+						// don't show followings because they could be to big, mainly when is not a manual role:
+						// , windowPermissions
+						// , processPermissions
+						// , taskPermissions
+						// , formPermissions
+						// , workflowPermissions
 				);
 
 		return sb.toString();
@@ -274,10 +301,10 @@ class UserRolePermissions implements IUserRolePermissions
 	public boolean isSystemAdministrator()
 	{
 		return
-		// System role:
-		getRoleId().isSystem()
-				// and Shall have at access to system organization:
-				&& isOrgAccess(OrgId.ANY, Access.WRITE);
+				// System role:
+				getRoleId().isSystem()
+						// and Shall have at access to system organization:
+						&& isOrgAccess(OrgId.ANY, Access.WRITE);
 	}
 
 	/**************************************************************************
@@ -340,7 +367,7 @@ class UserRolePermissions implements IUserRolePermissions
 
 		final Set<OrgId> adOrgIds = orgPermissions.getOrgAccess(access);
 
-		Services.get(ISecurityRuleEngine.class).filterOrgs(this, tableName, access, adOrgIds);
+		securityRuleEngine().filterOrgs(this, tableName, access, adOrgIds);
 
 		return adOrgIds;
 	}
@@ -399,14 +426,14 @@ class UserRolePermissions implements IUserRolePermissions
 			else
 			{
 				logger.error("No Access Org records");
-				return "AD_Org_ID=-1";	// No Access Record
+				return "AD_Org_ID=-1";    // No Access Record
 			}
 		}
 		else
 		{
 			return "AD_Org_ID IN (" + sb.toString() + ")";
 		}
-	}	// getOrgWhereValue
+	}    // getOrgWhereValue
 
 	/**
 	 * Access to Org
@@ -428,7 +455,7 @@ class UserRolePermissions implements IUserRolePermissions
 			return true;
 		}
 		return orgs.contains(orgId);
-	}	// isOrgAccess
+	}    // isOrgAccess
 
 	@Override
 	public String getAD_Org_IDs_AsString()
@@ -445,7 +472,7 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public boolean isCanReport(final int AD_Table_ID)
 	{
-		if (!isCanReport())   						// Role Level block
+		if (!isCanReport())                        // Role Level block
 		{
 			logger.warn("Role denied");
 			return false;
@@ -461,7 +488,7 @@ class UserRolePermissions implements IUserRolePermissions
 	@Override
 	public boolean isCanExport(final int AD_Table_ID)
 	{
-		if (!isCanExport())   						// Role Level block
+		if (!isCanExport())                        // Role Level block
 		{
 			logger.warn("Role denied");
 			return false;
@@ -517,8 +544,7 @@ class UserRolePermissions implements IUserRolePermissions
 
 	private boolean isRecordAccess(final int AD_Table_ID, final int Record_ID, final Access access)
 	{
-		final RecordAccessService userGroupRecordAccessService = Adempiere.getBean(RecordAccessService.class);
-		return userGroupRecordAccessService.hasRecordPermission(
+		return recordAccessService().hasRecordPermission(
 				getUserId(),
 				getRoleId(),
 				TableRecordReference.of(AD_Table_ID, Record_ID),
@@ -535,7 +561,7 @@ class UserRolePermissions implements IUserRolePermissions
 	public Boolean getWindowAccess(@NonNull final AdWindowId AD_Window_ID)
 	{
 		final Boolean access = checkWindowPermission(AD_Window_ID).getReadWriteBoolean();
-		Services.get(IRolePermLoggingBL.class).logWindowAccess(getRoleId(), AD_Window_ID.getRepoId(), access);
+		rolePermLoggingBL().logWindowAccess(getRoleId(), AD_Window_ID.getRepoId(), access);
 		return access;
 	}
 
@@ -555,7 +581,7 @@ class UserRolePermissions implements IUserRolePermissions
 	public Boolean getProcessAccess(final int AD_Process_ID)
 	{
 		final Boolean access = checkProcessAccess(AD_Process_ID);
-		Services.get(IRolePermLoggingBL.class).logProcessAccess(getRoleId(), AD_Process_ID, access);
+		rolePermLoggingBL().logProcessAccess(getRoleId(), AD_Process_ID, access);
 		return access;
 	}
 
@@ -581,7 +607,7 @@ class UserRolePermissions implements IUserRolePermissions
 	public Boolean getTaskAccess(final int AD_Task_ID)
 	{
 		final Boolean access = checkTaskAccess(AD_Task_ID);
-		Services.get(IRolePermLoggingBL.class).logTaskAccess(getRoleId(), AD_Task_ID, access);
+		rolePermLoggingBL().logTaskAccess(getRoleId(), AD_Task_ID, access);
 		return access;
 	}
 
@@ -607,7 +633,7 @@ class UserRolePermissions implements IUserRolePermissions
 	public Boolean getFormAccess(final int AD_Form_ID)
 	{
 		final Boolean access = checkFormAccess(AD_Form_ID);
-		Services.get(IRolePermLoggingBL.class).logTaskAccess(getRoleId(), AD_Form_ID, access);
+		rolePermLoggingBL().logTaskAccess(getRoleId(), AD_Form_ID, access);
 		return access;
 	}
 
@@ -633,7 +659,7 @@ class UserRolePermissions implements IUserRolePermissions
 	public Boolean getWorkflowAccess(final int AD_Workflow_ID)
 	{
 		final Boolean access = checkWorkflowAccess(AD_Workflow_ID);
-		Services.get(IRolePermLoggingBL.class).logWorkflowAccess(getRoleId(), AD_Workflow_ID, access);
+		rolePermLoggingBL().logWorkflowAccess(getRoleId(), AD_Workflow_ID, access);
 		return access;
 	}
 
@@ -662,17 +688,17 @@ class UserRolePermissions implements IUserRolePermissions
 
 	/**
 	 * VIEW - Can I view record in Table with given TableLevel. <code>
-	 * 	TableLevel			S__ 100		4	System info
-	 * 						SCO	111		7	System shared info
-	 * 						SC_ 110		6	System/Client info
-	 * 						_CO	011		3	Client shared info
-	 * 						_C_	011		2	Client shared info
-	 * 						__O	001		1	Organization info
-	 *  </code>
+	 * TableLevel			S__ 100		4	System info
+	 * SCO	111		7	System shared info
+	 * SC_ 110		6	System/Client info
+	 * _CO	011		3	Client shared info
+	 * _C_	011		2	Client shared info
+	 * __O	001		1	Organization info
+	 * </code>
 	 *
 	 * @return true/false
-	 *         Access error info (AccessTableNoUpdate, AccessTableNoView) is saved in the log
-	 *         see org.compiere.model.MTabVO#loadTabDetails(MTabVO, ResultSet)
+	 * Access error info (AccessTableNoUpdate, AccessTableNoView) is saved in the log
+	 * see org.compiere.model.MTabVO#loadTabDetails(MTabVO, ResultSet)
 	 **/
 	@Override
 	public boolean canView(final TableAccessLevel tableAcessLevel)
@@ -691,7 +717,7 @@ class UserRolePermissions implements IUserRolePermissions
 		final String userAccessLevelTrl = msgBL.getMsg(Env.getCtx(), userAccessLevel.getAD_Message());
 		MetasfreshLastError.saveWarning(logger, "AccessTableNoView", "Required=" + tableAcessLevel + "(" + tableAcessLevelTrl + ") != UserLevel=" + userAccessLevelTrl);
 		return false;
-	}	// canView
+	}    // canView
 
 	@Override
 	public boolean canView(final ClientId clientId, final OrgId orgId, final int AD_Table_ID, final int Record_ID)
@@ -738,7 +764,9 @@ class UserRolePermissions implements IUserRolePermissions
 		}
 	}
 
-	/** @return error message or <code>null</code> if OK */
+	/**
+	 * @return error message or <code>null</code> if OK
+	 */
 	@Nullable
 	private String checkCanAccessRecord(
 			@NonNull final ClientId clientId,
@@ -917,7 +945,7 @@ class UserRolePermissions implements IUserRolePermissions
 
 			if (optionsCtx.getDocTypeId() != null)
 			{
-				Services.get(IRolePermLoggingBL.class).logDocActionAccess(getRoleId(), optionsCtx.getDocTypeId(), targetDocAction, access);
+				rolePermLoggingBL().logDocActionAccess(getRoleId(), optionsCtx.getDocTypeId(), targetDocAction, access);
 			}
 		}
 
@@ -929,8 +957,8 @@ class UserRolePermissions implements IUserRolePermissions
 	 * It will look something like myalias.AD_Role_ID IN (?, ?, ?).
 	 *
 	 * @param roleColumnSQL role columnname or role column SQL (e.g. myalias.AD_Role_ID)
-	 * @param params a list where the method will put SQL parameters.
-	 *            If null, this method will generate a not parametrized query
+	 * @param params        a list where the method will put SQL parameters.
+	 *                      If null, this method will generate a not parametrized query
 	 * @return role SQL where clause
 	 */
 	@Override
