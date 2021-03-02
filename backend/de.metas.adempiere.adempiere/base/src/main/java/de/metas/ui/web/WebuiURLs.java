@@ -14,6 +14,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -42,7 +44,7 @@ import lombok.NonNull;
  */
 public class WebuiURLs
 {
-	public static final WebuiURLs newInstance()
+	public static WebuiURLs newInstance()
 	{
 		return new WebuiURLs();
 	}
@@ -71,6 +73,7 @@ public class WebuiURLs
 	 *
 	 * @return e.g. https://webui
 	 */
+	@Nullable
 	public String getFrontendURL()
 	{
 		final String url = sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL, "");
@@ -83,6 +86,7 @@ public class WebuiURLs
 		return url.trim();
 	}
 
+	@Nullable
 	private String getFrontendURL(@NonNull final String pathSysConfigName, final Map<String, Object> params)
 	{
 		String url = getFrontendURL();
