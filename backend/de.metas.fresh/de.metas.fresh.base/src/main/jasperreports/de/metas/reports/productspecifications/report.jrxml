@@ -28,7 +28,10 @@
   UPC                     as UPC,
   weight                  as NetWeight,
   c.name                 as Country,
-  guaranteedaysmin        as ShelfLifeDays,
+CASE
+    when ((guaranteedaysmin is NULL) or (guaranteedaysmin <= 0) and guaranteemonths IS NOT NULL) then guaranteemonths::NUMERIC
+    ELSE guaranteedaysmin
+end as ShelfLifeDays,
   warehouse_temperature   as Warehouse_temperature,
   p.description       as ProductDescription,
 p.customerlabelname,
