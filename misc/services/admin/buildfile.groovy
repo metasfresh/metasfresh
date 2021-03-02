@@ -18,7 +18,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 			<h3>admin</h3>
 		"""
 
-    inal misc = new Misc()
+    final misc = new Misc()
     final String dockerLatestTag = "${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST"
 
     if (!misc.isAnyFileChanged(scmVars) && !forceBuild) {
