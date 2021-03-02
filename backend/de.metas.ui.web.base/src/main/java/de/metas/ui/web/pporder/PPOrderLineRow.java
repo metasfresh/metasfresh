@@ -228,8 +228,8 @@ public class PPOrderLineRow implements IViewRow
 				.getQtyRequiredToProduce();
 
 		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
-				rowId.toDocumentId(),
-				ppOrder.getM_AttributeSetInstance_ID());
+															  rowId.toDocumentId(),
+															  ppOrder.getM_AttributeSetInstance_ID());
 
 		this.includedRows = ImmutableList.copyOf(includedRows);
 
@@ -238,7 +238,6 @@ public class PPOrderLineRow implements IViewRow
 		this.qty = includedRows.stream()
 				.map(PPOrderLineRow::getQty)
 				.reduce(Quantity.zero(getUom()), (existingQty, newRowQty) -> Quantitys.add(uomConversionCtx, existingQty, newRowQty));
-
 
 		this.documentPath = computeDocumentPath();
 
@@ -288,14 +287,12 @@ public class PPOrderLineRow implements IViewRow
 
 		this.includedRows = ImmutableList.copyOf(includedRows);
 
-		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(ProductId.ofRepoId(ppOrderBomLine.getM_Product_ID()));
-
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(ProductId.ofRepoIdOrNull(ppOrderBomLine.getM_Product_ID()));
 
 		final Quantity qtyDraftIssuedOrReceived = includedRows.stream()
 				.filter(row -> PPOrderQtyStatus.isDraft(row.getIssueOrReceiveCandidateStatus()))
 				.map(PPOrderLineRow::getQty)
 				.reduce(Quantity.zero(getUom()), (partialQty, lineQty) -> Quantitys.add(uomConversionCtx, partialQty, lineQty));
-
 
 		this.qty = qtyProcessedIssuedOrReceived.add(qtyDraftIssuedOrReceived);
 
