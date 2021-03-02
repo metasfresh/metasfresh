@@ -1,6 +1,6 @@
 import { reduce, cloneDeep, get, find, uniqBy } from 'lodash';
 
-import { createCollapsedMap, flattenRows } from '../utils/documentListHelper';
+import { flattenRows } from '../utils/documentListHelper';
 import * as types from '../constants/ActionTypes';
 
 import { fetchQuickActions } from '../actions/Actions';
@@ -76,21 +76,14 @@ export function setActiveSort(id, active) {
  * @param {string} tableId
  * @param {array} collapsedParentRows - main collapsed rows
  * @param {array} collapsedRows - descendants of collapsed rows
- * @param {array} collapsedArrayMap - all collapsed rows
  */
-function collapseRows({
-  tableId,
-  collapsedParentRows,
-  collapsedRows,
-  collapsedArrayMap,
-}) {
+function collapseRows({ tableId, collapsedParentRows, collapsedRows }) {
   return {
     type: types.COLLAPSE_TABLE_ROWS,
     payload: {
       id: tableId,
       collapsedParentRows,
       collapsedRows,
-      collapsedArrayMap,
     },
   };
 }
@@ -320,12 +313,7 @@ export function updateGridTableData(tableId, rows) {
 
     if (state.tables) {
       const table = state.tables[tableId];
-      const {
-        indentSupported,
-        expandedDepth,
-        keyProperty,
-        collapsible,
-      } = table;
+      const { indentSupported, keyProperty } = table;
 
       if (rows.length && indentSupported) {
         rows = flattenRows(rows);
@@ -338,12 +326,9 @@ export function updateGridTableData(tableId, rows) {
 
       if (indentSupported) {
         dispatch(
-          createCollapsedRows({
+          updateCollapsedRows({
             tableId,
             rows,
-            collapsible,
-            expandedDepth,
-            keyProperty,
           })
         );
       }
@@ -444,14 +429,12 @@ function createCollapsedRows({
   keyProperty,
 }) {
   return (dispatch) => {
-    let collapsedArrayMap = [];
-    let collapsedParentRows = [];
     let collapsedRows = [];
+    let collapsedParentRows = [];
 
     if (collapsible && rows.length) {
       rows.forEach((row) => {
         if (row.indent.length >= expandedDepth && row.includedDocuments) {
-          collapsedArrayMap = collapsedArrayMap.concat(createCollapsedMap(row));
           collapsedParentRows = collapsedParentRows.concat(row[keyProperty]);
         } else if (row.indent.length > expandedDepth) {
           collapsedRows = collapsedRows.concat(row[keyProperty]);
@@ -465,7 +448,59 @@ function createCollapsedRows({
           tableId,
           collapsedParentRows,
           collapsedRows,
-          collapsedArrayMap,
+        })
+      );
+    }
+  };
+}
+
+/**
+ * @method updateCollapsedRows
+ * @summary Create a new table entry for grids using data from the window layout
+ * (so not populated with data yet)
+ *
+ * @param {string} tableId
+ * @param {array} rows
+ */
+function updateCollapsedRows({ tableId, rows }) {
+  return (dispatch, getState) => {
+    const state = getState();
+    const table = state.tables[tableId];
+    const {
+      expandedDepth,
+      keyProperty,
+      collapsible,
+      collapsedRows,
+      collapsedParentRows,
+    } = table;
+    let newCollapsedParentRows = [];
+    let newCollapsedRows = [];
+
+    if (collapsible) {
+      if (rows.length) {
+        rows.forEach((row) => {
+          if (
+            row.indent.length >= expandedDepth &&
+            row.includedDocuments &&
+            !collapsedParentRows.indexOf(row.id)
+          ) {
+            newCollapsedParentRows = newCollapsedParentRows.concat(
+              row[keyProperty]
+            );
+          } else if (
+            row.indent.length > expandedDepth &&
+            !collapsedRows.indexOf(row.id)
+          ) {
+            newCollapsedRows = newCollapsedRows.concat(row[keyProperty]);
+          }
+        });
+      }
+
+      dispatch(
+        collapseRows({
+          tableId,
+          collapsedParentRows: newCollapsedParentRows,
+          collapsedRows: newCollapsedRows,
         })
       );
     }
@@ -481,20 +516,12 @@ export function collapseTableRow({ tableId, collapse, node }) {
     const table = getTable(getState(), tableId);
 
     // TODO: We're cloning those arrays, because they're frozen by
-    // immer in the reducer. In ideal case we should not reuse objects
-    // neither here nor in `createCollapsedMap`.
+    // immer in the reducer. In ideal case we should not reuse objects here.
     let collapsedParentRows = cloneDeep(table.collapsedParentRows);
     let collapsedRows = cloneDeep(table.collapsedRows);
-    let collapsedArrayMap = cloneDeep(table.collapsedArrayMap);
     const { keyProperty } = table;
 
     const inner = (parentNode) => {
-      collapsedArrayMap = createCollapsedMap(
-        parentNode,
-        collapse,
-        collapsedArrayMap
-      );
-
       if (collapse) {
         collapsedParentRows.splice(
           collapsedParentRows.indexOf(parentNode[keyProperty]),
@@ -530,7 +557,6 @@ export function collapseTableRow({ tableId, collapse, node }) {
       tableId,
       collapsedRows,
       collapsedParentRows,
-      collapsedArrayMap,
     };
 
     dispatch(collapseRows(returnData));
