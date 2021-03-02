@@ -25,6 +25,7 @@ package de.metas.document.references.zoom_into;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
@@ -58,6 +59,7 @@ public class SqlCustomizedWindowInfoMapRepository implements CustomizedWindowInf
 		final String sql = "SELECT "
 				+ I_AD_Window.COLUMNNAME_AD_Window_ID
 				+ "," + I_AD_Window.COLUMNNAME_Overrides_Window_ID
+				+ "," + I_AD_Window.COLUMNNAME_IsOverrideInMenu
 				+ ", " + I_AD_Window.COLUMNNAME_Name
 				+ ", (SELECT array_agg(ARRAY[wtrl.ad_language, wtrl.name]) AS array_agg FROM ad_window_trl wtrl WHERE wtrl.ad_window_id = w.ad_window_id) AS name_trls"
 				+ " FROM " + I_AD_Window.Table_Name + " w"
@@ -78,6 +80,7 @@ public class SqlCustomizedWindowInfoMapRepository implements CustomizedWindowInf
 				.customizationWindowId(AdWindowId.ofRepoId(rs.getInt(I_AD_Window.COLUMNNAME_AD_Window_ID)))
 				.customizationWindowCaption(retrieveWindowCaption(rs))
 				.baseWindowId(AdWindowId.ofRepoId(rs.getInt(I_AD_Window.COLUMNNAME_Overrides_Window_ID)))
+				.overrideInMenu(StringUtils.toBoolean(rs.getString(I_AD_Window.COLUMNNAME_IsOverrideInMenu)))
 				.build();
 	}
 
