@@ -8,6 +8,8 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.PPOrderQtyId;
 import de.metas.handlingunits.pporder.api.PPOrderQtyStatus;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UOMConversionContext;
 import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductDAO;
@@ -226,15 +228,16 @@ public class PPOrderLineRow implements IViewRow
 				.getQtyRequiredToProduce();
 
 		this.attributesSupplier = createASIAttributesSupplier(attributesProvider,
-				rowId.toDocumentId(),
-				ppOrder.getM_AttributeSetInstance_ID());
+															  rowId.toDocumentId(),
+															  ppOrder.getM_AttributeSetInstance_ID());
 
 		this.includedRows = ImmutableList.copyOf(includedRows);
 
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(productId);
+
 		this.qty = includedRows.stream()
 				.map(PPOrderLineRow::getQty)
-				.reduce(Quantity::add)
-				.orElseGet(qtyPlan::toZero);
+				.reduce(Quantity.zero(getUom()), (existingQty, newRowQty) -> Quantitys.add(uomConversionCtx, existingQty, newRowQty));
 
 		this.documentPath = computeDocumentPath();
 
@@ -284,11 +287,12 @@ public class PPOrderLineRow implements IViewRow
 
 		this.includedRows = ImmutableList.copyOf(includedRows);
 
+		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(ProductId.ofRepoIdOrNull(ppOrderBomLine.getM_Product_ID()));
+
 		final Quantity qtyDraftIssuedOrReceived = includedRows.stream()
 				.filter(row -> PPOrderQtyStatus.isDraft(row.getIssueOrReceiveCandidateStatus()))
 				.map(PPOrderLineRow::getQty)
-				.reduce(Quantity::add)
-				.orElseGet(qtyPlan::toZero);
+				.reduce(Quantity.zero(getUom()), (partialQty, lineQty) -> Quantitys.add(uomConversionCtx, partialQty, lineQty));
 
 		this.qty = qtyProcessedIssuedOrReceived.add(qtyDraftIssuedOrReceived);
 

@@ -192,8 +192,10 @@ public final class HUEditorRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_UOM, //
 			captionKey = FIELDNAME_UOM, //
 			widgetType = DocumentFieldWidgetType.Text, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60, //
-					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
+			widgetSize = WidgetSize.Small,
+			layouts = {
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX),
+					@ViewColumnLayout(when = JSONViewDataType.includedView, seqNo = 60)
 			})
 	private final JSONLookupValue uom;
 
@@ -270,10 +272,10 @@ public final class HUEditorRow implements IViewRow
 		if (attributesProvider != null)
 		{
 			attributesSupplier = Optional.of(HUEditorRowAttributesSupplier.builder()
-					.viewRowId(rowId.toDocumentId())
-					.huId(huId)
-					.provider(attributesProvider)
-					.build());
+													 .viewRowId(rowId.toDocumentId())
+													 .huId(huId)
+													 .provider(attributesProvider)
+													 .build());
 		}
 		else
 		{
