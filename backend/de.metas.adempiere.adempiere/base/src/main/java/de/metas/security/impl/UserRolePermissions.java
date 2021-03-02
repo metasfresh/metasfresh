@@ -28,6 +28,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.document.engine.IDocument;
+import de.metas.document.references.zoom_into.CustomizedWindowInfo;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
@@ -41,6 +44,7 @@ import de.metas.security.permissions.Constraint;
 import de.metas.security.permissions.Constraints;
 import de.metas.security.permissions.ElementPermission;
 import de.metas.security.permissions.ElementPermissions;
+import de.metas.security.permissions.ElementResource;
 import de.metas.security.permissions.GenericPermissions;
 import de.metas.security.permissions.LoginOrgConstraint;
 import de.metas.security.permissions.OrgPermissions;
@@ -213,6 +217,8 @@ class UserRolePermissions implements IUserRolePermissions
 	private IRolePermLoggingBL rolePermLoggingBL() { return Services.get(IRolePermLoggingBL.class); }
 
 	private ISecurityRuleEngine securityRuleEngine() { return Services.get(ISecurityRuleEngine.class); }
+
+	private CustomizedWindowInfoMap getCustomizedWindowInfoMap() { return SpringContextHolder.instance.getBean(CustomizedWindowInfoMapRepository.class).get(); }
 
 	@Override
 	public String toStringX()
@@ -566,9 +572,21 @@ class UserRolePermissions implements IUserRolePermissions
 	}
 
 	@Override
-	public ElementPermission checkWindowPermission(@NonNull final AdWindowId AD_Window_ID)
+	public ElementPermission checkWindowPermission(@NonNull final AdWindowId adWindowId)
 	{
-		return windowPermissions.getPermission(AD_Window_ID.getRepoId());
+		final CustomizedWindowInfo customizedWindowInfo = getCustomizedWindowInfoMap().getCustomizedWindowInfo(adWindowId).orElse(null);
+		if (customizedWindowInfo == null)
+		{
+			return windowPermissions.getPermission(adWindowId.getRepoId());
+		}
+		else
+		{
+			final ElementResource resource = windowPermissions.elementResource(adWindowId.getRepoId());
+			return customizedWindowInfo.getWindowIdsFromBaseToCustomization()
+					.stream()
+					.map(currentWindowId -> windowPermissions.getPermission(currentWindowId.getRepoId()).withResource(resource))
+					.reduce(ElementPermission.none(resource), ElementPermission::mergeWith);
+		}
 	}
 
 	/**
