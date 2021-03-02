@@ -428,10 +428,9 @@ function createCollapsedRows({
   expandedDepth,
   keyProperty,
 }) {
-  return (dispatch, getState) => {
-    const state = getState();
-    const table = state.tables[tableId];
-    let { collapsedRows, collapsedParentRows } = table;
+  return (dispatch) => {
+    let collapsedRows = [];
+    let collapsedParentRows = [];
 
     if (collapsible && rows.length) {
       rows.forEach((row) => {
