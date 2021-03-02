@@ -24,7 +24,7 @@ import de.metas.security.permissions.WindowMaxQueryRecordsConstraint;
  */
 public class GridTabMaxRowsRestrictionChecker
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -53,7 +53,7 @@ public class GridTabMaxRowsRestrictionChecker
 	 */
 	public boolean isQueryMax(final int noRecords)
 	{
-		int max = getMaxQueryRecords();
+		final int max = getMaxQueryRecords();
 		return max > 0 && noRecords > max;
 	}	// isQueryMax
 
@@ -97,20 +97,14 @@ public class GridTabMaxRowsRestrictionChecker
 		{
 			return maxQueryRecordsPerTab;
 		}
-		else if (maxQueryRecordsPerRole > 0)
-		{
-			return maxQueryRecordsPerRole;
-		}
 		else
 		{
-			return 0;
+			return Math.max(maxQueryRecordsPerRole, 0);
 		}
 	}
 
 	/**
 	 * Gets the maximum allowed records to be presented to user, without asking him to confirm/refine the initial query.
-	 * 
-	 * If there was no limit configured on role level or in other places, {@value #DEFAULT_ConfirmQueryRecords} will be returned.
 	 * 
 	 * @return maximum allowed records to be presented to user, without asking him to confirm/refine the initial query.
 	 */
@@ -124,7 +118,6 @@ public class GridTabMaxRowsRestrictionChecker
 	 * 
 	 * If there was NO maximum number of rows configured, then ZERO will be returned.
 	 * 
-	 * @param maxQueryRecords
 	 * @return maximum number of rows allowed to be presented to a user in a window.
 	 */
 	public int resolve(final GridTabMaxRows maxQueryRecords)
@@ -172,10 +165,10 @@ public class GridTabMaxRowsRestrictionChecker
 		{
 			return getUserRolePermissions()
 					.getConstraint(WindowMaxQueryRecordsConstraint.class)
-					.or(WindowMaxQueryRecordsConstraint.DEFAULT);
+					.orElse(WindowMaxQueryRecordsConstraint.DEFAULT);
 		}
 
-		private final IUserRolePermissions getUserRolePermissions()
+		private IUserRolePermissions getUserRolePermissions()
 		{
 			if (userRolePermissions != null)
 			{

@@ -23,7 +23,6 @@ package de.metas.security.impl;
  */
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocActionOptionsContext;
@@ -89,6 +88,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
@@ -281,7 +281,7 @@ class UserRolePermissions implements IUserRolePermissions
 	public int getStartup_AD_Form_ID()
 	{
 		return getConstraint(StartupWindowConstraint.class)
-				.or(StartupWindowConstraint.NULL)
+				.orElse(StartupWindowConstraint.NULL)
 				.getAD_Form_ID();
 	}
 
@@ -300,7 +300,7 @@ class UserRolePermissions implements IUserRolePermissions
 	public UserPreferenceLevelConstraint getPreferenceLevel()
 	{
 		return getConstraint(UserPreferenceLevelConstraint.class)
-				.or(UserPreferenceLevelConstraint.NONE);
+				.orElse(UserPreferenceLevelConstraint.NONE);
 	}
 
 	@Override
@@ -382,7 +382,7 @@ class UserRolePermissions implements IUserRolePermissions
 	public Set<OrgResource> getLoginOrgs()
 	{
 		final LoginOrgConstraint loginOrgConstraint = getConstraint(LoginOrgConstraint.class)
-				.or(LoginOrgConstraint.DEFAULT);
+				.orElse(LoginOrgConstraint.DEFAULT);
 
 		return orgPermissions.getResourcesWithAccessThatMatch(Access.LOGIN, loginOrgConstraint.asOrgResourceMatcher());
 	}

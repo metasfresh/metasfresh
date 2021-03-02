@@ -1,14 +1,13 @@
 package de.metas.security;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-
-import com.google.common.base.Optional;
 
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.organization.OrgId;
@@ -141,7 +140,7 @@ public interface IUserRolePermissions
 	@Nullable Boolean checkProcessAccess(int AD_Process_ID);
 	default boolean checkProcessAccessRW(final int AD_Process_ID) { return isReadWriteAccess(checkProcessAccess(AD_Process_ID)); }
 	ElementPermission checkProcessPermission(int AD_Process_ID);
-	Boolean getProcessAccess(int AD_Process_ID);
+	@Nullable Boolean getProcessAccess(int AD_Process_ID);
 	// @formatter:on
 
 	void applyActionAccess(DocActionOptionsContext optionsCtx);
@@ -236,7 +235,7 @@ public interface IUserRolePermissions
 	//
 	// Static Helpers
 	//
-	static boolean isReadWriteAccess(final Boolean access)
+	static boolean isReadWriteAccess(@Nullable final Boolean access)
 	{
 		return access != null && access;
 	}
