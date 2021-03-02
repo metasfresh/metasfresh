@@ -253,7 +253,7 @@
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
-                 <configuration>
+                <configuration>
                     <to>
                         <!-- we expect those environment variables to be set from the outside world -->
                         <!-- without specifying the tag in the image name, jib will push "latest", thx https://github.com/GoogleContainerTools/jib/issues/2237#issuecomment-575967019 -->
@@ -282,7 +282,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <!-- Create tests JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
