@@ -474,37 +474,6 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
   return result;
 }
 
-/**
- * Create a flat array of collapsed rows ids including parents and children
- * @todo TODO: rewrite this to not modify `initialMap`. This will also require
- * changes in TableActions
- */
-export function createCollapsedMap(node, isCollapsed, initialMap) {
-  let collapsedMap = [];
-  if (initialMap) {
-    if (!isCollapsed) {
-      initialMap.splice(
-        initialMap.indexOf(node.includedDocuments[0]),
-        node.includedDocuments.length
-      );
-      collapsedMap = initialMap;
-    } else {
-      initialMap.map((item) => {
-        collapsedMap.push(item);
-        if (item.id === node.id) {
-          collapsedMap = collapsedMap.concat(node.includedDocuments);
-        }
-      });
-    }
-  } else {
-    if (node.includedDocuments) {
-      collapsedMap.push(node);
-    }
-  }
-
-  return collapsedMap;
-}
-
 export function renderHeaderProperties(groups) {
   return groups.reduce((acc, group, idx) => {
     let cursor = 0;
