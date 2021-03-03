@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.edi.esb.commons.SystemTime;
@@ -90,16 +91,16 @@ public class Excel_OLCand_Row_Builder
 	private static final String MAPKEY_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 	int C_BPartner_Location_ID = -1;
 
-	private static final List<DateFormat> dateFormats = ImmutableList.<DateFormat> builder()
+	private static final List<DateFormat> dateFormats = ImmutableList.<DateFormat>builder()
 			.add(new SimpleDateFormat("dd.MM.yyyy"))
 			.add(new SimpleDateFormat("dd.MM.yy"))
 			.add(new SimpleDateFormat("MM/dd/yyyy")) // US format
 			.add(new SimpleDateFormat("MM/dd/yy")) // US format
 			.build();
 
-	private static final List<NumberFormat> numberFormats = ImmutableList.<NumberFormat> builder()
-			.add(NumberFormat.getInstance(Locale.GERMAN))
+	private static final List<NumberFormat> numberFormats = ImmutableList.<NumberFormat>builder()
 			.add(NumberFormat.getInstance(Locale.ENGLISH))
+			.add(NumberFormat.getInstance(Locale.GERMAN))
 			.build();
 
 	Excel_OLCand_Row_Builder()
@@ -205,6 +206,14 @@ public class Excel_OLCand_Row_Builder
 	private static BigDecimal extractBigDecimal(final Map<String, Object> map, final String key)
 	{
 		final Object value = getValue(map, key);
+
+		return extractBigDecimal(value);
+
+	}
+
+	@VisibleForTesting
+	protected static BigDecimal extractBigDecimal(final Object value)
+	{
 		if (value == null)
 		{
 			return null;
@@ -220,18 +229,30 @@ public class Excel_OLCand_Row_Builder
 			return null;
 		}
 
-		for (final NumberFormat numberFormat : numberFormats)
+		BigDecimal actualNumber = null;
+		try
 		{
-			try
+			for (final NumberFormat numberFormat : numberFormats)
 			{
 				final Number parsed = numberFormat.parse(valueStr);
-				return new BigDecimal(parsed.toString());
+				final BigDecimal numberCandidate = new BigDecimal(parsed.toString());
+
+				if (actualNumber == null)
+				{
+					actualNumber = numberCandidate;
+				}
+				else if (actualNumber.compareTo(numberCandidate) > 0)
+				{
+					actualNumber = numberCandidate;
+				}
 			}
-			catch (final ParseException e)
-			{
-				// ignore it
-			}
+			return actualNumber;
 		}
+		catch (final Exception e)
+		{
+			// ignore it
+		}
+
 		return null;
 	}
 
