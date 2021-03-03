@@ -237,23 +237,57 @@ public class Excel_OLCand_Row_Builder
 				final Number parsed = numberFormat.parse(valueStr);
 				final BigDecimal numberCandidate = new BigDecimal(parsed.toString());
 
+
 				if (actualNumber == null)
 				{
 					actualNumber = numberCandidate;
+					continue;
 				}
-				else if (actualNumber.compareTo(numberCandidate) > 0)
+
+				final boolean isIntegerActual = isInteger(actualNumber);
+				final boolean isIntegerCandidate = isInteger(numberCandidate);
+
+				if(actualNumber.equals(numberCandidate))
 				{
-					actualNumber = numberCandidate;
+					continue;
 				}
+
+				else if (isIntegerActual)
+				{
+					// Maybe the decimal separator was ignored. Use the smaller number.
+					if (numberCandidate.compareTo(actualNumber) < 0)
+					{
+						actualNumber = numberCandidate;
+					}
+				}
+				else if (!isIntegerCandidate)
+				{
+
+					// both the actual number and the number candidate have decimal separators.
+					// This means that one of them could have used the both separators, for thousands and decimals.
+					// Take the greater number in this case
+					if (numberCandidate.compareTo(actualNumber) > 0)
+					{
+						actualNumber = numberCandidate;
+					}
+				}
+
 			}
 			return actualNumber;
 		}
+
 		catch (final Exception e)
 		{
 			// ignore it
 		}
+		//	}
 
 		return null;
+	}
+
+	private static boolean isInteger(final BigDecimal numberCandidate)
+	{
+		return numberCandidate.stripTrailingZeros().scale() <= 0;
 	}
 
 	private Date extractDate(final Map<String, Object> map, final String key)

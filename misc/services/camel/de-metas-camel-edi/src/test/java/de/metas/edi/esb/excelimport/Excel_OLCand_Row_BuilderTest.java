@@ -31,6 +31,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Excel_OLCand_Row_BuilderTest extends CamelTestSupport
 {
+
+	@Test
+	public void testZero()
+	{
+		final String numberWithDelimiter = "0";
+		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithDelimiter);
+
+		assertEquals(BigDecimal.ZERO, result);
+	}
 	@Test
 	public void testBigDecimal_Comma()
 	{
@@ -44,28 +53,103 @@ public class Excel_OLCand_Row_BuilderTest extends CamelTestSupport
 	@Test
 	public void testBigDecimal_Dot()
 	{
-		final String numberWithComma = "1.2";
-		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithComma);
+		final String numberWithDelimiter = "1.2";
+		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithDelimiter);
 
 		assertEquals(new BigDecimal("1.2"), result);
 
 	}
 
+	@Test
 	public void testBigDecimal_DotAndComma()
 	{
-		final String numberWithComma = "1.200,65";
-		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithComma);
+		final String numberWithDelimiter = "1.200,65";
+		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithDelimiter);
 
 		assertEquals(new BigDecimal("1200.65"), result);
 
 	}
 
+	@Test
 	public void testBigDecimal_CommaAndDot()
 	{
-		final String numberWithComma = "1,200.65";
-		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithComma);
+		final String numberWithDelimiter = "1,200.65";
+		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithDelimiter);
 
 		assertEquals(new BigDecimal("1200.65"), result);
 	}
 
+	@Test
+	public void testInteger()
+	{
+		final String numberWithDelimiter = "123";
+		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithDelimiter);
+
+		assertEquals(new BigDecimal("123"), result);
+	}
+
+	@Test
+	public void testInteger_Dot()
+	{
+		final String numberWithDelimiter = "1,200.65";
+		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithDelimiter);
+
+		assertEquals(new BigDecimal("1200.65"), result);
+	}
+
+	@Test
+	public void testInteger_Comma()
+	{
+		final String numberWithDelimiter = "1.200,65";
+		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithDelimiter);
+
+		assertEquals(new BigDecimal("1200.65"), result);
+	}
+
+	@Test
+	public void testInteger_Dot4()
+	{
+		final String numberWithDelimiter = "4.000000000";
+		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithDelimiter);
+
+		assertEquals(new BigDecimal("4"), result);
+	}
+
+	@Test
+	public void testInteger_Comma4()
+	{
+		final String numberWithDelimiter = "4.000000000";
+		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithDelimiter);
+
+		assertEquals(new BigDecimal("4"), result);
+	}
+
+	@Test
+	public void testInteger_Dot4000()
+	{
+		final String numberWithDelimiter = "4000.000000";
+		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithDelimiter);
+
+		assertEquals(new BigDecimal("4000"), result);
+	}
+
+	/* This will return 1.234 and not 1234! */
+	@Test
+	public void testInteger_ShadyComma()
+	{
+		final String numberWithDelimiter = "1,234";
+		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithDelimiter);
+
+		assertEquals(new BigDecimal("1.234"), result);
+	}
+
+	/* This will return 1.234 and not 1234! */
+	@Test
+	public void testInteger_ShadyDot()
+	{
+		final String numberWithDelimiter = "1.234";
+		final BigDecimal result = Excel_OLCand_Row_Builder.extractBigDecimal(numberWithDelimiter);
+
+		assertEquals(new BigDecimal("1.234"), result);
+	}
 }
