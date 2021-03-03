@@ -14,7 +14,7 @@
 
     <properties>
         <migration-sql-basedir/>
-        <metasfresh.version>[1,10.0.0]</metasfresh.version>
+        <metasfresh.version>10.0.0</metasfresh.version>
     </properties>
 
     <dependencies>
@@ -55,6 +55,14 @@
             <artifactId>de.metas.adempiere.adempiere.base</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
     </dependencies>
 
 </project>
