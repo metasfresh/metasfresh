@@ -99,8 +99,8 @@ public class Excel_OLCand_Row_Builder
 			.build();
 
 	private static final List<NumberFormat> numberFormats = ImmutableList.<NumberFormat>builder()
-			.add(NumberFormat.getInstance(Locale.ENGLISH))
 			.add(NumberFormat.getInstance(Locale.GERMAN))
+			.add(NumberFormat.getInstance(Locale.ENGLISH))
 			.build();
 
 	Excel_OLCand_Row_Builder()
