@@ -487,7 +487,7 @@ public class DefaultModelArchiver
 		final IQueryBuilder<I_C_BP_PrintFormat> queryBuilder = queryBL.createQueryBuilder(I_C_BP_PrintFormat.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClientOrSystem()
-				.addEqualsFilter(I_C_BP_PrintFormat.COLUMN_C_BPartner_ID, bpartnerId);
+				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, bpartnerId);
 
 		final IQueryBuilderOrderByClause<I_C_BP_PrintFormat> orderBy = queryBuilder.orderBy();
 		final ICompositeQueryFilter<I_C_BP_PrintFormat> docTypeFilter = queryBuilder.addCompositeQueryFilter()
@@ -498,9 +498,9 @@ public class DefaultModelArchiver
 			final I_C_DocType docType = docActionBL.getDocTypeOrNull(model);
 			if (docType != null)
 			{
-				docTypeFilter.addEqualsFilter(I_C_BP_PrintFormat.COLUMN_C_DocType_ID, docType.getC_DocType_ID());
+				docTypeFilter.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_DocType_ID, docType.getC_DocType_ID());
 
-				orderBy.addColumn(I_C_BP_PrintFormat.COLUMN_C_DocType_ID, Direction.Ascending, Nulls.Last);
+				orderBy.addColumn(I_C_BP_PrintFormat.COLUMNNAME_C_DocType_ID, Direction.Ascending, Nulls.Last);
 			}
 		}
 
@@ -508,8 +508,8 @@ public class DefaultModelArchiver
 		{
 			final int adTableId = InterfaceWrapperHelper.getModelTableId(model);
 
-			docTypeFilter.addEqualsFilter(I_C_BP_PrintFormat.COLUMN_AD_Table_ID, adTableId);
-			orderBy.addColumn(I_C_BP_PrintFormat.COLUMN_AD_Table_ID, Direction.Ascending, Nulls.Last);
+			docTypeFilter.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_AD_Table_ID, adTableId);
+			orderBy.addColumn(I_C_BP_PrintFormat.COLUMNNAME_AD_Table_ID, Direction.Ascending, Nulls.Last);
 		}
 
 		final int printFormatId = queryBuilder.andCollect(I_C_BP_PrintFormat.COLUMN_AD_PrintFormat_ID)
