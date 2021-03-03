@@ -27,7 +27,7 @@ exports[`Table row (TableRow) output matches snapshot 1`] = `
           className="widget-color-display"
           style={
             Object {
-              "backgroundColor" : "#ff3200",
+              "backgroundColor": "#ff3200",
             }
           }
         />
@@ -624,7 +624,7 @@ exports[`Table row (TableRow) output matches snapshot 1`] = `
           className="widget-color-display"
           style={
             Object {
-              "backgroundColor" : "",
+              "backgroundColor": "",
             }
           }
         />
