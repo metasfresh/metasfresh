@@ -66,8 +66,8 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 	public final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 
-	public static final String PARAM_CONFIG_ID = "ChildConfigId";
-	@Param(parameterName = PARAM_CONFIG_ID)
+	public static final String PARAM_CHILD_CONFIG_ID = "ChildConfigId";
+	@Param(parameterName = PARAM_CHILD_CONFIG_ID)
 	protected int childConfigId;
 
 	private static final String PARAM_SINCE = "since";

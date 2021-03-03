@@ -53,7 +53,7 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_CONFIG_ID;
+import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_CHILD_CONFIG_ID;
 import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_EXTERNAL_REQUEST;
 
 @Service
@@ -88,11 +88,13 @@ public class ExternalSystemService
 																							.getExternalSystemType()
 																							.getExternalSystemProcessClassName());
 
+		// note: when the AD_PInstance is created by the schedule, it's also stored as string
+		final String configIdAsString = Integer.toString(externalSystemParentConfig.getChildConfig().getId().getRepoId());
+		
 		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
 		processInfoBuilder.setAD_Process_ID(processId.getRepoId());
-
 		processInfoBuilder.addParameter(PARAM_EXTERNAL_REQUEST, invokeExternalSystemProcessRequest.getRequest());
-		processInfoBuilder.addParameter(PARAM_CONFIG_ID, externalSystemParentConfig.getChildConfig().getId().getRepoId());
+		processInfoBuilder.addParameter(PARAM_CHILD_CONFIG_ID, configIdAsString);
 
 		final ProcessExecutionResult processExecutionResult = processInfoBuilder
 				.buildAndPrepareExecution()
