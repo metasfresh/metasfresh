@@ -196,7 +196,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 				AdditionalMatchers.not(ArgumentMatchers.eq(productId)));
 
 		final Properties ctx = Env.getCtx();
-		Mockito.doReturn(3).when(taxBL).getTax(
+		Mockito.doReturn(3).when(taxBL).getTaxNotNull(
 				ctx,
 				order1,
 				(TaxCategoryId)null,

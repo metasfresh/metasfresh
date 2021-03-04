@@ -162,7 +162,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		Mockito.doReturn(activityId).when(productAcctDAO).retrieveActivityForAcct(clientId, orgId, productId);
 
 		final Properties ctx = Env.getCtx();
-		Mockito.doReturn(3).when(taxBL).getTax(
+		Mockito.doReturn(3).when(taxBL).getTaxNotNull(
 				ctx,
 				order,
 				(TaxCategoryId)null, // taxCategoryId

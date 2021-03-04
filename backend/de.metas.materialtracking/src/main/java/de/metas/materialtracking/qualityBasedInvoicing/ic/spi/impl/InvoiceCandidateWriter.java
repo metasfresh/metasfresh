@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.tax.api.TaxId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -618,7 +619,7 @@ public class InvoiceCandidateWriter
 		final Properties ctx = contextProvider.getCtx();
 		final TaxCategoryId taxCategoryId = pricingResult.getTaxCategoryId();
 
-		final int taxID = taxBL.getTax(
+		final TaxId taxID = taxBL.getTaxNotNull(
 				ctx,
 				ic,
 				taxCategoryId,
@@ -628,6 +629,6 @@ public class InvoiceCandidateWriter
 				(WarehouseId)null,
 				ic.getBill_Location_ID(), // shipPartnerLocation TODO
 				SOTrx.PURCHASE.toBoolean());
-		ic.setC_Tax_ID(taxID);
+		ic.setC_Tax_ID(taxID.getRepoId());
 	}
 }

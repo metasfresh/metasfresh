@@ -32,6 +32,7 @@ import java.sql.Timestamp;
 
 import java.util.Properties;
 
+import de.metas.tax.api.TaxId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.warehouse.WarehouseId;
@@ -241,7 +242,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		final Properties ctx = Env.getCtx();
 		final TaxCategoryId taxCategoryId = null;
 		final boolean isSOTrx = true;
-		Mockito.when(taxBL.getTax(
+		Mockito.when(taxBL.getTaxNotNull(
 				ctx,
 				currentTerm,
 				taxCategoryId,
@@ -251,7 +252,7 @@ public class FlatrateBLTest extends ContractsTestBase
 				(WarehouseId)null,
 				CoalesceUtil.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(), currentTerm.getBill_Location_ID()),
 				isSOTrx))
-				.thenReturn(3);
+				.thenReturn(TaxId.ofRepoId(3));
 	}
 
 	@Test
