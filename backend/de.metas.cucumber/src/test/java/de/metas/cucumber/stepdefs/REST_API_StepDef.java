@@ -59,7 +59,19 @@ public class REST_API_StepDef
 	{
 		testContext.setRequestPayload(payload);
 
-		apiResponse = RESTUtil.performHTTPRequest(endpointPath, verb, payload, userAuthToken);
+		apiResponse = RESTUtil.performHTTPRequest(endpointPath, verb, payload, userAuthToken, null);
+		testContext.setApiResponse(apiResponse);
+	}
+
+	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the payload from context and responds with {string} status code")
+	public void metasfresh_rest_api_endpoint_api_external_ref_receives_get_request_with_the_payload_from_context(
+			final String endpointPath,
+			final String verb,
+			final String statusCode) throws IOException
+	{
+		final String payload = testContext.getRequestPayload();
+
+		apiResponse = RESTUtil.performHTTPRequest(endpointPath, verb, payload, userAuthToken, Integer.parseInt(statusCode));
 		testContext.setApiResponse(apiResponse);
 	}
 
@@ -68,7 +80,7 @@ public class REST_API_StepDef
 			final String endpointPath,
 			final String verb) throws IOException
 	{
-		apiResponse = RESTUtil.performHTTPRequest(endpointPath, verb, null, userAuthToken);
+		apiResponse = RESTUtil.performHTTPRequest(endpointPath, verb, null, userAuthToken, null);
 		testContext.setApiResponse(apiResponse);
 	}
 
