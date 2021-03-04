@@ -22,20 +22,9 @@
 
 package de.metas.ui.web.payment_allocation;
 
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.PaymentId;
 import de.metas.process.AdProcessId;
@@ -43,6 +32,8 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.payment_allocation.process.InvoicesView_AddAdditionalInvoice;
+import de.metas.ui.web.payment_allocation.process.InvoicesView_MarkPreparedForAllocation;
+import de.metas.ui.web.payment_allocation.process.InvoicesView_UnMarkPreparedForAllocation;
 import de.metas.ui.web.payment_allocation.process.PaymentsView_AddAdditionalPayment;
 import de.metas.ui.web.payment_allocation.process.PaymentsView_Allocate;
 import de.metas.ui.web.payment_allocation.process.PaymentsView_AllocateAndDiscount;
@@ -63,6 +54,14 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @ViewFactory(windowId = PaymentsViewFactory.WINDOW_ID_String)
 public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
@@ -98,9 +97,9 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 				.setAllowOpeningRowDetails(false)
 				.allowViewCloseAction(ViewCloseAction.DONE)
 				.setIncludedViewLayout(IncludedViewLayout.builder()
-						.openOnSelect(true)
-						.blurWhenOpen(false)
-						.build())
+											   .openOnSelect(true)
+											   .blurWhenOpen(false)
+											   .build())
 				.addElementsFromViewRowClass(PaymentRow.class, viewDataType)
 				.build();
 	}
@@ -166,7 +165,9 @@ public class PaymentsViewFactory implements IViewFactory, IViewsIndexStorage
 	private List<RelatedProcessDescriptor> getInvoiceRelatedProcessDescriptors()
 	{
 		return ImmutableList.of(
-				createProcessDescriptor(10, InvoicesView_AddAdditionalInvoice.class));
+				createProcessDescriptor(10, InvoicesView_MarkPreparedForAllocation.class),
+				createProcessDescriptor(20, InvoicesView_UnMarkPreparedForAllocation.class),
+				createProcessDescriptor(30, InvoicesView_AddAdditionalInvoice.class));
 	}
 
 	protected final RelatedProcessDescriptor createProcessDescriptor(final int sortNo, @NonNull final Class<?> processClass)
