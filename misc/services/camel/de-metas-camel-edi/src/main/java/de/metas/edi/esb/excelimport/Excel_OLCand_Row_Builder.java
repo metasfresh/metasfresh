@@ -33,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.edi.esb.commons.SystemTime;
@@ -90,14 +91,14 @@ public class Excel_OLCand_Row_Builder
 	private static final String MAPKEY_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 	int C_BPartner_Location_ID = -1;
 
-	private static final List<DateFormat> dateFormats = ImmutableList.<DateFormat> builder()
+	private static final List<DateFormat> dateFormats = ImmutableList.<DateFormat>builder()
 			.add(new SimpleDateFormat("dd.MM.yyyy"))
 			.add(new SimpleDateFormat("dd.MM.yy"))
 			.add(new SimpleDateFormat("MM/dd/yyyy")) // US format
 			.add(new SimpleDateFormat("MM/dd/yy")) // US format
 			.build();
 
-	private static final List<NumberFormat> numberFormats = ImmutableList.<NumberFormat> builder()
+	private static final List<NumberFormat> numberFormats = ImmutableList.<NumberFormat>builder()
 			.add(NumberFormat.getInstance(Locale.GERMAN))
 			.add(NumberFormat.getInstance(Locale.ENGLISH))
 			.build();
@@ -205,6 +206,14 @@ public class Excel_OLCand_Row_Builder
 	private static BigDecimal extractBigDecimal(final Map<String, Object> map, final String key)
 	{
 		final Object value = getValue(map, key);
+
+		return extractBigDecimal(value);
+
+	}
+
+	@VisibleForTesting
+	static BigDecimal extractBigDecimal(final Object value)
+	{
 		if (value == null)
 		{
 			return null;
@@ -220,19 +229,71 @@ public class Excel_OLCand_Row_Builder
 			return null;
 		}
 
-		for (final NumberFormat numberFormat : numberFormats)
+		return extractBigDecimalFromStringWithUnknownLocale(valueStr);
+	}
+
+	/**
+	 * @deprecated this code is required for old excel files (>2018) where some number are encoded as strings. It can soon be removed.
+	 */
+	@Deprecated
+	private static BigDecimal extractBigDecimalFromStringWithUnknownLocale(@NonNull final String valueStr)
+	{
+		BigDecimal actualNumber = null;
+		try
 		{
-			try
+			for (final NumberFormat numberFormat : numberFormats)
 			{
 				final Number parsed = numberFormat.parse(valueStr);
-				return new BigDecimal(parsed.toString());
+				final BigDecimal numberCandidate = new BigDecimal(parsed.toString());
+
+
+				if (actualNumber == null)
+				{
+					actualNumber = numberCandidate;
+					continue;
+				}
+
+				final boolean isIntegerActual = isInteger(actualNumber);
+				final boolean isIntegerCandidate = isInteger(numberCandidate);
+
+				if(actualNumber.equals(numberCandidate))
+				{
+					continue;
+				}
+
+				else if (isIntegerActual)
+				{
+					// Maybe the decimal separator was ignored. Use the smaller number.
+					if (numberCandidate.compareTo(actualNumber) < 0)
+					{
+						actualNumber = numberCandidate;
+					}
+				}
+				else if (!isIntegerCandidate)
+				{
+
+					// both the actual number and the number candidate have decimal separators.
+					// This means that one of them could have used the both separators, for thousands and decimals.
+					// Take the greater number in this case
+					if (numberCandidate.compareTo(actualNumber) > 0)
+					{
+						actualNumber = numberCandidate;
+					}
+				}
+
 			}
-			catch (final ParseException e)
-			{
-				// ignore it
-			}
+			return actualNumber;
+		}
+		catch (final Exception e)
+		{
+			// ignore it
 		}
 		return null;
+	}
+	
+	private static boolean isInteger(final BigDecimal numberCandidate)
+	{
+		return numberCandidate.stripTrailingZeros().scale() <= 0;
 	}
 
 	private Date extractDate(final Map<String, Object> map, final String key)
