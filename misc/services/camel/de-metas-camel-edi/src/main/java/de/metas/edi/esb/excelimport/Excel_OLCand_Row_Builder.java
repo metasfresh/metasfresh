@@ -212,7 +212,7 @@ public class Excel_OLCand_Row_Builder
 	}
 
 	@VisibleForTesting
-	protected static BigDecimal extractBigDecimal(final Object value)
+	static BigDecimal extractBigDecimal(final Object value)
 	{
 		if (value == null)
 		{
@@ -229,6 +229,15 @@ public class Excel_OLCand_Row_Builder
 			return null;
 		}
 
+		return extractBigDecimalFromStringWithUnknownLocale(valueStr);
+	}
+
+	/**
+	 * @deprecated this code is required for old excel files (>2018) where some number are encoded as strings. It can soon be removed.
+	 */
+	@Deprecated
+	private static BigDecimal extractBigDecimalFromStringWithUnknownLocale(@NonNull final String valueStr)
+	{
 		BigDecimal actualNumber = null;
 		try
 		{
@@ -275,16 +284,13 @@ public class Excel_OLCand_Row_Builder
 			}
 			return actualNumber;
 		}
-
 		catch (final Exception e)
 		{
 			// ignore it
 		}
-		//	}
-
 		return null;
 	}
-
+	
 	private static boolean isInteger(final BigDecimal numberCandidate)
 	{
 		return numberCandidate.stripTrailingZeros().scale() <= 0;
