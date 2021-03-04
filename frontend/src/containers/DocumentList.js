@@ -124,7 +124,8 @@ class DocumentListContainer extends Component {
       deleteTable,
       isModal,
       filters,
-      viewData: { pending },
+      queryViewId,
+      viewData: { pending, layoutPending },
       deleteQuickActions,
     } = this.props;
     const staticFilterCleared = filters ? filters.staticFilterCleared : false;
@@ -146,7 +147,7 @@ class DocumentListContainer extends Component {
      */
 
     if (
-      (nextViewId !== nextQueryViewId && !isIncluded) || // for the case when you applied a filter and come back via browser back button
+      (queryViewId && !isIncluded && nextViewId !== nextQueryViewId) || // for the case when you applied a filter and come back via browser back button
       staticFilterCleared ||
       nextWindowId !== windowId ||
       (nextWindowId === windowId &&
@@ -157,7 +158,10 @@ class DocumentListContainer extends Component {
     ) {
       // if view is already loading or reloading (after filtering) don't fetch
       // the data and layout again
-      if (!(pending || (nextViewData && nextViewData.pending))) {
+      if (
+        !(pending || (nextViewData && nextViewData.pending)) &&
+        !(layoutPending || (nextViewData && nextViewData.layoutPending))
+      ) {
         deleteTable(getTableId({ windowId, viewId }));
         deleteQuickActions(windowId, viewId);
 
