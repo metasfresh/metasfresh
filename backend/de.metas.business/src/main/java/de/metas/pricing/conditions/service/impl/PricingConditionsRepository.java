@@ -219,7 +219,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				//
 				.qualityDiscountPercentage(schemaBreakRecord.getQualityIssuePercentage())
 				//
-				.pricingsystemsurchargeamt(schemaBreakRecord.getPricingSystemSurchargeAmt())
+				.pricingSystemSurchargeAmt(schemaBreakRecord.getPricingSystemSurchargeAmt())
 				//
 				//
 				.dateCreated(TimeUtil.asInstant(schemaBreakRecord.getCreated()))
