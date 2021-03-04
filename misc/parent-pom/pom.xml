@@ -59,7 +59,7 @@
             3.15.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
         -->
-        <assertj.version>3.15.0</assertj.version>
+        <assertj.version>3.19.0</assertj.version>
         <xmlunit.version>2.6.4</xmlunit.version>
 
         <mockito.version>2.7.22</mockito.version>
@@ -143,7 +143,17 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        
+        <!-- 
+        dependency of org.skyscreamer:jsonassert which is a dependency of json-snapshot
+        I get a ClassNotFoundException JSONException, despite ofc it *should* be there transitively 
+        -->
+        <dependency>
+            <groupId>com.vaadin.external.google</groupId>
+            <artifactId>android-json</artifactId>
+            <version>0.0.20131108.vaadin1</version>
+        </dependency>
+        
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
