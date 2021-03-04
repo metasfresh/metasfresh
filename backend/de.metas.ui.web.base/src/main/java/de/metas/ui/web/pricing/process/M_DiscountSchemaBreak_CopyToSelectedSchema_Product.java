@@ -7,8 +7,6 @@ import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 import org.compiere.model.I_M_Product;
 
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
 import de.metas.pricing.conditions.CopyDiscountSchemaBreaksRequest;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.CopyDiscountSchemaBreaksRequest.Direction;
@@ -48,10 +46,8 @@ import lombok.NonNull;
  * #L%
  */
 
-public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
+public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private static final AdMessageKey MSG = AdMessageKey.of("de.metas.ui.web.pricing.process.M_DiscountSchemaBreak_CopyToOtherSchema_Product.NoSingleProduct");
-
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
 	final String PARAM_M_Product_ID = I_M_Product.COLUMNNAME_M_Product_ID;
@@ -70,22 +66,7 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (!rowsHaveSingleProductId())
-		{
-			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG);
-			return ProcessPreconditionsResolution.reject(msg);
-		}
-
 		return ProcessPreconditionsResolution.accept();
-	}
-
-	private boolean rowsHaveSingleProductId()
-	{
-		// getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false)); doesn't work from checkPreconditionsApplicable
-		final SqlViewRowsWhereClause viewSqlWhereClause = getViewSqlWhereClause(getSelectedRowIds());
-		final IQueryFilter<I_M_DiscountSchemaBreak> selectionQueryFilter = viewSqlWhereClause.toQueryFilter();
-
-		return pricingConditionsRepo.isSingleProductId(selectionQueryFilter);
 	}
 
 	@Override
@@ -113,12 +94,6 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 		}
 	}
 
-	private SqlViewRowsWhereClause getViewSqlWhereClause(@NonNull final DocumentIdsSelection rowIds)
-	{
-		final String breaksTableName = I_M_DiscountSchemaBreak.Table_Name;
-		return getView().getSqlWhereClause(rowIds, SqlOptions.usingTableName(breaksTableName));
-	}
-
 	@Override
 	protected String doIt()
 	{
@@ -135,7 +110,7 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 				.pricingConditionsId(PricingConditionsId.ofRepoId(p_PricingConditionsId))
 				.productId(ProductId.ofRepoId(p_ProductId))
 				.allowCopyToSameSchema(allowCopyToSameSchema)
-				.direction(Direction.SourceTarget)
+				.direction(Direction.TargetSource)
 				.build();
 		
 		pricingConditionsRepo.copyDiscountSchemaBreaksWithProductId(request);

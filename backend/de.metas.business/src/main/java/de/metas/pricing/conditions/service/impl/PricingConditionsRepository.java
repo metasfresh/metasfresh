@@ -77,6 +77,8 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.BreakValueType;
+import de.metas.pricing.conditions.CopyDiscountSchemaBreaksRequest;
+import de.metas.pricing.conditions.CopyDiscountSchemaBreaksRequest.Direction;
 import de.metas.pricing.conditions.PriceSpecification;
 import de.metas.pricing.conditions.PriceSpecificationType;
 import de.metas.pricing.conditions.PricingConditions;
@@ -552,68 +554,145 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 			@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> sourceFilter,
 			@NonNull final PricingConditionsId toPricingConditionsId)
 	{
-		copyDiscountSchemaBreaksWithProductId(sourceFilter, toPricingConditionsId, null/* productId */, false/* allowCopyToSameSchema */);
+		final CopyDiscountSchemaBreaksRequest request = CopyDiscountSchemaBreaksRequest.builder()
+				.filter(sourceFilter)
+				.pricingConditionsId(toPricingConditionsId)
+				.productId(null)
+				.allowCopyToSameSchema(false)
+				.direction(Direction.SourceTarget)
+				.build();
+		copyDiscountSchemaBreaksWithProductId(request);
 	}
 
 	@Override
-	public void copyDiscountSchemaBreaksWithProductId(
-			@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> sourceFilter,
-			@NonNull final PricingConditionsId toPricingConditionsId,
-			@Nullable final ProductId toProductId,
-			final boolean allowCopyToSameSchema)
+	public void copyDiscountSchemaBreaksWithProductId(@NonNull CopyDiscountSchemaBreaksRequest request)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksFromOtherPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
-				.setJoinAnd()
-				.addFilter(sourceFilter);
+		final IQueryFilter<I_M_DiscountSchemaBreak> filter = request.getFilter();
+		final PricingConditionsId pPricingConditionsId = request.getPricingConditionsId();
+		final ProductId productId = request.getProductId();
+		final boolean allowCopyToSameSchema = request.isAllowCopyToSameSchema();
+		final Direction direction = request.getDirection();
 
-		if (!allowCopyToSameSchema)
-		{
-			breaksFromOtherPricingConditions
-					.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, toPricingConditionsId.getRepoId());
-		}
 		
-		final List<PricingConditionsBreak> sourceDiscountSchemaBreaks = retrieveDiscountSchemaBreakRecords(breaksFromOtherPricingConditions);
-
-		//
-		// retrieve existent target discount breaks
-		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksForGivenPorductAndPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
-				.setJoinAnd()
-				.addEqualsFilter(I_M_DiscountSchemaBreak.COLUMN_M_DiscountSchema_ID, toPricingConditionsId)
-				.addEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_Product_ID, toProductId);
-		
-		final List<PricingConditionsBreak> exitentTargetDiscountBreaks = retrieveDiscountSchemaBreakRecords(breaksForGivenPorductAndPricingConditions);
-
-		//
-		// find records that need to be updated and the records that needs to be copied
-		
-		final Map<PricingConditionsBreak, PricingConditionsBreak> discountSchemaBreaksToUpdate = new HashMap<PricingConditionsBreak, PricingConditionsBreak>();
-		final List<PricingConditionsBreak> discountSchemaBreaksToCopy = new ArrayList<PricingConditionsBreak>();
-		
-		for (final PricingConditionsBreak discountSchemaBreak : sourceDiscountSchemaBreaks)
+		// filtered records are source and the target is the given product and pricing conditions
+		if (Direction.SourceTarget == direction)
 		{
 
-			final PricingConditionsBreak exitentBreak = fetchMatchingPricingConditionBreak(discountSchemaBreak, exitentTargetDiscountBreaks);
-			if (exitentBreak != null)
+			final IQueryBL queryBL = Services.get(IQueryBL.class);
+			final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksFromOtherPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
+					.setJoinAnd()
+					.addFilter(filter);
+
+			if (!allowCopyToSameSchema)
 			{
-				discountSchemaBreaksToUpdate.put(discountSchemaBreak, exitentBreak);
+				breaksFromOtherPricingConditions
+						.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, pPricingConditionsId.getRepoId());
 			}
-			else
+
+			final List<PricingConditionsBreak> sourceDiscountSchemaBreaks = retrieveDiscountSchemaBreakRecords(breaksFromOtherPricingConditions);
+
+			//
+			// retrieve existent target discount breaks
+			final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksForGivenPorductAndPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
+					.setJoinAnd()
+					.addEqualsFilter(I_M_DiscountSchemaBreak.COLUMN_M_DiscountSchema_ID, pPricingConditionsId)
+					.addEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_Product_ID, productId);
+
+			final List<PricingConditionsBreak> exitentTargetDiscountBreaks = retrieveDiscountSchemaBreakRecords(breaksForGivenPorductAndPricingConditions);
+
+			//
+			// find records that need to be updated and the records that needs to be copied
+
+			final Map<PricingConditionsBreak, PricingConditionsBreak> discountSchemaBreaksToUpdate = new HashMap<PricingConditionsBreak, PricingConditionsBreak>();
+			final List<PricingConditionsBreak> discountSchemaBreaksToCopy = new ArrayList<PricingConditionsBreak>();
+
+			for (final PricingConditionsBreak discountSchemaBreak : sourceDiscountSchemaBreaks)
 			{
-				discountSchemaBreaksToCopy.add(discountSchemaBreak);
+
+				final PricingConditionsBreak exitentBreak = fetchMatchingPricingConditionBreak(discountSchemaBreak, exitentTargetDiscountBreaks);
+				if (exitentBreak != null)
+				{
+					discountSchemaBreaksToUpdate.put(discountSchemaBreak, exitentBreak);
+				}
+				else
+				{
+					discountSchemaBreaksToCopy.add(discountSchemaBreak);
+				}
 			}
+
+			// copy breaks
+			for (final PricingConditionsBreak schemaBreak : discountSchemaBreaksToCopy)
+			{
+				copyDiscountSchemaBreakWithProductId(schemaBreak.getId(), pPricingConditionsId, productId);
+			}
+
+			// update breaks
+			for (final PricingConditionsBreak schemaBreak : discountSchemaBreaksToUpdate.keySet())
+			{
+				updateDiscountSchemaBreakRecords(schemaBreak, discountSchemaBreaksToUpdate.get(schemaBreak));
+			}
+
 		}
 
-		// copy breaks
-		for (final PricingConditionsBreak schemaBreak : discountSchemaBreaksToCopy)
+		// filtered records are the target and the source is the given product and pricing conditions
+		else
 		{
-			copyDiscountSchemaBreakWithProductId(schemaBreak.getId(), toPricingConditionsId, toProductId);
-		}
+			
+			final IQueryBL queryBL = Services.get(IQueryBL.class);
+			final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksFromOtherPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
+					.setJoinAnd()
+					.addFilter(filter);
 
-		// update breaks
-		for (final PricingConditionsBreak schemaBreak : discountSchemaBreaksToUpdate.keySet())
-		{
-			updateDiscountSchemaBreakRecords(schemaBreak, discountSchemaBreaksToUpdate.get(schemaBreak));
+			if (!allowCopyToSameSchema)
+			{
+				breaksFromOtherPricingConditions
+						.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, pPricingConditionsId.getRepoId());
+			}
+
+			final List<PricingConditionsBreak> targetDiscountSchemaBreaks = retrieveDiscountSchemaBreakRecords(breaksFromOtherPricingConditions);
+
+			//
+			// retrieve source discount breaks
+			final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksForGivenPorductAndPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
+					.setJoinAnd()
+					.addEqualsFilter(I_M_DiscountSchemaBreak.COLUMN_M_DiscountSchema_ID, pPricingConditionsId)
+					.addEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_Product_ID, productId);
+
+			final List<PricingConditionsBreak> sourceDiscountBreaks = retrieveDiscountSchemaBreakRecords(breaksForGivenPorductAndPricingConditions);
+
+			//
+			// find records that need to be updated and the records that needs to be copied
+
+			final Map<PricingConditionsBreak, PricingConditionsBreak> discountSchemaBreaksToUpdate = new HashMap<PricingConditionsBreak, PricingConditionsBreak>();
+			final List<PricingConditionsBreak> discountSchemaBreaksToCopy = new ArrayList<PricingConditionsBreak>();
+
+			for (final PricingConditionsBreak discountSchemaBreak : targetDiscountSchemaBreaks)
+			{
+
+				final PricingConditionsBreak exitentBreak = fetchMatchingPricingConditionBreak(discountSchemaBreak, sourceDiscountBreaks);
+				if (exitentBreak != null)
+				{
+					discountSchemaBreaksToUpdate.put(discountSchemaBreak, exitentBreak);
+				}
+				else
+				{
+					discountSchemaBreaksToCopy.add(discountSchemaBreak);
+				}
+			}
+
+			// copy breaks
+			for (final PricingConditionsBreak schemaBreak : discountSchemaBreaksToCopy)
+			{
+				copyDiscountSchemaBreakWithProductId(schemaBreak.getId(), pPricingConditionsId, productId);
+			}
+
+			// update breaks
+			for (final PricingConditionsBreak schemaBreak : discountSchemaBreaksToUpdate.keySet())
+			{
+				updateDiscountSchemaBreakRecords(schemaBreak, discountSchemaBreaksToUpdate.get(schemaBreak));
+			}
+			
+			
 		}
 	}
 	
