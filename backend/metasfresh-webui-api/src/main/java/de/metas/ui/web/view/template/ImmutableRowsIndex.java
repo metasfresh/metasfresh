@@ -1,5 +1,16 @@
 package de.metas.ui.web.view.template;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -7,18 +18,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-
-import de.metas.ui.web.view.IViewRow;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -30,12 +29,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -136,10 +135,47 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 		if (!added)
 		{
 			resultRows.add(rowToAdd);
-			added = true;
 		}
 
 		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);
+	}
+
+	public ImmutableRowsIndex<T> changingRows(
+			@NonNull final DocumentIdsSelection rowIdsToChange,
+			@NonNull final UnaryOperator<T> rowMapper)
+	{
+		if (rowIdsToChange.isEmpty())
+		{
+			return this;
+		}
+
+		boolean changed = false;
+		final ArrayList<T> resultRows = new ArrayList<>(rowIds.size());
+		for (final DocumentId rowId : this.rowIds)
+		{
+			final T row = rowsById.get(rowId);
+			if (rowIdsToChange.contains(rowId))
+			{
+				final T rowChanged = rowMapper.apply(row);
+				if (Objects.equals(row, rowChanged))
+				{
+					resultRows.add(row);
+				}
+				else
+				{
+					resultRows.add(rowChanged);
+					changed = true;
+				}
+			}
+			else
+			{
+				resultRows.add(row);
+			}
+		}
+
+		return changed
+				? new ImmutableRowsIndex<>(this.initialRowIds, resultRows)
+				: this;
 	}
 
 	public ImmutableRowsIndex<T> changingRow(

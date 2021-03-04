@@ -1,15 +1,8 @@
 package de.metas.ui.web.payment_allocation;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.model.I_C_Invoice;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.invoice.InvoiceId;
 import de.metas.ui.web.view.IEditableView.RowEditingContext;
 import de.metas.ui.web.view.template.IEditableRowsData;
@@ -20,6 +13,13 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.model.I_C_Invoice;
+
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -87,13 +87,31 @@ public class InvoiceRows implements IEditableRowsData<InvoiceRow>
 	}
 
 	@Override
-	public void invalidate(final DocumentIdsSelection rowIds)
+	public void invalidate(@NonNull final DocumentIdsSelection rowIds)
 	{
-		final ImmutableSet<InvoiceId> invoiceIds = rowsHolder
-				.getRecordIdsToRefresh(rowIds, InvoiceRow::convertDocumentIdToInvoiceId);
+		final ImmutableSet<InvoiceId> invoiceIds = rowsHolder.getRecordIdsToRefresh(rowIds, InvoiceRow::convertDocumentIdToInvoiceId);
 
-		final List<InvoiceRow> newRows = repository.getInvoiceRowsListByInvoiceId(invoiceIds, evaluationDate);
+		final ImmutableMap<DocumentId, InvoiceRow> oldRowsById = rowsHolder.getDocumentId2TopLevelRows();
+
+		final List<InvoiceRow> newRows = repository.getInvoiceRowsListByInvoiceId(invoiceIds, evaluationDate)
+				.stream()
+				.map(newRow -> mergeFromOldRow(newRow, oldRowsById))
+				.collect(ImmutableList.toImmutableList());
+
 		rowsHolder.compute(rows -> rows.replacingRows(rowIds, newRows));
+	}
+
+	private static InvoiceRow mergeFromOldRow(
+			@NonNull final InvoiceRow newRow,
+			@NonNull final ImmutableMap<DocumentId, InvoiceRow> oldRowsById)
+	{
+		final InvoiceRow oldRow = oldRowsById.get(newRow.getId());
+		if (oldRow == null)
+		{
+			return newRow;
+		}
+
+		return newRow.withPreparedForAllocation(oldRow.isPreparedForAllocation());
 	}
 
 	public void addInvoice(@NonNull final InvoiceId invoiceId)
@@ -112,5 +130,23 @@ public class InvoiceRows implements IEditableRowsData<InvoiceRow>
 	{
 		final DocumentId rowIdToChange = ctx.getRowId();
 		rowsHolder.compute(rows -> rows.changingRow(rowIdToChange, row -> InvoiceRowReducers.reduce(row, fieldChangeRequests)));
+	}
+
+	public ImmutableList<InvoiceRow> getRowsWithPreparedForAllocationFlagSet()
+	{
+		return getAllRows()
+				.stream()
+				.filter(InvoiceRow::isPreparedForAllocation)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void markPreparedForAllocation(@NonNull final DocumentIdsSelection rowIds)
+	{
+		rowsHolder.compute(rows -> rows.changingRows(rowIds, InvoiceRow::withPreparedForAllocationSet));
+	}
+
+	public void unmarkPreparedForAllocation(@NonNull final DocumentIdsSelection rowIds)
+	{
+		rowsHolder.compute(rows -> rows.changingRows(rowIds, InvoiceRow::withPreparedForAllocationUnset));
 	}
 }
