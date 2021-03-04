@@ -14,6 +14,8 @@ import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
@@ -46,8 +48,9 @@ import lombok.NonNull;
  * #L%
  */
 
-public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends ViewBasedProcessTemplate implements IProcessPrecondition, IProcessDefaultParametersProvider
+public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends JavaProcess implements IProcessPrecondition
 {
+
 	private final IPricingConditionsRepository pricingConditionsRepo = Services.get(IPricingConditionsRepository.class);
 
 	final String PARAM_M_Product_ID = I_M_Product.COLUMNNAME_M_Product_ID;
@@ -59,41 +62,16 @@ public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends ViewBase
 	private int p_ProductId;
 
 	@Override
-	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull IProcessPreconditionsContext context)
 	{
-		if (getSelectedRowIds().isEmpty())
+		
+		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
 		return ProcessPreconditionsResolution.accept();
 	}
-
-	@Override
-	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
-	{
-		final String parameterName = parameter.getColumnName();
-		if (PARAM_M_Product_ID.equals(parameterName))
-		{
-			final IQueryFilter<I_M_DiscountSchemaBreak> selectionQueryFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
-
-			final ProductId uniqueProductIdForSelection = pricingConditionsRepo.retrieveUniqueProductIdForSelectionOrNull(selectionQueryFilter);
-
-			if (uniqueProductIdForSelection == null)
-			{
-				// should not happen because of the preconditions above
-				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
-			}
-
-			return uniqueProductIdForSelection.getRepoId();
-		}
-
-		else
-		{
-			return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
-		}
-	}
-
 	@Override
 	protected String doIt()
 	{
