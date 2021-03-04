@@ -72,7 +72,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
@@ -112,8 +111,6 @@ public class DebugRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/debug";
 
-	private static final Logger logger = LogManager.getLogger(Logger.class);
-
 	@Autowired
 	private UserSession userSession;
 
@@ -134,10 +131,6 @@ public class DebugRestController
 	@Autowired
 	@Lazy
 	private ProcessRestController processesController;
-
-	@Autowired
-	@Lazy
-	private IQueryStatisticsLogger statisticsLogger;
 
 	@Autowired
 	@Lazy
@@ -234,25 +227,6 @@ public class DebugRestController
 		userSession.assertLoggedIn();
 
 		return userSession.isAllowDeprecatedRestAPI();
-	}
-
-	@RequestMapping(value = "/traceSqlQueries", method = RequestMethod.GET)
-	public void setTraceSqlQueries(
-
-			@ApiParam(value = "If Enabled, all SQL queries are logged with loglevel=WARN, or if the system property <code>" + IQueryStatisticsLogger.SYSTEM_PROPERTY_LOG_TO_SYSTEM_ERROR + "</code> is set to <code>true</code>, they will be written to std-err.", //
-					allowEmptyValue = false) //
-			@RequestParam("enabled") final boolean enabled)
-	{
-		userSession.assertLoggedIn();
-
-		if (enabled)
-		{
-			statisticsLogger.enableWithSqlTracing();
-		}
-		else
-		{
-			statisticsLogger.disable();
-		}
 	}
 
 	@RequestMapping(value = "/debugProtocol", method = RequestMethod.GET)
@@ -390,7 +364,7 @@ public class DebugRestController
 
 		private final Set<String> loggerNames;
 
-		private LoggingModule(final String... loggerNames)
+		LoggingModule(final String... loggerNames)
 		{
 			this.loggerNames = ImmutableSet.copyOf(loggerNames);
 		}
@@ -491,7 +465,7 @@ public class DebugRestController
 
 		//
 		// Delete from DB selection
-		String sql = "DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
+		final String sql = "DELETE FROM " + I_T_WEBUI_ViewSelection.Table_Name
 				+ " WHERE " + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID + "=" + DB.TO_STRING(viewId.getViewId())
 				+ " AND " + I_T_WEBUI_ViewSelection.COLUMNNAME_IntKey1 + "=" + DB.buildSqlList(rowIds.toIntSet());
 		final int countDeleted = DB.executeUpdateEx(sql, ITrx.TRXNAME_None);
@@ -592,7 +566,7 @@ public class DebugRestController
 					countEventsGenerated++;
 				}
 			}
-			catch (SQLException ex)
+			catch (final SQLException ex)
 			{
 				throw new DBException(ex);
 			}

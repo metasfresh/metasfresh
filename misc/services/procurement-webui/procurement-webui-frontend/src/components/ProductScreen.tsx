@@ -2,7 +2,6 @@ import React, { ReactElement } from 'react';
 import { observer, inject } from 'mobx-react';
 import { withRouter, RouteComponentProps } from 'react-router';
 import { getSnapshot } from 'mobx-state-tree';
-
 import { formDate, prettyDate } from '../utils/date';
 import DailyNav from './DailyNav';
 import View from './View';

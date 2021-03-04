@@ -111,7 +111,8 @@
         <module>de.metas.contracts</module>
 
         <module>de.metas.externalreference</module>
-
+        <module>de.metas.externalsystem</module>
+        
         <!-- cucumber has its own build script -->
         <!-- <module>de.metas.cucumber</module> -->
 

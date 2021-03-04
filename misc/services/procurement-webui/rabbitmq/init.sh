@@ -2,17 +2,17 @@
 
 reset_config_file="/etc/rabbitmq/delete_me_to_reset_config.txt"
 
+reset_config_file="/etc/rabbitmq/delete_me_to_reset_config.txt"
 if [ ! -f "$reset_config_file" ]; then
         echo "init.sh - before rabbitmq start - $reset_config_file does not exist; -> resetting config files"
         cp --recursive --verbose /etc/rabbitmq_default_configs/* /etc/rabbitmq/
 else
         echo "init.sh - before rabbitmq start - $reset_config_file exits; -> not resetting config files"
 fi
-
 echo "Auto-generated file; delete this file to let the rabbitmq container reset the config to internal defaults on startup." > $reset_config_file
 
 #echo "init.sh - before rabbitmq start - RABBITMQ_PROCUREMENT_WEBUI_PASSWORD=$RABBITMQ_PROCUREMENT_WEBUI_PASSWORD"
-#echo "init.sh - before rabbitmq start - RABBITMQ_METASFRESH_PASSWORD=$RABBITMQ_METASFRESH_PASSWORD"
+#echo "init.sh - before rabbitmq start - RABBITMQ_PROCUREMENT_MF_PASSWORD=RABBITMQ_PROCUREMENT_MF_PASSWORD"
 
 # thx to https://stackoverflow.com/a/30773882/1012103
 # update Rabbitmq user passwords when the server is up

@@ -27,6 +27,7 @@ import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
@@ -86,7 +87,7 @@ class ExternalReferenceRestControllerServiceTest
 	{
 		// given
 		final JsonExternalReferenceCreateRequest request = JsonExternalReferenceCreateRequest.builder()
-				.systemName("system")
+				.systemName(JsonExternalSystemName.of("system"))
 				.item(JsonExternalReferenceItem.of(JsonExternalReferenceLookupItem.builder()
 								.id("id1")
 								.type("bpartner")
@@ -119,7 +120,7 @@ class ExternalReferenceRestControllerServiceTest
 
 		final JsonExternalReferenceLookupResponse response = externalReferenceRestControllerService.performLookup("orgCode",
 				JsonExternalReferenceLookupRequest.builder()
-						.systemName("system")
+						.systemName(JsonExternalSystemName.of("system"))
 						.item(lookupItem1)
 						.item(lookupItem2)
 						.item(lookupItem3)

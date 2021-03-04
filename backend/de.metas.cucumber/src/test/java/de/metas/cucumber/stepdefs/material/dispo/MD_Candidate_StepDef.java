@@ -91,7 +91,7 @@ public class MD_Candidate_StepDef
 		DB.executeUpdateEx("TRUNCATE TABLE MD_Candidate cascade", ITrx.TRXNAME_None);
 	}
 
-	@When("metasfresh receives a shipmentScheduleCreatedEvent")
+	@When("metasfresh receives a ShipmentScheduleCreatedEvent")
 	public void shipmentScheduleCreatedEvent(@NonNull final DataTable dataTable)
 	{
 		final Map<String, String> map = dataTable.asMaps().get(0);

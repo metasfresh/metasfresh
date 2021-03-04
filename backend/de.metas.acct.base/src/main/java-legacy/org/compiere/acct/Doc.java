@@ -1762,7 +1762,7 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	}
 
 	@Nullable
-	private String getValueAsString(final String columnName)
+	protected String getValueAsString(final String columnName)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);

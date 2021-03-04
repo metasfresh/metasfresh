@@ -5,7 +5,11 @@
         "es6": true,
         "jest/globals": true
     },
-    "parser": "babel-eslint",
+    "parser": "@babel/eslint-parser",
+    "parserOptions": {
+        "requireConfigFile" : "false",
+        "babelOptions": { "configFile": "./.babelrc" }
+    },
     "extends": [
         "eslint:recommended",
         "plugin:react/recommended",

@@ -843,7 +843,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 
 		final APIExportStatus currentExportStatus = APIExportStatus.ofNullableCode(schedRecord.getExportStatus());
-		final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(schedRecord);
 
 		// if it's not "DontExport" and not "Pending" already, we *might* set them back to "Pending".
 		final boolean maybeSetBackToPending = !Objects.equals(currentExportStatus, APIExportStatus.Pending)

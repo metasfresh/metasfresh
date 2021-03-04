@@ -24,7 +24,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.InputStream;
 import java.util.Optional;
 
+import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -43,6 +45,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -66,30 +69,29 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
-import de.metas.rest_api.bpartner.request.JsonRequestBankAccountUpsertItem;
-import de.metas.rest_api.bpartner.request.JsonRequestBankAccountsUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestComposite;
-import de.metas.rest_api.bpartner.request.JsonRequestContact;
-import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
-import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
-import de.metas.rest_api.bpartner.response.JsonResponseComposite;
-import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
-import de.metas.rest_api.bpartner.response.JsonResponseContact;
-import de.metas.rest_api.bpartner.response.JsonResponseLocation;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
-import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsertItem;
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.utils.MetasfreshId;
-import de.metas.rest_api.common.SyncAdvise;
-import de.metas.rest_api.common.SyncAdvise.IfExists;
-import de.metas.rest_api.common.SyncAdvise.IfNotExists;
+import de.metas.common.bpartner.request.JsonRequestBPartner;
+import de.metas.common.bpartner.request.JsonRequestBPartnerUpsert;
+import de.metas.common.bpartner.request.JsonRequestBPartnerUpsertItem;
+import de.metas.common.bpartner.request.JsonRequestBankAccountUpsertItem;
+import de.metas.common.bpartner.request.JsonRequestBankAccountsUpsert;
+import de.metas.common.bpartner.request.JsonRequestComposite;
+import de.metas.common.bpartner.request.JsonRequestContact;
+import de.metas.common.bpartner.request.JsonRequestContactUpsert;
+import de.metas.common.bpartner.request.JsonRequestContactUpsertItem;
+import de.metas.common.bpartner.request.JsonRequestLocationUpsert;
+import de.metas.common.bpartner.request.JsonRequestLocationUpsertItem;
+import de.metas.common.bpartner.response.JsonResponseComposite;
+import de.metas.common.bpartner.response.JsonResponseCompositeList;
+import de.metas.common.bpartner.response.JsonResponseContact;
+import de.metas.common.bpartner.response.JsonResponseLocation;
+import de.metas.common.bpartner.response.JsonResponseUpsert;
+import de.metas.common.bpartner.response.JsonResponseUpsertItem;
+import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsert;
+import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsertItem;
+import de.metas.common.rest_api.JsonExternalId;
+import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.SyncAdvise.IfExists;
+import de.metas.common.rest_api.SyncAdvise.IfNotExists;
 import de.metas.util.web.exception.MissingResourceException;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
@@ -162,7 +164,8 @@ class BpartnerRestControllerTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				currencyRepository);
+				currencyRepository,
+				Mockito.mock(ExternalReferenceRestControllerService.class));
 
 		bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),
@@ -281,8 +284,8 @@ class BpartnerRestControllerTest
 		// invoke the method under test
 		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
-		final MetasfreshId metasfreshId = assertUpsertResultOK(result, "ext-" + externalId);
-		BPartnerId bpartnerId = BPartnerId.ofRepoId(metasfreshId.getValue());
+		final JsonMetasfreshId metasfreshId = assertUpsertResultOK(result, "ext-" + externalId);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(metasfreshId.getValue());
 
 		final BPartnerComposite persistedResult = bpartnerCompositeRepository.getById(bpartnerId);
 		expect(persistedResult).toMatchSnapshot();
@@ -496,7 +499,7 @@ class BpartnerRestControllerTest
 		return bpartnerUpsertRequest;
 	}
 
-	private MetasfreshId assertUpsertResultOK(
+	private JsonMetasfreshId assertUpsertResultOK(
 			@NonNull final ResponseEntity<JsonResponseBPartnerCompositeUpsert> result,
 			@NonNull final String bpartnerIdentifier)
 	{
@@ -508,7 +511,7 @@ class BpartnerRestControllerTest
 		final JsonResponseBPartnerCompositeUpsertItem responseCompositeItem = resultBody.getResponseItems().get(0);
 		assertThat(responseCompositeItem.getResponseBPartnerItem().getIdentifier()).isEqualTo(bpartnerIdentifier);
 
-		final MetasfreshId metasfreshId = responseCompositeItem.getResponseBPartnerItem().getMetasfreshId();
+		final JsonMetasfreshId metasfreshId = responseCompositeItem.getResponseBPartnerItem().getMetasfreshId();
 		return metasfreshId;
 	}
 
@@ -611,7 +614,7 @@ class BpartnerRestControllerTest
 		final JsonResponseUpsertItem responseItem = response.getResponseItems().get(0);
 		assertThat(responseItem.getIdentifier()).isEqualTo(jsonContact.getContactIdentifier());
 
-		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
+		final JsonMetasfreshId metasfreshId = responseItem.getMetasfreshId();
 
 		final BPartnerContactQuery bpartnerContactQuery = BPartnerContactQuery.builder().userId(UserId.ofRepoId(metasfreshId.getValue())).build();
 		final Optional<BPartnerCompositeAndContactId> optContactIdAndBPartner = bpartnerCompositeRepository.getByContact(bpartnerContactQuery);
@@ -643,7 +646,7 @@ class BpartnerRestControllerTest
 		final JsonRequestContact jsonContact = new JsonRequestContact();
 		jsonContact.setName("jsonContact.name-UPDATED");
 		jsonContact.setCode("jsonContact.code-UPDATED");
-		jsonContact.setMetasfreshBPartnerId(MetasfreshId.of(C_BPARTNER_ID));
+		jsonContact.setMetasfreshBPartnerId(JsonMetasfreshId.of(C_BPARTNER_ID));
 
 		de.metas.common.util.time.SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
@@ -664,7 +667,7 @@ class BpartnerRestControllerTest
 		final JsonResponseUpsertItem responseItem = response.getResponseItems().get(0);
 		assertThat(responseItem.getIdentifier()).isEqualTo(contactIdentifier);
 
-		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
+		final JsonMetasfreshId metasfreshId = responseItem.getMetasfreshId();
 
 		final BPartnerContactQuery bpartnerContactQuery = BPartnerContactQuery.builder().userId(UserId.ofRepoId(metasfreshId.getValue())).build();
 		final Optional<BPartnerCompositeAndContactId> optContactIdAndBPartner = bpartnerCompositeRepository.getByContact(bpartnerContactQuery);
@@ -699,7 +702,7 @@ class BpartnerRestControllerTest
 
 		assertThat(responseItem.getIdentifier()).isEqualTo(jsonLocation.getLocationIdentifier());
 
-		final MetasfreshId metasfreshId = responseItem.getMetasfreshId();
+		final JsonMetasfreshId metasfreshId = responseItem.getMetasfreshId();
 
 		final BPartnerQuery query = BPartnerQuery.builder().externalId(ExternalId.of(C_BPARTNER_EXTERNAL_ID)).build();
 		final ImmutableList<BPartnerComposite> persistedPage = bpartnerCompositeRepository.getByQuery(query);

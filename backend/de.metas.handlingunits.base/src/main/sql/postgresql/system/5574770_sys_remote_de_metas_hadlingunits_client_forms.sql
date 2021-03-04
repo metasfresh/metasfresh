@@ -143,6 +143,8 @@ DELETE FROM AD_Field WHERE AD_Field_ID=558503
 /* DDL */ SELECT public.db_alter_table('M_InOut','ALTER TABLE M_InOut DROP COLUMN IF EXISTS ReturnFromCustomer')
 ;
 
+DELETE FROM AD_Field where  AD_Column_ID=556818;
+
 -- 2020-12-14T14:25:26.521Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=556818

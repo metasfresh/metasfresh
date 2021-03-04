@@ -40,7 +40,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.pricing.service.impl.ProductPriceBuilder;
-import de.metas.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.JsonExternalId;
 import de.metas.rest_api.common.JsonSOTrx;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.web.exception.InvalidEntityException;

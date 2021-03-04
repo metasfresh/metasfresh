@@ -42,6 +42,8 @@ import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Process;
@@ -64,6 +66,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * This is the rest controller used when processes are invoked via REST-API on the app-server (ServerRoot).
+ */
 @RestController
 @RequestMapping(ProcessRestController.ENDPOINT)
 @Profile(Profiles.PROFILE_App)
@@ -83,12 +88,12 @@ public class ProcessRestController
 		this.processService = processService;
 	}
 
+	@ApiOperation("Invoke a process from the list returned by the `available` endpoint")
 	@PostMapping("{value}/invoke")
 	public ResponseEntity<?> invokeProcess(
-			@NonNull @PathVariable("value") final String processValue,
+			@NonNull @PathVariable("value") @ApiParam("Translates to `AD_Process.Value`") final String processValue,
 			@Nullable @RequestBody(required = false) final RunProcessRequest request)
 	{
-
 		final Optional<AdProcessId> processId = getProcessIdIfRunnable(processValue);
 
 		if (!processId.isPresent())
@@ -163,7 +168,7 @@ public class ProcessRestController
 
 			return ResponseEntity.ok()
 					.contentType(MediaType.parseMediaType(contentType))
-					.header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\"" + processExecutionResult.getReportFilename() + "\"")
+					.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + processExecutionResult.getReportFilename() + "\"")
 					.body(processExecutionResult.getReportDataAsByteArray());
 		}
 		else

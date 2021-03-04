@@ -95,6 +95,7 @@ class PurchaseRowsSaver
 				.peek(candidate -> {
 					candidate.setQtyToPurchase(candidate.getQtyToPurchase().toZero());
 					candidate.setPrepared(false);
+					candidate.setReqCreated(false);
 				})
 				.collect(ImmutableList.toImmutableList());
 		purchaseCandidatesRepo.saveAll(purchaseCandidatesToZero);
@@ -245,6 +246,8 @@ class PurchaseRowsSaver
 					.aggregatePOs(candidatesGroup.isAggregatePOs())
 					//
 					.profitInfoOrNull(profitInfo)
+					.forecastLineId(candidatesGroup.getForecastLineId())
+					.dimension(candidatesGroup.getDimension())
 					//
 					.build();
 

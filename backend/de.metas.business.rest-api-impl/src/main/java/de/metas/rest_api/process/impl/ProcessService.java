@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessBasicInfo;
@@ -45,6 +46,7 @@ import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Process_Para;
 import org.compiere.model.I_AD_Reference;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -56,10 +58,14 @@ import java.util.stream.Collectors;
 @Service
 public class ProcessService
 {
+	private static final transient Logger logger = LogManager.getLogger(ProcessService.class);
+
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IADElementDAO elementDAO = Services.get(IADElementDAO.class);
 	private final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
+
 	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
+
 
 	@NonNull
 	public ImmutableList<ProcessBasicInfo> getProcessesByType(@NonNull final Set<ProcessType> processTypes)
@@ -143,4 +149,6 @@ public class ProcessService
 				.parameters(paramBasicInfos)
 				.build();
 	}
+
+
 }

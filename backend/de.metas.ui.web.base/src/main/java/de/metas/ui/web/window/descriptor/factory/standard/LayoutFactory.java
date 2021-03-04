@@ -534,6 +534,12 @@ public class LayoutFactory
 			return ViewEditorRenderMode.NEVER;
 		}
 
+		final ViewEditorRenderMode viewEditMode = ViewEditorRenderMode.ofNullableCode(uiElement.getViewEditMode());
+		if(viewEditMode != null)
+		{
+			return viewEditMode;
+		}
+
 		// if we can't tell the mode from field, then use our "old" logic
 		if (widgetType == DocumentFieldWidgetType.Amount
 				|| widgetType == DocumentFieldWidgetType.CostPrice

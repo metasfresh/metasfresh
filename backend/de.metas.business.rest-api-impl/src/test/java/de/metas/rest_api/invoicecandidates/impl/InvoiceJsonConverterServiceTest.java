@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.JsonExternalId;
 import de.metas.rest_api.invoicecandidates.request.JsonInvoiceCandidateReference;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;

@@ -62,6 +62,10 @@ public class TestCommissionConfig
 	@NonNull
 	Boolean subtractLowerLevelCommissionFromBase;
 
+	@NonNull
+	@Default
+	Boolean createShareForOwnRevenue = false;
+
 	@Singular
 	List<TestCommissionContract> contractTestRecords;
 
@@ -74,6 +78,7 @@ public class TestCommissionConfig
 		settingsRecord.setPointsPrecision(pointsPrecision);
 		settingsRecord.setCommission_Product_ID(commissionProductId.getRepoId());
 		settingsRecord.setIsSubtractLowerLevelCommissionFromBase(subtractLowerLevelCommissionFromBase);
+		settingsRecord.setIsCreateShareForOwnRevenue(createShareForOwnRevenue);
 		saveRecord(settingsRecord);
 
 		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
@@ -81,7 +86,7 @@ public class TestCommissionConfig
 		conditionsRecord.setDocStatus(IDocument.STATUS_Completed);
 		saveRecord(conditionsRecord);
 
-		ImmutableMap.Builder<String, CommissionSettingsLineId> name2CommissionSettingsLineId = ImmutableMap.builder();
+		final ImmutableMap.Builder<String, CommissionSettingsLineId> name2CommissionSettingsLineId = ImmutableMap.builder();
 		for (final TestCommissionConfigLine configLineTestRecord : configLineTestRecords)
 		{
 			final IPair<String, CommissionSettingsLineId> configLineResult = configLineTestRecord.createConfigLineData(settingsRecord.getC_HierarchyCommissionSettings_ID());

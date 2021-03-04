@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,7 +36,7 @@ import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SerializeDeserializeTest
+class SerializeDeserializeTest
 {
 	private ObjectMapper jsonObjectMapper;
 
@@ -50,10 +51,10 @@ public class SerializeDeserializeTest
 	}
 
 	@Test
-	public void jsonExternalReferenceLookupRequest() throws Exception
+	void jsonExternalReferenceLookupRequest() throws Exception
 	{
 		final JsonExternalReferenceLookupRequest jsonExternalReferenceLookupRequest = JsonExternalReferenceLookupRequest.builder()
-				.systemName("systemName")
+				.systemName(JsonExternalSystemName.of("systemName"))
 				.item(JsonExternalReferenceLookupItem.builder()
 						.id("item1Id")
 						.type("item1Type").build())
@@ -65,10 +66,24 @@ public class SerializeDeserializeTest
 	}
 
 	@Test
-	public void jsonExternalReferenceCreateRequest() throws Exception
+	void jsonExternalReferenceLookupRequest_fromString() throws IOException
+	{
+		String jsonString = "{\n"
+				+ "  \"systemName\": \"Github\",\n"
+				+ "  \"items\": [\n"
+				+ "    { \"id\": \"noIssueWithThisId\", \"type\": \"IssueID\" }\n"
+				+ "  ]\n"
+				+ "}";
+
+		final JsonExternalReferenceLookupRequest jsonDeserialized = jsonObjectMapper.readValue(jsonString, JsonExternalReferenceLookupRequest.class);
+		assertThat(jsonDeserialized).isNotNull();
+	}
+
+	@Test
+	void jsonExternalReferenceCreateRequest() throws Exception
 	{
 		final JsonExternalReferenceCreateRequest build = JsonExternalReferenceCreateRequest.builder()
-				.systemName("systemName")
+				.systemName(JsonExternalSystemName.of("systemName"))
 				.item(JsonExternalReferenceItem.of(
 						JsonExternalReferenceLookupItem.builder().id("item1Id").type("item1Type").build(),
 						JsonMetasfreshId.of(24)))
@@ -77,6 +92,20 @@ public class SerializeDeserializeTest
 						JsonMetasfreshId.of(25)))
 				.build();
 		testSerializeDeserialize(build, JsonExternalReferenceCreateRequest.class);
+	}
+
+	@Test
+	void jsonExternalReferenceCreateRequest_fromString() throws IOException
+	{
+		final String jsonString = "{\n"
+				+ "  \"systemName\": \"Github\",\n"
+				+ "  \"items\": [\n"
+				+ "    { \"lookupItem\": { \"id\": \"existingId\", \"type\": \"IssueID\" }, \"metasfreshId\": 43 }\n"
+				+ "  ]\n"
+				+ "}";
+
+		final JsonExternalReferenceCreateRequest jsonDeserialized = jsonObjectMapper.readValue(jsonString, JsonExternalReferenceCreateRequest.class);
+		assertThat(jsonDeserialized).isNotNull();
 	}
 
 	@Test
