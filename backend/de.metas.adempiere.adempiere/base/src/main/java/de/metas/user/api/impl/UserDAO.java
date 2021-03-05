@@ -3,6 +3,7 @@ package de.metas.user.api.impl;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -13,17 +14,15 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_AD_User_Substitute;
-import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -56,6 +55,8 @@ public class UserDAO implements IUserDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(UserDAO.class);
 
+	private final AdMessageKey MSG_MailOrUsernameNotFound = AdMessageKey.of("MailOrUsernameNotFound");
+
 	@Override
 	public I_AD_User retrieveLoginUserByUserId(final String userId)
 	{
@@ -73,14 +74,16 @@ public class UserDAO implements IUserDAO
 		if (users.size() > 1)
 		{
 			logger.info("More then one user found for UserId '{}': {}", userId, users);
-			throw new AdempiereException("@" + MSG_MailOrUsernameNotFound + "@").markAsUserValidationError();
+			throw new AdempiereException(MSG_MailOrUsernameNotFound).markAsUserValidationError();
 		}
-		if (users.size() == 0)
+		else if (users.size() == 0)
 		{
-			throw new AdempiereException("@" + MSG_MailOrUsernameNotFound + "@").markAsUserValidationError();
+			throw new AdempiereException(MSG_MailOrUsernameNotFound).markAsUserValidationError();
 		}
-
-		return users.get(0);
+		else
+		{
+			return users.get(0);
+		}
 	}
 
 	@Override
@@ -103,28 +106,6 @@ public class UserDAO implements IUserDAO
 		}
 
 		return user;
-	}
-
-	@Override
-	public List<I_AD_User> retrieveUsersSubstitudedBy(final Properties ctx, final int adUserId, final Timestamp date, final String trxName)
-	{
-		final String wc = "EXISTS ("
-				+ " select 1"
-				+ " from " + I_AD_User_Substitute.Table_Name + " us"
-				+ " where us." + I_AD_User_Substitute.COLUMNNAME_Substitute_ID + "=?"
-				+ " AND us." + I_AD_User_Substitute.COLUMNNAME_AD_User_ID + "=AD_User.AD_User_ID"
-				+ " AND us." + I_AD_User_Substitute.COLUMNNAME_IsActive + "=?"
-				+ " AND (us." + I_AD_User_Substitute.COLUMNNAME_ValidFrom + " IS NULL OR us." + I_AD_User_Substitute.COLUMNNAME_ValidFrom + " <= ?)"
-				+ " AND (us." + I_AD_User_Substitute.COLUMNNAME_ValidTo + " IS NULL OR us." + I_AD_User_Substitute.COLUMNNAME_ValidTo + ">= ?)"
-				+ ")";
-
-		final List<I_AD_User> users = new Query(ctx, I_AD_User.Table_Name, wc, trxName)
-				.setParameters(adUserId, true, date, date)
-				.setOrderBy(I_AD_User.COLUMNNAME_AD_User_ID)
-				.setOnlyActiveRecords(true)
-				.list(I_AD_User.class);
-
-		return users;
 	}
 
 	@Override
@@ -189,13 +170,13 @@ public class UserDAO implements IUserDAO
 				.create()
 				.first(I_AD_User.COLUMNNAME_Name, String.class);
 
-		return !Check.isEmpty(fullname) ? fullname : "<" + userId.getRepoId() + ">";
+		return fullname != null && !Check.isEmpty(fullname) ? fullname : "<" + userId.getRepoId() + ">";
 	}
 
 	@Override
 	public UserId retrieveUserIdByEMail(@Nullable final String email, @NonNull final ClientId adClientId)
 	{
-		if (Check.isEmpty(email, true))
+		if (email == null || Check.isBlank(email))
 		{
 			return null;
 		}
@@ -232,7 +213,8 @@ public class UserDAO implements IUserDAO
 		}
 	}
 
-	private static final String extractEMailAddressOrNull(final String email)
+	@Nullable
+	private static String extractEMailAddressOrNull(final String email)
 	{
 		try
 		{
@@ -273,28 +255,17 @@ public class UserDAO implements IUserDAO
 	@Override
 	public BPartnerId getBPartnerIdByUserId(@NonNull final UserId userId)
 	{
-		final I_AD_User userRecord = getById(userId.getRepoId());
+		final I_AD_User userRecord = getById(userId);
 		return BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
 	}
 
 	@Override
 	public <T extends org.compiere.model.I_AD_User> T getByIdInTrx(final UserId userId, final Class<T> modelClass)
 	{
-		final T user = load(userId, modelClass);
-		return user;
+		return load(userId, modelClass);
 	}
 
 	@Override
-	public Set<UserId> getUserIdsByBPartnerId(final BPartnerId bpartnerId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_AD_User.class)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.orderBy(I_AD_User.COLUMNNAME_AD_User_ID)
-				.create()
-				.listIds(UserId::ofRepoId);
-	}
-
 	@Nullable
 	public UserId retrieveUserIdByLogin(@NonNull final String login)
 	{
@@ -303,5 +274,11 @@ public class UserDAO implements IUserDAO
 				.addEqualsFilter(I_AD_User.COLUMNNAME_Login, login)
 				.create()
 				.firstId(UserId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public void save(@NonNull final I_AD_User user)
+	{
+		InterfaceWrapperHelper.save(user);
 	}
 }

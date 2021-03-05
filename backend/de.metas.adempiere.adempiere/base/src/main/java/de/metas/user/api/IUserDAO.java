@@ -29,15 +29,11 @@ import de.metas.util.ISingletonService;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 public interface IUserDAO extends ISingletonService
 {
-	String MSG_MailOrUsernameNotFound = "MailOrUsernameNotFound";
-
 	/**
 	 * Retrieves a user whose <code>Login</code> or <code>EMail</code> column equals the given <code>userId</code>.
 	 *
@@ -47,8 +43,7 @@ public interface IUserDAO extends ISingletonService
 
 	I_AD_User getByPasswordResetCode(String passwordResetCode);
 
-	List<I_AD_User> retrieveUsersSubstitudedBy(Properties ctx, int adUserId, Timestamp date, String trxName);
-
+	@Nullable
 	I_AD_User retrieveUserOrNull(Properties ctx, int adUserId);
 
 	/**
@@ -78,6 +73,7 @@ public interface IUserDAO extends ISingletonService
 
 	String retrieveUserFullname(UserId userId);
 
+	@Nullable
 	UserId retrieveUserIdByEMail(String email, ClientId adClientId);
 
 	/**
@@ -87,10 +83,11 @@ public interface IUserDAO extends ISingletonService
 
 	boolean isSystemUser(UserId userId);
 
+	@Nullable
 	BPartnerId getBPartnerIdByUserId(final UserId userId);
-
-	Set<UserId> getUserIdsByBPartnerId(BPartnerId bpartnerId);
 
 	@Nullable
 	UserId retrieveUserIdByLogin(String login);
+
+	void save(I_AD_User user);
 }

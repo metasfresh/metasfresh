@@ -1,31 +1,12 @@
 package org.compiere.util;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.LinkedHashSet;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeSet;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.service.ISystemBL;
-import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.session.MFSession;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.service.IValuePreferenceBL;
-import org.compiere.model.ModelValidationEngine;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IPostingService;
 import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.IPrinterRoutingBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.Language;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
@@ -45,19 +26,35 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;
+import org.adempiere.ad.service.ISystemBL;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.IValuePreferenceBL;
+import org.compiere.model.ModelValidationEngine;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.LinkedHashSet;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Login Manager
  *
  * @author Jorg Janke
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
- *         <li>Incorrect global Variable when you use multi Account Schema
- *         http://sourceforge.net/tracker/?func=detail&atid=879335&aid=2531597&group_id=176962
+ * <li>Incorrect global Variable when you use multi Account Schema
+ * http://sourceforge.net/tracker/?func=detail&atid=879335&aid=2531597&group_id=176962
  * @author teo.sarca@gmail.com
- *         <li>BF [ 2867246 ] Do not show InTrazit WHs on login
- *         https://sourceforge.net/tracker/?func=detail&aid=2867246&group_id=176962&atid=879332
+ * <li>BF [ 2867246 ] Do not show InTrazit WHs on login
+ * https://sourceforge.net/tracker/?func=detail&aid=2867246&group_id=176962&atid=879332
  * @version $Id: Login.java,v 1.6 2006/10/02 05:19:06 jjanke Exp $
  */
 public class Login
@@ -274,7 +271,7 @@ public class Login
 		if (remoteAddr != null)
 		{
 			session.setRemote_Addr(remoteAddr, getRemoteHost());
-			session.setWebSessionId(getWebSession());
+			session.setWebSessionId(getWebSessionId());
 		}
 
 		return session;
@@ -458,7 +455,7 @@ public class Login
 	 * <p>
 	 * Assumes that the context is set for #AD_Client_ID, #AD_User_ID, #AD_Role_ID
 	 *
-	 * @param org org information
+	 * @param org       org information
 	 * @param timestamp optional date
 	 * @return AD_Message of error (NoValidAcctInfo) or ""
 	 */
