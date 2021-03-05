@@ -278,7 +278,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			shipment = createShipmentHeader(candidate, shipmentDate);
 		}
 
-		MDC.put(I_M_InOut.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID());
+		MDC.put(I_M_InOut.COLUMNNAME_M_InOut_ID, Integer.toString(shipment.getM_InOut_ID()));
 		return shipment;
 	}
 
