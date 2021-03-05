@@ -47,7 +47,10 @@ BEGIN
               UNION ALL
               SELECT 'W' AS access
              ) AS permissions
-        WHERE EXISTS(SELECT 1
+        WHERE TRUE
+          AND (bp.c_bpartner_salesrep_id IS NULL OR bp.c_bpartner_salesrep_id = bp.c_bpartner_id)
+          -- AND EXISTS(SELECT 1 FROM c_bpartner child_bp WHERE child_bp.c_bpartner_salesrep_id = bp.c_bpartner_id)
+          AND EXISTS(SELECT 1
                      FROM c_flatrate_term contract
                      WHERE TRUE
                        AND contract.bill_bpartner_id = bp.c_bpartner_id
@@ -55,7 +58,7 @@ BEGIN
                        AND contract.docstatus = 'CO'
                        AND contract.startdate <= NOW()
                        AND (contract.enddate IS NULL OR contract.enddate >= NOW()))
-        --
+          --
         UNION ALL
         --
         SELECT parent.root_bpartner_id,
@@ -181,7 +184,7 @@ BEGIN
     RAISE NOTICE 'Considered % C_Payment(s)', v_count;
 
     --
-    -- Requests (C_BPartner_ID)
+    -- Requests
     --
     INSERT
     INTO TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
@@ -198,28 +201,7 @@ BEGIN
     WHERE a.ad_table_id = 291 -- C_BPartner
     ;
     GET DIAGNOSTICS v_count = ROW_COUNT;
-    RAISE NOTICE 'Considered % R_Request(s) via their R_Request.C_BPartner_ID', v_count;
-    --
-    -- Requests (CreatedBy)
-    --
-    INSERT
-    INTO TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
-    SELECT 417                                  AS AD_Table_ID,
-           r.R_Request_Id                       AS record_id,
-           r.createdby                          AS ad_user_id,
-           permissions.access                   AS access,
-           ''                                   AS comments,
-           NEXTVAL('ad_user_record_access_seq') AS id,
-           NULL::numeric                        AS parent_id,
-           NULL::numeric                        AS root_id
-    FROM R_Request r,
-         (SELECT 'R' AS access
-          UNION ALL
-          SELECT 'W' AS access
-         ) AS permissions
-    WHERE TRUE;
-    GET DIAGNOSTICS v_count = ROW_COUNT;
-    RAISE NOTICE 'Considered % R_Request(s) via their R_Request.CreatedBy', v_count;
+    RAISE NOTICE 'Considered % R_Request(s)', v_count;
 
 
     --

@@ -75,12 +75,8 @@ public interface IDeliveryDayBL extends ISingletonService
 	 * select the last available deliveryDay that is before the promised date/time
 	 *
 	 * @param context            - object from where the context is taken
-	 * @param soTrx
 	 * @param calculationTime    the date+time when the calculation is made.
 	 *                           It will usually be when the date+time when the order was created, or the system time
-	 * @param datePromised
-	 * @param bpartnerLocationId
-	 * @return
 	 */
 	@NonNull
 	ImmutablePair<TourId, ZonedDateTime> calculateTourAndPreparationDate(
@@ -92,8 +88,6 @@ public interface IDeliveryDayBL extends ISingletonService
 
 	/**
 	 * Sets DeliveryDateTimeMax = DeliveryDate + BufferHours.
-	 *
-	 * @param deliveryDay
 	 */
 	void setDeliveryDateTimeMax(I_M_DeliveryDay deliveryDay);
 }
