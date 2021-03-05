@@ -1,9 +1,9 @@
 package de.metas.ui.web.login.json;
 
-import java.io.Serializable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Value;
 
 /*
  * #%L
@@ -27,61 +27,42 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public class JSONLoginRole implements Serializable
+@Value
+public class JSONLoginRole
 {
 	@JsonCreator
-	public static final JSONLoginRole of(
-			@JsonProperty("caption") final String caption //
-			, @JsonProperty("roleId") final int roleId //
-			, @JsonProperty("tenantId") final int tenantId //
-			, @JsonProperty("orgId") int orgId //
+	public static JSONLoginRole of(
+			@JsonProperty("caption") final String caption,
+			@JsonProperty("roleId") final int roleId,
+			@JsonProperty("tenantId") final int tenantId,
+			@JsonProperty("orgId") final int orgId
 	)
 	{
-		return new JSONLoginRole(caption, roleId, tenantId, orgId);
+		return builder()
+				.caption(caption)
+				.roleId(roleId)
+				.tenantId(tenantId)
+				.orgId(orgId)
+				.build();
 	}
 
-	@JsonProperty("key")
-	private final String key;
+	@JsonProperty("key") String key;
+	@JsonProperty("caption") String caption;
+	@JsonProperty("roleId") int roleId;
+	@JsonProperty("tenantId") int tenantId;
+	@JsonProperty("orgId") int orgId;
 
-	@JsonProperty("caption")
-	private final String caption;
-
-	@JsonProperty("roleId")
-	private final int roleId;
-
-	@JsonProperty("tenantId")
-	private final int tenantId;
-
-	@JsonProperty("orgId")
-	private final int orgId;
-
-	private JSONLoginRole(final String caption, final int roleId, final int tenantId, int orgId)
+	@Builder
+	private JSONLoginRole(
+			final String caption,
+			final int roleId,
+			final int tenantId,
+			final int orgId)
 	{
 		this.caption = caption;
 		this.roleId = roleId;
 		this.tenantId = tenantId;
 		this.orgId = orgId;
 		this.key = roleId + "_" + tenantId + "_" + orgId;
-	}
-
-	public String getCaption()
-	{
-		return caption;
-	}
-
-	public int getRoleId()
-	{
-		return roleId;
-	}
-
-	public int getTenantId()
-	{
-		return tenantId;
-	}
-
-	public int getOrgId()
-	{
-		return orgId;
 	}
 }

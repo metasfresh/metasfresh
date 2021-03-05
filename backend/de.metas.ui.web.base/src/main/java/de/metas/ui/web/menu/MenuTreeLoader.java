@@ -189,14 +189,14 @@ final class MenuTreeLoader
 
 			final CustomizedWindowInfo customizedWindowInfo = customizedWindowInfoMap.getCustomizedWindowInfo(adWindowId).orElse(null);
 			final AdWindowId effectiveAdWindowId;
-			if (customizedWindowInfo == null)
-			{
-				effectiveAdWindowId = adWindowId;
-			}
-			else
+			if (customizedWindowInfo != null && customizedWindowInfo.isOverrideInMenu())
 			{
 				effectiveAdWindowId = customizedWindowInfo.getCustomizationWindowId();
 				builder.setCaption(customizedWindowInfo.getCustomizationWindowCaption().translate(getAD_Language()));
+			}
+			else
+			{
+				effectiveAdWindowId = adWindowId;
 			}
 
 			final DocumentId elementId = DocumentId.of(effectiveAdWindowId.getRepoId());

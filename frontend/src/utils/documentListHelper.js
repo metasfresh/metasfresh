@@ -78,6 +78,7 @@ const DLmapStateToProps = (state, props) => {
   if (!master) {
     master = viewState;
   }
+  // modals use viewId from layout data, and not from the url
   let viewId = master.viewId ? master.viewId : queryViewId;
   let sort = querySort || master.sort;
   let page = toInteger(queryPage) || master.page;
