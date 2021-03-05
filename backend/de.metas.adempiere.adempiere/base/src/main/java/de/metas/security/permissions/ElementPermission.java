@@ -1,20 +1,21 @@
 package de.metas.security.permissions;
 
 import com.google.common.collect.ImmutableSet;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 /**
  * Application Dictionary element permission (e.g. Window, Process etc).
  *
  * @author tsa
- *
  */
 @Value
-public final class ElementPermission implements Permission
+public class ElementPermission implements Permission
 {
 	public static ElementPermission ofReadWriteFlag(final ElementResource resource, final boolean readWrite)
 	{
@@ -32,14 +33,15 @@ public final class ElementPermission implements Permission
 		return new ElementPermission(resource, accesses.build());
 	}
 
-	public static final ElementPermission none(final ElementResource resource)
+	public static ElementPermission none(final ElementResource resource)
 	{
 		return new ElementPermission(resource, ImmutableSet.of());
 	}
 
-	private final ElementResource resource;
+	@NonNull ElementResource resource;
+
 	@Getter(AccessLevel.PRIVATE)
-	private final ImmutableSet<Access> accesses;
+	@NonNull ImmutableSet<Access> accesses;
 
 	private ElementPermission(
 			@NonNull final ElementResource resource,
@@ -55,7 +57,7 @@ public final class ElementPermission implements Permission
 	}
 
 	@Override
-	public boolean hasAccess(Access access)
+	public boolean hasAccess(final Access access)
 	{
 		return accesses.contains(access);
 	}
@@ -70,6 +72,7 @@ public final class ElementPermission implements Permission
 		return accesses.contains(Access.WRITE);
 	}
 
+	@Nullable
 	public Boolean getReadWriteBoolean()
 	{
 		if (hasAccess(Access.WRITE))
@@ -87,15 +90,27 @@ public final class ElementPermission implements Permission
 	}
 
 	@Override
-	public Permission mergeWith(final Permission permissionFrom)
+	public ElementPermission mergeWith(final Permission permissionFrom)
 	{
 		final ElementPermission elementPermissionFrom = PermissionInternalUtils.checkCompatibleAndCastToTarget(this, permissionFrom);
 
-		final ImmutableSet<Access> accesses = ImmutableSet.<Access> builder()
+		return withAccesses(ImmutableSet.<Access>builder()
 				.addAll(this.accesses)
 				.addAll(elementPermissionFrom.accesses)
-				.build();
+				.build());
+	}
 
-		return new ElementPermission(this.resource, accesses);
+	private ElementPermission withAccesses(@NonNull final ImmutableSet<Access> accesses)
+	{
+		return !Objects.equals(this.accesses, accesses)
+				? new ElementPermission(this.resource, accesses)
+				: this;
+	}
+
+	public ElementPermission withResource(@NonNull final ElementResource resource)
+	{
+		return !Objects.equals(this.resource, resource)
+				? new ElementPermission(resource, this.accesses)
+				: this;
 	}
 }
