@@ -33,9 +33,10 @@
         <!-- this is our default; individual projects might need to specify their own settings -->
         <metasfresh.java.version>1.8</metasfresh.java.version>
 
-        <!-- please keep in sync with spring-boot's jackson-version-->
+        <!-- please keep in sync with spring-boot's versions - https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
         <jackson.version>2.11.4</jackson.version>
-
+        <amqp-client.version>5.10.0</amqp-client.version>
+        
         <jasperreports.version>6.7.0</jasperreports.version>
 
         <itext.version>2.1.7.js6</itext.version>

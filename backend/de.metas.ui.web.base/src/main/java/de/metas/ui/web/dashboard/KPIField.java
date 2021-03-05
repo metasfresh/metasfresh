@@ -10,6 +10,7 @@ import java.util.List;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
+import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.slf4j.Logger;
 
@@ -61,7 +62,7 @@ public class KPIField
 	@FunctionalInterface
 	public interface BucketValueExtractor
 	{
-		Object extractValue(final String containingAggName, final MultiBucketsAggregation.Bucket bucket);
+		Object extractValue(String containingAggName, InternalMultiBucketAggregation.InternalBucket bucket);
 	}
 
 	private static final Logger logger = LogManager.getLogger(KPIField.class);
@@ -107,7 +108,7 @@ public class KPIField
 		bucketValueExtractor = createBucketValueExtractor(esPath);
 	}
 
-	private static BucketValueExtractor createBucketValueExtractor(final List<String> path)
+	private static BucketValueExtractor createBucketValueExtractor(@NonNull final List<String> path)
 	{
 		if (path.size() == 1)
 		{
@@ -121,9 +122,8 @@ public class KPIField
 				return (containingAggName, bucket) -> bucket.getKeyAsString();
 			}
 		}
-
-		//return (containingAggName, bucket) -> bucket.getProperty(containingAggName, path);
-		throw new AdempiereException("unsupported path name " + path);
+		
+		return (containingAggName, bucket) -> bucket.getProperty(containingAggName, path);
 	}
 
 	public final Object convertValueToJson(final Object value, @NonNull final JSONOptions jsonOpts)

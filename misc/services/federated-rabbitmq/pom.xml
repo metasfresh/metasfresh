@@ -69,7 +69,7 @@
         <dependency>
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
-            <version>5.10.0</version>
+            <version>${amqp-client.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
