@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 /*
  * #%L
@@ -583,6 +584,25 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 		}
 	}
+	
+	
+	private  List<PricingConditionsBreak> fetchMatchingPricingConditionBreakValue(@NonNull PricingConditionsBreak sourceBreak, @NonNull final List<PricingConditionsBreak> exitentBreaks)
+	{
+		final List<PricingConditionsBreak> matchedBreaks = new ArrayList<PricingConditionsBreak>();
+		
+		for (final PricingConditionsBreak discountSchemaBreak : exitentBreaks)
+		{
+			final BigDecimal sourceBreakValue = sourceBreak.getMatchCriteria().getBreakValue();
+			
+			if (sourceBreakValue.equals(discountSchemaBreak.getMatchCriteria().getBreakValue()))
+			{
+				matchedBreaks.add(discountSchemaBreak);
+			}
+		}
+		
+		return matchedBreaks;
+	}
+	
 
 	private void copyFromGivenSchemaAndProductToSelection(@NonNull CopyDiscountSchemaBreaksRequest request)
 	{
@@ -613,31 +633,31 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 		//
 		// find records that need to be updated and the records that needs to be copied
-		final Map<PricingConditionsBreak, PricingConditionsBreak> discountSchemaBreaksToUpdate = new HashMap<PricingConditionsBreak, PricingConditionsBreak>();
-		final List<PricingConditionsBreak> discountSchemaBreaksToCopy = new ArrayList<PricingConditionsBreak>();
+		final Map<PricingConditionsBreak, List<PricingConditionsBreak>> discountSchemaBreaksToUpdate = new HashMap<PricingConditionsBreak, List<PricingConditionsBreak>>();
+		final Set<PricingConditionsBreak> discountSchemaBreaksToCopy = new HashSet<PricingConditionsBreak>();
 		
 		for (final PricingConditionsBreak discountSchemaBreak : sourceDiscountSchemaBreaks)
 		{
 
-			final PricingConditionsBreak exitentBreak = fetchMatchingPricingConditionBreak(discountSchemaBreak, targetDiscountSchemaBreaks);
-			if (exitentBreak != null)
+			final List<PricingConditionsBreak> exitentBreaks = fetchMatchingPricingConditionBreakValue(discountSchemaBreak, targetDiscountSchemaBreaks);
+			if (exitentBreaks.isEmpty())
 			{
-				discountSchemaBreaksToUpdate.put(discountSchemaBreak, exitentBreak);
+				discountSchemaBreaksToUpdate.put(discountSchemaBreak, exitentBreaks);
 			}
 			else
 			{
 				discountSchemaBreaksToCopy.add(discountSchemaBreak);
 			}
 		}
-
+		
 		// copy breaks
 		for (final PricingConditionsBreak schemaBreak : discountSchemaBreaksToCopy)
 		{
 			// build target data for copy
 			// can be one product and several discount schemas or one schema and several products
 			
-			final List<PricingConditionsId> pricingConditionsIds = new ArrayList<PricingConditionsId>();
-			final List<ProductId> productIds = new ArrayList<ProductId>();
+			final Set<PricingConditionsId> pricingConditionsIds = new HashSet<PricingConditionsId>();
+			final Set<ProductId> productIds = new HashSet<ProductId>();
 			targetDiscountSchemaBreaks.forEach(discountBreak -> {
 
 				productIds.add(discountBreak.getMatchCriteria().getProductId());
@@ -656,9 +676,12 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 
 		// update breaks
-		for (final PricingConditionsBreak schemaBreak : discountSchemaBreaksToUpdate.keySet())
+		for (final  PricingConditionsBreak schemaBreakKey : discountSchemaBreaksToUpdate.keySet())
 		{
-			updateDiscountSchemaBreakRecords(schemaBreak, discountSchemaBreaksToUpdate.get(schemaBreak));
+			for (final PricingConditionsBreak schemaBreak : discountSchemaBreaksToUpdate.get(schemaBreakKey))
+			{
+				updateDiscountSchemaBreakRecords(schemaBreakKey, schemaBreak);
+			}
 		}
 	}
 
@@ -735,6 +758,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		
 		return null;
 	}
+	
 
 	private List<PricingConditionsBreak> retrieveDiscountSchemaBreakRecords(@NonNull final IQueryFilter<I_M_DiscountSchemaBreak> queryFilter)
 	{

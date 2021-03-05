@@ -64,15 +64,14 @@ public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends JavaProc
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull IProcessPreconditionsContext context)
 	{
-		
+
 		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
 		return ProcessPreconditionsResolution.accept();
-	}
-	
+	}	
 	
 	@Override
 	protected String doIt()
