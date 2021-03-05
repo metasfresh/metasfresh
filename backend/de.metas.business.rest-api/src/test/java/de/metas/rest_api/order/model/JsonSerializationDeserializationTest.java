@@ -2,6 +2,7 @@ package de.metas.rest_api.order.model;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 import org.junit.Assert;
@@ -67,7 +68,7 @@ public class JsonSerializationDeserializationTest
 	{
 		testSerializeDeserialize(JsonSalesOrderCreateRequest.builder()
 				.shipBPartnerCode("123")
-				.datePromised(ZonedDateTime.now())
+				.datePromised(ZonedDateTime.now(ZoneId.of("UTC")))
 				.line(JsonSalesOrderLine.builder()
 						.productCode("01")
 						.qty(new BigDecimal("12.34"))

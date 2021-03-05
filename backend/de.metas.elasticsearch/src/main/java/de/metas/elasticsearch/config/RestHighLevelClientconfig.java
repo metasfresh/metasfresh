@@ -32,20 +32,23 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RestHighLevelClientconfig
 {
-	@Value("${elasticsearch.scheme}")
+	@Value("${elasticsearch.scheme:}")
 	private String elasticsearchScheme;
 	
-	@Value("${elasticsearch.host}")
+	@Value("${elasticsearch.host:OFF}")
 	private String elasticsearchHost;
 
-	@Value("${elasticsearch.port}")
+	@Value("${elasticsearch.port:-1}")
 	private int elasticsearchPort;
 	
 	@Bean(name = "metasfreshRestHighLevelClientconfig")
+    //@Conditional()
 	public RestHighLevelClient metasfreshRestHighLevelClientconfig()
 	{
+		final String effectiveScheme= "OFF".equals(elasticsearchScheme)?null:elasticsearchScheme;
+		
 		return new RestHighLevelClient(
 				RestClient.builder(
-						new HttpHost(elasticsearchHost, elasticsearchPort, elasticsearchScheme)));
+						new HttpHost(elasticsearchHost, elasticsearchPort, effectiveScheme)));
 	}
 }
