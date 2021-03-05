@@ -16,6 +16,7 @@ SELECT pi.ad_process_id,
        pi.isprocessing,
        pi.errormsg,
        i.ad_issue_id,
+       i.issuesummary,
        CASE
            WHEN i.ad_issue_id is not null
                OR pi.errormsg is not null THEN 'Error'
