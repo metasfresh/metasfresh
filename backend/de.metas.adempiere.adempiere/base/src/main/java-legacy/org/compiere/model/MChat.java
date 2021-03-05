@@ -31,7 +31,6 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.logging.LogManager;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;

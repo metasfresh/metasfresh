@@ -29,9 +29,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
+import de.metas.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_PackageLine;
 import org.compiere.model.MClient;
 import org.compiere.model.MInOut;
@@ -50,7 +52,6 @@ import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailSentStatus;
 import de.metas.email.impl.EMailSendException;
-import de.metas.interfaces.I_C_BPartner;
 import de.metas.letters.model.IEMailEditor;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
@@ -111,7 +112,8 @@ public class ShipperTransportationMailNotification implements ModelValidator
 						orderUser = user;
 					}
 					//
-					I_C_BPartner partnerPO = InterfaceWrapperHelper.create(user.getC_BPartner(), I_C_BPartner.class);
+					final BPartnerId bpartnerId = BPartnerId.ofRepoId(user.getC_BPartner_ID());
+					final I_C_BPartner partnerPO = Services.get(IBPartnerDAO.class).getByIdInTrx(bpartnerId);
 					if (partnerPO.isShippingNotificationEmail() && user.isDefaultContact())
 					{
 						String message = sendEMail(text, (MInOut)sp.getM_InOut(), orderUser);

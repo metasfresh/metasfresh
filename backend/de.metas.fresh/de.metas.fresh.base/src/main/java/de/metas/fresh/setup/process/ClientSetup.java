@@ -13,6 +13,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
@@ -25,7 +26,6 @@ import org.compiere.util.TrxRunnable;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -108,7 +108,7 @@ class ClientSetup
 	private final OrgInfoUpdateRequest.OrgInfoUpdateRequestBuilder adOrgInfoChangeRequest;
 	private final I_C_BPartner orgBPartner;
 	private final I_C_BPartner_Location orgBPartnerLocation;
-	private final I_AD_User orgContact;
+	private final org.compiere.model.I_AD_User orgContact;
 	private final I_C_BP_BankAccount orgBankAccount;
 	private final I_C_AcctSchema acctSchema;
 	private final I_M_PriceList priceList_None;

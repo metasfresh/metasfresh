@@ -26,7 +26,7 @@ public interface I_AD_User extends org.compiere.model.I_AD_User
 {
 	//@formatter:off
 	// task 724 ; gh #443
-	public static final String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
+	String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
 	/**
 	 * Get IsInvoiceEmailEnabled.
 	 *
@@ -34,7 +34,7 @@ public interface I_AD_User extends org.compiere.model.I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIsInvoiceEmailEnabled();
+	java.lang.String getIsInvoiceEmailEnabled();
 	/**
 	 * Set IsInvoiceEmailEnabled.
 	 *
@@ -42,6 +42,6 @@ public interface I_AD_User extends org.compiere.model.I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsInvoiceEmailEnabled (java.lang.String IsInvoiceEmailEnabled);
+	void setIsInvoiceEmailEnabled (java.lang.String IsInvoiceEmailEnabled);
 	//@formatter:on
 }
