@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Properties;
 
+import de.metas.tax.api.TaxId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -197,7 +198,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final Timestamp shipDate = inOut.getMovementDate();
 		final int locationId = inOut.getC_BPartner_Location_ID();
 
-		final int taxId = Services.get(ITaxBL.class).getTax(
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
 				ic,
 				taxCategoryId,
@@ -207,7 +208,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
 				locationId, // shipC_BPartner_Location_ID
 				false); // isSOTrx same as in vendor return
-		ic.setC_Tax_ID(taxId);
+		ic.setC_Tax_ID(taxId.getRepoId());
 
 		//
 		// Save the Invoice Candidate, so that we can use it's ID further down

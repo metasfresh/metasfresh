@@ -49,6 +49,7 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -56,10 +57,6 @@ public class AbstractTestSupport
 {
 	/**
 	 * Gets/creates an {@link I_M_Product} with given value.
-	 *
-	 * @param productValue
-	 * @param productId    TODO
-	 * @return product
 	 */
 	public I_M_Product product(final String productValue, final int productId)
 	{
@@ -165,7 +162,7 @@ public class AbstractTestSupport
 
 	}
 
-	protected I_C_DocType docType(final String baseType, final String subType)
+	protected I_C_DocType docType(final String baseType, @Nullable final String subType)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
 		I_C_DocType docType = db.getFirstOnly(I_C_DocType.class, pojo -> Objects.equals(pojo.getDocBaseType(), baseType) && Objects.equals(pojo.getDocSubType(), baseType));
