@@ -1754,7 +1754,7 @@ public class JsonPersisterService
 							.orElseGet(() -> {
 								logger.warn("*** WARN in insertBPLocationExternalRefIfMissing: no metasfreshId was found for the externalId: {}! "
 													+ "If this happened, something went wrong while upserting the bPartnerLocations", locationExternalId);
-								return null; // todo cp: ask tobi if we should throw an error here
+								return null;
 							});
 				})
 				.filter(Objects::nonNull)
