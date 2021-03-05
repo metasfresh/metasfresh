@@ -76,7 +76,7 @@ public class FlatrateTermDataFactory
 	public static I_AD_User createADUser(@NonNull final I_C_BPartner bpartner, final String lastName, final String firstName, final boolean isBillToContact_Default, final boolean isShipToContact_Default)
 	{
 		final I_AD_User user = newInstance(I_AD_User.class, bpartner);
-		user.setC_BPartner(bpartner);
+		user.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		user.setLastname(lastName);
 		user.setFirstname(firstName);
 		user.setIsBillToContact_Default(isBillToContact_Default);

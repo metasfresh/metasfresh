@@ -72,14 +72,13 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		save(bPartnerLocationRecord);
 
 		final UserRepository userRepository = new UserRepository();
-
+		final BPartnerBL bpartnerBL = new BPartnerBL(userRepository);
 		dunningDocOutboundLogMailRecipientProvider = new DunningDocOutboundLogMailRecipientProvider(
-				new DocOutBoundRecipientRepository(),
-				new BPartnerBL(userRepository),
+				new DocOutBoundRecipientRepository(bpartnerBL),
+				bpartnerBL,
 				new DunningService());
 
-		final BPartnerBL bPartnerBL = new BPartnerBL(userRepository);
-		Services.registerService(IBPartnerBL.class, bPartnerBL);
+		Services.registerService(IBPartnerBL.class, bpartnerBL);
 	}
 
 	@Test
@@ -119,7 +118,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		final I_AD_User bPartnerUserRecord = newInstance(I_AD_User.class);
 		bPartnerUserRecord.setName("bPartnerUserRecord");
 		bPartnerUserRecord.setEMail("bPartnerUserRecord.EMail");
-		bPartnerUserRecord.setC_BPartner(bPartnerRecord);
+		bPartnerUserRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		saveRecord(bPartnerUserRecord);
 
 		final I_C_Invoice invoiceRecord1 = createInvoiceRecord(invoiceUserRecord);
@@ -146,12 +145,13 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		assertThat(result.get().getEmailAddress()).isEqualTo("bPartnerUserRecord.EMail");
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_AD_User createUserRecord(final String eMail)
 	{
 		final I_AD_User userRecord = newInstance(I_AD_User.class);
 		userRecord.setName("userRecord");
 		userRecord.setEMail(eMail);
-		userRecord.setC_BPartner(bPartnerRecord);
+		userRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		saveRecord(userRecord);
 		return userRecord;
 	}

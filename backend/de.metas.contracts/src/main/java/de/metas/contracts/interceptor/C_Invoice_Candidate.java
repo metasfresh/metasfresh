@@ -39,7 +39,7 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
+import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -147,7 +147,7 @@ public class C_Invoice_Candidate
 				final I_C_Flatrate_DataEntry dataEntry = ica.getC_Flatrate_DataEntry();
 				if (X_C_Flatrate_DataEntry.DOCSTATUS_Completed.equals(dataEntry.getDocStatus()))
 				{
-					throw new InconsistentUpdateExeption(
+					throw new InconsistentUpdateException(
 							MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_0P,
 							MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_TEXT_2P,
 							new Object[] { invoiceCand.getC_Invoice_Candidate_ID(), dataEntry.getC_Period().getName() },
@@ -197,7 +197,7 @@ public class C_Invoice_Candidate
 				{
 					if (X_C_Flatrate_DataEntry.DOCSTATUS_Completed.equals(dataEntry.getDocStatus()))
 					{
-						throw new InconsistentUpdateExeption(
+						throw new InconsistentUpdateException(
 								MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_0P,
 								MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_TEXT_2P,
 								new Object[] { invoiceCand.getC_Invoice_Candidate_ID(), dataEntry.getC_Period().getName() },

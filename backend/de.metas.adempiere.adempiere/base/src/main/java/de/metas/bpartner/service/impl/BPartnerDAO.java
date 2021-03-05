@@ -190,8 +190,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		// NOTE: generally, don't load out of trx unless knowing the context that therefore knowing that it's OK.
 		// You *don not* know that the C_BPartner wasn't just created and the DB was not yet committed.
 		// Therefore, you can't assume that loading out of trx will be OK.
-		final T bpartner = load(bpartnerId.getRepoId(), modelClass);
-		return bpartner;
+		return load(bpartnerId.getRepoId(), modelClass);
 	}
 
 	public List<I_C_BPartner> getByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
@@ -254,7 +253,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public I_C_BPartner getByIdInTrx(@NonNull final BPartnerId bpartnerId)
 	{
-		return load(bpartnerId, I_C_BPartner.class);
+		return getByIdInTrx(bpartnerId, I_C_BPartner.class);
+	}
+
+	@Override
+	public <T extends I_C_BPartner> T getByIdInTrx(@NonNull final BPartnerId bpartnerId, @NonNull final Class<T> modelClass)
+	{
+		return load(bpartnerId, modelClass);
 	}
 
 	@Override
@@ -290,7 +295,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public <T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass)
+	public <T extends I_AD_User> T getContactById(final BPartnerContactId contactId, final Class<T> modelClass)
 	{
 		return getContactById(contactId, modelClass);
 	}
@@ -346,7 +351,8 @@ public class BPartnerDAO implements IBPartnerDAO
 				: Optional.empty();
 	}
 
-	private <T extends I_AD_User> T retrieveDefaultContactOrNull(final Properties ctx, final BPartnerId bpartnerId, final String trxName, final Class<T> clazz)
+	@Nullable
+	private <T extends I_AD_User> T retrieveDefaultContactOrNull(final Properties ctx, final BPartnerId bpartnerId, @Nullable final String trxName, final Class<T> clazz)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_User.class, ctx, trxName)
 				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bpartnerId)
@@ -557,7 +563,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	@Cached(cacheName = I_AD_User.Table_Name + "#by#" + I_AD_User.COLUMNNAME_C_BPartner_ID)
-	public ImmutableList<I_AD_User> retrieveContacts(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx final String trxName)
+	public ImmutableList<I_AD_User> retrieveContacts(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx @Nullable final String trxName)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class, ctx, trxName)
@@ -677,10 +683,11 @@ public class BPartnerDAO implements IBPartnerDAO
 	 *                   <code>C_BP_Group.PO_PricingSystem_ID</code>. Note that <code>AD_OrgInfo</code> has currently no <code>PO_PricingSystem_ID</code> column.
 	 *                   </ul>
 	 */
+	@Nullable
 	private PricingSystemId retrievePricingSystemIdOrNull(
 			@NonNull final BPartnerId bpartnerId,
 			final SOTrx soTrx,
-			final String trxName)
+			@Nullable final String trxName)
 	{
 		final Properties ctx = Env.getCtx();
 		final I_C_BPartner bPartner = InterfaceWrapperHelper.create(ctx, bpartnerId.getRepoId(), I_C_BPartner.class, trxName);
@@ -802,10 +809,8 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addOnlyContextClient(ctx)
 				.addOnlyActiveRecordsFilter();
 
-		final I_C_BPartner result = queryBuilder.create()
+		return queryBuilder.create()
 				.firstOnly(I_C_BPartner.class);
-
-		return result;
 	}
 
 	@Override
@@ -850,8 +855,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addOnlyContextClient(ctx)
 				.addOnlyActiveRecordsFilter();
 
-		final I_C_BPartner result = queryBuilder.create().firstOnly(I_C_BPartner.class);
-		return result;
+		return queryBuilder.create().firstOnly(I_C_BPartner.class);
 	}
 
 	@Override
@@ -1540,15 +1544,15 @@ public class BPartnerDAO implements IBPartnerDAO
 				.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addInArrayFilter(I_AD_User.COLUMN_AD_Org_ID, Env.getOrgId(), OrgId.ANY);
+				.addInArrayFilter(I_AD_User.COLUMNNAME_AD_Org_ID, Env.getOrgId(), OrgId.ANY);
 
 		if (contactQuery.getBPartnerId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_AD_User.COLUMN_C_BPartner_ID, contactQuery.getBPartnerId());
+			queryBuilder.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, contactQuery.getBPartnerId());
 		}
 		else
 		{ // we don't know which one, but is has to be some C_BPartner_ID
-			queryBuilder.addNotEqualsFilter(I_AD_User.COLUMN_C_BPartner_ID, null);
+			queryBuilder.addNotEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, null);
 		}
 
 		if (contactQuery.getUserId() != null)

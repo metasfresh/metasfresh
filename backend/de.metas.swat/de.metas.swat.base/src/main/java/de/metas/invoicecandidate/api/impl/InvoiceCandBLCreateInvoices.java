@@ -6,6 +6,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.Dimension;
@@ -16,6 +17,7 @@ import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -43,6 +45,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -59,6 +62,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
@@ -137,6 +141,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final transient IUserBL userBL = Services.get(IUserBL.class);
 
 	//
 	// Parameters
@@ -1010,18 +1015,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 					note.setReference(error.getLocalizedMessage());
 
-					final String adLanguage;
-					if (user.getC_BPartner_ID() > 0)
-					{
-						adLanguage = user.getC_BPartner().getAD_Language();
-					}
-					else
-					{
-						adLanguage = Env.getAD_Language(getCtx());
-					}
-
+					final Language adLanguage = userBL.getUserLanguage(user);
 					final String noteMsg = msgBL.getMsg(
-							adLanguage,
+							adLanguage.getAD_Language(),
 							MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P,
 							new Object[] { candidates.toString() });
 					note.setTextMsg(noteMsg);

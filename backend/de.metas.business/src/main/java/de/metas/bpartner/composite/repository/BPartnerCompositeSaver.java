@@ -366,8 +366,8 @@ final class BPartnerCompositeSaver
 		queryBL
 				.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_User.COLUMN_C_BPartner_ID, bpartnerId)
-				.addNotInArrayFilter(I_AD_User.COLUMN_AD_User_ID, savedBPartnerContactIds)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.addNotInArrayFilter(I_AD_User.COLUMNNAME_AD_User_ID, savedBPartnerContactIds)
 				.create()
 				.update(columnUpdater);
 	}
