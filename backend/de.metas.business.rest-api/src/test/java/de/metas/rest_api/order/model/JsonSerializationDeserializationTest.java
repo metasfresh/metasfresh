@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -48,7 +49,9 @@ public class JsonSerializationDeserializationTest
 	@Before
 	public void init()
 	{
-		jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+		jsonObjectMapper = new ObjectMapper()
+				.findAndRegisterModules()
+				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE); // thx to https://juplo.de/how-to-keep-the-time-zone-when-deserializing-a-zoneddatetime-with-jackson/
 	}
 
 	private void testSerializeDeserialize(@NonNull final Object obj) throws IOException
