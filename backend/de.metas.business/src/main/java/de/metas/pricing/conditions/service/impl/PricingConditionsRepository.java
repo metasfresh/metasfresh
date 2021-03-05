@@ -89,7 +89,6 @@ import de.metas.pricing.conditions.PricingConditionsDiscountType;
 import de.metas.pricing.conditions.PricingConditionsId;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.PricingConditionsBreakChangeRequest;
-import de.metas.process.PInstanceId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.user.UserId;
@@ -591,8 +590,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		final PricingConditionsId pPricingConditionsId = request.getPricingConditionsId();
 		final ProductId productId = request.getProductId();
 		final boolean allowCopyToSameSchema = request.isAllowCopyToSameSchema();
-		
-		final PInstanceId pinstanceId= request.getPinstanceId();
+		final IQueryFilter<I_M_DiscountSchemaBreak> filter = request.getFilter();
 		
 		//
 		// retrieve source discount breaks
@@ -609,21 +607,12 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 
 		final List<PricingConditionsBreak> sourceDiscountSchemaBreaks = retrieveDiscountSchemaBreakRecords(breaksForGivenPorductAndPricingConditions);
 
-		
 		//
 		// retrieve target discount breaks
-
-		final List<PricingConditionsBreak> targetDiscountSchemaBreaks = queryBL
-				.createQueryBuilder(I_M_DiscountSchemaBreak.class)
-				.setOnlySelection(pinstanceId)
-				.create()
-				.stream()
-				.map(schemaBreakRecord->toPricingConditionsBreak(schemaBreakRecord))
-				.collect(Collectors.toList());
+		final List<PricingConditionsBreak> targetDiscountSchemaBreaks = retrieveDiscountSchemaBreakRecords(filter);
 
 		//
 		// find records that need to be updated and the records that needs to be copied
-
 		final Map<PricingConditionsBreak, PricingConditionsBreak> discountSchemaBreaksToUpdate = new HashMap<PricingConditionsBreak, PricingConditionsBreak>();
 		final List<PricingConditionsBreak> discountSchemaBreaksToCopy = new ArrayList<PricingConditionsBreak>();
 		
@@ -680,8 +669,6 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		final boolean allowCopyToSameSchema = request.isAllowCopyToSameSchema();
 		
 		final IQueryFilter<I_M_DiscountSchemaBreak> filter = request.getFilter();
-		final PInstanceId pinstanceId= request.getPinstanceId();
-		
 		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> breaksFromOtherPricingConditions = queryBL.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
 				.setJoinAnd()
 				.addFilter(filter);

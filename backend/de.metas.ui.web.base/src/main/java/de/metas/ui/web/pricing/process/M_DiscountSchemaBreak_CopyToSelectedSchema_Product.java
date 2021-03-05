@@ -1,7 +1,17 @@
 package de.metas.ui.web.pricing.process;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.PlainContextAware;
 import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_DiscountSchemaBreak;
+import org.compiere.model.I_M_DiscountSchemaBreak_V;
 import org.compiere.model.I_M_Product;
+
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.pricing.conditions.CopyDiscountSchemaBreaksRequest;
 import de.metas.pricing.conditions.CopyDiscountSchemaBreaksRequest.Direction;
@@ -62,36 +72,42 @@ public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends JavaProc
 
 		return ProcessPreconditionsResolution.accept();
 	}
+	
+	
 	@Override
 	protected String doIt()
 	{
 		
-//		final List<PO> records =  getSelectedIncludedRecords(PO.class);
-//		final Set<ProductId> products = new HashSet<ProductId>();
-//		final Set<PricingConditionsId> pricingConditions = new HashSet<PricingConditionsId>();
-//		
-//		records.forEach(record -> {
-//			final Optional<Integer> productId = InterfaceWrapperHelper.getValue(record, I_M_DiscountSchemaBreak.COLUMNNAME_M_Product_ID);
-//			if (productId.isPresent())
-//			{
-//				products.add(ProductId.ofRepoId(productId.get()));	
-//			}
-//			
-//			//
-//			final Optional<Integer> pricingConditionsId = InterfaceWrapperHelper.getValue(record, I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID);
-//			if (pricingConditionsId.isPresent())
-//			{
-//				pricingConditions.add(PricingConditionsId.ofRepoId(pricingConditionsId.get()));	
-//			}
-//			
-//		});
-//		
-//		
+		
+		final PlainContextAware localCtx = PlainContextAware.newWithThreadInheritedTrx(getCtx());
+		
+		final Set<I_M_DiscountSchemaBreak_V> breaks = getProcessInfo().getSelectedIncludedRecords()
+				.stream()
+				.map(recordRef -> recordRef.getModel(localCtx, I_M_DiscountSchemaBreak_V.class))
+				.collect(ImmutableSet.toImmutableSet());
 
+		final Set<ProductId> products = new HashSet<ProductId>();
+		final Set<PricingConditionsId> pricingConditions = new HashSet<PricingConditionsId>();
+
+		breaks.forEach(record -> {
+
+			products.add(ProductId.ofRepoId(record.getM_Product_ID()));
+
+			//
+			pricingConditions.add(PricingConditionsId.ofRepoId(record.getM_DiscountSchema_ID()));
+
+		});
+		
+		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> queryFilter = Services.get(IQueryBL.class)
+				.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
+				.setJoinAnd()
+				.addInArrayFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, pricingConditions)
+				.addInArrayFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_Product_ID, products);
+		
 		final boolean allowCopyToSameSchema = true;
 
 		final CopyDiscountSchemaBreaksRequest request = CopyDiscountSchemaBreaksRequest.builder()
-				.pinstanceId(getPinstanceId())
+				.filter(queryFilter)
 				.pricingConditionsId(PricingConditionsId.ofRepoId(p_PricingConditionsId))
 				.productId(ProductId.ofRepoId(p_ProductId))
 				.allowCopyToSameSchema(allowCopyToSameSchema)
