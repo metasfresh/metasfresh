@@ -41,10 +41,8 @@ import de.metas.common.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBu
 import de.metas.common.bpartner.response.JsonResponseUpsertItem;
 import de.metas.common.bpartner.response.JsonResponseUpsertItem.JsonResponseUpsertItemBuilder;
 import de.metas.common.bpartner.response.JsonResponseUpsertItem.SyncOutcome;
-import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
-import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.SyncAdvise;
 import de.metas.common.rest_api.SyncAdvise.IfExists;
@@ -67,6 +65,7 @@ import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
@@ -83,7 +82,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 import static de.metas.common.util.CoalesceUtil.coalesce;
@@ -203,38 +201,9 @@ public class JsonPersisterService
 				bpartnerComposite,
 				effectiveSyncAdvise);
 
-		if (jsonRequestComposite.getBPartnerReferenceCreateRequest() != null
-				&& !Check.isEmpty(jsonRequestComposite.getBPartnerReferenceCreateRequest().getItems()))
-		{
-			insertExternalReferenceIfMissing(jsonRequestComposite.getBPartnerReferenceCreateRequest(), bpartnerComposite, orgCode);
-		}
+		handleExternalReferenceRecords(requestItem, bpartnerComposite, orgCode);
 
 		return resultBuilder.build();
-	}
-
-	@NonNull
-	private JsonExternalReferenceCreateRequest buildExternalReferenceCreateRequestWithBPId(
-			@NonNull final JsonExternalReferenceCreateRequest bPartnerReferenceCreateRequest,
-			@NonNull final BPartnerComposite bPartnerComposite)
-	{
-		if (bPartnerComposite.getBpartner() == null || bPartnerComposite.getBpartner().getId() == null)
-		{
-			throw new AdempiereException("bPartnerComposite.getBpartner().getId() should never be null at this stage!")
-					.appendParametersToMessage()
-					.setParameter("BPartnerComposite", bPartnerComposite);
-		}
-
-		final JsonMetasfreshId bPartnerId = JsonMetasfreshId.of(bPartnerComposite.getBpartner().getId().getRepoId());
-
-		final List<JsonExternalReferenceItem> updateReferenceItems = bPartnerReferenceCreateRequest.getItems()
-				.stream()
-				.map(item -> JsonExternalReferenceItem.of(item.getLookupItem(), bPartnerId))
-				.collect(Collectors.toList());
-
-		return JsonExternalReferenceCreateRequest.builder()
-				.systemName(bPartnerReferenceCreateRequest.getSystemName())
-				.items(updateReferenceItems)
-				.build();
 	}
 
 	@Data
@@ -1713,47 +1682,102 @@ public class JsonPersisterService
 		return locationType.build();
 	}
 
-	private void insertExternalReferenceIfMissing(
-			@NonNull final JsonExternalReferenceCreateRequest jsonExternalReferenceCreateRequest,
+	private void handleExternalReferenceRecords(
+			@NonNull final JsonRequestBPartnerUpsertItem jsonRequestBPartnerUpsertItem,
 			@NonNull final BPartnerComposite bpartnerComposite,
 			@Nullable final String orgCode)
 	{
-		if (Check.isEmpty(jsonExternalReferenceCreateRequest.getItems())
-				||  jsonExternalReferenceCreateRequest.getItems().size() > 1)
+
+		//1. handle bPartner external ref if any
+		if (jsonRequestBPartnerUpsertItem.getBpartnerComposite().getBPartnerReferenceCreateRequest() != null)
 		{
-			throw new AdempiereException("Unexpected jsonExternalReferenceCreateRequest! jsonExternalReferenceCreateRequest.items must always have one element!")
-					.appendParametersToMessage()
-					.setParameter("JsonExternalReferenceCreateRequest", jsonExternalReferenceCreateRequest);
+			insertBPartnerExternalReferenceIfMissing(jsonRequestBPartnerUpsertItem.getBpartnerComposite().getBPartnerReferenceCreateRequest(), bpartnerComposite, orgCode);
 		}
 
-		final JsonExternalReferenceItem refToBeInserted = jsonExternalReferenceCreateRequest.getItems().get(0);
+		//2. handle bPartner location external ref if any
+		final JsonRequestLocationUpsert upsertLocationRequest = jsonRequestBPartnerUpsertItem.getBpartnerComposite().getLocationsNotNull();
 
-		final JsonExternalReferenceCreateRequest createRequest =
-				buildExternalReferenceCreateRequestWithBPId(jsonExternalReferenceCreateRequest, bpartnerComposite);
+		if (Check.isEmpty(upsertLocationRequest.getRequestItems()))
+		{
+			return;//nothing more to do
+		}
 
-		final JsonExternalReferenceLookupRequest externalRefLookupReq = JsonExternalReferenceLookupRequest.builder()
-				.systemName(createRequest.getSystemName())
-				.item(refToBeInserted.getLookupItem())
+		final Map<ExternalId, JsonMetasfreshId> externalLocationId2MetasfreshId = Check.isEmpty(bpartnerComposite.getLocations())
+				? ImmutableMap.of()
+				: bpartnerComposite.getLocations()
+				.stream()
+				.filter(location -> location.getExternalId() != null && location.getId() != null)
+				.collect(ImmutableMap.toImmutableMap(
+						BPartnerLocation::getExternalId,
+						location -> JsonMetasfreshId.of(location.getId().getRepoId()))
+				);
+
+		insertBPLocationExternalRefIfMissing(upsertLocationRequest.getRequestItems(), externalLocationId2MetasfreshId, orgCode);
+	}
+
+	private void insertBPartnerExternalReferenceIfMissing(
+			@NonNull final JsonSingleExternalReferenceCreateReq externalReferenceCreateReq,
+			@NonNull final BPartnerComposite bpartnerComposite,
+			@Nullable final String orgCode)
+	{
+		final BPartnerId bPartnerId = bpartnerComposite.getBpartner() != null && bpartnerComposite.getBpartner().getId() != null
+				? bpartnerComposite.getBpartner().getId()
+				: null;
+
+		if (bPartnerId == null)
+		{
+			throw new AdempiereException("bPartnerComposite.getBpartner().getId() should never be null at this stage!")
+					.appendParametersToMessage()
+					.setParameter("BPartnerComposite", bpartnerComposite);
+		}
+
+		final JsonSingleExternalReferenceCreateReq createRequest =
+				buildExternalRefWithMetasfreshId(externalReferenceCreateReq, JsonMetasfreshId.of(bPartnerId.getRepoId()));
+
+		externalReferenceRestControllerService.performInsertIfMissing(createRequest, orgCode);
+	}
+
+	private void insertBPLocationExternalRefIfMissing(
+			@NonNull final List<JsonRequestLocationUpsertItem> requestItems,
+			@NonNull final Map<ExternalId, JsonMetasfreshId> externalLocationId2MetasfreshId,
+			@Nullable final String orgCode)
+	{
+
+		requestItems.stream()
+				.map(JsonRequestLocationUpsertItem::getLocationExternalRef)
+				.filter(Objects::nonNull)
+				.map(locationExternalRef ->  {
+					final ExternalId locationExternalId = ExternalId.of(locationExternalRef.getExternalReferenceItem().getLookupItem().getId());
+
+					return Optional.ofNullable(externalLocationId2MetasfreshId.get(locationExternalId))
+							.map(locationMFId -> buildExternalRefWithMetasfreshId(locationExternalRef, locationMFId))
+							.orElseGet(() -> {
+								logger.warn("*** WARN in insertBPLocationExternalRefIfMissing: no metasfreshId was found for the externalId: {}! "
+													+ "If this happened, something went wrong while upserting the bPartnerLocations", locationExternalId);
+								return null; // todo cp: ask tobi if we should throw an error here
+							});
+				})
+				.filter(Objects::nonNull)
+				.forEach(createExternalRefReq -> externalReferenceRestControllerService.performInsertIfMissing(createExternalRefReq, orgCode) );
+	}
+
+
+	@NonNull
+	private JsonSingleExternalReferenceCreateReq buildExternalRefWithMetasfreshId(
+			@NonNull final JsonSingleExternalReferenceCreateReq externalReferenceCreateReq,
+			@NonNull final JsonMetasfreshId metasfreshId)
+	{
+
+		final JsonExternalReferenceItem referenceItemWithMFId = JsonExternalReferenceItem
+				.builder()
+				.metasfreshId(metasfreshId)
+				.version(externalReferenceCreateReq.getExternalReferenceItem().getVersion())
+				.lookupItem(externalReferenceCreateReq.getExternalReferenceItem().getLookupItem())
 				.build();
 
-		final JsonExternalReferenceLookupResponse lookupResponse = externalReferenceRestControllerService.performLookup(orgCode, externalRefLookupReq);
-
-		if (lookupResponse != null)
-		{
-			final boolean isExternalRefAlreadyCreated = lookupResponse.getItems()
-					.stream()
-					.filter(item -> item.getLookupItem().equals(refToBeInserted.getLookupItem()))
-					.findFirst()
-					.map(externalRefItem -> externalRefItem.getMetasfreshId() != null)
-					.orElse(false);
-
-			if (isExternalRefAlreadyCreated)
-			{
-				logger.debug("insertExternalReferenceIfMissing: There is already an external reference stored for: " + refToBeInserted);
-				return; // nothing to do for now, but it might be a good idea to support updates on external ref
-			}
-		}
-
-		externalReferenceRestControllerService.performInsert(orgCode, createRequest);
+		return JsonSingleExternalReferenceCreateReq.builder()
+				.systemName(externalReferenceCreateReq.getSystemName())
+				.externalReferenceItem(referenceItemWithMFId)
+				.build();
 	}
 }

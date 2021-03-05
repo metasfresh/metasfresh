@@ -29,6 +29,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.GetBearerRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonOauthResponse;
 import de.metas.camel.externalsystems.shopware6.api.model.PathSegmentsEnum;
 import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDeliveries;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrders;
@@ -104,7 +105,7 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	public Optional<JsonOrderAddress> getOrderAddressDetails(@NonNull final String orderAddressId) throws JsonProcessingException
+	public Optional<JsonOrderAddress> getOrderAddressDetails(@NonNull final String orderAddressId)
 	{
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
@@ -126,11 +127,18 @@ public class ShopwareClient
 
 		final ObjectMapper objectMapper = new ObjectMapper();
 
-		final JsonNode jsonNode = objectMapper.readValue(response.getBody(), JsonNode.class);
+		try
+		{
+			final JsonNode jsonNode = objectMapper.readValue(response.getBody(), JsonNode.class);
 
-		return jsonNode.get(JSON_NODE_DATA) != null
-				? Optional.ofNullable(objectMapper.treeToValue(jsonNode.get(JSON_NODE_DATA), JsonOrderAddress.class))
-				: Optional.empty();
+			return jsonNode.get(JSON_NODE_DATA) != null
+					? Optional.ofNullable(objectMapper.treeToValue(jsonNode.get(JSON_NODE_DATA), JsonOrderAddress.class))
+					: Optional.empty();
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	@NonNull
@@ -156,6 +164,42 @@ public class ShopwareClient
 		}
 
 		return Optional.of(response.getBody());
+	}
+
+	@NonNull
+	public Optional<JsonCountry> getCountryDetails(@NonNull final String countryId)
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.V3.getValue())
+				.pathSegment(PathSegmentsEnum.COUNTRY.getValue())
+				.pathSegment(countryId);
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<String> response = performWithRetry(resourceURI, HttpMethod.GET, String.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null)
+		{
+			return Optional.empty();
+		}
+
+		final ObjectMapper objectMapper = new ObjectMapper();
+
+		try
+		{
+			final JsonNode jsonNode = objectMapper.readValue(response.getBody(), JsonNode.class);
+			return jsonNode.get(JSON_NODE_DATA) != null
+					? Optional.ofNullable(objectMapper.treeToValue(jsonNode.get(JSON_NODE_DATA), JsonCountry.class))
+					: Optional.empty();
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Nullable

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalreference
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,47 +20,20 @@
  * #L%
  */
 
-package de.metas.externalreference;
+package de.metas.camel.externalsystems.common;
 
-import de.metas.organization.OrgId;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
-public class ExternalReference
+public class LogMessageRequest
 {
-	/**
-	 * Used in maps to indicate that no reference was found for a given query.
-	 */
-	public static final ExternalReference NULL = ExternalReference.builder()
-			.orgId(OrgId.ANY)
-			.externalSystem(NullExternalSystem.NULL)
-			.externalReferenceType(NullExternalReferenceType.NULL)
-			.externalReference("NULL")
-			.recordId(-1)
-			.build();
-
-	@Nullable
-	ExternalReferenceId externalReferenceId;
+	@NonNull
+	String logMessage;
 
 	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	IExternalSystem externalSystem;
-
-	@NonNull
-	IExternalReferenceType externalReferenceType;
-
-	@NonNull
-	String externalReference;
-
-	@Nullable
-	String version;
-
-	int recordId;
+	JsonMetasfreshId pInstanceId;
 }

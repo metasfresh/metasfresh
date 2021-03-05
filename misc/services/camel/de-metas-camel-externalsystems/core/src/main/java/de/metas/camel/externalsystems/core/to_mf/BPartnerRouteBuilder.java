@@ -45,6 +45,8 @@ public class BPartnerRouteBuilder extends RouteBuilder
 	@Override
 	public void configure()
 	{
+		errorHandler(noErrorHandler());
+
 		from("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_CAMEL_URI + "}}")
 				.routeId(ROUTE_ID)
 				.streamCaching()

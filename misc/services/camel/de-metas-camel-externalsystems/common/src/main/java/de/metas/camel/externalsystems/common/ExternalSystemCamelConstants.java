@@ -38,5 +38,9 @@ public class ExternalSystemCamelConstants
 
 	public static String MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.lookup-externalreference.camel.uri";
 
+	public static String MF_EXTERNAL_SYSTEM_URI = "metasfresh.externalsystem.api.uri";
+
 	public final String MF_ERROR_ROUTE_ID = "Error-Route";
+
+	public final String MF_LOG_MESSAGE_ROUTE_ID = "Log-Message-Route";
 }
