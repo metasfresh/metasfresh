@@ -3,7 +3,12 @@ import { IndexRoute, NoMatch, Route } from 'react-router';
 import { push } from 'react-router-redux';
 
 import { loginSuccess, logoutSuccess } from './actions/AppActions';
-import { localLoginRequest, logoutRequest, getResetPasswordInfo, loginWithToken } from './api';
+import {
+  localLoginRequest,
+  logoutRequest,
+  getResetPasswordInfo,
+  loginWithToken,
+} from './api';
 import { clearNotifications, enableTutorial } from './actions/AppActions';
 import { createWindow } from './actions/WindowActions';
 import { setBreadcrumb } from './actions/MenuActions';
@@ -63,9 +68,9 @@ export const getRoutes = (store, auth, plugins) => {
   };
 
   /**
-   * @method tokenAuthentication 
+   * @method tokenAuthentication
    * @summary - method executed when we authenticate directly by using a `token` without the need to supply a `username` and a `password`
-   * @param {object} - tokenId prop given as param to the /token path i.e  /token/xxxxxxx   (`xxxxxxx` will be the value of the tokenId ) 
+   * @param {object} - tokenId prop given as param to the /token path i.e  /token/xxxxxxx   (`xxxxxxx` will be the value of the tokenId )
    */
   const tokenAuthentication = ({ params: { tokenId } }) => {
     loginWithToken(tokenId)
@@ -73,7 +78,7 @@ export const getRoutes = (store, auth, plugins) => {
         store.dispatch(push('/'));
       })
       .catch(() => {
-         store.dispatch(push('/login?redirect=true'));
+        store.dispatch(push('/login?redirect=true'));
       });
   };
 
@@ -193,10 +198,7 @@ export const getRoutes = (store, auth, plugins) => {
       <Route onEnter={authRequired} childRoutes={childRoutes}>
         <IndexRoute component={Dashboard} />
       </Route>
-      <Route 
-        path="/token/:tokenId"
-        onEnter={tokenAuthentication}
-      />
+      <Route path="/token/:tokenId" onEnter={tokenAuthentication} />
       <Route
         path="/login"
         component={({ location }) => (
