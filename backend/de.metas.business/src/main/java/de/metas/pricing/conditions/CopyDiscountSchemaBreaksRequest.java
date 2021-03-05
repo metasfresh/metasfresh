@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 
+import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,7 +43,7 @@ public class CopyDiscountSchemaBreaksRequest
 	    TargetSource
 	}
 	
-	@NonNull 
+	@Nullable 
 	IQueryFilter<I_M_DiscountSchemaBreak> filter;
 	
 	@NonNull 
@@ -51,6 +52,9 @@ public class CopyDiscountSchemaBreaksRequest
 	@Nullable ProductId productId;
 	
 	boolean allowCopyToSameSchema;
+	
+	@Nullable 
+	PInstanceId pinstanceId;
 	
 	@NonNull 
 	Direction direction;
