@@ -174,7 +174,7 @@ export const getRoutes = (store, auth, plugins) => {
         ),
     },
     {
-      path: '/sitemap2',
+      path: '/sitemap',
       component: NavigationTree,
     },
     {
