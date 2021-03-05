@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.logging.LogManager;
@@ -67,7 +67,7 @@ public class WEBUI_CreateRequest extends JavaProcess implements IProcessPrecondi
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
-	private final Optional<AdWindowId> requestWindowId = RecordZoomWindowFinder.findAdWindowId(I_R_Request.Table_Name);
+	private final Optional<AdWindowId> requestWindowId = RecordWindowFinder.findAdWindowId(I_R_Request.Table_Name);
 
 	public WEBUI_CreateRequest()
 	{
