@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
 package org.compiere.util;
 
 import java.sql.Timestamp;
@@ -62,6 +46,8 @@ import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Login Manager
  *
@@ -77,17 +63,17 @@ import lombok.NonNull;
 public class Login
 {
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system
+	 * Task http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system
 	 */
 	private static final String SYSCONFIG_UI_WindowHeader_Notice_Text = "UI_WindowHeader_Notice_Text";
 
 	/**
-	 * @task https://metasfresh.atlassian.net/browse/FRESH-352
+	 * Task https://metasfresh.atlassian.net/browse/FRESH-352
 	 */
 	private static final String SYSCONFIG_UI_WindowHeader_Notice_BG_Color = "UI_WindowHeader_Notice_BG_Color";
 
 	/**
-	 * @task https://metasfresh.atlassian.net/browse/FRESH-352
+	 * Task https://metasfresh.atlassian.net/browse/FRESH-352
 	 */
 	private static final String SYSCONFIG_UI_WindowHeader_Notice_FG_Color = "UI_WindowHeader_Notice_FG_Color";
 
@@ -141,11 +127,9 @@ public class Login
 	 * @return available roles; never null or empty
 	 * @throws AdempiereException in case of any error (including no roles found)
 	 */
-	public Set<KeyNamePair> authenticate(final String username, final HashableString password)
+	public Set<KeyNamePair> authenticate(@Nullable final String username, @Nullable final HashableString password)
 	{
-		log.debug("User={}", username);
-
-		if (Check.isEmpty(username, true))
+		if (username == null || Check.isBlank(username))
 		{
 			throw new AdempiereException("@UserOrPasswordInvalid@").markAsUserValidationError();
 		}
@@ -179,9 +163,9 @@ public class Login
 		if (isAccountLocked)
 		{
 			final Timestamp curentLogin = (new Timestamp(System.currentTimeMillis()));
-			long loginFailureTime = user.getLoginFailureDate().getTime();
-			long newloginFailureTime = loginFailureTime + (1000 * 60 * accountLockExpire);
-			Timestamp acountUnlock = new Timestamp(newloginFailureTime);
+			final long loginFailureTime = user.getLoginFailureDate().getTime();
+			final long newloginFailureTime = loginFailureTime + (1000L * 60 * accountLockExpire);
+			final Timestamp acountUnlock = new Timestamp(newloginFailureTime);
 			if (curentLogin.compareTo(acountUnlock) > 0)
 			{
 				user.setLoginFailureCount(0);
@@ -348,8 +332,7 @@ public class Login
 		// Get user role
 		final ClientId clientId = null; // N/A
 		final LocalDate loginDate = SystemTime.asLocalDate(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
-		final IUserRolePermissions rolePermissions = userRolePermissionsDAO.getUserRolePermissions(roleId, userId, clientId, loginDate);
-		return rolePermissions;
+		return userRolePermissionsDAO.getUserRolePermissions(roleId, userId, clientId, loginDate);
 	}
 
 	public Set<KeyNamePair> getAvailableClients(final RoleId roleId, final UserId userId)
@@ -419,12 +402,14 @@ public class Login
 	 * @param org log-in org
 	 * @return error message
 	 */
+	@Nullable
 	public String validateLogin(final KeyNamePair org)
 	{
 		final boolean fireLoginComplete = true;
 		return validateLogin(org, fireLoginComplete);
 	}
 
+	@Nullable
 	public String validateLogin(final KeyNamePair org, final boolean fireLoginComplete)
 	{
 		final LoginContext ctx = getCtx();
@@ -479,10 +464,8 @@ public class Login
 	 */
 	public String loadPreferences(
 			@NonNull final KeyNamePair org,
-			final java.sql.Timestamp timestamp)
+			@Nullable final java.sql.Timestamp timestamp)
 	{
-		Check.assumeNotNull(org, "Parameter org is not null");
-
 		final LoginContext ctx = getCtx();
 		final ClientId clientId = ctx.getClientId();
 		final UserId userId = ctx.getUserId();
@@ -541,7 +524,7 @@ public class Login
 		{
 			loadAccounting();
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			log.warn("Failed loading accounting info", ex);
 			retValue = "NoValidAcctInfo";
@@ -553,7 +536,7 @@ public class Login
 			// Load preferences
 			loadPreferences();
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			log.warn("Failed loading preferences. Skipping.", e);
 		}
