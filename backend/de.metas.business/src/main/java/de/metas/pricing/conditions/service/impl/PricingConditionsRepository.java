@@ -640,7 +640,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		{
 
 			final List<PricingConditionsBreak> exitentBreaks = fetchMatchingPricingConditionBreakValue(discountSchemaBreak, targetDiscountSchemaBreaks);
-			if (exitentBreaks.isEmpty())
+			if (!exitentBreaks.isEmpty())
 			{
 				discountSchemaBreaksToUpdate.put(discountSchemaBreak, exitentBreaks);
 			}
