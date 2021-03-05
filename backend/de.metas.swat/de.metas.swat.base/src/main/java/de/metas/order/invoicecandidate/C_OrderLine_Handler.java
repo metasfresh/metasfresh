@@ -230,7 +230,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
 				CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
 				order.isSOTrx());
-		icRecord.setC_Tax_ID(taxId.getRepoId());
+		icRecord.setC_Tax_ID(TaxId.toRepoId(taxId)); // avoid NPE in tests
 
 		// set Quality Issue Percentage Override
 

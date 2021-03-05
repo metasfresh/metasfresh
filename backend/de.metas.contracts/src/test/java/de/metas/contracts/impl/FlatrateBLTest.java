@@ -5,6 +5,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyInt;
 
 import java.sql.Timestamp;
 
@@ -242,16 +245,17 @@ public class FlatrateBLTest extends ContractsTestBase
 		final Properties ctx = Env.getCtx();
 		final TaxCategoryId taxCategoryId = null;
 		final boolean isSOTrx = true;
-		Mockito.when(taxBL.getTaxNotNull(
-				ctx,
-				currentTerm,
-				taxCategoryId,
-				currentTerm.getM_Product_ID(),
-				dataEntry.getDate_Reported(),
-				OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
-				(WarehouseId)null,
-				CoalesceUtil.firstGreaterThanZero(currentTerm.getDropShip_Location_ID(), currentTerm.getBill_Location_ID()),
-				isSOTrx))
+		Mockito
+				.when(taxBL.getTaxNotNull(
+						any(Properties.class),
+						any(I_C_Flatrate_Term.class),
+						any(TaxCategoryId.class),
+						anyInt(),
+						any(Timestamp.class),
+						any(OrgId.class),
+						any(WarehouseId.class),
+						anyInt(),
+						anyBoolean()))
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 
