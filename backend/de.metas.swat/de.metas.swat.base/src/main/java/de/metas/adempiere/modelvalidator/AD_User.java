@@ -13,9 +13,9 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.CopyRecordFactory;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.user.UserPOCopyRecordSupport;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
@@ -43,14 +43,14 @@ public class AD_User
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 
-		CopyRecordFactory.enableForTableName(I_AD_User.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_AD_User.Table_Name, UserPOCopyRecordSupport.class);
+		CopyRecordFactory.enableForTableName(org.compiere.model.I_AD_User.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(org.compiere.model.I_AD_User.Table_Name, UserPOCopyRecordSupport.class);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = { I_AD_User.COLUMNNAME_Firstname, I_AD_User.COLUMNNAME_Lastname })
-	@CalloutMethod(columnNames = { I_AD_User.COLUMNNAME_Firstname, I_AD_User.COLUMNNAME_Lastname })
-	public void setName(final I_AD_User user)
+			ifColumnsChanged = { org.compiere.model.I_AD_User.COLUMNNAME_Firstname, org.compiere.model.I_AD_User.COLUMNNAME_Lastname })
+	@CalloutMethod(columnNames = { org.compiere.model.I_AD_User.COLUMNNAME_Firstname, org.compiere.model.I_AD_User.COLUMNNAME_Lastname })
+	public void setName(final org.compiere.model.I_AD_User user)
 	{
 		final IUserBL userService = Services.get(IUserBL.class);
 
@@ -63,8 +63,8 @@ public class AD_User
 	}
 
 	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE},
-			ifColumnsChanged = {I_AD_User.COLUMNNAME_C_Title_ID})
-	public void setTitle(final I_AD_User user)
+			ifColumnsChanged = { org.compiere.model.I_AD_User.COLUMNNAME_C_Title_ID})
+	public void setTitle(final org.compiere.model.I_AD_User user)
 	{
 		if (user.getC_Title_ID() > 0)
 		{
@@ -77,7 +77,7 @@ public class AD_User
 		}
 	}
 
-	private String extractTitle(I_AD_User user)
+	private String extractTitle(org.compiere.model.I_AD_User user)
 	{
 		String userTitle = "";
 		final Optional<Language> languageForModel = bpPartnerService.getLanguageForModel(user);

@@ -77,6 +77,8 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.slf4j.MDC;
 
+import javax.annotation.Nullable;
+
 public class TaxBL implements de.metas.tax.api.ITaxBL
 {
 	private static final Logger log = LogManager.getLogger(TaxBL.class);
@@ -97,13 +99,14 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	 * 07739: If that's not available, then throw an exception; don't attempt to retrieve the German tax because that method proved to return a wrong result
 	 */
 	@Override
-	public int getTax(final Properties ctx,
-			final Object model,
-			final TaxCategoryId taxCategoryId,
+	@NonNull
+	public TaxId getTaxNotNull(final Properties ctx,
+			@Nullable final Object model,
+			@Nullable final TaxCategoryId taxCategoryId,
 			final int productId,
 			@NonNull final Timestamp shipDate,
 			@NonNull final OrgId orgId,
-			final WarehouseId warehouseId,
+			@Nullable final WarehouseId warehouseId,
 			final int shipC_BPartner_Location_ID,
 			final boolean isSOTrx)
 	{
@@ -130,7 +133,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 			final I_C_BPartner_Location bpLocTo = loadOutOfTrx(shipC_BPartner_Location_ID, I_C_BPartner_Location.class);
 
-			final int taxIdForCategory = retrieveTaxIdForCategory(ctx,
+			final TaxId taxIdForCategory = retrieveTaxIdForCategory(ctx,
 					countryFromId,
 					orgId,
 					bpLocTo,
@@ -139,7 +142,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 					isSOTrx,
 					false // throwEx
 			);
-			if (taxIdForCategory > 0)
+			if (taxIdForCategory != null)
 			{
 				return taxIdForCategory;
 			}
@@ -162,8 +165,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		// 07814
 		// If we got here, it means that no tax was found to satisfy the conditions
 		// In this case, the Tax_Not_Found placeholder will be returned
-		final I_C_Tax taxNotFound = taxDAO.retrieveNoTaxFound(ctx);
-		return taxNotFound.getC_Tax_ID();
+		return TaxId.ofRepoId(TaxDAO.C_TAX_ID_NO_TAX_FOUND);
 	}
 
 	/**
@@ -173,7 +175,8 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	 * </ul>
 	 */
 	@Override
-	public int retrieveTaxIdForCategory(final Properties ctx,
+	@Nullable
+	public TaxId retrieveTaxIdForCategory(final Properties ctx,
 			final CountryId countryFromId,
 			final OrgId orgId,
 			@NonNull final I_C_BPartner_Location bpLocTo,
@@ -270,10 +273,10 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 					.build()
 					.setParameter("query", query.toString())
 					.throwOrLogWarning(throwEx, log);
-			return -1;
+			return null;
 		}
 
-		return taxId;
+		return TaxId.ofRepoId(taxId);
 	}
 
 	private int getGermanTax(final Properties ctx,

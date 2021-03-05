@@ -1,16 +1,7 @@
 package de.metas.ui.web.menu;
 
-import java.util.Enumeration;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.tree.AdTreeId;
-import org.compiere.model.MTree;
-import org.compiere.model.MTreeNode;
-import org.compiere.model.X_AD_Menu;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
+import de.metas.document.references.zoom_into.CustomizedWindowInfo;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
 import de.metas.logging.LogManager;
 import de.metas.menu.AdMenuId;
 import de.metas.security.IUserRolePermissions;
@@ -23,6 +14,18 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.tree.AdTreeId;
+import org.compiere.model.MTree;
+import org.compiere.model.MTreeNode;
+import org.compiere.model.X_AD_Menu;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Enumeration;
 
 /*
  * #%L
@@ -48,7 +51,8 @@ import lombok.NonNull;
 
 final class MenuTreeLoader
 {
-	/* package */static MenuTreeLoader newInstance()
+	/* package */
+	static MenuTreeLoader newInstance()
 	{
 		return new MenuTreeLoader();
 	}
@@ -60,6 +64,7 @@ final class MenuTreeLoader
 	private static final int DEPTH_Root = 0;
 	private static final int DEPTH_RootChildren = 1;
 
+	private CustomizedWindowInfoMap customizedWindowInfoMap = CustomizedWindowInfoMap.empty();
 	private UserRolePermissionsKey _userRolePermissionsKey;
 	private IUserRolePermissions _userRolePermissions; // lazy
 	private String _adLanguage;
@@ -67,7 +72,12 @@ final class MenuTreeLoader
 
 	private MenuTreeLoader()
 	{
-		super();
+	}
+
+	public MenuTreeLoader setCustomizedWindowInfoMap(@NonNull final CustomizedWindowInfoMap customizedWindowInfoMap)
+	{
+		this.customizedWindowInfoMap = customizedWindowInfoMap;
+		return this;
 	}
 
 	public MenuTreeLoader setUserRolePermissionsKey(final UserRolePermissionsKey userRolePermissionsKey)
@@ -100,7 +110,7 @@ final class MenuTreeLoader
 		}
 
 		final MTreeNode rootNodeModel = retrieveRootNodeModel();
-		final MenuNode rootNode = createMenuNodeRecursivelly(rootNodeModel, DEPTH_Root);
+		final MenuNode rootNode = createMenuNodeRecursively(rootNodeModel, DEPTH_Root);
 		if (rootNode == null)
 		{
 			throw new IllegalStateException("No root menu node available"); // shall not happen
@@ -110,7 +120,8 @@ final class MenuTreeLoader
 		return MenuTree.of(version, rootNode);
 	}
 
-	private MenuNode createMenuNodeRecursivelly(final MTreeNode nodeModel, final int depth)
+	@Nullable
+	private MenuNode createMenuNodeRecursively(final MTreeNode nodeModel, final int depth)
 	{
 		final MenuNode.Builder nodeBuilder = createMenuNodeBuilder(nodeModel, depth);
 		if (nodeBuilder == null)
@@ -124,7 +135,7 @@ final class MenuTreeLoader
 		{
 			final MTreeNode childModel = (MTreeNode)childModels.nextElement();
 
-			final MenuNode childNode = createMenuNodeRecursivelly(childModel, depth + 1);
+			final MenuNode childNode = createMenuNodeRecursively(childModel, depth + 1);
 			if (childNode == null)
 			{
 				continue;
@@ -145,6 +156,7 @@ final class MenuTreeLoader
 		return nodeBuilder.build();
 	}
 
+	@Nullable
 	private MenuNode.Builder createMenuNodeBuilder(final MTreeNode nodeModel, final int depth)
 	{
 		final String captionBreadcrumb = nodeModel.getName(); // shall not be empty
@@ -173,7 +185,21 @@ final class MenuTreeLoader
 		}
 		else if (X_AD_Menu.ACTION_Window.equals(action))
 		{
-			final DocumentId elementId = DocumentId.of(nodeModel.getAD_Window_ID());
+			final AdWindowId adWindowId = AdWindowId.ofRepoId(nodeModel.getAD_Window_ID());
+
+			final CustomizedWindowInfo customizedWindowInfo = customizedWindowInfoMap.getCustomizedWindowInfo(adWindowId).orElse(null);
+			final AdWindowId effectiveAdWindowId;
+			if (customizedWindowInfo != null && customizedWindowInfo.isOverrideInMenu())
+			{
+				effectiveAdWindowId = customizedWindowInfo.getCustomizationWindowId();
+				builder.setCaption(customizedWindowInfo.getCustomizationWindowCaption().translate(getAD_Language()));
+			}
+			else
+			{
+				effectiveAdWindowId = adWindowId;
+			}
+
+			final DocumentId elementId = DocumentId.of(effectiveAdWindowId.getRepoId());
 			builder.setType(MenuNodeType.Window, elementId);
 		}
 		else if (X_AD_Menu.ACTION_Process.equals(action))
@@ -199,7 +225,8 @@ final class MenuTreeLoader
 		return builder;
 	}
 
-	private MenuNode createNewRecordNode(final MenuNode node, final String caption, String captionBreadcrumb)
+	@Nullable
+	private MenuNode createNewRecordNode(final MenuNode node, final String caption, final String captionBreadcrumb)
 	{
 		if (node.getType() != MenuNodeType.Window)
 		{
@@ -250,7 +277,7 @@ final class MenuTreeLoader
 				.build();
 
 		final MTreeNode rootNodeModel = mTree.getRoot();
-		AdMenuId rootMenuIdEffective = userMenuInfo.getRootMenuId();
+		final AdMenuId rootMenuIdEffective = userMenuInfo.getRootMenuId();
 		if (rootMenuIdEffective != null)
 		{
 			final MTreeNode rootNodeModelEffective = rootNodeModel.findNode(rootMenuIdEffective.getRepoId());
@@ -278,7 +305,7 @@ final class MenuTreeLoader
 		return userRolePermissions.getMenuInfo();
 	}
 
-	public MenuTreeLoader setAD_Language(String adLanguage)
+	public MenuTreeLoader setAD_Language(final String adLanguage)
 	{
 		this._adLanguage = adLanguage;
 		return this;

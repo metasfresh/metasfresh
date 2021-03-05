@@ -25,7 +25,8 @@ package de.metas.rest_api.utils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.bpartner.GLN;
-import de.metas.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.JsonExternalId;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
@@ -268,6 +269,14 @@ public class IdentifierString
 		return MetasfreshId.of(repoId);
 	}
 
+	public JsonMetasfreshId asJsonMetasfreshId()
+	{
+		Check.assume(Type.METASFRESH_ID.equals(type), "The type of this instance needs to be {}; this={}", Type.METASFRESH_ID, this);
+
+		final int repoId = Integer.parseInt(value);
+		return JsonMetasfreshId.of(repoId);
+	}
+	
 	public <T extends RepoIdAware> T asMetasfreshId(@NonNull final IntFunction<T> mapper)
 	{
 		Check.assume(Type.METASFRESH_ID.equals(type), "The type of this instance needs to be {}; this={}", Type.METASFRESH_ID, this);

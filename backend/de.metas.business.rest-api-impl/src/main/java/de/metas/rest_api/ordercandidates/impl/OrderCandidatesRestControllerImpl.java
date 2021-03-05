@@ -160,7 +160,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 			// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
 			// (at least currently) part of the respective caching keys.
 			final JsonOLCandCreateBulkResponse //
-			response = trxManager.callInNewTrx(() -> creatOrderLineCandidatesBulk(bulkRequest, masterdataProvider));
+					response = trxManager.callInNewTrx(() -> creatOrderLineCandidatesBulk(bulkRequest, masterdataProvider));
 
 			//
 			return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -191,7 +191,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 				() -> bulkRequest.getRequests()
 						.stream()
 						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider)),
-						ApiAPMHelper.createMetadataFor("CreateOrUpdateMasterDataBulk"));
+				ApiAPMHelper.createMetadataFor("CreateOrUpdateMasterDataBulk"));
 	}
 
 	private void createOrUpdateMasterdata(

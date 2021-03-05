@@ -1,39 +1,5 @@
 package de.metas.invoicecandidate.callout;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Properties;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.TimeUtil;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.invoicecandidate.api.IAggregationBL;
@@ -51,6 +17,17 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Properties;
 
 @Callout(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
@@ -150,7 +127,7 @@ public class C_Invoice_Candidate
 		ic.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSysId));
 	}
 
-	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override )
+	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override)
 	public void onQualityDiscountPercentOverride(final I_C_Invoice_Candidate icRecord, final ICalloutField field)
 	{
 		icRecord.setIsInDispute(false);
@@ -166,5 +143,11 @@ public class C_Invoice_Candidate
 
 		final InvoiceCandidatesStorage orderLinesStorage = groupsRepo.createNotSaveableSingleOrderLineStorage(ic);
 		groupsRepo.saveGroup(group, orderLinesStorage);
+	}
+
+	@CalloutMethod(columnNames = I_C_Invoice_Candidate.COLUMNNAME_DateInvoiced )
+	public void updateFromDateInvoiced(final I_C_Invoice_Candidate invoice, final ICalloutField field)
+	{
+		invoice.setDateAcct(invoice.getDateInvoiced());
 	}
 }

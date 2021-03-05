@@ -14,7 +14,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.JsonExternalId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.web.exception.InvalidEntityException;
 import de.metas.rest_api.invoicecandidates.request.JsonCloseInvoiceCandidatesRequest;

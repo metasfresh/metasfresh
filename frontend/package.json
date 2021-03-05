@@ -57,6 +57,7 @@
     "@babel/preset-env": "7.11.0",
     "@babel/preset-react": "7.10.4",
     "@babel/register": "7.10.5",
+    "@babel/runtime": "^7.12.5",
     "@storybook/react": "5.3.19",
     "@testing-library/dom": "7.22.6",
     "@testing-library/react": "10.4.9",

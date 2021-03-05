@@ -2,6 +2,8 @@ package de.metas.externalreference.model;
 
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+
 /** Generated Interface for S_ExternalReference
  *  @author metasfresh (generated) 
  */
@@ -273,4 +275,27 @@ public interface I_S_ExternalReference
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Version.
+	 * Version of the table definition
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setVersion (@Nullable java.lang.String Version);
+
+	/**
+	 * Get Version.
+	 * Version of the table definition
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getVersion();
+
+	ModelColumn<I_S_ExternalReference, Object> COLUMN_Version = new ModelColumn<>(I_S_ExternalReference.class, "Version", null);
+	String COLUMNNAME_Version = "Version";
 }

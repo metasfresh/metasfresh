@@ -46,7 +46,11 @@
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
         <springfox-swagger.version>2.9.2</springfox-swagger.version>
-
+        <!--        Compatibility with Springfox-->
+        <!--        Springfox 2.x <-> springfox-enum-plugin 1.x.-->
+        <!--        Springfox 3.x <-> springfox-enum-plugin 3.x.-->
+        <springfox-enum-plugin.version>1.3.0</springfox-enum-plugin.version>
+        
         <!-- please keep in sync with spring-boot's version to avoid dependency convergence errors -->
         <slf4j-api.version>1.7.25</slf4j-api.version>
 

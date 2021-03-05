@@ -22,11 +22,9 @@
 
 package de.metas.externalreference;
 
-import de.metas.externalreference.model.X_S_ExternalReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_User;
 
 @AllArgsConstructor
 @Getter

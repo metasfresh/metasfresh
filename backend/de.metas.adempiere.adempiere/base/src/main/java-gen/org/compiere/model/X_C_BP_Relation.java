@@ -228,6 +228,8 @@ public class X_C_BP_Relation extends org.compiere.model.PO implements I_C_BP_Rel
 	public static final String ROLE_PreferredPharmacy = "PP";
 	/** Nursing Service = NS */
 	public static final String ROLE_NursingService = "NS";
+	/** Payer = PA */
+	public static final String ROLE_Payer = "PA";
 	@Override
 	public void setRole (final @Nullable java.lang.String Role)
 	{

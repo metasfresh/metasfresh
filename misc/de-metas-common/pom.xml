@@ -43,13 +43,16 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>de-metas-common-rest_api</module>
+        <module>de-metas-common-bpartner</module>
+        <module>de-metas-common-changelog</module>
+        <module>de-metas-common-externalreference</module>
+        <module>de-metas-common-externalsystem</module>
         <module>de-metas-common-filemaker</module>
-        <module>de-metas-common-shipping</module>
-        <module>de-metas-common-util</module>
         <module>de-metas-common-manufacturing</module>
         <module>de-metas-common-procurement</module>
-        <module>de-metas-common-externalreference</module>
+        <module>de-metas-common-rest_api</module>
+        <module>de-metas-common-shipping</module>
+        <module>de-metas-common-util</module>
     </modules>
 
     <build>

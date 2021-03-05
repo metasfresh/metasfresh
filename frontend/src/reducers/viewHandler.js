@@ -296,7 +296,9 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             viewId,
-            pending: false,
+            // we don't change `pending` to false, since we'll be fetching data immediately
+            // after that and for a split of a second we can trigger unnecessary duplicated
+            // requests if pending will be falsy
             notFound: false,
           },
         },

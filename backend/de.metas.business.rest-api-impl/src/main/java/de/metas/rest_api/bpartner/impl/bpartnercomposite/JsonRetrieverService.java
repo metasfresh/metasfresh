@@ -7,6 +7,7 @@ import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
@@ -22,6 +23,16 @@ import de.metas.bpartner.composite.repository.SinceQuery;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.common.bpartner.response.JsonResponseBPartner;
+import de.metas.common.bpartner.response.JsonResponseComposite;
+import de.metas.common.bpartner.response.JsonResponseComposite.JsonResponseCompositeBuilder;
+import de.metas.common.bpartner.response.JsonResponseContact;
+import de.metas.common.bpartner.response.JsonResponseLocation;
+import de.metas.common.changelog.JsonChangeInfo;
+import de.metas.common.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
+import de.metas.common.changelog.JsonChangeLogItem;
+import de.metas.common.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.greeting.Greeting;
@@ -31,26 +42,16 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
-import de.metas.rest_api.bpartner.response.JsonResponseComposite;
-import de.metas.rest_api.bpartner.response.JsonResponseComposite.JsonResponseCompositeBuilder;
-import de.metas.rest_api.bpartner.response.JsonResponseContact;
-import de.metas.rest_api.bpartner.response.JsonResponseLocation;
-import de.metas.rest_api.changelog.JsonChangeInfo;
-import de.metas.rest_api.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
-import de.metas.rest_api.changelog.JsonChangeLogItem;
-import de.metas.rest_api.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
-import de.metas.rest_api.utils.MetasfreshId;
-import de.metas.util.web.exception.InvalidEntityException;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
-import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
-import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
+import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
+import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
+import de.metas.util.web.exception.InvalidEntityException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -273,11 +274,11 @@ public class JsonRetrieverService
 				.externalId(JsonConverters.toJsonOrNull(bpartner.getExternalId()))
 				.group(convertIdToGroupName(bpartner.getGroupId()))
 				.language(Language.asLanguageStringOrNull(bpartner.getLanguage()))
-				.metasfreshId(MetasfreshId.ofOrNull(bpartner.getId()))
+				.metasfreshId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartner.getId())))
 				.name(bpartner.getName())
 				.name2(bpartner.getName2())
 				.name3(bpartner.getName3())
-				.parentId(MetasfreshId.ofNullable(bpartner.getParentId()))
+				.parentId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartner.getParentId())))
 				.phone(bpartner.getPhone())
 				.url(bpartner.getUrl())
 				.url2(bpartner.getUrl2())
@@ -300,9 +301,9 @@ public class JsonRetrieverService
 		}
 
 		final JsonChangeInfoBuilder jsonChangeInfo = JsonChangeInfo.builder()
-				.createdBy(MetasfreshId.ofOrNull(recordChangeLog.getCreatedByUserId()))
+				.createdBy(JsonMetasfreshId.ofOrNull(UserId.toRepoId(recordChangeLog.getCreatedByUserId())))
 				.createdMillis(recordChangeLog.getCreatedTimestamp().toEpochMilli())
-				.lastUpdatedBy(MetasfreshId.ofOrNull(recordChangeLog.getLastChangedByUserId()))
+				.lastUpdatedBy(JsonMetasfreshId.ofOrNull(UserId.toRepoId(recordChangeLog.getLastChangedByUserId())))
 				.lastUpdatedMillis(recordChangeLog.getLastChangedTimestamp().toEpochMilli());
 
 		for (final RecordChangeLogEntry entry : recordChangeLog.getEntries())
@@ -315,7 +316,7 @@ public class JsonRetrieverService
 
 			final JsonChangeLogItemBuilder jsonChangeLogItem = JsonChangeLogItem.builder()
 					.fieldName(columnMap.get(columnName))
-					.updatedBy(MetasfreshId.ofOrNull(entry.getChangedByUserId()))
+					.updatedBy(JsonMetasfreshId.ofOrNull(UserId.toRepoId(entry.getChangedByUserId())))
 					.updatedMillis(entry.getChangedTimestamp().toEpochMilli())
 					.newValue(String.valueOf(entry.getValueNew()))
 					.oldValue(String.valueOf(entry.getValueOld()));
@@ -342,8 +343,8 @@ public class JsonRetrieverService
 	{
 		try
 		{
-			final MetasfreshId metasfreshId = MetasfreshId.of(contact.getId());
-			final MetasfreshId metasfreshBPartnerId = MetasfreshId.of(contact.getId().getBpartnerId());
+			final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(BPartnerContactId.toRepoId(contact.getId()));
+			final JsonMetasfreshId metasfreshBPartnerId = JsonMetasfreshId.of(BPartnerId.toRepoId(contact.getId().getBpartnerId()));
 
 			final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(contact.getChangeLog(), CONTACT_FIELD_MAP);
 
@@ -409,7 +410,7 @@ public class JsonRetrieverService
 					.district(location.getDistrict())
 					.externalId(JsonConverters.toJsonOrNull(location.getExternalId()))
 					.gln(GLN.toCode(location.getGln()))
-					.metasfreshId(MetasfreshId.of(location.getId()))
+					.metasfreshId(JsonMetasfreshId.of(BPartnerLocationId.toRepoId(location.getId())))
 					.poBox(location.getPoBox())
 					.postal(location.getPostal())
 					.region(location.getRegion())
@@ -503,7 +504,7 @@ public class JsonRetrieverService
 		return result.build();
 	}
 
-	private static final OrgAndBPartnerCompositeLookupKeyList extractBPartnerLookupKeys(@NonNull final BPartnerComposite bPartnerComposite)
+	private static OrgAndBPartnerCompositeLookupKeyList extractBPartnerLookupKeys(@NonNull final BPartnerComposite bPartnerComposite)
 	{
 		final ImmutableList.Builder<BPartnerCompositeLookupKey> result = ImmutableList.builder();
 

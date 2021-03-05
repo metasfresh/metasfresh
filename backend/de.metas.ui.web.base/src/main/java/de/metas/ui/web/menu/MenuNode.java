@@ -1,22 +1,20 @@
 package de.metas.ui.web.menu;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
-
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-
 import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 /*
  * #%L
@@ -42,20 +40,20 @@ import de.metas.util.Check;
 
 public final class MenuNode
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static enum MenuNodeType
+	public enum MenuNodeType
 	{
 		Group, Window, NewRecord, Process, Report, Board,
 	}
 
 	@FunctionalInterface
-	public static interface MenuNodeFilter
+	public interface MenuNodeFilter
 	{
-		public static enum MenuNodeFilterResolution
+		enum MenuNodeFilterResolution
 		{
 			Accept, Reject, AcceptIfHasChildren, AcceptIfParentIsAccepted
 		}
@@ -71,7 +69,7 @@ public final class MenuNode
 	private final DocumentId elementId;
 	private final String mainTableName;
 
-	private final List<MenuNode> children;
+	private final ImmutableList<MenuNode> children;
 
 	private MenuNode parent;
 
@@ -83,8 +81,6 @@ public final class MenuNode
 
 	private MenuNode(final Builder builder)
 	{
-		super();
-
 		id = builder.getId();
 		adMenuId = builder.getAD_Menu_ID();
 
@@ -112,7 +108,6 @@ public final class MenuNode
 	/** Copy constructor */
 	private MenuNode(final MenuNode node, final List<MenuNode> children, final boolean matchedByFilter)
 	{
-		super();
 		id = node.id;
 		adMenuId = node.adMenuId;
 		caption = node.caption;
@@ -200,6 +195,7 @@ public final class MenuNode
 		return parent;
 	}
 
+	@Nullable
 	public String getParentId()
 	{
 		return parent == null ? null : parent.getId();
@@ -235,12 +231,14 @@ public final class MenuNode
 		}
 	}
 
+	@Nullable
 	public MenuNode deepCopy(final MenuNodeFilter filter)
 	{
 		final IPair<MenuNode, MenuNodeFilterResolution> nodeAndResolution = deepCopy0(filter);
 		return nodeAndResolution == null ? null : nodeAndResolution.getLeft();
 	}
 
+	@Nullable
 	private IPair<MenuNode, MenuNodeFilterResolution> deepCopy0(final MenuNodeFilter filter)
 	{
 		//
@@ -310,8 +308,6 @@ public final class MenuNode
 	 * Returns true if this node is effectively a leaf node.
 	 *
 	 * An effectively leaf node it's a node which it's not a grouping node, or even if it's grouping node, it does no have any children.
-	 *
-	 * @return
 	 */
 	public boolean isEffectiveLeafNode()
 	{
@@ -330,14 +326,13 @@ public final class MenuNode
 		private String caption;
 		private String captionBreadcrumb;
 		private MenuNodeType type;
-		private DocumentId elementId;
+		@Nullable private DocumentId elementId;
 		private String mainTableName;
 		private final List<MenuNode> childrenFirst = new ArrayList<>();
 		private final List<MenuNode> childrenRest = new ArrayList<>();
 
 		private Builder()
 		{
-			super();
 		}
 
 		public MenuNode build()
@@ -389,43 +384,26 @@ public final class MenuNode
 			return this;
 		}
 
-		public Builder setType(final MenuNodeType type, final DocumentId elementId)
+		public Builder setType(final MenuNodeType type, @Nullable final DocumentId elementId)
 		{
 			this.type = type;
 			this.elementId = elementId;
 			return this;
 		}
 
-		public Builder setTypeGroup()
+		public void setTypeGroup()
 		{
-			final DocumentId elementId = null;
-			setType(MenuNodeType.Group, elementId);
-			return this;
+			setType(MenuNodeType.Group, null);
 		}
 
-		public Builder addChildToFirstsList(final MenuNode child)
+		public void addChildToFirstsList(@NonNull final MenuNode child)
 		{
-			Preconditions.checkNotNull(child, "child");
 			childrenFirst.add(child);
-			return this;
 		}
 
-		public Builder addChild(final MenuNode child)
+		public void addChild(@NonNull final MenuNode child)
 		{
-			Preconditions.checkNotNull(child, "child");
 			childrenRest.add(child);
-			return this;
-		}
-
-		public Builder addChildren(final Collection<MenuNode> children)
-		{
-			if (children == null || children.isEmpty())
-			{
-				return this;
-			}
-
-			childrenRest.addAll(children);
-			return this;
 		}
 
 		public Builder setMainTableName(final String mainTableName)

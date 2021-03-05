@@ -464,14 +464,14 @@ public class BPartnerBL implements IBPartnerBL
 			//
 			// BPartner contact
 			final I_AD_User bpContact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
-			bpContact.setC_BPartner(bpartner);
+			bpContact.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 			bpContact.setC_Greeting(template.getC_Greeting());
 			bpContact.setFirstname(template.getFirstname());
 			bpContact.setLastname(template.getLastname());
 			bpContact.setPhone(template.getPhone());
 			bpContact.setEMail(template.getEMail());
 			bpContact.setIsNewsletter(template.isNewsletter());
-			bpContact.setC_BPartner_Location(bpLocation);
+			bpContact.setC_BPartner_Location_ID(bpLocation.getC_BPartner_Location_ID());
 			if (template.isCustomer())
 			{
 				bpContact.setIsSalesContact(true);

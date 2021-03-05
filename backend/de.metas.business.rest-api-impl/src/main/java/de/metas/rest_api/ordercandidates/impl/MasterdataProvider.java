@@ -25,10 +25,10 @@ import de.metas.payment.paymentterm.impl.PaymentTermQuery.PaymentTermQueryBuilde
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.bpartner.impl.BpartnerRestController;
-import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
-import de.metas.rest_api.bpartner.response.JsonResponseContact;
-import de.metas.rest_api.bpartner.response.JsonResponseLocation;
-import de.metas.rest_api.common.SyncAdvise;
+import de.metas.common.bpartner.response.JsonResponseBPartner;
+import de.metas.common.bpartner.response.JsonResponseContact;
+import de.metas.common.bpartner.response.JsonResponseLocation;
+import de.metas.common.rest_api.SyncAdvise;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
