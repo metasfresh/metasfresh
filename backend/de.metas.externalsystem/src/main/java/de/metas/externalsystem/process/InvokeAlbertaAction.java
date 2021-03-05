@@ -24,6 +24,7 @@ package de.metas.externalsystem.process;
 
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
@@ -31,9 +32,11 @@ import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.process.IProcessPreconditionsContext;
 import lombok.NonNull;
+import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 {
@@ -56,8 +59,19 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 		}
 		else
 		{
-			// note: we can blindly get the first I_ExternalSystem_Config_Alberta, because the checkPreconditionsApplicable impl made sure there is exactly one.
-			id = getSelectedIncludedRecordIds(I_ExternalSystem_Config_Alberta.class).stream().findFirst().get();
+			final Set<Integer> selectedRecordIds = getSelectedIncludedRecordIds(I_ExternalSystem_Config_Alberta.class);
+
+			// note: we can blindly get the first I_ExternalSystem_Config_Alberta, because the checkPreconditionsApplicable impl made sure there is exactly one selected or in db
+			if (CollectionUtils.isEmpty(selectedRecordIds))
+			{
+				id = externalSystemConfigDAO.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()), getExternalSystemType())
+						.get().getId().getRepoId();
+			}
+			else
+			{
+				id = selectedRecordIds.stream().findFirst().get();
+			}
+
 		}
 		return ExternalSystemAlbertaConfigId.ofRepoId(id);
 	}
@@ -80,5 +94,11 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 	protected String getTabName()
 	{
 		return ExternalSystemType.Alberta.getName();
+	}
+
+	@NonNull
+	protected ExternalSystemType getExternalSystemType()
+	{
+		return ExternalSystemType.Alberta;
 	}
 }

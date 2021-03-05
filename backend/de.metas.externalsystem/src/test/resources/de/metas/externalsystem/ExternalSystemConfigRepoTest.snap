@@ -35,6 +35,18 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndParent=[
+  {
+    "id": 100002,
+    "parentId": 100001,
+    "name": "name",
+    "apiKey": "apiKey",
+    "baseUrl": "baseUrl",
+    "tenant": "tenant"
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndValue=[
   {
     "id": 100001,
@@ -85,6 +97,17 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId": "id",
       "clientSecret": "secret"
     }
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByTypeAndParent=[
+  {
+    "id": 100002,
+    "parentId": 100001,
+    "baseUrl": "baseUrl",
+    "clientId": "id",
+    "clientSecret": "secret"
   }
 ]
 

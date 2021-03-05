@@ -24,6 +24,7 @@ package de.metas.externalsystem.process;
 
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
@@ -31,11 +32,14 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.process.IProcessPreconditionsContext;
 import lombok.NonNull;
+import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
-public class InvokeShopware6Action extends InvokeExternalSystemProcess {
+public class InvokeShopware6Action extends InvokeExternalSystemProcess
+{
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -47,8 +51,18 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess {
 		}
 		else
 		{
-			// note: we can blindly get the first I_ExternalSystem_Config_Shopware6, because the checkPreconditionsApplicable impl made sure there is exactly one.
-			id = getSelectedIncludedRecordIds(I_ExternalSystem_Config_Shopware6.class).stream().findFirst().get();
+			final Set<Integer> selectedRecordIds = getSelectedIncludedRecordIds(I_ExternalSystem_Config_Shopware6.class);
+
+			// note: we can blindly get the first I_ExternalSystem_Config_Shopware6, because the checkPreconditionsApplicable impl made sure there is exactly one selected or in db
+			if (CollectionUtils.isEmpty(selectedRecordIds))
+			{
+				id = externalSystemConfigDAO.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()), getExternalSystemType())
+						.get().getId().getRepoId();
+			}
+			else
+			{
+				id = selectedRecordIds.stream().findFirst().get();
+			}
 		}
 		return ExternalSystemShopware6ConfigId.ofRepoId(id);
 	}
@@ -80,5 +94,11 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess {
 				.stream()
 				.filter(recordRef -> I_ExternalSystem_Config_Shopware6.Table_Name.equals(recordRef.getTableName()))
 				.count();
+	}
+
+	@NonNull
+	protected ExternalSystemType getExternalSystemType()
+	{
+		return ExternalSystemType.Shopware6;
 	}
 }

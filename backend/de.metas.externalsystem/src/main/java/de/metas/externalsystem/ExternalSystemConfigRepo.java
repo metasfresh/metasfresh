@@ -34,6 +34,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -74,6 +76,25 @@ public class ExternalSystemConfigRepo
 		}
 	}
 
+	public Optional<IExternalSystemChildConfig> getChildByParentIdAndType(@NonNull final ExternalSystemParentConfigId id, @NonNull final ExternalSystemType externalSystemType)
+	{
+		switch (externalSystemType)
+		{
+			case Alberta:
+				return getAlbertaConfigByParentId(id);
+			case Shopware6:
+				return getShopware6ConfigByParentId(id);
+			default:
+				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+		}
+	}
+
+	public ITableRecordReference toTableRecordReference(@NonNull final ExternalSystemParentConfig externalSystemParentConfig)
+	{
+		Check.assumeNotNull(externalSystemParentConfig.getId(), "ExternalSystemParentConfig ID must not be null");
+		return TableRecordReference.of(I_ExternalSystem_Config.Table_Name, externalSystemParentConfig.getId());
+	}
+
 	@NonNull
 	private Optional<I_ExternalSystem_Config_Alberta> getAlbertaConfigByValue(@NonNull final String value)
 	{
@@ -94,6 +115,28 @@ public class ExternalSystemConfigRepo
 				.firstOnlyOptional(I_ExternalSystem_Config_Shopware6.class);
 	}
 
+	@NonNull
+	private Optional<IExternalSystemChildConfig> getAlbertaConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		 return queryBL.createQueryBuilder(I_ExternalSystem_Config_Alberta.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_Alberta.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_Alberta.class)
+				.map(ex -> getExternalSystemAlbertaConfig(ex,id));
+	}
+
+	@NonNull
+	private Optional<IExternalSystemChildConfig>  getShopware6ConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_Shopware6.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_Shopware6.class)
+				.map(ex -> getExternalSystemShopware6Config(ex,id));
+	}
+
 	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemAlbertaConfigId id)
 	{
 		final I_ExternalSystem_Config_Alberta config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_Alberta.class);
@@ -105,17 +148,24 @@ public class ExternalSystemConfigRepo
 	{
 		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
 
-		final ExternalSystemAlbertaConfig child = ExternalSystemAlbertaConfig.builder()
+		final ExternalSystemAlbertaConfig child = getExternalSystemAlbertaConfig(config, parentConfigId);
+
+		return getById(parentConfigId)
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemAlbertaConfig getExternalSystemAlbertaConfig(final @NonNull I_ExternalSystem_Config_Alberta config,
+			@NonNull final ExternalSystemParentConfigId parentConfigId)
+	{
+		return ExternalSystemAlbertaConfig.builder()
 				.id(ExternalSystemAlbertaConfigId.ofRepoId(config.getExternalSystem_Config_Alberta_ID()))
 				.parentId(parentConfigId)
 				.apiKey(config.getApiKey())
 				.baseUrl(config.getBaseURL())
 				.name(config.getName())
 				.tenant(config.getTenant())
-				.build();
-
-		return getById(parentConfigId)
-				.childConfig(child)
 				.build();
 	}
 
@@ -130,16 +180,23 @@ public class ExternalSystemConfigRepo
 	{
 		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
 
-		final ExternalSystemShopware6Config child = ExternalSystemShopware6Config.builder()
+		final ExternalSystemShopware6Config child = getExternalSystemShopware6Config(config, parentConfigId);
+
+		return getById(parentConfigId)
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemShopware6Config getExternalSystemShopware6Config(final @NonNull I_ExternalSystem_Config_Shopware6 config,
+			@NonNull final ExternalSystemParentConfigId parentConfigId)
+	{
+		return ExternalSystemShopware6Config.builder()
 				.id(ExternalSystemShopware6ConfigId.ofRepoId(config.getExternalSystem_Config_Shopware6_ID()))
 				.parentId(parentConfigId)
 				.baseUrl(config.getBaseURL())
 				.clientSecret(config.getClient_Secret())
 				.clientId(config.getClient_Id())
-				.build();
-
-		return getById(parentConfigId)
-				.childConfig(child)
 				.build();
 	}
 
