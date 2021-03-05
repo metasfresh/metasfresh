@@ -73,8 +73,6 @@ class DocumentListContainer extends Component {
     };
 
     this.fetchLayoutAndData();
-    this.renderedSuccessfuly = false;
-
     this.debouncedRefresh = debounce(
       () => {
         this.browseView(true);
@@ -107,6 +105,7 @@ class DocumentListContainer extends Component {
   UNSAFE_componentWillReceiveProps(nextProps) {
     const {
       viewId: nextViewId,
+      queryViewId: nextQueryViewId,
       isIncluded: nextIsIncluded,
       refDocumentId: nextRefDocumentId,
       referenceId: nextReferenceId,
@@ -126,7 +125,8 @@ class DocumentListContainer extends Component {
       deleteTable,
       isModal,
       filters,
-      viewData: { pending },
+      queryViewId,
+      viewData: { pending, layoutPending },
       deleteQuickActions,
     } = this.props;
     const staticFilterCleared = filters ? filters.staticFilterCleared : false;
@@ -148,9 +148,7 @@ class DocumentListContainer extends Component {
      */
 
     if (
-      (nextProps.viewId !== nextProps.queryViewId && // for the case when you applied a filter and come back via browser back button
-        nextProps.queryViewId &&
-        !this.renderedSuccessfuly) ||
+      (queryViewId && !isIncluded && nextViewId !== nextQueryViewId) || // for the case when you applied a filter and come back via browser back button
       staticFilterCleared ||
       nextWindowId !== windowId ||
       (nextWindowId === windowId &&
@@ -159,10 +157,12 @@ class DocumentListContainer extends Component {
       nextRefDocumentId !== refDocumentId ||
       nextReferenceId !== referenceId
     ) {
-      this.renderedSuccessfuly = true;
       // if view is already loading or reloading (after filtering) don't fetch
       // the data and layout again
-      if (!(pending || (nextViewData && nextViewData.pending))) {
+      if (
+        !(pending || (nextViewData && nextViewData.pending)) &&
+        !(layoutPending || (nextViewData && nextViewData.layoutPending))
+      ) {
         deleteTable(getTableId({ windowId, viewId }));
         deleteQuickActions(windowId, viewId);
 
