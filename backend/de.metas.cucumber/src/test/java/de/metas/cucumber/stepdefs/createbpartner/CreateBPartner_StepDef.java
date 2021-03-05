@@ -51,6 +51,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
@@ -72,7 +73,7 @@ public class CreateBPartner_StepDef
 	public CreateBPartner_StepDef(final TestContext testContext)
 	{
 		this.testContext = testContext;
-		this.bPartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		this.bPartnerCompositeRepository = SpringContextHolder.instance.getBean(BPartnerCompositeRepository.class);
 	}
 
 	@Given("the user adds bpartner")
