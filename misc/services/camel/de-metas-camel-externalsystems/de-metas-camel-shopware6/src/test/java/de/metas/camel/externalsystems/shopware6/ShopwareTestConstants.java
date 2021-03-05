@@ -22,31 +22,7 @@
 
 package de.metas.camel.externalsystems.shopware6;
 
-public interface Shopware6Constants
+public interface ShopwareTestConstants
 {
-	String SHOPWARE6_SYSTEM_NAME = "Shopware6";
-	String ESR_TYPE_BPARTNER_LOCATION = "BPartnerLocation";
-	String ESR_TYPE_BPARTNER = "BPartner";
-
-	String FIELD_UPDATED_AT = "updatedAt";
-	String FIELD_CREATED_AT = "createdAt";
-
-	String PARAMETERS_DATE_GTE =  "gte";
-
-	//camel route properties
-	String ROUTE_PROPERTY_SHOPWARE_CLIENT = "shopwareClient";
-	String ROUTE_PROPERTY_CURRENT_ORDER = "currentOrder";
-	String ROUTE_PROPERTY_ORDER_DELIVERIES = "orderDeliveries";
-	String ROUTE_PROPERTY_ORG_CODE = "orgCode";
-
-	//nodes
-	String JSON_NODE_DATA = "data";
-
-	//shopware client
-	int CONNECTION_TIMEOUT_SECONDS = 600;
-	int READ_TIMEOUT_SECONDS = 600;
-
-	//
-	String EXTERNAL_ID_PREFIX = "ext-";
-
+	String MOCK_ORG_CODE = "orgCode";
 }

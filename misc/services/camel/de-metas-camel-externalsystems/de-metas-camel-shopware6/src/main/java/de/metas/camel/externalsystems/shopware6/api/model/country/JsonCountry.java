@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalreference
+ * de-metas-camel-shopware6
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,47 +20,32 @@
  * #L%
  */
 
-package de.metas.externalreference;
+package de.metas.camel.externalsystems.shopware6.api.model.country;
 
-import de.metas.organization.OrgId;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
-public class ExternalReference
+@JsonDeserialize(builder = JsonCountry.JsonCountryBuilder.class)
+public class JsonCountry
 {
-	/**
-	 * Used in maps to indicate that no reference was found for a given query.
-	 */
-	public static final ExternalReference NULL = ExternalReference.builder()
-			.orgId(OrgId.ANY)
-			.externalSystem(NullExternalSystem.NULL)
-			.externalReferenceType(NullExternalReferenceType.NULL)
-			.externalReference("NULL")
-			.recordId(-1)
-			.build();
-
-	@Nullable
-	ExternalReferenceId externalReferenceId;
+	@NonNull
+	@JsonProperty("id")
+	String id;
 
 	@NonNull
-	OrgId orgId;
+	@JsonProperty("iso")
+	String iso;
 
-	@NonNull
-	IExternalSystem externalSystem;
-
-	@NonNull
-	IExternalReferenceType externalReferenceType;
-
-	@NonNull
-	String externalReference;
-
-	@Nullable
-	String version;
-
-	int recordId;
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	@JsonPOJOBuilder(withPrefix = "")
+	static class JsonCountryBuilder
+	{
+	}
 }

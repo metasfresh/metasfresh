@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-externalreference
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,29 +20,31 @@
  * #L%
  */
 
-package de.metas.common.rest_api;
+package de.metas.common.externalreference;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.externalsystem.JsonExternalSystemName;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
-import java.util.List;
-
 @Value
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class CreatePInstanceLogRequest//
+public class JsonSingleExternalReferenceCreateReq
 {
-	@NonNull
-	List<JsonPInstanceLog> logs;
+	@ApiModelProperty(required = true, value = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
+	JsonExternalSystemName systemName;
 
-	@Builder
+	JsonExternalReferenceItem externalReferenceItem;
+
 	@JsonCreator
-	private CreatePInstanceLogRequest(@JsonProperty("logs") @Singular @NonNull final List<JsonPInstanceLog> logs)
+	@Builder
+	public JsonSingleExternalReferenceCreateReq(
+			@JsonProperty("systemName") @NonNull final JsonExternalSystemName systemName,
+			@JsonProperty("externalReferenceItem") @NonNull final JsonExternalReferenceItem externalReferenceItem)
 	{
-		this.logs = logs;
+		this.systemName = systemName;
+		this.externalReferenceItem = externalReferenceItem;
 	}
 }

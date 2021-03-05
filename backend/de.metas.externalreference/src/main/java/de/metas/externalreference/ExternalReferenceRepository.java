@@ -39,6 +39,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
@@ -93,6 +94,7 @@ public class ExternalReferenceRepository
 		record.setExternalSystem(externalReference.getExternalSystem().getCode());
 		record.setType(externalReference.getExternalReferenceType().getCode());
 		record.setRecord_ID(externalReference.getRecordId());
+		record.setVersion(externalReference.getVersion());
 
 		InterfaceWrapperHelper.saveRecord(record);
 
@@ -122,7 +124,7 @@ public class ExternalReferenceRepository
 	/**
 	 * @return a map with one entry for each given {@link ExternalReferenceQuery}.
 	 */
-	public ImmutableMap<ExternalReferenceQuery, ExternalReference> getExternalReferences(@NonNull final List<ExternalReferenceQuery> queries)
+	public ImmutableMap<ExternalReferenceQuery, ExternalReference> getExternalReferences(@NonNull final Set<ExternalReferenceQuery> queries)
 	{
 		final IQueryBuilder<I_S_ExternalReference> queryBuilder = queryBL.createQueryBuilder(I_S_ExternalReference.class).setJoinOr()
 				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true);
@@ -215,6 +217,7 @@ public class ExternalReferenceRepository
 				.externalReferenceType(type)
 				.externalSystem(externalSystem)
 				.recordId(record.getRecord_ID())
+				.version(record.getVersion())
 				.build();
 	}
 

@@ -36,6 +36,7 @@ import de.metas.common.bprelation.JsonBPRelationRole;
 import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.JsonExternalId;
 import de.metas.common.rest_api.JsonMetasfreshId;
@@ -182,7 +183,7 @@ public class BPartnerUpsertRequestProducer
 				.build();
 
 		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(patientId);
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(patientId)
 				: null;
 
@@ -345,7 +346,7 @@ public class BPartnerUpsertRequestProducer
 									 .build())
 				.build();
 
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(careGiverId)
 				: null;
 
@@ -401,7 +402,7 @@ public class BPartnerUpsertRequestProducer
 				.location(requestLocation)
 				.build();
 
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(hospital.getId())
 				: null;
 
@@ -459,7 +460,7 @@ public class BPartnerUpsertRequestProducer
 				.requestItem(jsonRequestLocationUpsertItem)
 				.build();
 
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(nursingService.getId())
 				: null;
 
@@ -518,7 +519,7 @@ public class BPartnerUpsertRequestProducer
 				.requestItem(jsonRequestLocationUpsertItem)
 				.build();
 
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(nursingHome.getId())
 				: null;
 
@@ -584,7 +585,7 @@ public class BPartnerUpsertRequestProducer
 				.requestItem(jsonRequestLocationUpsertItem)
 				.build();
 
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(doctor.getId())
 				: null;
 
@@ -639,7 +640,7 @@ public class BPartnerUpsertRequestProducer
 				.requestItem(jsonRequestLocationUpsertItem)
 				.build();
 
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(payer.getId())
 				: null;
 
@@ -658,16 +659,16 @@ public class BPartnerUpsertRequestProducer
 	}
 
 	@NonNull
-	private JsonExternalReferenceCreateRequest createInsertExternalReferenceReq(@NonNull final String externalId)
+	private JsonSingleExternalReferenceCreateReq createInsertExternalReferenceReq(@NonNull final String externalId)
 	{
 		final JsonExternalReferenceLookupItem jsonExternalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
 				.type(ESR_TYPE_BPARTNER)
 				.id(externalId)
 				.build();
 
-		return JsonExternalReferenceCreateRequest.builder()
+		return JsonSingleExternalReferenceCreateReq.builder()
 				.systemName(JsonExternalSystemName.of(ALBERTA_SYSTEM_NAME))
-				.item(JsonExternalReferenceItem.of(jsonExternalReferenceLookupItem))
+				.externalReferenceItem(JsonExternalReferenceItem.of(jsonExternalReferenceLookupItem))
 				.build();
 	}
 

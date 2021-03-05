@@ -22,49 +22,63 @@
 
 package de.metas.camel.externalsystems.shopware6.processor;
 
+import de.metas.camel.externalsystems.common.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDeliveries;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDelivery;
+import de.metas.common.bpartner.request.JsonRequestBPartnerUpsert;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import java.util.logging.Level;
+import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_CURRENT_ORDER;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_ORDER_DELIVERIES;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_ORG_CODE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_SHOPWARE_CLIENT;
+import static de.metas.camel.externalsystems.shopware6.processor.ProcessorHelper.getPropertyOrThrowError;
 
 public class CreateBPartnerUpsertReqProcessor implements Processor
 {
-	private static final Logger logger = Logger.getLogger(CreateBPartnerUpsertReqProcessor.class.getName());
-
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
-		//we will start using it in the 2nd step of the implementation
 		final JsonExternalReferenceLookupResponse esrResponse = exchange.getIn().getBody(JsonExternalReferenceLookupResponse.class);
 
-		final JsonOrder order = exchange.getProperty(ROUTE_PROPERTY_CURRENT_ORDER, JsonOrder.class);
-		if (order == null)
-		{
-			throw new RuntimeException("Missing route property: " + ROUTE_PROPERTY_CURRENT_ORDER + " !");
-		}
+		final String orgCode = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_ORG_CODE, String.class);
 
-		final ShopwareClient shopwareClient = exchange.getProperty(ROUTE_PROPERTY_SHOPWARE_CLIENT, ShopwareClient.class);
-		if (shopwareClient == null)
-		{
-			throw new RuntimeException("Missing route property: " + ROUTE_PROPERTY_SHOPWARE_CLIENT + " !");
-		}
+		final JsonOrder order = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_CURRENT_ORDER, JsonOrder.class);
 
-		//1. retrieve billing address
-		final JsonOrderAddress billingAddress = shopwareClient.getOrderAddressDetails(order.getBillingAddressId()).orElse(null);
+		final ShopwareClient shopwareClient = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SHOPWARE_CLIENT, ShopwareClient.class);
 
-		//2 retreive deliveries
-		final JsonOrderDeliveries orderDeliveries = shopwareClient.getDeliveries(order.getId()).orElse(null);
+		final JsonOrderDeliveries orderDeliveries = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_ORDER_DELIVERIES, JsonOrderDeliveries.class);
 
-		logger.log(Level.INFO, "Retrieved the following data form shopware: jsonOrder: " + order
-				+ "\n billingAddress: " + billingAddress + "\n deliveries: " + orderDeliveries);
+		final List<JsonOrderAddress> shippingAddressList = orderDeliveries.getData().stream()
+				.map(JsonOrderDelivery::getShippingOrderAddress)
+				.collect(Collectors.toList());
+
+		final BPartnerUpsertRequestProducer bPartnerUpsertRequestProducer = BPartnerUpsertRequestProducer.builder()
+				.shopwareClient(shopwareClient)
+				.externalReferenceLookupResponse(esrResponse)
+				.billingAddressId(order.getBillingAddressId())
+				.billingAddressVersion(order.getBillingAddressVersionId())
+				.orderCustomer(order.getOrderCustomer())
+				.shippingAddressList(shippingAddressList)
+				.orgCode(orgCode)
+				.build();
+
+		final JsonRequestBPartnerUpsert upsertBPartner = bPartnerUpsertRequestProducer.run();
+
+		final BPUpsertCamelRequest bpUpsertCamelRequest = BPUpsertCamelRequest.builder()
+				.jsonRequestBPartnerUpsert(upsertBPartner)
+				.orgCode(orgCode)
+				.build();
+
+		exchange.getIn().setBody(bpUpsertCamelRequest);
 	}
 }

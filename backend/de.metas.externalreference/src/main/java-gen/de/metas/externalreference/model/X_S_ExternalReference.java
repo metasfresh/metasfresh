@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_ExternalReference, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 331442409L;
+	private static final long serialVersionUID = -1996519745L;
 
     /** Standard Constructor */
     public X_S_ExternalReference (final Properties ctx, final int S_ExternalReference_ID, @Nullable final String trxName)
@@ -150,5 +150,17 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public java.lang.String getType() 
 	{
 		return get_ValueAsString(COLUMNNAME_Type);
+	}
+
+	@Override
+	public void setVersion (final @Nullable java.lang.String Version)
+	{
+		set_Value (COLUMNNAME_Version, Version);
+	}
+
+	@Override
+	public java.lang.String getVersion()
+	{
+		return get_ValueAsString(COLUMNNAME_Version);
 	}
 }

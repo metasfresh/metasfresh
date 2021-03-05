@@ -120,6 +120,7 @@ public class ExternalReferenceRepositoryTest
 				.externalReferenceType(TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE)
 				.externalSystem(TestConstants.MOCK_EXTERNAL_SYSTEM)
 				.recordId(TestConstants.MOCK_RECORD_ID)
+				.version(TestConstants.MOCK_EXTERNAL_REFERENCE_VERSION)
 				.build();
 	}
 
@@ -129,5 +130,6 @@ public class ExternalReferenceRepositoryTest
 		assertEquals(externalReference.getExternalReference(), record.getExternalReference());
 		assertEquals(externalReference.getExternalReferenceType().getCode(), record.getType());
 		assertEquals(externalReference.getExternalSystem().getCode(), record.getExternalSystem());
+		assertEquals(externalReference.getVersion(), record.getVersion());
 	}
 }
