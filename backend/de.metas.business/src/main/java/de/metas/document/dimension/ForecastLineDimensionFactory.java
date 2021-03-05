@@ -25,6 +25,7 @@ package de.metas.document.dimension;
 import de.metas.mforecast.interceptors.M_ForecastLine;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import lombok.NonNull;
 import org.compiere.model.I_M_ForecastLine;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +39,8 @@ public class ForecastLineDimensionFactory implements DimensionFactory<I_M_Foreca
 	}
 
 	@Override
-	public Dimension getFromRecord(final I_M_ForecastLine record)
+	@NonNull
+	public Dimension getFromRecord(@NonNull final I_M_ForecastLine record)
 	{
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))

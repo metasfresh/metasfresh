@@ -8,6 +8,7 @@ import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.ContactPersonService;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
+import de.metas.organization.IOrgDAO;
 import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -51,6 +52,7 @@ public class AD_User
 	private final static AdMessageKey MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org = AdMessageKey.of("MKTG_Campaign_NewsletterGroup_Missing_For_Org");
 	private final static String SYS_CONFIG_CREATE_MARKETING_CONTACT = "de.metas.marketing.SyncUserNewsletterFlagToMarketingContact";
 
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final CampaignRepository campaignRepository;
 	private final CampaignService campaignService;
 	private final UserRepository userRepository;
@@ -87,9 +89,10 @@ public class AD_User
 		{
 			if (!defaultcampaignId.isPresent())
 			{
+				final String orgName = orgDAO.retrieveOrgName(userRecord.getAD_Org_ID());
 				final ITranslatableString translatableMsgText = msgBL.getTranslatableMsgText(
 						MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org,
-						userRecord.getAD_Org().getName());
+						orgName);
 
 				throw new AdempiereException(translatableMsgText);
 			}
@@ -121,7 +124,7 @@ public class AD_User
 		contactPersonService.updateContactPersonsEmailFromUser(user, oldEmail, oldLanguage);
 	}
 
-	private boolean isCreateMarketingContact(int clientID, int orgID)
+	private boolean isCreateMarketingContact(final int clientID, final int orgID)
 	{
 		return sysConfigBL.getBooleanValue(SYS_CONFIG_CREATE_MARKETING_CONTACT, false, clientID, orgID);
 	}

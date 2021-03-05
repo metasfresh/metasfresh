@@ -7,6 +7,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_NotificationGroup;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_User_NotificationGroup;
 import org.compiere.model.X_AD_User_NotificationGroup;
 
@@ -14,7 +15,6 @@ import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.email.EMailAddress;
@@ -58,7 +58,7 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 			.tableName(I_AD_User_NotificationGroup.Table_Name)
 			.initialCapacity(100)
 			.cacheMapType(CacheMapType.LRU)
-			.additionalTableNameToResetFor(I_AD_User.Table_Name)
+			.additionalTableNameToResetFor(org.compiere.model.I_AD_User.Table_Name)
 			.additionalTableNameToResetFor(I_AD_NotificationGroup.Table_Name)
 			.build();
 
