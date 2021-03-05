@@ -247,7 +247,7 @@ public class BankStatementImportTableSqlUpdater
 															+ " ) "
 															+ " AND i." + I_I_BankStatement.COLUMNNAME_AD_Org_ID
 															+ " = bp. " + I_C_BPartner.COLUMNNAME_AD_Org_ID
-															+ ") "
+															+ ")) "
 															+ "WHERE i." + I_I_BankStatement.COLUMNNAME_C_BPartner_ID + " IS NULL "
 															+ "AND i.I_IsImported<>'Y' "
 															+ "OR i.I_IsImported IS NULL")
