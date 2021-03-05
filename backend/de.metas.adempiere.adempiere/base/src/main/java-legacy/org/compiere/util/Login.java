@@ -649,15 +649,15 @@ public class Login
 		return getCtx().getRemoteHost();
 	}    // RemoteHost
 
-	public void setWebSession(final String webSession)
+	public void setWebSessionId(final String webSessionId)
 	{
-		getCtx().setWebSession(webSession);
+		getCtx().setWebSessionId(webSessionId);
 	}
 
-	public String getWebSession()
+	public String getWebSessionId()
 	{
-		return getCtx().getWebSession();
-	}    // WebSession
+		return getCtx().getWebSessionId();
+	}
 
 	public boolean isAllowLoginDateOverride()
 	{

@@ -251,7 +251,7 @@ public class LoginRestController
 		// Update Login helper
 		loginService.setRemoteAddr(remoteAddr);
 		loginService.setRemoteHost(remoteHost);
-		loginService.setWebSession(webSessionId);
+		loginService.setWebSessionId(webSessionId);
 
 		return session;
 	}
