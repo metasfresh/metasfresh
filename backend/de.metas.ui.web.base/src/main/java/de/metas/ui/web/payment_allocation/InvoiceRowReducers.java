@@ -22,16 +22,15 @@
 
 package de.metas.ui.web.payment_allocation;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.ui.web.payment_allocation.InvoiceRow.InvoiceRowBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 public class InvoiceRowReducers
 {
