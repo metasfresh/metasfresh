@@ -11,13 +11,13 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
@@ -84,7 +84,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 	@Test
 	public void provideMailRecipient_dunned_invoices_with_common_email_user()
 	{
-		final I_AD_User userRecord = createUserRecord("userRecord.EMail");
+		final org.compiere.model.I_AD_User userRecord = createUserRecord("userRecord.EMail");
 
 		final I_C_Invoice invoiceRecord1 = createInvoiceRecord(userRecord);
 		final I_C_Invoice invoiceRecord2 = createInvoiceRecord(userRecord);
@@ -113,9 +113,9 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 	@Test
 	public void provideMailRecipient_dunned_invoices_without_common_emailuser()
 	{
-		final I_AD_User invoiceUserRecord = createUserRecord("userRecord.EMail");
+		final org.compiere.model.I_AD_User invoiceUserRecord = createUserRecord("userRecord.EMail");
 
-		final I_AD_User bPartnerUserRecord = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User bPartnerUserRecord = newInstance(I_AD_User.class);
 		bPartnerUserRecord.setName("bPartnerUserRecord");
 		bPartnerUserRecord.setEMail("bPartnerUserRecord.EMail");
 		bPartnerUserRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
@@ -146,9 +146,9 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	private I_AD_User createUserRecord(final String eMail)
+	private org.compiere.model.I_AD_User createUserRecord(final String eMail)
 	{
-		final I_AD_User userRecord = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User userRecord = newInstance(I_AD_User.class);
 		userRecord.setName("userRecord");
 		userRecord.setEMail(eMail);
 		userRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
@@ -156,7 +156,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		return userRecord;
 	}
 
-	private I_C_Invoice createInvoiceRecord(@Nullable final I_AD_User userRecord)
+	private I_C_Invoice createInvoiceRecord(@Nullable final org.compiere.model.I_AD_User userRecord)
 	{
 		final I_C_Invoice invoiceRecord2 = newInstance(I_C_Invoice.class);
 		invoiceRecord2.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());

@@ -178,7 +178,7 @@ public interface IBPartnerDAO extends ISingletonService
 	/**
 	 * @return true if a contact with the flag defaultContact on true already exists in the table, false otherwise.
 	 */
-	boolean existsDefaultContactInTable(de.metas.adempiere.model.I_AD_User user, @Nullable String trxName);
+	boolean existsDefaultContactInTable(I_AD_User user, @Nullable String trxName);
 
 	/**
 	 * Search after the BPartner when the value is given

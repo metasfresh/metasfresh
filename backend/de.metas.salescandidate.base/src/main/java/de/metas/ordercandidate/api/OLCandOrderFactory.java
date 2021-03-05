@@ -1,6 +1,5 @@
 package de.metas.ordercandidate.api;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -55,6 +54,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MNote;
 import org.compiere.model.X_C_Order;
@@ -471,7 +471,7 @@ class OLCandOrderFactory
 
 	private I_AD_Note createOrderCompleteErrorNote(final String errorMsg)
 	{
-		final I_AD_User user = userDAO.getById(userInChargeId);
+		final org.compiere.model.I_AD_User user = userDAO.getById(userInChargeId);
 
 		final String candidateIdsAsString = candidates.stream()
 				.map(OLCand::getId)

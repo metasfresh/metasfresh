@@ -779,7 +779,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public boolean existsDefaultContactInTable(final de.metas.adempiere.model.I_AD_User user, final String trxName)
+	public boolean existsDefaultContactInTable(final I_AD_User user, final String trxName)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()

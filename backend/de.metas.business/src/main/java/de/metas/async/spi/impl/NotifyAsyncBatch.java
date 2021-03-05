@@ -32,11 +32,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
@@ -128,7 +128,7 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 						attributesBuilder.setSourceDocumentFromObject(asyncBatch);
 
 						// try to set language; take first from partner; if does not exists, take it from client
-						final I_AD_User user = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, ITrx.TRXNAME_None);
+						final org.compiere.model.I_AD_User user = InterfaceWrapperHelper.create(ctx, asyncBatch.getCreatedBy(), I_AD_User.class, ITrx.TRXNAME_None);
 						final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(user.getC_BPartner_ID());
 						final I_C_BPartner partner = bpartnerId != null
 								? Services.get(IBPartnerDAO.class).getById(bpartnerId)

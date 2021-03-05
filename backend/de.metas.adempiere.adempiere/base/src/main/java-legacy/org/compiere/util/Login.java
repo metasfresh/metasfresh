@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IPostingService;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.Language;
@@ -34,6 +33,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.IValuePreferenceBL;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidationEngine;
 import org.slf4j.Logger;
 

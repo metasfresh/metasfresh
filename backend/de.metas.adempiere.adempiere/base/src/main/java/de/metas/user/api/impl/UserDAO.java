@@ -1,6 +1,5 @@
 package de.metas.user.api.impl;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.AdMessageKey;
@@ -17,6 +16,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -58,19 +58,19 @@ public class UserDAO implements IUserDAO
 	private final AdMessageKey MSG_MailOrUsernameNotFound = AdMessageKey.of("MailOrUsernameNotFound");
 
 	@Override
-	public I_AD_User retrieveLoginUserByUserId(final String userId)
+	public org.compiere.model.I_AD_User retrieveLoginUserByUserId(final String userId)
 	{
-		final IQueryBuilder<I_AD_User> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<org.compiere.model.I_AD_User> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSystemUser, true);
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsSystemUser, true);
 
 		queryBuilder.addCompositeQueryFilter()
 				.setJoinOr()
-				.addEqualsFilter(I_AD_User.COLUMNNAME_Login, userId)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_EMail, userId);
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_Login, userId)
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_EMail, userId);
 
-		final List<I_AD_User> users = queryBuilder.create().list();
+		final List<org.compiere.model.I_AD_User> users = queryBuilder.create().list();
 		if (users.size() > 1)
 		{
 			logger.info("More then one user found for UserId '{}': {}", userId, users);
@@ -87,12 +87,12 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public I_AD_User getByPasswordResetCode(@NonNull final String passwordResetCode)
+	public org.compiere.model.I_AD_User getByPasswordResetCode(@NonNull final String passwordResetCode)
 	{
-		final I_AD_User user = Services.get(IQueryBL.class)
+		final org.compiere.model.I_AD_User user = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_User.COLUMNNAME_PasswordResetCode, passwordResetCode)
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_PasswordResetCode, passwordResetCode)
 				.create()
 				.firstOnly(I_AD_User.class);
 
@@ -109,20 +109,20 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	@Cached(cacheName = I_AD_User.Table_Name)
-	public I_AD_User retrieveUserOrNull(@CacheCtx final Properties ctx, final int adUserId)
+	@Cached(cacheName = org.compiere.model.I_AD_User.Table_Name)
+	public org.compiere.model.I_AD_User retrieveUserOrNull(@CacheCtx final Properties ctx, final int adUserId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class, ctx, ITrx.TRXNAME_None)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, adUserId)
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID, adUserId)
 				.create()
 				.firstOnly(I_AD_User.class);
 	}
 
 	@Override
-	public I_AD_User getById(@NonNull final UserId adUserId)
+	public org.compiere.model.I_AD_User getById(@NonNull final UserId adUserId)
 	{
-		final I_AD_User user = retrieveUserOrNull(Env.getCtx(), adUserId.getRepoId());
+		final org.compiere.model.I_AD_User user = retrieveUserOrNull(Env.getCtx(), adUserId.getRepoId());
 		if (user == null)
 		{
 			throw new AdempiereException("No user found for ID=" + adUserId).markAsUserValidationError();
@@ -132,11 +132,11 @@ public class UserDAO implements IUserDAO
 
 	// NOTE: never cache it
 	@Override
-	public I_AD_User getByIdInTrx(final int adUserId)
+	public org.compiere.model.I_AD_User getByIdInTrx(final int adUserId)
 	{
-		final I_AD_User user = Services.get(IQueryBL.class)
+		final org.compiere.model.I_AD_User user = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, adUserId)
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID, adUserId)
 				.create()
 				.firstOnlyNotNull(I_AD_User.class);
 		if (user == null)
@@ -166,9 +166,9 @@ public class UserDAO implements IUserDAO
 		}
 		final String fullname = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, userId)
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID, userId)
 				.create()
-				.first(I_AD_User.COLUMNNAME_Name, String.class);
+				.first(org.compiere.model.I_AD_User.COLUMNNAME_Name, String.class);
 
 		return fullname != null && !Check.isEmpty(fullname) ? fullname : "<" + userId.getRepoId() + ">";
 	}
@@ -190,8 +190,8 @@ public class UserDAO implements IUserDAO
 		final Set<UserId> userIds = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_User.COLUMNNAME_EMail, emailNorm)
-				.addInArrayFilter(I_AD_User.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM, adClientId)
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_EMail, emailNorm)
+				.addInArrayFilter(org.compiere.model.I_AD_User.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM, adClientId)
 				.create()
 				.listIds(UserId::ofRepoId);
 
@@ -234,8 +234,8 @@ public class UserDAO implements IUserDAO
 
 		return queryBL.createQueryBuilderOutOfTrx(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSystemUser, true)
-				.orderByDescending(I_AD_User.COLUMNNAME_AD_User_ID)
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsSystemUser, true)
+				.orderByDescending(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID)
 				.create()
 				.listIds(UserId::ofRepoId);
 	}
@@ -246,8 +246,8 @@ public class UserDAO implements IUserDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, userId)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSystemUser, true)
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID, userId)
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_IsSystemUser, true)
 				.create()
 				.anyMatch();
 	}
@@ -255,7 +255,7 @@ public class UserDAO implements IUserDAO
 	@Override
 	public BPartnerId getBPartnerIdByUserId(@NonNull final UserId userId)
 	{
-		final I_AD_User userRecord = getById(userId);
+		final org.compiere.model.I_AD_User userRecord = getById(userId);
 		return BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
 	}
 
@@ -271,13 +271,13 @@ public class UserDAO implements IUserDAO
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_User.class)
-				.addEqualsFilter(I_AD_User.COLUMNNAME_Login, login)
+				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_Login, login)
 				.create()
 				.firstId(UserId::ofRepoIdOrNull);
 	}
 
 	@Override
-	public void save(@NonNull final I_AD_User user)
+	public void save(@NonNull final org.compiere.model.I_AD_User user)
 	{
 		InterfaceWrapperHelper.save(user);
 	}

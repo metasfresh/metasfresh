@@ -23,12 +23,12 @@
 package de.metas.marketing.base.api.impl;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.marketing.base.api.IMKTGChannelDao;
 import de.metas.marketing.base.model.I_AD_User_MKTG_Channels;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_AD_User;
 
 public class MKTGChannelDao implements IMKTGChannelDao
 {

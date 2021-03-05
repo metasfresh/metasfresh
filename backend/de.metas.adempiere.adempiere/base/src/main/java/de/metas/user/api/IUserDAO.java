@@ -22,11 +22,11 @@ package de.metas.user.api;
  * #L%
  */
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_User;
 
 import javax.annotation.Nullable;
 import java.util.Properties;
@@ -39,23 +39,23 @@ public interface IUserDAO extends ISingletonService
 	 *
 	 * @return user; never return null
 	 */
-	I_AD_User retrieveLoginUserByUserId(String userId);
+	org.compiere.model.I_AD_User retrieveLoginUserByUserId(String userId);
 
-	I_AD_User getByPasswordResetCode(String passwordResetCode);
+	org.compiere.model.I_AD_User getByPasswordResetCode(String passwordResetCode);
 
 	@Nullable
-	I_AD_User retrieveUserOrNull(Properties ctx, int adUserId);
+	org.compiere.model.I_AD_User retrieveUserOrNull(Properties ctx, int adUserId);
 
 	/**
 	 * @deprecated please use {@link #getById(UserId)} instead
 	 */
 	@Deprecated
-	default I_AD_User getById(final int adUserRepoId)
+	default org.compiere.model.I_AD_User getById(final int adUserRepoId)
 	{
 		return getById(UserId.ofRepoId(adUserRepoId));
 	}
 
-	I_AD_User getById(UserId adUserId);
+	org.compiere.model.I_AD_User getById(UserId adUserId);
 
 	<T extends org.compiere.model.I_AD_User> T getByIdInTrx(UserId userId, Class<T> modelClass);
 
@@ -64,7 +64,7 @@ public interface IUserDAO extends ISingletonService
 		return getByIdInTrx(userId, org.compiere.model.I_AD_User.class);
 	}
 
-	I_AD_User getByIdInTrx(int adUserId);
+	org.compiere.model.I_AD_User getByIdInTrx(int adUserId);
 
 	/**
 	 * @return user's full name or <code>?</code> if no found
