@@ -67,7 +67,7 @@ public class ESModelIndexersRegistry
 	private final ObjectMapper jsonObjectMapper;
 
 	public ESModelIndexersRegistry(
-			@Qualifier("metasfreshRestHighLevelClientconfig") @NonNull final RestHighLevelClient elasticsearchClient,
+			@NonNull final RestHighLevelClient elasticsearchClient,
 			@NonNull final  ObjectMapper jsonObjectMapper)
 	{
 		this.elasticsearchClient = elasticsearchClient; 

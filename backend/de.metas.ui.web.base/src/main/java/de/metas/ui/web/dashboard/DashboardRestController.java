@@ -5,10 +5,9 @@ import java.util.Comparator;
 import java.util.List;
 
 import de.metas.elasticsearch.impl.ESSystemEnabledCondition;
+import lombok.NonNull;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -80,10 +79,10 @@ public class DashboardRestController
 	private final WebsocketSender websocketSender;
 
 	public DashboardRestController(
-			final UserSession userSession, 
-			final UserDashboardRepository userDashboardRepo,
-			@Qualifier("metasfreshRestHighLevelClientconfig") final RestHighLevelClient elasticsearchClient, 
-			final WebsocketSender websocketSender)
+			@NonNull final UserSession userSession,
+			@NonNull final UserDashboardRepository userDashboardRepo,
+			@NonNull final RestHighLevelClient elasticsearchClient,
+			@NonNull final WebsocketSender websocketSender)
 	{
 		this.userSession = userSession;
 		this.userDashboardRepo = userDashboardRepo;

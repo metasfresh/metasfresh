@@ -62,7 +62,7 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 
 	public FullTextSearchDocumentFilterDescriptorsProviderFactory(
 			@NonNull final ESModelIndexersRegistry esModelIndexersRegistry,
-			@Qualifier("metasfreshRestHighLevelClientconfig") @NonNull final RestHighLevelClient elasticsearchClient)
+			@NonNull final RestHighLevelClient elasticsearchClient)
 	{
 		this.esModelIndexersRegistry = esModelIndexersRegistry;
 		this.elasticsearchClient = elasticsearchClient;
