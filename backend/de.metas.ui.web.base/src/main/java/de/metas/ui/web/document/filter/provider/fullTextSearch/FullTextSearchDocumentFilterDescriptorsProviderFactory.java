@@ -2,7 +2,7 @@ package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
 import de.metas.elasticsearch.impl.ESSystemEnabledCondition;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
-import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
+import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -55,13 +55,16 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 {
 	// services
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IESModelIndexersRegistry esModelIndexersRegistry = Services.get(IESModelIndexersRegistry.class);
+	private final ESModelIndexersRegistry esModelIndexersRegistry;
 	private final RestHighLevelClient elasticsearchClient;
 
 	private static final AdMessageKey MSG_FULL_TEXT_SEARCH_CAPTION = AdMessageKey.of("Search");
 
-	public FullTextSearchDocumentFilterDescriptorsProviderFactory(@Qualifier("metasfreshRestHighLevelClientconfig") @NonNull final RestHighLevelClient elasticsearchClient)
+	public FullTextSearchDocumentFilterDescriptorsProviderFactory(
+			@NonNull final ESModelIndexersRegistry esModelIndexersRegistry,
+			@Qualifier("metasfreshRestHighLevelClientconfig") @NonNull final RestHighLevelClient elasticsearchClient)
 	{
+		this.esModelIndexersRegistry = esModelIndexersRegistry;
 		this.elasticsearchClient = elasticsearchClient;
 	}
 
