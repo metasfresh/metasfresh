@@ -1,15 +1,6 @@
 package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
-import java.util.Collection;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdTabId;
-
-import org.elasticsearch.client.RestHighLevelClient;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-
+import de.metas.elasticsearch.impl.ESSystemEnabledCondition;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.i18n.AdMessageKey;
@@ -27,6 +18,14 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdTabId;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
 
 /*
  * #%L
@@ -51,6 +50,7 @@ import lombok.NonNull;
  */
 
 @Component
+@Conditional(ESSystemEnabledCondition.class)
 public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
 	// services

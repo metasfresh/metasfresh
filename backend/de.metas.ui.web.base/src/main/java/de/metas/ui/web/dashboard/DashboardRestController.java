@@ -4,10 +4,12 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
+import de.metas.elasticsearch.impl.ESSystemEnabledCondition;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -66,6 +68,7 @@ import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping(value = DashboardRestController.ENDPOINT)
+@Conditional(ESSystemEnabledCondition.class)
 public class DashboardRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/dashboard";
