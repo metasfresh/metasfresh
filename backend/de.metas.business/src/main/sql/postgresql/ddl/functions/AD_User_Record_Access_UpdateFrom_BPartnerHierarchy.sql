@@ -1,207 +1,244 @@
-drop function if exists ad_user_record_access_updatefrom_bpartnerhierarchy();
+DROP FUNCTION IF EXISTS ad_user_record_access_updatefrom_bpartnerhierarchy()
+;
 
-create function ad_user_record_access_updatefrom_bpartnerhierarchy()
-    returns void
-    language plpgsql
-as
+CREATE FUNCTION ad_user_record_access_updatefrom_bpartnerhierarchy()
+    RETURNS void
+    LANGUAGE plpgsql
+AS
 $$
-declare
+DECLARE
     v_count numeric;
-begin
-    drop table if exists TMP_RecordsToGrantAccess;
-    create temporary table TMP_RecordsToGrantAccess
+BEGIN
+    DROP TABLE IF EXISTS TMP_RecordsToGrantAccess;
+    CREATE TEMPORARY TABLE TMP_RecordsToGrantAccess
     (
-        ad_table_id numeric not null,
-        record_id   numeric not null,
-        ad_user_id  numeric not null,
+        ad_table_id numeric NOT NULL,
+        record_id   numeric NOT NULL,
+        ad_user_id  numeric NOT NULL,
         access      varchar,
         comments    text,
-        id          numeric not null,
+        id          numeric NOT NULL,
         parent_id   numeric,
-        root_id     numeric
+        root_id     numeric,
+        level       integer
     );
-    create unique index on TMP_RecordsToGrantAccess (id);
+    CREATE UNIQUE INDEX ON TMP_RecordsToGrantAccess (id);
 
 
     --
     -- BPartners
     --
-    with recursive bpartner as (
-        select c_bpartner_id                                                      as root_bpartner_id,
-               bp.name                                                            as root_bpartner_name,
-               salesrep_id                                                        as root_salesRep_ID,
-               (select u.Name from AD_user u where u.ad_user_id = bp.salesrep_id) as root_salesRep_Name,
-               c_bpartner_id,
-               bp.name                                                            as BPName,
-               permissions.access                                                 as access,
-               nextval('ad_user_record_access_seq')                               as id,
-               null::numeric                                                      as parent_id,
-               null::numeric                                                      as root_id
-        from c_bpartner bp,
-             (select 'R' as access
-              union all
-              select 'W' as access
-             ) as permissions
-        where SalesRep_ID is not null
-          and c_bpartner_salesrep_id is null
-          --
-        union all
+    WITH RECURSIVE bpartner AS (
+        SELECT bp.c_bpartner_id                     AS root_bpartner_id,
+               bp.name                              AS root_bpartner_name,
+               u.ad_user_id                         AS root_salesRep_ID,
+               u.name                               AS root_salesRep_Name,
+               bp.c_bpartner_id,
+               bp.name                              AS BPName,
+               permissions.access                   AS access,
+               NEXTVAL('ad_user_record_access_seq') AS id,
+               NULL::numeric                        AS parent_id,
+               NULL::numeric                        AS root_id,
+               0::integer                           AS level
+        FROM c_bpartner bp
+                 INNER JOIN ad_user u ON u.c_bpartner_id = bp.c_bpartner_id AND u.isactive = 'Y' AND u.issystemuser = 'Y'
+                ,
+             (SELECT 'R' AS access
+              UNION ALL
+              SELECT 'W' AS access
+             ) AS permissions
+        WHERE EXISTS(SELECT 1
+                     FROM c_flatrate_term contract
+                     WHERE TRUE
+                       AND contract.bill_bpartner_id = bp.c_bpartner_id
+                       AND contract.c_flatrate_conditions_id IN (1000026, 1000027)
+                       AND contract.docstatus = 'CO'
+                       AND contract.startdate <= NOW()
+                       AND (contract.enddate IS NULL OR contract.enddate >= NOW()))
         --
-        select parent.root_bpartner_id,
+        UNION ALL
+        --
+        SELECT parent.root_bpartner_id,
                parent.root_bpartner_name,
                parent.root_salesRep_ID,
                parent.root_salesRep_Name,
                child.c_bpartner_id,
-               child.name                           as BPName,
-               parent.access                        as access,
-               nextval('ad_user_record_access_seq') as id,
-               parent.id                            as parent_id,
-               parent.id                            as root_id
-        from bpartner parent
-                 inner join c_bpartner child on child.c_bpartner_salesrep_id = parent.c_bpartner_id
+               child.name                           AS BPName,
+               parent.access                        AS ACCESS,
+               NEXTVAL('ad_user_record_access_seq') AS id,
+               parent.id                            AS parent_id,
+               parent.id                            AS root_id,
+               parent.level + 1                     AS level
+        FROM bpartner parent
+                 INNER JOIN c_bpartner child
+                            ON child.c_bpartner_salesrep_id = parent.c_bpartner_id
+        WHERE child.c_bpartner_id <> parent.c_bpartner_id -- avoid recursion
     )
-    insert
-    into TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
-    select 291                                                        as ad_table_id,
-           c_bpartner_id                                              as record_id,
-           root_salesRep_ID                                           as ad_user_id,
-           bpartner.access                                            as access,
-           'BP: ' || BPName || '(Root: ' || root_bpartner_name || ')' as comments,
-           bpartner.id                                                as id,
-           bpartner.parent_id                                         as parent_id,
-           bpartner.root_id                                           as root_id
-    from bpartner
-    order by root_bpartner_id;
+    INSERT
+    INTO TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id, level)
+    SELECT 291                                                        AS ad_table_id,
+           c_bpartner_id                                              AS record_id,
+           root_salesRep_ID                                           AS ad_user_id,
+           bpartner.access                                            AS access,
+           'BP: ' || BPName || '(Root: ' || root_bpartner_name || ')' AS comments,
+           bpartner.id                                                AS id,
+           bpartner.parent_id                                         AS parent_id,
+           bpartner.root_id                                           AS root_id,
+           bpartner.level                                             AS level
+    FROM bpartner
+    ORDER BY root_bpartner_id;
+
     -- select * from bpartner order by root_bpartner_id
     GET DIAGNOSTICS v_count = ROW_COUNT;
-    raise notice 'Considered % C_BPartner(s)', v_count;
+    RAISE NOTICE 'Considered % C_BPartner(s)', v_count;
 
     --
     -- Set Root_ID
     --
-    update TMP_RecordsToGrantAccess set root_id=id where root_id is null;
+    UPDATE TMP_RecordsToGrantAccess SET root_id=id WHERE root_id IS NULL;
     GET DIAGNOSTICS v_count = ROW_COUNT;
-    raise notice 'Set Root_ID for % records', v_count;
+    RAISE NOTICE 'Set Root_ID for % records', v_count;
 
     --
     -- Orders
     --
-    insert
-    into TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
-    select 259                                  as AD_Table_ID,
-           o.c_order_id                         as record_id,
-           a.ad_user_id                         as ad_user_id,
-           a.access                             as access,
-           ''                                   as comments,
-           nextval('ad_user_record_access_seq') as id,
-           a.id                                 as parent_id,
-           a.root_id                            as root_id
-    from TMP_RecordsToGrantAccess a
-             inner join C_Order o on o.c_bpartner_id = a.record_id
-    where a.ad_table_id = 291 -- C_BPartner
+    INSERT
+    INTO TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
+    SELECT 259                                  AS AD_Table_ID,
+           o.c_order_id                         AS record_id,
+           a.ad_user_id                         AS ad_user_id,
+           a.access                             AS access,
+           ''                                   AS comments,
+           NEXTVAL('ad_user_record_access_seq') AS id,
+           a.id                                 AS parent_id,
+           a.root_id                            AS root_id
+    FROM TMP_RecordsToGrantAccess a
+             INNER JOIN C_Order o ON o.c_bpartner_id = a.record_id
+    WHERE a.ad_table_id = 291 -- C_BPartner
     ;
     GET DIAGNOSTICS v_count = ROW_COUNT;
-    raise notice 'Considered % C_Order(s)', v_count;
+    RAISE NOTICE 'Considered % C_Order(s)', v_count;
 
     --
     -- Invoices
     --
-    insert
-    into TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
-    select 318                                  as AD_Table_ID,
-           i.c_invoice_id                       as record_id,
-           a.ad_user_id                         as ad_user_id,
-           a.access                             as access,
-           ''                                   as comments,
-           nextval('ad_user_record_access_seq') as id,
-           a.id                                 as parent_id,
-           a.root_id                            as root_id
-    from TMP_RecordsToGrantAccess a
-             inner join c_invoice i on i.c_bpartner_id = a.record_id
-    where a.ad_table_id = 291 -- C_BPartner
+    INSERT
+    INTO TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
+    SELECT 318                                  AS AD_Table_ID,
+           i.c_invoice_id                       AS record_id,
+           a.ad_user_id                         AS ad_user_id,
+           a.access                             AS access,
+           ''                                   AS comments,
+           NEXTVAL('ad_user_record_access_seq') AS id,
+           a.id                                 AS parent_id,
+           a.root_id                            AS root_id
+    FROM TMP_RecordsToGrantAccess a
+             INNER JOIN c_invoice i ON i.c_bpartner_id = a.record_id
+    WHERE a.ad_table_id = 291 -- C_BPartner
     ;
     GET DIAGNOSTICS v_count = ROW_COUNT;
-    raise notice 'Considered % C_Invoice(s)', v_count;
+    RAISE NOTICE 'Considered % C_Invoice(s)', v_count;
 
     --
     -- InOuts
     --
-    insert
-    into TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
-    select 319                                  as AD_Table_ID,
-           io.m_inout_id                        as record_id,
-           a.ad_user_id                         as ad_user_id,
-           a.access                             as access,
-           ''                                   as comments,
-           nextval('ad_user_record_access_seq') as id,
-           a.id                                 as parent_id,
-           a.root_id                            as root_id
-    from TMP_RecordsToGrantAccess a
-             inner join m_inout io on io.c_bpartner_id = a.record_id
-    where a.ad_table_id = 291 -- C_BPartner
+    INSERT
+    INTO TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
+    SELECT 319                                  AS AD_Table_ID,
+           io.m_inout_id                        AS record_id,
+           a.ad_user_id                         AS ad_user_id,
+           a.access                             AS access,
+           ''                                   AS comments,
+           NEXTVAL('ad_user_record_access_seq') AS id,
+           a.id                                 AS parent_id,
+           a.root_id                            AS root_id
+    FROM TMP_RecordsToGrantAccess a
+             INNER JOIN m_inout io ON io.c_bpartner_id = a.record_id
+    WHERE a.ad_table_id = 291 -- C_BPartner
     ;
     GET DIAGNOSTICS v_count = ROW_COUNT;
-    raise notice 'Considered % M_InOut(s)', v_count;
+    RAISE NOTICE 'Considered % M_InOut(s)', v_count;
 
 
     --
     -- Payments
     --
-    insert
-    into TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
-    select 335                                  as AD_Table_ID,
-           p.c_payment_id                       as record_id,
-           a.ad_user_id                         as ad_user_id,
-           a.access                             as access,
-           ''                                   as comments,
-           nextval('ad_user_record_access_seq') as id,
-           a.id                                 as parent_id,
-           a.root_id                            as root_id
-    from TMP_RecordsToGrantAccess a
-             inner join c_payment p on p.c_bpartner_id = a.record_id
-    where a.ad_table_id = 291 -- C_BPartner
+    INSERT
+    INTO TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
+    SELECT 335                                  AS AD_Table_ID,
+           p.c_payment_id                       AS record_id,
+           a.ad_user_id                         AS ad_user_id,
+           a.access                             AS access,
+           ''                                   AS comments,
+           NEXTVAL('ad_user_record_access_seq') AS id,
+           a.id                                 AS parent_id,
+           a.root_id                            AS root_id
+    FROM TMP_RecordsToGrantAccess a
+             INNER JOIN c_payment p ON p.c_bpartner_id = a.record_id
+    WHERE a.ad_table_id = 291 -- C_BPartner
     ;
     GET DIAGNOSTICS v_count = ROW_COUNT;
-    raise notice 'Considered % C_Payment(s)', v_count;
+    RAISE NOTICE 'Considered % C_Payment(s)', v_count;
 
     --
-    -- Requests
+    -- Requests (C_BPartner_ID)
     --
-    insert
-    into TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
-    select 417                                  as AD_Table_ID,
-           r.R_Request_Id                       as record_id,
-           a.ad_user_id                         as ad_user_id,
-           a.access                             as access,
-           ''                                   as comments,
-           nextval('ad_user_record_access_seq') as id,
-           a.id                                 as parent_id,
-           a.root_id                            as root_id
-    from TMP_RecordsToGrantAccess a
-             inner join R_Request r on r.c_bpartner_id = a.record_id
-    where a.ad_table_id = 291 -- C_BPartner
+    INSERT
+    INTO TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
+    SELECT 417                                  AS AD_Table_ID,
+           r.R_Request_Id                       AS record_id,
+           a.ad_user_id                         AS ad_user_id,
+           a.access                             AS access,
+           ''                                   AS comments,
+           NEXTVAL('ad_user_record_access_seq') AS id,
+           a.id                                 AS parent_id,
+           a.root_id                            AS root_id
+    FROM TMP_RecordsToGrantAccess a
+             INNER JOIN R_Request r ON r.c_bpartner_id = a.record_id
+    WHERE a.ad_table_id = 291 -- C_BPartner
     ;
     GET DIAGNOSTICS v_count = ROW_COUNT;
-    raise notice 'Considered % R_Request(s)', v_count;
+    RAISE NOTICE 'Considered % R_Request(s) via their R_Request.C_BPartner_ID', v_count;
+    --
+    -- Requests (CreatedBy)
+    --
+    INSERT
+    INTO TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
+    SELECT 417                                  AS AD_Table_ID,
+           r.R_Request_Id                       AS record_id,
+           r.createdby                          AS ad_user_id,
+           permissions.access                   AS access,
+           ''                                   AS comments,
+           NEXTVAL('ad_user_record_access_seq') AS id,
+           NULL::numeric                        AS parent_id,
+           NULL::numeric                        AS root_id
+    FROM R_Request r,
+         (SELECT 'R' AS access
+          UNION ALL
+          SELECT 'W' AS access
+         ) AS permissions
+    WHERE TRUE;
+    GET DIAGNOSTICS v_count = ROW_COUNT;
+    RAISE NOTICE 'Considered % R_Request(s) via their R_Request.CreatedBy', v_count;
 
 
     --
     -- Users
     -- grant access of the users linked to the partners
-    insert
-    into TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
-    select 114                                  as AD_Table_ID,
-           u.AD_User_ID                         as record_id,
-           a.ad_user_id                         as ad_user_id,
-           a.access                             as access,
-           ''                                   as comments,
-           nextval('ad_user_record_access_seq') as id,
-           a.id                                 as parent_id,
-           a.root_id                            as root_id
-    from TMP_RecordsToGrantAccess a
-             inner join AD_User u on u.c_bpartner_id = a.record_id;
+    INSERT
+    INTO TMP_RecordsToGrantAccess(ad_table_id, record_id, ad_user_id, access, comments, id, parent_id, root_id)
+    SELECT 114                                  AS AD_Table_ID,
+           u.AD_User_ID                         AS record_id,
+           a.ad_user_id                         AS ad_user_id,
+           a.access                             AS access,
+           ''                                   AS comments,
+           NEXTVAL('ad_user_record_access_seq') AS id,
+           a.id                                 AS parent_id,
+           a.root_id                            AS root_id
+    FROM TMP_RecordsToGrantAccess a
+             INNER JOIN AD_User u ON u.c_bpartner_id = a.record_id;
     GET DIAGNOSTICS v_count = ROW_COUNT;
-    raise notice 'Considered % AD_User(s)', v_count;
+    RAISE NOTICE 'Considered % AD_User(s)', v_count;
 
     --
     -- Check TMP_RecordsToGrantAccess
@@ -214,9 +251,9 @@ begin
     --
     --
     -- remove existing access rules
-    delete from ad_user_record_access where PermissionIssuer = 'AUTO_BP_HIERARCHY';
+    DELETE FROM ad_user_record_access WHERE PermissionIssuer = 'AUTO_BP_HIERARCHY';
     GET DIAGNOSTICS v_count = ROW_COUNT;
-    raise notice 'Removed % previous AD_User_Record_Access records', v_count;
+    RAISE NOTICE 'Removed % previous AD_User_Record_Access records', v_count;
     --
     --
     INSERT INTO ad_user_record_access ( --
@@ -236,28 +273,29 @@ begin
         created, createdby, updated, updatedby,
         --
         ad_user_record_access_id, parent_id, root_id)
-    select a.ad_table_id       as ad_table_id,
-           a.record_id         as record_id,
-           a.access            as access,
-           a.ad_user_id        as ad_user_id,
-           'AUTO_BP_HIERARCHY' as permissionissuer,
+    SELECT a.ad_table_id       AS ad_table_id,
+           a.record_id         AS record_id,
+           a.access            AS access,
+           a.ad_user_id        AS ad_user_id,
+           'AUTO_BP_HIERARCHY' AS permissionissuer,
            --
-           1000000             as ad_client_id,
-           0                   as AD_Org_ID,
-           'Y'                 as IsActive,
-           now()               as created,
-           99                  as createdby,
-           now()               as updatedby,
-           99                  as updated,
+           1000000             AS ad_client_id,
+           0                   AS AD_Org_ID,
+           'Y'                 AS IsActive,
+           NOW()               AS created,
+           99                  AS createdby,
+           NOW()               AS updatedby,
+           99                  AS updated,
            --
-           a.id                as ad_user_record_access_id,
-           a.parent_id         as parent_id,
-           a.root_id           as root_id
-    from TMP_RecordsToGrantAccess a;
+           a.id                AS ad_user_record_access_id,
+           a.parent_id         AS parent_id,
+           a.root_id           AS root_id
+    FROM TMP_RecordsToGrantAccess a;
     GET DIAGNOSTICS v_count = ROW_COUNT;
-    raise notice 'Inserted % AD_User_Record_Access records', v_count;
-end;
-$$;
+    RAISE NOTICE 'Inserted % AD_User_Record_Access records', v_count;
+END;
+$$
+;
 
 -- alter function ad_user_record_access_updatefrom_bpartnerhierarchy() owner to metasfresh;
 

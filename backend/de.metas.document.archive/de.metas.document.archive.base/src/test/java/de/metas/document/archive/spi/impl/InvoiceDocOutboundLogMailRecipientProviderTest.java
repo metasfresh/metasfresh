@@ -13,13 +13,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Optional;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
@@ -86,24 +86,24 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		Services.registerService(IBPartnerBL.class, bPartnerBL);
 
 		invoiceDocOutboundLogMailRecipientProvider = new InvoiceDocOutboundLogMailRecipientProvider(
-				new DocOutBoundRecipientRepository(),
-				new BPartnerBL(userRepository));
+				new DocOutBoundRecipientRepository(bPartnerBL),
+				bPartnerBL);
 	}
 
 	@Test
 	public void provideMailRecipient()
 	{
-		final I_AD_User userRecord2 = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User userRecord2 = newInstance(I_AD_User.class);
 		userRecord2.setName("userRecord2");
 		userRecord2.setEMail(null);
 		userRecord2.setIsBillToContact_Default(true);
 		userRecord2.setAD_Language(AD_Language_en_AU);
-		userRecord2.setC_BPartner(bPartnerRecord);
+		userRecord2.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 
-		final I_AD_User userRecord = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User userRecord = newInstance(I_AD_User.class);
 		userRecord.setName("userRecord");
 		userRecord.setEMail("userRecord.EMail");
-		userRecord.setC_BPartner(bPartnerRecord);
+		userRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		userRecord.setAD_Language(AD_Language_en_GB);
 		saveRecord(userRecord);
 

@@ -22,28 +22,27 @@
 
 package de.metas.common.bpartner.request;
 
-import static de.metas.common.rest_api.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-
-import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
+import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
+import de.metas.common.rest_api.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
-import de.metas.common.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+
+import static de.metas.common.rest_api.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @ApiModel(description = "A BPartner with `n` contacts and `n` locations.\n")
 @Value
@@ -76,9 +75,9 @@ public class JsonRequestComposite
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestBankAccountsUpsert bankAccounts;
 
-	@ApiModelProperty(value = "Ids of the business partner from external systems", position = 60)
+	@ApiModelProperty(value = "The Id of the business partner from an external system.", position = 60)
 	@JsonInclude(Include.NON_NULL)
-	JsonExternalReferenceCreateRequest bPartnerReferenceCreateRequest;
+	JsonSingleExternalReferenceCreateReq bPartnerReferenceCreateRequest;
 
 	@ApiModelProperty(value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
 			+ READ_ONLY_SYNC_ADVISE_DOC, position = 70)
@@ -92,8 +91,8 @@ public class JsonRequestComposite
 			@JsonProperty("bpartner") @Nullable final JsonRequestBPartner bpartner,
 			@JsonProperty("locations") @Nullable final JsonRequestLocationUpsert locations,
 			@JsonProperty("contacts") @Nullable final JsonRequestContactUpsert contacts,
-			@JsonProperty("bankAccounts") @Nullable JsonRequestBankAccountsUpsert bankAccounts,
-			@JsonProperty("bpartnerReferenceCreateRequest") @Nullable final JsonExternalReferenceCreateRequest bPartnerReferenceCreateRequest,
+			@JsonProperty("bankAccounts") @Nullable final JsonRequestBankAccountsUpsert bankAccounts,
+			@JsonProperty("bpartnerReferenceCreateRequest") @Nullable final JsonSingleExternalReferenceCreateReq bPartnerReferenceCreateRequest,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.orgCode = orgCode;

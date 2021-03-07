@@ -30,8 +30,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.user.UserId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
@@ -40,7 +38,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.references.ZoomInfoPermissionsFactory;
+import de.metas.document.references.related_documents.ZoomInfoPermissionsFactory;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilter.Builder;

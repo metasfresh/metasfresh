@@ -6,13 +6,13 @@ import org.adempiere.model.ModelColumn;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_Alberta 
+public interface I_ExternalSystem_Config_Alberta
 {
 
 	String Table_Name = "ExternalSystem_Config_Alberta";
 
-//	/** AD_Table_ID=541577 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=541577 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -161,6 +161,27 @@ public interface I_ExternalSystem_Config_Alberta
 
 	ModelColumn<I_ExternalSystem_Config_Alberta, de.metas.externalsystem.model.I_ExternalSystem_Config> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config_Alberta.class, "ExternalSystem_Config_ID", de.metas.externalsystem.model.I_ExternalSystem_Config.class);
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
+
+	/**
+	 * Set Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystemValue (java.lang.String ExternalSystemValue);
+
+	/**
+	 * Get Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getExternalSystemValue();
+
+	ModelColumn<I_ExternalSystem_Config_Alberta, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Config_Alberta.class, "ExternalSystemValue", null);
+	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
 
 	/**
 	 * Set Active.

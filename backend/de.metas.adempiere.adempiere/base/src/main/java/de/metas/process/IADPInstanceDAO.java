@@ -22,17 +22,15 @@ package de.metas.process;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Set;
-
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
 
-import de.metas.util.ISingletonService;
-
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Set;
 
 public interface IADPInstanceDAO extends ISingletonService
 {
@@ -114,4 +112,6 @@ public interface IADPInstanceDAO extends ISingletonService
 	PInstanceId createADPinstanceAndADPInstancePara(PInstanceRequest pinstanceRequest);
 
 	Timestamp getLastRunDate(@NonNull AdProcessId adProcessId, @Nullable PInstanceId pinstanceToExclude);
+
+	void saveProcessInfoLogs(PInstanceId pinstanceId, List<ProcessInfoLog> logs);
 }

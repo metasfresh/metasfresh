@@ -27,6 +27,7 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -53,8 +54,9 @@ public class PurchaseCandidateDimensionFactory implements DimensionFactory<I_C_P
 		record.setUserElementString7(from.getUserElementString7());
 	}
 
+	@NonNull
 	@Override
-	public Dimension getFromRecord(final I_C_PurchaseCandidate record)
+	public Dimension getFromRecord(@NonNull final I_C_PurchaseCandidate record)
 	{
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))

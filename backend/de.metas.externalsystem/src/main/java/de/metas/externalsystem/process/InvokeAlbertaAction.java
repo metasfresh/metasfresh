@@ -23,11 +23,11 @@
 package de.metas.externalsystem.process;
 
 import de.metas.common.externalsystem.ExternalSystemConstants;
-import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
-import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
+import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.process.IProcessPreconditionsContext;
 import lombok.NonNull;
@@ -48,10 +48,17 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
-		// note: we can blindly get the first I_ExternalSystem_Config_Alberta, because the checkPreconditionsApplicable impl made sure there is exactly one.
-		final int id = this.configId != null
-				? this.configId.getValue()
-				: getSelectedIncludedRecordIds(I_ExternalSystem_Config_Alberta.class).stream().findFirst().get();
+		final int id;
+
+		if (this.childConfigId > 0)
+		{
+			id = this.childConfigId;
+		}
+		else
+		{
+			// note: we can blindly get the first I_ExternalSystem_Config_Alberta, because the checkPreconditionsApplicable impl made sure there is exactly one.
+			id = getSelectedIncludedRecordIds(I_ExternalSystem_Config_Alberta.class).stream().findFirst().get();
+		}
 		return ExternalSystemAlbertaConfigId.ofRepoId(id);
 	}
 

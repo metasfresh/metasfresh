@@ -105,7 +105,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @return {@link I_C_BPartner}; never return null
 	 * @throws OrgHasNoBPartnerLinkException if no partner was found
 	 */
-	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, String trxName);
+	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, @Nullable String trxName);
 
 	Optional<UserId> getDefaultContactId(BPartnerId bpartnerId);
 
@@ -113,10 +113,13 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, GLN gln);
 
+	@Nullable
 	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
-	
+
+	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(BPartnerLocationId bpartnerLocationId);
 
+	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);
 
 	boolean exists(BPartnerLocationId bpartnerLocationId);
@@ -136,7 +139,7 @@ public interface IBPartnerDAO extends ISingletonService
 	/**
 	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
 	 */
-	List<I_AD_User> retrieveContacts(Properties ctx, int partnerId, String trxName);
+	List<I_AD_User> retrieveContacts(Properties ctx, int partnerId, @Nullable String trxName);
 
 	/**
 	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
@@ -145,18 +148,24 @@ public interface IBPartnerDAO extends ISingletonService
 
 	List<I_AD_User> retrieveContacts(BPartnerId bpartnerId);
 
+	<T extends I_C_BPartner> T getByIdInTrx(@NonNull BPartnerId bpartnerId, @NonNull Class<T> modelClass);
+
 	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
+	@Nullable
 	I_AD_User getContactById(BPartnerContactId contactId);
 
+	@Nullable
 	I_AD_User getContactByIdInTrx(BPartnerContactId contactId);
 
 	<T extends I_AD_User> T getContactById(BPartnerContactId contactId, Class<T> modelClass);
 
 	@NonNull EMailAddress getContactEMail(BPartnerContactId contactId);
 
+	@Nullable
 	PricingSystemId retrievePricingSystemIdOrNullInTrx(BPartnerId bPartnerId, SOTrx soTrx);
 
+	@Nullable
 	PricingSystemId retrievePricingSystemIdOrNull(BPartnerId bPartnerId, SOTrx soTrx);
 
 	ShipperId getShipperId(BPartnerId bpartnerId);
@@ -164,12 +173,12 @@ public interface IBPartnerDAO extends ISingletonService
 	/**
 	 * @return true if an address with the flag columnName on true already exists in the table, false otherwise.
 	 */
-	boolean existsDefaultAddressInTable(I_C_BPartner_Location address, String trxName, String columnName);
+	boolean existsDefaultAddressInTable(I_C_BPartner_Location address, @Nullable String trxName, String columnName);
 
 	/**
 	 * @return true if a contact with the flag defaultContact on true already exists in the table, false otherwise.
 	 */
-	boolean existsDefaultContactInTable(de.metas.adempiere.model.I_AD_User user, String trxName);
+	boolean existsDefaultContactInTable(I_AD_User user, @Nullable String trxName);
 
 	/**
 	 * Search after the BPartner when the value is given
@@ -189,10 +198,12 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @return a single bPartner or <code>null</code>
 	 * @throws org.adempiere.exceptions.DBMoreThanOneRecordsFoundException if there is more than one matching partner.
 	 */
+	@Nullable
 	I_C_BPartner retrieveBPartnerByValueOrSuffix(Properties ctx, String bpValue, String bpValueSuffixToFallback);
 
 	boolean hasEmailAddress(@NonNull BPartnerContactId contactId);
 
+	@Nullable
 	<T extends org.compiere.model.I_AD_User> T retrieveDefaultContactOrNull(I_C_BPartner bPartner, Class<T> clazz);
 
 	/**
@@ -200,7 +211,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 *
 	 * @return true if there more BP locations for given BP, excluding the given one
 	 */
-	boolean hasMoreLocations(Properties ctx, int bpartnerId, int excludeBPLocationId, String trxName);
+	boolean hasMoreLocations(Properties ctx, int bpartnerId, int excludeBPLocationId, @Nullable String trxName);
 
 	/**
 	 * Search the {@link I_C_BP_Relation}s for matching partner and location (note that the link without location is acceptable too)
@@ -234,8 +245,10 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */
 	@Deprecated
+	@Nullable
 	I_C_BPartner_Location getDefaultShipToLocation(BPartnerId bpartnerId);
-	
+
+	@Nullable
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
 	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpartnerLocationId);
@@ -252,13 +265,14 @@ public interface IBPartnerDAO extends ISingletonService
 	I_C_BPartner_Location retrieveBillToLocation(Properties ctx,
 			int bPartnerId,
 			boolean alsoTryBilltoRelation,
-			String trxName);
+			@Nullable String trxName);
 
 	/**
 	 * Get the fit contact for the given partner and isSOTrx. In case of SOTrx, the salesContacts will have priority. Same for POTrx and PurcanseCOntacts In case of 2 entries with equal values in the
 	 * fields above, the Default contact will have priority
 	 */
-	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, String trxName);
+	@Nullable
+	I_AD_User retrieveContact(Properties ctx, int bpartnerId, boolean isSOTrx, @Nullable String trxName);
 
 	Map<BPartnerId, Integer> retrieveAllDiscountSchemaIdsIndexedByBPartnerId(BPartnerType bpartnerType);
 
@@ -290,11 +304,11 @@ public interface IBPartnerDAO extends ISingletonService
 
 	@Value
 	@Builder
-	public static class BPartnerLocationQuery
+	class BPartnerLocationQuery
 	{
 		public enum Type
 		{
-			BILL_TO, SHIP_TO, REMIT_TO;
+			BILL_TO, SHIP_TO, REMIT_TO
 		}
 
 		@NonNull

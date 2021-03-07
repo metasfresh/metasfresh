@@ -24,7 +24,7 @@ package de.metas.document.dimension;
 
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
-import org.compiere.model.I_M_ForecastLine;
+import lombok.NonNull;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
@@ -37,8 +37,9 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 		return I_M_InOutLine.Table_Name;
 	}
 
+	@NonNull
 	@Override
-	public Dimension getFromRecord(final I_M_InOutLine record)
+	public Dimension getFromRecord(@NonNull final I_M_InOutLine record)
 	{
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))

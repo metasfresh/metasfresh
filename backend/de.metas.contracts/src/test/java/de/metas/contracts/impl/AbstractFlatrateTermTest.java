@@ -1,7 +1,6 @@
 package de.metas.contracts.impl;
 
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
@@ -29,6 +28,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
@@ -110,7 +110,7 @@ public abstract class AbstractFlatrateTermTest
 	private I_C_BPartner_Location bpLocation;
 
 	@Getter
-	private I_AD_User user;
+	private org.compiere.model.I_AD_User user;
 
 	private TaxCategoryId taxCategoryId;
 

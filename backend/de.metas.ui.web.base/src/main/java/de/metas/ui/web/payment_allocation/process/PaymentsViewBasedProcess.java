@@ -3,6 +3,7 @@ package de.metas.ui.web.payment_allocation.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.payment_allocation.InvoiceRow;
 import de.metas.ui.web.payment_allocation.InvoicesView;
+import de.metas.ui.web.payment_allocation.InvoicesViewFactory;
 import de.metas.ui.web.payment_allocation.PaymentRow;
 import de.metas.ui.web.payment_allocation.PaymentsView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
@@ -81,13 +82,22 @@ abstract class PaymentsViewBasedProcess extends ViewBasedProcessTemplate
 		}
 	}
 
-	protected final List<InvoiceRow> getSelectedInvoiceRows()
+	protected final List<InvoiceRow> getInvoiceRowsSelectedForAllocation()
 	{
-		final DocumentIdsSelection invoiceRowIds = getSelectedInvoiceRowIds();
-
-		return getInvoicesView()
-				.streamByIds(invoiceRowIds)
-				.collect(ImmutableList.toImmutableList());
+		final InvoicesView invoicesView = getInvoicesView();
+		if (InvoicesViewFactory.isEnablePreparedForAllocationFlag())
+		{
+			return invoicesView
+					.streamByIds(DocumentIdsSelection.ALL)
+					.filter(InvoiceRow::isPreparedForAllocation)
+					.collect(ImmutableList.toImmutableList());
+		}
+		else
+		{
+			return invoicesView
+					.streamByIds(getSelectedInvoiceRowIds())
+					.collect(ImmutableList.toImmutableList());
+		}
 	}
 
 	protected final void invalidatePaymentsAndInvoicesViews()

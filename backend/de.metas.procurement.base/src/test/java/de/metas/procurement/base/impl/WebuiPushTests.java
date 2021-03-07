@@ -77,7 +77,7 @@ public class WebuiPushTests
 		final I_C_BPartner bpartner = createBPartner();
 
 		final I_AD_User user = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		user.setC_BPartner(bpartner);
+		user.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		user.setEMail("mail@email");
 		user.setProcurementPassword("validPassword");
 		user.setIsMFProcurementUser(false);
@@ -95,7 +95,7 @@ public class WebuiPushTests
 		final I_C_BPartner bpartner = createBPartner();
 
 		final I_AD_User user = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		user.setC_BPartner(bpartner);
+		user.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		user.setEMail(null);
 		user.setProcurementPassword("validPassword");
 		user.setIsMFProcurementUser(true);
@@ -115,7 +115,7 @@ public class WebuiPushTests
 		InterfaceWrapperHelper.save(bpartner);
 
 		final I_AD_User user = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		user.setC_BPartner(bpartner);
+		user.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		user.setEMail("mail@email");
 		user.setProcurementPassword("validPassword");
 		user.setIsMFProcurementUser(true);
@@ -177,7 +177,7 @@ public class WebuiPushTests
 		final I_C_BPartner bpartner = createBPartner();
 
 		final I_AD_User user = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-		user.setC_BPartner(bpartner);
+		user.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		user.setEMail("mail@email");
 		user.setProcurementPassword("validPassword");
 		user.setIsMFProcurementUser(true);

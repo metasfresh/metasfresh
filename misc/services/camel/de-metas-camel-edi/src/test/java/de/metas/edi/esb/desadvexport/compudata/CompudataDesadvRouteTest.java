@@ -85,20 +85,17 @@ class CompudataDesadvRouteTest extends CamelTestSupport
 	}
 
 	@Test
-	void nonEmpty_desadv() throws Exception
+	void desadv_as_ordered() throws Exception
 	{
 		// given
 		SystemTime.setTimeSource(() -> Instant.parse("2021-02-07T20:35:30.00Z").toEpochMilli());
 
-		final var inputStr = CompudataDesadvRouteTest.class.getResourceAsStream("/de/metas/edi/esb/desadvexport/compudata/DESADV.xml");
+		final var inputStr = CompudataDesadvRouteTest.class.getResourceAsStream("/de/metas/edi/esb/desadvexport/compudata/DESADV_as_ordered.xml");
 		assertThat(inputStr).isNotNull();
 
 		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
 		final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
 		final JAXBElement<EDIExpDesadvType> inputXml = (JAXBElement)unmarshaller.unmarshal(inputStr);
-
-		// TODO: Constants.DECIMAL_FORMAT, NumberFormat.getInstance() is missing as a property!
-		// make it a header or solve the issue otherwise
 
 		final Exchange exchange = new DefaultExchange(template.getCamelContext());
 
@@ -119,6 +116,41 @@ class CompudataDesadvRouteTest extends CamelTestSupport
 		fileOutputEndpoint.assertIsSatisfied(1000);
 		final var desadvOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
 		assertThat(desadvOutput)
-				.isEqualTo(contentOf(new File("./src/test/resources/de/metas/edi/esb/desadvexport/compudata/DESADV_expected_output.txt")));
+				.isEqualTo(contentOf(new File("./src/test/resources/de/metas/edi/esb/desadvexport/compudata/DESADV_as_ordered_expected_output.txt")));
+	}
+
+	@Test
+	void desadv_as_differing_qties() throws Exception
+	{
+		// given
+		SystemTime.setTimeSource(() -> Instant.parse("2021-02-07T20:35:30.00Z").toEpochMilli());
+
+		final var inputStr = CompudataDesadvRouteTest.class.getResourceAsStream("/de/metas/edi/esb/desadvexport/compudata/DESADV_differing_qties.xml");
+		assertThat(inputStr).isNotNull();
+
+		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+		final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+		final JAXBElement<EDIExpDesadvType> inputXml = (JAXBElement)unmarshaller.unmarshal(inputStr);
+
+		final Exchange exchange = new DefaultExchange(template.getCamelContext());
+
+		final var numberFormat = NumberFormat.getInstance();
+		numberFormat.setGroupingUsed(false);
+
+		exchange.setProperty(Constants.DECIMAL_FORMAT, numberFormat);
+		exchange.getIn().setBody(inputXml.getValue());
+		exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_OriginalXMLBody, inputXml.getValue());
+
+		// when
+		template.send(
+				CompuDataDesadvRoute.EP_EDI_COMPUDATA_DESADV_CONSUMER /*endpoint-URI*/,
+				exchange);
+
+		// then
+		fileOutputEndpoint.expectedMessageCount(1);
+		fileOutputEndpoint.assertIsSatisfied(1000);
+		final var desadvOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
+		assertThat(desadvOutput)
+				.isEqualTo(contentOf(new File("./src/test/resources/de/metas/edi/esb/desadvexport/compudata/DESADV_differing_qties_expected_output.txt")));
 	}
 }

@@ -20,6 +20,7 @@
         <module>core</module>
         <module>alberta</module>
         <module>common</module>
+        <module>de-metas-camel-shopware6</module>
     </modules>
 
 </project>
