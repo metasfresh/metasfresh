@@ -32,11 +32,9 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.process.IProcessPreconditionsContext;
 import lombok.NonNull;
-import org.springframework.util.CollectionUtils;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class InvokeShopware6Action extends InvokeExternalSystemProcess
 {
@@ -51,19 +49,10 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		}
 		else
 		{
-			final Set<Integer> selectedRecordIds = getSelectedIncludedRecordIds(I_ExternalSystem_Config_Shopware6.class);
-
-			// note: we can blindly get the first I_ExternalSystem_Config_Shopware6, because the checkPreconditionsApplicable impl made sure there is exactly one selected or in db
-			if (CollectionUtils.isEmpty(selectedRecordIds))
-			{
-				id = externalSystemConfigDAO.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()), getExternalSystemType())
-						.get().getId().getRepoId();
-			}
-			else
-			{
-				id = selectedRecordIds.stream().findFirst().get();
-			}
+			id = externalSystemConfigDAO.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()), getExternalSystemType())
+					.get().getId().getRepoId();
 		}
+
 		return ExternalSystemShopware6ConfigId.ofRepoId(id);
 	}
 
