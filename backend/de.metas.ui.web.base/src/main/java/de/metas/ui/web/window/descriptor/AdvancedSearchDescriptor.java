@@ -33,9 +33,9 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class AdvancedSearchDescriptor
 {
-	public static AdvancedSearchDescriptor of(final String tableName, final int newRecordWindowId, final AdvancedSearchSelectionProcessor processor)
+	public static AdvancedSearchDescriptor of(final String tableName, final int advSearchWindowId, final AdvancedSearchSelectionProcessor processor)
 	{
-		return new AdvancedSearchDescriptor(tableName, newRecordWindowId, processor);
+		return new AdvancedSearchDescriptor(tableName, advSearchWindowId, processor);
 	}
 
 	public interface AdvancedSearchSelectionProcessor

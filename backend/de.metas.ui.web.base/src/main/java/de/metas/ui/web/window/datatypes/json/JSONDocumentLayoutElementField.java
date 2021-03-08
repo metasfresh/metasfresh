@@ -241,8 +241,8 @@ public final class JSONDocumentLayoutElementField
 		final DocumentEntityDescriptor advancedSearchEntityDescriptor = findAdvancedSearchEntityDescriptor(fieldDescriptor.getLookupTableName().orElse(null), jsonOpts);
 		if (advancedSearchEntityDescriptor != null)
 		{
-			advSearchWindowId = newRecordEntityDescriptor.getDocumentTypeId().toJson();
-			advSearchCaption = newRecordEntityDescriptor.getCaption().translate(jsonOpts.getAdLanguage());
+			advSearchWindowId = advancedSearchEntityDescriptor.getDocumentTypeId().toJson();
+			advSearchCaption = advancedSearchEntityDescriptor.getCaption().translate(jsonOpts.getAdLanguage());
 		}
 		else
 		{

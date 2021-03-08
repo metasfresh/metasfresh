@@ -47,12 +47,12 @@ public class AdvancedSearchDescriptorsProvider
 	@Autowired
 	private DocumentDescriptorFactory documentDescriptors;
 
-	private final ConcurrentHashMap<String, AdvancedSearchDescriptor> newRecordDescriptorsByTableName = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, AdvancedSearchDescriptor> advSearchDescriptorsByTableName = new ConcurrentHashMap<>();
 
 	AdvancedSearchDescriptorsProvider()
 	{
 		// FIXME: hardcoded AdvancedSearchDescriptor for C_BPartner_Adv_Search_v
-		addNewRecordDescriptor(AdvancedSearchDescriptor.of(
+		addAdvancedSearchDescriptor(AdvancedSearchDescriptor.of(
 				I_C_BPartner.Table_Name //
 				, 541045 // AD_Window_ID
 				, (document, idStr) -> {
@@ -64,14 +64,14 @@ public class AdvancedSearchDescriptorsProvider
 				}));
 	}
 
-	public void addNewRecordDescriptor(final AdvancedSearchDescriptor searchDescriptor)
+	public void addAdvancedSearchDescriptor(final AdvancedSearchDescriptor searchDescriptor)
 	{
-		newRecordDescriptorsByTableName.put(searchDescriptor.getTableName(), searchDescriptor);
+		advSearchDescriptorsByTableName.put(searchDescriptor.getTableName(), searchDescriptor);
 	}
 
 	public AdvancedSearchDescriptor getAdvancedSearchDescriptorOrNull(final String tableName)
 	{
-		return newRecordDescriptorsByTableName.get(tableName);
+		return advSearchDescriptorsByTableName.get(tableName);
 	}
 
 	/**
@@ -82,7 +82,7 @@ public class AdvancedSearchDescriptorsProvider
 	{
 		final int windowIdValue = windowId.toInt();
 
-		return newRecordDescriptorsByTableName.values()
+		return advSearchDescriptorsByTableName.values()
 				.stream()
 				.filter(descriptor -> windowIdValue == descriptor.getWindowId())
 				.findFirst()
@@ -92,19 +92,19 @@ public class AdvancedSearchDescriptorsProvider
 	@Nullable
 	public DocumentEntityDescriptor getAdvancedSearchDescriptorIfAvailable(final String tableName)
 	{
-		final AdvancedSearchDescriptor newRecordDescriptor = getAdvancedSearchDescriptorOrNull(tableName);
-		if (newRecordDescriptor == null)
+		final AdvancedSearchDescriptor descriptor = getAdvancedSearchDescriptorOrNull(tableName);
+		if (descriptor == null)
 		{
 			return null;
 		}
 
 		try
 		{
-			return documentDescriptors.getDocumentEntityDescriptor(newRecordDescriptor.getWindowId());
+			return documentDescriptors.getDocumentEntityDescriptor(descriptor.getWindowId());
 		}
 		catch (final Exception ex)
 		{
-			logger.warn("Failed fetching document entity descriptor for {}. Ignored", newRecordDescriptor, ex);
+			logger.warn("Failed fetching document entity descriptor for {}. Ignored", descriptor, ex);
 			return null;
 		}
 	}
