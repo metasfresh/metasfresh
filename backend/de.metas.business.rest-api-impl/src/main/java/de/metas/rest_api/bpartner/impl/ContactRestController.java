@@ -62,7 +62,10 @@ import lombok.NonNull;
  * #L%
  */
 
-@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/contact")
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/contact",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/contact",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/contact" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ContactRestController

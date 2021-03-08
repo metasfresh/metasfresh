@@ -40,14 +40,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = RemittanceAdviceRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/payment",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/payment",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/payments" })
 @Profile(Profiles.PROFILE_App)
 public class RemittanceAdviceRestController
 {
-
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/payment";
-
-	private static final transient Logger logger = LogManager.getLogger(RemittanceAdviceRestController.class);
 	private final CreateRemittanceAdviceService createRemittanceAdviceService;
 
 	public RemittanceAdviceRestController(

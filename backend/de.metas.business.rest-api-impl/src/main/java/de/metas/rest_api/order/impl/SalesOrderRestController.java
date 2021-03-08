@@ -72,12 +72,13 @@ import lombok.NonNull;
  */
 
 @RestController
-@RequestMapping(SalesOrderRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/sales/order",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/orders/sales" })
 @Profile(Profiles.PROFILE_App)
 public class SalesOrderRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order";
-
 	private final AttachmentEntryService attachmentEntryService;
 
 	public SalesOrderRestController(@NonNull final AttachmentEntryService attachmentEntryService)

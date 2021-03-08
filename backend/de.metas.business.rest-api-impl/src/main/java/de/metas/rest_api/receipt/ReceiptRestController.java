@@ -45,14 +45,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RequestMapping(ReceiptRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/receipt",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/receipt",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/receipts" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ReceiptRestController
 {
 	private static final Logger log = LogManager.getLogger(ReceiptRestController.class);
-
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/receipt";
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 

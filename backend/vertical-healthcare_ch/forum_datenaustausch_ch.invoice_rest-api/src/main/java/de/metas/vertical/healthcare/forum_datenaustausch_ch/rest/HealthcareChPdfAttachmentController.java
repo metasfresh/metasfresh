@@ -6,6 +6,7 @@ import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT
 
 import java.io.IOException;
 
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +51,10 @@ import lombok.NonNull;
  */
 
 @RestController
-@RequestMapping(RestApiConstants.ENDPOINT_PDF_ATTACHMENT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/forum-datenaustausch.ch",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/forum-datenaustausch.ch",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/forum-datenaustausch.ch" })
 @Conditional(RestApiStartupCondition.class)
 @Api(tags = { "forum-datenaustausch.ch XML endpoint" })
 public class HealthcareChPdfAttachmentController

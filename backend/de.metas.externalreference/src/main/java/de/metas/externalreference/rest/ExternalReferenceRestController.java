@@ -38,7 +38,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/externalRef")
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/externalRef",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/externalRef",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/externalRefs" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ExternalReferenceRestController

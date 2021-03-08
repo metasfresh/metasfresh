@@ -51,20 +51,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = ExternalSystemRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/externalsystem",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/externalsystem",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/externalsystem" })
 @Profile(Profiles.PROFILE_App)
 public class ExternalSystemRestController
 {
-
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/externalsystem";
-
 	private final ExternalSystemService externalSystemService;
-	private final ProcessService processService;
 
-	public ExternalSystemRestController(final ExternalSystemService externalSystemService, final ProcessService processService)
+	public ExternalSystemRestController(final ExternalSystemService externalSystemService)
 	{
 		this.externalSystemService = externalSystemService;
-		this.processService = processService;
 	}
 
 	@ApiOperation("Invoke an external system.")

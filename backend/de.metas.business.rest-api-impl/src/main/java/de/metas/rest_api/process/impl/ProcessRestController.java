@@ -70,13 +70,14 @@ import java.util.stream.Collectors;
  * This is the rest controller used when processes are invoked via REST-API on the app-server (ServerRoot).
  */
 @RestController
-@RequestMapping(ProcessRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/process",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/process",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/processes" })
 @Profile(Profiles.PROFILE_App)
 public class ProcessRestController
 {
 	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
-
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/process";
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();

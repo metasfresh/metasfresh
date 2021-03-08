@@ -36,10 +36,6 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 
 public interface OrderCandidatesRestEndpoint
 {
-	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order/candidates";
-
-	String PATH_BULK = "/bulk";
-
 	ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidate(JsonOLCandCreateRequest request);
 
 	ResponseEntity<JsonOLCandCreateBulkResponse> createOrderLineCandidates(JsonOLCandCreateBulkRequest bulkRequest);

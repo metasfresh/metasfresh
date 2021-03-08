@@ -34,11 +34,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(PaymentRestEndpointImpl.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/payment",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/payment",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/payments" })
 @Profile(Profiles.PROFILE_App)
 public class PaymentRestEndpointImpl
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/payment";
 	private final JsonPaymentService jsonPaymentService;
 
 	public PaymentRestEndpointImpl(final JsonPaymentService jsonPaymentService)
