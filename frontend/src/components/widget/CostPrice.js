@@ -42,7 +42,7 @@ export default class CostPrice extends PureComponent {
         {editMode && (
           <input
             {...this.props}
-            onBlur={(e) => this.localOnBlur(e)}
+            onBlur={this.localOnBlur}
             type="number"
             ref={this.costRef}
           />
