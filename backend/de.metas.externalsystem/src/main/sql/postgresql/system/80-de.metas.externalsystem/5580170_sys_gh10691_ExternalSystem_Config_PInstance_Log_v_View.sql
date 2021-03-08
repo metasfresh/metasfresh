@@ -15,13 +15,6 @@ SELECT pi.ad_process_id,
        pi.ad_pinstance_id,
        pi.isprocessing,
        pi.errormsg,
-       i.ad_issue_id,
-       i.issuesummary,
-       CASE
-           WHEN i.ad_issue_id is not null
-               OR pi.errormsg is not null THEN 'Error'
-           ELSE 'Info'
-       END as type,
        now() as created,
        100 as createdby,
        now() as updated,
@@ -31,7 +24,6 @@ FROM ad_pinstance pi
          JOIN ad_pinstance_para pip_request ON pi.ad_pinstance_id = pip_request.ad_pinstance_id AND pip_request.parametername = 'External_Request'
          LEFT JOIN ad_pinstance_para pip_config ON pi.ad_pinstance_id = pip_config.ad_pinstance_id AND pip_config.parametername = 'ChildConfigId'
          JOIN ad_pinstance_log pil ON pil.ad_pinstance_id = pi.ad_pinstance_id
-         JOIN ad_issue i on i.ad_pinstance_id = pi.ad_pinstance_id
 WHERE pi.AD_Table_ID = get_table_id('ExternalSystem_Config') /*AD_Table_ID is not set then the process was called from AD_Scheduler */
    OR pip_config.parametername = 'ChildConfigId'
 ;
