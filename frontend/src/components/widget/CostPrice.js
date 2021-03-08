@@ -2,10 +2,8 @@ import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 
 export default class CostPrice extends PureComponent {
-
   render() {
-    
-    console.log(this.props);
+    // console.log(this.props);
 
     return (
       <div>
@@ -16,4 +14,5 @@ export default class CostPrice extends PureComponent {
 }
 
 CostPrice.propTypes = {
+  onChange: PropTypes.func.isRequired,
 };
