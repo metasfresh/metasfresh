@@ -105,7 +105,8 @@ public class BPartnerUpsertRequestProducer
 			@Nullable final NursingService nursingService,
 			@Nullable final NursingHome nursingHome,
 			@Nullable final Doctor doctor,
-			@Nullable final Payer payer, @Nullable final Pharmacy pharmacy)
+			@Nullable final Payer payer,
+			@Nullable final Pharmacy pharmacy)
 	{
 		if (patient.getId() == null)
 		{
