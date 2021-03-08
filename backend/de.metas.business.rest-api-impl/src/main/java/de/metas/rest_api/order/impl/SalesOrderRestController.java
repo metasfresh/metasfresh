@@ -76,7 +76,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 public class SalesOrderRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/sales/order";
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order";
 
 	private final AttachmentEntryService attachmentEntryService;
 

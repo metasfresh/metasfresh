@@ -36,7 +36,7 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 
 public interface IInvoicesRestEndpoint
 {
-	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/invoices/";
+	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/invoices/";
 
 	ResponseEntity<JsonCreateInvoiceCandidatesResponse> createInvoiceCandidates(JsonCreateInvoiceCandidatesRequest request);
 

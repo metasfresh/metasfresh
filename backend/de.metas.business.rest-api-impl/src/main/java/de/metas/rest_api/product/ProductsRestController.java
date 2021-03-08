@@ -43,7 +43,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 public class ProductsRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/products";
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/products";
 
 	private static final Logger logger = LogManager.getLogger(ProductsRestController.class);
 	private final ProductsServicesFacade productsServicesFacade;

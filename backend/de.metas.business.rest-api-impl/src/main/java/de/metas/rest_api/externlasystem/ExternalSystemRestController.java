@@ -56,7 +56,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ExternalSystemRestController
 {
 
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/externalsystem";
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/externalsystem";
 
 	private final ExternalSystemService externalSystemService;
 	private final ProcessService processService;

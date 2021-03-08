@@ -31,7 +31,6 @@ import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -39,7 +38,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API + "/externalRef")
+@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/externalRef")
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ExternalReferenceRestController

@@ -48,7 +48,7 @@ import io.swagger.annotations.ApiParam;
 //the spelling "Bpartner.." is to avoid swagger spelling it "b-partner-prod.."
 public class BpartnerProductRestController
 {
-	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartnerProducts";
+	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/bpartnerProducts";
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IBPartnerProductDAO bpartnerProductsRepo = Services.get(IBPartnerProductDAO.class);

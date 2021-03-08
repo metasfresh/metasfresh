@@ -52,7 +52,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 public class SalesInvoicePaymentStatusRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/sales/invoice/paymentstatus";
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/invoice/paymentstatus";
 
 	private SalesInvoicePaymentStatusRepository salesInvoicePaymentStatusRepository;
 

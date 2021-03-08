@@ -47,7 +47,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 public class ShipmentCandidatesRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/shipments";
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/shipments";
 
 	private final ShipmentCandidateAPIService shipmentCandidateAPIService;
 

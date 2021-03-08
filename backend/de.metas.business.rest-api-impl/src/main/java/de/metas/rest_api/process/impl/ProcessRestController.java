@@ -76,7 +76,7 @@ public class ProcessRestController
 {
 	private static final transient Logger logger = LogManager.getLogger(ADProcessDAO.class);
 
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/process";
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/process";
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();

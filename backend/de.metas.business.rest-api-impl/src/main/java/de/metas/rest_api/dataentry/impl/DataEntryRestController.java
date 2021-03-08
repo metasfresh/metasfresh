@@ -51,7 +51,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 public class DataEntryRestController
 {
-	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/dataentry";
+	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/dataentry";
 
 	private static final transient Logger log = LogManager.getLogger(DataEntryRestController.class);
 

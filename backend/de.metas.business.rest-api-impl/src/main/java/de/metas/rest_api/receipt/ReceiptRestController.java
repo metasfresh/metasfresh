@@ -52,7 +52,7 @@ public class ReceiptRestController
 {
 	private static final Logger log = LogManager.getLogger(ReceiptRestController.class);
 
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/receipt";
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/receipt";
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 

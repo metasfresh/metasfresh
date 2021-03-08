@@ -52,7 +52,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile(Profiles.PROFILE_App)
 public class ShipmentRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/shipment";
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/shipment";
 
 	private static final Logger log = LogManager.getLogger(ShipmentRestController.class);
 

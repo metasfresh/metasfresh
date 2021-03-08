@@ -53,7 +53,7 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 public class ManufacturingOrderRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/manufacturing/orders";
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/manufacturing/orders";
 
 	private final ManufacturingOrderAPIService manufacturingOrderAPIService;
 

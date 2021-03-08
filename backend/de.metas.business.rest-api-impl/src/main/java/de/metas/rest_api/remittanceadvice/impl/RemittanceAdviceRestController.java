@@ -45,7 +45,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RemittanceAdviceRestController
 {
 
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/payment";
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/payment";
 
 	private static final transient Logger logger = LogManager.getLogger(RemittanceAdviceRestController.class);
 	private final CreateRemittanceAdviceService createRemittanceAdviceService;

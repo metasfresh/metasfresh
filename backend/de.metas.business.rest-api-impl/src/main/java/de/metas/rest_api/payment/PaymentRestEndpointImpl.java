@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile(Profiles.PROFILE_App)
 public class PaymentRestEndpointImpl
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/payment";
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/payment";
 	private final JsonPaymentService jsonPaymentService;
 
 	public PaymentRestEndpointImpl(final JsonPaymentService jsonPaymentService)

@@ -55,7 +55,7 @@ import static de.metas.rest_api.bpartner.impl.BpartnerRestController.ORG_CODE_PA
 // the spelling "Bpartner" is to avoid swagger from spelling it "b-partner-rest.."
 public class BpartnerRelationRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartner/relation";
+	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/bpartner/relation";
 	private final BPRelationsService bpRelationsService;
 
 	public BpartnerRelationRestController(@NonNull final BPRelationsService bpRelationsService)

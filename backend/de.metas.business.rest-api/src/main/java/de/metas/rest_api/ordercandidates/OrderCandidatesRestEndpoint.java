@@ -36,7 +36,7 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 
 public interface OrderCandidatesRestEndpoint
 {
-	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/sales/order/candidates";
+	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order/candidates";
 
 	String PATH_BULK = "/bulk";
 
