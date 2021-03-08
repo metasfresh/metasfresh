@@ -27,6 +27,7 @@ import Lookup from './Lookup/Lookup';
 import Switch from './Switch';
 import Amount from './Amount';
 import Password from './Password';
+import CostPrice from './CostPrice';
 
 class WidgetRenderer extends PureComponent {
   constructor(props) {
@@ -437,7 +438,10 @@ class WidgetRenderer extends PureComponent {
       case 'CostPrice':
         return (
           <div className={classnames(this.getClassNames(), 'number-field')}>
-            <input {...widgetProperties} type="number" />
+            <CostPrice
+              {...widgetProperties}
+              precision={widgetData[0].precision}
+            />
           </div>
         );
       case 'YesNo':
