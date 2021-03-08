@@ -80,7 +80,7 @@ public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends JavaProc
 				.map(discBreak -> ProductId.ofRepoId(discBreak.getM_Product_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 
-		if (breaks.size() > 0)
+		if (breaks.size() > 1)
 		{
 			return ProcessPreconditionsResolution.reject();
 		}
