@@ -145,7 +145,8 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 			final Optional<IExternalSystemChildConfig> childConfig =
 					externalSystemConfigDAO.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()), getExternalSystemType());
 
-			if(!childConfig.isPresent()){
+			if (!childConfig.isPresent())
+			{
 				return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getTabName()));
 			}
 		}

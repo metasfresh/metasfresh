@@ -272,31 +272,4 @@ class ExternalSystemConfigRepoTest
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Shopware6_ID());
 		expect(result).toMatchSnapshot();
 	}
-
-	@Test
-	void externalSystem_Config_toTableRecordReference(){
-		final ExternalSystemShopware6Config childConfig = ExternalSystemShopware6Config.builder()
-				.baseUrl("test")
-				.clientId("test")
-				.clientSecret("test")
-				.id(ExternalSystemShopware6ConfigId.ofRepoId(10001))
-				.parentId(ExternalSystemParentConfigId.ofRepoId(10000))
-				.build();
-
-		final ExternalSystemParentConfig parentConfig = ExternalSystemParentConfig.builder()
-				.id(ExternalSystemParentConfigId.ofRepoId(10000))
-				.type(ExternalSystemType.Shopware6)
-				.childConfig(childConfig)
-				.camelUrl("test")
-				.name("test")
-				.build();
-
-		final ITableRecordReference tableRecordReference = externalSystemConfigRepo.toTableRecordReference(parentConfig);
-
-		assertThat(tableRecordReference).isNotNull();
-		assertThat(tableRecordReference.getTableName()).isEqualTo(I_ExternalSystem_Config.Table_Name);
-		assertThat(tableRecordReference.getRecord_ID()).isEqualTo(parentConfig.getId().getRepoId());
-
-
-	}
 }

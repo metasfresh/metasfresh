@@ -34,8 +34,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -89,11 +87,6 @@ public class ExternalSystemConfigRepo
 		}
 	}
 
-	public ITableRecordReference toTableRecordReference(@NonNull final ExternalSystemParentConfig externalSystemParentConfig)
-	{
-		return TableRecordReference.of(I_ExternalSystem_Config.Table_Name, externalSystemParentConfig.getId());
-	}
-
 	@NonNull
 	private Optional<I_ExternalSystem_Config_Alberta> getAlbertaConfigByValue(@NonNull final String value)
 	{
@@ -117,7 +110,7 @@ public class ExternalSystemConfigRepo
 	@NonNull
 	private Optional<IExternalSystemChildConfig> getAlbertaConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
 	{
-		 return queryBL.createQueryBuilder(I_ExternalSystem_Config_Alberta.class)
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Alberta.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ExternalSystem_Config_Alberta.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
 				.create()
@@ -126,7 +119,7 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private Optional<IExternalSystemChildConfig>  getShopware6ConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	private Optional<IExternalSystemChildConfig> getShopware6ConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6.class)
 				.addOnlyActiveRecordsFilter()
