@@ -370,5 +370,30 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_Field SET DisplayLength=255, SpanX=999,Updated=TO_TIMESTAMP('2021-03-05 16:57:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=635061
 ;
 
+-- 2021-03-08T07:38:53.398Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Window SET AD_Element_ID=573791, Description=NULL, Help=NULL, Name='Alle nicht Fertiggestellten Belege',Updated=TO_TIMESTAMP('2021-03-08 09:38:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Window_ID=540276
+;
+
+-- 2021-03-08T07:38:53.428Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_window_translation_from_ad_element(573791)
+;
+
+-- 2021-03-08T07:38:53.439Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Window_ID=540276
+;
+
+-- 2021-03-08T07:38:53.445Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Window(540276)
+;
+
+-- 2021-03-08T07:43:14.014Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET DisplayLogic='@AD_Issue_ID/0@>0',Updated=TO_TIMESTAMP('2021-03-08 09:43:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=632158
+;
+
 
 
