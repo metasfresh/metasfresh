@@ -119,13 +119,13 @@ public class JSONDocumentLayoutOptions
 		public String toString()
 		{
 			return "basic layout elements";
-		};
+		}
 
 		@Override
 		public boolean test(final DocumentLayoutElementDescriptor layoutElement)
 		{
 			return !layoutElement.isAdvancedField();
-		};
+		}
 	};
 
 	private static final Predicate<DocumentLayoutElementDescriptor> FILTER_DocumentLayoutElementDescriptor_ALL = new Predicate<DocumentLayoutElementDescriptor>()
@@ -134,13 +134,13 @@ public class JSONDocumentLayoutOptions
 		public String toString()
 		{
 			return "all layout elements";
-		};
+		}
 
 		@Override
 		public boolean test(final DocumentLayoutElementDescriptor layoutElement)
 		{
 			return true;
-		};
+		}
 	};
 
 	public String getAdLanguage()

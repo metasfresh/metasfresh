@@ -56,8 +56,8 @@ public class AdvancedSearchDescriptorsProvider
 				I_C_BPartner.Table_Name //
 				, 541045 // AD_Window_ID
 				, (document, idStr) -> {
-					Integer locId = Integer.parseInt(idStr);
-					I_C_BPartner_Location loc = InterfaceWrapperHelper.load(locId, I_C_BPartner_Location.class);
+					final int locId = Integer.parseInt(idStr);
+					final I_C_BPartner_Location loc = InterfaceWrapperHelper.load(locId, I_C_BPartner_Location.class);
 					Check.assumeNotNull(loc, "Cannot find C_BPartner_Location for ID: " + idStr);
 					document.processValueChange(I_C_Order.COLUMNNAME_C_BPartner_Location_ID, loc.getC_BPartner_Location_ID(), null, false);
 					document.processValueChange(I_C_Order.COLUMNNAME_C_BPartner_ID, loc.getC_BPartner_ID(), null, false);
