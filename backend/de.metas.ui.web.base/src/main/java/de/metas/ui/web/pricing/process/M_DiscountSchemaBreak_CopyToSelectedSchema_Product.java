@@ -69,6 +69,21 @@ public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends JavaProc
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
+		
+		
+
+		final PlainContextAware localCtx = PlainContextAware.newWithThreadInheritedTrx(getCtx());
+		
+		final Set<ProductId> breaks = getProcessInfo().getSelectedIncludedRecords()
+				.stream()
+				.map(recordRef -> recordRef.getModel(localCtx, I_M_DiscountSchemaBreak_V.class))
+				.map(discBreak -> ProductId.ofRepoId(discBreak.getM_Product_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (breaks.size() > 0)
+		{
+			return ProcessPreconditionsResolution.reject();
+		}
 
 		return ProcessPreconditionsResolution.accept();
 	}	
