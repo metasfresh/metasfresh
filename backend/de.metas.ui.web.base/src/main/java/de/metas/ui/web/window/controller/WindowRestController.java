@@ -60,10 +60,12 @@ import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChangeLogService;
+import de.metas.ui.web.window.model.DocumentChangesCollector;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
@@ -113,6 +115,7 @@ public class WindowRestController
 	private final DocumentCollection documentCollection;
 	private final DocumentChangeLogService documentChangeLogService;
 	private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
+	private final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider;
 	private final ProcessRestController processRestController;
 	private final DocumentWebsocketPublisher websocketPublisher;
 	private final CommentsService commentsService;
@@ -122,6 +125,7 @@ public class WindowRestController
 			@NonNull final DocumentCollection documentCollection,
 			@NonNull final DocumentChangeLogService documentChangeLogService,
 			@NonNull final NewRecordDescriptorsProvider newRecordDescriptorsProvider,
+			@NonNull final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider,
 			@NonNull final ProcessRestController processRestController,
 			@NonNull final DocumentWebsocketPublisher websocketPublisher,
 			@NonNull final CommentsService commentsService)
@@ -130,6 +134,7 @@ public class WindowRestController
 		this.documentCollection = documentCollection;
 		this.documentChangeLogService = documentChangeLogService;
 		this.newRecordDescriptorsProvider = newRecordDescriptorsProvider;
+		this.advancedSearchDescriptorsProvider = advancedSearchDescriptorsProvider;
 		this.processRestController = processRestController;
 		this.websocketPublisher = websocketPublisher;
 		this.commentsService = commentsService;
@@ -143,7 +148,8 @@ public class WindowRestController
 	private JSONDocumentLayoutOptionsBuilder newJSONLayoutOptions()
 	{
 		return JSONDocumentLayoutOptions.prepareFrom(userSession)
-				.newRecordDescriptorsProvider(newRecordDescriptorsProvider);
+				.newRecordDescriptorsProvider(newRecordDescriptorsProvider)
+				.advancedSearchDescriptorsProvider(advancedSearchDescriptorsProvider);
 	}
 
 	private JSONDocumentOptionsBuilder newJSONDocumentOptions()
@@ -909,6 +915,39 @@ public class WindowRestController
 					.getProcessor()
 					.processNewRecordDocument(document);
 		}));
+	}
+
+	@GetMapping("/{windowId}/{documentId}/advSearch/{advSearchWindowId}/{selectionId}")
+	public List<JSONDocument> advSearchResult(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("advSearchWindowId") final String advSearchWindowIdStr,
+			@PathVariable("selectionId") final String selectionIdStr
+	)
+	{
+		userSession.assertLoggedIn();
+
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
+
+		return Execution.callInNewExecution("window.advSearch", () -> advSearchResult0(WindowId.fromJson(advSearchWindowIdStr), selectionIdStr, documentPath));
+	}
+
+	@Nullable
+	private List<JSONDocument> advSearchResult0(final WindowId windowId, final String selectionIdStr, final DocumentPath documentPath)
+	{
+		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions().build();
+
+		 documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
+			advancedSearchDescriptorsProvider.getAdvancedSearchDescriptor(windowId)
+					.getProcessor()
+					.processSelection(document, selectionIdStr);
+			return null;
+		});
+		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
+		websocketPublisher.convertAndPublish(jsonDocumentEvents);
+		return jsonDocumentEvents;
 	}
 
 	@PostMapping("/{windowId}/{documentId}/discardChanges")
