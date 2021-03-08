@@ -8,6 +8,11 @@ export default class CostPrice extends PureComponent {
     this.state = { editMode: false };
   }
 
+  /**
+   * @method localOnBlur
+   * @summary - proxy onBlur that also sets the visibility before passing further the event to the onBlur function from the props
+   * @param {DOM event} e
+   */
   localOnBlur = (e) => {
     const { onBlur } = this.props;
     this.setState({ editMode: false });
