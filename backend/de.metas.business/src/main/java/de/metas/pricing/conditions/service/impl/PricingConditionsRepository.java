@@ -585,31 +585,12 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		}
 	}
 	
-	
-	private  List<PricingConditionsBreak> fetchMatchingPricingConditionBreakValue(@NonNull PricingConditionsBreak sourceBreak, @NonNull final List<PricingConditionsBreak> exitentBreaks)
-	{
-		final List<PricingConditionsBreak> matchedBreaks = new ArrayList<PricingConditionsBreak>();
-		
-		for (final PricingConditionsBreak discountSchemaBreak : exitentBreaks)
-		{
-			final BigDecimal sourceBreakValue = sourceBreak.getMatchCriteria().getBreakValue();
-			
-			if (sourceBreakValue.equals(discountSchemaBreak.getMatchCriteria().getBreakValue()))
-			{
-				matchedBreaks.add(discountSchemaBreak);
-			}
-		}
-		
-		return matchedBreaks;
-	}
-	
 
 	private void copyFromGivenSchemaAndProductToSelection(@NonNull CopyDiscountSchemaBreaksRequest request)
 	{
 		
 		final PricingConditionsId pPricingConditionsId = request.getPricingConditionsId();
 		final ProductId productId = request.getProductId();
-		final boolean allowCopyToSameSchema = request.isAllowCopyToSameSchema();
 		final IQueryFilter<I_M_DiscountSchemaBreak> filter = request.getFilter();
 		
 		//
@@ -618,12 +599,6 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				.setJoinAnd()
 				.addEqualsFilter(I_M_DiscountSchemaBreak.COLUMN_M_DiscountSchema_ID, pPricingConditionsId)
 				.addEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_Product_ID, productId);
-
-		if (!allowCopyToSameSchema)
-		{
-			breaksForGivenPorductAndPricingConditions
-					.addNotEqualsFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, pPricingConditionsId.getRepoId());
-		}
 
 		final List<PricingConditionsBreak> sourceDiscountSchemaBreaks = retrieveDiscountSchemaBreakRecords(breaksForGivenPorductAndPricingConditions);
 
@@ -744,6 +719,24 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		{
 			updateDiscountSchemaBreakRecords(schemaBreak, discountSchemaBreaksToUpdate.get(schemaBreak));
 		}
+	}
+	
+	
+	private  List<PricingConditionsBreak> fetchMatchingPricingConditionBreakValue(@NonNull PricingConditionsBreak sourceBreak, @NonNull final List<PricingConditionsBreak> exitentBreaks)
+	{
+		final List<PricingConditionsBreak> matchedBreaks = new ArrayList<PricingConditionsBreak>();
+		
+		for (final PricingConditionsBreak discountSchemaBreak : exitentBreaks)
+		{
+			final BigDecimal sourceBreakValue = sourceBreak.getMatchCriteria().getBreakValue();
+			
+			if (sourceBreakValue.equals(discountSchemaBreak.getMatchCriteria().getBreakValue()))
+			{
+				matchedBreaks.add(discountSchemaBreak);
+			}
+		}
+		
+		return matchedBreaks;
 	}
 	
 	private  PricingConditionsBreak fetchMatchingPricingConditionBreak(@NonNull PricingConditionsBreak sourceBreak, @NonNull final List<PricingConditionsBreak> exitentBreaks)
