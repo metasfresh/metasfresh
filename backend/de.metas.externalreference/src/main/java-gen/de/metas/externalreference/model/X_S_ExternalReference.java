@@ -140,6 +140,10 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_TimeBookingID = "TimeBookingID";
 	/** MilestoneId = MilestonId */
 	public static final String TYPE_MilestoneId = "MilestonId";
+	/** BPartner = BPartner */
+	public static final String TYPE_Bpartner = "BPartner";
+	/** BPartnerLocation = BPartnerLocation */
+	public static final String TYPE_BPartnerLocation = "BPartnerLocation";
 	@Override
 	public void setType (final java.lang.String Type)
 	{
