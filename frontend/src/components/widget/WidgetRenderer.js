@@ -436,11 +436,12 @@ class WidgetRenderer extends PureComponent {
         );
       case 'Number':
       case 'CostPrice':
-        console.log(widgetProperties);
         return (
           <div className={classnames(this.getClassNames(), 'number-field')}>
-            {/* <input {...widgetProperties} type="number" /> */}
-            <CostPrice {...widgetProperties} />
+            <CostPrice
+              {...widgetProperties}
+              precision={widgetData[0].precision}
+            />
           </div>
         );
       case 'YesNo':

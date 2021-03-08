@@ -1,13 +1,47 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-
+import { createAmount } from '../../utils/tableHelpers';
 export default class CostPrice extends PureComponent {
+  constructor(props) {
+    super(props);
+    this.costRef = React.createRef();
+    this.state = { editMode: false };
+  }
+
+  localOnBlur = (e) => {
+    const { onBlur } = this.props;
+    this.setState({ editMode: false });
+    onBlur(e);
+  };
+
   render() {
-    // console.log(this.props);
+    const { value, precision } = this.props;
+    const { editMode } = this.state;
 
     return (
       <div>
-        <input {...this.props} type="text" pattern="^[0-9.,']*$" />
+        {!editMode && (
+          <input
+            className="input-field js-input-field"
+            value={createAmount(value, precision)}
+            type="text"
+            onChange={() => false}
+            onFocus={() => {
+              this.setState({ editMode: true }, () => {
+                this.costRef.current.focus();
+              });
+            }}
+          />
+        )}
+
+        {editMode && (
+          <input
+            {...this.props}
+            onBlur={(e) => this.localOnBlur(e)}
+            type="number"
+            ref={this.costRef}
+          />
+        )}
       </div>
     );
   }
@@ -15,4 +49,7 @@ export default class CostPrice extends PureComponent {
 
 CostPrice.propTypes = {
   onChange: PropTypes.func.isRequired,
+  onBlur: PropTypes.func.isRequired,
+  value: PropTypes.string,
+  precision: PropTypes.number,
 };
