@@ -23,23 +23,102 @@
 package de.metas.contracts.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.copy;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Repository
 public class OrgChangeRepository
 {
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-	public boolean hasMembershipSubscriptions(final BPartnerId partnerId)
+	public boolean hasMembershipSubscriptions(final BPartnerId bPartnerId)
 	{
-		return false;
+		final IQuery<I_M_Product_Category> membershipCategoryQuery = getMembershipCategoryQuery();
+
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId)
+				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID,
+									 I_M_Product_Category.COLUMNNAME_M_Product_Category_ID,
+									 membershipCategoryQuery)
+				.create()
+				.anyMatch();
 	}
+
+	public boolean hasAnyMembershipProduct(final OrgId orgId)
+	{
+		final IQuery<I_M_Product_Category> membershipCategoryQuery = getMembershipCategoryQuery();
+		return queryBL.createQueryBuilder(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Org_ID, orgId)
+				.addInSubQueryFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID,
+									 I_M_Product_Category.COLUMNNAME_M_Product_Category_ID,
+									 membershipCategoryQuery)
+				.create()
+				.anyMatch();
+
+	}
+
+	private IQuery<I_M_Product_Category> getMembershipCategoryQuery()
+	{
+		final IQuery<I_M_Product_Category> membershipCategoryQuery = queryBL.createQueryBuilder(I_M_Product_Category.class)
+				.addInArrayFilter(I_M_Product_Category.COLUMNNAME_Value, "Membership") // todo: see if this can be cleaner
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_AD_Org_ID, 0)
+				.create();
+		return membershipCategoryQuery;
+	}
+	public BPartnerId retrieveOrCloneBPartner(final @NonNull OrgChangeParameters orgChangeParameters)
+	{
+
+		final I_C_BPartner bPartner = bpartnerDAO.getById(orgChangeParameters.getBpartnerId());
+
+		//bPartner.getOrgChangeMapping
+		return null;
+	}
+
+	private BPartnerId cloneBPartner(final @NonNull OrgChangeParameters orgChangeParameters)
+	{
+		final I_C_BPartner oldBpartner = bpartnerDAO.getById(orgChangeParameters.getBpartnerId());
+
+		final I_C_BPartner newBPartner = copy()
+				.setFrom(oldBpartner)
+
+				.addTargetColumnNameToSkip(I_C_BPartner.COLUMNNAME_AD_Org_ID)
+				.copyToNew(I_C_BPartner.class);
+
+		newBPartner.setAD_Org_ID(orgChangeParameters.getOrgToId().getRepoId());
+		save(newBPartner);
+
+		return BPartnerId.ofRepoId(newBPartner.getC_BPartner_ID());
+	}
+
+	public void cloneLocations(final @NonNull OrgChangeParameters orgChangeParameters,
+			final @NonNull BPartnerId newBPartnerId)
+	{
+		final List<I_C_BPartner_Location> i_c_bPartner_locations = bpartnerDAO.retrieveBPartnerLocations(orgChangeParameters.getBpartnerId());
+	}
+
+
 	// private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	//
 	// public OrgMappingId retrieveOrgMappingId(

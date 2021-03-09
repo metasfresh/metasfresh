@@ -22,15 +22,37 @@
 
 package de.metas.contracts.bpartner.service;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 @Service
 public class OrgChangeService
 {
+	final OrgChangeRepository repo;
+
+	public OrgChangeService(final @NonNull OrgChangeRepository repo)
+	{
+		this.repo = repo;
+	}
+
 	public void moveBPartnerToOrg(final OrgChangeParameters orgChangeParameters)
 	{
 
+		final BPartnerId newBPartnerId = repo.retrieveOrCloneBPartner(orgChangeParameters);
+
+	//	repo.cloneLocations(orgChangeParameters, newBPartnerId);
 
 	}
 
+	public boolean hasMembershipSubscriptions(final BPartnerId partnerId)
+	{
+		return repo.hasMembershipSubscriptions(partnerId);
+	}
+
+	public boolean hasAnyMembershipProduct(final OrgId orgId)
+	{
+		return repo.hasAnyMembershipProduct(orgId);
+	}
 }

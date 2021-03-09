@@ -46,6 +46,7 @@ package de.metas.contracts.bpartner.process;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.bpartner.service.OrgChangeParameters;
 import de.metas.contracts.bpartner.service.OrgChangeRepository;
+import de.metas.contracts.bpartner.service.OrgChangeService;
 import de.metas.organization.OrgId;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
@@ -74,7 +75,8 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 	@Param(parameterName = "IsShowMembershipParameter", mandatory = true)
 	private boolean isShowMembershipParameter;
 
-	final OrgChangeRepository repo = SpringContextHolder.instance.getBean(OrgChangeRepository.class);
+	//final OrgChangeRepository repo = SpringContextHolder.instance.getBean(OrgChangeRepository.class);
+	final OrgChangeService service = SpringContextHolder.instance.getBean(OrgChangeService.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -87,6 +89,8 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 				.membershipProductId(p_membershipProductId)
 				.orgToId(p_orgTargetId)
 				.build();
+
+		service.moveBPartnerToOrg(orgChangeParameters);
 
 		return MSG_OK;
 	}
@@ -109,7 +113,7 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 		{
 			final BPartnerId partnerId = BPartnerId.ofRepoId(getRecord_ID());
 
-			if (repo.hasMembershipSubscriptions(partnerId))
+			if (service.hasMembershipSubscriptions(partnerId) && service.hasAnyMembershipProduct(p_orgTargetId))
 			{
 				isShowMembershipParameter = true;
 			}
