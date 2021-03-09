@@ -5,51 +5,33 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_OLCandProcessor
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OLCandProcessor, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 894687494L;
+	private static final long serialVersionUID = -1082229742L;
 
     /** Standard Constructor */
-    public X_C_OLCandProcessor (Properties ctx, int C_OLCandProcessor_ID, String trxName)
+    public X_C_OLCandProcessor (final Properties ctx, final int C_OLCandProcessor_ID, final String trxName)
     {
       super (ctx, C_OLCandProcessor_ID, trxName);
-      /** if (C_OLCandProcessor_ID == 0)
-        {
-			setAD_User_InCharge_ID (0);
-			setC_DocTypeTarget_ID (0);
-			setC_OLCandProcessor_ID (0);
-			setC_PaymentTerm_ID (0);
-			setDeliveryRule (null); // F
-			setDeliveryViaRule (null); // S
-			setFreightCostRule (null);
-			setInvoiceRule (null); // I
-			setM_Shipper_ID (0);
-			setName (null);
-			setPaymentRule (null); // T
-        } */
     }
 
     /** Load Constructor */
-    public X_C_OLCandProcessor (Properties ctx, ResultSet rs, String trxName)
+    public X_C_OLCandProcessor (final Properties ctx, final ResultSet rs, final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
 	public org.compiere.model.I_AD_Scheduler getAD_Scheduler()
@@ -58,147 +40,96 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	}
 
 	@Override
-	public void setAD_Scheduler(org.compiere.model.I_AD_Scheduler AD_Scheduler)
+	public void setAD_Scheduler(final org.compiere.model.I_AD_Scheduler AD_Scheduler)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Scheduler_ID, org.compiere.model.I_AD_Scheduler.class, AD_Scheduler);
 	}
 
-	/** Set Ablaufsteuerung.
-		@param AD_Scheduler_ID 
-		Schedule Processes
-	  */
 	@Override
-	public void setAD_Scheduler_ID (int AD_Scheduler_ID)
+	public void setAD_Scheduler_ID (final int AD_Scheduler_ID)
 	{
 		if (AD_Scheduler_ID < 1) 
 			set_Value (COLUMNNAME_AD_Scheduler_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Scheduler_ID, Integer.valueOf(AD_Scheduler_ID));
+			set_Value (COLUMNNAME_AD_Scheduler_ID, AD_Scheduler_ID);
 	}
 
-	/** Get Ablaufsteuerung.
-		@return Schedule Processes
-	  */
 	@Override
-	public int getAD_Scheduler_ID () 
+	public int getAD_Scheduler_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Scheduler_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Scheduler_ID);
 	}
 
-	/** Set Betreuer.
-		@param AD_User_InCharge_ID 
-		Person, die bei einem fachlichen Problem vom System informiert wird.
-	  */
 	@Override
-	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID)
+	public void setAD_User_InCharge_ID (final int AD_User_InCharge_ID)
 	{
 		if (AD_User_InCharge_ID < 1) 
 			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_User_InCharge_ID, Integer.valueOf(AD_User_InCharge_ID));
+			set_Value (COLUMNNAME_AD_User_InCharge_ID, AD_User_InCharge_ID);
 	}
 
-	/** Get Betreuer.
-		@return Person, die bei einem fachlichen Problem vom System informiert wird.
-	  */
 	@Override
-	public int getAD_User_InCharge_ID () 
+	public int getAD_User_InCharge_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_InCharge_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_User_InCharge_ID);
 	}
 
-	/** Set Zielbelegart.
-		@param C_DocTypeTarget_ID 
-		Zielbelegart für die Umwandlung von Dokumenten
-	  */
 	@Override
-	public void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID)
+	public void setC_DocTypeTarget_ID (final int C_DocTypeTarget_ID)
 	{
 		if (C_DocTypeTarget_ID < 1) 
 			set_Value (COLUMNNAME_C_DocTypeTarget_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_DocTypeTarget_ID, Integer.valueOf(C_DocTypeTarget_ID));
+			set_Value (COLUMNNAME_C_DocTypeTarget_ID, C_DocTypeTarget_ID);
 	}
 
-	/** Get Zielbelegart.
-		@return Zielbelegart für die Umwandlung von Dokumenten
-	  */
 	@Override
-	public int getC_DocTypeTarget_ID () 
+	public int getC_DocTypeTarget_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeTarget_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_DocTypeTarget_ID);
 	}
 
-	/** Set C_OLCandAgg_IncludedTab.
-		@param C_OLCandAgg_IncludedTab C_OLCandAgg_IncludedTab	  */
 	@Override
-	public void setC_OLCandAgg_IncludedTab (java.lang.String C_OLCandAgg_IncludedTab)
+	public void setC_OLCandAgg_IncludedTab (final java.lang.String C_OLCandAgg_IncludedTab)
 	{
 		set_ValueNoCheck (COLUMNNAME_C_OLCandAgg_IncludedTab, C_OLCandAgg_IncludedTab);
 	}
 
-	/** Get C_OLCandAgg_IncludedTab.
-		@return C_OLCandAgg_IncludedTab	  */
 	@Override
-	public java.lang.String getC_OLCandAgg_IncludedTab () 
+	public java.lang.String getC_OLCandAgg_IncludedTab() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_C_OLCandAgg_IncludedTab);
+		return get_ValueAsString(COLUMNNAME_C_OLCandAgg_IncludedTab);
 	}
 
-	/** Set Auftragskand. Verarb..
-		@param C_OLCandProcessor_ID Auftragskand. Verarb.	  */
 	@Override
-	public void setC_OLCandProcessor_ID (int C_OLCandProcessor_ID)
+	public void setC_OLCandProcessor_ID (final int C_OLCandProcessor_ID)
 	{
 		if (C_OLCandProcessor_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_OLCandProcessor_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_OLCandProcessor_ID, Integer.valueOf(C_OLCandProcessor_ID));
+			set_ValueNoCheck (COLUMNNAME_C_OLCandProcessor_ID, C_OLCandProcessor_ID);
 	}
 
-	/** Get Auftragskand. Verarb..
-		@return Auftragskand. Verarb.	  */
 	@Override
-	public int getC_OLCandProcessor_ID () 
+	public int getC_OLCandProcessor_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_OLCandProcessor_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_OLCandProcessor_ID);
 	}
 
-	/** Set Zahlungsbedingung.
-		@param C_PaymentTerm_ID 
-		Die Bedingungen für die Bezahlung dieses Vorgangs
-	  */
 	@Override
-	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID)
+	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
 	{
 		if (C_PaymentTerm_ID < 1) 
 			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, Integer.valueOf(C_PaymentTerm_ID));
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, C_PaymentTerm_ID);
 	}
 
-	/** Get Zahlungsbedingung.
-		@return Die Bedingungen für die Bezahlung dieses Vorgangs
-	  */
 	@Override
-	public int getC_PaymentTerm_ID () 
+	public int getC_PaymentTerm_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
 	}
 
 	/** 
@@ -220,24 +151,16 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	public static final String DELIVERYRULE_Manual = "M";
 	/** MitNaechsterAbolieferung = S */
 	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
-	/** Set Lieferart.
-		@param DeliveryRule 
-		Definiert die zeitliche Steuerung von Lieferungen
-	  */
 	@Override
-	public void setDeliveryRule (java.lang.String DeliveryRule)
+	public void setDeliveryRule (final java.lang.String DeliveryRule)
 	{
-
 		set_Value (COLUMNNAME_DeliveryRule, DeliveryRule);
 	}
 
-	/** Get Lieferart.
-		@return Definiert die zeitliche Steuerung von Lieferungen
-	  */
 	@Override
-	public java.lang.String getDeliveryRule () 
+	public java.lang.String getDeliveryRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DeliveryRule);
+		return get_ValueAsString(COLUMNNAME_DeliveryRule);
 	}
 
 	/** 
@@ -251,40 +174,28 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	public static final String DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_Shipper = "S";
-	/** Set Lieferung.
-		@param DeliveryViaRule 
-		Wie der Auftrag geliefert wird
-	  */
 	@Override
-	public void setDeliveryViaRule (java.lang.String DeliveryViaRule)
+	public void setDeliveryViaRule (final java.lang.String DeliveryViaRule)
 	{
-
 		set_Value (COLUMNNAME_DeliveryViaRule, DeliveryViaRule);
 	}
 
-	/** Get Lieferung.
-		@return Wie der Auftrag geliefert wird
-	  */
 	@Override
-	public java.lang.String getDeliveryViaRule () 
+	public java.lang.String getDeliveryViaRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DeliveryViaRule);
+		return get_ValueAsString(COLUMNNAME_DeliveryViaRule);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -302,24 +213,16 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	public static final String FREIGHTCOSTRULE_Line = "L";
 	/** Versandkostenpauschale = P */
 	public static final String FREIGHTCOSTRULE_Versandkostenpauschale = "P";
-	/** Set Frachtkostenberechnung.
-		@param FreightCostRule 
-		Methode zur Berechnung von Frachtkosten
-	  */
 	@Override
-	public void setFreightCostRule (java.lang.String FreightCostRule)
+	public void setFreightCostRule (final java.lang.String FreightCostRule)
 	{
-
 		set_Value (COLUMNNAME_FreightCostRule, FreightCostRule);
 	}
 
-	/** Get Frachtkostenberechnung.
-		@return Methode zur Berechnung von Frachtkosten
-	  */
 	@Override
-	public java.lang.String getFreightCostRule () 
+	public java.lang.String getFreightCostRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_FreightCostRule);
+		return get_ValueAsString(COLUMNNAME_FreightCostRule);
 	}
 
 	/** 
@@ -335,24 +238,18 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	public static final String INVOICERULE_CustomerScheduleAfterDelivery = "S";
 	/** Immediate = I */
 	public static final String INVOICERULE_Immediate = "I";
-	/** Set Rechnungsstellung.
-		@param InvoiceRule 
-		"Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
-	  */
+	/** OrderCompletelyDelivered = C */
+	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
 	@Override
-	public void setInvoiceRule (java.lang.String InvoiceRule)
+	public void setInvoiceRule (final java.lang.String InvoiceRule)
 	{
-
 		set_Value (COLUMNNAME_InvoiceRule, InvoiceRule);
 	}
 
-	/** Get Rechnungsstellung.
-		@return "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
-	  */
 	@Override
-	public java.lang.String getInvoiceRule () 
+	public java.lang.String getInvoiceRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InvoiceRule);
+		return get_ValueAsString(COLUMNNAME_InvoiceRule);
 	}
 
 	@Override
@@ -362,59 +259,39 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	}
 
 	@Override
-	public void setM_AttributeSet(org.compiere.model.I_M_AttributeSet M_AttributeSet)
+	public void setM_AttributeSet(final org.compiere.model.I_M_AttributeSet M_AttributeSet)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class, M_AttributeSet);
 	}
 
-	/** Set Merkmals-Satz.
-		@param M_AttributeSet_ID 
-		Merkmals-Satz zum Produkt
-	  */
 	@Override
-	public void setM_AttributeSet_ID (int M_AttributeSet_ID)
+	public void setM_AttributeSet_ID (final int M_AttributeSet_ID)
 	{
 		if (M_AttributeSet_ID < 0) 
 			set_Value (COLUMNNAME_M_AttributeSet_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_AttributeSet_ID, Integer.valueOf(M_AttributeSet_ID));
+			set_Value (COLUMNNAME_M_AttributeSet_ID, M_AttributeSet_ID);
 	}
 
-	/** Get Merkmals-Satz.
-		@return Merkmals-Satz zum Produkt
-	  */
 	@Override
-	public int getM_AttributeSet_ID () 
+	public int getM_AttributeSet_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSet_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_AttributeSet_ID);
 	}
 
-	/** Set Preissystem.
-		@param M_PricingSystem_ID 
-		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
-	  */
 	@Override
-	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
+	public void setM_PricingSystem_ID (final int M_PricingSystem_ID)
 	{
 		if (M_PricingSystem_ID < 1) 
 			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
+			set_Value (COLUMNNAME_M_PricingSystem_ID, M_PricingSystem_ID);
 	}
 
-	/** Get Preissystem.
-		@return Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
-	  */
 	@Override
-	public int getM_PricingSystem_ID () 
+	public int getM_PricingSystem_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_PricingSystem_ID);
 	}
 
 	@Override
@@ -424,75 +301,51 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	}
 
 	@Override
-	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper)
+	public void setM_Shipper(final org.compiere.model.I_M_Shipper M_Shipper)
 	{
 		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
 	}
 
-	/** Set Lieferweg.
-		@param M_Shipper_ID 
-		Methode oder Art der Warenlieferung
-	  */
 	@Override
-	public void setM_Shipper_ID (int M_Shipper_ID)
+	public void setM_Shipper_ID (final int M_Shipper_ID)
 	{
 		if (M_Shipper_ID < 1) 
 			set_Value (COLUMNNAME_M_Shipper_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+			set_Value (COLUMNNAME_M_Shipper_ID, M_Shipper_ID);
 	}
 
-	/** Get Lieferweg.
-		@return Methode oder Art der Warenlieferung
-	  */
 	@Override
-	public int getM_Shipper_ID () 
+	public int getM_Shipper_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Shipper_ID);
 	}
 
-	/** Set Lager.
-		@param M_Warehouse_ID 
-		Lager oder Ort für Dienstleistung
-	  */
 	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 
 			set_Value (COLUMNNAME_M_Warehouse_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
 	}
 
-	/** Get Lager.
-		@return Lager oder Ort für Dienstleistung
-	  */
 	@Override
-	public int getM_Warehouse_ID () 
+	public int getM_Warehouse_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
-	/** Set Name.
-		@param Name Name	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Name	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	/** 
@@ -516,23 +369,15 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	public static final String PAYMENTRULE_Mixed = "M";
 	/** PayPal = L */
 	public static final String PAYMENTRULE_PayPal = "L";
-	/** Set Zahlungsweise.
-		@param PaymentRule 
-		Wie die Rechnung bezahlt wird
-	  */
 	@Override
-	public void setPaymentRule (java.lang.String PaymentRule)
+	public void setPaymentRule (final java.lang.String PaymentRule)
 	{
-
 		set_Value (COLUMNNAME_PaymentRule, PaymentRule);
 	}
 
-	/** Get Zahlungsweise.
-		@return Wie die Rechnung bezahlt wird
-	  */
 	@Override
-	public java.lang.String getPaymentRule () 
+	public java.lang.String getPaymentRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PaymentRule);
+		return get_ValueAsString(COLUMNNAME_PaymentRule);
 	}
 }

@@ -40,6 +40,8 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Plain implementation of {@link ITrx}.
  *
@@ -47,7 +49,7 @@ import lombok.NonNull;
  * <ul>
  * <li>makes sure savepoints are consistent
  * </ul>
- * Hint: if you actually want to test trx related behavior, then you might use {@link MockedTrxManager} and {@link MockedTrx} instead.
+ * Hint: if you actually want to test trx related behavior, then you might use MockedTrxManager and MockedTrx instead.
  *
  * @author tsa
  *
@@ -56,7 +58,7 @@ public class PlainTrx extends AbstractTrx
 {
 	private static final transient Logger logger = LogManager.getLogger(PlainTrx.class);
 
-	private final List<ITrxSavepoint> activeSavepoints = new ArrayList<ITrxSavepoint>();
+	private final List<ITrxSavepoint> activeSavepoints = new ArrayList<>();
 
 	/** Debugging: history of transaction important actions like TrxStatus change */
 	private final List<String> debugLog;
@@ -96,7 +98,7 @@ public class PlainTrx extends AbstractTrx
 	{
 		// Make sure we are not calling start() twice.
 		assertNotActive("Transaction shall not be started");
-		boolean started = super.start();
+		final boolean started = super.start();
 
 		setTrxStatus(TrxStatus.STARTED);
 
@@ -116,7 +118,7 @@ public class PlainTrx extends AbstractTrx
 		return savepoint;
 	}
 
-	private final void removeUntilSavepoint(@NonNull final ITrxSavepoint savepointToRemove)
+	private void removeUntilSavepoint(@NonNull final ITrxSavepoint savepointToRemove)
 	{
 		//
 		// Iterate all active savepoints,
@@ -263,7 +265,7 @@ public class PlainTrx extends AbstractTrx
 		final boolean activeActual = isActive();
 		if (activeActual != activeExpected)
 		{
-			String errmsgToUse = "Inconsistent transaction state: " + errmsg;
+			final String errmsgToUse = "Inconsistent transaction state: " + errmsg;
 			throw new TrxException(errmsgToUse
 					+ "\n Expected active: " + activeExpected
 					+ "\n Actual active: " + activeActual
@@ -276,13 +278,13 @@ public class PlainTrx extends AbstractTrx
 		return trxStatus;
 	}
 
-	private final void setTrxStatus(final TrxStatus trxStatus)
+	private void setTrxStatus(final TrxStatus trxStatus)
 	{
 		final String detailMsg = null;
 		setTrxStatus(trxStatus, detailMsg);
 	}
 
-	private final void setTrxStatus(final TrxStatus trxStatus, final String detailMsg)
+	private void setTrxStatus(final TrxStatus trxStatus, @Nullable final String detailMsg)
 	{
 		final TrxStatus trxStatusOld = this.trxStatus;
 		this.trxStatus = trxStatus;
@@ -300,7 +302,7 @@ public class PlainTrx extends AbstractTrx
 		}
 	}
 
-	private final void logTrxAction(final String message)
+	private void logTrxAction(final String message)
 	{
 		if (debugLog == null)
 		{

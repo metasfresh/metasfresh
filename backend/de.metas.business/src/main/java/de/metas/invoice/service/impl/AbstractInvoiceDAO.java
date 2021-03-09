@@ -11,16 +11,21 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.time.InstantInterval;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -33,12 +38,15 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -46,9 +54,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
 
+import static de.metas.util.Check.assumeNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -410,6 +420,114 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 				.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_Ref_InvoiceLine_ID, invoiceLineId)
+				.create()
+				.list();
+	}
+
+	public Optional<InvoiceId> retrieveIdByInvoiceQuery(@NonNull final InvoiceQuery query)
+	{
+		if (query.getInvoiceId() != null)
+		{
+			return Optional.of(InvoiceId.ofRepoId(query.getInvoiceId()));
+		}
+		if (query.getExternalId() != null)
+		{
+			return getInvoiceIdByExternalIdIfExists(query);
+		}
+		if (!Check.isEmpty(query.getDocType()))
+		{
+			return getInvoiceIdByDocumentIdIfExists(query);
+		}
+		return Optional.empty();
+	}
+
+
+	@Override
+	public <T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(final String documentNo, final OrgId orgId, final Class<T> modelClass)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(modelClass)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNo)
+				.addEqualsFilter(org.compiere.model.I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.list(modelClass);
+	}
+
+	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)
+	{
+		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null docId; query={}", query);
+		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
+		final DocBaseAndSubType docType = assumeNotNull(query.getDocType(), "Param query needs to have a non-null docType; query={}", query);
+		final String docBaseType = assumeNotNull(docType.getDocBaseType(), "Param query needs to have a non-null docBaseType; query={}", query);
+		final String docSubType = docType.getDocSubType();
+
+		final IQueryBuilder<I_C_DocType> docTypeQueryBuilder = createQueryBuilder(I_C_DocType.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, docBaseType);
+		if (Check.isNotBlank(docSubType))
+		{
+			docTypeQueryBuilder.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, docSubType);
+		}
+
+		final IQueryBuilder<I_C_Invoice> queryBuilder = createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocumentNo, documentNo)
+				.addInSubQueryFilter(I_C_Invoice.COLUMNNAME_C_DocType_ID, I_C_DocType.COLUMNNAME_C_DocType_ID, docTypeQueryBuilder.create());
+
+		final int invoiceRepoId = queryBuilder.create().firstIdOnly();
+		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
+	}
+
+	private Optional<InvoiceId> getInvoiceIdByExternalIdIfExists(@NonNull final InvoiceQuery query)
+	{
+		final ExternalId externalId = assumeNotNull(query.getExternalId(), "Param query needs to have a non-null externalId; query={}", query);
+		final OrgId orgId = assumeNotNull(query.getOrgId(), "Param query needs to have a non-null orgId; query={}", query);
+
+		final IQueryBuilder<I_C_Invoice> queryBuilder = createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_ExternalId, externalId.getValue());
+
+		final int invoiceRepoId = queryBuilder.create().firstIdOnly();
+		return Optional.ofNullable(InvoiceId.ofRepoIdOrNull(invoiceRepoId));
+	}
+
+	private <T> IQueryBuilder<T> createQueryBuilder(
+			@NonNull final Class<T> modelClass)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(modelClass)
+				// .addOnlyActiveRecordsFilter() // don't generally rule out inactive partners
+				.orderByDescending(I_AD_Org.COLUMNNAME_AD_Org_ID); // prefer "more specific" AD_Org_ID > 0;
+	}
+
+	@Override
+	public List<I_C_Invoice> retrieveBySalesrepPartnerId(@NonNull final BPartnerId salesRepBPartnerId, @NonNull final InstantInterval invoicedDateInterval)
+	{
+		final Timestamp from = TimeUtil.asTimestamp(invoicedDateInterval.getFrom());
+		final Timestamp to = TimeUtil.asTimestamp(invoicedDateInterval.getTo());
+
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_SalesRep_ID, salesRepBPartnerId.getRepoId())
+				.addBetweenFilter(I_C_Invoice.COLUMNNAME_DateInvoiced, from, to)
+				.create()
+				.list();
+	}
+
+	@Override
+	public List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(@NonNull final BPartnerId bpartnerId, @NonNull final InstantInterval invoicedDateInterval)
+	{
+		final Timestamp from = TimeUtil.asTimestamp(invoicedDateInterval.getFrom());
+		final Timestamp to = TimeUtil.asTimestamp(invoicedDateInterval.getTo());
+
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsSOTrx, true)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_BPartner_ID, bpartnerId.getRepoId())
+				.addBetweenFilter(I_C_Invoice.COLUMNNAME_DateInvoiced, from, to)
 				.create()
 				.list();
 	}

@@ -157,3 +157,15 @@ export const DEBOUNCE_TIME_SEARCH = 150;
  * @type {integer} Used to indicate the number of characters from where we show read more link in the notification toastr
  */
 export const SHOW_READ_MORE_FROM = 100;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the max number of items to show when user clicks on the `Home` icon (`childrenLimit` param in api/menu/root call)
+ */
+export const HOME_MENU_USER_MAX_ITEMS = 10;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the number of rows from where we display the `Show more...` button
+ */
+export const INLINE_TAB_SHOW_MORE_FROM = 5;

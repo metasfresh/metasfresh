@@ -309,8 +309,20 @@ public class M_ShipmentSchedule
 		InterfaceWrapperHelper.save(orderLine);
 	}
 
+	/**
+	 * Note: keep {@code ifColumnsChanged} in sync with the changeable properties loaded at {@link de.metas.inoutcandidate.ShipmentScheduleRepository#ofRecord(I_M_ShipmentSchedule)}.
+	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_M_ReceiptSchedule.COLUMNNAME_ExportStatus)
+			ifColumnsChanged = { I_M_ShipmentSchedule.COLUMNNAME_ExportStatus,
+					I_M_ShipmentSchedule.COLUMNNAME_POReference,
+					I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver,
+					I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_C_BP_Location_Override_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_AD_User_Override_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_DateOrdered }
+	)
 	public void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		shipmentScheduleBL.updateCanBeExportedAfter(sched);

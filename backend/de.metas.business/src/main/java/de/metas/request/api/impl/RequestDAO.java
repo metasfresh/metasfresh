@@ -12,6 +12,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
 import org.compiere.util.TimeUtil;
@@ -19,7 +20,6 @@ import org.compiere.util.TimeUtil;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -46,10 +46,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class RequestDAO implements IRequestDAO
 {
 	@Override
+	public I_R_Request getById(@NonNull final RequestId id)
+	{
+		return InterfaceWrapperHelper.load(id, I_R_Request.class);
+	}
+
+	@Override
+	public void save(@NonNull final I_R_Request request)
+	{
+		InterfaceWrapperHelper.saveRecord(request);
+	}
+
+	@Override
 	public I_R_Request createRequest(@NonNull final RequestCandidate candidate)
 	{
 		final I_R_Request request = newInstance(I_R_Request.class);
-		;
+
 		request.setSummary(candidate.getSummary());
 		request.setConfidentialType(candidate.getConfidentialType());
 		request.setAD_Org_ID(candidate.getOrgId().getRepoId());
@@ -71,7 +83,7 @@ public class RequestDAO implements IRequestDAO
 		request.setPerformanceType(candidate.getPerformanceType());
 		request.setDateDelivered(TimeUtil.asTimestamp(candidate.getDateDelivered()));
 
-		saveRecord(request);
+		save(request);
 
 		return request;
 	}

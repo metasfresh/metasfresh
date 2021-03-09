@@ -24,14 +24,18 @@ package de.metas.serviceprovider.issue.importer;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalSystems;
 import de.metas.organization.OrgId;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.serviceprovider.external.ExternalId;
+import de.metas.externalreference.ExternalId;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
+
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueRepository;
@@ -77,11 +81,20 @@ class IssueImporterServiceTest
 		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 		issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
+
+		final ExternalSystems externalSystems = new ExternalSystems();
+		externalSystems.registerExternalSystem(ExternalSystem.GITHUB);
+
+		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
+		externalReferenceTypes.registerType(ExternalServiceReferenceType.ISSUE_ID);
+
+		final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalSystems, externalReferenceTypes);
+
 		issueImporterService = new IssueImporterService(
 				new ImportQueue<>(100, "logPrefix"),
 				new MilestoneRepository(),
 				issueRepository,
-				new ExternalReferenceRepository(queryBL),
+				externalReferenceRepository,
 				trxManager,
 				adReferenceDAO,
 				new IssueLabelRepository(queryBL)

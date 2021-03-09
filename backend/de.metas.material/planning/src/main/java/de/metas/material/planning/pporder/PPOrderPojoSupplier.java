@@ -11,7 +11,7 @@ import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ProductPlanningBL;
+import de.metas.material.planning.ProductPlanningService;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.RoutingService;
 import de.metas.material.planning.RoutingServiceFactory;
@@ -83,14 +83,14 @@ public class PPOrderPojoSupplier
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	private final ProductPlanningBL productPlanningBL;
+	private final ProductPlanningService productPlanningService;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
 	public PPOrderPojoSupplier(
-			@NonNull final ProductPlanningBL productPlanningBL,
+			@NonNull final ProductPlanningService productPlanningService,
 			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
 	{
-		this.productPlanningBL = productPlanningBL;
+		this.productPlanningService = productPlanningService;
 		this.productDescriptorFactory = productDescriptorFactory;
 	}
 
@@ -112,11 +112,9 @@ public class PPOrderPojoSupplier
 	{
 		final PPOrder ppOrder = supplyPPOrderPojo(request);
 
-		final PPOrder ppOrderWithLines = ppOrder.toBuilder()
+		return ppOrder.toBuilder()
 				.lines(supplyPPOrderLinePojos(ppOrder))
 				.build();
-
-		return ppOrderWithLines;
 	}
 
 	private PPOrder supplyPPOrderPojo(@NonNull final IMaterialRequest request)
@@ -202,8 +200,7 @@ public class PPOrderPojoSupplier
 			@NonNull final BigDecimal qty)
 	{
 		final int leadtimeDays = calculateLeadtimeDays(mrpContext, qty);
-		final int durationTotalDays = productPlanningBL.calculateDurationDays(leadtimeDays, mrpContext.getProductPlanning());
-		return durationTotalDays;
+		return productPlanningService.calculateDurationDays(leadtimeDays, mrpContext.getProductPlanning());
 	}
 
 	private int calculateLeadtimeDays(
@@ -222,8 +219,7 @@ public class PPOrderPojoSupplier
 		final PPRoutingId routingId = PPRoutingId.ofRepoId(productPlanningData.getAD_Workflow_ID());
 		final ResourceId plantId = ResourceId.ofRepoIdOrNull(productPlanningData.getS_Resource_ID());
 		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
-		final int leadtimeCalc = routingService.calculateDurationDays(routingId, plantId, qty);
-		return leadtimeCalc;
+		return routingService.calculateDurationDays(routingId, plantId, qty);
 	}
 
 	private List<PPOrderLine> supplyPPOrderLinePojos(@NonNull final PPOrder ppOrder)

@@ -2,6 +2,7 @@ package de.metas.ordercandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.api.IBPRelationDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
@@ -49,6 +50,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class C_OLCand
 {
 	private final OLCandValidatorService olCandValidatorService;
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public C_OLCand(@NonNull final OLCandValidatorService olCandValidatorService)
 	{
@@ -283,12 +285,13 @@ public class C_OLCand
 		}
 		else
 		{
-			org.compiere.model.I_C_BPartner_Location handOverLocation = handoverRelation.getC_BPartnerRelation_Location();
+			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(handoverRelation.getC_BPartnerRelation_ID(), handoverRelation.getC_BPartnerRelation_Location_ID());
+			final org.compiere.model.I_C_BPartner_Location handOverLocation = bPartnerDAO.getBPartnerLocationById(bPartnerLocationId);
+
 			if (handOverLocation == null)
 			{
 				// this should also not happen because C_BPartnerRelation_Location is mandatory
 				olCand.setHandOver_Location_Override_ID(0);
-
 				return;
 			}
 			olCand.setHandOver_Location_Override_ID(handOverLocation.getC_BPartner_Location_ID());

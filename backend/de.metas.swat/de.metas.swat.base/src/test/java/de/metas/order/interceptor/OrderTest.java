@@ -1,21 +1,21 @@
 package de.metas.order.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.junit.Assert.assertTrue;
-
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.order.model.interceptor.C_Order;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.order.model.interceptor.C_Order;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -46,7 +46,8 @@ public class OrderTest
 	{
 		AdempiereTestHelper.get().init();
 
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Order.INSTANCE);
+		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(orderLineDetailRepository));
 	}
 
 	@Test
@@ -68,8 +69,8 @@ public class OrderTest
 		order.setC_DocTypeTarget_ID(docType1.getC_DocType_ID());
 		save(order);
 
-		assertTrue(descriptionDocType1.equals(order.getDescription()));
-		assertTrue(documentNoteDocType1.equals(order.getDescriptionBottom()));
+		Assertions.assertEquals(order.getDescription(), descriptionDocType1);
+		Assertions.assertEquals(order.getDescriptionBottom(), documentNoteDocType1);
 
 		final String newOrderDescription = "New order description";
 
@@ -80,15 +81,16 @@ public class OrderTest
 
 		save(order);
 
-		assertTrue(newOrderDescription.equals(order.getDescription()));
-		assertTrue(newOrderDocumentNote.equals(order.getDescriptionBottom()));
+		Assertions.assertEquals(order.getDescription(), newOrderDescription);
+		Assertions.assertEquals(order.getDescriptionBottom(), newOrderDocumentNote);
 
 		Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_Complete);
 
-		assertTrue(newOrderDescription.equals(order.getDescription()));
-		assertTrue(newOrderDocumentNote.equals(order.getDescriptionBottom()));
+		Assertions.assertEquals(order.getDescription(), newOrderDescription);
+		Assertions.assertEquals(order.getDescriptionBottom(), newOrderDocumentNote);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_C_BPartner createPartner(final String name, final String language)
 	{
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
@@ -100,6 +102,7 @@ public class OrderTest
 		return partner;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_C_DocType createDocType(final String name, final String description, final String documentNote)
 	{
 		final I_C_DocType doctype = newInstance(I_C_DocType.class);

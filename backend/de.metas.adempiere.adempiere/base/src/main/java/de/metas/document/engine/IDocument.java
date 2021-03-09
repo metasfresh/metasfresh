@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 /**
  * Document Interface.
  * <p>
@@ -70,6 +72,7 @@ public interface IDocument
 	 */
 	String Reversal_ID = "Reversal_ID";
 
+	@Nullable
 	String getProcessMsg();
 
 	/** @return true if success */

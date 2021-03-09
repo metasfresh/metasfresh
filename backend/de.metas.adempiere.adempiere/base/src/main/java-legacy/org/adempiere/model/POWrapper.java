@@ -161,9 +161,8 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	 * @param id record id
 	 * @param modelClass model interface class
 	 * @param trxName db transaction name
-	 * @return
 	 */
-	public static <T> T create(final Properties ctx, final int id, final Class<T> modelClass, final String trxName)
+	public static <T> T create(final Properties ctx, final int id, @NonNull final Class<T> modelClass, final String trxName)
 	{
 		final String tableName = getTableName(modelClass); // won't return null
 		return create(ctx, tableName, id, modelClass, trxName);
@@ -436,13 +435,9 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	/**
-	 *
-	 * @param clazz
-	 * @return
-	 * @throws AdempiereException
 	 * @see {@link InterfaceWrapperHelper#getTableName(Class)}
 	 */
-	public static final String getTableName(final Class<?> clazz) throws AdempiereException
+	public static String getTableName(@NonNull final Class<?> clazz) throws AdempiereException
 	{
 		return InterfaceWrapperHelper.getTableName(clazz);
 	}

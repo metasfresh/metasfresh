@@ -40,7 +40,7 @@ import org.compiere.model.I_M_InOut;
 import org.eevolution.api.IPPOrderDAO;
 
 import de.metas.document.engine.IDocumentBL;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.materialtracking.IMaterialTrackingDAO;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.IMaterialTrackingReportDAO;

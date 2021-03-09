@@ -42,7 +42,6 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
-import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
 
 import de.metas.document.engine.IDocument;
@@ -92,20 +91,6 @@ public class DDOrderBL implements IDDOrderBL
 				.subtract(qtyDelivered); // minus: Qty that we already moved (so it's there, on hand)
 
 		return qtyToReceive;
-	}
-
-	@Override
-	public BigDecimal getQtyToShip(final I_DD_OrderLine ddOrderLine)
-	{
-		final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt = InterfaceWrapperHelper.create(ddOrderLine, I_DD_OrderLine_Or_Alternative.class);
-		return getQtyToShip(ddOrderLineOrAlt);
-	}
-
-	@Override
-	public BigDecimal getQtyToShip(final I_DD_OrderLine_Alternative ddOrderLineAlt)
-	{
-		final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt = InterfaceWrapperHelper.create(ddOrderLineAlt, I_DD_OrderLine_Or_Alternative.class);
-		return getQtyToShip(ddOrderLineOrAlt);
 	}
 
 	@Override
@@ -182,20 +167,6 @@ public class DDOrderBL implements IDDOrderBL
 	}
 
 	@Override
-	public void completeForwardDDOrdersIfNeeded(final I_PP_Order ppOrder)
-	{
-		Check.assumeNotNull(ppOrder, "ppOrder not null");
-
-		final List<I_DD_Order> forwardDDOrders = Services.get(IDDOrderDAO.class)
-				.retrieveForwardDDOrderLinesQuery(ppOrder)
-				.andCollect(I_DD_OrderLine.COLUMN_DD_Order_ID)
-				.create()
-				.list();
-
-		completeDDOrdersIfNeeded(forwardDDOrders);
-	}
-
-	@Override
 	public I_S_Resource findPlantFromOrNull(final I_DD_OrderLine ddOrderLine)
 	{
 		Check.assumeNotNull(ddOrderLine, LiberoException.class, "ddOrderLine not null");
@@ -261,10 +232,9 @@ public class DDOrderBL implements IDDOrderBL
 	 * <li>only those which are for same Plant as given <code>ddOrder</code> is
 	 * </ul>
 	 * 
-	 * @param ddOrder
 	 * @param ddOrderProcessor processor used to process those DD Orders
 	 */
-	private final void processForwardAndBackwardDraftDDOrders(final I_DD_Order ddOrder, final IProcessor<I_DD_Order> ddOrderProcessor)
+	private void processForwardAndBackwardDraftDDOrders(final I_DD_Order ddOrder, final IProcessor<I_DD_Order> ddOrderProcessor)
 	{
 		Check.assumeNotNull(ddOrder, "ddOrder not null");
 		Check.assumeNotNull(ddOrderProcessor, "ddOrderProcessor not null");
@@ -294,9 +264,9 @@ public class DDOrderBL implements IDDOrderBL
 		}
 	}
 
-	private final void processDraftDDOrders(final IQueryBuilder<I_DD_OrderLine> ddOrderLinesQuery,
-			final int currentPlantId,
-			final IProcessor<I_DD_Order> ddOrderProcessor)
+	private void processDraftDDOrders(final IQueryBuilder<I_DD_OrderLine> ddOrderLinesQuery,
+									  final int currentPlantId,
+									  final IProcessor<I_DD_Order> ddOrderProcessor)
 	{
 		logger.debug("PP_Plant_ID: {}", currentPlantId);
 		logger.debug("Processor: {}", ddOrderProcessor);
@@ -340,34 +310,22 @@ public class DDOrderBL implements IDDOrderBL
 	{
 		//
 		// Complete Forward and Backward DD Orders, if they are on the same plant (08059)
-		processForwardAndBackwardDraftDDOrders(ddOrder, new IProcessor<I_DD_Order>()
-		{
-			@Override
-			public void process(final I_DD_Order ddOrderToProcess)
-			{
-				completeDDOrderIfNeeded(ddOrderToProcess);
-			}
-		});
+		processForwardAndBackwardDraftDDOrders(ddOrder, ddOrderToProcess -> completeDDOrderIfNeeded(ddOrderToProcess));
 	}
 
 	@Override
 	public void disallowMRPCleanupOnForwardAndBackwardDDOrders(final I_DD_Order ddOrder)
 	{
-		processForwardAndBackwardDraftDDOrders(ddOrder, new IProcessor<I_DD_Order>()
-		{
-			@Override
-			public void process(final I_DD_Order ddOrderToProcess)
+		processForwardAndBackwardDraftDDOrders(ddOrder, ddOrderToProcess -> {
+			// Skip this DD_Order if flag was already set to false
+			if (!ddOrderToProcess.isMRP_AllowCleanup())
 			{
-				// Skip this DD_Order if flag was already set to false
-				if (!ddOrderToProcess.isMRP_AllowCleanup())
-				{
-					return;
-				}
-
-				// Set MRP_AlowCleanup to false and save it
-				ddOrderToProcess.setMRP_AllowCleanup(false);
-				Services.get(IDDOrderDAO.class).save(ddOrderToProcess);
+				return;
 			}
+
+			// Set MRP_AlowCleanup to false and save it
+			ddOrderToProcess.setMRP_AllowCleanup(false);
+			Services.get(IDDOrderDAO.class).save(ddOrderToProcess);
 		});
 
 	}

@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.commons.lang.NotImplementedException;
 import org.compiere.model.I_C_BPartner;
@@ -29,6 +31,8 @@ import de.metas.util.Services;
 import de.metas.common.util.CoalesceUtil;
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -124,6 +128,7 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 		return Services.get(IUOMDAO.class).getById(orderLine.getC_UOM_ID());
 	}
 
+	@Nullable
 	@Override
 	public I_C_Flatrate_Term getC_Flatrate_Term()
 	{
@@ -137,8 +142,8 @@ public class PMMPricingAware_C_OrderLine implements IPMMPricingAware
 		// the product and M_HU_PI_Item_Product must belong to a PMM_ProductEntry that is currently valid
 		final I_PMM_Product pmmProduct = Services.get(IPMMProductBL.class).getPMMProductForDateProductAndASI(
 				getDate(),
-				getM_Product().getM_Product_ID(),
-				getC_BPartner().getC_BPartner_ID(),
+				ProductId.ofRepoId(getM_Product().getM_Product_ID()),
+				BPartnerId.ofRepoIdOrNull(getC_BPartner().getC_BPartner_ID()),
 				hupip.getM_HU_PI_Item_Product_ID(),
 				getM_AttributeSetInstance());
 

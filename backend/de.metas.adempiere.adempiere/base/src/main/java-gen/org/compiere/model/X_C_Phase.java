@@ -1,258 +1,155 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Phase
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_C_Phase extends PO implements I_C_Phase, I_Persistent 
+ *  @author metasfresh (generated) 
+ */
+@SuppressWarnings("unused")
+public class X_C_Phase extends org.compiere.model.PO implements I_C_Phase, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = 860622820L;
 
     /** Standard Constructor */
-    public X_C_Phase (Properties ctx, int C_Phase_ID, String trxName)
+    public X_C_Phase (final Properties ctx, final int C_Phase_ID, @Nullable final String trxName)
     {
       super (ctx, C_Phase_ID, trxName);
-      /** if (C_Phase_ID == 0)
-        {
-			setC_Phase_ID (0);
-			setC_ProjectType_ID (0);
-			setName (null);
-			setSeqNo (0);
-// @SQL=SELECT NVL(MAX(SeqNo),0)+10 AS DefaultValue FROM C_Phase WHERE C_ProjectType_ID=@C_ProjectType_ID@
-			setStandardQty (Env.ZERO);
-// 1
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Phase (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Phase (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
-    /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
-    {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_C_Phase[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** Set Standard Phase.
-		@param C_Phase_ID 
-		Standard Phase of the Project Type
-	  */
-	public void setC_Phase_ID (int C_Phase_ID)
+	@Override
+	public void setC_Phase_ID (final int C_Phase_ID)
 	{
 		if (C_Phase_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Phase_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Phase_ID, Integer.valueOf(C_Phase_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Phase_ID, C_Phase_ID);
 	}
 
-	/** Get Standard Phase.
-		@return Standard Phase of the Project Type
-	  */
-	public int getC_Phase_ID () 
+	@Override
+	public int getC_Phase_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Phase_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Phase_ID);
 	}
 
-	public I_C_ProjectType getC_ProjectType() throws RuntimeException
-    {
-		return (I_C_ProjectType)MTable.get(getCtx(), I_C_ProjectType.Table_Name)
-			.getPO(getC_ProjectType_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_ProjectType getC_ProjectType()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_ProjectType_ID, org.compiere.model.I_C_ProjectType.class);
+	}
 
-	/** Set Project Type.
-		@param C_ProjectType_ID 
-		Type of the project
-	  */
-	public void setC_ProjectType_ID (int C_ProjectType_ID)
+	@Override
+	public void setC_ProjectType(final org.compiere.model.I_C_ProjectType C_ProjectType)
+	{
+		set_ValueFromPO(COLUMNNAME_C_ProjectType_ID, org.compiere.model.I_C_ProjectType.class, C_ProjectType);
+	}
+
+	@Override
+	public void setC_ProjectType_ID (final int C_ProjectType_ID)
 	{
 		if (C_ProjectType_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_ProjectType_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_ProjectType_ID, Integer.valueOf(C_ProjectType_ID));
+			set_ValueNoCheck (COLUMNNAME_C_ProjectType_ID, C_ProjectType_ID);
 	}
 
-	/** Get Project Type.
-		@return Type of the project
-	  */
-	public int getC_ProjectType_ID () 
+	@Override
+	public int getC_ProjectType_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_ProjectType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_ProjectType_ID);
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	@Override
+	public void setDescription (final java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	@Override
+	public java.lang.String getDescription() 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set Comment/Help.
-		@param Help 
-		Comment or Hint
-	  */
-	public void setHelp (String Help)
+	@Override
+	public void setHelp (final java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Comment/Help.
-		@return Comment or Hint
-	  */
-	public String getHelp () 
+	@Override
+	public java.lang.String getHelp() 
 	{
-		return (String)get_Value(COLUMNNAME_Help);
+		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
-	public I_M_Product getM_Product() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_Product_ID(), get_TrxName());	}
-
-	/** Set Product.
-		@param M_Product_ID 
-		Product, Service, Item
-	  */
-	public void setM_Product_ID (int M_Product_ID)
+	@Override
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Product.
-		@return Product, Service, Item
-	  */
-	public int getM_Product_ID () 
+	@Override
+	public int getM_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name)
+	@Override
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
-	public String getName () 
+	@Override
+	public java.lang.String getName() 
 	{
-		return (String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getName());
-    }
-
-	/** Set Sequence.
-		@param SeqNo 
-		Method of ordering records; lowest number comes first
-	  */
-	public void setSeqNo (int SeqNo)
+	@Override
+	public void setSeqNo (final int SeqNo)
 	{
-		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
-	/** Get Sequence.
-		@return Method of ordering records; lowest number comes first
-	  */
-	public int getSeqNo () 
+	@Override
+	public int getSeqNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
-	/** Set Standard Quantity.
-		@param StandardQty 
-		Standard Quantity
-	  */
-	public void setStandardQty (BigDecimal StandardQty)
+	@Override
+	public void setStandardQty (final BigDecimal StandardQty)
 	{
 		set_Value (COLUMNNAME_StandardQty, StandardQty);
 	}
 
-	/** Get Standard Quantity.
-		@return Standard Quantity
-	  */
-	public BigDecimal getStandardQty () 
+	@Override
+	public BigDecimal getStandardQty() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_StandardQty);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_StandardQty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

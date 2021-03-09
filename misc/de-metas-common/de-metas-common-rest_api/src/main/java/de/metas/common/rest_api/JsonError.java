@@ -25,14 +25,18 @@ package de.metas.common.rest_api;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 @Value
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(builder = JsonError.JsonErrorBuilder.class)
 public class JsonError
 {
 	public static JsonError ofSingleItem(@NonNull final JsonErrorItem item)

@@ -23,7 +23,7 @@
 package de.metas.serviceprovider.issue.importer.info;
 
 import de.metas.organization.OrgId;
-import de.metas.serviceprovider.external.ExternalId;
+import de.metas.externalreference.ExternalId;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import lombok.Builder;
 import lombok.Data;

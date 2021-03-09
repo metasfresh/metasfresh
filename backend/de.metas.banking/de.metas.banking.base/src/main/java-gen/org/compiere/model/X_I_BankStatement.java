@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_I_BankStatement extends org.compiere.model.PO implements I_I_BankStatement, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1510765379L;
+	private static final long serialVersionUID = -668181063L;
 
     /** Standard Constructor */
     public X_I_BankStatement (final Properties ctx, final int I_BankStatement_ID, @Nullable final String trxName)
@@ -374,10 +374,10 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	 * Reference name: I_BankStatement_DebitOrCreditIndicator
 	 */
 	public static final int DEBITORCREDITINDICATOR_AD_Reference_ID=541226;
-	/** Debit = S */
-	public static final String DEBITORCREDITINDICATOR_Debit = "S";
-	/** Credit = H */
-	public static final String DEBITORCREDITINDICATOR_Credit = "H";
+	/** Debit = H */
+	public static final String DEBITORCREDITINDICATOR_Debit = "H";
+	/** Credit = S */
+	public static final String DEBITORCREDITINDICATOR_Credit = "S";
 	@Override
 	public void setDebitOrCreditIndicator (final java.lang.String DebitOrCreditIndicator)
 	{

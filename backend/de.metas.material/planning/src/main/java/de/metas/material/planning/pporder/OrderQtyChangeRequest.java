@@ -22,32 +22,47 @@
 
 package de.metas.material.planning.pporder;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderId;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.function.UnaryOperator;
 
 @Value
-@Builder(toBuilder = true)
 public class OrderQtyChangeRequest
 {
-	@NonNull
-	PPOrderId ppOrderId;
+	@NonNull PPOrderId ppOrderId;
+	@NonNull Quantity qtyReceivedToAdd;
+	@NonNull Quantity qtyScrappedToAdd;
+	@NonNull Quantity qtyRejectedToAdd;
+	@NonNull ZonedDateTime date;
 
-	@NonNull
-	Quantity qtyReceivedToAdd;
+	@Builder(toBuilder = true)
+	private OrderQtyChangeRequest(
+			@NonNull final PPOrderId ppOrderId,
+			@Nullable final Quantity qtyReceivedToAdd,
+			@Nullable final Quantity qtyScrappedToAdd,
+			@Nullable final Quantity qtyRejectedToAdd,
+			@NonNull final ZonedDateTime date)
+	{
+		final Quantity firstNonNullQty = CoalesceUtil.coalesce(qtyReceivedToAdd, qtyScrappedToAdd, qtyRejectedToAdd);
+		if (firstNonNullQty == null)
+		{
+			throw new AdempiereException("At least one of the qtys shall be non-null");
+		}
 
-	@NonNull
-	Quantity qtyScrappedToAdd;
-
-	@NonNull
-	Quantity qtyRejectedToAdd;
-
-	@NonNull
-	ZonedDateTime date;
+		this.ppOrderId = ppOrderId;
+		this.qtyReceivedToAdd = qtyReceivedToAdd != null ? qtyReceivedToAdd : firstNonNullQty.toZero();
+		this.qtyScrappedToAdd = qtyScrappedToAdd != null ? qtyScrappedToAdd : firstNonNullQty.toZero();
+		this.qtyRejectedToAdd = qtyRejectedToAdd != null ? qtyRejectedToAdd : firstNonNullQty.toZero();
+		this.date = date;
+	}
 
 	public OrderQtyChangeRequest convertQuantities(@NonNull final UnaryOperator<Quantity> converter)
 	{

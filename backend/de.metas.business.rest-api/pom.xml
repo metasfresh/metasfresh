@@ -45,6 +45,12 @@
             <version>${metasfresh-common.version}</version>
         </dependency>
         <dependency>
+            <groupId>de.metas.common.bpartner</groupId>
+            <artifactId>de-metas-common-bpartner</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
+        
+        <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
         </dependency>
@@ -52,13 +58,6 @@
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
-        </dependency>
-
-        <!-- https://github.com/hoereth/springfox-enum-plugin -->
-        <dependency>
-            <groupId>de.pentabyte</groupId>
-            <artifactId>springfox-enum-plugin</artifactId>
-            <version>1.1.1</version>
         </dependency>
 
         <dependency>

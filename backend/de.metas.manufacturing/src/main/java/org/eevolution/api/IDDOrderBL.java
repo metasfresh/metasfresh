@@ -22,10 +22,7 @@ package org.eevolution.api;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Collection;
-
+import de.metas.util.ISingletonService;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_S_Resource;
@@ -33,9 +30,10 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
 import org.eevolution.model.I_DD_OrderLine_Or_Alternative;
-import org.eevolution.model.I_PP_Order;
 
-import de.metas.util.ISingletonService;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
 
 public interface IDDOrderBL extends ISingletonService
 {
@@ -47,9 +45,6 @@ public interface IDDOrderBL extends ISingletonService
 	 * i.e. QtyOrdered - QtyDelivered
 	 *
 	 * The UOM is line's UOM.
-	 *
-	 * @param ddOrderLine
-	 * @return
 	 */
 	BigDecimal getQtyToReceive(I_DD_OrderLine ddOrderLine);
 
@@ -58,8 +53,6 @@ public interface IDDOrderBL extends ISingletonService
 	 *
 	 * The UOM is line's UOM.
 	 *
-	 * @param ddOrderLineAlt
-	 * @return
 	 * @see #getQtyToReceive(I_DD_OrderLine)
 	 */
 	BigDecimal getQtyToReceive(I_DD_OrderLine_Alternative ddOrderLineAlt);
@@ -69,43 +62,14 @@ public interface IDDOrderBL extends ISingletonService
 	 *
 	 * The UOM is line's UOM.
 	 *
-	 * @param ddOrderLineOrAlt
-	 * @return
 	 * @see #getQtyToReceive(I_DD_OrderLine)
 	 */
 	BigDecimal getQtyToReceive(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt);
 
 	/**
-	 * Gets Qty that needs to be shipped so far from source locator
-	 *
-	 * i.e. QtyOrdered - QtyDelivered - QtyInTransit
-	 *
-	 * The UOM is line's UOM.
-	 *
-	 * @param ddOrderLine
-	 * @return
-	 */
-	BigDecimal getQtyToShip(I_DD_OrderLine ddOrderLine);
-
-	/**
 	 * Gets Qty that needs to be shipped so far from source locator.
 	 *
 	 * The UOM is line's UOM.
-	 *
-	 * @param ddOrderLineAlt
-	 * @return
-	 * @see #getQtyToShip(I_DD_OrderLine)
-	 */
-	BigDecimal getQtyToShip(I_DD_OrderLine_Alternative ddOrderLineAlt);
-
-	/**
-	 * Gets Qty that needs to be shipped so far from source locator.
-	 *
-	 * The UOM is line's UOM.
-	 *
-	 * @param ddOrderLineOrAlt
-	 * @return
-	 * @see #getQtyToShip(I_DD_OrderLine)
 	 */
 	BigDecimal getQtyToShip(I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt);
 
@@ -113,16 +77,12 @@ public interface IDDOrderBL extends ISingletonService
 
 	/**
 	 * Retrieves the given <code>ddOrderLine</code>'s order and invokes {@link #completeDDOrderIfNeeded(I_DD_Order)}.
-	 *
-	 * @param ddOrderLine
 	 */
 	void completeDDOrderIfNeeded(I_DD_OrderLine ddOrderLine);
 
 	/**
 	 * If the given <code>ddOrder</code> is in status draft or in progress, then the method attempts to complete it. Otherwise, it assumes that the ddOrder is already completed and throws an exception
 	 * if that is not the case.
-	 *
-	 * @param ddOrder
 	 */
 	void completeDDOrderIfNeeded(I_DD_Order ddOrder);
 
@@ -136,10 +96,8 @@ public interface IDDOrderBL extends ISingletonService
 
 	/**
 	 * Search for Source Plant based on source locator ({@link I_DD_OrderLine#getM_Locator()}).
-	 *
-	 * @param ddOrderLine
-	 * @return plant or null
 	 */
+	@Nullable
 	I_S_Resource findPlantFromOrNull(I_DD_OrderLine ddOrderLine);
 
 	/**
@@ -147,27 +105,21 @@ public interface IDDOrderBL extends ISingletonService
 	 * 
 	 * NOTE: this method assumes that the movementLine is linked to a DD Order line, else an exception will be thrown.
 	 * 
-	 * @param movementLine
 	 * @return <code>true</code> if given DD_OrderLine's Movement is about receiving materials to target warehouse; <code>false</code> if it's about shipping materials from source warehouse to
 	 *         in-transit warehouse.
 	 */
 	boolean isMovementReceipt(I_M_MovementLine movementLine);
 
-	void completeForwardDDOrdersIfNeeded(I_PP_Order ppOrder);
-
 	/**
 	 * Complete Forward and Backward DD Orders, if they are on the same plant.
-	 * 
-	 * @param ddOrder
-	 * @task 08059
+	 * Task 08059
 	 */
 	void completeForwardAndBackwardDDOrders(I_DD_Order ddOrder);
 
 	/**
 	 * {@link I_DD_Order#setMRP_AllowCleanup(boolean)} to <code>false</code> to backward and forward DD Orders, if they are on the same plant.
 	 * 
-	 * @param ddOrder
-	 * @task 08059
+	 * Task 08059
 	 */
 	void disallowMRPCleanupOnForwardAndBackwardDDOrders(I_DD_Order ddOrder);
 

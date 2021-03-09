@@ -1,19 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="metasfresh@k8s-local" uuid="cf9ca076-7495-46dd-bd25-ac04a2891af0">
-      <driver-ref>postgresql</driver-ref>
-      <synchronize>true</synchronize>
-      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://localhost:30040/metasfresh</jdbc-url>
-    </data-source>
-    <data-source source="LOCAL" name="metasfresh@mf15cloudit" uuid="083736b0-1f8d-4527-b084-38fa707c25d4">
-      <driver-ref>postgresql</driver-ref>
-      <synchronize>true</synchronize>
-      <auto-commit>false</auto-commit>
-      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
-      <jdbc-url>jdbc:postgresql://declouddb001:5432/postgres</jdbc-url>
-    </data-source>
     <data-source source="LOCAL" name="metasfresh@devxxx" check-outdated="false" uuid="2853f62f-8c35-4789-9fbb-3ce09b4ce818">
       <driver-ref>postgresql</driver-ref>
       <synchronize>true</synchronize>
@@ -31,6 +18,12 @@
       <synchronize>true</synchronize>
       <jdbc-driver>org.postgresql.Driver</jdbc-driver>
       <jdbc-url>jdbc:postgresql://erptest:5432/metasfresh</jdbc-url>
+    </data-source>
+    <data-source source="LOCAL" name="metasfresh@docker-local" uuid="375d471a-974c-48ee-abd6-f461ba25440b">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://localhost:5432/metasfresh</jdbc-url>
     </data-source>
   </component>
 </project>

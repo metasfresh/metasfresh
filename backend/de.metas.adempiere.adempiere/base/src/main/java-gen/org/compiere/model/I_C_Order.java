@@ -7,6 +7,7 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for C_Order
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_C_Order 
 {
 
@@ -2363,6 +2364,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, org.compiere.model.I_C_Order> COLUMN_Ref_Proposal_ID = new ModelColumn<>(I_C_Order.class, "Ref_Proposal_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_Ref_Proposal_ID = "Ref_Proposal_ID";
+
+	/**
+	 * Set Return Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setreturnDate (@Nullable java.sql.Timestamp returnDate);
+
+	/**
+	 * Get Return Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getreturnDate();
+
+	ModelColumn<I_C_Order, Object> COLUMN_returnDate = new ModelColumn<>(I_C_Order.class, "returnDate", null);
+	String COLUMNNAME_returnDate = "returnDate";
 
 	/**
 	 * Set Sales partner code.

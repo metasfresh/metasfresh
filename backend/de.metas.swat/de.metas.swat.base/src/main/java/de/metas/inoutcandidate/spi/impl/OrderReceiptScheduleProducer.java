@@ -26,6 +26,7 @@ package de.metas.inoutcandidate.spi.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.order.IOrderBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 
@@ -57,6 +58,7 @@ public class OrderReceiptScheduleProducer extends AbstractReceiptScheduleProduce
 
 		final I_C_Order order = InterfaceWrapperHelper.create(model, I_C_Order.class);
 		Check.assume(!order.isSOTrx(), "Only purchase orders are handled: {}", order);
+		Check.assume(!Services.get(IOrderBL.class).isRequisition(order), "Requisitions are not handled {}", order);
 
 		return order;
 

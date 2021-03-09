@@ -1,33 +1,37 @@
 package de.metas.phonecall.process;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.process.ProcessExecutionResult;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.order.OrderFactory;
 import de.metas.organization.IOrgDAO;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.phonecall.PhonecallSchedule;
 import de.metas.phonecall.PhonecallScheduleId;
 import de.metas.phonecall.service.PhonecallScheduleRepository;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 /*
  * #%L
@@ -71,25 +75,26 @@ public class C_Phonecall_Schedule_CreateSalesOrder extends JavaProcess implement
 				.adClientId(Env.getAD_Client_ID())
 				.build();
 
-		final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
+		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(query);
 
-		final I_C_BPartner partnerRecord = bpartnerDAO.getById(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId());
+		final BPartnerLocationId bpartnerAndLocationId = phonecallSchedule.getBpartnerAndLocationId();
+		final BPartnerId bpartnerId = bpartnerAndLocationId.getBpartnerId();
+		final BPartnerContactId bpContactId = BPartnerContactId.of(bpartnerId, phonecallSchedule.getContactId());
+		final I_C_BPartner partnerRecord = bpartnerDAO.getById(bpartnerId);
 
 		final LocalDate today = SystemTime.asLocalDate();
 		final ZoneId orgTimeZone = orgDAO.getTimeZone(phonecallSchedule.getOrgId());
 		final ZonedDateTime datePromisedEndOfDay = today.atTime(LocalTime.MAX).atZone(orgTimeZone);
 
 		final I_C_Order draftOrder = OrderFactory.newSalesOrder()
-				.shipBPartner(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId(),
-						phonecallSchedule.getBpartnerAndLocationId().getRepoId(),
-						phonecallSchedule.getContactId().getRepoId())
+				.shipBPartner(bpartnerId, bpartnerAndLocationId, bpContactId)
 				// // this makes the system create a SO with deactivated BPartner Contact, if you have 3 contacts and the first 2 have IsActive=false
 				// // kept here for easy repro of https://github.com/metasfresh/metasfresh/issues/6463
 				// // can be deleted after that bug is fixed
 				// .shipBPartner(phonecallSchedule.getBpartnerAndLocationId().getBpartnerId())
 				//
 				.docType(docTypeId)
-				.paymentTermId(partnerRecord.getC_PaymentTerm_ID())
+				.paymentTermId(PaymentTermId.ofRepoIdOrNull(partnerRecord.getC_PaymentTerm_ID()))
 				.datePromised(datePromisedEndOfDay)
 				.createDraftOrderHeader();
 

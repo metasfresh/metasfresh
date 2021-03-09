@@ -585,11 +585,8 @@ public class Adempiere
 
 	/**
 	 * Immediately returns if the member <code>started</code> is already true. Also calls {@link #startupEnvironment(RunMode)}, <b>unless the given runMode is {@link RunMode#SWING_CLIENT}</b>
-	 *
-	 * @param runMode
-	 * @return
 	 */
-	public synchronized boolean startup(final RunMode runMode)
+	public synchronized boolean startup(@NonNull final RunMode runMode)
 	{
 		//
 		// Check if already started
@@ -638,8 +635,7 @@ public class Adempiere
 		logger.info(getSummaryAscii());
 
 		// System properties
-		Ini.loadProperties(false); // reload=false
-
+		Ini.loadProperties();
 		// Update logging configuration from Ini file (applies only if we are running the swing client)
 		if (runmodeClient)
 		{

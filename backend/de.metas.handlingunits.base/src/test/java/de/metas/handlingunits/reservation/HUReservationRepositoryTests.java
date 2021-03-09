@@ -1,26 +1,26 @@
 package de.metas.handlingunits.reservation;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Reservation;
+import de.metas.order.OrderLineId;
+import de.metas.quantity.Quantity;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Reservation;
-import de.metas.order.OrderLineId;
-import de.metas.quantity.Quantity;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -71,13 +71,15 @@ public class HUReservationRepositoryTests
 		final I_M_HU vhu2 = createHuReservationRecord(orderLineId, ONE);
 
 		// invoke the method under test
-		final HUReservation huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId).get();
+		final HUReservation huReservation = huReservationRepository
+				.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId))
+				.get();
 
-		assertThat(huReservation.getSalesOrderLineId()).isEqualTo(orderLineId);
+		assertThat(huReservation.getDocumentRef().getSalesOrderLineId()).isEqualTo(orderLineId);
 
 		final Quantity reservedQtySum = huReservation.getReservedQtySum();
 		assertThat(reservedQtySum.toBigDecimal()).isEqualByComparingTo(ELEVEN);
-		assertThat(reservedQtySum.getUOMId()).isEqualTo(uomRecord.getC_UOM_ID());
+		assertThat(reservedQtySum.getUomId().getRepoId()).isEqualTo(uomRecord.getC_UOM_ID());
 
 		final HuId expectedVhu1Id = HuId.ofRepoId(vhu1.getM_HU_ID());
 		assertThat(huReservation.getVhuIds()).contains(expectedVhu1Id);
@@ -94,11 +96,12 @@ public class HUReservationRepositoryTests
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(20);
 
 		// invoke the method under test
-		final Optional<HUReservation> huReservation = huReservationRepository.getBySalesOrderLineId(orderLineId);
+		final Optional<HUReservation> huReservation = huReservationRepository
+				.getByDocumentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId));
 		assertThat(huReservation).isNotPresent();
 	}
 
-	private I_M_HU createHuReservationRecord(final OrderLineId orderLineId, BigDecimal qtyReserved)
+	private I_M_HU createHuReservationRecord(final OrderLineId orderLineId, final BigDecimal qtyReserved)
 	{
 		final I_M_HU vhu1 = newInstance(I_M_HU.class);
 		saveRecord(vhu1);
@@ -116,7 +119,8 @@ public class HUReservationRepositoryTests
 	public void save()
 	{
 		final HUReservation huReservation = HUReservation.builder()
-				.salesOrderLineId(OrderLineId.ofRepoId(20))
+				.documentRef(HUReservationDocRef.ofSalesOrderLineId(OrderLineId.ofRepoId(20)))
+				.customerId(BPartnerId.ofRepoId(123))
 				.reservedQtyByVhuId(HuId.ofRepoId(10), Quantity.of(TEN, uomRecord))
 				.reservedQtyByVhuId(HuId.ofRepoId(11), Quantity.of(ONE, uomRecord))
 				.build();

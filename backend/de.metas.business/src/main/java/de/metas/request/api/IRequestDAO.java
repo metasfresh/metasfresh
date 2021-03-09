@@ -3,6 +3,7 @@ package de.metas.request.api;
 import de.metas.bpartner.BPartnerId;
 import de.metas.request.RequestId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_R_Request;
 
 import java.util.stream.Stream;
@@ -31,6 +32,10 @@ import java.util.stream.Stream;
 
 public interface IRequestDAO extends ISingletonService
 {
+	I_R_Request getById(@NonNull RequestId id);
+
+	void save(@NonNull I_R_Request request);
+
 	I_R_Request createRequest(RequestCandidate candidate);
 
 	I_R_Request createEmptyRequest();

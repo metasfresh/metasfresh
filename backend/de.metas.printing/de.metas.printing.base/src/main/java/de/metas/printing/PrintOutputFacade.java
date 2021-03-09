@@ -66,7 +66,8 @@ public class PrintOutputFacade
 		print(source, IPrintJobBL.ContextForAsyncProcessing.builder().build());
 	}
 
-	public void print(@NonNull final IPrintingQueueSource source, @NonNull final IPrintJobBL.ContextForAsyncProcessing printJobContext)
+	public void print(@NonNull final IPrintingQueueSource source,
+			@NonNull final IPrintJobBL.ContextForAsyncProcessing printJobContext)
 	{
 		final Iterator<I_C_Printing_Queue> it = source.createItemsIterator();
 		while (it.hasNext())

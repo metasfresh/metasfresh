@@ -1,5 +1,6 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
+import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import org.springframework.stereotype.Service;
 
 import de.metas.bpartner.BPGroupRepository;
@@ -43,6 +44,7 @@ public class JsonServiceFactory
 	private final BPGroupRepository bpGroupRepository;
 	private final GreetingRepository greetingRepository;
 	private final CurrencyRepository currencyRepository;
+	private final ExternalReferenceRestControllerService externalReferenceService;
 
 	public JsonServiceFactory(
 			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
@@ -50,7 +52,8 @@ public class JsonServiceFactory
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
-			@NonNull final CurrencyRepository currencyRepository)
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService)
 	{
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
 		this.bpartnerQueryService = bpartnerQueryService;
@@ -58,6 +61,7 @@ public class JsonServiceFactory
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.currencyRepository = currencyRepository;
+		this.externalReferenceService = externalReferenceService;
 	}
 
 	public JsonPersisterService createPersister()
@@ -71,6 +75,7 @@ public class JsonServiceFactory
 				bpartnerCompositeRepository,
 				bpGroupRepository,
 				currencyRepository,
+				externalReferenceService,
 				identifier);
 	}
 

@@ -45,6 +45,8 @@ public class BPRelation
 
 	private final BPartnerLocationId relBPLocationId;
 
+	private final String name;
+
 	public I_C_BP_Relation createRecord()
 	{
 		final I_C_BP_Relation bpRelation = newInstance(I_C_BP_Relation.class);
@@ -53,6 +55,7 @@ public class BPRelation
 		bpRelation.setC_BPartnerRelation_ID(relBPartnerId.getRepoId());
 		bpRelation.setC_BPartnerRelation_Location_ID(relBPLocationId.getRepoId());
 		bpRelation.setIsBillTo(billTo);
+		bpRelation.setName(name);
 		saveRecord(bpRelation);
 
 		return bpRelation;

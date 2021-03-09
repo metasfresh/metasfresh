@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.material.planning.pporder.PPOrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

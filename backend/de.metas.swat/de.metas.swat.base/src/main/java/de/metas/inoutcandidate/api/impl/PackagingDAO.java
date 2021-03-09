@@ -29,7 +29,7 @@ import de.metas.inoutcandidate.api.Packageable.PackageableBuilder;
 import de.metas.inoutcandidate.api.PackageableQuery;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;

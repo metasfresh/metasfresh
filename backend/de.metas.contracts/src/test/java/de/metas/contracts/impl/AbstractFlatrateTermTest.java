@@ -329,7 +329,7 @@ public abstract class AbstractFlatrateTermTest
 				.name("Abo")
 				.calendar(getCalendar())
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
-				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
+				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Immediate)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.onFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice)
 				.isCreateNoInvoice(false)

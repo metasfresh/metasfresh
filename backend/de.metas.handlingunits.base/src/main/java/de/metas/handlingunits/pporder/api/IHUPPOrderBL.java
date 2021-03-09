@@ -5,8 +5,8 @@ import de.metas.handlingunits.allocation.IAllocationSource;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.eevolution.api.PPOrderPlanningStatus;
@@ -67,9 +67,9 @@ public interface IHUPPOrderBL extends ISingletonService
 
 	boolean canChangePlanningStatus(PPOrderPlanningStatus fromPlanningStatus, PPOrderPlanningStatus toPlanningStatus);
 
-	void setAssignedHandlingUnits(I_PP_Order ppOrder, Collection<I_M_HU> hus);
+	void addAssignedHandlingUnits(I_PP_Order ppOrder, Collection<I_M_HU> hus);
 
-	void setAssignedHandlingUnits(I_PP_Order_BOMLine ppOrderBOMLine, Collection<I_M_HU> hus);
+	void addAssignedHandlingUnits(I_PP_Order_BOMLine ppOrderBOMLine, Collection<I_M_HU> hus);
 
 	void closeOrder(PPOrderId ppOrderId);
 }

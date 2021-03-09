@@ -307,15 +307,7 @@ public class InvoiceCandidate
 		switch (invoiceRule)
 		{
 			case AfterDelivery:
-				if (product.isStocked())
-				{
-					qtyToInvoice = computeInvoicableQtysDelivered();
-				}
-				else
-				{
-					qtyToInvoice = computeDeliveredOrOrdered();
-				}
-				break;
+			case OrderCompletelyDelivered:
 			case CustomerScheduleAfterDelivery:
 				if (product.isStocked())
 				{

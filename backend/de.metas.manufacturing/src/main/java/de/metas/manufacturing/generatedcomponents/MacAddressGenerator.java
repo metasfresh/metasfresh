@@ -92,7 +92,8 @@ public class MacAddressGenerator implements IComponentGenerator
 				continue;
 			}
 
-			final boolean alreadyGenerated = Check.isNotBlank(existingAttributes.getValueAsString(attributeCode));
+			final boolean alreadyGenerated = !context.isOverrideExistingValues()
+					&& Check.isNotBlank(existingAttributes.getValueAsString(attributeCode));
 			if (alreadyGenerated)
 			{
 				countAlreadyGenerated++;

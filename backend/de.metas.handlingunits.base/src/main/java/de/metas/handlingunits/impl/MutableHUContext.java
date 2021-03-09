@@ -1,20 +1,7 @@
 package de.metas.handlingunits.impl;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-
 import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.IHUContext;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -29,8 +16,17 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /* package */class MutableHUContext implements IMutableHUContext
 {
@@ -43,10 +39,9 @@ import javax.annotation.Nullable;
 	private IHUStorageFactory huStorageFactory = null;
 	private IAttributeStorageFactory _attributesStorageFactory = null;
 	private boolean _attributesStorageFactoryInitialized = false;
-	private ZonedDateTime date = null;
+	private ZonedDateTime date;
 	private CompositeHUTrxListener _trxListeners = null;
 
-	final IHUContext huCtx = null; // task 07734: we don't want to track M_MaterialTrackings, so we don't need to provide a HU context.
 	private IHUPackingMaterialsCollector<IHUPackingMaterialCollectorSource> _huPackingMaterialsCollector = new HUPackingMaterialsCollector(null);
 
 	private final List<EmptyHUListener> emptyHUListeners = new ArrayList<>();
@@ -84,6 +79,7 @@ import javax.annotation.Nullable;
 				+ "]";
 	}
 
+	@Nullable
 	@Override
 	public Object setProperty(final String propertyName, final Object value)
 	{
@@ -98,12 +94,12 @@ import javax.annotation.Nullable;
 		return propertyValue;
 	}
 
-	private final void setProperties(final Map<String, Object> contextProperties)
+	private void setProperties(final Map<String, Object> contextProperties)
 	{
 		_contextProperties = contextProperties;
 	}
 
-	private final Map<String, Object> getProperties()
+	private Map<String, Object> getProperties()
 	{
 		return _contextProperties;
 	}
@@ -122,7 +118,7 @@ import javax.annotation.Nullable;
 		huContextCopy.setHUPackingMaterialsCollector(_huPackingMaterialsCollector.copy());
 		huContextCopy._trxListeners = getTrxListeners().copy(); // using the getter to make sure they are loaded
 
-		emptyHUListeners.forEach(l -> huContextCopy.addEmptyHUListener(l));
+		emptyHUListeners.forEach(huContextCopy::addEmptyHUListener);
 
 		return huContextCopy;
 	}
@@ -133,6 +129,7 @@ import javax.annotation.Nullable;
 		return ctx;
 	}
 
+	@Nullable
 	@Override
 	public String getTrxName()
 	{
@@ -140,7 +137,7 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
-	public void setTrxName(final String trxName)
+	public void setTrxName(@Nullable final String trxName)
 	{
 		this.trxName = trxName;
 	}
@@ -266,5 +263,15 @@ import javax.annotation.Nullable;
 	public List<EmptyHUListener> getEmptyHUListeners()
 	{
 		return ImmutableList.copyOf(emptyHUListeners);
+	}
+
+	@Override
+	public void flush()
+	{
+		final IAttributeStorageFactory attributesStorageFactory = _attributesStorageFactory;
+		if(attributesStorageFactory != null)
+		{
+			attributesStorageFactory.flush();
+		}
 	}
 }

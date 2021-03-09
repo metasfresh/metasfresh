@@ -87,7 +87,7 @@ describe('Change Product Price', function() {
   it(`Change Price and use it`, function() {
     cy.visitWindow(`140`, productRecordID);
     cy.selectTab(`M_ProductPrice`);
-    cy.selectNthRow(0);
+    cy.get(`[data-cy=cell-M_PriceList_Version_ID]`).click();
     cy.openAdvancedEdit();
     cy.writeIntoStringField('PriceStd', 1, true, null, true);
     cy.pressDoneButton();

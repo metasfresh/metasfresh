@@ -42,6 +42,7 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	/**
 	 * Like {@link #getBPartnerEffectiveId(I_C_OLCand)}, but returns the actual partner.
 	 */
+	@Nullable
 	I_C_BPartner getC_BPartner_Effective(I_C_OLCand olCand);
 
 	/**
@@ -155,6 +156,7 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	/**
 	 * Like {@link #getM_Product_Effective_ID(I_C_OLCand)}, but returns the actual product.
 	 */
+	@Nullable
 	I_M_Product getM_Product_Effective(I_C_OLCand olCand);
 
 	/**

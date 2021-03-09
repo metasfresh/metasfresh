@@ -10,6 +10,8 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -105,6 +107,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 	// Services
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
@@ -231,8 +234,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final boolean qtyLeftWasAllocated = qtyLeftToAllocate.abs().compareTo(allocatedQty.abs()) == 0;
 
 			Check.errorIf(qtyLeftShouldHaveBeenAllocated && !qtyLeftWasAllocated,
-					"We invoked createInvoiceCandidateForInOutLineOrNull with forcedQtyOrdered={}, but allocatedQty={}; inOutLine={}; inOut={}",
-					qtyLeftToAllocate, allocatedQty, inOutLine, inOutLine.getM_InOut());
+						  "We invoked createInvoiceCandidateForInOutLineOrNull with forcedQtyOrdered={}, but allocatedQty={}; inOutLine={}; inOut={}",
+						  qtyLeftToAllocate, allocatedQty, inOutLine, inOutLine.getM_InOut());
 		}
 
 		return createdInvoiceCandidates.build();
@@ -358,10 +361,17 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			}
 		}
 
-		//
-		// Set C_Activity from Product (07442)
-		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
-		icRecord.setC_Activity_ID(ActivityId.toRepoId(activityId));
+		Dimension inOutLineDimension = dimensionService.getFromRecord(inOutLineRecord);
+
+		if (inOutLineDimension.getActivityId() == null)
+		{
+			//
+			// Set C_Activity from Product (07442)
+			final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
+			inOutLineDimension = inOutLineDimension.withActivityId(activityId);
+		}
+
+		dimensionService.updateRecord(icRecord, inOutLineDimension);
 
 		//
 		// Set C_Tax from Product (07442)
@@ -770,9 +780,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 			final User billBPContact = bPartnerBL
 					.retrieveContactOrNull(RetrieveContactRequest.builder()
-							.bpartnerId(billBPLocationId.getBpartnerId())
-							.bPartnerLocationId(billBPLocationId)
-							.build());
+												   .bpartnerId(billBPLocationId.getBpartnerId())
+												   .bPartnerLocationId(billBPLocationId)
+												   .build());
 			billBPContactId = billBPContact != null
 					? BPartnerContactId.of(billBPLocationId.getBpartnerId(), billBPContact.getId())
 					: null;

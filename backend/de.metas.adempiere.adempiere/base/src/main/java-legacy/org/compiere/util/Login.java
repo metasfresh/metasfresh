@@ -147,11 +147,11 @@ public class Login
 
 		if (Check.isEmpty(username, true))
 		{
-			throw new AdempiereException("@UserOrPasswordInvalid@");
+			throw new AdempiereException("@UserOrPasswordInvalid@").markAsUserValidationError();
 		}
 		if (HashableString.isEmpty(password))
 		{
-			throw new AdempiereException("@UserOrPasswordInvalid@");
+			throw new AdempiereException("@UserOrPasswordInvalid@").markAsUserValidationError();
 		}
 
 		//
@@ -190,7 +190,7 @@ public class Login
 			}
 			else
 			{
-				throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
+				throw new AdempiereException("@UserAccountLockedError@").markAsUserValidationError(); // TODO: specific exception
 			}
 		}
 
@@ -206,13 +206,13 @@ public class Login
 				InterfaceWrapperHelper.save(user);
 
 				destroySessionOnLoginIncorrect(session);
-				throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
+				throw new AdempiereException("@UserAccountLockedError@").markAsUserValidationError(); // TODO: specific exception
 			}
 
 			InterfaceWrapperHelper.save(user);
 
 			destroySessionOnLoginIncorrect(session);
-			throw new AdempiereException("@UserOrPasswordInvalid@");
+			throw new AdempiereException("@UserOrPasswordInvalid@").markAsUserValidationError();
 		}
 		else
 		{
@@ -274,7 +274,7 @@ public class Login
 		//
 		if (roles.isEmpty())
 		{
-			throw new AdempiereException("No roles"); // TODO: specific exception
+			throw new AdempiereException("@NoRoles@").markAsUserValidationError(); // TODO: specific exception
 		}
 
 		log.debug("User={}, roles={}", username, roles);
@@ -330,7 +330,7 @@ public class Login
 		if (clientsList.isEmpty())
 		{
 			// shall not happen because in this case rolePermissions retrieving should fail
-			throw new AdempiereException("No Clients for Role: " + role.toStringX());
+			throw new AdempiereException("No Clients for Role: " + role.toStringX()).markAsUserValidationError();
 		}
 
 		//
@@ -475,7 +475,6 @@ public class Login
 	 *
 	 * @param org org information
 	 * @param timestamp optional date
-	 * @param printerName optional printer info
 	 * @return AD_Message of error (NoValidAcctInfo) or ""
 	 */
 	public String loadPreferences(
