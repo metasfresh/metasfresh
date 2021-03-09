@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.contracts
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.bpartner.service;
+package de.metas.contracts.bpartner.service;
 
 import org.springframework.stereotype.Service;
 
@@ -29,6 +29,7 @@ public class OrgChangeService
 {
 	public void moveBPartnerToOrg(final OrgChangeParameters orgChangeParameters)
 	{
+
 
 	}
 

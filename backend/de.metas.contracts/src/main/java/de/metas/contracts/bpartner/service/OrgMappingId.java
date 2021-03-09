@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.contracts
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,14 +20,13 @@
  * #L%
  */
 
-package de.metas.bpartner.service;
+package de.metas.contracts.bpartner.service;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
-import org.adempiere.ad.table.api.AdTableId;
 
 import java.util.Objects;
 

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.contracts
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,27 +20,34 @@
  * #L%
  */
 
-package de.metas.bpartner.service;
+package de.metas.contracts.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import lombok.Builder;
+import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.AdTableId;
+import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
+import javax.annotation.Nullable;
 
-@Value
-@Builder
-public class OrgChangeParameters
+@Repository
+public class OrgChangeRepository
 {
-	@NonNull BPartnerId bpartnerId;
+	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@NonNull OrgId orgToId;
+	public boolean hasMembershipSubscriptions(final BPartnerId partnerId)
+	{
+		return false;
+	}
+	// private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	//
+	// public OrgMappingId retrieveOrgMappingId(
+	// 		@NonNull final AdTableId tableId,
+	// 		@Nullable String value)
+	// {
+	//
+	// }
 
-	@NonNull LocalDate startDate;
-
-	@NonNull ProductId membershipProductId;
-
+	// TODO
 }
