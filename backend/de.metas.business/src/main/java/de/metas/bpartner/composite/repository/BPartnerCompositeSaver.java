@@ -231,10 +231,16 @@ final class BPartnerCompositeSaver
 
 			boolean anyLocationChange = false;
 
+			// we always have to save it in case of new BP Location
+			if(bpartnerLocation.getId() == null)
+			{
+				anyLocationChange = true;
+			}
+
 			// C_Location is immutable; never update an existing record, but create a new one
 			final I_C_Location locationRecord = newInstance(I_C_Location.class);
 
-			anyLocationChange = bpartnerLocation.isActiveChanged();
+			anyLocationChange = anyLocationChange || bpartnerLocation.isActiveChanged();
 			locationRecord.setIsActive(bpartnerLocation.isActive());
 
 			anyLocationChange = anyLocationChange || bpartnerLocation.isAddress1Changed();
@@ -270,9 +276,9 @@ final class BPartnerCompositeSaver
 				{
 					postalQueryBuilder.addEqualsFilter(I_C_Postal.COLUMN_District, bpartnerLocation.getDistrict());
 				}
-				else
+				if (!isEmpty(bpartnerLocation.getCountryCode(), true))
 				{
-					// prefer C_Postal records that have no district set
+					postalQueryBuilder.addEqualsFilter(I_C_Postal.COLUMN_C_Country_ID, locationRecord.getC_Country_ID());
 				}
 
 				postalQueryBuilder.orderBy().addColumn(I_C_Postal.COLUMNNAME_District, Direction.Ascending, Nulls.First);
