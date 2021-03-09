@@ -46,8 +46,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
 
-import static de.metas.common.rest_api.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.impl.BpartnerRestController.ORG_CODE_PARAMETER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.rest_api.bpartner.impl.v1.BpartnerRestController.ORG_CODE_PARAMETER_DOC;
 
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/bpartner/relation",

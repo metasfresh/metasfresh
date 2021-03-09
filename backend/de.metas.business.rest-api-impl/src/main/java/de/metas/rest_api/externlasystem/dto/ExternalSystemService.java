@@ -23,13 +23,13 @@
 package de.metas.rest_api.externlasystem.dto;
 
 import de.metas.RestUtils;
-import de.metas.common.rest_api.CreatePInstanceLogRequest;
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonErrorItem;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.JsonPInstanceLog;
-import de.metas.common.rest_api.issue.JsonCreateIssueResponse;
-import de.metas.common.rest_api.issue.JsonCreateIssueResponseItem;
+import de.metas.common.rest_api.v1.CreatePInstanceLogRequest;
+import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonPInstanceLog;
+import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
+import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponseItem;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;

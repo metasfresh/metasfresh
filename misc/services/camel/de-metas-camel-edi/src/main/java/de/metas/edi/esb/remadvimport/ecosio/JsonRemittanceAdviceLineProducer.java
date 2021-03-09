@@ -31,7 +31,7 @@ import at.erpel.schemas._1p0.documents.extensions.edifact.REMADVListLineItemExte
 import at.erpel.schemas._1p0.documents.extensions.edifact.TaxType;
 import at.erpel.schemas._1p0.documents.extensions.edifact.VATType;
 import com.google.common.collect.ImmutableSet;
-import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdviceLine;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;

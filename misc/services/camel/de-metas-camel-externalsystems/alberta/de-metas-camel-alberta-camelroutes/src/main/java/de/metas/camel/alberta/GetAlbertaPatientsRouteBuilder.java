@@ -31,7 +31,7 @@ import de.metas.camel.alberta.processor.CreateBPartnerReqProcessor;
 import de.metas.camel.alberta.processor.CreateESRQueryProcessor;
 import de.metas.camel.alberta.processor.RetrievePatientsProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsert;
+import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;

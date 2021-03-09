@@ -31,7 +31,7 @@ import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonMetasfreshId;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.externalreference.ExternalReferenceRepository;

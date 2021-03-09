@@ -1,24 +1,8 @@
-package de.metas.rest_api.bpartner.impl.bpartnercomposite;
-
-import de.metas.bpartner.composite.BPartnerContact;
-import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.order.InvoiceRule;
-import de.metas.common.rest_api.JsonInvoiceRule;
-import de.metas.rest_api.utils.MetasfreshId;
-import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.utils.IdentifierString.Type;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-import java.util.function.Predicate;
-
 /*
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,6 +19,22 @@ import java.util.function.Predicate;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.rest_api.bpartner.impl.bpartnercomposite;
+
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.order.InvoiceRule;
+import de.metas.common.rest_api.v1.JsonInvoiceRule;
+import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.utils.IdentifierString.Type;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.function.Predicate;
 
 @UtilityClass
 public class BPartnerCompositeRestUtils

@@ -2,8 +2,8 @@ package de.metas.rest_api.invoicecandidates.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import de.metas.common.rest_api.JsonErrorItem;
-import de.metas.common.rest_api.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.common.rest_api.v1.JsonExternalId;
 import de.metas.rest_api.utils.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;

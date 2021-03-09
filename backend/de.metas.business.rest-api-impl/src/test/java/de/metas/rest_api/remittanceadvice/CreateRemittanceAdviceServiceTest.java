@@ -24,12 +24,12 @@ package de.metas.rest_api.remittanceadvice;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceRequest;
-import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceResponse;
-import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdvice;
-import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdviceLine;
-import de.metas.common.rest_api.remittanceadvice.RemittanceAdviceType;
+import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRequest;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceResponse;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdvice;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
+import de.metas.common.rest_api.v1.remittanceadvice.RemittanceAdviceType;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
