@@ -433,3 +433,148 @@ UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=20,Updated=TO_T
 UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=30,Updated=TO_TIMESTAMP('2021-03-05 16:24:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=573059
 ;
 
+-- 2021-03-09T14:53:55.895Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,578812,0,TO_TIMESTAMP('2021-03-09 16:53:55','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Search Asistant','Search Asistant',TO_TIMESTAMP('2021-03-09 16:53:55','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-03-09T14:53:55.908Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=578812 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2021-03-09T14:54:12.525Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Suchassistent',Updated=TO_TIMESTAMP('2021-03-09 16:54:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578812 AND AD_Language='de_CH'
+;
+
+-- 2021-03-09T14:54:12.563Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578812,'de_CH') 
+;
+
+-- 2021-03-09T14:54:13.882Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Suchassistent',Updated=TO_TIMESTAMP('2021-03-09 16:54:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578812 AND AD_Language='de_DE'
+;
+
+-- 2021-03-09T14:54:13.884Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578812,'de_DE') 
+;
+
+-- 2021-03-09T14:54:13.892Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(578812,'de_DE') 
+;
+
+-- 2021-03-09T14:54:13.894Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName=NULL, Name='Suchassistent', Description=NULL, Help=NULL WHERE AD_Element_ID=578812
+;
+
+-- 2021-03-09T14:54:13.896Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Suchassistent', Description=NULL, Help=NULL WHERE AD_Element_ID=578812 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-03-09T14:54:13.897Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Suchassistent', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=578812) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 578812)
+;
+
+-- 2021-03-09T14:54:13.930Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Search Asistant', Name='Suchassistent' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=578812)
+;
+
+-- 2021-03-09T14:54:13.932Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Suchassistent', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 578812
+;
+
+-- 2021-03-09T14:54:13.935Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Suchassistent', Description=NULL, Help=NULL WHERE AD_Element_ID = 578812
+;
+
+-- 2021-03-09T14:54:13.936Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Suchassistent', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 578812
+;
+
+-- 2021-03-09T14:54:16.490Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Suchassistent',Updated=TO_TIMESTAMP('2021-03-09 16:54:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578812 AND AD_Language='nl_NL'
+;
+
+-- 2021-03-09T14:54:16.492Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578812,'nl_NL') 
+;
+
+-- 2021-03-09T14:54:17.468Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-03-09 16:54:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578812 AND AD_Language='en_US'
+;
+
+-- 2021-03-09T14:54:17.469Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578812,'en_US') 
+;
+
+-- 2021-03-09T14:54:18.700Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET PrintName='Suchassistent',Updated=TO_TIMESTAMP('2021-03-09 16:54:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578812 AND AD_Language='de_DE'
+;
+
+-- 2021-03-09T14:54:18.701Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578812,'de_DE') 
+;
+
+-- 2021-03-09T14:54:18.709Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(578812,'de_DE') 
+;
+
+-- 2021-03-09T14:54:18.711Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Suchassistent', Name='Suchassistent' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=578812)
+;
+
+-- 2021-03-09T14:54:19.644Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET PrintName='Suchassistent',Updated=TO_TIMESTAMP('2021-03-09 16:54:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578812 AND AD_Language='de_CH'
+;
+
+-- 2021-03-09T14:54:19.646Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578812,'de_CH') 
+;
+
+-- 2021-03-09T14:54:22.044Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET PrintName='Suchassistent',Updated=TO_TIMESTAMP('2021-03-09 16:54:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=578812 AND AD_Language='nl_NL'
+;
+
+-- 2021-03-09T14:54:22.046Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578812,'nl_NL') 
+;
+
+-- 2021-03-09T14:55:33.563Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET AD_Element_ID=578812, CommitWarning=NULL, Description=NULL, Help=NULL, Name='Suchassistent',Updated=TO_TIMESTAMP('2021-03-09 16:55:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=543530
+;
+
+-- 2021-03-09T14:55:33.568Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_tab_translation_from_ad_element(578812) 
+;
+
+-- 2021-03-09T14:55:33.584Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(543530)
+;
+ 
