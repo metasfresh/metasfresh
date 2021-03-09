@@ -42,13 +42,14 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 
-@RequestMapping(ShipmentCandidatesRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/shipments",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/shipments",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/shipments" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ShipmentCandidatesRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/shipments";
-
 	private final ShipmentCandidateAPIService shipmentCandidateAPIService;
 
 	public ShipmentCandidatesRestController(@NonNull final ShipmentCandidateAPIService shipmentCandidateAPIService)

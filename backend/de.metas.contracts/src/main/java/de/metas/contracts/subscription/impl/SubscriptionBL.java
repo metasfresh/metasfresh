@@ -45,6 +45,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MNote;
 import org.compiere.model.Query;
@@ -57,7 +58,6 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -316,7 +316,7 @@ public class SubscriptionBL implements ISubscriptionBL
 									return;
 								}
 
-								I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, olCand.getAD_Org_ID(), trxName);
+								org.compiere.model.I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, olCand.getAD_Org_ID(), trxName);
 								if (userInCharge == null)
 								{
 									userInCharge = InterfaceWrapperHelper.create(ctx, Env.getAD_User_ID(ctx), I_AD_User.class, trxName);
@@ -435,7 +435,7 @@ public class SubscriptionBL implements ISubscriptionBL
 
 		newTerm.setC_Flatrate_Data(existingData);
 
-		final I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, olCandRecord.getAD_Org_ID(), trxName);
+		final org.compiere.model.I_AD_User userInCharge = Services.get(IBPartnerOrgBL.class).retrieveUserInChargeOrNull(ctx, olCandRecord.getAD_Org_ID(), trxName);
 		if (userInCharge != null)
 		{
 			newTerm.setAD_User_InCharge_ID(userInCharge.getAD_User_ID());

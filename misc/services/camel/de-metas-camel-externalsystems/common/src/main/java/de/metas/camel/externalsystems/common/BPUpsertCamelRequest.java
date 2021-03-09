@@ -22,6 +22,8 @@
 
 package de.metas.camel.externalsystems.common;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.bpartner.request.JsonRequestBPartnerUpsert;
 import lombok.Builder;
 import lombok.NonNull;
@@ -29,11 +31,14 @@ import lombok.Value;
 
 @Value
 @Builder
+@JsonDeserialize(builder = BPUpsertCamelRequest.BPUpsertCamelRequestBuilder.class)
 public class BPUpsertCamelRequest
 {
 	@NonNull
+	@JsonProperty("orgCode")
 	String orgCode;
 
 	@NonNull
+	@JsonProperty("jsonRequestBPartnerUpsert")
 	JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert;
 }

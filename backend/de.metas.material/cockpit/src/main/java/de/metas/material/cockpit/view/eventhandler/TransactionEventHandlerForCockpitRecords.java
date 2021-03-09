@@ -1,8 +1,12 @@
 package de.metas.material.cockpit.view.eventhandler;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.Collection;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +51,7 @@ public class TransactionEventHandlerForCockpitRecords
 		implements MaterialEventHandler<AbstractTransactionEvent>
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public TransactionEventHandlerForCockpitRecords(
 			@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
@@ -69,19 +74,21 @@ public class TransactionEventHandlerForCockpitRecords
 		dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
 	}
 
-	private UpdateMainDataRequest createDataUpdateRequestForEvent(
-			@NonNull final AbstractTransactionEvent transactionEvent)
+	private UpdateMainDataRequest createDataUpdateRequestForEvent(@NonNull final AbstractTransactionEvent event)
 	{
-		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier
-				.createForMaterial(transactionEvent.getMaterialDescriptor());
+		final OrgId orgId = event.getEventDescriptor().getOrgId();
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
-		final BigDecimal eventQuantity = transactionEvent.getQuantityDelta();
+		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier
+				.createForMaterial(event.getMaterialDescriptor(), timeZone);
+
+		final BigDecimal eventQuantity = event.getQuantityDelta();
 
 		final UpdateMainDataRequestBuilder dataRequestBuilder = UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.onHandQtyChange(eventQuantity);
 
-		if (transactionEvent.isDirectMovementWarehouse())
+		if (event.isDirectMovementWarehouse())
 		{
 			dataRequestBuilder.directMovementQty(eventQuantity);
 		}

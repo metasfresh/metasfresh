@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -94,6 +95,10 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		final I_C_Order salesOrder = salesOrderLine.getC_Order();
 
 		final I_C_BPartner vendor = bpartnerDAO.retrieveBPartnerByValue(context.getCtx(), (String)vendorBPartnerValue);
+		if (vendor == null)
+		{
+			throw new AdempiereException("No vendor found for Value=" + vendorBPartnerValue + " or vendor is not active.");
+		}
 
 		final I_C_Order purchaseOrder = createPurchaseOrder(vendor, salesOrder);
 
@@ -166,8 +171,9 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		return orderLinesAggregator;
 	}
 
-	private I_C_Order createPurchaseOrder(final I_C_BPartner vendor,
-			final I_C_Order salesOrder)
+	private I_C_Order createPurchaseOrder(
+			@NonNull final I_C_BPartner vendor,
+			@NonNull final I_C_Order salesOrder)
 	{
 
 		final I_C_Order purchaseOrder = InterfaceWrapperHelper.newInstance(I_C_Order.class, context);

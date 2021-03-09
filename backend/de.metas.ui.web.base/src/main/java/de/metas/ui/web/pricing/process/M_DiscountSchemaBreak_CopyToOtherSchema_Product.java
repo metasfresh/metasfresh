@@ -9,7 +9,9 @@ import org.compiere.model.I_M_Product;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
+import de.metas.pricing.conditions.CopyDiscountSchemaBreaksRequest;
 import de.metas.pricing.conditions.PricingConditionsId;
+import de.metas.pricing.conditions.CopyDiscountSchemaBreaksRequest.Direction;
 import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -128,10 +130,15 @@ public class M_DiscountSchemaBreak_CopyToOtherSchema_Product extends ViewBasedPr
 
 		final boolean allowCopyToSameSchema = true;
 
-		pricingConditionsRepo.copyDiscountSchemaBreaksWithProductId(queryFilter,
-				PricingConditionsId.ofRepoId(p_PricingConditionsId),
-				ProductId.ofRepoId(p_ProductId),
-				allowCopyToSameSchema);
+		final CopyDiscountSchemaBreaksRequest request = CopyDiscountSchemaBreaksRequest.builder()
+				.filter(queryFilter)
+				.pricingConditionsId(PricingConditionsId.ofRepoId(p_PricingConditionsId))
+				.productId(ProductId.ofRepoId(p_ProductId))
+				.allowCopyToSameSchema(allowCopyToSameSchema)
+				.direction(Direction.SourceTarget)
+				.build();
+		
+		pricingConditionsRepo.copyDiscountSchemaBreaksWithProductId(request);
 
 		return MSG_OK;
 	}

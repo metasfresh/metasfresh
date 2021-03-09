@@ -69,6 +69,7 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -449,7 +450,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
 
-		final int taxId = Services.get(ITaxBL.class).getTax(
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
 				term,
 				taxCategoryId,
@@ -460,7 +461,7 @@ public class FlatrateBL implements IFlatrateBL
 				shipToLocationId,
 				isSOTrx);
 
-		newCand.setC_Tax_ID(taxId);
+		newCand.setC_Tax_ID(taxId.getRepoId());
 
 		setILCandHandler(ctx, newCand);
 
@@ -580,7 +581,7 @@ public class FlatrateBL implements IFlatrateBL
 		final boolean isSOTrx = true;
 
 		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
-		final int taxId = Services.get(ITaxBL.class).getTax(
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
 				term,
 				taxCategoryId,
@@ -591,7 +592,7 @@ public class FlatrateBL implements IFlatrateBL
 				shipToLocationId,
 				isSOTrx);
 
-		newCand.setC_Tax_ID(taxId);
+		newCand.setC_Tax_ID(taxId.getRepoId());
 
 		setILCandHandler(ctx, newCand);
 

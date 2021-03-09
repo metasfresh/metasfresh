@@ -36,6 +36,7 @@ import de.metas.common.bprelation.JsonBPRelationRole;
 import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.JsonExternalId;
 import de.metas.common.rest_api.JsonMetasfreshId;
@@ -49,6 +50,7 @@ import io.swagger.client.model.Patient;
 import io.swagger.client.model.PatientBillingAddress;
 import io.swagger.client.model.PatientDeliveryAddress;
 import io.swagger.client.model.Payer;
+import io.swagger.client.model.Pharmacy;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -85,6 +87,8 @@ public class BPartnerUpsertRequestProducer
 	private final Doctor doctor;
 	@Nullable
 	private final Payer payer;
+	@Nullable
+	private final Pharmacy pharmacy;
 
 	@NonNull
 	private final Map<String, JsonBPRelationRole> bPartnerIdentifier2RelationRole;
@@ -101,7 +105,8 @@ public class BPartnerUpsertRequestProducer
 			@Nullable final NursingService nursingService,
 			@Nullable final NursingHome nursingHome,
 			@Nullable final Doctor doctor,
-			@Nullable final Payer payer)
+			@Nullable final Payer payer,
+			@Nullable final Pharmacy pharmacy)
 	{
 		if (patient.getId() == null)
 		{
@@ -115,6 +120,7 @@ public class BPartnerUpsertRequestProducer
 		this.orgCode = orgCode;
 		this.patient = patient;
 		this.payer = payer;
+		this.pharmacy = pharmacy;
 		this.externalId2MetasfreshId = externalId2MetasfreshId;
 		this.bPartnerIdentifier2RelationRole = new HashMap<>();
 		this.requestProducerResultBuilder = BPartnerRequestProducerResult.builder();
@@ -141,6 +147,7 @@ public class BPartnerUpsertRequestProducer
 		mapNursingHome().ifPresent(upsertBPartnersRequest::requestItem);
 		mapDoctor().ifPresent(upsertBPartnersRequest::requestItem);
 		mapPayer().ifPresent(upsertBPartnersRequest::requestItem);
+		mapPharmacy().ifPresent(upsertBPartnersRequest::requestItem);
 
 		return requestProducerResultBuilder
 				.patientBPartnerIdentifier(patientUpsertItem.getBpartnerIdentifier())
@@ -182,7 +189,7 @@ public class BPartnerUpsertRequestProducer
 				.build();
 
 		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(patientId);
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(patientId)
 				: null;
 
@@ -320,13 +327,8 @@ public class BPartnerUpsertRequestProducer
 		location.setExternalId(JsonExternalId.of(careGiverId));
 		location.setPostal(careGiver.getPostalCode());
 
-		final JsonRequestLocationUpsert locationUpsertRequest = JsonRequestLocationUpsert.builder()
-				.requestItem(JsonRequestLocationUpsertItem.builder()
-									 .locationIdentifier(EXTERNAL_ID_PREFIX + careGiverId)
-									 .location(location)
-									 .build()
-				)
-				.build();
+		final JsonRequestLocationUpsert locationUpsertRequest =
+				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + careGiverId, location);
 
 		final JsonRequestContact contact = new JsonRequestContact();
 		contact.setFirstName(careGiver.getFirstName());
@@ -345,7 +347,7 @@ public class BPartnerUpsertRequestProducer
 									 .build())
 				.build();
 
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(careGiverId)
 				: null;
 
@@ -396,19 +398,17 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setShipTo(true);
 		requestLocation.setShipToDefault(true);
 
-		final JsonRequestLocationUpsertItem jsonRequestLocationUpsertItem = JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(EXTERNAL_ID_PREFIX + hospital.getId())
-				.location(requestLocation)
-				.build();
+		final JsonRequestLocationUpsert upsertLocationsRequest =
+				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + hospital.getId(), requestLocation);
 
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(hospital.getId())
 				: null;
 
 		final JsonRequestComposite compositeUpsertItem = JsonRequestComposite.builder()
 				.orgCode(orgCode)
 				.bpartner(jsonRequestBPartner)
-				.locations(JsonRequestLocationUpsert.builder().requestItem(jsonRequestLocationUpsertItem).build())
+				.locations(upsertLocationsRequest)
 				.bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
 				.build();
 
@@ -450,16 +450,10 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setShipTo(true);
 		requestLocation.setShipToDefault(true);
 
-		final JsonRequestLocationUpsertItem jsonRequestLocationUpsertItem = JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(EXTERNAL_ID_PREFIX + nursingService.getId())
-				.location(requestLocation)
-				.build();
+		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
+				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + nursingService.getId(), requestLocation);
 
-		final JsonRequestLocationUpsert jsonRequestLocationUpsert = JsonRequestLocationUpsert.builder()
-				.requestItem(jsonRequestLocationUpsertItem)
-				.build();
-
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(nursingService.getId())
 				: null;
 
@@ -509,16 +503,10 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setShipTo(true);
 		requestLocation.setShipToDefault(true);
 
-		final JsonRequestLocationUpsertItem jsonRequestLocationUpsertItem = JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(EXTERNAL_ID_PREFIX + nursingHome.getId())
-				.location(requestLocation)
-				.build();
+		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
+				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + nursingHome.getId(), requestLocation);
 
-		final JsonRequestLocationUpsert jsonRequestLocationUpsert = JsonRequestLocationUpsert.builder()
-				.requestItem(jsonRequestLocationUpsertItem)
-				.build();
-
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(nursingHome.getId())
 				: null;
 
@@ -575,16 +563,10 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setShipTo(true);
 		requestLocation.setShipToDefault(true);
 
-		final JsonRequestLocationUpsertItem jsonRequestLocationUpsertItem = JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(EXTERNAL_ID_PREFIX + doctor.getId())
-				.location(requestLocation)
-				.build();
+		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
+				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + doctor.getId(), requestLocation);
 
-		final JsonRequestLocationUpsert jsonRequestLocationUpsert = JsonRequestLocationUpsert.builder()
-				.requestItem(jsonRequestLocationUpsertItem)
-				.build();
-
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(doctor.getId())
 				: null;
 
@@ -630,16 +612,10 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setShipTo(true);
 		requestLocation.setShipToDefault(true);
 
-		final JsonRequestLocationUpsertItem jsonRequestLocationUpsertItem = JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(EXTERNAL_ID_PREFIX + payer.getId())
-				.location(requestLocation)
-				.build();
+		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
+				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + payer.getId(), requestLocation);
 
-		final JsonRequestLocationUpsert jsonRequestLocationUpsert = JsonRequestLocationUpsert.builder()
-				.requestItem(jsonRequestLocationUpsertItem)
-				.build();
-
-		final JsonExternalReferenceCreateRequest referenceCreateRequestOrNull = actualMFBPartnerId == null
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(payer.getId())
 				: null;
 
@@ -657,17 +633,88 @@ public class BPartnerUpsertRequestProducer
 								   .build());
 	}
 
+	private Optional<JsonRequestBPartnerUpsertItem> mapPharmacy()
+	{
+		if (pharmacy == null)
+		{
+			return Optional.empty();
+		}
+
+		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(pharmacy.getId());
+		final String bpartnerIdentifier = actualMFBPartnerId != null
+				? String.valueOf(actualMFBPartnerId.getValue())
+				: EXTERNAL_ID_PREFIX + pharmacy.getId();
+
+		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.Pharmacy);
+
+		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
+		jsonRequestBPartner.setExternalId(JsonExternalId.of(pharmacy.getId()));
+		jsonRequestBPartner.setName(pharmacy.getName());
+		jsonRequestBPartner.setPhone(pharmacy.getPhone());
+		jsonRequestBPartner.setCustomer(true);
+		// todo pharmacy.getWebsite() ?
+		// todo pharmacy.getEmail() ?
+		// todo pharmacy.getFax() ?
+
+
+		final JsonRequestLocation requestLocation = new JsonRequestLocation();
+		requestLocation.setExternalId(JsonExternalId.of(pharmacy.getId()));
+		requestLocation.setCountryCode(COUNTRY_CODE_DE);
+		requestLocation.setCity(pharmacy.getCity());
+		requestLocation.setPostal(pharmacy.getPostalCode());
+		requestLocation.setAddress1(pharmacy.getAddress());
+		requestLocation.setBillTo(true);
+		requestLocation.setBillToDefault(true);
+		requestLocation.setShipTo(true);
+		requestLocation.setShipToDefault(true);
+
+		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
+				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + pharmacy.getId(), requestLocation);
+
+		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
+				? createInsertExternalReferenceReq(pharmacy.getId())
+				: null;
+
+		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
+				.bpartner(jsonRequestBPartner)
+				.locations(jsonRequestLocationUpsert)
+				.orgCode(orgCode)
+				.bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
+				.build();
+
+		return Optional.of(JsonRequestBPartnerUpsertItem
+								   .builder()
+								   .bpartnerIdentifier(bpartnerIdentifier)
+								   .bpartnerComposite(jsonRequestComposite)
+								   .build());
+	}
+
 	@NonNull
-	private JsonExternalReferenceCreateRequest createInsertExternalReferenceReq(@NonNull final String externalId)
+	private JsonRequestLocationUpsert toJsonRequestLocationUpsert(
+			@NonNull final String locationIdentifier,
+			@NonNull final JsonRequestLocation locationRequest)
+	{
+		final JsonRequestLocationUpsertItem jsonRequestLocationUpsertItem = JsonRequestLocationUpsertItem.builder()
+				.locationIdentifier(locationIdentifier)
+				.location(locationRequest)
+				.build();
+
+		return JsonRequestLocationUpsert.builder()
+				.requestItem(jsonRequestLocationUpsertItem)
+				.build();
+	}
+
+	@NonNull
+	private JsonSingleExternalReferenceCreateReq createInsertExternalReferenceReq(@NonNull final String externalId)
 	{
 		final JsonExternalReferenceLookupItem jsonExternalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
 				.type(ESR_TYPE_BPARTNER)
 				.id(externalId)
 				.build();
 
-		return JsonExternalReferenceCreateRequest.builder()
+		return JsonSingleExternalReferenceCreateReq.builder()
 				.systemName(JsonExternalSystemName.of(ALBERTA_SYSTEM_NAME))
-				.item(JsonExternalReferenceItem.of(jsonExternalReferenceLookupItem))
+				.externalReferenceItem(JsonExternalReferenceItem.of(jsonExternalReferenceLookupItem))
 				.build();
 	}
 

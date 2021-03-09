@@ -58,8 +58,9 @@ BEGIN
                 AND v_FixedConversion_Rate <> 0
                 AND v_FixedConversion_FromCurrency_ID = alloc.C_Currency_ID)
             THEN
-                v_CurrentAllocatedAmt := alloc.AllocatedAmt * v_FixedConversion_Rate;
+                v_CurrentAllocatedAmt := alloc.AllocatedAmt / v_FixedConversion_Rate;
                 v_CurrentAllocatedAmt := currencyround(v_CurrentAllocatedAmt, v_Payment_Currency_ID, 'N');
+                RAISE DEBUG '[C_Payment_ID=%] Alloc Amt: % (currency:%) => % (currency:%) | FIXED currencyRate=%', p_c_payment_id, alloc.AllocatedAmt, alloc.c_currency_id, v_CurrentAllocatedAmt, v_Payment_Currency_ID, v_FixedConversion_Rate;
             ELSE
                 v_CurrentAllocatedAmt := currencyConvert(
                         alloc.AllocatedAmt,
@@ -69,9 +70,11 @@ BEGIN
                         NULL,
                         alloc.AD_Client_ID,
                         alloc.AD_Org_ID);
+                RAISE DEBUG '[C_Payment_ID=%] Alloc Amt: % (currency:%) => % (currency:%)', p_c_payment_id, alloc.AllocatedAmt, alloc.c_currency_id, v_CurrentAllocatedAmt, v_Payment_Currency_ID;
             END IF;
 
             v_AllocatedAmt := v_AllocatedAmt + v_CurrentAllocatedAmt;
+            RAISE DEBUG '[C_Payment_ID=%] => AllocatedAmt: %', p_c_payment_id, v_AllocatedAmt;
         END LOOP;
 
     RETURN v_AllocatedAmt;

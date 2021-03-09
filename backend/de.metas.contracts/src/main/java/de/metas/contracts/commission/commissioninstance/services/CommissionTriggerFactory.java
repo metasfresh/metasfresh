@@ -46,9 +46,16 @@ public class CommissionTriggerFactory
 	{
 		final CommissionTriggerData triggerData = createForRequest(commissionTriggerDocument, documentDeleted);
 
+		final Customer customer = Customer.of(commissionTriggerDocument.getCustomerBPartnerId());
+		
+		// set benefiary to be the customer-bpartner, because at this point we don't know if 
+		// * the customer is also a samesrep and 
+		// * if they might get something out of their own purchase too.
+		final Beneficiary beneficiary = Beneficiary.of(commissionTriggerDocument.getCustomerBPartnerId());
+
 		final CommissionTrigger trigger = CommissionTrigger.builder()
-				.customer(Customer.of(commissionTriggerDocument.getCustomerBPartnerId()))
-				.beneficiary(Beneficiary.of(commissionTriggerDocument.getSalesRepBPartnerId()))
+				.customer(customer)
+				.beneficiary(beneficiary)
 				.commissionTriggerData(triggerData)
 				.build();
 

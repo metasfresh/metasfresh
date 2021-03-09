@@ -31,8 +31,11 @@ import de.metas.common.bprelation.request.JsonRequestBPRelationsUpsert;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
+
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 
 @Component
 public class BPRelationRouteBuilder extends RouteBuilder
@@ -43,6 +46,8 @@ public class BPRelationRouteBuilder extends RouteBuilder
 	@Override
 	public void configure()
 	{
+		errorHandler(noErrorHandler());
+
 		from("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPRELATION_CAMEL_URI + "}}")
 				.routeId(ROUTE_ID)
 				.streamCaching()

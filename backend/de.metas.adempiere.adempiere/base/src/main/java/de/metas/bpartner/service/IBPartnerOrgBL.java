@@ -26,10 +26,10 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.CountryId;

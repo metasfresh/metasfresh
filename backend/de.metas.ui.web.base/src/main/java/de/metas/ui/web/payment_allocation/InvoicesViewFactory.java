@@ -22,8 +22,6 @@
 
 package de.metas.ui.web.payment_allocation;
 
-import java.util.stream.Stream;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
@@ -39,8 +37,10 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
+import java.util.stream.Stream;
 
 @ViewFactory(windowId = InvoicesViewFactory.WINDOW_ID_String)
 public class InvoicesViewFactory implements IViewFactory, IViewsIndexStorage
@@ -48,12 +48,20 @@ public class InvoicesViewFactory implements IViewFactory, IViewsIndexStorage
 	static final String WINDOW_ID_String = "invoicesToAllocate"; // FIXME: HARDCODED
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_String);
 
+	public static final String SYSCONFIG_EnablePreparedForAllocationFlag = "de.metas.ui.web.payment_allocation.EnablePreparedForAllocationFlag";
+
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final PaymentsViewFactory paymentsViewFactory;
 
 	public InvoicesViewFactory(@NonNull final PaymentsViewFactory paymentsViewFactory)
 	{
 		this.paymentsViewFactory = paymentsViewFactory;
+	}
+
+	public static boolean isEnablePreparedForAllocationFlag()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_EnablePreparedForAllocationFlag, false);
 	}
 
 	@Override
@@ -65,12 +73,18 @@ public class InvoicesViewFactory implements IViewFactory, IViewsIndexStorage
 	@Override
 	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
 	{
-		return ViewLayout.builder()
+		final ViewLayout.Builder layoutBuilder = ViewLayout.builder()
 				.setWindowId(WINDOW_ID)
 				.setCaption(msgBL.translatable("InvoicesToAllocate"))
 				.setAllowOpeningRowDetails(false)
-				.addElementsFromViewRowClass(InvoiceRow.class, viewDataType)
-				.build();
+				.addElementsFromViewRowClass(InvoiceRow.class, viewDataType);
+
+		if (!isEnablePreparedForAllocationFlag())
+		{
+			layoutBuilder.removeElementByFieldName(InvoiceRow.FIELD_IsPreparedForAllocation);
+		}
+
+		return layoutBuilder.build();
 	}
 
 	@Override

@@ -196,8 +196,8 @@ public class BPartnerCompositeRepository
 					.createQueryBuilder(I_AD_User.class)
 					.addOnlyActiveRecordsFilter()
 					.addOnlyContextClient()
-					.addCompareFilter(I_AD_User.COLUMN_Updated, Operator.GREATER_OR_EQUAL, timestamp)
-					.addNotEqualsFilter(I_AD_User.COLUMN_C_BPartner_ID, null)
+					.addCompareFilter(I_AD_User.COLUMNNAME_Updated, Operator.GREATER_OR_EQUAL, timestamp)
+					.addNotEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, null)
 					.create()
 					.paginate(I_AD_User.class, sinceQuery.getPageSize());
 		}

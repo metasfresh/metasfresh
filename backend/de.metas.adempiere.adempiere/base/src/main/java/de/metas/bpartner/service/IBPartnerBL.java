@@ -230,4 +230,6 @@ public interface IBPartnerBL extends ISingletonService
 	 * @return the payment rule for the BP. If none is set, gets the one of the BP group.
 	 */
 	Optional<PaymentRule> getPaymentRuleForBPartner(BPartnerId bpartnerId);
+
+	boolean isSalesRep(BPartnerId bpartnerId);
 }

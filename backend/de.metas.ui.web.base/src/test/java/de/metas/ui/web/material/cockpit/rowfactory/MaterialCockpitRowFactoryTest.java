@@ -2,6 +2,7 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -117,12 +118,10 @@ public class MaterialCockpitRowFactoryTest
 		attr2_value1 = attributesTestHelper.createM_AttributeValue(attr2, "test2_value1");
 		attr2_value2 = attributesTestHelper.createM_AttributeValue(attr2, "test2_value2");
 
-		initDimenstionSpec();
-
 		materialCockpitRowFactory = new MaterialCockpitRowFactory();
 	}
 
-	protected void initDimenstionSpec()
+	private void initDimensionSpec_notEmpty()
 	{
 		dimensionSpec = createDimensionSpec(attr1, attr1_value1, attr2);
 		final List<DimensionSpecGroup> groups = dimensionSpec.retrieveGroups();
@@ -180,6 +179,8 @@ public class MaterialCockpitRowFactoryTest
 	@Test
 	public void createRows_contains_attribute_groups()
 	{
+		initDimensionSpec_notEmpty();
+
 		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
 		save(asi1);
 		final AttributeSetInstanceId asiId1 = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
@@ -249,7 +250,8 @@ public class MaterialCockpitRowFactoryTest
 		// 1: both stock records are added to a counting record
 		assertThat(includedRows).hasSize(4);
 
-		final MaterialCockpitRow emptyGroupRow = extractRowWithDimensionSpecGroup(includedRows, dimensionspecGroup_empty);
+		final MaterialCockpitRow emptyGroupRow = extractRowWithDimensionSpecGroup(includedRows, dimensionspecGroup_empty); 
+		assertThat(emptyGroupRow.getAllIncludedStockRecordIds()).contains(stockRecordWithEmptyAttributesKey.getMD_Stock_ID());
 		assertThat(emptyGroupRow.getQtyOnHandStock()).isEqualByComparingTo(TWELVE);
 		assertThat(emptyGroupRow.getQtyReservedPurchase()).isEqualByComparingTo(ONE);
 
@@ -306,6 +308,8 @@ public class MaterialCockpitRowFactoryTest
 	@Test
 	public void createEmptyRowBuckets()
 	{
+		initDimensionSpec_notEmpty();
+
 		final LocalDate today = de.metas.common.util.time.SystemTime.asLocalDate();
 		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 
@@ -324,5 +328,103 @@ public class MaterialCockpitRowFactoryTest
 		final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> subRowBuckets = mainRowBucket.getDimensionGroupSubRows();
 		assertThat(subRowBuckets).hasSize(dimensionSpec.retrieveGroups().size());
 		assertThat(subRowBuckets.keySet()).containsOnlyElementsOf(dimensionSpec.retrieveGroups());
+	}
+
+	/**
+	 * Tests the scenario that there is no plant etc and that the dimension spec is "empty", i.e. does not specify and attribute or default group.
+	 */
+	@Test
+	public void createRows_empty_dimension_spec_includePerPlantDetailRows()
+	{
+		final CreateRowsRequest request = setup(true);
+		
+		// when
+		final List<MaterialCockpitRow> result = materialCockpitRowFactory.createRows(request);
+
+		// then
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).getAllIncludedCockpitRecordIds()).contains(request.getCockpitRecords().get(0).getMD_Cockpit_ID());
+		assertThat(result.get(0).getQtyReservedPurchase()).isEqualByComparingTo(TEN);
+		assertThat(result.get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
+
+		// this is the stockrecord-row. it's a dedicated subrow because of the includePerPlantDetailRows (even though the plant-id is zero)
+		assertThat(result.get(0).getIncludedRows().get(0).getDimensionGroupOrNull()).isNull();
+		assertThat(result.get(0).getIncludedRows().get(0).getQtyReservedPurchase()).isNull();
+		assertThat(result.get(0).getIncludedRows().get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
+		
+		assertThat(result.get(0).getIncludedRows().get(1).getDimensionGroupOrNull()).isEqualTo(DimensionSpecGroup.OTHER_GROUP);
+		assertThat(result.get(0).getIncludedRows().get(1).getQtyReservedPurchase()).isEqualByComparingTo(TEN);
+		assertThat(result.get(0).getIncludedRows().get(1).getQtyOnHandStock()).isEqualByComparingTo(ZERO);
+	}
+
+	/**
+	 * Tests the scenario that there is no plant etc and that the dimension spec is "empty", i.e. does not specify and attribute or default group.
+	 */
+	@Test
+	public void createRows_empty_dimension_spec_dontIncludePerPlantDetailRows()
+	{
+		final CreateRowsRequest request = setup(false);
+
+		// when
+		final List<MaterialCockpitRow> result = materialCockpitRowFactory.createRows(request);
+
+		// then
+		assertThat(result).hasSize(1);
+		assertThat(result.get(0).getAllIncludedCockpitRecordIds()).contains(request.getCockpitRecords().get(0).getMD_Cockpit_ID());
+		assertThat(result.get(0).getQtyReservedPurchase()).isEqualByComparingTo(TEN);
+		assertThat(result.get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
+
+		assertThat(result.get(0).getIncludedRows().get(0).getDimensionGroupOrNull()).isEqualTo(DimensionSpecGroup.OTHER_GROUP);
+		assertThat(result.get(0).getIncludedRows().get(0).getQtyReservedPurchase()).isEqualByComparingTo(TEN);
+		assertThat(result.get(0).getIncludedRows().get(0).getQtyOnHandStock()).isEqualByComparingTo(ELEVEN);
+	}
+	
+	private CreateRowsRequest setup(boolean includePerPlantDetailRows)
+	{
+		// given
+		final I_DIM_Dimension_Spec dimSpec = newInstance(I_DIM_Dimension_Spec.class);
+		dimSpec.setInternalName(MaterialCockpitUtil.DEFAULT_DIM_SPEC_INTERNAL_NAME);
+		dimSpec.setIsIncludeEmpty(false);
+		dimSpec.setIsIncludeOtherGroup(false);
+		save(dimSpec);
+
+		final I_M_AttributeSetInstance asi1 = newInstance(I_M_AttributeSetInstance.class);
+		save(asi1);
+		final AttributeSetInstanceId asiId1 = AttributeSetInstanceId.ofRepoId(asi1.getM_AttributeSetInstance_ID());
+
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId1, attr1_value1);
+		attributeSetInstanceBL.getCreateAttributeInstance(asiId1, attr2_value1);
+
+		final AttributesKey attributesKeyWithAttr1_and_attr2 = AttributesKeys
+				.createAttributesKeyFromASIAllAttributes(asiId1)
+				.get();
+
+		final I_MD_Cockpit cockpitRecordWithAttributes = newInstance(I_MD_Cockpit.class);
+		cockpitRecordWithAttributes.setM_Product(product);
+		cockpitRecordWithAttributes.setDateGeneral(de.metas.common.util.time.SystemTime.asTimestamp());
+		cockpitRecordWithAttributes.setAttributesKey(attributesKeyWithAttr1_and_attr2.getAsString());
+		cockpitRecordWithAttributes.setQtyReserved_Purchase(TEN);
+		save(cockpitRecordWithAttributes);
+
+		final I_M_Warehouse warehouseWithoutPlant = newInstance(I_M_Warehouse.class);
+		save(warehouseWithoutPlant);
+
+		final I_MD_Stock stockRecordWithAttributes = newInstance(I_MD_Stock.class);
+		stockRecordWithAttributes.setM_Product(product);
+		stockRecordWithAttributes.setAttributesKey(attributesKeyWithAttr1_and_attr2.getAsString());
+		stockRecordWithAttributes.setM_Warehouse(warehouseWithoutPlant);
+		stockRecordWithAttributes.setQtyOnHand(ELEVEN);
+		save(stockRecordWithAttributes);
+
+		final LocalDate today = de.metas.common.util.time.SystemTime.asLocalDate();
+
+		return CreateRowsRequest.builder()
+				.date(today)
+				.productIdsToListEvenIfEmpty(ImmutableSet.of())
+				.cockpitRecords(ImmutableList.of(cockpitRecordWithAttributes))
+				.stockRecords(ImmutableList.of(stockRecordWithAttributes))
+				.includePerPlantDetailRows(includePerPlantDetailRows)
+				.build();
 	}
 }

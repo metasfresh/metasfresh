@@ -47,13 +47,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping(ShipmentRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/shipments",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/shipments",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/shipments" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ShipmentRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/shipment";
-
 	private static final Logger log = LogManager.getLogger(ShipmentRestController.class);
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);

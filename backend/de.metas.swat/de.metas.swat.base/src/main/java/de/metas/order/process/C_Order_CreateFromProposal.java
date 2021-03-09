@@ -51,6 +51,7 @@ public final class C_Order_CreateFromProposal extends C_Order_CreationProcess
 	@Param(parameterName = "CompleteIt")
 	private boolean completeIt;
 
+	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull I_C_Order order)
 	{
 		final DocStatus quotationDocStatus = DocStatus.ofNullableCodeOrUnknown(order.getDocStatus());
@@ -83,5 +84,4 @@ public final class C_Order_CreateFromProposal extends C_Order_CreationProcess
 
 		return newSalesOrder.getDocumentNo();
 	}
-
 }
