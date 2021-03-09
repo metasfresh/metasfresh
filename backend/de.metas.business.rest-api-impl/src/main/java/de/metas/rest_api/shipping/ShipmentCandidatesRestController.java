@@ -22,13 +22,9 @@
 
 package de.metas.rest_api.shipping;
 
-import de.metas.Profiles;
-import de.metas.common.shipping.JsonRequestCandidateResults;
-import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -39,7 +35,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Nullable;
+import de.metas.Profiles;
+import de.metas.common.shipping.JsonRequestCandidateResults;
+import de.metas.common.shipping.shipmentcandidate.JsonResponseShipmentCandidates;
+import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
 
 @RequestMapping(ShipmentCandidatesRestController.ENDPOINT)
 @RestController
@@ -57,11 +58,12 @@ public class ShipmentCandidatesRestController
 
 	@GetMapping("shipmentCandidates")
 	public ResponseEntity<JsonResponseShipmentCandidates> getShipmentCandidates(
-			@ApiParam("Max number of items to be returned in one request.") //
-			@RequestParam(name = "limit", required = false, defaultValue = "500") //
+			@ApiParam("Max number orders per request for which shipmentSchedules shall be returned.\n"
+					+ "ShipmentSchedules without an order count as one.") //
+			@RequestParam(name = "limit", required = false, defaultValue = "10") //
 			@Nullable final Integer limit)
 	{
-		final Integer limitEff = CoalesceUtil.coalesce(limit, 500);
+		final QueryLimit limitEff = QueryLimit.ofNullableOrNoLimit(limit).ifNoLimitUse(10);
 		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(limitEff);
 		return ResponseEntity.ok(result);
 	}

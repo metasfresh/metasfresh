@@ -2,10 +2,13 @@ import counterpart from 'counterpart';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+
 import {
   getViewAttributes,
   getViewAttributesLayout,
 } from '../../actions/ViewAttributesActions';
+import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
+
 import RawWidget from '../widget/RawWidget';
 
 /**
@@ -101,6 +104,10 @@ class SelectionAttributes extends PureComponent {
       DLWrapperHandlePatch,
       entity,
       setClickOutsideLock,
+      modalVisible,
+      timeZone,
+      allowShortcut,
+      disableShortcut,
     } = this.props;
 
     return (
@@ -133,6 +140,12 @@ class SelectionAttributes extends PureComponent {
                 tabIndex={this.getTabId(
                   item.fields.map((elem) => DLWrapperData[elem.field] || -1)
                 )}
+                {...{
+                  modalVisible,
+                  timeZone,
+                  allowShortcut,
+                  disableShortcut,
+                }}
               />
             ))}
           {DLWrapperLayout && !DLWrapperLayout.length && (
@@ -146,6 +159,15 @@ class SelectionAttributes extends PureComponent {
     );
   }
 }
+
+const mapStateToProps = (state) => {
+  const { appHandler, windowHandler } = state;
+
+  return {
+    modalVisible: windowHandler.modal.visible,
+    timeZone: appHandler.me.timeZone,
+  };
+};
 
 SelectionAttributes.propTypes = {
   windowId: PropTypes.string,
@@ -162,6 +184,16 @@ SelectionAttributes.propTypes = {
   entity: PropTypes.any,
   DLWrapperLayout: PropTypes.array,
   supportAttribute: PropTypes.bool,
+  allowShortcut: PropTypes.func.isRequired,
+  disableShortcut: PropTypes.func.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
+  timeZone: PropTypes.string.isRequired,
 };
 
-export default connect()(SelectionAttributes);
+export default connect(
+  mapStateToProps,
+  {
+    allowShortcut,
+    disableShortcut,
+  }
+)(SelectionAttributes);

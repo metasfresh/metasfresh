@@ -87,16 +87,66 @@
             vertical-align: middle;
         }
 
-        .sort-menu .th-caption {
-            text-overflow: ellipsis;
-            overflow: hidden;
-            display: inline-block;
+        .sort-menu {
             width: 100%;
-        }
-    }
+            line-height: 22px;
+            vertical-align: middle;
+            position: relative;
 
-    .col-12, .col-sm-12 {
-        position: static;
+            &:hover {
+                .th-caption {
+                    color: $brand-font-color;
+                    text-decoration: underline;
+                }
+                .sort-ico {
+                    color: $brand-font-color;
+                }
+            }
+
+            &.rotate-90 {
+                text-align: left;
+            }
+
+            .th-caption {
+                color: white;
+                vertical-align: middle;
+                text-overflow: ellipsis;
+                overflow: hidden;
+                display: inline-block;
+                width: 100%;
+            }
+
+            .sort-ico {
+                position: absolute;
+                right: -12px;
+                cursor: pointer;
+                color: $brand-font-color;
+                opacity: 0;
+                display: inline-block;
+                vertical-align: middle;
+
+                &:not(.rotate-90) {
+                    top: 3px;
+                }
+            }
+
+            .sort {
+                color: white;
+                opacity: 1;
+            }
+        }
+
+        .sort-menu--sortable {
+            cursor: pointer;
+        }
+
+        .rotate-90 {
+            transform: rotate(180deg);
+        }
+
+        .col-12, .col-sm-12 {
+            position: static;
+        }
     }
 
     td, th {
@@ -164,6 +214,14 @@
                 flex: 1 1 20px;
             }
         }
+    }
+
+    td.pulse-on input {
+        background: transparent !important;
+    }
+
+    td.pulse-off input {
+        background: transparent !important;
     }
 
     /* Table cols sizing */

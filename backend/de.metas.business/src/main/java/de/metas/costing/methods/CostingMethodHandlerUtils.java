@@ -1,12 +1,5 @@
 package de.metas.costing.methods;
 
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import org.adempiere.service.ClientId;
-import org.springframework.stereotype.Service;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -30,12 +23,20 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityUOMConverter;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -84,10 +85,41 @@ public class CostingMethodHandlerUtils
 		return uomConversionBL;
 	}
 
-	public ProductPrice convertToUOM(final ProductPrice costPrice, final UomId uomId)
+	@NonNull
+	public ProductPrice convertToUOM(
+			@NonNull final ProductPrice costPrice,
+			@NonNull final UomId uomId)
 	{
 		final CurrencyPrecision precision = currenciesRepo.getCostingPrecision(costPrice.getCurrencyId());
 		return uomConversionBL.convertProductPriceToUom(costPrice, uomId, precision);
+	}
+
+	@NonNull
+	public CostPrice convertToUOM(
+			@NonNull final CostPrice costPrice,
+			@NonNull final UomId targetUomId,
+			@NonNull final ProductId productId
+	)
+	{
+		return costPrice.convertAmounts(targetUomId, costAmount -> {
+			final ProductPrice productPrice = ProductPrice.builder()
+					.productId(productId)
+					.uomId(costPrice.getUomId())
+					.money(costAmount.toMoney())
+					.build();
+			final ProductPrice productPriceConv = convertToUOM(productPrice, targetUomId);
+			return CostAmount.ofProductPrice(productPriceConv);
+		});
+	}
+
+	@NonNull
+	public Quantity convertToUOM(
+			@NonNull final Quantity qty,
+			@NonNull final UomId targetUomId,
+			@NonNull final ProductId productId
+	)
+	{
+		return uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
 	}
 
 	public AcctSchema getAcctSchemaById(final AcctSchemaId acctSchemaId)
@@ -161,7 +193,9 @@ public class CostingMethodHandlerUtils
 		currentCostsRepo.save(currentCost);
 	}
 
-	public CostAmount convertToAcctSchemaCurrency(final CostAmount amt, final CostDetailCreateRequest request)
+	public CostAmount convertToAcctSchemaCurrency(
+			final CostAmount amt,
+			final CostDetailCreateRequest request)
 	{
 		final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
 		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
@@ -181,9 +215,13 @@ public class CostingMethodHandlerUtils
 		return CostAmount.of(result.getAmount(), acctCurrencyId);
 	}
 
-	public CurrencyConversionResult convert(CurrencyConversionContext conversionCtx, Money price, CurrencyId acctCurencyId)
+	@NonNull
+	public CurrencyConversionResult convert(
+			final CurrencyConversionContext conversionCtx,
+			final Money price,
+			final CurrencyId acctCurrencyId)
 	{
-		return currencyBL.convert(conversionCtx, price, acctCurencyId);
+		return currencyBL.convert(conversionCtx, price, acctCurrencyId);
 	}
 
 	private CurrencyConversionContext createCurrencyConversionContext(final CostDetailCreateRequest request)

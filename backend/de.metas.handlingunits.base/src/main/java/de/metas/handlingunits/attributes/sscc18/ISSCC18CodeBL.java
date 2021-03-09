@@ -39,7 +39,7 @@ public interface ISSCC18CodeBL extends ISingletonService
 	/**
 	 * Generates a new SSCC18 code for given serialNumber
 	 *
-	 *@param orgId there might be different GS1-manufacturer-IDs for different orgs.
+	 * @param orgId there might be different GS1-manufacturer-IDs for different orgs.
 	 *
 	 * @return generated SSCC18; never return null
 	 * @throws AdempiereException if serialNumber or ManufacturerCode is not valid
@@ -54,22 +54,10 @@ public interface ISSCC18CodeBL extends ISingletonService
 	SSCC18 generate(OrgId orgId);
 
 	/**
-	 * Converts given {@link SSCC18} code to String representation
-	 *
-	 * @param sscc18
-	 * @param humanReadable
-	 * @return SSCC18 string representation
-	 */
-	String toString(SSCC18 sscc18, boolean humanReadable);
-
-	/**
 	 * From the right to left, start with odd position, assign the odd/even position to each digit. Sum all digits in odd position and multiply the result by 3. Sum all digits in even position. Sum
 	 * the results of step 3 and step 4. Divide the result of step 4 by 10. The check digit is the number which adds the remainder to 10.
 	 *
 	 * @see <a href="http://mdn.morovia.com/kb/Serial-Shipping-Container-Code-SSCC18-10601.html">SSCC18 - Check Digit Calculation</a>
-	 *
-	 * @param stringSSCC18ToVerify
-	 * @return
 	 */
 	int computeCheckDigit(String stringSSCC18ToVerify);
 
@@ -77,8 +65,6 @@ public interface ISSCC18CodeBL extends ISingletonService
 	 * Validate the components of SSCC18
 	 *
 	 * throws exception if it's not valid
-	 *
-	 * @param sscc18ToValidate
 	 */
 	void validate(SSCC18 sscc18ToValidate);
 }

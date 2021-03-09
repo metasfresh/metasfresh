@@ -53,8 +53,8 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMConstants;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -122,7 +122,7 @@ public class CustomsInvoiceServiceTest
 
 		uom1 = createUOM("UomCode1");
 		uom2 = createUOM("UomCode2");
-		createUOM(UOMConstants.X12_KILOGRAM);
+		createUOM(X12DE355.KILOGRAM.getCode());
 
 		product1 = createProduct("Product1", uom1);
 

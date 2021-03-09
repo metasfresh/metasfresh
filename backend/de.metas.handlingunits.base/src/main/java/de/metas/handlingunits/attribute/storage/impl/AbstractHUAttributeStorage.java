@@ -182,7 +182,7 @@ public abstract class AbstractHUAttributeStorage extends AbstractAttributeStorag
 	}
 
 	@Override
-	protected final List<IAttributeValue> generateAndGetInitialAttributes(final IAttributeValueContext attributesCtx, final Map<AttributeId, Object> defaultAttributesValue)
+	protected final List<IAttributeValue> generateAndGetInitialAttributes(final IAttributeValueContext attributesCtx, @Nullable final Map<AttributeId, Object> defaultAttributesValue)
 	{
 		final I_M_HU hu = getM_HU();
 		Check.assumeNotNull(hu, "hu not null");

@@ -130,7 +130,7 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEdiRecipientGLN (java.lang.String EdiRecipientGLN);
+	public void setEdiDesadvRecipientGLN (java.lang.String EdiDesadvRecipientGLN);
 
 	/**
 	 * Get EDI-ID des Dateiempfängers.
@@ -139,12 +139,12 @@ public interface I_EDI_cctop_000_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEdiRecipientGLN();
+	public java.lang.String getEdiDesadvRecipientGLN();
 
-    /** Column definition for EdiRecipientGLN */
-    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_EdiRecipientGLN = new org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object>(I_EDI_cctop_000_v.class, "EdiRecipientGLN", null);
-    /** Column name EdiRecipientGLN */
-    public static final String COLUMNNAME_EdiRecipientGLN = "EdiRecipientGLN";
+    /** Column definition for EdiDesadvRecipientGLN */
+    public static final org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object> COLUMN_EdiDesadvRecipientGLN = new org.adempiere.model.ModelColumn<I_EDI_cctop_000_v, Object>(I_EDI_cctop_000_v.class, "EdiDesadvRecipientGLN", null);
+    /** Column name EdiDesadvRecipientGLN */
+    public static final String COLUMNNAME_EdiDesadvRecipientGLN = "EdiDesadvRecipientGLN";
 
 	/**
 	 * Set Active.

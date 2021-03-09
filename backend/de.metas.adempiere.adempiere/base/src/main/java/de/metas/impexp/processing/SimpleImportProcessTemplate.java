@@ -1,18 +1,8 @@
-package de.metas.impexp.processing;
-
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-
-import de.metas.util.collections.CollectionUtils;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,22 +20,42 @@ import lombok.NonNull;
  * #L%
  */
 
-public abstract class SimpleImportProcessTemplate<ImportRecordType> extends ImportProcessTemplate<ImportRecordType>
+package de.metas.impexp.processing;
+
+import java.util.List;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IMutable;
+
+import de.metas.impexp.processing.SimpleImportProcessTemplate.RecordIdGroupKey;
+import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+import lombok.Value;
+
+public abstract class SimpleImportProcessTemplate<ImportRecordType>
+		extends ImportProcessTemplate<ImportRecordType, RecordIdGroupKey>
 {
+	@Value(staticConstructor = "of")
+	public static class RecordIdGroupKey
+	{
+		int recordId;
+	}
+
 	@Override
-	protected final ImportGroupKey extractImportGroupKey(final ImportRecordType importRecord)
+	protected final RecordIdGroupKey extractImportGroupKey(final ImportRecordType importRecord)
 	{
 		final int recordId = InterfaceWrapperHelper.getId(importRecord);
-		return ImportGroupKey.of("importRecordId", recordId);
+		return RecordIdGroupKey.of(recordId);
 	}
 
 	@Override
 	protected final ImportGroupResult importRecords(
+			final RecordIdGroupKey groupKey,
 			final List<ImportRecordType> importRecords,
 			final IMutable<Object> stateHolder) throws Exception
 	{
 		final ImportRecordType importRecord = CollectionUtils.singleElement(importRecords);
-		ImportRecordResult result = importRecord(stateHolder, importRecord, isInsertOnly());
+		final ImportRecordResult result = importRecord(stateHolder, importRecord, isInsertOnly());
 		if (result == ImportRecordResult.Inserted)
 		{
 			return ImportGroupResult.ONE_INSERTED;

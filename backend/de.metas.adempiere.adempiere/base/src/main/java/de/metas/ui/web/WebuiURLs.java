@@ -120,10 +120,9 @@ public class WebuiURLs
 				.build());
 	}
 
-	public String getViewUrl(final int adWindowId, @NonNull final String viewId)
+	public String getViewUrl(@NonNull final AdWindowId adWindowId, @NonNull final String viewId)
 	{
-		Check.assumeGreaterThanZero(adWindowId, "adWindowId");
-		return getViewUrl(String.valueOf(adWindowId), viewId);
+		return getViewUrl(String.valueOf(adWindowId.getRepoId()), viewId);
 	}
 
 	public String getViewUrl(@NonNull final String windowId, @NonNull final String viewId)

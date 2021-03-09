@@ -1,21 +1,17 @@
 package org.adempiere.ad.modelvalidator;
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.document.engine.IDocument;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import org.compiere.model.ModelValidator;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import org.compiere.model.ModelValidator;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.document.engine.IDocument;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-
 /**
- * 
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public enum DocTimingType implements TimingType
 {
@@ -49,7 +45,7 @@ public enum DocTimingType implements TimingType
 	private final String docStatus;
 	private final BeforeAfterType beforeAfter;
 
-	private DocTimingType(final int timing, final String docAction, final String docStatus, final BeforeAfterType beforeAfter)
+	DocTimingType(final int timing, final String docAction, final String docStatus, final BeforeAfterType beforeAfter)
 	{
 		this.timing = timing;
 		this.docAction = docAction;
@@ -99,7 +95,7 @@ public enum DocTimingType implements TimingType
 		return isDocAction(docAction) && this.beforeAfter == beforeAfter;
 	}
 
-	public static final DocTimingType valueOf(final int timing)
+	public static DocTimingType valueOf(final int timing)
 	{
 		final DocTimingType value = timingInt2type.get(timing);
 		if (value == null)
@@ -111,7 +107,7 @@ public enum DocTimingType implements TimingType
 
 	private static final Map<Integer, DocTimingType> timingInt2type = Stream.of(values()).collect(GuavaCollectors.toImmutableMapByKey(DocTimingType::toInt));
 
-	public static final DocTimingType forAction(final String docAction, final BeforeAfterType beforeAfterType)
+	public static DocTimingType forAction(final String docAction, final BeforeAfterType beforeAfterType)
 	{
 		Check.assumeNotEmpty(docAction, "docAction not null");
 		Check.assumeNotNull(beforeAfterType, "beforeAfterType not null");
@@ -128,4 +124,16 @@ public enum DocTimingType implements TimingType
 
 		throw new IllegalArgumentException("Unknown DocAction: " + docAction + ", " + beforeAfterType);
 	}
+
+	public boolean isVoid()
+	{
+		return this == BEFORE_VOID || this == AFTER_VOID;
+	}
+
+	public boolean isReverse()
+	{
+		return this == BEFORE_REVERSECORRECT || this == AFTER_REVERSECORRECT
+				|| this == BEFORE_REVERSEACCRUAL || this == AFTER_REVERSEACCRUAL;
+	}
+
 }

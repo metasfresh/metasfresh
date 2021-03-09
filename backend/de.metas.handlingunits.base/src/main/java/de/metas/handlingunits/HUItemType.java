@@ -34,8 +34,13 @@ import lombok.NonNull;
 public enum HUItemType implements ReferenceListAwareEnum
 {
 	HandlingUnit(X_M_HU_Item.ITEMTYPE_HandlingUnit), //
+
+	/** the actual good, like salad or machine parts */
 	Material(X_M_HU_Item.ITEMTYPE_Material), //
+
+	/** Packaging, like palette, IFCO or box */
 	PackingMaterial(X_M_HU_Item.ITEMTYPE_PackingMaterial), //
+
 	HUAggregate(X_M_HU_Item.ITEMTYPE_HUAggregate), //
 	;
 

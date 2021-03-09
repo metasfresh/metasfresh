@@ -45,9 +45,8 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssuesCommand;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.material.planning.pporder.PPOrderUtil;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -213,7 +212,7 @@ public class HUPPOrderIssueProducer
 	{
 		return ppOrderBOMsRepo.retrieveOrderBOMLines(orderId)
 				.stream()
-				.filter(line -> PPOrderUtil.isIssue(BOMComponentType.ofCode(line.getComponentType())))
+				.filter(line -> BOMComponentType.ofCode(line.getComponentType()).isIssue())
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -229,7 +228,7 @@ public class HUPPOrderIssueProducer
 		//
 		// Make sure we have only issue BOM lines
 		final List<I_PP_Order_BOMLine> notIssueBOMLines = targetOrderBOMLines.stream()
-				.filter(bomLine -> !PPOrderUtil.isIssue(BOMComponentType.ofCode(bomLine.getComponentType())))
+				.filter(bomLine -> !BOMComponentType.ofCode(bomLine.getComponentType()).isIssue())
 				.collect(ImmutableList.toImmutableList());
 		if (!notIssueBOMLines.isEmpty())
 		{

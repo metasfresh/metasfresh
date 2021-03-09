@@ -33,13 +33,12 @@ import de.metas.dao.selection.model.I_T_Query_Selection_ToDelete;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.springframework.stereotype.Component;
 
 /**
  * Clears several temporary tables.
  */
-// not registering this one for because is might lead to problems if a swing-client is running while the server is starting up.
-// TODO: evaluate if this is still valid
-// @Component
+@Component
 public class ClearTemporaryTables implements IStartupHouseKeepingTask
 {
 	private static final Logger logger = LogManager.getLogger(ClearTemporaryTables.class);
@@ -50,8 +49,9 @@ public class ClearTemporaryTables implements IStartupHouseKeepingTask
 		truncateTable("T_Selection");
 		truncateTable("T_Selection2");
 
-		truncateTable(I_T_Query_Selection.Table_Name);
-		truncateTable(I_T_Query_Selection_ToDelete.Table_Name);
+		// handeled via QuerySelectionToDeleteHelper
+		// truncateTable(I_T_Query_Selection.Table_Name);
+		// truncateTable(I_T_Query_Selection_ToDelete.Table_Name);
 	}
 
 	private void truncateTable(@NonNull final String tableName)

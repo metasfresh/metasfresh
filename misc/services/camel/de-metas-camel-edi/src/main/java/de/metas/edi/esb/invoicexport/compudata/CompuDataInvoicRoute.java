@@ -22,6 +22,7 @@
 
 package de.metas.edi.esb.invoicexport.compudata;
 
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 
 import javax.xml.namespace.QName;
@@ -30,6 +31,7 @@ import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
+import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.spi.DataFormat;
 import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
@@ -49,10 +51,9 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 
 	private static final String EDI_INVOICE_FILENAME_PATTERN = "edi.file.invoic.compudata.filename";
 
-	public static final String EP_EDI_COMPUDATA_INVOICE_CONSUMER = "direct:edi.invoice.consumer";
+	public static final String EP_EDI_COMPUDATA_INVOIC_CONSUMER = "direct:edi.invoic.consumer";
 
 	public static final String EDI_INVOIC_SENDER_GLN = "edi.props.000.sender.gln";
-	public static final String EDI_INVOIC_IS_TEST = "edi.compudata.invoic.isTest";
 
 	public final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
 	public static final String METHOD_setCInvoiceID = "setCInvoiceID";
@@ -60,28 +61,26 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 	/**
 	 * The FILE folder where the EDI file will be stored
 	 */
-	public static final String EP_EDI_FILE_INVOICE = "{{edi.file.invoic.compudata}}";
+	public static final String EP_EDI_FILE_INVOICE = "edi.file.invoic.compudata";
 
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
-		final SmooksDataFormat sdf = getSDFForConfiguration("edi.smooks.config.xml.invoices");
+		final SmooksDataFormat sdf = getSDFForConfiguration("edi.smooks.config.xml.invoic");
 
 		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
 		final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
 		final String invoiceFilenamePattern = Util.resolveProperty(getContext(), CompuDataInvoicRoute.EDI_INVOICE_FILENAME_PATTERN);
-
+		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_MF_DURABLE_ROUTING_KEY);
 		final String senderGln = Util.resolveProperty(getContext(), CompuDataInvoicRoute.EDI_INVOIC_SENDER_GLN);
-		final String isTest = Util.resolveProperty(getContext(), CompuDataInvoicRoute.EDI_INVOIC_IS_TEST);
 
-		from(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOICE_CONSUMER)
+		from(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOIC_CONSUMER)
 				.routeId(ROUTE_ID)
 
 		.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
 				.setProperty(CompuDataInvoicRoute.EDI_INVOIC_SENDER_GLN).constant(senderGln)
-				.setProperty(CompuDataInvoicRoute.EDI_INVOIC_IS_TEST).constant(isTest)
 
 		.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
 				.process(new Processor()
@@ -109,7 +108,7 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 				.setHeader(Exchange.FILE_NAME).simple(invoiceFilenamePattern)
 
 		.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
-				.to(CompuDataInvoicRoute.EP_EDI_FILE_INVOICE)
+				.to("{{" + CompuDataInvoicRoute.EP_EDI_FILE_INVOICE + "}}")
 
 		.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<EDIInvoiceFeedbackType>(EDIInvoiceFeedbackType.class, CompuDataInvoicRoute.EDIInvoiceFeedback_QNAME, CompuDataInvoicRoute.METHOD_setCInvoiceID))
@@ -118,6 +117,9 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 				.marshal(jaxb)
 
 		.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
-				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
+		
+		.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
+ 		.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
+		.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
 	}
 }

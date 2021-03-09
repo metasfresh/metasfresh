@@ -33,15 +33,16 @@ DELETE FROM  AD_Element_Trl WHERE AD_Element_ID=576947
 DELETE FROM AD_Element WHERE AD_Element_ID=576947
 ;
 
--- 2019-07-26T14:01:01.715Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,576948,0,'QtyInPriceUomVia',TO_TIMESTAMP('2019-07-26 16:01:01','YYYY-MM-DD HH24:MI:SS'),100,'Legt fest auf welche Art der Mengenbertrag ermittelt wird, wenn die Preis-Maßeinheit von der Produkt-Maßeinheit abweicht.','D','Y','Menge in Preiseinheit durch','Menge in Preiseinheit durch',TO_TIMESTAMP('2019-07-26 16:01:01','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2019-07-26T14:01:01.716Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=576948 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
-;
+-- moved to 5528169_sys_gh5384-app_add_important_AD_Elements.sql
+-- -- 2019-07-26T14:01:01.715Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,576948,0,'QtyInPriceUomVia',TO_TIMESTAMP('2019-07-26 16:01:01','YYYY-MM-DD HH24:MI:SS'),100,'Legt fest auf welche Art der Mengenbertrag ermittelt wird, wenn die Preis-Maßeinheit von der Produkt-Maßeinheit abweicht.','D','Y','Menge in Preiseinheit durch','Menge in Preiseinheit durch',TO_TIMESTAMP('2019-07-26 16:01:01','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
+--
+-- -- 2019-07-26T14:01:01.716Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=576948 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+-- ;
 
 -- 2019-07-26T14:01:14.503Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -98,25 +99,26 @@ UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Quantity in pr
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(576948,'en_US') 
 ;
 
--- 2019-07-26T14:02:43.591Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541023,TO_TIMESTAMP('2019-07-26 16:02:43','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','QtyInPriceUOMVia',TO_TIMESTAMP('2019-07-26 16:02:43','YYYY-MM-DD HH24:MI:SS'),100,'L')
-;
-
--- 2019-07-26T14:02:43.593Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Reference_ID=541023 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
-;
-
--- 2019-07-26T14:03:14.706Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541023,541992,TO_TIMESTAMP('2019-07-26 16:03:14','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Nominal',TO_TIMESTAMP('2019-07-26 16:03:14','YYYY-MM-DD HH24:MI:SS'),100,'Nominal','Nominal')
-;
-
--- 2019-07-26T14:03:14.707Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Ref_List_ID=541992 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
-;
+-- moved to 5528169a_sys_gh5384-app_add_important_AD_References.sql
+-- -- 2019-07-26T14:02:43.591Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541023,TO_TIMESTAMP('2019-07-26 16:02:43','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','QtyInPriceUOMVia',TO_TIMESTAMP('2019-07-26 16:02:43','YYYY-MM-DD HH24:MI:SS'),100,'L')
+-- ;
+--
+-- -- 2019-07-26T14:02:43.593Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Reference_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Reference t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Reference_ID=541023 AND NOT EXISTS (SELECT 1 FROM AD_Reference_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Reference_ID=t.AD_Reference_ID)
+-- ;
+--
+-- -- 2019-07-26T14:03:14.706Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541023,541992,TO_TIMESTAMP('2019-07-26 16:03:14','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Nominal',TO_TIMESTAMP('2019-07-26 16:03:14','YYYY-MM-DD HH24:MI:SS'),100,'Nominal','Nominal')
+-- ;
+--
+-- -- 2019-07-26T14:03:14.707Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Ref_List_ID=541992 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+-- ;
 
 -- 2019-07-26T14:06:24.126Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -137,16 +139,16 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2019-07-26 16:
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Ref_List_Trl SET IsTranslated='N',Updated=TO_TIMESTAMP('2019-07-26 16:06:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=541992
 ;
-
--- 2019-07-26T14:08:25.637Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541023,541993,TO_TIMESTAMP('2019-07-26 16:08:25','YYYY-MM-DD HH24:MI:SS'),100,'Der Mengenbetrag wird aus den Summen der tatsächlich gelieferten Güter ermittelt.','D','Y','Catch Weight',TO_TIMESTAMP('2019-07-26 16:08:25','YYYY-MM-DD HH24:MI:SS'),100,'CatchWeight','CatchWeight')
-;
-
--- 2019-07-26T14:08:25.638Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Ref_List_ID=541993 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
-;
+-- moved to 5528169a_sys_gh5384-app_add_important_AD_References.sql
+-- -- 2019-07-26T14:08:25.637Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541023,541993,TO_TIMESTAMP('2019-07-26 16:08:25','YYYY-MM-DD HH24:MI:SS'),100,'Der Mengenbetrag wird aus den Summen der tatsächlich gelieferten Güter ermittelt.','D','Y','Catch Weight',TO_TIMESTAMP('2019-07-26 16:08:25','YYYY-MM-DD HH24:MI:SS'),100,'CatchWeight','CatchWeight')
+-- ;
+--
+-- -- 2019-07-26T14:08:25.638Z
+-- -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+-- INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' AND l.IsBaseLanguage='N') AND t.AD_Ref_List_ID=541993 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+-- ;
 
 -- 2019-07-26T14:08:34.714Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

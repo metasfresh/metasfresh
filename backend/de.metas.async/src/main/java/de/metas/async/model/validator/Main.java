@@ -45,9 +45,7 @@ import de.metas.async.model.I_C_Queue_WorkPackage_Param;
 import de.metas.async.processor.IQueueProcessorExecutorService;
 import de.metas.async.spi.impl.DefaultAsyncBatchListener;
 import de.metas.event.Topic;
-import de.metas.impexp.async.AsyncImportProcessBuilderFactory;
-import de.metas.impexp.async.AsyncImportWorkpackageProcessor;
-import de.metas.impexp.processing.IImportProcessFactory;
+import de.metas.impexp.DataImportService;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -82,7 +80,6 @@ public class Main extends AbstractModuleInterceptor
 		migrationLogger.addTableToIgnoreList(I_C_Queue_WorkPackage_Param.Table_Name);
 
 		// Data import (async support)
-		Services.get(IImportProcessFactory.class).setAsyncImportProcessBuilderFactory(AsyncImportProcessBuilderFactory.instance);
 		Services.get(IAsyncBatchListeners.class).registerAsyncBatchNoticeListener(new DefaultAsyncBatchListener(), AsyncBatchDAO.ASYNC_BATCH_TYPE_DEFAULT); // task 08917
 	}
 
@@ -171,6 +168,6 @@ public class Main extends AbstractModuleInterceptor
 	{
 		return ImmutableList.of(
 				Async_Constants.WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC,
-				AsyncImportWorkpackageProcessor.USER_NOTIFICATIONS_TOPIC);
+				DataImportService.USER_NOTIFICATIONS_TOPIC);
 	}
 }

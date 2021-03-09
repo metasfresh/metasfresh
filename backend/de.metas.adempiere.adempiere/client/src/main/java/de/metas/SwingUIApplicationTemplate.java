@@ -76,7 +76,6 @@ public abstract class SwingUIApplicationTemplate
 					// at any rate, we have not yet a solution as to how to configure them
 					.web(false)
 					.profiles(Profiles.PROFILE_SwingUI)
-					.properties(CConnection.get().createRabbitmqSpringProperties())
 					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}

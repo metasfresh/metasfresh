@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -32,7 +33,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -306,7 +306,7 @@ public class HUSplitBuilderCoreEngine
 		final I_M_HU_PI_Item_Product piip = piipDAO.retrievePIMaterialItemProduct(
 				tuPIItem, 
 				BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID()), 
-				productId, 
+				productId,
 				SystemTime.asZonedDateTime());
 		return piip;
 	}

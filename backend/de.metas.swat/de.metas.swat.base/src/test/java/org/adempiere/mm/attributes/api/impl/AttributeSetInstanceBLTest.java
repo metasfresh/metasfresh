@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
@@ -25,8 +27,6 @@ import org.junit.jupiter.api.Test;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -166,7 +166,7 @@ public class AttributeSetInstanceBLTest
 		}
 
 		@Override
-		public BigDecimal getValueAsBigDecimal(final AttributeCode attributeCode)
+		public BigDecimal getValueAsBigDecimal(final @NonNull AttributeCode attributeCode)
 		{
 			assertThat(attributeCode).isEqualTo(AttributeCode.ofString(numberAttribute.getValue()));
 			return (BigDecimal)valuesByAttributeCode.get(attributeCode);

@@ -80,7 +80,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public abstract class AbstractFlatrateTermTest
 {
@@ -240,7 +239,7 @@ public abstract class AbstractFlatrateTermTest
 	private void createDocType()
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
-		docType.setAD_Org(helper.getOrg());
+		docType.setAD_Org_ID(helper.getOrg().getAD_Org_ID());
 		docType.setDocSubType(I_C_DocType.DocSubType_Abonnement);
 		docType.setDocBaseType(I_C_DocType.DocBaseType_CustomerContract);
 		save(docType);
@@ -330,7 +329,7 @@ public abstract class AbstractFlatrateTermTest
 				.name("Abo")
 				.calendar(getCalendar())
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
-				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
+				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Immediate)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.onFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice)
 				.isCreateNoInvoice(false)

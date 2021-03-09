@@ -22,28 +22,13 @@ package de.metas.report.client;
  * #L%
  */
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.api.IRangeAwareParams;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
-import org.slf4j.Logger;
-
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
-import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
@@ -53,9 +38,17 @@ import de.metas.report.server.IReportServer;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
-import net.sf.jasperreports.engine.JasperPrint;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 
 public final class ReportsClient
 {
@@ -72,7 +65,9 @@ public final class ReportsClient
 	// NOTE: keep this one after all other static declarations, to avoid NPE on initialization
 	private static final ReportsClient instance = new ReportsClient();
 
-	/** Reports server supplier */
+	/**
+	 * Reports server supplier
+	 */
 	private final ExtendedMemorizingSupplier<IReportServer> serverSupplier = ExtendedMemorizingSupplier.of(() -> createReportServer());
 
 	private ReportsClient()
@@ -103,59 +98,32 @@ public final class ReportsClient
 		return 1;
 	}
 
-	public JasperPrint createJasperPrint(final ProcessInfo pi)
-	{
-		final Language language = extractLanguage(pi);
-		return createJasperPrint(pi.getAdProcessId(), pi.getPinstanceId(), language);
-	}
-
-	private JasperPrint createJasperPrint(final AdProcessId adProcessId, final PInstanceId pinstanceId, final Language language)
-	{
-		return createJasperPrint0(adProcessId, pinstanceId, language);
-	}
-
-	private JasperPrint createJasperPrint0(
-			final AdProcessId adProcessId,
-			final PInstanceId pinstanceId,
-			final Language language)
-	{
-		final IReportServer server = serverSupplier.get();
-		final ReportResult reportResult = server.report(adProcessId.getRepoId(), pinstanceId.getRepoId(), language.getAD_Language(), OutputType.JasperPrint);
-		try
-		{
-			final ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(reportResult.getReportContent()));
-			final JasperPrint jasperPrint = (JasperPrint)ois.readObject();
-			return jasperPrint;
-		}
-		catch (IOException | ClassNotFoundException e)
-		{
-			throw new AdempiereException(
-					"Caught " + e.getClass().getSimpleName() + " while trying to convert reports server data byte[] to JasperPrint", e);
-		}
-	}
-
-	private ReportResult report(final AdProcessId adProcessId, final PInstanceId pinstanceId, final Language language, final OutputType outputType)
-	{
-		final IReportServer server = serverSupplier.get();
-		return server.report(adProcessId.getRepoId(), PInstanceId.toRepoId(pinstanceId), language.getAD_Language(), outputType);
-	}
-
-	public ReportResult report(final ProcessInfo pi)
+	public ReportResult report(@NonNull final ProcessInfo pi)
 	{
 		return report(pi, pi.getJRDesiredOutputType());
 	}
 
-	public ReportResult report(@NonNull final ProcessInfo pi, @Nullable final OutputType outputType)
+	public ReportResult report(
+			@NonNull final ProcessInfo pi,
+			@Nullable final OutputType outputType)
 	{
 		// Make sure the ProcessInfo is persisted because we will need to access it's data (like AD_Table_ID/Record_ID etc)
 		if (pi.getPinstanceId() == null)
 		{
-			Services.get(IADPInstanceDAO.class).saveProcessInfoOnly(pi);
+			final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+			adPInstanceDAO.saveProcessInfoOnly(pi);
 		}
 
-		final Language language = extractLanguage(pi);
-		final OutputType outputTypeEffective = CoalesceUtil.coalesce(outputType, pi.getJRDesiredOutputType());
-		return report(pi.getAdProcessId(), pi.getPinstanceId(), language, outputTypeEffective);
+		return getServer().report(
+				pi.getAdProcessId().getRepoId(),
+				PInstanceId.toRepoId(pi.getPinstanceId()),
+				extractLanguage(pi).getAD_Language(),
+				CoalesceUtil.coalesce(outputType, pi.getJRDesiredOutputType()));
+	}
+
+	private IReportServer getServer()
+	{
+		return serverSupplier.get();
 	}
 
 	private IReportServer createReportServer()
@@ -173,7 +141,7 @@ public final class ReportsClient
 			final IReportServer server = (IReportServer)classLoader
 					.loadClass(serverClassname)
 					.newInstance();
-			logger.info("Reports server instance: " + server);
+			logger.info("Reports server instance: {}", server);
 			return server;
 		}
 		catch (ClassNotFoundException | InstantiationException | IllegalAccessException e)
@@ -189,9 +157,8 @@ public final class ReportsClient
 	 * Extracts reporting language from given {@link ProcessInfo}.
 	 *
 	 * @return Language; never returns null
-	 *
 	 * @implNote Usually the ProcessInfo already has the language set, so this method is just a fallback.
-	 *           If you are thinking to extend how the reporting language is fetched, please check {@link ProcessInfoBuilder}'s getReportLanguage() method.
+	 * If you are thinking to extend how the reporting language is fetched, please check {@link ProcessInfoBuilder}'s getReportLanguage() method.
 	 */
 	private static Language extractLanguage(final ProcessInfo pi)
 	{

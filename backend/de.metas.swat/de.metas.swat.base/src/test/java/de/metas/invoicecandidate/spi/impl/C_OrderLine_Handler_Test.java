@@ -32,13 +32,20 @@ import static org.junit.Assert.assertTrue;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -75,7 +82,7 @@ import de.metas.util.Services;
 
 public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 {
-	private final C_OrderLine_Handler orderLineHandler = new C_OrderLine_Handler();
+	private  C_OrderLine_Handler orderLineHandler;
 	private final IAggregationKeyBuilder<I_C_Invoice_Candidate> headerAggregationKeyBuilder = new HeaderAggregationKeyBuilder();
 
 	@Before
@@ -84,6 +91,17 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		final Properties ctx = Env.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_CH");
+
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new OrderLineDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
+
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
+		orderLineHandler  = new C_OrderLine_Handler();
 
 		// current DB structure for OLHandler
 		final I_C_ILCandHandler handler = InterfaceWrapperHelper.create(Env.getCtx(), I_C_ILCandHandler.class, ITrx.TRXNAME_None);
@@ -99,6 +117,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		LogManager.setLevel(Level.DEBUG);
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+
+
 	}
 
 	@Test

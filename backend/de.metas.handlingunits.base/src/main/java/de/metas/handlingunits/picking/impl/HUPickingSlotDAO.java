@@ -231,8 +231,7 @@ public class HUPickingSlotDAO implements IHUPickingSlotDAO
 			final IQuery<I_M_PickingSlot> pickingSlotsQuery = queryBL.createQueryBuilder(I_M_PickingSlot.class, contextProvider)
 					.addOnlyActiveRecordsFilter()
 					// NOTE: make sure that we are considering only those picking slots where M_HU_ID is set
-					// If not, well, postgresql will be confused and it will look at this query like the virgin to a black cock
-					// ... and will evaluate this expression like always false
+					// If not, well, postgresql will be confused and will evaluate this expression like always false
 					.addNotEqualsFilter(I_M_PickingSlot.COLUMNNAME_M_HU_ID, null)
 					.create();
 			filters.addInSubQueryFilter(I_M_HU.COLUMNNAME_M_HU_ID,

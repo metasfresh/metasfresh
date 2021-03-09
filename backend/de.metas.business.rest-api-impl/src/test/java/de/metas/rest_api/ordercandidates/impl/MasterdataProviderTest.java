@@ -1,11 +1,35 @@
 package de.metas.rest_api.ordercandidates.impl;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.currency.CurrencyRepository;
+import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.greeting.GreetingRepository;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.rest_api.bpartner.impl.BPartnerEndpointService;
+import de.metas.rest_api.bpartner.impl.BpartnerRestController;
+import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
+import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
+import de.metas.common.bpartner.request.JsonRequestBPartner;
+import de.metas.common.bpartner.request.JsonRequestContact;
+import de.metas.common.bpartner.request.JsonRequestLocation;
+import de.metas.common.rest_api.JsonExternalId;
+import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.SyncAdvise.IfExists;
+import de.metas.common.rest_api.SyncAdvise.IfNotExists;
+import de.metas.rest_api.ordercandidates.request.JsonOrganization;
+import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
+import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.security.permissions2.PermissionService;
+import de.metas.user.UserId;
+import de.metas.user.UserRepository;
+import de.metas.util.JSONObjectMapper;
+import de.metas.util.Services;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -26,35 +50,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import de.metas.bpartner.BPGroupRepository;
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.currency.CurrencyRepository;
-import de.metas.greeting.GreetingRepository;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfo;
-import de.metas.rest_api.bpartner.impl.BPartnerEndpointService;
-import de.metas.rest_api.bpartner.impl.BpartnerRestController;
-import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestContact;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.SyncAdvise;
-import de.metas.rest_api.common.SyncAdvise.IfExists;
-import de.metas.rest_api.common.SyncAdvise.IfNotExists;
-import de.metas.rest_api.ordercandidates.request.JsonOrganization;
-import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
-import de.metas.rest_api.utils.BPartnerQueryService;
-import de.metas.security.PermissionService;
-import de.metas.user.UserId;
-import de.metas.user.UserRepository;
-import de.metas.util.JSONObjectMapper;
-import de.metas.util.Services;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -135,7 +135,9 @@ public class MasterdataProviderTest
 				bpartnerCompositeRepository,
 				new BPGroupRepository(),
 				new GreetingRepository(),
-				currencyRepository);
+				currencyRepository,
+				Mockito.mock(ExternalReferenceRestControllerService.class));
+
 		final BpartnerRestController bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),
 				jsonServiceFactory,
@@ -199,10 +201,18 @@ public class MasterdataProviderTest
 	@Test
 	void getCreateBPartnerInfo()
 	{
+		// given
+		final OrgId orgId = AdempiereTestHelper.createOrgWithTimeZone();
+
+		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
+		bpGroupRecord.setName("bpGroup");
+		saveRecord(bpGroupRecord);
+
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setAD_Org_ID(orgId.getRepoId());
 		bpartnerRecord.setValue("jsonBPartner.code");
 		bpartnerRecord.setName("jsonBPartner.name");
-		bpartnerRecord.setC_BP_Group_ID(20);
+		bpartnerRecord.setC_BP_Group_ID(bpGroupRecord.getC_BP_Group_ID());
 		saveRecord(bpartnerRecord);
 
 		final JsonRequestBPartner jsonBPartner = new JsonRequestBPartner();
@@ -236,11 +246,17 @@ public class MasterdataProviderTest
 				.contact(jsonContact)
 				.build();
 
-		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/* billTo */, OrgId.ofRepoId(10));
+		// when
+		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/* billTo */, orgId);
+
+		// then
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 
-		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/* billTo */, OrgId.ofRepoId(10));
+		// when II
+		masterdataProvider.getCreateBPartnerInfoInTrx(jsonBPartnerInfo, true/* billTo */, orgId);
+
+		// then II
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class, l -> "externalId".equals(l.getExternalId()))).hasSize(1);
 	}

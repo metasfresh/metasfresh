@@ -46,7 +46,7 @@ public class FMPXMLRESULT
 	@JacksonXmlProperty(localName = "RESULTSET")
 	RESULTSET resultset;
 
-	@Builder
+	@Builder(toBuilder = true)
 	@JsonCreator
 	public FMPXMLRESULT(
 			@JacksonXmlProperty(localName = "ERRORCODE") final String errorCode,

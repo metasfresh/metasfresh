@@ -11,6 +11,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
 import lombok.Builder;
@@ -75,8 +76,6 @@ public class InvoiceToAllocate
 	@NonNull
 	Amount grandTotal;
 	@NonNull
-	Amount grandTotalConverted;
-	@NonNull
 	Amount openAmountConverted;
 	@NonNull
 	Amount discountAmountConverted;
@@ -88,4 +87,7 @@ public class InvoiceToAllocate
 
 	@Nullable
 	String poReference;
+
+	@Nullable
+	CurrencyConversionTypeId currencyConversionTypeId;
 }

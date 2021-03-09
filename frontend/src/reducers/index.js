@@ -6,9 +6,10 @@ import menuHandler from './menuHandler';
 import windowHandler from './windowHandler';
 import pluginsHandler from './pluginsHandler';
 import viewHandler from './viewHandler';
-import filters from './filterHandler';
+import filters from './filters';
 import commentsPanel from './commentsPanel';
 import tables from './tables';
+import actionsHandler from './actionsHandler';
 
 export default {
   appHandler,
@@ -21,4 +22,5 @@ export default {
   commentsPanel,
   tables,
   routing,
+  actionsHandler,
 };

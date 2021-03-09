@@ -1,45 +1,19 @@
 package de.metas.purchasecandidate;
 
-import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_DiscountSchema;
-import org.compiere.model.I_M_DiscountSchemaBreak;
-import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.X_M_DiscountSchema;
-import org.compiere.model.X_M_DiscountSchemaBreak;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.ShutdownListener;
 import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -54,6 +28,7 @@ import de.metas.payment.grossprofit.PaymentProfitPriceActualComponentProvider;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.pricing.conditions.BreakValueType;
 import de.metas.product.ProductId;
+import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoService;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfoServiceImpl;
@@ -64,7 +39,36 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_DiscountSchema;
+import org.compiere.model.I_M_DiscountSchemaBreak;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.X_M_DiscountSchema;
+import org.compiere.model.X_M_DiscountSchemaBreak;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static java.math.BigDecimal.TEN;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -96,10 +100,14 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 	private static final BigDecimal TWENTY = new BigDecimal("20");
 
-	/** purchase order quantity */
+	/**
+	 * purchase order quantity
+	 */
 	private static final BigDecimal PO_QTY_ORDERED_ONE = new BigDecimal("1");
 
-	/** sales order quantity */
+	/**
+	 * sales order quantity
+	 */
 	private static final BigDecimal SO_QTY_ORDERED_TEN = new BigDecimal("10");
 
 	private static final BigDecimal QTY_TO_PURCHASE_NINE = NINE;
@@ -171,16 +179,16 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		orgId = OrgId.ofRepoId(1000000);
 		Services.get(IOrgDAO.class).createOrUpdateOrgInfo(OrgInfoUpdateRequest.builder()
-				.orgId(orgId)
-				.build());
+																  .orgId(orgId)
+																  .build());
 
 		purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
 		purchaseCandidateRecord.setAD_Org_ID(orgId.getRepoId());
-		purchaseCandidateRecord.setVendor(vendorRecord);
+		purchaseCandidateRecord.setVendor_ID(vendorRecord.getC_BPartner_ID());
 		purchaseCandidateRecord.setM_WarehousePO_ID(30);
-		purchaseCandidateRecord.setM_Product(productRecord);
+		purchaseCandidateRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		purchaseCandidateRecord.setDemandReference("DemandReference");
-		purchaseCandidateRecord.setC_UOM(uomRecord);
+		purchaseCandidateRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		purchaseCandidateRecord.setQtyToPurchase(QTY_TO_PURCHASE_NINE);
 		purchaseCandidateRecord.setPurchaseDatePromised(SystemTime.asTimestamp());
 		saveRecord(purchaseCandidateRecord);
@@ -201,12 +209,19 @@ public class PurchaseDemandWithCandidatesServiceTest
 
 		final BPPurchaseScheduleService bpPurchaseScheduleService = new BPPurchaseScheduleService(new BPPurchaseScheduleRepository());
 
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new PurchaseCandidateDimensionFactory());
+
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 
 		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
 				new PurchaseItemRepository(),
 				new ReferenceGenerator(),
-				bpPurchaseScheduleService);
+				bpPurchaseScheduleService,
+				dimensionService
+		);
 
 		final MoneyService moneyService = new MoneyService(currencyRepository);
 		final ProfitPriceActualFactory profitPriceActualFactory = new ProfitPriceActualFactory(Optional.of(ImmutableList.of(new PaymentProfitPriceActualComponentProvider(moneyService))));
@@ -279,7 +294,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 	{
 		// invoke the method under test
 		final ImmutableListMultimap<PurchaseDemand, PurchaseCandidatesGroup> //
-		result = purchaseDemandWithCandidatesService.createMissingPurchaseCandidatesGroups(ImmutableList.of(purchaseDemand), ImmutableMap.of());
+				result = purchaseDemandWithCandidatesService.createMissingPurchaseCandidatesGroups(ImmutableList.of(purchaseDemand), ImmutableMap.of());
 
 		assertThat(result).isNotNull();
 

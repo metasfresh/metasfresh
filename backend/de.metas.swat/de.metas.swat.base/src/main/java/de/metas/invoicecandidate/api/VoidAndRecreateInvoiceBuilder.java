@@ -7,6 +7,8 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.process.ProcessExecutionResult;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -32,7 +34,6 @@ import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * @author cg
@@ -221,7 +222,7 @@ public class VoidAndRecreateInvoiceBuilder
 					{ invoice.getDocumentNo() }));
 			}
 
-			getProcessInfo().getResult().setRecordToOpen(TableRecordReference.of(invoice), 0, OpenTarget.GridView);
+			getProcessInfo().getResult().setRecordToOpen(TableRecordReference.of(invoice), 0, OpenTarget.GridView, ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB_OVERLAY);
 
 			builder.append("@Enqueued@ @C_Invoice_ID@ ")
 					.append(invoice.getDocumentNo())

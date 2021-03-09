@@ -28,9 +28,7 @@ package de.metas.device.api;
  * <p>
  * Background: in our current usage scenario in ADempiere we have buttons that are supposed to query scales and add set result into a UI numerical field. To support this, ADempiere only adds buttons
  * for those {@link IDeviceRequest}s that have a single value response.
- * <p>
- * Currently, this can be seen in <code>de.metas.handlingunits.client.terminal.editor.model.impl.HUAttributeSetPropertiesModel</code>.
- * 
+ *
  * @author ts
  * 
  * @param <T> the type of the return value.

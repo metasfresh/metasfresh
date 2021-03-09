@@ -7,14 +7,19 @@
     </inspection_tool>
     <inspection_tool class="ES6CheckImport" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="ESLintInspection" enabled="true" level="WARNING" enabled_by_default="true" />
+    <inspection_tool class="EmptyStatementBody" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="m_reportEmptyBlocks" value="true" />
+      <option name="commentsAreContent" value="true" />
+    </inspection_tool>
     <inspection_tool class="Eslint" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="useSeverityFromConfigFile" value="false" />
     </inspection_tool>
     <inspection_tool class="FieldCanBeLocal" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="EXCLUDE_ANNOS">
         <value>
-          <list size="1">
+          <list size="2">
             <item index="0" class="java.lang.String" itemvalue="de.metas.process.Param" />
+            <item index="1" class="java.lang.String" itemvalue="de.metas.ui.web.view.descriptor.annotation.ViewColumn" />
           </list>
         </value>
       </option>
@@ -29,6 +34,9 @@
     </inspection_tool>
     <inspection_tool class="SimplifiableEqualsExpression" enabled="true" level="WARNING" enabled_by_default="true" />
     <inspection_tool class="Stylelint" enabled="true" level="ERROR" enabled_by_default="true" />
+    <inspection_tool class="TrivialIf" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoreChainedIf" value="true" />
+    </inspection_tool>
     <inspection_tool class="UnstableApiUsage" enabled="false" level="WARNING" enabled_by_default="false" />
   </profile>
 </component>

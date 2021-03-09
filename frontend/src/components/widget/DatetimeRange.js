@@ -35,6 +35,30 @@ class DatetimeRange extends Component {
   }
 
   /**
+   * @method handleClear
+   * @summary Clears the DatatimeRange input by updating the startDate and endDate into the local state
+   */
+  handleClear = () => {
+    const { onChange } = this.props;
+
+    this.setState(
+      {
+        startDate: undefined,
+        endDate: undefined,
+      },
+      () => {
+        onChange(undefined, undefined);
+        // even if we reset the values we get autofocus on the input and calendar shown
+        // we need to use this workaround below to cancel programatically such that we hide the calendars automatically
+        const rangeInputEl = document.querySelector('div.range_inputs');
+        const rangeInputButtons = rangeInputEl.querySelectorAll('button');
+        const cancelBtn = rangeInputButtons ? rangeInputButtons[1] : null;
+        cancelBtn && cancelBtn.click();
+      }
+    );
+  };
+
+  /**
    * @method handleApply
    * @summary ToDo: Describe the method
    * @param {object} event
@@ -112,6 +136,7 @@ class DatetimeRange extends Component {
         onApply={this.handleApply}
         onShow={onShow}
         onHide={onHide}
+        onEvent={this.handleFocus}
         locale={{
           format: Moment.localeData().longDateFormat(format),
           firstDay: 1,
@@ -142,7 +167,17 @@ class DatetimeRange extends Component {
           )}
         >
           {availableDates}
-          <i className="meta-icon-calendar input-icon-right" />
+          {startDate && (
+            <i
+              className="meta-icon-close-alt input-icon-right"
+              onClick={this.handleClear}
+            />
+          )}
+          <i
+            className={classnames('meta-icon-calendar', 'input-icon-right', {
+              'input-icon-m-right input-icon-m-top-small': startDate && endDate,
+            })}
+          />
         </button>
       </DateRangePicker>
     );

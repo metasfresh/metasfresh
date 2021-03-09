@@ -5,17 +5,15 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import { deleteViewRequest } from '../../api';
-import { getTableId } from '../../reducers/tables';
-
 import { PATCH_RESET } from '../../constants/ActionTypes';
-import { closeListIncludedView } from '../../actions/ListActions';
+
+import { unsetIncludedView } from '../../actions/ViewActions';
 import { addNotification } from '../../actions/AppActions';
 import {
   closeModal,
   closeRawModal,
   openRawModal,
 } from '../../actions/WindowActions';
-import { deleteTable } from '../../actions/TableActions';
 
 import keymap from '../../shortcuts/keymap';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
@@ -40,19 +38,19 @@ const ModalButton = (props) => {
 
   /**
    * @func handleClick
-   * @summary ToDo: Describe the method.
+   * @summary Call the `onClick` on mouse click
    */
   const handleClick = () => onClick(name);
 
   /**
    * @func handleShowTooltip
-   * @summary ToDo: Describe the method.
+   * @summary Call the `onShowTooltip` on mouse enter
    */
   const handleShowTooltip = () => onShowTooltip(name);
 
   /**
    * @method handleHideTooltip
-   * @summary ToDo: Describe the method.
+   * @summary Call the `onHideTooltip` on mouse leave
    */
   const handleHideTooltip = () => onHideTooltip(name);
 
@@ -183,16 +181,7 @@ class RawModal extends Component {
    * @param {*} type
    */
   handleClose = async (type) => {
-    const {
-      dispatch,
-      // TODO: Looks like we're never passing this
-      closeCallback,
-      viewId,
-      windowId,
-      requests,
-      rawModal,
-    } = this.props;
-    const { isNew } = this.state;
+    const { dispatch, viewId, windowId, requests, rawModal } = this.props;
 
     if (requests.length > 0) {
       const success = await new Promise((resolve) => {
@@ -220,10 +209,6 @@ class RawModal extends Component {
         openRawModal(rawModal.parentWindowId, rawModal.parentViewId)
       );
     } else {
-      if (closeCallback) {
-        await closeCallback(isNew);
-      }
-
       await this.removeModal();
       await deleteViewRequest(windowId, viewId, type);
     }
@@ -236,15 +221,13 @@ class RawModal extends Component {
    */
   removeModal = async () => {
     const { dispatch, modalVisible, windowId, viewId } = this.props;
-    const tableId = getTableId({ windowId, viewId });
 
     await Promise.all(
       [
         closeRawModal(),
-        deleteTable(tableId),
         closeModal(),
-        closeListIncludedView({
-          windowType: windowId,
+        unsetIncludedView({
+          windowId: windowId,
           viewId,
           forceClose: true,
         }),
@@ -322,10 +305,6 @@ class RawModal extends Component {
     return <ModalContextShortcuts {...shortcutActions} />;
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
   render() {
     const {
       modalTitle,

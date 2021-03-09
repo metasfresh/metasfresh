@@ -39,6 +39,8 @@ import org.compiere.util.TrxRunnable;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Transaction Manager
  *
@@ -348,7 +350,7 @@ public interface ITrxManager extends ISingletonService
 	 *
 	 * @return true if given transaction is "null" (i.e. no transaction)
 	 */
-	boolean isNull(String trxName);
+	boolean isNull(@Nullable String trxName);
 
 	/**
 	 * @return true if transaction is not null and it's active (e.g. not already committed/closed)
@@ -460,7 +462,7 @@ public interface ITrxManager extends ISingletonService
 	 *
 	 * @return previous trxName (before setting this one)
 	 */
-	String setThreadInheritedTrxName(String trxName);
+	String setThreadInheritedTrxName(@Nullable String trxName);
 
 	/**
 	 * Gets current Thread's transaction name.

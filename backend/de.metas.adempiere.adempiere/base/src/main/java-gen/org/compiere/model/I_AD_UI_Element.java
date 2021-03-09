@@ -1,41 +1,31 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_UI_Element
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public interface I_AD_UI_Element 
 {
 
-    /** TableName=AD_UI_Element */
-    public static final String Table_Name = "AD_UI_Element";
+	String Table_Name = "AD_UI_Element";
 
-    /** AD_Table_ID=540783 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540783 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 4 - System
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Client>(I_AD_UI_Element.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Feld.
@@ -45,7 +35,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Field_ID (int AD_Field_ID);
+	void setAD_Field_ID (int AD_Field_ID);
 
 	/**
 	 * Get Feld.
@@ -55,41 +45,36 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Field_ID();
+	int getAD_Field_ID();
 
-	public org.compiere.model.I_AD_Field getAD_Field();
+	@Nullable org.compiere.model.I_AD_Field getAD_Field();
 
-	public void setAD_Field(org.compiere.model.I_AD_Field AD_Field);
+	void setAD_Field(@Nullable org.compiere.model.I_AD_Field AD_Field);
 
-    /** Column definition for AD_Field_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Field> COLUMN_AD_Field_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Field>(I_AD_UI_Element.class, "AD_Field_ID", org.compiere.model.I_AD_Field.class);
-    /** Column name AD_Field_ID */
-    public static final String COLUMNNAME_AD_Field_ID = "AD_Field_ID";
+	ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Field> COLUMN_AD_Field_ID = new ModelColumn<>(I_AD_UI_Element.class, "AD_Field_ID", org.compiere.model.I_AD_Field.class);
+	String COLUMNNAME_AD_Field_ID = "AD_Field_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Org>(I_AD_UI_Element.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Register.
@@ -99,7 +84,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Tab_ID (int AD_Tab_ID);
+	void setAD_Tab_ID (int AD_Tab_ID);
 
 	/**
 	 * Get Register.
@@ -109,16 +94,14 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Tab_ID();
+	int getAD_Tab_ID();
 
-	public org.compiere.model.I_AD_Tab getAD_Tab();
+	org.compiere.model.I_AD_Tab getAD_Tab();
 
-	public void setAD_Tab(org.compiere.model.I_AD_Tab AD_Tab);
+	void setAD_Tab(org.compiere.model.I_AD_Tab AD_Tab);
 
-    /** Column definition for AD_Tab_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Tab> COLUMN_AD_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Tab>(I_AD_UI_Element.class, "AD_Tab_ID", org.compiere.model.I_AD_Tab.class);
-    /** Column name AD_Tab_ID */
-    public static final String COLUMNNAME_AD_Tab_ID = "AD_Tab_ID";
+	ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Tab> COLUMN_AD_Tab_ID = new ModelColumn<>(I_AD_UI_Element.class, "AD_Tab_ID", org.compiere.model.I_AD_Tab.class);
+	String COLUMNNAME_AD_Tab_ID = "AD_Tab_ID";
 
 	/**
 	 * Set UI Element.
@@ -127,7 +110,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_UI_Element_ID (int AD_UI_Element_ID);
+	void setAD_UI_Element_ID (int AD_UI_Element_ID);
 
 	/**
 	 * Get UI Element.
@@ -136,12 +119,10 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_UI_Element_ID();
+	int getAD_UI_Element_ID();
 
-    /** Column definition for AD_UI_Element_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_AD_UI_Element_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "AD_UI_Element_ID", null);
-    /** Column name AD_UI_Element_ID */
-    public static final String COLUMNNAME_AD_UI_Element_ID = "AD_UI_Element_ID";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_AD_UI_Element_ID = new ModelColumn<>(I_AD_UI_Element.class, "AD_UI_Element_ID", null);
+	String COLUMNNAME_AD_UI_Element_ID = "AD_UI_Element_ID";
 
 	/**
 	 * Set UI Element Group.
@@ -150,7 +131,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_UI_ElementGroup_ID (int AD_UI_ElementGroup_ID);
+	void setAD_UI_ElementGroup_ID (int AD_UI_ElementGroup_ID);
 
 	/**
 	 * Get UI Element Group.
@@ -159,16 +140,14 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_UI_ElementGroup_ID();
+	int getAD_UI_ElementGroup_ID();
 
-	public org.compiere.model.I_AD_UI_ElementGroup getAD_UI_ElementGroup();
+	@Nullable org.compiere.model.I_AD_UI_ElementGroup getAD_UI_ElementGroup();
 
-	public void setAD_UI_ElementGroup(org.compiere.model.I_AD_UI_ElementGroup AD_UI_ElementGroup);
+	void setAD_UI_ElementGroup(@Nullable org.compiere.model.I_AD_UI_ElementGroup AD_UI_ElementGroup);
 
-    /** Column definition for AD_UI_ElementGroup_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_UI_ElementGroup> COLUMN_AD_UI_ElementGroup_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_UI_ElementGroup>(I_AD_UI_Element.class, "AD_UI_ElementGroup_ID", org.compiere.model.I_AD_UI_ElementGroup.class);
-    /** Column name AD_UI_ElementGroup_ID */
-    public static final String COLUMNNAME_AD_UI_ElementGroup_ID = "AD_UI_ElementGroup_ID";
+	ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_UI_ElementGroup> COLUMN_AD_UI_ElementGroup_ID = new ModelColumn<>(I_AD_UI_Element.class, "AD_UI_ElementGroup_ID", org.compiere.model.I_AD_UI_ElementGroup.class);
+	String COLUMNNAME_AD_UI_ElementGroup_ID = "AD_UI_ElementGroup_ID";
 
 	/**
 	 * Set Element type.
@@ -177,7 +156,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_UI_ElementType (java.lang.String AD_UI_ElementType);
+	void setAD_UI_ElementType (java.lang.String AD_UI_ElementType);
 
 	/**
 	 * Get Element type.
@@ -186,115 +165,157 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAD_UI_ElementType();
+	java.lang.String getAD_UI_ElementType();
 
-    /** Column definition for AD_UI_ElementType */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_AD_UI_ElementType = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "AD_UI_ElementType", null);
-    /** Column name AD_UI_ElementType */
-    public static final String COLUMNNAME_AD_UI_ElementType = "AD_UI_ElementType";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_AD_UI_ElementType = new ModelColumn<>(I_AD_UI_Element.class, "AD_UI_ElementType", null);
+	String COLUMNNAME_AD_UI_ElementType = "AD_UI_ElementType";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Set Window.
+	 * Data entry or display window
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setAD_Window_ID (int AD_Window_ID);
+
+	/**
+	 * Get Window.
+	 * Data entry or display window
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getAD_Window_ID();
+
+	@Nullable org.compiere.model.I_AD_Window getAD_Window();
+
+	@Deprecated
+	void setAD_Window(@Nullable org.compiere.model.I_AD_Window AD_Window);
+
+	ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new ModelColumn<>(I_AD_UI_Element.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
+	String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_Created = new ModelColumn<>(I_AD_UI_Element.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_User>(I_AD_UI_Element.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_Description = new ModelColumn<>(I_AD_UI_Element.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Kommentar/Hilfe.
+	 * Set Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHelp (java.lang.String Help);
+	void setHelp (@Nullable java.lang.String Help);
 
 	/**
-	 * Get Kommentar/Hilfe.
+	 * Get Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHelp();
+	@Nullable java.lang.String getHelp();
 
-    /** Column definition for Help */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_Help = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "Help", null);
-    /** Column name Help */
-    public static final String COLUMNNAME_Help = "Help";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_Help = new ModelColumn<>(I_AD_UI_Element.class, "Help", null);
+	String COLUMNNAME_Help = "Help";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Inline Tab.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInline_Tab_ID (int Inline_Tab_ID);
+
+	/**
+	 * Get Inline Tab.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getInline_Tab_ID();
+
+	@Nullable org.compiere.model.I_AD_Tab getInline_Tab();
+
+	void setInline_Tab(@Nullable org.compiere.model.I_AD_Tab Inline_Tab);
+
+	ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Tab> COLUMN_Inline_Tab_ID = new ModelColumn<>(I_AD_UI_Element.class, "Inline_Tab_ID", org.compiere.model.I_AD_Tab.class);
+	String COLUMNNAME_Inline_Tab_ID = "Inline_Tab_ID";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_UI_Element.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Advanced field.
@@ -303,7 +324,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAdvancedField (boolean IsAdvancedField);
+	void setIsAdvancedField (boolean IsAdvancedField);
 
 	/**
 	 * Get Advanced field.
@@ -312,12 +333,10 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAdvancedField();
+	boolean isAdvancedField();
 
-    /** Column definition for IsAdvancedField */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsAdvancedField = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsAdvancedField", null);
-    /** Column name IsAdvancedField */
-    public static final String COLUMNNAME_IsAdvancedField = "IsAdvancedField";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_IsAdvancedField = new ModelColumn<>(I_AD_UI_Element.class, "IsAdvancedField", null);
+	String COLUMNNAME_IsAdvancedField = "IsAdvancedField";
 
 	/**
 	 * Set Allow filtering.
@@ -326,7 +345,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAllowFiltering (boolean IsAllowFiltering);
+	void setIsAllowFiltering (boolean IsAllowFiltering);
 
 	/**
 	 * Get Allow filtering.
@@ -335,12 +354,10 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllowFiltering();
+	boolean isAllowFiltering();
 
-    /** Column definition for IsAllowFiltering */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsAllowFiltering = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsAllowFiltering", null);
-    /** Column name IsAllowFiltering */
-    public static final String COLUMNNAME_IsAllowFiltering = "IsAllowFiltering";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_IsAllowFiltering = new ModelColumn<>(I_AD_UI_Element.class, "IsAllowFiltering", null);
+	String COLUMNNAME_IsAllowFiltering = "IsAllowFiltering";
 
 	/**
 	 * Set Displayed.
@@ -350,7 +367,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDisplayed (boolean IsDisplayed);
+	void setIsDisplayed (boolean IsDisplayed);
 
 	/**
 	 * Get Displayed.
@@ -360,12 +377,10 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDisplayed();
+	boolean isDisplayed();
 
-    /** Column definition for IsDisplayed */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsDisplayed = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsDisplayed", null);
-    /** Column name IsDisplayed */
-    public static final String COLUMNNAME_IsDisplayed = "IsDisplayed";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_IsDisplayed = new ModelColumn<>(I_AD_UI_Element.class, "IsDisplayed", null);
+	String COLUMNNAME_IsDisplayed = "IsDisplayed";
 
 	/**
 	 * Set Displayed in Side List.
@@ -375,7 +390,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDisplayed_SideList (boolean IsDisplayed_SideList);
+	void setIsDisplayed_SideList (boolean IsDisplayed_SideList);
 
 	/**
 	 * Get Displayed in Side List.
@@ -385,12 +400,10 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDisplayed_SideList();
+	boolean isDisplayed_SideList();
 
-    /** Column definition for IsDisplayed_SideList */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsDisplayed_SideList = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsDisplayed_SideList", null);
-    /** Column name IsDisplayed_SideList */
-    public static final String COLUMNNAME_IsDisplayed_SideList = "IsDisplayed_SideList";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_IsDisplayed_SideList = new ModelColumn<>(I_AD_UI_Element.class, "IsDisplayed_SideList", null);
+	String COLUMNNAME_IsDisplayed_SideList = "IsDisplayed_SideList";
 
 	/**
 	 * Set Displayed in Grid.
@@ -400,7 +413,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDisplayedGrid (boolean IsDisplayedGrid);
+	void setIsDisplayedGrid (boolean IsDisplayedGrid);
 
 	/**
 	 * Get Displayed in Grid.
@@ -410,12 +423,10 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDisplayedGrid();
+	boolean isDisplayedGrid();
 
-    /** Column definition for IsDisplayedGrid */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsDisplayedGrid = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsDisplayedGrid", null);
-    /** Column name IsDisplayedGrid */
-    public static final String COLUMNNAME_IsDisplayedGrid = "IsDisplayedGrid";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_IsDisplayedGrid = new ModelColumn<>(I_AD_UI_Element.class, "IsDisplayedGrid", null);
+	String COLUMNNAME_IsDisplayedGrid = "IsDisplayedGrid";
 
 	/**
 	 * Set Multi Line.
@@ -424,7 +435,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsMultiLine (boolean IsMultiLine);
+	void setIsMultiLine (boolean IsMultiLine);
 
 	/**
 	 * Get Multi Line.
@@ -433,12 +444,10 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isMultiLine();
+	boolean isMultiLine();
 
-    /** Column definition for IsMultiLine */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_IsMultiLine = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "IsMultiLine", null);
-    /** Column name IsMultiLine */
-    public static final String COLUMNNAME_IsMultiLine = "IsMultiLine";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_IsMultiLine = new ModelColumn<>(I_AD_UI_Element.class, "IsMultiLine", null);
+	String COLUMNNAME_IsMultiLine = "IsMultiLine";
 
 	/**
 	 * Set Labels selector field.
@@ -447,7 +456,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLabels_Selector_Field_ID (int Labels_Selector_Field_ID);
+	void setLabels_Selector_Field_ID (int Labels_Selector_Field_ID);
 
 	/**
 	 * Get Labels selector field.
@@ -456,16 +465,14 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getLabels_Selector_Field_ID();
+	int getLabels_Selector_Field_ID();
 
-	public org.compiere.model.I_AD_Field getLabels_Selector_Field();
+	@Nullable org.compiere.model.I_AD_Field getLabels_Selector_Field();
 
-	public void setLabels_Selector_Field(org.compiere.model.I_AD_Field Labels_Selector_Field);
+	void setLabels_Selector_Field(@Nullable org.compiere.model.I_AD_Field Labels_Selector_Field);
 
-    /** Column definition for Labels_Selector_Field_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Field> COLUMN_Labels_Selector_Field_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Field>(I_AD_UI_Element.class, "Labels_Selector_Field_ID", org.compiere.model.I_AD_Field.class);
-    /** Column name Labels_Selector_Field_ID */
-    public static final String COLUMNNAME_Labels_Selector_Field_ID = "Labels_Selector_Field_ID";
+	ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Field> COLUMN_Labels_Selector_Field_ID = new ModelColumn<>(I_AD_UI_Element.class, "Labels_Selector_Field_ID", org.compiere.model.I_AD_Field.class);
+	String COLUMNNAME_Labels_Selector_Field_ID = "Labels_Selector_Field_ID";
 
 	/**
 	 * Set Labels content tab.
@@ -474,7 +481,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLabels_Tab_ID (int Labels_Tab_ID);
+	void setLabels_Tab_ID (int Labels_Tab_ID);
 
 	/**
 	 * Get Labels content tab.
@@ -483,16 +490,14 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getLabels_Tab_ID();
+	int getLabels_Tab_ID();
 
-	public org.compiere.model.I_AD_Tab getLabels_Tab();
+	@Nullable org.compiere.model.I_AD_Tab getLabels_Tab();
 
-	public void setLabels_Tab(org.compiere.model.I_AD_Tab Labels_Tab);
+	void setLabels_Tab(@Nullable org.compiere.model.I_AD_Tab Labels_Tab);
 
-    /** Column definition for Labels_Tab_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Tab> COLUMN_Labels_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Tab>(I_AD_UI_Element.class, "Labels_Tab_ID", org.compiere.model.I_AD_Tab.class);
-    /** Column name Labels_Tab_ID */
-    public static final String COLUMNNAME_Labels_Tab_ID = "Labels_Tab_ID";
+	ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_Tab> COLUMN_Labels_Tab_ID = new ModelColumn<>(I_AD_UI_Element.class, "Labels_Tab_ID", org.compiere.model.I_AD_Tab.class);
+	String COLUMNNAME_Labels_Tab_ID = "Labels_Tab_ID";
 
 	/**
 	 * Set Media Types.
@@ -501,7 +506,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMediaTypes (java.lang.String MediaTypes);
+	void setMediaTypes (@Nullable java.lang.String MediaTypes);
 
 	/**
 	 * Get Media Types.
@@ -510,12 +515,10 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getMediaTypes();
+	@Nullable java.lang.String getMediaTypes();
 
-    /** Column definition for MediaTypes */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_MediaTypes = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "MediaTypes", null);
-    /** Column name MediaTypes */
-    public static final String COLUMNNAME_MediaTypes = "MediaTypes";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_MediaTypes = new ModelColumn<>(I_AD_UI_Element.class, "MediaTypes", null);
+	String COLUMNNAME_MediaTypes = "MediaTypes";
 
 	/**
 	 * Set Lines Count.
@@ -524,7 +527,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMultiLine_LinesCount (int MultiLine_LinesCount);
+	void setMultiLine_LinesCount (int MultiLine_LinesCount);
 
 	/**
 	 * Get Lines Count.
@@ -533,12 +536,10 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getMultiLine_LinesCount();
+	int getMultiLine_LinesCount();
 
-    /** Column definition for MultiLine_LinesCount */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_MultiLine_LinesCount = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "MultiLine_LinesCount", null);
-    /** Column name MultiLine_LinesCount */
-    public static final String COLUMNNAME_MultiLine_LinesCount = "MultiLine_LinesCount";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_MultiLine_LinesCount = new ModelColumn<>(I_AD_UI_Element.class, "MultiLine_LinesCount", null);
+	String COLUMNNAME_MultiLine_LinesCount = "MultiLine_LinesCount";
 
 	/**
 	 * Set Name.
@@ -547,7 +548,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -556,39 +557,35 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_Name = new ModelColumn<>(I_AD_UI_Element.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSeqNo (int SeqNo);
+	void setSeqNo (int SeqNo);
 
 	/**
-	 * Get Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getSeqNo();
+	int getSeqNo();
 
-    /** Column definition for SeqNo */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "SeqNo", null);
-    /** Column name SeqNo */
-    public static final String COLUMNNAME_SeqNo = "SeqNo";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_SeqNo = new ModelColumn<>(I_AD_UI_Element.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Reihenfolge (Side List).
@@ -597,7 +594,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSeqNo_SideList (int SeqNo_SideList);
+	void setSeqNo_SideList (int SeqNo_SideList);
 
 	/**
 	 * Get Reihenfolge (Side List).
@@ -606,12 +603,10 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getSeqNo_SideList();
+	int getSeqNo_SideList();
 
-    /** Column definition for SeqNo_SideList */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_SeqNo_SideList = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "SeqNo_SideList", null);
-    /** Column name SeqNo_SideList */
-    public static final String COLUMNNAME_SeqNo_SideList = "SeqNo_SideList";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_SeqNo_SideList = new ModelColumn<>(I_AD_UI_Element.class, "SeqNo_SideList", null);
+	String COLUMNNAME_SeqNo_SideList = "SeqNo_SideList";
 
 	/**
 	 * Set Reihenfolge (grid).
@@ -622,7 +617,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSeqNoGrid (int SeqNoGrid);
+	void setSeqNoGrid (int SeqNoGrid);
 
 	/**
 	 * Get Reihenfolge (grid).
@@ -633,12 +628,10 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getSeqNoGrid();
+	int getSeqNoGrid();
 
-    /** Column definition for SeqNoGrid */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_SeqNoGrid = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "SeqNoGrid", null);
-    /** Column name SeqNoGrid */
-    public static final String COLUMNNAME_SeqNoGrid = "SeqNoGrid";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_SeqNoGrid = new ModelColumn<>(I_AD_UI_Element.class, "SeqNoGrid", null);
+	String COLUMNNAME_SeqNoGrid = "SeqNoGrid";
 
 	/**
 	 * Set UI Style.
@@ -647,7 +640,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUIStyle (java.lang.String UIStyle);
+	void setUIStyle (@Nullable java.lang.String UIStyle);
 
 	/**
 	 * Get UI Style.
@@ -656,42 +649,35 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUIStyle();
+	@Nullable java.lang.String getUIStyle();
 
-    /** Column definition for UIStyle */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_UIStyle = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "UIStyle", null);
-    /** Column name UIStyle */
-    public static final String COLUMNNAME_UIStyle = "UIStyle";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_UIStyle = new ModelColumn<>(I_AD_UI_Element.class, "UIStyle", null);
+	String COLUMNNAME_UIStyle = "UIStyle";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_Updated = new ModelColumn<>(I_AD_UI_Element.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_UI_Element, org.compiere.model.I_AD_User>(I_AD_UI_Element.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Widget size.
@@ -700,7 +686,7 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setWidgetSize (java.lang.String WidgetSize);
+	void setWidgetSize (@Nullable java.lang.String WidgetSize);
 
 	/**
 	 * Get Widget size.
@@ -709,10 +695,8 @@ public interface I_AD_UI_Element
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getWidgetSize();
+	@Nullable java.lang.String getWidgetSize();
 
-    /** Column definition for WidgetSize */
-    public static final org.adempiere.model.ModelColumn<I_AD_UI_Element, Object> COLUMN_WidgetSize = new org.adempiere.model.ModelColumn<I_AD_UI_Element, Object>(I_AD_UI_Element.class, "WidgetSize", null);
-    /** Column name WidgetSize */
-    public static final String COLUMNNAME_WidgetSize = "WidgetSize";
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_WidgetSize = new ModelColumn<>(I_AD_UI_Element.class, "WidgetSize", null);
+	String COLUMNNAME_WidgetSize = "WidgetSize";
 }

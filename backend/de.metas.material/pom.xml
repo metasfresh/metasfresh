@@ -1,26 +1,26 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<modelVersion>4.0.0</modelVersion>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<artifactId>de.metas.parent</artifactId>
-		<groupId>de.metas</groupId>
-		<version>10.0.0</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+    <parent>
+        <artifactId>de.metas.parent</artifactId>
+        <groupId>de.metas</groupId>
+        <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
-	<groupId>de.metas.material</groupId>
-	<artifactId>metasfresh-material</artifactId>
-	<packaging>pom</packaging>
+    <version>10.0.0</version> <!-- needed by versions:set during the jenkins build -->
+    <groupId>de.metas.material</groupId>
+    <artifactId>metasfresh-material</artifactId>
+    <packaging>pom</packaging>
 
-	<modules>
-		<module>commons</module>
-		<module>dispo-commons</module>
-		<module>dispo-service</module>
-		<module>cockpit</module>
-		<module>event</module>
-		<module>planning</module>
-	</modules>
+    <modules>
+        <module>commons</module>
+        <module>dispo-commons</module>
+        <module>dispo-service</module>
+        <module>cockpit</module>
+        <module>event</module>
+        <module>planning</module>
+    </modules>
 
 </project>

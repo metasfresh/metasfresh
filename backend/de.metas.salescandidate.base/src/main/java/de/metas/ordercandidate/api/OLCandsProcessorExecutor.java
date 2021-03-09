@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.ArrayKeyBuilder;
 import org.compiere.util.TimeUtil;
@@ -33,7 +34,6 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -181,7 +181,6 @@ public class OLCandsProcessorExecutor
 		if (currentOrder != null)
 		{
 			currentOrder.completeOrDelete();
-			currentOrder = null;
 		}
 
 		Check.assume(processedIds.size() == candidates.size(), "All candidates have been processed");

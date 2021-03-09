@@ -20,7 +20,7 @@ import de.metas.handlingunits.IHUAssignmentDAO.HuAssignment;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.materialtracking.model.I_M_InOutLine;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.util.Loggables;
@@ -125,7 +125,7 @@ public class PPOrderMInOutLineRetrievalService implements IPPOrderMInOutLineRetr
 				id2iol.put(inoutLine.getM_InOutLine_ID(), inoutLine);
 			}
 
-			BigDecimal qtyToAllocate = costCollector.getMovementQty();
+			BigDecimal qtyToAllocate = ppCostCollectorBL.getMovementQtyInStockingUOM(costCollector).toBigDecimal();
 			for (final I_M_InOutLine inoutLine : id2iol.values())
 			{
 				final BigDecimal qty = qtyToAllocate.min(inoutLine.getMovementQty());

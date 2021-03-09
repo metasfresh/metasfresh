@@ -1,8 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="procurement-webui" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" folderName="Less Used">
-    <module name="de.metas.procurement.webui" />
+    <module name="procurement-webui-backend" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="de.metas.procurement.webui.Application" />
     <option name="ALTERNATIVE_JRE_PATH" />
+    <option name="SHORTEN_COMMAND_LINE" value="MANIFEST" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

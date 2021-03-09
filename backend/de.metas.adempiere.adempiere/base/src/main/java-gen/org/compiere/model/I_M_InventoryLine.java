@@ -2,7 +2,7 @@ package org.compiere.model;
 
 
 /** Generated Interface for M_InventoryLine
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_M_InventoryLine 
@@ -14,16 +14,9 @@ public interface I_M_InventoryLine
     /** AD_Table_ID=322 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
@@ -36,8 +29,8 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -46,8 +39,8 @@ public interface I_M_InventoryLine
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -105,7 +98,30 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Cost Preise.
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public int getC_UOM_ID();
+
+    /** Column name C_UOM_ID */
+    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Cost Price.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -114,7 +130,7 @@ public interface I_M_InventoryLine
 	public void setCostPrice (java.math.BigDecimal CostPrice);
 
 	/**
-	 * Get Cost Preise.
+	 * Get Cost Price.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -128,7 +144,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_CostPrice = "CostPrice";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
@@ -143,7 +159,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
@@ -156,30 +172,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -188,7 +181,7 @@ public interface I_M_InventoryLine
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -225,6 +218,31 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
+	 * Set HU aggregation.
+	 * Specifies whether the respective line is about one HU or about potientielly many HUs.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setHUAggregationType (java.lang.String HUAggregationType);
+
+	/**
+	 * Get HU aggregation.
+	 * Specifies whether the respective line is about one HU or about potientielly many HUs.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getHUAggregationType();
+
+    /** Column definition for HUAggregationType */
+    public static final org.adempiere.model.ModelColumn<I_M_InventoryLine, Object> COLUMN_HUAggregationType = new org.adempiere.model.ModelColumn<I_M_InventoryLine, Object>(I_M_InventoryLine.class, "HUAggregationType", null);
+    /** Column name HUAggregationType */
+    public static final String COLUMNNAME_HUAggregationType = "HUAggregationType";
+
+	/**
 	 * Set Inventory Type.
 	 * Type of inventory difference
 	 *
@@ -250,7 +268,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_InventoryType = "InventoryType";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -260,7 +278,7 @@ public interface I_M_InventoryLine
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
@@ -275,7 +293,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Gezählt.
+	 * Set Counted.
 	 * Count number of not empty elements
 	 *
 	 * <br>Type: YesNo
@@ -285,7 +303,7 @@ public interface I_M_InventoryLine
 	public void setIsCounted (boolean IsCounted);
 
 	/**
-	 * Get Gezählt.
+	 * Get Counted.
 	 * Count number of not empty elements
 	 *
 	 * <br>Type: YesNo
@@ -300,8 +318,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_IsCounted = "IsCounted";
 
 	/**
-	 * Set Zeile Nr..
-	 * Unique line for this document
+	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -310,8 +327,7 @@ public interface I_M_InventoryLine
 	public void setLine (int Line);
 
 	/**
-	 * Get Zeile Nr..
-	 * Unique line for this document
+	 * Get SeqNo..
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -325,8 +341,8 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: true
@@ -335,8 +351,8 @@ public interface I_M_InventoryLine
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: true
@@ -354,8 +370,8 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
+	 * Set Receipt Line.
+	 * Line on Receipt document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -364,8 +380,8 @@ public interface I_M_InventoryLine
 	public void setM_InOutLine_ID (int M_InOutLine_ID);
 
 	/**
-	 * Get Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
+	 * Get Receipt Line.
+	 * Line on Receipt document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -383,7 +399,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
 	/**
-	 * Set Inventur.
+	 * Set Phys. Inventory.
 	 * Parameters for a Physical Inventory
 	 *
 	 * <br>Type: Search
@@ -393,7 +409,7 @@ public interface I_M_InventoryLine
 	public void setM_Inventory_ID (int M_Inventory_ID);
 
 	/**
-	 * Get Inventur.
+	 * Get Phys. Inventory.
 	 * Parameters for a Physical Inventory
 	 *
 	 * <br>Type: Search
@@ -412,7 +428,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_M_Inventory_ID = "M_Inventory_ID";
 
 	/**
-	 * Set Inventur-Position.
+	 * Set Phys.Inventory Line.
 	 * Unique line in an Inventory document
 	 *
 	 * <br>Type: ID
@@ -422,7 +438,7 @@ public interface I_M_InventoryLine
 	public void setM_InventoryLine_ID (int M_InventoryLine_ID);
 
 	/**
-	 * Get Inventur-Position.
+	 * Get Phys.Inventory Line.
 	 * Unique line in an Inventory document
 	 *
 	 * <br>Type: ID
@@ -437,7 +453,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_M_InventoryLine_ID = "M_InventoryLine_ID";
 
 	/**
-	 * Set Lagerort.
+	 * Set Locator.
 	 * Warehouse Locator
 	 *
 	 * <br>Type: Locator
@@ -447,7 +463,7 @@ public interface I_M_InventoryLine
 	public void setM_Locator_ID (int M_Locator_ID);
 
 	/**
-	 * Get Lagerort.
+	 * Get Locator.
 	 * Warehouse Locator
 	 *
 	 * <br>Type: Locator
@@ -460,8 +476,8 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -470,8 +486,8 @@ public interface I_M_InventoryLine
 	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -483,8 +499,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -493,8 +508,7 @@ public interface I_M_InventoryLine
 	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -508,8 +522,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Buchmenge.
-	 * Book Quantity
+	 * Set Qty Book.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -518,8 +531,7 @@ public interface I_M_InventoryLine
 	public void setQtyBook (java.math.BigDecimal QtyBook);
 
 	/**
-	 * Get Buchmenge.
-	 * Book Quantity
+	 * Get Qty Book.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -533,8 +545,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_QtyBook = "QtyBook";
 
 	/**
-	 * Set Zählmenge.
-	 * Counted Quantity
+	 * Set Qty Count.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -543,8 +554,7 @@ public interface I_M_InventoryLine
 	public void setQtyCount (java.math.BigDecimal QtyCount);
 
 	/**
-	 * Get Zählmenge.
-	 * Counted Quantity
+	 * Get Qty Count.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -581,8 +591,8 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_QtyCsv = "QtyCsv";
 
 	/**
-	 * Set Internal Use Qty.
-	 * Internal Use Quantity removed from Inventory
+	 * Set Quantity count.
+	 * Counted Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -591,8 +601,8 @@ public interface I_M_InventoryLine
 	public void setQtyInternalUse (java.math.BigDecimal QtyInternalUse);
 
 	/**
-	 * Get Internal Use Qty.
-	 * Internal Use Quantity removed from Inventory
+	 * Get Quantity count.
+	 * Counted Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -634,7 +644,7 @@ public interface I_M_InventoryLine
 
 	/**
 	 * Set UPC.
-	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	 * Bar Code (Universal Product Code or its superset European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -646,7 +656,7 @@ public interface I_M_InventoryLine
 
 	/**
 	 * Get UPC.
-	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	 * Bar Code (Universal Product Code or its superset European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -662,7 +672,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_UPC = "UPC";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
@@ -677,7 +687,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
@@ -690,7 +700,7 @@ public interface I_M_InventoryLine
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Suchschlüssel.
+	 * Set Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
@@ -702,7 +712,7 @@ public interface I_M_InventoryLine
 	public void setValue (java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
+	 * Get Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String

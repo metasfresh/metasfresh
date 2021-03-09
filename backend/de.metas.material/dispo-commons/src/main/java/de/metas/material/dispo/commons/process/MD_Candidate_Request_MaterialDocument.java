@@ -2,6 +2,7 @@ package de.metas.material.dispo.commons.process;
 
 import java.util.function.Predicate;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.SpringContextHolder;
 
@@ -40,7 +41,7 @@ import de.metas.util.Services;
  */
 
 /**
- * Invokes {@link RequestMaterialOrderService#requestMaterialOrderForCandidates(Integer)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
+ * Invokes {@link RequestMaterialOrderService#requestMaterialOrderForCandidates(MaterialDispoGroupId)} so that some other part of the system should create a production order for the selected {@link I_MD_Candidate}(s).
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -57,14 +58,16 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 
 		return X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION.equals(businessCase)
 				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION.equals(businessCase)
-				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PURCHASE.equals(businessCase);
+				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PURCHASE.equals(businessCase)
+				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_FORECAST.equals(businessCase);
 	};
 
 	private final Predicate<I_MD_Candidate> statusIsDocPlanned = r -> {
 
 		final String status = r.getMD_Candidate_Status();
 
-		return X_MD_Candidate.MD_CANDIDATE_STATUS_Doc_planned.equals(status);
+		return X_MD_Candidate.MD_CANDIDATE_STATUS_Doc_planned.equals(status)
+		|| X_MD_Candidate.MD_CANDIDATE_STATUS_Planned.equals(status);
 	};
 
 	@Override
@@ -88,7 +91,7 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 	}
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
 		if (context.isNoSelection())
 		{

@@ -690,7 +690,7 @@ public interface I_AD_Process
 	/**
 	 * Set JSON Path.
 	 *
-	 * <br>Type: String
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -699,7 +699,7 @@ public interface I_AD_Process
 	/**
 	 * Get JSON Path.
 	 *
-	 * <br>Type: String
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -757,6 +757,29 @@ public interface I_AD_Process
     public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "Name", null);
     /** Column name Name */
     public static final String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Response format.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setPostgrestResponseFormat (java.lang.String PostgrestResponseFormat);
+
+	/**
+	 * Get Response format.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPostgrestResponseFormat();
+
+    /** Column definition for PostgrestResponseFormat */
+    public static final org.adempiere.model.ModelColumn<I_AD_Process, Object> COLUMN_PostgrestResponseFormat = new org.adempiere.model.ModelColumn<I_AD_Process, Object>(I_AD_Process.class, "PostgrestResponseFormat", null);
+    /** Column name PostgrestResponseFormat */
+    public static final String COLUMNNAME_PostgrestResponseFormat = "PostgrestResponseFormat";
 
 	/**
 	 * Set Procedure.

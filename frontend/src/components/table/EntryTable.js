@@ -4,6 +4,14 @@ import classnames from 'classnames';
 import { connect } from 'react-redux';
 
 import { getTableId, getTable } from '../../reducers/tables';
+import { updateTableRowProperty } from '../../actions/TableActions';
+import {
+  openModal,
+  patch,
+  updatePropertyValue,
+  allowShortcut,
+  disableShortcut,
+} from '../../actions/WindowActions';
 
 import WidgetTooltip from '../widget/WidgetTooltip';
 import MasterWidget from '../widget/MasterWidget';
@@ -42,6 +50,19 @@ class EntryTable extends PureComponent {
     });
   };
 
+  handleChange = (response) => {
+    const { windowId, tabId, documentId, updateTableRowProperty } = this.props;
+
+    response.then((rows) => {
+      const tableId = getTableId({ windowId, docId: documentId, tabId });
+
+      rows.forEach((row) => {
+        const rowId = row.rowId;
+        updateTableRowProperty({ tableId, rowId, change: row });
+      });
+    });
+  };
+
   /**
    * @method renderElements
    * @summary ToDo: Describe the method
@@ -60,6 +81,13 @@ class EntryTable extends PureComponent {
       documentId,
       tabIndex,
       isFullScreen,
+      openModal,
+      patch,
+      updatePropertyValue,
+      allowShortcut,
+      disableShortcut,
+      modalVisible,
+      timeZone,
     } = this.props;
     const { tooltipToggled } = this.state;
     const renderedArray = [];
@@ -103,7 +131,7 @@ class EntryTable extends PureComponent {
               <MasterWidget
                 ref={addRefToWidgets}
                 entity="window"
-                windowType={windowId}
+                windowId={windowId}
                 dataId={documentId}
                 dataEntry={true}
                 fieldName={fieldName}
@@ -116,6 +144,14 @@ class EntryTable extends PureComponent {
                 tabIndex={tabIndex}
                 fullScreen={isFullScreen}
                 onBlurWidget={onBlurWidget}
+                openModal={openModal}
+                patch={patch}
+                updatePropertyValue={updatePropertyValue}
+                allowShortcut={allowShortcut}
+                disableShortcut={disableShortcut}
+                modalVisible={modalVisible}
+                timeZone={timeZone}
+                onChange={this.handleChange}
                 {...elem}
               />
               {tooltipWidget && (
@@ -161,27 +197,46 @@ class EntryTable extends PureComponent {
 EntryTable.propTypes = {
   columns: PropTypes.array.isRequired,
   rows: PropTypes.array.isRequired,
-  //
   windowId: PropTypes.string.isRequired,
   documentId: PropTypes.string,
   tabId: PropTypes.string,
-  //
+  modalVisible: PropTypes.bool.isRequired,
+  timeZone: PropTypes.string.isRequired,
   data: PropTypes.oneOfType([PropTypes.shape(), PropTypes.array]), // TODO: type here should point to a hidden issue?
   extendedData: PropTypes.any,
-  //
   tabIndex: PropTypes.any,
   isFullScreen: PropTypes.bool,
-  //
   addRefToWidgets: PropTypes.func.isRequired,
   onBlurWidget: PropTypes.func.isRequired,
+  updatePropertyValue: PropTypes.func.isRequired,
+  openModal: PropTypes.func.isRequired,
+  patch: PropTypes.func.isRequired,
+  allowShortcut: PropTypes.func.isRequired,
+  disableShortcut: PropTypes.func.isRequired,
+  updateTableRowProperty: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state, props) => {
+  const { appHandler, windowHandler } = state;
   const { windowId, documentId, tabId } = props;
   const tableId = getTableId({ windowId, tabId, docId: documentId });
   const table = getTable(state, tableId);
 
-  return { rows: table.rows };
+  return {
+    rows: table.rows,
+    modalVisible: windowHandler.modal.visible,
+    timeZone: appHandler.me.timeZone,
+  };
 };
 
-export default connect(mapStateToProps)(EntryTable);
+export default connect(
+  mapStateToProps,
+  {
+    openModal,
+    patch,
+    updatePropertyValue,
+    allowShortcut,
+    disableShortcut,
+    updateTableRowProperty,
+  }
+)(EntryTable);

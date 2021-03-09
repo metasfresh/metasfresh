@@ -577,7 +577,8 @@
 
     .notification-number {
         top: -5px;
-        right: 10px;   
+        right: 5px;
+        left: initial;
     }
 }
 
@@ -638,4 +639,9 @@
     flex-direction: column;
     justify-content: top;
     align-items: center;
+}
+
+.menu-overlay-search-item-focused {
+  text-decoration: underline;
+  text-underline-position: under;
 }

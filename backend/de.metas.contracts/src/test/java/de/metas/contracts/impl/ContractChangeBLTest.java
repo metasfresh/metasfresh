@@ -27,6 +27,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
@@ -48,7 +49,6 @@ import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class ContractChangeBLTest extends AbstractFlatrateTermTest
@@ -170,7 +170,7 @@ public class ContractChangeBLTest extends AbstractFlatrateTermTest
 		assertThat(flatrateTerm.getMasterEndDate()).isEqualTo(cancelinglDate);
 		assertThat(flatrateTerm.getTerminationMemo()).isEqualTo(terminationMemo);
 		assertThat(flatrateTerm.getTerminationReason()).isEqualTo(X_C_Flatrate_Term.TERMINATIONREASON_General);
-		assertThat(flatrateTerm.getTerminationDate()).isEqualTo(SystemTime.asDayTimestamp());
+		assertThat(flatrateTerm.getTerminationDate()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 	}
 
 	private void assertSubscriptionProgress(@NonNull final I_C_Flatrate_Term flatrateTerm, final int expected)

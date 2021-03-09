@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.service.ISystemBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
@@ -59,7 +60,6 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -147,11 +147,11 @@ public class Login
 
 		if (Check.isEmpty(username, true))
 		{
-			throw new AdempiereException("@UserOrPasswordInvalid@");
+			throw new AdempiereException("@UserOrPasswordInvalid@").markAsUserValidationError();
 		}
 		if (HashableString.isEmpty(password))
 		{
-			throw new AdempiereException("@UserOrPasswordInvalid@");
+			throw new AdempiereException("@UserOrPasswordInvalid@").markAsUserValidationError();
 		}
 
 		//
@@ -190,7 +190,7 @@ public class Login
 			}
 			else
 			{
-				throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
+				throw new AdempiereException("@UserAccountLockedError@").markAsUserValidationError(); // TODO: specific exception
 			}
 		}
 
@@ -198,7 +198,7 @@ public class Login
 		{
 			loginFailureCount++;
 			user.setLoginFailureCount(loginFailureCount);
-			user.setLoginFailureDate(SystemTime.asTimestamp());
+			user.setLoginFailureDate(de.metas.common.util.time.SystemTime.asTimestamp());
 			if (user.getLoginFailureCount() >= maxLoginFailure)
 			{
 				user.setIsAccountLocked(true);
@@ -206,13 +206,13 @@ public class Login
 				InterfaceWrapperHelper.save(user);
 
 				destroySessionOnLoginIncorrect(session);
-				throw new AdempiereException("@UserAccountLockedError@"); // TODO: specific exception
+				throw new AdempiereException("@UserAccountLockedError@").markAsUserValidationError(); // TODO: specific exception
 			}
 
 			InterfaceWrapperHelper.save(user);
 
 			destroySessionOnLoginIncorrect(session);
-			throw new AdempiereException("@UserOrPasswordInvalid@");
+			throw new AdempiereException("@UserOrPasswordInvalid@").markAsUserValidationError();
 		}
 		else
 		{
@@ -274,7 +274,7 @@ public class Login
 		//
 		if (roles.isEmpty())
 		{
-			throw new AdempiereException("No roles"); // TODO: specific exception
+			throw new AdempiereException("@NoRoles@").markAsUserValidationError(); // TODO: specific exception
 		}
 
 		log.debug("User={}, roles={}", username, roles);
@@ -330,7 +330,7 @@ public class Login
 		if (clientsList.isEmpty())
 		{
 			// shall not happen because in this case rolePermissions retrieving should fail
-			throw new AdempiereException("No Clients for Role: " + role.toStringX());
+			throw new AdempiereException("No Clients for Role: " + role.toStringX()).markAsUserValidationError();
 		}
 
 		//
@@ -393,7 +393,7 @@ public class Login
 	{
 		//
 		// Get user role
-		final LocalDate loginDate = SystemTime.asLocalDate(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
+		final LocalDate loginDate = de.metas.common.util.time.SystemTime.asLocalDate(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
 		final IUserRolePermissions role = userRolePermissionsDAO.getUserRolePermissions(roleId, userId, clientId, loginDate);
 
 		//
@@ -475,7 +475,6 @@ public class Login
 	 *
 	 * @param org org information
 	 * @param timestamp optional date
-	 * @param printerName optional printer info
 	 * @return AD_Message of error (NoValidAcctInfo) or ""
 	 */
 	public String loadPreferences(
@@ -504,7 +503,7 @@ public class Login
 		final LocalDate loginDate;
 		if (timestamp == null)
 		{
-			loginDate = SystemTime.asLocalDate();
+			loginDate = de.metas.common.util.time.SystemTime.asLocalDate();
 		}
 		else
 		{

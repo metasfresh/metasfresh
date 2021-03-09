@@ -1,5 +1,33 @@
 package de.metas.user.api.impl;
 
+import de.metas.adempiere.model.I_AD_User;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.logging.LogManager;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_AD_User_Substitute;
+import org.compiere.model.Query;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
@@ -24,36 +52,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.I_AD_User_Substitute;
-import org.compiere.model.Query;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import de.metas.adempiere.model.I_AD_User;
-import de.metas.bpartner.BPartnerId;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.logging.LogManager;
-import de.metas.user.UserId;
-import de.metas.user.api.IUserDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 public class UserDAO implements IUserDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(UserDAO.class);
@@ -75,11 +73,11 @@ public class UserDAO implements IUserDAO
 		if (users.size() > 1)
 		{
 			logger.info("More then one user found for UserId '{}': {}", userId, users);
-			throw new AdempiereException("@" + MSG_MailOrUsernameNotFound + "@");
+			throw new AdempiereException("@" + MSG_MailOrUsernameNotFound + "@").markAsUserValidationError();
 		}
 		if (users.size() == 0)
 		{
-			throw new AdempiereException("@" + MSG_MailOrUsernameNotFound + "@");
+			throw new AdempiereException("@" + MSG_MailOrUsernameNotFound + "@").markAsUserValidationError();
 		}
 
 		return users.get(0);
@@ -97,11 +95,11 @@ public class UserDAO implements IUserDAO
 
 		if (user == null)
 		{
-			throw new AdempiereException("@PasswordResetCodeNoLongerValid@");
+			throw new AdempiereException("@PasswordResetCodeNoLongerValid@").markAsUserValidationError();
 		}
 		if (!passwordResetCode.equals(user.getPasswordResetCode()))
 		{
-			throw new AdempiereException("@PasswordResetCodeNoLongerValid@");
+			throw new AdempiereException("@PasswordResetCodeNoLongerValid@").markAsUserValidationError();
 		}
 
 		return user;
@@ -146,7 +144,7 @@ public class UserDAO implements IUserDAO
 		final I_AD_User user = retrieveUserOrNull(Env.getCtx(), adUserId.getRepoId());
 		if (user == null)
 		{
-			throw new AdempiereException("No user found for ID=" + adUserId);
+			throw new AdempiereException("No user found for ID=" + adUserId).markAsUserValidationError();
 		}
 		return user;
 	}
@@ -162,7 +160,7 @@ public class UserDAO implements IUserDAO
 				.firstOnlyNotNull(I_AD_User.class);
 		if (user == null)
 		{
-			throw new AdempiereException("No user found for ID=" + adUserId);
+			throw new AdempiereException("No user found for ID=" + adUserId).markAsUserValidationError();
 		}
 		return user;
 	}
@@ -258,6 +256,18 @@ public class UserDAO implements IUserDAO
 				.orderByDescending(I_AD_User.COLUMNNAME_AD_User_ID)
 				.create()
 				.listIds(UserId::ofRepoId);
+	}
+
+	@Override
+	public boolean isSystemUser(@NonNull final UserId userId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_User.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User.COLUMNNAME_AD_User_ID, userId)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSystemUser, true)
+				.create()
+				.anyMatch();
 	}
 
 	@Override

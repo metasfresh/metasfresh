@@ -11,7 +11,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule_ExportAudit extends org.compiere.model.PO implements I_M_ShipmentSchedule_ExportAudit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1385649030L;
+	private static final long serialVersionUID = 6876153L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule_ExportAudit (Properties ctx, int M_ShipmentSchedule_ExportAudit_ID, String trxName)
@@ -49,15 +49,27 @@ public class X_M_ShipmentSchedule_ExportAudit extends org.compiere.model.PO impl
 	public void setAD_Issue_ID (int AD_Issue_ID)
 	{
 		if (AD_Issue_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_AD_Issue_ID, null);
+			set_Value (COLUMNNAME_AD_Issue_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
+			set_Value (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
 	}
 
 	@Override
 	public int getAD_Issue_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
+	}
+
+	@Override
+	public void setExportSequenceNumber (int ExportSequenceNumber)
+	{
+		set_Value (COLUMNNAME_ExportSequenceNumber, Integer.valueOf(ExportSequenceNumber));
+	}
+
+	@Override
+	public int getExportSequenceNumber() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExportSequenceNumber);
 	}
 
 	/** 
@@ -91,6 +103,18 @@ public class X_M_ShipmentSchedule_ExportAudit extends org.compiere.model.PO impl
 	}
 
 	@Override
+	public void setForwardedData (java.lang.String ForwardedData)
+	{
+		set_Value (COLUMNNAME_ForwardedData, ForwardedData);
+	}
+
+	@Override
+	public java.lang.String getForwardedData() 
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_ForwardedData);
+	}
+
+	@Override
 	public void setM_ShipmentSchedule_ExportAudit_ID (int M_ShipmentSchedule_ExportAudit_ID)
 	{
 		if (M_ShipmentSchedule_ExportAudit_ID < 1) 
@@ -103,33 +127,6 @@ public class X_M_ShipmentSchedule_ExportAudit extends org.compiere.model.PO impl
 	public int getM_ShipmentSchedule_ExportAudit_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID);
-	}
-
-	@Override
-	public de.metas.inoutcandidate.model.I_M_ShipmentSchedule getM_ShipmentSchedule()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class);
-	}
-
-	@Override
-	public void setM_ShipmentSchedule(de.metas.inoutcandidate.model.I_M_ShipmentSchedule M_ShipmentSchedule)
-	{
-		set_ValueFromPO(COLUMNNAME_M_ShipmentSchedule_ID, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class, M_ShipmentSchedule);
-	}
-
-	@Override
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
-	{
-		if (M_ShipmentSchedule_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
-	}
-
-	@Override
-	public int getM_ShipmentSchedule_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 
 	@Override

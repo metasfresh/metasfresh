@@ -37,6 +37,7 @@ const clearNotFrequentFilters = () => {
     .click()
     .find('.filter-clear')
     .click();
+  cy.waitForSaveIndicator(true);
 }
 
 export {

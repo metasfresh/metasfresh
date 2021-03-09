@@ -43,7 +43,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.logging.LogManager;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
 import de.metas.materialtracking.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -263,7 +263,8 @@ import lombok.NonNull;
 
 		for (final I_PP_Cost_Collector cc : ppCostCollectorDAO.getCompletedOrClosedByOrderId(ppOrderId))
 		{
-			if (ppCostCollectorBL.isAnyComponentIssueOrCoProduct(cc) && cc.getMovementQty().signum() > 0)
+			if (ppCostCollectorBL.isAnyComponentIssueOrCoProduct(cc)
+					&& ppCostCollectorBL.getMovementQty(cc).signum() > 0)
 			{
 				return true;
 			}

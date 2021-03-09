@@ -1,37 +1,67 @@
+/*
+ * #%L
+ * de.metas.banking.base
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.banking.payment.paymentallocation.service;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyRate;
+import de.metas.currency.FixedConversionRate;
+import de.metas.currency.ICurrencyBL;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.OptionalDeferredException;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_Invoice;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.allocation.api.PaymentAllocationId;
-import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
-import de.metas.money.Money;
-import de.metas.util.Check;
-import de.metas.util.OptionalDeferredException;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 /**
  * Builds one {@link I_C_AllocationHdr} of all given {@link PayableDocument}s and {@link PaymentDocument}s.
- *
- * @author tsa
- *
  */
 public class PaymentAllocationBuilder
 {
@@ -40,21 +70,22 @@ public class PaymentAllocationBuilder
 		DO_NOTHING, WRITE_OFF, DISCOUNT
 	}
 
-	public static final PaymentAllocationBuilder newBuilder()
+	public static PaymentAllocationBuilder newBuilder()
 	{
 		return new PaymentAllocationBuilder();
 	}
 
 	// services
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final AllocationLineCandidateSaver candidatesSaver = new AllocationLineCandidateSaver();
 
 	// Parameters
-	private LocalDate _dateTrx;
-	private LocalDate _dateAcct;
+	private LocalDate _defaultDateTrx;
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
 	private ImmutableList<PaymentDocument> _paymentDocuments = ImmutableList.of();
-	private boolean allowOnlyOneVendorDoc = true;
 	private boolean allowPartialAllocations = false;
 	private boolean allowPurchaseSalesInvoiceCompensation;
 	private PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
@@ -96,29 +127,29 @@ public class PaymentAllocationBuilder
 
 		//
 		// Create & process allocation documents
-		final ImmutableSet<PaymentAllocationId> paymentAllocationIds;
+		final ImmutableMap<PaymentAllocationId,AllocationLineCandidate> paymentAllocations;
 		if (!candidates.isEmpty() && !dryRun)
 		{
-			paymentAllocationIds = processCandidates(candidates);
+			paymentAllocations = processCandidates(candidates);
 		}
 		else
 		{
-			paymentAllocationIds = ImmutableSet.of();
+			paymentAllocations= ImmutableMap.of();
 		}
 
 		return PaymentAllocationResult.builder()
 				.candidates(candidates)
 				.fullyAllocatedCheck(fullyAllocatedCheck)
-				.paymentAllocationIds(paymentAllocationIds)
+				.paymentAllocationIds(paymentAllocations)
 				.build();
 	}
 
-	private ImmutableSet<PaymentAllocationId> processCandidates(final Collection<AllocationLineCandidate> candidates)
+	private ImmutableMap<PaymentAllocationId,AllocationLineCandidate> processCandidates(final Collection<AllocationLineCandidate> candidates)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> processCandidatesInTrx(candidates));
 	}
 
-	private ImmutableSet<PaymentAllocationId> processCandidatesInTrx(final Collection<AllocationLineCandidate> candidates)
+	private ImmutableMap<PaymentAllocationId,AllocationLineCandidate> processCandidatesInTrx(final Collection<AllocationLineCandidate> candidates)
 	{
 		try
 		{
@@ -168,10 +199,6 @@ public class PaymentAllocationBuilder
 				.paymentDocumentRef(TableRecordReference.of(I_C_Invoice.Table_Name, serviceInvoiceId))
 				.build();
 	}
-
-	/**
-	 * Create and complete one {@link I_C_AllocationHdr} for given candidate.
-	 */
 
 	/**
 	 * Allocate {@link #getPayableDocuments()} and {@link #getPaymentDocuments()}.
@@ -234,17 +261,11 @@ public class PaymentAllocationBuilder
 			final List<PayableDocument> payableDocuments,
 			final List<PaymentDocument> paymentDocuments)
 	{
-		if (!allowOnlyOneVendorDoc)
-		{
-			return; // task 09558: nothing to do
-		}
-
 		final List<PaymentDocument> paymentVendorDocuments = paymentDocuments.stream()
 				.filter(paymentDocument -> paymentDocument.getPaymentDirection().isOutboundPayment())
 				.collect(ImmutableList.toImmutableList());
 
 		final List<PayableDocument> payableVendorDocuments_NoCreditMemos = new ArrayList<>();
-		final List<CreditMemoInvoiceAsPaymentDocumentWrapper> paymentVendorDocuments_CreditMemos = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
 			if (!payable.getSoTrx().isPurchase())
@@ -252,30 +273,20 @@ public class PaymentAllocationBuilder
 				continue;
 			}
 
-			if (payable.isCreditMemo())
-			{
-				paymentVendorDocuments_CreditMemos.add(CreditMemoInvoiceAsPaymentDocumentWrapper.wrap(payable));
-			}
-			else
+			if (!payable.isCreditMemo())
 			{
 				payableVendorDocuments_NoCreditMemos.add(payable);
-
 			}
 		}
 
 		if (paymentVendorDocuments.size() > 1
-				|| payableVendorDocuments_NoCreditMemos.size() > 1
-				|| paymentVendorDocuments_CreditMemos.size() > 1)
+				|| payableVendorDocuments_NoCreditMemos.size() > 1)
 		{
-			final List<IPaymentDocument> paymentVendorDocs = new ArrayList<>();
-			paymentVendorDocs.addAll(paymentVendorDocuments);
-			paymentVendorDocs.addAll(paymentVendorDocuments_CreditMemos);
-
-			throw new MultipleVendorDocumentsException(paymentVendorDocs, payableVendorDocuments_NoCreditMemos);
+			throw new MultipleVendorDocumentsException(paymentVendorDocuments, payableVendorDocuments_NoCreditMemos);
 		}
 	}
 
-	private final List<AllocationLineCandidate> createAllocationLineCandidates(
+	private List<AllocationLineCandidate> createAllocationLineCandidates(
 			@NonNull final AllocationLineCandidateType type,
 			@NonNull final List<PayableDocument> payableDocuments,
 			@NonNull final List<? extends IPaymentDocument> paymentDocuments)
@@ -311,25 +322,26 @@ public class PaymentAllocationBuilder
 
 				//
 				// Calculate the amounts to allocate:
-				final AllocationAmounts payableAmountsToAllocate = calculateAmountToAllocate(payable, payment);
-				final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(payableAmountsToAllocate);
-				final Money paymentOverUnderAmt = payment.calculateProjectedOverUnderAmt(payableAmountsToAllocate.getPayAmt());
+				final InvoiceAndPaymentAmountsToAllocate amountsToAllocate = calculateAmountToAllocate(payable, payment);
+				final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency());
+				final Money paymentOverUnderAmt = computePaymentOverUnderAmtInInvoiceCurrency(payment, amountsToAllocate);
 
 				// Create new Allocation Line
+				final LocalDate dateTrx = TimeUtil.max(payable.getDate(), payment.getDate());
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(type)
 						//
-						.orgId(payable.getOrgId())
+						.orgId(payable.getClientAndOrgId().getOrgId())
 						.bpartnerId(payable.getBpartnerId())
 						//
 						.payableDocumentRef(payable.getReference())
 						.paymentDocumentRef(payment.getReference())
 						//
-						.dateTrx(getDateTrx())
-						.dateAcct(getDateAcct())
+						.dateTrx(dateTrx)
+						.dateAcct(dateTrx)
 						//
 						// Amounts:
-						.amounts(payableAmountsToAllocate)
+						.amounts(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency())
 						.payableOverUnderAmt(payableOverUnderAmt)
 						.paymentOverUnderAmt(paymentOverUnderAmt)
 						//
@@ -337,9 +349,9 @@ public class PaymentAllocationBuilder
 				allocationLineCandidates.add(allocationLine);
 
 				// Update how much was allocated on current invoice and payment.
-				payable.addAllocatedAmounts(payableAmountsToAllocate);
-				payment.addAllocatedAmt(payableAmountsToAllocate.getPayAmt());
-			}	// loop through payments for current payable (aka invoice or prepay order)
+				payable.addAllocatedAmounts(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency());
+				payment.addAllocatedAmt(amountsToAllocate.getPayAmtInPaymentCurrency());
+			}    // loop through payments for current payable (aka invoice or prepay order)
 
 			if (!payable.isFullyAllocated())
 			{
@@ -354,7 +366,15 @@ public class PaymentAllocationBuilder
 		return allocationLineCandidates;
 	}
 
-	private final AllocationLineCandidate createAllocationLineCandidate_ForRemainingOpenAmt(@NonNull final PayableDocument payable)
+	@NonNull
+	private Money computePaymentOverUnderAmtInInvoiceCurrency(@NonNull final IPaymentDocument payment, @NonNull final InvoiceAndPaymentAmountsToAllocate amountsToAllocate)
+	{
+		final Money paymentOverUnderAmtInPaymentCurrency = payment.calculateProjectedOverUnderAmt(amountsToAllocate.getPayAmtInPaymentCurrency());
+		return amountsToAllocate.currencyRate.convertAmount(paymentOverUnderAmtInPaymentCurrency);
+	}
+
+	@Nullable
+	private AllocationLineCandidate createAllocationLineCandidate_ForRemainingOpenAmt(@NonNull final PayableDocument payable)
 	{
 		if (payable.isFullyAllocated())
 		{
@@ -382,7 +402,7 @@ public class PaymentAllocationBuilder
 		}
 	}
 
-	private final List<AllocationLineCandidate> createAllocationLineCandidates_CreditMemosToInvoices(final List<PayableDocument> payableDocuments)
+	private List<AllocationLineCandidate> createAllocationLineCandidates_CreditMemosToInvoices(@NonNull final List<PayableDocument> payableDocuments)
 	{
 		if (payableDocuments.isEmpty())
 		{
@@ -409,7 +429,7 @@ public class PaymentAllocationBuilder
 				creditMemos);
 	}
 
-	private final List<AllocationLineCandidate> createAllocationLineCandidates_PurchaseInvoicesToSaleInvoices(final List<PayableDocument> payableDocuments)
+	private List<AllocationLineCandidate> createAllocationLineCandidates_PurchaseInvoicesToSaleInvoices(@NonNull final List<PayableDocument> payableDocuments)
 	{
 		if (payableDocuments.isEmpty())
 		{
@@ -442,7 +462,7 @@ public class PaymentAllocationBuilder
 				purchaseInvoices);
 	}
 
-	private final List<AllocationLineCandidate> createAllocationLineCandidates_InboundPaymentToOutboundPayment(final List<PaymentDocument> paymentDocuments)
+	private List<AllocationLineCandidate> createAllocationLineCandidates_InboundPaymentToOutboundPayment(@NonNull final List<PaymentDocument> paymentDocuments)
 	{
 		if (paymentDocuments.isEmpty())
 		{
@@ -494,17 +514,18 @@ public class PaymentAllocationBuilder
 				final Money paymentOverUnderAmt = paymentIn.calculateProjectedOverUnderAmt(amtToAllocate.negate()).negate();
 
 				// Create new Allocation Line
+				final LocalDate dateTrx = TimeUtil.max(paymentOut.getDate(), paymentIn.getDate());
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
 						//
-						.orgId(paymentOut.getOrgId())
+						.orgId(paymentOut.getClientAndOrgId().getOrgId())
 						.bpartnerId(paymentOut.getBpartnerId())
 						//
 						.payableDocumentRef(paymentOut.getReference())
 						.paymentDocumentRef(paymentIn.getReference())
 						//
-						.dateTrx(getDateTrx())
-						.dateAcct(getDateAcct())
+						.dateTrx(dateTrx)
+						.dateAcct(dateTrx)
 						//
 						// Amounts:
 						.amounts(AllocationAmounts.ofPayAmt(amtToAllocate))
@@ -526,7 +547,6 @@ public class PaymentAllocationBuilder
 	/**
 	 * Iterate all given payable documents and create an allocation only for Discount and WriteOff amounts.
 	 *
-	 * @param payableDocuments
 	 * @return created allocation candidates.
 	 */
 	private List<AllocationLineCandidate> createAllocationLineCandidates_DiscountAndWriteOffs(final List<PayableDocument> payableDocuments)
@@ -561,18 +581,19 @@ public class PaymentAllocationBuilder
 			return null;
 		}
 
+		final LocalDate dateTrx = getDefaultDateTrx();
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceDiscountOrWriteOff)
 				//
-				.orgId(payable.getOrgId())
+				.orgId(payable.getClientAndOrgId().getOrgId())
 				.bpartnerId(payable.getBpartnerId())
 				//
 				.payableDocumentRef(payable.getReference())
 				.paymentDocumentRef(null) // nop
 				//
-				.dateTrx(getDateTrx())
-				.dateAcct(getDateAcct())
+				.dateTrx(dateTrx)
+				.dateAcct(dateTrx)
 				//
 				// Amounts:
 				.amounts(amountsToAllocate)
@@ -606,6 +627,7 @@ public class PaymentAllocationBuilder
 		return allocationLineCandidates;
 	}
 
+	@Nullable
 	private AllocationLineCandidate createAllocationLineCandidate_InvoiceProcessingFee(@NonNull final PayableDocument payable)
 	{
 		final AllocationAmounts amountsToAllocate = AllocationAmounts.builder()
@@ -616,23 +638,26 @@ public class PaymentAllocationBuilder
 			return null;
 		}
 
+		final OrgId orgId = payable.getClientAndOrgId().getOrgId();
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = payable.getInvoiceProcessingFeeCalculation();
+		final LocalDate dateTrx = TimeUtil.asLocalDate(invoiceProcessingFeeCalculation.getEvaluationDate(), orgDAO.getTimeZone(orgId));
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceProcessingFee)
 				//
-				.orgId(payable.getOrgId())
+				.orgId(orgId)
 				.bpartnerId(payable.getBpartnerId())
 				//
 				.payableDocumentRef(payable.getReference())
 				.paymentDocumentRef(null) // nop
 				//
-				.dateTrx(getDateTrx())
-				.dateAcct(getDateAcct())
+				.dateTrx(dateTrx)
+				.dateAcct(dateTrx)
 				//
 				// Amounts:
 				.amounts(amountsToAllocate)
 				.payableOverUnderAmt(payableOverUnderAmt)
-				.invoiceProcessingFeeCalculation(payable.getInvoiceProcessingFeeCalculation())
+				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				//
 				.build();
 
@@ -641,7 +666,7 @@ public class PaymentAllocationBuilder
 		return allocationLine;
 	}
 
-	private final OptionalDeferredException<PaymentAllocationException> checkFullyAllocated()
+	private OptionalDeferredException<PaymentAllocationException> checkFullyAllocated()
 	{
 		//
 		// Check payables (invoices, prepaid orders etc)
@@ -685,11 +710,9 @@ public class PaymentAllocationBuilder
 	/**
 	 * Check if given payment document can be allocated to payable document.
 	 *
-	 * @param payable
-	 * @param payment
 	 * @return true if the invoice and payment are compatible and we could try to do an allocation
 	 */
-	private static final boolean isCompatible(final PayableDocument payable, final IPaymentDocument payment)
+	private static boolean isCompatible(@NonNull final PayableDocument payable, @NonNull final IPaymentDocument payment)
 	{
 		// Given payment does not support payable's type
 		if (!payment.canPay(payable))
@@ -715,29 +738,62 @@ public class PaymentAllocationBuilder
 	}
 
 	/**
-	 *
-	 * @param invoice
-	 * @param payment
+	 * The amounts returned here are equal.
+	 * The only difference is that they could be represented in different currencies in case the 2 documents are in different currencies.
+	 */
+	@Value
+	@Builder
+	private static class InvoiceAndPaymentAmountsToAllocate
+	{
+		@NonNull
+		AllocationAmounts invoiceAmountsToAllocateInInvoiceCurrency;
+
+		@NonNull
+		Money payAmtInPaymentCurrency;
+
+		@NonNull
+		CurrencyRate currencyRate;
+	}
+
+	/**
 	 * @return how much we maximum allocate between given invoice and given payment.
 	 */
-	private final AllocationAmounts calculateAmountToAllocate(final PayableDocument invoice, final IPaymentDocument payment)
+	@NonNull
+	private InvoiceAndPaymentAmountsToAllocate calculateAmountToAllocate(@NonNull final PayableDocument invoice, @NonNull final IPaymentDocument payment)
 	{
+		final CurrencyId paymentCurrencyId = payment.getCurrencyId();
+		final CurrencyId invoiceCurrencyId = invoice.getCurrencyId();
+
 		final AllocationAmounts invoiceAmountsToAllocate = invoice.getAmountsToAllocate();
 		final Money invoicePayAmtToAllocate = invoiceAmountsToAllocate.getPayAmt();
-		final Money paymentAmountToAllocate = payment.getAmountToAllocate();
+
+		final CurrencyConversionContext conversionContext = getCurrencyConversionContext(payment);
+		final CurrencyRate currencyRate = currencyBL.getCurrencyRate(conversionContext, paymentCurrencyId, invoiceCurrencyId);
+
+		final Money paymentAmountToAllocate = currencyRate.convertAmount(payment.getAmountToAllocate());
 
 		if (invoicePayAmtToAllocate.signum() >= 0)
 		{
 			// Invoice(+), Payment(+)
 			if (paymentAmountToAllocate.signum() >= 0)
 			{
-				final Money payAmt = invoicePayAmtToAllocate.min(paymentAmountToAllocate);
-				return invoiceAmountsToAllocate.withPayAmt(payAmt);
+				final Money payAmtInInvoiceCurrency = invoicePayAmtToAllocate.min(paymentAmountToAllocate);
+				final Money payAmtInPaymentCurrency = currencyRate.reverseConvertAmount(payAmtInInvoiceCurrency);
+
+				return InvoiceAndPaymentAmountsToAllocate.builder()
+						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withPayAmt(payAmtInInvoiceCurrency))
+						.payAmtInPaymentCurrency(payAmtInPaymentCurrency)
+						.currencyRate(currencyRate)
+						.build();
 			}
 			// Invoice(+), Payment(-)
 			else
 			{
-				return invoiceAmountsToAllocate.withZeroPayAmt();
+				return InvoiceAndPaymentAmountsToAllocate.builder()
+						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withZeroPayAmt())
+						.payAmtInPaymentCurrency(Money.zero(paymentCurrencyId))
+						.currencyRate(currencyRate)
+						.build();
 			}
 		}
 		else
@@ -745,58 +801,69 @@ public class PaymentAllocationBuilder
 			// Invoice(-), Payment(+)
 			if (paymentAmountToAllocate.signum() >= 0)
 			{
-				return invoiceAmountsToAllocate.withZeroPayAmt();
+				return InvoiceAndPaymentAmountsToAllocate.builder()
+						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withZeroPayAmt())
+						.payAmtInPaymentCurrency(Money.zero(paymentCurrencyId))
+						.currencyRate(currencyRate)
+						.build();
 			}
 			// Invoice(-), Payment(-)
 			else
 			{
-				final Money payAmt = invoicePayAmtToAllocate.max(paymentAmountToAllocate);
-				return invoiceAmountsToAllocate.withPayAmt(payAmt);
+				final Money payAmtInInvoiceCurrency = invoicePayAmtToAllocate.max(paymentAmountToAllocate);
+				final Money payAmtInPaymentCurrency = currencyRate.reverseConvertAmount(payAmtInInvoiceCurrency);
+
+				return InvoiceAndPaymentAmountsToAllocate.builder()
+						.invoiceAmountsToAllocateInInvoiceCurrency(invoiceAmountsToAllocate.withPayAmt(payAmtInInvoiceCurrency))
+						.payAmtInPaymentCurrency(payAmtInPaymentCurrency)
+						.currencyRate(currencyRate)
+						.build();
 			}
 		}
 	}
 
-	private final void markAsBuilt()
+	private CurrencyConversionContext getCurrencyConversionContext(@NonNull final IPaymentDocument payment)
+	{
+		CurrencyConversionContext conversionContext = moneyService.createConversionContext(
+				payment.getDate(),
+				payment.getPaymentCurrencyContext().getCurrencyConversionTypeId(),
+				payment.getClientAndOrgId()
+		);
+
+		final FixedConversionRate fixedConversionRate = payment.getPaymentCurrencyContext().toFixedConversionRateOrNull();
+		if (fixedConversionRate != null)
+		{
+			conversionContext = conversionContext.withFixedConversionRate(fixedConversionRate);
+		}
+
+		return conversionContext;
+	}
+
+	private void markAsBuilt()
 	{
 		assertNotBuilt();
 		_built = true;
 	}
 
-	private final void assertNotBuilt()
+	private void assertNotBuilt()
 	{
 		Check.assume(!_built, "Not already built");
 	}
 
-	private final LocalDate getDateTrx()
+	private LocalDate getDefaultDateTrx()
 	{
-		Check.assumeNotNull(_dateTrx, "date not null");
-		return _dateTrx;
+		final LocalDate defaultDateTrx = _defaultDateTrx;
+		if (defaultDateTrx == null)
+		{
+			throw new AdempiereException("Default DateTrx was not defined for " + this);
+		}
+		return defaultDateTrx;
 	}
 
-	public PaymentAllocationBuilder dateTrx(final LocalDate dateTrx)
+	public PaymentAllocationBuilder defaultDateTrx(final LocalDate defaultDateTrx)
 	{
 		assertNotBuilt();
-		_dateTrx = dateTrx;
-		return this;
-	}
-
-	private final LocalDate getDateAcct()
-	{
-		Check.assumeNotNull(_dateAcct, "date not null");
-		return _dateAcct;
-	}
-
-	public PaymentAllocationBuilder dateAcct(final LocalDate dateAcct)
-	{
-		assertNotBuilt();
-		_dateAcct = dateAcct;
-		return this;
-	}
-
-	public PaymentAllocationBuilder allowOnlyOneVendorDoc(final boolean allowOnlyOneVendorDoc)
-	{
-		assertNotBuilt();
-		this.allowOnlyOneVendorDoc = allowOnlyOneVendorDoc;
+		_defaultDateTrx = defaultDateTrx;
 		return this;
 	}
 

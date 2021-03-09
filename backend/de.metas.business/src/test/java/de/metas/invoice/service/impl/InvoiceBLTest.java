@@ -1,5 +1,27 @@
 package de.metas.invoice.service.impl;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocTypeId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.Properties;
+
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,27 +48,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import de.metas.document.DocTypeId;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-
 public class InvoiceBLTest
 {
 	private static IInvoiceBL invoiceBL;
@@ -55,6 +56,8 @@ public class InvoiceBLTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 
 		final Properties ctx = Env.getCtx();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1);
@@ -67,7 +70,7 @@ public class InvoiceBLTest
 	{
 		final I_C_DocType orderDocType = docType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
 		final I_C_DocType invoiceDocType = docType(X_C_DocType.DOCBASETYPE_ARInvoice, null);
-		orderDocType.setC_DocTypeInvoice(invoiceDocType);
+		orderDocType.setC_DocTypeInvoice_ID(invoiceDocType.getC_DocType_ID());
 		InterfaceWrapperHelper.save(orderDocType);
 
 		return orderDocType;

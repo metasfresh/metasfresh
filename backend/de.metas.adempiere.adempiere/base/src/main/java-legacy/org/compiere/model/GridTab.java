@@ -19,22 +19,23 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.swing.event.EventListenerList;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.logging.MetasfreshLastError;
+import de.metas.process.AdProcessId;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.SelectionSize;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutExecutor;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.callout.api.impl.CalloutExecutor;
@@ -81,23 +82,20 @@ import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
-
-import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.logging.MetasfreshLastError;
-import de.metas.process.AdProcessId;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.SelectionSize;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.swing.event.EventListenerList;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Tab Model.
@@ -142,11 +140,11 @@ import lombok.NonNull;
  *         <li>BF [ 2910368 ] Error in context when IsActive field is found in different
  *         https://sourceforge.net/tracker/?func=detail&aid=2910368&group_id=176962&atid=879332
  * @author Carlos Ruiz, qss FR [1877902]
- * @see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1877902&group_id=176962 to FR [1877902]
+ * See http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1877902&group_id=176962 to FR [1877902]
  * @author Cristina Ghita, www.arhipac.ro FR [2870645] Set null value for an ID
- * @see https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2870645&group_id=176962
+ * See https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2870645&group_id=176962
  * @author Paul Bowden, phib BF 2900767 Zoom to child tab - inefficient queries
- * @see https://sourceforge.net/tracker/?func=detail&aid=2900767&group_id=176962&atid=879332
+ * See https://sourceforge.net/tracker/?func=detail&aid=2900767&group_id=176962&atid=879332
  */
 public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICalloutRecord
 {
@@ -1305,6 +1303,12 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		dataRefresh();
 	}
 
+	@Override
+	public boolean isLookupValuesContainingId(@NonNull final String columnName, @NonNull final RepoIdAware id)
+	{
+		throw new UnsupportedOperationException();
+	}
+
 	/**
 	 * Refresh row data
 	 *
@@ -2218,7 +2222,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	public int getTemplateTabId()
 	{
-		return m_vo.getTemplateTabId();
+		return AdTabId.toRepoId(m_vo.getTemplateTabId());
 	}
 
 	/**
@@ -3493,7 +3497,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 * Feature Request [1707462]
 	 * Enable runtime change of VFormat
 	 *
-	 * @param Identifier field indent
+	 * @param identifier field indent
 	 * @param strNewFormat new mask
 	 * @author fer_luck
 	 */
@@ -3999,7 +4003,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		return query;
 	}
 
-	/** Copy mode when {@link GridTab#dataNew(boolean)} is invoked */
 	public enum DataNewCopyMode
 	{
 		NoCopy, Copy, CopyWithDetails;
@@ -4015,9 +4018,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 	}
 
-	/**
-	 * Field set by {@link #dataNew(boolean, boolean)} while we are in copy record mode
-	 */
 	private DataNewCopyMode _dataNewCopyMode = null;
 	/** Tables suggested by user for copy with details */
 	private List<CopyRecordSupportTableInfo> m_suggestedCopyWithDetailsList = null;

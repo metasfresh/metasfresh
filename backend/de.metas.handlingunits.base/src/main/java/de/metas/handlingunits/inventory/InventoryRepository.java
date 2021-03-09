@@ -196,6 +196,9 @@ public class InventoryRepository
 		return docTypeDAO.getDocBaseAndSubTypeById(docTypeId);
 	}
 
+	/**
+	 * The method might not belong here, but we often need this from outside the repo
+	 */
 	public InventoryLine toInventoryLine(@NonNull final I_M_InventoryLine inventoryLineRecord)
 	{
 		final InventoryLineId inventoryLineId = extractInventoryLineIdOrNull(inventoryLineRecord);
@@ -449,7 +452,7 @@ public class InventoryRepository
 		saveRecord(lineRecord);
 		inventoryLine.setId(extractInventoryLineId(lineRecord));
 
-		saveInventoryLineHURecords(inventoryLine);
+		saveInventoryLineHURecords(inventoryLine, inventoryId);
 	}
 
 	private void updateInventoryLineRecordQuantities(
@@ -488,7 +491,9 @@ public class InventoryRepository
 		lineRecord.setIsCounted(from.isCounted());
 	}
 
-	public void saveInventoryLineHURecords(@NonNull final InventoryLine inventoryLine)
+	public void saveInventoryLineHURecords(
+			@NonNull final InventoryLine inventoryLine,
+			@NonNull final InventoryId inventoryId)
 	{
 		if (inventoryLine.isSingleHUAggregation())
 		{
@@ -496,8 +501,6 @@ public class InventoryRepository
 			{
 				deleteInventoryLineHUs(inventoryLine.getId());
 			}
-
-			return;
 		}
 		else
 		{
@@ -513,7 +516,8 @@ public class InventoryRepository
 					lineHURecord = newInstance(I_M_InventoryLine_HU.class);
 				}
 
-				lineHURecord.setAD_Org_ID(inventoryLine.getId().getRepoId());
+				lineHURecord.setAD_Org_ID(inventoryLine.getOrgId().getRepoId());
+				lineHURecord.setM_Inventory_ID(inventoryId.getRepoId());
 				lineHURecord.setM_InventoryLine_ID(inventoryLine.getId().getRepoId());
 				updateInventoryLineHURecord(lineHURecord, lineHU);
 

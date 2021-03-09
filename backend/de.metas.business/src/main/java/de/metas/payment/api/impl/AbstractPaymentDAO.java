@@ -88,7 +88,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 	@Override
 	@Nullable
-	public ExternalId getExternalId(@NonNull final PaymentId paymentId){
+	public ExternalId getExternalOrderId(@NonNull final PaymentId paymentId){
 		final List<String> externalIDs = queryBL
 				.createQueryBuilder(I_C_Payment.class)
 				.addEqualsFilter(I_C_Payment.COLUMN_C_Payment_ID, paymentId)
@@ -100,6 +100,19 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 		}
 
 		return ExternalId.of(externalIDs.get(0));
+	}
+
+	@Override
+	public Optional<I_C_Payment> getByExternalId(@NonNull final ExternalId externalId, @NonNull final OrgId orgId)
+	{
+		final I_C_Payment i_c_payment = queryBL
+				.createQueryBuilder(I_C_Payment.class)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_ExternalId, externalId.getValue())
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.firstOnlyOrNull(I_C_Payment.class);
+
+		return Optional.ofNullable(i_c_payment);
 	}
 
 	@Override

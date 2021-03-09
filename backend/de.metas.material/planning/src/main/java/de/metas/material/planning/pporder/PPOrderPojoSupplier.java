@@ -1,17 +1,36 @@
 package de.metas.material.planning.pporder;
 
-import static org.compiere.util.TimeUtil.asDate;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.logging.LogManager;
+import de.metas.material.event.ModelProductDescriptorExtractor;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderLine;
+import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.IMaterialRequest;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanningService;
+import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.RoutingService;
+import de.metas.material.planning.RoutingServiceFactory;
+import de.metas.material.planning.exception.MrpException;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
@@ -24,28 +43,13 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.logging.LogManager;
-import de.metas.material.event.ModelProductDescriptorExtractor;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.ProductDescriptor;
-import de.metas.material.event.pporder.PPOrder;
-import de.metas.material.event.pporder.PPOrderLine;
-import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMaterialRequest;
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.material.planning.ProductPlanningBL;
-import de.metas.material.planning.ProductPlanningId;
-import de.metas.material.planning.RoutingService;
-import de.metas.material.planning.RoutingServiceFactory;
-import de.metas.material.planning.exception.MrpException;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.compiere.util.TimeUtil.asDate;
 
 /*
  * #%L
@@ -72,16 +76,21 @@ import lombok.NonNull;
 public class PPOrderPojoSupplier
 {
 	private static final transient Logger logger = LogManager.getLogger(PPOrderPojoSupplier.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
+	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
+	private final IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
+	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	private final ProductPlanningBL productPlanningBL;
-
+	private final ProductPlanningService productPlanningService;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
 	public PPOrderPojoSupplier(
-			@NonNull final ProductPlanningBL productPlanningBL,
+			@NonNull final ProductPlanningService productPlanningService,
 			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
 	{
-		this.productPlanningBL = productPlanningBL;
+		this.productPlanningService = productPlanningService;
 		this.productDescriptorFactory = productDescriptorFactory;
 	}
 
@@ -103,11 +112,9 @@ public class PPOrderPojoSupplier
 	{
 		final PPOrder ppOrder = supplyPPOrderPojo(request);
 
-		final PPOrder ppOrderWithLines = ppOrder.toBuilder()
+		return ppOrder.toBuilder()
 				.lines(supplyPPOrderLinePojos(ppOrder))
 				.build();
-
-		return ppOrderWithLines;
 	}
 
 	private PPOrder supplyPPOrderPojo(@NonNull final IMaterialRequest request)
@@ -130,8 +137,8 @@ public class PPOrderPojoSupplier
 
 		//
 		// Routing (Workflow)
-		final int adWorkflowId = productPlanningData.getAD_Workflow_ID();
-		if (adWorkflowId <= 0)
+		final PPRoutingId routingId = PPRoutingId.ofRepoIdOrNull(productPlanningData.getAD_Workflow_ID());
+		if (routingId == null)
 		{
 			throw new MrpException("@FillMandatory@ @AD_Workflow_ID@ ( @M_Product_ID@=" + product.getValue() + ")");
 		}
@@ -145,15 +152,15 @@ public class PPOrderPojoSupplier
 
 		final ProductDescriptor productDescriptor = createPPOrderProductDescriptor(mrpContext);
 
-		final ProductId productId = ProductId.ofRepoId(mrpContext.getM_Product_ID());
-		final Quantity ppOrderQuantity = Services.get(IUOMConversionBL.class).convertToProductUOM(qtyToSupply, productId);
+		final ProductId productId = mrpContext.getProductId();
+		final Quantity ppOrderQuantity = uomConversionBL.convertToProductUOM(qtyToSupply, productId);
 
 		return PPOrder.builder()
-				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(mrpContext.getAD_Client_ID(), mrpContext.getAD_Org_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ClientId.toRepoId(mrpContext.getClientId()), OrgId.toRepoIdOrAny(mrpContext.getOrgId())))
 
 				// Planning dimension
 				.plantId(ResourceId.ofRepoIdOrNull(mrpContext.getPlant_ID()))
-				.warehouseId(WarehouseId.ofRepoId(mrpContext.getM_Warehouse_ID()))
+				.warehouseId(mrpContext.getWarehouseId())
 				.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 
 				// Product, UOM, ASI
@@ -177,13 +184,13 @@ public class PPOrderPojoSupplier
 	 */
 	private ProductDescriptor createPPOrderProductDescriptor(final IMaterialPlanningContext mrpContext)
 	{
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(mrpContext.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asiId = mrpContext.getAttributeSetInstanceId();
 		final AttributesKey attributesKey = AttributesKeys
 				.createAttributesKeyFromASIStorageAttributes(asiId)
 				.orElse(AttributesKey.NONE);
 
 		return ProductDescriptor.forProductAndAttributes(
-				mrpContext.getM_Product_ID(),
+				ProductId.toRepoId(mrpContext.getProductId()),
 				attributesKey,
 				asiId.getRepoId());
 	}
@@ -193,8 +200,7 @@ public class PPOrderPojoSupplier
 			@NonNull final BigDecimal qty)
 	{
 		final int leadtimeDays = calculateLeadtimeDays(mrpContext, qty);
-		final int durationTotalDays = productPlanningBL.calculateDurationDays(leadtimeDays, mrpContext.getProductPlanning());
-		return durationTotalDays;
+		return productPlanningService.calculateDurationDays(leadtimeDays, mrpContext.getProductPlanning());
 	}
 
 	private int calculateLeadtimeDays(
@@ -213,32 +219,31 @@ public class PPOrderPojoSupplier
 		final PPRoutingId routingId = PPRoutingId.ofRepoId(productPlanningData.getAD_Workflow_ID());
 		final ResourceId plantId = ResourceId.ofRepoIdOrNull(productPlanningData.getS_Resource_ID());
 		final RoutingService routingService = RoutingServiceFactory.get().getRoutingService();
-		final int leadtimeCalc = routingService.calculateDurationDays(routingId, plantId, qty);
-		return leadtimeCalc;
+		return routingService.calculateDurationDays(routingId, plantId, qty);
 	}
 
 	private List<PPOrderLine> supplyPPOrderLinePojos(@NonNull final PPOrder ppOrder)
 	{
-		final I_PP_Product_BOM productBOM = retriveAndVerifyBOM(ppOrder);
+		final I_PP_Product_BOM productBOM = retrieveAndVerifyBOM(ppOrder);
+		final ImmutableList<I_PP_Product_BOMLine> productBOMLines = productBOMDAO.retrieveLines(productBOM);
 
-		final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
+		final UomId bomUomId = UomId.ofRepoId(productBOM.getC_UOM_ID());
+		final Quantity finishedGoodsQtyRequiredInBOMUOM = extractQtyRequired(ppOrder, bomUomId);
 
-		final List<PPOrderLine> result = new ArrayList<>();
-
-		final List<I_PP_Product_BOMLine> productBOMLines = Services.get(IProductBOMDAO.class).retrieveLines(productBOM);
+		final ArrayList<PPOrderLine> result = new ArrayList<>();
 		for (final I_PP_Product_BOMLine productBomLine : productBOMLines)
 		{
 			if (!productBOMBL.isValidFromTo(productBomLine, TimeUtil.asDate(ppOrder.getDateStartSchedule())))
 			{
-				logger.debug("BOM Line skipped - " + productBomLine);
+				logger.debug("BOM Line skipped because it's not between valid from/to: {}", productBomLine);
 				continue;
 			}
 
 			final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(productBomLine);
 
-			final boolean receipt = PPOrderUtil.isReceipt(BOMComponentType.ofCode(productBomLine.getComponentType()));
+			final boolean receipt = BOMComponentType.ofCode(productBomLine.getComponentType()).isReceipt();
 
-			final PPOrderLine intermedidatePPOrderLine = PPOrderLine.builder()
+			final PPOrderLine intermediatePPOrderLine = PPOrderLine.builder()
 					.productBomLineId(productBomLine.getPP_Product_BOMLine_ID())
 					.description(productBomLine.getDescription())
 					.productDescriptor(productDescriptor)
@@ -247,28 +252,54 @@ public class PPOrderPojoSupplier
 					.qtyRequired(BigDecimal.ZERO) // is computed in the next step
 					.build();
 
-			final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-			final Quantity qtyRequired = ppOrderBOMBL.computeQtyRequired(intermedidatePPOrderLine, ppOrder.getQtyRequired());
+			final Quantity componentQtyRequired = ppOrderBOMBL.computeQtyRequiredByQtyOfFinishedGoods(intermediatePPOrderLine, finishedGoodsQtyRequiredInBOMUOM);
+			final ProductId componentId = extractProductId(intermediatePPOrderLine.getProductDescriptor());
+			final Quantity componentQtyRequiredInStockingUOM = uomConversionBL.convertToProductUOM(componentQtyRequired, componentId);
 
-			final PPOrderLine ppOrderLine = intermedidatePPOrderLine.withQtyRequired(qtyRequired.toBigDecimal());
+			final PPOrderLine ppOrderLine = intermediatePPOrderLine.withQtyRequired(componentQtyRequiredInStockingUOM.toBigDecimal());
 
 			result.add(ppOrderLine);
 		}
 		return result;
 	}
 
-	private I_PP_Product_BOM retriveAndVerifyBOM(@NonNull final PPOrder ppOrder)
+	@NonNull
+	private static ProductId extractProductId(final @NonNull PPOrder ppOrder)
+	{
+		return extractProductId(ppOrder.getProductDescriptor());
+	}
+
+	@NonNull
+	private static ProductId extractProductId(@NonNull final ProductDescriptor productDescriptor)
+	{
+		return ProductId.ofRepoId(productDescriptor.getProductId());
+	}
+
+	@NonNull
+	private Quantity extractQtyRequired(
+			final @NonNull PPOrder ppOrder,
+			final @NonNull UomId targetUomId)
+	{
+		final ProductId finishedGoodsProductId = extractProductId(ppOrder);
+		final I_C_UOM finishedGoodsStockingUOM = productBL.getStockUOM(finishedGoodsProductId);
+		final Quantity finishedGoodsQtyRequiredInStockingUOM = Quantity.of(ppOrder.getQtyRequired(), finishedGoodsStockingUOM);
+
+		return uomConversionBL.convertQuantityTo(
+				finishedGoodsQtyRequiredInStockingUOM,
+				finishedGoodsProductId,
+				targetUomId);
+	}
+
+	private I_PP_Product_BOM retrieveAndVerifyBOM(@NonNull final PPOrder ppOrder)
 	{
 		final Instant dateStartSchedule = ppOrder.getDateStartSchedule();
-		final ProductId ppOrderProductId = ProductId.ofRepoId(ppOrder.getProductDescriptor().getProductId());
+		final ProductId ppOrderProductId = extractProductId(ppOrder);
 
-		final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
 		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(ppOrder.getProductPlanningId());
 		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(productPlanningId);
 
-		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
 		final ProductBOMId productBOMId = ProductBOMId.ofRepoId(productPlanning.getPP_Product_BOM_ID());
-		final I_PP_Product_BOM productBOM = productBOMsRepo.getById(productBOMId);
+		final I_PP_Product_BOM productBOM = productBOMDAO.getById(productBOMId);
 
 		return PPOrderUtil.verifyProductBOMAndReturnIt(ppOrderProductId, asDate(dateStartSchedule), productBOM);
 	}

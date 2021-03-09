@@ -40,7 +40,6 @@ public interface IHUAndItemsDAO
 	/**
 	 * Gets parent {@link I_M_HU}
 	 *
-	 * @param hu
 	 * @return parent HU or null
 	 */
 	I_M_HU retrieveParent(final I_M_HU hu);
@@ -50,11 +49,11 @@ public interface IHUAndItemsDAO
 
 	I_M_HU_Item retrieveParentItem(I_M_HU hu);
 
-	void setParentItem(I_M_HU hu, I_M_HU_Item parentItem);
+	void setParentItem(I_M_HU hu, @Nullable I_M_HU_Item parentItem);
 
-	List<I_M_HU> retrieveIncludedHUs(final I_M_HU_Item item);
+	List<I_M_HU> retrieveIncludedHUs(I_M_HU_Item item);
 
-	List<I_M_HU_Item> retrieveItems(final I_M_HU hu);
+	List<I_M_HU_Item> retrieveItems(I_M_HU hu);
 
 	/**
 	 * From the {@link I_M_HU_Item}s that reference the given {@code hu}, retrieve the one that also references the given {@code piItem},<br>
@@ -74,7 +73,6 @@ public interface IHUAndItemsDAO
 	I_M_HU_Item createHUItem(I_M_HU hu, I_M_HU_PI_Item piItem);
 
 	/**
-
 	 * @see IHandlingUnitsDAO#createAggregateHUItem(I_M_HU)
 	 */
 	I_M_HU_Item createAggregateHUItem(I_M_HU hu);

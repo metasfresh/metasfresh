@@ -48,7 +48,7 @@ public class C_RfQ_CloseResults extends JavaProcess implements IProcessPrecondit
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		final I_C_RfQ rfq = context.getSelectedModel(I_C_RfQ.class);
-		return ProcessPreconditionsResolution.acceptIf(rfqBL.isClosed(rfq));
+		return ProcessPreconditionsResolution.acceptIf(rfq != null && rfqBL.isClosed(rfq));
 	}
 
 	@Override

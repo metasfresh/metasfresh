@@ -37,6 +37,8 @@ import de.metas.util.ISingletonService;
 
 public interface ITaxBL extends ISingletonService
 {
+	I_C_Tax getTaxById(TaxId taxId);
+
 	/**
 	 * Try to retrieve tax by {@link #retrieveTaxIdForCategory(Properties, CountryId, OrgId, I_C_BPartner_Location, Timestamp, TaxCategoryId, boolean, boolean)} (Properties, int, int, org.compiere.model.I_C_BPartner_Location, Timestamp, TaxCategoryId, boolean, boolean)} first.<br>
 	 * If that doesn't work, try retrieving the German tax
@@ -72,10 +74,7 @@ public interface ITaxBL extends ISingletonService
 	/**
 	 * Calculate Tax - no rounding
 	 *
-	 * @param tax
-	 * @param amount amount
 	 * @param taxIncluded if true tax is calculated from gross otherwise from net
-	 * @param scale scale
 	 * @return tax amount
 	 */
 	BigDecimal calculateTax(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);

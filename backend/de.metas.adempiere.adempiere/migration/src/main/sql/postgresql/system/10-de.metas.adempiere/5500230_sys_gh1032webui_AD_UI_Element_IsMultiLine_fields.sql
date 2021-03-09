@@ -10,8 +10,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-08-30T12:44:17.344
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_UI_Element','ALTER TABLE public.AD_UI_Element ADD COLUMN IsMultiLine CHAR(1) DEFAULT ''N'' CHECK (IsMultiLine IN (''Y'',''N'')) NOT NULL')
-;
+-- moved to 5500230_sys_gh1032webui_AD_UI_Element_IsMultiLine_fields_DDL.sql
+--/* DDL */ SELECT public.db_alter_table('AD_UI_Element','ALTER TABLE public.AD_UI_Element ADD COLUMN IsMultiLine CHAR(1) DEFAULT ''N'' CHECK (IsMultiLine IN (''Y'',''N'')) NOT NULL')
+--;
 
 -- 2018-08-30T12:44:40.377
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -50,7 +51,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2018-08-30T12:58:43.373
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_UI_Element','ALTER TABLE public.AD_UI_Element ADD COLUMN MultiLine_LinesCount NUMERIC(10)')
+-- move to _DDL file
+--/* DDL */ SELECT public.db_alter_table('AD_UI_Element','ALTER TABLE public.AD_UI_Element ADD COLUMN MultiLine_LinesCount NUMERIC(10)')
 ;
 
 -- 2018-08-30T12:59:01.295

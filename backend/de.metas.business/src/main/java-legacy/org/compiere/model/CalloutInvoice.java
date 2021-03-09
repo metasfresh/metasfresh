@@ -50,7 +50,6 @@ import de.metas.product.IProductBL;
 import de.metas.security.IUserRolePermissions;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -397,15 +396,15 @@ public class CalloutInvoice extends CalloutEngine
 		// No Product defined
 		if (invoiceLine.getM_Product_ID() > 0)
 		{
-			invoiceLine.setC_Charge(null);
+			invoiceLine.setC_Charge_ID(-1);
 			return "ChargeExclusively";
 		}
 
 		invoiceLine.setM_AttributeSetInstance(null);
 		invoiceLine.setS_ResourceAssignment_ID(-1);
-		invoiceLine.setC_UOM_ID(IUOMDAO.C_UOM_ID_Each); // EA
+		invoiceLine.setC_UOM_ID(UomId.EACH.getRepoId()); // EA
 
-		invoiceLine.setPrice_UOM_ID(IUOMDAO.C_UOM_ID_Each); // 07216: Make sure price UOM is also filled.
+		invoiceLine.setPrice_UOM_ID(UomId.EACH.getRepoId()); // 07216: Make sure price UOM is also filled.
 
 		calloutField.putContext(CTX_DiscountSchema, false);
 
@@ -495,7 +494,17 @@ public class CalloutInvoice extends CalloutEngine
 		final int orgID = invoiceLine.getAD_Org_ID();
 		log.debug("Org=" + orgID);
 
-		final int warehouseID = calloutField.getGlobalContextAsInt("#M_Warehouse_ID");
+		final int warehouseID;
+		if (invoice.getM_Warehouse_ID() > 0)
+		{
+			warehouseID = invoice.getM_Warehouse_ID();
+
+		}
+		else
+		{
+			warehouseID = calloutField.getGlobalContextAsInt("#M_Warehouse_ID");
+		}
+
 		log.debug("Warehouse={}", warehouseID);
 
 		//

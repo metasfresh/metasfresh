@@ -37,6 +37,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.GenericPO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
@@ -51,6 +52,8 @@ import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /**
  * Class responsible for loading {@link PO}.
@@ -83,7 +86,7 @@ public final class TableModelLoader
 		return newPO(Env.getCtx(), tableName, ITrx.TRXNAME_ThreadInherited);
 	}
 
-	public PO getPO(final Properties ctx, final String tableName, final int Record_ID, final String trxName)
+	public PO getPO(final Properties ctx, final String tableName, final int Record_ID, @Nullable final String trxName)
 	{
 		boolean checkCache = true;
 
@@ -102,11 +105,13 @@ public final class TableModelLoader
 		return getPO(ctx, tableName, Record_ID, trxName);
 	}
 
+	public PO getPO(@NonNull final TableRecordReference recordRef)
+	{
+		return getPO(Env.getCtx(), recordRef.getTableName(), recordRef.getRecord_ID(), ITrx.TRXNAME_ThreadInherited);
+	}
+
 	/**
-	 *
-	 * @param recordId
 	 * @param checkCache true if object shall be checked in cache first
-	 * @param trxName
 	 * @return loaded PO
 	 */
 	public PO getPO(final Properties ctx, final String tableName, final int recordId, final boolean checkCache, final String trxName)

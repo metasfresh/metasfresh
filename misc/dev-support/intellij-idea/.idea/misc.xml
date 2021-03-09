@@ -22,7 +22,7 @@
     <file type="gwt" url="file://$PROJECT_DIR$/metasfresh-procurement-webui" />
   </component>
   <component name="JavaScriptSettings">
-    <option name="languageLevel" value="JSX" />
+    <option name="languageLevel" value="ES6" />
   </component>
   <component name="MavenProjectsManager">
     <option name="originalFiles">
@@ -38,6 +38,17 @@
         <option value="$PROJECT_DIR$/metasfresh-procurement-webui/pom.xml" />
         <option value="$PROJECT_DIR$/metasfresh/de.metas.shipper.gateway.dhl/pom.xml" />
         <option value="$PROJECT_DIR$/metasfresh/de.metas.shipper.gateway.dpd/pom.xml" />
+        <option value="$PROJECT_DIR$/metasfresh/misc/parent-pom/pom.xml" />
+        <option value="$PROJECT_DIR$/metasfresh/backend/pom.xml" />
+        <option value="$PROJECT_DIR$/metasfresh/backend/metasfresh-dist/ait/pom.xml" />
+        <option value="$PROJECT_DIR$/metasfresh/backend/de.metas.assemblies/pom.xml" />
+        <option value="$PROJECT_DIR$/metasfresh/backend/de.metas.documentation/pom.xml" />
+        <option value="$PROJECT_DIR$/metasfresh/misc/services/admin/pom.xml" />
+        <option value="$PROJECT_DIR$/metasfresh/misc/services/camel/pom.xml" />
+        <option value="$PROJECT_DIR$/metasfresh/misc/services/procurement-webui/pom.xml" />
+        <option value="$PROJECT_DIR$/metasfresh/misc/de-metas-common/pom.xml" />
+        <option value="$PROJECT_DIR$/metasfresh/misc/de-metas-common/de-metas-common-filemaker/pom.xml" />
+        <option value="$PROJECT_DIR$/metasfresh/misc/services/camel/de-metas-camel-edi/pom.xml" />
       </list>
     </option>
   </component>

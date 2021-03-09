@@ -36,6 +36,8 @@ public class JsonResponseShipmentCandidates
 {
 	String transactionKey;
 
+	Integer exportSequenceNumber;
+
 	List<JsonResponseShipmentCandidate> items;
 
 	boolean hasMoreItems;
@@ -44,11 +46,20 @@ public class JsonResponseShipmentCandidates
 	@JsonCreator
 	private JsonResponseShipmentCandidates(
 			@JsonProperty("transactionKey") @NonNull final String transactionKey,
+			@JsonProperty("exportSequenceNumber") @NonNull final Integer exportSequenceNumber,
 			@JsonProperty("items") @Singular @NonNull final List<JsonResponseShipmentCandidate> items,
 			@JsonProperty("hasMoreItems") @NonNull final Boolean hasMoreItems)
 	{
 		this.transactionKey = transactionKey;
+		this.exportSequenceNumber = exportSequenceNumber;
 		this.items = items;
 		this.hasMoreItems = hasMoreItems;
+	}
+
+	public static JsonResponseShipmentCandidates empty(@NonNull final String transactionKey)
+	{
+		return builder().transactionKey(transactionKey).hasMoreItems(false)
+				.exportSequenceNumber(0) // no data is exported, so there is no sequence number
+				.build();
 	}
 }

@@ -132,3 +132,40 @@ export const LOCAL_LANG = 'metasfreshLanguage';
  * @type {integer} Used to indicate the code of the F2 key. Visualy is easier to see the constant name and reason about
  */
 export const F2_KEY = 113;
+
+/**
+ * @constant
+ * @type {string} Used to indicate the max height for the TableContextMenu from where the autoscroll will start
+ */
+export const TBL_CONTEXT_MENU_HEIGHT = '300px';
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the max Y mouse position from where the routine to scroll the table and readjust position begins
+ *                 case when there are many OL and you click on one line at the bottom.
+ */
+export const TBL_CONTEXT_MENU_MAX_Y = 706;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the debounce time when performing a search
+ */
+export const DEBOUNCE_TIME_SEARCH = 150;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the number of characters from where we show read more link in the notification toastr
+ */
+export const SHOW_READ_MORE_FROM = 100;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the max number of items to show when user clicks on the `Home` icon (`childrenLimit` param in api/menu/root call)
+ */
+export const HOME_MENU_USER_MAX_ITEMS = 10;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the number of rows from where we display the `Show more...` button
+ */
+export const INLINE_TAB_SHOW_MORE_FROM = 5;

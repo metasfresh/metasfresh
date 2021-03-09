@@ -13,6 +13,7 @@ import { waitFor } from '@testing-library/dom';
 import { createWaitForElement } from 'enzyme-wait';
 import hotkeys from '../../../test_setup/fixtures/hotkeys.json';
 import keymap from '../../../test_setup/fixtures/keymap.json';
+import { serverTestPort } from '../../../test_setup/jestSetup';
 
 import http from 'http';
 import StompServer from 'stomp-broker-js';
@@ -100,7 +101,7 @@ describe('MasterWindowContainer', () => {
         path: '/ws',
       });
 
-      server.listen(8080);
+      server.listen(serverTestPort); // this is defined in the jestSetup file
     });
 
     // afterEach stop server
@@ -181,7 +182,7 @@ describe('MasterWindowContainer', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/?noTabs=true`)
+        .get(`/window/${windowType}/${docId}/`)
         .reply(200, dataFixtures.data1);
 
       const wrapper = await mount(
@@ -307,7 +308,7 @@ describe('MasterWindowContainer', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/window/${windowType}/${docId}/?noTabs=true`)
+        .get(`/window/${windowType}/${docId}/`)
         .reply(200, dataFixtures.data2);
 
       const wrapper = mount(
@@ -428,7 +429,7 @@ describe('MasterWindowContainer', () => {
           </Provider>
         );
       } catch (e) {
-          console.log('e: ', e);
+        console.log('e: ', e);
       }
 
       await waitForExpect(() => {

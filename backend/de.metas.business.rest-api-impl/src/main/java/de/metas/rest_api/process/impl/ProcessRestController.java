@@ -23,9 +23,12 @@
 package de.metas.rest_api.process.impl;
 
 import de.metas.Profiles;
+import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.issue.JsonCreateIssueResponse;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
+import de.metas.process.PInstanceId;
 import de.metas.process.ProcessBasicInfo;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
@@ -37,11 +40,14 @@ import de.metas.rest_api.process.response.JSONProcessBasicInfo;
 import de.metas.rest_api.process.response.JSONProcessParamBasicInfo;
 import de.metas.rest_api.process.response.Message;
 import de.metas.rest_api.process.response.RunProcessResponse;
-import de.metas.security.PermissionServiceFactories;
-import de.metas.security.PermissionServiceFactory;
+import de.metas.security.permissions2.PermissionServiceFactories;
+import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Process;
@@ -86,7 +92,7 @@ public class ProcessRestController
 	@PostMapping("{value}/invoke")
 	public ResponseEntity<?> invokeProcess(
 			@NonNull @PathVariable("value") final String processValue,
-			@Nullable @RequestBody final RunProcessRequest request)
+			@Nullable @RequestBody(required = false) final RunProcessRequest request)
 	{
 
 		final Optional<AdProcessId> processId = getProcessIdIfRunnable(processValue);
@@ -142,18 +148,33 @@ public class ProcessRestController
 				.body(response);
 	}
 
+	@ApiOperation("Create an AD_Issue")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully created issue"),
+			@ApiResponse(code = 401, message = "You are not authorized to create new issue"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
+			@ApiResponse(code = 422, message = "The request body could not be processed")
+	})
+
+	@PostMapping(path = "{AD_PInstance_ID}/externalstatus/error",consumes = "application/json", produces = "application/json")
+	public ResponseEntity<JsonCreateIssueResponse> handleError(@RequestBody @NonNull final JsonError request, @PathVariable final Integer AD_PInstance_ID)
+	{
+		final JsonCreateIssueResponse issueResponse = processService.createIssue(request, PInstanceId.ofRepoId(AD_PInstance_ID));
+		return ResponseEntity.ok(issueResponse);
+	}
+
 	private ResponseEntity<?> getResponse(@NonNull final ProcessExecutionResult processExecutionResult)
 	{
 		if (processExecutionResult.isError())
 		{
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(processExecutionResult.getThrowable());
+			throw AdempiereException.wrapIfNeeded(processExecutionResult.getThrowable());
 		}
-		else if (Check.isNotBlank(processExecutionResult.getJsonResult()))
+		else if (Check.isNotBlank(processExecutionResult.getStringResult()))
 		{
 			return ResponseEntity
 					.ok()
-					.contentType(MediaType.APPLICATION_JSON_UTF8)
-					.body(processExecutionResult.getJsonResult());
+					.contentType(MediaType.valueOf(processExecutionResult.getStringResultContentType()))
+					.body(processExecutionResult.getStringResult());
 		}
 		else if (Check.isNotBlank(processExecutionResult.getReportFilename()))
 		{
@@ -164,7 +185,7 @@ public class ProcessRestController
 			return ResponseEntity.ok()
 					.contentType(MediaType.parseMediaType(contentType))
 					.header(HttpHeaders.CONTENT_DISPOSITION,"attachment; filename=\"" + processExecutionResult.getReportFilename() + "\"")
-					.body(processExecutionResult.getReportData());
+					.body(processExecutionResult.getReportDataAsByteArray());
 		}
 		else
 		{

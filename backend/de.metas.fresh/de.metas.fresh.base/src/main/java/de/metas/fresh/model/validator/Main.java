@@ -53,11 +53,9 @@ import org.adempiere.mm.attributes.listeners.inAusLand.OrderLineInAusLandModelAt
 import org.adempiere.model.CopyRecordFactory;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
-import de.metas.fresh.picking.form.SwingPickingTerminalPanel;
 import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextProvider;
 import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;
-import de.metas.picking.terminal.form.swing.PickingTerminal;
 import de.metas.util.Services;
 
 public class Main extends AbstractModuleInterceptor
@@ -105,8 +103,6 @@ public class Main extends AbstractModuleInterceptor
 		modelAttributeSetInstanceListenerService.registerListener(new OrderLineMonthsUntilExpiryModelASIListener());
 
 		modelAttributeSetInstanceListenerService.registerListener(new AgeModelAttributeSetInstanceListener());
-
-		PickingTerminal.setPickingTerminalPanelClass(SwingPickingTerminalPanel.class);
 
 		//
 		// Setup Time Format (see 06148)

@@ -3,64 +3,84 @@
 // thx to https://github.com/jenkinsci/pipeline-examples/blob/master/docs/BEST_PRACTICES.md
 
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
+
 @Library('misc')
-import de.metas.jenkins.MvnConf
 import de.metas.jenkins.Misc
+import de.metas.jenkins.MvnConf
 
+def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = false) {
 
-def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=false)
-{
-	final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
-	
-    // stage('Build procurement-webui')  // too many stages clutter the build info
-    //{
-		currentBuild.description= """${currentBuild.description}<p/>
-			<h3>procurement-webui</h3>
-		"""
+    currentBuild.description = """${currentBuild.description}
+    <h3>procurement-webui</h3>"""
 
-	def anyFileChanged
-	try {
-		def vgitout = sh(returnStdout: true, script: "git diff --name-only ${scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT} ${scmVars.GIT_COMMIT} .").trim()
-		echo "git diff output (modified files):\n>>>>>\n${vgitout}\n<<<<<"
-		anyFileChanged = !vgitout.isEmpty()
-		// see if anything at all changed in this folder
-		echo "Any file changed compared to last build: ${anyFileChanged}"
-	} catch (ignored) {
-		echo "git diff error => assume something must have changed"
-		anyFileChanged = true
-	}
+    final String backendBuildDescription
+    final String backendDockerImage
+    final String frontendBuildDescription
+    final String frontendDockerImage
+    final String rabbitmqBuildDescription
+    final String rabbitmqDockerImage
+    final String nginxBuildDescription
+    final String nginxDockerImage
 
-	if(scmVars.GIT_COMMIT && scmVars.GIT_PREVIOUS_SUCCESSFUL_COMMIT && !anyFileChanged && !forceBuild)
-	{
-		currentBuild.description= """${currentBuild.description}<p/>
-					No changes happened in procurement-webui.
-					"""
-		echo "no changes happened in procurement-webui; skip building procurement-webui";
-		return;
-	}
+    dir('rabbitmq') {
 
-	// set the root-pom's parent pom. Although the parent pom is avaialbe via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
-		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DparentVersion=${env.MF_VERSION} ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:update-parent"
+        final def buildFile = load('buildfile.groovy')
+        final Map results = buildFile.build(scmVars, forceBuild)
 
-		final String mavenUpdatePropertyParam='-Dproperty=metasfresh.version'
-		
-		// update the metasfresh.version property. either to the latest version or to the given params.MF_UPSTREAM_VERSION.
-		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} ${mavenUpdatePropertyParam} ${VERSIONS_PLUGIN}:update-property"
+        rabbitmqBuildDescription = results.buildDescription
+        rabbitmqDockerImage = results.dockerImage
+    }
+    dir('nginx') {
+        final def buildFile = load('buildfile.groovy')
+        final Map results = buildFile.build(scmVars, forceBuild)
 
-		// set the artifact version of everything below the webui's pom.xml
-		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${MF_VERSION} -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
+        nginxBuildDescription = results.buildDescription
+        nginxDockerImage = results.dockerImage
+    }
 
-		// do the actual building and deployment
-		// maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-		sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
+    withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
+        dir('procurement-webui-backend') {
+            final def buildFile = load('buildfile.groovy')
+            final Map results = buildFile.build(mvnConf, scmVars, forceBuild)
 
-		currentBuild.description="""${currentBuild.description}<p/>
-		artifacts (if not yet cleaned up)
-			<ul>
-<li><a href=\"https://repo.metasfresh.com/content/repositories/${mvnConf.mvnRepoName}/de/metas/procurement/de.metas.procurement.webui/${MF_VERSION}/de.metas.procurement.webui-${MF_VERSION}.jar\">de.metas.procurement.webui-${MF_VERSION}.jar</a></li>
-</ul>""";
-    //} // stage
-} 
+            backendBuildDescription = results.buildDescription
+            backendDockerImage = results.dockerImage
+        }
+    }
+    dir('procurement-webui-frontend') {
+        final def buildFile = load('buildfile.groovy')
+        final Map results = buildFile.build(scmVars, forceBuild)
+
+        frontendBuildDescription = results.buildDescription
+        frontendDockerImage = results.dockerImage
+    }
+
+    // create and push our docker-compose.yml file
+    sh 'cp docker-compose/docker-compose-template.yml docker-compose/docker-compose.yml'
+    sh "sed -i 's|\${dockerImage.procurement_rabbitmq}|${rabbitmqDockerImage}|g' docker-compose/docker-compose.yml"
+    sh "sed -i 's|\${dockerImage.procurement_nginx}|${nginxDockerImage}|g' docker-compose/docker-compose.yml"
+    sh "sed -i 's|\${dockerImage.procurement_backend}|${backendDockerImage}|g' docker-compose/docker-compose.yml"
+    sh "sed -i 's|\${dockerImage.procurement_frontend}|${frontendDockerImage}|g' docker-compose/docker-compose.yml"
+
+    String dockerComposeGroupId='de.metas.procurement'
+    String dockerComposeArtifactId='procurement-webui'
+    String dockerComposeClassifier='docker-compose'
+    withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
+        sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=docker-compose/docker-compose.yml -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=${dockerComposeGroupId} -DartifactId=${dockerComposeArtifactId} -Dversion=${env.MF_VERSION} -Dclassifier=${dockerComposeClassifier} -Dpackaging=yml -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
+    }
+
+    final Misc misc = new Misc()
+    currentBuild.description = """${currentBuild.description}
+<p>
+  this build's <a href="${mvnConf.deployRepoURL}/de/metas/procurement/procurement-webui/${misc.urlEncode(env.MF_VERSION)}/procurement-webui-${misc.urlEncode(env.MF_VERSION)}-${dockerComposeClassifier}.yml">docker-compose.yml</a>.
+<p>
+Note: you can always get the <b>latest</b> docker-compose.yml for this branch at <code>${mvnConf.mvnResolveRepoBaseURL}/service/rest/v1/search/assets/download?sort=version&repository=${mvnConf.mvnRepoName}&maven.groupId=${dockerComposeGroupId}&maven.artifactId=${dockerComposeArtifactId}&maven.classifier=${dockerComposeClassifier}&maven.extension=yml</code>
+
+${frontendBuildDescription}<p>
+${backendBuildDescription}<p>
+${rabbitmqBuildDescription}<p>
+${nginxBuildDescription}<p>
+"""
+}
 
 return this
-

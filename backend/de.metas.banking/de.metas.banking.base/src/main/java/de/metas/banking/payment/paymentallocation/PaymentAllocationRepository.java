@@ -1,46 +1,8 @@
-package de.metas.banking.payment.paymentallocation;
-
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.compiere.apps.search.FindHelper;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Repository;
-
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
-import de.metas.document.DocTypeId;
-import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.invoice.InvoiceId;
-import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.order.OrderId;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
-import de.metas.payment.PaymentDirection;
-import de.metas.payment.PaymentId;
-import de.metas.util.Check;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -57,6 +19,48 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.banking.payment.paymentallocation;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyCode;
+import de.metas.document.DocTypeId;
+import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.InvoiceId;
+import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentCurrencyContext;
+import de.metas.payment.PaymentDirection;
+import de.metas.payment.PaymentId;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.compiere.apps.search.FindHelper;
+import org.compiere.model.I_C_ConversionType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Repository
 public class PaymentAllocationRepository
@@ -92,12 +96,17 @@ public class PaymentAllocationRepository
 	{
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = buildSelectInvoiceToAllocateSql(query, sqlParams);
+		if (sql == null)
+		{
+			return ImmutableList.of();
+		}
 
 		final ZonedDateTime evaluationDate = query.getEvaluationDate();
 
 		return DB.retrieveRows(sql, sqlParams, rs -> retrieveInvoiceToAllocateOrNull(rs, evaluationDate));
 	}
 
+	@Nullable
 	private static String buildSelectInvoiceToAllocateSql(
 			@NonNull final InvoiceToAllocateQuery query,
 			@NonNull final List<Object> sqlParams)
@@ -118,7 +127,7 @@ public class PaymentAllocationRepository
 			sqlParams.addAll(Arrays.asList(
 					query.getBpartnerId(),
 					convertToCurrencyId,
-					multiCurrency, // multicurrency
+					multiCurrency,
 					orgId,
 					query.getEvaluationDate(),
 					null, // C_Invoice_ID
@@ -145,7 +154,7 @@ public class PaymentAllocationRepository
 			sqlParams.addAll(Arrays.asList(
 					null, // no C_BPartner_ID
 					convertToCurrencyId,
-					multiCurrency, // multicurrency
+					multiCurrency,
 					orgId,
 					query.getEvaluationDate(),
 					invoiceId, // C_Invoice_ID
@@ -166,7 +175,7 @@ public class PaymentAllocationRepository
 			sqlParams.addAll(Arrays.asList(
 					null, // no C_BPartner_ID
 					convertToCurrencyId,
-					multiCurrency, // multicurrency
+					multiCurrency,
 					orgId,
 					query.getEvaluationDate(),
 					null, // C_Invoice_ID
@@ -201,6 +210,7 @@ public class PaymentAllocationRepository
 		return sql.toString();
 	}
 
+	@Nullable
 	private InvoiceToAllocate retrieveInvoiceToAllocateOrNull(
 			@NonNull final ResultSet rs,
 			@NonNull final ZonedDateTime evaluationDate) throws SQLException
@@ -240,6 +250,8 @@ public class PaymentAllocationRepository
 		final BigDecimal multiplierCreditMemo = rs.getBigDecimal("multiplier"); // CreditMemo=-1, Regular Invoice=+1
 		final boolean isCreditMemo = multiplierCreditMemo.signum() < 0 || grandTotalConv.signum() < 0; // task 09429: also if grandTotal<0
 
+		final CurrencyConversionTypeId currencyConversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(I_C_Invoice.COLUMNNAME_C_ConversionType_ID));
+
 		if (!isPrePayOrder && grandTotal.signum() == 0)
 		{
 			// nothing - i.e. allow zero amount invoices to be visible for allocation
@@ -263,16 +275,16 @@ public class PaymentAllocationRepository
 				.documentCurrencyCode(documentCurrencyCode)
 				.evaluationDate(evaluationDate)
 				.grandTotal(grandTotal)
-				.grandTotalConverted(grandTotalConv)
 				.openAmountConverted(openAmtConv)
 				.discountAmountConverted(discountAmountConv)
 				.docTypeId(docTypeId)
 				.docBaseType(InvoiceDocBaseType.ofSOTrxAndCreditMemo(soTrx, isCreditMemo))
 				.poReference(rs.getString("POReference"))
+				.currencyConversionTypeId(currencyConversionTypeId)
 				.build();
 	}
 
-	private static final Amount retrieveAmount(
+	private static Amount retrieveAmount(
 			@NonNull final ResultSet rs,
 			@NonNull final String columnName,
 			@NonNull final CurrencyCode currencyCode) throws SQLException
@@ -288,35 +300,19 @@ public class PaymentAllocationRepository
 		final List<Object> sqlParams = new ArrayList<>();
 		final String sql = buildSelectPaymentsToAllocateSql(query, sqlParams);
 
-		return DB.retrieveRows(sql, sqlParams, this::retrievePaymentToAllocateOrNull);
-	}
-
-	public ImmutableSet<PaymentId> retrievePaymentIdsToAllocate(final PaymentToAllocateQuery query)
-	{
-		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = buildSelectPaymentsToAllocateSql(query, sqlParams);
-
-		final List<PaymentId> paymentIds = DB.retrieveRows(sql, sqlParams, rs -> retrievePaymentId(rs));
-		return ImmutableSet.copyOf(paymentIds);
+		return DB.retrieveRows(sql, sqlParams, PaymentAllocationRepository::retrievePaymentToAllocateOrNull);
 	}
 
 	private String buildSelectPaymentsToAllocateSql(final PaymentToAllocateQuery query, final List<Object> sqlParams)
 	{
-		final CurrencyId currencyId = query.getCurrencyId();
-		final boolean isMultiCurrency = currencyId == null;
-		final ClientAndOrgId clientAndOrgId = query.getClientAndOrgId();
-		final OrgId orgId = clientAndOrgId != null ? clientAndOrgId.getOrgId() : null;
-
 		final StringBuilder sql = new StringBuilder();
 
 		if (query.getBpartnerId() != null)
 		{
-			sql.append("SELECT * FROM GetOpenPayments(?, ?, ?, ?, ?, ?)");
+			sql.append("SELECT * FROM GetOpenPayments(?, ?, ?, ?)");
 			sqlParams.addAll(Arrays.asList(
 					query.getBpartnerId(),
-					currencyId,
-					isMultiCurrency,
-					orgId,
+					null, // orgId
 					query.getEvaluationDate(),
 					null // c_payment_id
 			));
@@ -330,11 +326,9 @@ public class PaymentAllocationRepository
 			{
 				sql.append("\n UNION \n");
 			}
-			sql.append("SELECT * FROM GetOpenPayments(?, ?, ?, ?, ?, ?)");
+			sql.append("SELECT * FROM GetOpenPayments(?, ?, ?, ?)");
 			sqlParams.addAll(Arrays.asList(
 					null, // don't filter by BPartner context.getC_BPartner_ID()
-					null, // currency
-					true, // multiCurrency
 					null, // org
 					query.getEvaluationDate(),
 					paymentId // c_payment_id
@@ -345,44 +339,59 @@ public class PaymentAllocationRepository
 		// Builder the final outer SQL:
 		sql.insert(0, "SELECT * FROM ( ").append(") p WHERE true");
 
-		if (clientAndOrgId != null)
-		{
-			sql.append(" AND p.AD_Client_ID = ?");
-			sqlParams.add(clientAndOrgId.getClientId());
-		}
-		sql.append(" ORDER BY p.paymentDate, p.DocNo");
+		sql.append(" ORDER BY p.paymentDate, p.DocumentNo");
 
 		return sql.toString();
 	}
 
-	private PaymentToAllocate retrievePaymentToAllocateOrNull(@NonNull final ResultSet rs) throws SQLException
+	private static PaymentToAllocate retrievePaymentToAllocateOrNull(@NonNull final ResultSet rs) throws SQLException
 	{
-		// final CurrencyCode documentCurrencyCode = CurrencyCode.ofThreeLetterCode(rs.getString("iso_code"));
-		final CurrencyCode convertedToCurrencyCode = CurrencyCode.ofThreeLetterCode(rs.getString("ConvertTo_Currency_ISO_Code"));
+		final CurrencyCode documentCurrencyCode = CurrencyCode.ofThreeLetterCode(rs.getString("currency_code"));
 
-		final BigDecimal multiplierAP = rs.getBigDecimal("multiplierap"); // +1=Inbound Payment, -1=Outbound Payment
+		final BigDecimal multiplierAP = rs.getBigDecimal("MultiplierAP"); // +1=Inbound Payment, -1=Outbound Payment
 		final boolean inboundPayment = multiplierAP.signum() > 0;
 
 		// NOTE: we assume the amounts were already AP adjusted, so we are converting them back to relative values (i.e. not AP adjusted)
-		// final Amount payAmt = retrieveAmount(rs, "orig_total", documentCurrencyCode).negateIf(!inboundPayment);
-		final Amount payAmtConv = retrieveAmount(rs, "conv_total", convertedToCurrencyCode).negateIf(!inboundPayment);
-		final Amount openAmtConv = retrieveAmount(rs, "conv_open", convertedToCurrencyCode).negateIf(!inboundPayment);
+		final Amount payAmt = retrieveAmount(rs, "PayAmt", documentCurrencyCode).negateIf(!inboundPayment);
+		final Amount openAmt = retrieveAmount(rs, "OpenAmt", documentCurrencyCode).negateIf(!inboundPayment);
 
 		return PaymentToAllocate.builder()
 				.paymentId(retrievePaymentId(rs))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(rs.getInt("AD_Client_ID"), rs.getInt("AD_Org_ID")))
-				.documentNo(rs.getString("DocNo"))
-				.bpartnerId(BPartnerId.ofRepoId(rs.getInt("c_bpartner_id")))
-				.dateTrx(TimeUtil.asLocalDate(rs.getTimestamp("paymentdate")))
-				.dateAcct(TimeUtil.asLocalDate(rs.getTimestamp("dateacct"))) // task 09643
-				.payAmt(payAmtConv)
-				.openAmt(openAmtConv)
+				.documentNo(rs.getString("DocumentNo"))
+				.bpartnerId(BPartnerId.ofRepoId(rs.getInt("C_BPartner_ID")))
+				.dateTrx(TimeUtil.asLocalDate(rs.getTimestamp("PaymentDate")))
+				.dateAcct(TimeUtil.asLocalDate(rs.getTimestamp("DateAcct"))) // task 09643
+				.payAmt(payAmt)
+				.openAmt(openAmt)
 				.paymentDirection(PaymentDirection.ofInboundPaymentFlag(inboundPayment))
+				.paymentCurrencyContext(extractPaymentCurrencyContext(rs))
 				.build();
+	}
+
+	private static PaymentCurrencyContext extractPaymentCurrencyContext(@NonNull final ResultSet rs) throws SQLException
+	{
+		final PaymentCurrencyContext.PaymentCurrencyContextBuilder result = PaymentCurrencyContext.builder()
+				.currencyConversionTypeId(CurrencyConversionTypeId.ofRepoIdOrNull(rs.getInt(I_C_ConversionType.COLUMNNAME_C_ConversionType_ID)));
+
+		final CurrencyId sourceCurrencyId = CurrencyId.ofRepoIdOrNull(rs.getInt("FixedConversion_SourceCurrency_ID"));
+		final BigDecimal currencyRate = rs.getBigDecimal("FixedConversion_Rate");
+		if (sourceCurrencyId != null
+				&& currencyRate != null
+				&& currencyRate.signum() != 0)
+		{
+			final CurrencyId paymentCurrencyId = CurrencyId.ofRepoId(rs.getInt("C_Currency_ID"));
+
+			result.paymentCurrencyId(paymentCurrencyId)
+					.sourceCurrencyId(sourceCurrencyId)
+					.currencyRate(currencyRate);
+		}
+
+		return result.build();
 	}
 
 	private static PaymentId retrievePaymentId(final ResultSet rs) throws SQLException
 	{
-		return PaymentId.ofRepoId(rs.getInt("c_payment_id"));
+		return PaymentId.ofRepoId(rs.getInt("C_Payment_ID"));
 	}
 }

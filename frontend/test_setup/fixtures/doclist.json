@@ -1,0 +1,21 @@
+{
+  "props1": {
+    "query": {
+      "page": "1",
+      "viewId": "540371-3"
+    },
+    "windowId": "540371"
+  },
+  "state1": {
+    "routing": {
+      "locationBeforeTransitions": {
+        "pathname": "/window/540371",
+        "search": "",
+        "hash": "",
+        "action": "POP",
+        "key": null,
+        "query": {}
+      }
+    }
+  }
+}

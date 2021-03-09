@@ -1,18 +1,17 @@
 package de.metas.material.event.shipmentschedule;
 
-import java.math.BigDecimal;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -55,6 +54,7 @@ public class ShipmentScheduleDeletedEvent extends AbstractShipmentScheduleEvent
 		super(
 				eventDescriptor,
 				materialDescriptor,
+				null, // no replenish descriptor needed because this event can't trigger a new supply-request
 				reservedQuantity,
 				shipmentScheduleId);
 	}

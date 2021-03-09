@@ -29,19 +29,11 @@ export default class SelectionDropdown extends Component {
     this.handleMouseDown = this.handleMouseDown.bind(this);
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
   }
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
@@ -312,10 +304,8 @@ export default class SelectionDropdown extends Component {
     </ReactCSSTransitionGroup>
   );
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
+  setRef = (ref) => (this.wrapper = ref);
+
   render() {
     const { options, width, height, loading, forceEmpty } = this.props;
     const empty = this.size(options) === 0;
@@ -329,11 +319,7 @@ export default class SelectionDropdown extends Component {
     }
 
     return (
-      <div
-        ref={(ref) => (this.wrapper = ref)}
-        className="input-dropdown-list"
-        style={style}
-      >
+      <div ref={this.setRef} className="input-dropdown-list" style={style}>
         {loading ? this.loading : (empty || forceEmpty) && this.renderEmpty()}
         {options.map(this.renderOption)}
       </div>

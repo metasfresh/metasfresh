@@ -16,6 +16,7 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -81,20 +82,20 @@ public class UOMTestHelper
 		return uom;
 	}
 
-	public UomId createUOMId(final String name, final int stdPrecision, final int costingPrecision, final String X12DE355)
+	public UomId createUOMId(final String name, final int stdPrecision, final int costingPrecision, final X12DE355 X12DE355)
 	{
 		final I_C_UOM uom = createUOM(name, stdPrecision, costingPrecision, X12DE355);
 		return UomId.ofRepoId(uom.getC_UOM_ID());
 	}
 
-	public I_C_UOM createUOM(final String name, final int stdPrecision, final int costingPrecision, final String X12DE355)
+	public I_C_UOM createUOM(final String name, final int stdPrecision, final int costingPrecision, final X12DE355 X12DE355)
 	{
 		final I_C_UOM uom = InterfaceWrapperHelper.create(ctx, I_C_UOM.class, ITrx.TRXNAME_None);
 		uom.setName(name);
 		uom.setStdPrecision(stdPrecision);
 		uom.setCostingPrecision(costingPrecision);
-		uom.setX12DE355(X12DE355);
-		uom.setUOMSymbol(X12DE355);
+		uom.setX12DE355(X12DE355.getCode());
+		uom.setUOMSymbol(X12DE355.getCode());
 
 		InterfaceWrapperHelper.save(uom);
 

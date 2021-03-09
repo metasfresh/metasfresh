@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,7 +34,7 @@ import lombok.Value;
  */
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class CreateCommissionSharesRequest
 {
 	@NonNull
@@ -45,6 +46,9 @@ public class CreateCommissionSharesRequest
 
 	@NonNull
 	Hierarchy hierarchy;
+
+	@NonNull
+	HierarchyLevel startingHierarchyLevel;
 
 	public CreateCommissionSharesRequest withoutConfigs(@NonNull final ImmutableSet<CommissionConfig> existingConfigs)
 	{
@@ -60,6 +64,8 @@ public class CreateCommissionSharesRequest
 		return CreateCommissionSharesRequest.builder()
 				.configs(remainingConfigs)
 				.trigger(trigger)
-				.hierarchy(hierarchy).build();
+				.hierarchy(hierarchy)
+				.startingHierarchyLevel(startingHierarchyLevel)
+				.build();
 	}
 }

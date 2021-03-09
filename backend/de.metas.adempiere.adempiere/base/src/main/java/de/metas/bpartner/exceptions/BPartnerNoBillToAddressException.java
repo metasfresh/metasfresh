@@ -1,6 +1,9 @@
 package de.metas.bpartner.exceptions;
 
+import de.metas.i18n.AdMessageKey;
 import org.compiere.model.I_C_BPartner;
+
+import javax.annotation.Nullable;
 
 /**
  * Thrown when Bill To Address is required for a BPartner but not found.
@@ -8,10 +11,15 @@ import org.compiere.model.I_C_BPartner;
 @SuppressWarnings("serial")
 public class BPartnerNoBillToAddressException extends BPartnerException
 {
-	public static final String AD_Message = "BPartnerNoBillToAddress";
+	private static final AdMessageKey MSG = AdMessageKey.of("BPartnerNoBillToAddress");
 
-	public BPartnerNoBillToAddressException(final I_C_BPartner bpartner)
+	public BPartnerNoBillToAddressException(@Nullable final I_C_BPartner bpartner)
 	{
-		super(AD_Message, bpartner);
+		super(MSG, bpartner);
+	}
+
+	public BPartnerNoBillToAddressException(@Nullable final String bpartnerName)
+	{
+		super(MSG, bpartnerName);
 	}
 }

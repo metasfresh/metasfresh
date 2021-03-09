@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Map as iMap } from 'immutable';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
 import deepUnfreeze from 'deep-unfreeze';
@@ -9,6 +8,7 @@ import { toInteger } from 'lodash';
 import { getItemsByProperty, nullToEmptyStrings } from './index';
 import { viewState, getView } from '../reducers/viewHandler';
 import { getTable, getTableId, getSelection } from '../reducers/tables';
+import { getEntityRelatedId, getCachedFilter } from '../reducers/filters';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
 
@@ -21,7 +21,6 @@ const DLpropTypes = {
   windowId: PropTypes.string.isRequired,
   viewId: PropTypes.string,
   queryViewId: PropTypes.string,
-  updateParentSelectedIds: PropTypes.func,
   page: PropTypes.number,
   sort: PropTypes.string,
   defaultViewId: PropTypes.string,
@@ -48,16 +47,13 @@ const DLpropTypes = {
   filterView: PropTypes.func.isRequired,
   deleteTable: PropTypes.func.isRequired,
   indicatorState: PropTypes.func.isRequired,
-  closeListIncludedView: PropTypes.func.isRequired,
   setListPagination: PropTypes.func.isRequired,
   setListSorting: PropTypes.func.isRequired,
   setListId: PropTypes.func.isRequired,
   push: PropTypes.func.isRequired,
   updateRawModal: PropTypes.func.isRequired,
-  updateTableSelection: PropTypes.func.isRequired,
-  deselectTableItems: PropTypes.func.isRequired,
+  deselectTableRows: PropTypes.func.isRequired,
   fetchLocationConfig: PropTypes.func.isRequired,
-  clearAllFilters: PropTypes.func.isRequired,
 };
 
 /**
@@ -83,6 +79,7 @@ const DLmapStateToProps = (state, props) => {
   if (!master) {
     master = viewState;
   }
+  // modals use viewId from layout data, and not from the url
   let viewId = master.viewId ? master.viewId : queryViewId;
   let sort = querySort || master.sort;
   let page = toInteger(queryPage) || master.page;
@@ -109,9 +106,9 @@ const DLmapStateToProps = (state, props) => {
   let childTableId = null;
   const childSelector = getSelection();
   const { includedView } = props;
-  if (includedView && includedView.windowType) {
+  if (includedView && includedView.windowId) {
     childTableId = getTableId({
-      windowId: includedView.windowType,
+      windowId: includedView.windowId,
       viewId: includedView.viewId,
     });
   }
@@ -125,6 +122,8 @@ const DLmapStateToProps = (state, props) => {
       viewId: parentDefaultViewId,
     });
   }
+  const filterId = getEntityRelatedId({ windowId, viewId });
+  const filters = getCachedFilter(state, filterId);
 
   return {
     page,
@@ -143,7 +142,8 @@ const DLmapStateToProps = (state, props) => {
     parentSelected: parentSelector(state, parentTableId),
     modal: state.windowHandler.modal,
     rawModalVisible: state.windowHandler.rawModal.visible,
-    filters: state.filters,
+    filters: filters ? filters : {},
+    filterId,
   };
 };
 
@@ -157,17 +157,6 @@ if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
   GEO_PANEL_STATES.splice(1, 1);
 }
 
-const filtersToMap = function(filtersArray) {
-  let filtersMap = iMap();
-
-  if (filtersArray && filtersArray.length) {
-    filtersArray.forEach((filter) => {
-      filtersMap = filtersMap.set(filter.filterId, filter);
-    });
-  }
-  return filtersMap;
-};
-
 /**
  * Check if current selection still exists in the provided data (used when
  * updates happen)
@@ -180,6 +169,10 @@ const doesSelectionExist = function({
   keyProperty = 'id',
 } = {}) {
   if (selected && selected[0] === 'all') {
+    return true;
+  }
+  // if selection is empty and data exist, selection is valid
+  if (selected && !selected.length && data) {
     return true;
   }
 
@@ -210,7 +203,6 @@ export {
   PANEL_WIDTHS,
   GEO_PANEL_STATES,
   getSortingQuery,
-  filtersToMap,
   doesSelectionExist,
 };
 
@@ -481,37 +473,6 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
     }
   }
   return result;
-}
-
-/**
- * Create a flat array of collapsed rows ids including parents and children
- * @todo TODO: rewrite this to not modify `initialMap`. This will also require
- * changes in TableActions
- */
-export function createCollapsedMap(node, isCollapsed, initialMap) {
-  let collapsedMap = [];
-  if (initialMap) {
-    if (!isCollapsed) {
-      initialMap.splice(
-        initialMap.indexOf(node.includedDocuments[0]),
-        node.includedDocuments.length
-      );
-      collapsedMap = initialMap;
-    } else {
-      initialMap.map((item) => {
-        collapsedMap.push(item);
-        if (item.id === node.id) {
-          collapsedMap = collapsedMap.concat(node.includedDocuments);
-        }
-      });
-    }
-  } else {
-    if (node.includedDocuments) {
-      collapsedMap.push(node);
-    }
-  }
-
-  return collapsedMap;
 }
 
 export function renderHeaderProperties(groups) {

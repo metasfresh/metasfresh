@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.order.callout;
 
 /*
@@ -32,10 +29,6 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
 import de.metas.util.Services;
 
-/**
- * @author cg
- *
- */
 @Callout(I_C_OrderLine.class)
 public class C_OrderLine
 {
@@ -53,5 +46,14 @@ public class C_OrderLine
 		orderLineRecord.setIsManualPaymentTerm(false);
 
 		Services.get(IOrderLineBL.class).updatePrices(orderLineRecord); // see task 06727
+	}
+
+	/**
+	 * Sets {@code C_OrderLine.IsManualPrice='Y'}, but only if the user "manually" edited the price.
+	 */
+	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_PriceEntered }, skipIfCopying = true, skipIfIndirectlyCalled = true)
+	public void setIsManualPriceFlag(final I_C_OrderLine orderLine)
+	{
+		orderLine.setIsManualPrice(true);
 	}
 }

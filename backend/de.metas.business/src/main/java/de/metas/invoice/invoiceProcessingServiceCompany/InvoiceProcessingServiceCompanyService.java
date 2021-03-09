@@ -75,6 +75,11 @@ public class InvoiceProcessingServiceCompanyService
 		this.moneyService = moneyService;
 	}
 
+	public Optional<InvoiceProcessingServiceCompanyConfig> getByCustomerId(@NonNull final BPartnerId customerId, @NonNull final ZonedDateTime evaluationDate)
+	{
+		return configRepository.getByCustomerId(customerId, evaluationDate);
+	}
+
 	public Optional<InvoiceProcessingFeeCalculation> createFeeCalculationForPayment(@NonNull final InvoiceProcessingFeeWithPrecalculatedAmountRequest request)
 	{
 		final BPartnerId serviceCompanyBPartnerId = request.getServiceCompanyBPartnerId();
@@ -91,7 +96,6 @@ public class InvoiceProcessingServiceCompanyService
 		{
 			return Optional.empty();
 		}
-
 
 		return Optional.of(InvoiceProcessingFeeCalculation.builder()
 				.orgId(request.getOrgId())
@@ -119,7 +123,7 @@ public class InvoiceProcessingServiceCompanyService
 			return Optional.empty();
 		}
 
-		final InvoiceProcessingServiceCompanyConfig config = configRepository.getByCustomerId(customerId, request.getEvaluationDate()).orElse(null);
+		final InvoiceProcessingServiceCompanyConfig config = getByCustomerId(customerId, request.getEvaluationDate()).orElse(null);
 		if (config == null)
 		{
 			return Optional.empty();
@@ -132,7 +136,9 @@ public class InvoiceProcessingServiceCompanyService
 		}
 
 		final CurrencyPrecision precision = moneyService.getStdPrecision(invoiceGrandTotal.getCurrencyCode());
-		final Amount feeAmountIncludingTax = invoiceGrandTotal.multiply(feePercentageOfGrandTotal, precision);
+		final Amount feeAmountIncludingTax = invoiceGrandTotal
+				.abs() // because no matter if the grand total is payed by customer or we have to pay it to customer, the processing company is retaining their fee
+				.multiply(feePercentageOfGrandTotal, precision);
 
 		return Optional.of(InvoiceProcessingFeeCalculation.builder()
 				.orgId(request.getOrgId())

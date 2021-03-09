@@ -1,15 +1,16 @@
 package de.metas.banking.payment.paymentallocation;
 
-import java.time.LocalDate;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -21,12 +22,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -61,4 +62,7 @@ public class PaymentToAllocate
 
 	@NonNull
 	PaymentDirection paymentDirection;
+
+	@NonNull
+	PaymentCurrencyContext paymentCurrencyContext;
 }

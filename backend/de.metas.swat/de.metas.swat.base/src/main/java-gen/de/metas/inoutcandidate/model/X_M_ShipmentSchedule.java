@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1131484261L;
+	private static final long serialVersionUID = 814957481L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (Properties ctx, int M_ShipmentSchedule_ID, String trxName)
@@ -104,6 +104,36 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getBill_BPartner_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_BPartner_ID);
+	}
+
+	@Override
+	public void setBill_Location_ID (int Bill_Location_ID)
+	{
+		if (Bill_Location_ID < 1) 
+			set_Value (COLUMNNAME_Bill_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_Location_ID, Integer.valueOf(Bill_Location_ID));
+	}
+
+	@Override
+	public int getBill_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Bill_Location_ID);
+	}
+
+	@Override
+	public void setBill_User_ID (int Bill_User_ID)
+	{
+		if (Bill_User_ID < 1) 
+			set_Value (COLUMNNAME_Bill_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_User_ID, Integer.valueOf(Bill_User_ID));
+	}
+
+	@Override
+	public int getBill_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Bill_User_ID);
 	}
 
 	@Override
@@ -908,6 +938,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public void setNrOfOLCandsWithSamePOReference (int NrOfOLCandsWithSamePOReference)
+	{
+		set_Value (COLUMNNAME_NrOfOLCandsWithSamePOReference, Integer.valueOf(NrOfOLCandsWithSamePOReference));
+	}
+
+	@Override
+	public int getNrOfOLCandsWithSamePOReference() 
+	{
+		return get_ValueAsInt(COLUMNNAME_NrOfOLCandsWithSamePOReference);
+	}
+
+	@Override
 	public org.eevolution.model.I_PP_Order getPickFrom_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_PickFrom_Order_ID, org.eevolution.model.I_PP_Order.class);
@@ -937,7 +979,8 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setPOReference (java.lang.String POReference)
 	{
-		throw new IllegalArgumentException ("POReference is virtual column");	}
+		set_ValueNoCheck (COLUMNNAME_POReference, POReference);
+	}
 
 	@Override
 	public java.lang.String getPOReference() 

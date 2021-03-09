@@ -130,7 +130,7 @@ public class SwatValidator implements ModelValidator
 	/**
 	 * Default SalesRep_ID
 	 *
-	 * @see http://dewiki908/mediawiki/index.php/US315:_Im_Mahntext_die_neuen_Textbausteine_verwenden_k%C3%B6nnen_%282010070510000495%29#SalesRep_issue_.28Teo_09:24.2C_26._Okt._2011_.28CEST.29.29
+	 * See http://dewiki908/mediawiki/index.php/US315:_Im_Mahntext_die_neuen_Textbausteine_verwenden_k%C3%B6nnen_%282010070510000495%29#SalesRep_issue_.28Teo_09:24.2C_26._Okt._2011_.28CEST.29.29
 	 */
 	private static final String SYSCONFIG_DEFAULT_SalesRep_ID = "DEFAULT_SalesRep_ID";
 
@@ -180,7 +180,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new M_Warehouse(), client); // 03084
 		engine.addModelValidator(new C_BPartner_Location(), client); // 02618
 
-		engine.addModelValidator(new de.metas.allocation.modelvalidator.C_Invoice(), client); // 04193
 		engine.addModelValidator(new de.metas.allocation.modelvalidator.C_Payment(), client); // 04193
 
 		engine.addModelValidator(new M_AttributeInstance(), client); // 05839
@@ -272,11 +271,6 @@ public class SwatValidator implements ModelValidator
 			{
 				Check.setExceptionHeaderMessage(msgBL.getMsg(Env.getCtx(), MSG_ORG_ADEMPIERE_UTIL_CHECK_EXCEPTION_HEADER_MESSAGE));
 			}
-		}
-
-		if (Ini.isSwingClient())
-		{
-			ReportStarter.setSwingViewerProvider(new org.compiere.report.SwingJRViewerProvider());
 		}
 
 		// task 09232

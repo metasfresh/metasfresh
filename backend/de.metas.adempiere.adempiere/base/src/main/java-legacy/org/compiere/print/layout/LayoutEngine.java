@@ -48,7 +48,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 import org.compiere.model.MTable;
-import org.compiere.model.PrintInfo;
+import org.adempiere.archive.api.ArchiveInfo;
 import org.compiere.print.ArchiveEngine;
 import org.compiere.print.CPaper;
 import org.compiere.print.DataEngine;
@@ -87,6 +87,7 @@ import de.metas.logging.LogManager;
  *         http://sourceforge.net/tracker/index.php?func=detail&aid=2011567&group_id=176962&atid=879335
  * @author Michael Judd (Akuna Ltd) <li>BF [ 2695078 ] Country is not translated on invoice
  */
+@Deprecated  // TODO delete me
 public class LayoutEngine implements Pageable, Printable, Doc
 {
 	/**
@@ -96,7 +97,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	 * @param data Print Data
 	 * @param query query for parameter info
 	 */
-	public LayoutEngine(final MPrintFormat format, final PrintData data, final MQuery query, final PrintInfo info)
+	public LayoutEngine(final MPrintFormat format, final PrintData data, final MQuery query, final ArchiveInfo info)
 	{
 		this(format, data, query, info, null);
 	}	// LayoutEngine
@@ -109,7 +110,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	 * @param query query for parameter info
 	 * @param trxName
 	 */
-	public LayoutEngine(final MPrintFormat format, final PrintData data, final MQuery query, final PrintInfo info, final String trxName)
+	public LayoutEngine(final MPrintFormat format, final PrintData data, final MQuery query, final ArchiveInfo info, final String trxName)
 	{
 		m_TrxName = trxName;
 		log.info(format + " - " + data + " - " + query);
@@ -144,7 +145,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	/** Transaction name */
 	private String m_TrxName = null;
 	/** PrintInfo **/
-	private PrintInfo m_PrintInfo = null;
+	private ArchiveInfo m_PrintInfo = null;
 
 	/** Paper - default: standard portrait */
 	private CPaper m_paper;
@@ -483,12 +484,12 @@ public class LayoutEngine implements Pageable, Printable, Doc
 		// Page Background Image
 		Image image = null;
 		MPrintTableFormat tf = m_format.getTableFormat();
-		MTable table = MTable.get(getCtx(), getPrintInfo().getAD_Table_ID());
+		MTable table = MTable.get(getCtx(), getPrintInfo().getRecordRef().getAD_Table_ID());
 		if (table.getColumn("IsPrinted") != null && !table.isView())
 		{
 			String tableName = table.getTableName();
 			final String sql = "SELECT IsPrinted FROM " + tableName + " WHERE " + tableName + "_ID=?";
-			boolean isPrinted = "Y".equals(DB.getSQLValueStringEx(m_TrxName, sql, getPrintInfo().getRecord_ID()));
+			boolean isPrinted = "Y".equals(DB.getSQLValueStringEx(m_TrxName, sql, getPrintInfo().getRecordRef().getRecord_ID()));
 			if (isPrinted)
 			{
 				image = tf.getImageWaterMark();
@@ -2069,11 +2070,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 		return null;
 	}	// getStreamForBytes
 
-	/**
-	 *
-	 * @param PrintInfo info
-	 */
-	public void setPrintInfo(final PrintInfo info)
+	public void setPrintInfo(final ArchiveInfo info)
 	{
 		m_PrintInfo = info;
 	}
@@ -2082,7 +2079,7 @@ public class LayoutEngine implements Pageable, Printable, Doc
 	 *
 	 * @return PrintInfo
 	 */
-	public PrintInfo getPrintInfo()
+	public ArchiveInfo getPrintInfo()
 	{
 		return m_PrintInfo;
 	}
