@@ -150,7 +150,7 @@ public class DesadvLineSSCC18Generator
 		{
 
 			@Override
-			public void run(final String localTrxName) throws Exception
+			public void run(final String localTrxName)
 			{
 				final IContextAware context = trxManager.createThreadContextAware(contextInitial.getCtx());
 				setContext(context);
@@ -196,7 +196,7 @@ public class DesadvLineSSCC18Generator
 		return this;
 	}
 
-	private final IContextAware getContext()
+	private IContextAware getContext()
 	{
 		Check.assumeNotNull(_context, "_context not null");
 		return _context;
@@ -204,8 +204,6 @@ public class DesadvLineSSCC18Generator
 
 	/**
 	 * Sets if it shall also print the existing labels of an {@link I_EDI_DesadvLine} or only the newly generated ones.
-	 *
-	 * @param printExistingLabels
 	 */
 	public DesadvLineSSCC18Generator setPrintExistingLabels(final boolean printExistingLabels)
 	{
@@ -218,7 +216,7 @@ public class DesadvLineSSCC18Generator
 	 *
 	 * The SSCC18 code will be generated.
 	 */
-	private final I_EDI_DesadvLine_Pack generateDesadvLineSSCC(final I_EDI_DesadvLine desadvLine, final LUQtys luQtys)
+	private I_EDI_DesadvLine_Pack generateDesadvLineSSCC(final I_EDI_DesadvLine desadvLine, final LUQtys luQtys)
 	{
 		final IContextAware context = getContext();
 		final Properties ctx = context.getCtx();
@@ -233,17 +231,20 @@ public class DesadvLineSSCC18Generator
 		// Create SSCC record
 		final I_EDI_DesadvLine_Pack desadvLineSSCC = InterfaceWrapperHelper.create(ctx, I_EDI_DesadvLine_Pack.class, trxName);
 		desadvLineSSCC.setAD_Org_ID(desadvLine.getAD_Org_ID());
-		desadvLineSSCC.setEDI_DesadvLine(desadvLine);
+		desadvLineSSCC.setEDI_Desadv_ID(desadvLine.getEDI_Desadv_ID());
+		desadvLineSSCC.setEDI_DesadvLine_ID(desadvLine.getEDI_DesadvLine_ID());
 		desadvLineSSCC.setIPA_SSCC18(ipaSSCC18);
+		desadvLineSSCC.setC_UOM_ID(desadvLine.getC_UOM_ID());
 		desadvLineSSCC.setQtyCU(luQtys.getQtyCUsPerTU());
 		desadvLineSSCC.setQtyTU(luQtys.getQtyTUsPerLU().intValueExact());
 		desadvLineSSCC.setQtyCUsPerLU(luQtys.getQtyCUsPerLU());
+		desadvLineSSCC.setMovementQty(luQtys.getQtyCUsPerLU());
 		InterfaceWrapperHelper.save(desadvLineSSCC);
 
 		return desadvLineSSCC;
 	}
 
-	private final void enqueueToPrint(@NonNull final I_EDI_DesadvLine_Pack desadvLineSSCC)
+	private void enqueueToPrint(@NonNull final I_EDI_DesadvLine_Pack desadvLineSSCC)
 	{
 		desadvLineSSCC_IDs_ToPrint.add(desadvLineSSCC.getEDI_DesadvLine_Pack_ID());
 	}
