@@ -73,8 +73,8 @@ public class ManufacturingOrderDocumentReportAdvisor implements DocumentReportAd
 	{
 		final PPOrderId manufacturingOrderId = recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId);
 		final I_PP_Order manufacturingOrder = ppOrderBL.getById(manufacturingOrderId);
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(manufacturingOrder.getC_BPartner_ID());
-		final I_C_BPartner bpartner = util.getBPartnerById(bpartnerId);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(manufacturingOrder.getC_BPartner_ID());
+		final I_C_BPartner bpartner = bpartnerId == null? null: util.getBPartnerById(bpartnerId);
 
 		final DocTypeId docTypeId = extractDocTypeId(manufacturingOrder);
 		final I_C_DocType docType = util.getDocTypeById(docTypeId);
@@ -83,7 +83,8 @@ public class ManufacturingOrderDocumentReportAdvisor implements DocumentReportAd
 
 		final PrintFormatId printFormatId = CoalesceUtil.coalesceSuppliers(
 				() -> adPrintFormatToUseId,
-				() -> util.getBPartnerPrintFormats(bpartnerId).getPrintFormatIdByDocTypeId(docTypeId).orElse(null),
+				() -> bpartnerId == null ? null :
+						util.getBPartnerPrintFormats(bpartnerId).getPrintFormatIdByDocTypeId(docTypeId).orElse(null),
 				() -> PrintFormatId.ofRepoIdOrNull(docType.getAD_PrintFormat_ID()),
 				() -> util.getDefaultPrintFormats(clientId).getManufacturingOrderPrintFormatId());
 		if (printFormatId == null)
@@ -91,7 +92,7 @@ public class ManufacturingOrderDocumentReportAdvisor implements DocumentReportAd
 			throw new AdempiereException("@NotFound@ @AD_PrintFormat_ID@");
 		}
 
-		final Language language = util.getBPartnerLanguage(bpartner).orElse(null);
+		final Language language = bpartner == null? null : util.getBPartnerLanguage(bpartner).orElse(null);
 
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_PP_Order.Table_Name, manufacturingOrderId))

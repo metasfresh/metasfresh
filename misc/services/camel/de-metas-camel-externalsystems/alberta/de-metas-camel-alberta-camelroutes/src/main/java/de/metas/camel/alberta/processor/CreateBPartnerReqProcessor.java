@@ -36,6 +36,7 @@ import io.swagger.client.api.HospitalApi;
 import io.swagger.client.api.NursingHomeApi;
 import io.swagger.client.api.NursingServiceApi;
 import io.swagger.client.api.PayerApi;
+import io.swagger.client.api.PharmacyApi;
 import io.swagger.client.model.Doctor;
 import io.swagger.client.model.Hospital;
 import io.swagger.client.model.NursingHome;
@@ -44,6 +45,7 @@ import io.swagger.client.model.Patient;
 import io.swagger.client.model.PatientHospital;
 import io.swagger.client.model.PatientPayer;
 import io.swagger.client.model.Payer;
+import io.swagger.client.model.Pharmacy;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -93,6 +95,7 @@ public class CreateBPartnerReqProcessor implements Processor
 				.nursingService(getNursingServiceOrNull(connectionDetails, patient.getNursingServiceId()))
 				.hospital(getHospital(connectionDetails, patient.getHospital()))
 				.payer(getPayerOrNull(connectionDetails, patient.getPayer()))
+				.pharmacy(getPharmacyOrNull(connectionDetails, patient.getPharmacyId()))
 				.build();
 
 		final BPartnerUpsertRequestProducer.BPartnerRequestProducerResult result = bPartnerUpsertRequestProducer.run();
@@ -224,6 +227,28 @@ public class CreateBPartnerReqProcessor implements Processor
 		}
 
 		return payer;
+	}
+
+	@Nullable
+	private Pharmacy getPharmacyOrNull(
+			@NonNull final AlbertaConnectionDetails albertaConnectionDetails,
+			@Nullable final String pharmacyId) throws ApiException
+	{
+		if (EmptyUtil.isBlank(pharmacyId))
+		{
+			return null;
+		}
+		final var apiClient = new ApiClient().setBasePath(albertaConnectionDetails.getBasePath());
+		final PharmacyApi pharmacyApi = new PharmacyApi(apiClient);
+
+		final Pharmacy pharmacy = pharmacyApi.getPharmacy(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), pharmacyId);
+
+		if (pharmacy == null)
+		{
+			throw new RuntimeException("No info returned for pharmacy: " + pharmacyId);
+		}
+
+		return pharmacy;
 	}
 
 }
