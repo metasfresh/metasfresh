@@ -45,6 +45,7 @@ import {
   RESET_PRINTING_OPTIONS,
   TOGGLE_PRINTING_OPTION,
 } from '../constants/ActionTypes';
+import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
@@ -498,6 +499,35 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
 }
 
 /*
+ * @method createSearchWindow
+ * @summary - special function that is used to get the window view information for the search and opens a modal with that view
+ *            this is a hacky way of opening the window as this wasn't existing for the SEARCH type (check how `NEW` was opening)
+ * param {object}
+ */
+export function createSearchWindow({
+  windowId: windowType,
+  docId,
+  tabId,
+  rowId,
+  isModal,
+  dispatch,
+}) {
+  dispatch(
+    createView({
+      windowId: windowType,
+      viewType: 'grid',
+      refDocumentId: docId,
+      refTabId: tabId,
+      refRowIds: [rowId],
+      isModal,
+    })
+  ).then(({ windowId, viewId }) => {
+    dispatch(openRawModal(windowId, viewId));
+  });
+  dispatch(getWindowBreadcrumb(windowType));
+}
+
+/*
  * Main method to generate window
  */
 export function createWindow({
@@ -512,6 +542,21 @@ export function createWindow({
   let disconnectedData = null;
   let documentId = docId || 'NEW';
   return (dispatch) => {
+    if (documentId === 'SEARCH') {
+      // use specific function for search window creation
+      createSearchWindow({
+        windowId: windowType,
+        docId,
+        tabId,
+        rowId,
+        isModal,
+        isAdvanced,
+        disconnected,
+        dispatch,
+      });
+      return false;
+    }
+
     if (documentId.toLowerCase() === 'new') {
       documentId = 'NEW';
     }

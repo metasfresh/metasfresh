@@ -329,6 +329,8 @@ class WidgetRenderer extends PureComponent {
             forceHeight={forceHeight}
             newRecordCaption={fields[0].newRecordCaption}
             newRecordWindowId={fields[0].newRecordWindowId}
+            advSearchCaption={fields[0].advSearchCaption} // Search Assistant entry in the  Lookup
+            advSearchWindowId={fields[0].advSearchWindowId}
             listenOnKeys={listenOnKeys}
             listenOnKeysFalse={listenOnKeysFalse}
             closeTableField={closeTableField}
