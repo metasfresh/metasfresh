@@ -42,11 +42,9 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
  * #L%
  */
 
-@WebFilter({ UserAuthTokenFilter.URL_PATTERN_API })
+@WebFilter({ MetasfreshRestAPIConstants.URL_PATTERN_API })
 public class UserAuthTokenFilter implements Filter
 {
-	static final String URL_PATTERN_API = MetasfreshRestAPIConstants.ENDPOINT_API + "/*";
-
 	public static final String HEADER_Authorization = "Authorization";
 
 	private final UserAuthTokenService userAuthTokenService;
