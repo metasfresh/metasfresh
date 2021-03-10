@@ -311,7 +311,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		}
 	}
 
-	private static final List<I_AD_Table> retrieveChildTablesForParentColumn(final String columnName)
+	private final List<I_AD_Table> retrieveChildTablesForParentColumn(final String columnName)
 	{
 		final String whereClause = " EXISTS (SELECT 1 FROM AD_Column c WHERE c.ColumnName = ? AND c.ad_table_id = ad_table.ad_table_id  AND c.IsParent = 'Y')"
 				+ " AND NOT EXISTS (SELECT 1 FROM AD_Column c WHERE c.ColumnName = ? AND c.ad_table_id = ad_table.ad_table_id AND c.ColumnName = ?)"
@@ -332,7 +332,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	 * @param tableName
 	 * @return true if the table can be copied
 	 */
-	private static final boolean isCopyTable(final String tableName)
+	protected boolean isCopyTable(final String tableName)
 	{
 		final String upperTableName = tableName.toUpperCase();
 		boolean isCopyTable = !upperTableName.endsWith("_ACCT") // acct table
