@@ -1,14 +1,14 @@
 package de.metas.product;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
 import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.GeneralCopyRecordSupport;
+import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Allergen;
 import org.compiere.model.I_M_Product_Nutrition;
 import org.compiere.model.PO;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
 /*
  * #%L
@@ -40,7 +40,14 @@ public class ProductPOCopyRecordSupport extends GeneralCopyRecordSupport
 		return super.getSuggestedChildren(po, suggestedChildren)
 				.stream()
 				.filter(childTableInfo -> I_M_Product_Nutrition.Table_Name.equals(childTableInfo.getTableName())
-						|| I_M_Product_Allergen.Table_Name.equals(childTableInfo.getTableName()))
+						|| I_M_Product_Allergen.Table_Name.equals(childTableInfo.getTableName())
+						|| I_M_Product_Acct.Table_Name.equals(childTableInfo.getTableName()))
 				.collect(ImmutableList.toImmutableList());
+	}
+
+
+	protected boolean isCopyTable(final String tableName)
+	{
+		return tableName.equals("M_Product_Acct") || super.isCopyTable(tableName);
 	}
 }
