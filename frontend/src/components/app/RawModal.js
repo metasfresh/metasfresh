@@ -206,7 +206,10 @@ class RawModal extends Component {
 
     if (type === 'BACK') {
       await dispatch(
-        openRawModal(rawModal.parentWindowId, rawModal.parentViewId)
+        openRawModal({
+          windowId: rawModal.parentWindowId,
+          viewId: rawModal.parentViewId,
+        })
       );
     } else {
       await this.removeModal();

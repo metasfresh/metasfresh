@@ -250,6 +250,9 @@ export class RawLookup extends Component {
       filterWidget,
       parameterName,
       mainProperty,
+      windowType,
+      dataId,
+      item,
     } = this.props;
 
     this.handleBlur();
@@ -261,6 +264,9 @@ export class RawLookup extends Component {
         modalType: 'window',
         dataId: 'SEARCH',
         triggerField: filterWidget ? parameterName : mainProperty[0].field,
+        parentWindowId: windowType,
+        parentDocumentId: dataId,
+        parentFieldId: item.field,
       })
     );
   };

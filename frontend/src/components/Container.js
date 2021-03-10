@@ -150,6 +150,10 @@ class Container extends PureComponent {
               windowId={rawModal.windowId}
               viewId={rawModal.viewId}
               masterDocumentList={masterDocumentList}
+              parentWindowId={modal.parentWindowId} // parentWindowId, parentDocumentId, parentFieldId were added to
+              parentDocumentId={modal.parentDocumentId} // support the Search feature
+              parentFieldId={modal.parentFieldId}
+              featureType={modal.dataId} // 'SEARCH'
             >
               <div className="document-lists-wrapper">
                 <DocumentList

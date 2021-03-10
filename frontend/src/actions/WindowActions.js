@@ -93,12 +93,12 @@ export function toggleOverlay(data) {
   };
 }
 
-export function openRawModal(windowId, viewId, profileId) {
+export function openRawModal({ windowId, viewId, profileId }) {
   return {
     type: OPEN_RAW_MODAL,
-    windowId: windowId,
-    viewId: viewId,
-    profileId: profileId,
+    windowId,
+    viewId,
+    profileId,
   };
 }
 
@@ -333,6 +333,9 @@ export function openModal({
   childViewId = null,
   childViewSelectedIds = null,
   staticModalType = null,
+  parentWindowId = null,
+  parentDocumentId = null,
+  parentFieldId = null,
 }) {
   const isMobile =
     currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
@@ -359,6 +362,9 @@ export function openModal({
       parentViewSelectedIds,
       childViewId,
       childViewSelectedIds,
+      parentWindowId,
+      parentDocumentId,
+      parentFieldId,
     },
   };
 }
@@ -522,7 +528,7 @@ export function createSearchWindow({
       isModal,
     })
   ).then(({ windowId, viewId }) => {
-    dispatch(openRawModal(windowId, viewId));
+    dispatch(openRawModal({ windowId, viewId }));
   });
 }
 
@@ -1249,7 +1255,9 @@ export function handleProcessResponse(response, type, id, parentId) {
             }
 
             if (targetTab === 'SAME_TAB_OVERLAY') {
-              await dispatch(openRawModal(windowId, viewId, action.profileId));
+              await dispatch(
+                openRawModal({ windowId, viewId, profileId: action.profileId })
+              );
             }
             break;
           }
