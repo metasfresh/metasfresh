@@ -244,8 +244,15 @@ class RawModal extends Component {
    * @summary ToDo: Describe the method.
    */
   renderButtons = () => {
-    const { modalVisible, rawModal } = this.props;
+    const { modalVisible, rawModal, windowId } = this.props;
     let { allowedCloseActions } = this.props;
+
+    // This is hardcoded for the Search Window feature (injecting cancel button)
+    if (windowId === '541045' && allowedCloseActions) {
+      allowedCloseActions.push('CANCEL');
+    }
+    allowedCloseActions = [...new Set(allowedCloseActions)];
+
     const rawModalVisible = rawModal.visible || false;
     const buttonsArray = [];
 

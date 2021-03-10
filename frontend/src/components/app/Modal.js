@@ -522,6 +522,7 @@ class Modal extends Component {
       staticModalType,
       printingOptions,
     } = this.props;
+
     const { okButtonCaption: printBtnCaption } = printingOptions;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
 

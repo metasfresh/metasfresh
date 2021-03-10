@@ -524,7 +524,6 @@ export function createSearchWindow({
   ).then(({ windowId, viewId }) => {
     dispatch(openRawModal(windowId, viewId));
   });
-  dispatch(getWindowBreadcrumb(windowType));
 }
 
 /*
