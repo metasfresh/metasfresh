@@ -40,9 +40,9 @@ public class OrgChangeService
 	public void moveBPartnerToOrg(final OrgChangeParameters orgChangeParameters)
 	{
 
-		final BPartnerId newBPartnerId = repo.retrieveOrCloneBPartner(orgChangeParameters);
+		final BPartnerId counterpartBPartnerId = repo.retrieveOrCloneBPartner(orgChangeParameters);
 
-	//	repo.cloneLocations(orgChangeParameters, newBPartnerId);
+		repo.retrieveOrCloneLocations(orgChangeParameters, counterpartBPartnerId);
 
 	}
 

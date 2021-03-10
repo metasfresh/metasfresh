@@ -29,6 +29,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 @Value
@@ -42,5 +43,4 @@ public class OrgChangeParameters
 	@NonNull LocalDate startDate;
 
 	@NonNull ProductId membershipProductId;
-
 }
