@@ -67,10 +67,10 @@ public final class DocumentFilter
 		return builder()
 				.setFilterId(filterId)
 				.addParameter(DocumentFilterParam.builder()
-						.setFieldName(fieldName)
-						.setOperator(operator)
-						.setValue(value)
-						.build())
+									  .setFieldName(fieldName)
+									  .setOperator(operator)
+									  .setValue(value)
+									  .build())
 				.build();
 	}
 
@@ -81,10 +81,10 @@ public final class DocumentFilter
 		return builder()
 				.setFilterId(filterId)
 				.addParameter(DocumentFilterParam.builder()
-						.setFieldName(fieldName)
-						.setOperator(Operator.IN_ARRAY)
-						.setValue(ImmutableList.copyOf(values))
-						.build())
+									  .setFieldName(fieldName)
+									  .setOperator(Operator.IN_ARRAY)
+									  .setValue(ImmutableList.copyOf(values))
+									  .build())
 				.build();
 	}
 
@@ -138,7 +138,9 @@ public final class DocumentFilter
 	@Nullable
 	public String getCaption(@Nullable final String adLanguage)
 	{
-		return caption != null ? caption.translate(adLanguage) : null;
+		return caption != null
+				? (adLanguage != null ? caption.translate(adLanguage) : caption.getDefaultValue())
+				: null;
 	}
 
 	public boolean hasParameters()
@@ -202,7 +204,8 @@ public final class DocumentFilter
 		return param.getValueAsInt(defaultValue);
 	}
 
-	public Boolean getParameterValueAsBoolean(@NonNull final String parameterName, final Boolean defaultValue)
+	@Nullable
+	public Boolean getParameterValueAsBoolean(@NonNull final String parameterName, @Nullable final Boolean defaultValue)
 	{
 		final DocumentFilterParam param = getParameterOrNull(parameterName);
 		if (param == null)
@@ -221,16 +224,18 @@ public final class DocumentFilter
 			return defaultValue;
 		}
 
+		//noinspection ConstantConditions
 		return param.getValueAsBoolean(defaultValue);
 	}
 
+	@Nullable
 	public LocalDate getParameterValueAsLocalDateOrNull(@NonNull final String parameterName)
 	{
-		final LocalDate defaultValue = null;
-		return getParameterValueAsLocalDateOr(parameterName, defaultValue);
+		return getParameterValueAsLocalDateOr(parameterName, null);
 	}
 
-	public LocalDate getParameterValueAsLocalDateOr(@NonNull final String parameterName, final LocalDate defaultValue)
+	@Nullable
+	public LocalDate getParameterValueAsLocalDateOr(@NonNull final String parameterName, @Nullable final LocalDate defaultValue)
 	{
 		final DocumentFilterParam param = getParameterOrNull(parameterName);
 		if (param == null)
@@ -279,6 +284,7 @@ public final class DocumentFilter
 		private ITranslatableString caption = TranslatableStrings.empty();
 		private boolean facetFilter;
 
+		@Nullable
 		private ArrayList<DocumentFilterParam> parameters;
 		private Set<String> internalParameterNames;
 
