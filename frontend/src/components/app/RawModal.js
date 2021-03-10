@@ -175,13 +175,24 @@ class RawModal extends Component {
   };
 
   /**
+   * @method handleSearchDone
+   * @summary Method executed only for the SEARCH type modal window
+   */
+  handleSearchDone = (props) => {
+    console.log('POST on search DONE');
+    console.log(props)
+  };
+
+  /**
    * @async
    * @method handleClose
    * @summary ToDo: Describe the method.
    * @param {*} type
    */
   handleClose = async (type) => {
-    const { dispatch, viewId, windowId, requests, rawModal } = this.props;
+    const { dispatch, viewId, windowId, requests, rawModal, featureType } = this.props;
+
+    featureType === 'SEARCH' && type === 'DONE' && this.handleSearchDone(this.props);
 
     if (requests.length > 0) {
       const success = await new Promise((resolve) => {
@@ -252,9 +263,8 @@ class RawModal extends Component {
 
     // This is hardcoded for the Search Window feature (injecting cancel button)
     if (windowId === '541045' && allowedCloseActions) {
-      allowedCloseActions.push('CANCEL');
+      !allowedCloseActions.includes('CANCEL') && allowedCloseActions.push('CANCEL');
     }
-    allowedCloseActions = [...new Set(allowedCloseActions)];
 
     const rawModalVisible = rawModal.visible || false;
     const buttonsArray = [];
