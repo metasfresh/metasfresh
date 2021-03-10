@@ -21,17 +21,6 @@ DECLARE
     requiredAttributeInstances        character varying[];
 BEGIN
     --
-    -- Fetch required attributes
-    IF (COALESCE(p_M_AttributeSetInstance_ID, 0) > 0) THEN
-        SELECT COALESCE(asi.attributeinstances, ARRAY []::character varying[])
-        INTO requiredAttributeInstances
-        FROM M_AttributeSetInstance_ID_AttributeInstances asi
-        WHERE asi.m_attributesetinstance_id = p_M_AttributeSetInstance_ID;
-    ELSE
-        requiredAttributeInstances := ARRAY []::character varying[];
-    END IF;
-
-    --
     -- Iterate C_BPartner_Product table
     FOR ProductNo, ProductName, bpp_asi_id, C_BPartner_Product_ID IN
         (SELECT DISTINCT ON (bpp.M_AttributeSetInstance_ID, bpp.ProductNo, bpp.ProductName) bpp.ProductNo,
@@ -89,7 +78,7 @@ $BODY$
 ;
 
 COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(numeric, numeric, numeric)
-    IS 'This function returns a C_BPartner_Product record with a matching matching given product-Id, bpartner-Id and p_M_AttributeSetInstance_ID.
+    IS 'This function returns a C_BPartner_Product record with a matching given product-Id, bpartner-Id and p_M_AttributeSetInstance_ID.
 For the attribute-set-instance-id to match, its array as returned by the view M_AttributeSetInstance_ID_AttributeInstances
 needs to be included in the given p_M_AttributeSetInstance_ID''s M_AttributeSetInstance_ID_AttributeInstances-array.
 C_BPartner_Product records that have no M_AttributeSetInstance_ID match every p_M_AttributeSetInstance_ID.
