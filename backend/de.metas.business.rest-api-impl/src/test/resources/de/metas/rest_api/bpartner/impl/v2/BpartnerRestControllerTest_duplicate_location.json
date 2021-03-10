@@ -14,7 +14,7 @@
                         }
                     },
                       {
-                          "locationIdentifier": "ext-bpartnerLocation.externalId",
+                          "locationIdentifier": "gln-123456",
                           "location": {
                             "active": false,
                             "address2": "address2_extId"

@@ -9,7 +9,7 @@
           "locations": {
             "requestItems": [
                 {
-                    "locationIdentifier": "ext-123",
+                    "locationIdentifier": "gln-123456",
                     "location": {
                       "billToDefault": true,
                       "postal": "5040",

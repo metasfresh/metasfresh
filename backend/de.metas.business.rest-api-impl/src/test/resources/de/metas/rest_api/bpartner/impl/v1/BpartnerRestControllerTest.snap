@@ -57,8 +57,6 @@ BpartnerRestControllerTest.createOrUpdateBPartner_create=[
         "m_name": "Deutsch",
         "m_AD_Language": "de_DE",
         "m_locale": "de_DE",
-        "_decimalPoint": false,
-        "_dateFormatPattern": "dd.MM.yyyy",
         "_mediaSize": {
           "x": 210000,
           "y": 297000,
@@ -2066,8 +2064,6 @@ de.metas.rest_api.bpartner.impl.v1.BpartnerRestControllerTest.createOrUpdateBPar
         "m_name": "Deutsch",
         "m_AD_Language": "de_DE",
         "m_locale": "de_DE",
-        "_decimalPoint": false,
-        "_dateFormatPattern": "dd.MM.yyyy",
         "_mediaSize": {
           "x": 210000,
           "y": 297000,
