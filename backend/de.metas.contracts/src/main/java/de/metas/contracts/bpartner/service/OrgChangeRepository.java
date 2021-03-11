@@ -62,6 +62,8 @@ public class OrgChangeRepository
 	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	final IProductDAO productDAO = Services.get(IProductDAO.class);
 
+	//TODO Try to use a domain object instead of the service
+
 	public boolean hasMembershipSubscriptions(final BPartnerId bPartnerId)
 	{
 		return createMembershipRunningSubscriptionQuery(bPartnerId).anyMatch();
