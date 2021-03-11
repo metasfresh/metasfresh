@@ -60,13 +60,6 @@ public class JSONDocumentFilter
 				.collect(DocumentFilterList.toDocumentFilterList());
 	}
 
-	public static DocumentFilter unwrap(
-			@NonNull final JSONDocumentFilter jsonFilter,
-			@NonNull final DocumentFilterDescriptorsProvider filterDescriptorProvider)
-	{
-		return filterDescriptorProvider.unwrap(jsonFilter);
-	}
-
 	public static DocumentFilter unwrapAsGenericFilter(final JSONDocumentFilter jsonFilter)
 	{
 		return DocumentFilter.builder()
