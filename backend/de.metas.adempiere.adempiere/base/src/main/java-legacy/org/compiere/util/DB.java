@@ -2187,7 +2187,7 @@ public class DB
 	/**
 	 * Create persistent selection in T_Selection table
 	 */
-	public void createT_Selection(@NonNull final PInstanceId pinstanceId, final Iterable<Integer> selection, final String trxName)
+	public void createT_Selection(@NonNull final PInstanceId pinstanceId, final Iterable<Integer> selection, @Nullable final String trxName)
 	{
 		final int pinstanceRepoId = pinstanceId.getRepoId();
 
@@ -2241,7 +2241,7 @@ public class DB
 
 	public void createT_Selection(
 			@NonNull final PInstanceId selectionId, 
-			@NonNull final Set<? extends RepoIdAware> selection, 
+			@NonNull final Collection<? extends RepoIdAware> selection,
 			@Nullable final String trxName)
 	{
 		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
