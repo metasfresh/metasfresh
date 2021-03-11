@@ -112,7 +112,8 @@ public interface IBPartnerDAO extends ISingletonService
 	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, GLN gln);
-
+	@NonNull
+	BPartnerLocationId getBPartnerLocationIdByRepoId(final int repoId);
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
 
