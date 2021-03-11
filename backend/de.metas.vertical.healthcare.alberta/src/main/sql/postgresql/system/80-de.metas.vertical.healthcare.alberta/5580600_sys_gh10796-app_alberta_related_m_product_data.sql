@@ -2690,3 +2690,8 @@ INSERT INTO t_alter_column values('m_product_albertatherapy','Therapy','VARCHAR(
 /* DDL */ CREATE TABLE public.M_Product_AlbertaBillableTherapy (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, M_Product_AlbertaBillableTherapy_ID NUMERIC(10) NOT NULL, M_Product_ID NUMERIC(10), Therapy VARCHAR(50) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, Value VARCHAR(2), CONSTRAINT M_Product_AlbertaBillableTherapy_Key PRIMARY KEY (M_Product_AlbertaBillableTherapy_ID), CONSTRAINT MProduct_MProductAlbertaBillableTherapy FOREIGN KEY (M_Product_ID) REFERENCES public.M_Product DEFERRABLE INITIALLY DEFERRED)
 ;
 
+-- 2021-03-11T06:06:31.796Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('M_Product','ALTER TABLE public.M_Product ADD COLUMN ManufacturerArticleNumber VARCHAR(125)')
+;
+
