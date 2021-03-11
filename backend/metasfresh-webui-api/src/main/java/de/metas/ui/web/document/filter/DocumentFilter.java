@@ -89,6 +89,29 @@ public final class DocumentFilter
 				.build();
 	}
 
+	public static DocumentFilter equalsFilter(
+			@NonNull final String fieldName,
+			@Nullable final Object value)
+	{
+		final String filterId = fieldName + "=" + value;
+		return equalsFilter(filterId, fieldName, value);
+	}
+
+	public static DocumentFilter equalsFilter(
+			@NonNull final String filterId,
+			@NonNull final String fieldName,
+			@Nullable final Object value)
+	{
+		return builder()
+				.filterId(filterId)
+				.parameter(DocumentFilterParam.builder()
+								   .setFieldName(fieldName)
+								   .setOperator(Operator.EQUAL)
+								   .setValue(value)
+								   .build())
+				.build();
+	}
+
 	@Getter
 	private final String filterId;
 	private final ITranslatableString caption;
