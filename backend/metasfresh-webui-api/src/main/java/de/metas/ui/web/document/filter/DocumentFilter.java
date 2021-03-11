@@ -9,20 +9,19 @@ import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.IntFunction;
 
 /*
@@ -57,34 +56,36 @@ import java.util.function.IntFunction;
 @ToString
 public final class DocumentFilter
 {
-	public static Builder builder()
-	{
-		return new Builder();
-	}
-
-	public static DocumentFilter singleParameterFilter(final String filterId, final String fieldName, final Operator operator, final Object value)
+	public static DocumentFilter singleParameterFilter(
+			@NonNull final String filterId,
+			final String fieldName,
+			final Operator operator,
+			final Object value)
 	{
 		return builder()
-				.setFilterId(filterId)
-				.addParameter(DocumentFilterParam.builder()
-									  .setFieldName(fieldName)
-									  .setOperator(operator)
-									  .setValue(value)
-									  .build())
+				.filterId(filterId)
+				.parameter(DocumentFilterParam.builder()
+								   .setFieldName(fieldName)
+								   .setOperator(operator)
+								   .setValue(value)
+								   .build())
 				.build();
 	}
 
-	public static DocumentFilter inArrayFilter(@NonNull final String filterId, @NonNull final String fieldName, @NonNull final Collection<Integer> values)
+	public static DocumentFilter inArrayFilter(
+			@NonNull final String filterId,
+			@NonNull final String fieldName,
+			@NonNull final Collection<Integer> values)
 	{
 		Check.assumeNotEmpty(values, "values is not empty");
 
 		return builder()
-				.setFilterId(filterId)
-				.addParameter(DocumentFilterParam.builder()
-									  .setFieldName(fieldName)
-									  .setOperator(Operator.IN_ARRAY)
-									  .setValue(ImmutableList.copyOf(values))
-									  .build())
+				.filterId(filterId)
+				.parameter(DocumentFilterParam.builder()
+								   .setFieldName(fieldName)
+								   .setOperator(Operator.IN_ARRAY)
+								   .setValue(ImmutableList.copyOf(values))
+								   .build())
 				.build();
 	}
 
@@ -98,24 +99,26 @@ public final class DocumentFilter
 	@Getter
 	private final boolean facetFilter;
 
-	private DocumentFilter(final Builder builder)
+	@Builder(toBuilder = true)
+	private DocumentFilter(
+			@NonNull final String filterId,
+			@Nullable final ITranslatableString caption,
+			final boolean facetFilter,
+			@NonNull @Singular final ImmutableList<DocumentFilterParam> parameters,
+			@NonNull @Singular final ImmutableSet<String> internalParameterNames)
 	{
-		filterId = builder.filterId;
 		Check.assumeNotEmpty(filterId, "filterId is not empty");
 
-		caption = builder.caption;
+		this.filterId = filterId;
+		this.caption = caption != null ? caption : TranslatableStrings.empty();
+		this.facetFilter = facetFilter;
 
-		facetFilter = builder.facetFilter;
-
-		parameters = builder.parameters != null
-				? ImmutableList.copyOf(builder.parameters)
-				: ImmutableList.of();
-		parametersByName = parameters.stream()
+		this.parameters = parameters != null ? ImmutableList.copyOf(parameters) : ImmutableList.of();
+		this.parametersByName = this.parameters.stream()
 				.filter(parameter -> !parameter.isSqlFilter())
 				.collect(GuavaCollectors.toImmutableMapByKey(DocumentFilterParam::getFieldName));
-		internalParameterNames = builder.internalParameterNames != null
-				? ImmutableSet.copyOf(builder.internalParameterNames)
-				: ImmutableSet.of();
+
+		this.internalParameterNames = internalParameterNames != null ? ImmutableSet.copyOf(internalParameterNames) : ImmutableSet.of();
 	}
 
 	private DocumentFilter(@NonNull final DocumentFilter from, @NonNull final String filterId)
@@ -278,46 +281,26 @@ public final class DocumentFilter
 	//
 	//
 
-	public static final class Builder
+	public static final class DocumentFilterBuilder
 	{
-		private String filterId;
-		private ITranslatableString caption = TranslatableStrings.empty();
-		private boolean facetFilter;
-
-		@Nullable
-		private ArrayList<DocumentFilterParam> parameters;
-		private Set<String> internalParameterNames;
-
-		private Builder()
+		public DocumentFilterBuilder setFilterId(final String filterId)
 		{
+			return filterId(filterId);
 		}
 
-		public DocumentFilter build()
+		public DocumentFilterBuilder setCaption(@NonNull final ITranslatableString caption)
 		{
-			return new DocumentFilter(this);
+			return caption(caption);
 		}
 
-		public Builder setFilterId(final String filterId)
+		public DocumentFilterBuilder setCaption(@NonNull final String caption)
 		{
-			this.filterId = filterId;
-			return this;
+			return caption(TranslatableStrings.constant(caption));
 		}
 
-		public Builder setCaption(@NonNull final ITranslatableString caption)
+		public DocumentFilterBuilder setFacetFilter(final boolean facetFilter)
 		{
-			this.caption = caption;
-			return this;
-		}
-
-		public Builder setCaption(@NonNull final String caption)
-		{
-			return setCaption(TranslatableStrings.constant(caption));
-		}
-
-		public Builder setFacetFilter(final boolean facetFilter)
-		{
-			this.facetFilter = facetFilter;
-			return this;
+			return facetFilter(facetFilter);
 		}
 
 		public boolean hasParameters()
@@ -326,46 +309,21 @@ public final class DocumentFilter
 					|| !Check.isEmpty(internalParameterNames);
 		}
 
-		public Builder setParameters(@NonNull final List<DocumentFilterParam> parameters)
+		public DocumentFilterBuilder setParameters(@NonNull final List<DocumentFilterParam> parameters)
 		{
-			if (!parameters.isEmpty())
-			{
-				this.parameters = new ArrayList<>(parameters);
-			}
-			else
-			{
-				this.parameters = null;
-			}
-
-			return this;
+			return parameters(parameters);
 		}
 
-		public Builder addParameter(@NonNull final DocumentFilterParam parameter)
+		public DocumentFilterBuilder addParameter(@NonNull final DocumentFilterParam parameter)
 		{
-			if (parameters == null)
-			{
-				parameters = new ArrayList<>();
-			}
-
-			parameters.add(parameter);
-
-			return this;
+			return parameter(parameter);
 		}
 
-		public Builder addInternalParameter(@NonNull final DocumentFilterParam parameter)
+		public DocumentFilterBuilder addInternalParameter(@NonNull final DocumentFilterParam parameter)
 		{
-			addParameter(parameter);
-			addInternalParameterName(parameter.getFieldName());
+			parameter(parameter);
+			internalParameterName(parameter.getFieldName());
 			return this;
-		}
-
-		private void addInternalParameterName(final String parameterName)
-		{
-			if (internalParameterNames == null)
-			{
-				internalParameterNames = new HashSet<>();
-			}
-			internalParameterNames.add(parameterName);
 		}
 	}
 }
