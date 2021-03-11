@@ -180,7 +180,7 @@ class RawModal extends Component {
    */
   handleSearchDone = (props) => {
     console.log('POST on search DONE');
-    console.log(props)
+    console.log(props);
   };
 
   /**
@@ -190,9 +190,18 @@ class RawModal extends Component {
    * @param {*} type
    */
   handleClose = async (type) => {
-    const { dispatch, viewId, windowId, requests, rawModal, featureType } = this.props;
+    const {
+      dispatch,
+      viewId,
+      windowId,
+      requests,
+      rawModal,
+      featureType,
+    } = this.props;
 
-    featureType === 'SEARCH' && type === 'DONE' && this.handleSearchDone(this.props);
+    featureType === 'SEARCH' &&
+      type === 'DONE' &&
+      this.handleSearchDone(this.props);
 
     if (requests.length > 0) {
       const success = await new Promise((resolve) => {
@@ -263,7 +272,8 @@ class RawModal extends Component {
 
     // This is hardcoded for the Search Window feature (injecting cancel button)
     if (windowId === '541045' && allowedCloseActions) {
-      !allowedCloseActions.includes('CANCEL') && allowedCloseActions.unshift('CANCEL');
+      !allowedCloseActions.includes('CANCEL') &&
+        allowedCloseActions.unshift('CANCEL');
     }
 
     const rawModalVisible = rawModal.visible || false;
@@ -432,6 +442,7 @@ RawModal.propTypes = {
   masterDocumentList: PropTypes.any,
   children: PropTypes.node,
   closeCallback: PropTypes.func,
+  featureType: PropTypes.string,
 };
 
 /**

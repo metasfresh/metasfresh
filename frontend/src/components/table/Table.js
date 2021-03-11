@@ -100,7 +100,13 @@ export default class Table extends PureComponent {
   };
 
   handleClick = (e, item) => {
-    const { keyProperty, selected, onSelect, onDeselect, featureType } = this.props;
+    const {
+      keyProperty,
+      selected,
+      onSelect,
+      onDeselect,
+      featureType,
+    } = this.props;
     const disableMultiSel = featureType === 'SEARCH' ? true : false;
     const id = item[keyProperty];
 
@@ -113,7 +119,7 @@ export default class Table extends PureComponent {
       if (selectMore || isMobileOrTablet) {
         if (isSelected) {
           onDeselect(id);
-        } else {  
+        } else {
           // selection with [CTRL + click] happens here
           let newSelectionItems =
             selected && !selected.includes(id) ? [...selected, id] : [id];

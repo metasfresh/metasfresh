@@ -93,12 +93,13 @@ export function toggleOverlay(data) {
   };
 }
 
-export function openRawModal({ windowId, viewId, profileId }) {
+export function openRawModal({ windowId, viewId, profileId, title }) {
   return {
     type: OPEN_RAW_MODAL,
     windowId,
     viewId,
     profileId,
+    title,
   };
 }
 
@@ -517,6 +518,7 @@ export function createSearchWindow({
   rowId,
   isModal,
   dispatch,
+  title,
 }) {
   dispatch(
     createView({
@@ -528,7 +530,7 @@ export function createSearchWindow({
       isModal,
     })
   ).then(({ windowId, viewId }) => {
-    dispatch(openRawModal({ windowId, viewId }));
+    dispatch(openRawModal({ windowId, viewId, title }));
   });
 }
 
@@ -543,6 +545,7 @@ export function createWindow({
   isModal,
   isAdvanced,
   disconnected,
+  title,
 }) {
   let disconnectedData = null;
   let documentId = docId || 'NEW';
@@ -558,6 +561,7 @@ export function createWindow({
         isAdvanced,
         disconnected,
         dispatch,
+        title,
       });
       return false;
     }

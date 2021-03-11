@@ -161,7 +161,9 @@ class Modal extends Component {
       childViewSelectedIds,
       parentViewId,
       viewDocumentIds,
+      title,
     } = this.props;
+
     let request = null;
 
     switch (modalType) {
@@ -203,6 +205,7 @@ class Modal extends Component {
               rowId,
               isModal: true,
               isAdvanced,
+              title,
             })
           );
         } catch (error) {
@@ -822,6 +825,7 @@ Modal.propTypes = {
   viewDocumentIds: PropTypes.array,
   printBtnCaption: PropTypes.string,
   printingOptions: PropTypes.object,
+  title: PropTypes.string,
 };
 
 const mapStateToProps = (state, props) => {
