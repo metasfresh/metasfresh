@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
@@ -95,7 +96,9 @@ public class DesadvBL implements IDesadvBL
 {
 	private static final AdMessageKey MSG_EDI_DESADV_RefuseSending = AdMessageKey.of("EDI_DESADV_RefuseSending");
 
-	/** Process used to print the {@link I_EDI_DesadvLine_Pack}s labels */
+	/**
+	 * Process used to print the {@link I_EDI_DesadvLine_Pack}s labels
+	 */
 	private static final String AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print = "EDI_DesadvLine_SSCC_Print";
 
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -293,10 +296,13 @@ public class DesadvBL implements IDesadvBL
 
 			desadv.setHandOver_Partner_ID(order.getHandOver_Partner_ID());
 			desadv.setHandOver_Location_ID(order.getHandOver_Location_ID());
-			desadv.setDropShip_BPartner_ID(order.getDropShip_BPartner_ID());
-			desadv.setDropShip_Location_ID(order.getDropShip_Location_ID());
+			
+			// the DESADV recipient might need an explicitly set dropship partner&location, even if it is the same as the buyer's one
+			desadv.setDropShip_BPartner_ID(CoalesceUtil.firstGreaterThanZero(order.getDropShip_BPartner_ID(), order.getC_BPartner_ID()));
+			desadv.setDropShip_Location_ID(CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()));
 
 			desadv.setBill_Location_ID(BPartnerLocationId.toRepoId(orderBL.getBillToLocationIdOrNull(order)));
+
 			// note: the minimal acceptable fulfillment is currently set by a model interceptor
 			InterfaceWrapperHelper.save(desadv);
 		}
