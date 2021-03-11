@@ -143,8 +143,7 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 		// Grouping row
 		if (rowBuilder.isRootRow())
 		{
-			final LookupValue productLV = rowBuilder.getFieldValueAsLookupValue(I_M_Packageable_V.COLUMNNAME_M_Product_ID);
-			return productLV;
+			return rowBuilder.getFieldValueAsLookupValue(I_M_Packageable_V.COLUMNNAME_M_Product_ID);
 		}
 		// Detail/included row
 		else
