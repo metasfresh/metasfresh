@@ -1,17 +1,8 @@
-package de.metas.ui.web.document.filter.provider;
-
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
-import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,16 +20,26 @@ import java.util.Collection;
  * #L%
  */
 
-public interface DocumentFilterDescriptorsProviderFactory
-{
-	@Nullable
-	DocumentFilterDescriptorsProvider createFiltersProvider(
-			@Nullable AdTabId adTabId,
-			@Nullable String tableName,
-			@NonNull Collection<DocumentFieldDescriptor> fields);
+package de.metas.handlingunits.edi;
 
-	default boolean isActive()
-	{
-		return true;
-	}
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class EDIProductLookup
+{
+	@NonNull ProductId productId;
+
+	@Nullable
+	BPartnerId bpartnerId;
+
+	String upc;
+
+	boolean usedForCustomer;
 }

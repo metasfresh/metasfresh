@@ -1,5 +1,29 @@
 package de.metas.ui.web.view;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.process.RelatedProcessDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.references.DocumentReferenceId;
+import de.metas.ui.web.process.view.ViewActionDescriptorsList;
+import de.metas.ui.web.view.json.JSONFilterViewRequest;
+import de.metas.ui.web.view.json.JSONViewDataType;
+import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentPath;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.collections.CollectionUtils;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -8,36 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.process.RelatedProcessDescriptor;
-import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilterList;
-import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
-import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
-import de.metas.ui.web.document.references.DocumentReferenceId;
-import de.metas.ui.web.process.view.ViewActionDescriptorsFactory;
-import de.metas.ui.web.process.view.ViewActionDescriptorsList;
-import de.metas.ui.web.view.json.JSONFilterViewRequest;
-import de.metas.ui.web.view.json.JSONViewDataType;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
-import de.metas.util.Check;
-import de.metas.util.collections.CollectionUtils;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
 
 /*
  * #%L
@@ -67,7 +61,7 @@ import lombok.Value;
  * @author metas-dev <dev@metasfresh.com>
  */
 @Value
-public final class CreateViewRequest
+public class CreateViewRequest
 {
 	public static Builder builder(final WindowId windowId)
 	{
@@ -205,13 +199,7 @@ public final class CreateViewRequest
 		applySecurityRestrictions = builder.isApplySecurityRestrictions();
 	}
 
-
-	public Characteristic getViewTypeRequiredFieldCharacteristic()
-	{
-		Check.assumeNotNull(viewType, "Parameter viewType is not null for {}", this);
-		return viewType.getRequiredFieldCharacteristic();
-	}
-
+	@Nullable
 	public DocumentPath getSingleReferencingDocumentPathOrNull()
 	{
 		final Set<DocumentPath> referencingDocumentPaths = getReferencingDocumentPaths();
@@ -249,6 +237,7 @@ public final class CreateViewRequest
 	}
 
 	@Nullable
+	@SuppressWarnings("unused")
 	public <T> T getParameterAs(@NonNull final String parameterName, @NonNull final Class<T> type)
 	{
 		@SuppressWarnings("unchecked")
@@ -257,6 +246,7 @@ public final class CreateViewRequest
 	}
 
 	@Nullable
+	@SuppressWarnings("unused")
 	public <T> Set<T> getParameterAsSet(@NonNull final String parameterName, @NonNull final Class<T> type)
 	{
 		@SuppressWarnings("unchecked")
@@ -273,12 +263,14 @@ public final class CreateViewRequest
 	{
 		private final ViewId viewId;
 		private final JSONViewDataType viewType;
+		@Nullable
 		private ViewProfileId profileId = ViewProfileId.NULL;
 
 		private ViewId parentViewId;
 		private DocumentId parentRowId;
 
 		private Set<DocumentPath> referencingDocumentPaths;
+		@Nullable
 		private DocumentReferenceId documentReferenceId;
 
 		/**
@@ -287,6 +279,7 @@ public final class CreateViewRequest
 		@Deprecated
 		private LinkedHashSet<Integer> filterOnlyIds;
 
+		@Nullable
 		private ArrayList<DocumentFilter> stickyFilters;
 		private WrappedDocumentFilterList filters;
 		private boolean useAutoFilters;
@@ -321,12 +314,13 @@ public final class CreateViewRequest
 			return viewType;
 		}
 
-		public Builder setProfileId(ViewProfileId profileId)
+		public Builder setProfileId(@Nullable final ViewProfileId profileId)
 		{
 			this.profileId = profileId;
 			return this;
 		}
 
+		@Nullable
 		private ViewProfileId getProfileId()
 		{
 			return profileId;
@@ -343,7 +337,7 @@ public final class CreateViewRequest
 			return parentViewId;
 		}
 
-		public Builder setParentRowId(DocumentId parentRowId)
+		public Builder setParentRowId(final DocumentId parentRowId)
 		{
 			this.parentRowId = parentRowId;
 			return this;
@@ -371,20 +365,26 @@ public final class CreateViewRequest
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 		}
 
-		public Builder setDocumentReferenceId(DocumentReferenceId documentReferenceId)
+		public Builder setDocumentReferenceId(@Nullable final DocumentReferenceId documentReferenceId)
 		{
 			this.documentReferenceId = documentReferenceId;
 			return this;
 		}
 
+		@Nullable
 		private DocumentReferenceId getDocumentReferenceId()
 		{
 			return documentReferenceId;
 		}
 
-		public Builder setStickyFilters(final DocumentFilterList stickyFilters)
+		public Builder setStickyFilters(@Nullable final DocumentFilterList stickyFilters)
 		{
-			this.stickyFilters = stickyFilters != null ? new ArrayList<>(stickyFilters.toList()) : null;
+			return setStickyFilters(stickyFilters != null ? stickyFilters.toList() : null);
+		}
+
+		public Builder setStickyFilters(@Nullable final List<DocumentFilter> stickyFilters)
+		{
+			this.stickyFilters = stickyFilters != null && !stickyFilters.isEmpty() ? new ArrayList<>(stickyFilters) : null;
 			return this;
 		}
 
@@ -448,7 +448,7 @@ public final class CreateViewRequest
 			return filterOnlyIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(filterOnlyIds);
 		}
 
-		public Builder setUseAutoFilters(boolean useAutoFilters)
+		public Builder setUseAutoFilters(final boolean useAutoFilters)
 		{
 			this.useAutoFilters = useAutoFilters;
 			return this;
@@ -457,13 +457,6 @@ public final class CreateViewRequest
 		private boolean isUseAutoFilters()
 		{
 			return useAutoFilters;
-		}
-
-		public Builder addActionsFromUtilityClass(final Class<?> utilityClass)
-		{
-			final ViewActionDescriptorsList actionsToAdd = ViewActionDescriptorsFactory.instance.getFromClass(utilityClass);
-			addActions(actionsToAdd);
-			return this;
 		}
 
 		public Builder addActions(final ViewActionDescriptorsList actionsToAdd)
@@ -554,8 +547,7 @@ public final class CreateViewRequest
 			}
 
 			final ImmutableList<JSONDocumentFilter> jsonFiltersEffective = null;
-			final DocumentFilterList filtersEffective = filters;
-			return new WrappedDocumentFilterList(jsonFiltersEffective, filtersEffective);
+			return new WrappedDocumentFilterList(jsonFiltersEffective, filters);
 		}
 
 		public static WrappedDocumentFilterList ofJSONFilters(final List<JSONDocumentFilter> jsonFilters)
@@ -575,7 +567,7 @@ public final class CreateViewRequest
 		private final ImmutableList<JSONDocumentFilter> jsonFilters;
 		private final DocumentFilterList filters;
 
-		private WrappedDocumentFilterList(final ImmutableList<JSONDocumentFilter> jsonFilters, final DocumentFilterList filters)
+		private WrappedDocumentFilterList(@Nullable final ImmutableList<JSONDocumentFilter> jsonFilters, @Nullable final DocumentFilterList filters)
 		{
 			this.jsonFilters = jsonFilters;
 			this.filters = filters;
