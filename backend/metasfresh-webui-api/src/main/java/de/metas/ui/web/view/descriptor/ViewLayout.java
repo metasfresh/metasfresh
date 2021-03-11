@@ -214,7 +214,7 @@ public class ViewLayout implements ETagAware
 		eTag = from.eTag.overridingAttributes(extractETagAttributes(filters, allowNewCaption));
 	}
 
-	private static ImmutableMap<String, String> extractETagAttributes(final ImmutableList<DocumentFilterDescriptor> filters, final String allowNewCaption)
+	private static ImmutableMap<String, String> extractETagAttributes(@Nullable final ImmutableList<DocumentFilterDescriptor> filters, @Nullable final String allowNewCaption)
 	{
 		final String filtersNorm = filters == null ? "0" : String.valueOf(filters.hashCode());
 		final String allowNewCaptionNorm = allowNewCaption == null ? "0" : String.valueOf(allowNewCaption.hashCode());
@@ -283,6 +283,7 @@ public class ViewLayout implements ETagAware
 		return defaultOrderBys;
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public ViewLayout withAllowNewRecordIfPresent(final Optional<String> allowNewCaption)
 	{
 		if (!allowNewCaption.isPresent())
@@ -577,8 +578,8 @@ public class ViewLayout implements ETagAware
 	{
 		private WindowId windowId;
 		private DetailId detailId;
-		private ITranslatableString caption;
-		private ITranslatableString description;
+		@Nullable private ITranslatableString caption;
+		@Nullable private ITranslatableString description;
 		private ITranslatableString emptyResultText = LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT;
 		private ITranslatableString emptyResultHint = LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT;
 
@@ -689,7 +690,6 @@ public class ViewLayout implements ETagAware
 					if (element.getFieldsCount() <= 0)
 					{
 						it.remove();
-						continue;
 					}
 				}
 			}
@@ -738,6 +738,7 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
+		@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 		public boolean hasElements()
 		{
 			return !elementBuilders.isEmpty();
@@ -863,7 +864,7 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		public Builder setAllowOpeningRowDetails(boolean allowOpeningRowDetails)
+		public Builder setAllowOpeningRowDetails(final boolean allowOpeningRowDetails)
 		{
 			this.allowOpeningRowDetails = allowOpeningRowDetails;
 			return this;
