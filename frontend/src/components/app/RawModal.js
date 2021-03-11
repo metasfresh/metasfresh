@@ -132,16 +132,21 @@ class RawModal extends Component {
    * @summary Method executed only for the SEARCH type modal window, calls advSearchRequest from the API
    */
   handleSearchDone = (props) => {
-    const { parentWindowId, parentDocumentId, parentFieldId, windowId, modalTableSelectedId } = props;
-    console.log('POST on search DONE');
+    const {
+      parentWindowId,
+      parentDocumentId,
+      parentFieldId,
+      windowId,
+      modalTableSelectedId,
+    } = props;
+
     advSearchRequest({
       windowId: parentWindowId,
       documentId: parentDocumentId,
       fieldName: parentFieldId,
       advSearchWindowId: windowId,
-      selectedId: modalTableSelectedId
+      selectedId: modalTableSelectedId,
     });
-    console.log(props);
   };
 
   /**
