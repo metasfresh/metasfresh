@@ -22,6 +22,7 @@
 
 package de.metas.edi.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
@@ -43,6 +44,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.IQuery;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.List;
 
 public class DesadvDAO implements IDesadvDAO
@@ -93,6 +95,22 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
+	public List<I_EDI_DesadvLine> retrieveLinesByIds(@NonNull final Collection<Integer> desadvLineIds)
+	{
+		if(desadvLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_EDI_DesadvLine.class)
+				.addInArrayFilter(I_EDI_DesadvLine.COLUMN_EDI_DesadvLine_ID, desadvLineIds)
+				.create()
+				.list();
+
+	}
+
+	@Override
 	public List<I_M_InOut> retrieveAllInOuts(final I_EDI_Desadv desadv)
 	{
 		return createAllInOutsQuery(desadv)
@@ -100,7 +118,7 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
-	public boolean hasInOuts(I_EDI_Desadv desadv)
+	public boolean hasInOuts(final I_EDI_Desadv desadv)
 	{
 		return createAllInOutsQuery(desadv)
 				.anyMatch();
@@ -122,14 +140,14 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
-	public boolean hasInOutLines(I_EDI_DesadvLine desadvLine)
+	public boolean hasInOutLines(final I_EDI_DesadvLine desadvLine)
 	{
 		return createAllInOutLinesQuery(desadvLine)
 				.anyMatch();
 	}
 
 	@Override
-	public boolean hasOrderLines(I_EDI_DesadvLine desadvLine)
+	public boolean hasOrderLines(final I_EDI_DesadvLine desadvLine)
 	{
 		return createAllOrderLinesQuery(desadvLine)
 				.create()
@@ -137,7 +155,7 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
-	public List<I_C_OrderLine> retrieveAllOrderLines(I_EDI_DesadvLine desadvLine)
+	public List<I_C_OrderLine> retrieveAllOrderLines(final I_EDI_DesadvLine desadvLine)
 	{
 		return createAllOrderLinesQuery(desadvLine)
 				.create()
@@ -145,21 +163,21 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
-	public boolean hasDesadvLines(I_EDI_Desadv desadv)
+	public boolean hasDesadvLines(final I_EDI_Desadv desadv)
 	{
 		return createAllDesadvLinesQuery(desadv)
 				.anyMatch();
 	}
 
 	@Override
-	public boolean hasOrders(I_EDI_Desadv desadv)
+	public boolean hasOrders(final I_EDI_Desadv desadv)
 	{
 		return createAllOrdersQuery(desadv)
 				.anyMatch();
 	}
 
 	@Override
-	public List<I_C_Order> retrieveAllOrders(I_EDI_Desadv desadv)
+	public List<I_C_Order> retrieveAllOrders(final I_EDI_Desadv desadv)
 	{
 		return createAllOrdersQuery(desadv)
 				.list(I_C_Order.class);
@@ -181,7 +199,7 @@ public class DesadvDAO implements IDesadvDAO
 				.create();
 	}
 
-	private IQuery<I_C_Order> createAllOrdersQuery(I_EDI_Desadv desadv)
+	private IQuery<I_C_Order> createAllOrdersQuery(final I_EDI_Desadv desadv)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Order.class, desadv)
 				// .addOnlyActiveRecordsFilter()
@@ -258,7 +276,7 @@ public class DesadvDAO implements IDesadvDAO
 		{
 			return new BigDecimal(minimumPercentageAccepted_Value);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			Check.errorIf(true, "AD_SysConfig {} = {} can't be parsed as a number", SYS_CONFIG_DefaultMinimumPercentage, minimumPercentageAccepted_Value);
 			return null; // shall not be reached
