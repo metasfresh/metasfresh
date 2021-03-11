@@ -319,7 +319,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		}
 	}
 
-	private static List<I_AD_Table> retrieveChildTablesForParentColumn(final String columnName)
+	private List<I_AD_Table> retrieveChildTablesForParentColumn(final String columnName)
 	{
 		final String whereClause = " EXISTS (SELECT 1 FROM AD_Column c WHERE c.ColumnName = ? AND c.ad_table_id = ad_table.ad_table_id  AND c.IsParent = 'Y')"
 				+ " AND NOT EXISTS (SELECT 1 FROM AD_Column c WHERE c.ColumnName = ? AND c.ad_table_id = ad_table.ad_table_id AND c.ColumnName = ?)"
