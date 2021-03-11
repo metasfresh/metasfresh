@@ -1832,7 +1832,7 @@ public class DB
 	 * @param param
 	 * @return parameter as SQL code
 	 */
-	public String TO_SQL(final Object param)
+	public String TO_SQL(@Nullable final Object param)
 	{
 		// TODO: check and refactor together with buildSqlList(...)
 		if (param == null)

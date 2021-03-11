@@ -95,7 +95,7 @@ public class ProductsProposalViewFilters
 
 	public static DocumentFilterList toDocumentFilters(final ProductsProposalViewFilter filter)
 	{
-		final DocumentFilter.Builder builder = DocumentFilter.builder()
+		final DocumentFilter.DocumentFilterBuilder builder = DocumentFilter.builder()
 				.setFilterId(ProductsProposalViewFilter.FILTER_ID)
 				.setCaption(getDefaultFilterCaption());
 
