@@ -31,7 +31,9 @@ import at.erpel.schemas._1p0.documents.extensions.edifact.REMADVListLineItemExte
 import at.erpel.schemas._1p0.documents.extensions.edifact.TaxType;
 import at.erpel.schemas._1p0.documents.extensions.edifact.VATType;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdviceLine;
 import lombok.Getter;
 import lombok.NonNull;
@@ -54,12 +56,15 @@ import java.util.logging.Logger;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOCUMENT_ZONE_ID;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOC_PREFIX;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.GLN_PREFIX;
+import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.REASON_CODES_TO_IGNORE;
 
 @Value
 public class JsonRemittanceAdviceLineProducer
 {
 	private static final Logger logger = Logger.getLogger(JsonRemittanceAdviceLineProducer.class.getName());
 
+	
+	
 	@NonNull REMADVListLineItemExtensionType remadvLineItemExtension;
 
 	public static JsonRemittanceAdviceLineProducer of(@NonNull final REMADVListLineItemExtensionType remadvListLineItemExtensionType)
@@ -89,7 +94,7 @@ public class JsonRemittanceAdviceLineProducer
 					.dateInvoiced(getDateInvoiced().orElse(null))
 
 					.remittedAmount(asBigDecimal(monetaryAmounts.getRemittedAmount())
-											.orElseThrow(() -> new RuntimeException("RemittedAmount not found on line!")))
+							.orElseThrow(() -> new RuntimeException("RemittedAmount not found on line!")))
 
 					.invoiceGrossAmount(asBigDecimal(monetaryAmounts.getInvoiceGrossAmount()).orElse(null))
 
@@ -209,6 +214,7 @@ public class JsonRemittanceAdviceLineProducer
 
 		final ImmutableSet<BigDecimal> vatTaxRateSet = monetaryAmounts.getAdjustment()
 				.stream()
+				.filter(type -> !REASON_CODES_TO_IGNORE.contains(type.getReasonCode()))
 				.map(AdjustmentType::getTax)
 				.filter(Objects::nonNull)
 				.map(TaxType::getVAT)
