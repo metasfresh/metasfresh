@@ -67,9 +67,9 @@ public class EcosioRemadvRoute extends RouteBuilder
 					.log(LoggingLevel.INFO, "Getting remote file")
 					.to("{{" + INPUT_REMADV_LOCAL + "}}");
 		}
-		
+
 		// @formatter:off
-		from(INPUT_REMADV_LOCAL)
+		from("{{" +INPUT_REMADV_LOCAL + "}}")
 				.routeId(ECOSIO_REMADV_XML_TO_JSON_ROUTE)
 				.streamCaching()
 				.unmarshal(jacksonXMLDataFormat)
