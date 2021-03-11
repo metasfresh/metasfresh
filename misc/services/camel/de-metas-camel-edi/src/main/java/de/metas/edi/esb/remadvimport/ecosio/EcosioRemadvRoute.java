@@ -63,7 +63,7 @@ public class EcosioRemadvRoute extends RouteBuilder
 		if (!Util.isEmpty(remoteEndpoint))
 		{
 			from(remoteEndpoint)
-					.routeId("ecosio-Remote-XML-Orders-To-Local")
+					.routeId("ecosio-Remote-XML-Remadv-To-Local")
 					.log(LoggingLevel.INFO, "Getting remote file")
 					.to("{{" + INPUT_REMADV_LOCAL + "}}");
 		}
