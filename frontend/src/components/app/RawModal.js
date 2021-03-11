@@ -263,7 +263,7 @@ class RawModal extends Component {
 
     // This is hardcoded for the Search Window feature (injecting cancel button)
     if (windowId === '541045' && allowedCloseActions) {
-      !allowedCloseActions.includes('CANCEL') && allowedCloseActions.push('CANCEL');
+      !allowedCloseActions.includes('CANCEL') && allowedCloseActions.unshift('CANCEL');
     }
 
     const rawModalVisible = rawModal.visible || false;
