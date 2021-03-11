@@ -32,7 +32,7 @@ public interface EcosioRemadvConstants
 	String ECOSIO_REMADV_XML_TO_JSON_ROUTE = "ecosio-XML-Remadv-To-MF-RESTAPI";
 
 	String INPUT_REMADV_REMOTE = "edi.file.remadv.ecosio.remote";
-	String INPUT_REMADV_LOCAL = "{{edi.file.remadv.ecosio}}";
+	String INPUT_REMADV_LOCAL = "edi.file.remadv.ecosio";
 
 	String ECOSIO_AUTH_TOKEN = "{{metasfresh.api.auth}}";
 	String CREATE_REMADV_MF_URL = "{{metasfresh.api.baseurl}}/payment/remittanceAdvice";
