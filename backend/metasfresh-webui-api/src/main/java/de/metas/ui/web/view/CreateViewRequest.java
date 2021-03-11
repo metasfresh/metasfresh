@@ -287,7 +287,7 @@ public final class CreateViewRequest
 		@Deprecated
 		private LinkedHashSet<Integer> filterOnlyIds;
 
-		private ArrayList<DocumentFilter> stickyFilters;
+		@Nullable private ArrayList<DocumentFilter> stickyFilters;
 		private WrappedDocumentFilterList filters;
 		private boolean useAutoFilters;
 
@@ -382,9 +382,14 @@ public final class CreateViewRequest
 			return documentReferenceId;
 		}
 
-		public Builder setStickyFilters(final DocumentFilterList stickyFilters)
+		public Builder setStickyFilters(@Nullable final DocumentFilterList stickyFilters)
 		{
-			this.stickyFilters = stickyFilters != null ? new ArrayList<>(stickyFilters.toList()) : null;
+			return setStickyFilters(stickyFilters != null ? stickyFilters.toList() : null);
+		}
+
+		public Builder setStickyFilters(@Nullable final List<DocumentFilter> stickyFilters)
+		{
+			this.stickyFilters = stickyFilters != null && !stickyFilters.isEmpty() ? new ArrayList<>(stickyFilters) : null;
 			return this;
 		}
 
