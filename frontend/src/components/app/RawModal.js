@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { deleteViewRequest } from '../../api';
+import { deleteViewRequest, advSearchRequest } from '../../api';
 import { PATCH_RESET } from '../../constants/ActionTypes';
 
 import { unsetIncludedView } from '../../actions/ViewActions';
@@ -20,54 +20,7 @@ import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import { renderHeaderProperties } from '../../utils/documentListHelper';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
-
-/**
- * @file Function based component.
- * @module ModalButton
- * @param {object} props
- */
-const ModalButton = (props) => {
-  const {
-    name,
-    onShowTooltip,
-    onHideTooltip,
-    children,
-    onClick,
-    tabIndex,
-  } = props;
-
-  /**
-   * @func handleClick
-   * @summary Call the `onClick` on mouse click
-   */
-  const handleClick = () => onClick(name);
-
-  /**
-   * @func handleShowTooltip
-   * @summary Call the `onShowTooltip` on mouse enter
-   */
-  const handleShowTooltip = () => onShowTooltip(name);
-
-  /**
-   * @method handleHideTooltip
-   * @summary Call the `onHideTooltip` on mouse leave
-   */
-  const handleHideTooltip = () => onHideTooltip(name);
-
-  return (
-    <button
-      key={`rawmodal-button-${name}`}
-      name={name}
-      className="btn btn-meta-outline-secondary btn-distance-3 btn-md"
-      onClick={handleClick}
-      tabIndex={tabIndex}
-      onMouseEnter={handleShowTooltip}
-      onMouseLeave={handleHideTooltip}
-    >
-      {children}
-    </button>
-  );
-};
+import ModalButton from './ModalButton';
 
 /**
  * @file Class based component.
@@ -176,10 +129,17 @@ class RawModal extends Component {
 
   /**
    * @method handleSearchDone
-   * @summary Method executed only for the SEARCH type modal window
+   * @summary Method executed only for the SEARCH type modal window, calls advSearchRequest from the API
    */
   handleSearchDone = (props) => {
+    const { parentWindowId, parentDocumentId, parentFieldId, windowId } = props;
     console.log('POST on search DONE');
+    advSearchRequest({
+      windowId: parentWindowId,
+      documentId: parentDocumentId,
+      fieldName: parentFieldId,
+      advSearchWindowId: windowId,
+    });
     console.log(props);
   };
 
@@ -267,7 +227,12 @@ class RawModal extends Component {
    * @summary ToDo: Describe the method.
    */
   renderButtons = () => {
-    const { modalVisible, rawModal, windowId } = this.props;
+    const {
+      modalVisible,
+      rawModal,
+      windowId,
+      modalTableSelectedId,
+    } = this.props;
     let { allowedCloseActions } = this.props;
 
     // This is hardcoded for the Search Window feature (injecting cancel button)
@@ -296,6 +261,11 @@ class RawModal extends Component {
           onShowTooltip={this.showTooltip}
           onHideTooltip={this.hideTooltip}
           key={i}
+          disabled={
+            windowId === '541045' && !modalTableSelectedId && name === 'DONE'
+              ? true
+              : false
+          } // Disable the btn if no selection in src table
         >
           {counterpart.translate(selector)}
           {showTooltip && (
@@ -395,24 +365,6 @@ class RawModal extends Component {
 
 /**
  * @typedef {object} Props Component props
- * @prop {node} [children]
- * @prop {*} [name]
- * @prop {*} [onShowTooltip]
- * @prop {*} [onHideTooltip]
- * @prop {*} [onClick]
- * @prop {*} [tabIndex]
- */
-ModalButton.propTypes = {
-  children: PropTypes.node,
-  name: PropTypes.any,
-  onShowTooltip: PropTypes.any,
-  onHideTooltip: PropTypes.any,
-  onClick: PropTypes.any,
-  tabIndex: PropTypes.any,
-};
-
-/**
- * @typedef {object} Props Component props
  * @prop {func} dispatch
  * @prop {bool} [modalVisible]
  * @prop {object} rawModal
@@ -443,6 +395,10 @@ RawModal.propTypes = {
   children: PropTypes.node,
   closeCallback: PropTypes.func,
   featureType: PropTypes.string,
+  modalTableSelectedId: PropTypes.oneOfType([
+    PropTypes.oneOf([null]),
+    PropTypes.string,
+  ]),
 };
 
 /**
@@ -450,12 +406,18 @@ RawModal.propTypes = {
  * @summary ToDo: Describe the method.
  * @param {object} windowHandler
  */
-const mapStateToProps = ({ windowHandler }) => ({
-  modalVisible: windowHandler.modal.visible || false,
-  rawModal: windowHandler.rawModal,
-  requests: windowHandler.patches.requests,
-  success: windowHandler.patches.success,
-  indicator: windowHandler.indicator,
-});
+const mapStateToProps = ({ windowHandler, tables }, ownProps) => {
+  let selArrInTable = tables[`${ownProps.windowId}_${ownProps.viewId}`];
+  let selectedId = selArrInTable ? selArrInTable.selected[0] : null;
+
+  return {
+    modalVisible: windowHandler.modal.visible || false,
+    rawModal: windowHandler.rawModal,
+    requests: windowHandler.patches.requests,
+    success: windowHandler.patches.success,
+    indicator: windowHandler.indicator,
+    modalTableSelectedId: selectedId,
+  };
+};
 
 export default connect(mapStateToProps)(RawModal);
