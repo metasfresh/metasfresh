@@ -294,10 +294,9 @@ public class DesadvBL implements IDesadvBL
 			desadv.setMovementDate(order.getDatePromised());
 			desadv.setC_Currency_ID(order.getC_Currency_ID());
 
-			desadv.setHandOver_Partner_ID(order.getHandOver_Partner_ID());
-			desadv.setHandOver_Location_ID(order.getHandOver_Location_ID());
-			
-			// the DESADV recipient might need an explicitly set dropship partner&location, even if it is the same as the buyer's one
+			// the DESADV recipient might need an explicitly set dropship and handover partner&location, even if it is the same as the buyer's one
+			desadv.setHandOver_Partner_ID(CoalesceUtil.firstGreaterThanZero(order.getHandOver_Partner_ID(), order.getC_BPartner_ID()));
+			desadv.setHandOver_Location_ID(CoalesceUtil.firstGreaterThanZero(order.getHandOver_Location_ID(), order.getC_BPartner_Location_ID()));
 			desadv.setDropShip_BPartner_ID(CoalesceUtil.firstGreaterThanZero(order.getDropShip_BPartner_ID(), order.getC_BPartner_ID()));
 			desadv.setDropShip_Location_ID(CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()));
 
