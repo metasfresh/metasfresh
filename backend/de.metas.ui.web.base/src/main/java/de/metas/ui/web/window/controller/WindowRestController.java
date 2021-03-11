@@ -41,6 +41,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentAdvSearch;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangeLog;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
@@ -94,6 +95,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -916,31 +918,34 @@ public class WindowRestController
 		}));
 	}
 
-	@GetMapping("/{windowId}/{documentId}/advSearch/{advSearchWindowId}/{selectionId}")
+	@PostMapping("/{windowId}/{documentId}/field/{fieldName}/advSearchResult")
 	public List<JSONDocument> advSearchResult(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
-			@PathVariable("advSearchWindowId") final String advSearchWindowIdStr,
-			@PathVariable("selectionId") final String selectionIdStr
+			@PathVariable("fieldName") final String fieldName,
+			@RequestBody final JSONDocumentAdvSearch body
 	)
 	{
 		userSession.assertLoggedIn();
 
+		final String advSearchWindowIdStr = body.getAdvSearchWindowId();
+		final String selectionIdStr = body.getSelectedId();
+
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 
-		return Execution.callInNewExecution("window.advSearch", () -> advSearchResult0(WindowId.fromJson(advSearchWindowIdStr), selectionIdStr, documentPath));
+		return Execution.callInNewExecution("window.advSearch", () -> advSearchResult0(WindowId.fromJson(advSearchWindowIdStr), selectionIdStr, documentPath, fieldName));
 	}
 
-	private List<JSONDocument> advSearchResult0(final WindowId windowId, final String selectionIdStr, final DocumentPath documentPath)
+	private List<JSONDocument> advSearchResult0(final WindowId windowId, final String selectionIdStr, final DocumentPath documentPath, final String fieldName)
 	{
 		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
 		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions().build();
 
-		 documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
+		documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
 			advancedSearchDescriptorsProvider.getAdvancedSearchDescriptor(windowId)
 					.getProcessor()
-					.processSelection(document, selectionIdStr);
+					.processSelection(document, fieldName, selectionIdStr);
 			return null;
 		});
 		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);

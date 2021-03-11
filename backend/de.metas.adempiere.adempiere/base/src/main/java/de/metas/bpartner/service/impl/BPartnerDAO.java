@@ -387,6 +387,15 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public BPartnerLocationId getBPartnerLocationIdByRepoId(final int repoId)
+	{
+		Check.assumeGreaterThanZero(repoId, "C_BPartner_Location_ID");
+		final I_C_BPartner_Location loc = InterfaceWrapperHelper.load(repoId, I_C_BPartner_Location.class);
+		Check.assumeNotNull(loc, "Cannot find C_BPartner_Location for ID: " + repoId);
+		return BPartnerLocationId.ofRepoId(loc.getC_BPartner_ID(), loc.getC_BPartner_Location_ID());
+	}
+
+	@Override
 	public I_C_BPartner_Location getBPartnerLocationById(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return retrieveBPartnerLocations(bpartnerLocationId.getBpartnerId())

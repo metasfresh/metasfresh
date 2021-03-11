@@ -9,7 +9,7 @@ import javax.annotation.concurrent.Immutable;
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -40,7 +40,7 @@ public final class AdvancedSearchDescriptor
 
 	public interface AdvancedSearchSelectionProcessor
 	{
-		void processSelection(Document document, String selectionIdStr);
+		void processSelection(Document document, final String fieldName, String selectionIdStr);
 	}
 
 	private final String tableName;
