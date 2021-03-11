@@ -140,8 +140,7 @@ public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 		// Detail/included row
 		else
 		{
-			final LookupValue bpLocationLV = rowBuilder.getFieldValueAsLookupValue(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
-			return bpLocationLV;
+			return rowBuilder.getFieldValueAsLookupValue(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
 		}
 	}
 
