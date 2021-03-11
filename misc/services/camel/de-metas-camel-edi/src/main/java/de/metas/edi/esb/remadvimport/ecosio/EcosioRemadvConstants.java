@@ -44,5 +44,5 @@ public interface EcosioRemadvConstants
 	String GLN_PREFIX = "gln-";
 	String DOCUMENT_ZONE_ID = "Europe/Vienna";
 	
-	Set<String> REASON_CODES_TO_IGNORE = ImmutableSet.of("67");
+	Set<String> TAX_RATES_TO_IGNORE = ImmutableSet.of("7.7");
 }

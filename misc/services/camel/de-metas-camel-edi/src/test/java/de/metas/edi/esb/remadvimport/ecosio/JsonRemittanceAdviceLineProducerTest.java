@@ -37,7 +37,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonRemittanceAdviceLineProducerTest
 {
-
 	private final ObjectFactory objectFactory = new ObjectFactory();
 
 	@Test
