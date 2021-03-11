@@ -2695,3 +2695,8 @@ INSERT INTO t_alter_column values('m_product_albertatherapy','Therapy','VARCHAR(
 /* DDL */ SELECT public.db_alter_table('M_Product','ALTER TABLE public.M_Product ADD COLUMN ManufacturerArticleNumber VARCHAR(125)')
 ;
 
+-- 2021-03-11T06:46:39.544Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2021-03-11 07:46:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=570772
+;
+

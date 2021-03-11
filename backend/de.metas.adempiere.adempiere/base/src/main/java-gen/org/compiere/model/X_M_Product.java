@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1198428967L;
+	private static final long serialVersionUID = 1004704805L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -637,6 +637,21 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public int getM_AttributeSetInstance_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public void setM_CommodityNumber_ID (final int M_CommodityNumber_ID)
+	{
+		if (M_CommodityNumber_ID < 1) 
+			set_Value (COLUMNNAME_M_CommodityNumber_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_CommodityNumber_ID, M_CommodityNumber_ID);
+	}
+
+	@Override
+	public int getM_CommodityNumber_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CommodityNumber_ID);
 	}
 
 	@Override

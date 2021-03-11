@@ -1067,6 +1067,27 @@ public interface I_M_Product
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
+	 * Set Commodity Number.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_CommodityNumber_ID (int M_CommodityNumber_ID);
+
+	/**
+	 * Get Commodity Number.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_CommodityNumber_ID();
+
+	ModelColumn<I_M_Product, Object> COLUMN_M_CommodityNumber_ID = new ModelColumn<>(I_M_Product.class, "M_CommodityNumber_ID", null);
+	String COLUMNNAME_M_CommodityNumber_ID = "M_CommodityNumber_ID";
+
+	/**
 	 * Set Customs Tariff.
 	 *
 	 * <br>Type: Search
