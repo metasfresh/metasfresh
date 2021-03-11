@@ -43,8 +43,8 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 		final String locationFieldName = getLocationFieldNameForBPartnerField(bpartnerFieldName);
 		final BPartnerLocationId locationId = Services.get(IBPartnerDAO.class).getBPartnerLocationIdByRepoId(locId);
 
-		document.processValueChange(locationFieldName, locationId.getRepoId(), null, false);
 		document.processValueChange(bpartnerFieldName, locationId.getBpartnerId(), null, false);
+		document.processValueChange(locationFieldName, locationId.getRepoId(), null, false);
 	}
 
 	@NonNull
