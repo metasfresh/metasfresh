@@ -259,9 +259,20 @@ export async function quickActionsRequest({
  * @param {string} advSearchWindowId
  * @param {string} selectedId
  */
-export function advSearchRequest({ windowId, documentId, fieldName, advSearchWindowId, selectedId }) {
-  return post(`${config.API_URL}/window/${windowId}/${documentId}/field/${fieldName}/advSearchResult`, {
-    advSearchWindowId,
-    selectedId
-  });
+export function advSearchRequest({
+  windowId,
+  documentId,
+  fieldName,
+  advSearchWindowId,
+  selectedId,
+}) {
+  return post(
+    `${
+      config.API_URL
+    }/window/${windowId}/${documentId}/field/${fieldName}/advSearchResult`,
+    {
+      advSearchWindowId,
+      selectedId,
+    }
+  );
 }
