@@ -30,6 +30,7 @@ import at.erpel.schemas._1p0.documents.extensions.edifact.MonetaryAmountType;
 import at.erpel.schemas._1p0.documents.extensions.edifact.REMADVListLineItemExtensionType;
 import at.erpel.schemas._1p0.documents.extensions.edifact.TaxType;
 import at.erpel.schemas._1p0.documents.extensions.edifact.VATType;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdviceLine;
 import lombok.Getter;
@@ -197,7 +198,8 @@ public class JsonRemittanceAdviceLineProducer
 		return Optional.of(monetaryAmountType.getAmount().abs());
 	}
 
-	private Optional<BigDecimal> getServiceFeeVATRate(@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts)
+	@VisibleForTesting
+	Optional<BigDecimal> getServiceFeeVATRate(@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts)
 	{
 		if (CollectionUtils.isEmpty(monetaryAmounts.getAdjustment()))
 		{
