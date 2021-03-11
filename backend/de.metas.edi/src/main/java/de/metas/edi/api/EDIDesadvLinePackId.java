@@ -2,7 +2,7 @@
  * #%L
  * de.metas.edi
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,26 +32,26 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-public class EDIDesadvId implements RepoIdAware
+public class EDIDesadvLinePackId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
 	@NonNull
-	public static EDIDesadvId ofRepoId(final int repoId)
+	public static EDIDesadvLinePackId ofRepoId(final int repoId)
 	{
-		return new EDIDesadvId(repoId);
+		return new EDIDesadvLinePackId(repoId);
 	}
 
 	@Nullable
-	public static EDIDesadvId ofRepoIdOrNull(final int repoId)
+	public static EDIDesadvLinePackId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new EDIDesadvId(repoId) : null;
+		return repoId > 0 ? new EDIDesadvLinePackId(repoId) : null;
 	}
 
-	private EDIDesadvId(final int repoId)
+	private EDIDesadvLinePackId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "EDI_Desadv_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "EDI_DesadvLine_Pack_ID");
 	}
 
 	@JsonValue
