@@ -246,6 +246,7 @@ class DocumentListContainer extends Component {
                 viewId,
                 selectedIds: table.selected,
                 viewProfileId,
+                isModal,
               });
             }
 
