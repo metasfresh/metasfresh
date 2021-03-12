@@ -165,8 +165,8 @@ public class PaymentAllocationService
 		{
 			final @NonNull ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
 
-			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(paymentAllocationPayableItem.getBPartnerId(), evaluationDate)
-					.orElseThrow(() -> new AdempiereException("Invoice with Service Fees: no config found for C_BPartner_ID=" + BPartnerId.toRepoId(paymentAllocationPayableItem.getBPartnerId()))
+			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(paymentAllocationPayableItem.getInvoiceBPartnerId(), evaluationDate)
+					.orElseThrow(() -> new AdempiereException("Invoice with Service Fees: no config found for invoice-C_BPartner_ID=" + BPartnerId.toRepoId(paymentAllocationPayableItem.getInvoiceBPartnerId()))
 							.appendParametersToMessage()
 							.setParameter("C_Invoice_ID", InvoiceId.toRepoId(paymentAllocationPayableItem.getInvoiceId()))
 							.setParameter("C_Invoice.DocumentNo", paymentAllocationPayableItem.getDocumentNo())

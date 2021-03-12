@@ -35,6 +35,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfig;
@@ -159,8 +160,10 @@ public class PaymentsViewAllocateCommand
 		final Money discountAmt = moneyService.toMoney(row.getDiscountAmt());
 		final CurrencyId currencyId = openAmt.getCurrencyId();
 
-		@Nullable final Amount serviceFeeAmt = row.getServiceFeeAmt();
-		@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
+		@Nullable
+		final Amount serviceFeeAmt = row.getServiceFeeAmt();
+		@Nullable
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 		if (serviceFeeAmt != null && !serviceFeeAmt.isZero())
 		{
 			final InvoiceProcessingContext invoiceProcessingContext = extractInvoiceProcessingContext(row, paymentDocuments, invoiceProcessingServiceCompanyService);
@@ -228,7 +231,12 @@ public class PaymentsViewAllocateCommand
 		{
 			final @NonNull ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
 			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(row.getBPartnerId(), evaluationDate)
-					.orElseThrow(() -> new AdempiereException("Invoice with Service Fees: no config found for invoice " + row.getDocumentNo()));
+					.orElseThrow(() -> new AdempiereException("Invoice with Service Fees: no config found for invoice-C_BPartner_ID=" + BPartnerId.toRepoId(row.getBPartnerId()))
+							.appendParametersToMessage()
+							.setParameter("C_Invoice_ID", InvoiceId.toRepoId(row.getInvoiceId()))
+							.setParameter("C_Invoice.DocumentNo", row.getDocumentNo())
+
+					);
 
 			return InvoiceProcessingContext.builder()
 					.serviceCompanyId(config.getServiceCompanyBPartnerId())
