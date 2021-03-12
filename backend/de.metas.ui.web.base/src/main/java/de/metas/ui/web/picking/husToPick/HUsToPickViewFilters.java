@@ -5,6 +5,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.process.BarcodeScannerType;
@@ -54,14 +55,13 @@ class HUsToPickViewFilters
 {
 	private static final String LocatorBarcode_FilterId = "LocatorBarcodeFilter";
 	private static final String PARAM_Barcode = "Barcode";
+	private static final AdMessageKey MSG_LocatorBarcodeFilter = AdMessageKey.of("webui.view.husToPick.filters.locatorBarcodeFilter");
 
 	private static final String HU_IDS_FilterId = "HU_IDS_Filter";
 	private static final String PARAM_ConsiderAttributes = "IsConsiderAttributes";
 
 	static final String PARAM_CurrentShipmentScheduleId = "CurrentShipmentScheduleId";
 	static final String PARAM_BestBeforePolicy = "BestBeforePolicy";
-
-	private static final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
 	public static ImmutableList<DocumentFilterDescriptor> createFilterDescriptors()
 	{
@@ -72,12 +72,12 @@ class HUsToPickViewFilters
 
 	public static List<SqlDocumentFilterConverter> createFilterConverters()
 	{
-		return ImmutableList.<SqlDocumentFilterConverter> of(
+		return ImmutableList.of(
 				LocatorBarcodeFilterConverter.instance,
 				HUIdsFilterConverter.instance);
 	}
 
-	private static final DocumentFilterDescriptor createLocatorBarcodeFilterDescriptor()
+	private static DocumentFilterDescriptor createLocatorBarcodeFilterDescriptor()
 	{
 		return DocumentFilterDescriptor.builder()
 				.setFilterId(LocatorBarcode_FilterId)
@@ -85,7 +85,7 @@ class HUsToPickViewFilters
 				.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
 				.addParameter(DocumentFilterParamDescriptor.builder()
 						.setFieldName(PARAM_Barcode)
-						.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText("webui.view.husToPick.filters.locatorBarcodeFilter"))
+						.setDisplayName(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_LocatorBarcodeFilter))
 						.setMandatory(true)
 						.setWidgetType(DocumentFieldWidgetType.Text)
 						.barcodeScannerType(BarcodeScannerType.QRCode))
@@ -117,12 +117,11 @@ class HUsToPickViewFilters
 			final String barcode = filter.getParameterValueAsString(PARAM_Barcode);
 			final int locatorId = Services.get(IWarehouseDAO.class).retrieveLocatorIdByBarcode(barcode);
 
-			final String sql = sqlOpts.getTableNameOrAlias() + "." + I_M_HU.COLUMNNAME_M_Locator_ID + "=" + sqlParamsOut.placeholder(locatorId);
-			return sql;
+			return sqlOpts.getTableNameOrAlias() + "." + I_M_HU.COLUMNNAME_M_Locator_ID + "=" + sqlParamsOut.placeholder(locatorId);
 		}
 	}
 
-	private static final DocumentFilterDescriptor createHUIdsFilterDescriptor()
+	private static DocumentFilterDescriptor createHUIdsFilterDescriptor()
 	{
 		return DocumentFilterDescriptor.builder()
 				.setFilterId(HU_IDS_FilterId)
@@ -136,7 +135,7 @@ class HUsToPickViewFilters
 				.build();
 	}
 
-	public static final DocumentFilter createHUIdsFilter(final boolean considerAttributes)
+	public static DocumentFilter createHUIdsFilter(final boolean considerAttributes)
 	{
 		return DocumentFilter.singleParameterFilter(HU_IDS_FilterId, PARAM_ConsiderAttributes, Operator.EQUAL, considerAttributes);
 	}
@@ -146,13 +145,17 @@ class HUsToPickViewFilters
 		public static final transient HUIdsFilterConverter instance = new HUIdsFilterConverter();
 
 		@Override
-		public boolean canConvert(String filterId)
+		public boolean canConvert(final String filterId)
 		{
 			return Objects.equals(filterId, HU_IDS_FilterId);
 		}
 
 		@Override
-		public String getSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter, SqlOptions sqlOpts, SqlDocumentFilterConverterContext context)
+		public String getSql(
+				final SqlParamsCollector sqlParamsOut,
+				final DocumentFilter filter,
+				final SqlOptions sqlOpts,
+				final SqlDocumentFilterConverterContext context)
 		{
 			if (!HU_IDS_FilterId.equals(filter.getFilterId()))
 			{
@@ -172,8 +175,7 @@ class HUsToPickViewFilters
 				return "/* no M_HU_IDs */ 1=0";
 			}
 
-			final String sql = sqlOpts.getTableNameOrAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID + " IN " + DB.buildSqlList(huIds);
-			return sql;
+			return sqlOpts.getTableNameOrAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID + " IN " + DB.buildSqlList(huIds);
 		}
 	}
 
@@ -181,6 +183,8 @@ class HUsToPickViewFilters
 			final int shipmentScheduleId,
 			final boolean considerAttributes)
 	{
+		final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+
 		final ShipmentScheduleId sScheduleID = ShipmentScheduleId.ofRepoId(shipmentScheduleId);
 
 		final RetrieveAvailableHUIdsToPickRequest request = RetrieveAvailableHUIdsToPickRequest
