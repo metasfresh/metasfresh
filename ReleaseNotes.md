@@ -9,59 +9,56 @@ Additional notes:
 
 Here come the actual release notes:
 
-# Current RC - metasfresh 5.162 - WIP
+# metasfresh 5.162
 ## Features
-- https://github.com/metasfresh/metasfresh/issues/10516
-- https://github.com/metasfresh/metasfresh/issues/10541
-- https://github.com/metasfresh/metasfresh/pull/10565
-- https://github.com/metasfresh/metasfresh/issues/10568
-- https://github.com/metasfresh/metasfresh/issues/10648
-- https://github.com/metasfresh/metasfresh/pull/10653
-- https://github.com/metasfresh/metasfresh/issues/10661
-- https://github.com/metasfresh/metasfresh/pull/10664
-- https://github.com/metasfresh/metasfresh/issues/10666
-- https://github.com/metasfresh/metasfresh/issues/10667
-- https://github.com/metasfresh/metasfresh/pull/10669
-- https://github.com/metasfresh/metasfresh/issues/10670
-- https://github.com/metasfresh/metasfresh/pull/10674
-- https://github.com/metasfresh/metasfresh/issues/10681
-- https://github.com/metasfresh/metasfresh/issues/10687
-- https://github.com/metasfresh/metasfresh/issues/10691
-- https://github.com/metasfresh/metasfresh/pull/10694
-- https://github.com/metasfresh/metasfresh/issues/10696
-- https://github.com/metasfresh/metasfresh/pull/10697
-- https://github.com/metasfresh/metasfresh/pull/10702
-- https://github.com/metasfresh/metasfresh/issues/10704
-- https://github.com/metasfresh/metasfresh/issues/10705
-- https://github.com/metasfresh/metasfresh/pull/10708
-- https://github.com/metasfresh/metasfresh/pull/10729
-- https://github.com/metasfresh/metasfresh/issues/10724
-- https://github.com/metasfresh/metasfresh/issues/10718
-- https://github.com/metasfresh/metasfresh/issues/10736
-- https://github.com/metasfresh/metasfresh/pull/10739
-- https://github.com/metasfresh/metasfresh/pull/10743
-- https://github.com/metasfresh/metasfresh/pull/10743
-- https://github.com/metasfresh/metasfresh/pull/10744
-- https://github.com/metasfresh/metasfresh/issues/10749
-- https://github.com/metasfresh/metasfresh/issues/10760
-- https://github.com/metasfresh/metasfresh/pull/10759
-- https://github.com/metasfresh/metasfresh/pull/10763
-- https://github.com/metasfresh/metasfresh/issues/10741
+* metasfresh
+  * [#10541](https://github.com/metasfresh/metasfresh/issues/10541) Process to reconstruct commission data from `C_BPartner.C_BPartner_SalesRep_ID`'s changelog
+  * [#10565](https://github.com/metasfresh/metasfresh/pull/10565) WebUI: Zoom Into shall open the right window
+  * [#10568](https://github.com/metasfresh/metasfresh/issues/10568) Add Org filter for intratrade and intracommunity reports
+  * [#10648](https://github.com/metasfresh/metasfresh/issues/10648) Add guarantee time in months
+  * [#10653](https://github.com/metasfresh/metasfresh/pull/10653) Allow sending email from WebUI without SMTP-credentials set in `AD_User`
+  * [#10661](https://github.com/metasfresh/metasfresh/issues/10661) New `ProblemCode` field in `PP_Order` table
+  * [#10664](https://github.com/metasfresh/metasfresh/pull/10664) Show `SerialNo` attribute + translation
+  * [#10666](https://github.com/metasfresh/metasfresh/issues/10666) Tune material cockpit default settings
+  * [#10667](https://github.com/metasfresh/metasfresh/issues/10667) Create `AD_Zebra_Config` Table
+  * [#10669](https://github.com/metasfresh/metasfresh/pull/10669) `CreatePOFromSOsAggregator`: improve error message; `QueryStatisticsLogger`: fix it
+  * [#10670](https://github.com/metasfresh/metasfresh/issues/10670) Add Accounting date to windows that support it
+  * [#10674](https://github.com/metasfresh/metasfresh/pull/10674) `AD_User_Record_Access_UpdateFrom_BPartnerHierarchy`: Use the new `C_BPartner.c_bpartner_salesrep_id` hierarchy
+  * [#10687](https://github.com/metasfresh/metasfresh/issues/10687) External System Tweaks
+  * [#10691](https://github.com/metasfresh/metasfresh/issues/10691) Create Window External system log
+  * [#10693](https://github.com/metasfresh/metasfresh/issues/10693) Alberta: sync payer
+  * [#10696](https://github.com/metasfresh/metasfresh/issues/10696) `AD_PInstance_Log` Rest Endpoint
+  * [#10697](https://github.com/metasfresh/metasfresh/pull/10697) Improve performance of material receipt dispo for large DBs
+  * [#10702](https://github.com/metasfresh/metasfresh/pull/10702) Editing packing item override option to be changed
+  * [#10704](https://github.com/metasfresh/metasfresh/issues/10704) Debitor/Creditor in Bank Statement import
+  * [#10705](https://github.com/metasfresh/metasfresh/issues/10705) Allow creating commission-deed for purchase done by salesrep themselves
+  * [#10718](https://github.com/metasfresh/metasfresh/issues/10718) Add Frame Agreement and Order Call SO doc types
+  * [#10724](https://github.com/metasfresh/metasfresh/issues/10724) Shopware dedicated camel route
+  * [#10729](https://github.com/metasfresh/metasfresh/pull/10729) stepcom-orderss-edi - guard against prices with too many digits behind the decimal point
+  * [#10736](https://github.com/metasfresh/metasfresh/issues/10736) Feld Dropdown Produktfenster "Vegan/Vegetarisch"
+  * [#10739](https://github.com/metasfresh/metasfresh/pull/10739) `ADW_Window.Overrides_Window_ID` improvements
+  * [#10741](https://github.com/metasfresh/metasfresh/issues/10741) Customize Window Payment Selection
+  * [#10743](https://github.com/metasfresh/metasfresh/pull/10743) `DeliveredDataLoader`: fallback to stocking UOM in case `C_InvoiceCandidate_InOutLine.C_UOM_ID` is not set
+  * [#10749](https://github.com/metasfresh/metasfresh/issues/10749) Allow adding on non-stocked items to physical inventory
+  * [#10759](https://github.com/metasfresh/metasfresh/pull/10759) Payment Allocation: Invoice Row - `IsPreparedForAllocation`
+  * [#10760](https://github.com/metasfresh/metasfresh/issues/10760) Retrieve bpartner-masterdata from shopware6
+  * [#10763](https://github.com/metasfresh/metasfresh/pull/10763) WebUI login with token
 
 ## Fixes
-- https://github.com/metasfresh/metasfresh/pull/10647
-- https://github.com/metasfresh/metasfresh/pull/10659
-- https://github.com/metasfresh/metasfresh/pull/10673
-- https://github.com/metasfresh/metasfresh/pull/10686
-- https://github.com/metasfresh/metasfresh/pull/10698
-- https://github.com/metasfresh/metasfresh/pull/10711
-- https://github.com/metasfresh/metasfresh/pull/10713
-- https://github.com/metasfresh/metasfresh/pull/10733
-- https://github.com/metasfresh/metasfresh/pull/10717
-- https://github.com/metasfresh/metasfresh/issues/10734
-- https://github.com/metasfresh/metasfresh/pull/10751
-- https://github.com/metasfresh/metasfresh/pull/10755
-- https://github.com/metasfresh/metasfresh/issues/10757
+* metasfresh
+  * [#10516](https://github.com/metasfresh/metasfresh/issues/10516) Don't update `CanBeExportedAfter` value if nothing changed
+  * [#10647](https://github.com/metasfresh/metasfresh/pull/10647) Hotfix `OrderBL.setBill_User_ID`
+  * [#10656](https://github.com/metasfresh/metasfresh/issues/10656) Inventory import when no `huAggregationType` is set
+  * [#10681](https://github.com/metasfresh/metasfresh/issues/10681) Show Standard account from Org in 0 in balance sheet
+  * [#10698](https://github.com/metasfresh/metasfresh/pull/10698) `DebugTraceSqlQueriesRestController`
+  * [#10711](https://github.com/metasfresh/metasfresh/pull/10711) Don't remove the HU from view after moving it
+  * [#10713](https://github.com/metasfresh/metasfresh/pull/10713) Avoid spring cyclic dep by introducing `RecordAccessRepository`
+  * [#10717](https://github.com/metasfresh/metasfresh/pull/10717) Fix `paymentAllocatedAmt` in case of fixed conversion rate
+  * [#10733](https://github.com/metasfresh/metasfresh/pull/10733) Restore old `C_Order_CreatePOFromSOs` process
+  * [#10734](https://github.com/metasfresh/metasfresh/issues/10734) Issue CUs from Source HUs failing for different UOMs
+  * [#10751](https://github.com/metasfresh/metasfresh/pull/10751) Hotfix allocation posting for APC invoices
+  * [#10754](https://github.com/metasfresh/metasfresh/issues/10754) Camel-EDI: Number format improvement
+  * [#10757](https://github.com/metasfresh/metasfresh/issues/10757) Update `M_ShipmentSchedule.CanBeExportedFrom` when changing export status
 
 # metasfresh 5.161
 ## Features
