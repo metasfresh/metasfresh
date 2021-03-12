@@ -30,8 +30,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 
-import javax.annotation.Nullable;
-
 public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor.AdvancedSearchSelectionProcessor
 {
 
