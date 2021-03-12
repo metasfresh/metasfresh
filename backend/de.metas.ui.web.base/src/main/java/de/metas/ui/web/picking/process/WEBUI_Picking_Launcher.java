@@ -1,27 +1,30 @@
 package de.metas.ui.web.picking.process;
 
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_DIVERGING_LOCATIONS;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_TOO_MANY_PACKAGEABLES_1P;
-
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.process.IProcessPrecondition;
+import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.picking.PickingConstants;
+import de.metas.ui.web.picking.packageable.PackageableViewFactory;
+import de.metas.ui.web.picking.packageable.filters.PackageableFilterDescriptorProvider;
+import de.metas.ui.web.picking.packageable.filters.ProductBarcodeFilterData;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_DIVERGING_LOCATIONS;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_TOO_MANY_PACKAGEABLES_1P;
 
 /*
  * #%L
@@ -56,29 +59,28 @@ public class WEBUI_Picking_Launcher extends ViewBasedProcessTemplate implements 
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		// repeat the verification from checkPreconditionsApplicable() just to be sure.
 		// We had cases where the selected rows of checkPreconditionsApplicable() were not the selected rows of doIt()
-		final ProcessPreconditionsResolution verifySelectedDocuments = verifySelectedDocuments();
-		if (verifySelectedDocuments.isRejected())
-		{
-			throw new AdempiereException(verifySelectedDocuments().getRejectReason().translate(Env.getAD_Language(getCtx())));
-		}
+		verifySelectedDocuments().throwExceptionIfRejected();
 
-		final DocumentIdsSelection selectedRowIds = getSelectedRootDocumentIds();
-		final List<TableRecordReference> records = getView().streamByIds(selectedRowIds)
-				.flatMap(selectedRow -> selectedRow.getIncludedRows().stream())
-				.map(IViewRow::getId)
-				.map(DocumentId::removeDocumentPrefixAndConvertToInt)
-				.map(recordId -> TableRecordReference.of(I_M_Packageable_V.Table_Name, recordId))
-				.collect(ImmutableList.toImmutableList());
-		if (records.isEmpty())
+		final List<ShipmentScheduleId> shipmentScheduleIds = getShipmentScheduleIds();
+		if (shipmentScheduleIds.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		getResult().setRecordsToOpen(records, PickingConstants.WINDOWID_PickingView.toInt());
+		final IView packageablesView = getViewsRepo().createView(
+				PackageableViewFactory.createViewRequest()
+						.shipmentScheduleIds(shipmentScheduleIds)
+						.barcodeFilterData(getProductBarcodeFilterData().orElse(null))
+						.build());
+
+		getResult().setWebuiViewToOpen(ProcessExecutionResult.WebuiViewToOpen.builder()
+											   .target(ProcessExecutionResult.ViewOpenTarget.ModalOverlay)
+											   .viewId(packageablesView.getViewId().toJson())
+											   .build());
 
 		return MSG_OK;
 	}
@@ -102,7 +104,7 @@ public class WEBUI_Picking_Launcher extends ViewBasedProcessTemplate implements 
 		{
 			final Set<Integer> bpartnerLocationIds = getView().streamByIds(selectedRowIds)
 					.flatMap(selectedRow -> selectedRow.getIncludedRows().stream())
-					.map(this::getBPartnerLocationId)
+					.map(WEBUI_Picking_Launcher::getBPartnerLocationId)
 					.collect(Collectors.toSet());
 			if (bpartnerLocationIds.size() > 1)
 			{
@@ -113,7 +115,7 @@ public class WEBUI_Picking_Launcher extends ViewBasedProcessTemplate implements 
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	private int getBPartnerLocationId(@NonNull final IViewRow row)
+	private static int getBPartnerLocationId(@NonNull final IViewRow row)
 	{
 		return row.getFieldValueAsInt(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID, -1);
 	}
@@ -147,4 +149,21 @@ public class WEBUI_Picking_Launcher extends ViewBasedProcessTemplate implements 
 		}
 	}
 
+	private Optional<ProductBarcodeFilterData> getProductBarcodeFilterData()
+	{
+		return PackageableFilterDescriptorProvider.extractProductBarcodeFilterData(getView());
+	}
+
+	private List<ShipmentScheduleId> getShipmentScheduleIds()
+	{
+		final DocumentIdsSelection selectedRowIds = getSelectedRootDocumentIds();
+		return getView().streamByIds(selectedRowIds)
+				.flatMap(selectedRow -> selectedRow.getIncludedRows().stream())
+				.map(IViewRow::getId)
+				.distinct()
+				.map(DocumentId::removeDocumentPrefixAndConvertToInt)
+				.map(ShipmentScheduleId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
+	}
 }

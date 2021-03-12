@@ -85,7 +85,7 @@ public class TypedSqlQueryTests
 		public void missingParams()
 		{
 			assertThatInliningSqlParams("SELECT * FROM Table where a=? and b=? and c=?", 1, "str")
-					.isEqualTo("SELECT * FROM Table where a=1 and b='str' and c=?missing?");
+					.isEqualTo("SELECT * FROM Table where a=1 and b='str' and c=?missing3?");
 		}
 
 		@Test

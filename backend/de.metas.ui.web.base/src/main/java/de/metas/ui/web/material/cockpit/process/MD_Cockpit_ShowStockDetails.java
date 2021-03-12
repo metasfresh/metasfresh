@@ -15,7 +15,7 @@ import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilter.Builder;
+import de.metas.ui.web.document.filter.DocumentFilter.DocumentFilterBuilder;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
@@ -89,7 +89,7 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 		// create at least one filter per row; filters will be ORed
 		for (final MaterialCockpitRow row : rows)
 		{
-			DocumentFilter.Builder filterBuilder = newFilterBuilder(row);
+			DocumentFilterBuilder filterBuilder = newFilterBuilder(row);
 
 			boolean attributeFilterAdded = false;
 
@@ -164,9 +164,9 @@ public class MD_Cockpit_ShowStockDetails extends MaterialCockpitViewBasedProcess
 		return view.getViewId();
 	}
 
-	private static DocumentFilter.Builder newFilterBuilder(@NonNull final MaterialCockpitRow row)
+	private static DocumentFilterBuilder newFilterBuilder(@NonNull final MaterialCockpitRow row)
 	{
-		final Builder builder = DocumentFilter.builder();
+		final DocumentFilterBuilder builder = DocumentFilter.builder();
 
 		final DocumentFilterParam productParameter = DocumentFilterParam
 				.builder()

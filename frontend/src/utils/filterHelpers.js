@@ -1,7 +1,7 @@
-import deepUnfreeze from 'deep-unfreeze';
 import _ from 'lodash';
 
 import { DATE_FIELD_TYPES } from '../constants/Constants';
+import { deepUnfreeze } from '../utils';
 import { fieldValueToString } from '../utils/tableHelpers';
 import { getFormatForDateField, getFormattedDate } from './widgetHelpers';
 
@@ -58,18 +58,20 @@ export function formatFilters({ filtersData, filtersActive = [] }) {
  */
 export function getParentFilterFromFilterData({ filterId, filterData }) {
   let parentFilter = {};
-  filterData.forEach((filter) => {
-    if (filter.filterId && filter.filterId === filterId) {
-      parentFilter = filter;
-    }
-    if (filter.includedFilters) {
-      filter.includedFilters.forEach((incFilter) => {
-        if (incFilter.filterId && incFilter.filterId === filterId) {
-          parentFilter = incFilter;
-        }
-      });
-    }
-  });
+
+  filterData &&
+    filterData.forEach((filter) => {
+      if (filter.filterId && filter.filterId === filterId) {
+        parentFilter = filter;
+      }
+      if (filter.includedFilters) {
+        filter.includedFilters.forEach((incFilter) => {
+          if (incFilter.filterId && incFilter.filterId === filterId) {
+            parentFilter = incFilter;
+          }
+        });
+      }
+    });
   return parentFilter;
 }
 
