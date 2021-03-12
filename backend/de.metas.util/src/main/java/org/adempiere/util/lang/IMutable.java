@@ -42,6 +42,7 @@ public interface IMutable<T> extends IReference<T>
 	 * @return reference value
 	 */
 	@Override
+	@Nullable
 	T getValue();
 
 	/**

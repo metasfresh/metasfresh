@@ -28,8 +28,4 @@ public interface I_C_BP_Relation extends org.compiere.model.I_C_BP_Relation
 	public static String COLUMNNAME_IsHandOverLocation = "IsHandOverLocation";
 	public boolean isHandOverLocation();
 	public void setIsHandOverLocation(boolean IsHandOverLocation);
-	
-	public static String COLUMNNAME_IsMainProducer = "IsMainProducer";
-	public boolean isMainProducer();
-	public void setIsMainProducer(boolean IsMainProducer);
 }

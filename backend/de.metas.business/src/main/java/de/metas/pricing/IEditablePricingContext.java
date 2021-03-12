@@ -32,13 +32,16 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
+import lombok.NonNull;
 
 /**
  * A {@link IPricingContext} which also have setters.
  *
  * This object is used for creating the pricing context.
  */
+@SuppressWarnings("UnusedReturnValue")
 public interface IEditablePricingContext extends IPricingContext
 {
 	IEditablePricingContext setOrgId(OrgId orgId);
@@ -52,11 +55,18 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setQty(BigDecimal qty);
 
+	IEditablePricingContext setUomId(UomId uomId);
+
+	default IEditablePricingContext setQty(@NonNull final Quantity qty)
+	{
+		setQty(qty.toBigDecimal());
+		setUomId(qty.getUomId());
+		return this;
+	}
+
 	IEditablePricingContext setBPartnerId(BPartnerId bpartnerId);
 
 	IEditablePricingContext setCurrencyId(CurrencyId currencyId);
-
-	IEditablePricingContext setUomId(UomId uomId);
 
 	IEditablePricingContext setPriceDate(LocalDate priceDate);
 
@@ -78,24 +88,17 @@ public interface IEditablePricingContext extends IPricingContext
 	IEditablePricingContext setTrxName(String trxName);
 
 	/**
-	 *
-	 * @param convertPriceToContextUOM
 	 * @see IPricingContext#isConvertPriceToContextUOM()
 	 */
 	IEditablePricingContext setConvertPriceToContextUOM(boolean convertPriceToContextUOM);
 
 	IEditablePricingContext setProperty(String propertyName, Object value);
 
-	default IEditablePricingContext setProperty(String propertyName)
+	default IEditablePricingContext setProperty(final String propertyName)
 	{
 		return setProperty(propertyName, Boolean.TRUE);
 	}
 
-	/**
-	 * See {@link IPricingContext#isManualPrice()}.
-	 *
-	 * @param manualPriceEnabled
-	 */
 	IEditablePricingContext setManualPriceEnabled(boolean manualPriceEnabled);
 
 	IEditablePricingContext setCountryId(CountryId countryId);

@@ -60,7 +60,7 @@ FROM
 		FROM AD_Table t, AD_Column c, AD_Reference r
 		WHERE t.ad_table_id = c.ad_table_id
 			-- AND t.tablename LIKE 'ASP|_%' ESCAPE '|'
-			AND c.columnsql IS NULL
+          AND TRIM(COALESCE(c.columnsql, '')) = ''
 			AND c.ad_reference_id = r.ad_reference_id
 			AND (   c.ad_reference_id IN (19 /*Table Direct*/)
 				OR (    c.ad_reference_id IN (30 /*Search*/)
@@ -85,7 +85,7 @@ FROM
                  AD_Table tr
            WHERE t.ad_table_id = c.ad_table_id
              -- AND t.tablename LIKE 'ASP|_%' ESCAPE '|'
-             AND c.columnsql IS NULL
+             AND TRIM(COALESCE(c.columnsql, '')) = ''
              AND c.ad_reference_id = r.ad_reference_id
              AND (   c.ad_reference_id IN (18 /*Table*/)
                   OR (    c.ad_reference_id IN (30 /*Search*/)

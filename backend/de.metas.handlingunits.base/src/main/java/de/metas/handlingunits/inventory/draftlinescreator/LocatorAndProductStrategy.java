@@ -1,9 +1,16 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
+import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -11,16 +18,8 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import javax.annotation.Nullable;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -48,7 +47,6 @@ import lombok.Value;
  * Builds up a list of HUs for certain product, locator and warehouse, which have stock
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Value
 public class LocatorAndProductStrategy implements HUsForInventoryStrategy
@@ -57,12 +55,16 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 	IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	HuForInventoryLineFactory huForInventoryLineFactory;
+	@NonNull HuForInventoryLineFactory huForInventoryLineFactory;
 
+	@Nullable
 	WarehouseId warehouseId;
+	@Nullable
 	LocatorId locatorId;
+	@Nullable
 	ProductId productId;
-	AttributeSetInstanceId asiId;
+	boolean onlyStockedProducts;
+	@NonNull AttributeSetInstanceId asiId;
 
 	@Builder
 	private LocatorAndProductStrategy(
@@ -71,6 +73,7 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 			@Nullable final WarehouseId warehouseId,
 			@Nullable final LocatorId locatorId,
 			@Nullable final ProductId productId,
+			final boolean onlyStockedProducts,
 			@Nullable final AttributeSetInstanceId asiId)
 	{
 		this.huForInventoryLineFactory = huForInventoryLineFactory;
@@ -78,13 +81,14 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 		this.locatorId = locatorId;
 		this.warehouseId = warehouseId;
 		this.productId = productId;
+		this.onlyStockedProducts = onlyStockedProducts;
 		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
 
 		if (warehouseId != null && locatorId != null)
 		{
 			Check.errorUnless(warehouseId.equals(locatorId.getWarehouseId()),
-					"If both a warehouse and locator are specified, then the locator's WH needs to be the given WH; warehouseId={}; locatorId={}",
-					warehouseId, locatorId);
+							  "If both a warehouse and locator are specified, then the locator's WH needs to be the given WH; warehouseId={}; locatorId={}",
+							  warehouseId, locatorId);
 		}
 	}
 
@@ -93,7 +97,8 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 	{
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder()
 				.setOnlyTopLevelHUs()
-				.addHUStatusesToInclude(huStatusBL.getQtyOnHandStatuses());
+				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
+				.setOnlyStockedProducts(onlyStockedProducts);
 
 		if (warehouseId != null)
 		{

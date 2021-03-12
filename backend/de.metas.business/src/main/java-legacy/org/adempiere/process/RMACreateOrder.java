@@ -17,8 +17,11 @@
 
 package org.adempiere.process;
 
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MRMA;
@@ -38,6 +41,7 @@ import de.metas.util.Services;
 public class RMACreateOrder extends JavaProcess
 {
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	private int rmaId = 0;
     @Override
@@ -121,11 +125,13 @@ public class RMACreateOrder extends JavaProcess
                 orderLine.setM_Warehouse_ID(Services.get(IWarehouseAdvisor.class).evaluateWarehouse(originalOLine).getRepoId());
                 orderLine.setC_Currency_ID(originalOLine.getC_Currency_ID());
                 orderLine.setQty(line.getQty());
-                orderLine.setC_Project_ID(originalOLine.getC_Project_ID());
-                orderLine.setC_Activity_ID(originalOLine.getC_Activity_ID());
-                orderLine.setC_Campaign_ID(originalOLine.getC_Campaign_ID());
+
                 orderLine.setPrice();
                 orderLine.setPrice(line.getAmt());
+
+                final Dimension originalDimension = dimensionService.getFromRecord(originalOLine);
+
+                dimensionService.updateRecord(orderLine, originalDimension);
 
                 if (!orderLine.save())
                 {

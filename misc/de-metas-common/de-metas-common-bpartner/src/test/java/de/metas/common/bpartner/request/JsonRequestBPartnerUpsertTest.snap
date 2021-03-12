@@ -1,0 +1,392 @@
+de.metas.common.bpartner.request.JsonRequestBPartnerUpsertTest.deserialize_1=[
+  {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "ext-fghij_2",
+        "bpartnerComposite": {
+          "bpartner": {
+            "externalId": "fghij_2",
+            "externalIdSet": true,
+            "code": "code",
+            "codeSet": true,
+            "activeSet": false,
+            "name": "bPartner.name",
+            "nameSet": true,
+            "name2Set": false,
+            "name3Set": false,
+            "companyName": "bPartner.companyName",
+            "companyNameSet": true,
+            "vendorSet": false,
+            "customerSet": false,
+            "parentId": 1,
+            "parentIdSet": true,
+            "phone": "bPartner.phone",
+            "phoneSet": true,
+            "language": "bPartner.de_CH",
+            "languageSet": true,
+            "invoiceRuleSet": false,
+            "url": "bPartner.url",
+            "urlSet": true,
+            "url2Set": false,
+            "url3Set": false,
+            "group": "bpGroupRecord.name",
+            "groupSet": true,
+            "globalIdset": false,
+            "vatId": "bPartner.vatId",
+            "vatIdSet": true,
+            "syncAdviseSet": false
+          },
+          "locations": {
+            "requestItems": [
+              {
+                "locationIdentifier": "ext-l1_externalId",
+                "location": {
+                  "externalId": "l1_externalId",
+                  "externalIdSet": true,
+                  "activeSet": false,
+                  "nameSet": false,
+                  "bpartnerNameSet": false,
+                  "address1": "l1_address1",
+                  "address1Set": true,
+                  "address2": "l1_address2",
+                  "address2Set": true,
+                  "address3Set": false,
+                  "address4Set": false,
+                  "poBox": "l1_poBox",
+                  "poBoxSet": true,
+                  "postal": "l1_postal",
+                  "postalSet": true,
+                  "city": "l1_city",
+                  "citySet": true,
+                  "district": "l1_district",
+                  "districtSet": true,
+                  "region": "l1_region",
+                  "regionSet": true,
+                  "countryCode": "CH",
+                  "countryCodeSet": true,
+                  "gln": "l1_gln",
+                  "glnSet": true,
+                  "shipToSet": false,
+                  "shipToDefaultSet": false,
+                  "billToSet": false,
+                  "billToDefaultSet": false,
+                  "syncAdviseSet": false
+                }
+              },
+              {
+                "locationIdentifier": "ext-l2_externalId",
+                "location": {
+                  "externalId": "l2_externalId",
+                  "externalIdSet": true,
+                  "activeSet": false,
+                  "nameSet": false,
+                  "bpartnerNameSet": false,
+                  "address1": "l2_address1",
+                  "address1Set": true,
+                  "address2": "l2_address2",
+                  "address2Set": true,
+                  "address3Set": false,
+                  "address4Set": false,
+                  "poBox": "l2_poBox",
+                  "poBoxSet": true,
+                  "postal": "l2_postal",
+                  "postalSet": true,
+                  "city": "l2_city",
+                  "citySet": true,
+                  "district": "l2_district",
+                  "districtSet": true,
+                  "region": "l2_region",
+                  "regionSet": true,
+                  "countryCode": "DE",
+                  "countryCodeSet": true,
+                  "gln": "l2_gln",
+                  "glnSet": true,
+                  "shipToSet": false,
+                  "shipToDefaultSet": false,
+                  "billToSet": false,
+                  "billToDefaultSet": false,
+                  "syncAdviseSet": false
+                }
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "UPDATE_MERGE"
+            }
+          },
+          "contacts": {
+            "requestItems": [
+              {
+                "contactIdentifier": "ext-c1_externalId",
+                "contact": {
+                  "externalId": "c1_externalId",
+                  "externalIdSet": true,
+                  "metasfreshBPartnerIdSet": false,
+                  "codeSet": false,
+                  "activeSet": false,
+                  "name": "c1_name",
+                  "nameSet": true,
+                  "firstNameSet": false,
+                  "lastNameSet": false,
+                  "email": "c1_email@email.net",
+                  "emailSet": true,
+                  "phone": "c1_phone",
+                  "phoneSet": true,
+                  "faxSet": true,
+                  "mobilePhoneSet": false,
+                  "defaultContactSet": false,
+                  "shipToDefaultSet": false,
+                  "billToDefaultSet": false,
+                  "newsletterSet": false,
+                  "descriptionSet": false,
+                  "salesSet": false,
+                  "salesDefaultSet": false,
+                  "purchaseSet": false,
+                  "purchaseDefaultSet": false,
+                  "subjectMatterSet": false,
+                  "syncAdviseSet": false
+                }
+              },
+              {
+                "contactIdentifier": "ext-c2_externalId",
+                "contact": {
+                  "externalId": "c2_externalId",
+                  "externalIdSet": true,
+                  "metasfreshBPartnerIdSet": false,
+                  "codeSet": false,
+                  "activeSet": false,
+                  "name": "c2_name",
+                  "nameSet": true,
+                  "firstNameSet": false,
+                  "lastNameSet": false,
+                  "email": "c2_email@email.net",
+                  "emailSet": true,
+                  "phone": "c2_phone",
+                  "phoneSet": true,
+                  "faxSet": false,
+                  "mobilePhoneSet": false,
+                  "defaultContactSet": false,
+                  "shipToDefaultSet": false,
+                  "billToDefaultSet": false,
+                  "newsletterSet": false,
+                  "descriptionSet": false,
+                  "salesSet": false,
+                  "salesDefaultSet": false,
+                  "purchaseSet": false,
+                  "purchaseDefaultSet": false,
+                  "subjectMatterSet": false,
+                  "syncAdviseSet": false
+                }
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "UPDATE_MERGE"
+            }
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+]
+
+
+de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertTest.deserialize_1=[
+  {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "ext-fghij_2",
+        "bpartnerComposite": {
+          "bpartner": {
+            "externalId": "fghij_2",
+            "externalIdSet": true,
+            "code": "code",
+            "codeSet": true,
+            "activeSet": false,
+            "name": "bPartner.name",
+            "nameSet": true,
+            "name2Set": false,
+            "name3Set": false,
+            "companyName": "bPartner.companyName",
+            "companyNameSet": true,
+            "vendorSet": false,
+            "customerSet": false,
+            "parentId": 1,
+            "parentIdSet": true,
+            "phone": "bPartner.phone",
+            "phoneSet": true,
+            "language": "bPartner.de_CH",
+            "languageSet": true,
+            "invoiceRuleSet": false,
+            "url": "bPartner.url",
+            "urlSet": true,
+            "url2Set": false,
+            "url3Set": false,
+            "group": "bpGroupRecord.name",
+            "groupSet": true,
+            "globalIdset": false,
+            "syncAdviseSet": false,
+            "vatId": "bPartner.vatId",
+            "vatIdSet": true
+          },
+          "locations": {
+            "requestItems": [
+              {
+                "locationIdentifier": "ext-l1_externalId",
+                "location": {
+                  "externalId": "l1_externalId",
+                  "externalIdSet": true,
+                  "activeSet": false,
+                  "nameSet": false,
+                  "bpartnerNameSet": false,
+                  "address1": "l1_address1",
+                  "address1Set": true,
+                  "address2": "l1_address2",
+                  "address2Set": true,
+                  "address3Set": false,
+                  "address4Set": false,
+                  "poBox": "l1_poBox",
+                  "poBoxSet": true,
+                  "postal": "l1_postal",
+                  "postalSet": true,
+                  "city": "l1_city",
+                  "citySet": true,
+                  "district": "l1_district",
+                  "districtSet": true,
+                  "region": "l1_region",
+                  "regionSet": true,
+                  "countryCode": "CH",
+                  "countryCodeSet": true,
+                  "gln": "l1_gln",
+                  "glnSet": true,
+                  "shipToSet": false,
+                  "shipToDefaultSet": false,
+                  "billToSet": false,
+                  "billToDefaultSet": false,
+                  "syncAdviseSet": false
+                }
+              },
+              {
+                "locationIdentifier": "ext-l2_externalId",
+                "location": {
+                  "externalId": "l2_externalId",
+                  "externalIdSet": true,
+                  "activeSet": false,
+                  "nameSet": false,
+                  "bpartnerNameSet": false,
+                  "address1": "l2_address1",
+                  "address1Set": true,
+                  "address2": "l2_address2",
+                  "address2Set": true,
+                  "address3Set": false,
+                  "address4Set": false,
+                  "poBox": "l2_poBox",
+                  "poBoxSet": true,
+                  "postal": "l2_postal",
+                  "postalSet": true,
+                  "city": "l2_city",
+                  "citySet": true,
+                  "district": "l2_district",
+                  "districtSet": true,
+                  "region": "l2_region",
+                  "regionSet": true,
+                  "countryCode": "DE",
+                  "countryCodeSet": true,
+                  "gln": "l2_gln",
+                  "glnSet": true,
+                  "shipToSet": false,
+                  "shipToDefaultSet": false,
+                  "billToSet": false,
+                  "billToDefaultSet": false,
+                  "syncAdviseSet": false
+                }
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "UPDATE_MERGE"
+            }
+          },
+          "contacts": {
+            "requestItems": [
+              {
+                "contactIdentifier": "ext-c1_externalId",
+                "contact": {
+                  "externalId": "c1_externalId",
+                  "externalIdSet": true,
+                  "metasfreshBPartnerIdSet": false,
+                  "codeSet": false,
+                  "activeSet": false,
+                  "name": "c1_name",
+                  "nameSet": true,
+                  "firstNameSet": false,
+                  "lastNameSet": false,
+                  "email": "c1_email@email.net",
+                  "emailSet": true,
+                  "phone": "c1_phone",
+                  "phoneSet": true,
+                  "faxSet": true,
+                  "mobilePhoneSet": false,
+                  "defaultContactSet": false,
+                  "shipToDefaultSet": false,
+                  "billToDefaultSet": false,
+                  "newsletterSet": false,
+                  "descriptionSet": false,
+                  "salesSet": false,
+                  "salesDefaultSet": false,
+                  "purchaseSet": false,
+                  "purchaseDefaultSet": false,
+                  "subjectMatterSet": false,
+                  "syncAdviseSet": false
+                }
+              },
+              {
+                "contactIdentifier": "ext-c2_externalId",
+                "contact": {
+                  "externalId": "c2_externalId",
+                  "externalIdSet": true,
+                  "metasfreshBPartnerIdSet": false,
+                  "codeSet": false,
+                  "activeSet": false,
+                  "name": "c2_name",
+                  "nameSet": true,
+                  "firstNameSet": false,
+                  "lastNameSet": false,
+                  "email": "c2_email@email.net",
+                  "emailSet": true,
+                  "phone": "c2_phone",
+                  "phoneSet": true,
+                  "faxSet": false,
+                  "mobilePhoneSet": false,
+                  "defaultContactSet": false,
+                  "shipToDefaultSet": false,
+                  "billToDefaultSet": false,
+                  "newsletterSet": false,
+                  "descriptionSet": false,
+                  "salesSet": false,
+                  "salesDefaultSet": false,
+                  "purchaseSet": false,
+                  "purchaseDefaultSet": false,
+                  "subjectMatterSet": false,
+                  "syncAdviseSet": false
+                }
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "UPDATE_MERGE"
+            }
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+]

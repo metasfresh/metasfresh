@@ -8,17 +8,45 @@
     <option name="RIGHT_MARGIN" value="400" />
     <option name="FORMATTER_TAGS_ENABLED" value="true" />
     <option name="SOFT_MARGINS" value="80,150" />
-    <DB2CodeStyleSettings version="2">
-      <option name="KEYWORD_CASE" value="0" />
+    <DB2CodeStyleSettings version="5">
+      <option name="SET_EL_WRAP" value="3" />
+      <option name="WITH_EL_WRAP" value="2" />
+      <option name="ROUTINE_ARG_WRAP" value="1" />
+      <option name="ROUTINE_ARG_ALIGN_TYPES" value="true" />
+      <option name="ROUTINE_AS_WRAP" value="true" />
+      <option name="IMP_DECLARE_EL_WRAP" value="3" />
+      <option name="EXPR_CASE_THEN_ALIGN" value="true" />
+      <option name="EXPR_CASE_ELSE_ALIGN_THEN" value="true" />
+      <option name="EXPR_CASE_END" value="1" />
     </DB2CodeStyleSettings>
-    <DerbyCodeStyleSettings version="2">
-      <option name="KEYWORD_CASE" value="0" />
+    <DerbyCodeStyleSettings version="5">
+      <option name="SET_EL_WRAP" value="3" />
+      <option name="WITH_EL_WRAP" value="2" />
+      <option name="ROUTINE_ARG_WRAP" value="1" />
+      <option name="ROUTINE_ARG_ALIGN_TYPES" value="true" />
+      <option name="ROUTINE_AS_WRAP" value="true" />
+      <option name="IMP_DECLARE_EL_WRAP" value="3" />
+      <option name="EXPR_CASE_THEN_ALIGN" value="true" />
+      <option name="EXPR_CASE_ELSE_ALIGN_THEN" value="true" />
+      <option name="EXPR_CASE_END" value="1" />
     </DerbyCodeStyleSettings>
-    <H2CodeStyleSettings version="2">
-      <option name="KEYWORD_CASE" value="0" />
+    <H2CodeStyleSettings version="5">
+      <option name="SET_EL_WRAP" value="3" />
+      <option name="WITH_EL_WRAP" value="2" />
+      <option name="ROUTINE_ARG_WRAP" value="1" />
+      <option name="ROUTINE_ARG_ALIGN_TYPES" value="true" />
+      <option name="EXPR_CASE_THEN_ALIGN" value="true" />
+      <option name="EXPR_CASE_ELSE_ALIGN_THEN" value="true" />
+      <option name="EXPR_CASE_END" value="1" />
     </H2CodeStyleSettings>
-    <HSQLCodeStyleSettings version="2">
-      <option name="KEYWORD_CASE" value="0" />
+    <HSQLCodeStyleSettings version="5">
+      <option name="SET_EL_WRAP" value="3" />
+      <option name="WITH_EL_WRAP" value="2" />
+      <option name="ROUTINE_ARG_WRAP" value="1" />
+      <option name="ROUTINE_ARG_ALIGN_TYPES" value="true" />
+      <option name="EXPR_CASE_THEN_ALIGN" value="true" />
+      <option name="EXPR_CASE_ELSE_ALIGN_THEN" value="true" />
+      <option name="EXPR_CASE_END" value="1" />
     </HSQLCodeStyleSettings>
     <JSCodeStyleSettings version="0">
       <option name="SPACE_BEFORE_FUNCTION_LEFT_PARENTH" value="false" />
@@ -31,46 +59,108 @@
       <option name="GENERATE_FINAL_PARAMETERS" value="true" />
       <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="999" />
       <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="999" />
+      <option name="PACKAGES_TO_USE_IMPORT_ON_DEMAND">
+        <value>
+          <package name="java.awt" withSubpackages="false" static="false" />
+          <package name="org.assertj.core.api.Assertions" withSubpackages="true" static="true" />
+          <package name="javax.swing" withSubpackages="false" static="false" />
+        </value>
+      </option>
     </JavaCodeStyleSettings>
-    <MSSQLCodeStyleSettings version="2">
-      <option name="KEYWORD_CASE" value="0" />
-    </MSSQLCodeStyleSettings>
-    <MySQLCodeStyleSettings version="2">
-      <option name="KEYWORD_CASE" value="0" />
-    </MySQLCodeStyleSettings>
-    <OracleCodeStyleSettings version="2">
-      <option name="KEYWORD_CASE" value="0" />
-    </OracleCodeStyleSettings>
-    <PostgresCodeStyleSettings version="2">
-      <option name="USE_GENERIC_STYLE" value="true" />
-      <option name="KEYWORD_CASE" value="0" />
+    <MSSQLCodeStyleSettings version="5">
+      <option name="SET_EL_WRAP" value="3" />
+      <option name="WITH_EL_WRAP" value="2" />
       <option name="ROUTINE_ARG_WRAP" value="1" />
+      <option name="ROUTINE_ARG_ALIGN_TYPES" value="true" />
       <option name="ROUTINE_AS_WRAP" value="true" />
-      <option name="ROUTINE_PG_R_QUOTE_WRAP_AFTER" value="true" />
-      <option name="EXPR_CASE_COLLAPSE" value="false" />
-    </PostgresCodeStyleSettings>
-    <SQLiteCodeStyleSettings version="2">
-      <option name="KEYWORD_CASE" value="0" />
-    </SQLiteCodeStyleSettings>
-    <SqlCodeStyleSettings version="2">
-      <option name="KEYWORD_CASE" value="0" />
+      <option name="IMP_DECLARE_EL_WRAP" value="3" />
+      <option name="EXPR_CASE_THEN_ALIGN" value="true" />
+      <option name="EXPR_CASE_ELSE_ALIGN_THEN" value="true" />
+      <option name="EXPR_CASE_END" value="1" />
+    </MSSQLCodeStyleSettings>
+    <MySQLCodeStyleSettings version="5">
+      <option name="SET_EL_WRAP" value="3" />
+      <option name="WITH_EL_WRAP" value="2" />
+      <option name="ROUTINE_ARG_WRAP" value="1" />
+      <option name="ROUTINE_ARG_ALIGN_TYPES" value="true" />
+      <option name="EXPR_CASE_THEN_ALIGN" value="true" />
+      <option name="EXPR_CASE_ELSE_ALIGN_THEN" value="true" />
+      <option name="EXPR_CASE_END" value="1" />
+    </MySQLCodeStyleSettings>
+    <OracleCodeStyleSettings version="5">
+      <option name="SET_EL_WRAP" value="3" />
+      <option name="WITH_EL_WRAP" value="2" />
+      <option name="ROUTINE_ARG_WRAP" value="1" />
+      <option name="ROUTINE_ARG_ALIGN_TYPES" value="true" />
+      <option name="ROUTINE_AS_WRAP" value="true" />
+      <option name="IMP_DECLARE_EL_WRAP" value="3" />
+      <option name="EXPR_CASE_THEN_ALIGN" value="true" />
+      <option name="EXPR_CASE_ELSE_ALIGN_THEN" value="true" />
+      <option name="EXPR_CASE_END" value="1" />
+    </OracleCodeStyleSettings>
+    <PostgresCodeStyleSettings version="5">
       <option name="SET_EL_WRAP" value="3" />
       <option name="WITH_EL_WRAP" value="2" />
       <option name="ROUTINE_ARG_WRAP" value="1" />
       <option name="ROUTINE_ARG_ALIGN_TYPES" value="true" />
       <option name="ROUTINE_AS_WRAP" value="true" />
       <option name="ROUTINE_PG_R_QUOTE_WRAP_AFTER" value="true" />
+      <option name="IMP_DECLARE_EL_WRAP" value="1" />
+      <option name="EXPR_CASE_THEN_ALIGN" value="true" />
+      <option name="EXPR_CASE_ELSE_ALIGN_THEN" value="true" />
+      <option name="EXPR_CASE_END" value="1" />
+      <option name="USE_GENERIC_STYLE" value="true" />
+      <option name="NEW_LINE_AROUND_SEMICOLON" value="true" />
+    </PostgresCodeStyleSettings>
+    <SQLiteCodeStyleSettings version="5">
+      <option name="SET_EL_WRAP" value="3" />
+      <option name="WITH_EL_WRAP" value="2" />
+      <option name="ROUTINE_ARG_WRAP" value="1" />
+      <option name="ROUTINE_ARG_ALIGN_TYPES" value="true" />
+      <option name="EXPR_CASE_THEN_ALIGN" value="true" />
+      <option name="EXPR_CASE_ELSE_ALIGN_THEN" value="true" />
+      <option name="EXPR_CASE_END" value="1" />
+    </SQLiteCodeStyleSettings>
+    <SqlCodeStyleSettings version="5">
+      <option name="KEYWORD_CASE" value="2" />
+      <option name="SET_EL_WRAP" value="3" />
+      <option name="WITH_EL_WRAP" value="2" />
+      <option name="ROUTINE_ARG_WRAP" value="1" />
+      <option name="ROUTINE_ARG_ALIGN_TYPES" value="true" />
+      <option name="ROUTINE_AS_WRAP" value="true" />
+      <option name="ROUTINE_PG_R_QUOTE_WRAP_AFTER" value="true" />
+      <option name="IMP_DECLARE_EL_WRAP" value="3" />
       <option name="EXPR_CASE_THEN_ALIGN" value="true" />
       <option name="EXPR_CASE_ELSE_ALIGN_THEN" value="true" />
       <option name="EXPR_CASE_END" value="1" />
       <option name="NEW_LINE_AROUND_SEMICOLON" value="true" />
     </SqlCodeStyleSettings>
-    <SybaseCodeStyleSettings version="2">
-      <option name="KEYWORD_CASE" value="0" />
+    <SybaseCodeStyleSettings version="5">
+      <option name="SET_EL_WRAP" value="3" />
+      <option name="WITH_EL_WRAP" value="2" />
+      <option name="ROUTINE_ARG_WRAP" value="1" />
+      <option name="ROUTINE_ARG_ALIGN_TYPES" value="true" />
+      <option name="ROUTINE_AS_WRAP" value="true" />
+      <option name="IMP_DECLARE_EL_WRAP" value="3" />
+      <option name="EXPR_CASE_THEN_ALIGN" value="true" />
+      <option name="EXPR_CASE_ELSE_ALIGN_THEN" value="true" />
+      <option name="EXPR_CASE_END" value="1" />
     </SybaseCodeStyleSettings>
     <XML>
       <option name="XML_TEXT_WRAP" value="0" />
     </XML>
+    <codeStyleSettings language="DB2">
+      <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
+    </codeStyleSettings>
+    <codeStyleSettings language="Derby">
+      <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
+    </codeStyleSettings>
+    <codeStyleSettings language="H2">
+      <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
+    </codeStyleSettings>
+    <codeStyleSettings language="HSQLDB">
+      <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
+    </codeStyleSettings>
     <codeStyleSettings language="JAVA">
       <option name="LINE_COMMENT_AT_FIRST_COLUMN" value="false" />
       <option name="LINE_COMMENT_ADD_SPACE" value="true" />
@@ -87,6 +177,7 @@
       <option name="CATCH_ON_NEW_LINE" value="true" />
       <option name="FINALLY_ON_NEW_LINE" value="true" />
       <option name="ALIGN_MULTILINE_PARAMETERS" value="false" />
+      <option name="ALIGN_MULTILINE_PARAMETERS_IN_CALLS" value="true" />
       <option name="ALIGN_MULTILINE_RESOURCES" value="false" />
       <option name="SPACE_WITHIN_ARRAY_INITIALIZER_BRACES" value="true" />
       <option name="SPACE_AFTER_TYPE_CAST" value="false" />
@@ -111,11 +202,29 @@
     <codeStyleSettings language="JavaScript">
       <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />
     </codeStyleSettings>
+    <codeStyleSettings language="MySQL">
+      <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
+    </codeStyleSettings>
+    <codeStyleSettings language="Oracle">
+      <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
+    </codeStyleSettings>
     <codeStyleSettings language="PostgreSQL">
       <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
     </codeStyleSettings>
     <codeStyleSettings language="SQL">
       <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
+    </codeStyleSettings>
+    <codeStyleSettings language="SQLite">
+      <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
+    </codeStyleSettings>
+    <codeStyleSettings language="Sybase">
+      <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
+    </codeStyleSettings>
+    <codeStyleSettings language="TSQL">
+      <option name="KEEP_FIRST_COLUMN_COMMENT" value="false" />
+    </codeStyleSettings>
+    <codeStyleSettings language="XML">
+      <option name="RIGHT_MARGIN" value="1000" />
     </codeStyleSettings>
   </code_scheme>
 </component>

@@ -780,4 +780,9 @@ public final class Quantity implements Comparable<Quantity>
 				sourceQty != null ? sourceQty.setScale(newScale.toInt(), roundingMode) : newQty,
 				sourceUom != null ? sourceUom : uom);
 	}
+
+	public int intValueExact()
+	{
+		return toBigDecimal().intValueExact();
+	}
 }

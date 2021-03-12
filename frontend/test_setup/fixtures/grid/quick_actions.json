@@ -31,5 +31,117 @@
       "evaluateDuration": "331.8 μs",
       "internalName": "WEBUI_Fact_Acct_Repost_ViewRows"
     }
+  ],
+  "actions2": [
+    {
+      "processId": "ADP_540809",
+      "caption": "Open HU selection window",
+      "description": "",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "evaluateDuration": "218.7 μs",
+      "internalName": "WEBUI_Picking_HUEditor_Launcher"
+    },
+    {
+      "processId": "ADP_540808",
+      "caption": "Pick to existing HU",
+      "description": "",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "disabled": true,
+      "disabledReason": "No items selected",
+      "evaluateDuration": "215.8 μs",
+      "internalName": "WEBUI_Picking_PickQtyToExistingHU"
+    },
+    {
+      "processId": "ADP_540807",
+      "caption": "Pick to new HU",
+      "description": "",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "disabled": true,
+      "disabledReason": "No items selected",
+      "evaluateDuration": "281.0 μs",
+      "internalName": "WEBUI_Picking_PickQtyToNewHU"
+    },
+    {
+      "processId": "ADP_540948",
+      "caption": "Picking TU Label For HU",
+      "description": "Picking TU Label For HU",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "disabled": true,
+      "disabledReason": "A HU item shall be selected",
+      "evaluateDuration": "135.6 μs",
+      "internalName": "WEBUI_Picking_TU_Label_For_HU"
+    },
+    {
+      "processId": "ADP_540810",
+      "caption": "Process picking",
+      "description": "Associates the picking records with their respective shipment schedule records such that shipments can be created.",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "disabled": true,
+      "disabledReason": "WEBUI_Picking_No_Unprocessed_Records",
+      "evaluateDuration": "154.3 μs",
+      "internalName": "WEBUI_Picking_M_Picking_Candidate_Process"
+    },
+    {
+      "processId": "ADP_540815",
+      "caption": "Reactivate picking",
+      "description": "Un-associates the selected picking data with their respective shipment schedules.",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "disabled": true,
+      "disabledReason": "A HU item shall be selected",
+      "evaluateDuration": "158.2 μs",
+      "internalName": "WEBUI_Picking_M_Picking_Candidate_Unprocess"
+    },
+    {
+      "processId": "ADP_540805",
+      "caption": "Unpick HU",
+      "description": "",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "disabled": true,
+      "disabledReason": "A HU item shall be selected",
+      "evaluateDuration": "142.2 μs",
+      "internalName": "WEBUI_Picking_RemoveHUFromPickingSlot"
+    },
+    {
+      "processId": "ADP_540827",
+      "caption": "Zurück in Quell-HU",
+      "description": "",
+      "displayPlaces": [
+        "ViewQuickActions"
+      ],
+      "quickAction": true,
+      "defaultQuickAction": false,
+      "disabled": true,
+      "disabledReason": "A HU item shall be selected",
+      "evaluateDuration": "218.3 μs",
+      "internalName": "WEBUI_Picking_ReturnQtyToSourceHU"
+    }
   ]
 }

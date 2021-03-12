@@ -1,13 +1,11 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base;
 
-import java.util.Arrays;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import lombok.Getter;
+
+import javax.annotation.Nullable;
+import java.util.Arrays;
 
 /*
  * #%L
@@ -40,7 +38,10 @@ public enum HealthCareInvoiceDocSubType
 	KT("KT"),
 
 	/** "Krankenversicherung" - invoice to a health insurance */
-	KV("KV");
+	KV("KV"),
+
+	/** "Gemeinde" - invoice to a municipality */
+	GM("GM");
 
 	public static HealthCareInvoiceDocSubType ofCodeOrNull(@Nullable final String code)
 	{

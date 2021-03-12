@@ -350,7 +350,7 @@ public interface ITrxManager extends ISingletonService
 	 *
 	 * @return true if given transaction is "null" (i.e. no transaction)
 	 */
-	boolean isNull(String trxName);
+	boolean isNull(@Nullable String trxName);
 
 	/**
 	 * @return true if transaction is not null and it's active (e.g. not already committed/closed)

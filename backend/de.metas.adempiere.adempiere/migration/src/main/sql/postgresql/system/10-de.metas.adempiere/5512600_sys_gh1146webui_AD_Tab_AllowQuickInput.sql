@@ -95,8 +95,9 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2019-02-13T12:58:28.244
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('AD_Tab','ALTER TABLE public.AD_Tab ADD COLUMN AllowQuickInput CHAR(1) DEFAULT ''Y'' CHECK (AllowQuickInput IN (''Y'',''N'')) NOT NULL')
-;
+-- moved to 5512600_sys_gh1146webui_AD_Tab_AllowQuickInput_DDL.sql
+--/* DDL */ SELECT public.db_alter_table('AD_Tab','ALTER TABLE public.AD_Tab ADD COLUMN AllowQuickInput CHAR(1) DEFAULT ''Y'' CHECK (AllowQuickInput IN (''Y'',''N'')) NOT NULL')
+--;
 
 -- 2019-02-13T13:12:56.238
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator

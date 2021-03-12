@@ -16,8 +16,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.JsonInvoiceRule;
+import de.metas.common.rest_api.JsonExternalId;
+import de.metas.common.rest_api.JsonInvoiceRule;
 import de.metas.rest_api.common.JsonPrice;
 import de.metas.rest_api.common.JsonSOTrx;
 import io.swagger.annotations.ApiModelProperty;

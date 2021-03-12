@@ -1,6 +1,9 @@
 package de.metas.material.dispo.service.candidatechange;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -29,6 +32,7 @@ import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,6 +41,7 @@ import org.mockito.Mockito;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -107,13 +112,21 @@ public class CandidateChangeHandlerTests
 	private StockCandidateService stockCandidateService;
 	private CandidateRepositoryWriteService candidateRepositoryCommands;
 
+	private DimensionService dimensionService;
+
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
-		candidateRepositoryCommands = new CandidateRepositoryWriteService();
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService);
+		candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
@@ -165,7 +178,7 @@ public class CandidateChangeHandlerTests
 			}
 
 			@Override
-			public Candidate onCandidateNewOrChange(Candidate candidate)
+			public Candidate onCandidateNewOrChange(Candidate candidate, OnNewOrChangeAdvise advise)
 			{
 				throw new UnsupportedOperationException();
 			}
@@ -197,10 +210,10 @@ public class CandidateChangeHandlerTests
 
 			earlierCandidate = candidateRepositoryCommands
 					.addOrUpdateOverwriteStoredSeqNo(Candidate.builder()
-							.type(CandidateType.STOCK)
-							.clientAndOrgId(CLIENT_AND_ORG_ID)
-							.materialDescriptor(earlierMaterialDescriptor)
-							.build())
+															 .type(CandidateType.STOCK)
+															 .clientAndOrgId(CLIENT_AND_ORG_ID)
+															 .materialDescriptor(earlierMaterialDescriptor)
+															 .build())
 					.getCandidate();
 
 			final MaterialDescriptor laterMaterialDescriptor = materialDescriptor.withDate(t3);
@@ -568,11 +581,11 @@ public class CandidateChangeHandlerTests
 		final Candidate candidate = supplyCandidate.toBuilder()
 				.materialDescriptor(supplyCandidate.getMaterialDescriptor().withDate(BEFORE_NOW))
 				.transactionDetail(TransactionDetail.builder()
-						.transactionId(50)
-						.quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
-						.transactionDate(BEFORE_NOW)
-						.complete(true)
-						.build())
+										   .transactionId(50)
+										   .quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
+										   .transactionDate(BEFORE_NOW)
+										   .complete(true)
+										   .build())
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
@@ -628,11 +641,11 @@ public class CandidateChangeHandlerTests
 		final Candidate candidate = supplyCandidate.toBuilder()
 				.materialDescriptor(supplyCandidate.getMaterialDescriptor().withDate(BEFORE_NOW))
 				.transactionDetail(TransactionDetail.builder()
-						.transactionId(50)
-						.quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
-						.transactionDate(BEFORE_NOW)
-						.complete(true)
-						.build())
+										   .transactionId(50)
+										   .quantity(FIFTEEN) // sidenote: this is not the candidate's Qty..it just contributes to the candidate's *fullFilledQty*
+										   .transactionDate(BEFORE_NOW)
+										   .complete(true)
+										   .build())
 				.build();
 
 		candidateChangeHandler.onCandidateNewOrChange(candidate);
@@ -725,10 +738,10 @@ public class CandidateChangeHandlerTests
 
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.businessCaseDetail(PurchaseDetail.builder()
-						.qty(qty)
-						.advised(Flag.TRUE)
-						.receiptScheduleRepoId(receiptScheduleIdForSupplyDetail)
-						.build())
+											.qty(qty)
+											.advised(Flag.TRUE)
+											.receiptScheduleRepoId(receiptScheduleIdForSupplyDetail)
+											.build())
 				.build();
 
 		return candidateChangeHandler.onCandidateNewOrChange(supplyCandidate);

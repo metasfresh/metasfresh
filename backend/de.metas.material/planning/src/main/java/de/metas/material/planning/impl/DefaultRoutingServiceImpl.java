@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.material.planning.impl;
 
 /*
@@ -25,10 +22,6 @@ package de.metas.material.planning.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Duration;
-
 import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.RoutingService;
@@ -43,7 +36,11 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
 
 /**
  * Default Routing Service Implementation
@@ -81,7 +78,7 @@ public class DefaultRoutingServiceImpl implements RoutingService
 	}
 
 	@Override
-	public int calculateDurationDays(final PPRoutingId routingId, final ResourceId plantId, final BigDecimal qty)
+	public int calculateDurationDays(final PPRoutingId routingId, @Nullable final ResourceId plantId, final BigDecimal qty)
 	{
 		if (plantId == null)
 		{

@@ -22,6 +22,7 @@ import org.compiere.model.I_AD_UI_ElementField;
 import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
+import org.compiere.model.X_AD_UI_Element;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
@@ -337,6 +338,7 @@ public final class WindowUIElementsGenerator
 		final I_AD_UI_Element uiElement = InterfaceWrapperHelper.newInstance(I_AD_UI_Element.class);
 		uiElement.setAD_Tab_ID(adField.getAD_Tab_ID());
 		uiElement.setAD_UI_ElementGroup_ID(UIElementGroupId.toRepoId(uiElementGroupId));
+		uiElement.setAD_UI_ElementType(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Field);
 		uiElement.setAD_Field(adField);
 		uiElement.setName(adField.getName());
 		uiElement.setDescription(adField.getDescription());

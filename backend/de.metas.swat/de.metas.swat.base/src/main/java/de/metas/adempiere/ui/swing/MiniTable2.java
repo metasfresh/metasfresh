@@ -47,7 +47,6 @@ import org.compiere.minigrid.IDColumn;
 import org.compiere.minigrid.MiniTable;
 import org.compiere.util.DB;
 
-import de.metas.adempiere.form.terminal.swing.SwingTerminalFactory;
 import de.metas.adempiere.ui.MiniTableUtil;
 
 /**
@@ -113,8 +112,8 @@ public class MiniTable2 extends MiniTable
 	{
 		listeners.addPropertyChangeListener(listener);
 	}
-	
-	
+
+	private static final int SCROLL_Size = 30;
 
 	private void growScrollbars()
 	{
@@ -126,8 +125,8 @@ public class MiniTable2 extends MiniTable
 			if (gp instanceof JScrollPane)
 			{
 				JScrollPane scrollPane = (JScrollPane)gp;
-				scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(SwingTerminalFactory.SCROLL_Size, 0));
-				scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, SwingTerminalFactory.SCROLL_Size));
+				scrollPane.getVerticalScrollBar().setPreferredSize(new Dimension(SCROLL_Size, 0));
+				scrollPane.getHorizontalScrollBar().setPreferredSize(new Dimension(0, SCROLL_Size));
 			}
 		}
 	}

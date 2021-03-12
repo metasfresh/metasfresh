@@ -72,7 +72,7 @@ public class CurrencyId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(final CurrencyId currencyId1, final CurrencyId currencyId2)
+	public static boolean equals(@Nullable final CurrencyId currencyId1, @Nullable final CurrencyId currencyId2)
 	{
 		return Objects.equals(currencyId1, currencyId2);
 	}

@@ -46,6 +46,7 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -114,7 +115,6 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.StringUtils.TruncateAt;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import de.metas.util.xml.DynamicObjectFactory;
 import lombok.NonNull;
 

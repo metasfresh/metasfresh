@@ -1,22 +1,26 @@
 package de.metas.material.dispo.commons.repository;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.sql.Timestamp;
-import java.util.List;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -44,21 +48,28 @@ public class CandidateRepositoryRetrievalTest
 {
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
+	private DimensionService dimensionService;
+
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService);
 	}
 
 	@Test
 	public void retrieveCandidatesForPPOrderId()
 	{
 		@SuppressWarnings("unused")
-		final I_MD_Candidate candidateWithoutProdDetail = createCandidateRecord(SystemTime.asTimestamp());
+		final I_MD_Candidate candidateWithoutProdDetail = createCandidateRecord(de.metas.common.util.time.SystemTime.asTimestamp());
 
-		final I_MD_Candidate candidateWithUnrelatedProdDetail = createCandidateRecord(SystemTime.asTimestamp());
+		final I_MD_Candidate candidateWithUnrelatedProdDetail = createCandidateRecord(de.metas.common.util.time.SystemTime.asTimestamp());
 		final I_MD_Candidate_Prod_Detail unrelatedProductionDetail = newInstance(I_MD_Candidate_Prod_Detail.class);
 		unrelatedProductionDetail.setPP_Order_ID(10);
 		unrelatedProductionDetail.setMD_Candidate(candidateWithUnrelatedProdDetail);

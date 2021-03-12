@@ -50,7 +50,7 @@ public class DocOutBoundRecipientRepository
 		final Language userLanguage = Language.asLanguage(userRecord.getAD_Language());
 
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
-		final Language bPartnerLanguage = bPartnerBL.getLanguageForModel(userRecord);
+		final Language bPartnerLanguage = bPartnerBL.getLanguageForModel(userRecord).orElse(null);
 
 		return DocOutBoundRecipient.builder()
 				.id(DocOutBoundRecipientId.ofRepoId(userRecord.getAD_User_ID()))

@@ -1,61 +1,49 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_PackagingCode
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_HU_PackagingCode extends org.compiere.model.PO implements I_M_HU_PackagingCode, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -247359093L;
+	private static final long serialVersionUID = -1348078474L;
 
     /** Standard Constructor */
-    public X_M_HU_PackagingCode (Properties ctx, int M_HU_PackagingCode_ID, String trxName)
+    public X_M_HU_PackagingCode (final Properties ctx, final int M_HU_PackagingCode_ID, @Nullable final String trxName)
     {
       super (ctx, M_HU_PackagingCode_ID, trxName);
-      /** if (M_HU_PackagingCode_ID == 0)
-        {
-			setM_HU_PackagingCode_ID (0);
-			setPackagingCode (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_HU_PackagingCode (Properties ctx, ResultSet rs, String trxName)
+    public X_M_HU_PackagingCode (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
+	/** Load Meta Data */
 	@Override
-	public void setDescription (java.lang.String Description)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -69,58 +57,42 @@ public class X_M_HU_PackagingCode extends org.compiere.model.PO implements I_M_H
 	public static final String HU_UNITTYPE_LoadLogistiqueUnit = "LU";
 	/** VirtualPI = V */
 	public static final String HU_UNITTYPE_VirtualPI = "V";
-	/** Set Handling Unit Typ.
-		@param HU_UnitType Handling Unit Typ	  */
 	@Override
-	public void setHU_UnitType (java.lang.String HU_UnitType)
+	public void setHU_UnitType (final @Nullable java.lang.String HU_UnitType)
 	{
-
 		set_Value (COLUMNNAME_HU_UnitType, HU_UnitType);
 	}
 
-	/** Get Handling Unit Typ.
-		@return Handling Unit Typ	  */
 	@Override
-	public java.lang.String getHU_UnitType () 
+	public java.lang.String getHU_UnitType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_HU_UnitType);
+		return get_ValueAsString(COLUMNNAME_HU_UnitType);
 	}
 
-	/** Set Verpackungscode.
-		@param M_HU_PackagingCode_ID Verpackungscode	  */
 	@Override
-	public void setM_HU_PackagingCode_ID (int M_HU_PackagingCode_ID)
+	public void setM_HU_PackagingCode_ID (final int M_HU_PackagingCode_ID)
 	{
 		if (M_HU_PackagingCode_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_PackagingCode_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_PackagingCode_ID, Integer.valueOf(M_HU_PackagingCode_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_PackagingCode_ID, M_HU_PackagingCode_ID);
 	}
 
-	/** Get Verpackungscode.
-		@return Verpackungscode	  */
 	@Override
-	public int getM_HU_PackagingCode_ID () 
+	public int getM_HU_PackagingCode_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PackagingCode_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_PackagingCode_ID);
 	}
 
-	/** Set Verpackungscode.
-		@param PackagingCode Verpackungscode	  */
 	@Override
-	public void setPackagingCode (java.lang.String PackagingCode)
+	public void setPackagingCode (final java.lang.String PackagingCode)
 	{
 		set_Value (COLUMNNAME_PackagingCode, PackagingCode);
 	}
 
-	/** Get Verpackungscode.
-		@return Verpackungscode	  */
 	@Override
-	public java.lang.String getPackagingCode () 
+	public java.lang.String getPackagingCode() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PackagingCode);
+		return get_ValueAsString(COLUMNNAME_PackagingCode);
 	}
 }

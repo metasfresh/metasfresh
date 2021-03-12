@@ -129,7 +129,7 @@ public class AddQtyToHUCommand
 
 		// NOTE: create the context with the tread-inherited transaction,
 		// otherwise, the loader won't be able to access the HU's material item and therefore won't load anything!
-		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
+		final IAllocationRequest request = AllocationUtils.builder()
 				.setHUContext(huContextFactory.createMutableHUContextForProcessing())
 				.setProduct(productsRepo.getById(productId))
 				.setQuantity(qtyToPack)

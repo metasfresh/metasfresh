@@ -3,6 +3,7 @@ package de.metas.inout;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.request.RequestTypeId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -11,9 +12,12 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_R_Request;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -44,6 +48,10 @@ import java.util.List;
  */
 public interface IInOutBL extends ISingletonService
 {
+	I_M_InOut getById(@NonNull InOutId inoutId);
+
+	void save(I_M_InOut inout);
+
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
 
 	/**
@@ -55,6 +63,8 @@ public interface IInOutBL extends ISingletonService
 	 * @return return movementQty and qtyEntered.
 	 */
 	StockQtyAndUOMQty getStockQtyAndQtyInUOM(I_M_InOutLine inoutLine);
+
+	List<I_M_InOutLine> getLines(@NonNull InOutId inoutId);
 
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
@@ -81,8 +91,9 @@ public interface IInOutBL extends ISingletonService
 
 	/**
 	 * @return the pricing system fir for the inout,
-	 *         Otherwise, throws exception when throwEx = true and return null if it is false
+	 * Otherwise, throws exception when throwEx = true and return null if it is false
 	 */
+	@Nullable
 	I_M_PricingSystem getPricingSystem(I_M_InOut inOut, boolean throwEx);
 
 	/**
@@ -119,11 +130,10 @@ public interface IInOutBL extends ISingletonService
 	<T extends I_M_InOutLine> T newInOutLine(I_M_InOut inout, Class<T> modelClass);
 
 	/**
-	 * @return
-	 *         <ul>
-	 *         <li>true if Customer Shipment or Returns
-	 *         <li>false if Vendor Receipts or Returns
-	 *         </ul>
+	 * @return <ul>
+	 * <li>true if Customer Shipment or Returns
+	 * <li>false if Vendor Receipts or Returns
+	 * </ul>
 	 */
 	boolean getSOTrxFromMovementType(String movementType);
 
@@ -167,4 +177,8 @@ public interface IInOutBL extends ISingletonService
 	void invalidateStatistics(I_M_InOutLine inoutLine);
 
 	I_C_Order getOrderByInOutLine(I_M_InOutLine inoutLine);
+
+	Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(I_M_InOut inOut);
+
+	I_R_Request createRequestFromInOut(I_M_InOut inOut);
 }

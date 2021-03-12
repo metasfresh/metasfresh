@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryStatisticsCollector;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.trx.api.ITrx;
@@ -27,7 +28,6 @@ import com.google.common.base.Stopwatch;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 @Service
 @ManagedResource(objectName = "org.adempiere.ad.dao.impl.QueryStatisticsLogger:type=Statistics", description = "SQL query statistics and tracing")

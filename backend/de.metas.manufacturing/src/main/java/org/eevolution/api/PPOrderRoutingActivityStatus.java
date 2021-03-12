@@ -1,16 +1,14 @@
 package org.eevolution.api;
 
-import java.util.Arrays;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.model.X_PP_Order_Node;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
-
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.model.X_PP_Order_Node;
+
+import java.util.Arrays;
 
 /*
  * #%L
@@ -51,14 +49,9 @@ public enum PPOrderRoutingActivityStatus
 		this.docStatus = docStatus;
 	}
 
-	public static PPOrderRoutingActivityStatus ofNullableDocStatus(final String docStatus)
-	{
-		return docStatus != null ? ofDocStatus(docStatus) : null;
-	}
-
 	public static PPOrderRoutingActivityStatus ofDocStatus(@NonNull final String docStatus)
 	{
-		PPOrderRoutingActivityStatus type = typesByDocStatus.get(docStatus);
+		final PPOrderRoutingActivityStatus type = typesByDocStatus.get(docStatus);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + PPOrderRoutingActivityStatus.class + " found for DocStatus: " + docStatus);
@@ -96,5 +89,6 @@ public enum PPOrderRoutingActivityStatus
 			// .put(COMPLETED, NOT_STARTED)
 			.put(COMPLETED, CLOSED)
 			// .put(COMPLETED, VOIDED)
+			.put(CLOSED, IN_PROGRESS)
 			.build();
 }

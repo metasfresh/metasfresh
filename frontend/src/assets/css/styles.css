@@ -679,6 +679,7 @@ body{
 .document-list-body {
     display: flex;
     flex-grow: 1;
+    position: relative;
     /*flex-direction: column;*/
 }
 
@@ -1006,7 +1007,8 @@ body{
     border-radius: 3px;
     display: inline-block;
     position: absolute;
-    z-index: 4;
+    /* it has to come on top of the overlay */
+    z-index: 500;
     left: 0;
     top: 31px;
     list-style: none;

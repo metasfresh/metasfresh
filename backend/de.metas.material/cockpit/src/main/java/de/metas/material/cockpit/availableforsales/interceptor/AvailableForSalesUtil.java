@@ -15,6 +15,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -101,7 +102,7 @@ public class AvailableForSalesUtil
 	public boolean isOrderEligibleForFeature(@NonNull final I_C_Order orderRecord)
 	{
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		if (orderBL.isQuotation(orderRecord))
+		if (orderBL.isSalesProposalOrQuotation(orderRecord))
 		{
 			return false;
 		}
@@ -291,7 +292,7 @@ public class AvailableForSalesUtil
 		final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
 				.important(true)
 				.recipientUserId(errorNotificationRecipient)
-				.subjectADMessage(I_AD_Issue.COLUMNNAME_AD_Issue_ID)
+				.subjectADMessage(AdMessageKey.of(I_AD_Issue.COLUMNNAME_AD_Issue_ID))
 				.contentPlain(AdempiereException.extractMessage(cause))
 				.targetAction(targetAction)
 				.build();

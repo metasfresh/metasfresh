@@ -1,61 +1,64 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>de.metas.printing</groupId>
-		<artifactId>de.metas.printing.common</artifactId>
-		<version>10.0.0</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+    <parent>
+        <groupId>de.metas.printing</groupId>
+        <artifactId>de.metas.printing.common</artifactId>
+        <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<artifactId>de.metas.printing.esb.base</artifactId>
+    <artifactId>de.metas.printing.esb.base</artifactId>
 
-	<properties>
-		<!-- IMPORTANT: keep in sync with JAXBConstants.JAXB_ContextPath -->
-		<jaxb.packageName>de.metas.printing.esb.base.jaxb.generated</jaxb.packageName>
-	</properties>
+    <properties>
+        <!-- IMPORTANT: keep in sync with JAXBConstants.JAXB_ContextPath -->
+        <jaxb.packageName>de.metas.printing.esb.base.jaxb.generated</jaxb.packageName>
+    </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>de.metas.printing</groupId>
-			<artifactId>de.metas.printing.api</artifactId>
-			<version>10.0.0</version>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>de.metas.printing</groupId>
+            <artifactId>de.metas.printing.api</artifactId>
+            <version>10.0.0</version>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
-	<build>
+    <build>
 
-		<defaultGoal>install</defaultGoal>
-		<plugins>
-			<!-- Create tests JAR -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+        <defaultGoal>install</defaultGoal>
+        <plugins>
+            <!-- Create tests JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>jaxb2-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>xjc</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<packageName>${jaxb.packageName}</packageName>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-de.metas.printing.esb.base</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <schemaDirectory>${project.basedir}/src/main/xsd</schemaDirectory>
+                            <generatePackage>${jaxb.packageName}</generatePackage>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
 </project>

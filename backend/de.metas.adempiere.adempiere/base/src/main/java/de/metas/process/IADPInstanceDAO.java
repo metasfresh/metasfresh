@@ -22,13 +22,17 @@ package de.metas.process;
  * #L%
  */
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
 
 import de.metas.util.ISingletonService;
+
+import javax.annotation.Nullable;
 
 public interface IADPInstanceDAO extends ISingletonService
 {
@@ -44,7 +48,7 @@ public interface IADPInstanceDAO extends ISingletonService
 	/**
 	 * Saves {@link ProcessInfo} only, excluding depending records like process parameters.
 	 *
-	 * Also, in case the {@link ProcessInfo#getAD_PInstance_ID()} is missing, this method will create it and it will set it to {@link ProcessInfo}.
+	 * Also, in case the {@link ProcessInfo#getAdProcessId()} is missing, this method will create it and it will set it to {@link ProcessInfo}.
 	 *
 	 * @param pi
 	 */
@@ -59,7 +63,7 @@ public interface IADPInstanceDAO extends ISingletonService
 	void saveParameterToDB(PInstanceId pinstanceId, List<ProcessInfoParameter> piParams);
 
 	/**
-	 * @param adPInstanceId AD_PInstance_ID
+	 * @param pinstanceId AD_PInstance_ID
 	 * @return process parameters for given AD_PInstance_ID
 	 */
 	List<ProcessInfoParameter> retrieveProcessInfoParameters(PInstanceId pinstanceId);
@@ -67,7 +71,7 @@ public interface IADPInstanceDAO extends ISingletonService
 	/**
 	 * Locks underlying AD_PInstance.
 	 *
-	 * @param adPInstanceId
+	 * @param pinstanceId
 	 */
 	void lock(PInstanceId pinstanceId);
 
@@ -108,4 +112,6 @@ public interface IADPInstanceDAO extends ISingletonService
 	void saveSelectedIncludedRecords(PInstanceId pinstanceId, Set<TableRecordReference> recordRefs);
 
 	PInstanceId createADPinstanceAndADPInstancePara(PInstanceRequest pinstanceRequest);
+
+	Timestamp getLastRunDate(@NonNull AdProcessId adProcessId, @Nullable PInstanceId pinstanceToExclude);
 }

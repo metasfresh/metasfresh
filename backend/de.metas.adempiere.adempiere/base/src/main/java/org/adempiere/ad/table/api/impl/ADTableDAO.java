@@ -31,6 +31,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
@@ -111,6 +112,14 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
+	public AdColumnId retrieveColumnId(final AdTableId tableId, final String columnName)
+	{
+		final I_AD_Column column = retrieveColumn(tableId, columnName);
+
+		return AdColumnId.ofRepoId(column.getAD_Column_ID());
+	}
+
+	@Override
 	public I_AD_Column retrieveColumn(final String tableName, final String columnName)
 	{
 		final I_AD_Column column = retrieveColumnOrNull(tableName, columnName);
@@ -175,6 +184,12 @@ public class ADTableDAO implements IADTableDAO
 		return TableIdsCache.instance.getTableId(tableName)
 				.map(AdTableId::getRepoId)
 				.orElse(-1);
+	}
+
+	@Override
+	public AdTableId retrieveAdTableId(@Nullable final String tableName)
+	{
+		return AdTableId.ofRepoId(retrieveTableId(tableName));
 	}
 
 	@Override

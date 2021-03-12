@@ -4,9 +4,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.IdConstants;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -26,6 +29,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.stock.ResetStockPInstanceId;
+import de.metas.mforecast.IForecastDAO;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -36,6 +40,8 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -78,6 +84,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @Service
 public class CandidateRepositoryWriteService
 {
+	private final DimensionService dimensionService;
+
+	public CandidateRepositoryWriteService(final DimensionService dimensionService)
+	{
+		this.dimensionService = dimensionService;
+	}
+
 	/**
 	 * Stores the given {@code candidate}.
 	 * If there is already an existing candidate in the store, it is loaded, its fields are updated and the result is saved.<br>
@@ -85,13 +98,13 @@ public class CandidateRepositoryWriteService
 	 * If the given {@code candidate} specifies a {@link Candidate#getSeqNo()}, then that value will be persisted, even if there is already a different value stored in the underlying {@link I_MD_Candidate} record.
 	 *
 	 * @return a candidate with
-	 *         <ul>
-	 *         <li>the {@code id} of the persisted data record</li>
-	 *         <li>the {@code groupId} of the persisted data record. This is either the given {@code candidate}'s {@code groupId} or the given candidate's ID (in case the given candidate didn't have a groupId)</li>
-	 *         <li>the {@code parentId} of the persisted data record or {@code null} if the persisted record didn't exist or has a parentId of zero.
-	 *         <li>the {@code seqNo}: the rules are similar to groupId, but if there was a persisted {@link I_MD_Candidate} with a different seqno, that different seqno might also be returned, depending on the {@code preserveExistingSeqNo} parameter.</li>
-	 *         <li>the quantity <b>delta</b> of the persisted data record before the update was made</li>
-	 *         </ul>
+	 * <ul>
+	 * <li>the {@code id} of the persisted data record</li>
+	 * <li>the {@code groupId} of the persisted data record. This is either the given {@code candidate}'s {@code groupId} or the given candidate's ID (in case the given candidate didn't have a groupId)</li>
+	 * <li>the {@code parentId} of the persisted data record or {@code null} if the persisted record didn't exist or has a parentId of zero.
+	 * <li>the {@code seqNo}: the rules are similar to groupId, but if there was a persisted {@link I_MD_Candidate} with a different seqno, that different seqno might also be returned, depending on the {@code preserveExistingSeqNo} parameter.</li>
+	 * <li>the quantity <b>delta</b> of the persisted data record before the update was made</li>
+	 * </ul>
 	 */
 	public SaveResult addOrUpdateOverwriteStoredSeqNo(@NonNull final Candidate candidate)
 	{
@@ -106,6 +119,16 @@ public class CandidateRepositoryWriteService
 		return addOrUpdate(candidate, true);
 	}
 
+	/**
+	 * @param candidate candidate that we know does not exist, so there is no existing candidate to update
+	 */
+	public SaveResult add(@NonNull final Candidate candidate)
+	{
+		return addOrUpdate(
+				CandidatesQuery.FALSE /*make sure we don't find anything to update*/,
+				candidate, false/*doesn't matter*/);
+	}
+
 	public SaveResult updateCandidateById(@NonNull final Candidate candidate)
 	{
 		Check.errorIf(candidate.getId().isNull(), "The candidate parameter needs to have an id; candidate={}", candidate);
@@ -118,7 +141,9 @@ public class CandidateRepositoryWriteService
 	@Builder
 	public static class SaveResult
 	{
-		/** The saved candidate. */
+		/**
+		 * The saved candidate.
+		 */
 		@NonNull
 		Candidate candidate;
 
@@ -194,7 +219,9 @@ public class CandidateRepositoryWriteService
 			return candidate.withQuantity(getQtyDelta());
 		}
 
-		/** Convenience method that returns a new instance whose included {@link Candidate} has the given id. */
+		/**
+		 * Convenience method that returns a new instance whose included {@link Candidate} has the given id.
+		 */
 		public SaveResult withCandidateId(@Nullable final CandidateId candidateId)
 		{
 			return SaveResult
@@ -205,7 +232,9 @@ public class CandidateRepositoryWriteService
 					.build();
 		}
 
-		/** Convenience method that returns a new instance with negated candidate quantity and previousQty */
+		/**
+		 * Convenience method that returns a new instance with negated candidate quantity and previousQty
+		 */
 		public SaveResult withNegatedQuantity()
 		{
 			return SaveResult
@@ -224,12 +253,12 @@ public class CandidateRepositoryWriteService
 	}
 
 	private SaveResult addOrUpdate(
-			@NonNull final CandidatesQuery singleCandidateOrNullQuery,
+			@NonNull final CandidatesQuery singleCandidateQuery,
 			@NonNull final Candidate candidate,
 			final boolean preserveExistingSeqNoAndParentId)
 	{
 		final I_MD_Candidate oldCandidateRecord = RepositoryCommons
-				.mkQueryBuilder(singleCandidateOrNullQuery)
+				.mkQueryBuilder(singleCandidateQuery)
 				.create()
 				.firstOnly(I_MD_Candidate.class);
 
@@ -273,7 +302,7 @@ public class CandidateRepositoryWriteService
 		final String verb = oldCandidateRecord == null ? "created" : "updated";
 		Loggables.addLog(
 				"addOrUpdate - {} candidateId={}; type={};\nsingleCandidateOrNullQuery={};\n\npreserveExistingSeqNoAndParentId={};\n\ncandidate={}",
-				verb, savedCandidate.getId().getRepoId(), savedCandidate.getType().toString(), singleCandidateOrNullQuery, preserveExistingSeqNoAndParentId, savedCandidate);
+				verb, savedCandidate.getId().getRepoId(), savedCandidate.getType().toString(), singleCandidateQuery, preserveExistingSeqNoAndParentId, savedCandidate);
 
 		return SaveResult
 				.builder()
@@ -327,6 +356,8 @@ public class CandidateRepositoryWriteService
 			@NonNull final Candidate candidate,
 			final boolean preserveExistingSeqNo)
 	{
+		final IForecastDAO forecastRepo = Services.get(IForecastDAO.class);
+
 		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
 		candidateRecord.setAD_Org_ID(candidate.getOrgId().getRepoId());
@@ -348,7 +379,21 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setReplenish_MinQty(candidate.getMinMaxDescriptor().getMin());
 		candidateRecord.setReplenish_MaxQty(candidate.getMinMaxDescriptor().getMax());
 
-		updatCandidateRecordFromDemandDetail(candidateRecord, candidate.getDemandDetail());
+		final DemandDetail demandDetail = candidate.getDemandDetail();
+
+		if (demandDetail != null)
+		{
+			final int forecastLineId = demandDetail.getForecastLineId();
+			if (forecastLineId > 0 && forecastLineId != IdConstants.UNSPECIFIED_REPO_ID)
+			{
+				final I_M_ForecastLine forecastLine = forecastRepo.getForecastLineById(forecastLineId);
+
+				final Dimension forecastLineDimension = dimensionService.getFromRecord(forecastLine);
+				dimensionService.updateRecord(candidateRecord, forecastLineDimension);
+			}
+		}
+
+		updatCandidateRecordFromDemandDetail(candidateRecord, demandDetail);
 
 		if (candidate.getBusinessCase() != null)
 		{
@@ -380,7 +425,12 @@ public class CandidateRepositoryWriteService
 				.reduce(ZERO, BigDecimal::add);
 		candidateRecord.setQtyFulfilled(fulfilledQty);
 
-		if (fulfilledQty.compareTo(candidateRecord.getQty()) >= 0)
+		final boolean typeImpliesProcessedDone =
+				candidate.getType().equals(CandidateType.INVENTORY_UP)
+						|| candidate.getType().equals(CandidateType.INVENTORY_DOWN)
+						|| candidate.getType().equals(CandidateType.ATTRIBUTES_CHANGED_FROM)
+						|| candidate.getType().equals(CandidateType.ATTRIBUTES_CHANGED_TO);
+		if (fulfilledQty.compareTo(candidateRecord.getQty()) >= 0 || typeImpliesProcessedDone)
 		{
 			candidateRecord.setMD_Candidate_Status(X_MD_Candidate.MD_CANDIDATE_STATUS_Processed);
 		}
@@ -394,7 +444,6 @@ public class CandidateRepositoryWriteService
 	 * Update the demand related reference columns, but don't reset them to zero, unless the respective ID is {@link IdConstants#NULL_REPO_ID}.
 	 * <p>
 	 * Note that we have them as physical columns for performance reasons.
-	 *
 	 */
 	private void updatCandidateRecordFromDemandDetail(
 			@NonNull final I_MD_Candidate candidateRecord,
@@ -603,7 +652,7 @@ public class CandidateRepositoryWriteService
 			final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 			final ICompositeQueryFilter<I_MD_Candidate_Transaction_Detail> //
-			transactionOrPInstanceId = queryBL
+					transactionOrPInstanceId = queryBL
 					.createCompositeQueryFilter(I_MD_Candidate_Transaction_Detail.class)
 					.setJoinOr();
 			if (transactionDetail.getTransactionId() > 0)
@@ -629,6 +678,7 @@ public class CandidateRepositoryWriteService
 				detailRecordToUpdate.setM_Transaction_ID(transactionDetail.getTransactionId());
 				detailRecordToUpdate.setAD_PInstance_ResetStock_ID(ResetStockPInstanceId.toRepoId(transactionDetail.getResetStockPInstanceId()));
 				detailRecordToUpdate.setMD_Stock_ID(transactionDetail.getStockId());
+				detailRecordToUpdate.setMD_Candidate_RebookedFrom_ID(CandidateId.toRepoId(transactionDetail.getRebookedFromCandidateId()));
 			}
 			else
 			{

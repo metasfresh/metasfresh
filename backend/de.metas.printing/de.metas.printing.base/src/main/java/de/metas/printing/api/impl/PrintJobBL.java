@@ -194,8 +194,7 @@ public class PrintJobBL implements IPrintJobBL
 		{
 			final List<I_C_Print_Job_Instructions> printJobInstructions = createPrintJobInstructionsAndPrintJobs(source,
 					currentItems,
-					printingQueueProcessingInfo,
-					ITrx.TRXNAME_ThreadInherited);
+					printingQueueProcessingInfo);
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Created {} C_Print_Job_Instructions for related C_Printing_Queues", printJobInstructions.size());
 			if (printJobInstructions.isEmpty())
 			{
@@ -240,14 +239,13 @@ public class PrintJobBL implements IPrintJobBL
 
 	private List<I_C_Print_Job_Instructions> createPrintJobInstructionsAndPrintJobs(final IPrintingQueueSource source,
 			final Iterator<I_C_Printing_Queue> items,
-			final PrintingQueueProcessingInfo printingQueueProcessingInfo,
-			final String trxName)
+			final PrintingQueueProcessingInfo printingQueueProcessingInfo)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 		final Mutable<List<I_C_Print_Job_Instructions>> instructionsMutable = new Mutable<>();
 
-		trxManager.run(trxName, (TrxRunnable)localTrxName -> instructionsMutable.setValue(createPrintJobInstructionsAndPrintJobs0(source, items, printingQueueProcessingInfo, localTrxName)));
+		trxManager.run(ITrx.TRXNAME_ThreadInherited, (TrxRunnable)localTrxName -> instructionsMutable.setValue(createPrintJobInstructionsAndPrintJobs0(source, items, printingQueueProcessingInfo, localTrxName)));
 
 		if (instructionsMutable.getValue() == null)
 		{
@@ -256,7 +254,7 @@ public class PrintJobBL implements IPrintJobBL
 
 		//
 		// Reload instructions (in base transaction), to be used by monitor or other processors
-		InterfaceWrapperHelper.refreshAll(instructionsMutable.getValue(), trxName);
+		InterfaceWrapperHelper.refreshAll(instructionsMutable.getValue(), ITrx.TRXNAME_ThreadInherited);
 		return instructionsMutable.getValue();
 	}
 

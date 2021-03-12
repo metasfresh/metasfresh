@@ -454,6 +454,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	 * @throws DBException
 	 * @see {@link #first()}
 	 */
+	@Nullable
 	public <ET extends T> ET firstOnly() throws DBException
 	{
 		final Class<ET> clazz = null;
@@ -462,12 +463,11 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	/**
-	 * @param clazz
 	 * @param throwExIfMoreThenOneFound if true and there more then one record found it will throw exception, <code>null</code> will be returned otherwise.
 	 * @return model or null
-	 * @throws DBException
 	 */
 	@Override
+	@Nullable
 	protected final <ET extends T> ET firstOnly(final Class<ET> clazz, final boolean throwExIfMoreThenOneFound) throws DBException
 	{
 		ET model = null;
@@ -509,8 +509,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 
 		return model;
@@ -1638,7 +1636,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	/**
 	 * Inserts the query result into a <code>T_Selection</code> for the given AD_PInstance_ID
 	 *
-	 * @param AD_PInstance_ID
+	 * @param pinstanceId
 	 * @return number of records inserted in selection
 	 */
 	@Override
@@ -1811,11 +1809,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		// Get the key column name / row id
 		final String tableName = getTableName();
 		final POInfo info = getPOInfo();
-		String keyColumnName = info.getKeyColumnName();
+		final String keyColumnName = info.getKeyColumnName();
 		if (keyColumnName == null)
 		{
-			// Fallback if table has no primary key: use database specific ROW ID
-			keyColumnName = DB.getDatabase().getRowIdSql(tableName);
+			throw new AdempiereException("Cannot update table `" + tableName + "`directly because it does not have a single primary key defined");
 		}
 
 		final List<Object> sqlParams = new ArrayList<>();
@@ -1854,7 +1851,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public TypedSqlQuery<T> addUnion(final IQuery<T> query, final boolean distinct)
+	public void addUnion(final IQuery<T> query, final boolean distinct)
 	{
 		final SqlQueryUnion<T> sqlQueryUnion = new SqlQueryUnion<>(query, distinct);
 		if (unions == null)
@@ -1863,7 +1860,6 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		}
 		unions.add(sqlQueryUnion);
 
-		return this;
 	}
 
 	public boolean hasUnions()

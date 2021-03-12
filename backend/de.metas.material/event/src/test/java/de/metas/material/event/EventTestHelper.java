@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.service.ClientId;
@@ -19,7 +20,6 @@ import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

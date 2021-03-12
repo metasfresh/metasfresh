@@ -12,8 +12,6 @@ import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.util.time.SystemTime;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -37,7 +35,7 @@ import de.metas.util.time.SystemTime;
  */
 
 /**
- * Expression which evaluates to {@link SystemTime#asDate()}.
+ * Expression which evaluates to {@link de.metas.common.util.time.SystemTime#asDate()}.
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -80,7 +78,7 @@ public class SysDateDateExpression implements IExpression<java.util.Date>
 	@Override
 	public Date evaluate(final Evaluatee ctx, final OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException
 	{
-		return SystemTime.asDate();
+		return de.metas.common.util.time.SystemTime.asDate();
 	}
 
 	@Override

@@ -57,7 +57,7 @@ public class UserRepository
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
 		final Language userLanguage = Language.asLanguage(userRecord.getAD_Language());
-		final Language bPartnerLanguage = bPartnerBL.getLanguageForModel(userRecord);
+		final Language bpartnerLanguage = bPartnerBL.getLanguageForModel(userRecord).orElse(null);
 		final Language language = userBL.getUserLanguage(userRecord);
 
 		return User.builder()
@@ -72,7 +72,7 @@ public class UserRepository
 				.emailAddress(userRecord.getEMail())
 
 				.userLanguage(userLanguage)
-				.bPartnerLanguage(bPartnerLanguage)
+				.bPartnerLanguage(bpartnerLanguage)
 				.language(language)
 
 				.build();

@@ -643,7 +643,7 @@ public class InterfaceWrapperHelper
 		return modelToSave;
 	}
 
-	public static void save(final Object model, final String trxName)
+	public static void save(final Object model, @Nullable final String trxName)
 	{
 		if (model == null)
 		{
@@ -1487,7 +1487,7 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static final IModelTranslationMap getModelTranslationMap(@NonNull final Object model)
+	public static IModelTranslationMap getModelTranslationMap(@NonNull final Object model)
 	{
 		if (POWrapper.isHandled(model))
 		{
@@ -1500,7 +1500,6 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param model
 	 * @return true if model is a new record (not yet saved in database)
 	 */
 	public static boolean isNew(final Object model)
@@ -1576,14 +1575,21 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param model
-	 * @param columnNames
 	 * @return true if <i>any</i> of the given column names where changed
 	 */
 	public static boolean isValueChanged(final Object model, final Set<String> columnNames)
 	{
 		return helpers.isValueChanged(model, columnNames);
 	}
+
+	/**
+	 * @return true if <i>any</i> of the given column names where changed
+	 */
+	public static boolean isValueChanged(final Object model, final String... columnNames)
+	{
+		return helpers.isValueChanged(model, ImmutableSet.copyOf(columnNames));
+	}
+
 
 	@Deprecated
 	public static boolean isPOValueChanged(final Object model, final String columnName)

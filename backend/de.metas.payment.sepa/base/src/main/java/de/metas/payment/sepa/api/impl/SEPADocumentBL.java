@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.sql.Timestamp;
 import java.util.Date;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_PaySelection;
@@ -19,7 +20,6 @@ import de.metas.payment.sepa.sepamarshaller.impl.SEPACustomerDirectDebitMarshale
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAMarshaler;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02;
 import de.metas.util.FileUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class SEPADocumentBL implements ISEPADocumentBL

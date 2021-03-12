@@ -60,7 +60,6 @@ public final class AllocationUtils
 	/**
 	 * Creates initial {@link IMutableAllocationResult} using given <code>qtyToAllocate</code>.
 	 *
-	 * @param qtyToAllocate
 	 * @return initial mutable result
 	 */
 	public static IMutableAllocationResult createMutableAllocationResult(@NonNull final BigDecimal qtyToAllocate)
@@ -71,7 +70,6 @@ public final class AllocationUtils
 	/**
 	 * Creates initial/empty {@link IMutableAllocationResult} using requested Qty as QtyToAllocate.
 	 *
-	 * @param request
 	 * @return initial mutable result
 	 */
 	public static IMutableAllocationResult createMutableAllocationResult(@NonNull final IAllocationRequest request)
@@ -81,13 +79,12 @@ public final class AllocationUtils
 
 	/**
 	 * Creates an empty allocation request builder. Use this to create an allocation request from scratch.
-	 *
-	 * @return
 	 */
-	public static IAllocationRequestBuilder createAllocationRequestBuilder()
+	public static IAllocationRequestBuilder builder()
 	{
 		return new AllocationRequestBuilder();
 	}
+
 
 	public static IAllocationRequestBuilder createQtyLoadRequestBuilder(
 			@NonNull final IAllocationRequest originalRequest,
@@ -98,7 +95,7 @@ public final class AllocationUtils
 
 		final Quantity qty = qtyAbs.negate();
 
-		final IAllocationRequestBuilder builder = createAllocationRequestBuilder();
+		final IAllocationRequestBuilder builder = builder();
 		builder.setBaseAllocationRequest(originalRequest);
 
 		builder.setProduct(unloadTrx.getProductId());
@@ -148,9 +145,9 @@ public final class AllocationUtils
 			final BigDecimal qtyBD,
 			final I_C_UOM uom,
 			final ZonedDateTime date,
-			final Object referenceModel)
+			@Nullable final Object referenceModel)
 	{
-		return createAllocationRequestBuilder()
+		return builder()
 				.setHUContext(huContext)
 				.setProduct(product)
 				.setQuantity(new Quantity(qtyBD, uom))
@@ -166,7 +163,7 @@ public final class AllocationUtils
 			final Quantity qty,
 			final ZonedDateTime date)
 	{
-		return createAllocationRequestBuilder()
+		return builder()
 				.setHUContext(huContext)
 				.setProduct(productId)
 				.setQuantity(qty)
@@ -184,7 +181,7 @@ public final class AllocationUtils
 			@Nullable final Object referenceModel,
 			final boolean forceQtyAllocation)
 	{
-		return createAllocationRequestBuilder()
+		return builder()
 				.setHUContext(huContext)
 				.setProduct(productId)
 				.setQuantity(qty)
@@ -201,7 +198,7 @@ public final class AllocationUtils
 
 	public static IAllocationRequest createQtyRequest(final IAllocationRequest request, final BigDecimal qty)
 	{
-		return createAllocationRequestBuilder()
+		return builder()
 				.setBaseAllocationRequest(request)
 				.setQuantity(new Quantity(qty, request.getC_UOM()))
 				.create();
@@ -209,7 +206,7 @@ public final class AllocationUtils
 
 	public static IAllocationRequest createQtyRequest(final IAllocationRequest request, final Quantity qty)
 	{
-		return createAllocationRequestBuilder()
+		return builder()
 				.setBaseAllocationRequest(request)
 				.setQuantity(qty)
 				.create();
@@ -217,10 +214,6 @@ public final class AllocationUtils
 
 	/**
 	 * This method creates a new request that represents the portion of the given {@code request} that is not yet covered by the given {@code result}.
-	 *
-	 * @param request
-	 * @param status
-	 * @return
 	 */
 	public static IAllocationRequest createQtyRequestForRemaining(final IAllocationRequest request, final IMutableAllocationResult status)
 	{
@@ -232,7 +225,7 @@ public final class AllocationUtils
 	{
 		// NOTE: we assume "status" quantities are in request's UOM
 		final BigDecimal qtyToRequest = status.getQtyToAllocate();
-		return createAllocationRequestBuilder()
+		return builder()
 				.setBaseAllocationRequest(request)
 				.setQuantity(new Quantity(qtyToRequest, request.getC_UOM()));
 	}
@@ -246,9 +239,6 @@ public final class AllocationUtils
 	 * <li>all transactions from <code>from</code> will be appended to <code>to</code>'s transactions list
 	 * <li>all attribute transactions from <code>from</code> will be appended to <code>to</code>'s attribute transactions list
 	 * </ul>
-	 *
-	 * @param to
-	 * @param from
 	 */
 	public static void mergeAllocationResult(
 			@NonNull final IMutableAllocationResult to,
@@ -270,9 +260,6 @@ public final class AllocationUtils
 	/**
 	 * Creates an immutable allocation result. For cross-package use.
 	 *
-	 * @param qtyToAllocate
-	 * @param qtyAllocated
-	 * @param trxs
 	 * @return {@link AllocationResult}
 	 */
 	public static IAllocationResult createQtyAllocationResult(final BigDecimal qtyToAllocate,
@@ -283,6 +270,7 @@ public final class AllocationUtils
 		return new AllocationResult(qtyToAllocate, qtyAllocated, trxs, attributeTrxs);
 	}
 
+	@Nullable
 	public static Object getReferencedModel(final IAllocationRequest request)
 	{
 		final ITableRecordReference tableRecord = request.getReference();
@@ -292,8 +280,7 @@ public final class AllocationUtils
 		}
 
 		final IContextAware context = request.getHUContext();
-		final Object referencedModel = tableRecord.getModel(context);
-		return referencedModel;
+		return tableRecord.getModel(context);
 	}
 
 	/**
@@ -310,17 +297,15 @@ public final class AllocationUtils
 
 	/**
 	 * Use this to create a new allocation request, using the given request as template.
-	 *
-	 * @param request
-	 * @return
 	 */
 	public static IAllocationRequestBuilder derive(@NonNull final IAllocationRequest request)
 	{
 		Check.assumeNotNull(request, "request not null");
-		return createAllocationRequestBuilder()
+		return builder()
 				.setBaseAllocationRequest(request);
 	}
 
+	@Nullable
 	private static BPartnerId getBPartnerId(final IAllocationRequest request)
 	{
 		final Object referencedModel = AllocationUtils.getReferencedModel(request);
@@ -336,7 +321,6 @@ public final class AllocationUtils
 	/**
 	 * Creates and configures an {@link IHUBuilder} based on the given <code>request</code> (bPartner and date).
 	 *
-	 * @param request
 	 * @return HU builder
 	 */
 	public static IHUBuilder createHUBuilder(final IAllocationRequest request)

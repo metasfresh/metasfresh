@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -66,14 +67,14 @@ public class UserNotificationRequest
 	String subjectPlain;
 
 	/** Optional */
-	String subjectADMessage;
+	AdMessageKey subjectADMessage;
 	List<Object> subjectADMessageParams;
 
 	/** Optional; takes precedence over {@link #contentADMessage}, if set. */
 	String contentPlain;
 
 	/** Optional */
-	String contentADMessage;
+	AdMessageKey contentADMessage;
 	List<Object> contentADMessageParams;
 
 	TargetAction targetAction;
@@ -93,14 +94,14 @@ public class UserNotificationRequest
 			final boolean important,
 			//
 			@Nullable final String subjectPlain,
-			@Nullable final String subjectADMessage,
+			@Nullable final AdMessageKey subjectADMessage,
 			@Singular final List<Object> subjectADMessageParams,
 			//
 			final String contentPlain,
-			final String contentADMessage,
+			final AdMessageKey contentADMessage,
 			@Singular final List<Object> contentADMessageParams,
 			//
-			@Nullable TargetAction targetAction,
+			@Nullable final TargetAction targetAction,
 			//
 			@Singular final List<Resource> attachments,
 			// Options:
@@ -155,11 +156,6 @@ public class UserNotificationRequest
 	public String getADLanguageOrGet(final Supplier<String> defaultLanguageSupplier)
 	{
 		return getNotificationsConfig().getUserADLanguageOrGet(defaultLanguageSupplier);
-	}
-
-	public String getSubjectADMessageOr(final String defaultValue)
-	{
-		return !Check.isEmpty(subjectADMessage) ? subjectADMessage : defaultValue;
 	}
 
 	public UserNotificationRequest deriveByNotificationsConfig(@NonNull final UserNotificationsConfig notificationsConfig)
@@ -248,12 +244,13 @@ public class UserNotificationRequest
 	@lombok.Builder
 	public static class TargetViewAction implements TargetAction
 	{
-		public static final TargetViewAction cast(final TargetAction targetAction)
+		public static TargetViewAction cast(final TargetAction targetAction)
 		{
 			return (TargetViewAction)targetAction;
 		}
 
-		int adWindowId;
+		@Nullable
+		AdWindowId adWindowId;
 		@NonNull
 		String viewId;
 	}

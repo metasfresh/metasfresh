@@ -1,16 +1,18 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
-import java.util.function.Predicate;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.rest_api.common.MetasfreshId;
+import de.metas.order.InvoiceRule;
+import de.metas.common.rest_api.JsonInvoiceRule;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -37,13 +39,12 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class BPartnerCompositeRestUtils
 {
-
-	public Predicate<BPartnerLocation> createLocationFilterFor(@NonNull final IdentifierString locationIdentifier)
+	public static Predicate<BPartnerLocation> createLocationFilterFor(@NonNull final IdentifierString locationIdentifier)
 	{
 		return l -> matches(locationIdentifier, l);
 	}
 
-	public boolean matches(
+	public static boolean matches(
 			@NonNull final IdentifierString locationIdentifier,
 			@NonNull final BPartnerLocation location)
 	{
@@ -64,7 +65,7 @@ public class BPartnerCompositeRestUtils
 		}
 	}
 
-	public Predicate<BPartnerContact> createContactFilterFor(@NonNull final IdentifierString contactIdentifier)
+	public static Predicate<BPartnerContact> createContactFilterFor(@NonNull final IdentifierString contactIdentifier)
 	{
 		return c -> matches(contactIdentifier, c);
 	}
@@ -87,6 +88,28 @@ public class BPartnerCompositeRestUtils
 				return contactIdentifier.asValue().equals(contact.getValue());
 			default:
 				throw new AdempiereException("Unexpected type; contactIdentifier=" + contactIdentifier);
+		}
+	}
+
+	@Nullable
+	public static InvoiceRule getInvoiceRule(@Nullable final JsonInvoiceRule jsonInvoiceRule)
+	{
+		if (jsonInvoiceRule == null)
+		{
+			return null;
+		}
+		switch (jsonInvoiceRule)
+		{
+			case AfterDelivery:
+				return InvoiceRule.AfterDelivery;
+			case CustomerScheduleAfterDelivery:
+				return InvoiceRule.CustomerScheduleAfterDelivery;
+			case Immediate:
+				return InvoiceRule.Immediate;
+			case OrderCompletelyDelivered:
+				return InvoiceRule.OrderCompletelyDelivered;
+			default:
+				throw new AdempiereException("Unsupported JsonInvliceRule " + jsonInvoiceRule);
 		}
 	}
 }

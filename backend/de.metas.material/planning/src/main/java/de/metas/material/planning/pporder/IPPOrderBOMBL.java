@@ -25,22 +25,25 @@ package de.metas.material.planning.pporder;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
-import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 public interface IPPOrderBOMBL extends ISingletonService
 {
+	I_PP_Order_BOMLine getOrderBOMLineById(PPOrderBOMLineId orderBOMLineId);
+
 	PPOrderQuantities getQuantities(
 			@NonNull I_PP_Order ppOrder,
 			@NonNull UomId targetUOMId);
@@ -105,15 +108,6 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	Percent getCoProductCostDistributionPercent(I_PP_Order_BOMLine orderBOMLine);
 
-	/**
-	 * Returns the negated value of the given <code>qty</code>.
-	 * <p>
-	 * Note: In case of Co/By-Products, we need to issue negative Qtys
-	 */
-	BigDecimal adjustCoProductQty(BigDecimal qty);
-
-	Quantity adjustCoProductQty(Quantity qty);
-
 	void addQty(OrderBOMLineQtyChangeRequest request);
 
 	/**
@@ -129,8 +123,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 * @return qty to issue (in given <code>targetUOM</code>)
 	 */
 	Quantity computeQtyToIssueBasedOnFinishedGoodReceipt(
-			I_PP_Order_BOMLine orderBOMLine,
-			I_C_UOM targetUOM);
+			@NonNull I_PP_Order_BOMLine orderBOMLine,
+			@NonNull I_C_UOM targetUOM);
 
 	void voidBOMLine(I_PP_Order_BOMLine line);
 

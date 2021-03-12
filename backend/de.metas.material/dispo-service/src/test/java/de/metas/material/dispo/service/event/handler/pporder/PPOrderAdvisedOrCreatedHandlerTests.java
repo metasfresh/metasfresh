@@ -1,6 +1,9 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -30,12 +33,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
@@ -48,7 +53,7 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -87,25 +92,31 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 
 	private PPOrderAdvisedHandler ppOrderAdvisedHandler;
 
-	private AvailableToPromiseRepository stockRepository;
+	private AvailableToPromiseRepository availableToPromiseRepository;
 
 	private PPOrderCreatedHandler ppOrderCreatedHandler;
+	private DimensionService dimensionService;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService);
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
 				candidateRepositoryWriteService);
 
-		stockRepository = new AvailableToPromiseRepository();
+		availableToPromiseRepository = new AvailableToPromiseRepository();
 
 		final SupplyCandidateHandler supplyCandidateHandler = new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService);
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of(
@@ -114,7 +125,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 						candidateRepositoryRetrieval,
 						candidateRepositoryWriteService,
 						postMaterialEventService,
-						stockRepository,
+						availableToPromiseRepository,
 						stockCandidateService,
 						supplyCandidateHandler)));
 
@@ -317,25 +328,25 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 				.docStatus(DocStatus.InProgress)
 				.materialDispoGroupId(groupId)
 				.line(PPOrderLine.builder()
-						.ppOrderLineId(ppOrderId * 5)
-						.description("descr1")
-						.productDescriptor(rawProductDescriptor1)
-						.issueOrReceiveDate(NOW)
-						.qtyRequired(TEN)
-						.qtyDelivered(ONE)
-						.productBomLineId(1020)
-						.receipt(false)
-						.build())
+							  .ppOrderLineId(ppOrderId * 5)
+							  .description("descr1")
+							  .productDescriptor(rawProductDescriptor1)
+							  .issueOrReceiveDate(NOW)
+							  .qtyRequired(TEN)
+							  .qtyDelivered(ONE)
+							  .productBomLineId(1020)
+							  .receipt(false)
+							  .build())
 				.line(PPOrderLine.builder()
-						.ppOrderLineId(ppOrderId * 6)
-						.description("descr2")
-						.productDescriptor(rawProductDescriptor2)
-						.issueOrReceiveDate(NOW)
-						.qtyRequired(ELEVEN)
-						.qtyDelivered(ONE)
-						.productBomLineId(1030)
-						.receipt(false)
-						.build())
+							  .ppOrderLineId(ppOrderId * 6)
+							  .description("descr2")
+							  .productDescriptor(rawProductDescriptor2)
+							  .issueOrReceiveDate(NOW)
+							  .qtyRequired(ELEVEN)
+							  .qtyDelivered(ONE)
+							  .productBomLineId(1030)
+							  .receipt(false)
+							  .build())
 				.build();
 		return ppOrder;
 	}

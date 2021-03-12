@@ -1,24 +1,9 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
 package org.compiere.util;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Range;
+import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -69,14 +54,13 @@ public class TimeUtil
 	 *
 	 * @param time day and time
 	 * @return day with 00:00
-	 *
 	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
-	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
+	 * Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
 	@Deprecated
 	public static Timestamp getDay(final long time)
 	{
-		final long timeToUse = time > 0 ? time : SystemTime.millis();
+		final long timeToUse = time > 0 ? time : de.metas.common.util.time.SystemTime.millis();
 
 		// note-ts: not using a locale because this method may be used during early startup
 		// (and I don't see what for we need a locale)
@@ -88,7 +72,7 @@ public class TimeUtil
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		return new Timestamp(cal.getTimeInMillis());
-	}	// getDay
+	}    // getDay
 
 	/**
 	 * @return instant at midnight of the given time zone
@@ -109,9 +93,8 @@ public class TimeUtil
 	 *
 	 * @param dayTime day and time
 	 * @return day with 00:00
-	 *
 	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
-	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
+	 * Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
 	@Deprecated
 	static public Timestamp getDay(@Nullable final Date dayTime)
@@ -121,18 +104,17 @@ public class TimeUtil
 			return getDay(System.currentTimeMillis());
 		}
 		return getDay(dayTime.getTime());
-	}	// getDay
+	}    // getDay
 
 	/**
 	 * Get earliest time of a day (truncate)
 	 *
-	 * @param day day 1..31
+	 * @param day   day 1..31
 	 * @param month month 1..12
-	 * @param year year (if two digits: < 50 is 2000; > 50 is 1900)
+	 * @param year  year (if two digits: < 50 is 2000; > 50 is 1900)
 	 * @return timestamp ** not too reliable
-	 *
 	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
-	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
+	 * Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
 	@Deprecated
 	static public Timestamp getDay(final int year, final int month, final int day)
@@ -145,7 +127,7 @@ public class TimeUtil
 
 	/**
 	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
-	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
+	 * Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
 	@Deprecated
 	public static Timestamp getDay(
@@ -175,7 +157,7 @@ public class TimeUtil
 
 		final GregorianCalendar cal = new GregorianCalendar(yearToUse, month - 1, day, hour, minute, second);
 		return new Timestamp(cal.getTimeInMillis());
-	}	// getDay
+	}    // getDay
 
 	/**
 	 * Get today (truncate)
@@ -191,7 +173,7 @@ public class TimeUtil
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		return cal;
-	}	// getToday
+	}    // getToday
 
 	/**
 	 * Get earliest time of next day
@@ -199,24 +181,24 @@ public class TimeUtil
 	 * @param day day
 	 * @return next day with 00:00
 	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
-	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
+	 * Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
 	@Deprecated
 	static public Timestamp getNextDay(@Nullable final Timestamp day)
 	{
-		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
+		final Timestamp dayToUse = day != null ? day : de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final GregorianCalendar cal = new GregorianCalendar();
 
 		cal.setTimeInMillis(dayToUse.getTime());
-		cal.add(Calendar.DAY_OF_YEAR, +1);	// next
+		cal.add(Calendar.DAY_OF_YEAR, +1);    // next
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 
 		return new Timestamp(cal.getTimeInMillis());
-	}	// getNextDay
+	}    // getNextDay
 
 	/**
 	 * Get earliest time of prev day
@@ -224,24 +206,24 @@ public class TimeUtil
 	 * @param day day
 	 * @return next day with 00:00
 	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
-	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
+	 * Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
 	@Deprecated
 	static public Timestamp getPrevDay(@Nullable final Timestamp day)
 	{
-		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
+		final Timestamp dayToUse = day != null ? day : de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final GregorianCalendar cal = new GregorianCalendar();
 
 		cal.setTimeInMillis(dayToUse.getTime());
-		cal.add(Calendar.DAY_OF_YEAR, -1);	// prev
+		cal.add(Calendar.DAY_OF_YEAR, -1);    // prev
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 
 		return new Timestamp(cal.getTimeInMillis());
-	}	// getPrevDay
+	}    // getPrevDay
 
 	/**
 	 * Get last date in month
@@ -249,12 +231,12 @@ public class TimeUtil
 	 * @param day day
 	 * @return last day with 00:00
 	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
-	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
+	 * Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
 	@Deprecated
 	static public Timestamp getMonthLastDay(@Nullable final Timestamp day)
 	{
-		final Timestamp dayToUse = day != null ? day : SystemTime.asDayTimestamp();
+		final Timestamp dayToUse = day != null ? day : de.metas.common.util.time.SystemTime.asDayTimestamp();
 
 		final GregorianCalendar cal = new GregorianCalendar();
 
@@ -264,12 +246,12 @@ public class TimeUtil
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		//
-		cal.add(Calendar.MONTH, 1);			// next
-		cal.set(Calendar.DAY_OF_MONTH, 1);	// first
-		cal.add(Calendar.DAY_OF_YEAR, -1);	// previous
+		cal.add(Calendar.MONTH, 1);            // next
+		cal.set(Calendar.DAY_OF_MONTH, 1);    // first
+		cal.add(Calendar.DAY_OF_YEAR, -1);    // previous
 
 		return new Timestamp(cal.getTimeInMillis());
-	}	// getNextDay
+	}    // getNextDay
 
 	/**
 	 * Get 15'th day in month
@@ -277,12 +259,12 @@ public class TimeUtil
 	 * @param day may be <code>null</code>, in which case the current time is used.
 	 * @return 15'th with 00:00
 	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
-	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
+	 * Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
 	@Deprecated
 	static public Timestamp getMonthMiddleDay(@Nullable final Timestamp day)
 	{
-		final Timestamp dateToUse = day == null ? SystemTime.asDayTimestamp() : day;
+		final Timestamp dateToUse = day == null ? de.metas.common.util.time.SystemTime.asDayTimestamp() : day;
 
 		final GregorianCalendar cal = new GregorianCalendar();
 
@@ -292,22 +274,22 @@ public class TimeUtil
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 
-		cal.set(Calendar.DAY_OF_MONTH, 16);	// 15'th
-		cal.add(Calendar.DAY_OF_YEAR, -1);	// previous
+		cal.set(Calendar.DAY_OF_MONTH, 16);    // 15'th
+		cal.add(Calendar.DAY_OF_YEAR, -1);    // previous
 
 		return new Timestamp(cal.getTimeInMillis());
 	}
 
 	/**
 	 * Compose <code>day</code> (year, month, day) and <code>time</code> (hour, minute) and return the resulting date+time.
-	 *
+	 * <p>
 	 * Milliseconds will be set to zero.
 	 *
-	 * @param day day part
+	 * @param day  day part
 	 * @param time time part
 	 * @return day + time.
 	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
-	 *             Hint: you can use {@link #asDate(Object)} to get a "real" date
+	 * Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
 	@Deprecated
 	public static Timestamp getDayTime(
@@ -328,9 +310,8 @@ public class TimeUtil
 				timeCal.get(Calendar.MINUTE),
 				timeCal.get(Calendar.SECOND));
 		cal.set(Calendar.MILLISECOND, 0);
-		final Timestamp retValue = new Timestamp(cal.getTimeInMillis());
-		return retValue;
-	}	// getDayTime
+		return new Timestamp(cal.getTimeInMillis());
+	}    // getDayTime
 
 	/**
 	 * Is the _1 in the Range of _2
@@ -339,13 +320,13 @@ public class TimeUtil
 	 * 		Time_1         +--x--+
 	 * 		Time_2   +a+      +---b---+   +c+
 	 * </pre>
-	 *
+	 * <p>
 	 * The function returns true for b and false for a/b.
 	 *
 	 * @param start_1 start (1)
-	 * @param end_1 not included end (1)
+	 * @param end_1   not included end (1)
 	 * @param start_2 start (2)
-	 * @param end_2 not included (2)
+	 * @param end_2   not included (2)
 	 * @return true if in range
 	 */
 	static public boolean inRange(
@@ -364,33 +345,33 @@ public class TimeUtil
 			throw new UnsupportedOperationException("TimeUtil.inRange End_2=" + end_2 + " before Start_2=" + start_2);
 		}
 		// case a
-		if (!end_2.after(start_1))		// end not including
+		if (!end_2.after(start_1))        // end not including
 		{
 			// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
 			return false;
 		}
 		// case c
-		if (!start_2.before(end_1))		// end not including
+		if (!start_2.before(end_1))        // end not including
 		{
 			// log.debug( "TimeUtil.InRange - No", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
 			return false;
 		}
 		// log.debug( "TimeUtil.InRange - Yes", start_1 + "->" + end_1 + " <??> " + start_2 + "->" + end_2);
 		return true;
-	}	// inRange
+	}    // inRange
 
 	/**
 	 * Is start..end on one of the days ?
 	 *
-	 * @param start start day
-	 * @param end end day (not including)
-	 * @param OnMonday true if OK
-	 * @param OnTuesday true if OK
+	 * @param start       start day
+	 * @param end         end day (not including)
+	 * @param OnMonday    true if OK
+	 * @param OnTuesday   true if OK
 	 * @param OnWednesday true if OK
-	 * @param OnThursday true if OK
-	 * @param OnFriday true if OK
-	 * @param OnSaturday true if OK
-	 * @param OnSunday true if OK
+	 * @param OnThursday  true if OK
+	 * @param OnFriday    true if OK
+	 * @param OnSaturday  true if OK
+	 * @param OnSunday    true if OK
 	 * @return true if on one of the days
 	 */
 	static public boolean inRange(
@@ -416,7 +397,7 @@ public class TimeUtil
 		//
 		final GregorianCalendar calEnd = new GregorianCalendar();
 		calEnd.setTimeInMillis(end.getTime());
-		calEnd.add(Calendar.DAY_OF_YEAR, -1);	// not including
+		calEnd.add(Calendar.DAY_OF_YEAR, -1);    // not including
 		int dayEnd = calEnd.get(Calendar.DAY_OF_WEEK);
 
 		// On same day
@@ -481,7 +462,7 @@ public class TimeUtil
 		// log.debug( "MAssignment.InRange - No", start + "->" + end + " - "
 		// + OnMonday+"-"+OnTuesday+"-"+OnWednesday+"-"+OnThursday+"-"+OnFriday+"="+OnSaturday+"-"+OnSunday);
 		return false;
-	}	// isRange
+	}    // isRange
 
 	/**
 	 * Is it the same day
@@ -509,7 +490,7 @@ public class TimeUtil
 			return true;
 		}
 		return false;
-	}	// isSameDay
+	}    // isSameDay
 
 	/**
 	 * Is it the same hour
@@ -538,14 +519,10 @@ public class TimeUtil
 			return true;
 		}
 		return false;
-	}	// isSameHour
+	}    // isSameHour
 
 	/**
 	 * If is the dates are form the same year, returns true
-	 *
-	 * @param one
-	 * @param two
-	 * @return
 	 */
 	static public boolean isSameYear(final Timestamp one, final Timestamp two)
 	{
@@ -559,7 +536,7 @@ public class TimeUtil
 	 * Is all day
 	 *
 	 * @param start start date
-	 * @param end end date
+	 * @param end   end date
 	 * @return true if all day (00:00-00:00 next day)
 	 */
 	static public boolean isAllDay(final Timestamp start, final Timestamp end)
@@ -582,7 +559,7 @@ public class TimeUtil
 		}
 		//
 		return false;
-	}	// isAllDay
+	}    // isAllDay
 
 	/**
 	 * Calculate the number of hours between start and end.
@@ -598,11 +575,11 @@ public class TimeUtil
 		return (date2.getTime() - date1.getTime()) / MILLI_TO_HOUR;
 	}
 
-	public static int getDaysBetween(@NonNull Instant start, @NonNull Instant end)
+	public static int getDaysBetween(@NonNull final Instant start, @NonNull final Instant end)
 	{
 		// Thanks to http://mattgreencroft.blogspot.com/2014/12/java-8-time-choosing-right-object.html
-		final LocalDate d1 = LocalDateTime.ofInstant(start, SystemTime.zoneId()).toLocalDate();
-		final LocalDate d2 = LocalDateTime.ofInstant(end, SystemTime.zoneId()).toLocalDate();
+		final LocalDate d1 = LocalDateTime.ofInstant(start, de.metas.common.util.time.SystemTime.zoneId()).toLocalDate();
+		final LocalDate d2 = LocalDateTime.ofInstant(end, de.metas.common.util.time.SystemTime.zoneId()).toLocalDate();
 		return Period.between(d1, d2).getDays();
 	}
 
@@ -610,7 +587,7 @@ public class TimeUtil
 	 * Calculate the number of days between start and end.
 	 *
 	 * @param start start date
-	 * @param end end date
+	 * @param end   end date
 	 * @return number of days (0 = same)
 	 */
 	public static int getDaysBetween(@NonNull Date start, @NonNull Date end)
@@ -662,12 +639,12 @@ public class TimeUtil
 			return counter * -1;
 		}
 		return counter;
-	}	// getDaysBetween
+	}    // getDaysBetween
 
 	/**
 	 * Return Day + offset (truncates)
 	 *
-	 * @param day Day
+	 * @param day    Day
 	 * @param offset day offset
 	 * @return Day + offset at 00:00
 	 */
@@ -679,7 +656,7 @@ public class TimeUtil
 		}
 		if (day == null)
 		{
-			day = SystemTime.asTimestamp();
+			day = de.metas.common.util.time.SystemTime.asTimestamp();
 		}
 		//
 		final GregorianCalendar cal = new GregorianCalendar();
@@ -689,14 +666,14 @@ public class TimeUtil
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 
-		cal.add(Calendar.YEAR, offset);			// may have a problem with negative (before 1/1)
+		cal.add(Calendar.YEAR, offset);            // may have a problem with negative (before 1/1)
 		return new Timestamp(cal.getTimeInMillis());
-	}	// addMonths
+	}    // addMonths
 
 	/**
 	 * Return Day + offset (truncates)
 	 *
-	 * @param day Day
+	 * @param day    Day
 	 * @param offset day offset
 	 * @return Day + offset at 00:00
 	 */
@@ -708,7 +685,7 @@ public class TimeUtil
 		}
 		if (day == null)
 		{
-			day = SystemTime.asTimestamp();
+			day = de.metas.common.util.time.SystemTime.asTimestamp();
 		}
 		//
 		final GregorianCalendar cal = new GregorianCalendar();
@@ -718,14 +695,14 @@ public class TimeUtil
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 
-		cal.add(Calendar.MONTH, offset);			// may have a problem with negative (before 1/1)
+		cal.add(Calendar.MONTH, offset);            // may have a problem with negative (before 1/1)
 		return new Timestamp(cal.getTimeInMillis());
-	}	// addMonths
+	}    // addMonths
 
 	/**
 	 * Return Day + offset (truncates)
 	 *
-	 * @param day Day
+	 * @param day    Day
 	 * @param offset day offset
 	 * @return Day + offset at 00:00
 	 */
@@ -747,14 +724,14 @@ public class TimeUtil
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 
-		cal.add(Calendar.WEEK_OF_YEAR, offset);			// may have a problem with negative (before 1/1)
+		cal.add(Calendar.WEEK_OF_YEAR, offset);            // may have a problem with negative (before 1/1)
 		return new Timestamp(cal.getTimeInMillis());
-	}	// addDays
+	}    // addDays
 
 	/**
 	 * Return Day + offset (truncates)
 	 *
-	 * @param day Day
+	 * @param day    Day
 	 * @param offset day offset
 	 * @return day + offset at 00:00
 	 */
@@ -766,7 +743,7 @@ public class TimeUtil
 		}
 		if (day == null)
 		{
-			day = SystemTime.asTimestamp();
+			day = de.metas.common.util.time.SystemTime.asTimestamp();
 		}
 		//
 		final GregorianCalendar cal = new GregorianCalendar();
@@ -776,15 +753,14 @@ public class TimeUtil
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 
-		cal.add(Calendar.DAY_OF_YEAR, offset);			// may have a problem with negative (before 1/1)
+		cal.add(Calendar.DAY_OF_YEAR, offset);            // may have a problem with negative (before 1/1)
 		return new Timestamp(cal.getTimeInMillis());
-	}	// addDays
+	}    // addDays
 
 	/**
 	 * Similar to {@link #addDays(Date, int)}, but the given {@code day} may not be {@code null},
 	 * and the return value has the same hours, minutes, records and milliseconds as the given day (i.e. it's not 00:00).
 	 *
-	 * @param day
 	 * @param offset day offset
 	 * @return day + offset
 	 */
@@ -800,12 +776,12 @@ public class TimeUtil
 	 * Return DateTime + offset in minutes
 	 *
 	 * @param dateTime Date and Time
-	 * @param offset minute offset
+	 * @param offset   minute offset
 	 * @return dateTime + offset in minutes; never returns {@code null}
 	 */
 	public static Date addMinutes(final Date dateTime, final int offset)
 	{
-		final Date dateTimeToUse = dateTime == null ? SystemTime.asDate() : dateTime;
+		final Date dateTimeToUse = dateTime == null ? de.metas.common.util.time.SystemTime.asDate() : dateTime;
 
 		if (offset == 0)
 		{
@@ -814,16 +790,12 @@ public class TimeUtil
 
 		final GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(dateTimeToUse);
-		cal.add(Calendar.MINUTE, offset);			// may have a problem with negative
+		cal.add(Calendar.MINUTE, offset);            // may have a problem with negative
 		return new Date(cal.getTimeInMillis());
 	}
 
 	/**
 	 * Like {@link #addMinutes(Date, int)}, but takes and returns a {@link Timestamp} and not a {@link Date}.
-	 *
-	 * @param dateTime
-	 * @param offset
-	 * @return
 	 */
 	public static Timestamp addMinutes(final Timestamp dateTime, final int offset)
 	{
@@ -834,7 +806,7 @@ public class TimeUtil
 	 * Return DateTime + offset in millis
 	 *
 	 * @param dateTime Date and Time
-	 * @param offset minute offset
+	 * @param offset   minute offset
 	 * @return dateTime + offset in millis
 	 */
 	static public Timestamp addMillis(Timestamp dateTime, final int offset)
@@ -850,15 +822,15 @@ public class TimeUtil
 		//
 		final GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(dateTime);
-		cal.add(Calendar.MILLISECOND, offset);			// may have a problem with negative
+		cal.add(Calendar.MILLISECOND, offset);            // may have a problem with negative
 		return new Timestamp(cal.getTimeInMillis());
-	}	// addMillis
+	}    // addMillis
 
 	/**
 	 * Return DateTime + offset in hours
 	 *
 	 * @param dateTime Date and Time
-	 * @param offset minute offset
+	 * @param offset   minute offset
 	 * @return dateTime + offset in hours
 	 */
 	static public Timestamp addHours(Date dateTime, final int offset)
@@ -874,15 +846,15 @@ public class TimeUtil
 		//
 		final GregorianCalendar cal = new GregorianCalendar();
 		cal.setTime(dateTime);
-		cal.add(Calendar.HOUR, offset);			// may have a problem with negative
+		cal.add(Calendar.HOUR, offset);            // may have a problem with negative
 		return new Timestamp(cal.getTimeInMillis());
-	}	// addHours
+	}    // addHours
 
 	/**
 	 * Format Elapsed Time
 	 *
 	 * @param start start time or null for now
-	 * @param end end time or null for now
+	 * @param end   end time or null for now
 	 */
 	public static String formatElapsed(final Timestamp start, final Timestamp end)
 	{
@@ -891,8 +863,8 @@ public class TimeUtil
 			return formatElapsed(0);
 		}
 
-		final long startTime = start != null ? start.getTime() : System.currentTimeMillis();
-		final long endTime = end != null ? end.getTime() : System.currentTimeMillis();
+		final long startTime = start.getTime();
+		final long endTime = end.getTime();
 		return formatElapsed(endTime - startTime);
 	}
 
@@ -910,7 +882,7 @@ public class TimeUtil
 		return formatElapsed(endTime - startTime);
 	}
 
-	public static String formatElapsed(long elapsedMillis)
+	public static String formatElapsed(final long elapsedMillis)
 	{
 		return formatElapsed(Duration.ofMillis(elapsedMillis));
 	}
@@ -927,7 +899,7 @@ public class TimeUtil
 	}
 
 	// copy-paste of com.google.common.base.Stopwatch.chooseUnit(long)
-	private static TimeUnit chooseUnit(long nanos)
+	private static TimeUnit chooseUnit(final long nanos)
 	{
 		if (DAYS.convert(nanos, NANOSECONDS) > 0)
 		{
@@ -957,7 +929,7 @@ public class TimeUtil
 	}
 
 	// copy-paste of com.google.common.base.Stopwatch.abbreviate(TimeUnit)
-	private static String abbreviate(TimeUnit unit)
+	private static String abbreviate(final TimeUnit unit)
 	{
 		switch (unit)
 		{
@@ -984,22 +956,22 @@ public class TimeUtil
 	 * Is it valid today?
 	 *
 	 * @param validFrom valid from
-	 * @param validTo valid to
+	 * @param validTo   valid to
 	 * @return true if walid
 	 */
 	public static boolean isValid(final Timestamp validFrom, final Timestamp validTo)
 	{
 		return isValid(validFrom, validTo, new Timestamp(System.currentTimeMillis()));
-	}	// isValid
+	}    // isValid
 
 	/**
 	 * Is it valid on test date.
-	 *
+	 * <p>
 	 * If <code>testDate</code> is null, true will be returned.
 	 *
 	 * @param validFrom valid from
-	 * @param validTo valid to
-	 * @param testDate Date
+	 * @param validTo   valid to
+	 * @param testDate  Date
 	 * @return true if valid
 	 * @see #isBetween(Date, Date, Date)
 	 */
@@ -1011,16 +983,13 @@ public class TimeUtil
 		}
 
 		return isBetween(testDate, validFrom, validTo);
-	}	// isValid
+	}    // isValid
 
 	/**
 	 * Checks if given <code>date</code> is between <code>dateFrom</code> and <code>dateTo</code> inclusivelly.
-	 *
+	 * <p>
 	 * If <code>dateFrom</code> or <code>dateTo</code> are <code>null</code> it will be considered as infinity.
 	 *
-	 * @param date
-	 * @param dateFrom
-	 * @param dateTo
 	 * @return true if date is between given dates (inclusively)
 	 */
 	public static boolean isBetween(final Date date, final Date dateFrom, final Date dateTo)
@@ -1040,6 +1009,24 @@ public class TimeUtil
 		return true;
 	}
 
+	public static boolean isBetween(
+			@NonNull final Instant date,
+			@Nullable final Instant dateFrom,
+			@Nullable final Instant dateTo)
+	{
+		if (dateFrom != null && date.isBefore(dateFrom))
+		{
+			return false;
+		}
+
+		if (dateTo != null && date.isAfter(dateTo))
+		{
+			return false;
+		}
+
+		return true;
+	}
+
 	/**
 	 * Max date
 	 *
@@ -1047,6 +1034,7 @@ public class TimeUtil
 	 * @param ts2 p2
 	 * @return max time
 	 */
+	@Nullable
 	public static <T extends Date> T max(
 			@Nullable final T ts1,
 			@Nullable final T ts2)
@@ -1065,19 +1053,18 @@ public class TimeUtil
 			return ts2;
 		}
 		return ts1;
-	}	// max
+	}    // max
 
 	/**
 	 * Gets minimum date.
-	 *
+	 * <p>
 	 * If one of the dates is null, then the not null one will be returned.
-	 *
+	 * <p>
 	 * If both dates are null then null will be returned.
 	 *
-	 * @param date1
-	 * @param date2
 	 * @return minimum date or null
 	 */
+	@Nullable
 	public static <T extends Date> T min(
 			@Nullable final T date1,
 			@Nullable final T date2)
@@ -1104,7 +1091,10 @@ public class TimeUtil
 		}
 	}
 
-	public static final ZonedDateTime min(final ZonedDateTime date1, final ZonedDateTime date2)
+	@Nullable
+	public static ZonedDateTime min(
+			@Nullable final ZonedDateTime date1,
+			@Nullable final ZonedDateTime date2)
 	{
 		if (date1 == date2)
 		{
@@ -1124,28 +1114,44 @@ public class TimeUtil
 		}
 	}
 
-	/** Truncate Second - S */
+	/**
+	 * Truncate Second - S
+	 */
 	public static final String TRUNC_SECOND = "S";
-	/** Truncate Minute - M */
+	/**
+	 * Truncate Minute - M
+	 */
 	public static final String TRUNC_MINUTE = "M";
-	/** Truncate Hour - H */
+	/**
+	 * Truncate Hour - H
+	 */
 	public static final String TRUNC_HOUR = "H";
-	/** Truncate Day - D */
+	/**
+	 * Truncate Day - D
+	 */
 	public static final String TRUNC_DAY = "D";
-	/** Truncate Week - W (Monday is always considered the first day of the week) */
+	/**
+	 * Truncate Week - W (Monday is always considered the first day of the week)
+	 */
 	public static final String TRUNC_WEEK = "W";
-	/** Truncate Month - MM */
+	/**
+	 * Truncate Month - MM
+	 */
 	public static final String TRUNC_MONTH = "MM";
-	/** Truncate Quarter - Q */
+	/**
+	 * Truncate Quarter - Q
+	 */
 	public static final String TRUNC_QUARTER = "Q";
-	/** Truncate Year - Y */
+	/**
+	 * Truncate Year - Y
+	 */
 	public static final String TRUNC_YEAR = "Y";
 
 	/**
 	 * Get truncated day/time
 	 *
 	 * @param dayTime day
-	 * @param trunc how to truncate TRUNC_*
+	 * @param trunc   how to truncate TRUNC_*
 	 * @return next day with 00:00
 	 */
 	// metas: changed dayTime type from Timestamp to Date
@@ -1158,7 +1164,7 @@ public class TimeUtil
 			@Nullable final Date dayTime,
 			final String trunc)
 	{
-		final Date dayTimeToUse = dayTime == null ? SystemTime.asTimestamp() : dayTime;
+		final Date dayTimeToUse = dayTime == null ? de.metas.common.util.time.SystemTime.asTimestamp() : dayTime;
 		return truncToMillisDayTimeNotNull(dayTimeToUse, trunc);
 	}
 
@@ -1236,9 +1242,10 @@ public class TimeUtil
 		}
 		cal.set(Calendar.DAY_OF_YEAR, 1);
 		return cal.getTimeInMillis();
-	}	// trunc
+	}    // trunc
 
-	public static final Timestamp truncToDay(final Date dayTime)
+	@Nullable
+	public static Timestamp truncToDay(@Nullable final Date dayTime)
 	{
 		return dayTime == null ? null : trunc(dayTime, TRUNC_DAY);
 	}
@@ -1246,11 +1253,6 @@ public class TimeUtil
 	/**
 	 * Returns the day border by combining the date part from dateTime and time part form timeSlot. If timeSlot is null, then first milli of the day will be used (if end == false) or last milli of the
 	 * day (if end == true).
-	 *
-	 * @param dateTime
-	 * @param timeSlot
-	 * @param end
-	 * @return
 	 */
 	public static Timestamp getDayBorder(final Timestamp dateTime, final Timestamp timeSlot, final boolean end)
 	{
@@ -1286,6 +1288,7 @@ public class TimeUtil
 		return new Timestamp(gc.getTimeInMillis());
 	}
 
+	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Object obj)
 	{
 		if (obj == null)
@@ -1312,9 +1315,7 @@ public class TimeUtil
 
 	public static boolean isDateOrTimeObject(@Nullable final Object value)
 	{
-		return value != null
-				? isDateOrTimeClass(value.getClass())
-				: false;
+		return value != null && isDateOrTimeClass(value.getClass());
 	}
 
 	public static boolean isDateOrTimeClass(@NonNull final Class<?> clazz)
@@ -1328,15 +1329,20 @@ public class TimeUtil
 				|| XMLGregorianCalendar.class.isAssignableFrom(clazz);
 	}
 
-	/** @deprecated your method argument is already a {@link Timestamp}; you don't need to call this method. */
+	/**
+	 * @deprecated your method argument is already a {@link Timestamp}; you don't need to call this method.
+	 */
 	@Deprecated
 	public static Timestamp asTimestamp(final Timestamp timestamp)
 	{
 		return timestamp;
 	}
 
-	/** @return date as timestamp or null if the date is null */
-	public static Timestamp asTimestamp(final Date date)
+	/**
+	 * @return date as timestamp or null if the date is null
+	 */
+	@Nullable
+	public static Timestamp asTimestamp(@Nullable final Date date)
 	{
 		if (date instanceof Timestamp)
 		{
@@ -1348,6 +1354,7 @@ public class TimeUtil
 	/**
 	 * @return instant as timestamp or null if the instant is null; note: use {@link Timestamp#toInstant()} for the other direction.
 	 */
+	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Instant instant)
 	{
 		return instant != null ? Timestamp.from(instant) : null;
@@ -1357,12 +1364,14 @@ public class TimeUtil
 	 * NOTE: please consider using {@link #asTimestamp(LocalDate, ZoneId)} with the respective org's time zone instead (see {@link de.metas.organization.IOrgDAO#getTimeZone(de.metas.organization.OrgId)}).
 	 * Will be deprecated in future but atm we cannot because there are a lot of cases when we have to use it.
 	 */
+	@Nullable
 	public static Timestamp asTimestamp(@Nullable final LocalDate localDate)
 	{
 		final ZoneId timezone = null;
 		return asTimestamp(localDate, timezone);
 	}
 
+	@Nullable
 	public static Timestamp asTimestamp(
 			@Nullable final LocalDate localDate,
 			@Nullable final ZoneId timezone)
@@ -1372,7 +1381,7 @@ public class TimeUtil
 			return null;
 		}
 		final Instant instant = localDate
-				.atStartOfDay(coalesce(timezone, SystemTime.zoneId()))
+				.atStartOfDay(coalesce(timezone, de.metas.common.util.time.SystemTime.zoneId()))
 				.toInstant();
 		return Timestamp.from(instant);
 	}
@@ -1391,7 +1400,7 @@ public class TimeUtil
 			@Nullable final ZoneId timezone)
 	{
 		final LocalDate localDateEff = localDate != null ? localDate : LocalDate.now();
-		final ZoneId timezoneEff = coalesce(timezone, SystemTime.zoneId());
+		final ZoneId timezoneEff = coalesce(timezone, de.metas.common.util.time.SystemTime.zoneId());
 
 		final Instant instant;
 		if (localTime == null)
@@ -1406,6 +1415,7 @@ public class TimeUtil
 		return Timestamp.from(instant);
 	}
 
+	@Nullable
 	public static Timestamp asTimestamp(@Nullable final LocalDateTime localDateTime)
 	{
 		if (localDateTime == null)
@@ -1439,7 +1449,7 @@ public class TimeUtil
 		cal.set(Calendar.MONTH, Calendar.DECEMBER);
 		cal.set(Calendar.DAY_OF_MONTH, 31);
 		return new Timestamp(cal.getTimeInMillis());
-	}	// getYearLastDay
+	}    // getYearLastDay
 
 	/**
 	 * Get first date in year
@@ -1464,12 +1474,11 @@ public class TimeUtil
 		cal.set(Calendar.MONTH, Calendar.JANUARY);
 		cal.set(Calendar.DAY_OF_MONTH, 1);
 		return new Timestamp(cal.getTimeInMillis());
-	}	// getYearFirstDay
+	}    // getYearFirstDay
 
 	/**
 	 * Extract the year from a given date.
 	 *
-	 * @param date
 	 * @return the year as int
 	 */
 	static public int getYearFromTimestamp(final Date date)
@@ -1477,16 +1486,13 @@ public class TimeUtil
 		final Calendar calendar = Calendar.getInstance();
 		calendar.setTime(date);
 
-		final int year = calendar.get(Calendar.YEAR);
-		return year;
+		return calendar.get(Calendar.YEAR);
 	}
 
 	public static String formatDate(final Timestamp date, final String pattern)
 	{
 		final SimpleDateFormat sdf = new SimpleDateFormat(pattern);
-		final String s = sdf.format(date);
-
-		return s;
+		return sdf.format(date);
 	}
 
 	/**
@@ -1521,8 +1527,6 @@ public class TimeUtil
 	/**
 	 * Truncates given dates by using the <code>trunc</code> method and then compares them.
 	 *
-	 * @param date1
-	 * @param date2
 	 * @param trunc see TRUNC_* constants
 	 * @return true if the dates are equal after truncating them by <code>trunc</code> method.
 	 */
@@ -1547,20 +1551,20 @@ public class TimeUtil
 		return date1Trunc.equals(date2Trunc);
 	}
 
-	/** @return copy of given timestamp or null if the given timestamp was null */
-	public static final Timestamp copyOf(final Timestamp timestamp)
+	/**
+	 * @return copy of given timestamp or null if the given timestamp was null
+	 */
+	@Nullable
+	public static Timestamp copyOf(@Nullable final Timestamp timestamp)
 	{
 		return timestamp == null ? null : new Timestamp(timestamp.getTime());
 	}
 
 	/**
 	 * Get the week of year number for the given Date
-	 *
+	 * <p>
 	 * The logic for calculating the week number is based on the ISO week date conventions.
 	 * Please, check https://en.wikipedia.org/wiki/ISO_week_date for more details.
-	 *
-	 * @param date
-	 * @return
 	 */
 	public static int getWeekNumber(final Date date)
 	{
@@ -1578,17 +1582,13 @@ public class TimeUtil
 		// It is the first week with a majority (4 or more) of its days in January.
 		cal.setMinimalDaysInFirstWeek(4);
 
-		final int weekOfYear = cal.get(Calendar.WEEK_OF_YEAR);
-		return weekOfYear;
+		return cal.get(Calendar.WEEK_OF_YEAR);
 	}
 
 	/**
 	 * Get the day of the week for the given date.
 	 * First day of the week is considered Monday, due to ISO 8601.
 	 * Please, check https://en.wikipedia.org/wiki/ISO_week_date for more details.
-	 *
-	 * @param date
-	 * @return
 	 */
 	public static int getDayOfWeek(final Date date)
 	{
@@ -1605,7 +1605,8 @@ public class TimeUtil
 	}
 
 	@Deprecated
-	public static LocalDate asLocalDate(final LocalDate localDate)
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final LocalDate localDate)
 	{
 		return localDate;
 	}
@@ -1614,6 +1615,7 @@ public class TimeUtil
 	 * Please use {@link #asLocalDate(Timestamp, ZoneId)}
 	 */
 	@Deprecated
+	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Timestamp ts)
 	{
 		return ts != null
@@ -1621,7 +1623,8 @@ public class TimeUtil
 				: null;
 	}
 
-	public static LocalDate asLocalDate(final Object obj)
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Object obj)
 	{
 		if (obj == null)
 		{
@@ -1641,6 +1644,7 @@ public class TimeUtil
 		}
 	}
 
+	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
 	{
 		return timestamp != null
@@ -1648,6 +1652,7 @@ public class TimeUtil
 				: null;
 	}
 
+	@Nullable
 	public static LocalDate asLocalDate(@Nullable final ZonedDateTime zonedDateTime, @NonNull final ZoneId zoneId)
 	{
 		return zonedDateTime != null
@@ -1663,7 +1668,7 @@ public class TimeUtil
 	}
 
 
-	public static LocalTime asLocalTime(final Object obj)
+	public static LocalTime asLocalTime(@Nullable final Object obj)
 	{
 		if (obj == null)
 		{
@@ -1679,14 +1684,17 @@ public class TimeUtil
 		}
 	}
 
-	/** @deprecated your method argument is already a {@link LocalDateTime}; you don't need to call this method. */
+	/**
+	 * @deprecated your method argument is already a {@link LocalDateTime}; you don't need to call this method.
+	 */
 	@Deprecated
 	public static LocalDateTime asLocalDateTime(final LocalDateTime localDateTime)
 	{
 		return localDateTime;
 	}
 
-	public static LocalDateTime asLocalDateTime(final Object obj)
+	@Nullable
+	public static LocalDateTime asLocalDateTime(@Nullable final Object obj)
 	{
 		if (obj == null)
 		{
@@ -1710,7 +1718,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asInstant(obj).atZone(SystemTime.zoneId()).toLocalDateTime();
+			return asInstant(obj).atZone(de.metas.common.util.time.SystemTime.zoneId()).toLocalDateTime();
 		}
 	}
 
@@ -1724,13 +1732,21 @@ public class TimeUtil
 	 * @deprecated favor using {@link #asZonedDateTime(Object, ZoneId)}
 	 */
 	@Deprecated
+	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final LocalDate localDate)
 	{
 		return localDate != null
-				? localDate.atStartOfDay(SystemTime.zoneId())
+				? localDate.atStartOfDay(de.metas.common.util.time.SystemTime.zoneId())
 				: null;
 	}
 
+	@Nullable
+	public static ZonedDateTime asZonedDateTime(@Nullable final Instant instant)
+	{
+		return instant != null ? instant.atZone(SystemTime.zoneId()) : null;
+	}
+
+	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj)
 	{
 		if (obj == null)
@@ -1738,9 +1754,10 @@ public class TimeUtil
 			return null;
 		}
 
-		return asZonedDateTime(obj, SystemTime.zoneId());
+		return asZonedDateTime(obj, de.metas.common.util.time.SystemTime.zoneId());
 	}
 
+	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj, @NonNull final ZoneId zoneId)
 	{
 		if (obj == null)
@@ -1757,7 +1774,8 @@ public class TimeUtil
 		}
 	}
 
-	public static Date asDate(final Object obj)
+	@Nullable
+	public static Date asDate(@Nullable final Object obj)
 	{
 		if (obj == null)
 		{
@@ -1777,20 +1795,32 @@ public class TimeUtil
 		}
 	}
 
-	/** @deprecated your method argument is already an {@link Instant}; you don't need to call this method. */
+	/**
+	 * @deprecated your method argument is already an {@link Instant}; you don't need to call this method.
+	 */
 	@Deprecated
+	@Nullable
 	public static Instant asInstant(@Nullable final Instant instant)
 	{
 		return instant;
 	}
 
+	@Nullable
 	public static Instant asInstant(@Nullable final Object obj)
 	{
-		return asInstant(obj, SystemTime.zoneId());
+		return asInstant(obj, de.metas.common.util.time.SystemTime.zoneId());
 	}
 
+	@Nullable
+	public static Instant asInstant(@Nullable final Timestamp timestamp)
+	{
+		return timestamp != null ? timestamp.toInstant() : null;
+	}
+
+	@Nullable
 	public static Instant asInstant(
-			@Nullable final Object obj, @NonNull final ZoneId zoneId)
+			@Nullable final Object obj,
+			@NonNull final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1835,12 +1865,12 @@ public class TimeUtil
 		}
 		else if (obj instanceof Integer)
 		{
-			final int millis = ((Integer)obj).intValue();
+			final int millis = (Integer)obj;
 			return Instant.ofEpochMilli(millis);
 		}
 		else if (obj instanceof Long)
 		{
-			final long millis = ((Long)obj).longValue();
+			final long millis = (Long)obj;
 			return Instant.ofEpochMilli(millis);
 		}
 		else
@@ -1849,6 +1879,7 @@ public class TimeUtil
 		}
 	}
 
+	@Nullable
 	public static Duration max(
 			@Nullable final Duration duration1,
 			@Nullable final Duration duration2)
@@ -1871,6 +1902,7 @@ public class TimeUtil
 		}
 	}
 
+	@Nullable
 	public static Instant max(
 			@Nullable final Instant instant1,
 			@Nullable final Instant instant2)
@@ -1944,7 +1976,7 @@ public class TimeUtil
 	 */
 	public static String serializeInstant(@NonNull final Instant instant)
 	{
-		return Long.toString(instant.getEpochSecond()) + "." + Long.toString(instant.getNano());
+		return instant.getEpochSecond() + "." + Long.toString(instant.getNano());
 	}
 
 	/**
@@ -1968,7 +2000,7 @@ public class TimeUtil
 		{
 			seconds = Long.parseLong(split[0]);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			throw new AdempiereException("The 'seconds' part of the given instant string can't be parsed as long", e).appendParametersToMessage().setParameter("instant-string", instant);
 		}
@@ -1977,16 +2009,38 @@ public class TimeUtil
 		{
 			nanos = Long.parseLong(split[1]);
 		}
-		catch (NumberFormatException e)
+		catch (final NumberFormatException e)
 		{
 			throw new AdempiereException("The 'nanos' part of the given instant string can't be parsed as long", e).appendParametersToMessage().setParameter("instant-string", instant);
 		}
 		return Instant.ofEpochSecond(seconds, nanos);
 	}
-	
+
 	@NonNull
 	public static Duration toDuration(@NonNull final Stopwatch stopwatch)
 	{
 		return Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
 	}
-}	// TimeUtil
+
+	public static Range<LocalDate> toLocalDateRange(
+			@Nullable final java.sql.Timestamp from,
+			@Nullable final java.sql.Timestamp to)
+	{
+		return toLocalDateRange(asLocalDate(from), asLocalDate(to));
+	}
+
+	public static Range<LocalDate> toLocalDateRange(
+			@Nullable final LocalDate from,
+			@Nullable final LocalDate to)
+	{
+		if (from == null)
+		{
+			return to == null ? Range.all() : Range.lessThan(to);
+		}
+		else
+		{
+			return to == null ? Range.atLeast(from) : Range.closedOpen(from, to);
+		}
+	}
+
+}    // TimeUtil

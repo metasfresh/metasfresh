@@ -7,6 +7,7 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.util.Optional;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner;
@@ -19,7 +20,6 @@ import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.IImportProcess;
 import de.metas.purchasecandidate.BPPurchaseSchedule;
 import de.metas.purchasecandidate.BPPurchaseScheduleRepository;
-import de.metas.util.time.SystemTime;
 import de.metas.util.time.generator.Frequency;
 import de.metas.util.time.generator.FrequencyType;
 import lombok.NonNull;
@@ -102,7 +102,7 @@ public class BPPurchaseScheduleImportPartnerInterceptor implements IImportInterc
 						.frequency(frequency)
 						.leadTimeOffset(Duration.ofDays(importRecord.getLeadTimeOffset()))
 						.reminderTime(Duration.ofHours(1))
-						.validFrom(SystemTime.asLocalDate())
+						.validFrom(de.metas.common.util.time.SystemTime.asLocalDate())
 						.build();
 				bpPurchaseScheduleRepo.save(schedule);
 			}

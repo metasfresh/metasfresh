@@ -7,9 +7,6 @@ public interface IJavaClassBL extends ISingletonService
 {
 	/**
 	 * Creates a new instance of the given class definition
-	 *
-	 * @param javaClassDef
-	 * @return
 	 */
 	<T> T newInstance(I_AD_JavaClass javaClassDef);
 

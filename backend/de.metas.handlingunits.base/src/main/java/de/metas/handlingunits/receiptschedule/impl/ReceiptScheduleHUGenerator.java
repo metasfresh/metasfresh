@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
@@ -48,7 +49,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -142,9 +142,7 @@ public class ReceiptScheduleHUGenerator
 	/**
 	 * Sets if, after generating the HUs, we shall also update receipt schedule's LUTU configuration.
 	 *
-	 * IMPORTANT: this flag applies for {@link #generateWithinOwnTransaction()} but does not apply for {@link #generateAllPlanningHUs_InChunks()}.
-	 *
-	 * @param updateReceiptScheduleDefaultConfiguration
+	 * IMPORTANT: this flag applies for {@link #generateWithinOwnTransaction()}.
 	 */
 	public ReceiptScheduleHUGenerator setUpdateReceiptScheduleDefaultConfiguration(final boolean updateReceiptScheduleDefaultConfiguration)
 	{
@@ -431,12 +429,6 @@ public class ReceiptScheduleHUGenerator
 		return allocationSources;
 	}
 
-	/**
-	 * Keep in sync with {@link de.metas.handlingunits.client.terminal.receipt.model.ReceiptScheduleCUKey.createVHU()}
-	 *
-	 * @param qty
-	 * @return
-	 */
 	private final IAllocationRequest createAllocationRequest(final Quantity qty)
 	{
 		final IContextAware contextProvider = getContextInitial();

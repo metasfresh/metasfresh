@@ -84,7 +84,7 @@ public class ADWindowDAO implements IADWindowDAO
 {
 	private static final transient Logger logger = LogManager.getLogger(ADWindowDAO.class);
 
-	private CCache<String, AdWindowId> windowIdsByInternalName = CCache.<String, AdWindowId> builder()
+	private final CCache<String, AdWindowId> windowIdsByInternalName = CCache.<String, AdWindowId> builder()
 			.tableName(I_AD_Window.Table_Name)
 			.build();
 
@@ -268,7 +268,7 @@ public class ADWindowDAO implements IADWindowDAO
 		return nextSeqNo(lastSeqNo);
 	}
 
-	private static final int nextSeqNo(final Integer lastSeqNo)
+	private static int nextSeqNo(final Integer lastSeqNo)
 	{
 		if (lastSeqNo == null || lastSeqNo <= 0)
 		{
@@ -391,6 +391,13 @@ public class ADWindowDAO implements IADWindowDAO
 				.orderBy(I_AD_Tab.COLUMNNAME_SeqNo) // just take the first one; it might have seqno != 10
 				.create()
 				.first(I_AD_Tab.class);
+	}
+
+	@Override
+	public String getFirstTabWhereClause(@NonNull final AdWindowId adWindowId)
+	{
+		final I_AD_Tab firstTab = retrieveFirstTab(adWindowId);
+		return firstTab != null ? firstTab.getWhereClause() : null;
 	}
 
 	@Override
@@ -579,7 +586,7 @@ public class ADWindowDAO implements IADWindowDAO
 		return targetUIElementGroup;
 	}
 
-	private int retrieveUIElementGroupLastSeqNo(int uiColumnId)
+	private int retrieveUIElementGroupLastSeqNo(final int uiColumnId)
 	{
 		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_ElementGroup.class)
 				.addEqualsFilter(I_AD_UI_ElementGroup.COLUMNNAME_AD_UI_Column_ID, uiColumnId)
@@ -723,6 +730,16 @@ public class ADWindowDAO implements IADWindowDAO
 					? copyCtx.getTargetFieldIdBySourceFieldId(sourceLabelsSelectorFieldId)
 					: -1;
 			targetElement.setLabels_Selector_Field_ID(targetLabelsSelectorFieldId);
+		}
+
+		//
+		// Inline Tab
+		{
+			final int sourceInlineTabId = sourceElement.getInline_Tab_ID();
+			final int targetInlineTabId = sourceInlineTabId > 0
+					? copyCtx.getTargetTabIdBySourceTabId(sourceInlineTabId)
+					: -1;
+			targetElement.setInline_Tab_ID(targetInlineTabId);
 		}
 
 		if (targetElement.getSeqNo() <= 0)
@@ -962,7 +979,7 @@ public class ADWindowDAO implements IADWindowDAO
 		return targetTab;
 	}
 
-	private int retrieveTabLastSeqNo(int windowId)
+	private int retrieveTabLastSeqNo(final int windowId)
 	{
 		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Tab.class)
 				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, windowId)
@@ -1072,7 +1089,7 @@ public class ADWindowDAO implements IADWindowDAO
 		copyFieldTrl(targetField.getAD_Field_ID(), sourceField.getAD_Field_ID());
 	}
 
-	private int retrieveFieldLastSeqNo(int tabId)
+	private int retrieveFieldLastSeqNo(final int tabId)
 	{
 		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Field.class)
 				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Tab_ID, tabId)
@@ -1103,7 +1120,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 	@Override
 	@Cached(cacheName = I_AD_Tab_Callout.Table_Name + "#by#" + I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID)
-	public List<I_AD_Tab_Callout> retrieveTabCallouts(@NonNull AdTabId tabId)
+	public List<I_AD_Tab_Callout> retrieveTabCallouts(@NonNull final AdTabId tabId)
 	{
 		return retrieveTabCalloutsQuery(tabId)
 				.create()

@@ -96,8 +96,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	/**
 	 * Please consider using {@link #getPOInfo(String)}.
 	 *
-	 * @param ctx_NOTUSED
-	 * @param tableName
 	 * @return POInfo
 	 */
 	public static POInfo getPOInfo(final Properties ctx_NOTUSED, final String tableName)
@@ -140,11 +138,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 
 	/**
 	 * Please consider using {@link #getPOInfo(String)}.
-	 *
-	 * @param ctx_NOTUSED
-	 * @param tableName
-	 * @param trxName
-	 * @return
 	 */
 	public static POInfo getPOInfo(final Properties ctx_NOTUSED, final String tableName, final String trxName)
 	{

@@ -6,7 +6,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Warehouse;
 
-import de.metas.handlingunits.inout.IReturnsInOutProducer;
+import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.util.ISingletonService;
 

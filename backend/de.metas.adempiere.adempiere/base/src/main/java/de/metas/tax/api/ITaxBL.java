@@ -37,6 +37,8 @@ import de.metas.util.ISingletonService;
 
 public interface ITaxBL extends ISingletonService
 {
+	I_C_Tax getTaxById(TaxId taxId);
+
 	/**
 	 * Try to retrieve tax by {@link #retrieveTaxIdForCategory(Properties, CountryId, OrgId, I_C_BPartner_Location, Timestamp, TaxCategoryId, boolean, boolean)} (Properties, int, int, org.compiere.model.I_C_BPartner_Location, Timestamp, TaxCategoryId, boolean, boolean)} first.<br>
 	 * If that doesn't work, try retrieving the German tax

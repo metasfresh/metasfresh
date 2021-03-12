@@ -4,6 +4,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 import java.time.ZonedDateTime;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -29,7 +30,6 @@ import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 @Callout(I_C_Invoice.class)
 @Component

@@ -60,7 +60,6 @@
 			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 
-
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>

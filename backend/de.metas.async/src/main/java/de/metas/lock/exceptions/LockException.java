@@ -101,6 +101,7 @@ public abstract class LockException extends AdempiereException
 		return this;
 	}
 
+ 	@Override
 	@OverridingMethodsMustInvokeSuper
 	public LockException setRecord(final @NonNull TableRecordReference record)
 	{

@@ -13,13 +13,20 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -137,6 +144,13 @@ public class CandidateAssignmentServiceTest
 				refundConfigChangeService);
 
 		refundTestTools = RefundTestTools.newInstance();
+
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
+
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 	}
 
 	@Test
@@ -413,7 +427,7 @@ public class CandidateAssignmentServiceTest
 	 *
 	 * expected: the remaining assigned quantity of refund-candidates is 10
 	 *
-	 * Hint: if this one fails, first check if the tests for {@link InvoiceCandidateAssignmentService#updateAssignment(AssignableInvoiceCandidate)} work.
+	 * Hint: if this one fails, first check if the tests for {@link CandidateAssignmentService#updateAssignment(AssignableInvoiceCandidate)} work.
 	 */
 	@Test
 	public void unassignCandidate_perScaleConfig1()
@@ -458,7 +472,7 @@ public class CandidateAssignmentServiceTest
 	 * the refund-candidate that had 14 now has 14-7=7
 	 * the assignable-candidate with 8 is now exclusively assigned to the refund-candidates with 0
 	 *
-	 * Hint: if this one fails, first check if the tests for {@link InvoiceCandidateAssignmentService#updateAssignment(AssignableInvoiceCandidate)} work.
+	 * Hint: if this one fails, first check if the tests for {@link CandidateAssignmentService#updateAssignment(AssignableInvoiceCandidate)} work.
 	 */
 	@Test
 	public void unassignCandidate_perScaleConfig2()

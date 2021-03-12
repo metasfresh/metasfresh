@@ -9,6 +9,231 @@ Additional notes:
 
 Here come the actual release notes:
 
+# Current master - metasfresh 5.162 - WIP
+
+## Reatures
+* [#10683](https://github.com/metasfresh/metasfresh/issues/10683) AD_Issue - Insert REST Endpoint
+
+# Current RC - metasfresh 5.161 - WIP
+
+https://github.com/metasfresh/metasfresh/issues/10595
+https://github.com/metasfresh/metasfresh/pull/10659
+  https://github.com/metasfresh/metasfresh/issues/10540
+
+
+
+## Features
+* metasfresh
+  https://github.com/metasfresh/metasfresh/issues/10566
+  * [#10535](https://github.com/metasfresh/metasfresh/issues/10535) Additional String Accounting Dimensions
+  https://github.com/metasfresh/metasfresh/issues/10555
+  https://github.com/metasfresh/metasfresh/issues/10624
+  https://github.com/metasfresh/metasfresh/pull/10645
+  https://github.com/metasfresh/metasfresh/issues/10524
+  https://github.com/metasfresh/metasfresh/issues/10573
+  https://github.com/metasfresh/metasfresh/issues/10249
+  https://github.com/metasfresh/metasfresh/issues/10426
+https://github.com/metasfresh/metasfresh/issues/10424
+https://github.com/metasfresh/metasfresh/issues/10419
+https://github.com/metasfresh/metasfresh/issues/10393
+https://github.com/metasfresh/metasfresh/issues/10389
+https://github.com/metasfresh/metasfresh/pull/10301
+https://github.com/metasfresh/metasfresh/issues/10269
+https://github.com/metasfresh/metasfresh/pull/10432
+https://github.com/metasfresh/metasfresh/issues/10436
+https://github.com/metasfresh/metasfresh/issues/10438
+https://github.com/metasfresh/metasfresh/issues/10446
+https://github.com/metasfresh/metasfresh/issues/10448
+https://github.com/metasfresh/metasfresh/issues/10450
+https://github.com/metasfresh/metasfresh/issues/10457
+https://github.com/metasfresh/metasfresh/issues/10464
+https://github.com/metasfresh/metasfresh/pull/10466
+https://github.com/metasfresh/metasfresh/issues/10467
+https://github.com/metasfresh/metasfresh/issues/10471
+https://github.com/metasfresh/metasfresh/issues/10478
+https://github.com/metasfresh/metasfresh/pull/10488
+https://github.com/metasfresh/metasfresh/issues/10493
+https://github.com/metasfresh/metasfresh/issues/10500
+https://github.com/metasfresh/metasfresh/issues/10501
+https://github.com/metasfresh/metasfresh/issues/10515
+https://github.com/metasfresh/metasfresh/issues/10526
+https://github.com/metasfresh/metasfresh/issues/10521
+https://github.com/metasfresh/metasfresh/issues/10531
+https://github.com/metasfresh/metasfresh/issues/10536
+https://github.com/metasfresh/metasfresh/issues/10538
+https://github.com/metasfresh/metasfresh/issues/10556
+https://github.com/metasfresh/metasfresh/issues/10560
+https://github.com/metasfresh/metasfresh/pull/10569
+https://github.com/metasfresh/metasfresh/pull/10570
+https://github.com/metasfresh/metasfresh/issues/10575
+https://github.com/metasfresh/metasfresh/issues/10582
+https://github.com/metasfresh/metasfresh/issues/10581
+https://github.com/metasfresh/metasfresh/issues/10590
+https://github.com/metasfresh/metasfresh/issues/10594
+https://github.com/metasfresh/metasfresh/issues/10607
+https://github.com/metasfresh/metasfresh/issues/10618
+https://github.com/metasfresh/metasfresh/pull/10619
+https://github.com/metasfresh/metasfresh/pull/10634
+https://github.com/metasfresh/metasfresh/issues/10642
+
+## Fixes
+* metasfresh
+  * [#10652](https://github.com/metasfresh/metasfresh/issues/10652) Incorrect breadcrumb after logout & login
+  https://github.com/metasfresh/metasfresh/issues/10649
+  https://github.com/metasfresh/metasfresh/issues/10149
+  https://github.com/metasfresh/metasfresh/issues/10422
+  https://github.com/metasfresh/metasfresh/issues/10434
+  https://github.com/metasfresh/metasfresh/issues/10455
+  https://github.com/metasfresh/metasfresh/issues/10459
+  https://github.com/metasfresh/metasfresh/issues/10469
+  https://github.com/metasfresh/metasfresh/issues/10474
+  https://github.com/metasfresh/metasfresh/pull/10481
+  https://github.com/metasfresh/metasfresh/pull/10482
+  https://github.com/metasfresh/metasfresh/issues/10483
+  https://github.com/metasfresh/metasfresh/issues/10490
+  https://github.com/metasfresh/metasfresh/issues/10491
+  https://github.com/metasfresh/metasfresh/issues/10497
+  https://github.com/metasfresh/metasfresh/issues/10503
+  https://github.com/metasfresh/metasfresh/issues/10507
+  https://github.com/metasfresh/metasfresh/pull/10511
+  https://github.com/metasfresh/metasfresh/issues/10513
+  https://github.com/metasfresh/metasfresh/issues/10529
+  https://github.com/metasfresh/metasfresh/issues/10547
+https://github.com/metasfresh/metasfresh/issues/10578
+https://github.com/metasfresh/metasfresh/issues/10580
+https://github.com/metasfresh/metasfresh/issues/10589
+https://github.com/metasfresh/metasfresh/issues/10591
+https://github.com/metasfresh/metasfresh/pull/10598
+https://github.com/metasfresh/metasfresh/issues/10599
+https://github.com/metasfresh/metasfresh/issues/10609
+https://github.com/metasfresh/metasfresh/pull/10612
+https://github.com/metasfresh/metasfresh/issues/10614
+https://github.com/metasfresh/metasfresh/pull/10617
+https://github.com/metasfresh/metasfresh/issues/10630
+https://github.com/metasfresh/metasfresh/pull/10635
+
+
+# metasfresh 5.160
+## Features
+* metasfresh
+  * [#10035](https://github.com/metasfresh/metasfresh/issues/10035) Can't sort by ID type virtual columns in grid view
+  * [#10184](https://github.com/metasfresh/metasfresh/issues/10184) WebUI: Implement User approval workflows
+  * [#10187](https://github.com/metasfresh/metasfresh/issues/10187) Extend shipment-candidate exported infos
+  * [#10191](https://github.com/metasfresh/metasfresh/issues/10191) UX: Error Messages
+  * [#10192](https://github.com/metasfresh/metasfresh/issues/10192) Some custom queries aren't working
+  * [#10203](https://github.com/metasfresh/metasfresh/pull/10203) Create Sales Order from this Quotation: don't show the action if it does not apply
+  * [#10206](https://github.com/metasfresh/metasfresh/issues/10206) Async/bounce cache invalidation and websocket events
+  * [#10208](https://github.com/metasfresh/metasfresh/pull/10208) Avoid using Postgres OID
+  * [#10210](https://github.com/metasfresh/metasfresh/issues/10210) Disable DocAction button while processing
+  * [#10221](https://github.com/metasfresh/metasfresh/issues/10221) Allow movements from source HUs
+  * [#10226](https://github.com/metasfresh/metasfresh/issues/10226) Add Validation Rule to display only the last 3 newest price list versions
+  * [#10231](https://github.com/metasfresh/metasfresh/issues/10231) Add Packaging-GTINs to Desadv-Pack
+  * [#10232](https://github.com/metasfresh/metasfresh/issues/10232) Update `AD_Process.Name` when editing `AD_Process_Trl.Name` for base language
+  * [#10238](https://github.com/metasfresh/metasfresh/issues/10238) Add SQL For Current vs Next price list comparison
+  * [#10242](https://github.com/metasfresh/metasfresh/issues/10242) Report - Quotation: handle `PRINTER_OPTS_IsPrintLogo`, `PRINTER_OPTS_IsPrintTotals` parameters
+  * [#10244](https://github.com/metasfresh/metasfresh/pull/10244) More info if ESR-check-digit computation fails for SEPA_Export_Line
+  * [#10245](https://github.com/metasfresh/metasfresh/issues/10245) Display Discontinued Flag for product and add Process to activate ProductPrice based on the flag
+  * [#10246](https://github.com/metasfresh/metasfresh/pull/10246) Printing Options
+  * [#10252](https://github.com/metasfresh/metasfresh/issues/10252) Mark Country ID as mandatory in the area search filters
+  * [#10262](https://github.com/metasfresh/metasfresh/issues/10262) Cypress test for UI Element Labels
+  * [#10264](https://github.com/metasfresh/metasfresh/issues/10264) Support for using the login user as default filter
+  * [#10266](https://github.com/metasfresh/metasfresh/issues/10266) Activate changelog
+  * [#10267](https://github.com/metasfresh/metasfresh/issues/10267) Add Movement Type Filter to Product Transactions window
+  * [#10270](https://github.com/metasfresh/metasfresh/issues/10270) Bank Statement Import improvements
+  * [#10273](https://github.com/metasfresh/metasfresh/pull/10273) `C_Invoice_Candidate_Recompute`: add PK
+  * [#10279](https://github.com/metasfresh/metasfresh/issues/10279) Add Marketing Channel Attribute and Window to User
+  * [#10283](https://github.com/metasfresh/metasfresh/pull/10283) Make sure that we specify if date-without-time shall be 00:00 or 23:59
+  * [#10291](https://github.com/metasfresh/metasfresh/issues/10291) Warehouse in Picking Terminal v2 Filter
+  * [#10293](https://github.com/metasfresh/metasfresh/issues/10293) Router Attributes
+  * [#10298](https://github.com/metasfresh/metasfresh/pull/10298) Redistribute syncadvise when creating bpartner from olcand-bpartner info
+  * [#10302](https://github.com/metasfresh/metasfresh/issues/10302) Manufacturing extensions
+  * [#10304](https://github.com/metasfresh/metasfresh/issues/10304) Put toast notification in place with close icon
+  * [#10310](https://github.com/metasfresh/metasfresh/issues/10310) Manufacturing extension: material dispo shall work with `PP_Product_Planning.MaxManufacturedQtyPerOrder`
+  * [#10312](https://github.com/metasfresh/metasfresh/pull/10312) Remove popup about missing app server when starting swing
+  * [#10316](https://github.com/metasfresh/metasfresh/issues/10316) Adding a LeadTime column and display on the Product Business Partner Tab
+  * [#10318](https://github.com/metasfresh/metasfresh/issues/10318) Reuse last archive if no info available when creating reports
+  * [#10321](https://github.com/metasfresh/metasfresh/issues/10321) Add new font icons
+  * [#10323](https://github.com/metasfresh/metasfresh/issues/10323) Add flag to disable marketing contact creation
+  * [#10325](https://github.com/metasfresh/metasfresh/issues/10325) Print manufacturing order label
+  * [#10327](https://github.com/metasfresh/metasfresh/issues/10327) Material schedule improvements
+  * [#10332](https://github.com/metasfresh/metasfresh/pull/10332) Improve `migrationscript_ignore` error handling
+  * [#10336](https://github.com/metasfresh/metasfresh/issues/10336) Order printing options: only display totals when needed
+  * [#10338](https://github.com/metasfresh/metasfresh/issues/10338) Add dedicated REST-Endpoint for municipality invoices
+  * [#10340](https://github.com/metasfresh/metasfresh/issues/10340) Unlink Quotation/Order before deleting
+  * [#10348](https://github.com/metasfresh/metasfresh/issues/10348) Create Scheduler for minus skonto
+  * [#10357](https://github.com/metasfresh/metasfresh/issues/10357) Add `M_Warehouse_ID` to `C_OLCand`
+  * [#10365](https://github.com/metasfresh/metasfresh/issues/10365) Always update `SalesOrderLine.Price*` when SalesOrder.DatePromissed is changed
+  * [#10368](https://github.com/metasfresh/metasfresh/issues/10368) Do not show by-product on manufacturing order report
+  * [#10371](https://github.com/metasfresh/metasfresh/issues/10371) Add new column to `r_request` table
+  * [#10374](https://github.com/metasfresh/metasfresh/pull/10374) Customize Tabs for "Service Annahme" Window
+  * [#10375](https://github.com/metasfresh/metasfresh/issues/10375) Introduce new `ad_messages`
+  * [#10377](https://github.com/metasfresh/metasfresh/issues/10377) Service Orders: create Request from `M_InOut` if configured
+  * [#10378](https://github.com/metasfresh/metasfresh/issues/10378) Product proposal: only allow prices in the same currency as the source order
+  * [#10383](https://github.com/metasfresh/metasfresh/pull/10383) Changing reference to search in base price list
+  * [#10409](https://github.com/metasfresh/metasfresh/issues/10409) Adding filter for creating new order from quotation
+  * [#10414](https://github.com/metasfresh/metasfresh/issues/10414) Guarantee/Service: Own window for Service Handling Units
+  * [#10415](https://github.com/metasfresh/metasfresh/issues/10415) Action to open the Service HU Editor from "Service Annahme" window
+  * [#10417](https://github.com/metasfresh/metasfresh/pull/10417) When splitting the HU in `QtyCU`=1 HUs, make sure the `PP_Order_Qty.Qty` is also ONE
+  * [#10433](https://github.com/metasfresh/metasfresh/pull/10433) Add property `skipIfIndirectlyCalled` to annotation `CalloutMethod`
+
+* metasfresh-webui-frontend-legacy
+  * [#2656](https://github.com/metasfresh/metasfresh-webui-frontend-legacy/issues/2656) UX: Error Messages
+
+## Fixes
+* metasfresh
+  * [#9867](https://github.com/metasfresh/metasfresh/pull/9867) OLCand-API's BPartner lookup ignores Org
+  * [#10196](https://github.com/metasfresh/metasfresh/pull/10196) Fix NPE on missing currency conversion
+  * [#10197](https://github.com/metasfresh/metasfresh/issues/10197) Sales Order window: avoid setting a DocType if is not in the list that user can pick from
+  * [#10201](https://github.com/metasfresh/metasfresh/issues/10201) Error when setting attributes in orderline
+  * [#10204](https://github.com/metasfresh/metasfresh/issues/10204) Label UI Elements: respect reference and valrule from `AD_Field`
+  * [#10211](https://github.com/metasfresh/metasfresh/issues/10211) Browser back button does not work correctly when starting tab using a direct link
+  * [#10224](https://github.com/metasfresh/metasfresh/pull/10224) Replication - boolean fields need to export `Y` or `N`, not `true` or `false`
+  * [#10228](https://github.com/metasfresh/metasfresh/issues/10228) Request.EndDate gets reset when setting another field
+  * [#10230](https://github.com/metasfresh/metasfresh/issues/10230) Advanced Edit - View jumping to end of list
+  * [#10247](https://github.com/metasfresh/metasfresh/pull/10247) On any RuntimeException flag shipmentCandidate as "error" and move on
+  * [#10254](https://github.com/metasfresh/metasfresh/issues/10254) Fix Manufacturing Order printing
+  * [#10276](https://github.com/metasfresh/metasfresh/issues/10276) Some windows not usable sometimes in case of mass shipping / mass invoicing
+  * [#10278](https://github.com/metasfresh/metasfresh/pull/10278) Prevent multiple re-renderings
+  * [#10287](https://github.com/metasfresh/metasfresh/issues/10287) Invoice is not ispaid = Y although fully allocated
+  * [#10307](https://github.com/metasfresh/metasfresh/issues/10307) Packing instructions available in sales order batch entry although not on price list
+  * [#10330](https://github.com/metasfresh/metasfresh/issues/10330) Fix for partner lookup when imported from OLCand
+  * [#10347](https://github.com/metasfresh/metasfresh/pull/10347) Also filter by product when resolving HUs
+  * [#10352](https://github.com/metasfresh/metasfresh/pull/10352) Add `outputDirectory` configuration to jaxb2
+  * [#10354](https://github.com/metasfresh/metasfresh/pull/10354) Hotfix WebUI convert from boolean to string lookup value
+  * [#10385](https://github.com/metasfresh/metasfresh/pull/10385) Hotfix `DataTypes.convertToBigDecimal`: handle Quantity too
+  * [#10396](https://github.com/metasfresh/metasfresh/issues/10396) REST Endpoint for Invoice data Query by customer
+  * [#10397](https://github.com/metasfresh/metasfresh/issues/10397) Reference to commission Invoice candidate is missing in commission deed
+  * [#10406](https://github.com/metasfresh/metasfresh/pull/10406) Error attaching Sales Order to Customer Return window
+
+# metasfresh 5.159
+## Features
+* metasfresh
+  * [#10023](https://github.com/metasfresh/metasfresh/issues/10023) Payment service providers also calculate fee on credit memos
+  * [#10174](https://github.com/metasfresh/metasfresh/issues/10174) Unskip modal tests
+  * [#10175](https://github.com/metasfresh/metasfresh/issues/10175) Avoid timeouts while cleaning up old `T_Query_Selection_*` records
+
+## Fixes
+* metasfresh
+  * [#10078](https://github.com/metasfresh/metasfresh/issues/10078) Wrong costs for manufacturing finished goods
+
+# metasfresh 5.158
+## Features
+* metasfresh
+  * [#9944](https://github.com/metasfresh/metasfresh/issues/9944) Include product commodity number in the receipt schedule export REST endpoint
+  * [#10094](https://github.com/metasfresh/metasfresh/issues/10094) Create shipping packages REST endpoint
+  * [#10127](https://github.com/metasfresh/metasfresh/issues/10127) Transfer complete sales order in \_bestell-XML
+  * [#10130](https://github.com/metasfresh/metasfresh/issues/10130) QR Code disabled by default
+  * [#10143](https://github.com/metasfresh/metasfresh/issues/10143) Status changes for DESADV
+  * [#10150](https://github.com/metasfresh/metasfresh/issues/10150) Avoid concurrent shipment-creation and shipment-schedule updating
+  * [#10167](https://github.com/metasfresh/metasfresh/issues/10167) Allow deselecting rows when mouse clicking
+
+## Fixes
+* metasfresh
+  * [#10157](https://github.com/metasfresh/metasfresh/issues/10157) Bug on order counter document creation: DocTypeTarget set for initial order, not for counter
+  * [#10159](https://github.com/metasfresh/metasfresh/issues/10159) Picking list issue - double entries in some cases
+  * [#10161](https://github.com/metasfresh/metasfresh/issues/10161) Bug when creating business partner *and group* on the fly
+  * [#10165](https://github.com/metasfresh/metasfresh/issues/10165) Payment allocation: outbound payment, vendor invoice, vendor CM not working
+
 # metasfresh 5.157
 ## Features
 * metasfresh

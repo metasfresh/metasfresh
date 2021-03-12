@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * Copyright (C) 2003-2007 e-Evolution,SC. All Rights Reserved. *
- * Contributor(s): Victor Perez www.e-evolution.com *
- * Teo Sarca, www.arhipac.ro *
- *****************************************************************************/
 package org.eevolution.model;
 
 /*
@@ -37,43 +21,45 @@ package org.eevolution.model;
  * #L%
  */
 
-import de.metas.document.IDocTypeDAO;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.report.DocumentReportService;
+import de.metas.report.ReportResultData;
+import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.MDocType;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
-import org.compiere.model.X_C_DocType;
-import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.ActivityControlCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.PPOrderDocBaseType;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.validator.PPOrderChangedEventFactory;
 
 import java.io.File;
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.time.Duration;
@@ -91,6 +77,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 {
 	private static final long serialVersionUID = 1L;
 
+	@SuppressWarnings("unused")
 	public MPPOrder(
 			final Properties ctx,
 			final int PP_Order_ID,
@@ -103,6 +90,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		}
 	}
 
+	@SuppressWarnings("unused")
 	public MPPOrder(
 			final Properties ctx,
 			final ResultSet rs,
@@ -217,14 +205,14 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public boolean approveIt()
 	{
-		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(getC_DocType_ID());
-		if (X_C_DocType.DOCBASETYPE_QualityOrder.equals(docType.getDocBaseType()))
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(getDocBaseType());
+		if (docBaseType.isQualityOrder())
 		{
 			final String whereClause = COLUMNNAME_PP_Product_BOM_ID + "=? AND " + COLUMNNAME_AD_Workflow_ID + "=?";
 			final MQMSpecification qms = new Query(getCtx(), I_QM_Specification.Table_Name, whereClause, get_TrxName())
-					.setParameters(new Object[] { getPP_Product_BOM_ID(), getAD_Workflow_ID() })
+					.setParameters(getPP_Product_BOM_ID(), getAD_Workflow_ID())
 					.firstOnly(MQMSpecification.class);
-			return qms != null ? qms.isValid(getM_AttributeSetInstance_ID()) : true;
+			return qms == null || qms.isValid(getM_AttributeSetInstance_ID());
 		}
 		else
 		{
@@ -262,11 +250,6 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		}
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
-
-		//
-		// Mark BOM Lines as processed
-		final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 
 		//
 		// Implicit Approval
@@ -361,8 +344,8 @@ public class MPPOrder extends X_PP_Order implements IDocument
 
 		//
 		// Check already closed
-		String docStatus = getDocStatus();
-		if (IDocument.STATUS_Closed.equals(docStatus))
+		DocStatus docStatus = DocStatus.ofCode(getDocStatus());
+		if (docStatus.isClosed())
 		{
 			return true;
 		}
@@ -370,19 +353,25 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// If DocStatus is not Completed => complete it now
 		// TODO: don't know if this approach is ok, i think we shall throw an exception instead
-		if (!IDocument.STATUS_Completed.equals(docStatus))
+		if (!docStatus.isCompleted())
 		{
-			docStatus = completeIt();
-			setDocStatus(docStatus);
+			final String newDocStatus = completeIt();
+			docStatus = DocStatus.ofCode(newDocStatus);
+			setDocStatus(newDocStatus);
 			setDocAction(ACTION_None);
 		}
 
 		//
 		// Create usage variances
-		createVariances();
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(getDocBaseType());
+		if (!docBaseType.isRepairOrder())
+		{
+			createVariances();
+		}
 
 		//
 		// Update BOM Lines and set QtyRequired=QtyDelivered
+		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		final IPPOrderBOMBL ppOrderBOMLineBL = Services.get(IPPOrderBOMBL.class);
 		for (final I_PP_Order_BOMLine line : getLines())
 		{
@@ -392,12 +381,11 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		//
 		// Close all the activity do not reported
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
-		Services.get(IPPOrderBL.class).closeAllActivities(orderId);
+		ppOrderBL.closeAllActivities(orderId);
 
 		//
 		// Set QtyOrdered=QtyDelivered
 		// Clear Ordered Quantities
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 		ppOrderBL.closeQtyOrdered(this);
 
 		if (getDateDelivered() == null)
@@ -417,10 +405,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// Call Model Validator: AFTER_CLOSE
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_CLOSE);
 
-		final PPOrderChangedEvent changeEvent = eventFactory
-				.inspectPPOrderAfterChange();
+		final PPOrderChangedEvent changeEvent = eventFactory.inspectPPOrderAfterChange();
 
-		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
+		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
 		materialEventService.postEventAfterNextCommit(changeEvent);
 
 		return true;
@@ -501,32 +488,19 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public File createPDF()
 	{
-		try
-		{
-			final File temp = File.createTempFile(get_TableName() + get_ID() + "_", ".pdf");
-			return createPDF(temp);
-		}
-		catch (final IOException e)
-		{
-			throw new AdempiereException("Could not create PDF", e);
-		}
+		final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
+		final ReportResultData report = documentReportService.createStandardDocumentReportData(getCtx(), StandardDocumentReportType.MANUFACTURING_ORDER, getPP_Order_ID());
+		return report.writeToTemporaryFile(get_TableName() + get_ID());
 	}
-
-	private File createPDF(final File file)
-	{
-		final ReportEngine re = ReportEngine.get(getCtx(), ReportEngine.MANUFACTURING_ORDER, getPP_Order_ID());
-		if (re == null)
-		{
-			return null;
-		}
-		return re.getPDF(file);
-	} // createPDF
 
 	@Override
 	public String getDocumentInfo()
 	{
-		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		return dt.getName() + " " + getDocumentNo();
+		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
+		final DocTypeId docTypeId = DocTypeId.ofRepoId(getC_DocType_ID());
+		final ITranslatableString docTypeName = docTypeBL.getNameById(docTypeId);
+		return docTypeName.translate(Env.getADLanguageOrBaseLanguage()) + " " + getDocumentNo();
 	}
 
 	private PPOrderRouting getOrderRouting()
@@ -538,18 +512,17 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder("MPPOrder[ID=").append(get_ID())
-				.append("-DocumentNo=").append(getDocumentNo())
-				.append(",IsSOTrx=").append(isSOTrx())
-				.append(",C_DocType_ID=").append(getC_DocType_ID())
-				.append("]");
-		return sb.toString();
+		return "MPPOrder[ID=" + get_ID()
+				+ "-DocumentNo=" + getDocumentNo()
+				+ ",IsSOTrx=" + isSOTrx()
+				+ ",C_DocType_ID=" + getC_DocType_ID()
+				+ "]";
 	}
 
 	/**
 	 * Auto report the first Activity and Sub contracting if are Milestone Activity
 	 */
-	private final void autoReportActivities()
+	private void autoReportActivities()
 	{
 		final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 

@@ -25,8 +25,14 @@ package de.metas.inoutcandidate.api.impl;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InOutLineDimensionFactory;
+import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
@@ -35,7 +41,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -43,6 +48,7 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
@@ -65,6 +71,8 @@ import org.mockito.Mockito;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -76,6 +84,11 @@ public abstract class ReceiptScheduleTestBase
 	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new InOutLineDimensionFactory());
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 		POJOWrapper.setDefaultStrictValues(false);
 
 		//
@@ -136,7 +149,7 @@ public abstract class ReceiptScheduleTestBase
 
 		ctx = Env.getCtx();
 		date = SystemTime.asTimestamp();
-		date2 = SystemTime.asDayTimestamp();
+		date2 = de.metas.common.util.time.SystemTime.asDayTimestamp();
 		Env.setContext(ctx, Env.CTXNAME_Date, date2);
 
 		// Master data
@@ -172,6 +185,14 @@ public abstract class ReceiptScheduleTestBase
 		// 07629 just adding to fix existing tests; TODO extend the tests
 		productAcctDAO = Mockito.spy(IProductAcctDAO.class);
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new OrderLineDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new InOutLineDimensionFactory());
+
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 		//
 		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
 		saveRecord(activity);

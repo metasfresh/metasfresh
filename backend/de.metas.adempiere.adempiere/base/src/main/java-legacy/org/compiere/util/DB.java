@@ -999,7 +999,7 @@ public class DB
 	 *
 	 * @see {@link #executeUpdateEx(String, Object[], String)}
 	 */
-	public int executeUpdateEx(final String sql, final String trxName) throws DBException
+	public int executeUpdateEx(final String sql, @Nullable final String trxName) throws DBException
 	{
 		final Object[] params = null;
 		final int timeOut = 0;
@@ -2154,7 +2154,7 @@ public class DB
 		return getSQLValue(trxName, sql, new Object[] {});
 	}
 
-	public int getSQLValue(final String trxName, final String sql, final int int_param1)
+	public int getSQLValue(@Nullable final String trxName, final String sql, final int int_param1)
 	{
 		return getSQLValue(trxName, sql, new Object[] { int_param1 });
 	}
@@ -2237,6 +2237,15 @@ public class DB
 	{
 		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
 		return createT_Selection(ids, trxName);
+	}
+
+	public void createT_Selection(
+			@NonNull final PInstanceId selectionId, 
+			@NonNull final Set<? extends RepoIdAware> selection, 
+			@Nullable final String trxName)
+	{
+		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);
+		createT_Selection(selectionId, ids, trxName);
 	}
 
 	public PInstanceId createT_Selection(@NonNull final TableRecordReferenceSet recordRefs, final String trxName)
@@ -2685,6 +2694,12 @@ public class DB
 		else if (returnType.isAssignableFrom(String.class))
 		{
 			value = (AT)rs.getString(columnIndex);
+		}
+		else if(RepoIdAware.class.isAssignableFrom(returnType))
+		{
+			@SuppressWarnings("unchecked")
+			final Class<? extends RepoIdAware> repoIdAwareType = (Class<? extends RepoIdAware>)returnType;
+			value = (AT)RepoIdAwares.ofRepoIdOrNull(rs.getInt(columnIndex), repoIdAwareType);
 		}
 		else
 		{

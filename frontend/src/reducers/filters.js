@@ -1,12 +1,37 @@
-import * as types from '../constants/FilterTypes';
 import { produce, original } from 'immer';
-export const initialFiltersBranchState = {};
+import { createCachedSelector } from 're-reselect';
 
+import * as types from '../constants/ActionTypes';
+
+export const initialFiltersBranchState = {};
 export const initialFiltersLeafState = {
   widgetShown: false,
   filtersCaptions: {},
   notValidFields: null,
 };
+
+/**
+ * @method getFilterFromState
+ * @param {object} state - redux state
+ * @param {*} filterId
+ */
+export function getFilterFromState(state, filterId) {
+  return state.filters && state.filters[filterId]
+    ? state.filters[filterId]
+    : null;
+}
+
+/**
+ * @method getCachedFilter
+ * @summary cached selector for picking the filters
+ *
+ * @param {object} state - redux state
+ * @param {string} filterId - id from the filters structure
+ */
+export const getCachedFilter = createCachedSelector(
+  getFilterFromState,
+  (filters) => filters
+)((_state, filterId) => filterId);
 
 /**
  * @method getEntityRelatedId
@@ -46,7 +71,7 @@ const reducer = produce((draftState, action) => {
 
       return;
     }
-    case types.UPDATE_ACTIVE_FILTER: {
+    case types.UPDATE_ACTIVE_FILTERS: {
       const { id, data } = action.payload;
       draftState[id].filtersActive = data;
       return;

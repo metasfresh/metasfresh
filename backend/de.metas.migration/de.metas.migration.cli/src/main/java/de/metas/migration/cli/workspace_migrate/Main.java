@@ -3,6 +3,8 @@ package de.metas.migration.cli.workspace_migrate;
 import java.io.File;
 import java.time.ZonedDateTime;
 
+import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig.OnScriptFailure;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,19 +35,19 @@ import com.google.common.collect.ImmutableSet;
 
 public class Main
 {
-
 	private static final transient Logger logger = LoggerFactory.getLogger(Main.class);
 
 	private static final String PROP_WORKSPACE = "workspace";
-	private static final String PROP_DB_URL_DEFAULT = "jdbc:postgresql://localhost/metasfresh";
-	private static final String PROP_DB_USERNAME_DEFAULT = "metasfresh";
-	private static final String PROP_DB_PASSWORD_DEFAULT = "metasfresh";
-	private static final String PROP_LABELS_DEFAULT = "mf15,common";
 
-	public static void main(final String[] args) throws Exception
+	public static void main(final String[] args)
 	{
 		final WorkspaceMigrateConfig config = getConfig();
-		System.out.println("Configuration: " + config);
+		main(config);
+	}
+
+	public static void main(@NonNull final WorkspaceMigrateConfig config)
+	{
+		System.out.println("WorkspaceMigrateConfig: " + config);
 
 		final WorkspaceScriptsApplier applier = new WorkspaceScriptsApplier(config);
 
@@ -65,11 +67,12 @@ public class Main
 	{
 		return WorkspaceMigrateConfig.builder()
 				.workspaceDir(getWorkspaceDir())
-				.dbUrl(getMandatoryProperty("db.url", PROP_DB_URL_DEFAULT))
-				.dbUsername(getMandatoryProperty("db.username", PROP_DB_USERNAME_DEFAULT))
-				.dbPassword(getMandatoryProperty("db.password", PROP_DB_PASSWORD_DEFAULT))
+				.dbUrl(getMandatoryProperty("db.url", WorkspaceMigrateConfig.PROP_DB_URL_DEFAULT))
+				.dbUsername(getMandatoryProperty("db.username", WorkspaceMigrateConfig.PROP_DB_USERNAME_DEFAULT))
+				.dbPassword(getMandatoryProperty("db.password", WorkspaceMigrateConfig.PROP_DB_PASSWORD_DEFAULT))
 				.dryRunMode(getBooleanProperty("dryRunMode", false))
 				.skipExecutingAfterScripts(getBooleanProperty("skipExecutingAfterScripts", false))
+				.onScriptFailure(OnScriptFailure.valueOf(getMandatoryProperty("onScriptFailure", OnScriptFailure.ASK.toString())))
 				.labels(getLabels())
 				.build();
 	}
@@ -96,7 +99,7 @@ public class Main
 
 	private static ImmutableSet<Label> getLabels()
 	{
-		final String labelsStr = getMandatoryProperty("labels", PROP_LABELS_DEFAULT);
+		final String labelsStr = getMandatoryProperty("labels", WorkspaceMigrateConfig.PROP_LABELS_DEFAULT);
 		return Label.ofCommaSeparatedString(labelsStr);
 	}
 

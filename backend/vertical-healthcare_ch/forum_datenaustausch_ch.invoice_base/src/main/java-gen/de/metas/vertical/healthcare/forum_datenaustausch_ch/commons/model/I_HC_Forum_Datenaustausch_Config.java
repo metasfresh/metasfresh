@@ -1,154 +1,121 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for HC_Forum_Datenaustausch_Config
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_HC_Forum_Datenaustausch_Config 
 {
 
-    /** TableName=HC_Forum_Datenaustausch_Config */
-    public static final String Table_Name = "HC_Forum_Datenaustausch_Config";
+	String Table_Name = "HC_Forum_Datenaustausch_Config";
 
-    /** AD_Table_ID=541145 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541145 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_AD_Client>(I_HC_Forum_Datenaustausch_Config.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_AD_Org>(I_HC_Forum_Datenaustausch_Config.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Rechnungspartner.
-	 * Geschäftspartner für die Rechnungsstellung
+	 * Set Bill Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBill_BPartner_ID (int Bill_BPartner_ID);
+	void setBill_BPartner_ID (int Bill_BPartner_ID);
 
 	/**
-	 * Get Rechnungspartner.
-	 * Geschäftspartner für die Rechnungsstellung
+	 * Get Bill Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getBill_BPartner_ID();
+	int getBill_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner getBill_BPartner();
-
-	public void setBill_BPartner(org.compiere.model.I_C_BPartner Bill_BPartner);
-
-    /** Column definition for Bill_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_C_BPartner> COLUMN_Bill_BPartner_ID = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_C_BPartner>(I_HC_Forum_Datenaustausch_Config.class, "Bill_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name Bill_BPartner_ID */
-    public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
+	String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_Created = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_AD_User>(I_HC_Forum_Datenaustausch_Config.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_Description = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Modus der Exportdateien.
@@ -157,7 +124,7 @@ public interface I_HC_Forum_Datenaustausch_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setExportedXmlMode (java.lang.String ExportedXmlMode);
+	void setExportedXmlMode (java.lang.String ExportedXmlMode);
 
 	/**
 	 * Get Modus der Exportdateien.
@@ -166,12 +133,10 @@ public interface I_HC_Forum_Datenaustausch_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExportedXmlMode();
+	java.lang.String getExportedXmlMode();
 
-    /** Column definition for ExportedXmlMode */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_ExportedXmlMode = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "ExportedXmlMode", null);
-    /** Column name ExportedXmlMode */
-    public static final String COLUMNNAME_ExportedXmlMode = "ExportedXmlMode";
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_ExportedXmlMode = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "ExportedXmlMode", null);
+	String COLUMNNAME_ExportedXmlMode = "ExportedXmlMode";
 
 	/**
 	 * Set Export XML Version.
@@ -180,7 +145,7 @@ public interface I_HC_Forum_Datenaustausch_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setExportedXmlVersion (java.lang.String ExportedXmlVersion);
+	void setExportedXmlVersion (java.lang.String ExportedXmlVersion);
 
 	/**
 	 * Get Export XML Version.
@@ -189,12 +154,10 @@ public interface I_HC_Forum_Datenaustausch_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExportedXmlVersion();
+	java.lang.String getExportedXmlVersion();
 
-    /** Column definition for ExportedXmlVersion */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_ExportedXmlVersion = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "ExportedXmlVersion", null);
-    /** Column name ExportedXmlVersion */
-    public static final String COLUMNNAME_ExportedXmlVersion = "ExportedXmlVersion";
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_ExportedXmlVersion = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "ExportedXmlVersion", null);
+	String COLUMNNAME_ExportedXmlVersion = "ExportedXmlVersion";
 
 	/**
 	 * Set Absender EAN.
@@ -204,7 +167,7 @@ public interface I_HC_Forum_Datenaustausch_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setFrom_EAN (java.lang.String From_EAN);
+	void setFrom_EAN (@Nullable java.lang.String From_EAN);
 
 	/**
 	 * Get Absender EAN.
@@ -214,60 +177,131 @@ public interface I_HC_Forum_Datenaustausch_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getFrom_EAN();
+	@Nullable java.lang.String getFrom_EAN();
 
-    /** Column definition for From_EAN */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_From_EAN = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "From_EAN", null);
-    /** Column name From_EAN */
-    public static final String COLUMNNAME_From_EAN = "From_EAN";
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_From_EAN = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "From_EAN", null);
+	String COLUMNNAME_From_EAN = "From_EAN";
 
 	/**
-	 * Set forum-datenaustausch.ch config.
+	 * Set HC_Forum_Datenaustausch.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setHC_Forum_Datenaustausch_Config_ID (int HC_Forum_Datenaustausch_Config_ID);
+	void setHC_Forum_Datenaustausch_Config_ID (int HC_Forum_Datenaustausch_Config_ID);
 
 	/**
-	 * Get forum-datenaustausch.ch config.
+	 * Get HC_Forum_Datenaustausch.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getHC_Forum_Datenaustausch_Config_ID();
+	int getHC_Forum_Datenaustausch_Config_ID();
 
-    /** Column definition for HC_Forum_Datenaustausch_Config_ID */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_HC_Forum_Datenaustausch_Config_ID = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "HC_Forum_Datenaustausch_Config_ID", null);
-    /** Column name HC_Forum_Datenaustausch_Config_ID */
-    public static final String COLUMNNAME_HC_Forum_Datenaustausch_Config_ID = "HC_Forum_Datenaustausch_Config_ID";
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_HC_Forum_Datenaustausch_Config_ID = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "HC_Forum_Datenaustausch_Config_ID", null);
+	String COLUMNNAME_HC_Forum_Datenaustausch_Config_ID = "HC_Forum_Datenaustausch_Config_ID";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Sprache.
+	 * Sprache für einen Geschäftspartner, der beim Import neu angelegt oder aktualisiert wird
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setImportedBPartnerLanguage (@Nullable java.lang.String ImportedBPartnerLanguage);
+
+	/**
+	 * Get Sprache.
+	 * Sprache für einen Geschäftspartner, der beim Import neu angelegt oder aktualisiert wird
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getImportedBPartnerLanguage();
+
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_ImportedBPartnerLanguage = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "ImportedBPartnerLanguage", null);
+	String COLUMNNAME_ImportedBPartnerLanguage = "ImportedBPartnerLanguage";
+
+	/**
+	 * Set Gemeinden-Kundengruppe.
+	 * Kundengruppe für eine Gemeinde, die beim Import neu angelegt oder aktualisiert wird
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setImportedMunicipalityBP_Group_ID (int ImportedMunicipalityBP_Group_ID);
+
+	/**
+	 * Get Gemeinden-Kundengruppe.
+	 * Kundengruppe für eine Gemeinde, die beim Import neu angelegt oder aktualisiert wird
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getImportedMunicipalityBP_Group_ID();
+
+	@Nullable org.compiere.model.I_C_BP_Group getImportedMunicipalityBP_Group();
+
+	void setImportedMunicipalityBP_Group(@Nullable org.compiere.model.I_C_BP_Group ImportedMunicipalityBP_Group);
+
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_C_BP_Group> COLUMN_ImportedMunicipalityBP_Group_ID = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "ImportedMunicipalityBP_Group_ID", org.compiere.model.I_C_BP_Group.class);
+	String COLUMNNAME_ImportedMunicipalityBP_Group_ID = "ImportedMunicipalityBP_Group_ID";
+
+	/**
+	 * Set Patienten-Kundengruppe.
+	 * Kundengruppe für einen Patienten, der beim Import neu angelegt oder aktualisiert wird
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setImportedPartientBP_Group_ID (int ImportedPartientBP_Group_ID);
+
+	/**
+	 * Get Patienten-Kundengruppe.
+	 * Kundengruppe für einen Patienten, der beim Import neu angelegt oder aktualisiert wird
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getImportedPartientBP_Group_ID();
+
+	@Nullable org.compiere.model.I_C_BP_Group getImportedPartientBP_Group();
+
+	void setImportedPartientBP_Group(@Nullable org.compiere.model.I_C_BP_Group ImportedPartientBP_Group);
+
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_C_BP_Group> COLUMN_ImportedPartientBP_Group_ID = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "ImportedPartientBP_Group_ID", org.compiere.model.I_C_BP_Group.class);
+	String COLUMNNAME_ImportedPartientBP_Group_ID = "ImportedPartientBP_Group_ID";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_IsActive = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Speicherverzeichnis.
@@ -277,7 +311,7 @@ public interface I_HC_Forum_Datenaustausch_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setStoreDirectory (java.lang.String StoreDirectory);
+	void setStoreDirectory (@Nullable java.lang.String StoreDirectory);
 
 	/**
 	 * Get Speicherverzeichnis.
@@ -287,42 +321,35 @@ public interface I_HC_Forum_Datenaustausch_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getStoreDirectory();
+	@Nullable java.lang.String getStoreDirectory();
 
-    /** Column definition for StoreDirectory */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_StoreDirectory = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "StoreDirectory", null);
-    /** Column name StoreDirectory */
-    public static final String COLUMNNAME_StoreDirectory = "StoreDirectory";
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_StoreDirectory = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "StoreDirectory", null);
+	String COLUMNNAME_StoreDirectory = "StoreDirectory";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_Updated = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, org.compiere.model.I_AD_User>(I_HC_Forum_Datenaustausch_Config.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Via EAN.
@@ -332,7 +359,7 @@ public interface I_HC_Forum_Datenaustausch_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setVia_EAN (java.lang.String Via_EAN);
+	void setVia_EAN (java.lang.String Via_EAN);
 
 	/**
 	 * Get Via EAN.
@@ -342,10 +369,8 @@ public interface I_HC_Forum_Datenaustausch_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getVia_EAN();
+	java.lang.String getVia_EAN();
 
-    /** Column definition for Via_EAN */
-    public static final org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_Via_EAN = new org.adempiere.model.ModelColumn<I_HC_Forum_Datenaustausch_Config, Object>(I_HC_Forum_Datenaustausch_Config.class, "Via_EAN", null);
-    /** Column name Via_EAN */
-    public static final String COLUMNNAME_Via_EAN = "Via_EAN";
+	ModelColumn<I_HC_Forum_Datenaustausch_Config, Object> COLUMN_Via_EAN = new ModelColumn<>(I_HC_Forum_Datenaustausch_Config.class, "Via_EAN", null);
+	String COLUMNNAME_Via_EAN = "Via_EAN";
 }

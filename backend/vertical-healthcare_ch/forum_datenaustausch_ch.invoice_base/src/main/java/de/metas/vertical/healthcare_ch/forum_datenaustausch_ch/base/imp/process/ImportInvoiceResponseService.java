@@ -3,6 +3,7 @@ package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process
 import java.util.List;
 import java.util.Optional;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
@@ -64,11 +65,11 @@ class ImportInvoiceResponseService
 {
 	private final static transient Logger log = LogManager.getLogger(ImportInvoiceResponseService.class);
 
-	private static final String MSG_NOT_ALL_FILES_IMPORTED_NOTIFICATION = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImportedNotification";
+	private static final AdMessageKey MSG_NOT_ALL_FILES_IMPORTED_NOTIFICATION = AdMessageKey.of("de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.NotAllFilesImportedNotification");
 
-	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Subject";
-	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_EXISTS = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Content_WhenUserExists";
-	private static final String MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_DOES_NOT_EXIST = "de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Content_WhenUserDoesNotExist";
+	private static final AdMessageKey MSG_INVOICE_REJECTED_NOTIFICATION_SUBJECT = AdMessageKey.of("de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Subject");
+	private static final AdMessageKey MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_EXISTS = AdMessageKey.of("de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Content_WhenUserExists");
+	private static final AdMessageKey MSG_INVOICE_REJECTED_NOTIFICATION_CONTENT_WHEN_USER_DOES_NOT_EXIST = AdMessageKey.of("de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.process.C_Invoice_ImportInvoiceResponse.InvoiceRejectedNotification_Content_WhenUserDoesNotExist");
 
 	private static final int WINDOW_ID_AD_PInstance_ID = 332; // FIXME Hardcoded
 

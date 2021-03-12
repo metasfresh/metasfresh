@@ -57,12 +57,12 @@ public class ReceiptRestController
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ReceiptService receiptService;
-	private final CustomerReturnService customerReturnService;
+	private final CustomerReturnRestService customerReturnRestService;
 
-	public ReceiptRestController(final ReceiptService receiptService, final CustomerReturnService customerReturnService)
+	public ReceiptRestController(final ReceiptService receiptService, final CustomerReturnRestService customerReturnRestService)
 	{
 		this.receiptService = receiptService;
-		this.customerReturnService = customerReturnService;
+		this.customerReturnRestService = customerReturnRestService;
 	}
 
 	@PostMapping
@@ -92,7 +92,7 @@ public class ReceiptRestController
 
 		final List<InOutId> createdReturnIds = jsonCreateReceiptsRequest.getJsonCreateCustomerReturnInfoList().isEmpty()
 				? ImmutableList.of()
-				: customerReturnService.handleReturns(jsonCreateReceiptsRequest.getJsonCreateCustomerReturnInfoList());
+				: customerReturnRestService.handleReturns(jsonCreateReceiptsRequest.getJsonCreateCustomerReturnInfoList());
 
 		return toJsonCreateReceiptsResponse(createdReceiptIds, createdReturnIds);
 	}

@@ -12,7 +12,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderBOMLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;

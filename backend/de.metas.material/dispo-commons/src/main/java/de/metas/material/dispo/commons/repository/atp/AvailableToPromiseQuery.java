@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 
@@ -18,7 +19,6 @@ import de.metas.material.commons.attributes.AttributesKeyPattern;
 import de.metas.material.commons.attributes.AttributesKeyPatterns;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

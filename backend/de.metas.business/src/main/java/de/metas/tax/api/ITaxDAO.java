@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.util.lang.Percent;
 import org.adempiere.exceptions.ExemptTaxNotFoundException;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
@@ -48,6 +49,8 @@ public interface ITaxDAO extends ISingletonService
 	int C_TAX_ID_NO_TAX_FOUND = 100;
 
 	I_C_Tax getTaxById(int taxRepoId);
+
+	I_C_Tax getTaxById(TaxId taxRepoId);
 
 	I_C_Tax getTaxByIdOrNull(int taxRepoId);
 
@@ -89,6 +92,8 @@ public interface ITaxDAO extends ISingletonService
 	ITranslatableString getTaxCategoryNameById(TaxCategoryId id);
 
 	Optional<TaxCategoryId> getTaxCategoryIdByName(@NonNull String name);
+
+	Percent getRateById(@NonNull TaxId taxId);
 
 	@Builder
 	@Value

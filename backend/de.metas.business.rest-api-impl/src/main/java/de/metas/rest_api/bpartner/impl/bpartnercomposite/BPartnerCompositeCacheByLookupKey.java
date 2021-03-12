@@ -1,24 +1,23 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.function.Function;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CacheMapType;
+import de.metas.cache.CacheIndex;
+import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.cache.CCache;
-import de.metas.cache.CCache.CacheMapType;
-import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
-import de.metas.cache.CacheIndex;
-import lombok.NonNull;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -44,40 +43,44 @@ import lombok.NonNull;
 
 final class BPartnerCompositeCacheByLookupKey
 {
-	private final transient CCache<BPartnerCompositeLookupKey, BPartnerComposite> cache;
+	private final transient CCache<OrgAndBPartnerCompositeLookupKey, BPartnerComposite> cache;
 
 	public BPartnerCompositeCacheByLookupKey(@NonNull final String identifier)
 	{
-		final CacheIndex<BPartnerId/* RK */, BPartnerCompositeLookupKey/* CK */, BPartnerComposite/* V */> //
-		cacheIndex = CacheIndex.of(new BPartnerCompositeCacheIndex());
+		final CacheIndex<BPartnerId/* RK */, OrgAndBPartnerCompositeLookupKey/* CK */, BPartnerComposite/* V */> //
+				cacheIndex = CacheIndex.of(new BPartnerCompositeCacheIndex());
 
-		cache = CCache.<BPartnerCompositeLookupKey, BPartnerComposite> builder()
+		cache = CCache.<OrgAndBPartnerCompositeLookupKey, BPartnerComposite>builder()
 				.cacheName("BPartnerComposite_by_LookupKey" + "_" + identifier)
 				.additionalTableNameToResetFor(I_AD_User.Table_Name)
 				.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 				.additionalTableNameToResetFor(I_C_BPartner_Location.Table_Name)
 				.cacheMapType(CacheMapType.LRU)
 				.initialCapacity(100)
-				.invalidationKeysMapper(cacheIndex::computeCachingKeys)
+				.invalidationKeysMapper(cacheIndex)
 				.removalListener(cacheIndex::remove)
 				.additionListener(cacheIndex::add)
 				.build();
 	}
 
 	public Collection<BPartnerComposite> getAllOrLoad(
-			@NonNull final Collection<BPartnerCompositeLookupKey> keys,
-			@NonNull final Function<Collection<BPartnerCompositeLookupKey>, Map<BPartnerCompositeLookupKey, BPartnerComposite>> valuesLoader)
+			@NonNull final Collection<OrgAndBPartnerCompositeLookupKey> keys,
+			@NonNull final Function<
+								Set<OrgAndBPartnerCompositeLookupKey>,
+								Map<OrgAndBPartnerCompositeLookupKey, BPartnerComposite>> valuesLoader)
 	{
 		return cache.getAllOrLoad(keys, valuesLoader);
 	}
 
-	/** Get all the records, assuming that there is a cache entry for each single record. If not, throw an exception. */
+	/**
+	 * Get all the records, assuming that there is a cache entry for each single record. If not, throw an exception.
+	 */
 	@VisibleForTesting
 	public Collection<BPartnerComposite> getAssertAllCached(
-			@NonNull final Collection<BPartnerCompositeLookupKey> keys)
+			@NonNull final Collection<OrgAndBPartnerCompositeLookupKey> keys)
 	{
 		final ImmutableList.Builder<BPartnerComposite> result = ImmutableList.builder();
-		for (final BPartnerCompositeLookupKey key : keys)
+		for (final OrgAndBPartnerCompositeLookupKey key : keys)
 		{
 			result.add(cache.getOrElseThrow(
 					key,

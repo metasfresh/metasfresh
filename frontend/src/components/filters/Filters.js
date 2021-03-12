@@ -2,22 +2,24 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
+import deepUnfreeze from 'deep-unfreeze';
+
+import { getEntityRelatedId, getCachedFilter } from '../../reducers/filters';
 import {
   updateFilterWidgetShown,
-  setNewFiltersActive,
-  updateActiveFilter,
+  updateActiveFilters,
   clearAllFilters,
+  updateNotValidFields,
+} from '../../actions/FiltersActions';
+import {
+  setNewFiltersActive,
   annotateFilters,
   isFilterValid,
-  updateNotValidFields,
-  parseToPatch,
-  getCachedFilter,
-} from '../../actions/FiltersActions';
+  parseFiltersToPatch,
+} from '../../utils/filterHelpers';
 
 import FiltersNotIcluded from './FiltersNotIncluded';
 import FiltersIncluded from './FiltersIncluded';
-import deepUnfreeze from 'deep-unfreeze';
-import { getEntityRelatedId } from '../../reducers/filters';
 
 /**
  * @file Class based component.
@@ -40,7 +42,7 @@ class Filters extends PureComponent {
       const parsedFilter = filter.parameters
         ? {
             ...filter,
-            parameters: parseToPatch(filter.parameters),
+            parameters: parseFiltersToPatch(filter.parameters),
           }
         : filter;
 
@@ -57,7 +59,7 @@ class Filters extends PureComponent {
    * @param {object} filterToAdd
    */
   setFilterActive = (filterToAdd) => {
-    const { updateDocList, filterId, updateActiveFilter } = this.props;
+    const { updateDocList, filterId, updateActiveFilters } = this.props;
     const { filtersActive: storeActiveFilters } = this.props.filters;
 
     // updating the active filters from the redux store with the filter passed as param
@@ -66,7 +68,7 @@ class Filters extends PureComponent {
       filterToAdd,
     });
 
-    updateActiveFilter({ filterId, data: newFiltersActive }); // update in the store the filters
+    updateActiveFilters({ filterId, data: newFiltersActive }); // update in the store the filters
     updateDocList(newFiltersActive); // move on and update the page with the new filters via DocList
   };
 
@@ -217,7 +219,7 @@ Filters.propTypes = {
   modalVisible: PropTypes.bool,
   filterId: PropTypes.string,
   updateFilterWidgetShown: PropTypes.func,
-  updateActiveFilter: PropTypes.func,
+  updateActiveFilters: PropTypes.func,
   filters: PropTypes.object,
   clearAllFilters: PropTypes.func,
   updateNotValidFields: PropTypes.func,
@@ -260,7 +262,7 @@ export default connect(
   mapStateToProps,
   {
     updateFilterWidgetShown,
-    updateActiveFilter,
+    updateActiveFilters,
     clearAllFilters,
     updateNotValidFields,
   }

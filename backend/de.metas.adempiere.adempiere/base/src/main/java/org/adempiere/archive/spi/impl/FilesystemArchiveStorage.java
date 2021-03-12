@@ -28,6 +28,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
+
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -70,11 +73,12 @@ public class FilesystemArchiveStorage extends AbstractArchiveStorage
 	}
 	
 	@Override
-	public void init(final Properties ctx, final int adClientId)
+	public void init(@NonNull final ClientId adClientId)
 	{
-		final I_AD_Client client = Services.get(IClientDAO.class).retriveClient(ctx, adClientId);
+		final IClientDAO clientDAO = Services.get(IClientDAO.class);
+		final I_AD_Client client = clientDAO.getById(adClientId);
 		this.archivePathRoot = getArchivePath(client);
-		logger.info("Archive Path: {}, Config={}", new Object[] { archivePathRoot, client });
+		logger.info("init: Archive Path: {}, Config={}", archivePathRoot, client);
 	}
 	
 	private final void checkContext()

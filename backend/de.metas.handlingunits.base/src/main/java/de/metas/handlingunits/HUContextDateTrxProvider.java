@@ -28,7 +28,7 @@ import java.util.Date;
 
 import org.compiere.util.TimeUtil;
 
-import de.metas.util.time.SystemTime;
+import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 
 /**
@@ -61,7 +61,7 @@ public class HUContextDateTrxProvider
 		{
 			return date;
 		}
-		return SystemTime.asZonedDateTime();
+		return de.metas.common.util.time.SystemTime.asZonedDateTime();
 	}
 
 	/**

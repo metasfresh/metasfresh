@@ -72,7 +72,7 @@ class HUSubProducerBPartnerAttributeValuesProvider implements IAttributeValuesPr
 	 * NOTE: we use a static cache for optimization purposes
 	 */
 	private static final CCache<Integer, List<KeyNamePair>> bpartnerId2subProducers = CCache.<Integer, List<KeyNamePair>> builder()
-			.cacheName(CACHE_PREFIX + "#by#" + I_C_BP_Relation.COLUMNNAME_C_BPartner_ID + "#" + I_C_BP_Relation.COLUMNNAME_IsMainProducer)
+			.cacheName(CACHE_PREFIX + "#by#" + I_C_BP_Relation.COLUMNNAME_C_BPartner_ID + "#" + I_C_BP_Relation.COLUMNNAME_Role)
 			.initialCapacity(10)
 			.additionalTableNameToResetFor(I_C_BPartner.Table_Name)
 			.additionalTableNameToResetFor(I_C_BP_Relation.Table_Name)
