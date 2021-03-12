@@ -2,6 +2,7 @@ import { produce, original } from 'immer';
 import { createCachedSelector } from 're-reselect';
 
 import * as types from '../constants/ActionTypes';
+import { deepUnfreeze } from '../utils';
 
 export const initialFiltersBranchState = {};
 export const initialFiltersLeafState = {
@@ -105,9 +106,22 @@ const reducer = produce((draftState, action) => {
       return;
     }
     case types.UPDATE_INLINE_FILTER: {
-      const { filterId, data } = action.payload;
-      if (original(draftState[filterId].filtersActive).length) {
-        draftState[filterId].filtersActive[0].parameters[0].value = data;
+      const { filterId, parentFilterId, data } = action.payload;
+      const currentActiveFilters = original(draftState[filterId].filtersActive);
+
+      if (currentActiveFilters.length) {
+        draftState[filterId].filtersActive = currentActiveFilters.map(
+          (filter) => {
+            if (filter.filterId === parentFilterId) {
+              filter = deepUnfreeze(filter);
+              filter.parameters[0].value = data;
+
+              return filter;
+            }
+
+            return filter;
+          }
+        );
       }
       return;
     }
