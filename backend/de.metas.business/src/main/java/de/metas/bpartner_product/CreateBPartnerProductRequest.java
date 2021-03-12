@@ -1,18 +1,8 @@
-package de.metas.product;
-
-import de.metas.organization.OrgId;
-import de.metas.uom.UomId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,52 +20,63 @@ import javax.annotation.Nullable;
  * #L%
  */
 
+package de.metas.bpartner_product;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
 @Value
 @Builder
-public class CreateProductRequest
+public class CreateBPartnerProductRequest
 {
 	@NonNull
-	OrgId orgId;
-
-	@Nullable
-	String productValue;
+	ProductId productId;
 
 	@NonNull
-	String productName;
-	@NonNull
-	ProductCategoryId productCategoryId;
-
-	@NonNull
-	String productType;
-
-	@NonNull
-	UomId uomId;
-
-	boolean purchased;
-	boolean sold;
-
-	@Nullable
-	Boolean bomVerified;
-
-	@Nullable
-	ProductPlanningSchemaSelector planningSchemaSelector;
-
-	@Nullable
-	String ean;
-
-	@Nullable
-	String gtin;
-
-	@Nullable
-	String description;
-
-	@Nullable
-	Boolean discontinued;
+	BPartnerId bPartnerId;
 
 	@Nullable
 	Boolean active;
 
 	@Nullable
-	Boolean stocked;
+	Integer seqNo;
 
+	@Nullable
+	String productNo;
+
+	@Nullable
+	String description;
+
+	@Nullable
+	String cuEAN;
+
+	@Nullable
+	String gtin;
+
+	@Nullable
+	String customerLabelName;
+
+	@Nullable
+	String ingredients;
+
+	@Nullable
+	Boolean currentVendor;
+
+	@Nullable
+	Boolean isExcludedFromSales;
+
+	@Nullable
+	String exclusionFromSalesReason;
+
+	@Nullable
+	Boolean dropShip;
+
+	int shelfLifeMinPct;
+
+	int shelfLifeMinDays;
 }
