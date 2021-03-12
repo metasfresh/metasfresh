@@ -44,12 +44,9 @@ import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductId;
-import de.metas.remittanceadvice.RemittanceAdvice;
-import de.metas.remittanceadvice.RemittanceAdviceLine;
-import de.metas.remittanceadvice.RemittanceAdviceLineServiceFee;
-import de.metas.remittanceadvice.RemittanceAdviceRepository;
-import de.metas.remittanceadvice.RemittanceAdviceService;
+import de.metas.remittanceadvice.*;
 import de.metas.report.jasper.client.RemoteServletInvoker;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
@@ -98,9 +95,9 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-
 		final IQueryFilter<I_C_RemittanceAdvice> processFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 		if (processFilter == null)
 		{
@@ -110,12 +107,15 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 
 		for (final RemittanceAdvice remittanceAdvice : remittanceAdvices)
 		{
-			try{
+			try
+			{
 				trxManager.runInNewTrx(() -> runForRemittanceAdvice(remittanceAdvice));
 			}
 			catch (final Exception e)
 			{
-				logger.error("*** ERROR: failed to create and allocate payments for remittance advice id: {} ", remittanceAdvice.getRemittanceAdviceId());
+				Loggables.withLogger(logger,Level.WARN).addLog("*** ERROR: failed to create and allocate payments for C_RemittanceAdvice_ID={} ", RemittanceAdviceId.toRepoId(remittanceAdvice.getRemittanceAdviceId()));
+				throw AdempiereException.wrapIfNeeded(e)
+						.appendParametersToMessage().setParameter("C_RemittanceAdvice_ID", RemittanceAdviceId.toRepoId(remittanceAdvice.getRemittanceAdviceId()));
 			}
 		}
 
