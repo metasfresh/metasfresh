@@ -377,6 +377,8 @@ class WidgetRenderer extends PureComponent {
       case 'LongText': {
         const classNameParams = { icon: true };
         let renderContent = null;
+        delete widgetProperties.id; // removed the id as this is not used anyway
+        // this was passed as a prop (i.e inline filter and due to that we got warnings due to dup ID for elements)
 
         if (widgetType === 'Text') {
           renderContent = (
