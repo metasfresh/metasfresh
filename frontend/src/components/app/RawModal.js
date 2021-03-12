@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { deleteViewRequest, advSearchRequest } from '../../api';
+import { deleteViewRequest, advSearchRequest, patchRequest } from '../../api';
 import { PATCH_RESET } from '../../constants/ActionTypes';
 
 import { unsetIncludedView } from '../../actions/ViewActions';
@@ -146,6 +146,23 @@ class RawModal extends Component {
       fieldName: parentFieldId,
       advSearchWindowId: windowId,
       selectedId: modalTableSelectedId,
+    }).then((response) => {
+      let {
+        id: docIdToPatch,
+        windowId: docTypeToPatch,
+        fieldsByName,
+      } = response.data[0];
+
+      let valueToPatch = fieldsByName[parentFieldId].value;
+      patchRequest({
+        docId: docIdToPatch,
+        docType: docTypeToPatch,
+        entity: 'window',
+        isAdvanced: false,
+        isEdit: false,
+        property: parentFieldId,
+        value: valueToPatch,
+      });
     });
   };
 
