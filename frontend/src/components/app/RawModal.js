@@ -147,6 +147,10 @@ class RawModal extends Component {
       advSearchWindowId: windowId,
       selectedId: modalTableSelectedId,
     }).then((response) => {
+      if (!response.data.length) { 
+        console.error('No data for the selected ID');
+        return false; 
+      }
       let {
         id: docIdToPatch,
         windowId: docTypeToPatch,
