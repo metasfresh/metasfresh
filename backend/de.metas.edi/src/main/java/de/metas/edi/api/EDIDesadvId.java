@@ -51,7 +51,7 @@ public class EDIDesadvId implements RepoIdAware
 
 	private EDIDesadvId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Bank_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "EDI_Desadv_ID");
 	}
 
 	@JsonValue

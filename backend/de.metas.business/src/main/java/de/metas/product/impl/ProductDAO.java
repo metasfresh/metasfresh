@@ -22,15 +22,41 @@
 
 package de.metas.product.impl;
 
-import static de.metas.util.Check.isEmpty;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.cache.CCache;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.organization.OrgId;
+import de.metas.product.CreateProductRequest;
+import de.metas.product.IProductDAO;
+import de.metas.product.IProductMappingAware;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
+import de.metas.product.ProductPlanningSchemaSelector;
+import de.metas.product.ResourceId;
+import de.metas.product.UpdateProductRequest;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.X_M_Product;
+import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,42 +68,14 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
-import de.metas.product.ProductPlanningSchemaSelector;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.X_M_Product;
-import org.compiere.util.Env;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-
-import de.metas.cache.CCache;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.organization.OrgId;
-import de.metas.product.CreateProductRequest;
-import de.metas.product.IProductDAO;
-import de.metas.product.IProductMappingAware;
-import de.metas.product.ProductAndCategoryAndManufacturerId;
-import de.metas.product.ProductAndCategoryId;
-import de.metas.product.ProductCategoryId;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
-import de.metas.product.UpdateProductRequest;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static de.metas.util.Check.isEmpty;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ProductDAO implements IProductDAO
 {
@@ -224,7 +222,6 @@ public class ProductDAO implements IProductDAO
 	{
 		return defaultProductCategoryCache.getOrLoad(0, this::retrieveDefaultProductCategoryId);
 	}
-
 
 	/**
 	 * @return All the active products with the given product planning schema selector
@@ -540,5 +537,21 @@ public class ProductDAO implements IProductDAO
 			}
 		}
 		return 0;
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByBarcode(@NonNull final String barcode, @NonNull final ClientId clientId)
+	{
+		final ProductId productId = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
+								.setJoinOr()
+								.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
+								.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+				.create()
+				.firstIdOnly(ProductId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(productId);
 	}
 }
