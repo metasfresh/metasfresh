@@ -1,0 +1,74 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.pricing.pricelist;
+
+import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+
+@Getter
+@EqualsAndHashCode
+public class PriceListVersion
+{
+	@NonNull
+	PriceListVersionId priceListVersionId;
+
+	@NonNull
+	PriceListId priceListId;
+
+	@NonNull
+	OrgId orgId;
+
+	@Nullable
+	String description;
+
+	@NonNull
+	Instant validFrom;
+
+	@NonNull
+	Boolean isActive;
+
+	@Builder
+	public PriceListVersion(
+			@NonNull final OrgId orgId,
+			@NonNull final PriceListId priceListId,
+			@NonNull final PriceListVersionId priceListVersionId,
+			@Nullable final String description,
+			@NonNull final Instant validFrom,
+			@NonNull final Boolean isActive)
+	{
+		this.orgId = orgId;
+		this.priceListVersionId = priceListVersionId;
+		this.description = description;
+		this.validFrom = validFrom;
+		this.isActive = isActive;
+		this.priceListId = priceListId;
+	}
+}
