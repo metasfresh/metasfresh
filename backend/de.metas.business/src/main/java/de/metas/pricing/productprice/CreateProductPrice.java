@@ -57,7 +57,7 @@ public class CreateProductPrice
 
 	@Nullable
 	TaxCategoryId taxCategoryId;
-	
+
 	@Nullable
 	String internalName;
 

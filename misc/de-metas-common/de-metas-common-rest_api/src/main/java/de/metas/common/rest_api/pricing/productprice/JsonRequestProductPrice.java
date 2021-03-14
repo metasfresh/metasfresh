@@ -30,12 +30,10 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
 @Getter
 @ToString
 @EqualsAndHashCode
-public class JsonUpsertProductPriceRequest
+public class JsonRequestProductPrice
 {
 	@ApiModelProperty(required = true)
 	private String orgCode;
@@ -136,7 +134,7 @@ public class JsonUpsertProductPriceRequest
 
 	public void setSyncAdvise(final SyncAdvise syncAdvise)
 	{
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+		this.syncAdvise = syncAdvise;
 		this.syncAdviseSet = true;
 	}
 }

@@ -32,25 +32,23 @@ import lombok.Value;
 
 @Value
 @ApiModel
-public class JsonProductPriceRequest
+public class JsonRequestProductPriceItemUpsert
 {
 	@ApiModelProperty(position = 10, dataType = "java.lang.String")
 	@JsonProperty("productPriceIdentifier")
-	@NonNull
 	String productPriceIdentifier;
 
 	@ApiModelProperty(position = 20, value = "jsonUpsertProductPriceRequest object")
-	@JsonProperty("jsonUpsertProductPriceRequest")
-	@NonNull
-	JsonUpsertProductPriceRequest jsonUpsertProductPriceRequest;
+	@JsonProperty("jsonRequestProductPrice")
+	JsonRequestProductPrice jsonRequestProductPrice;
 
 	@JsonCreator
 	@Builder
-	public JsonProductPriceRequest(
+	public JsonRequestProductPriceItemUpsert(
 			@NonNull @JsonProperty("productPriceIdentifier") final String productPriceIdentifier,
-			@NonNull @JsonProperty("jsonUpsertProductPriceRequest") final JsonUpsertProductPriceRequest jsonUpsertProductPriceRequest)
+			@NonNull @JsonProperty("jsonRequestProductPrice") final JsonRequestProductPrice jsonRequestProductPrice)
 	{
 		this.productPriceIdentifier = productPriceIdentifier;
-		this.jsonUpsertProductPriceRequest = jsonUpsertProductPriceRequest;
+		this.jsonRequestProductPrice = jsonRequestProductPrice;
 	}
 }

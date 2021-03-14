@@ -36,8 +36,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
-
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
@@ -55,15 +53,22 @@ public class ProductPriceRepository
 		return toProductPrice(record);
 	}
 
-	@NonNull
-	public ProductPrice updateProductPrice(@NonNull final ProductPrice request)
+	public void updateProductPrice(@NonNull final ProductPrice request)
 	{
-		final I_M_ProductPrice record = buildProductPrice(request);
+		final I_M_ProductPrice record = toProductPriceRecord(request);
 		saveRecord(record);
-
-		return toProductPrice(record);
 	}
 
+	public void inactivateProductPrice(@NonNull final ProductPrice productPrice)
+	{
+		final ProductPriceId productPriceId = productPrice.getProductPriceId();
+		final I_M_ProductPrice record = getRecordById(productPriceId);
+
+		record.setIsActive(false);
+		saveRecord(record);
+	}
+
+	@NonNull
 	private I_M_ProductPrice buildCreateProductPrice(@NonNull final CreateProductPrice request)
 	{
 		final I_M_ProductPrice record = InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class);
@@ -88,9 +93,10 @@ public class ProductPriceRepository
 		return record;
 	}
 
-	private I_M_ProductPrice buildProductPrice(@NonNull final ProductPrice request)
+	@NonNull
+	private I_M_ProductPrice toProductPriceRecord(@NonNull final ProductPrice request)
 	{
-		final I_M_ProductPrice record = getRecordOrNull(request.getProductPriceId());
+		final I_M_ProductPrice record = getRecordById(request.getProductPriceId());
 
 		final I_C_UOM UOMRecord = productBL.getStockUOM(request.getProductId());
 
@@ -104,8 +110,10 @@ public class ProductPriceRepository
 
 		record.setC_UOM_ID(UOMRecord.getC_UOM_ID());
 
-		record.setC_TaxCategory_ID(1000009);
-		// todo florina record.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
+		if (request.getTaxCategoryId() != null)
+		{
+			record.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
+		}
 		//todo florina set internal name
 
 		record.setIsActive(request.getIsActive());
@@ -113,21 +121,23 @@ public class ProductPriceRepository
 		return record;
 	}
 
-	@Nullable
-	private I_M_ProductPrice getRecordOrNull(@NonNull final ProductPriceId productPriceId)
+	@NonNull
+	private I_M_ProductPrice getRecordById(@NonNull final ProductPriceId productPriceId)
 	{
 		return queryBL
 				.createQueryBuilder(I_M_ProductPrice.class)
-				.addEqualsFilter(I_M_ProductPrice.COLUMN_M_Product_ID, productPriceId)
+				.filter(item -> item.getM_ProductPrice_ID() == productPriceId.getRepoId())
 				.create()
-				.firstOnly(I_M_ProductPrice.class);
+				.firstOnlyNotNull(I_M_ProductPrice.class);
 	}
 
+	@NonNull
 	private ProductPrice toProductPrice(@NonNull final I_M_ProductPrice record)
 	{
 		return ProductPrice.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()))
 				.priceListVersionId(PriceListVersionId.ofRepoId(record.getM_PriceList_Version_ID()))
 				.priceLimit(record.getPriceLimit())
 				.priceList(record.getPriceList())

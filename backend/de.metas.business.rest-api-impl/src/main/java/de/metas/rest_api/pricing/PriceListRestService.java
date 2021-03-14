@@ -71,20 +71,18 @@ public class PriceListRestService
 		final JsonRequestPriceListVersion jsonRequestPriceListVersion = request.getJsonRequestPriceListVersion();
 
 		final SyncAdvise parentSyncAdvise = request.getSyncAdvise();
-		final SyncAdvise effectiveSyncAdvise = jsonRequestPriceListVersion.getSyncAdvise() != null ? jsonRequestPriceListVersion.getSyncAdvise() : parentSyncAdvise;
+		final SyncAdvise effectiveSyncAdvise = jsonRequestPriceListVersion.getSyncAdvise() != null
+				? jsonRequestPriceListVersion.getSyncAdvise()
+				: parentSyncAdvise;
 
 		final JsonResponseUpsertItem.SyncOutcome syncOutcome;
 		final PriceListVersionId priceListVersionId;
 
-		final Optional<PriceListId> existingPriceListId = getPriceListIdOrNull(jsonRequestPriceListVersion.getPriceListIdentifier());
+		final Optional<PriceListId> priceListId = getPriceListIdOrNull(jsonRequestPriceListVersion.getPriceListIdentifier());
 
-		if (!existingPriceListId.isPresent())
+		if (!priceListId.isPresent())
 		{
-			throw MissingResourceException.builder()
-					.resourceName("priceListIdentifier")
-					.resourceIdentifier(jsonRequestPriceListVersion.getPriceListIdentifier())
-					.parentResource(jsonRequestPriceListVersion).build()
-					.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
+			throw new AdempiereException("PriceListIdentifier could not be found: " + jsonRequestPriceListVersion.getPriceListIdentifier());
 		}
 
 		final Optional<PriceListVersion> existingRecord = getPriceListVersionRecordOrNull(priceListVersionIdentifier);
@@ -93,18 +91,21 @@ public class PriceListRestService
 		{
 			if (effectiveSyncAdvise.getIfExists().isUpdate())
 			{
+				final PriceListVersion priceListVersion = syncJsonToPriceListVersion(
+						priceListVersionIdentifier,
+						jsonRequestPriceListVersion,
+						existingRecord.get(),
+						effectiveSyncAdvise);
+
 				if (effectiveSyncAdvise.getIfExists().isUpdateRemove())
 				{
-					priceListRepository.inactivatePriceListVersion(existingRecord.get());
-					priceListVersionId = existingRecord.get().getPriceListVersionId();
+					priceListRepository.inactivatePriceListVersion(priceListVersion);
 				}
 				else
 				{
-					final PriceListVersion priceListVersion = syncJsonToPriceListVersion(priceListVersionIdentifier, jsonRequestPriceListVersion, existingRecord.get(), effectiveSyncAdvise);
 					priceListRepository.updatePriceListVersion(priceListVersion);
-					priceListVersionId = priceListVersion.getPriceListVersionId();
-
 				}
+				priceListVersionId = priceListVersion.getPriceListVersionId();
 				syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
 			}
 			else
@@ -130,7 +131,6 @@ public class PriceListRestService
 				final CreatePriceListVersionRequest createPriceListVersion = syncJsonToCreatePriceListVersionRequest(jsonRequestPriceListVersion);
 				priceListVersionId = priceListRepository.createPriceListVersion(createPriceListVersion).getPriceListVersionId();
 				syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
-
 			}
 		}
 
@@ -177,7 +177,9 @@ public class PriceListRestService
 		//validFrom
 		if (jsonRequest.isValidFromSet())
 		{
-			final Instant validFromDate = jsonRequest.getValidFrom() != null ? Instant.parse(jsonRequest.getValidFrom()) : null;
+			final Instant validFromDate = jsonRequest.getValidFrom() != null
+					? Instant.parse(jsonRequest.getValidFrom())
+					: null;
 
 			if (validFromDate == null)
 			{
@@ -217,7 +219,9 @@ public class PriceListRestService
 		final PriceListId priceListId = PriceListId.ofRepoId(Integer.parseInt(jsonUpsertPriceListVersion.getPriceListIdentifier()));
 
 		final Boolean isActive = jsonUpsertPriceListVersion.getActive().equals("true");
-		final Instant validFromDate = jsonUpsertPriceListVersion.getValidFrom() != null ? Instant.parse(jsonUpsertPriceListVersion.getValidFrom()) : null;
+		final Instant validFromDate = jsonUpsertPriceListVersion.getValidFrom() != null
+				? Instant.parse(jsonUpsertPriceListVersion.getValidFrom())
+				: null;
 
 		if (validFromDate == null)
 		{

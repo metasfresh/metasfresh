@@ -23,9 +23,11 @@
 package de.metas.rest_api.pricing;
 
 import de.metas.Profiles;
+import de.metas.common.bpartner.response.JsonResponseUpsert;
 import de.metas.common.bpartner.response.JsonResponseUpsertItem;
+import de.metas.common.rest_api.SyncAdvise;
 import de.metas.common.rest_api.pricing.pricelist.JsonRequestPriceListVersionUpsert;
-import de.metas.common.rest_api.pricing.productprice.JsonProductPriceRequest;
+import de.metas.common.rest_api.pricing.productprice.JsonRequestProductPriceUpsert;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -39,6 +41,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/prices",
@@ -79,16 +84,21 @@ public class PriceListRestController
 			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
 	@PutMapping("/priceListVersions/{priceListVersionIdentifier}/productPrices")
-	public ResponseEntity<JsonResponseUpsertItem> putProductPriceByPriceListVersionIdentifier(
+	public ResponseEntity<JsonResponseUpsert> putProductPriceByPriceListVersionIdentifier(
 			@ApiParam(required = true, value = "String")
 			@PathVariable("priceListVersionIdentifier") //
 			@NonNull final String priceListVersionIdentifier,
 
-			@RequestBody @NonNull final JsonProductPriceRequest jsonProductPriceRequest)
+			@RequestBody @NonNull final JsonRequestProductPriceUpsert request)
 	{
-		final JsonResponseUpsertItem jsonResponseUpsertItem = productPriceRestService
-				.putProductPriceByPriceListVersionIdentifier(priceListVersionIdentifier, jsonProductPriceRequest);
-		return ResponseEntity.ok(jsonResponseUpsertItem);
+		final SyncAdvise syncAdvise = request.getSyncAdvise();
+		final List<JsonResponseUpsertItem> responseList =
+				request.getRequestItems()
+						.stream()
+						.map(reqItem -> productPriceRestService.putProductPriceByPriceListVersionIdentifier(priceListVersionIdentifier, reqItem, syncAdvise))
+						.collect(Collectors.toList());
+
+		return ResponseEntity.ok().body(JsonResponseUpsert.builder().responseItems(responseList).build());
 	}
 }
 

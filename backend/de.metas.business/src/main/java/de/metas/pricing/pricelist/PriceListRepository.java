@@ -33,8 +33,6 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
@@ -60,11 +58,10 @@ public class PriceListRepository
 	public void inactivatePriceListVersion(@NonNull final PriceListVersion priceListVersion)
 	{
 		final PriceListVersionId priceListVersionId = priceListVersion.getPriceListVersionId();
-		final Optional<I_M_PriceList_Version> existingRecord = getRecordOrNull(priceListVersionId);
+		final I_M_PriceList_Version record = getRecordById(priceListVersionId);
 
-		existingRecord.ifPresent(i_m_priceList_version -> i_m_priceList_version.setIsActive(false));
-
-		saveRecord(existingRecord);
+		record.setIsActive(false);
+		saveRecord(record);
 	}
 
 	@NonNull
@@ -90,7 +87,7 @@ public class PriceListRepository
 	@NonNull
 	private I_M_PriceList_Version buildPriceListVersion(@NonNull final PriceListVersion request)
 	{
-		final I_M_PriceList_Version existingRecord = getRecordOrNull(request.getPriceListVersionId()).get();
+		final I_M_PriceList_Version existingRecord = getRecordById(request.getPriceListVersionId());
 
 		existingRecord.setAD_Org_ID(request.getOrgId().getRepoId());
 
@@ -109,17 +106,13 @@ public class PriceListRepository
 	}
 
 	@NonNull
-	private Optional<I_M_PriceList_Version> getRecordOrNull(@NonNull final PriceListVersionId priceListVersionId)
+	private I_M_PriceList_Version getRecordById(@NonNull final PriceListVersionId priceListVersionId)
 	{
-		final I_M_PriceList_Version record = queryBL
+		return queryBL
 				.createQueryBuilder(I_M_PriceList_Version.class)
 				.filter(item -> item.getM_PriceList_Version_ID() == priceListVersionId.getRepoId())
 				.create()
-				.firstOnly(I_M_PriceList_Version.class);
-
-		return record != null
-				? Optional.of(record)
-				: Optional.empty();
+				.firstOnlyNotNull(I_M_PriceList_Version.class);
 	}
 
 	@NonNull

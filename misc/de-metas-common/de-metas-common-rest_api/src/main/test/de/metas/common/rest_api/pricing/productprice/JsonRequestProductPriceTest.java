@@ -26,7 +26,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.sun.corba.se.impl.orbutil.concurrent.Sync;
 import de.metas.common.rest_api.SyncAdvise;
 import lombok.Builder;
 import org.assertj.core.api.Assertions;
@@ -36,7 +35,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-public class JsonUpsertProductPriceRequestTest
+public class JsonRequestProductPriceTest
 {
 	private ObjectMapper objectMapper;
 
@@ -58,7 +57,7 @@ public class JsonUpsertProductPriceRequestTest
 	@Test
 	public void test() throws Exception
 	{
-		testSerializeDeserialize(createJsonUpsertProductPriceRequestBuilder()
+		testSerializeDeserialize(createJsonRequestProductPriceBuilder()
 										 .orgCode("test-code")
 										 .productIdentifier("123")
 										 .taxCategory(TaxCategory.NORMAL)
@@ -71,9 +70,9 @@ public class JsonUpsertProductPriceRequestTest
 										 .build());
 	}
 
-	@Builder(builderMethodName = "createJsonUpsertProductPriceRequestBuilder",
-			builderClassName = "JsonUpsertProductPriceRequestBuilder")
-	private JsonUpsertProductPriceRequest createJsonUpsertProductPriceRequest(
+	@Builder(builderMethodName = "createJsonRequestProductPriceBuilder",
+			builderClassName = "JsonRequestProductPriceBuilder")
+	private JsonRequestProductPrice createJsonRequestProductPrice(
 			final String orgCode,
 			final String productIdentifier,
 			final TaxCategory taxCategory,
@@ -85,28 +84,28 @@ public class JsonUpsertProductPriceRequestTest
 			final SyncAdvise syncAdvise
 	)
 	{
-		final JsonUpsertProductPriceRequest jsonUpsertProductPriceRequest = new JsonUpsertProductPriceRequest();
-		jsonUpsertProductPriceRequest.setOrgCode(orgCode);
-		jsonUpsertProductPriceRequest.setProductId(productIdentifier);
-		jsonUpsertProductPriceRequest.setTaxCategory(TaxCategory.NORMAL);
-		jsonUpsertProductPriceRequest.setPriceLimit(priceLimit);
-		jsonUpsertProductPriceRequest.setPriceList(priceList);
-		jsonUpsertProductPriceRequest.setPriceStd(priceStd);
-		jsonUpsertProductPriceRequest.setSeqNo(seqNo);
-		jsonUpsertProductPriceRequest.setActive(active);
-		jsonUpsertProductPriceRequest.setSyncAdvise(syncAdvise);
+		final JsonRequestProductPrice jsonRequestProductPrice = new JsonRequestProductPrice();
+		jsonRequestProductPrice.setOrgCode(orgCode);
+		jsonRequestProductPrice.setProductId(productIdentifier);
+		jsonRequestProductPrice.setTaxCategory(TaxCategory.NORMAL);
+		jsonRequestProductPrice.setPriceLimit(priceLimit);
+		jsonRequestProductPrice.setPriceList(priceList);
+		jsonRequestProductPrice.setPriceStd(priceStd);
+		jsonRequestProductPrice.setSeqNo(seqNo);
+		jsonRequestProductPrice.setActive(active);
+		jsonRequestProductPrice.setSyncAdvise(syncAdvise);
 
-		return jsonUpsertProductPriceRequest;
+		return jsonRequestProductPrice;
 	}
 
-	private void testSerializeDeserialize(final JsonUpsertProductPriceRequest obj) throws IOException
+	private void testSerializeDeserialize(final JsonRequestProductPrice obj) throws IOException
 	{
 		System.out.println("Object: " + obj);
 
 		final String json = objectMapper.writeValueAsString(obj);
 		System.out.println("Object->JSON: " + json);
 
-		final JsonUpsertProductPriceRequest objDeserialized = objectMapper.readValue(json, obj.getClass());
+		final JsonRequestProductPrice objDeserialized = objectMapper.readValue(json, obj.getClass());
 		System.out.println("Object deserialized: " + objDeserialized);
 		Assertions.assertThat(objDeserialized).isEqualTo(obj);
 	}

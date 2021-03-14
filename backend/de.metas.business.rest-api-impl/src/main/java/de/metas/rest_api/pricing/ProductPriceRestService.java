@@ -25,24 +25,29 @@ package de.metas.rest_api.pricing;
 import de.metas.common.bpartner.response.JsonResponseUpsertItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.SyncAdvise;
-import de.metas.common.rest_api.pricing.productprice.JsonProductPriceRequest;
-import de.metas.common.rest_api.pricing.productprice.JsonUpsertProductPriceRequest;
+import de.metas.common.rest_api.pricing.productprice.JsonRequestProductPrice;
+import de.metas.common.rest_api.pricing.productprice.JsonRequestProductPriceItemUpsert;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
+import de.metas.pricing.pricelist.PriceListVersion;
 import de.metas.pricing.productprice.CreateProductPrice;
 import de.metas.pricing.productprice.ProductPrice;
 import de.metas.pricing.productprice.ProductPriceRepository;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
-import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
@@ -60,86 +65,80 @@ public class ProductPriceRestService
 	@NonNull
 	public JsonResponseUpsertItem putProductPriceByPriceListVersionIdentifier(
 			@NonNull final String priceListVersionIdentifier,
-			@NonNull final JsonProductPriceRequest jsonProductPriceRequest)
+			@NonNull final JsonRequestProductPriceItemUpsert jsonRequest,
+			@NonNull final SyncAdvise parentSyncAdvise)
 	{
+		final Optional<PriceListVersion> priceListVersion = getPriceListVersionRecordOrNull(priceListVersionIdentifier);
 
-		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoIdOrNull(Integer.parseInt(priceListVersionIdentifier));
-
-		if (priceListVersionId == null)
+		if (!priceListVersion.isPresent())
 		{
-			throw new AdempiereException("Missing priceListVersionIdentifier from metasfresh DB")
-					.appendParametersToMessage()
-					.setParameter("priceListVersionIdentifier", priceListVersionIdentifier);
+			throw new AdempiereException("PriceListVersionIdentifier could not be found: " + priceListVersionIdentifier);
 		}
 
-		final String productPriceIdentifier = jsonProductPriceRequest.getProductPriceIdentifier();
-		final JsonUpsertProductPriceRequest jsonUpsertProductPriceRequest = jsonProductPriceRequest.getJsonUpsertProductPriceRequest();
-		final SyncAdvise syncAdvise = jsonUpsertProductPriceRequest.getSyncAdvise();
+		final String productPriceIdentifier = jsonRequest.getProductPriceIdentifier();
+		final JsonRequestProductPrice jsonRequestProductPrice = jsonRequest.getJsonRequestProductPrice();
 
-		final ProductPriceId productPriceId = ProductPriceId.ofRepoIdOrNull(Integer.parseInt(productPriceIdentifier));
+		final Optional<ProductId> existingProductId = getProductIdRecordOrNull(jsonRequestProductPrice.getProductId());
+
+		if (!existingProductId.isPresent())
+		{
+			throw new AdempiereException("ProductIdentifier could not be found: " + jsonRequestProductPrice.getProductId());
+		}
+
+		final SyncAdvise effectiveSyncAdvise = jsonRequestProductPrice.getSyncAdvise() != null
+				? jsonRequestProductPrice.getSyncAdvise()
+				: parentSyncAdvise;
 
 		final JsonResponseUpsertItem.SyncOutcome syncOutcome;
-		final ProductPrice persistedProductPrice;
+		final ProductPriceId productPriceId;
 
-		if (productPriceId == null)
+		final Optional<ProductPrice> existingProductPriceRecord = getProductPriceRecordOrNull(productPriceIdentifier);
+
+		if (existingProductPriceRecord.isPresent())
 		{
-			if (syncAdvise.isFailIfNotExists())
+			productPriceId = existingProductPriceRecord.get().getProductPriceId();
+			if (effectiveSyncAdvise.getIfExists().isUpdate())
 			{
-				throw MissingResourceException.builder()
-						.resourceName("productPriceIdentifier")
-						.resourceIdentifier(productPriceIdentifier)
-						.parentResource(jsonProductPriceRequest).build()
-						.setParameter("effectiveSyncAdvise", syncAdvise);
+				final ProductPrice productPriceRequest = syncJsonToProductPrice(
+						priceListVersion.get().getPriceListVersionId(),
+						existingProductPriceRecord.get().getProductPriceId(),
+						jsonRequestProductPrice,
+						existingProductPriceRecord.get());
+				productPriceRepository.updateProductPrice(productPriceRequest);
+
+				syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
+			}
+			else if (effectiveSyncAdvise.getIfExists().isUpdateRemove())
+			{
+				productPriceRepository.inactivateProductPrice(existingProductPriceRecord.get());
+				syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
 			}
 			else
 			{
-				final CreateProductPrice createProductPriceRequest = syncJsonToCreateProductPrice(priceListVersionId, jsonUpsertProductPriceRequest);
-				persistedProductPrice = productPriceRepository.createProductPrice(createProductPriceRequest);
-				syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
+				syncOutcome = JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE;
 			}
 		}
 		else
 		{
-			final I_M_ProductPrice record = getRecordOrNull(productPriceId);
-
-			if (record == null)
+			if (effectiveSyncAdvise.isFailIfNotExists())
 			{
-				if (syncAdvise.isFailIfNotExists())
-				{
-					throw new AdempiereException("No I_M_ProductPrice record was found for the given ID")
-							.appendParametersToMessage()
-							.setParameter("M_ProductPrice_ID", productPriceId);
-				}
-				else
-				{
-					final CreateProductPrice createProductPriceRequest = syncJsonToCreateProductPrice(priceListVersionId, jsonUpsertProductPriceRequest);
-					persistedProductPrice = productPriceRepository.createProductPrice(createProductPriceRequest);
-					syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
-				}
-			}
-			else if (syncAdvise.isLoadReadOnly())
-			{
-				syncOutcome = JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE;
-				return JsonResponseUpsertItem.builder()
-						.identifier(priceListVersionIdentifier)
-						.metasfreshId(JsonMetasfreshId.of(productPriceId.getRepoId()))
-						.syncOutcome(syncOutcome)
-						.build();
+				throw new AdempiereException("Missing ProductPrice record from metasfresh DB")
+						.appendParametersToMessage()
+						.setParameter("productPriceIdentifier", productPriceIdentifier);
 			}
 			else
 			{
-				final ProductPrice productPriceRequest = syncJsonToProductPrice(
-						priceListVersionId,
-						productPriceId,
-						jsonUpsertProductPriceRequest);
-				persistedProductPrice = productPriceRepository.updateProductPrice(productPriceRequest);
-				syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
+				final CreateProductPrice createProductPriceRequest = syncJsonToCreateProductPrice(
+						priceListVersion.get().getPriceListVersionId(), jsonRequestProductPrice);
+				final ProductPrice persistedProductPrice = productPriceRepository.createProductPrice(createProductPriceRequest);
+				productPriceId = persistedProductPrice.getProductPriceId();
+				syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
 			}
 		}
 
 		return JsonResponseUpsertItem.builder()
 				.identifier(priceListVersionIdentifier)
-				.metasfreshId(JsonMetasfreshId.of(persistedProductPrice.getProductId().getRepoId()))
+				.metasfreshId(JsonMetasfreshId.of(productPriceId.getRepoId()))
 				.syncOutcome(syncOutcome)
 				.build();
 	}
@@ -148,82 +147,77 @@ public class ProductPriceRestService
 	private ProductPrice syncJsonToProductPrice(
 			@NonNull final PriceListVersionId priceListVersionId,
 			@NonNull final ProductPriceId productPriceId,
-			@NonNull final JsonUpsertProductPriceRequest jsonUpsertProductPriceRequest)
+			@NonNull final JsonRequestProductPrice jsonRequest,
+			@NonNull final ProductPrice existingRecord)
 	{
 		final ProductPrice.ProductPriceBuilder productPriceBuilder = ProductPrice.builder();
 
-		final OrgId orgId = retrieveOrgIdOrDefault(jsonUpsertProductPriceRequest.getOrgCode());
+		final OrgId orgId = retrieveOrgIdOrDefault(jsonRequest.getOrgCode());
 		productPriceBuilder.orgId(orgId);
 
 		productPriceBuilder.priceListVersionId(priceListVersionId);
 		productPriceBuilder.productPriceId(productPriceId);
 
-		if (jsonUpsertProductPriceRequest.isProductIdSet())
+		//productId
+		if (jsonRequest.isProductIdSet())
 		{
-			final ProductId productId = ProductId.ofRepoId(Integer.parseInt(jsonUpsertProductPriceRequest.getProductId()));
+			final ProductId productId = ProductId.ofRepoId(Integer.parseInt(jsonRequest.getProductId()));
 			productPriceBuilder.productId(productId);
 		}
 		else
 		{
-			throw new AdempiereException("jsonUpsertProductPriceRequest.getProductId() should never be null at this stage!")
-					.appendParametersToMessage()
-					.setParameter("jsonUpsertProductPriceRequest", jsonUpsertProductPriceRequest);
+			productPriceBuilder.productId(existingRecord.getProductId());
 		}
 
-		if (jsonUpsertProductPriceRequest.isPriceLimitSet())
+		//priceLimit
+		if (jsonRequest.isPriceLimitSet())
 		{
-			productPriceBuilder.priceLimit(jsonUpsertProductPriceRequest.getPriceLimit());
+			productPriceBuilder.priceLimit(jsonRequest.getPriceLimit());
 		}
 		else
 		{
-			throw new AdempiereException("jsonUpsertProductPriceRequest.getPriceLimit() should never be null at this stage!")
-					.appendParametersToMessage()
-					.setParameter("jsonUpsertProductPriceRequest", jsonUpsertProductPriceRequest);
+			productPriceBuilder.priceLimit(existingRecord.getPriceLimit());
 		}
 
-		if (jsonUpsertProductPriceRequest.isPriceListSet())
+		//priceList
+		if (jsonRequest.isPriceListSet())
 		{
-			productPriceBuilder.priceList(jsonUpsertProductPriceRequest.getPriceList());
+			productPriceBuilder.priceList(jsonRequest.getPriceList());
 		}
 		else
 		{
-			throw new AdempiereException("jsonUpsertProductPriceRequest.getPriceList() should never be null at this stage!")
-					.appendParametersToMessage()
-					.setParameter("jsonUpsertProductPriceRequest", jsonUpsertProductPriceRequest);
+			productPriceBuilder.priceLimit(existingRecord.getPriceLimit());
 		}
 
-		if (jsonUpsertProductPriceRequest.isPriceStdSet())
+		//priceStd
+		if (jsonRequest.isPriceStdSet())
 		{
-			productPriceBuilder.priceStd(jsonUpsertProductPriceRequest.getPriceStd());
+			productPriceBuilder.priceStd(jsonRequest.getPriceStd());
 		}
 		else
 		{
-			throw new AdempiereException("jsonUpsertProductPriceRequest.getPriceStd() should never be null at this stage!")
-					.appendParametersToMessage()
-					.setParameter("jsonUpsertProductPriceRequest", jsonUpsertProductPriceRequest);
+			productPriceBuilder.priceStd(existingRecord.getPriceStd());
 		}
 
-		if (jsonUpsertProductPriceRequest.isTaxCategorySet())
+		//taxCategory
+		if (jsonRequest.isTaxCategorySet())
 		{
 			//	todo florina look for tax category in db by tax InternalName, set both
 		}
 		else
 		{
-			throw new AdempiereException("jsonUpsertProductPriceRequest.getTaxCategory() should never be null at this stage!")
-					.appendParametersToMessage()
-					.setParameter("jsonUpsertProductPriceRequest", jsonUpsertProductPriceRequest);
+			productPriceBuilder.taxCategoryId(existingRecord.getTaxCategoryId());
 		}
 
-		if (jsonUpsertProductPriceRequest.isActiveSet())
+		//isActive
+		if (jsonRequest.isActiveSet())
 		{
-			final Boolean isActive = jsonUpsertProductPriceRequest.getActive().equals("true");
+			final Boolean isActive = jsonRequest.getActive().equals("true");
 			productPriceBuilder.isActive(isActive);
 		}
 		else
 		{
-			throw new AdempiereException("jsonUpsertProductPriceRequest.getActive() should never be null at this stage!")
-					.appendParametersToMessage()
-					.setParameter("jsonUpsertProductPriceRequest", jsonUpsertProductPriceRequest);
+			productPriceBuilder.isActive(existingRecord.getIsActive());
 		}
 
 		return productPriceBuilder.build();
@@ -232,35 +226,96 @@ public class ProductPriceRestService
 	@NonNull
 	private CreateProductPrice syncJsonToCreateProductPrice(
 			@NonNull final PriceListVersionId priceListVersionId,
-			@NonNull final JsonUpsertProductPriceRequest jsonUpsertProductPriceRequest
+			@NonNull final JsonRequestProductPrice jsonRequest
 	)
 	{
-		final CreateProductPrice.CreateProductPriceBuilder productPriceBuilder = CreateProductPrice.builder();
+		final OrgId orgId = retrieveOrgIdOrDefault(jsonRequest.getOrgCode());
+		final ProductId productId = ProductId.ofRepoId(Integer.parseInt(jsonRequest.getProductId()));
 
-		final OrgId orgId = retrieveOrgIdOrDefault(jsonUpsertProductPriceRequest.getOrgCode());
-		productPriceBuilder.orgId(orgId);
-
-		productPriceBuilder.productId(ProductId.ofRepoId(Integer.parseInt(jsonUpsertProductPriceRequest.getProductId())));
-		productPriceBuilder.priceListVersionId(priceListVersionId);
-
-		productPriceBuilder.priceLimit(jsonUpsertProductPriceRequest.getPriceLimit());
-		productPriceBuilder.priceList(jsonUpsertProductPriceRequest.getPriceList());
-		productPriceBuilder.priceStd(jsonUpsertProductPriceRequest.getPriceStd());
+		final Boolean isActive = jsonRequest.getActive().equals("true");
 
 		//todo florina tax category id
 		//todo florina tax internal name
-		productPriceBuilder.isActive(Boolean.valueOf(jsonUpsertProductPriceRequest.getActive()));
 
-		return productPriceBuilder.build();
+		return CreateProductPrice.builder()
+				.orgId(orgId)
+				.productId(productId)
+				.priceListVersionId(priceListVersionId)
+				.priceLimit(jsonRequest.getPriceLimit())
+				.priceList(jsonRequest.getPriceList())
+				.priceStd(jsonRequest.getPriceStd())
+				.isActive(isActive)
+				.build();
 	}
 
-	@Nullable
-	private I_M_ProductPrice getRecordOrNull(@NonNull final ProductPriceId productPriceId)
+	@NonNull
+	private Optional<ProductId> getProductIdRecordOrNull(@NonNull final String identifier)
 	{
-		return queryBL
+		final I_M_Product record = queryBL
+				.createQueryBuilder(I_M_Product.class)
+				.filter(item -> item.getM_Product_ID() == Integer.parseInt(identifier))
+				.create()
+				.firstOnly(I_M_Product.class);
+
+		return record != null
+				? Optional.of(ProductId.ofRepoId(record.getM_Product_ID()))
+				: Optional.empty();
+	}
+
+	@NonNull
+	private Optional<ProductPrice> getProductPriceRecordOrNull(@NonNull final String identifier)
+	{
+		final I_M_ProductPrice record = queryBL
 				.createQueryBuilder(I_M_ProductPrice.class)
-				.addEqualsFilter(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, productPriceId.getRepoId())
+				.filter(item -> item.getM_ProductPrice_ID() == Integer.parseInt(identifier))
 				.create()
 				.firstOnly(I_M_ProductPrice.class);
+
+		return record != null
+				? Optional.of(buildProductPrice(record))
+				: Optional.empty();
+	}
+
+	@NonNull
+	private ProductPrice buildProductPrice(@NonNull final I_M_ProductPrice record)
+	{
+		return ProductPrice.builder()
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.productPriceId(ProductPriceId.ofRepoId(record.getM_ProductPrice_ID()))
+				.priceListVersionId(PriceListVersionId.ofRepoId(record.getM_PriceList_Version_ID()))
+				.priceLimit(record.getPriceLimit())
+				.priceList(record.getPriceList())
+				.priceStd(record.getPriceStd())
+				.taxCategoryId(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID()))
+				.isActive(record.isActive())
+				.build();
+	}
+
+	@NonNull
+	private Optional<PriceListVersion> getPriceListVersionRecordOrNull(@NonNull final String identifier)
+	{
+		final I_M_PriceList_Version record = queryBL
+				.createQueryBuilder(I_M_PriceList_Version.class)
+				.filter(item -> item.getM_PriceList_Version_ID() == Integer.parseInt(identifier))
+				.create()
+				.firstOnly(I_M_PriceList_Version.class);
+
+		return record != null
+				? Optional.of(buildPriceListVersion(record))
+				: Optional.empty();
+	}
+
+	@NonNull
+	private PriceListVersion buildPriceListVersion(@NonNull final I_M_PriceList_Version record)
+	{
+		return PriceListVersion.builder()
+				.priceListVersionId(PriceListVersionId.ofRepoId(record.getM_PriceList_Version_ID()))
+				.priceListId(PriceListId.ofRepoId(record.getM_PriceList_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.description(record.getDescription())
+				.validFrom(TimeUtil.asInstant(record.getValidFrom()))
+				.isActive(record.isActive())
+				.build();
 	}
 }
