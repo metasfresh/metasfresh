@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Product_AlbertaBillableTherapy extends org.compiere.model.PO implements I_M_Product_AlbertaBillableTherapy, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1403306654L;
+	private static final long serialVersionUID = -690575572L;
 
     /** Standard Constructor */
     public X_M_Product_AlbertaBillableTherapy (final Properties ctx, final int M_Product_AlbertaBillableTherapy_ID, @Nullable final String trxName)
@@ -65,24 +65,46 @@ public class X_M_Product_AlbertaBillableTherapy extends org.compiere.model.PO im
 	}
 
 	/** 
-	 * Therapy AD_Reference_ID=540709
-	 * Reference name: MD_Candidate_BusinessCase
+	 * Therapy AD_Reference_ID=541282
+	 * Reference name: Therapy
 	 */
-	public static final int THERAPY_AD_Reference_ID=540709;
-	/** DISTRIBUTION = DISTRIBUTION */
-	public static final String THERAPY_DISTRIBUTION = "DISTRIBUTION";
-	/** PRODUCTION = PRODUCTION */
-	public static final String THERAPY_PRODUCTION = "PRODUCTION";
-	/** RECEIPT = RECEIPT */
-	public static final String THERAPY_RECEIPT = "RECEIPT";
-	/** SHIPMENT = SHIPMENT */
-	public static final String THERAPY_SHIPMENT = "SHIPMENT";
-	/** FORECAST = FORECAST */
-	public static final String THERAPY_FORECAST = "FORECAST";
-	/** PURCHASE = PURCHASE */
-	public static final String THERAPY_PURCHASE = "PURCHASE";
-	/** INVENTORY = INVENTORY */
-	public static final String THERAPY_INVENTORY = "INVENTORY";
+	public static final int THERAPY_AD_Reference_ID=541282;
+	/** Unknown = 0 */
+	public static final String THERAPY_Unknown = "0";
+	/** ParenteralNutrition = 1 */
+	public static final String THERAPY_ParenteralNutrition = "1";
+	/** EnteralNutrition = 2 */
+	public static final String THERAPY_EnteralNutrition = "2";
+	/** Stoma = 3 */
+	public static final String THERAPY_Stoma = "3";
+	/** Tracheostoma = 4 */
+	public static final String THERAPY_Tracheostoma = "4";
+	/** Inkontinenz ableitend = 5 */
+	public static final String THERAPY_InkontinenzAbleitend = "5";
+	/** Wundversorgung = 6 */
+	public static final String THERAPY_Wundversorgung = "6";
+	/** IV-Therapien = 7 */
+	public static final String THERAPY_IV_Therapien = "7";
+	/** Beatmung = 8 */
+	public static final String THERAPY_Beatmung = "8";
+	/** Sonstiges = 9 */
+	public static final String THERAPY_Sonstiges = "9";
+	/** OSA = 10 */
+	public static final String THERAPY_OSA = "10";
+	/** Hustenhilfen = 11 */
+	public static final String THERAPY_Hustenhilfen = "11";
+	/** Absaugung = 12 */
+	public static final String THERAPY_Absaugung = "12";
+	/** Patientenüberwachung = 13 */
+	public static final String THERAPY_Patientenueberwachung = "13";
+	/** Sauerstoff = 14 */
+	public static final String THERAPY_Sauerstoff = "14";
+	/** Inhalations- und Atemtherapie = 15 */
+	public static final String THERAPY_Inhalations_UndAtemtherapie = "15";
+	/** Lagerungshilfsmittel = 16 */
+	public static final String THERAPY_Lagerungshilfsmittel = "16";
+	/** Schmerztherapie = 17 */
+	public static final String THERAPY_Schmerztherapie = "17";
 	@Override
 	public void setTherapy (final java.lang.String Therapy)
 	{

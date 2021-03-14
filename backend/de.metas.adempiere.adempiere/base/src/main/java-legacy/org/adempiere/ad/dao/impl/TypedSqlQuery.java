@@ -35,6 +35,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.dao.sql.SqlParamsInliner;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
@@ -102,6 +103,10 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 {
 	private static final Logger log = LogManager.getLogger(TypedSqlQuery.class);
 
+	private static final SqlParamsInliner sqlParamsInliner = SqlParamsInliner.builder()
+			.failOnError(false)
+			.build();
+
 	private final Properties ctx;
 	private final String tableName;
 	private String sqlFrom = null;
@@ -129,7 +134,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			final Class<T> modelClass,
 			final String tableName,
 			final String whereClause,
-			final String trxName)
+			@Nullable final String trxName)
 	{
 		this.modelClass = modelClass;
 		this.tableName = InterfaceWrapperHelper.getTableName(modelClass, tableName);
@@ -144,7 +149,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 			final Properties ctx,
 			final Class<T> modelClass,
 			final String whereClause,
-			final String trxName)
+			@Nullable final String trxName)
 	{
 		this(ctx,
 				modelClass,
@@ -1381,69 +1386,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@VisibleForTesting
 	static String inlineSqlParams(final String sql, final List<Object> params)
 	{
-		final int paramsCount = params != null ? params.size() : 0;
-
-		final int sqlLength = sql.length();
-		final StringBuilder sqlFinal = new StringBuilder(sqlLength);
-
-		boolean insideQuotes = false;
-		int nextParamIndex = 0;
-		for (int i = 0; i < sqlLength; i++)
-		{
-			final char ch = sql.charAt(i);
-
-			if (ch == '?')
-			{
-				if (insideQuotes)
-				{
-					sqlFinal.append(ch);
-				}
-				else
-				{
-					if (nextParamIndex < paramsCount)
-					{
-						sqlFinal.append(DB.TO_SQL(params.get(nextParamIndex)));
-					}
-					else
-					{
-						// error: parameter index is invalid
-						sqlFinal.append("?missing?");
-					}
-
-					nextParamIndex++;
-				}
-			}
-			else if (ch == '\'')
-			{
-				sqlFinal.append(ch);
-				insideQuotes = !insideQuotes;
-			}
-			else
-			{
-				sqlFinal.append(ch);
-			}
-		}
-
-		if (nextParamIndex < paramsCount)
-		{
-			sqlFinal.append(" -- Exceeding params: ");
-			boolean firstExceedingParam = true;
-			for (int i = nextParamIndex; i < paramsCount; i++)
-			{
-				if (firstExceedingParam)
-				{
-					firstExceedingParam = false;
-				}
-				else
-				{
-					sqlFinal.append(", ");
-				}
-
-				sqlFinal.append(DB.TO_SQL(params.get(i)));
-			}
-		}
-
-		return sqlFinal.toString();
+		return sqlParamsInliner.inline(sql, params);
 	}
 
 	// metas
