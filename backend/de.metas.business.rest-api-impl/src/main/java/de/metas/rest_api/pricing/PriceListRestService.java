@@ -25,8 +25,8 @@ package de.metas.rest_api.pricing;
 import de.metas.common.bpartner.response.JsonResponseUpsertItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.SyncAdvise;
-import de.metas.common.rest_api.pricing.pricelist.JsonPriceListVersionRequest;
-import de.metas.common.rest_api.pricing.pricelist.JsonUpsertPriceListVersionRequest;
+import de.metas.common.rest_api.pricing.pricelist.JsonRequestPriceListVersion;
+import de.metas.common.rest_api.pricing.pricelist.JsonRequestPriceListVersionUpsert;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
@@ -35,16 +35,17 @@ import de.metas.pricing.pricelist.CreatePriceListVersionRequest;
 import de.metas.pricing.pricelist.PriceListRepository;
 import de.metas.pricing.pricelist.PriceListVersion;
 import de.metas.util.Services;
-import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Optional;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
@@ -64,83 +65,78 @@ public class PriceListRestService
 	}
 
 	@NonNull
-	public JsonResponseUpsertItem putPriceListVersions(@NonNull final JsonPriceListVersionRequest jsonPriceListVersionRequest)
+	public JsonResponseUpsertItem putPriceListVersions(@NonNull final JsonRequestPriceListVersionUpsert request)
 	{
-		final String priceListVersionIdentifier = jsonPriceListVersionRequest.getPriceListVersionIdentifier();
-		final JsonUpsertPriceListVersionRequest jsonPriceListVersion = jsonPriceListVersionRequest.getJsonUpsertPriceListVersionRequest();
-		final SyncAdvise syncAdvise = jsonPriceListVersion.getSyncAdvise();
+		final String priceListVersionIdentifier = request.getPriceListVersionIdentifier();
+		final JsonRequestPriceListVersion jsonRequestPriceListVersion = request.getJsonRequestPriceListVersion();
 
-		final PriceListVersion persistedPriceListVersion;
+		final SyncAdvise parentSyncAdvise = request.getSyncAdvise();
+		final SyncAdvise effectiveSyncAdvise = jsonRequestPriceListVersion.getSyncAdvise() != null ? jsonRequestPriceListVersion.getSyncAdvise() : parentSyncAdvise;
+
 		final JsonResponseUpsertItem.SyncOutcome syncOutcome;
+		final PriceListVersionId priceListVersionId;
 
-		final String priceListVersionIdentifierPrefix = priceListVersionIdentifier.substring(0, 4);
+		final Optional<PriceListId> existingPriceListId = getPriceListIdOrNull(jsonRequestPriceListVersion.getPriceListIdentifier());
 
-		if (priceListVersionIdentifierPrefix.equals("ext-"))//type EXTERNAL_ID
+		if (!existingPriceListId.isPresent())
 		{
-			// todo florina lookup for external if found update otherwise create
-			final CreatePriceListVersionRequest createPriceListVersion = syncJsonToCreatePriceListVersionRequest(jsonPriceListVersion);
-			persistedPriceListVersion = priceListRepository.createPriceListVersion(createPriceListVersion);
-			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
+			throw MissingResourceException.builder()
+					.resourceName("priceListIdentifier")
+					.resourceIdentifier(jsonRequestPriceListVersion.getPriceListIdentifier())
+					.parentResource(jsonRequestPriceListVersion).build()
+					.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
 		}
-		else
-		{
-			final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoIdOrNull(Integer.parseInt(priceListVersionIdentifier));
 
-			if (priceListVersionId == null)
+		final Optional<PriceListVersion> existingRecord = getPriceListVersionRecordOrNull(priceListVersionIdentifier);
+
+		if (existingRecord.isPresent())
+		{
+			if (effectiveSyncAdvise.getIfExists().isUpdate())
 			{
-				if (syncAdvise.isFailIfNotExists())
+				if (effectiveSyncAdvise.getIfExists().isUpdateRemove())
 				{
-					throw MissingResourceException.builder()
-							.resourceName("priceListVersion")
-							.resourceIdentifier(priceListVersionIdentifier)
-							.parentResource(jsonPriceListVersionRequest).build()
-							.setParameter("effectiveSyncAdvise", syncAdvise);
+					priceListRepository.inactivatePriceListVersion(existingRecord.get());
+					priceListVersionId = existingRecord.get().getPriceListVersionId();
 				}
 				else
 				{
-					throw new MissingPropertyException("priceListVersionIdentifier", priceListVersionIdentifier);
+					final PriceListVersion priceListVersion = syncJsonToPriceListVersion(priceListVersionIdentifier, jsonRequestPriceListVersion, existingRecord.get(), effectiveSyncAdvise);
+					priceListRepository.updatePriceListVersion(priceListVersion);
+					priceListVersionId = priceListVersion.getPriceListVersionId();
+
 				}
+				syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
 			}
 			else
 			{
-				final I_M_PriceList_Version record = getRecordOrNull(priceListVersionId);
+				priceListVersionId = PriceListVersionId.ofRepoId(Integer.parseInt(priceListVersionIdentifier));
+				syncOutcome = JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE;
+			}
+		}
+		else
+		{
+			//todo florina look for external ID path
 
-				if (record == null)
-				{
-					if (syncAdvise.isFailIfNotExists())
-					{
-						throw new AdempiereException("No I_M_PriceList_Version record was found for the given ID")
-								.appendParametersToMessage()
-								.setParameter("M_PriceList_Version_ID", priceListVersionId);
-					}
-					else
-					{
-						final CreatePriceListVersionRequest createPriceListVersion = syncJsonToCreatePriceListVersionRequest(jsonPriceListVersion);
-						persistedPriceListVersion = priceListRepository.createPriceListVersion(createPriceListVersion);
-						syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
-					}
-				}
-				else if (syncAdvise.isLoadReadOnly())
-				{
-					syncOutcome = JsonResponseUpsertItem.SyncOutcome.NOTHING_DONE;
-					return JsonResponseUpsertItem.builder()
-							.identifier(priceListVersionIdentifier)
-							.metasfreshId(JsonMetasfreshId.of(priceListVersionId.getRepoId()))
-							.syncOutcome(syncOutcome)
-							.build();
-				}
-				else
-				{
-					final PriceListVersion priceListVersion = syncJsonToPriceListVersion(priceListVersionIdentifier, jsonPriceListVersion, syncAdvise);
-					persistedPriceListVersion = priceListRepository.updatePriceListVersion(priceListVersion);
-					syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
-				}
+			if (parentSyncAdvise.isFailIfNotExists())
+			{
+				throw MissingResourceException.builder()
+						.resourceName("priceListVersion")
+						.resourceIdentifier(priceListVersionIdentifier)
+						.parentResource(request).build()
+						.setParameter("effectiveparentSyncAdvise", parentSyncAdvise);
+			}
+			else
+			{
+				final CreatePriceListVersionRequest createPriceListVersion = syncJsonToCreatePriceListVersionRequest(jsonRequestPriceListVersion);
+				priceListVersionId = priceListRepository.createPriceListVersion(createPriceListVersion).getPriceListVersionId();
+				syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
+
 			}
 		}
 
 		return JsonResponseUpsertItem.builder()
-				.identifier(jsonPriceListVersionRequest.getPriceListVersionIdentifier())
-				.metasfreshId(JsonMetasfreshId.of(persistedPriceListVersion.getPriceListVersionId().getRepoId()))
+				.identifier(request.getPriceListVersionIdentifier())
+				.metasfreshId(JsonMetasfreshId.of(priceListVersionId.getRepoId()))
 				.syncOutcome(syncOutcome)
 				.build();
 	}
@@ -148,60 +144,66 @@ public class PriceListRestService
 	@NonNull
 	private PriceListVersion syncJsonToPriceListVersion(
 			@NonNull final String priceListVersionIdentifier,
-			@NonNull final JsonUpsertPriceListVersionRequest jsonPriceListVersion,
+			@NonNull final JsonRequestPriceListVersion jsonRequest,
+			@NonNull final PriceListVersion existingRecord,
 			@NonNull final SyncAdvise syncAdvise)
 	{
 		final PriceListVersion.PriceListVersionBuilder priceListVersionBuilder = PriceListVersion.builder();
 		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
 
-		final OrgId orgId = retrieveOrgIdOrDefault(jsonPriceListVersion.getOrgCode());
+		final OrgId orgId = retrieveOrgIdOrDefault(jsonRequest.getOrgCode());
 		priceListVersionBuilder.orgId(orgId);
 
-		final PriceListId priceListId = PriceListId.ofRepoId(Integer.parseInt(jsonPriceListVersion.getPriceListIdentifier()));
+		final PriceListId priceListId = PriceListId.ofRepoId(Integer.parseInt(jsonRequest.getPriceListIdentifier()));
 		priceListVersionBuilder.priceListId(priceListId);
 
 		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(Integer.parseInt(priceListVersionIdentifier));
 		priceListVersionBuilder.priceListVersionId(priceListVersionId);
 
-		if (jsonPriceListVersion.isDescriptionSet())
+		//description
+		if (jsonRequest.isDescriptionSet())
 		{
-			priceListVersionBuilder.description(jsonPriceListVersion.getDescription());
+			priceListVersionBuilder.description(jsonRequest.getDescription());
 		}
 		else if (isUpdateRemove)
 		{
 			priceListVersionBuilder.description(null);
 		}
-
-		if (jsonPriceListVersion.isValidFromSet())
+		else
 		{
-			final Instant validFromDate = jsonPriceListVersion.getValidFrom() != null ? Instant.parse(jsonPriceListVersion.getValidFrom()) : null;
+			priceListVersionBuilder.description(existingRecord.getDescription());
+		}
+
+		//validFrom
+		if (jsonRequest.isValidFromSet())
+		{
+			final Instant validFromDate = jsonRequest.getValidFrom() != null ? Instant.parse(jsonRequest.getValidFrom()) : null;
 
 			if (validFromDate == null)
 			{
-				throw new AdempiereException("jsonPriceListVersion.getValidFrom() should never be null at this stage!")
+				throw new AdempiereException("jsonRequest.getValidFrom() should never be null at this stage!")
 						.appendParametersToMessage()
-						.setParameter("jsonPriceListVersion", jsonPriceListVersion);
+						.setParameter("jsonRequest", jsonRequest);
 			}
-
-			priceListVersionBuilder.validFrom(validFromDate);
+			else
+			{
+				priceListVersionBuilder.validFrom(validFromDate);
+			}
 		}
 		else
 		{
-			throw new AdempiereException("jsonPriceListVersion.getValidFrom() should never be null at this stage!")
-					.appendParametersToMessage()
-					.setParameter("jsonPriceListVersion", jsonPriceListVersion);
+			priceListVersionBuilder.validFrom(existingRecord.getValidFrom());
 		}
 
-		if (jsonPriceListVersion.isActiveSet())
+		//isActive
+		if (jsonRequest.isActiveSet())
 		{
-			final Boolean isActive = jsonPriceListVersion.getActive().equals("true");
+			final Boolean isActive = jsonRequest.getActive().equals("true");
 			priceListVersionBuilder.isActive(isActive);
 		}
 		else
 		{
-			throw new AdempiereException("jsonPriceListVersion.getActive() should never be null at this stage!")
-					.appendParametersToMessage()
-					.setParameter("jsonPriceListVersion", jsonPriceListVersion);
+			priceListVersionBuilder.isActive(existingRecord.getIsActive());
 		}
 
 		return priceListVersionBuilder.build();
@@ -209,10 +211,8 @@ public class PriceListRestService
 
 	@NonNull
 	private CreatePriceListVersionRequest syncJsonToCreatePriceListVersionRequest(
-			@NonNull final JsonUpsertPriceListVersionRequest jsonUpsertPriceListVersion)
+			@NonNull final JsonRequestPriceListVersion jsonUpsertPriceListVersion)
 	{
-		final CreatePriceListVersionRequest.CreatePriceListVersionRequestBuilder priceListVersionRequestBuilder = CreatePriceListVersionRequest.builder();
-
 		final OrgId orgId = retrieveOrgIdOrDefault(jsonUpsertPriceListVersion.getOrgCode());
 		final PriceListId priceListId = PriceListId.ofRepoId(Integer.parseInt(jsonUpsertPriceListVersion.getPriceListIdentifier()));
 
@@ -226,32 +226,53 @@ public class PriceListRestService
 					.setParameter("jsonUpsertPriceListVersion", jsonUpsertPriceListVersion);
 		}
 
-		priceListVersionRequestBuilder.orgId(orgId);
-
-		priceListVersionRequestBuilder.priceListId(priceListId);
-
-		priceListVersionRequestBuilder.validFrom(validFromDate);
-		priceListVersionRequestBuilder.isActive(isActive);
-
-		if (jsonUpsertPriceListVersion.isDescriptionSet())
-		{
-			priceListVersionRequestBuilder.description(jsonUpsertPriceListVersion.getDescription());
-		}
-		else
-		{
-			priceListVersionRequestBuilder.description(null);
-		}
-
-		return priceListVersionRequestBuilder.build();
+		return CreatePriceListVersionRequest.builder()
+				.orgId(orgId)
+				.priceListId(priceListId)
+				.description(jsonUpsertPriceListVersion.getDescription())
+				.validFrom(validFromDate)
+				.isActive(isActive)
+				.build();
 	}
 
-	@Nullable
-	private I_M_PriceList_Version getRecordOrNull(@NonNull final PriceListVersionId priceListVersionId)
+	@NonNull
+	private Optional<PriceListId> getPriceListIdOrNull(@NonNull final String identifier)
 	{
-		return queryBL
+		final I_M_PriceList record = queryBL
+				.createQueryBuilder(I_M_PriceList.class)
+				.filter(item -> item.getM_PriceList_ID() == Integer.parseInt(identifier))
+				.create()
+				.firstOnly(I_M_PriceList.class);
+
+		return record != null
+				? Optional.of(PriceListId.ofRepoId(record.getM_PriceList_ID()))
+				: Optional.empty();
+	}
+
+	@NonNull
+	private Optional<PriceListVersion> getPriceListVersionRecordOrNull(@NonNull final String identifier)
+	{
+		final I_M_PriceList_Version record = queryBL
 				.createQueryBuilder(I_M_PriceList_Version.class)
-				.addEqualsFilter(I_M_PriceList_Version.COLUMN_M_PriceList_Version_ID, priceListVersionId.getRepoId())
+				.filter(item -> item.getM_PriceList_Version_ID() == Integer.parseInt(identifier))
 				.create()
 				.firstOnly(I_M_PriceList_Version.class);
+
+		return record != null
+				? Optional.of(buildPriceListVersion(record))
+				: Optional.empty();
+	}
+
+	@NonNull
+	private PriceListVersion buildPriceListVersion(@NonNull final I_M_PriceList_Version record)
+	{
+		return PriceListVersion.builder()
+				.priceListVersionId(PriceListVersionId.ofRepoId(record.getM_PriceList_Version_ID()))
+				.priceListId(PriceListId.ofRepoId(record.getM_PriceList_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.description(record.getDescription())
+				.validFrom(TimeUtil.asInstant(record.getValidFrom()))
+				.isActive(record.isActive())
+				.build();
 	}
 }

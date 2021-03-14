@@ -33,6 +33,8 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
@@ -49,13 +51,20 @@ public class PriceListRepository
 		return toPriceListVersion(record);
 	}
 
-	@NonNull
-	public PriceListVersion updatePriceListVersion(@NonNull final PriceListVersion request)
+	public void updatePriceListVersion(@NonNull final PriceListVersion request)
 	{
 		final I_M_PriceList_Version record = buildPriceListVersion(request);
 		saveRecord(record);
+	}
 
-		return toPriceListVersion(record);
+	public void inactivatePriceListVersion(@NonNull final PriceListVersion priceListVersion)
+	{
+		final PriceListVersionId priceListVersionId = priceListVersion.getPriceListVersionId();
+		final Optional<I_M_PriceList_Version> existingRecord = getRecordOrNull(priceListVersionId);
+
+		existingRecord.ifPresent(i_m_priceList_version -> i_m_priceList_version.setIsActive(false));
+
+		saveRecord(existingRecord);
 	}
 
 	@NonNull
@@ -81,11 +90,7 @@ public class PriceListRepository
 	@NonNull
 	private I_M_PriceList_Version buildPriceListVersion(@NonNull final PriceListVersion request)
 	{
-		final I_M_PriceList_Version existingRecord = queryBL
-				.createQueryBuilder(I_M_PriceList_Version.class)
-				.filter(item -> item.getM_PriceList_Version_ID() == request.getPriceListVersionId().getRepoId())
-				.create()
-				.first();
+		final I_M_PriceList_Version existingRecord = getRecordOrNull(request.getPriceListVersionId()).get();
 
 		existingRecord.setAD_Org_ID(request.getOrgId().getRepoId());
 
@@ -101,6 +106,20 @@ public class PriceListRepository
 		}
 
 		return existingRecord;
+	}
+
+	@NonNull
+	private Optional<I_M_PriceList_Version> getRecordOrNull(@NonNull final PriceListVersionId priceListVersionId)
+	{
+		final I_M_PriceList_Version record = queryBL
+				.createQueryBuilder(I_M_PriceList_Version.class)
+				.filter(item -> item.getM_PriceList_Version_ID() == priceListVersionId.getRepoId())
+				.create()
+				.firstOnly(I_M_PriceList_Version.class);
+
+		return record != null
+				? Optional.of(record)
+				: Optional.empty();
 	}
 
 	@NonNull

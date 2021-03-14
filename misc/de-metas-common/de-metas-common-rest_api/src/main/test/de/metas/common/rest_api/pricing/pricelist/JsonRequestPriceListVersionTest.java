@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-public class JsonUpsertPriceListVersionRequestTest
+public class JsonRequestPriceListVersionTest
 {
 	private ObjectMapper objectMapper;
 
@@ -56,7 +56,7 @@ public class JsonUpsertPriceListVersionRequestTest
 	@Test
 	public void test() throws Exception
 	{
-		testSerializeDeserialize(createJsonUpsertPriceListVersionRequestBuilder()
+		testSerializeDeserialize(createJsonRequestPriceListVersionBuilder()
 										 .orgCode("test-code")
 										 .priceListIdentifier("ext-123")
 										 .description("test-description")
@@ -66,9 +66,9 @@ public class JsonUpsertPriceListVersionRequestTest
 										 .build());
 	}
 
-	@Builder(builderMethodName = "createJsonUpsertPriceListVersionRequestBuilder",
-			builderClassName = "JsonUpsertPriceListVersionRequestBuilder")
-	private JsonUpsertPriceListVersionRequest createJsonUpsertPriceListVersionRequest(
+	@Builder(builderMethodName = "createJsonRequestPriceListVersionBuilder",
+			builderClassName = "JsonRequestPriceListVersionBuilder")
+	private JsonRequestPriceListVersion createJsonRequestPriceListVersion(
 			final String priceListIdentifier,
 			final String orgCode,
 			final String validFrom,
@@ -77,25 +77,25 @@ public class JsonUpsertPriceListVersionRequestTest
 			final SyncAdvise syncAdvise
 	)
 	{
-		final JsonUpsertPriceListVersionRequest jsonUpsertPriceListVersionRequest = new JsonUpsertPriceListVersionRequest();
-		jsonUpsertPriceListVersionRequest.setOrgCode(orgCode);
-		jsonUpsertPriceListVersionRequest.setPriceListIdentifier(priceListIdentifier);
-		jsonUpsertPriceListVersionRequest.setDescription(description);
-		jsonUpsertPriceListVersionRequest.setValidFrom(validFrom);
-		jsonUpsertPriceListVersionRequest.setActive(active);
-		jsonUpsertPriceListVersionRequest.setSyncAdvise(syncAdvise);
+		final JsonRequestPriceListVersion jsonRequestPriceListVersion = new JsonRequestPriceListVersion();
+		jsonRequestPriceListVersion.setOrgCode(orgCode);
+		jsonRequestPriceListVersion.setPriceListIdentifier(priceListIdentifier);
+		jsonRequestPriceListVersion.setDescription(description);
+		jsonRequestPriceListVersion.setValidFrom(validFrom);
+		jsonRequestPriceListVersion.setActive(active);
+		jsonRequestPriceListVersion.setSyncAdvise(syncAdvise);
 
-		return jsonUpsertPriceListVersionRequest;
+		return jsonRequestPriceListVersion;
 	}
 
-	private void testSerializeDeserialize(final JsonUpsertPriceListVersionRequest obj) throws IOException
+	private void testSerializeDeserialize(final JsonRequestPriceListVersion obj) throws IOException
 	{
 		System.out.println("Object: " + obj);
 
 		final String json = objectMapper.writeValueAsString(obj);
 		System.out.println("Object->JSON: " + json);
 
-		final JsonUpsertPriceListVersionRequest objDeserialized = objectMapper.readValue(json, obj.getClass());
+		final JsonRequestPriceListVersion objDeserialized = objectMapper.readValue(json, obj.getClass());
 		System.out.println("Object deserialized: " + objDeserialized);
 		Assertions.assertThat(objDeserialized).isEqualTo(obj);
 	}

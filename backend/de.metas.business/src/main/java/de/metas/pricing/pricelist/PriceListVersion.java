@@ -38,13 +38,13 @@ import java.time.Instant;
 public class PriceListVersion
 {
 	@NonNull
-	PriceListVersionId priceListVersionId;
+	OrgId orgId;
 
 	@NonNull
 	PriceListId priceListId;
 
 	@NonNull
-	OrgId orgId;
+	PriceListVersionId priceListVersionId;
 
 	@Nullable
 	String description;
@@ -65,10 +65,10 @@ public class PriceListVersion
 			@NonNull final Boolean isActive)
 	{
 		this.orgId = orgId;
+		this.priceListId = priceListId;
 		this.priceListVersionId = priceListVersionId;
 		this.description = description;
 		this.validFrom = validFrom;
 		this.isActive = isActive;
-		this.priceListId = priceListId;
 	}
 }

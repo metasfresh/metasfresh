@@ -28,12 +28,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
 @Getter
 @ToString
 @EqualsAndHashCode
-public class JsonUpsertPriceListVersionRequest
+public class JsonRequestPriceListVersion
 {
 	@ApiModelProperty(required = true)
 	private String priceListIdentifier;
@@ -93,7 +91,7 @@ public class JsonUpsertPriceListVersionRequest
 
 	public void setSyncAdvise(final SyncAdvise syncAdvise)
 	{
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
+		this.syncAdvise = syncAdvise;
 		this.syncAdviseSet = true;
 	}
 }

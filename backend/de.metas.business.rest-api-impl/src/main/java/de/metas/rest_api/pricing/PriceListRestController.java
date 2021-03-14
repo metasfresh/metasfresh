@@ -24,7 +24,7 @@ package de.metas.rest_api.pricing;
 
 import de.metas.Profiles;
 import de.metas.common.bpartner.response.JsonResponseUpsertItem;
-import de.metas.common.rest_api.pricing.pricelist.JsonPriceListVersionRequest;
+import de.metas.common.rest_api.pricing.pricelist.JsonRequestPriceListVersionUpsert;
 import de.metas.common.rest_api.pricing.productprice.JsonProductPriceRequest;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
@@ -65,9 +65,9 @@ public class PriceListRestController
 			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
 	@PutMapping(path = "/priceListVersions", consumes = "application/json", produces = "application/json")
-	public ResponseEntity<JsonResponseUpsertItem> putPriceListVersions(@RequestBody @NonNull final JsonPriceListVersionRequest jsonPriceListVersionRequest)
+	public ResponseEntity<JsonResponseUpsertItem> putPriceListVersions(@RequestBody @NonNull final JsonRequestPriceListVersionUpsert request)
 	{
-		final JsonResponseUpsertItem jsonResponseUpsertItem = priceListRestService.putPriceListVersions(jsonPriceListVersionRequest);
+		final JsonResponseUpsertItem jsonResponseUpsertItem = priceListRestService.putPriceListVersions(request);
 		return ResponseEntity.ok(jsonResponseUpsertItem);
 	}
 

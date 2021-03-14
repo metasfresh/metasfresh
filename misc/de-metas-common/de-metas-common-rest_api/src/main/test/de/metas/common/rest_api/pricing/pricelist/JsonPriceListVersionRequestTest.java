@@ -56,7 +56,7 @@ public class JsonPriceListVersionRequestTest
 	@Test
 	public void test() throws Exception
 	{
-		final JsonUpsertPriceListVersionRequest jsonUpsertPriceListVersionRequest = createJsonUpsertPriceListVersionRequestBuilder()
+		final JsonRequestPriceListVersion jsonRequestPriceListVersion = createJsonRequestPriceListVersionBuilder()
 				.orgCode("test-code")
 				.priceListIdentifier("ext-123")
 				.description("test-description")
@@ -65,28 +65,31 @@ public class JsonPriceListVersionRequestTest
 				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 				.build();
 
-		testSerializeDeserialize(createJsonPriceListVersionRequestBuilder()
+		testSerializeDeserialize(createJsonRequestPriceListVersionUpsertBuilder()
 										 .priceListVersionIdentifier("test")
-										 .jsonUpsertPriceListVersionRequest(jsonUpsertPriceListVersionRequest)
+										 .jsonRequestPriceListVersion(jsonRequestPriceListVersion)
+										 .syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 										 .build());
 	}
 
-	@Builder(builderMethodName = "createJsonPriceListVersionRequestBuilder",
-			builderClassName = "JsonPriceListVersionRequestBuilder")
-	private JsonPriceListVersionRequest createJsonPriceListVersionRequest(
+	@Builder(builderMethodName = "createJsonRequestPriceListVersionUpsertBuilder",
+			builderClassName = "JsonRequestPriceListVersionUpsertBuilder")
+	private JsonRequestPriceListVersionUpsert createJsonRequestPriceListVersionUpsert(
 			final String priceListVersionIdentifier,
-			final JsonUpsertPriceListVersionRequest jsonUpsertPriceListVersionRequest
+			final JsonRequestPriceListVersion jsonRequestPriceListVersion,
+			final SyncAdvise syncAdvise
 	)
 	{
-		return JsonPriceListVersionRequest.builder()
+		return JsonRequestPriceListVersionUpsert.builder()
 				.priceListVersionIdentifier(priceListVersionIdentifier)
-				.jsonUpsertPriceListVersionRequest(jsonUpsertPriceListVersionRequest)
+				.jsonRequestPriceListVersion(jsonRequestPriceListVersion)
+				.syncAdvise(syncAdvise)
 				.build();
 	}
 
-	@Builder(builderMethodName = "createJsonUpsertPriceListVersionRequestBuilder",
-			builderClassName = "JsonUpsertPriceListVersionRequestBuilder")
-	private JsonUpsertPriceListVersionRequest createJsonUpsertPriceListVersionRequest(
+	@Builder(builderMethodName = "createJsonRequestPriceListVersionBuilder",
+			builderClassName = "JsonRequestPriceListVersionBuilder")
+	private JsonRequestPriceListVersion createJsonRequestPriceListVersion(
 			final String priceListIdentifier,
 			final String orgCode,
 			final String validFrom,
@@ -95,25 +98,25 @@ public class JsonPriceListVersionRequestTest
 			final SyncAdvise syncAdvise
 	)
 	{
-		final JsonUpsertPriceListVersionRequest jsonUpsertPriceListVersionRequest = new JsonUpsertPriceListVersionRequest();
-		jsonUpsertPriceListVersionRequest.setOrgCode(orgCode);
-		jsonUpsertPriceListVersionRequest.setPriceListIdentifier(priceListIdentifier);
-		jsonUpsertPriceListVersionRequest.setDescription(description);
-		jsonUpsertPriceListVersionRequest.setValidFrom(validFrom);
-		jsonUpsertPriceListVersionRequest.setActive(active);
-		jsonUpsertPriceListVersionRequest.setSyncAdvise(syncAdvise);
+		final JsonRequestPriceListVersion jsonRequestPriceListVersion = new JsonRequestPriceListVersion();
+		jsonRequestPriceListVersion.setOrgCode(orgCode);
+		jsonRequestPriceListVersion.setPriceListIdentifier(priceListIdentifier);
+		jsonRequestPriceListVersion.setDescription(description);
+		jsonRequestPriceListVersion.setValidFrom(validFrom);
+		jsonRequestPriceListVersion.setActive(active);
+		jsonRequestPriceListVersion.setSyncAdvise(syncAdvise);
 
-		return jsonUpsertPriceListVersionRequest;
+		return jsonRequestPriceListVersion;
 	}
 
-	private void testSerializeDeserialize(final JsonPriceListVersionRequest obj) throws IOException
+	private void testSerializeDeserialize(final JsonRequestPriceListVersionUpsert obj) throws IOException
 	{
 		System.out.println("Object: " + obj);
 
 		final String json = objectMapper.writeValueAsString(obj);
 		System.out.println("Object->JSON: " + json);
 
-		final JsonPriceListVersionRequest objDeserialized = objectMapper.readValue(json, obj.getClass());
+		final JsonRequestPriceListVersionUpsert objDeserialized = objectMapper.readValue(json, obj.getClass());
 		System.out.println("Object deserialized: " + objDeserialized);
 		Assertions.assertThat(objDeserialized).isEqualTo(obj);
 	}
