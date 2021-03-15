@@ -473,7 +473,6 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				}
 
 				saveRecord(productRecord);
-				//product.setId(extractPPOrderRoutingProductId(productRecord));
 			}
 
 			//
