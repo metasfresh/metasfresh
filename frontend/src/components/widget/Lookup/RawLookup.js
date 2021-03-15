@@ -159,7 +159,9 @@ export class RawLookup extends Component {
 
     if (select && select.key === 'NEW') {
       this.handleAddNew();
-
+      return;
+    } else if (select.key === 'SEARCH') {
+      this.handleAdvSearch();
       return;
     } else if (select.key === null) {
       selected = null;
@@ -240,6 +242,35 @@ export class RawLookup extends Component {
     );
   }
 
+  handleAdvSearch = () => {
+    const {
+      dispatch,
+      advSearchCaption,
+      advSearchWindowId,
+      filterWidget,
+      parameterName,
+      mainProperty,
+      windowType,
+      dataId,
+      item,
+    } = this.props;
+
+    this.handleBlur();
+
+    dispatch(
+      openModal({
+        title: advSearchCaption,
+        windowId: advSearchWindowId,
+        modalType: 'window',
+        dataId: 'SEARCH',
+        triggerField: filterWidget ? parameterName : mainProperty[0].field,
+        parentWindowId: windowType,
+        parentDocumentId: dataId,
+        parentFieldId: item.field,
+      })
+    );
+  };
+
   handleFocus(mouse = true) {
     const { mandatory } = this.props;
 
@@ -275,6 +306,8 @@ export class RawLookup extends Component {
       isModal,
       newRecordCaption,
       mandatory,
+      advSearchCaption,
+      advSearchWindowId,
     } = this.props;
 
     // -- shape placeholder with the clearValueText in case this exists
@@ -333,8 +366,12 @@ export class RawLookup extends Component {
         list = values;
 
         newState.forceEmpty = false;
-        newState.selected = values[0];
+        newState.selected = advSearchWindowId ? values[1] : values[0];
       }
+
+      // we inject the advanced search entry if we have a advSearchWindowId
+      advSearchWindowId &&
+        list.unshift({ key: 'SEARCH', caption: advSearchCaption });
 
       if (!mandatory && placeholder) {
         list.push({
@@ -590,6 +627,8 @@ RawLookup.propTypes = {
   disabled: PropTypes.bool,
   tabIndex: PropTypes.number,
   idValue: PropTypes.string,
+  advSearchCaption: PropTypes.string,
+  advSearchWindowId: PropTypes.string,
 };
 
 export default connect(mapStateToProps)(RawLookup);

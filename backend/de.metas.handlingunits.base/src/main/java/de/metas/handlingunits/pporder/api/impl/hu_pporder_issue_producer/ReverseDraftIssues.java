@@ -1,5 +1,7 @@
 package de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer;
 
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 
@@ -45,7 +47,8 @@ public class ReverseDraftIssues
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient IPPOrderProductAttributeDAO ppOrderProductAttributeDAO = Services.get(IPPOrderProductAttributeDAO.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	
+	private final transient SourceHUsService sourceHuService = SourceHUsService.get();
+
 	public void reverseDraftIssue(@NonNull final I_PP_Order_Qty candidate)
 	{
 		if (candidate.isProcessed())
@@ -67,6 +70,9 @@ public class ReverseDraftIssues
 		//
 		// Delete the candidate
 		huPPOrderQtyDAO.delete(candidate);
+
+		// Make sure the HU is marked as source
+		sourceHuService.addSourceHuMarker(HuId.ofRepoId(huToIssue.getM_HU_ID()));
 	}
 
 }
