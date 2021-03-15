@@ -83,7 +83,7 @@ import lombok.NonNull;
  */
 class ClientSetup
 {
-	public static final ClientSetup newInstance(final Properties ctx)
+	public static ClientSetup newInstance(final Properties ctx)
 	{
 		return new ClientSetup(ctx);
 	}
