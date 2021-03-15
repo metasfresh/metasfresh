@@ -188,7 +188,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			return this;
 		}
 
-		int getRequiredSSCC18Count()
+		public int getRequiredSSCC18Count()
 		{
 			if (requiredSSCC18Count != null)
 			{
