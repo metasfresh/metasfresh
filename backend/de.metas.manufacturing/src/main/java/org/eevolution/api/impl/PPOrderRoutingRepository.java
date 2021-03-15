@@ -12,8 +12,6 @@ import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
-import de.metas.material.planning.pporder.PPRoutingProduct;
-import de.metas.material.planning.pporder.PPRoutingProductId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -48,7 +46,6 @@ import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.I_PP_Order_NodeNext;
 import org.eevolution.model.I_PP_Order_Node_Product;
 import org.eevolution.model.I_PP_Order_Workflow;
-import org.eevolution.model.I_PP_WF_Node_Product;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
@@ -122,15 +119,15 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	private PPOrderRoutingProduct toPPOrderRoutingProduct(final I_PP_Order_Node_Product product)
 	{
 		final PPOrderId orderId = PPOrderId.ofRepoId(product.getPP_Order_ID());
-		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId,product.getPP_Order_Node_ID());
-		final PPOrderRoutingProductId id = PPOrderRoutingProductId.ofRepoId(activityId,product.getPP_Order_Node_Product_ID());
-			return PPOrderRoutingProduct.builder()
-					.id(id)
-					.productId(ProductId.ofRepoId(product.getM_Product_ID()))
-					.qty(product.getQty())
-					.subcontracting(product.isSubcontracting())
-					.seqNo(product.getSeqNo())
-					.build();
+		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, product.getPP_Order_Node_ID());
+		final PPOrderRoutingProductId id = PPOrderRoutingProductId.ofRepoId(activityId, product.getPP_Order_Node_Product_ID());
+		return PPOrderRoutingProduct.builder()
+				.id(id)
+				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
+				.qty(product.getQty())
+				.subcontracting(product.isSubcontracting())
+				.seqNo(product.getSeqNo())
+				.build();
 	}
 
 	@Override
