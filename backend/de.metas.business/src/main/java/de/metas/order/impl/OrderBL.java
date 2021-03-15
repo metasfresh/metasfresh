@@ -124,7 +124,7 @@ public class OrderBL implements IOrderBL
 		final boolean overridePricingSystem = overridePricingSystemAndDontThrowExIfNotFound;
 		if (overridePricingSystem || previousPricingSystemId <= 0)
 		{
-			final BPartnerLocationId bpartnerAndLocation = getShipToLocationIdOrNull(order);
+			final BPartnerLocationId bpartnerAndLocation = extractBPartnerLocationOrNull(order);
 			if (bpartnerAndLocation == null)
 			{
 				logger.debug("Order {} has no C_BPartner_ID. Doing nothing", order);
@@ -171,7 +171,7 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		final BPartnerLocationId bpartnerAndLocationId = getShipToLocationIdOrNull(order);
+		final BPartnerLocationId bpartnerAndLocationId = extractBPartnerLocationOrNull(order);
 		if (bpartnerAndLocationId == null)
 		{
 			logger.debug("order {} has no C_BPartner_Location_ID. Doing nothing", order);
@@ -199,7 +199,7 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		final BPartnerLocationId bpartnerAndLocationId = getShipToLocationIdOrNull(order);
+		final BPartnerLocationId bpartnerAndLocationId = extractBPartnerLocationOrNull(order);
 		if (bpartnerAndLocationId == null)
 		{
 			return;
@@ -236,7 +236,7 @@ public class OrderBL implements IOrderBL
 		}
 
 		final PricingSystemId pricingSystemId = pricingSystemIdOverride != null ? pricingSystemIdOverride : PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
-		final BPartnerLocationId bpartnerAndLocationId = getShipToLocationIdOrNull(order);
+		final BPartnerLocationId bpartnerAndLocationId = extractBPartnerLocationOrNull(order);
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 		return retrievePriceListIdOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
 	}
