@@ -5,7 +5,7 @@ UPDATE AD_Element_Trl SET PrintName='Alberta-Artikeldaten',Updated=TO_TIMESTAMP(
 
 -- 2021-03-15T13:57:51.957Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'de_CH') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'de_CH')
 ;
 
 -- 2021-03-15T13:58:06.259Z
@@ -15,12 +15,12 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', PrintName='Alberta-Artikeldaten',Upd
 
 -- 2021-03-15T13:58:06.263Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'de_DE') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'de_DE')
 ;
 
 -- 2021-03-15T13:58:06.301Z
 -- URL zum Konzept
-/* DDL */  select update_ad_element_on_ad_element_trl_update(578816,'de_DE') 
+/* DDL */  select update_ad_element_on_ad_element_trl_update(578816,'de_DE')
 ;
 
 -- 2021-03-15T13:58:06.302Z
@@ -35,7 +35,7 @@ UPDATE AD_Element_Trl SET PrintName='Alberta article data',Updated=TO_TIMESTAMP(
 
 -- 2021-03-15T13:58:23.529Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'en_US')
 ;
 
 -- 2021-03-15T13:58:26.428Z
@@ -45,7 +45,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-03-15 14:5
 
 -- 2021-03-15T13:58:26.429Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'en_US')
 ;
 
 -- 2021-03-15T13:58:43.779Z
@@ -55,7 +55,7 @@ UPDATE AD_Element_Trl SET PrintName='Alberta-Artikeldaten',Updated=TO_TIMESTAMP(
 
 -- 2021-03-15T13:58:43.783Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'nl_NL') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'nl_NL')
 ;
 
 -- 2021-03-15T14:04:52.899Z
@@ -65,7 +65,7 @@ UPDATE AD_Element_Trl SET Name='Alberta-Artikeldaten',Updated=TO_TIMESTAMP('2021
 
 -- 2021-03-15T14:04:52.903Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'de_CH') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'de_CH')
 ;
 
 -- 2021-03-15T14:05:00.964Z
@@ -75,12 +75,12 @@ UPDATE AD_Element_Trl SET Name='Alberta-Artikeldaten',Updated=TO_TIMESTAMP('2021
 
 -- 2021-03-15T14:05:00.968Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'de_DE') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'de_DE')
 ;
 
 -- 2021-03-15T14:05:00.994Z
 -- URL zum Konzept
-/* DDL */  select update_ad_element_on_ad_element_trl_update(578816,'de_DE') 
+/* DDL */  select update_ad_element_on_ad_element_trl_update(578816,'de_DE')
 ;
 
 -- 2021-03-15T14:05:00.996Z
@@ -130,7 +130,7 @@ UPDATE AD_Element_Trl SET Name='Alberta article data',Updated=TO_TIMESTAMP('2021
 
 -- 2021-03-15T14:05:09.096Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'en_US')
 ;
 
 -- 2021-03-15T14:05:21.238Z
@@ -140,7 +140,7 @@ UPDATE AD_Element_Trl SET Name='Alberta-Artikeldaten',Updated=TO_TIMESTAMP('2021
 
 -- 2021-03-15T14:05:21.241Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'nl_NL') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578816,'nl_NL')
 ;
 
 -- 2021-03-15T14:06:52.558Z
@@ -150,7 +150,7 @@ UPDATE AD_Element_Trl SET Name='Alberta-Therapien', PrintName='Alberta-Therapien
 
 -- 2021-03-15T14:06:52.561Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578829,'nl_NL') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578829,'nl_NL')
 ;
 
 -- 2021-03-15T14:07:03.508Z
@@ -160,12 +160,12 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Alberta-Therapien', PrintName=
 
 -- 2021-03-15T14:07:03.511Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578829,'de_DE') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578829,'de_DE')
 ;
 
 -- 2021-03-15T14:07:03.520Z
 -- URL zum Konzept
-/* DDL */  select update_ad_element_on_ad_element_trl_update(578829,'de_DE') 
+/* DDL */  select update_ad_element_on_ad_element_trl_update(578829,'de_DE')
 ;
 
 -- 2021-03-15T14:07:03.520Z
@@ -215,7 +215,7 @@ UPDATE AD_Element_Trl SET Name='Alberta-Therapien', PrintName='Alberta-Therapien
 
 -- 2021-03-15T14:07:10.638Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578829,'de_CH') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578829,'de_CH')
 ;
 
 -- 2021-03-15T14:07:41.259Z
@@ -225,7 +225,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Alberta therapies', PrintName=
 
 -- 2021-03-15T14:07:41.260Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578829,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578829,'en_US')
 ;
 
 -- 2021-03-15T14:08:22.671Z
@@ -235,7 +235,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Billable Alberta therapies', P
 
 -- 2021-03-15T14:08:22.674Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578831,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578831,'en_US')
 ;
 
 -- 2021-03-15T14:09:00.580Z
@@ -245,7 +245,7 @@ UPDATE AD_Element_Trl SET Name='Abrechenbare Alberta-Therapien', PrintName='Abre
 
 -- 2021-03-15T14:09:00.580Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578831,'nl_NL') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578831,'nl_NL')
 ;
 
 -- 2021-03-15T14:09:12.367Z
@@ -255,12 +255,12 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Abrechenbare Alberta-Therapien
 
 -- 2021-03-15T14:09:12.368Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578831,'de_DE') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578831,'de_DE')
 ;
 
 -- 2021-03-15T14:09:12.372Z
 -- URL zum Konzept
-/* DDL */  select update_ad_element_on_ad_element_trl_update(578831,'de_DE') 
+/* DDL */  select update_ad_element_on_ad_element_trl_update(578831,'de_DE')
 ;
 
 -- 2021-03-15T14:09:12.373Z
@@ -310,7 +310,7 @@ UPDATE AD_Element_Trl SET Name='Abrechenbare Alberta-Therapien', PrintName='Abre
 
 -- 2021-03-15T14:09:23.128Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578831,'de_CH') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578831,'de_CH')
 ;
 
 -- 2021-03-15T14:11:34.615Z
@@ -320,7 +320,7 @@ UPDATE AD_Element_Trl SET Name='Abrechenbare Alberta-Therapien', PrintName='Abre
 
 -- 2021-03-15T14:11:34.617Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578825,'de_CH') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578825,'de_CH')
 ;
 
 -- 2021-03-15T14:12:24.152Z
@@ -330,12 +330,12 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Alberta-Verpackungseinheiten',
 
 -- 2021-03-15T14:12:24.154Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578825,'de_DE') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578825,'de_DE')
 ;
 
 -- 2021-03-15T14:12:24.163Z
 -- URL zum Konzept
-/* DDL */  select update_ad_element_on_ad_element_trl_update(578825,'de_DE') 
+/* DDL */  select update_ad_element_on_ad_element_trl_update(578825,'de_DE')
 ;
 
 -- 2021-03-15T14:12:24.164Z
@@ -385,7 +385,7 @@ UPDATE AD_Element_Trl SET Name='Alberta-Verpackungseinheiten', PrintName='Albert
 
 -- 2021-03-15T14:12:31.448Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578825,'de_CH') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578825,'de_CH')
 ;
 
 -- 2021-03-15T14:12:40.862Z
@@ -395,7 +395,7 @@ UPDATE AD_Element_Trl SET Name='Alberta-Verpackungseinheiten', PrintName='Albert
 
 -- 2021-03-15T14:12:40.864Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578825,'nl_NL') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578825,'nl_NL')
 ;
 
 -- 2021-03-15T14:13:19.694Z
@@ -405,7 +405,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Alberta packaging units', Prin
 
 -- 2021-03-15T14:13:19.697Z
 -- URL zum Konzept
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578825,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578825,'en_US')
 ;
 
 -- 2021-03-15T14:20:37.908Z
@@ -418,3 +418,32 @@ UPDATE AD_UI_Element SET Name='Therapy1',Updated=TO_TIMESTAMP('2021-03-15 15:20:
 UPDATE AD_UI_Element SET Name='Therapy',Updated=TO_TIMESTAMP('2021-03-15 15:21:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=579773
 ;
 
+-- 2021-03-15T14:36:56.505Z
+-- URL zum Konzept
+UPDATE AD_Reference_Trl SET IsTranslated='Y', Name='Therapie',Updated=TO_TIMESTAMP('2021-03-15 15:36:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Reference_ID=541282
+;
+
+-- 2021-03-15T14:37:03.808Z
+-- URL zum Konzept
+UPDATE AD_Reference_Trl SET Name='Therapie',Updated=TO_TIMESTAMP('2021-03-15 15:37:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Reference_ID=541282
+;
+
+-- 2021-03-15T14:37:09.925Z
+-- URL zum Konzept
+UPDATE AD_Reference_Trl SET Name='Therapie',Updated=TO_TIMESTAMP('2021-03-15 15:37:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Reference_ID=541282
+;
+
+-- 2021-03-15T14:44:57.375Z
+-- URL zum Konzept
+UPDATE AD_Reference_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-03-15 15:44:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Reference_ID=541282
+;
+
+-- 2021-03-15T14:52:22.136Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET Name='M_Product_AlbertaTherapy',Updated=TO_TIMESTAMP('2021-03-15 15:52:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=579773
+;
+
+-- 2021-03-15T14:52:53.319Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET Name='Therapy',Updated=TO_TIMESTAMP('2021-03-15 15:52:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=579773
+;
