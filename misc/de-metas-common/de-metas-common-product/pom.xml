@@ -51,11 +51,5 @@
             <artifactId>de-metas-common-rest_api</artifactId>
             <version>${metasfresh-common.version}</version>
         </dependency>
-        <dependency>
-            <groupId>de.metas.util</groupId>
-            <artifactId>de.metas.util.web</artifactId>
-            <version>${metasfresh.version}</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 </project>

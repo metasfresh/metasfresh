@@ -5,10 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.JsonErrorItem;
-import de.metas.rest_api.utils.JsonErrors;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
@@ -46,15 +43,4 @@ public class JsonGetProductsResponse
 	@JsonProperty("products")
 	@Singular
 	List<JsonProduct> products;
-
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	@JsonProperty("error")
-	JsonErrorItem error;
-
-	public static JsonGetProductsResponse error(@NonNull final Throwable throwable, @NonNull final String adLanguage)
-	{
-		return builder()
-				.error(JsonErrors.ofThrowable(throwable, adLanguage))
-				.build();
-	}
 }

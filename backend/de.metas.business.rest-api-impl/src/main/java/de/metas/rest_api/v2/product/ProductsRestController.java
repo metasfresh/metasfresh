@@ -29,6 +29,7 @@ import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.externlasystem.dto.ExternalSystemService;
+import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v2.product.command.GetProductsCommand;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
@@ -38,7 +39,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -78,7 +78,7 @@ public class ProductsRestController
 	}
 
 	@GetMapping
-	public ResponseEntity<JsonGetProductsResponse> getProducts(
+	public ResponseEntity<?> getProducts(
 			@RequestParam(value = SINCE, required = false) @Nullable final Instant since,
 			@RequestParam(value = AD_PINSTANCE_ID, required = false) @Nullable final Integer pInstanceId,
 			@RequestParam(value = EXTERNAL_SYSTEM_CONFIG_TYPE, required = false) @Nullable final String externalSystemConfigType,
@@ -113,11 +113,10 @@ public class ProductsRestController
 		}
 		catch (final Exception ex)
 		{
-			logger.debug("Got exception", ex);
+			logger.error(ex.getMessage(), ex);
 
-			return ResponseEntity
-					.status(HttpStatus.NOT_FOUND)
-					.body(JsonGetProductsResponse.error(ex, adLanguage));
+			return ResponseEntity.badRequest()
+					.body(JsonErrors.ofThrowable(ex, adLanguage));
 		}
 	}
 
