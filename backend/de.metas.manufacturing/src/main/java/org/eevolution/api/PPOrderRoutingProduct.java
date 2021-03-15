@@ -23,6 +23,7 @@
 package org.eevolution.api;
 
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -45,9 +46,9 @@ public final class PPOrderRoutingProduct
 
 	private final boolean subcontracting;
 	@Nullable
-	private BigDecimal qty;
+	private Quantity qty;
 	@Nullable
-	private Integer seqNo;
+	private int seqNo;
 	@NonNull
 	private ProductId productId;
 

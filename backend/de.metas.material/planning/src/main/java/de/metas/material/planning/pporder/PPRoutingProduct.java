@@ -23,7 +23,9 @@
 package de.metas.material.planning.pporder;
 
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -33,12 +35,11 @@ import java.math.BigDecimal;
 @Builder(toBuilder = true)
 public class PPRoutingProduct
 {
-	PPRoutingProductId id;
-	PPRoutingActivityId activityId;
+	@NonNull PPRoutingProductId id;
+	@NonNull PPRoutingActivityId activityId;
 	boolean subcontracting;
-	@Nullable
-	BigDecimal qty;
-	ProductId productId;
-	Integer seqNo;
+	@Nullable Quantity qty;
+	@NonNull ProductId productId;
+	int seqNo;
 
 }

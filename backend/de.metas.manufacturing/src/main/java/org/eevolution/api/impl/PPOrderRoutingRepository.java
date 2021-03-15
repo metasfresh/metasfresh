@@ -12,6 +12,7 @@ import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -60,6 +61,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 {
+	public final IProductBL productBL = Services.get(IProductBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -121,10 +123,11 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		final PPOrderId orderId = PPOrderId.ofRepoId(product.getPP_Order_ID());
 		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, product.getPP_Order_Node_ID());
 		final PPOrderRoutingProductId id = PPOrderRoutingProductId.ofRepoId(activityId, product.getPP_Order_Node_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
 		return PPOrderRoutingProduct.builder()
 				.id(id)
-				.productId(ProductId.ofRepoId(product.getM_Product_ID()))
-				.qty(product.getQty())
+				.productId(productId)
+				.qty(Quantity.of(product.getQty(), productBL.getStockUOM(productId)))
 				.subcontracting(product.isSubcontracting())
 				.seqNo(product.getSeqNo())
 				.build();
@@ -519,11 +522,13 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		InterfaceWrapperHelper.deleteAll(activityRecordsToDelete);
 	}
 
-
 	private void updateOrderNodeProductRecord(final I_PP_Order_Node_Product record, final PPOrderRoutingProduct product)
 	{
 		record.setM_Product_ID(product.getProductId().getRepoId());
-		record.setQty(product.getQty());
+		if (product.getQty() != null)
+		{
+			record.setQty(product.getQty().toBigDecimal());
+		}
 		record.setSeqNo(product.getSeqNo());
 		record.setIsSubcontracting(product.isSubcontracting());
 	}
@@ -557,7 +562,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	private PPOrderRoutingProductId extractPPOrderRoutingProductId(final I_PP_Order_Node_Product record)
 	{
 		final PPOrderId orderId = PPOrderId.ofRepoId(record.getPP_Order_ID());
-		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId,record.getPP_Order_Node_ID());
+		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, record.getPP_Order_Node_ID());
 		return PPOrderRoutingProductId.ofRepoId(activityId, record.getPP_Order_Node_Product_ID());
 	}
 

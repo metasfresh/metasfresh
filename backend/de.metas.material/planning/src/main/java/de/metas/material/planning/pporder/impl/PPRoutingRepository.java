@@ -18,9 +18,11 @@ import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.material.planning.pporder.PPRoutingProduct;
 import de.metas.material.planning.pporder.PPRoutingProductId;
 import de.metas.material.planning.pporder.PPRoutingType;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -31,13 +33,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_WF_NodeNext;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
-import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.I_PP_WF_Node_Asset;
 import org.eevolution.model.I_PP_WF_Node_Product;
 import org.slf4j.Logger;
@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -80,6 +81,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class PPRoutingRepository implements IPPRoutingRepository
 {
 	private static final Logger logger = LogManager.getLogger(PPRoutingRepository.class);
+	public final IProductBL productBL = Services.get(IProductBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
@@ -112,7 +114,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 
 		final List<I_AD_WF_Node> activityRecords = retrieveNodes(routingRecord);
 		final Set<PPRoutingActivityId> activityIds = activityRecords.stream().map(r -> PPRoutingActivityId.ofAD_WF_Node_ID(routingId, r.getAD_WF_Node_ID())).collect(ImmutableSet.toImmutableSet());
-		final List<I_PP_WF_Node_Product> productRecords = retrieveProducts(routingRecord);
+		final List<I_PP_WF_Node_Product> productRecords = retrieveProducts(activityIds);
 		final ImmutableSetMultimap<PPRoutingActivityId, PPRoutingActivityId> nextActivityIdByActivityId = retrieveNextActivityIdsIndexedByActivityId(activityIds);
 
 		final ImmutableList<PPRoutingActivity> activities = activityRecords
@@ -152,7 +154,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.id(PPRoutingProductId.ofRepoId(productRecord.getPP_WF_Node_Product_ID()))
 				.activityId(nodeIdToActivityIds.get(productRecord.getAD_WF_Node_ID()))
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
-				.qty(productRecord.getQty())
+				.qty(Quantity.of(productRecord.getQty(), productBL.getStockUOM(productRecord.getM_Product_ID())))
 				.subcontracting(productRecord.isSubcontracting())
 				.seqNo(productRecord.getSeqNo())
 				.build();
@@ -333,20 +335,17 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.list();
 	}
 
-	private List<I_PP_WF_Node_Product> retrieveProducts(@NonNull final I_AD_Workflow routingRecord)
+	private List<I_PP_WF_Node_Product> retrieveProducts(final Set<PPRoutingActivityId> activityIds)
 	{
-		final PPRoutingId routingId = PPRoutingId.ofRepoId(routingRecord.getAD_Workflow_ID());
-
-		final IQuery<I_AD_WF_Node> orderNodeQuery = queryBL.createQueryBuilder(I_AD_WF_Node.class, routingRecord)
-				.addEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_Workflow_ID, routingId).create();
+		if (Check.isEmpty(activityIds))
+		{
+			return Collections.emptyList();
+		}
 		return queryBL
 				.createQueryBuilder(I_PP_WF_Node_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addInSubQueryFilter()
-				.matchingColumnNames(I_AD_WF_Node.COLUMNNAME_AD_WF_Node_ID, I_PP_WF_Node_Product.COLUMNNAME_AD_WF_Node_ID)
-				.subQuery(orderNodeQuery)
-				.end()
+				.addInArrayFilter(I_PP_WF_Node_Product.COLUMNNAME_AD_WF_Node_ID, activityIds)
 				.create()
 				.list();
 	}
