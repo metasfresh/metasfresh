@@ -26,12 +26,12 @@ import de.metas.camel.alberta.ProcessorHelper;
 import de.metas.camel.alberta.product.processor.PushProductsProcessor;
 import de.metas.camel.alberta.product.processor.RetrieveProductsProcessor;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
-import de.metas.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.time.Instant;
 
@@ -82,7 +82,7 @@ public class PushProductsRoute extends RouteBuilder
 	{
 		final JsonGetProductsResponse response = exchange.getIn().getBody(JsonGetProductsResponse.class);
 
-		if (response == null || Check.isEmpty(response.getProducts()))
+		if (response == null || CollectionUtils.isEmpty(response.getProducts()))
 		{
 			throw new RuntimeException("Empty response from metasfresh!");
 		}

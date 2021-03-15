@@ -26,12 +26,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.alberta.JsonAlbertaPackagingUnit;
 import de.metas.common.product.v2.response.alberta.JsonAlbertaProductInfo;
-import de.metas.util.Check;
 import io.swagger.client.model.Article;
 import io.swagger.client.model.PackagingUnit;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -56,7 +56,7 @@ public class PushProductsProcessor implements Processor
 
 	private Optional<Article> jsonProductToArticle(@NonNull final JsonProduct product)
 	{
-		if (product.getAlbertaProductInfo() == null || Check.isEmpty(product.getAlbertaProductInfo().getPackagingUnits()))
+		if (product.getAlbertaProductInfo() == null || CollectionUtils.isEmpty(product.getAlbertaProductInfo().getPackagingUnits()))
 		{
 			return Optional.empty();
 		}
@@ -94,7 +94,7 @@ public class PushProductsProcessor implements Processor
 	@Nullable
 	private List<PackagingUnit> toPackageUnitList(@NonNull final List<JsonAlbertaPackagingUnit> albertaPackagingUnits)
 	{
-		if (Check.isEmpty(albertaPackagingUnits))
+		if (CollectionUtils.isEmpty(albertaPackagingUnits))
 		{
 			return null;
 		}
