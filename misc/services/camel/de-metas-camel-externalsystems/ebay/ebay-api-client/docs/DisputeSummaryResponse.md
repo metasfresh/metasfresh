@@ -1,6 +1,10 @@
+
+
 # DisputeSummaryResponse
 
+This type defines the base response payload of the getPaymentDisputeSummaries method. Each payment dispute that matches the input criteria is returned under the paymentDisputeSummaries array.
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **href** | **String** | The URI of the getPaymentDisputeSummaries call request that produced the current page of the result set. |  [optional]
@@ -10,3 +14,6 @@ Name | Type | Description | Notes
 **paymentDisputeSummaries** | [**List&lt;PaymentDisputeSummary&gt;**](PaymentDisputeSummary.md) | Each payment dispute that matches the input criteria is returned under this array. If no payment disputes are found, an empty array is returned. |  [optional]
 **prev** | **String** | The getPaymentDisputeSummaries call URI to use if you wish to view the previous page of the result set. For example, the following URI returns records 1 thru 10 from the collection of payment disputes: path/payment_dispute_summary?limit&#x3D;10&amp;amp;offset&#x3D;0 This field is only returned if there is a previous page of results to view based on the current input criteria. |  [optional]
 **total** | **Integer** | This integer value is the total number of payment disputes that matched the input criteria. If the total number of entries exceeds the value that was set for limit in the request payload, you will have to make multiple API calls to see all pages of the results set. This field is returned even if it is 0. |  [optional]
+
+
+

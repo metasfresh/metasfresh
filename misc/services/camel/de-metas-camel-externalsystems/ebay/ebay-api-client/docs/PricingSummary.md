@@ -1,6 +1,10 @@
+
+
 # PricingSummary
 
+This type contains a summary of cumulative costs and charges for all line items of an order, including item price, price adjustments, sales taxes, delivery costs, and order discounts.
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **adjustment** | [**Amount**](Amount.md) |  |  [optional]
@@ -11,3 +15,6 @@ Name | Type | Description | Notes
 **priceSubtotal** | [**Amount**](Amount.md) |  |  [optional]
 **tax** | [**Amount**](Amount.md) |  |  [optional]
 **total** | [**Amount**](Amount.md) |  |  [optional]
+
+
+

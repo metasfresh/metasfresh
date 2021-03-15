@@ -1,6 +1,10 @@
+
+
 # OrderSearchPagedCollection
 
+This type contains the specifications for the collection of orders that match the search or filter criteria of a getOrders call. The collection is grouped into a result set, and based on the query parameters that are set (including the limit and offset parameters), the result set may included multiple pages, but only one page of the result set can be viewed at a time.
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **href** | **String** | The URI of the getOrders call request that produced the current page of the result set. |  [optional]
@@ -11,3 +15,6 @@ Name | Type | Description | Notes
 **prev** | **String** | The getOrders call URI for the previous result set. For example, the following URI returns orders 21 thru 30 from the collection of orders: path/order?limit&#x3D;10&amp;amp;offset&#x3D;20 This field is only returned if there is a previous page of results to view based on the current input criteria. |  [optional]
 **total** | **Integer** | The total number of orders in the results set based on the current input criteria. Note: If no orders are found, this field is returned with a value of 0. |  [optional]
 **warnings** | [**List&lt;Error&gt;**](Error.md) | This array is returned if one or more errors or warnings occur with the call request. |  [optional]
+
+
+

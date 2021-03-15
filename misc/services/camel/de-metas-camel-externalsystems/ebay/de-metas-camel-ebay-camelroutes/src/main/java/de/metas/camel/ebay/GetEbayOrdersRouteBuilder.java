@@ -1,18 +1,14 @@
 package de.metas.camel.ebay;
 
-import java.util.List;
-
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.ebay.api.model.Order;
 import de.metas.common.bpartner.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import io.swagger.client.api.OrderApi;
-import io.swagger.client.model.Order;
-import io.swagger.client.model.OrderSearchPagedCollection;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -61,18 +57,18 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder{
 				log.trace("Executing call for tenant {}", tenant);
 				
 				
-				final OrderApi api = new OrderApi();
-				String fieldGroups = null;
-			    String filter = null;
-			    String limit = "20";
-			    String offset = null;
-			    String orderIds = null;
-			    OrderSearchPagedCollection response = api.getOrders(fieldGroups, filter, limit, offset, orderIds);
+//				final OrderApi api = new OrderApi();
+//				String fieldGroups = null;
+//			    String filter = null;
+//			    String limit = "20";
+//			    String offset = null;
+//			    String orderIds = null;
+//			    OrderSearchPagedCollection response = api.getOrders(fieldGroups, filter, limit, offset, orderIds);
+//				
+//			    List<Order> orders = response.getOrders();
 				
-			    List<Order> orders = response.getOrders();
-				
-				exchange.getIn().setHeader(ExternalSystemCamelConstants.HEADER_ORG_CODE, request.getOrgCode());
-				exchange.getIn().setBody(orders);
+//				exchange.getIn().setHeader(ExternalSystemCamelConstants.HEADER_ORG_CODE, request.getOrgCode());
+//				exchange.getIn().setBody(orders);
 			})
 			.split(body())
 			// create bpartners in metasfresh

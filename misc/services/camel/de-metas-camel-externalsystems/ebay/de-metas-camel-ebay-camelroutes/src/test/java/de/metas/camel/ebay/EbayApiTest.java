@@ -12,11 +12,12 @@ import com.ebay.api.client.auth.oauth2.OAuth2Api;
 import com.ebay.api.client.auth.oauth2.model.Environment;
 import com.ebay.api.client.auth.oauth2.model.OAuthResponse;
 
-import io.swagger.client.ApiClient;
-import io.swagger.client.Configuration;
-import io.swagger.client.api.OrderApi;
-import io.swagger.client.auth.OAuth;
-import io.swagger.client.model.OrderSearchPagedCollection;
+import de.metas.camel.externalsystems.ebay.api.OrderApi;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
+import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
+import de.metas.camel.externalsystems.ebay.api.invoker.auth.OAuth;
+import de.metas.camel.externalsystems.ebay.api.model.OrderSearchPagedCollection;
+
 
 public class EbayApiTest {
 	
@@ -46,14 +47,16 @@ public class EbayApiTest {
 		
 		CredentialUtil.load(new FileInputStream("src/test/resources/ebay-test-creds.yaml"));
 		
-		OAuth2Api oauth2Api = new OAuth2Api();
 		
+		
+		
+        OAuth2Api oauth2Api = new OAuth2Api();
 		List<String> scopes = new ArrayList<>();
 		scopes.add("https://api.ebay.com/oauth/api_scope/sell.fulfillment");
 		
-		OAuthResponse oauth2Response = oauth2Api.getApplicationToken(Environment.SANDBOX, scopes);
+		OAuthResponse oauth2Response = oauth2Api.getAccessToken(Environment.SANDBOX, null, scopes);
 		
-		
+		Assert.assertNotNull(oauth2Response);
 
 		if(oauth2Response.getRefreshToken().isPresent()) {
 			ApiClient defaultClient = Configuration.getDefaultApiClient();

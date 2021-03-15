@@ -1,6 +1,6 @@
 # PaymentDisputeApi
 
-All URIs are relative to *https://api.ebay.com{basePath}*
+All URIs are relative to *https://api.ebay.com/sell/fulfillment/v1*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
@@ -14,9 +14,10 @@ Method | HTTP request | Description
 [**updateEvidence**](PaymentDisputeApi.md#updateEvidence) | **POST** /payment_dispute/{payment_dispute_id}/update_evidence | Update evidence
 [**uploadEvidenceFile**](PaymentDisputeApi.md#uploadEvidenceFile) | **POST** /payment_dispute/{payment_dispute_id}/upload_evidence_file | Upload an Evidence File
 
+
 <a name="acceptPaymentDispute"></a>
 # **acceptPaymentDispute**
-> acceptPaymentDispute(paymentDisputeId, body)
+> acceptPaymentDispute(paymentDisputeId, acceptPaymentDisputeRequest)
 
 Accept Payment Dispute
 
@@ -25,26 +26,35 @@ This method is used if the seller wishes to accept a payment dispute. The unique
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiClient;
-//import io.swagger.client.ApiException;
-//import io.swagger.client.Configuration;
-//import io.swagger.client.auth.*;
-//import io.swagger.client.api.PaymentDisputeApi;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiException;
+import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
+import de.metas.camel.externalsystems.ebay.api.invoker.auth.*;
+import de.metas.camel.externalsystems.ebay.api.invoker.models.*;
+import de.metas.camel.externalsystems.ebay.api.PaymentDisputeApi;
 
-ApiClient defaultClient = Configuration.getDefaultApiClient();
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://api.ebay.com/sell/fulfillment/v1");
+    
+    // Configure OAuth2 access token for authorization: api_auth
+    OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
+    api_auth.setAccessToken("YOUR ACCESS TOKEN");
 
-// Configure OAuth2 access token for authorization: api_auth
-OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
-api_auth.setAccessToken("YOUR ACCESS TOKEN");
-
-PaymentDisputeApi apiInstance = new PaymentDisputeApi();
-String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to accept. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above.
-AcceptPaymentDisputeRequest body = new AcceptPaymentDisputeRequest(); // AcceptPaymentDisputeRequest | 
-try {
-    apiInstance.acceptPaymentDispute(paymentDisputeId, body);
-} catch (ApiException e) {
-    System.err.println("Exception when calling PaymentDisputeApi#acceptPaymentDispute");
-    e.printStackTrace();
+    PaymentDisputeApi apiInstance = new PaymentDisputeApi(defaultClient);
+    String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to accept. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above.
+    AcceptPaymentDisputeRequest acceptPaymentDisputeRequest = new AcceptPaymentDisputeRequest(); // AcceptPaymentDisputeRequest | 
+    try {
+      apiInstance.acceptPaymentDispute(paymentDisputeId, acceptPaymentDisputeRequest);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling PaymentDisputeApi#acceptPaymentDispute");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
 }
 ```
 
@@ -53,7 +63,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **paymentDisputeId** | **String**| This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to accept. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above. |
- **body** | [**AcceptPaymentDisputeRequest**](AcceptPaymentDisputeRequest.md)|  | [optional]
+ **acceptPaymentDisputeRequest** | [**AcceptPaymentDisputeRequest**](AcceptPaymentDisputeRequest.md)|  | [optional]
 
 ### Return type
 
@@ -68,9 +78,18 @@ null (empty response body)
  - **Content-Type**: application/json
  - **Accept**: Not defined
 
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | Success |  -  |
+**400** | Bad Request |  -  |
+**404** | Not Found |  -  |
+**409** | Conflict |  -  |
+**500** | Internal Server Error |  -  |
+
 <a name="addEvidence"></a>
 # **addEvidence**
-> AddEvidencePaymentDisputeResponse addEvidence(paymentDisputeId, body)
+> AddEvidencePaymentDisputeResponse addEvidence(paymentDisputeId, addEvidencePaymentDisputeRequest)
 
 Add an Evidence File
 
@@ -79,27 +98,36 @@ This method is used by the seller to add one or more evidence files to address a
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiClient;
-//import io.swagger.client.ApiException;
-//import io.swagger.client.Configuration;
-//import io.swagger.client.auth.*;
-//import io.swagger.client.api.PaymentDisputeApi;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiException;
+import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
+import de.metas.camel.externalsystems.ebay.api.invoker.auth.*;
+import de.metas.camel.externalsystems.ebay.api.invoker.models.*;
+import de.metas.camel.externalsystems.ebay.api.PaymentDisputeApi;
 
-ApiClient defaultClient = Configuration.getDefaultApiClient();
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://api.ebay.com/sell/fulfillment/v1");
+    
+    // Configure OAuth2 access token for authorization: api_auth
+    OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
+    api_auth.setAccessToken("YOUR ACCESS TOKEN");
 
-// Configure OAuth2 access token for authorization: api_auth
-OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
-api_auth.setAccessToken("YOUR ACCESS TOKEN");
-
-PaymentDisputeApi apiInstance = new PaymentDisputeApi();
-String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to add evidence for a contested payment dispute. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above.
-AddEvidencePaymentDisputeRequest body = new AddEvidencePaymentDisputeRequest(); // AddEvidencePaymentDisputeRequest | 
-try {
-    AddEvidencePaymentDisputeResponse result = apiInstance.addEvidence(paymentDisputeId, body);
-    System.out.println(result);
-} catch (ApiException e) {
-    System.err.println("Exception when calling PaymentDisputeApi#addEvidence");
-    e.printStackTrace();
+    PaymentDisputeApi apiInstance = new PaymentDisputeApi(defaultClient);
+    String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to add evidence for a contested payment dispute. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above.
+    AddEvidencePaymentDisputeRequest addEvidencePaymentDisputeRequest = new AddEvidencePaymentDisputeRequest(); // AddEvidencePaymentDisputeRequest | 
+    try {
+      AddEvidencePaymentDisputeResponse result = apiInstance.addEvidence(paymentDisputeId, addEvidencePaymentDisputeRequest);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling PaymentDisputeApi#addEvidence");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
 }
 ```
 
@@ -108,7 +136,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **paymentDisputeId** | **String**| This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to add evidence for a contested payment dispute. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above. |
- **body** | [**AddEvidencePaymentDisputeRequest**](AddEvidencePaymentDisputeRequest.md)|  | [optional]
+ **addEvidencePaymentDisputeRequest** | [**AddEvidencePaymentDisputeRequest**](AddEvidencePaymentDisputeRequest.md)|  | [optional]
 
 ### Return type
 
@@ -123,9 +151,18 @@ Name | Type | Description  | Notes
  - **Content-Type**: application/json
  - **Accept**: application/json
 
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Success |  -  |
+**400** | Bad Request |  -  |
+**404** | Not Found |  -  |
+**409** | Conflict |  -  |
+**500** | Internal Server Error |  -  |
+
 <a name="contestPaymentDispute"></a>
 # **contestPaymentDispute**
-> contestPaymentDispute(paymentDisputeId, body)
+> contestPaymentDispute(paymentDisputeId, contestPaymentDisputeRequest)
 
 Contest Payment Dispute
 
@@ -134,26 +171,35 @@ This method is used if the seller wishes to contest a payment dispute initiated 
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiClient;
-//import io.swagger.client.ApiException;
-//import io.swagger.client.Configuration;
-//import io.swagger.client.auth.*;
-//import io.swagger.client.api.PaymentDisputeApi;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiException;
+import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
+import de.metas.camel.externalsystems.ebay.api.invoker.auth.*;
+import de.metas.camel.externalsystems.ebay.api.invoker.models.*;
+import de.metas.camel.externalsystems.ebay.api.PaymentDisputeApi;
 
-ApiClient defaultClient = Configuration.getDefaultApiClient();
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://api.ebay.com/sell/fulfillment/v1");
+    
+    // Configure OAuth2 access token for authorization: api_auth
+    OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
+    api_auth.setAccessToken("YOUR ACCESS TOKEN");
 
-// Configure OAuth2 access token for authorization: api_auth
-OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
-api_auth.setAccessToken("YOUR ACCESS TOKEN");
-
-PaymentDisputeApi apiInstance = new PaymentDisputeApi();
-String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to contest. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above.
-ContestPaymentDisputeRequest body = new ContestPaymentDisputeRequest(); // ContestPaymentDisputeRequest | 
-try {
-    apiInstance.contestPaymentDispute(paymentDisputeId, body);
-} catch (ApiException e) {
-    System.err.println("Exception when calling PaymentDisputeApi#contestPaymentDispute");
-    e.printStackTrace();
+    PaymentDisputeApi apiInstance = new PaymentDisputeApi(defaultClient);
+    String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to contest. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above.
+    ContestPaymentDisputeRequest contestPaymentDisputeRequest = new ContestPaymentDisputeRequest(); // ContestPaymentDisputeRequest | 
+    try {
+      apiInstance.contestPaymentDispute(paymentDisputeId, contestPaymentDisputeRequest);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling PaymentDisputeApi#contestPaymentDispute");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
 }
 ```
 
@@ -162,7 +208,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **paymentDisputeId** | **String**| This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to contest. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above. |
- **body** | [**ContestPaymentDisputeRequest**](ContestPaymentDisputeRequest.md)|  | [optional]
+ **contestPaymentDisputeRequest** | [**ContestPaymentDisputeRequest**](ContestPaymentDisputeRequest.md)|  | [optional]
 
 ### Return type
 
@@ -177,6 +223,15 @@ null (empty response body)
  - **Content-Type**: application/json
  - **Accept**: Not defined
 
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | Success |  -  |
+**400** | Bad Request |  -  |
+**404** | Not Found |  -  |
+**409** | Conflict |  -  |
+**500** | Internal Server Error |  -  |
+
 <a name="fetchEvidenceContent"></a>
 # **fetchEvidenceContent**
 > List&lt;String&gt; fetchEvidenceContent(paymentDisputeId, evidenceId, fileId)
@@ -188,28 +243,37 @@ This call retrieves a specific evidence file for a payment dispute. The followin
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiClient;
-//import io.swagger.client.ApiException;
-//import io.swagger.client.Configuration;
-//import io.swagger.client.auth.*;
-//import io.swagger.client.api.PaymentDisputeApi;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiException;
+import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
+import de.metas.camel.externalsystems.ebay.api.invoker.auth.*;
+import de.metas.camel.externalsystems.ebay.api.invoker.models.*;
+import de.metas.camel.externalsystems.ebay.api.PaymentDisputeApi;
 
-ApiClient defaultClient = Configuration.getDefaultApiClient();
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://api.ebay.com/sell/fulfillment/v1");
+    
+    // Configure OAuth2 access token for authorization: api_auth
+    OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
+    api_auth.setAccessToken("YOUR ACCESS TOKEN");
 
-// Configure OAuth2 access token for authorization: api_auth
-OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
-api_auth.setAccessToken("YOUR ACCESS TOKEN");
-
-PaymentDisputeApi apiInstance = new PaymentDisputeApi();
-String paymentDisputeId = "paymentDisputeId_example"; // String | The identifier of the payment dispute. The identifier of each payment dispute is returned in the getPaymentDisputeSummaries response. This identifier is passed in as a path parameter at the end of the call URI.
-String evidenceId = "evidenceId_example"; // String | The identifier of the evidential file set. The identifier of an evidential file set for a payment dispute is returned under the evidence array in the getPaymentDispute response. Below is an example of the syntax to use for this query parameter: evidence_id=12345678
-String fileId = "fileId_example"; // String | The identifier of an evidential file. This file must belong to the evidential file set identified through the evidence_id query parameter. The identifier of each evidential file is returned under the evidence.files array in the getPaymentDispute response. Below is an example of the syntax to use for this query parameter: file_id=12345678
-try {
-    List<String> result = apiInstance.fetchEvidenceContent(paymentDisputeId, evidenceId, fileId);
-    System.out.println(result);
-} catch (ApiException e) {
-    System.err.println("Exception when calling PaymentDisputeApi#fetchEvidenceContent");
-    e.printStackTrace();
+    PaymentDisputeApi apiInstance = new PaymentDisputeApi(defaultClient);
+    String paymentDisputeId = "paymentDisputeId_example"; // String | The identifier of the payment dispute. The identifier of each payment dispute is returned in the getPaymentDisputeSummaries response. This identifier is passed in as a path parameter at the end of the call URI.
+    String evidenceId = "evidenceId_example"; // String | The identifier of the evidential file set. The identifier of an evidential file set for a payment dispute is returned under the evidence array in the getPaymentDispute response. Below is an example of the syntax to use for this query parameter: evidence_id=12345678
+    String fileId = "fileId_example"; // String | The identifier of an evidential file. This file must belong to the evidential file set identified through the evidence_id query parameter. The identifier of each evidential file is returned under the evidence.files array in the getPaymentDispute response. Below is an example of the syntax to use for this query parameter: file_id=12345678
+    try {
+      List<String> result = apiInstance.fetchEvidenceContent(paymentDisputeId, evidenceId, fileId);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling PaymentDisputeApi#fetchEvidenceContent");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
 }
 ```
 
@@ -234,6 +298,14 @@ Name | Type | Description  | Notes
  - **Content-Type**: Not defined
  - **Accept**: application/octet-stream
 
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Success |  -  |
+**400** | Bad Request |  -  |
+**404** | Invalid Payment Dispute Id |  -  |
+**500** | Internal Server Error |  -  |
+
 <a name="getActivities"></a>
 # **getActivities**
 > PaymentDisputeActivityHistory getActivities(paymentDisputeId)
@@ -245,26 +317,35 @@ This method retrieve a log of activity for a payment dispute. The identifier of 
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiClient;
-//import io.swagger.client.ApiException;
-//import io.swagger.client.Configuration;
-//import io.swagger.client.auth.*;
-//import io.swagger.client.api.PaymentDisputeApi;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiException;
+import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
+import de.metas.camel.externalsystems.ebay.api.invoker.auth.*;
+import de.metas.camel.externalsystems.ebay.api.invoker.models.*;
+import de.metas.camel.externalsystems.ebay.api.PaymentDisputeApi;
 
-ApiClient defaultClient = Configuration.getDefaultApiClient();
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://api.ebay.com/sell/fulfillment/v1");
+    
+    // Configure OAuth2 access token for authorization: api_auth
+    OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
+    api_auth.setAccessToken("YOUR ACCESS TOKEN");
 
-// Configure OAuth2 access token for authorization: api_auth
-OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
-api_auth.setAccessToken("YOUR ACCESS TOKEN");
-
-PaymentDisputeApi apiInstance = new PaymentDisputeApi();
-String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed in at the end of the call URI to identify the payment dispute for which the user wishes to see all activity. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above.
-try {
-    PaymentDisputeActivityHistory result = apiInstance.getActivities(paymentDisputeId);
-    System.out.println(result);
-} catch (ApiException e) {
-    System.err.println("Exception when calling PaymentDisputeApi#getActivities");
-    e.printStackTrace();
+    PaymentDisputeApi apiInstance = new PaymentDisputeApi(defaultClient);
+    String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed in at the end of the call URI to identify the payment dispute for which the user wishes to see all activity. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above.
+    try {
+      PaymentDisputeActivityHistory result = apiInstance.getActivities(paymentDisputeId);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling PaymentDisputeApi#getActivities");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
 }
 ```
 
@@ -287,6 +368,14 @@ Name | Type | Description  | Notes
  - **Content-Type**: Not defined
  - **Accept**: application/json
 
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Success |  -  |
+**400** | Bad Request |  -  |
+**404** | Invalid Payment Dispute Id |  -  |
+**500** | Internal Server Error |  -  |
+
 <a name="getPaymentDispute"></a>
 # **getPaymentDispute**
 > PaymentDispute getPaymentDispute(paymentDisputeId)
@@ -298,26 +387,35 @@ This method retrieves detailed information on a specific payment dispute. The pa
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiClient;
-//import io.swagger.client.ApiException;
-//import io.swagger.client.Configuration;
-//import io.swagger.client.auth.*;
-//import io.swagger.client.api.PaymentDisputeApi;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiException;
+import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
+import de.metas.camel.externalsystems.ebay.api.invoker.auth.*;
+import de.metas.camel.externalsystems.ebay.api.invoker.models.*;
+import de.metas.camel.externalsystems.ebay.api.PaymentDisputeApi;
 
-ApiClient defaultClient = Configuration.getDefaultApiClient();
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://api.ebay.com/sell/fulfillment/v1");
+    
+    // Configure OAuth2 access token for authorization: api_auth
+    OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
+    api_auth.setAccessToken("YOUR ACCESS TOKEN");
 
-// Configure OAuth2 access token for authorization: api_auth
-OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
-api_auth.setAccessToken("YOUR ACCESS TOKEN");
-
-PaymentDisputeApi apiInstance = new PaymentDisputeApi();
-String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed in at the end of the call URI to identify the payment dispute to retrieve. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response.
-try {
-    PaymentDispute result = apiInstance.getPaymentDispute(paymentDisputeId);
-    System.out.println(result);
-} catch (ApiException e) {
-    System.err.println("Exception when calling PaymentDisputeApi#getPaymentDispute");
-    e.printStackTrace();
+    PaymentDisputeApi apiInstance = new PaymentDisputeApi(defaultClient);
+    String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed in at the end of the call URI to identify the payment dispute to retrieve. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response.
+    try {
+      PaymentDispute result = apiInstance.getPaymentDispute(paymentDisputeId);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling PaymentDisputeApi#getPaymentDispute");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
 }
 ```
 
@@ -340,6 +438,14 @@ Name | Type | Description  | Notes
  - **Content-Type**: Not defined
  - **Accept**: application/json
 
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Success |  -  |
+**400** | Bad Request |  -  |
+**404** | Invalid Payment Dispute Id |  -  |
+**500** | Internal Server Error |  -  |
+
 <a name="getPaymentDisputeSummaries"></a>
 # **getPaymentDisputeSummaries**
 > DisputeSummaryResponse getPaymentDisputeSummaries(orderId, buyerUsername, openDateFrom, openDateTo, paymentDisputeStatus, limit, offset)
@@ -351,32 +457,41 @@ This method is used retrieve one or more payment disputes filed against the sell
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiClient;
-//import io.swagger.client.ApiException;
-//import io.swagger.client.Configuration;
-//import io.swagger.client.auth.*;
-//import io.swagger.client.api.PaymentDisputeApi;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiException;
+import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
+import de.metas.camel.externalsystems.ebay.api.invoker.auth.*;
+import de.metas.camel.externalsystems.ebay.api.invoker.models.*;
+import de.metas.camel.externalsystems.ebay.api.PaymentDisputeApi;
 
-ApiClient defaultClient = Configuration.getDefaultApiClient();
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://api.ebay.com/sell/fulfillment/v1");
+    
+    // Configure OAuth2 access token for authorization: api_auth
+    OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
+    api_auth.setAccessToken("YOUR ACCESS TOKEN");
 
-// Configure OAuth2 access token for authorization: api_auth
-OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
-api_auth.setAccessToken("YOUR ACCESS TOKEN");
-
-PaymentDisputeApi apiInstance = new PaymentDisputeApi();
-String orderId = "orderId_example"; // String | This filter is used if the seller wishes to retrieve one or more payment disputes filed against a specific order. It is possible that there can be more than one dispute filed against an order if the order has multiple line items. If this filter is used, any other filters are ignored. Note: The order identifier passed into this field must be an Order ID in the new format. The legacy APIs still support the old and new order ID format to identify orders, but only the new order ID format is supported in REST-based APIs. eBay rolled out a new Order ID format in June 2019.
-String buyerUsername = "buyerUsername_example"; // String | This filter is used if the seller wishes to retrieve one or more payment disputes opened by a specific seller. The string that is passed in to this query parameter is the eBay user ID of the buyer.
-String openDateFrom = "openDateFrom_example"; // String | The open_date_from and/or open_date_to date filters are used if the seller wishes to retrieve payment disputes opened within a specific date range. A maximum date range that may be set with the open_date_from and/or open_date_to filters is 90 days. These date filters use the ISO-8601 24-hour date and time format, and time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The open_date_from field sets the beginning date of the date range, and can be set as far back as 18 months from the present time. If a open_date_from field is used, but a open_date_to field is not used, the open_date_to value will default to 90 days after the date specified in the open_date_from field, or to the present time if less than 90 days in the past. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.
-String openDateTo = "openDateTo_example"; // String | The open_date_from and/or open_date_to date filters are used if the seller wishes to retrieve payment disputes opened within a specific date range. A maximum date range that may be set with the open_date_from and/or open_date_to filters is 90 days. These date filters use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The open_date_to field sets the ending date of the date range, and can be set up to 90 days from the date set in the open_date_from field. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.
-String paymentDisputeStatus = "paymentDisputeStatus_example"; // String | This filter is used if the seller wishes to only retrieve payment disputes in a specific state. More than one value can be specified. If no payment_dispute_status filter is used, payment disputes in all states are returned in the response. See DisputeStateEnum type for supported values.
-String limit = "limit_example"; // String | The value passed in this query parameter sets the maximum number of payment disputes to return per page of data. The value passed in this field should be an integer from 1 to 200. If this query parameter is not set, up to 200 records will be returned on each page of results. Min: 1; Max: 200; Default: 200
-String offset = "offset_example"; // String | This field is used to specify the number of records to skip in the result set before returning the first payment dispute in the paginated response. A zero-based index is used, so if you set the offset value to 0 (default value), the first payment dispute in the result set appears at the top of the response. Combine offset with the limit parameter to control the payment disputes returned in the response. For example, if you supply an offset value of 0 and a limit value of 10, the response will contain the first 10 payment disputes from the result set that matches the input criteria. If you supply an offset value of 10 and a limit value of 20, the response will contain payment disputes 11-30 from the result set that matches the input criteria. Min: 0; Max: total number of payment disputes - 1; Default: 0
-try {
-    DisputeSummaryResponse result = apiInstance.getPaymentDisputeSummaries(orderId, buyerUsername, openDateFrom, openDateTo, paymentDisputeStatus, limit, offset);
-    System.out.println(result);
-} catch (ApiException e) {
-    System.err.println("Exception when calling PaymentDisputeApi#getPaymentDisputeSummaries");
-    e.printStackTrace();
+    PaymentDisputeApi apiInstance = new PaymentDisputeApi(defaultClient);
+    String orderId = "orderId_example"; // String | This filter is used if the seller wishes to retrieve one or more payment disputes filed against a specific order. It is possible that there can be more than one dispute filed against an order if the order has multiple line items. If this filter is used, any other filters are ignored. Note: The order identifier passed into this field must be an Order ID in the new format. The legacy APIs still support the old and new order ID format to identify orders, but only the new order ID format is supported in REST-based APIs. eBay rolled out a new Order ID format in June 2019.
+    String buyerUsername = "buyerUsername_example"; // String | This filter is used if the seller wishes to retrieve one or more payment disputes opened by a specific seller. The string that is passed in to this query parameter is the eBay user ID of the buyer.
+    String openDateFrom = "openDateFrom_example"; // String | The open_date_from and/or open_date_to date filters are used if the seller wishes to retrieve payment disputes opened within a specific date range. A maximum date range that may be set with the open_date_from and/or open_date_to filters is 90 days. These date filters use the ISO-8601 24-hour date and time format, and time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The open_date_from field sets the beginning date of the date range, and can be set as far back as 18 months from the present time. If a open_date_from field is used, but a open_date_to field is not used, the open_date_to value will default to 90 days after the date specified in the open_date_from field, or to the present time if less than 90 days in the past. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.
+    String openDateTo = "openDateTo_example"; // String | The open_date_from and/or open_date_to date filters are used if the seller wishes to retrieve payment disputes opened within a specific date range. A maximum date range that may be set with the open_date_from and/or open_date_to filters is 90 days. These date filters use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The open_date_to field sets the ending date of the date range, and can be set up to 90 days from the date set in the open_date_from field. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.
+    String paymentDisputeStatus = "paymentDisputeStatus_example"; // String | This filter is used if the seller wishes to only retrieve payment disputes in a specific state. More than one value can be specified. If no payment_dispute_status filter is used, payment disputes in all states are returned in the response. See DisputeStateEnum type for supported values.
+    String limit = "limit_example"; // String | The value passed in this query parameter sets the maximum number of payment disputes to return per page of data. The value passed in this field should be an integer from 1 to 200. If this query parameter is not set, up to 200 records will be returned on each page of results. Min: 1; Max: 200; Default: 200
+    String offset = "offset_example"; // String | This field is used to specify the number of records to skip in the result set before returning the first payment dispute in the paginated response. A zero-based index is used, so if you set the offset value to 0 (default value), the first payment dispute in the result set appears at the top of the response. Combine offset with the limit parameter to control the payment disputes returned in the response. For example, if you supply an offset value of 0 and a limit value of 10, the response will contain the first 10 payment disputes from the result set that matches the input criteria. If you supply an offset value of 10 and a limit value of 20, the response will contain payment disputes 11-30 from the result set that matches the input criteria. Min: 0; Max: total number of payment disputes - 1; Default: 0
+    try {
+      DisputeSummaryResponse result = apiInstance.getPaymentDisputeSummaries(orderId, buyerUsername, openDateFrom, openDateTo, paymentDisputeStatus, limit, offset);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling PaymentDisputeApi#getPaymentDisputeSummaries");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
 }
 ```
 
@@ -405,9 +520,16 @@ Name | Type | Description  | Notes
  - **Content-Type**: Not defined
  - **Accept**: application/json
 
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Success |  -  |
+**400** | Bad Request |  -  |
+**500** | Internal Server Error |  -  |
+
 <a name="updateEvidence"></a>
 # **updateEvidence**
-> updateEvidence(paymentDisputeId, body)
+> updateEvidence(paymentDisputeId, updateEvidencePaymentDisputeRequest)
 
 Update evidence
 
@@ -416,26 +538,35 @@ This method is used by the seller to update an existing evidence set for a payme
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiClient;
-//import io.swagger.client.ApiException;
-//import io.swagger.client.Configuration;
-//import io.swagger.client.auth.*;
-//import io.swagger.client.api.PaymentDisputeApi;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiException;
+import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
+import de.metas.camel.externalsystems.ebay.api.invoker.auth.*;
+import de.metas.camel.externalsystems.ebay.api.invoker.models.*;
+import de.metas.camel.externalsystems.ebay.api.PaymentDisputeApi;
 
-ApiClient defaultClient = Configuration.getDefaultApiClient();
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://api.ebay.com/sell/fulfillment/v1");
+    
+    // Configure OAuth2 access token for authorization: api_auth
+    OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
+    api_auth.setAccessToken("YOUR ACCESS TOKEN");
 
-// Configure OAuth2 access token for authorization: api_auth
-OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
-api_auth.setAccessToken("YOUR ACCESS TOKEN");
-
-PaymentDisputeApi apiInstance = new PaymentDisputeApi();
-String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to update the evidence set for a contested payment dispute. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above.
-UpdateEvidencePaymentDisputeRequest body = new UpdateEvidencePaymentDisputeRequest(); // UpdateEvidencePaymentDisputeRequest | 
-try {
-    apiInstance.updateEvidence(paymentDisputeId, body);
-} catch (ApiException e) {
-    System.err.println("Exception when calling PaymentDisputeApi#updateEvidence");
-    e.printStackTrace();
+    PaymentDisputeApi apiInstance = new PaymentDisputeApi(defaultClient);
+    String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to update the evidence set for a contested payment dispute. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above.
+    UpdateEvidencePaymentDisputeRequest updateEvidencePaymentDisputeRequest = new UpdateEvidencePaymentDisputeRequest(); // UpdateEvidencePaymentDisputeRequest | 
+    try {
+      apiInstance.updateEvidence(paymentDisputeId, updateEvidencePaymentDisputeRequest);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling PaymentDisputeApi#updateEvidence");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
 }
 ```
 
@@ -444,7 +575,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **paymentDisputeId** | **String**| This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to update the evidence set for a contested payment dispute. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above. |
- **body** | [**UpdateEvidencePaymentDisputeRequest**](UpdateEvidencePaymentDisputeRequest.md)|  | [optional]
+ **updateEvidencePaymentDisputeRequest** | [**UpdateEvidencePaymentDisputeRequest**](UpdateEvidencePaymentDisputeRequest.md)|  | [optional]
 
 ### Return type
 
@@ -459,6 +590,15 @@ null (empty response body)
  - **Content-Type**: application/json
  - **Accept**: Not defined
 
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**204** | Success |  -  |
+**400** | Bad Request |  -  |
+**404** | Not Found |  -  |
+**409** | Conflict |  -  |
+**500** | Internal Server Error |  -  |
+
 <a name="uploadEvidenceFile"></a>
 # **uploadEvidenceFile**
 > FileEvidence uploadEvidenceFile(paymentDisputeId)
@@ -470,26 +610,35 @@ This method is used to upload an evidence file for a contested payment dispute. 
 ### Example
 ```java
 // Import classes:
-//import io.swagger.client.ApiClient;
-//import io.swagger.client.ApiException;
-//import io.swagger.client.Configuration;
-//import io.swagger.client.auth.*;
-//import io.swagger.client.api.PaymentDisputeApi;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiException;
+import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
+import de.metas.camel.externalsystems.ebay.api.invoker.auth.*;
+import de.metas.camel.externalsystems.ebay.api.invoker.models.*;
+import de.metas.camel.externalsystems.ebay.api.PaymentDisputeApi;
 
-ApiClient defaultClient = Configuration.getDefaultApiClient();
+public class Example {
+  public static void main(String[] args) {
+    ApiClient defaultClient = Configuration.getDefaultApiClient();
+    defaultClient.setBasePath("https://api.ebay.com/sell/fulfillment/v1");
+    
+    // Configure OAuth2 access token for authorization: api_auth
+    OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
+    api_auth.setAccessToken("YOUR ACCESS TOKEN");
 
-// Configure OAuth2 access token for authorization: api_auth
-OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
-api_auth.setAccessToken("YOUR ACCESS TOKEN");
-
-PaymentDisputeApi apiInstance = new PaymentDisputeApi();
-String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to upload an evidence file. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above.
-try {
-    FileEvidence result = apiInstance.uploadEvidenceFile(paymentDisputeId);
-    System.out.println(result);
-} catch (ApiException e) {
-    System.err.println("Exception when calling PaymentDisputeApi#uploadEvidenceFile");
-    e.printStackTrace();
+    PaymentDisputeApi apiInstance = new PaymentDisputeApi(defaultClient);
+    String paymentDisputeId = "paymentDisputeId_example"; // String | This is the unique identifier of the payment dispute. This path parameter must be passed into the call URI to identify the payment dispute for which the user plans to upload an evidence file. This identifier is automatically created by eBay once the payment dispute comes into the eBay managed payments system. The unique identifier for payment disputes is returned in the paymentDisputeId field in the getPaymentDisputeSummaries response. This path parameter is required, and the actual identifier value is passed in right after the payment_dispute resource. See the Resource URI above.
+    try {
+      FileEvidence result = apiInstance.uploadEvidenceFile(paymentDisputeId);
+      System.out.println(result);
+    } catch (ApiException e) {
+      System.err.println("Exception when calling PaymentDisputeApi#uploadEvidenceFile");
+      System.err.println("Status code: " + e.getCode());
+      System.err.println("Reason: " + e.getResponseBody());
+      System.err.println("Response headers: " + e.getResponseHeaders());
+      e.printStackTrace();
+    }
+  }
 }
 ```
 
@@ -511,4 +660,13 @@ Name | Type | Description  | Notes
 
  - **Content-Type**: Not defined
  - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Success |  -  |
+**400** | Bad Request |  -  |
+**404** | Not Found |  -  |
+**409** | Conflict |  -  |
+**500** | Internal Server Error |  -  |
 

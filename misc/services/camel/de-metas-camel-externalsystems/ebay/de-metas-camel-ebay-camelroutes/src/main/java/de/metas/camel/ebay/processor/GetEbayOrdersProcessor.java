@@ -11,11 +11,11 @@ import java.util.List;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
+import de.metas.camel.externalsystems.ebay.api.OrderApi;
+import de.metas.camel.externalsystems.ebay.api.model.Order;
+import de.metas.camel.externalsystems.ebay.api.model.OrderSearchPagedCollection;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import io.swagger.client.api.OrderApi;
-import io.swagger.client.model.Order;
-import io.swagger.client.model.OrderSearchPagedCollection;
 
 public class GetEbayOrdersProcessor implements Processor {
 
