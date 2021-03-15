@@ -132,13 +132,13 @@
         <dependency>
             <groupId>de.metas.vertical.healthcare.alberta</groupId>
             <artifactId>de.metas.vertical.healthcare.alberta</artifactId>
-            <version>10.0.0</version>
+            <version>${metasfresh.version}</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>de.metas.common.product</groupId>
             <artifactId>de-metas-common-product</artifactId>
-            <version>10.0.0</version>
+            <version>${metasfresh-common.version}</version>
             <scope>compile</scope>
         </dependency>
 
