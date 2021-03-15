@@ -12,6 +12,7 @@ import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.rest_api.externlasystem.dto.ExternalSystemService;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
 import io.github.jsonSnapshot.SnapshotMatcher;
@@ -21,6 +22,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -82,6 +84,7 @@ public class ProductRestControllerTest
 	{
 		AdempiereTestHelper.get().init();
 		createMasterData();
+		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 
 		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade();
 		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO());
@@ -144,10 +147,9 @@ public class ProductRestControllerTest
 				.ean("ean2")
 				.uomId(kgUomId)
 				.build();
-
 		//
 		// Call endpoint
-		final ResponseEntity<JsonGetProductsResponse> response = restController.getProducts(null, null, null, null);
+		final ResponseEntity<JsonGetProductsResponse> response = (ResponseEntity<JsonGetProductsResponse>)restController.getProducts(null, null, null, null);
 		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
 
 		//
