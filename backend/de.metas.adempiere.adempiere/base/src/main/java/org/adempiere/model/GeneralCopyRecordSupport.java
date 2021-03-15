@@ -335,10 +335,11 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	/**
-	 * verify if a table can or not be copied
+	 * Verify if a table can or not be copied.
 	 *
 	 * @return true if the table can be copied
 	 */
+	@OverridingMethodsMustInvokeSuper
 	protected boolean isCopyTable(final String tableName)
 	{
 		final String upperTableName = tableName.toUpperCase();
