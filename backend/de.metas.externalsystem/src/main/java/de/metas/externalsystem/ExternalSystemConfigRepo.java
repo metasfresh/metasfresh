@@ -157,7 +157,7 @@ public class ExternalSystemConfigRepo
 				.parentId(parentConfigId)
 				.apiKey(config.getApiKey())
 				.baseUrl(config.getBaseURL())
-				.name(config.getName())
+				.value(config.getExternalSystemValue())
 				.tenant(config.getTenant())
 				.value(config.getExternalSystemValue())
 				.pharmacyPriceListId(PriceListId.ofRepoIdOrNull(config.getPharmacy_PriceList_ID()))

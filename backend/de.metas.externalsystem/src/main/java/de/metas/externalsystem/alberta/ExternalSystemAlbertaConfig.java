@@ -39,7 +39,7 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 	@NonNull
 	ExternalSystemParentConfigId parentId;
 	@NonNull
-	String name;
+	String value;
 	@NonNull
 	String apiKey;
 	@NonNull
@@ -47,27 +47,23 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 	@NonNull
 	String tenant;
 	@Nullable
-	String value;
-	@Nullable
 	PriceListId pharmacyPriceListId;
 
 	@Builder
 	public ExternalSystemAlbertaConfig(final @NonNull ExternalSystemAlbertaConfigId id,
 			final @NonNull ExternalSystemParentConfigId parentId,
-			final @NonNull String name,
+			final @NonNull String value,
 			final @NonNull String apiKey,
 			final @NonNull String baseUrl,
 			final @NonNull String tenant, 
-			final @Nullable String value, 
 			final @Nullable PriceListId pharmacyPriceListId)
 	{
 		this.id = id;
 		this.parentId = parentId;
-		this.name = name;
+		this.value = value;
 		this.apiKey = apiKey;
 		this.baseUrl = baseUrl;
 		this.tenant = tenant;
-		this.value = value;
 		this.pharmacyPriceListId = pharmacyPriceListId;
 	}
 

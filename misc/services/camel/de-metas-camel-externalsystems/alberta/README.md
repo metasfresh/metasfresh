@@ -1,6 +1,8 @@
 # Mappings
 note: I've marked with `?????` the alberta fields we didn't map yet
 
+## Patients and Instances (Alberta) => BPartners (metasfresh)
+
 Patient
 
 Metasfresh|  Alberta
@@ -197,5 +199,37 @@ BPLocation.shipToDefault | true |
 BPLocation.shipTo | true |
 
 
-
+## Products (metasfresh) => Articles (Alberta)
  
+| Alberta | metasfresh | mandatory | note |
+| --- | --- | --- | --- |
+| customerNumber | M_Product.Value | YES | value is unique *per org*; if we push an article to alberta, it is per tenant, not globally; i think we can assume that two different metasfresh-AD_Orgs will never have overlapping M_Product.Value but the same alberta tenant (and if they do we can still add a friggin prefix on the fly)|
+| name | M_Product.Name | YES | |
+| description | M_Product.Description | NO | |
+| additionalDescription | M_Product_AlbertaArticle.AdditionalDescription | NO| |
+| manufacturer| M_Product.Manufacturer_ID | NO| column points to C_BPartner_ID. C_Partner needs to be flagged as manufacturer |
+| manufacturerNumber | M_Product.~~Manufacturer~~ ManufacturerArticleNumber | NO| new column in M_Product|
+| therapyIds | M_Product_AlbertaTherapy | NO| label-field |
+| billableTherapies | M_Product_AlbertaBillableTherapy | NO| label-field |
+| productGroupId | S_ExternalReference.ExternalReference | NO| we need externalreference-support for M_ProductCategory..and then export the M_ProductCategory's external reference; :exclamation: looks like this not yet done by Alberta |
+| size |M_Product_AlbertaArticle.Size | NO|
+| inventoryType | M_Product_AlbertaArticle.InventoryType | NO| Ref-List as in the API definition |
+| status | M_Product_AlbertaArticle.Status | NO| Ref-List as in the API definition |
+| medicalAidPositionNumber | M_Product_AlbertaArticle.MedicalAidPositionNumber|  NO |
+| stars |M_Product_AlbertaData.Stars| NO|
+| assortmentType | M_Product_AlbertaArticle.AssortmentType | NO|
+| pharmacyPrice |  MProductPrice.PriceStd aus AEP-Preisliste | NO| Price-List can be set in in alberta-external-system-config, with a preset default value |
+| fixedPrice | MProductPrice.PriceList | NO| aus AEP-Preisliste (same as pharmacyPrice) :exclamation: in the alberta-webui we have also a sales price and `n` health-insurance-prices; i'll ask them to update the API-docs  |
+| purchaseRating | M_Product_AlbertaArticle.PurchaseRating | NO| Ref-List as in the API definition | 
+| |  | NO | :exclamation: in the API the also have attributes; i'll ask them to update the API-docs |
+
+**Article.packagingUnits**
+
+| Alberta | metasfresh | mandatory | note |
+| --- | --- | --- | --- |
+|  | M_Product_AlbertaPackagingUnit.M_HU_PI_Item_Product_ID | NO | optional; if set then we can look it up later when recediving C_OLCands
+| unit | M_Product_AlbertaPackagingUnit.Unit | YES | Ref-List with values `Stk` and `Ktn`
+| quantity | M_Product_AlbertaPackagingUnit.Quantity | YES | |
+| pcn | M_Product_AlbertaPackagingUnit.PCN | YES | :exclamation: i aked them if this *really* makes sense, and did not create the column yet |
+| defaultPackagingUnit | M_Product_AlbertaPackagingUnit.IsDefaultPackagingUnit | YES | allow just one to be the default; :exclamation: this is not in the webui, so i didn't create it yet
+| archived | M_Product_AlbertaPackagingUnit.IsArchived | NO | :exclamation: this is not in the webui, so i didn't create it yet
