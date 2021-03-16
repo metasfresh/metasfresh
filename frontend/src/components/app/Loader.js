@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { TransitionGroup as ReactCSSTransitionGroup } from 'react-transition-group';
 import PropTypes from 'prop-types';
 
 /**
