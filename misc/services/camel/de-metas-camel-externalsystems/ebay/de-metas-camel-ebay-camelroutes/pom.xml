@@ -176,6 +176,15 @@
             <artifactId>httpclient</artifactId>
             <scope>test</scope>
         </dependency>
+
+		<!-- Automatic download of webdriver. -->
+		<dependency>
+			<groupId>io.github.bonigarcia</groupId>
+			<artifactId>webdrivermanager</artifactId>
+			<version>4.3.1</version>
+			<scope>test</scope>
+		</dependency>
+        
         
     </dependencies>
     
