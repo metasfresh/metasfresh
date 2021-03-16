@@ -1,6 +1,8 @@
 # Mappings
 note: I've marked with `?????` the alberta fields we didn't map yet
 
+## Patients and Instances (Alberta) => BPartners (metasfresh)
+
 Patient
 
 Metasfresh|  Alberta
@@ -197,5 +199,5 @@ BPLocation.shipToDefault | true |
 BPLocation.shipTo | true |
 
 
-
+## Products (metasfresh) => Articles (Alberta)
  
