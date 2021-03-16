@@ -1,5 +1,4 @@
 /*
-/*
  * #%L
  * de.metas.adempiere.adempiere.migration-sql
  * %%
