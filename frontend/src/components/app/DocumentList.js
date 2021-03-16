@@ -122,6 +122,7 @@ export default class DocumentList extends Component {
       childSelected,
       parentSelected,
       filterId,
+      featureType,
     } = this.props;
     const {
       staticFilters,
@@ -325,6 +326,7 @@ export default class DocumentList extends Component {
                 focusOnFieldName={layout.focusOnFieldName}
                 toggleState={panelsState}
                 spinnerVisible={triggerSpinner}
+                featureType={featureType}
                 parentView={
                   isIncluded
                     ? {

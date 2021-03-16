@@ -45,6 +45,7 @@ import {
   RESET_PRINTING_OPTIONS,
   TOGGLE_PRINTING_OPTION,
 } from '../constants/ActionTypes';
+import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
@@ -92,12 +93,13 @@ export function toggleOverlay(data) {
   };
 }
 
-export function openRawModal(windowId, viewId, profileId) {
+export function openRawModal({ windowId, viewId, profileId, title }) {
   return {
     type: OPEN_RAW_MODAL,
-    windowId: windowId,
-    viewId: viewId,
-    profileId: profileId,
+    windowId,
+    viewId,
+    profileId,
+    title,
   };
 }
 
@@ -332,6 +334,9 @@ export function openModal({
   childViewId = null,
   childViewSelectedIds = null,
   staticModalType = null,
+  parentWindowId = null,
+  parentDocumentId = null,
+  parentFieldId = null,
 }) {
   const isMobile =
     currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
@@ -358,6 +363,9 @@ export function openModal({
       parentViewSelectedIds,
       childViewId,
       childViewSelectedIds,
+      parentWindowId,
+      parentDocumentId,
+      parentFieldId,
     },
   };
 }
@@ -498,6 +506,35 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
 }
 
 /*
+ * @method createSearchWindow
+ * @summary - special function that is used to get the window view information for the search and opens a modal with that view
+ *            this is a hacky way of opening the window as this wasn't existing for the SEARCH type (check how `NEW` was opening)
+ * param {object}
+ */
+export function createSearchWindow({
+  windowId: windowType,
+  docId,
+  tabId,
+  rowId,
+  isModal,
+  dispatch,
+  title,
+}) {
+  dispatch(
+    createView({
+      windowId: windowType,
+      viewType: 'grid',
+      refDocumentId: docId,
+      refTabId: tabId,
+      refRowIds: [rowId],
+      isModal,
+    })
+  ).then(({ windowId, viewId }) => {
+    dispatch(openRawModal({ windowId, viewId, title }));
+  });
+}
+
+/*
  * Main method to generate window
  */
 export function createWindow({
@@ -508,10 +545,27 @@ export function createWindow({
   isModal,
   isAdvanced,
   disconnected,
+  title,
 }) {
   let disconnectedData = null;
   let documentId = docId || 'NEW';
   return (dispatch) => {
+    if (documentId === 'SEARCH') {
+      // use specific function for search window creation
+      createSearchWindow({
+        windowId: windowType,
+        docId,
+        tabId,
+        rowId,
+        isModal,
+        isAdvanced,
+        disconnected,
+        dispatch,
+        title,
+      });
+      return false;
+    }
+
     if (documentId.toLowerCase() === 'new') {
       documentId = 'NEW';
     }
@@ -1205,7 +1259,9 @@ export function handleProcessResponse(response, type, id, parentId) {
             }
 
             if (targetTab === 'SAME_TAB_OVERLAY') {
-              await dispatch(openRawModal(windowId, viewId, action.profileId));
+              await dispatch(
+                openRawModal({ windowId, viewId, profileId: action.profileId })
+              );
             }
             break;
           }
