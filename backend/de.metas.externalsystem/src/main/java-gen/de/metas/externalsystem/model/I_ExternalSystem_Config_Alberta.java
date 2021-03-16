@@ -207,6 +207,26 @@ public interface I_ExternalSystem_Config_Alberta
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Pharmacy price list.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPharmacy_PriceList_ID (int Pharmacy_PriceList_ID);
+
+	/**
+	 * Get Pharmacy price list.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPharmacy_PriceList_ID();
+
+	String COLUMNNAME_Pharmacy_PriceList_ID = "Pharmacy_PriceList_ID";
+
+	/**
 	 * Set Tenant.
 	 *
 	 * <br>Type: String

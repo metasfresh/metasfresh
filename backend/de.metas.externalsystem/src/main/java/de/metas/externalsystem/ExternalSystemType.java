@@ -58,7 +58,7 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	}
 
 	@Nullable
-	public static ExternalSystemType ofNullableCode(final String code)
+	public static ExternalSystemType ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}
