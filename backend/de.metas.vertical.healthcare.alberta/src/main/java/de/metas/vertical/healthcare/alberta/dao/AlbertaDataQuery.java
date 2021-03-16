@@ -40,6 +40,9 @@ public class AlbertaDataQuery
 	@NonNull
 	Set<ProductId> productIds;
 
+	/**
+	 * Needed to retrieve all the Alberta-Data where the {@code M_Product} we not updated, but maybe the Alberta-Data itself.
+	 */
 	@NonNull
 	Instant updatedAfter;
 
