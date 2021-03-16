@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.productV2;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
@@ -70,6 +71,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
@@ -208,7 +210,6 @@ public class ProductRestService
 				return ProductCategoryId.ofRepoId(externalIdentifier.asMetasfreshId().getValue());
 
 			case EXTERNAL_REFERENCE:
-
 				final Optional<ProductCategoryId> productCategoryId =
 						getJsonMetasfreshIdFromExternalReference(org.getValue(), externalIdentifier, ProductCategoryExternalReferenceType.PRODUCT_CATEGORY)
 								.map(JsonMetasfreshId::getValue)
@@ -278,16 +279,16 @@ public class ProductRestService
 			if (effectiveSyncAdvise.getIfExists().isUpdateRemove())
 			{
 				final List<BPartnerProduct> bPartnerProducts = productRepository.getByProductId(productId);
-				final List<BPartnerId> currentBpartnerProducts =
+				final Set<BPartnerId> jsonBpartnerIds =
 						jsonRequestBPartnerProductsUpsert
 								.stream()
 								.map(jsonBpartnerProduct -> getBPartnerId(ExternalIdentifier.of(jsonBpartnerProduct.getBpartnerIdentifier()), org.getValue()))
-								.collect(Collectors.toList());
+								.collect(ImmutableSet.toImmutableSet());
 
 				final List<BPartnerId> bPartnerProductsToRemove =
 						bPartnerProducts.stream()
 								.map(BPartnerProduct::getBPartnerId)
-								.filter(bp -> !currentBpartnerProducts.contains(bp))
+								.filter(bp -> !jsonBpartnerIds.contains(bp))
 								.collect(Collectors.toList());
 
 				productRepository.inactivateBpartnerProducts(bPartnerProductsToRemove, productId);
@@ -333,6 +334,7 @@ public class ProductRestService
 		}
 	}
 
+	@NonNull
 	private BPartnerId getBPartnerId(@NonNull final ExternalIdentifier externalIdentifier, @Nullable final String orgCode)
 	{
 		if (ExternalIdentifier.Type.METASFRESH_ID.equals(externalIdentifier.getType()))
@@ -355,7 +357,6 @@ public class ProductRestService
 		}
 
 		throw new AdempiereException("BPartnerIdentifier could not be found: " + externalIdentifier.getRawValue());
-
 	}
 
 	@NonNull
