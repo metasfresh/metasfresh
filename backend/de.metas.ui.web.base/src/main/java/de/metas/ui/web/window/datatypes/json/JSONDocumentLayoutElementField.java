@@ -1,11 +1,5 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -14,19 +8,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.ui.web.devices.JSONDeviceDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * #%L
@@ -187,6 +186,14 @@ public final class JSONDocumentLayoutElementField
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String newRecordCaption;
 
+	@JsonProperty("advSearchWindowId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String advSearchWindowId;
+
+	@JsonProperty("advSearchCaption")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String advSearchCaption;
+
 	//
 	// Lookup
 	@JsonProperty("source")
@@ -231,6 +238,18 @@ public final class JSONDocumentLayoutElementField
 			newRecordCaption = null;
 		}
 
+		final DocumentEntityDescriptor advancedSearchEntityDescriptor = findAdvancedSearchEntityDescriptor(fieldDescriptor.getLookupTableName().orElse(null), jsonOpts);
+		if (advancedSearchEntityDescriptor != null)
+		{
+			advSearchWindowId = advancedSearchEntityDescriptor.getDocumentTypeId().toJson();
+			advSearchCaption = advancedSearchEntityDescriptor.getCaption().translate(jsonOpts.getAdLanguage());
+		}
+		else
+		{
+			advSearchWindowId = null;
+			advSearchCaption = null;
+		}
+
 		//
 		// Lookup
 		source = JSONLookupSource.fromNullable(fieldDescriptor.getLookupSource());
@@ -262,6 +281,8 @@ public final class JSONDocumentLayoutElementField
 			@JsonProperty("devices") final List<JSONDeviceDescriptor> devices,
 			@JsonProperty("newRecordWindowId") final String newRecordWindowId,
 			@JsonProperty("newRecordCaption") final String newRecordCaption,
+			@JsonProperty("advSearchWindowId") final String advSearchWindowId,
+			@JsonProperty("advSearchCaption") final String advSearchCaption,
 			//
 			@JsonProperty("source") final JSONLookupSource source,
 			@JsonProperty("lookupSearchStringMinLength") final Integer lookupSearchStringMinLength,
@@ -279,6 +300,8 @@ public final class JSONDocumentLayoutElementField
 
 		this.newRecordWindowId = newRecordWindowId;
 		this.newRecordCaption = newRecordCaption;
+		this.advSearchWindowId = advSearchWindowId;
+		this.advSearchCaption = advSearchCaption;
 
 		//
 		// Lookup
@@ -301,6 +324,7 @@ public final class JSONDocumentLayoutElementField
 				.add("clearValueText", clearValueText)
 				.add("actions", devices.isEmpty() ? null : devices)
 				.add("newRecordWindowId", newRecordWindowId)
+				.add("advSearchWindowId", advSearchWindowId)
 				.add("supportZoomInto", supportZoomInto)
 				.toString();
 	}
@@ -322,5 +346,24 @@ public final class JSONDocumentLayoutElementField
 		}
 
 		return newRecordDescriptorsProvider.getNewRecordEntityDescriptorIfAvailable(lookupTableName);
+	}
+
+	@Nullable
+	private static DocumentEntityDescriptor findAdvancedSearchEntityDescriptor(
+			@Nullable final String lookupTableName,
+			final JSONDocumentLayoutOptions jsonOpts)
+	{
+		if (lookupTableName == null)
+		{
+			return null;
+		}
+
+		final AdvancedSearchDescriptorsProvider provider = jsonOpts.getAdvancedSearchDescriptorsProvider();
+		if (provider == null)
+		{
+			return null;
+		}
+
+		return provider.getAdvancedSearchDescriptorIfAvailable(lookupTableName);
 	}
 }

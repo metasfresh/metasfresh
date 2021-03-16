@@ -297,7 +297,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public <T extends I_AD_User> T getContactById(final BPartnerContactId contactId, final Class<T> modelClass)
 	{
-		return getContactById(contactId, modelClass);
+		return InterfaceWrapperHelper.create(getContactById(contactId), modelClass);
 	}
 
 	@Override
@@ -384,6 +384,15 @@ public class BPartnerDAO implements IBPartnerDAO
 				.filter(bpLocation -> glnCode.equals(bpLocation.getGLN()))
 				.findFirst()
 				.map(record -> BPartnerLocationId.ofRepoId(bpartnerId, record.getC_BPartner_Location_ID()));
+	}
+
+	@Override
+	public BPartnerLocationId getBPartnerLocationIdByRepoId(final int repoId)
+	{
+		Check.assumeGreaterThanZero(repoId, "C_BPartner_Location_ID");
+		final I_C_BPartner_Location loc = InterfaceWrapperHelper.load(repoId, I_C_BPartner_Location.class);
+		Check.assumeNotNull(loc, "Cannot find C_BPartner_Location for ID: " + repoId);
+		return BPartnerLocationId.ofRepoId(loc.getC_BPartner_ID(), loc.getC_BPartner_Location_ID());
 	}
 
 	@Override

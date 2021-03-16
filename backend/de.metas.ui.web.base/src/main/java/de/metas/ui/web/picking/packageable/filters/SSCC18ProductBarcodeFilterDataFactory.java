@@ -22,11 +22,7 @@
 
 package de.metas.ui.web.picking.packageable.filters;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.product.ProductId;
-import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
@@ -53,22 +49,6 @@ class SSCC18ProductBarcodeFilterDataFactory implements ProductBarcodeFilterDataF
 		final String sscc18 = barcode.trim();
 
 		final I_M_HU hu = services.getHUBySSCC18(sscc18).orElse(null);
-		if (hu == null)
-		{
-			return Optional.empty();
-		}
-
-		final ImmutableSet<ProductId> productIds = services.extractProductIds(hu);
-		final SqlAndParams sqlWhereClause = services.createSqlWhereClauseByProductIds(productIds).orElse(null);
-		if (sqlWhereClause == null)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(ProductBarcodeFilterData.builder()
-								   .barcode(sscc18)
-								   .huId(HuId.ofRepoId(hu.getM_HU_ID()))
-								   .sqlWhereClause(sqlWhereClause)
-								   .build());
+		return services.createDataFromHU(sscc18, hu);
 	}
 }
