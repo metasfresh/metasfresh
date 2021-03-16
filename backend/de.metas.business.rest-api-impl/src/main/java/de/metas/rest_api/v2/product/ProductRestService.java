@@ -20,24 +20,24 @@
  * #L%
  */
 
-package de.metas.rest_api.productV2;
+package de.metas.rest_api.v2.product;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
-import de.metas.common.bpartner.response.JsonResponseUpsertItem;
 import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalsystem.JsonExternalSystemName;
-import de.metas.common.product.JsonRequestBPartnerProductUpsert;
-import de.metas.common.product.JsonRequestProduct;
-import de.metas.common.product.JsonRequestProductUpsertItem;
+import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
+import de.metas.common.product.v2.request.JsonRequestProduct;
+import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
@@ -335,7 +335,7 @@ public class ProductRestService
 	}
 
 	@NonNull
-	private BPartnerId getBPartnerId(@NonNull final ExternalIdentifier externalIdentifier, @Nullable final String orgCode)
+	private BPartnerId getBPartnerId(@NonNull final ExternalIdentifier externalIdentifier, @NonNull final String orgCode)
 	{
 		if (ExternalIdentifier.Type.METASFRESH_ID.equals(externalIdentifier.getType()))
 		{
@@ -387,7 +387,7 @@ public class ProductRestService
 	private BPartnerProduct syncBPartnerProductWithJson(
 			@NonNull final JsonRequestBPartnerProductUpsert jsonRequestBPartnerProductUpsert,
 			@NonNull final BPartnerProduct existingBPartnerProduct,
-			@NonNull SyncAdvise effectiveSyncAdvise,
+			@NonNull final SyncAdvise effectiveSyncAdvise,
 			@NonNull final BPartnerId bPartnerId)
 	{
 		final boolean isUpdateRemove = effectiveSyncAdvise.getIfExists().isUpdateRemove();

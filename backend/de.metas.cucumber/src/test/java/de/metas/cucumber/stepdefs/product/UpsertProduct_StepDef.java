@@ -24,10 +24,10 @@ package de.metas.cucumber.stepdefs.product;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
-import de.metas.common.product.JsonRequestBPartnerProductUpsert;
-import de.metas.common.product.JsonRequestProduct;
-import de.metas.common.product.JsonRequestProductUpsert;
-import de.metas.common.product.JsonRequestProductUpsertItem;
+import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
+import de.metas.common.product.v2.request.JsonRequestProduct;
+import de.metas.common.product.v2.request.JsonRequestProductUpsert;
+import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.RESTUtil;

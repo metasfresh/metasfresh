@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.product;
+package de.metas.common.product.v2.request;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -28,7 +28,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import static de.metas.common.product.constants.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 
 @Getter
 @ToString

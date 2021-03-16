@@ -20,13 +20,13 @@
  * #L%
  */
 
-package de.metas.rest_api.productV2;
+package de.metas.rest_api.v2.product;
 
 import de.metas.Profiles;
-import de.metas.common.bpartner.response.JsonResponseUpsert;
-import de.metas.common.bpartner.response.JsonResponseUpsertItem;
-import de.metas.common.product.JsonRequestProductUpsert;
+import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.v2.JsonResponseUpsert;
+import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;

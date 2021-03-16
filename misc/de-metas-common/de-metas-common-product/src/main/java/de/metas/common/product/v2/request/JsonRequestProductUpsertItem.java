@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.product;
+package de.metas.common.product.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,7 +30,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import static de.metas.common.product.constants.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
+import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
 @Value
 @Builder(toBuilder = true)
