@@ -156,6 +156,7 @@ class ProductRepositoryTest
 		assertThat(createdProduct.getEan()).isEqualTo(ean);
 		assertThat(createdProduct.getDescription().getDefaultValue()).isEqualTo(description);
 		assertThat(createdProduct.getProductNo()).isEqualTo(code);
+		assertThat(createdProduct.getUomId()).isEqualTo(createProductRequest.getUomId());
 	}
 
 	@Test
@@ -220,5 +221,6 @@ class ProductRepositoryTest
 		assertThat(updatedProduct.getManufacturerId()).isEqualTo(manufacturerId);
 		assertThat(updatedProduct.getPackageSize()).isEqualTo(packageSize);
 		assertThat(updatedProduct.getWeight()).isEqualTo(weight);
+		assertThat(updatedProduct.getUomId()).isEqualTo(product.getUomId());
 	}
 }
