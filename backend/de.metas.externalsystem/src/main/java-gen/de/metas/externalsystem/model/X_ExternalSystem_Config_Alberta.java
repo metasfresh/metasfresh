@@ -113,18 +113,6 @@ public class X_ExternalSystem_Config_Alberta extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
-	{
-		set_Value (COLUMNNAME_Name, Name);
-	}
-
-	@Override
-	public java.lang.String getName()
-	{
-		return get_ValueAsString(COLUMNNAME_Name);
-	}
-
-	@Override
 	public void setPharmacy_PriceList_ID (final int Pharmacy_PriceList_ID)
 	{
 		if (Pharmacy_PriceList_ID < 1) 

@@ -47,8 +47,6 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 	@NonNull
 	String tenant;
 	@Nullable
-	String value;
-	@Nullable
 	PriceListId pharmacyPriceListId;
 
 	@Builder
@@ -58,7 +56,6 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 			final @NonNull String apiKey,
 			final @NonNull String baseUrl,
 			final @NonNull String tenant, 
-			final @Nullable String value, 
 			final @Nullable PriceListId pharmacyPriceListId)
 	{
 		this.id = id;
@@ -67,7 +64,6 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 		this.apiKey = apiKey;
 		this.baseUrl = baseUrl;
 		this.tenant = tenant;
-		this.value = value;
 		this.pharmacyPriceListId = pharmacyPriceListId;
 	}
 
