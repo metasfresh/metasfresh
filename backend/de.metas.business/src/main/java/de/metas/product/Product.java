@@ -64,7 +64,7 @@ public class Product
 	@Builder.Default
 	ITranslatableString documentNote = TranslatableStrings.empty();
 
-	@Nullable
+	@NonNull
 	String productType;
 
 	@Nullable

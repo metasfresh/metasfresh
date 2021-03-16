@@ -63,6 +63,7 @@ class ProductRepositoryTest
 		productRecord.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		productRecord.setValue("productNo");
 		productRecord.setName("productName");
+		productRecord.setProductType("ITEM");
 		saveRecord(productRecord);
 
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
@@ -73,6 +74,7 @@ class ProductRepositoryTest
 		assertThat(product.getProductNo()).isEqualTo("productNo");
 		assertThat(product.getName().getDefaultValue()).isEqualTo("productName");
 		assertThat(product.getUomId()).isEqualTo(UomId.ofRepoId(uomRecord.getC_UOM_ID()));
+		assertThat(product.getProductType()).isEqualTo("ITEM");
 	}
 
 	@Test
@@ -84,6 +86,8 @@ class ProductRepositoryTest
 		productRecord1.setC_UOM_ID(uomRecord1.getC_UOM_ID());
 		productRecord1.setValue("productNo1");
 		productRecord1.setName("productName1");
+		productRecord1.setProductType("ITEM");
+
 		saveRecord(productRecord1);
 
 		final ProductId productId1 = ProductId.ofRepoId(productRecord1.getM_Product_ID());
@@ -94,6 +98,8 @@ class ProductRepositoryTest
 		productRecord2.setC_UOM_ID(uomRecord2.getC_UOM_ID());
 		productRecord2.setValue("productNo2");
 		productRecord2.setName("productName2");
+		productRecord2.setProductType("ITEM");
+
 		saveRecord(productRecord2);
 
 		final ProductId productId2 = ProductId.ofRepoId(productRecord2.getM_Product_ID());
