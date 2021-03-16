@@ -22,7 +22,7 @@
 
 package de.metas.cucumber.stepdefs.product;
 
-import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.common.product.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.JsonRequestProduct;
@@ -54,6 +54,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
+import de.metas.util.collections.MultiValueMap;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -65,17 +66,16 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -85,8 +85,9 @@ public class UpsertProduct_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	private final JsonRequestProductUpsert.JsonRequestProductUpsertBuilder jsonRequestProductUpsertBuilder = JsonRequestProductUpsert.builder();
-	private JsonRequestBPartnerProductUpsert jsonRequestBPartnerProductUpsert;
+	private final MultiValueMap<String, JsonRequestBPartnerProductUpsert> bPartnerProductsByProductCode = new MultiValueMap<>();
+	private final Map<String, JsonRequestProductUpsertItem> productsByProductCode = new HashMap<>();
+
 	private final ProductCategoryId defaultProductCategoryId = ProductCategoryId.ofRepoId(1000000);
 	private final OrgId defaultOrgId = OrgId.ofRepoId(1000000);
 
@@ -125,127 +126,128 @@ public class UpsertProduct_StepDef
 				.delete();
 	}
 
-	@And("no product with value {string} exists")
-	public void noProductWithCodeCodeExists(final String value)
-
+	@Then("verify if data is persisted correctly for each product")
+	public void verifyIfDataIsPersistedCorrectlyForProductCodeCode()
 	{
-		final Optional<I_M_Product> product = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
-				.create()
-				.firstOnlyOptional(I_M_Product.class);
+		productsByProductCode.keySet().forEach(productCode -> {
+			final I_M_Product record = productDAO.retrieveProductByValue(productCode);
+			final JsonRequestProductUpsertItem requestProductUpsert = productsByProductCode.get(productCode);
+			final JsonRequestProduct jsonRequestProduct = requestProductUpsert.getRequestProduct();
 
-		if (product.isPresent())
-		{
-			Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Product.class)
-					.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, product.get().getM_Product_ID())
-					.create()
-					.delete();
+			assertThat(record).isNotNull();
+			assertThat(record.isActive()).isEqualTo(jsonRequestProduct.getActive());
+			assertThat(record.getName()).isEqualTo(jsonRequestProduct.getName());
+			assertThat(ProductType.ofCode(record.getProductType()).toString().toLowerCase()).isEqualTo(jsonRequestProduct.getType().toString().toLowerCase());
 
-			Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class)
-					.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
-					.create()
-					.delete();
-		}
-	}
+			final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(jsonRequestProduct.getUomCode()));
 
-	@Then("verify if data is persisted correctly for productValue {string}")
-	public void verifyIfDataIsPersistedCorrectlyForProductCodeCode(final String value)
-	{
-		final I_M_Product record = productDAO.retrieveProductByValue(value);
-		final JsonRequestProductUpsertItem requestProductUpsert = jsonRequestProductUpsertBuilder.build().getRequestItems().get(0);
-		final JsonRequestProduct jsonRequestProduct = requestProductUpsert.getRequestProduct();
+			assertThat(record.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+			assertThat(record.getUPC()).isEqualTo(jsonRequestProduct.getEan());
+			assertThat(record.getGTIN()).isEqualTo(jsonRequestProduct.getGtin());
+			assertThat(record.getDescription()).isEqualTo(jsonRequestProduct.getDescription());
+			assertThat(record.getM_Product_Category_ID()).isEqualTo(defaultProductCategoryId.getRepoId());
+			assertThat(record.isDiscontinued()).isEqualTo(jsonRequestProduct.getDiscontinued());
+			assertThat(record.isStocked()).isEqualTo(jsonRequestProduct.getStocked());
 
-		assertThat(record).isNotNull();
-		assertThat(record.isActive()).isEqualTo(jsonRequestProduct.getActive());
-		assertThat(record.getName()).isEqualTo(jsonRequestProduct.getName());
-		assertThat(ProductType.ofCode(record.getProductType()).toString().toLowerCase()).isEqualTo(jsonRequestProduct.getType().toString().toLowerCase());
+			final Map<BPartnerId, BPartnerProduct> bPartnerProducts = productRepository
+					.getByProductId(ProductId.ofRepoId(record.getM_Product_ID()))
+					.stream()
+					.collect(Collectors.toMap(BPartnerProduct::getBPartnerId, bPartnerProduct -> bPartnerProduct));
 
-		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(jsonRequestProduct.getUomCode()));
+			assertThat(bPartnerProducts).isNotNull();
+			assertThat(bPartnerProducts).isNotEmpty();
 
-		assertThat(record.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
-		assertThat(record.getUPC()).isEqualTo(jsonRequestProduct.getEan());
-		assertThat(record.getGTIN()).isEqualTo(jsonRequestProduct.getGtin());
-		assertThat(record.getDescription()).isEqualTo(jsonRequestProduct.getDescription());
-		assertThat(record.getM_Product_Category_ID()).isEqualTo(defaultProductCategoryId.getRepoId());
-		assertThat(record.isDiscontinued()).isEqualTo(jsonRequestProduct.getDiscontinued());
-		assertThat(record.isStocked()).isEqualTo(jsonRequestProduct.getStocked());
+			final List<JsonRequestBPartnerProductUpsert> bPartnerProductUpsertList = bPartnerProductsByProductCode.get(productCode);
 
-		final List<BPartnerProduct> bPartnerProducts = productRepository.getByProductId(ProductId.ofRepoId(record.getM_Product_ID()));
+			bPartnerProductUpsertList.forEach(jsonRequestBPartnerProductUpsert -> {
 
-		assertThat(bPartnerProducts).isNotNull();
-		assertThat(bPartnerProducts).isNotEmpty();
+				final ExternalReference externalReference =
+						getExternalReference("bpartner", jsonRequestBPartnerProductUpsert.getBpartnerIdentifier());
 
-		final BPartnerProduct bPartnerProduct = bPartnerProducts.get(0);
+				final BPartnerProduct bPartnerProduct = bPartnerProducts.get(BPartnerId.ofRepoId(externalReference.getRecordId()));
 
-		assertThat(bPartnerProduct).isNotNull();
-		assertThat(bPartnerProduct.getActive()).isTrue();
-		assertThat(bPartnerProduct.getProductNo()).isEqualTo(jsonRequestBPartnerProductUpsert.getProductNo());
-		assertThat(bPartnerProduct.getSeqNo()).isEqualTo(jsonRequestBPartnerProductUpsert.getSeqNo());
-		assertThat(bPartnerProduct.getCuEAN()).isEqualTo(jsonRequestBPartnerProductUpsert.getCuEAN());
-		assertThat(bPartnerProduct.getGtin()).isEqualTo(jsonRequestBPartnerProductUpsert.getGtin());
-		assertThat(bPartnerProduct.getCustomerLabelName()).isEqualTo(jsonRequestBPartnerProductUpsert.getCustomerLabelName());
-		assertThat(bPartnerProduct.getIngredients()).isEqualTo(jsonRequestBPartnerProductUpsert.getIngredients());
+				assertThat(bPartnerProduct).isNotNull();
+				assertThat(bPartnerProduct.getActive()).isTrue();
+				assertThat(bPartnerProduct.getProductNo()).isEqualTo(jsonRequestBPartnerProductUpsert.getProductNo());
+				assertThat(bPartnerProduct.getSeqNo()).isEqualTo(jsonRequestBPartnerProductUpsert.getSeqNo());
+				assertThat(bPartnerProduct.getCuEAN()).isEqualTo(jsonRequestBPartnerProductUpsert.getCuEAN());
+				assertThat(bPartnerProduct.getGtin()).isEqualTo(jsonRequestBPartnerProductUpsert.getGtin());
+				assertThat(bPartnerProduct.getCustomerLabelName()).isEqualTo(jsonRequestBPartnerProductUpsert.getCustomerLabelName());
+				assertThat(bPartnerProduct.getIngredients()).isEqualTo(jsonRequestBPartnerProductUpsert.getIngredients());
+			});
+		});
 
 	}
 
 	@Given("the user adds product")
 	public void theUserAddsProduct(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> dataTableEntries = dataTable.asMaps().get(0);
-		final JsonRequestProductUpsertItem product = mapProductRequestItem(dataTableEntries);
-		jsonRequestProductUpsertBuilder.requestItem(product);
+		final List<Map<String, String>> dataTableEntries = dataTable.asMaps();
 
+		dataTableEntries.forEach(dataTableEntry -> {
+			final String productCode = DataTableUtil.extractStringForColumnName(dataTableEntry, "ProductCode");
+			productsByProductCode.put(productCode, mapProductRequestItem(dataTableEntry));
+		});
 	}
 
 	@Given("the user adds bpartner product")
 	public void theUserAddsBpartnerProduct(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> dataTableEntries = dataTable.asMaps().get(0);
-		jsonRequestBPartnerProductUpsert = mapBpartnerProductRequestItem(dataTableEntries);
+		final List<Map<String, String>> dataTableEntries = dataTable.asMaps();
 
+		dataTableEntries.forEach(dataTableEntry -> {
+			final String productCode = DataTableUtil.extractStringForColumnName(dataTableEntry, "ProductCode");
+			bPartnerProductsByProductCode.add(productCode, mapBpartnerProductRequestItem(dataTableEntry));
+		});
 	}
 
 	@Given("the user adds external reference")
 	public void theUserAddsBpartnerExternalReference(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> dataTableEntries = dataTable.asMaps().get(0);
+		final List<Map<String, String>> dataTableEntries = dataTable.asMaps();
 
-		final String externalSystemName = DataTableUtil.extractStringForColumnName(dataTableEntries, "systemname");
-		final String externalId = DataTableUtil.extractStringForColumnName(dataTableEntries, "externalId");
-		final IExternalReferenceType externalReferenceType = getExternalReferenceType(DataTableUtil.extractStringForColumnName(dataTableEntries, "externalReferenceType"));
+		final IQueryOrderBy orderBy =
+				queryBL.createQueryOrderByBuilder(I_C_BPartner.class)
+						.addColumn(I_C_BPartner.COLUMN_C_BPartner_ID)
+						.createQueryOrderBy();
 
-		final JsonMetasfreshId metasfreshId;
-		if (externalReferenceType.equals(BPartnerExternalReferenceType.BPARTNER))
-		{
-			final IQueryOrderBy orderBy =
-					queryBL.createQueryOrderByBuilder(I_C_BPartner.class)
-							.addColumn(I_C_BPartner.COLUMN_C_BPartner_ID)
-							.createQueryOrderBy();
+		final List<JsonMetasfreshId> bPartnerIds = queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.setOrderBy(orderBy)
+				.list()
+				.stream()
+				.map(bPartner -> JsonMetasfreshId.of(bPartner.getC_BPartner_ID())).collect(Collectors.toList());
 
-			metasfreshId = JsonMetasfreshId.of(queryBL.createQueryBuilder(I_C_BPartner.class)
-													   .addOnlyActiveRecordsFilter()
-													   .create()
-													   .setOrderBy(orderBy)
-													   .first()
-													   .getC_BPartner_ID());
-		}
-		else
-		{
-			throw new AdempiereException("No implementation for external reference type.");
-		}
+		dataTableEntries.forEach(dataTableEntry -> {
+			final String externalSystemName = DataTableUtil.extractStringForColumnName(dataTableEntry, "systemname");
+			final String externalId = DataTableUtil.extractStringForColumnName(dataTableEntry, "externalId");
+			final IExternalReferenceType externalReferenceType = getExternalReferenceType(DataTableUtil.extractStringForColumnName(dataTableEntry, "externalReferenceType"));
 
-		final IExternalSystem externalSystem = externalSystems.ofCode(externalSystemName)
-				.orElseThrow(() -> new InvalidIdentifierException("systemName", externalSystemName));
+			final JsonMetasfreshId metasfreshId;
+			if (externalReferenceType.equals(BPartnerExternalReferenceType.BPARTNER))
+			{
+				metasfreshId = bPartnerIds.get(dataTableEntries.indexOf(dataTableEntry));
+			}
+			else
+			{
+				throw new AdempiereException("No implementation for external reference type.");
+			}
 
-		final ExternalReference externalReference = ExternalReference.builder()
-				.orgId(defaultOrgId)
-				.externalSystem(externalSystem)
-				.externalReference(externalId)
-				.externalReferenceType(externalReferenceType)
-				.recordId(metasfreshId.getValue())
-				.build();
+			final IExternalSystem externalSystem = externalSystems.ofCode(externalSystemName)
+					.orElseThrow(() -> new InvalidIdentifierException("systemName", externalSystemName));
 
-		externalReferenceRepository.save(externalReference);
+			final ExternalReference externalReference = ExternalReference.builder()
+					.orgId(defaultOrgId)
+					.externalSystem(externalSystem)
+					.externalReference(externalId)
+					.externalReferenceType(externalReferenceType)
+					.recordId(metasfreshId.getValue())
+					.build();
+
+			externalReferenceRepository.save(externalReference);
+		});
+
 	}
 
 	private JsonRequestBPartnerProductUpsert mapBpartnerProductRequestItem(final Map<String, String> dataTableEntries)
@@ -280,7 +282,7 @@ public class UpsertProduct_StepDef
 	private JsonRequestProductUpsertItem mapProductRequestItem(final Map<String, String> dataTableEntries)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableEntries, "productIdentifier");
-		final String code = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.Code");
+		final String code = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "ProductCode");
 		final String name = DataTableUtil.extractStringForColumnName(dataTableEntries, "Name");
 		final String type = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "Type");
 		final String UOMCode = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "UOMCode");
@@ -300,7 +302,7 @@ public class UpsertProduct_StepDef
 		requestProduct.setActive(isActive);
 		requestProduct.setDiscontinued(false);
 		requestProduct.setStocked(true);
-		requestProduct.setBpartnerProductItems(Collections.singletonList(jsonRequestBPartnerProductUpsert));
+		requestProduct.setBpartnerProductItems(bPartnerProductsByProductCode.get(code));
 
 		return JsonRequestProductUpsertItem.builder()
 				.productIdentifier(productIdentifier)
@@ -313,7 +315,9 @@ public class UpsertProduct_StepDef
 	public void theRequestIsSetInContextOfSyncAdvise(final String syncAdvise) throws JsonProcessingException
 	{
 		final JsonRequestProductUpsert jsonRequestProductUpsert =
-				jsonRequestProductUpsertBuilder
+				JsonRequestProductUpsert
+						.builder()
+						.requestItems(productsByProductCode.values())
 						.syncAdvise(RESTUtil.mapSyncAdvise(syncAdvise))
 						.build();
 
@@ -324,6 +328,13 @@ public class UpsertProduct_StepDef
 	public void verifyIfDataIsPersistedCorrectlyForProductExternalReference(final String type, final String identifier)
 	{
 
+		final ExternalReference externalReference = getExternalReference(type, identifier);
+
+		assertThat(externalReference).isNotNull();
+	}
+
+	private ExternalReference getExternalReference(final String type, final String identifier)
+	{
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(identifier);
 
 		final IExternalSystem externalSystem = externalSystems.ofCode(productIdentifier.asExternalValueAndSystem().getExternalSystem())
@@ -339,10 +350,7 @@ public class UpsertProduct_StepDef
 		final Set<ExternalReferenceQuery> querySet = new HashSet<>();
 		querySet.add(externalReferenceQuery);
 
-		final ImmutableMap<ExternalReferenceQuery, ExternalReference> externalReferences = externalReferenceRepository.getExternalReferences(querySet);
-
-		assertThat(externalReferences).isNotNull();
-		assertThat(externalReferences).isNotEmpty();
+		return externalReferenceRepository.getExternalReferences(querySet).get(externalReferenceQuery);
 	}
 
 	private IExternalReferenceType getExternalReferenceType(final String type)
