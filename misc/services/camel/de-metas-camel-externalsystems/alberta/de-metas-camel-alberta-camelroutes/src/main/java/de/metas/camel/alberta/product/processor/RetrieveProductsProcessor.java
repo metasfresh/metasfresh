@@ -35,10 +35,13 @@ import static de.metas.camel.alberta.product.PushProductsRouteConstants.ALBERTA_
 import static de.metas.camel.alberta.product.PushProductsRouteConstants.ROUTE_PROPERTY_ALBERTA_PRODUCT_API;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 
+/**
+ * Prepares the exchange so that we can retrieve products from metasfresh and create them in Alberta.
+ */
 public class RetrieveProductsProcessor implements Processor
 {
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(@NonNull final Exchange exchange) throws Exception
 	{
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
