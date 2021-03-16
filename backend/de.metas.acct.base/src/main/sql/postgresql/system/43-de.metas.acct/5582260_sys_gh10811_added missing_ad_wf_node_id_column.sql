@@ -72,3 +72,95 @@ UPDATE AD_Field SET IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2021-03-16 11:01:0
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Field SET IsDisplayedGrid='N',Updated=TO_TIMESTAMP('2021-03-16 11:01:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53848
 ;
+
+-- 2021-03-16T11:38:04.377Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Fertigungsprodukte ', PrintName='Fertigungsprodukte ',Updated=TO_TIMESTAMP('2021-03-16 13:38:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=572685 AND AD_Language='de_CH'
+;
+
+-- 2021-03-16T11:38:04.420Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(572685,'de_CH') 
+;
+
+-- 2021-03-16T11:38:07.329Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Fertigungsprodukte ', PrintName='Fertigungsprodukte ',Updated=TO_TIMESTAMP('2021-03-16 13:38:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=572685 AND AD_Language='nl_NL'
+;
+
+-- 2021-03-16T11:38:07.331Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(572685,'nl_NL') 
+;
+
+-- 2021-03-16T11:38:13.193Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Fertigungsprodukte ', PrintName='Fertigungsprodukte ',Updated=TO_TIMESTAMP('2021-03-16 13:38:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=572685 AND AD_Language='de_DE'
+;
+
+-- 2021-03-16T11:38:13.195Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(572685,'de_DE') 
+;
+
+-- 2021-03-16T11:38:13.203Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(572685,'de_DE') 
+;
+
+-- 2021-03-16T11:38:13.207Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName=NULL, Name='Fertigungsprodukte ', Description=NULL, Help=NULL WHERE AD_Element_ID=572685
+;
+
+-- 2021-03-16T11:38:13.209Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Fertigungsprodukte ', Description=NULL, Help=NULL WHERE AD_Element_ID=572685 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-03-16T11:38:13.211Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Fertigungsprodukte ', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=572685) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 572685)
+;
+
+-- 2021-03-16T11:38:13.220Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Fertigungsprodukte ', Name='Fertigungsprodukte ' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=572685)
+;
+
+-- 2021-03-16T11:38:13.222Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Fertigungsprodukte ', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 572685
+;
+
+-- 2021-03-16T11:38:13.225Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Fertigungsprodukte ', Description=NULL, Help=NULL WHERE AD_Element_ID = 572685
+;
+
+-- 2021-03-16T11:38:13.226Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Fertigungsprodukte ', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 572685
+;
+
+-- 2021-03-16T11:38:34.378Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Manufacturing Products', PrintName='Manufacturing Products',Updated=TO_TIMESTAMP('2021-03-16 13:38:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=572685 AND AD_Language='en_US'
+;
+
+-- 2021-03-16T11:38:34.380Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(572685,'en_US') 
+;
+
+-- 2021-03-16T11:39:16.607Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2021-03-16 13:39:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53848
+;
+
+-- 2021-03-16T11:39:20.359Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET SeqNoGrid=50,Updated=TO_TIMESTAMP('2021-03-16 13:39:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=53849
+;
+ 
+ 
