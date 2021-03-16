@@ -57,7 +57,9 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 			final @NonNull String name,
 			final @NonNull String apiKey,
 			final @NonNull String baseUrl,
-			final @NonNull String tenant, @Nullable final String value, @Nullable final PriceListId pharmacyPriceListId)
+			final @NonNull String tenant, 
+			final @Nullable String value, 
+			final @Nullable PriceListId pharmacyPriceListId)
 	{
 		this.id = id;
 		this.parentId = parentId;
