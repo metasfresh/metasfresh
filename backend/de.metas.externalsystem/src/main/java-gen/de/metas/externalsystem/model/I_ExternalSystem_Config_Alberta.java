@@ -207,27 +207,6 @@ public interface I_ExternalSystem_Config_Alberta
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setName (java.lang.String Name);
-
-	/**
-	 * Get Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getName();
-
-	ModelColumn<I_ExternalSystem_Config_Alberta, Object> COLUMN_Name = new ModelColumn<>(I_ExternalSystem_Config_Alberta.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
-
-	/**
 	 * Set Tenant.
 	 *
 	 * <br>Type: String
