@@ -24,16 +24,13 @@ package de.metas.product;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.composite.BPartner;
 import de.metas.business.BusinessTestHelper;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.OrgId;
 import de.metas.product.model.I_M_Product;
 import de.metas.uom.UomId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.assertj.core.groups.Tuple;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -42,8 +39,7 @@ import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 
 class ProductRepositoryTest
 {
