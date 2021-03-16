@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.product;
+package de.metas.common.product.v2.request;
 
 import de.metas.common.rest_api.SyncAdvise;
 

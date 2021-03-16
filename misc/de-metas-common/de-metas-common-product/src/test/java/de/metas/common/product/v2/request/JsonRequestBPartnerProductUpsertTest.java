@@ -20,14 +20,14 @@
  * #L%
  */
 
-package de.metas.common.product;
+package de.metas.common.product.v2.request;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static de.metas.common.product.JsonRequestUtil.getJsonRequestBPartnerProductUpsert;
+import static de.metas.common.product.v2.request.JsonRequestUtil.getJsonRequestBPartnerProductUpsert;
 import static org.assertj.core.api.Assertions.*;
 
 public class JsonRequestBPartnerProductUpsertTest

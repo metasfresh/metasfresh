@@ -20,28 +20,28 @@
  * #L%
  */
 
-package de.metas.common.product;
+package de.metas.common.product.v2.request;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static de.metas.common.product.JsonRequestUtil.getJsonRequestProductUpsert;
+import static de.metas.common.product.v2.request.JsonRequestUtil.getJsonRequestProductUpsertItem;
 import static org.assertj.core.api.Assertions.*;
 
-public class JsonRequestProductUpsertTest
+public class JsonRequestProductUpsertItemTest
 {
 	final ObjectMapper mapper = new ObjectMapper();
 
 	@Test
 	void serializeDeserialize() throws IOException
 	{
-		final JsonRequestProductUpsert request = getJsonRequestProductUpsert();
+		final JsonRequestProductUpsertItem request = getJsonRequestProductUpsertItem();
 
 		final String valueAsString = mapper.writeValueAsString(request);
 
-		final JsonRequestProductUpsert readValue = mapper.readValue(valueAsString, JsonRequestProductUpsert.class);
+		final JsonRequestProductUpsertItem readValue = mapper.readValue(valueAsString, JsonRequestProductUpsertItem.class);
 
 		assertThat(readValue).isEqualTo(request);
 	}
