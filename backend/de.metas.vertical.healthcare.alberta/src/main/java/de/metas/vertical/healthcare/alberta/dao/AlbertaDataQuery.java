@@ -34,6 +34,9 @@ import java.util.Set;
 @Value
 public class AlbertaDataQuery
 {
+	/** 
+	 * Ids of products for which we need the Alberta-Data because the {@code M_Product} was updated after given the given {@code updatedAfter}.
+	 */
 	@NonNull
 	Set<ProductId> productIds;
 
