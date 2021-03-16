@@ -79,6 +79,12 @@
             <artifactId>alberta-api-client</artifactId>
             <version>10.0.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>de.metas.camel.alberta</groupId>
+            <artifactId>alberta-article-api</artifactId>
+            <version>10.0.0</version>
+        </dependency>
         
         <dependency>
             <groupId>de.metas.common.externalsystem</groupId>
@@ -174,6 +180,12 @@
         <dependency>
             <groupId>de.metas.common.externalreference</groupId>
             <artifactId>de-metas-common-externalreference</artifactId>
+            <version>${metasfresh-common.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.product</groupId>
+            <artifactId>de-metas-common-product</artifactId>
             <version>${metasfresh-common.version}</version>
             <scope>compile</scope>
         </dependency>

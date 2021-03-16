@@ -29,7 +29,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
       "name": "name",
       "apiKey": "apiKey",
       "baseUrl": "baseUrl",
-      "tenant": "tenant"
+      "tenant": "tenant",
+      "value": "testAlbertaValue"
     }
   }
 ]
@@ -42,7 +43,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     "name": "name",
     "apiKey": "apiKey",
     "baseUrl": "baseUrl",
-    "tenant": "tenant"
+    "tenant": "tenant",
+    "value":"testAlbertaValue"
   }
 ]
 
@@ -59,7 +61,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
       "name": "name",
       "apiKey": "apiKey",
       "baseUrl": "baseUrl",
-      "tenant": "tenant"
+      "tenant": "tenant",
+      "value":"testAlbertaValue"
     }
   }
 ]

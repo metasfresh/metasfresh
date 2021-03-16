@@ -21,6 +21,7 @@
     <modules>
         <module>de-metas-camel-alberta-camelroutes</module>
         <module>alberta-api-client</module>
+        <module>alberta-article-api</module>
     </modules>
    
 </project>
