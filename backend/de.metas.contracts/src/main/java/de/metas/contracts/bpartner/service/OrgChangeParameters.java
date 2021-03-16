@@ -42,5 +42,5 @@ public class OrgChangeParameters
 
 	@NonNull LocalDate startDate;
 
-	@NonNull ProductId membershipProductId;
+	@Nullable ProductId membershipProductId;
 }

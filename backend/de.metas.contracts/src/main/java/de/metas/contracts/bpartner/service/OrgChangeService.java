@@ -27,6 +27,8 @@ import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+
 @Service
 public class OrgChangeService
 {
@@ -46,9 +48,9 @@ public class OrgChangeService
 
 	}
 
-	public boolean hasMembershipSubscriptions(final BPartnerId partnerId)
+	public boolean hasMembershipSubscriptions(final @NonNull BPartnerId partnerId, final @NonNull LocalDate maxSubscriptionDate)
 	{
-		return repo.hasMembershipSubscriptions(partnerId);
+		return repo.hasMembershipSubscriptions(partnerId, maxSubscriptionDate);
 	}
 
 	public boolean hasAnyMembershipProduct(final OrgId orgId)

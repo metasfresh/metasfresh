@@ -44,10 +44,13 @@ package de.metas.contracts.bpartner.process;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.bpartner.service.OrgChangeParameters;
-import de.metas.contracts.bpartner.service.OrgChangeRepository;
 import de.metas.contracts.bpartner.service.OrgChangeService;
 import de.metas.organization.OrgId;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -59,17 +62,20 @@ import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 
-public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcessPrecondition, IProcessParametersCallout
+public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcessPrecondition,
+		IProcessParametersCallout,
+		IProcessDefaultParametersProvider
 {
 	@Param(parameterName = "AD_Org_Target_ID", mandatory = true)
 	private OrgId p_orgTargetId;
 
-	@Param(parameterName = "M_Membership_Product_ID", mandatory = true)
+	@Param(parameterName = "M_Product_ID")
 	private ProductId p_membershipProductId;
 
-	@Param(parameterName = "StartDate", mandatory = true)
+	@Param(parameterName = "DateFrom", mandatory = true)
 	private LocalDate p_startDate;
 
 	@Param(parameterName = "IsShowMembershipParameter", mandatory = true)
@@ -111,9 +117,15 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 	{
 		if ("AD_Org_Target_ID".equals(parameterName))
 		{
+			if(p_orgTargetId == null)
+			{
+				return;
+			}
 			final BPartnerId partnerId = BPartnerId.ofRepoId(getRecord_ID());
 
-			if (service.hasMembershipSubscriptions(partnerId) && service.hasAnyMembershipProduct(p_orgTargetId))
+			final LocalDate orgChangeDate = CoalesceUtil.coalesce(p_startDate, SystemTime.asLocalDate());
+
+			if (service.hasMembershipSubscriptions(partnerId, orgChangeDate) && service.hasAnyMembershipProduct(p_orgTargetId))
 			{
 				isShowMembershipParameter = true;
 			}
@@ -124,4 +136,14 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 		}
 	}
 
+	@Nullable
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if ("DateFrom".equals(parameter.getColumnName()))
+		{
+			return SystemTime.asLocalDate().plusDays(1);
+		}
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+	}
 }

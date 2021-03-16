@@ -294,3 +294,40 @@ UPDATE AD_Val_Rule SET Code='M_Product.AD_Org_ID = 0
 
 
 
+-- 2021-03-16T13:22:01.260Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Val_Rule SET Code='M_Product.AD_Org_ID = 0 AND M_Product.M_Product_Category_ID = (SELECT pc.M_Product_Category_ID FROM M_Product_Category pc WHERE pc.AD_Org_ID = 0 AND pc.Value = ''Membership'') AND M_Product.M_Product_Mapping_ID IN (SELECT p2.M_Product_Mapping_ID FROM M_Product p2 WHERE p2.M_Product_Category_ID = M_Product.M_Product_category_ID AND p2.AD_Org_ID = @AD_Org_Target_ID / -1@)',Updated=TO_TIMESTAMP('2021-03-16 15:22:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540535
+;
+
+-- 2021-03-16T13:24:13.165Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DisplayLogic='@IsShowMembershipParameter@ = ''Y''',Updated=TO_TIMESTAMP('2021-03-16 15:24:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541947
+;
+
+
+-- 2021-03-16T14:56:15.277Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue='@#Date@::Date  + INTERVAL ''1 day''',Updated=TO_TIMESTAMP('2021-03-16 16:56:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541948
+;
+
+-- 2021-03-16T15:01:59.178Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue='(@#Date@  + INTERVAL ''1 day'')::date',Updated=TO_TIMESTAMP('2021-03-16 17:01:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541948
+;
+
+-- None. Deal with it in java 
+
+
+-- 2021-03-16T15:21:31.599Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue='',Updated=TO_TIMESTAMP('2021-03-16 17:21:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541948
+;
+
+
+-- 2021-03-16T15:46:25.694Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-03-16 17:46:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541948
+;
+
+
+
