@@ -31,7 +31,7 @@ import lombok.ToString;
 
 import java.util.List;
 
-import static de.metas.common.product.Constants.SwaggerDocConstants.PRODUCT_CATEGORY_IDENTIFIER_DOC;
+import static de.metas.common.product.constants.SwaggerDocConstants.PRODUCT_CATEGORY_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
 
 @Getter

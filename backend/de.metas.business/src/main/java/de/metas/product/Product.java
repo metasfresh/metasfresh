@@ -65,12 +65,6 @@ public class Product
 	ITranslatableString documentNote = TranslatableStrings.empty();
 
 	@NonNull
-	String productName;
-
-	@Nullable
-	String productDescription;
-
-	@NonNull
 	String productType;
 
 	@Nullable

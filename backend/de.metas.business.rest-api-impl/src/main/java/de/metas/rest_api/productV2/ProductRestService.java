@@ -82,6 +82,7 @@ public class ProductRestService
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final ProductRepository productRepository;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
@@ -102,12 +103,12 @@ public class ProductRestService
 		ProductId productId = null;
 		final JsonRequestProduct jsonRequestProduct = jsonRequestProductUpsertItem.getRequestProduct();
 
-		final I_AD_Org org = Services.get(IOrgDAO.class).getById(retrieveOrgIdOrDefault(orgCode));
+		final I_AD_Org org = orgDAO.getById(retrieveOrgIdOrDefault(orgCode));
 
 		final SyncAdvise effectiveSyncAdvise = jsonRequestProduct.getSyncAdvise() != null ? jsonRequestProduct.getSyncAdvise() : parentSyncAdvise;
 
 		final Optional<Product> existingProduct = getProductId(jsonRequestProductUpsertItem.getProductIdentifier(), org, jsonRequestProduct.getCode())
-				.flatMap(productRepository::getByIdOrNull);
+				.flatMap(productRepository::getOptionalById);
 
 		if (existingProduct.isPresent())
 		{
@@ -600,11 +601,11 @@ public class ProductRestService
 		// name
 		if (jsonRequestProductUpsertItem.isNameSet())
 		{
-			builder.productName(jsonRequestProductUpsertItem.getName());
+			builder.name(TranslatableStrings.constant(jsonRequestProductUpsertItem.getName()));
 		}
 		else
 		{
-			builder.productName(existingProduct.getProductName());
+			builder.name(existingProduct.getName());
 		}
 
 		// category
@@ -670,15 +671,15 @@ public class ProductRestService
 		// description
 		if (jsonRequestProductUpsertItem.isDescriptionSet())
 		{
-			builder.productDescription(jsonRequestProductUpsertItem.getDescription());
+			builder.description(TranslatableStrings.constant(jsonRequestProductUpsertItem.getDescription()));
 		}
 		else if (isUpdateRemove)
 		{
-			builder.productDescription(null);
+			builder.description(TranslatableStrings.empty());
 		}
 		else
 		{
-			builder.productDescription(existingProduct.getProductDescription());
+			builder.description(existingProduct.getDescription());
 		}
 
 		// discontinued
@@ -736,9 +737,7 @@ public class ProductRestService
 				.orgId(orgId)
 				.productNo(existingProduct.getProductNo())
 				.commodityNumberId(existingProduct.getCommodityNumberId())
-				.description(existingProduct.getDescription())
 				.manufacturerId(existingProduct.getManufacturerId())
-				.name(existingProduct.getName())
 				.packageSize(existingProduct.getPackageSize())
 				.weight(existingProduct.getWeight());
 
@@ -754,7 +753,7 @@ public class ProductRestService
 		productType = getType(jsonRequestProductUpsertItem);
 
 		final ProductCategoryId productCategoryId = jsonRequestProductUpsertItem.isProductCategoryIdentifierSet() ?
-						getProductCategoryId(jsonRequestProductUpsertItem.getProductCategoryIdentifier(), org) : defaultProductCategoryId;
+				getProductCategoryId(jsonRequestProductUpsertItem.getProductCategoryIdentifier(), org) : defaultProductCategoryId;
 
 		return CreateProductRequest.builder()
 				.orgId(OrgId.ofRepoId(org.getAD_Org_ID()))

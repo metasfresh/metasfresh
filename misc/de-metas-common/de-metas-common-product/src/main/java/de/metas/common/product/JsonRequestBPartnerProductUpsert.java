@@ -28,7 +28,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import static de.metas.common.product.Constants.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.product.constants.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 
 @Getter
 @ToString
@@ -196,32 +196,4 @@ public class JsonRequestBPartnerProductUpsert
 		this.dropShip = dropShip;
 		dropShipSet = true;
 	}
-
-	// public JsonRequestBPartnerProductUpsert(
-	// 		@NonNull @JsonProperty("bpartnerIdentifier") final String bpartnerIdentifier,
-	// 		@Nullable @JsonProperty("isActive") final Boolean isActive,
-	// 		@Nullable @JsonProperty("seqNo") final String seqNo,
-	// 		@Nullable @JsonProperty("productNo") final String productNo,
-	// 		@Nullable @JsonProperty("description") final String description,
-	// 		@Nullable @JsonProperty("cuEAN") final String cuEAN,
-	// 		@Nullable @JsonProperty("gtin") final String gtin,
-	// 		@Nullable @JsonProperty("customerLabelName") final String customerLabelName,
-	// 		@Nullable @JsonProperty("ingredients") final String ingredients,
-	// 		@Nullable @JsonProperty("isCurrentVendor") final Boolean isCurrentVendor,
-	// 		@Nullable @JsonProperty("isExcludedFromSales") final Boolean isExcludedFromSales,
-	// 		@Nullable @JsonProperty("isDropShip") final Boolean isDropShip)
-	// {
-	// 	this.bpartnerIdentifier = bpartnerIdentifier;
-	// 	this.isActive = isActive;
-	// 	this.seqNo = seqNo;
-	// 	this.productNo = productNo;
-	// 	this.description = description;
-	// 	this.cuEAN = cuEAN;
-	// 	this.gtin = gtin;
-	// 	this.customerLabelName = customerLabelName;
-	// 	this.ingredients = ingredients;
-	// 	this.isCurrentVendor = isCurrentVendor;
-	// 	this.isExcludedFromSales = isExcludedFromSales;
-	// 	this.isDropShip = isDropShip;
-	// }
 }

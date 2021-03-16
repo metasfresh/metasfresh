@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.product.Constants;
+package de.metas.common.product.constants;
 
 public class SwaggerDocConstants
 {

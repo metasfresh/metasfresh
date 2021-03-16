@@ -1,5 +1,6 @@
 package de.metas.product;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
@@ -20,7 +21,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -54,7 +54,7 @@ public class ProductRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
-	public List<BPartnerProduct> getByProductId(@NonNull final ProductId productId){
+	public ImmutableList<BPartnerProduct> getByProductId(@NonNull final ProductId productId){
 
 		return queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
@@ -63,22 +63,19 @@ public class ProductRepository
 				.list()
 				.stream()
 				.map(ProductRepository::ofBPartnerProductRecord)
-				.collect(Collectors.toList());
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public void inactivateBpartnerProducts(@NonNull final List<BPartnerId> bPartnerIdList, @NonNull final ProductId productId){
 
-		final List<I_C_BPartner_Product> bPartnerProducts = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
+		queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
 				.addInArrayFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bPartnerIdList)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.list();
-
-		for (final I_C_BPartner_Product bPartnerProduct : bPartnerProducts){
-			bPartnerProduct.setIsActive(false);
-			saveRecord(bPartnerProduct);
-		}
+				.updateDirectly()
+				.addSetColumnValue(I_C_BPartner_Product.COLUMNNAME_IsActive, false)
+				.execute();
 	}
 
 	public Product getById(@NonNull final ProductId id)
@@ -88,7 +85,7 @@ public class ProductRepository
 	}
 
 	@NonNull
-	public Optional<Product> getByIdOrNull(@NonNull final ProductId id)
+	public Optional<Product> getOptionalById(@NonNull final ProductId id)
 	{
 		return queryBL.createQueryBuilder(I_M_Product.class)
 						.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, id)
@@ -261,11 +258,8 @@ public class ProductRepository
 				.commodityNumberId(CommodityNumberId.ofRepoIdOrNull(productRecord.getM_CommodityNumber_ID()))
 				.active(productRecord.isActive())
 				.productType(productRecord.getProductType())
-				.uomId(UomId.ofRepoId(productRecord.getC_UOM_ID()))
 				.gtin(productRecord.getGTIN())
 				.ean(productRecord.getUPC())
-				.productDescription(productRecord.getDescription())
-				.productName(productRecord.getName())
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
 				.build();
 	}
@@ -276,8 +270,8 @@ public class ProductRepository
 		final I_M_Product record = getRecordById(product.getId());
 
 		record.setValue(product.getProductNo());
-		record.setName(product.getProductName());
-		record.setDescription(product.getProductDescription());
+		record.setName(product.getName().getDefaultValue());
+		record.setDescription(Strings.emptyToNull(product.getDescription().getDefaultValue()));
 		record.setC_UOM_ID(product.getUomId().getRepoId());
 		record.setManufacturer_ID(product.getManufacturerId() != null ? product.getManufacturerId().getRepoId() : record.getManufacturer_ID());
 		record.setPackageSize(product.getPackageSize());
@@ -286,7 +280,6 @@ public class ProductRepository
 		record.setM_CommodityNumber_ID(product.getCommodityNumberId() != null ? product.getCommodityNumberId().getRepoId() : record.getM_CommodityNumber_ID());
 		record.setIsActive(product.getActive() != null ? product.getActive() : record.isActive());
 		record.setProductType(product.getProductType());
-		record.setC_UOM_ID(product.getUomId().getRepoId());
 		record.setGTIN(product.getGtin());
 		record.setUPC(product.getEan());
 		record.setDiscontinued(product.getDiscontinued() != null ? product.getDiscontinued()  : record.isDiscontinued());
