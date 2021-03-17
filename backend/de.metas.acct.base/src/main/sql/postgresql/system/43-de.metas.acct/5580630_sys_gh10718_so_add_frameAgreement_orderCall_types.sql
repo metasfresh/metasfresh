@@ -28,12 +28,12 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Order Call',Updated=TO_TIMEST
 UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Frame Agreement',Updated=TO_TIMESTAMP('2021-02-25 10:23:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=542288
 ;
 
-INSERT INTO public.ad_sequence (ad_sequence_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, description, isautosequence, incrementno, startno, currentnext, currentnextsys, isaudited, istableid, prefix, startnewyear) VALUES (1000219, 1000000, 0, 'Y', '2021-02-25 08:30:34.000000', 100, '2021-02-25 08:30:34.000000', 100, 'Frame Agreement', 'SO Frame Agreement seq', 'Y', 1, 1000000, 10023, 100, 'N', 'N', 'F', 'N')
+INSERT INTO public.ad_sequence (ad_sequence_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, description, isautosequence, incrementno, startno, currentnext, currentnextsys, isaudited, istableid, prefix, startnewyear) VALUES (555253, 1000000, 0, 'Y', '2021-02-25 08:30:34.000000', 100, '2021-02-25 08:30:34.000000', 100, 'Frame Agreement', 'SO Frame Agreement seq', 'Y', 1, 1000000, 10001, 100, 'N', 'N', 'F', 'N')
 ;
 
 -- 2021-02-25T08:47:35.355Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,AD_PrintFormat_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocSubType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,0,1000010,541010,TO_TIMESTAMP('2021-02-25 10:47:35','YYYY-MM-DD HH24:MI:SS'),100,'SOO',1000219,'FA',0,'D',1000001,'N','N','N','Y','N','N','N','Y','Y','N','N','N','N','N','Y','N','Rahmenvertrag','Rahmenvertrag',TO_TIMESTAMP('2021-02-25 10:47:35','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,AD_PrintFormat_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocNoSequence_ID,DocSubType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,0,1000010,541010,TO_TIMESTAMP('2021-02-25 10:47:35','YYYY-MM-DD HH24:MI:SS'),100,'SOO',555253,'FA',0,'D',1000001,'N','N','N','Y','N','N','N','Y','Y','N','N','N','N','N','Y','N','Rahmenvertrag','Rahmenvertrag',TO_TIMESTAMP('2021-02-25 10:47:35','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-02-25T08:47:35.358Z

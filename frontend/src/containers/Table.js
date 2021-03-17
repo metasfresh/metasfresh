@@ -273,7 +273,6 @@ const mapStateToProps = (state, props) => {
     selected: table.selected,
     collapsedParentRows: table.collapsedParentRows,
     collapsedRows: table.collapsedRows,
-    collapsedArrayMap: table.collapsedArrayMap,
     activeSort: table.activeSort,
     emptyText: table.emptyText,
     emptyHint: table.emptyHint,

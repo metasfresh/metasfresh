@@ -1,5 +1,11 @@
 package de.metas.rest_api.product;
 
+import de.metas.Profiles;
+import de.metas.logging.LogManager;
+import de.metas.rest_api.product.command.GetProductsCommand;
+import de.metas.rest_api.product.response.JsonGetProductsResponse;
+import de.metas.util.web.MetasfreshRestAPIConstants;
+import lombok.NonNull;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -8,13 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import de.metas.Profiles;
-import de.metas.logging.LogManager;
-import de.metas.rest_api.product.command.GetProductsCommand;
-import de.metas.rest_api.product.response.JsonGetProductsResponse;
-import de.metas.util.web.MetasfreshRestAPIConstants;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -38,13 +37,13 @@ import lombok.NonNull;
  * #L%
  */
 
-@RequestMapping(ProductsRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/products",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/products"})
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ProductsRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/products";
-
 	private static final Logger logger = LogManager.getLogger(ProductsRestController.class);
 	private final ProductsServicesFacade productsServicesFacade;
 

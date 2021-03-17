@@ -53,6 +53,7 @@
         <module>de-metas-common-rest_api</module>
         <module>de-metas-common-shipping</module>
         <module>de-metas-common-util</module>
+        <module>de-metas-common-product</module>
     </modules>
 
     <dependencies>

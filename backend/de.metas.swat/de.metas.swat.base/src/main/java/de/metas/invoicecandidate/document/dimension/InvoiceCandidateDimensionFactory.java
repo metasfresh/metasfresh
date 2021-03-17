@@ -27,6 +27,7 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import lombok.NonNull;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +41,8 @@ public class InvoiceCandidateDimensionFactory implements DimensionFactory<I_C_In
 	}
 
 	@Override
-	public Dimension getFromRecord(final I_C_Invoice_Candidate record)
+	@NonNull
+	public Dimension getFromRecord(@NonNull final I_C_Invoice_Candidate record)
 	{
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))

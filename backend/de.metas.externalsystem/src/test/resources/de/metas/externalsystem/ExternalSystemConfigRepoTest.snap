@@ -29,8 +29,22 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
       "name" : "name",
       "apiKey" : "apiKey",
       "baseUrl" : "baseUrl",
-      "tenant" : "tenant"
+      "tenant": "tenant",
+      "value": "testAlbertaValue"
     }
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndParent=[
+  {
+    "id": 100002,
+    "parentId": 100001,
+    "name": "name",
+    "apiKey": "apiKey",
+    "baseUrl": "baseUrl",
+    "tenant": "tenant",
+    "value":"testAlbertaValue"
   }
 ]
 
@@ -47,7 +61,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
       "name" : "name",
       "apiKey" : "apiKey",
       "baseUrl" : "baseUrl",
-      "tenant" : "tenant"
+      "tenant": "tenant",
+      "value":"testAlbertaValue"
     }
   }
 ]
@@ -85,6 +100,17 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientId" : "id",
       "clientSecret" : "secret"
     }
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByTypeAndParent=[
+  {
+    "id": 100002,
+    "parentId": 100001,
+    "baseUrl": "baseUrl",
+    "clientId": "id",
+    "clientSecret": "secret"
   }
 ]
 

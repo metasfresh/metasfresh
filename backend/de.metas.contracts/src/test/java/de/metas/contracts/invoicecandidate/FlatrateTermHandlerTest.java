@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 import java.util.Properties;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.tax.api.TaxId;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
@@ -115,7 +116,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 
 		final Properties ctx = Env.getCtx();
 		final TaxCategoryId taxCategoryId = null;
-		Mockito.when(taxBL.getTax(
+		Mockito.when(taxBL.getTaxNotNull(
 				ctx,
 				term1,
 				taxCategoryId,
@@ -125,7 +126,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				(WarehouseId)null,
 				CoalesceUtil.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID()),
 				SOTrx.SALES.toBoolean()))
-				.thenReturn(3);
+				.thenReturn(TaxId.ofRepoId(3));
 
 		final FlatrateTerm_Handler flatrateTermHandler = new FlatrateTerm_Handler();
 		final InvoiceCandidateGenerateResult candidates = flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, term1));

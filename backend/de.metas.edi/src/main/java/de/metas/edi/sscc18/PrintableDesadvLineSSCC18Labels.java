@@ -1,38 +1,6 @@
 package de.metas.edi.sscc18;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.slf4j.Logger;
-
-import com.google.common.base.Optional;
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
@@ -48,10 +16,18 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC18Labels
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -62,11 +38,11 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 	private final String productValue;
 	private final String productName;
 
-	private int existingSSCC18sCount;
+	private final int existingSSCC18sCount;
 	private final Supplier<List<I_EDI_DesadvLine_Pack>> existingSSCC18s;
 	private BigDecimal requiredSSCC18sCount;
 
-	private TotalQtyCUBreakdownCalculator huQtysCalculator;
+	private final TotalQtyCUBreakdownCalculator huQtysCalculator;
 
 	private PrintableDesadvLineSSCC18Labels(@NonNull final Builder builder)
 	{
@@ -147,11 +123,12 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 		private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 
 		private I_EDI_DesadvLine _desadvLine;
-		private Integer existingSSCC18Count;
 		private Integer requiredSSCC18Count;
 
-		private Optional<I_M_ShipmentSchedule> _shipmentSchedule = null;
-		private Optional<I_M_HU_LUTU_Configuration> _lutuConfiguration = null;
+		@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+		private Optional<I_M_ShipmentSchedule> _shipmentSchedule;
+		@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+		private Optional<I_M_HU_LUTU_Configuration> _lutuConfiguration;
 
 		TotalQtyCUBreakdownCalculator _huQtysCalculator = null;
 
@@ -170,7 +147,9 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			return this;
 		}
 
-		/** @return {@link I_EDI_DesadvLine}; never returns null */
+		/**
+		 * @return {@link I_EDI_DesadvLine}; never returns null
+		 */
 		I_EDI_DesadvLine getEDI_DesadvLine()
 		{
 			Check.assumeNotNull(_desadvLine, "desadvLine not null");
@@ -195,24 +174,12 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 		int getExistingSSCC18sCount()
 		{
-			if (existingSSCC18Count != null)
-			{
-				return existingSSCC18Count;
-			}
-
 			return desadvDAO.retrieveDesadvLinePackRecordsCount(_desadvLine);
 		}
 
 		Supplier<List<I_EDI_DesadvLine_Pack>> getExistingSSCC18s()
 		{
-			return Suppliers.memoize(new Supplier<List<I_EDI_DesadvLine_Pack>>()
-			{
-				@Override
-				public List<I_EDI_DesadvLine_Pack> get()
-				{
-					return desadvDAO.retrieveDesadvLinePacks(_desadvLine);
-				}
-			});
+			return Suppliers.memoize(() -> desadvDAO.retrieveDesadvLinePacks(_desadvLine));
 		}
 
 		public Builder setRequiredSSCC18Count(final Integer requiredSSCC18Count)
@@ -221,7 +188,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			return this;
 		}
 
-		int getRequiredSSCC18Count()
+		public int getRequiredSSCC18Count()
 		{
 			if (requiredSSCC18Count != null)
 			{
@@ -230,7 +197,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			return getHUQtysCalculator().getAvailableLUs();
 		}
 
-		private final TotalQtyCUBreakdownCalculator getHUQtysCalculator()
+		private TotalQtyCUBreakdownCalculator getHUQtysCalculator()
 		{
 			if (_huQtysCalculator == null)
 			{
@@ -238,7 +205,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 				{
 					_huQtysCalculator = createHUQtysCalculator();
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					logger.warn("Failed to calculate qtys for " + _desadvLine, e);
 					_huQtysCalculator = TotalQtyCUBreakdownCalculator.NULL;
@@ -247,30 +214,30 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			return _huQtysCalculator;
 		}
 
-		private final TotalQtyCUBreakdownCalculator createHUQtysCalculator()
+		private TotalQtyCUBreakdownCalculator createHUQtysCalculator()
 		{
-			final I_M_HU_LUTU_Configuration lutuConfiguration = getM_HU_LUTU_Configuration().orNull();
+			final I_M_HU_LUTU_Configuration lutuConfiguration = getM_HU_LUTU_Configuration().orElse(null);
 			if (lutuConfiguration == null)
 			{
 				// NOTE: an warning shall be already logged
 				return TotalQtyCUBreakdownCalculator.NULL;
 			}
 
-			final I_M_ShipmentSchedule shipmentSchedule = getM_ShipmentSchedule().orNull();
+			final I_M_ShipmentSchedule shipmentSchedule = getM_ShipmentSchedule().orElse(null);
 			if (shipmentSchedule == null)
 			{
 				// NOTE: an warning shall be already logged
 				return TotalQtyCUBreakdownCalculator.NULL;
 			}
 
-			TotalQtyCUBreakdownCalculator.Builder builder = TotalQtyCUBreakdownCalculator.builder();
+			final TotalQtyCUBreakdownCalculator.Builder builder = TotalQtyCUBreakdownCalculator.builder();
 
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.convertQtyToLUTUConfigurationUOM(
 					Quantity.of(shipmentSchedule.getQtyOrdered(),
-							Services.get(IProductBL.class).getStockUOM(shipmentSchedule.getM_Product_ID())),
+								Services.get(IProductBL.class).getStockUOM(shipmentSchedule.getM_Product_ID())),
 					lutuConfiguration);
 
-			builder.setQtyCUsTotal(qtyCUsTotal.getQty());
+			builder.setQtyCUsTotal(qtyCUsTotal.toBigDecimal());
 
 			final BigDecimal qtyTUsTotal = shipmentSchedule.getQtyOrdered_TU();
 			if (qtyTUsTotal.signum() > 0)
@@ -295,8 +262,9 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			return builder.build();
 		}
 
-		private final Optional<I_M_ShipmentSchedule> getM_ShipmentSchedule()
+		private Optional<I_M_ShipmentSchedule> getM_ShipmentSchedule()
 		{
+			//noinspection OptionalAssignedToNull
 			if (_shipmentSchedule == null)
 			{
 				final I_EDI_DesadvLine desadvLine = getEDI_DesadvLine();
@@ -305,13 +273,14 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 				{
 					logger.warn("No shipment schedule was found for {}", desadvLine);
 				}
-				_shipmentSchedule = Optional.fromNullable(shipmentSchedule);
+				_shipmentSchedule = Optional.ofNullable(shipmentSchedule);
 			}
 			return _shipmentSchedule;
 		}
 
-		private final Optional<I_M_HU_LUTU_Configuration> getM_HU_LUTU_Configuration()
+		private Optional<I_M_HU_LUTU_Configuration> getM_HU_LUTU_Configuration()
 		{
+			//noinspection OptionalAssignedToNull
 			if (_lutuConfiguration == null)
 			{
 				_lutuConfiguration = retrieveM_HU_LUTU_Configuration();
@@ -319,24 +288,24 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			return _lutuConfiguration;
 		}
 
-		private final Optional<I_M_HU_LUTU_Configuration> retrieveM_HU_LUTU_Configuration()
+		private Optional<I_M_HU_LUTU_Configuration> retrieveM_HU_LUTU_Configuration()
 		{
-			final I_M_ShipmentSchedule shipmentSchedule = getM_ShipmentSchedule().orNull();
+			final I_M_ShipmentSchedule shipmentSchedule = getM_ShipmentSchedule().orElse(null);
 			if (shipmentSchedule == null)
 			{
-				return Optional.absent();
+				return Optional.empty();
 			}
 
 			final I_M_HU_LUTU_Configuration lutuConfiguration = huShipmentScheduleBL.deriveM_HU_LUTU_Configuration(shipmentSchedule);
 			if (lutuConfiguration == null) // shall not happen
 			{
 				logger.warn("No LU/TU configuration found for {}", shipmentSchedule);
-				return Optional.absent();
+				return Optional.empty();
 			}
 			if (lutuConfigurationFactory.isNoLU(lutuConfiguration))
 			{
 				logger.warn("No LU PI found for {}", shipmentSchedule);
-				return Optional.absent();
+				return Optional.empty();
 			}
 
 			return Optional.of(lutuConfiguration);

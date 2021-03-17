@@ -34,6 +34,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,12 +44,13 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_CREATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_UPDATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_DATE_GTE;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_ORG_CODE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_SHOPWARE_CLIENT;
 
 public class GetOrdersProcessor implements Processor
 {
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
@@ -56,6 +58,8 @@ public class GetOrdersProcessor implements Processor
 		if (request.getAdPInstanceId() != null)
 		{
 			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
+
+			ProcessorHelper.logProcessMessage(exchange, "Shopware6:GetOrders process started!" +  Instant.now(), request.getAdPInstanceId().getValue() );
 		}
 
 		final String clientId = request.getParameters().get(ExternalSystemConstants.PARAM_CLIENT_ID);
@@ -72,6 +76,7 @@ public class GetOrdersProcessor implements Processor
 				.orElseGet(ArrayList::new);
 
 		exchange.getIn().setBody(ordersToProcess);
+		exchange.setProperty(ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
 		exchange.setProperty(ROUTE_PROPERTY_SHOPWARE_CLIENT, shopwareClient);
 	}
 

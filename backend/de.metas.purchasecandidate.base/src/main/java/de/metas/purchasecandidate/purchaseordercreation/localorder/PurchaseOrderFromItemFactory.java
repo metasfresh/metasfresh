@@ -109,8 +109,7 @@ import java.util.Set;
 				.orderLineByProductAndUom(
 						purchaseOrderItem.getProductId(),
 						UomId.ofRepoId(purchaseOrderItem.getUomId()))
-				.orElseGet(() -> orderFactory
-						.newOrderLine())
+				.orElseGet(orderFactory::newOrderLine)
 						.productId(purchaseOrderItem.getProductId());
 
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());

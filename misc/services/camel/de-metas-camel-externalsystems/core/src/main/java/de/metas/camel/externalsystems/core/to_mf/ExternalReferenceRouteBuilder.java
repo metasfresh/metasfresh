@@ -31,8 +31,11 @@ import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
+
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 
 @Component
 public class ExternalReferenceRouteBuilder extends RouteBuilder
@@ -46,6 +49,8 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 	@Override
 	public void configure()
 	{
+		errorHandler(noErrorHandler());
+
 		from("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNALREFERENCE_CAMEL_URI + "}}")
 				.routeId(CREATE_ROUTE_ID)
 				.streamCaching()
