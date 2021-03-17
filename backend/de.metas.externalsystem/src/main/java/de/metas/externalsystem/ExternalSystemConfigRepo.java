@@ -29,6 +29,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
+import de.metas.pricing.PriceListId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -156,8 +157,10 @@ public class ExternalSystemConfigRepo
 				.parentId(parentConfigId)
 				.apiKey(config.getApiKey())
 				.baseUrl(config.getBaseURL())
-				.name(config.getName())
+				.value(config.getExternalSystemValue())
 				.tenant(config.getTenant())
+				.value(config.getExternalSystemValue())
+				.pharmacyPriceListId(PriceListId.ofRepoIdOrNull(config.getPharmacy_PriceList_ID()))
 				.build();
 	}
 

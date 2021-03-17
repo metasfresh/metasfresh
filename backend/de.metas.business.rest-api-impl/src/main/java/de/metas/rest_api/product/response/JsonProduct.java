@@ -1,14 +1,9 @@
 package de.metas.rest_api.product.response;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
 import de.metas.product.ProductId;
 import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
 import io.swagger.annotations.ApiModelProperty;
@@ -16,6 +11,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
