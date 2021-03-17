@@ -203,7 +203,7 @@ BPLocation.shipTo | true |
  
 | Alberta | metasfresh | mandatory | note |
 | --- | --- | --- | --- |
-| customerNumber | M_Product.Value | YES | value is unique *per org*; if we push an article to alberta, it is per tenant, not globally; i think we can assume that two different metasfresh-AD_Orgs will never have overlapping M_Product.Value and also have the same alberta tenant (and if they do we can still add a friggin prefix on the fly)|
+| customerNumber | M_Product.Value | YES | value is unique *per org*; if we push an article to alberta, it is per tenant, not globally; i think we can assume that two different metasfresh-AD_Orgs will never have overlapping M_Product.Value and also have the same alberta tenant (and if they do we can still add a  prefix on the fly)|
 | name | M_Product.Name | YES | |
 | description | M_Product.Description | NO | |
 | additionalDescription | M_Product_AlbertaArticle.AdditionalDescription | NO| |
