@@ -1,5 +1,5 @@
 import React, { createRef, PureComponent } from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { TransitionGroup as ReactCSSTransitionGroup } from 'react-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
