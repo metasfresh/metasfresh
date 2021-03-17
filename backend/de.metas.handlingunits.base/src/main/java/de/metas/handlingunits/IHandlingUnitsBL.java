@@ -51,6 +51,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
@@ -245,6 +246,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	AttributeSetInstanceId createASIFromHUAttributes(@NonNull ProductId productId, @NonNull HuId huId);
 
 	AttributeSetInstanceId createASIFromHUAttributes(@NonNull ProductId productId, @NonNull I_M_HU hu);
+
+	ImmutableAttributeSet getImmutableAttributeSet(@NonNull I_M_HU hu);
 
 	@Builder
 	@Value

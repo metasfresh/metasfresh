@@ -240,6 +240,27 @@ public interface I_C_Project_Repair_CostCollector
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Warranty Case.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWarrantyCase (boolean IsWarrantyCase);
+
+	/**
+	 * Get Warranty Case.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWarrantyCase();
+
+	ModelColumn<I_C_Project_Repair_CostCollector, Object> COLUMN_IsWarrantyCase = new ModelColumn<>(I_C_Project_Repair_CostCollector.class, "IsWarrantyCase", null);
+	String COLUMNNAME_IsWarrantyCase = "IsWarrantyCase";
+
+	/**
 	 * Set Attributes.
 	 * Attribute Instances for Products
 	 *
