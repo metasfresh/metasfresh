@@ -46,7 +46,7 @@ package de.metas.contracts.bpartner.process;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.bpartner.service.OrgChangeParameters;
+import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.bpartner.service.OrgChangeService;
 import de.metas.organization.OrgId;
 import de.metas.process.IProcessDefaultParameter;
@@ -89,14 +89,14 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 	{
 		final I_C_BPartner bpartnerRecord = getProcessInfo().getRecord(I_C_BPartner.class);
 
-		final OrgChangeParameters orgChangeParameters = OrgChangeParameters.builder()
+		final OrgChangeRequest orgChangeRequest = OrgChangeRequest.builder()
 				.bpartnerId(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
 				.startDate(p_startDate)
 				.membershipProductId(p_membershipProductId)
 				.orgToId(p_orgTargetId)
 				.build();
 
-		service.moveBPartnerToOrg(orgChangeParameters);
+		service.moveBPartnerToOrg(orgChangeRequest);
 
 		return MSG_OK;
 	}

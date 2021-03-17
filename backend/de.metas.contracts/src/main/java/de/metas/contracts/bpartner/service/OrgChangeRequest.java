@@ -34,7 +34,7 @@ import java.time.LocalDate;
 
 @Value
 @Builder
-public class OrgChangeParameters
+public class OrgChangeRequest
 {
 	@NonNull BPartnerId bpartnerId;
 

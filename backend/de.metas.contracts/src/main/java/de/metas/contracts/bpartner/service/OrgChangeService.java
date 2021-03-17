@@ -23,6 +23,8 @@
 package de.metas.contracts.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -32,30 +34,36 @@ import java.time.LocalDate;
 @Service
 public class OrgChangeService
 {
-	final OrgChangeRepository repo;
+	final OrgChangeRepository orgChangeRepo;
+	final BPartnerCompositeRepository bpCompositeRepo;
 
-	public OrgChangeService(final @NonNull OrgChangeRepository repo)
+	public OrgChangeService(final @NonNull OrgChangeRepository orgChangeRepo,
+			final @NonNull BPartnerCompositeRepository bpCompositeRepo)
 	{
-		this.repo = repo;
+		this.orgChangeRepo = orgChangeRepo;
+		this.bpCompositeRepo = bpCompositeRepo;
 	}
 
-	public void moveBPartnerToOrg(final OrgChangeParameters orgChangeParameters)
+	public void moveBPartnerToOrg(final OrgChangeRequest orgChangeRequest)
 	{
+		final BPartnerComposite bpartnerComp = bpCompositeRepo.getById(orgChangeRequest.getBpartnerId());
 
-		final BPartnerId counterpartBPartnerId = repo.retrieveOrCloneBPartner(orgChangeParameters);
+		final BPartnerId counterpartBPartnerId = orgChangeRepo.retrieveOrCloneBPartner(orgChangeRequest);
 
-		repo.retrieveOrCloneLocations(orgChangeParameters, counterpartBPartnerId);
+		orgChangeRepo.retrieveOrCloneLocations(orgChangeRequest, counterpartBPartnerId);
+
+		orgChangeRepo.markIsActiveBPartner(orgChangeRequest.getBpartnerId(), false);
 
 	}
 
 	public boolean hasMembershipSubscriptions(final @NonNull BPartnerId partnerId, final @NonNull LocalDate maxSubscriptionDate)
 	{
-		return repo.hasMembershipSubscriptions(partnerId, maxSubscriptionDate);
+		return orgChangeRepo.hasMembershipSubscriptions(partnerId, maxSubscriptionDate);
 	}
 
 	public boolean hasAnyMembershipProduct(final OrgId orgId)
 	{
-		return repo.hasAnyMembershipProduct(orgId);
+		return orgChangeRepo.hasAnyMembershipProduct(orgId);
 	}
 
 }

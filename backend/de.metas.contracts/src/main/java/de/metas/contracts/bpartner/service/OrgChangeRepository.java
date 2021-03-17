@@ -23,8 +23,8 @@
 package de.metas.contracts.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.contracts.process.FlatrateTermCreator;
@@ -41,6 +41,7 @@ import org.compiere.model.I_AD_Org_Mapping;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.TimeUtil;
@@ -116,9 +117,9 @@ public class OrgChangeRepository
 				.create();
 	}
 
-	public BPartnerId retrieveOrCloneBPartner(final @NonNull OrgChangeParameters orgChangeParameters)
+	public BPartnerId retrieveOrCloneBPartner(final @NonNull OrgChangeRequest orgChangeRequest)
 	{
-		final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(orgChangeParameters.getBpartnerId());
+		final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(orgChangeRequest.getBpartnerId());
 
 		int orgMappingId = bPartnerRecord.getAD_Org_Mapping_ID();
 
@@ -132,7 +133,7 @@ public class OrgChangeRepository
 		}
 		else
 		{
-			final BPartnerId counterpartBPartnerId = retrieveCounterpartBPartner(orgMappingId, orgChangeParameters.getOrgToId());
+			final BPartnerId counterpartBPartnerId = retrieveCounterpartBPartner(orgMappingId, orgChangeRequest.getOrgToId());
 
 			if (counterpartBPartnerId != null)
 			{
@@ -142,12 +143,12 @@ public class OrgChangeRepository
 			}
 		}
 
-		createOrgChangehistory(orgMappingId, bPartnerRecord.getAD_Org_ID(), orgChangeParameters.getOrgToId());
+		createOrgChangeHistory(orgMappingId, bPartnerRecord.getAD_Org_ID(), orgChangeRequest.getOrgToId());
 
-		return cloneBPartner(orgChangeParameters, orgMappingId);
+		return cloneBPartner(orgChangeRequest, orgMappingId);
 	}
 
-	private void createOrgChangehistory(final int orgMappingId,
+	private void createOrgChangeHistory(final int orgMappingId,
 			final int orgFromId,
 			final OrgId orgToId)
 	{
@@ -181,72 +182,132 @@ public class OrgChangeRepository
 				.firstId(BPartnerId::ofRepoIdOrNull);
 	}
 
-	private BPartnerId cloneBPartner(final @NonNull OrgChangeParameters orgChangeParameters, final int orgMappingId)
+	private BPartnerId cloneBPartner(final @NonNull OrgChangeRequest orgChangeRequest, final int orgMappingId)
 	{
-		final I_C_BPartner oldBpartner = bpartnerDAO.getById(orgChangeParameters.getBpartnerId());
+		final I_C_BPartner oldBpartner = bpartnerDAO.getById(orgChangeRequest.getBpartnerId());
 
 		final I_C_BPartner newBPartner = copy()
 				.setFrom(oldBpartner)
 				.addTargetColumnNameToSkip(I_C_BPartner.COLUMNNAME_AD_Org_ID)
 				.copyToNew(I_C_BPartner.class);
 
-		newBPartner.setAD_Org_ID(orgChangeParameters.getOrgToId().getRepoId());
+		newBPartner.setAD_Org_ID(orgChangeRequest.getOrgToId().getRepoId());
 		newBPartner.setAD_Org_Mapping_ID(orgMappingId);
 		save(newBPartner);
 
 		return BPartnerId.ofRepoId(newBPartner.getC_BPartner_ID());
 	}
 
-	private void markIsActiveBPartner(final @NonNull BPartnerId bPartnerId, boolean isActive)
+	public void markIsActiveBPartner(final @NonNull BPartnerId bPartnerId, boolean isActive)
 	{
 		final I_C_BPartner bpartnerRecord = bpartnerDAO.getById(bPartnerId);
 		bpartnerRecord.setIsActive(isActive);
 		save(bpartnerRecord);
 	}
 
-	public void retrieveOrCloneLocations(final @NonNull OrgChangeParameters orgChangeParameters,
+	public void markIsActiveBPartnerLocation(final @NonNull BPartnerLocationId bPartnerLocationId, boolean isActive)
+	{
+		final I_C_BPartner_Location bpartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(bPartnerLocationId);
+		bpartnerLocationRecord.setIsActive(isActive);
+		save(bpartnerLocationRecord);
+	}
+
+	public void retrieveOrCloneLocations(final @NonNull OrgChangeRequest orgChangeRequest,
 			final @NonNull BPartnerId newBPartnerId)
 	{
-		final List<I_C_BPartner_Location> bpartnerActiveLocationRecords = bpartnerDAO.retrieveBPartnerLocations(orgChangeParameters.getBpartnerId());
+		final List<I_C_BPartner_Location> bpartnerActiveLocationRecords = bpartnerDAO.retrieveBPartnerLocations(orgChangeRequest.getBpartnerId());
 
 		for (I_C_BPartner_Location location : bpartnerActiveLocationRecords)
 		{
-			final int orgMappingId = location.getAD_Org_Mapping_ID();
+			BPartnerLocationId counterpartBPartnerLocationId = null;
 
-			// if(orgMappingId > 0 )
-			// {
-			// 	I_C_BPartner_Location counterpartBpartnerLocation = retrieveCounterpartBPartnerLocation(orgMappingId, orgChangeParameters.getOrgToId());
-			// }
-			// if(counterpartBpartnerLocation == null)
-			// {
-			// 	counterpartBpartnerLocation = cloneBPartnerLocation(location, orgMappingId )
-			// }
+			int orgMappingId = location.getAD_Org_Mapping_ID();
+
+			if (orgMappingId <= 0)
+			{
+				orgMappingId = createOrgMappingForBPartnerLocation(location);
+
+				location.setAD_Org_Mapping_ID(orgMappingId);
+
+				save(location);
+
+			}
+			else
+			{
+				counterpartBPartnerLocationId = retrieveCounterpartBPartnerLocation(orgMappingId,
+																					orgChangeRequest.getOrgToId());
+				if (counterpartBPartnerLocationId != null)
+				{
+					markIsActiveBPartnerLocation(counterpartBPartnerLocationId, true);
+				}
+			}
+
+			if (counterpartBPartnerLocationId == null)
+			{
+				counterpartBPartnerLocationId = cloneBPartnerLocation(location, orgMappingId, orgChangeRequest);
+			}
 		}
-		reactivateLocationsForPartner(orgChangeParameters, bpartnerActiveLocationRecords);
-
 	}
 
-	private I_C_BPartner_Location retrieveCounterpartBPartnerLocation(final int orgMappingId, final OrgId orgToId)
+	private BPartnerLocationId cloneBPartnerLocation(final I_C_BPartner_Location oldBPLocation, final int orgMappingId, final OrgChangeRequest orgChangeRequest)
 	{
-		// TODO
-		return null;
+		final OrgId orgToId = orgChangeRequest.getOrgToId();
+		final I_C_Location location = oldBPLocation.getC_Location();
+
+		final I_C_Location newLocation = copy()
+				.setFrom(location)
+				.addTargetColumnNameToSkip(I_C_Location.COLUMNNAME_AD_Org_ID)
+				.copyToNew(I_C_Location.class);
+
+		newLocation.setAD_Org_ID(orgToId.getRepoId());
+		save(newLocation);
+
+		final I_C_BPartner_Location newBPLocation = copy()
+				.setFrom(oldBPLocation)
+				.addTargetColumnNameToSkip(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID)
+				.addTargetColumnNameToSkip(I_C_BPartner_Location.COLUMNNAME_C_Location_ID)
+				.copyToNew(I_C_BPartner_Location.class);
+
+		newBPLocation.setC_Location_ID(newLocation.getC_Location_ID());
+		newBPLocation.setAD_Org_ID(orgChangeRequest.getOrgToId().getRepoId());
+		newBPLocation.setAD_Org_Mapping_ID(orgMappingId);
+		save(newBPLocation);
+
+		return BPartnerLocationId.ofRepoId(newBPLocation.getC_BPartner_ID(), newBPLocation.getC_BPartner_Location_ID());
 	}
 
-	private void reactivateLocationsForPartner(final OrgChangeParameters orgChangeParameters, final List<I_C_BPartner_Location> bpartnerLocationRecords)
+	private int createOrgMappingForBPartnerLocation(final I_C_BPartner_Location location)
+	{
+		final I_AD_Org_Mapping orgMapping = newInstance(I_AD_Org_Mapping.class);
+
+		orgMapping.setAD_Org_ID(0);
+		orgMapping.setAD_Table_ID(getTableId(I_C_BPartner_Location.class));
+		orgMapping.setValue(location.getName());
+
+		save(orgMapping);
+
+		return orgMapping.getAD_Org_Mapping_ID();
+	}
+
+	private BPartnerLocationId retrieveCounterpartBPartnerLocation(final int orgMappingId, final OrgId orgToId)
+	{
+		final I_C_BPartner_Location location = queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMN_AD_Org_Mapping_ID, orgMappingId)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID, orgToId)
+				.create()
+				.first(I_C_BPartner_Location.class);
+
+		return location == null ? null :
+				BPartnerLocationId.ofRepoIdOrNull(location.getC_BPartner_ID(), location.getC_BPartner_Location_ID());
+
+	}
+
+	private void reactivateLocationsForPartner(final OrgChangeRequest orgChangeRequest, final List<I_C_BPartner_Location> bpartnerLocationRecords)
 	{
 
 	}
 
-	// private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	//
-	// public OrgMappingId retrieveOrgMappingId(
-	// 		@NonNull final AdTableId tableId,
-	// 		@Nullable String value)
-	// {
-	//
-	// }
-
-	public void createSubscription(final @NonNull OrgChangeParameters orgChangeParams)
+	public void createSubscription(final @NonNull OrgChangeRequest orgChangeParams)
 	{
 		// now the source partner should have a counterpart in the new org.
 		// Also, the active users and locations have counterparts as well
@@ -306,11 +367,6 @@ public class OrgChangeRepository
 	}
 
 	private I_AD_User retrieveCounterpartUser(final int ad_user_inCharge_id)
-	{
-		return null;
-	}
-
-	private I_C_BPartner_Location retrieveCounterpartBPartnerLocation(final int bill_location_id)
 	{
 		return null;
 	}
