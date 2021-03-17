@@ -315,4 +315,4 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-03-16 20:2
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(578788,'en_US') 
 ;
 
-alter table ExternalSystem_Config_Alberta drop column name;
+

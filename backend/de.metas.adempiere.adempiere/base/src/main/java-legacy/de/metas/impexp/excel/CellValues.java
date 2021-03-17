@@ -1,17 +1,18 @@
 package de.metas.impexp.excel;
 
+import de.metas.util.NumberUtils;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.compiere.util.DisplayType;
-
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -38,7 +39,7 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class CellValues
 {
-	public static final int extractDisplayTypeFromValue(final Object value)
+	public static int extractDisplayTypeFromValue(final Object value)
 	{
 		if (value == null)
 		{
@@ -60,6 +61,10 @@ public class CellValues
 				return DisplayType.Number;
 			}
 		}
+		else if (value instanceof RepoIdAware)
+		{
+			return DisplayType.Integer;
+		}
 		else if (value instanceof Boolean)
 		{
 			return DisplayType.YesNo;
@@ -70,8 +75,10 @@ public class CellValues
 		}
 	}
 
-	/** @return a list that could contain {@code null} values */
-	public static ArrayList<CellValue> toCellValues(@NonNull final List<? extends Object> row)
+	/**
+	 * @return a list that could contain {@code null} values
+	 */
+	public static ArrayList<CellValue> toCellValues(@NonNull final List<?> row)
 	{
 		final ArrayList<CellValue> result = new ArrayList<>();
 		for (final Object value : row)
@@ -81,7 +88,7 @@ public class CellValues
 		return result;
 	}
 
-	public static final CellValue toCellValue(@Nullable final Object value)
+	public static CellValue toCellValue(@Nullable final Object value)
 	{
 		if (value == null)
 		{
@@ -92,7 +99,7 @@ public class CellValues
 		return toCellValue(value, displayType);
 	}
 
-	public static final CellValue toCellValue(final Object value, final int displayType)
+	public static CellValue toCellValue(final Object value, final int displayType)
 	{
 		if (value == null)
 		{
@@ -101,34 +108,27 @@ public class CellValues
 
 		if (DisplayType.isDate(displayType))
 		{
-			final Date date = (Date)value;
+			final Date date = TimeUtil.asDate(value);
 			return CellValue.ofDate(date);
 		}
 		else if (displayType == DisplayType.Integer)
 		{
-			final int valueInt;
-			if (value instanceof Number)
-			{
-				valueInt = ((Number)value).intValue();
-			}
-			else
-			{
-				valueInt = new BigDecimal(value.toString()).intValueExact();
-			}
-			return CellValue.ofNumber(valueInt);
+			final Integer valueInteger = NumberUtils.asInteger(value, null);
+			return valueInteger != null
+					? CellValue.ofNumber(valueInteger)
+					: null;
 		}
 		else if (DisplayType.isNumeric(displayType))
 		{
-			final Number number;
 			if (value instanceof Number)
 			{
-				number = (Number)value;
+				return CellValue.ofNumber((Number)value);
 			}
 			else
 			{
-				number = new BigDecimal(value.toString());
+				final BigDecimal number = NumberUtils.asBigDecimal(value, null);
+				return number != null ? CellValue.ofNumber(number) : null;
 			}
-			return CellValue.ofNumber(number);
 		}
 		else if (displayType == DisplayType.YesNo)
 		{
