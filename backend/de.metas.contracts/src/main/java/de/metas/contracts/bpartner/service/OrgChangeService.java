@@ -25,6 +25,7 @@ package de.metas.contracts.bpartner.service;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.contracts.bpartner.repository.OrgChangeRepository;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -44,15 +45,12 @@ public class OrgChangeService
 		this.bpCompositeRepo = bpCompositeRepo;
 	}
 
-	public void moveBPartnerToOrg(final OrgChangeRequest orgChangeRequest)
+	public void moveBPartnerToOrg(final @NonNull OrgChangeRequest orgChangeRequest)
 	{
-		final BPartnerComposite bpartnerComp = bpCompositeRepo.getById(orgChangeRequest.getBpartnerId());
+		final OrgChangeBPartnerComposite initialBPartnerComposite = orgChangeRepo.getByIdAndOrgChangeDate(orgChangeRequest.getBpartnerId(),
+																										  orgChangeRequest.getStartDate());
 
-		final BPartnerId counterpartBPartnerId = orgChangeRepo.retrieveOrCloneBPartner(orgChangeRequest);
 
-		orgChangeRepo.retrieveOrCloneLocations(orgChangeRequest, counterpartBPartnerId);
-
-		orgChangeRepo.markIsActiveBPartner(orgChangeRequest.getBpartnerId(), false);
 
 	}
 

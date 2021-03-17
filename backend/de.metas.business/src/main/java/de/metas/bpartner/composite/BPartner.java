@@ -111,6 +111,8 @@ public class BPartner
 
 	private String vatId;
 
+	private OrgMappingId orgMappingId;
+
 	private final RecordChangeLog changeLog;
 
 	/**
@@ -118,7 +120,7 @@ public class BPartner
 	 */
 	private final String shipmentAllocationBestBeforePolicy;
 
-	private final OrgMappingId orgMappingId;
+
 
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.

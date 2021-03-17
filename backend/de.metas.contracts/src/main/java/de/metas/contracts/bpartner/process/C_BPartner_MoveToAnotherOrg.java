@@ -46,6 +46,8 @@ package de.metas.contracts.bpartner.process;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.bpartner.repository.OrgChangeRepository;
+import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
 import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.bpartner.service.OrgChangeService;
 import de.metas.organization.OrgId;
@@ -81,7 +83,7 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 	@Param(parameterName = "IsShowMembershipParameter", mandatory = true)
 	private boolean isShowMembershipParameter;
 
-	//final OrgChangeRepository repo = SpringContextHolder.instance.getBean(OrgChangeRepository.class);
+	final OrgChangeRepository orgChangeRepo = SpringContextHolder.instance.getBean(OrgChangeRepository.class);
 	final OrgChangeService service = SpringContextHolder.instance.getBean(OrgChangeService.class);
 
 	@Override
@@ -96,6 +98,8 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 				.orgToId(p_orgTargetId)
 				.build();
 
+		final OrgChangeBPartnerComposite initialBPartnerComposite = orgChangeRepo.getByIdAndOrgChangeDate(orgChangeRequest.getBpartnerId(),
+																										  orgChangeRequest.getStartDate());
 		service.moveBPartnerToOrg(orgChangeRequest);
 
 		return MSG_OK;
