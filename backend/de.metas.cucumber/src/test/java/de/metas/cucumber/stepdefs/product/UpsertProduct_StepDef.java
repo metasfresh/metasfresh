@@ -179,13 +179,13 @@ public class UpsertProduct_StepDef
 
 	}
 
-	@Given("we create JsonRequestProductUpsertItems")
+	@Given("the user adds JsonRequestProductUpsertItems")
 	public void theUserAddsProduct(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> dataTableEntries = dataTable.asMaps();
 
 		dataTableEntries.forEach(dataTableEntry -> {
-			final String productCode = DataTableUtil.extractStringForColumnName(dataTableEntry, "ProductCode");
+			final String productCode = DataTableUtil.extractStringForColumnName(dataTableEntry, "Code");
 			productsByProductCode.put(productCode, mapProductRequestItem(dataTableEntry));
 		});
 	}
@@ -282,10 +282,10 @@ public class UpsertProduct_StepDef
 	private JsonRequestProductUpsertItem mapProductRequestItem(final Map<String, String> dataTableEntries)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableEntries, "productIdentifier");
-		final String code = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "ProductCode");
+		final String code = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "Code");
 		final String name = DataTableUtil.extractStringForColumnName(dataTableEntries, "Name");
 		final String type = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "Type");
-		final String UOMCode = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "UOMCode");
+		final String UOMCode = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "uomCode");
 		final String ean = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.EAN");
 		final String gtin = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.GTIN");
 		final String description = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.Description");
@@ -311,7 +311,7 @@ public class UpsertProduct_StepDef
 
 	}
 
-	@And("the request is set in context of syncAdvise {string}")
+	@And("we create a JsonRequestProductUpsert, set syncAdvise to {string}, add the JsonRequestProductUpsertItems and store it in the test context")
 	public void theRequestIsSetInContextOfSyncAdvise(final String syncAdvise) throws JsonProcessingException
 	{
 		final JsonRequestProductUpsert jsonRequestProductUpsert =

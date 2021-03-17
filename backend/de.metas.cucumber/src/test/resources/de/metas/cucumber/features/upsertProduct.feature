@@ -21,11 +21,11 @@ Feature:product create/update using metasfresh api
       | code345      | ext-ALBERTA-345    | true         | 10        | test          | test            | ean_test | gtin_test | test                  | test            |
       | code345      | ext-ALBERTA-456    | true         | 10        | test          | test            | ean_test | gtin_test | test                  | test            |
 
-    And we create JsonRequestProductUpsertItems
-      | productIdentifier | ProductCode | Name         | Type | UOMCode | OPT.EAN  | OPT.GTIN  | OPT.Description  | OPT.isActive |
-      | ext-ALBERTA-345   | code345     | Product_Test | ITEM | PCE     | ean_test | gtin_test | test_description | true         |
+    And the user adds JsonRequestProductUpsertItems
+      | productIdentifier | Code    | Name         | Type | uomCode | OPT.EAN  | OPT.GTIN  | OPT.Description  | OPT.isActive |
+      | ext-ALBERTA-345   | code345 | Product_Test | ITEM | PCE     | ean_test | gtin_test | test_description | true         |
 
-    And the request is set in context of syncAdvise 'CREATE_OR_MERGE'
+    And we create a JsonRequestProductUpsert, set syncAdvise to 'CREATE_OR_MERGE', add the JsonRequestProductUpsertItems and store it in the test context
 
     When the metasfresh REST-API endpoint path '/api/v2-pre/product/001' receives a 'PUT' request with the payload from context and responds with '200' status code
     Then verify if data is persisted correctly for each product
