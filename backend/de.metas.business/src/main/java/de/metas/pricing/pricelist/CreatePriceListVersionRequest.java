@@ -36,17 +36,18 @@ import java.time.Instant;
 public class CreatePriceListVersionRequest
 {
 	@NonNull
-	PriceListId priceListId;
-
-	@NonNull
 	OrgId orgId;
 
-	@Nullable
-	String description;
+	@NonNull
+	PriceListId priceListId;
 
 	@NonNull
 	Instant validFrom;
 
 	@NonNull
 	Boolean isActive;
+
+	@Nullable
+	String description;
+
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-pricing
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,25 +20,19 @@
  * #L%
  */
 
-package de.metas.common.rest_api.pricing.pricelist;
+package de.metas.common.pricing.pricelist.request.v2;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
-import static de.metas.common.rest_api.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
 @Value
 @ApiModel
-public class JsonRequestPriceListVersionUpsert
+public class JsonRequestPriceListVersionUpsertItem
 {
 	@ApiModelProperty(position = 10, dataType = "java.lang.String")
 	@JsonProperty("priceListVersionIdentifier")
@@ -48,19 +42,13 @@ public class JsonRequestPriceListVersionUpsert
 	@JsonProperty("jsonUpsertPriceListVersionRequest")
 	JsonRequestPriceListVersion jsonRequestPriceListVersion;
 
-	@ApiModelProperty(position = 30, value = "Default sync-advise that can be overridden by individual items\n" + READ_ONLY_SYNC_ADVISE_DOC)
-	@JsonProperty("syncAdvise")
-	SyncAdvise syncAdvise;
-
 	@JsonCreator
 	@Builder
-	public JsonRequestPriceListVersionUpsert(
+	public JsonRequestPriceListVersionUpsertItem(
 			@NonNull @JsonProperty("priceListVersionIdentifier") final String priceListVersionIdentifier,
-			@NonNull @JsonProperty("jsonUpsertPriceListVersionRequest") final JsonRequestPriceListVersion jsonRequestPriceListVersion,
-			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
+			@NonNull @JsonProperty("jsonUpsertPriceListVersionRequest") final JsonRequestPriceListVersion jsonRequestPriceListVersion)
 	{
 		this.priceListVersionIdentifier = priceListVersionIdentifier;
 		this.jsonRequestPriceListVersion = jsonRequestPriceListVersion;
-		this.syncAdvise = coalesce(syncAdvise, SyncAdvise.READ_ONLY);
 	}
 }

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.rest_api.pricing;
+package de.metas.rest_api.v2.pricing;
 
 import de.metas.common.bpartner.response.JsonResponseUpsertItem;
 import de.metas.common.rest_api.JsonMetasfreshId;

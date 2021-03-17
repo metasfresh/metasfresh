@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business.rest-api
+ * de.metas.business.rest-api-impl
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,13 +20,14 @@
  * #L%
  */
 
-package de.metas.rest_api.pricing;
+package de.metas.rest_api.v2.pricing;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.bpartner.response.JsonResponseUpsert;
 import de.metas.common.bpartner.response.JsonResponseUpsertItem;
+import de.metas.common.pricing.pricelist.request.v2.JsonRequestPriceListVersionUpsert;
 import de.metas.common.rest_api.SyncAdvise;
-import de.metas.common.rest_api.pricing.pricelist.JsonRequestPriceListVersionUpsert;
 import de.metas.common.rest_api.pricing.productprice.JsonRequestProductPriceUpsert;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
@@ -51,18 +52,18 @@ import java.util.stream.Collectors;
 		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/prices" })
 @RestController
 @Profile(Profiles.PROFILE_App)
-public class PriceListRestController
+public class PricesRestController
 {
 	private final PriceListRestService priceListRestService;
 	private final ProductPriceRestService productPriceRestService;
 
-	public PriceListRestController(@NonNull final PriceListRestService priceListRestService, final ProductPriceRestService productPriceRestService)
+	public PricesRestController(@NonNull final PriceListRestService priceListRestService, final ProductPriceRestService productPriceRestService)
 	{
 		this.priceListRestService = priceListRestService;
 		this.productPriceRestService = productPriceRestService;
 	}
 
-	@ApiOperation("Create or update price list version by price list id")
+	@ApiOperation("Create or update price list versions")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Successfully processed the request"),
 			@ApiResponse(code = 401, message = "You are not authorized to consume this resource"),
@@ -70,10 +71,17 @@ public class PriceListRestController
 			@ApiResponse(code = 422, message = "The request body could not be processed")
 	})
 	@PutMapping(path = "/priceListVersions", consumes = "application/json", produces = "application/json")
-	public ResponseEntity<JsonResponseUpsertItem> putPriceListVersions(@RequestBody @NonNull final JsonRequestPriceListVersionUpsert request)
+	public ResponseEntity<JsonResponseUpsert> putPriceListVersions(@RequestBody @NonNull final JsonRequestPriceListVersionUpsert request)
 	{
-		final JsonResponseUpsertItem jsonResponseUpsertItem = priceListRestService.putPriceListVersions(request);
-		return ResponseEntity.ok(jsonResponseUpsertItem);
+		final List<JsonResponseUpsertItem> jsonResponseUpsertItemList = request.getRequestItems().stream()
+				.map(item -> priceListRestService.upsertPriceListVersion(item, request.getSyncAdvise()))
+				.collect(ImmutableList.toImmutableList());
+
+		final JsonResponseUpsert responseUpsert = JsonResponseUpsert.builder()
+				.responseItems(jsonResponseUpsertItemList)
+				.build();
+
+		return ResponseEntity.ok(responseUpsert);
 	}
 
 	@ApiOperation("Create or update product price by price list version identifier")

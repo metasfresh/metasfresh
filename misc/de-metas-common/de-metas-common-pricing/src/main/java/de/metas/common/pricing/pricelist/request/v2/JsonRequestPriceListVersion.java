@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-pricing
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,13 +20,15 @@
  * #L%
  */
 
-package de.metas.common.rest_api.pricing.pricelist;
+package de.metas.common.pricing.pricelist.request.v2;
 
 import de.metas.common.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+
+import java.time.Instant;
 
 @Getter
 @ToString
@@ -39,22 +41,16 @@ public class JsonRequestPriceListVersion
 	@ApiModelProperty(required = true)
 	private String orgCode;
 
+	@ApiModelProperty(required = true)
+	private Instant validFrom;
+
+	@ApiModelProperty(required = true)
+	private Boolean active;
+
 	private String description;
 
 	@ApiModelProperty(hidden = true)
 	private boolean descriptionSet;
-
-	@ApiModelProperty(required = true)
-	private String validFrom;
-
-	@ApiModelProperty(hidden = true)
-	private boolean validFromSet;
-
-	@ApiModelProperty(required = true)
-	private String active;
-
-	@ApiModelProperty(hidden = true)
-	private boolean activeSet;
 
 	private SyncAdvise syncAdvise;
 
@@ -77,16 +73,14 @@ public class JsonRequestPriceListVersion
 		this.descriptionSet = true;
 	}
 
-	public void setValidFrom(final String validFrom)
+	public void setValidFrom(final Instant validFrom)
 	{
 		this.validFrom = validFrom;
-		this.validFromSet = true;
 	}
 
-	public void setActive(final String active)
+	public void setActive(final Boolean active)
 	{
 		this.active = active;
-		this.activeSet = true;
 	}
 
 	public void setSyncAdvise(final SyncAdvise syncAdvise)

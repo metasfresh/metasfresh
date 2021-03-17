@@ -36,71 +36,65 @@ import org.springframework.stereotype.Repository;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-public class PriceListRepository
+public class PriceListVersionRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
 	public PriceListVersion createPriceListVersion(@NonNull final CreatePriceListVersionRequest request)
 	{
-		final I_M_PriceList_Version record = buildCreatePriceListVersion(request);
+		final I_M_PriceList_Version record = prepareNewPriceListVersionRecord(request);
 		saveRecord(record);
 
 		return toPriceListVersion(record);
 	}
 
-	public void updatePriceListVersion(@NonNull final PriceListVersion request)
+	@NonNull
+	public PriceListVersion getPriceListVersionById(@NonNull final PriceListVersionId priceListVersionId)
 	{
-		final I_M_PriceList_Version record = buildPriceListVersion(request);
-		saveRecord(record);
-	}
+		final I_M_PriceList_Version priceListVersionRecord = queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_Version_ID, priceListVersionId.getRepoId())
+				.create()
+				.firstOnlyNotNull(I_M_PriceList_Version.class);
 
-	public void inactivatePriceListVersion(@NonNull final PriceListVersion priceListVersion)
-	{
-		final PriceListVersionId priceListVersionId = priceListVersion.getPriceListVersionId();
-		final I_M_PriceList_Version record = getRecordById(priceListVersionId);
-
-		record.setIsActive(false);
-		saveRecord(record);
+		return toPriceListVersion(priceListVersionRecord);
 	}
 
 	@NonNull
-	private I_M_PriceList_Version buildCreatePriceListVersion(@NonNull final CreatePriceListVersionRequest request)
+	public PriceListVersion savePriceListVersion(@NonNull final PriceListVersion request)
+	{
+		final I_M_PriceList_Version record = toPriceListVersionRecord(request);
+		saveRecord(record);
+
+		return toPriceListVersion(record);
+	}
+
+	@NonNull
+	private I_M_PriceList_Version prepareNewPriceListVersionRecord(@NonNull final CreatePriceListVersionRequest request)
 	{
 		final I_M_PriceList_Version record = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
 
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
-
 		record.setM_PriceList_ID(request.getPriceListId().getRepoId());
 
 		record.setValidFrom(TimeUtil.asTimestamp(request.getValidFrom()));
 		record.setIsActive(request.getIsActive());
 
-		if (request.getDescription() != null)
-		{
-			record.setDescription(request.getDescription());
-		}
+		record.setDescription(request.getDescription());
 
 		return record;
 	}
 
 	@NonNull
-	private I_M_PriceList_Version buildPriceListVersion(@NonNull final PriceListVersion request)
+	private I_M_PriceList_Version toPriceListVersionRecord(@NonNull final PriceListVersion request)
 	{
 		final I_M_PriceList_Version existingRecord = getRecordById(request.getPriceListVersionId());
 
 		existingRecord.setAD_Org_ID(request.getOrgId().getRepoId());
-
-		existingRecord.setM_PriceList_Version_ID(request.getPriceListVersionId().getRepoId());
 		existingRecord.setM_PriceList_ID(request.getPriceListId().getRepoId());
-
 		existingRecord.setValidFrom(TimeUtil.asTimestamp(request.getValidFrom()));
 		existingRecord.setIsActive(request.getIsActive());
-
-		if (request.getDescription() != null)
-		{
-			existingRecord.setDescription(request.getDescription());
-		}
+		existingRecord.setDescription(request.getDescription());
 
 		return existingRecord;
 	}
@@ -108,9 +102,8 @@ public class PriceListRepository
 	@NonNull
 	private I_M_PriceList_Version getRecordById(@NonNull final PriceListVersionId priceListVersionId)
 	{
-		return queryBL
-				.createQueryBuilder(I_M_PriceList_Version.class)
-				.filter(item -> item.getM_PriceList_Version_ID() == priceListVersionId.getRepoId())
+		return queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.addEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_Version_ID, priceListVersionId.getRepoId())
 				.create()
 				.firstOnlyNotNull(I_M_PriceList_Version.class);
 	}

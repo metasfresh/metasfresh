@@ -46,14 +46,14 @@ public class PriceListVersion
 	@NonNull
 	PriceListVersionId priceListVersionId;
 
-	@Nullable
-	String description;
-
 	@NonNull
 	Instant validFrom;
 
 	@NonNull
 	Boolean isActive;
+
+	@Nullable
+	String description;
 
 	@Builder
 	public PriceListVersion(
