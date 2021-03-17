@@ -75,8 +75,4 @@ public class CreateBPartnerProductRequest
 
 	@Nullable
 	Boolean dropShip;
-
-	int shelfLifeMinPct;
-
-	int shelfLifeMinDays;
 }

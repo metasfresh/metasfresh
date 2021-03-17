@@ -187,8 +187,9 @@ public class ProductRepository
 		bPartnerProduct.setGTIN(request.getGtin());
 		bPartnerProduct.setCustomerLabelName(request.getCustomerLabelName());
 		bPartnerProduct.setIngredients(request.getIngredients());
-		bPartnerProduct.setShelfLifeMinPct(request.getShelfLifeMinPct());
-		bPartnerProduct.setShelfLifeMinDays(request.getShelfLifeMinDays());
+		bPartnerProduct.setShelfLifeMinPct(0); // FIXME
+		bPartnerProduct.setShelfLifeMinDays(0); // FIXME
+		bPartnerProduct.setExclusionFromSaleReason(request.getExclusionFromSalesReason());
 
 		if (request.getDropShip() != null)
 		{
@@ -199,7 +200,6 @@ public class ProductRepository
 		if (request.getIsExcludedFromSales() != null)
 		{
 			bPartnerProduct.setIsExcludedFromSale(request.getIsExcludedFromSales());
-
 		}
 
 		if (request.getCurrentVendor() != null)

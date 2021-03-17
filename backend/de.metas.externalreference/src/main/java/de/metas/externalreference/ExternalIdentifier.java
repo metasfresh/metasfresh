@@ -116,7 +116,7 @@ public class ExternalIdentifier
 	public enum Type
 	{
 		METASFRESH_ID(Pattern.compile("^\\d+$")),
-		EXTERNAL_REFERENCE(Pattern.compile("(?:^ext-)(.+)-(.+)"));
+		EXTERNAL_REFERENCE(Pattern.compile("(?:^ext-)([a-zA-Z0-9]+)-(.+)"));
 
 		private final Pattern pattern;
 	}
