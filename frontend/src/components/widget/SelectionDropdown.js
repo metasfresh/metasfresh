@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { TransitionGroup as ReactCSSTransitionGroup } from 'react-transition-group';
 import classnames from 'classnames';
 
 /**
