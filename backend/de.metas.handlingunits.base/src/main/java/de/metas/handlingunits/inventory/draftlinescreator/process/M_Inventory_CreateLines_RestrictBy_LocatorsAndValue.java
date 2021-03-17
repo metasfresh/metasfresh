@@ -4,6 +4,7 @@ import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.LeastRecentTransactionStrategy;
+import de.metas.handlingunits.inventory.draftlinescreator.ProductStockFilter;
 import de.metas.organization.IOrgDAO;
 import de.metas.process.Param;
 import de.metas.util.Services;
@@ -48,8 +49,8 @@ public class M_Inventory_CreateLines_RestrictBy_LocatorsAndValue extends DraftIn
 	@Param(parameterName = "MaxNumberOfLocators")
 	private int maxLocators;
 
-	@Param(parameterName = "OnlyStockedProducts")
-	private boolean onlyStockedProducts;
+	@Param(parameterName = "StockFilterOption")
+	private String stockFilterOption;
 
 	@Override
 	protected LeastRecentTransactionStrategy createStrategy(@NonNull final Inventory inventory)
@@ -57,12 +58,20 @@ public class M_Inventory_CreateLines_RestrictBy_LocatorsAndValue extends DraftIn
 		final ZoneId timeZone = orgDAO.getTimeZone(inventory.getOrgId());
 		final LocalDate movementDate = TimeUtil.asLocalDate(inventory.getMovementDate(), timeZone);
 
-		return HUsForInventoryStrategies.leastRecentTransaction()
+		final LeastRecentTransactionStrategy.LeastRecentTransactionStrategyBuilder builder = HUsForInventoryStrategies.leastRecentTransaction()
 				.maxLocators(maxLocators)
 				.minimumPrice(minimumPrice)
 				.movementDate(movementDate)
-				.onlyStockedProducts(onlyStockedProducts)
-				.huForInventoryLineFactory(huForInventoryLineFactory)
-				.build();
+				.huForInventoryLineFactory(huForInventoryLineFactory);
+		switch (ProductStockFilter.of(stockFilterOption))
+		{
+			case STOCKED:
+				builder.onlyStockedProducts(true);
+				break;
+			case NON_STOCKED:
+				builder.onlyStockedProducts(false);
+				break;
+		}
+		return builder.build();
 	}
 }

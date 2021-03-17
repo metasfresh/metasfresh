@@ -4,10 +4,11 @@ import { push } from 'react-router-redux';
 import { Set as iSet } from 'immutable';
 import currentDevice from 'current-device';
 import { get, debounce } from 'lodash';
-import deepUnfreeze from 'deep-unfreeze';
+
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
 import { locationSearchRequest, getViewRowsByIds } from '../api';
 import { connectWS, disconnectWS } from '../utils/websockets';
+import { deepUnfreeze } from '../utils';
 
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
@@ -246,6 +247,7 @@ class DocumentListContainer extends Component {
                 viewId,
                 selectedIds: table.selected,
                 viewProfileId,
+                isModal,
               });
             }
 

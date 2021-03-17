@@ -22,7 +22,6 @@
 
 package de.metas.externalreference.rest;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
@@ -31,6 +30,7 @@ import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
@@ -39,9 +39,11 @@ import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -51,6 +53,8 @@ import java.util.Map;
 @Component
 public class ExternalReferenceRestControllerService
 {
+	private static final Logger logger = LogManager.getLogger(ExternalReferenceRestControllerService.class);
+
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ExternalSystems externalSystems;
 	private final ExternalReferenceTypes externalReferenceTypes;
@@ -65,8 +69,8 @@ public class ExternalReferenceRestControllerService
 		this.externalReferenceTypes = externalReferenceTypes;
 	}
 
-	JsonExternalReferenceLookupResponse performLookup(
-			@NonNull final String orgCode,
+	public JsonExternalReferenceLookupResponse performLookup(
+			@Nullable final String orgCode,
 			@NonNull final JsonExternalReferenceLookupRequest request)
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
@@ -74,19 +78,19 @@ public class ExternalReferenceRestControllerService
 		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
 
-		final ImmutableList<ExternalReferenceQuery> queries = extractRepoQueries(request, orgId, externalSystem);
+		final ImmutableSet<ExternalReferenceQuery> queries = extractRepoQueries(request, orgId, externalSystem);
 
 		final ImmutableMap<ExternalReferenceQuery, ExternalReference> externalReferences = externalReferenceRepository.getExternalReferences(queries);
 
 		return createResponseFromRepoResult(externalReferences);
 	}
 
-	private ImmutableList<ExternalReferenceQuery> extractRepoQueries(
+	private ImmutableSet<ExternalReferenceQuery> extractRepoQueries(
 			@NonNull final JsonExternalReferenceLookupRequest request,
 			@NonNull final OrgId orgId,
 			@NonNull final IExternalSystem externalSystem)
 	{
-		final ImmutableList.Builder<ExternalReferenceQuery> queriesBuilder = ImmutableList.builder();
+		final ImmutableSet.Builder<ExternalReferenceQuery> queriesBuilder = ImmutableSet.builder();
 
 		final ExternalReferenceQuery.ExternalReferenceQueryBuilder queryBuilder = ExternalReferenceQuery.builder().externalSystem(externalSystem);
 		for (final JsonExternalReferenceLookupItem item : request.getItems())
@@ -101,8 +105,7 @@ public class ExternalReferenceRestControllerService
 					.build();
 			queriesBuilder.add(query);
 		}
-		final ImmutableList<ExternalReferenceQuery> queries = queriesBuilder.build();
-		return queries;
+		return queriesBuilder.build();
 	}
 
 	private JsonExternalReferenceLookupResponse createResponseFromRepoResult(
@@ -127,7 +130,12 @@ public class ExternalReferenceRestControllerService
 			}
 			else
 			{
-				responseItem = JsonExternalReferenceItem.of(lookupItem, JsonMetasfreshId.of(externalReference.getRecordId()));
+				responseItem = JsonExternalReferenceItem.builder()
+						.lookupItem(lookupItem)
+						.metasfreshId(JsonMetasfreshId.of(externalReference.getRecordId()))
+						.version(externalReference.getVersion())
+						.build();
+
 			}
 			result.item(responseItem);
 		}
@@ -157,8 +165,44 @@ public class ExternalReferenceRestControllerService
 					.externalReference(lookupItem.getId())
 					.externalReferenceType(type)
 					.recordId(metasfreshId.getValue())
+					.version(reference.getVersion())
 					.build();
 			externalReferenceRepository.save(externalReference);
 		}
+	}
+
+	public void performInsertIfMissing(
+			@NonNull final JsonSingleExternalReferenceCreateReq externalRefCreateReq,
+			@Nullable final String orgCode)
+	{
+		final JsonExternalReferenceLookupRequest externalRefLookupReq = JsonExternalReferenceLookupRequest.builder()
+				.systemName(externalRefCreateReq.getSystemName())
+				.item(externalRefCreateReq.getExternalReferenceItem().getLookupItem())
+				.build();
+
+		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgCode, externalRefLookupReq);
+
+		if (lookupResponse != null)
+		{
+			final boolean isExternalRefAlreadyCreated = lookupResponse.getItems()
+					.stream()
+					.filter(item -> item.getLookupItem().equals(externalRefCreateReq.getExternalReferenceItem().getLookupItem()))
+					.findFirst()
+					.map(externalRefItem -> externalRefItem.getMetasfreshId() != null)
+					.orElse(false);
+
+			if (isExternalRefAlreadyCreated)
+			{
+				logger.debug("insertExternalReferenceIfMissing: There is already an external reference stored for: " + externalRefCreateReq);
+				return; // nothing to do for now, but it might be a good idea to support updates on external ref
+			}
+		}
+
+		final JsonExternalReferenceCreateRequest jsonExternalReferenceCreateRequest = JsonExternalReferenceCreateRequest.builder()
+				.systemName(externalRefCreateReq.getSystemName())
+				.item(externalRefCreateReq.getExternalReferenceItem())
+				.build();
+
+		performInsert(orgCode, jsonExternalReferenceCreateRequest);
 	}
 }

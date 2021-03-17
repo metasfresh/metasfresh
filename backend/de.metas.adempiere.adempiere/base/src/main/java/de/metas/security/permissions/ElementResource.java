@@ -22,12 +22,12 @@ package de.metas.security.permissions;
  * #L%
  */
 
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.util.lang.EqualsBuilder;
-import org.adempiere.util.lang.HashcodeBuilder;
-
 import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+
+import javax.annotation.concurrent.Immutable;
 
 /**
  * Application Dictionary element (e.g. Window, Process etc).
@@ -36,75 +36,34 @@ import de.metas.util.Check;
  *
  */
 @Immutable
+@EqualsAndHashCode(of = {"elementTableNameUC", "elementId"})
 public final class ElementResource implements Resource
 {
-	public static final ElementResource of(final String tableName, final int elementId)
+	public static ElementResource of(final String tableName, final int elementId)
 	{
 		return new ElementResource(tableName, elementId);
 	}
 
-	private final String tableName;
-	private final String tableNameUC;
-	private final int elementId;
-	private int hashcode = 0;
+	@Getter
+	private final String elementTableName;
+	private final String elementTableNameUC;
 
-	private ElementResource(final String tableName, final int elementId)
+	@Getter
+	private final int elementId;
+
+	private ElementResource(@NonNull final String elementTableName, final int elementId)
 	{
-		Check.assumeNotEmpty(tableName, "tableName not empty");
+		Check.assumeNotEmpty(elementTableName, "elementTableName not empty");
 		Check.assume(elementId > 0, "elementId > 0");
 
-		this.tableName = tableName.trim();
-		this.tableNameUC = this.tableName.toUpperCase();
+		this.elementTableName = elementTableName.trim();
+		this.elementTableNameUC = this.elementTableName.toUpperCase();
 		this.elementId = elementId;
 	}
 
 	@Override
 	public String toString()
 	{
-		return tableName + "-" + elementId;
-	}
-
-	@Override
-	public int hashCode()
-	{
-		if (hashcode == 0)
-		{
-			hashcode = new HashcodeBuilder()
-					.append(31) // seed
-					.append(tableNameUC)
-					.append(elementId)
-					.toHashcode();
-		}
-		return hashcode;
-	}
-
-	@Override
-	public boolean equals(final Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-
-		final ElementResource other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-
-		return new EqualsBuilder()
-				.append(tableNameUC, other.tableNameUC)
-				.append(elementId, other.elementId)
-				.isEqual();
-	}
-
-	public String getElementTableName()
-	{
-		return tableName;
-	}
-
-	public int getElementId()
-	{
-		return elementId;
+		return elementTableName + "-" + elementId;
 	}
 }

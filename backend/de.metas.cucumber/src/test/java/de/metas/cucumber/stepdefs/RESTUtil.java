@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.security.IRoleDAO;
 import de.metas.security.Role;
 import de.metas.user.UserId;
@@ -42,6 +43,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.compiere.model.I_AD_User_AuthToken;
 
+import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -79,11 +81,11 @@ public class RESTUtil
 
 	public APIResponse performHTTPRequest(final String endpointPath,
 			final String verb,
-			final String payload, final String authToken) throws IOException
+			final String payload,
+			final String authToken,
+			@Nullable final Integer statusCode) throws IOException
 	{
 		final CloseableHttpClient httpClient = HttpClients.createDefault();
-
-		final StringEntity entity = new StringEntity(payload);
 
 		final String appServerPort = System.getProperty("server.port");
 		final String url = "http://localhost:" + appServerPort + "/" + endpointPath;
@@ -102,10 +104,14 @@ public class RESTUtil
 		}
 
 		setHeaders(request, authToken);
-		request.setEntity(entity);
+		if (payload != null)
+		{
+			final StringEntity entity = new StringEntity(payload);
+			request.setEntity(entity);
+		}
 
 		final HttpResponse response = httpClient.execute(request);
-		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
 
 		final Header contentType = response.getEntity().getContentType();
 		final APIResponse.APIResponseBuilder apiResponseBuilder = APIResponse.builder();

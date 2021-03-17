@@ -30,6 +30,7 @@ import {
 import {
   loginRequest,
   localLoginRequest,
+  loginWithToken,
   loginCompletionRequest,
   logoutRequest,
   resetPasswordRequest,
@@ -74,6 +75,7 @@ export {
   locationSearchRequest,
   loginCompletionRequest,
   loginRequest,
+  loginWithToken,
   logoutRequest,
   patchRequest,
   quickActionsRequest,

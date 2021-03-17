@@ -139,7 +139,8 @@ public class BPRelation
 		NursingHome(X_C_BP_Relation.ROLE_NursingHome),
 		Caregiver(X_C_BP_Relation.ROLE_Caregiver),
 		PreferredPharmacy(X_C_BP_Relation.ROLE_PreferredPharmacy),
-		NursingService(X_C_BP_Relation.ROLE_NursingService);
+		NursingService(X_C_BP_Relation.ROLE_NursingService),
+		Payer(X_C_BP_Relation.ROLE_Payer);
 
 		@Getter
 		private final String code;

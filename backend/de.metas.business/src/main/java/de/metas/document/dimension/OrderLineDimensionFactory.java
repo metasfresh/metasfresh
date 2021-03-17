@@ -24,6 +24,7 @@ package de.metas.document.dimension;
 
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import lombok.NonNull;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
@@ -37,7 +38,8 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 	}
 
 	@Override
-	public Dimension getFromRecord(final I_C_OrderLine record)
+	@NonNull
+	public Dimension getFromRecord(@NonNull final I_C_OrderLine record)
 	{
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))

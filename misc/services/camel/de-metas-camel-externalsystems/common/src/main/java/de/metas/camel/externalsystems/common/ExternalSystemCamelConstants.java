@@ -28,6 +28,8 @@ import lombok.experimental.UtilityClass;
 public class ExternalSystemCamelConstants
 {
 	public static final String HEADER_ORG_CODE = "orgCode";
+	public static final String HEADER_PINSTANCE_ID = "pInstanceId";
+
 	public static String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 
 	public static String MF_UPSERT_BPRELATION_CAMEL_URI = "metasfresh.upsert-bprelation.camel.uri";
@@ -36,5 +38,9 @@ public class ExternalSystemCamelConstants
 
 	public static String MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.lookup-externalreference.camel.uri";
 
-	public static String MF_REPORT_ERROR_CAMEL_URI= "metasfresh.report_error.camel.uri";
+	public static String MF_EXTERNAL_SYSTEM_URI = "metasfresh.externalsystem.api.uri";
+
+	public final String MF_ERROR_ROUTE_ID = "Error-Route";
+
+	public final String MF_LOG_MESSAGE_ROUTE_ID = "Log-Message-Route";
 }

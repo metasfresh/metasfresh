@@ -123,6 +123,12 @@
             <version>${metasfresh.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.externalsystem</groupId>
+            <artifactId>de.metas.externalsystem</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 </project>

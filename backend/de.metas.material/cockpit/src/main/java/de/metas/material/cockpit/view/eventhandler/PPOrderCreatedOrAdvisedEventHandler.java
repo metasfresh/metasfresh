@@ -1,8 +1,12 @@
 package de.metas.material.cockpit.view.eventhandler;
 
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
@@ -13,7 +17,6 @@ import com.google.common.collect.ImmutableList;
 import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
-import de.metas.material.cockpit.CockpitConstants;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
@@ -55,6 +58,7 @@ public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler
 	private static final Logger logger = LogManager.getLogger(PPOrderCreatedOrAdvisedEventHandler.class);
 
 	private final MainDataRequestHandler dataUpdateRequestHandler;
+	private IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public PPOrderCreatedOrAdvisedEventHandler(@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
 	{
@@ -83,12 +87,15 @@ public class PPOrderCreatedOrAdvisedEventHandler implements MaterialEventHandler
 		final PPOrder ppOrder = ppOrderEvent.getPpOrder();
 		final List<PPOrderLine> lines = ppOrder.getLines();
 
+		final OrgId orgId = ppOrderEvent.getEventDescriptor().getOrgId();
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		
 		final ImmutableList.Builder<UpdateMainDataRequest> requests = ImmutableList.builder();
 		for (final PPOrderLine line : lines)
 		{
 			final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 					.productDescriptor(line.getProductDescriptor())
-					.date(TimeUtil.getDay(ppOrder.getDatePromised(), CockpitConstants.TIME_ZONE))
+					.date(TimeUtil.getDay(ppOrder.getDatePromised(), timeZone))
 					.build();
 
 			final UpdateMainDataRequest request = UpdateMainDataRequest.builder()

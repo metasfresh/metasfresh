@@ -63,7 +63,8 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 	LocatorId locatorId;
 	@Nullable
 	ProductId productId;
-	boolean onlyStockedProducts;
+	@Nullable
+	Boolean onlyStockedProducts;
 	@NonNull AttributeSetInstanceId asiId;
 
 	@Builder
@@ -73,7 +74,7 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 			@Nullable final WarehouseId warehouseId,
 			@Nullable final LocatorId locatorId,
 			@Nullable final ProductId productId,
-			final boolean onlyStockedProducts,
+			@Nullable final Boolean onlyStockedProducts,
 			@Nullable final AttributeSetInstanceId asiId)
 	{
 		this.huForInventoryLineFactory = huForInventoryLineFactory;
@@ -97,9 +98,12 @@ public class LocatorAndProductStrategy implements HUsForInventoryStrategy
 	{
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder()
 				.setOnlyTopLevelHUs()
-				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active)
-				.setOnlyStockedProducts(onlyStockedProducts);
+				.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
 
+		if (onlyStockedProducts != null)
+		{
+			huQueryBuilder.setOnlyStockedProducts(onlyStockedProducts);
+		}
 		if (warehouseId != null)
 		{
 			huQueryBuilder.addOnlyInWarehouseId(warehouseId);

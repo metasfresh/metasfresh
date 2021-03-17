@@ -20,25 +20,29 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT distinct
-  bp.companyname,
-  bpl.address,
-  p.name             as ProductName,
-  additional_produktinfos as Additional_produktinfos,
-  p.value            as ProductValue,
-  UPC                     as UPC,
-  weight                  as NetWeight,
-  c.name                 as Country,
-  guaranteedaysmin        as ShelfLifeDays,
-  warehouse_temperature   as Warehouse_temperature,
-  p.description       as ProductDescription,
-p.customerlabelname,
-m_product_ID
+    bp.companyname,
+    bpl.address,
+    p.name             as ProductName,
+    additional_produktinfos as Additional_produktinfos,
+    p.value            as ProductValue,
+    UPC                     as UPC,
+    weight                  as NetWeight,
+    c.name                 as Country,
+                CASE
+                    when ((guaranteedaysmin is NULL) or (guaranteedaysmin <= 0) and guaranteemonths IS NOT NULL) then
+                        getDaysFromGuaranteeMonths(guaranteemonths)
+                    ELSE guaranteedaysmin
+                end as ShelfLifeDays,
+    warehouse_temperature   as Warehouse_temperature,
+    p.description       as ProductDescription,
+    p.customerlabelname,
+    m_product_ID
 FROM m_product p
-left outer join ad_orginfo oi on p.ad_org_id = oi.ad_org_id
-left outer join C_BPartner_Location bpl on oi.orgbp_location_id = bpl.c_bpartner_location_id
-left outer join C_BPartner bp on bpl.C_BPartner_ID = bp.C_BPartner_ID
-left outer join c_location l on bpl.c_location_id = l.c_location_id
- left outer join c_country c on l.c_country_id = c.c_country_id
+         left outer join ad_orginfo oi on p.ad_org_id = oi.ad_org_id
+         left outer join C_BPartner_Location bpl on oi.orgbp_location_id = bpl.c_bpartner_location_id
+         left outer join C_BPartner bp on bpl.C_BPartner_ID = bp.C_BPartner_ID
+         left outer join c_location l on bpl.c_location_id = l.c_location_id
+         left outer join c_country c on l.c_country_id = c.c_country_id
  WHERE m_product_ID = $P{RECORD_ID}
 ;]]>
 	</queryString>

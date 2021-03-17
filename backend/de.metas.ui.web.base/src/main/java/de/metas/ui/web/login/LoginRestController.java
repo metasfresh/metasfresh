@@ -6,10 +6,9 @@ import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ILanguageBL;
-import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
-import de.metas.ui.web.session.UserPreference;
+import de.metas.security.UserAuthToken;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.login.exceptions.NotAuthenticatedException;
 import de.metas.ui.web.login.json.JSONLoginAuthRequest;
@@ -19,6 +18,7 @@ import de.metas.ui.web.login.json.JSONResetPassword;
 import de.metas.ui.web.login.json.JSONResetPasswordCompleteRequest;
 import de.metas.ui.web.login.json.JSONResetPasswordRequest;
 import de.metas.ui.web.notification.UserNotificationsService;
+import de.metas.ui.web.session.UserPreference;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.session.UserSessionRepository;
 import de.metas.ui.web.upload.WebuiImageId;
@@ -28,10 +28,11 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
-import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
+import de.metas.util.web.security.UserAuthTokenService;
+import lombok.NonNull;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
@@ -43,8 +44,6 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 import org.compiere.util.LoginContext;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -56,6 +55,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.Objects;
@@ -84,28 +84,36 @@ import java.util.Set;
  */
 
 @RestController
-@RequestMapping(value = LoginRestController.ENDPOINT)
+@RequestMapping(LoginRestController.ENDPOINT)
 public class LoginRestController
 {
-	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/login";
+	static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/login";
 
-	private final static transient Logger logger = LogManager.getLogger(LoginRestController.class);
+	private final IUserBL usersService = Services.get(IUserBL.class);
+	private final ISessionBL sessionBL = Services.get(ISessionBL.class);
+	private final ILanguageBL languageBL = Services.get(ILanguageBL.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final UserSession userSession;
+	private final UserSessionRepository userSessionRepo;
+	private final UserNotificationsService userNotificationsService;
+	private final WebuiImageService imageService;
+	private final UserAuthTokenService userAuthTokenService;
 
 	private final static AdMessageKey MSG_UserLoginInternalError = AdMessageKey.of("UserLoginInternalError");
 
-	private final IErrorManager errorManager = Services.get(IErrorManager.class);
-
-	@Autowired
-	private UserSession userSession;
-
-	@Autowired
-	private UserSessionRepository userSessionRepo;
-
-	@Autowired
-	private UserNotificationsService userNotificationsService;
-
-	@Autowired
-	private WebuiImageService imageService;
+	public LoginRestController(
+			@NonNull final UserSession userSession,
+			@NonNull final UserSessionRepository userSessionRepo,
+			@NonNull final UserNotificationsService userNotificationsService,
+			@NonNull final WebuiImageService imageService,
+			@NonNull final UserAuthTokenService userAuthTokenService)
+	{
+		this.userSession = userSession;
+		this.userSessionRepo = userSessionRepo;
+		this.userNotificationsService = userNotificationsService;
+		this.imageService = imageService;
+		this.userAuthTokenService = userAuthTokenService;
+	}
 
 	private Login getLoginService()
 	{
@@ -119,25 +127,50 @@ public class LoginRestController
 		getLoginService()
 				.getCtx()
 				.getUserIdIfExists()
-				.orElseThrow(() -> new NotAuthenticatedException());
+				.orElseThrow(NotAuthenticatedException::new);
 	}
 
 	@PostMapping("/authenticate")
 	public JSONLoginAuthResponse authenticate(@RequestBody final JSONLoginAuthRequest request)
 	{
-		if (Check.isEmpty(request.getUsername(), true))
+		final JSONLoginAuthRequest.Type authType = request.getType();
+		if (JSONLoginAuthRequest.Type.password.equals(authType))
 		{
-			throw new FillMandatoryException("Username");
-		}
-		if (Check.isEmpty(request.getPassword(), true))
-		{
-			throw new FillMandatoryException("Password");
-		}
+			if (Check.isEmpty(request.getUsername(), true))
+			{
+				throw new FillMandatoryException("Username");
+			}
+			if (Check.isEmpty(request.getPassword(), true))
+			{
+				throw new FillMandatoryException("Password");
+			}
 
-		return authenticate(request.getUsername(), request.getPasswordAsEncryptableString());
+			return authenticate(request.getUsername(), request.getPasswordAsEncryptableString(), null);
+		}
+		else if (JSONLoginAuthRequest.Type.token.equals(authType))
+		{
+			final UserAuthToken tokenInfo = userAuthTokenService.getByToken(request.getToken());
+			final I_AD_User user = usersService.getById(tokenInfo.getUserId());
+			final String username = usersService.extractUserLogin(user);
+			final HashableString password = usersService.extractUserPassword(user);
+			final JSONLoginRole roleToLogin = JSONLoginRole.builder()
+					.caption("role")
+					.roleId(tokenInfo.getRoleId().getRepoId())
+					.tenantId(tokenInfo.getClientId().getRepoId())
+					.orgId(tokenInfo.getOrgId().getRepoId())
+					.build();
+			return authenticate(username, password, roleToLogin);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown authentication type: " + authType);
+		}
 	}
 
-	private JSONLoginAuthResponse authenticate(final String username, final HashableString password)
+	private JSONLoginAuthResponse authenticate(
+			@NonNull final String username,
+			@Nullable final HashableString password,
+			@Nullable final JSONLoginRole role)
 	{
 		userSession.assertNotLoggedIn();
 
@@ -146,21 +179,29 @@ public class LoginRestController
 
 		try
 		{
-			final Set<KeyNamePair> availableRoles = loginService.authenticate(username, password);
-
-			//
-			// Create JSON roles
-			final Set<JSONLoginRole> jsonRoles = createJSONLoginRoles(loginService, availableRoles);
-
-			if (jsonRoles.size() == 1)
+			final Set<KeyNamePair> availableRoleKNPs = loginService.authenticate(username, password);
+			final Set<JSONLoginRole> availableRoles;
+			final JSONLoginRole roleToLogin;
+			if (role != null)
 			{
-				final JSONLoginRole loginRole = jsonRoles.iterator().next();
-				loginComplete(loginRole);
-
-				return JSONLoginAuthResponse.loginComplete(loginRole);
+				roleToLogin = role;
+				availableRoles = ImmutableSet.of(role);
+			}
+			else
+			{
+				availableRoles = createJSONLoginRoles(loginService, availableRoleKNPs);
+				roleToLogin = availableRoles.size() == 1 ? availableRoles.iterator().next() : null;
 			}
 
-			return JSONLoginAuthResponse.of(jsonRoles);
+			if (roleToLogin != null)
+			{
+				loginComplete(roleToLogin);
+				return JSONLoginAuthResponse.loginComplete(roleToLogin);
+			}
+			else
+			{
+				return JSONLoginAuthResponse.of(availableRoles);
+			}
 		}
 		catch (final Exception ex)
 		{
@@ -184,7 +225,7 @@ public class LoginRestController
 		return metasfreshException;
 	}
 
-	private Set<JSONLoginRole> createJSONLoginRoles(final Login loginService, final Set<KeyNamePair> availableRoles)
+	private static Set<JSONLoginRole> createJSONLoginRoles(final Login loginService, final Set<KeyNamePair> availableRoles)
 	{
 		if (availableRoles.isEmpty())
 		{
@@ -222,7 +263,7 @@ public class LoginRestController
 		return jsonRoles.build();
 	}
 
-	private static MFSession startMFSession(final Login loginService)
+	private void startMFSession(final Login loginService)
 	{
 		final HttpServletRequest httpRequest = ((ServletRequestAttributes)RequestContextHolder.currentRequestAttributes()).getRequest();
 		final HttpSession httpSess = httpRequest.getSession();
@@ -244,21 +285,20 @@ public class LoginRestController
 		}
 
 		final LoginContext ctx = loginService.getCtx();
-		final MFSession session = Services.get(ISessionBL.class).getCurrentOrCreateNewSession(ctx.getSessionContext());
+		final MFSession session = sessionBL.getCurrentOrCreateNewSession(ctx.getSessionContext());
 		session.setRemote_Addr(remoteAddr, remoteHost);
 		session.setWebSessionId(webSessionId);
 
 		// Update Login helper
 		loginService.setRemoteAddr(remoteAddr);
 		loginService.setRemoteHost(remoteHost);
-		loginService.setWebSession(webSessionId);
+		loginService.setWebSessionId(webSessionId);
 
-		return session;
 	}
 
-	private static void destroyMFSession(final Login loginService)
+	private void destroyMFSession(final Login loginService)
 	{
-		Services.get(ISessionBL.class).logoutCurrentSession();
+		sessionBL.logoutCurrentSession();
 
 		if (loginService != null)
 		{
@@ -304,7 +344,7 @@ public class LoginRestController
 		// Validate login: fires login complete model interceptors
 		{
 			final String msg = loginService.validateLogin(org);
-			if (!Check.isEmpty(msg, true))
+			if (msg != null && !Check.isBlank(msg))
 			{
 				throw new AdempiereException(msg);
 			}
@@ -313,8 +353,7 @@ public class LoginRestController
 		//
 		// Load preferences
 		{
-			final java.sql.Timestamp date = null;
-			final String msg = loginService.loadPreferences(org, date);
+			final String msg = loginService.loadPreferences(org, null);
 			if (!Check.isEmpty(msg, true))
 			{
 				throw new AdempiereException(msg);
@@ -355,7 +394,7 @@ public class LoginRestController
 	@GetMapping("/availableLanguages")
 	public JSONLookupValuesList getAvailableLanguages()
 	{
-		return Services.get(ILanguageBL.class).getAvailableLanguages()
+		return languageBL.getAvailableLanguages()
 				.toValueNamePairs()
 				.stream()
 				.map(JSONLookupValue::ofNamePair)
@@ -364,7 +403,7 @@ public class LoginRestController
 	}
 
 	@GetMapping("/logout")
-	public void logout(final HttpServletRequest request)
+	public void logout()
 	{
 		userSession.assertLoggedIn();
 
@@ -377,7 +416,6 @@ public class LoginRestController
 	{
 		userSession.assertNotLoggedIn();
 
-		final IUserBL usersService = Services.get(IUserBL.class);
 		usersService.createResetPasswordByEMailRequest(request.getEmail());
 	}
 
@@ -393,11 +431,10 @@ public class LoginRestController
 	{
 		userSession.assertNotLoggedIn();
 
-		final IUserDAO usersRepo = Services.get(IUserDAO.class);
-		final I_AD_User user = usersRepo.getByPasswordResetCode(token);
+		final I_AD_User user = usersService.getByPasswordResetCode(token);
 
 		final String userADLanguage = user.getAD_Language();
-		if (!Check.isEmpty(userADLanguage, true))
+		if (userADLanguage != null && !Check.isBlank(userADLanguage))
 		{
 			userSession.setAD_Language(userADLanguage);
 		}
@@ -415,8 +452,7 @@ public class LoginRestController
 			@RequestParam(name = "maxWidth", required = false, defaultValue = "-1") final int maxWidth,
 			@RequestParam(name = "maxHeight", required = false, defaultValue = "-1") final int maxHeight)
 	{
-		final IUserDAO usersRepo = Services.get(IUserDAO.class);
-		final I_AD_User user = usersRepo.getByPasswordResetCode(token);
+		final I_AD_User user = usersService.getByPasswordResetCode(token);
 
 		final WebuiImageId avatarId = WebuiImageId.ofRepoIdOrNull(user.getAvatar_ID());
 		if (avatarId == null)
@@ -440,11 +476,9 @@ public class LoginRestController
 			throw new AdempiereException("@Invalid@ @PasswordResetCode@");
 		}
 
-		final IUserBL usersService = Services.get(IUserBL.class);
 		final I_AD_User user = usersService.resetPassword(token, request.getPassword());
-
-		final String username = user.getEMail();
-		final HashableString password = usersService.getUserPassword(user);
-		return authenticate(username, password);
+		final String username = usersService.extractUserLogin(user);
+		final HashableString password = usersService.extractUserPassword(user);
+		return authenticate(username, password, null);
 	}
 }

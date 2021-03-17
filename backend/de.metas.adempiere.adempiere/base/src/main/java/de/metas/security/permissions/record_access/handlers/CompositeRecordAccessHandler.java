@@ -1,18 +1,16 @@
 package de.metas.security.permissions.record_access.handlers;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-
-import de.metas.security.permissions.record_access.RecordAccess;
 import de.metas.security.permissions.record_access.RecordAccessFeature;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -39,14 +37,15 @@ import lombok.ToString;
 @ToString
 public final class CompositeRecordAccessHandler implements RecordAccessHandler
 {
-	public static final CompositeRecordAccessHandler of(@NonNull final Optional<List<RecordAccessHandler>> handlers)
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	public static CompositeRecordAccessHandler of(@NonNull final Optional<List<RecordAccessHandler>> handlers)
 	{
 		return handlers
 				.map(CompositeRecordAccessHandler::of)
 				.orElse(CompositeRecordAccessHandler.EMPTY);
 	}
 
-	public static final CompositeRecordAccessHandler of(@NonNull final Collection<RecordAccessHandler> handlers)
+	public static CompositeRecordAccessHandler of(@NonNull final Collection<RecordAccessHandler> handlers)
 	{
 		if (handlers.isEmpty())
 		{
@@ -89,24 +88,6 @@ public final class CompositeRecordAccessHandler implements RecordAccessHandler
 	public boolean isEmpty()
 	{
 		return handlers.isEmpty();
-	}
-
-	@Override
-	public void onAccessGranted(final RecordAccess request)
-	{
-		for (final RecordAccessHandler handler : handlers)
-		{
-			handler.onAccessGranted(request);
-		}
-	}
-
-	@Override
-	public void onAccessRevoked(final RecordAccess request)
-	{
-		for (final RecordAccessHandler handler : handlers)
-		{
-			handler.onAccessRevoked(request);
-		}
 	}
 
 	public ImmutableSet<RecordAccessHandler> handlingFeatureSet(final Set<RecordAccessFeature> features)

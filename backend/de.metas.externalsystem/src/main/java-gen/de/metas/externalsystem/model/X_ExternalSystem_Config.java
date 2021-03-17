@@ -92,6 +92,8 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final int TYPE_AD_Reference_ID=541255;
 	/** Alberta = A */
 	public static final String TYPE_Alberta = "A";
+	/** Shopware6 = S6 */
+	public static final String TYPE_Shopware6 = "S6";
 	@Override
 	public void setType (final java.lang.String Type)
 	{

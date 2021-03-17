@@ -26,6 +26,8 @@ import de.metas.material.event.pporder.PPOrder.PPOrderBuilder;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -61,16 +63,13 @@ public class RequestMaterialOrderService
 {
 	private final CandidateRepositoryRetrieval candidateRepository;
 	private final PostMaterialEventService materialEventService;
-	private final DimensionService dimensionService;
 
 	public RequestMaterialOrderService(
 			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final DimensionService dimensionService)
+			@NonNull final PostMaterialEventService materialEventService)
 	{
 		this.materialEventService = materialEventService;
 		this.candidateRepository = candidateRepository;
-		this.dimensionService = dimensionService;
 	}
 
 	/**
@@ -284,9 +283,9 @@ public class RequestMaterialOrderService
 				.forecastId(singleCandidate.getAdditionalDemandDetail().getForecastId())
 				.forecastLineId(singleCandidate.getAdditionalDemandDetail().getForecastLineId())
 
-				.projectId(dimension.getProjectId().getRepoId())
+				.projectId(ProjectId.toRepoId(dimension.getProjectId()))
 				.campaignId(dimension.getCampaignId())
-				.activityId(dimension.getActivityId().getRepoId())
+				.activityId(ActivityId.toRepoId(dimension.getActivityId()))
 				.userElementId1(dimension.getUserElement1Id())
 				.userElementId2(dimension.getUserElement2Id())
 				.userElementString1(dimension.getUserElementString1())

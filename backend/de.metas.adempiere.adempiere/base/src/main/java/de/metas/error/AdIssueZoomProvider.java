@@ -1,11 +1,18 @@
 package de.metas.error;
 
-import java.util.List;
-import java.util.function.IntSupplier;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
+import de.metas.document.references.related_documents.IZoomProvider;
+import de.metas.document.references.related_documents.IZoomSource;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
+import de.metas.document.references.related_documents.ZoomInfoCandidate;
+import de.metas.document.references.related_documents.ZoomInfoId;
+import de.metas.document.references.related_documents.ZoomInfoRecordsCountSupplier;
+import de.metas.document.references.related_documents.ZoomTargetWindow;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Services;
+import de.metas.util.lang.Priority;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -13,19 +20,9 @@ import org.compiere.model.I_AD_Issue;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
 
-import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.document.references.IZoomProvider;
-import de.metas.document.references.IZoomSource;
-import de.metas.document.references.RecordZoomWindowFinder;
-import de.metas.document.references.ZoomInfoCandidate;
-import de.metas.document.references.ZoomInfoId;
-import de.metas.document.references.ZoomTargetWindow;
-import de.metas.i18n.ITranslatableString;
-import de.metas.util.Services;
-import de.metas.util.lang.Priority;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -64,7 +61,7 @@ public class AdIssueZoomProvider implements IZoomProvider
 	{
 		//
 		// Get the Issues AD_Window_ID
-		final AdWindowId issuesWindowId = RecordZoomWindowFinder.findAdWindowId(I_AD_Issue.Table_Name).orElse(null);
+		final AdWindowId issuesWindowId = RecordWindowFinder.findAdWindowId(I_AD_Issue.Table_Name).orElse(null);
 		if (issuesWindowId == null)
 		{
 			return ImmutableList.of();
@@ -85,7 +82,7 @@ public class AdIssueZoomProvider implements IZoomProvider
 		{
 			final ZoomInfoId id = ZoomInfoId.ofString("issues-" + issueCategory.getCode());
 			final ITranslatableString issueCategoryDisplayName = adReferenceDAO.retrieveListNameTranslatableString(IssueCategory.AD_REFERENCE_ID, issueCategory.getCode());
-			final IntSupplier recordsCountSupplier = () -> issueCountersSupplier.get().getCountOrZero(issueCategory);
+			final ZoomInfoRecordsCountSupplier recordsCountSupplier = () -> issueCountersSupplier.get().getCountOrZero(issueCategory);
 
 			result.add(ZoomInfoCandidate.builder()
 					.id(id)

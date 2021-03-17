@@ -10,108 +10,100 @@ Additional notes:
 Here come the actual release notes:
 
 # Current master - metasfresh 5.162 - WIP
-
-## Reatures
-* [#10683](https://github.com/metasfresh/metasfresh/issues/10683) AD_Issue - Insert REST Endpoint
-
-# Current RC - metasfresh 5.161 - WIP
-
-https://github.com/metasfresh/metasfresh/issues/10595
-https://github.com/metasfresh/metasfresh/pull/10659
-  https://github.com/metasfresh/metasfresh/issues/10540
+## Features
 
 
-
+# metasfresh 5.161
 ## Features
 * metasfresh
-  https://github.com/metasfresh/metasfresh/issues/10566
+  * [#10249](https://github.com/metasfresh/metasfresh/issues/10249) Printing Options: WebUI frontend panel
+  * [#10269](https://github.com/metasfresh/metasfresh/issues/10269) Possibility for Address & User input in Main view (not in subtab)
+  * [#10275](https://github.com/metasfresh/metasfresh/issues/10275) Implement `AD_UI_Element.Inline_Tab_ID`
+  * [#10389](https://github.com/metasfresh/metasfresh/issues/10389) Guarantee/Service Cases: Set `WarrantyStartDate` when shipping HUs
+  * [#10393](https://github.com/metasfresh/metasfresh/issues/10393) Add 'Show Less' and 'Show More' `ad_messages`
+  * [#10419](https://github.com/metasfresh/metasfresh/issues/10419) Create a function that should say if a country is in EU or not
+  * [#10424](https://github.com/metasfresh/metasfresh/issues/10424) Service Orders: Kickstart Service/Repair Project window
+  * [#10426](https://github.com/metasfresh/metasfresh/issues/10426) Only add `SerialNo` Attribute to Manufacturing
+  * [#10432](https://github.com/metasfresh/metasfresh/pull/10432) Delete old swing classes
+  * [#10438](https://github.com/metasfresh/metasfresh/issues/10438) Capture BOM components of a manufactured HU to be able to recall it after time
+  * [#10446](https://github.com/metasfresh/metasfresh/issues/10446) Guarantee/Service Cases: Clone a Shipped/inactive HU
+  * [#10448](https://github.com/metasfresh/metasfresh/issues/10448) Add a new invoice rule: Order Completely Delivered
+  * [#10455](https://github.com/metasfresh/metasfresh/issues/10455) Add `PresetDateInvoiced`, `DateAcct`, `DateInvoiced` to default aggregation rule
+  * [#10464](https://github.com/metasfresh/metasfresh/issues/10464) New procurement WebUI: Create a new spring boot/Maven project
+  * [#10467](https://github.com/metasfresh/metasfresh/issues/10467) `m_product.isstocked` new parm in inventory lines creating processes
+  * [#10478](https://github.com/metasfresh/metasfresh/issues/10478) Remove legacy jax-rs and jms code
+  * [#10481](https://github.com/metasfresh/metasfresh/pull/10481) StepComXMLDesadvBean and CompuDataDesadvBean: don't remove leading zeros
+  * [#10488](https://github.com/metasfresh/metasfresh/pull/10488) Rearrange procurement-WebUI folders
+  * [#10493](https://github.com/metasfresh/metasfresh/issues/10493) Create `C_Title` and `C_Title_Trl`
+  * [#10500](https://github.com/metasfresh/metasfresh/issues/10500) Create report for intratrade and intracommunity
+  * [#10501](https://github.com/metasfresh/metasfresh/issues/10501) Extended Payment REST Endpoint
+  * [#10515](https://github.com/metasfresh/metasfresh/issues/10515) Create `C_BPartner_Location.Setup_Place_No` field
+  * [#10521](https://github.com/metasfresh/metasfresh/issues/10521) Add `isSupervisor` Column into `AD_User` table
+  * [#10524](https://github.com/metasfresh/metasfresh/issues/10524) Customize Auftragsdisposition (Sales Order Candidates) Window
+  * [#10526](https://github.com/metasfresh/metasfresh/issues/10526) Tabs and sections need to be configurable for export via data-entry-rest-controller
+  * [#10531](https://github.com/metasfresh/metasfresh/issues/10531) Date 'Invoice from' as default filter date
   * [#10535](https://github.com/metasfresh/metasfresh/issues/10535) Additional String Accounting Dimensions
-  https://github.com/metasfresh/metasfresh/issues/10555
-  https://github.com/metasfresh/metasfresh/issues/10624
-  https://github.com/metasfresh/metasfresh/pull/10645
-  https://github.com/metasfresh/metasfresh/issues/10524
-  https://github.com/metasfresh/metasfresh/issues/10573
-  https://github.com/metasfresh/metasfresh/issues/10249
-  https://github.com/metasfresh/metasfresh/issues/10426
-https://github.com/metasfresh/metasfresh/issues/10424
-https://github.com/metasfresh/metasfresh/issues/10419
-https://github.com/metasfresh/metasfresh/issues/10393
-https://github.com/metasfresh/metasfresh/issues/10389
-https://github.com/metasfresh/metasfresh/pull/10301
-https://github.com/metasfresh/metasfresh/issues/10269
-https://github.com/metasfresh/metasfresh/pull/10432
-https://github.com/metasfresh/metasfresh/issues/10436
-https://github.com/metasfresh/metasfresh/issues/10438
-https://github.com/metasfresh/metasfresh/issues/10446
-https://github.com/metasfresh/metasfresh/issues/10448
-https://github.com/metasfresh/metasfresh/issues/10450
-https://github.com/metasfresh/metasfresh/issues/10457
-https://github.com/metasfresh/metasfresh/issues/10464
-https://github.com/metasfresh/metasfresh/pull/10466
-https://github.com/metasfresh/metasfresh/issues/10467
-https://github.com/metasfresh/metasfresh/issues/10471
-https://github.com/metasfresh/metasfresh/issues/10478
-https://github.com/metasfresh/metasfresh/pull/10488
-https://github.com/metasfresh/metasfresh/issues/10493
-https://github.com/metasfresh/metasfresh/issues/10500
-https://github.com/metasfresh/metasfresh/issues/10501
-https://github.com/metasfresh/metasfresh/issues/10515
-https://github.com/metasfresh/metasfresh/issues/10526
-https://github.com/metasfresh/metasfresh/issues/10521
-https://github.com/metasfresh/metasfresh/issues/10531
-https://github.com/metasfresh/metasfresh/issues/10536
-https://github.com/metasfresh/metasfresh/issues/10538
-https://github.com/metasfresh/metasfresh/issues/10556
-https://github.com/metasfresh/metasfresh/issues/10560
-https://github.com/metasfresh/metasfresh/pull/10569
-https://github.com/metasfresh/metasfresh/pull/10570
-https://github.com/metasfresh/metasfresh/issues/10575
-https://github.com/metasfresh/metasfresh/issues/10582
-https://github.com/metasfresh/metasfresh/issues/10581
-https://github.com/metasfresh/metasfresh/issues/10590
-https://github.com/metasfresh/metasfresh/issues/10594
-https://github.com/metasfresh/metasfresh/issues/10607
-https://github.com/metasfresh/metasfresh/issues/10618
-https://github.com/metasfresh/metasfresh/pull/10619
-https://github.com/metasfresh/metasfresh/pull/10634
-https://github.com/metasfresh/metasfresh/issues/10642
+  * [#10536](https://github.com/metasfresh/metasfresh/issues/10536) Prevent multiple invoice reversals
+  * [#10538](https://github.com/metasfresh/metasfresh/issues/10538) Move Haddex from Product to Partner
+  * [#10540](https://github.com/metasfresh/metasfresh/issues/10540) Changes to `C_Invoice_Rejection_Detail` now published to `C_Invoice`
+  * [#10555](https://github.com/metasfresh/metasfresh/issues/10555) Add Mass Print PDF process to Outbound Documents
+  * [#10556](https://github.com/metasfresh/metasfresh/issues/10556) Remove unused `C_Payment_CreateFrom_BankStatement` process and references
+  * [#10560](https://github.com/metasfresh/metasfresh/issues/10560) Prevent reverting inventories if HU was already transformed
+  * [#10566](https://github.com/metasfresh/metasfresh/issues/10566) Add Document Sub Type = Requisition
+  * [#10569](https://github.com/metasfresh/metasfresh/pull/10569) Picking v2 layout improvements
+  * [#10570](https://github.com/metasfresh/metasfresh/pull/10570) Change remaining modules from jaxb2-maven-plugin to maven-jaxb2-plugin
+  * [#10573](https://github.com/metasfresh/metasfresh/issues/10573) Increase Product eff. size, decrease Replication Transaction size
+  * [#10575](https://github.com/metasfresh/metasfresh/issues/10575) Lookup anstatt Dropdown bei Bestellungen aus Auftrag generieren
+  * [#10581](https://github.com/metasfresh/metasfresh/issues/10581) Filter für Gebinde in Rechnungsdispo ist nicht korrekt
+  * [#10582](https://github.com/metasfresh/metasfresh/issues/10582) Allow user to choose if shall print logo or not when printing documents
+  * [#10590](https://github.com/metasfresh/metasfresh/issues/10590) Extend BPartner-Relation and add it as BPartner-Tab
+  * [#10594](https://github.com/metasfresh/metasfresh/issues/10594) Create `ExternalSystem_Config` Table and Window
+  * [#10595](https://github.com/metasfresh/metasfresh/issues/10595) Remittance advice document
+  * [#10607](https://github.com/metasfresh/metasfresh/issues/10607) Create REST Endpoint for external reference lookups and insertions
+  * [#10617](https://github.com/metasfresh/metasfresh/pull/10617) Improve RestResponseEntityExceptionHandler's "default" method
+  * [#10618](https://github.com/metasfresh/metasfresh/issues/10618) Add endpoint for `C_BP_Relation`
+  * [#10619](https://github.com/metasfresh/metasfresh/pull/10619) WebUI json document field precision
+  * [#10624](https://github.com/metasfresh/metasfresh/issues/10624) Print Selection of Doc Outbound logs
+  * [#10634](https://github.com/metasfresh/metasfresh/pull/10634) `C_Payment.CurrencyRate` (intensive_care_hotfix)
+  * [#10642](https://github.com/metasfresh/metasfresh/issues/10642) `DD_Order.Processed` - add a default falue
+  * [#10644](https://github.com/metasfresh/metasfresh/issues/10644) Manufacturing REST API: Search HUs to Issue by HUValue and SerialNo
+  * [#10676](https://github.com/metasfresh/metasfresh/issues/10676) Alberta Patients Import
+  * [#10683](https://github.com/metasfresh/metasfresh/issues/10683) `AD_Issue` - Insert REST Endpoint
 
 ## Fixes
 * metasfresh
+  * [#10149](https://github.com/metasfresh/metasfresh/issues/10149) `/quickactions` endpoint is called twice first time with wrong params
+  * [#10422](https://github.com/metasfresh/metasfresh/issues/10422) `MD_Stock.qtyOnHand` is not updated when completing inventory
+  * [#10434](https://github.com/metasfresh/metasfresh/issues/10434) Creating bpartner on-the-fly not working correctly
+  * [#10436](https://github.com/metasfresh/metasfresh/issues/10436) Jenkins: when running frontend tests use a random port
+  * [#10450](https://github.com/metasfresh/metasfresh/issues/10450) Show more entries under navigation bookmark menu
+  * [#10457](https://github.com/metasfresh/metasfresh/issues/10457) Prevent weird errors on login
+  * [#10459](https://github.com/metasfresh/metasfresh/issues/10459) Dropdown appears, but it is not possible to add something from it when you click
+  * [#10469](https://github.com/metasfresh/metasfresh/issues/10469) Investigate failing tests that might be introduced in period Nov-Dec
+  * [#10471](https://github.com/metasfresh/metasfresh/issues/10471) Performance window accounting transactions on erpwebui
+  * [#10474](https://github.com/metasfresh/metasfresh/issues/10474) Price override on empty cells
+  * [#10483](https://github.com/metasfresh/metasfresh/issues/10483) Always set `C_Invoice_candidate.IsEDIEnabled` to `N` if bpartner is no invoice recipient
+  * [#10490](https://github.com/metasfresh/metasfresh/issues/10490) Fix M_Locator-Indices
+  * [#10491](https://github.com/metasfresh/metasfresh/issues/10491) Received CUs serial number correction
+  * [#10497](https://github.com/metasfresh/metasfresh/issues/10497) `I_BankStatement.DebitOrCreditIndicator` interchange
+  * [#10503](https://github.com/metasfresh/metasfresh/issues/10503) Allocation Tab sometimes missing in vendor invoice window
+  * [#10507](https://github.com/metasfresh/metasfresh/issues/10507) Lagerwert (Excel): convert cost price into the UOM displayed in the report line
+  * [#10513](https://github.com/metasfresh/metasfresh/issues/10513) Lagerwert (Excel): the product and warehouse parameters are not respected
+  * [#10529](https://github.com/metasfresh/metasfresh/issues/10529) Lagerwert (Excel): rounding for the amount
+  * [#10547](https://github.com/metasfresh/metasfresh/issues/10547) Creating rows in subtab of Bank Statement via import not working
+  * [#10578](https://github.com/metasfresh/metasfresh/issues/10578) Issue from multiple HUs
+  * [#10580](https://github.com/metasfresh/metasfresh/issues/10580) Avoid NPE when loading order line candidate via replication interface
+  * [#10589](https://github.com/metasfresh/metasfresh/issues/10589) Order reference not copied from quotation process parameter
+  * [#10591](https://github.com/metasfresh/metasfresh/issues/10591) CU label not available anymore in manufacturing order
+  * [#10598](https://github.com/metasfresh/metasfresh/pull/10598) Add a fix to display the view `C_Printing_Queue_PrintInfo_v` in WebUI
+  * [#10599](https://github.com/metasfresh/metasfresh/issues/10599) Payment allocation accounting: correction
+  * [#10609](https://github.com/metasfresh/metasfresh/issues/10609) FE Shortcut does not work in the modal for selecting print logo Y/N
+  * [#10614](https://github.com/metasfresh/metasfresh/issues/10614) Valid combination not created after new element
+  * [#10630](https://github.com/metasfresh/metasfresh/issues/10630) Investigate failing tests that might be introduced in period Ian- beginning of Feb 2021
+  * [#10635](https://github.com/metasfresh/metasfresh/pull/10635) Payment allocation: use max date between invoice and payment
+  * [#10649](https://github.com/metasfresh/metasfresh/issues/10649) Document actions element doesn't hide
   * [#10652](https://github.com/metasfresh/metasfresh/issues/10652) Incorrect breadcrumb after logout & login
-  https://github.com/metasfresh/metasfresh/issues/10649
-  https://github.com/metasfresh/metasfresh/issues/10149
-  https://github.com/metasfresh/metasfresh/issues/10422
-  https://github.com/metasfresh/metasfresh/issues/10434
-  https://github.com/metasfresh/metasfresh/issues/10455
-  https://github.com/metasfresh/metasfresh/issues/10459
-  https://github.com/metasfresh/metasfresh/issues/10469
-  https://github.com/metasfresh/metasfresh/issues/10474
-  https://github.com/metasfresh/metasfresh/pull/10481
-  https://github.com/metasfresh/metasfresh/pull/10482
-  https://github.com/metasfresh/metasfresh/issues/10483
-  https://github.com/metasfresh/metasfresh/issues/10490
-  https://github.com/metasfresh/metasfresh/issues/10491
-  https://github.com/metasfresh/metasfresh/issues/10497
-  https://github.com/metasfresh/metasfresh/issues/10503
-  https://github.com/metasfresh/metasfresh/issues/10507
-  https://github.com/metasfresh/metasfresh/pull/10511
-  https://github.com/metasfresh/metasfresh/issues/10513
-  https://github.com/metasfresh/metasfresh/issues/10529
-  https://github.com/metasfresh/metasfresh/issues/10547
-https://github.com/metasfresh/metasfresh/issues/10578
-https://github.com/metasfresh/metasfresh/issues/10580
-https://github.com/metasfresh/metasfresh/issues/10589
-https://github.com/metasfresh/metasfresh/issues/10591
-https://github.com/metasfresh/metasfresh/pull/10598
-https://github.com/metasfresh/metasfresh/issues/10599
-https://github.com/metasfresh/metasfresh/issues/10609
-https://github.com/metasfresh/metasfresh/pull/10612
-https://github.com/metasfresh/metasfresh/issues/10614
-https://github.com/metasfresh/metasfresh/pull/10617
-https://github.com/metasfresh/metasfresh/issues/10630
-https://github.com/metasfresh/metasfresh/pull/10635
-
+  * [#10656](https://github.com/metasfresh/metasfresh/issues/10656) Inventory import w/o HU aggregation type: Use multiple as default
 
 # metasfresh 5.160
 ## Features
