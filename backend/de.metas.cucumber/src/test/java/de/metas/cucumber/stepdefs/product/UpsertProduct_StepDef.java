@@ -179,7 +179,7 @@ public class UpsertProduct_StepDef
 
 	}
 
-	@Given("the user adds product")
+	@Given("we create JsonRequestProductUpsertItems")
 	public void theUserAddsProduct(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> dataTableEntries = dataTable.asMaps();
@@ -190,7 +190,7 @@ public class UpsertProduct_StepDef
 		});
 	}
 
-	@Given("the user adds bpartner product")
+	@Given("the user adds JsonRequestBpartnerProductUpsertItems")
 	public void theUserAddsBpartnerProduct(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> dataTableEntries = dataTable.asMaps();
@@ -201,7 +201,7 @@ public class UpsertProduct_StepDef
 		});
 	}
 
-	@Given("the user adds external reference")
+	@Given("metasfresh contains S_ExternalReferences")
 	public void theUserAddsBpartnerExternalReference(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> dataTableEntries = dataTable.asMaps();
@@ -220,9 +220,9 @@ public class UpsertProduct_StepDef
 				.map(bPartner -> JsonMetasfreshId.of(bPartner.getC_BPartner_ID())).collect(Collectors.toList());
 
 		dataTableEntries.forEach(dataTableEntry -> {
-			final String externalSystemName = DataTableUtil.extractStringForColumnName(dataTableEntry, "systemname");
-			final String externalId = DataTableUtil.extractStringForColumnName(dataTableEntry, "externalId");
-			final IExternalReferenceType externalReferenceType = getExternalReferenceType(DataTableUtil.extractStringForColumnName(dataTableEntry, "externalReferenceType"));
+			final String externalSystemName = DataTableUtil.extractStringForColumnName(dataTableEntry, "ExternalSystem.Code");
+			final String externalId = DataTableUtil.extractStringForColumnName(dataTableEntry, "ExternalReference");
+			final IExternalReferenceType externalReferenceType = getExternalReferenceType(DataTableUtil.extractStringForColumnName(dataTableEntry, "ExternalReference.Code"));
 
 			final JsonMetasfreshId metasfreshId;
 			if (externalReferenceType.equals(BPartnerExternalReferenceType.BPARTNER))

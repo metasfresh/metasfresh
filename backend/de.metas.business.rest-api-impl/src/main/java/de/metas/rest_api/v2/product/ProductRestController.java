@@ -28,6 +28,9 @@ import de.metas.common.rest_api.SyncAdvise;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -53,6 +56,13 @@ public class ProductRestController
 		this.productRestService = productRestService;
 	}
 
+	@ApiOperation("Create or update products and corresponding Bpartner-products.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully created or updated product(s)"),
+			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
+	})
 	@PutMapping("{orgCode}")
 	public ResponseEntity<JsonResponseUpsert> upsertProducts(@RequestBody @NonNull final JsonRequestProductUpsert request,
 			@PathVariable("orgCode") @Nullable final String orgCode)

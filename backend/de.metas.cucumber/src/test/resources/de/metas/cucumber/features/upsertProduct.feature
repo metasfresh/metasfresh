@@ -11,17 +11,17 @@ Feature:product create/update using metasfresh api
 
   Scenario: create Product request
 
-    Given the user adds external reference
-      | systemname | externalId | externalReferenceType |
-      | ALBERTA    | 345        | bpartner              |
-      | ALBERTA    | 456        | bpartner              |
+    Given metasfresh contains S_ExternalReferences
+      | ExternalSystem.Code | ExternalReference  | ExternalReference.Code |
+      | ALBERTA             | 345                | bpartner               |
+      | ALBERTA             | 456                | bpartner               |
 
-    Given the user adds bpartner product
+    And the user adds JsonRequestBpartnerProductUpsertItems
       | ProductCode  | bpartnerIdentifier | OPT.isActive | OPT.seqNo | OPT.ProductNo | OPT.Description | OPT.EAN  | OPT.GTIN  | OPT.customerLabelName | OPT.ingredients |
       | code345      | ext-ALBERTA-345    | true         | 10        | test          | test            | ean_test | gtin_test | test                  | test            |
       | code345      | ext-ALBERTA-456    | true         | 10        | test          | test            | ean_test | gtin_test | test                  | test            |
 
-    Given the user adds product
+    And we create JsonRequestProductUpsertItems
       | productIdentifier | ProductCode | Name         | Type | UOMCode | OPT.EAN  | OPT.GTIN  | OPT.Description  | OPT.isActive |
       | ext-ALBERTA-345   | code345     | Product_Test | ITEM | PCE     | ean_test | gtin_test | test_description | true         |
 
