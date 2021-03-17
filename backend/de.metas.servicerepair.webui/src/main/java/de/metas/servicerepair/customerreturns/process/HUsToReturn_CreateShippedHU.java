@@ -17,6 +17,7 @@ import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -24,6 +25,8 @@ import de.metas.process.RunOutOfTrx;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.servicerepair.customerreturns.AlreadyShippedHUsInPreviousSystem;
+import de.metas.servicerepair.customerreturns.AlreadyShippedHUsInPreviousSystemRepository;
 import de.metas.servicerepair.customerreturns.HUsToReturnViewContext;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -32,14 +35,17 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 
-public class HUsToReturn_CreateShippedHU extends HUsToReturnViewBasedProcess implements IProcessPrecondition
+public class HUsToReturn_CreateShippedHU extends HUsToReturnViewBasedProcess implements IProcessPrecondition, IProcessParametersCallout
 {
+	private final AlreadyShippedHUsInPreviousSystemRepository alreadyShippedHUsInPreviousSystemRepository = SpringContextHolder.instance.getBean(AlreadyShippedHUsInPreviousSystemRepository.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -48,12 +54,16 @@ public class HUsToReturn_CreateShippedHU extends HUsToReturnViewBasedProcess imp
 	// parameters
 	@Param(parameterName = "M_Product_ID", mandatory = true)
 	private ProductId productId;
-	@Param(parameterName = "SerialNo", mandatory = true)
+
+	private static final String PARAM_SerialNo = "SerialNo";
+	@Param(parameterName = PARAM_SerialNo, mandatory = true)
 	private String serialNo;
+
 	@Param(parameterName = "WarrantyStartDate")
-	private LocalDate warrantyStartDate;
+	@Nullable private LocalDate warrantyStartDate;
+
 	@Param(parameterName = "C_BPartner_Customer_ID")
-	private BPartnerId customerId;
+	@Nullable private BPartnerId customerId;
 
 	// state
 	private I_M_InOut _customerReturns; // lazy
@@ -67,6 +77,21 @@ public class HUsToReturn_CreateShippedHU extends HUsToReturnViewBasedProcess imp
 		}
 
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	@Override
+	public void onParameterChanged(final String parameterName)
+	{
+		if (PARAM_SerialNo.equals(parameterName))
+		{
+			final AlreadyShippedHUsInPreviousSystem result = alreadyShippedHUsInPreviousSystemRepository.getBySerialNo(serialNo).orElse(null);
+			if (result != null)
+			{
+				productId = result.getProductId();
+				customerId = result.getCustomerId();
+				warrantyStartDate = result.getWarrantyStartDate();
+			}
+		}
 	}
 
 	@Override
@@ -136,5 +161,4 @@ public class HUsToReturn_CreateShippedHU extends HUsToReturnViewBasedProcess imp
 		}
 		return customerReturns;
 	}
-
 }
