@@ -1,16 +1,5 @@
 package de.metas.rest_api.product;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -20,6 +9,17 @@ import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -56,7 +56,7 @@ public class ProductsServicesFacade
 
 	public Stream<I_M_Product> streamAllProducts()
 	{
-		return productsRepo.streamAllProducts();
+		return productsRepo.streamAllProducts(Instant.ofEpochMilli(0));
 	}
 
 	public String getUOMSymbol(@NonNull final UomId uomId)
