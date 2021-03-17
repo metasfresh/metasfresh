@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-pricing
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.rest_api.pricing.productprice;
+package de.metas.common.pricing.v2.productprice;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,19 +32,21 @@ import lombok.Value;
 
 @Value
 @ApiModel
-public class JsonRequestProductPriceItemUpsert
+public class JsonRequestProductPriceUpsertItem
 {
 	@ApiModelProperty(position = 10, dataType = "java.lang.String")
 	@JsonProperty("productPriceIdentifier")
+	@NonNull
 	String productPriceIdentifier;
 
 	@ApiModelProperty(position = 20, value = "jsonUpsertProductPriceRequest object")
 	@JsonProperty("jsonRequestProductPrice")
+	@NonNull
 	JsonRequestProductPrice jsonRequestProductPrice;
 
 	@JsonCreator
 	@Builder
-	public JsonRequestProductPriceItemUpsert(
+	public JsonRequestProductPriceUpsertItem(
 			@NonNull @JsonProperty("productPriceIdentifier") final String productPriceIdentifier,
 			@NonNull @JsonProperty("jsonRequestProductPrice") final JsonRequestProductPrice jsonRequestProductPrice)
 	{

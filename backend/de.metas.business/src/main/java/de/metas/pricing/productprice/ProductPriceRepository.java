@@ -25,14 +25,12 @@ package de.metas.pricing.productprice;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Repository;
 
@@ -42,38 +40,36 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class ProductPriceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@NonNull
-	public ProductPrice createProductPrice(@NonNull final CreateProductPrice request)
+	public ProductPrice createProductPrice(@NonNull final CreateProductPriceRequest request)
 	{
-		final I_M_ProductPrice record = buildCreateProductPrice(request);
+		final I_M_ProductPrice record = buildNewProductPriceRecord(request);
 		saveRecord(record);
 
 		return toProductPrice(record);
 	}
 
-	public void updateProductPrice(@NonNull final ProductPrice request)
+	@NonNull
+	public ProductPrice updateProductPrice(@NonNull final ProductPrice request)
 	{
 		final I_M_ProductPrice record = toProductPriceRecord(request);
 		saveRecord(record);
-	}
 
-	public void inactivateProductPrice(@NonNull final ProductPrice productPrice)
-	{
-		final ProductPriceId productPriceId = productPrice.getProductPriceId();
-		final I_M_ProductPrice record = getRecordById(productPriceId);
-
-		record.setIsActive(false);
-		saveRecord(record);
+		return toProductPrice(record);
 	}
 
 	@NonNull
-	private I_M_ProductPrice buildCreateProductPrice(@NonNull final CreateProductPrice request)
+	public ProductPrice getById(@NonNull final ProductPriceId productPriceId)
+	{
+		final I_M_ProductPrice record = getRecordById(productPriceId);
+		return toProductPrice(record);
+	}
+
+	@NonNull
+	private I_M_ProductPrice buildNewProductPriceRecord(@NonNull final CreateProductPriceRequest request)
 	{
 		final I_M_ProductPrice record = InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class);
-
-		final I_C_UOM UOMRecord = productBL.getStockUOM(request.getProductId());
 
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
 		record.setM_Product_ID(request.getProductId().getRepoId());
@@ -83,13 +79,14 @@ public class ProductPriceRepository
 		record.setPriceList(request.getPriceList());
 		record.setPriceStd(request.getPriceStd());
 
-		record.setC_UOM_ID(UOMRecord.getC_UOM_ID());
+		record.setC_UOM_ID(request.getUomId().getRepoId());
 
-		record.setC_TaxCategory_ID(1000009);
-		// todo florina record.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
-		//todo florina set internal name
+		record.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
 
-		record.setIsActive(request.getIsActive());
+		if (request.getIsActive() != null)
+		{
+			record.setIsActive(request.getIsActive());
+		}
 		return record;
 	}
 
@@ -98,8 +95,6 @@ public class ProductPriceRepository
 	{
 		final I_M_ProductPrice record = getRecordById(request.getProductPriceId());
 
-		final I_C_UOM UOMRecord = productBL.getStockUOM(request.getProductId());
-
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
 		record.setM_Product_ID(request.getProductId().getRepoId());
 		record.setM_PriceList_Version_ID(request.getPriceListVersionId().getRepoId());
@@ -108,13 +103,8 @@ public class ProductPriceRepository
 		record.setPriceList(request.getPriceList());
 		record.setPriceStd(request.getPriceStd());
 
-		record.setC_UOM_ID(UOMRecord.getC_UOM_ID());
-
-		if (request.getTaxCategoryId() != null)
-		{
-			record.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
-		}
-		//todo florina set internal name
+		record.setC_UOM_ID(request.getUomId().getRepoId());
+		record.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
 
 		record.setIsActive(request.getIsActive());
 
@@ -126,7 +116,7 @@ public class ProductPriceRepository
 	{
 		return queryBL
 				.createQueryBuilder(I_M_ProductPrice.class)
-				.filter(item -> item.getM_ProductPrice_ID() == productPriceId.getRepoId())
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID, productPriceId.getRepoId())
 				.create()
 				.firstOnlyNotNull(I_M_ProductPrice.class);
 	}

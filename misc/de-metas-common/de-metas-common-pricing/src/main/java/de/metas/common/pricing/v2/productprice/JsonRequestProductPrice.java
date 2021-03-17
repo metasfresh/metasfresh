@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.pricing.pricelist.request.v2;
+package de.metas.common.pricing.v2.productprice;
 
 import de.metas.common.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
@@ -28,29 +28,44 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import java.time.Instant;
+import java.math.BigDecimal;
 
 @Getter
 @ToString
 @EqualsAndHashCode
-public class JsonRequestPriceListVersion
+public class JsonRequestProductPrice
 {
-	@ApiModelProperty(required = true)
-	private String priceListIdentifier;
-
 	@ApiModelProperty(required = true)
 	private String orgCode;
 
 	@ApiModelProperty(required = true)
-	private Instant validFrom;
+	private String productIdentifier;
 
 	@ApiModelProperty(required = true)
-	private Boolean active;
+	private TaxCategory taxCategory;
 
-	private String description;
+	@ApiModelProperty(required = true)
+	private BigDecimal priceStd;
+
+	private BigDecimal priceLimit;
 
 	@ApiModelProperty(hidden = true)
-	private boolean descriptionSet;
+	private boolean priceLimitSet;
+
+	private BigDecimal priceList;
+
+	@ApiModelProperty(hidden = true)
+	private boolean priceListSet;
+
+	private String seqNo;
+
+	@ApiModelProperty(hidden = true)
+	private boolean seqNoSet;
+
+	private Boolean active;
+
+	@ApiModelProperty(hidden = true)
+	private boolean activeSet;
 
 	private SyncAdvise syncAdvise;
 
@@ -62,25 +77,43 @@ public class JsonRequestPriceListVersion
 		this.orgCode = orgCode;
 	}
 
-	public void setPriceListIdentifier(final String priceListIdentifier)
+	public void setProductId(final String productId)
 	{
-		this.priceListIdentifier = priceListIdentifier;
+		this.productIdentifier = productId;
 	}
 
-	public void setDescription(final String description)
+	public void setPriceLimit(final BigDecimal priceLimit)
 	{
-		this.description = description;
-		this.descriptionSet = true;
+		this.priceLimit = priceLimit;
+		this.priceLimitSet = true;
 	}
 
-	public void setValidFrom(final Instant validFrom)
+	public void setPriceList(final BigDecimal priceList)
 	{
-		this.validFrom = validFrom;
+		this.priceList = priceList;
+		this.priceListSet = true;
+	}
+
+	public void setPriceStd(final BigDecimal priceStd)
+	{
+		this.priceStd = priceStd;
+	}
+
+	public void setSeqNo(final String seqNo)
+	{
+		this.seqNo = seqNo;
+		this.seqNoSet = true;
+	}
+
+	public void setTaxCategory(final TaxCategory taxCategory)
+	{
+		this.taxCategory = taxCategory;
 	}
 
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
+		this.activeSet = true;
 	}
 
 	public void setSyncAdvise(final SyncAdvise syncAdvise)

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de-metas-common-pricing
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,47 +20,23 @@
  * #L%
  */
 
-package de.metas.pricing.productprice;
+package de.metas.common.pricing.v2.productprice;
 
-import de.metas.organization.OrgId;
-import de.metas.pricing.PriceListVersionId;
-import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.pentabyte.springfox.ApiEnum;
+import lombok.Getter;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
-@Value
-@Builder
-public class CreateProductPrice
+public enum TaxCategory
 {
-	@NonNull
-	OrgId orgId;
+	@ApiEnum("Specifies in which type the tax category is")
+	NORMAL("Normal"),
+	REDUCED("Reduced"),
+	TAXFREE("TaxFree");
 
-	@NonNull
-	ProductId productId;
+	@Getter
+	private final String value;
 
-	@NonNull
-	PriceListVersionId priceListVersionId;
-
-	@NonNull
-	BigDecimal priceLimit;
-
-	@NonNull
-	BigDecimal priceList;
-
-	@NonNull
-	BigDecimal priceStd;
-
-	@Nullable
-	TaxCategoryId taxCategoryId;
-
-	@Nullable
-	String internalName;
-
-	@NonNull
-	Boolean isActive;
+	TaxCategory(final String value)
+	{
+		this.value = value;
+	}
 }

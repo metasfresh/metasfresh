@@ -22,11 +22,15 @@
 
 package de.metas.rest_api.v2.pricing;
 
-import de.metas.common.bpartner.response.JsonResponseUpsertItem;
-import de.metas.common.pricing.pricelist.request.v2.JsonRequestPriceListVersion;
-import de.metas.common.pricing.pricelist.request.v2.JsonRequestPriceListVersionUpsertItem;
+import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
+import de.metas.common.externalreference.JsonExternalReferenceItem;
+import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
+import de.metas.common.externalsystem.JsonExternalSystemName;
+import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersion;
+import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsertItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.pricelist.PriceListExternalReferenceType;
 import de.metas.externalreference.pricelist.PriceListVersionExternalReferenceType;
@@ -37,10 +41,9 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.pricelist.CreatePriceListVersionRequest;
 import de.metas.pricing.pricelist.PriceListVersion;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
-import de.metas.util.Services;
+import de.metas.util.Check;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
@@ -52,7 +55,6 @@ import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 public class PriceListRestService
 {
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final PriceListVersionRepository priceListVersionRepository;
 
 	public PriceListRestService(
@@ -78,7 +80,7 @@ public class PriceListRestService
 		final PriceListVersionId priceListVersionId;
 
 		final ExternalIdentifier priceListVersionIdentifier = ExternalIdentifier.of(request.getPriceListVersionIdentifier());
-		final Optional<PriceListVersion> existingRecord = getPriceListVersionRecord(priceListVersionIdentifier, jsonRequestPriceListVersion.getOrgCode());
+		final Optional<PriceListVersion> existingRecord = getPriceListVersion(priceListVersionIdentifier, jsonRequestPriceListVersion.getOrgCode());
 
 		if (existingRecord.isPresent())
 		{
@@ -114,8 +116,12 @@ public class PriceListRestService
 			else
 			{
 				final CreatePriceListVersionRequest createPriceListVersion = buildCreatePriceListVersionRequest(jsonRequestPriceListVersion);
+
 				final PriceListVersion createdPriceListVersion = priceListVersionRepository.createPriceListVersion(createPriceListVersion);
 				priceListVersionId = createdPriceListVersion.getPriceListVersionId();
+
+				handleNewPriceListVersionExternalReference(jsonRequestPriceListVersion.getOrgCode(), priceListVersionIdentifier, priceListVersionId);
+
 				syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
 			}
 		}
@@ -125,6 +131,24 @@ public class PriceListRestService
 				.metasfreshId(JsonMetasfreshId.of(priceListVersionId.getRepoId()))
 				.syncOutcome(syncOutcome)
 				.build();
+	}
+
+	@NonNull
+	public Optional<PriceListVersionId> getPriceListVersionId(@NonNull final ExternalIdentifier priceListVersionIdentifier, @NonNull final String orgCode)
+	{
+		switch (priceListVersionIdentifier.getType())
+		{
+			case METASFRESH_ID:
+				return Optional.of(PriceListVersionId.ofRepoId(priceListVersionIdentifier.asMetasfreshId().getValue()));
+			case EXTERNAL_REFERENCE:
+				return externalReferenceRestControllerService
+						.getJsonMetasfreshIdFromExternalReference(orgCode, priceListVersionIdentifier, PriceListVersionExternalReferenceType.PRICE_LIST_VERSION)
+						.map(metasfreshId -> PriceListVersionId.ofRepoId(metasfreshId.getValue()));
+			default:
+				throw new AdempiereException("Unsupported external identifier type!")
+						.appendParametersToMessage()
+						.setParameter("priceListVersionIdentifier", priceListVersionIdentifier);
+		}
 	}
 
 	@NonNull
@@ -203,29 +227,37 @@ public class PriceListRestService
 	}
 
 	@NonNull
-	private Optional<PriceListVersionId> getPriceListVersionId(@NonNull final ExternalIdentifier priceListVersionIdentifier, @NonNull final String orgCode)
-	{
-		switch (priceListVersionIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				return Optional.of(PriceListVersionId.ofRepoId(priceListVersionIdentifier.asMetasfreshId().getValue()));
-			case EXTERNAL_REFERENCE:
-				return externalReferenceRestControllerService
-						.getJsonMetasfreshIdFromExternalReference(orgCode, priceListVersionIdentifier, PriceListVersionExternalReferenceType.PRICE_LIST_VERSION)
-						.map(metasfreshId -> PriceListVersionId.ofRepoId(metasfreshId.getValue()));
-			default:
-				throw new AdempiereException("Unsupported external identifier type!")
-						.appendParametersToMessage()
-						.setParameter("priceListVersionIdentifier", priceListVersionIdentifier);
-		}
-	}
-
-	@NonNull
-	private Optional<PriceListVersion> getPriceListVersionRecord(
+	private Optional<PriceListVersion> getPriceListVersion(
 			@NonNull final ExternalIdentifier priceListVersionIdentifier,
 			@NonNull final String orgCode)
 	{
 		return getPriceListVersionId(priceListVersionIdentifier, orgCode)
 				.map(priceListVersionRepository::getPriceListVersionById);
+	}
+
+	private void handleNewPriceListVersionExternalReference(
+			@NonNull final String orgCode,
+			@NonNull final ExternalIdentifier externalPriceListVersionIdentifier,
+			@NonNull final PriceListVersionId priceListVersionId)
+	{
+		Check.assume(externalPriceListVersionIdentifier.getType().equals(ExternalIdentifier.Type.EXTERNAL_REFERENCE), "ExternalIdentifier must be of type external reference.");
+
+		final ExternalIdentifier.ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalPriceListVersionIdentifier.asExternalValueAndSystem();
+
+		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
+				.id(externalReferenceValueAndSystem.getValue())
+				.type(PriceListVersionExternalReferenceType.PRICE_LIST_VERSION.getCode())
+				.build();
+
+		final JsonMetasfreshId jsonPriceListVersionId = JsonMetasfreshId.of(priceListVersionId.getRepoId());
+		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.of(externalReferenceLookupItem, jsonPriceListVersionId);
+
+		final JsonExternalSystemName systemName = JsonExternalSystemName.of(externalReferenceValueAndSystem.getExternalSystem());
+		final JsonExternalReferenceCreateRequest externalReferenceCreateRequest = JsonExternalReferenceCreateRequest.builder()
+				.systemName(systemName)
+				.item(externalReferenceItem)
+				.build();
+
+		externalReferenceRestControllerService.performInsert(orgCode, externalReferenceCreateRequest);
 	}
 }

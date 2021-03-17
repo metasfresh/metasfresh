@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.pricing.pricelist.request.v2;
+package de.metas.common.pricing.v2.pricelist.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

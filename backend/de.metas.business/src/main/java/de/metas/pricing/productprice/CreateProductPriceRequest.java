@@ -20,37 +20,50 @@
  * #L%
  */
 
-package de.metas.pricing.pricelist;
+package de.metas.pricing.productprice;
 
 import de.metas.organization.OrgId;
-import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
+import java.math.BigDecimal;
 
 @Value
 @Builder
-public class PriceListVersion
+public class CreateProductPriceRequest
 {
 	@NonNull
 	OrgId orgId;
 
 	@NonNull
-	PriceListId priceListId;
+	ProductId productId;
 
 	@NonNull
 	PriceListVersionId priceListVersionId;
 
 	@NonNull
-	Instant validFrom;
-
-	@NonNull
-	Boolean isActive;
+	BigDecimal priceStd;
 
 	@Nullable
-	String description;
+	Boolean isActive;
+
+	@NonNull
+	@Builder.Default
+	BigDecimal priceList = BigDecimal.ZERO;
+
+	@NonNull
+	@Builder.Default
+	BigDecimal priceLimit = BigDecimal.ZERO;
+
+	@NonNull
+	TaxCategoryId taxCategoryId;
+
+	@NonNull
+	UomId uomId;
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-pricing
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.rest_api.pricing.productprice;
+package de.metas.common.pricing.v2.productprice;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -44,7 +44,7 @@ public class JsonRequestProductPriceUpsert
 {
 	@ApiModelProperty(position = 10, dataType = "List of product prices")
 	@JsonProperty("requestItems")
-	List<JsonRequestProductPriceItemUpsert> requestItems;
+	List<JsonRequestProductPriceUpsertItem> requestItems;
 
 	@ApiModelProperty(
 			position = 20,
@@ -55,7 +55,7 @@ public class JsonRequestProductPriceUpsert
 	@JsonCreator
 	@Builder
 	public JsonRequestProductPriceUpsert(
-			@NonNull @JsonProperty("requestItems")  final List<JsonRequestProductPriceItemUpsert> requestItems,
+			@NonNull @JsonProperty("requestItems")  final List<JsonRequestProductPriceUpsertItem> requestItems,
 			@Nullable @JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.requestItems =  coalesce(requestItems, ImmutableList.of());

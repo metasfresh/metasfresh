@@ -27,16 +27,16 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
-@Getter
-@EqualsAndHashCode
+@Value
+@Builder
 public class ProductPrice
 {
 	@NonNull
@@ -52,15 +52,17 @@ public class ProductPrice
 	PriceListVersionId priceListVersionId;
 
 	@NonNull
-	BigDecimal priceLimit;
-
-	@NonNull
-	BigDecimal priceList;
-
-	@NonNull
 	BigDecimal priceStd;
 
-	@Nullable
+	@NonNull
+	@Builder.Default
+	BigDecimal priceList = BigDecimal.ZERO;
+
+	@NonNull
+	@Builder.Default
+	BigDecimal priceLimit = BigDecimal.ZERO;
+
+	@NonNull
 	TaxCategoryId taxCategoryId;
 
 	@Nullable
@@ -69,28 +71,6 @@ public class ProductPrice
 	@NonNull
 	Boolean isActive;
 
-	@Builder
-	public ProductPrice(
-			@NonNull final OrgId orgId,
-			@NonNull final ProductId productId,
-			@NonNull final ProductPriceId productPriceId,
-			@NonNull final PriceListVersionId priceListVersionId,
-			@NonNull final BigDecimal priceLimit,
-			@NonNull final BigDecimal priceList,
-			@NonNull final BigDecimal priceStd,
-			@Nullable final TaxCategoryId taxCategoryId,
-			@Nullable final String internalName,
-			@NonNull final Boolean isActive)
-	{
-		this.orgId = orgId;
-		this.productId = productId;
-		this.productPriceId = productPriceId;
-		this.priceListVersionId = priceListVersionId;
-		this.priceLimit = priceLimit;
-		this.priceList = priceList;
-		this.priceStd = priceStd;
-		this.taxCategoryId = taxCategoryId;
-		this.internalName = internalName;
-		this.isActive = isActive;
-	}
+	@NonNull
+	UomId uomId;
 }
