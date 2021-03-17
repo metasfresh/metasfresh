@@ -74,7 +74,7 @@ public interface I_C_Project_Repair_CostCollector
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set Repair Project Cost Collector.
+	 * Set Service/Repair Project Expenses.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -83,7 +83,7 @@ public interface I_C_Project_Repair_CostCollector
 	void setC_Project_Repair_CostCollector_ID (int C_Project_Repair_CostCollector_ID);
 
 	/**
-	 * Get Repair Project Cost Collector.
+	 * Get Service/Repair Project Expenses.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
