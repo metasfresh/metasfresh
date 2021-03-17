@@ -25,6 +25,7 @@ package de.metas.edi.api;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.bpartner.BPartnerId;
 import lombok.NonNull;
 import org.adempiere.util.lang.IContextAware;
 
@@ -145,4 +146,6 @@ public interface IDesadvDAO extends ISingletonService
 	BigDecimal retrieveMinimumSumPercentage();
 
 	void save(@NonNull I_EDI_Desadv ediDesadv);
+
+	BPartnerId retrieveBPartnerFromEdiDesadvPackId(int packId);
 }

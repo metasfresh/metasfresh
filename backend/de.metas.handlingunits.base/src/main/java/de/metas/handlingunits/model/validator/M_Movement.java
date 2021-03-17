@@ -102,8 +102,6 @@ public class M_Movement
 	/**
 	 * Fetch all HUs which are assigned to linked Receipt Line and assign them to given movement line.
 	 *
-	 * @param movementLine
-	 * @param packingMaterialsCollector
 	 * @return list of HUs which are now currently assigned given <code>movementLine</code>
 	 */
 	private void assignHUsFromReceiptLine(final I_M_MovementLine movementLine)
@@ -132,7 +130,7 @@ public class M_Movement
 
 		//
 		// Assign them to movement line
-		Services.get(IHUAssignmentBL.class).setAssignedHandlingUnits(movementLine, hus);
+		Services.get(IHUMovementBL.class).setAssignedHandlingUnits(movementLine, hus);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)

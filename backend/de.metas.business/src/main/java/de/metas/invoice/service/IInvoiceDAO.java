@@ -30,7 +30,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceQuery;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
@@ -47,6 +49,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -169,4 +172,8 @@ public interface IInvoiceDAO extends ISingletonService
 	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
 
 	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
+
+	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
+
+	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
 }

@@ -29,6 +29,10 @@ let soRecordId;
 let huValue1;
 let huValue2;
 
+const includedQAUrl = new RegExp(/rest\/api\/documentView\/pickingSlot\/.*\/quickActions\?parentViewId=540350/);
+const includedQAUrl2 = new RegExp(/rest\/api\/documentView\/husToPick\/.*\/quickActions\?parentViewId=540350/);
+const parentQAUrl = new RegExp(/rest\/api\/documentView\/.*\/quickActions\?childViewId=pickingSlot/);
+
 describe('Create test data', function() {
   it('Read fixture and prepare the names', function() {
     cy.fixture('picking/pick_HUs_and_create_shipment.json').then(f => {
@@ -73,39 +77,63 @@ describe('Pick the SO', function() {
     cy.visitWindow('540345');
   });
 
-  it('Select first row and run action Pick', function() {
+  it('Select row and run action Pick', function() {
     cy.selectRowByColumnAndValue({ column: productPartnerColumn, value: productName });
 
+    cy.intercept(includedQAUrl).as('huQA');
+
     cy.executeQuickAction('WEBUI_Picking_Launcher', false, false);
+
+    cy.wait('@huQA', { timeout: 10000 });
   });
 
   it('Pick first HU', function() {
+    cy.intercept(includedQAUrl).as('huQA1');
+
     cy.selectLeftTable().within(() => {
       cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
+
+    cy.selectRightTable().within(() => {
+      cy.get('.table-row', { timeout: 30000 }).should('exist');
+    });
+
+    cy.intercept(includedQAUrl2).as('huQA2');
     cy.executeQuickActionWithRightSideTable('WEBUI_Picking_HUEditor_Launcher', true);
+    cy.wait('@huQA2', { timeout: 10000 });
 
     cy.selectRightTable().within(() => {
       cy.selectItemUsingBarcodeFilter({ column: huSelectionHuCodeColumn, value: huValue1 }, false, true);
     });
-    cy.get('.spinner', { timeout: 10000 })
+    cy.get('.spinner', { timeout: 30000 })
       .should('not.exist')
       .then(() => {
         cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
+        cy.wait('@huQA1', { timeout: 10000 });
       });
   });
 
   it('Pick second HU', function() {
+    cy.intercept(includedQAUrl).as('huQA3');
+
     cy.selectLeftTable().within(() => {
       cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
+
+    cy.selectRightTable().within(() => {
+      cy.get('.table-row', { timeout: 30000 }).should('exist');
+    });
+
+    cy.intercept(includedQAUrl2).as('huQA4');
     cy.executeQuickActionWithRightSideTable('WEBUI_Picking_HUEditor_Launcher', true);
+    cy.wait('@huQA4', { timeout: 10000 });
 
     cy.selectRightTable().within(() => {
       cy.selectItemUsingBarcodeFilter({ column: huSelectionHuCodeColumn, value: huValue2 }, false, true);
     });
 
     cy.executeQuickAction('WEBUI_Picking_HUEditor_PickHU', true, false);
+    cy.wait('@huQA3', { timeout: 10000 });
   });
 
   it('Confirm Picks', function() {
@@ -113,17 +141,28 @@ describe('Pick the SO', function() {
       cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.selectRightTable().within(() => {
+      cy.get('.table-row', { timeout: 10000 }).should('exist');
       cy.selectRowByColumnAndValue({ column: pickingHuCodeColumn, value: huValue2 }, false, true);
     });
+
+    cy.intercept(parentQAUrl).as('parentQA1');
+    //cy.intercept(parentQAUrl).as('parentQA2');
+    cy.intercept(includedQAUrl).as('childQA1');
+    //cy.intercept(includedQAUrl).as('childQA2');
+
     cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
-    cy.waitForSaveIndicator();
+
+    cy.wait(['@parentQA1', '@childQA1'], { timeout: 30000 });
 
     cy.selectLeftTable().within(() => {
+      cy.get('.table-row', { timeout: 10000 }).should('exist');
       cy.selectRowByColumnAndValue({ column: orderColumn, value: soDocNumber }, false, true);
     });
     cy.selectRightTable().within(() => {
+      cy.get('.table-row', { timeout: 10000 }).should('exist');
       cy.selectRowByColumnAndValue({ column: pickingHuCodeColumn, value: huValue1 }, false, true);
     });
+
     cy.executeQuickAction('WEBUI_Picking_M_Picking_Candidate_Process', true, false);
     cy.waitForSaveIndicator();
   });

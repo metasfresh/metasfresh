@@ -11,8 +11,8 @@ import org.eevolution.api.BOMComponentType;
 
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
-import de.metas.material.planning.pporder.impl.QtyCalculationsBOMLine;
+import org.eevolution.api.QtyCalculationsBOM;
+import org.eevolution.api.QtyCalculationsBOMLine;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;

@@ -73,12 +73,9 @@ export default class Table extends PureComponent {
   };
 
   getCurrentRowId = () => {
-    const { keyProperty, selected, rows, collapsedArrayMap } = this.props;
+    const { keyProperty, selected, rows } = this.props;
 
-    const array =
-      collapsedArrayMap.length > 0
-        ? collapsedArrayMap.map((item) => item[keyProperty])
-        : rows.map((item) => item[keyProperty]);
+    const array = rows.map((item) => item[keyProperty]);
     const currentId = array.findIndex(
       (x) => x === selected[selected.length - 1]
     );

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -44,6 +45,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.storage.IStorageQuery;
+
+import javax.annotation.Nullable;
 
 /**
  * Developer friendly Query Builder which is oriented on Handling Units concerns.
@@ -186,16 +189,13 @@ public interface IHUQueryBuilder
 	 * Filter only those HUs which are in any of the given warehouse(s).
 	 *
 	 * NOTE: given warehouse(s) are appended to the list of previously specified ones
-	 *
-	 * @param warehouseId
-	 * @return this
 	 */
 	IHUQueryBuilder addOnlyInWarehouseId(final WarehouseId warehouseId);
 
 	/**
 	 *
-	 * @return an unmodifiable set containing the <code>M_Warehouse_ID</code>s that were previously specified by invocations of {@link #addOnlyInWarehouseId(int)},
-	 *         {@link #addOnlyInWarehouses(Collection)} and {@link #addOnlyInWarehouseIds(Collection)}.
+	 * @return an unmodifiable set containing the <code>M_Warehouse_ID</code>s that were previously specified by invocations of {@link #addOnlyInWarehouseId(WarehouseId)},
+	 *         {@link #addOnlyInWarehouseIds(Collection)} and {@link #addOnlyInWarehouseIds(Collection)}.
 	 */
 	Set<WarehouseId> getOnlyInWarehouseIds();
 
@@ -203,9 +203,6 @@ public interface IHUQueryBuilder
 
 	/**
 	 * See {@link IStorageQuery#setExcludeAfterPickingLocator(boolean)}.
-	 *
-	 * @param excludeAfterPickingLocator
-	 * @return
 	 */
 	IHUQueryBuilder setExcludeAfterPickingLocator(boolean excludeAfterPickingLocator);
 
@@ -220,7 +217,7 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder addOnlyInBPartnerId(final BPartnerId bPartnerId);
 
 	/**
-	 * @return an unmodifiable set containing the <code>C_BPartner_ID</code>s that were previously specified by invocations of {@link #addOnlyInBPartnerId(Integer)}.
+	 * @return an unmodifiable set containing the <code>C_BPartner_ID</code>s that were previously specified by invocations of {@link #addOnlyInBPartnerId(BPartnerId)}.
 	 */
 	Set<BPartnerId> getOnlyInBPartnerIds();
 
@@ -346,26 +343,17 @@ public interface IHUQueryBuilder
 	 * Filter only those HUs which have <code>attribute</code> with any of the given <code>values</code>.
 	 *
 	 * <p>
-	 * <b>IMPORTANT:</b> other than e.g. in {@link #addOnlyInWarehouses(Collection)}, the conditions specified by successive method invocations are <b>AND</b>ed. So, only HUs that have <b>all</b> (as
+	 * <b>IMPORTANT:</b> other than e.g. in {@link #addOnlyInWarehouseIds(Collection)}, the conditions specified by successive method invocations are <b>AND</b>ed. So, only HUs that have <b>all</b> (as
 	 * opposed to any) of the specified attributes and values will match the query.
-	 *
-	 * @param attribute
-	 * @param attributeValueType see X_M_Attribute.ATTRIBUTEVALUETYPE_*
-	 * @param values list of accepted values
-	 * @return this
 	 */
-	IHUQueryBuilder addOnlyWithAttributeInList(I_M_Attribute attribute, String attributeValueType, List<? extends Object> values);
+	IHUQueryBuilder addOnlyWithAttributeInList(I_M_Attribute attribute, String attributeValueType, List<?> values);
 
 	/**
 	 * Filter only those HUs which have <code>attributeCode</code> with any of the given <code>values</code>.
 	 *
 	 * <p>
-	 * <b>IMPORTANT:</b> other than e.g. in {@link #addOnlyInWarehouses(Collection)}, the conditions specified by successive method invocations are <b>AND</b>ed. So, only HUs that have <b>all</b> (as
+	 * <b>IMPORTANT:</b> other than e.g. in {@link #addOnlyInWarehouseIds(Collection)}, the conditions specified by successive method invocations are <b>AND</b>ed. So, only HUs that have <b>all</b> (as
 	 * opposed to any) of the specified attributes and values will match the query.
-	 *
-	 * @param attributeCode
-	 * @param values list of accepted values
-	 * @return this
 	 */
 	IHUQueryBuilder addOnlyWithAttributeInList(AttributeCode attributeCode, Object... values);
 
@@ -386,9 +374,6 @@ public interface IHUQueryBuilder
 	 * HU identification by barcode can be either of the 2 below:
 	 * <li>the M_HU.Value equals the inserted barcode (like before)</li>
 	 * <li>the HU has a linked M_HU_Attribute entry with M_Attribute of type Barcode (defined in the DIM_Barcode_Attributes dimension spec) and with the value that equals the inserted barcode</li>
-	 *
-	 * @param barcode
-	 * @return this
 	 */
 	IHUQueryBuilder setOnlyWithBarcode(String barcode);
 
@@ -450,44 +435,32 @@ public interface IHUQueryBuilder
 	 */
 	boolean isErrorIfNoItems();
 
+	IHUQueryBuilder addOnlyHUValue(@NonNull String huValue);
+
 	/**
 	 * Adds HUs which shall be selected. No other HUs, beside those ones will be considered.
 	 *
 	 * If the given list {@code null} this method will do nothing. If it is empty, no HUs will be considered.
-	 *
-	 * @param onlyHUIds
 	 */
 	IHUQueryBuilder addOnlyHUIds(Collection<Integer> onlyHUIds);
 
 	/**
 	 * Adds HUs which needs to be excluded when we retrieve them.
-	 *
-	 * @param husToExclude
-	 * @return this
 	 */
 	IHUQueryBuilder addHUsToExclude(Collection<I_M_HU> husToExclude);
 
 	/**
 	 * Adds HUs which needs to be excluded when we retrieve them.
-	 *
-	 * @param huIdsToExclude
-	 * @return
 	 */
 	IHUQueryBuilder addHUIdsToExclude(Collection<Integer> huIdsToExclude);
 
 	/**
 	 * Adds the {@link I_M_HU_PI_Version} to include.
-	 *
-	 * @param huPIVersionId
-	 * @return this
 	 */
 	IHUQueryBuilder addPIVersionToInclude(HuPackingInstructionsVersionId huPIVersionId);
 
 	/**
 	 * Check if given {@link IAttributeSet} is matching the attributes from our query.
-	 *
-	 * @param attributes
-	 * @return true if matches
 	 */
 	boolean matches(IAttributeSet attributes);
 
@@ -522,4 +495,10 @@ public interface IHUQueryBuilder
 	IHUQueryBuilder setExcludeReserved();
 
 	IHUQueryBuilder addOnlyInLocatorIds(Collection<Integer> locatorIds);
+
+	/**
+	 * If true = include only the HUs which have a product with {@link org.compiere.model.I_M_Product#COLUMNNAME_IsStocked} = true
+	 * If false or not set = all HUs are included (the field {@link org.compiere.model.I_M_Product#COLUMNNAME_IsStocked} is ignored when filtering the HUs)
+	 */
+	IHUQueryBuilder setOnlyStockedProducts(final boolean onlyStockedProducts);
 }

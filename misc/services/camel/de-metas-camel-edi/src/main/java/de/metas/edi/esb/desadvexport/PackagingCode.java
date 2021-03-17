@@ -35,6 +35,9 @@ public enum PackagingCode
 	/** Pallet ISO 1 - 1/1 EURO Pallet */
 	ISO1("ISO1"),
 
+	/** Same as {@link #ISO1} AFAIK */
+	EURO("EURO"),
+
 	/** Pallet ISO 1 - 1/2 EURO Pallet */
 	ISO2("ISO2"),
 

@@ -50,7 +50,8 @@ public class AttributeConstants
 	//
 	public final AttributeCode ATTR_SubProducerBPartner_Value = AttributeCode.ofString("SubProducerBPartner");
 
-	public final AttributeCode ATTR_SerialNo = AttributeCode.ofString("SerialNo");
+	public static final String ATTR_SerialNo_String = "SerialNo";
+	public final AttributeCode ATTR_SerialNo = AttributeCode.ofString(ATTR_SerialNo_String);
 
 	public static final String ATTR_LotNumber_String = "Lot-Nummer";
 	public static final AttributeCode ATTR_LotNumber = AttributeCode.ofString(ATTR_LotNumber_String);
@@ -63,4 +64,6 @@ public class AttributeConstants
 	public static final AttributeCode RouterMAC4 = AttributeCode.ofString("RouterMAC4");
 	public static final AttributeCode RouterMAC5 = AttributeCode.ofString("RouterMAC5");
 	public static final AttributeCode RouterMAC6 = AttributeCode.ofString("RouterMAC6");
+
+	public static final AttributeCode WarrantyStartDate = AttributeCode.ofString("WarrantyStartDate");
 }

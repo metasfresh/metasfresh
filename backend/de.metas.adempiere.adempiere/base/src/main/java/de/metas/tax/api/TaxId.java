@@ -9,6 +9,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -40,6 +42,7 @@ public class TaxId implements RepoIdAware
 		return new TaxId(repoId);
 	}
 
+	@Nullable
 	public static TaxId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
@@ -50,12 +53,12 @@ public class TaxId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final TaxId id)
+	public static int toRepoId(@Nullable final TaxId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
 
-	public static int toRepoId(final Optional<TaxId> optional)
+	public static int toRepoId(@Nullable final Optional<TaxId> optional)
 	{
 		final TaxId id = optional != null ? optional.orElse(null) : null;
 		return toRepoId(id);

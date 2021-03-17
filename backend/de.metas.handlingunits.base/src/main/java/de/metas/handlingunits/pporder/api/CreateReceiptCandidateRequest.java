@@ -2,8 +2,8 @@ package de.metas.handlingunits.pporder.api;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateId;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -68,6 +68,8 @@ public final class CreateReceiptCandidateRequest
 
 	@Nullable
 	private final PickingCandidateId pickingCandidateId;
+
+	private final boolean alreadyProcessed;
 
 	public static class CreateReceiptCandidateRequestBuilder
 	{

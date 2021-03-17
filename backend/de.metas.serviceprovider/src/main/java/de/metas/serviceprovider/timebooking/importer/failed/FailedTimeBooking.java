@@ -22,6 +22,7 @@
 
 package de.metas.serviceprovider.timebooking.importer.failed;
 
+import de.metas.organization.OrgId;
 import de.metas.serviceprovider.external.ExternalSystem;
 import lombok.Builder;
 import lombok.NonNull;
@@ -33,6 +34,9 @@ import javax.annotation.Nullable;
 @Builder(toBuilder = true)
 public class FailedTimeBooking
 {
+	@NonNull
+	OrgId orgId;
+
 	@NonNull
 	String externalId;
 

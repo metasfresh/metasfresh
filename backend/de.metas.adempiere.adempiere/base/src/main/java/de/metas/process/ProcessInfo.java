@@ -110,7 +110,6 @@ public final class ProcessInfo implements Serializable
 		sqlStatement = builder.getSQLStatement();
 		translateExcelHeaders = builder.isTranslateExcelHeaders();
 		adWorkflowId = builder.getWorkflowId();
-		serverProcess = builder.isServerProcess();
 		invokedByScheduler = builder.isInvokedByScheduler();
 		notifyUserAfterExecution = builder.isNotifyUserAfterExecution();
 
@@ -196,9 +195,6 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final boolean translateExcelHeaders;
 	private final WorkflowId adWorkflowId;
-
-	@Getter
-	private final boolean serverProcess;
 
 	@Getter
 	private final boolean invokedByScheduler;
@@ -644,7 +640,7 @@ public final class ProcessInfo implements Serializable
 	 * @return a query filter for the current m_whereClause or if there is none, return <code>defaultQueryFilter</code>
 	 */
 	@Nullable
-	public <T> IQueryFilter<T> getQueryFilterOrElse(final IQueryFilter<T> defaultQueryFilter)
+	public <T> IQueryFilter<T> getQueryFilterOrElse(@Nullable final IQueryFilter<T> defaultQueryFilter)
 	{
 		final IQueryFilter<T> whereFilter;
 		if (Check.isEmpty(whereClause, true))
@@ -1604,12 +1600,6 @@ public final class ProcessInfo implements Serializable
 			}
 
 			return null;
-		}
-
-		private boolean isServerProcess()
-		{
-			final I_AD_Process adProcess = getAD_ProcessOrNull();
-			return adProcess != null ? adProcess.isServerProcess() : false;
 		}
 
 		private boolean isReportingProcess()

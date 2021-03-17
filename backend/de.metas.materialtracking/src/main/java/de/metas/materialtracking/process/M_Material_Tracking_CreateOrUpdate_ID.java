@@ -24,6 +24,7 @@ package de.metas.materialtracking.process;
 
 import java.util.List;
 
+import de.metas.order.IOrderBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -278,6 +279,10 @@ public class M_Material_Tracking_CreateOrUpdate_ID
 			if (order == null)
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason("context contains no order");
+			}
+			if (Services.get(IOrderBL.class).isRequisition(order))
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("Is purchase requisition");
 			}
 			return ProcessPreconditionsResolution.acceptIf(!order.isSOTrx());
 		}

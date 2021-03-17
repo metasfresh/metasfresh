@@ -1,16 +1,6 @@
 package de.metas.util.web.security;
 
-import java.util.Properties;
-
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.util.Env;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-import com.google.common.base.Supplier;
-
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -22,6 +12,13 @@ import de.metas.security.UserRolePermissionsKey;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Service;
+
+import java.util.Properties;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -48,8 +45,18 @@ import lombok.NonNull;
 @Service
 public class UserAuthTokenService
 {
-	@Autowired
-	private UserAuthTokenRepository userAuthTokenRepo;
+	private final UserAuthTokenRepository userAuthTokenRepo;
+
+	public UserAuthTokenService(
+			@NonNull final UserAuthTokenRepository userAuthTokenRepo)
+	{
+		this.userAuthTokenRepo = userAuthTokenRepo;
+	}
+
+	public UserAuthToken getByToken(@NonNull final String token)
+	{
+		return userAuthTokenRepo.getByToken(token);
+	}
 
 	public void run(final Supplier<String> authTokenStringSupplier, @NonNull final UserAuthTokenRunnable runnable)
 	{
@@ -74,7 +81,7 @@ public class UserAuthTokenService
 		}
 
 		final Properties ctx = createContext(token);
-		try (final IAutoCloseable ctxRestorer = Env.switchContext(ctx))
+		try (final IAutoCloseable ignored = Env.switchContext(ctx))
 		{
 			return callable.call();
 		}
@@ -84,7 +91,7 @@ public class UserAuthTokenService
 		}
 	}
 
-	private final Properties createContext(final UserAuthToken token)
+	private Properties createContext(final UserAuthToken token)
 	{
 		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 		final IUserRolePermissions permissions = userRolePermissionsDAO.getUserRolePermissions(UserRolePermissionsKey.builder()

@@ -1,28 +1,23 @@
 package org.eevolution.api;
 
-import java.math.BigDecimal;
-import java.time.temporal.TemporalUnit;
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
-
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.workflow.WFDurationUnit;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Objects;
 
 /*
  * #%L
@@ -49,12 +44,12 @@ import lombok.Value;
 @Value
 public class PPOrderRouting
 {
-	PPOrderId ppOrderId;
+	@NonNull PPOrderId ppOrderId;
 
-	PPRoutingId routingId;
+	@NonNull PPRoutingId routingId;
 
-	TemporalUnit durationUnit;
-	BigDecimal qtyPerBatch;
+	@NonNull WFDurationUnit durationUnit;
+	@NonNull BigDecimal qtyPerBatch;
 
 	//
 	// Activities
@@ -63,13 +58,13 @@ public class PPOrderRouting
 	@Getter(AccessLevel.NONE)
 	PPOrderRoutingActivityCode firstActivityCode;
 	@Getter(AccessLevel.NONE)
-	private ImmutableSetMultimap<PPOrderRoutingActivityCode, PPOrderRoutingActivityCode> codeToNextCodeMap;
+	ImmutableSetMultimap<PPOrderRoutingActivityCode, PPOrderRoutingActivityCode> codeToNextCodeMap;
 
 	@Builder
 	private PPOrderRouting(
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final PPRoutingId routingId,
-			@NonNull final TemporalUnit durationUnit,
+			@NonNull final WFDurationUnit durationUnit,
 			@Nullable final BigDecimal qtyPerBatch,
 			@NonNull final PPOrderRoutingActivityCode firstActivityCode,
 			@NonNull final ImmutableList<PPOrderRoutingActivity> activities,
@@ -87,12 +82,6 @@ public class PPOrderRouting
 	public ImmutableCollection<PPOrderRoutingActivity> getActivities()
 	{
 		return activitiesByCode.values();
-	}
-
-	public List<PPOrderRoutingActivity> getActivitiesInOrder()
-	{
-		// TODO: really order the activities
-		return ImmutableList.copyOf(getActivities());
 	}
 
 	public boolean isSomethingProcessed()
@@ -131,6 +120,7 @@ public class PPOrderRouting
 		return Objects.equals(firstActivityCode, activity.getCode());
 	}
 
+	@Nullable
 	public PPOrderRoutingActivity getNextActivityOrNull(@NonNull final PPOrderRoutingActivity activity)
 	{
 		final ImmutableSet<PPOrderRoutingActivityCode> nextActivityCodes = getNextActivityCodes(activity);
@@ -151,6 +141,7 @@ public class PPOrderRouting
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Nullable
 	public PPOrderRoutingActivity getPreviousActivityOrNull(@NonNull final PPOrderRoutingActivity activity)
 	{
 		final ImmutableSet<PPOrderRoutingActivityCode> previousActivityCodes = getPreviousActivityCodes(activity);
@@ -202,4 +193,10 @@ public class PPOrderRouting
 	{
 		getActivityById(activityId).closeIt();
 	}
+
+	public void uncloseActivity(final PPOrderRoutingActivityId activityId)
+	{
+		getActivityById(activityId).uncloseIt();
+	}
+
 }

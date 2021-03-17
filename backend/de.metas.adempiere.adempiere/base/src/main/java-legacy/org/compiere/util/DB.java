@@ -1181,6 +1181,7 @@ public class DB
 		{
 			pstmt = prepareStatement(sql, trxName);
 			setParameters(pstmt, params);
+			pstmt.setMaxRows(1);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
@@ -2154,7 +2155,7 @@ public class DB
 		return getSQLValue(trxName, sql, new Object[] {});
 	}
 
-	public int getSQLValue(final String trxName, final String sql, final int int_param1)
+	public int getSQLValue(@Nullable final String trxName, final String sql, final int int_param1)
 	{
 		return getSQLValue(trxName, sql, new Object[] { int_param1 });
 	}

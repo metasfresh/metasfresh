@@ -56,7 +56,7 @@ public class ScriptsApplier implements IScriptsApplier
 	private int countApplied = 0;
 	private int countIgnored = 0;
 
-	private static enum ScriptApplyResult
+	private enum ScriptApplyResult
 	{
 		Applied, Ignored,
 	}
@@ -167,7 +167,7 @@ public class ScriptsApplier implements IScriptsApplier
 		}
 	}
 
-	private ScriptApplyResult apply(final IScript script)
+	private ScriptApplyResult apply(@NonNull final IScript script)
 	{
 		final IScriptsApplierListener listener = getListener();
 		final IScriptExecutor executor = getExecutor(script);

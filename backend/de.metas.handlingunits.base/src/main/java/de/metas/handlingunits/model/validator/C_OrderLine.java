@@ -3,16 +3,6 @@
  */
 package de.metas.handlingunits.model.validator;
 
-import java.util.function.Predicate;
-
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.MOrderLinePOCopyRecordSupport;
-import org.compiere.model.ModelValidator;
-
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.OrderLineHUPackingAware;
@@ -25,6 +15,15 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.impl.OrderLineBL;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.MOrderLinePOCopyRecordSupport;
+import org.compiere.model.ModelValidator;
+
+import java.util.function.Predicate;
 
 /**
  * @author cg
@@ -33,29 +32,15 @@ import de.metas.util.Services;
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine
 {
-	private static final Predicate<org.compiere.model.I_C_OrderLine> orderLineCopyRecordSkipPredicate = new Predicate<org.compiere.model.I_C_OrderLine>()
-	{
-
-		@Override
-		public boolean test(final org.compiere.model.I_C_OrderLine orderLine)
-		{
-			final I_C_OrderLine huOrderLine = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
-
-			// Skip copying packing material order lines
-			if (huOrderLine.isPackagingMaterial())
-			{
-				return true;
-			}
-
-			// Default: allow copying
-			return false; // don't skip
-		}
+	private static final Predicate<org.compiere.model.I_C_OrderLine> PREDICATE_NOT_PACKAGING_MATERIAL = orderLine -> {
+		final I_C_OrderLine huOrderLine = InterfaceWrapperHelper.create(orderLine, I_C_OrderLine.class);
+		return !huOrderLine.isPackagingMaterial();
 	};
 
 	@Init
 	public void setupCopyRecordSupport()
 	{
-		MOrderLinePOCopyRecordSupport.addSkipPredicate(orderLineCopyRecordSkipPredicate);
+		MOrderLinePOCopyRecordSupport.addSkipPredicate(PREDICATE_NOT_PACKAGING_MATERIAL);
 	}
 
 	@Init
@@ -71,11 +56,11 @@ public class C_OrderLine
 					ModelValidator.TYPE_BEFORE_CHANGE
 			}
 			, ifColumnsChanged = {
-					I_C_OrderLine.COLUMNNAME_C_BPartner_ID
-					, I_C_OrderLine.COLUMNNAME_M_Product_ID
-					, I_C_OrderLine.COLUMNNAME_QtyEntered
-					, de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID
-			})
+			I_C_OrderLine.COLUMNNAME_C_BPartner_ID
+			, I_C_OrderLine.COLUMNNAME_M_Product_ID
+			, I_C_OrderLine.COLUMNNAME_QtyEntered
+			, de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_M_HU_PI_Item_Product_ID
+	})
 	public void add_M_HU_PI_Item_Product(final I_C_OrderLine olPO)
 	{
 		// 09445: do not recompute price if also the price entered is changed
@@ -85,7 +70,6 @@ public class C_OrderLine
 			InterfaceWrapperHelper.setDynAttribute(olPO, OrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.TRUE);
 			return;
 		}
-
 
 		// avoid price recalculation in some specific cases (e.g. on reactivation)
 		final Boolean doNotRecalculatePrices = InterfaceWrapperHelper.getDynAttribute(olPO, OrderLineBL.DYNATTR_DoNotRecalculatePrices);

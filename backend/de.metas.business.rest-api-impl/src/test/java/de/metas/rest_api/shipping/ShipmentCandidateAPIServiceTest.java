@@ -47,6 +47,7 @@ import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -62,6 +63,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
@@ -77,7 +79,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
+@ExtendWith(AdempiereTestWatcher.class)
 class ShipmentCandidateAPIServiceTest
 {
 	private ShipmentCandidateAPIService shipmentCandidateAPIService;
@@ -271,13 +275,13 @@ class ShipmentCandidateAPIServiceTest
 		assertThat(exportAudit.get(0).getTransactionIdAPI()).isEqualTo(result.getTransactionKey());
 
 		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditItems = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
-		assertThat(exportAuditItems).hasSize(2);
 
-		assertThat(exportAuditItems.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord1.getM_ShipmentSchedule_ID());
-		assertThat(exportAuditItems.get(0).getExportStatus()).isEqualTo(Exported.getCode());
-
-		assertThat(exportAuditItems.get(1).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord2.getM_ShipmentSchedule_ID());
-		assertThat(exportAuditItems.get(1).getExportStatus()).isEqualTo(Exported.getCode());
+		assertThat(exportAuditItems)
+				.extracting(I_M_ShipmentSchedule_ExportAudit_Item.COLUMNNAME_M_ShipmentSchedule_ID,
+						I_M_ShipmentSchedule_ExportAudit_Item.COLUMNNAME_ExportStatus)
+				.containsExactlyInAnyOrder(
+						tuple(shipmentScheduleRecord1.getM_ShipmentSchedule_ID(), Exported.getCode()),
+						tuple(shipmentScheduleRecord2.getM_ShipmentSchedule_ID(), Exported.getCode()));
 	}
 
 	@Test
@@ -656,7 +660,7 @@ class ShipmentCandidateAPIServiceTest
 	}
 
 	/**
-	 * Verifies that shipment scheds are exported if one of them has canBeExported in the future, but that one is already exported
+	 * Verifies that shipment scheds are exported if one of them has canBeExported in the future, but that one *is* already exported
 	 */
 	@Test
 	void exportShipmentCandidates_O1_S4_Past_S1_FutureAlreadyExported_O2_S1_Past_Limit2()
@@ -732,8 +736,6 @@ class ShipmentCandidateAPIServiceTest
 		assertThat(shipmentScheduleRecord1_2.getExportStatus()).isEqualTo(ExportedAndForwarded.getCode()); // unchanged
 		refresh(shipmentScheduleRecord1_3);
 		assertThat(shipmentScheduleRecord1_3.getExportStatus()).isEqualTo(Exported.getCode());
-		refresh(shipmentScheduleRecord1_3);
-		assertThat(shipmentScheduleRecord1_3.getExportStatus()).isEqualTo(Exported.getCode());
 		refresh(shipmentScheduleRecord1_4);
 		assertThat(shipmentScheduleRecord1_4.getExportStatus()).isEqualTo(Exported.getCode());
 		refresh(shipmentScheduleRecord1_5);
@@ -742,9 +744,13 @@ class ShipmentCandidateAPIServiceTest
 		refresh(shipmentScheduleRecord2);
 		assertThat(shipmentScheduleRecord2.getExportStatus()).isEqualTo(Pending.getCode()); // ..because limit=1, and shipmentScheduleRecord1_* were exported
 
-		assertThat(exportAuditItems.get(0).getM_ShipmentSchedule_ID()).isEqualTo(shipmentScheduleRecord1_1.getM_ShipmentSchedule_ID());
+		assertThat(exportAuditItems).extracting(i -> i.getM_ShipmentSchedule_ID())
+				.containsExactlyInAnyOrder(
+						shipmentScheduleRecord1_1.getM_ShipmentSchedule_ID(),
+						shipmentScheduleRecord1_3.getM_ShipmentSchedule_ID(),
+						shipmentScheduleRecord1_4.getM_ShipmentSchedule_ID(),
+						shipmentScheduleRecord1_5.getM_ShipmentSchedule_ID());
 	}
-
 
 	/**
 	 * Verifies that shipment scheds of the same order are not exported if one of them is flagged as invalid

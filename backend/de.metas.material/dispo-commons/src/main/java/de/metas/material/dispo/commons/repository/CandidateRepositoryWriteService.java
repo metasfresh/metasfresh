@@ -4,9 +4,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.IdConstants;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
@@ -26,6 +29,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.stock.ResetStockPInstanceId;
+import de.metas.mforecast.IForecastDAO;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -36,6 +40,8 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -78,6 +84,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @Service
 public class CandidateRepositoryWriteService
 {
+	private final DimensionService dimensionService;
+
+	public CandidateRepositoryWriteService(final DimensionService dimensionService)
+	{
+		this.dimensionService = dimensionService;
+	}
+
 	/**
 	 * Stores the given {@code candidate}.
 	 * If there is already an existing candidate in the store, it is loaded, its fields are updated and the result is saved.<br>
@@ -128,7 +141,9 @@ public class CandidateRepositoryWriteService
 	@Builder
 	public static class SaveResult
 	{
-		/** The saved candidate. */
+		/**
+		 * The saved candidate.
+		 */
 		@NonNull
 		Candidate candidate;
 
@@ -204,7 +219,9 @@ public class CandidateRepositoryWriteService
 			return candidate.withQuantity(getQtyDelta());
 		}
 
-		/** Convenience method that returns a new instance whose included {@link Candidate} has the given id. */
+		/**
+		 * Convenience method that returns a new instance whose included {@link Candidate} has the given id.
+		 */
 		public SaveResult withCandidateId(@Nullable final CandidateId candidateId)
 		{
 			return SaveResult
@@ -215,7 +232,9 @@ public class CandidateRepositoryWriteService
 					.build();
 		}
 
-		/** Convenience method that returns a new instance with negated candidate quantity and previousQty */
+		/**
+		 * Convenience method that returns a new instance with negated candidate quantity and previousQty
+		 */
 		public SaveResult withNegatedQuantity()
 		{
 			return SaveResult
@@ -337,6 +356,8 @@ public class CandidateRepositoryWriteService
 			@NonNull final Candidate candidate,
 			final boolean preserveExistingSeqNo)
 	{
+		final IForecastDAO forecastRepo = Services.get(IForecastDAO.class);
+
 		final MaterialDescriptor materialDescriptor = candidate.getMaterialDescriptor();
 
 		candidateRecord.setAD_Org_ID(candidate.getOrgId().getRepoId());
@@ -358,7 +379,21 @@ public class CandidateRepositoryWriteService
 		candidateRecord.setReplenish_MinQty(candidate.getMinMaxDescriptor().getMin());
 		candidateRecord.setReplenish_MaxQty(candidate.getMinMaxDescriptor().getMax());
 
-		updatCandidateRecordFromDemandDetail(candidateRecord, candidate.getDemandDetail());
+		final DemandDetail demandDetail = candidate.getDemandDetail();
+
+		if (demandDetail != null)
+		{
+			final int forecastLineId = demandDetail.getForecastLineId();
+			if (forecastLineId > 0 && forecastLineId != IdConstants.UNSPECIFIED_REPO_ID)
+			{
+				final I_M_ForecastLine forecastLine = forecastRepo.getForecastLineById(forecastLineId);
+
+				final Dimension forecastLineDimension = dimensionService.getFromRecord(forecastLine);
+				dimensionService.updateRecord(candidateRecord, forecastLineDimension);
+			}
+		}
+
+		updatCandidateRecordFromDemandDetail(candidateRecord, demandDetail);
 
 		if (candidate.getBusinessCase() != null)
 		{
@@ -390,7 +425,12 @@ public class CandidateRepositoryWriteService
 				.reduce(ZERO, BigDecimal::add);
 		candidateRecord.setQtyFulfilled(fulfilledQty);
 
-		if (fulfilledQty.compareTo(candidateRecord.getQty()) >= 0)
+		final boolean typeImpliesProcessedDone =
+				candidate.getType().equals(CandidateType.INVENTORY_UP)
+						|| candidate.getType().equals(CandidateType.INVENTORY_DOWN)
+						|| candidate.getType().equals(CandidateType.ATTRIBUTES_CHANGED_FROM)
+						|| candidate.getType().equals(CandidateType.ATTRIBUTES_CHANGED_TO);
+		if (fulfilledQty.compareTo(candidateRecord.getQty()) >= 0 || typeImpliesProcessedDone)
 		{
 			candidateRecord.setMD_Candidate_Status(X_MD_Candidate.MD_CANDIDATE_STATUS_Processed);
 		}

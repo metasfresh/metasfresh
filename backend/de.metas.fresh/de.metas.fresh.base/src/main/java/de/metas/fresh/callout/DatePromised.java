@@ -26,10 +26,7 @@ public class DatePromised extends TabCalloutAdapter
 		final I_C_Order order = calloutRecord.getModel(I_C_Order.class);
 
 		final ZoneId timeZone = Services.get(IOrderBL.class).getTimeZone(order);
-
-		final ZonedDateTime datePromised = SystemTime.asZonedDateTime(timeZone);
-		final ZonedDateTime datePromisedEndOfDay = datePromised.toLocalDate().atTime(LocalTime.MAX).atZone(timeZone);
-
+		final ZonedDateTime datePromisedEndOfDay = SystemTime.asZonedDateTimeAtEndOfDay(timeZone);
 		order.setDatePromised(TimeUtil.asTimestamp(datePromisedEndOfDay));
 	}
 }

@@ -22,19 +22,29 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRate;
+import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.OptionalDeferredException;
+import de.metas.util.Services;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -42,20 +52,13 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.allocation.api.PaymentAllocationId;
-import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
-import de.metas.money.Money;
-import de.metas.util.Check;
-import de.metas.util.OptionalDeferredException;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Builds one {@link I_C_AllocationHdr} of all given {@link PayableDocument}s and {@link PaymentDocument}s.
@@ -67,7 +70,7 @@ public class PaymentAllocationBuilder
 		DO_NOTHING, WRITE_OFF, DISCOUNT
 	}
 
-	public static final PaymentAllocationBuilder newBuilder()
+	public static PaymentAllocationBuilder newBuilder()
 	{
 		return new PaymentAllocationBuilder();
 	}
@@ -76,11 +79,11 @@ public class PaymentAllocationBuilder
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final AllocationLineCandidateSaver candidatesSaver = new AllocationLineCandidateSaver();
 
 	// Parameters
-	private LocalDate _dateTrx;
-	private LocalDate _dateAcct;
+	private LocalDate _defaultDateTrx;
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
 	private ImmutableList<PaymentDocument> _paymentDocuments = ImmutableList.of();
 	private boolean allowPartialAllocations = false;
@@ -124,29 +127,29 @@ public class PaymentAllocationBuilder
 
 		//
 		// Create & process allocation documents
-		final ImmutableSet<PaymentAllocationId> paymentAllocationIds;
+		final ImmutableMap<PaymentAllocationId,AllocationLineCandidate> paymentAllocations;
 		if (!candidates.isEmpty() && !dryRun)
 		{
-			paymentAllocationIds = processCandidates(candidates);
+			paymentAllocations = processCandidates(candidates);
 		}
 		else
 		{
-			paymentAllocationIds = ImmutableSet.of();
+			paymentAllocations= ImmutableMap.of();
 		}
 
 		return PaymentAllocationResult.builder()
 				.candidates(candidates)
 				.fullyAllocatedCheck(fullyAllocatedCheck)
-				.paymentAllocationIds(paymentAllocationIds)
+				.paymentAllocationIds(paymentAllocations)
 				.build();
 	}
 
-	private ImmutableSet<PaymentAllocationId> processCandidates(final Collection<AllocationLineCandidate> candidates)
+	private ImmutableMap<PaymentAllocationId,AllocationLineCandidate> processCandidates(final Collection<AllocationLineCandidate> candidates)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> processCandidatesInTrx(candidates));
 	}
 
-	private ImmutableSet<PaymentAllocationId> processCandidatesInTrx(final Collection<AllocationLineCandidate> candidates)
+	private ImmutableMap<PaymentAllocationId,AllocationLineCandidate> processCandidatesInTrx(final Collection<AllocationLineCandidate> candidates)
 	{
 		try
 		{
@@ -196,10 +199,6 @@ public class PaymentAllocationBuilder
 				.paymentDocumentRef(TableRecordReference.of(I_C_Invoice.Table_Name, serviceInvoiceId))
 				.build();
 	}
-
-	/**
-	 * Create and complete one {@link I_C_AllocationHdr} for given candidate.
-	 */
 
 	/**
 	 * Allocate {@link #getPayableDocuments()} and {@link #getPaymentDocuments()}.
@@ -283,10 +282,7 @@ public class PaymentAllocationBuilder
 		if (paymentVendorDocuments.size() > 1
 				|| payableVendorDocuments_NoCreditMemos.size() > 1)
 		{
-			final List<IPaymentDocument> paymentVendorDocs = new ArrayList<>();
-			paymentVendorDocs.addAll(paymentVendorDocuments);
-
-			throw new MultipleVendorDocumentsException(paymentVendorDocs, payableVendorDocuments_NoCreditMemos);
+			throw new MultipleVendorDocumentsException(paymentVendorDocuments, payableVendorDocuments_NoCreditMemos);
 		}
 	}
 
@@ -331,6 +327,7 @@ public class PaymentAllocationBuilder
 				final Money paymentOverUnderAmt = computePaymentOverUnderAmtInInvoiceCurrency(payment, amountsToAllocate);
 
 				// Create new Allocation Line
+				final LocalDate dateTrx = TimeUtil.max(payable.getDate(), payment.getDate());
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(type)
 						//
@@ -340,8 +337,8 @@ public class PaymentAllocationBuilder
 						.payableDocumentRef(payable.getReference())
 						.paymentDocumentRef(payment.getReference())
 						//
-						.dateTrx(getDateTrx())
-						.dateAcct(getDateAcct())
+						.dateTrx(dateTrx)
+						.dateAcct(dateTrx)
 						//
 						// Amounts:
 						.amounts(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency())
@@ -517,6 +514,7 @@ public class PaymentAllocationBuilder
 				final Money paymentOverUnderAmt = paymentIn.calculateProjectedOverUnderAmt(amtToAllocate.negate()).negate();
 
 				// Create new Allocation Line
+				final LocalDate dateTrx = TimeUtil.max(paymentOut.getDate(), paymentIn.getDate());
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
 						//
@@ -526,8 +524,8 @@ public class PaymentAllocationBuilder
 						.payableDocumentRef(paymentOut.getReference())
 						.paymentDocumentRef(paymentIn.getReference())
 						//
-						.dateTrx(getDateTrx())
-						.dateAcct(getDateAcct())
+						.dateTrx(dateTrx)
+						.dateAcct(dateTrx)
 						//
 						// Amounts:
 						.amounts(AllocationAmounts.ofPayAmt(amtToAllocate))
@@ -549,7 +547,6 @@ public class PaymentAllocationBuilder
 	/**
 	 * Iterate all given payable documents and create an allocation only for Discount and WriteOff amounts.
 	 *
-	 * @param payableDocuments
 	 * @return created allocation candidates.
 	 */
 	private List<AllocationLineCandidate> createAllocationLineCandidates_DiscountAndWriteOffs(final List<PayableDocument> payableDocuments)
@@ -584,6 +581,7 @@ public class PaymentAllocationBuilder
 			return null;
 		}
 
+		final LocalDate dateTrx = getDefaultDateTrx();
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceDiscountOrWriteOff)
@@ -594,8 +592,8 @@ public class PaymentAllocationBuilder
 				.payableDocumentRef(payable.getReference())
 				.paymentDocumentRef(null) // nop
 				//
-				.dateTrx(getDateTrx())
-				.dateAcct(getDateAcct())
+				.dateTrx(dateTrx)
+				.dateAcct(dateTrx)
 				//
 				// Amounts:
 				.amounts(amountsToAllocate)
@@ -629,6 +627,7 @@ public class PaymentAllocationBuilder
 		return allocationLineCandidates;
 	}
 
+	@Nullable
 	private AllocationLineCandidate createAllocationLineCandidate_InvoiceProcessingFee(@NonNull final PayableDocument payable)
 	{
 		final AllocationAmounts amountsToAllocate = AllocationAmounts.builder()
@@ -639,23 +638,26 @@ public class PaymentAllocationBuilder
 			return null;
 		}
 
+		final OrgId orgId = payable.getClientAndOrgId().getOrgId();
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = payable.getInvoiceProcessingFeeCalculation();
+		final LocalDate dateTrx = TimeUtil.asLocalDate(invoiceProcessingFeeCalculation.getEvaluationDate(), orgDAO.getTimeZone(orgId));
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceProcessingFee)
 				//
-				.orgId(payable.getClientAndOrgId().getOrgId())
+				.orgId(orgId)
 				.bpartnerId(payable.getBpartnerId())
 				//
 				.payableDocumentRef(payable.getReference())
 				.paymentDocumentRef(null) // nop
 				//
-				.dateTrx(getDateTrx())
-				.dateAcct(getDateAcct())
+				.dateTrx(dateTrx)
+				.dateAcct(dateTrx)
 				//
 				// Amounts:
 				.amounts(amountsToAllocate)
 				.payableOverUnderAmt(payableOverUnderAmt)
-				.invoiceProcessingFeeCalculation(payable.getInvoiceProcessingFeeCalculation())
+				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				//
 				.build();
 
@@ -765,11 +767,7 @@ public class PaymentAllocationBuilder
 		final AllocationAmounts invoiceAmountsToAllocate = invoice.getAmountsToAllocate();
 		final Money invoicePayAmtToAllocate = invoiceAmountsToAllocate.getPayAmt();
 
-		final CurrencyConversionContext conversionContext = moneyService.createConversionContext(
-				payment.getDate(),
-				payment.getCurrencyConversionTypeId(),
-				payment.getClientAndOrgId()
-		);
+		final CurrencyConversionContext conversionContext = getCurrencyConversionContext(payment);
 		final CurrencyRate currencyRate = currencyBL.getCurrencyRate(conversionContext, paymentCurrencyId, invoiceCurrencyId);
 
 		final Money paymentAmountToAllocate = currencyRate.convertAmount(payment.getAmountToAllocate());
@@ -824,6 +822,23 @@ public class PaymentAllocationBuilder
 		}
 	}
 
+	private CurrencyConversionContext getCurrencyConversionContext(@NonNull final IPaymentDocument payment)
+	{
+		CurrencyConversionContext conversionContext = moneyService.createConversionContext(
+				payment.getDate(),
+				payment.getPaymentCurrencyContext().getCurrencyConversionTypeId(),
+				payment.getClientAndOrgId()
+		);
+
+		final FixedConversionRate fixedConversionRate = payment.getPaymentCurrencyContext().toFixedConversionRateOrNull();
+		if (fixedConversionRate != null)
+		{
+			conversionContext = conversionContext.withFixedConversionRate(fixedConversionRate);
+		}
+
+		return conversionContext;
+	}
+
 	private void markAsBuilt()
 	{
 		assertNotBuilt();
@@ -835,29 +850,20 @@ public class PaymentAllocationBuilder
 		Check.assume(!_built, "Not already built");
 	}
 
-	private LocalDate getDateTrx()
+	private LocalDate getDefaultDateTrx()
 	{
-		Check.assumeNotNull(_dateTrx, "date not null");
-		return _dateTrx;
+		final LocalDate defaultDateTrx = _defaultDateTrx;
+		if (defaultDateTrx == null)
+		{
+			throw new AdempiereException("Default DateTrx was not defined for " + this);
+		}
+		return defaultDateTrx;
 	}
 
-	public PaymentAllocationBuilder dateTrx(final LocalDate dateTrx)
+	public PaymentAllocationBuilder defaultDateTrx(final LocalDate defaultDateTrx)
 	{
 		assertNotBuilt();
-		_dateTrx = dateTrx;
-		return this;
-	}
-
-	private LocalDate getDateAcct()
-	{
-		Check.assumeNotNull(_dateAcct, "date not null");
-		return _dateAcct;
-	}
-
-	public PaymentAllocationBuilder dateAcct(final LocalDate dateAcct)
-	{
-		assertNotBuilt();
-		_dateAcct = dateAcct;
+		_defaultDateTrx = defaultDateTrx;
 		return this;
 	}
 

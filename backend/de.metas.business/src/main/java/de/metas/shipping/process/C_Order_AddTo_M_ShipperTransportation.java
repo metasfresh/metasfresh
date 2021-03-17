@@ -1,5 +1,8 @@
 package de.metas.shipping.process;
 
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
@@ -40,6 +43,7 @@ import lombok.NonNull;
 public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implements IProcessPrecondition
 {
 	private final PurchaseOrderToShipperTransportationService orderToShipperTransportationService = SpringContextHolder.instance.getBean(PurchaseOrderToShipperTransportationService.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@Param(parameterName = I_M_ShipperTransportation.COLUMNNAME_M_ShipperTransportation_ID)
 	private ShipperTransportationId p_M_ShipperTransportation_ID;
@@ -50,6 +54,13 @@ public class C_Order_AddTo_M_ShipperTransportation extends JavaProcess implement
 		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
+
+		final OrderId orderId = OrderId.ofRepoId(context.getSingleSelectedRecordId());
+		final org.compiere.model.I_C_Order order = orderBL.getById(orderId);
+		if (orderBL.isRequisition(order))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("is purchase requisition");
 		}
 
 		return ProcessPreconditionsResolution.accept();

@@ -22,11 +22,15 @@ package de.metas.cache.interceptor;
  * #L%
  */
 
-
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-
+import com.google.common.base.Supplier;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
@@ -39,19 +43,12 @@ import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
-import com.google.common.base.Supplier;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-
 import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
-public @Cached// @Interceptor
+public @Cached
 class CacheInterceptor implements Serializable
 {
 	/**
@@ -131,21 +128,14 @@ class CacheInterceptor implements Serializable
 	private final Cache<String, CCache<ArrayKey, Object>> _cacheStorage = _cacheStorageBuilder.build();
 
 	private static final String TRX_PROPERTY_CacheStorage = CacheInterceptor.class.getName() + ".CacheStorage";
-	private static final Supplier<Cache<String, CCache<ArrayKey, Object>>> TRX_PROPERTY_CacheStorageInitializer = new Supplier<Cache<String, CCache<ArrayKey, Object>>>()
-	{
-		@Override
-		public Cache<String, CCache<ArrayKey, Object>> get()
-		{
-			return _cacheStorageBuilder.build();
-		}
-	};
+	private static final Supplier<Cache<String, CCache<ArrayKey, Object>>> TRX_PROPERTY_CacheStorageInitializer = () -> _cacheStorageBuilder.build();
 
 	/**
 	 * @throws Throwable could throw throwable as the cached method could also throw it.
 	 */
-	@Nullable
 	@AroundInvoke
-	public Object invokeCache(final IInvocationContext invCtx) throws Throwable
+	@Nullable
+	public Object invokeCache(@NonNull final IInvocationContext invCtx) throws Throwable
 	{
 		if (logger.isTraceEnabled())
 		{
@@ -239,7 +229,7 @@ class CacheInterceptor implements Serializable
 	 * @return cache storage or null if not found
 	 */
 	@Nullable
-	private Cache<String, CCache<ArrayKey, Object>> getCacheStorage(final String trxName)
+	private Cache<String, CCache<ArrayKey, Object>> getCacheStorage(@Nullable final String trxName)
 	{
 		//
 		// If we have a transaction, we shall use transaction's cache
@@ -259,7 +249,7 @@ class CacheInterceptor implements Serializable
 				return null;
 			}
 
-			return trx.getProperty(TRX_PROPERTY_CacheStorage, TRX_PROPERTY_CacheStorageInitializer);
+			return trx.getProperty(TRX_PROPERTY_CacheStorage, TRX_PROPERTY_CacheStorageInitializer::get);
 		}
 
 		//

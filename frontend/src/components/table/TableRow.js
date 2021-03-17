@@ -87,20 +87,23 @@ class TableRow extends PureComponent {
   initPropertyEditor = ({ fieldName, mark }) => {
     const { cols, fieldsByName } = this.props;
 
-    this.setState({ valueBeforeEditing: fieldsByName[fieldName].value });
+    const beforeEditing = fieldsByName[fieldName]
+      ? fieldsByName[fieldName].value
+      : '';
+    this.setState({ valueBeforeEditing: beforeEditing });
 
     if (cols && fieldsByName) {
       cols.map((item) => {
         const property = item.fields[0].field;
         if (property === fieldName) {
           const widgetData = prepareWidgetData(item, fieldsByName);
-
+          const widgetReadOnly = widgetData[0] ? widgetData[0].readonly : false;
           if (widgetData) {
             this.handleEditProperty({
               event: null,
               property,
               focus: true,
-              readonly: widgetData[0].readonly,
+              readonly: widgetReadOnly,
               select: false,
               mark,
             });

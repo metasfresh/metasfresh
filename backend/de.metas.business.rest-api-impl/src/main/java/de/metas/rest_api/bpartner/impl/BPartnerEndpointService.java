@@ -2,22 +2,22 @@ package de.metas.rest_api.bpartner.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.RestUtils;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.NextPageQuery;
 import de.metas.bpartner.composite.repository.SinceQuery;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
-import de.metas.rest_api.bpartner.response.JsonResponseComposite;
-import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
-import de.metas.rest_api.bpartner.response.JsonResponseContact;
-import de.metas.rest_api.bpartner.response.JsonResponseContactList;
-import de.metas.rest_api.bpartner.response.JsonResponseLocation;
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.JsonPagingDescriptor;
-import de.metas.rest_api.common.MetasfreshId;
+import de.metas.common.bpartner.response.JsonResponseComposite;
+import de.metas.common.bpartner.response.JsonResponseCompositeList;
+import de.metas.common.bpartner.response.JsonResponseContact;
+import de.metas.common.bpartner.response.JsonResponseContactList;
+import de.metas.common.bpartner.response.JsonResponseLocation;
+import de.metas.common.rest_api.JsonExternalId;
+import de.metas.common.rest_api.JsonPagingDescriptor;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.utils.JsonExternalIds;
@@ -74,7 +74,7 @@ public class BPartnerEndpointService
 			@Nullable final String orgCode,
 			@NonNull final IdentifierString bpartnerIdentifier)
 	{
-		final OrgId orgId = BPartnerCompositeRestUtils.retrieveOrgIdOrDefault(orgCode);
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
 		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(orgId, bpartnerIdentifier);
 		return optBpartnerComposite;
@@ -88,7 +88,7 @@ public class BPartnerEndpointService
 			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final IdentifierString locationIdentifier)
 	{
-		final OrgId orgId = BPartnerCompositeRestUtils.retrieveOrgIdOrDefault(orgCode);
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
 		final Optional<JsonResponseComposite> optBpartnerComposite = jsonRetriever.getJsonBPartnerComposite(orgId, bpartnerIdentifier);
 		if (!optBpartnerComposite.isPresent())
@@ -115,7 +115,7 @@ public class BPartnerEndpointService
 			case GLN:
 				return GLN.equals(GLN.ofNullableString(jsonBPartnerLocation.getGln()), locationIdentifier.asGLN());
 			case METASFRESH_ID:
-				return MetasfreshId.equals(locationIdentifier.asMetasfreshId(), jsonBPartnerLocation.getMetasfreshId());
+				return JsonMetasfreshId.equals(locationIdentifier.asJsonMetasfreshId(), jsonBPartnerLocation.getMetasfreshId());
 			default:
 				// note: currently, "val-" is not supported with bpartner locations
 				throw new AdempiereException("Unexpected type=" + locationIdentifier.getType());
@@ -130,7 +130,7 @@ public class BPartnerEndpointService
 			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final IdentifierString contactIdentifier)
 	{
-		final OrgId orgId = BPartnerCompositeRestUtils.retrieveOrgIdOrDefault(orgCode);
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
 		final Optional<JsonResponseComposite> optBPartnerComposite = jsonRetriever.getJsonBPartnerComposite(orgId, bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())
@@ -154,7 +154,7 @@ public class BPartnerEndpointService
 			case EXTERNAL_ID:
 				return JsonExternalId.equals(jsonContact.getExternalId(), contactIdentifier.asJsonExternalId());
 			case METASFRESH_ID:
-				return MetasfreshId.equals(jsonContact.getMetasfreshId(), contactIdentifier.asMetasfreshId());
+				return JsonMetasfreshId.equals(jsonContact.getMetasfreshId(), contactIdentifier.asJsonMetasfreshId());
 			default:
 				// note: currently, "val-" and GLN are supported with contacts
 				throw new AdempiereException("Unexpected type=" + contactIdentifier.getType());

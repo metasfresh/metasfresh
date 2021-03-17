@@ -1,90 +1,78 @@
 package de.metas.handlingunits.model;
 
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for DD_OrderLine_HU_Candidate
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_DD_OrderLine_HU_Candidate 
 {
 
-    /** TableName=DD_OrderLine_HU_Candidate */
-    public static final String Table_Name = "DD_OrderLine_HU_Candidate";
+	String Table_Name = "DD_OrderLine_HU_Candidate";
 
-    /** AD_Table_ID=540686 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540686 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_DD_OrderLine_HU_Candidate, Object>(I_DD_OrderLine_HU_Candidate.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_Created = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Distribution Order Line HU Candidate.
@@ -93,7 +81,7 @@ public interface I_DD_OrderLine_HU_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDD_OrderLine_HU_Candidate_ID (int DD_OrderLine_HU_Candidate_ID);
+	void setDD_OrderLine_HU_Candidate_ID (int DD_OrderLine_HU_Candidate_ID);
 
 	/**
 	 * Get Distribution Order Line HU Candidate.
@@ -102,12 +90,10 @@ public interface I_DD_OrderLine_HU_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getDD_OrderLine_HU_Candidate_ID();
+	int getDD_OrderLine_HU_Candidate_ID();
 
-    /** Column definition for DD_OrderLine_HU_Candidate_ID */
-    public static final org.adempiere.model.ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_DD_OrderLine_HU_Candidate_ID = new org.adempiere.model.ModelColumn<I_DD_OrderLine_HU_Candidate, Object>(I_DD_OrderLine_HU_Candidate.class, "DD_OrderLine_HU_Candidate_ID", null);
-    /** Column name DD_OrderLine_HU_Candidate_ID */
-    public static final String COLUMNNAME_DD_OrderLine_HU_Candidate_ID = "DD_OrderLine_HU_Candidate_ID";
+	ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_DD_OrderLine_HU_Candidate_ID = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "DD_OrderLine_HU_Candidate_ID", null);
+	String COLUMNNAME_DD_OrderLine_HU_Candidate_ID = "DD_OrderLine_HU_Candidate_ID";
 
 	/**
 	 * Set Distribution Order Line.
@@ -116,7 +102,7 @@ public interface I_DD_OrderLine_HU_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDD_OrderLine_ID (int DD_OrderLine_ID);
+	void setDD_OrderLine_ID (int DD_OrderLine_ID);
 
 	/**
 	 * Get Distribution Order Line.
@@ -125,41 +111,37 @@ public interface I_DD_OrderLine_HU_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getDD_OrderLine_ID();
+	int getDD_OrderLine_ID();
 
-	public org.eevolution.model.I_DD_OrderLine getDD_OrderLine();
+	org.eevolution.model.I_DD_OrderLine getDD_OrderLine();
 
-	public void setDD_OrderLine(org.eevolution.model.I_DD_OrderLine DD_OrderLine);
+	void setDD_OrderLine(org.eevolution.model.I_DD_OrderLine DD_OrderLine);
 
-    /** Column definition for DD_OrderLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_DD_OrderLine_HU_Candidate, org.eevolution.model.I_DD_OrderLine> COLUMN_DD_OrderLine_ID = new org.adempiere.model.ModelColumn<I_DD_OrderLine_HU_Candidate, org.eevolution.model.I_DD_OrderLine>(I_DD_OrderLine_HU_Candidate.class, "DD_OrderLine_ID", org.eevolution.model.I_DD_OrderLine.class);
-    /** Column name DD_OrderLine_ID */
-    public static final String COLUMNNAME_DD_OrderLine_ID = "DD_OrderLine_ID";
+	ModelColumn<I_DD_OrderLine_HU_Candidate, org.eevolution.model.I_DD_OrderLine> COLUMN_DD_OrderLine_ID = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "DD_OrderLine_ID", org.eevolution.model.I_DD_OrderLine.class);
+	String COLUMNNAME_DD_OrderLine_ID = "DD_OrderLine_ID";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_DD_OrderLine_HU_Candidate, Object>(I_DD_OrderLine_HU_Candidate.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_IsActive = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Handling Unit.
@@ -168,7 +150,7 @@ public interface I_DD_OrderLine_HU_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_ID (int M_HU_ID);
+	void setM_HU_ID (int M_HU_ID);
 
 	/**
 	 * Get Handling Unit.
@@ -177,42 +159,37 @@ public interface I_DD_OrderLine_HU_Candidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_ID();
+	int getM_HU_ID();
 
-	public de.metas.handlingunits.model.I_M_HU getM_HU();
+	de.metas.handlingunits.model.I_M_HU getM_HU();
 
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
+	void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
 
-    /** Column definition for M_HU_ID */
-    public static final org.adempiere.model.ModelColumn<I_DD_OrderLine_HU_Candidate, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_DD_OrderLine_HU_Candidate, de.metas.handlingunits.model.I_M_HU>(I_DD_OrderLine_HU_Candidate.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
-    /** Column name M_HU_ID */
-    public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
+	ModelColumn<I_DD_OrderLine_HU_Candidate, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_DD_OrderLine_HU_Candidate, Object>(I_DD_OrderLine_HU_Candidate.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_DD_OrderLine_HU_Candidate, Object> COLUMN_Updated = new ModelColumn<>(I_DD_OrderLine_HU_Candidate.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -40,7 +40,6 @@ import de.metas.manufacturing.generatedcomponents.GeneratedComponentRequest;
 import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -60,6 +59,7 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -135,6 +135,7 @@ class PPOrderIssueServiceProductCommand
 				.qty(qtyToIssueForOneFinishedGood.intValueExact())
 				.attributes(ImmutableAttributeSet.copyOf(attributes))
 				.clientId(ClientId.ofRepoId(singleItemHU.getAD_Client_ID()))
+				.overrideExistingValues(request.isOverrideExistingValues())
 				.build());
 
 		if (attributesToChange.isEmpty())
@@ -226,9 +227,9 @@ class PPOrderIssueServiceProductCommand
 					//.topLevelHUId(...)
 					;
 
-			// Extract CUs of 1 item each,
-			// but leave one item in the original HU
-			for (int i = 1; i <= huQty - 1; i++)
+			// Extract CUs of 1 item each.
+			// The original HU will also be replaced.
+			for (int i = 1; i <= huQty; i++)
 			{
 				final I_M_HU extractedHU = CollectionUtils.singleElement(
 						HUTransformService.newInstance(huContext)
@@ -248,12 +249,6 @@ class PPOrderIssueServiceProductCommand
 			// delete the original candidate, we no longer need it
 			// NOTE: we have to delete it first and then create the new link because of the unique constraint on (PP_Order_ID, M_HU_ID).
 			ppOrderQtyDAO.delete(finishedGoodsReceiveCandidate);
-
-			// add (as first item) our original HU which we assume it has only one item left into it
-			singleItemHUs.add(0, hu);
-			ppOrderQtyDAO.save(createReceiptCandidateRequestTemplate
-					.topLevelHUId(HuId.ofRepoId(hu.getM_HU_ID()))
-					.build());
 
 			return singleItemHUs;
 		}

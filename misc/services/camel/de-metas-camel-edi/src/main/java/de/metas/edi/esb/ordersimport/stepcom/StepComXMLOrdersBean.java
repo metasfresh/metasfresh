@@ -38,16 +38,16 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.stepcom.order.DETAILXbest;
-import de.metas.edi.esb.jaxb.stepcom.order.DPRDE1;
-import de.metas.edi.esb.jaxb.stepcom.order.DPRIC1;
-import de.metas.edi.esb.jaxb.stepcom.order.DPRIN1;
-import de.metas.edi.esb.jaxb.stepcom.order.DQUAN1;
-import de.metas.edi.esb.jaxb.stepcom.order.Document;
-import de.metas.edi.esb.jaxb.stepcom.order.HADRE1;
-import de.metas.edi.esb.jaxb.stepcom.order.HDATE1;
-import de.metas.edi.esb.jaxb.stepcom.order.HEADERXbest;
-import de.metas.edi.esb.jaxb.stepcom.order.Xbest4H;
+import de.metas.edi.esb.jaxb.stepcom.orders.DETAILXbest;
+import de.metas.edi.esb.jaxb.stepcom.orders.DPRDE1;
+import de.metas.edi.esb.jaxb.stepcom.orders.DPRIC1;
+import de.metas.edi.esb.jaxb.stepcom.orders.DPRIN1;
+import de.metas.edi.esb.jaxb.stepcom.orders.DQUAN1;
+import de.metas.edi.esb.jaxb.stepcom.orders.Document;
+import de.metas.edi.esb.jaxb.stepcom.orders.HADRE1;
+import de.metas.edi.esb.jaxb.stepcom.orders.HDATE1;
+import de.metas.edi.esb.jaxb.stepcom.orders.HEADERXbest;
+import de.metas.edi.esb.jaxb.stepcom.orders.Xbest4H;
 import de.metas.edi.esb.commons.MeasurementUnit;
 import de.metas.edi.esb.ordersimport.compudata.H000;
 import de.metas.edi.esb.ordersimport.compudata.H100;
@@ -147,7 +147,7 @@ public class StepComXMLOrdersBean extends AbstractEDIOrdersBean
 				divisor = new BigDecimal(dpric1.getPRICEBASIS());
 			}
 			price = new BigDecimal(dpric1.getPRICE())
-					.setScale(3)
+					.setScale(3, RoundingMode.HALF_UP) // guard against pricess that come with more than 3 digits to start with
 					.divide(divisor, RoundingMode.HALF_UP);
 		}
 		p100.setBuyerPrice(price.toString());

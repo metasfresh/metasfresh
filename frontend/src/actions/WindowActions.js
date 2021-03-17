@@ -83,6 +83,7 @@ import {
   updateTableSelection,
   updateTableRowProperty,
 } from './TableActions';
+import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
 
 export function toggleOverlay(data) {
   return {
@@ -416,7 +417,7 @@ export function fetchTab({ tabId, windowId, docId, query }) {
  * @method updateTabLayout
  * @summary Action creator for fetching and updating single tab's layout
  *
- * @param {number} windowId
+ * @param {string} windowId
  * @param {string} tabId
  */
 export function updateTabLayout(windowId, tabId) {
@@ -499,14 +500,17 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
 /*
  * Main method to generate window
  */
-export function createWindow(
-  windowType,
-  documentId = 'NEW',
+export function createWindow({
+  windowId: windowType,
+  docId,
   tabId,
   rowId,
-  isModal = false,
-  isAdvanced
-) {
+  isModal,
+  isAdvanced,
+  disconnected,
+}) {
+  let disconnectedData = null;
+  let documentId = docId || 'NEW';
   return (dispatch) => {
     if (documentId.toLowerCase() === 'new') {
       documentId = 'NEW';
@@ -581,6 +585,10 @@ export function createWindow(
           );
           dispatch(updateStatus(response.data));
           dispatch(updateModal(data.rowId));
+          /** special case of inlineTab - disconnectedData will be used for data feed */
+          if (disconnected === 'inlineTab') {
+            disconnectedData = response.data[0];
+          }
         }
       } else {
         dispatch(getWindowBreadcrumb(windowType));
@@ -606,6 +614,10 @@ export function createWindow(
               };
               dispatch(updateTabTable(tableId, tableData));
             });
+          }
+          /** post get layout action triggered for the inlineTab case */
+          if (disconnectedData && disconnected === 'inlineTab') {
+            dispatch(inlineTabAfterGetLayout({ data, disconnectedData }));
           }
 
           dispatch(initLayoutSuccess(data, getScope(isModal)));
@@ -930,6 +942,8 @@ function updateStatus(responseData) {
  * in MasterWidget
  */
 export function updatePropertyValue({
+  windowId,
+  docId,
   property,
   value,
   tabId,
@@ -937,6 +951,9 @@ export function updatePropertyValue({
   isModal,
   entity,
   tableId,
+  disconnected,
+  action,
+  ret,
 }) {
   return (dispatch) => {
     if (rowId) {
@@ -947,6 +964,12 @@ export function updatePropertyValue({
           },
         },
       };
+      // - for the `inlineTab` type we will update the corresponding branch in the store
+      if (disconnected === 'inlineTab') {
+        action === 'patch' &&
+          dispatch(patchInlineTab({ ret, windowId, tabId, docId, rowId }));
+        return false;
+      }
 
       dispatch(updateTableRowProperty({ tableId, rowId, change }));
     } else if (!tabId || !rowId) {

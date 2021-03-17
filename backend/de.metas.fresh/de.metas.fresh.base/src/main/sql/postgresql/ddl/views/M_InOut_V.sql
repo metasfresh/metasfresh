@@ -82,7 +82,6 @@ from (
                                                                                           limit 1)) -- fallback to KG
                   LEFT OUTER JOIN C_UOM uom_iol ON uom_iol.C_UOM_ID = iol.C_UOM_ID
 
-
                   JOIN C_Period per on i.dateinvoiced >= per.startdate and i.dateinvoiced <= per.enddate
 
          where io.issotrx = 'Y'

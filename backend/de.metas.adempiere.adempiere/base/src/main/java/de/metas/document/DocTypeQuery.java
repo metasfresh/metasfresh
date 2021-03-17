@@ -1,13 +1,12 @@
 package de.metas.document;
 
-import javax.annotation.Nullable;
-
-import org.compiere.util.Env;
-
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -48,7 +47,9 @@ public class DocTypeQuery
 	@NonNull
 	Integer adClientId;
 
-	/** Even if specified, the system will still try to fallback to {@code AD_Org_ID=0} if there is no doctype with a matching org-id. */
+	/**
+	 * Even if specified, the system will still try to fallback to {@code AD_Org_ID=0} if there is no doctype with a matching org-id.
+	 */
 	@Default
 	int adOrgId = Env.CTXVALUE_AD_Org_ID_System;
 
@@ -60,4 +61,22 @@ public class DocTypeQuery
 
 	@Nullable
 	String name;
+
+	//
+	//
+	//
+
+	public static class DocTypeQueryBuilder
+	{
+		public DocTypeQueryBuilder docSubTypeAny()
+		{
+			return docSubType(DOCSUBTYPE_Any);
+		}
+
+		public DocTypeQueryBuilder docSubTypeNone()
+		{
+			return docSubType(DOCSUBTYPE_NONE);
+		}
+	}
+
 }

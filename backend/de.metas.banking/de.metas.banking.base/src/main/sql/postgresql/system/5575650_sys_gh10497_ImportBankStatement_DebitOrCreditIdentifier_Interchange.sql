@@ -1,0 +1,15 @@
+-- 2021-01-07T16:12:03.901Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Value='HH',Updated=TO_TIMESTAMP('2021-01-07 18:12:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542213
+;
+
+-- 2021-01-07T16:12:06.798Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Value='H',Updated=TO_TIMESTAMP('2021-01-07 18:12:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542212
+;
+
+-- 2021-01-07T16:12:08.987Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Value='S',Updated=TO_TIMESTAMP('2021-01-07 18:12:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542213
+;
+

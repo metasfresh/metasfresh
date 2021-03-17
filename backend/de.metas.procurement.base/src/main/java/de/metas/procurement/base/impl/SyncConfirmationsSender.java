@@ -1,20 +1,19 @@
 package de.metas.procurement.base.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import de.metas.common.procurement.sync.protocol.dto.IConfirmableDTO;
+import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutConfirmationToProcurementWebRequest;
 import de.metas.common.util.time.SystemTime;
+import de.metas.procurement.base.rabbitmq.SenderToProcurementWeb;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 
-import com.google.common.base.Supplier;
-
-import de.metas.procurement.base.IAgentSyncBL;
-import de.metas.procurement.sync.protocol.AbstractSyncModel;
-import de.metas.procurement.sync.protocol.SyncConfirmation;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -40,46 +39,42 @@ import de.metas.util.Services;
 
 /**
  * Sync confirmation collector and sender.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
  */
 final class SyncConfirmationsSender
 {
-	public static SyncConfirmationsSender forCurrentTransaction()
+	public static SyncConfirmationsSender forCurrentTransaction(@NonNull final SenderToProcurementWeb senderToProcurementWebUI)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 		if (trxManager.isNull(trx))
 		{
-			final SyncConfirmationsSender sender = new SyncConfirmationsSender();
+			final SyncConfirmationsSender sender = new SyncConfirmationsSender(senderToProcurementWebUI);
 			sender.setAutoSendAfterEachConfirm(true);
 			return sender;
 		}
-		return trx.getProperty(TRXPROPERTY, new Supplier<SyncConfirmationsSender>()
-		{
-			@Override
-			public SyncConfirmationsSender get()
-			{
-				final SyncConfirmationsSender sender = new SyncConfirmationsSender();
-				sender.setAutoSendAfterEachConfirm(false);
-				trx.getTrxListenerManager()
-						.newEventListener(TrxEventTiming.AFTER_COMMIT)
-						.registerHandlingMethod(innerTrx -> sender.send());
+		return trx.getProperty(
+				TRXPROPERTY,
+				() -> {
+					final SyncConfirmationsSender sender = new SyncConfirmationsSender(senderToProcurementWebUI);
+					sender.setAutoSendAfterEachConfirm(false);
+					trx.getTrxListenerManager()
+							.newEventListener(TrxEventTiming.AFTER_COMMIT)
+							.registerHandlingMethod(innerTrx -> sender.send());
 
-				return sender;
-			}
-		});
+					return sender;
+				});
 	}
 
 	private static final String TRXPROPERTY = SyncConfirmationsSender.class.getName();
 
-	private List<SyncConfirmation> syncConfirmations = new ArrayList<SyncConfirmation>();
+	private final List<SyncConfirmation> syncConfirmations = new ArrayList<>();
 	private boolean autoSendAfterEachConfirm = false;
 
-	private SyncConfirmationsSender()
+	private final SenderToProcurementWeb senderToProcurementWebUI;
+
+	private SyncConfirmationsSender(@NonNull final SenderToProcurementWeb senderToProcurementWebUI)
 	{
-		super();
+		this.senderToProcurementWebUI = senderToProcurementWebUI;
 	}
 
 	private void setAutoSendAfterEachConfirm(final boolean autoSendAfterEachConfirm)
@@ -95,17 +90,15 @@ final class SyncConfirmationsSender
 			return;
 		}
 
-		Services.get(IAgentSyncBL.class).confirm(syncConfirmations);
+		final PutConfirmationToProcurementWebRequest syncConfirmationRequest = PutConfirmationToProcurementWebRequest.of(syncConfirmations);
+		senderToProcurementWebUI.send(syncConfirmationRequest);
 		syncConfirmations.clear();
 	}
 
 	/**
 	 * Generates a {@link SyncConfirmation} instance to be send either directly after the next commit.
-	 *
-	 * @param syncModel
-	 * @param serverEventId
 	 */
-	public void confirm(final AbstractSyncModel syncModel, final String serverEventId)
+	public void confirm(final IConfirmableDTO syncModel, final String serverEventId)
 	{
 		if (syncModel.getSyncConfirmationId() <= 0)
 		{

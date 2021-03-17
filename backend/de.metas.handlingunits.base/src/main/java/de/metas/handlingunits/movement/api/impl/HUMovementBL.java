@@ -74,7 +74,8 @@ import lombok.NonNull;
 
 public class HUMovementBL implements IHUMovementBL
 {
-	final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
+	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	private final IMovementDAO movementDAO = Services.get(IMovementDAO.class);
 
 	@Override
 	public void createPackingMaterialMovementLines(final I_M_Movement movement)
@@ -197,9 +198,15 @@ public class HUMovementBL implements IHUMovementBL
 	public void assignHU(final org.compiere.model.I_M_MovementLine movementLine, final I_M_HU hu,
 			final boolean isTransferPackingMaterials, final String trxName)
 	{
-		final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 		huAssignmentBL.assignHU(movementLine, hu, isTransferPackingMaterials, trxName);
 	}
+
+	@Override
+	public void setAssignedHandlingUnits(final org.compiere.model.I_M_MovementLine movementLine, final List<I_M_HU> hus)
+	{
+		huAssignmentBL.setAssignedHandlingUnits(movementLine, hus);
+	}
+
 
 	@Override
 	public void moveHandlingUnits(final I_M_Movement movement, final boolean doReversal)

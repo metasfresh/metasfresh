@@ -39,7 +39,7 @@ import lombok.NonNull;
 class DBConnectionMaker
 {
 	public IDatabase createDb(
-			@NonNull final Settings settings,
+			@NonNull final DBConnectionSettings settings,
 			@NonNull final String dbName)
 	{
 		final IDatabase db = new SQLDatabase(
@@ -55,12 +55,9 @@ class DBConnectionMaker
 	/**
 	 * Creates an {@link IDatabase} instance we don't intend to run migration scripts against.
 	 * However, connecting to that DB is possible.
-	 *
-	 * @param dbName
-	 * @return
 	 */
 	public IDatabase createDummyDatabase(
-			@NonNull final Settings settings,
+			@NonNull final DBConnectionSettings settings,
 			@NonNull final String dbName)
 	{
 		// return a database that does not check whether our script was applied or not

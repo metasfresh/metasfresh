@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { HOME_MENU_USER_MAX_ITEMS } from '../constants/Constants';
 
 import * as types from '../constants/MenuTypes';
 
@@ -69,7 +70,7 @@ export function updateBreadcrumb(node) {
 }
 
 export function getRootBreadcrumb() {
-  return rootRequest(6, 10, true).then((root) => ({
+  return rootRequest(HOME_MENU_USER_MAX_ITEMS, 10, true).then((root) => ({
     nodeId: '0',
     children: root.data.children,
   }));

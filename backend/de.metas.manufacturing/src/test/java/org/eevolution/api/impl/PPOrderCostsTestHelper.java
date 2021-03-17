@@ -39,7 +39,7 @@ import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionDAO;

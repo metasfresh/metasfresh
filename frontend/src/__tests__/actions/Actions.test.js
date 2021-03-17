@@ -348,4 +348,69 @@ describe('QuickActions', () => {
         done();  
       });
   });
+
+  it(`fetch underlying view's actions when modal with included view is visible`, async (done) => {
+    const layoutResponse = gridLayoutFixtures.layout3_payments;
+    const rowResponse = gridRowFixtures.data4_payments;
+    const { windowId, viewId, result } = rowResponse;
+    const { includedViewId, includedWindowId, includedParentWindowId } = gridDataFixtures.data3_payments;
+    const id = getQuickActionsId({ windowId, viewId });
+    const tableId = getTableId({ windowId, viewId });
+    const selectedId = result[0].id;
+
+    const tableData_create = createTableData({
+      ...layoutResponse,
+      ...rowResponse,
+      keyProperty: 'id',
+    });
+
+    const initialStateData = createState({
+      viewHandler: {
+        includedView: {
+          viewId: includedViewId,
+          windowId: includedWindowId,
+          parentId: includedParentWindowId,
+        },
+      },
+      tables: {
+        length: 1,
+        [tableId]: {
+          ...initialTableState,
+          ...tableData_create,
+          selected: [selectedId],
+        },
+      },
+      actionsHandler: {
+        [id]: initialSingleActionsState,
+      },
+    });
+    const store = mockStore(initialStateData);
+
+    const payload1 = { id }; 
+    const payload2 = { id, actions: [] };
+
+    const expectedActions = [
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS, payload: payload1 },
+      { type: ACTION_TYPES.FETCH_QUICK_ACTIONS_SUCCESS, payload: payload2 },
+    ];
+
+    nock(config.API_URL)
+      .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+      .get(`/documentView/${windowId}/${viewId}/quickActions?selectedIds=${selectedId}`)
+      .reply(200, { actions: [] });
+
+    store
+      .dispatch(
+        fetchQuickActions({
+          windowId,
+          viewId,
+        })
+      ).then((res) => {
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
+
+        done();  
+      });
+  });
 });

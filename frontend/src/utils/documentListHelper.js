@@ -2,10 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
-import deepUnfreeze from 'deep-unfreeze';
 import { toInteger } from 'lodash';
 
-import { getItemsByProperty, nullToEmptyStrings } from './index';
+import { getItemsByProperty, nullToEmptyStrings, deepUnfreeze } from './index';
 import { viewState, getView } from '../reducers/viewHandler';
 import { getTable, getTableId, getSelection } from '../reducers/tables';
 import { getEntityRelatedId, getCachedFilter } from '../reducers/filters';
@@ -79,6 +78,7 @@ const DLmapStateToProps = (state, props) => {
   if (!master) {
     master = viewState;
   }
+  // modals use viewId from layout data, and not from the url
   let viewId = master.viewId ? master.viewId : queryViewId;
   let sort = querySort || master.sort;
   let page = toInteger(queryPage) || master.page;
@@ -217,6 +217,12 @@ export function mergeColumnInfosIntoViewRows(columnInfosByFieldName, rows) {
   );
 }
 
+/**
+ * @method mergeColumnInfosIntoViewRow
+ * @summary add additional data to row's fields
+ * @param {*} rows
+ * @param {object} map
+ */
 function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
   const fieldsByName = Object.values(row.fieldsByName)
     .map((viewRowField) =>
@@ -233,6 +239,12 @@ function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
   return Object.assign({}, row, { fieldsByName });
 }
 
+/**
+ * @method mergeColumnInfoIntoViewRowField
+ * @summary merge field's widget data of the row with additional data
+ * @param {*} rows
+ * @param {object} map
+ */
 function mergeColumnInfoIntoViewRowField(columnInfo, viewRowField) {
   if (!columnInfo) {
     return viewRowField;
@@ -251,6 +263,12 @@ function mergeColumnInfoIntoViewRowField(columnInfo, viewRowField) {
   return viewRowField;
 }
 
+/**
+ * @method indexRows
+ * @summary create a key/value map of rows with their ids as keys (including nested rows)
+ * @param {*} rows
+ * @param {object} map
+ */
 function indexRows(rows, map) {
   for (const row of rows) {
     const { id, includedDocuments } = row;
@@ -265,6 +283,13 @@ function indexRows(rows, map) {
   return map;
 }
 
+/**
+ * @method mapRows
+ * @summary TODO
+ * @param {*} rows
+ * @param {*} map
+ * @param {*} columnInfosByFieldName
+ */
 function mapRows(rows, map, columnInfosByFieldName) {
   return rows.map((row) => {
     const { id, includedDocuments } = row;
@@ -309,6 +334,14 @@ export function removeRows(rowsList, changedRows) {
   };
 }
 
+/**
+ * @method mergeRows
+ * @summary merge existing rows with new rows
+ * @param {*} toRows
+ * @param {*} fromRows
+ * @param {*} columnInfosByFieldName
+ * @param {*} changedIds
+ */
 export function mergeRows({
   toRows,
   fromRows,
@@ -472,37 +505,6 @@ export function mapIncluded(node, indent, isParentLastChild = false) {
     }
   }
   return result;
-}
-
-/**
- * Create a flat array of collapsed rows ids including parents and children
- * @todo TODO: rewrite this to not modify `initialMap`. This will also require
- * changes in TableActions
- */
-export function createCollapsedMap(node, isCollapsed, initialMap) {
-  let collapsedMap = [];
-  if (initialMap) {
-    if (!isCollapsed) {
-      initialMap.splice(
-        initialMap.indexOf(node.includedDocuments[0]),
-        node.includedDocuments.length
-      );
-      collapsedMap = initialMap;
-    } else {
-      initialMap.map((item) => {
-        collapsedMap.push(item);
-        if (item.id === node.id) {
-          collapsedMap = collapsedMap.concat(node.includedDocuments);
-        }
-      });
-    }
-  } else {
-    if (node.includedDocuments) {
-      collapsedMap.push(node);
-    }
-  }
-
-  return collapsedMap;
 }
 
 export function renderHeaderProperties(groups) {

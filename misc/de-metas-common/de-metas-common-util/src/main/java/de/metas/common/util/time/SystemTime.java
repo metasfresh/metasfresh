@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -120,20 +121,6 @@ public class SystemTime
 		return new Timestamp(cal.getTimeInMillis());
 	}
 
-	/**
-	 * "Why not go with {@link #asDayTimestamp()}" you ask?
-	 * See https://stackoverflow.com/questions/8929242/compare-date-object-with-a-timestamp-in-java
-	 */
-	public static Date asDayDate()
-	{
-		final GregorianCalendar cal = asGregorianCalendar();
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return new Date(cal.getTimeInMillis());
-	}
-
 	public static Instant asInstant()
 	{
 		return Instant.ofEpochMilli(millis());
@@ -147,7 +134,13 @@ public class SystemTime
 	@NonNull
 	public static LocalDate asLocalDate()
 	{
-		return asZonedDateTime().toLocalDate();
+		return asLocalDate(zoneId());
+	}
+
+	@NonNull
+	public static LocalDate asLocalDate(@NonNull final ZoneId zoneId)
+	{
+		return asZonedDateTime(zoneId).toLocalDate();
 	}
 
 	public static ZonedDateTime asZonedDateTime()
@@ -158,6 +151,14 @@ public class SystemTime
 	public static ZonedDateTime asZonedDateTimeAtStartOfDay()
 	{
 		return asZonedDateTime(zoneId()).truncatedTo(ChronoUnit.DAYS);
+	}
+
+	public static ZonedDateTime asZonedDateTimeAtEndOfDay(@NonNull final ZoneId zoneId)
+	{
+		return asZonedDateTime(zoneId)
+				.toLocalDate()
+				.atTime(LocalTime.MAX)
+				.atZone(zoneId);
 	}
 
 	public static ZonedDateTime asZonedDateTime(@NonNull final ZoneId zoneId)

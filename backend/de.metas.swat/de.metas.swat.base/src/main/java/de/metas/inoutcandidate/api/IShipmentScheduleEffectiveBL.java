@@ -29,9 +29,9 @@ import de.metas.bpartner.BPartnerContactId;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
