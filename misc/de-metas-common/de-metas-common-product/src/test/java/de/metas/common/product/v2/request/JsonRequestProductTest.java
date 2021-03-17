@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalreference
+ * de-metas-common-product
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,28 +20,29 @@
  * #L%
  */
 
-package de.metas.externalreference;
+package de.metas.common.product.v2.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.adempiere.exceptions.AdempiereException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.Test;
 
-import static de.metas.externalreference.model.X_S_ExternalReference.EXTERNALSYSTEM_ALBERTA;
+import java.io.IOException;
 
-@AllArgsConstructor
-@Getter
-public enum AlbertaExternalSystem implements IExternalSystem
+import static de.metas.common.product.v2.request.JsonRequestUtil.getJsonRequestProduct;
+import static org.assertj.core.api.Assertions.*;
+
+public class JsonRequestProductTest
 {
-	ALBERTA(EXTERNALSYSTEM_ALBERTA);
+	final ObjectMapper mapper = new ObjectMapper();
 
-	public String code;
-
-	public static AlbertaExternalSystem ofCode(final String code)
+	@Test
+	void serializeDeserialize() throws IOException
 	{
-		if (ALBERTA.getCode().equals(code))
-		{
-			return ALBERTA;
-		}
-		throw new AdempiereException("Unsupported code " + code + " for AlbertaExternalSystem. Hint: only 'ALBERTA' is allowed");
+		final JsonRequestProduct request = getJsonRequestProduct();
+
+		final String valueAsString = mapper.writeValueAsString(request);
+
+		final JsonRequestProduct readValue = mapper.readValue(valueAsString, JsonRequestProduct.class);
+
+		assertThat(readValue).isEqualTo(request);
 	}
 }

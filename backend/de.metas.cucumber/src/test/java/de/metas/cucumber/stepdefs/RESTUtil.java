@@ -22,7 +22,9 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.rest_api.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.EmptyUtil;
 import de.metas.security.IRoleDAO;
 import de.metas.security.Role;
 import de.metas.user.UserId;
@@ -133,5 +135,28 @@ public class RESTUtil
 	{
 		request.addHeader("content-type", "application/json");
 		request.addHeader(UserAuthTokenFilter.HEADER_Authorization, userAuthToken);
+	}
+
+	@Nullable
+	public static SyncAdvise mapSyncAdvise(@NonNull final String syncAdvise)
+	{
+		switch (syncAdvise)
+		{
+			case "CREATE_OR_MERGE":
+				return SyncAdvise.CREATE_OR_MERGE;
+			case "JUST_CREATE_IF_NOT_EXISTS":
+				return SyncAdvise.JUST_CREATE_IF_NOT_EXISTS;
+			case "READ_ONLY":
+				return SyncAdvise.READ_ONLY;
+			default:
+				if (EmptyUtil.isBlank(syncAdvise))
+				{
+					return null;
+				}
+				else
+				{
+					throw new AdempiereException("Invalid SyncAdvise: " + syncAdvise);
+				}
+		}
 	}
 }

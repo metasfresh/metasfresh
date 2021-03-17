@@ -24,6 +24,8 @@ package de.metas.externalreference;
 
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
+import de.metas.externalreference.product.ProductExternalReferenceType;
+import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.externalreference.pricelist.PriceListExternalReferenceType;
 import de.metas.externalreference.pricelist.PriceListVersionExternalReferenceType;
 import lombok.NonNull;
@@ -43,6 +45,8 @@ public class ExternalReferenceTypes
 		registerType(NullExternalReferenceType.NULL);
 		registerType(BPartnerExternalReferenceType.BPARTNER);
 		registerType(BPLocationExternalReferenceType.BPARTNER_LOCATION);
+		registerType(ProductExternalReferenceType.PRODUCT);
+		registerType(ProductCategoryExternalReferenceType.PRODUCT_CATEGORY);
 		registerType(PriceListExternalReferenceType.PRICE_LIST);
 		registerType(PriceListVersionExternalReferenceType.PRICE_LIST_VERSION);
 	}

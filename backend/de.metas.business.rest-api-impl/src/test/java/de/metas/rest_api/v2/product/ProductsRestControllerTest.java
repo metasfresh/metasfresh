@@ -56,7 +56,7 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
-public class ProductRestControllerTest
+public class ProductsRestControllerTest
 {
 	private ProductsRestController restController;
 

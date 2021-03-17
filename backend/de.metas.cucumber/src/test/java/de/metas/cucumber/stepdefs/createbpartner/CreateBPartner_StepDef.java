@@ -42,8 +42,8 @@ import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.rest_api.JsonExternalId;
 import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.SyncAdvise;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.RESTUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.i18n.Language;
 import io.cucumber.datatable.DataTable;
@@ -56,7 +56,6 @@ import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingExcept
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -131,7 +130,7 @@ public class CreateBPartner_StepDef
 
 		final JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert = JsonRequestBPartnerUpsert.builder()
 				.requestItems(jsonRequestBPartnerUpsertItems.build())
-				.syncAdvise(mapSyncAdvise(syncAdvise))
+				.syncAdvise(RESTUtil.mapSyncAdvise(syncAdvise))
 				.build();
 		testContext.setRequestPayload(new ObjectMapper().writeValueAsString(jsonRequestBPartnerUpsert));
 	}
@@ -275,22 +274,6 @@ public class CreateBPartner_StepDef
 		return JsonRequestContactUpsertItem.builder()
 				.contactIdentifier(externalId)
 				.contact(jsonRequestContact).build();
-	}
-
-	@Nullable
-	private SyncAdvise mapSyncAdvise(@NonNull final String syncAdvise)
-	{
-		switch (syncAdvise)
-		{
-			case "CREATE_OR_MERGE":
-				return SyncAdvise.CREATE_OR_MERGE;
-			case "JUST_CREATE_IF_NOT_EXISTS":
-				return SyncAdvise.JUST_CREATE_IF_NOT_EXISTS;
-			case "READ_ONLY":
-				return SyncAdvise.READ_ONLY;
-			default:
-				return null;
-		}
 	}
 
 	private void validateBPartner(
