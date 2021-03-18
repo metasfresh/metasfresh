@@ -1,5 +1,5 @@
 import React, { createRef, PureComponent } from 'react';
-import { TransitionGroup as ReactCSSTransitionGroup } from 'react-transition-group';
+import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
@@ -51,7 +51,11 @@ export class RawWidget extends PureComponent {
     const { rawWidget } = this;
 
     if (rawWidget.current && autoFocus) {
-      rawWidget.current.focus();
+      try {
+        rawWidget.current.focus();
+      } catch (e) {
+        console.error(`Custom widget doesn't have 'focus' function defined`);
+      }
     }
 
     if (textSelected) {

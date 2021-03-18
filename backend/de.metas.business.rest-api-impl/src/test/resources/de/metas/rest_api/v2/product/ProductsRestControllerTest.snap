@@ -1,4 +1,4 @@
-de.metas.rest_api.v2.product.ProductRestControllerTest.getProducts_standardCase=[ {
+de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase=[ {
   "products" : [ {
     "id" : 100003,
     "productNo" : "value1",

@@ -6,18 +6,25 @@ import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalSystems;
+import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
+import de.metas.product.ProductRepository;
 import de.metas.rest_api.externlasystem.dto.ExternalSystemService;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
 import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
@@ -56,7 +63,7 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
-public class ProductRestControllerTest
+public class ProductsRestControllerTest
 {
 	private ProductsRestController restController;
 
@@ -90,8 +97,18 @@ public class ProductRestControllerTest
 		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO());
 
 		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(), new ExternalSystemExportAuditRepo());
+		final ProductRepository productRepository = new ProductRepository();
+		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
-		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService);
+		final ExternalReferenceRepository externalReferenceRepository =
+				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), externalReferenceTypes);
+
+		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
+				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
+
+		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService);
+
+		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
 	}
 
 	private void createMasterData()

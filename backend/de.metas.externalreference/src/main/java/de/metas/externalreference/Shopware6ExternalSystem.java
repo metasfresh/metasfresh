@@ -26,11 +26,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.adempiere.exceptions.AdempiereException;
 
+import static de.metas.externalreference.model.X_S_ExternalReference.EXTERNALSYSTEM_Shopware6;
+
 @AllArgsConstructor
 @Getter
 public enum Shopware6ExternalSystem implements IExternalSystem
 {
-	SHOPWARE6("Shopware6");
+	SHOPWARE6(EXTERNALSYSTEM_Shopware6);
 
 	public String code;
 
