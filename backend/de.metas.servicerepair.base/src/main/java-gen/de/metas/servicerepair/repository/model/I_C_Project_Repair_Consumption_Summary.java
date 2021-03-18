@@ -73,7 +73,7 @@ public interface I_C_Project_Repair_Consumption_Summary
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set Repair Project Consumption Summary.
+	 * Set Expenses Overview.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -82,7 +82,7 @@ public interface I_C_Project_Repair_Consumption_Summary
 	void setC_Project_Repair_Consumption_Summary_ID (int C_Project_Repair_Consumption_Summary_ID);
 
 	/**
-	 * Get Repair Project Consumption Summary.
+	 * Get Expenses Overview.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

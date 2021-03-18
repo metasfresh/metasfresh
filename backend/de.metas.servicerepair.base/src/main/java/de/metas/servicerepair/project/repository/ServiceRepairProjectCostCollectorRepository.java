@@ -32,6 +32,7 @@ import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantitys;
+import de.metas.servicerepair.customerreturns.WarrantyCase;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
@@ -69,6 +70,7 @@ class ServiceRepairProjectCostCollectorRepository
 		record.setType(request.getType().getCode());
 		record.setM_Product_ID(request.getProductId().getRepoId());
 		record.setM_AttributeSetInstance_ID(request.getAsiId().getRepoId());
+		record.setIsWarrantyCase(request.getWarrantyCase().toBoolean());
 		record.setC_UOM_ID(request.getUomId().getRepoId());
 		record.setQtyReserved(request.getQtyReserved().toBigDecimal());
 		record.setQtyConsumed(request.getQtyConsumed().toBigDecimal());
@@ -130,6 +132,7 @@ class ServiceRepairProjectCostCollectorRepository
 				.type(ServiceRepairProjectCostCollectorType.ofCode(record.getType()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
+				.warrantyCase(WarrantyCase.ofBoolean(record.isWarrantyCase()))
 				.qtyReserved(Quantitys.create(record.getQtyReserved(), uomId))
 				.qtyConsumed(Quantitys.create(record.getQtyConsumed(), uomId))
 				.vhuId(HuId.ofRepoIdOrNull(record.getVHU_ID()))
