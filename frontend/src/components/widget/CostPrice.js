@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { createAmount } from '../../utils/tableHelpers';
+
 export default class CostPrice extends PureComponent {
   constructor(props) {
     super(props);
@@ -19,6 +20,12 @@ export default class CostPrice extends PureComponent {
     onBlur(e);
   };
 
+  focus = () => {
+    this.setState({ editMode: true }, () => {
+      this.costRef.current.focus();
+    });
+  };
+
   render() {
     const { value, precision } = this.props;
     const { editMode } = this.state;
@@ -31,11 +38,7 @@ export default class CostPrice extends PureComponent {
             value={createAmount(value, precision)}
             type="text"
             onChange={() => false}
-            onFocus={() => {
-              this.setState({ editMode: true }, () => {
-                this.costRef.current.focus();
-              });
-            }}
+            onFocus={this.focus}
           />
         )}
 
