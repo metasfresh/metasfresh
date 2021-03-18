@@ -424,9 +424,10 @@ public class ESRDataLoaderUtil
 			final String IBAN = StringUtils.trimBlankToNull(bankAccount.getIBAN());
 			final String SEPA_CreditorIdentifier = StringUtils.trimBlankToNull(bankAccount.getSEPA_CreditorIdentifier());
 			
-			if (! ( QR_IBAN.equals(StringUtils.cleanWhitespace(postAcctNo)) 
-					|| IBAN.equals(StringUtils.cleanWhitespace(postAcctNo))
-					|| SEPA_CreditorIdentifier.equals(StringUtils.cleanWhitespace(postAcctNo))))
+			final String postAcctNoCleaned = StringUtils.cleanWhitespace(postAcctNo);
+			if (! (postAcctNoCleaned.equals(QR_IBAN) 
+					|| postAcctNoCleaned.equals(IBAN)
+					|| postAcctNoCleaned.equals(SEPA_CreditorIdentifier)))
 			{
 				ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
 						new Object[] { QR_IBAN, postAcctNo }));
