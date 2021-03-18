@@ -12,7 +12,7 @@ Feature:product create/update using metasfresh api
   Scenario: create Product request
 
     Given metasfresh contains S_ExternalReferences
-      | ExternalSystem.Code | ExternalReference  | ExternalReference.Code |
+      | ExternalSystem.Code | ExternalReference  | ExternalReferenceType.Code |
       | ALBERTA             | 345                | bpartner               |
       | ALBERTA             | 456                | bpartner               |
 
@@ -27,7 +27,7 @@ Feature:product create/update using metasfresh api
 
     And we create a JsonRequestProductUpsert, set syncAdvise to 'CREATE_OR_MERGE', add the JsonRequestProductUpsertItems and store it in the test context
 
-    When the metasfresh REST-API endpoint path '/api/v2-pre/product/001' receives a 'PUT' request with the payload from context and responds with '200' status code
+    When the metasfresh REST-API endpoint path '/api/v2-pre/products/001' receives a 'PUT' request with the payload from context and responds with '200' status code
     Then verify if data is persisted correctly for each product
     And verify if data is persisted correctly for type 'product' and external reference 'ext-ALBERTA-345'
 
