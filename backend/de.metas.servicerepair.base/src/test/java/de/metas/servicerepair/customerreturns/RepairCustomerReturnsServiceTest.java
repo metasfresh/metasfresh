@@ -54,7 +54,8 @@ class RepairCustomerReturnsServiceTest
 		final CustomerReturnInOutRecordFactory customerReturnRepository = new CustomerReturnInOutRecordFactory();
 		final CustomerReturnsWithoutHUsProducer customerReturnsWithoutHUsProducer = new CustomerReturnsWithoutHUsProducer(customerReturnRepository);
 		final ReturnsServiceFacade returnsServiceFacade = new ReturnsServiceFacade(customerReturnsWithoutHUsProducer);
-		repairCustomerReturnsService = new RepairCustomerReturnsService(returnsServiceFacade);
+		final AlreadyShippedHUsInPreviousSystemRepository alreadyShippedHUsInPreviousSystemRepository = new AlreadyShippedHUsInPreviousSystemRepository();
+		repairCustomerReturnsService = new RepairCustomerReturnsService(returnsServiceFacade, alreadyShippedHUsInPreviousSystemRepository);
 
 		createWarrantyStartDateAttribute();
 	}

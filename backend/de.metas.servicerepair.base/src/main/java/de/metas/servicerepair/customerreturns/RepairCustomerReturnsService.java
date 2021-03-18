@@ -74,9 +74,11 @@ import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.QtyCalculationsBOM;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RepairCustomerReturnsService
@@ -91,13 +93,16 @@ public class RepairCustomerReturnsService
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
+	private final AlreadyShippedHUsInPreviousSystemRepository alreadyShippedHUsInPreviousSystemRepository;
 
 	private final DocBaseAndSubType DOCBASEANDSUBTYPE_ServiceRepair = DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialReceipt, X_C_DocType.DOCSUBTYPE_SR);
 
 	RepairCustomerReturnsService(
-			@NonNull final ReturnsServiceFacade returnsServiceFacade)
+			@NonNull final ReturnsServiceFacade returnsServiceFacade,
+			@NonNull final AlreadyShippedHUsInPreviousSystemRepository alreadyShippedHUsInPreviousSystemRepository)
 	{
 		this.returnsServiceFacade = returnsServiceFacade;
+		this.alreadyShippedHUsInPreviousSystemRepository = alreadyShippedHUsInPreviousSystemRepository;
 	}
 
 	public boolean isRepairCustomerReturns(@NonNull final I_M_InOut inout)
@@ -184,7 +189,7 @@ public class RepairCustomerReturnsService
 		returnsServiceFacade.assignHandlingUnitToHeaderAndLine(customerReturnLine, clonedPlaningHU);
 	}
 
-	private LocalDate getReturnDate(final InOutId customerReturnId)
+	private LocalDate getReturnDate(@NonNull final InOutId customerReturnId)
 	{
 		final I_M_InOut customerReturn = inoutBL.getById(customerReturnId);
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(customerReturn.getAD_Org_ID()));
@@ -283,5 +288,10 @@ public class RepairCustomerReturnsService
 		return customerReturnLines.stream()
 				.map(customerReturnLine -> InOutLineId.ofRepoId(customerReturnLine.getM_InOutLine_ID()))
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Optional<AlreadyShippedHUsInPreviousSystem> searchAlreadyShippedHUsInPreviousSystemRepositoryBySerialNo(@Nullable final String serialNo)
+	{
+		return alreadyShippedHUsInPreviousSystemRepository.getBySerialNo(serialNo);
 	}
 }

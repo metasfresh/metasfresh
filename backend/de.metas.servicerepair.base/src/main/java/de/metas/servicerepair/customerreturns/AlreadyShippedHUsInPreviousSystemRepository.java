@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.servicerepair.webui
+ * de.metas.servicerepair.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public class AlreadyShippedHUsInPreviousSystemRepository
+class AlreadyShippedHUsInPreviousSystemRepository
 {
 	private static final Logger logger = LogManager.getLogger(AlreadyShippedHUsInPreviousSystemRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -59,6 +59,7 @@ public class AlreadyShippedHUsInPreviousSystemRepository
 					.createQueryBuilder(I_ServiceRepair_Old_Shipped_HU.class)
 					.addEqualsFilter(I_ServiceRepair_Old_Shipped_HU.COLUMNNAME_SerialNo, serialNoNorm)
 					.addNotNull(I_ServiceRepair_Old_Shipped_HU.COLUMNNAME_M_Product_ID)
+					.addOnlyActiveRecordsFilter()
 					.setLimit(QueryLimit.ofInt(100))
 					.create()
 					.list();
