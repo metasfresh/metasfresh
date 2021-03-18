@@ -21,9 +21,17 @@
  */
 package de.metas.payment.esr.dataimporter;
 
+import java.util.Arrays;
+
+import org.adempiere.exceptions.AdempiereException;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
+import lombok.NonNull;
 
 public enum ESRType implements ReferenceListAwareEnum
 {
@@ -34,10 +42,21 @@ public enum ESRType implements ReferenceListAwareEnum
 	private final String code;
 	
 	
-	ESRType(final String code)
+	ESRType(@NonNull final String code)
 	{
 		this.code = code;
 	}
 
+	public static ESRType ofCode(@NonNull final String code)
+	{
+		ESRType type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + ESRType.class + " found for code: " + code);
+		}
+		return type;
+	}
+	
+	private static final ImmutableMap<String, ESRType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ESRType::getCode);
 
 }
