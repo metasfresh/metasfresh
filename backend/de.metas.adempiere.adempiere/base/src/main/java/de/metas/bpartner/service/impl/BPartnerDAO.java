@@ -411,7 +411,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public boolean exists(@NonNull final BPartnerLocationId bpartnerLocationId)
+	public boolean existsAndIsActive(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		return getBPartnerLocationById(bpartnerLocationId) != null;
 	}
@@ -518,11 +518,8 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public CountryId retrieveBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
 	{
-		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpLocationId);
-		if (bpLocation == null)
-		{
-			throw new AdempiereException(MSG_ADDRESS_INACTIVE).markAsUserValidationError();
-		}
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpLocationId);
+
 		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
 
 		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);

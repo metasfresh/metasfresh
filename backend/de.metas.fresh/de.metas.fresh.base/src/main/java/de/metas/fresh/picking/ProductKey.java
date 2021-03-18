@@ -126,7 +126,7 @@ public class ProductKey extends TerminalKey
 		final String pValue = truncatedString(product.getValue(), maxLength);
 		final String pName = truncatedString(product.getName(), maxLength);
 		final String bpName = truncatedString(bpartnersRepo.getBPartnerNameById(bpartnerId), maxLength);
-		final String bplName = truncatedString(bpartnersRepo.getBPartnerLocationById(bpartnerLocationId).getName(), maxLength);
+		final String bplName = truncatedString(bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId).getName(), maxLength);
 		return pValue
 				+ "<br>"
 				+ pName

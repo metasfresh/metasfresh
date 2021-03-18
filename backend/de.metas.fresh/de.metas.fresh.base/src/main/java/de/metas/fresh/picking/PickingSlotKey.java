@@ -64,6 +64,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 
+import javax.annotation.Nullable;
+
 /**
  * Picking Slot Terminal Key
  *
@@ -355,15 +357,13 @@ public class PickingSlotKey extends TerminalKey
 	/**
 	 * Gets total capacity of the HU which is currently open this picking slot.
 	 *
-	 * @param product
-	 * @param uom
-	 *
 	 * @return
 	 *         <ul>
 	 *         <li>total capacity definition
 	 *         <li>or <code>null</code> if the capacity information is not available
 	 *         </ul>
 	 */
+	@Nullable
 	public Capacity getHUTotalCapacity(final ProductId productId, final I_C_UOM uom)
 	{
 		final I_M_HU_PI_Item_Product piItemProduct = getM_HU_PI_Item_Product();
@@ -431,7 +431,7 @@ public class PickingSlotKey extends TerminalKey
 		if (bpartnerLocationId != null)
 		{
 			final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-			final I_C_BPartner_Location bpl = bpartnersRepo.getBPartnerLocationById(bpartnerLocationId);
+			final I_C_BPartner_Location bpl = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 			final String bplNameTrunc = truncatedString(bpl.getName(), maxLength);
 			pickingSlotName.append("<br>")
 					.append("<font size=\"3\">")

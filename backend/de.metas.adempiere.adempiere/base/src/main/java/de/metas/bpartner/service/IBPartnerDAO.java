@@ -119,7 +119,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);
 
-	boolean exists(BPartnerLocationId bpartnerLocationId);
+	boolean existsAndIsActive(BPartnerLocationId bpartnerLocationId);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(BPartnerId bpartnerId);
 
