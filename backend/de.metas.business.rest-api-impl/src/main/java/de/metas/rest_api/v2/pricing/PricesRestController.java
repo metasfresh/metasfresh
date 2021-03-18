@@ -22,13 +22,10 @@
 
 package de.metas.rest_api.v2.pricing;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsert;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
-import de.metas.common.rest_api.SyncAdvise;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
-import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -42,9 +39,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/prices",
@@ -73,13 +67,7 @@ public class PricesRestController
 	@PutMapping(path = "/priceListVersions", consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JsonResponseUpsert> putPriceListVersions(@RequestBody @NonNull final JsonRequestPriceListVersionUpsert request)
 	{
-		final List<JsonResponseUpsertItem> jsonResponseUpsertItemList = request.getRequestItems().stream()
-				.map(item -> priceListRestService.upsertPriceListVersion(item, request.getSyncAdvise()))
-				.collect(ImmutableList.toImmutableList());
-
-		final JsonResponseUpsert responseUpsert = JsonResponseUpsert.builder()
-				.responseItems(jsonResponseUpsertItemList)
-				.build();
+		final JsonResponseUpsert responseUpsert = priceListRestService.upsertPriceListVersion(request);
 
 		return ResponseEntity.ok(responseUpsert);
 	}
@@ -99,14 +87,9 @@ public class PricesRestController
 
 			@RequestBody @NonNull final JsonRequestProductPriceUpsert request)
 	{
-		final SyncAdvise syncAdvise = request.getSyncAdvise();
-		final List<JsonResponseUpsertItem> responseList =
-				request.getRequestItems()
-						.stream()
-						.map(reqItem -> productPriceRestService.upsertProductPrices(priceListVersionIdentifier, reqItem, syncAdvise))
-						.collect(Collectors.toList());
+		final JsonResponseUpsert responseUpsert = productPriceRestService.upsertProductPrices(priceListVersionIdentifier, request);
 
-		return ResponseEntity.ok().body(JsonResponseUpsert.builder().responseItems(responseList).build());
+		return ResponseEntity.ok().body(responseUpsert);
 	}
 }
 

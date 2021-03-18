@@ -27,10 +27,12 @@ import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPrice;
+import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
 import de.metas.common.pricing.v2.productprice.TaxCategory;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
@@ -52,11 +54,14 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
@@ -66,6 +71,7 @@ public class ProductPriceRestService
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final ProductPriceRepository productPriceRepository;
@@ -82,7 +88,31 @@ public class ProductPriceRestService
 	}
 
 	@NonNull
-	public JsonResponseUpsertItem upsertProductPrices(
+	public JsonResponseUpsert upsertProductPrices(
+			@NonNull final String priceListVersionIdentifier,
+			@NonNull final JsonRequestProductPriceUpsert request)
+	{
+		return trxManager.callInNewTrx(() -> upsertProductPricesWithinTrx(priceListVersionIdentifier, request));
+	}
+
+	@NonNull
+	private JsonResponseUpsert upsertProductPricesWithinTrx(
+			@NonNull final String priceListVersionIdentifier,
+			@NonNull final JsonRequestProductPriceUpsert request)
+	{
+		final SyncAdvise syncAdvise = request.getSyncAdvise();
+
+		final List<JsonResponseUpsertItem> responseList =
+				request.getRequestItems()
+						.stream()
+						.map(reqItem ->  upsertProductPricesItem(priceListVersionIdentifier, reqItem, syncAdvise))
+						.collect(Collectors.toList());
+
+		return JsonResponseUpsert.builder().responseItems(responseList).build();
+	}
+
+	@NonNull
+	private JsonResponseUpsertItem upsertProductPricesItem(
 			@NonNull final String priceListVersionIdentifier,
 			@NonNull final JsonRequestProductPriceUpsertItem jsonRequest,
 			@NonNull final SyncAdvise parentSyncAdvise)

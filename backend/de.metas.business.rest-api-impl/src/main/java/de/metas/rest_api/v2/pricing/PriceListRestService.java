@@ -22,14 +22,17 @@
 
 package de.metas.rest_api.v2.pricing;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersion;
+import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsert;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsertItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.pricelist.PriceListExternalReferenceType;
@@ -42,11 +45,14 @@ import de.metas.pricing.pricelist.CreatePriceListVersionRequest;
 import de.metas.pricing.pricelist.PriceListVersion;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
@@ -54,6 +60,8 @@ import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 @Service
 public class PriceListRestService
 {
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final PriceListVersionRepository priceListVersionRepository;
 
@@ -66,7 +74,26 @@ public class PriceListRestService
 	}
 
 	@NonNull
-	public JsonResponseUpsertItem upsertPriceListVersion(
+	public JsonResponseUpsert upsertPriceListVersion(@NonNull final JsonRequestPriceListVersionUpsert request)
+	{
+	 	return trxManager.callInNewTrx(() -> upsertPriceListVersionWithinTrx(request));
+	}
+
+	@NonNull
+	private JsonResponseUpsert upsertPriceListVersionWithinTrx(@NonNull final JsonRequestPriceListVersionUpsert request)
+	{
+		final List<JsonResponseUpsertItem> jsonResponseUpsertItemList = request.getRequestItems()
+				.stream()
+				.map(item -> upsertPriceListVersionItem(item, request.getSyncAdvise()))
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonResponseUpsert.builder()
+				.responseItems(jsonResponseUpsertItemList)
+				.build();
+	}
+
+	@NonNull
+	private JsonResponseUpsertItem upsertPriceListVersionItem(
 			@NonNull final JsonRequestPriceListVersionUpsertItem request,
 			@NonNull final SyncAdvise parentSyncAdvice)
 	{
