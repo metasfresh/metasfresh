@@ -239,7 +239,7 @@ public class ESRDataImporterCamt54v06
 			}
 		}
 		
-		if (countQRR != transactions.size())
+		if (countQRR != 0 && countQRR != transactions.size())
 		{
 				throw new AdempiereException(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES);
 		}
