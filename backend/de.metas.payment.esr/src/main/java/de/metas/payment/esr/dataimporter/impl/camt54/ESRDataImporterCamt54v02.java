@@ -15,6 +15,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.apache.ecs.xhtml.tr;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -23,6 +24,7 @@ import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.money.CurrencyId;
 import de.metas.payment.camt054_001_02.AccountNotification2;
@@ -41,6 +43,7 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.util.Services;
@@ -101,6 +104,7 @@ public class ESRDataImporterCamt54v02
 
 	private final I_ESR_Import header;
 	private final MultiVersionStreamReaderDelegate xsr;
+	
 
 	public ESRDataImporterCamt54v02(@NonNull final I_ESR_Import header, @NonNull final MultiVersionStreamReaderDelegate xsr)
 	{
@@ -212,6 +216,7 @@ public class ESRDataImporterCamt54v02
 	{
 		final List<ESRTransaction> transactions = new ArrayList<>();
 
+		int countQRR = 0;
 		for (final EntryTransaction2 txDtl : ntryDtl.getTxDtls())
 		{
 			final ESRTransactionBuilder trxBuilder = ESRTransaction.builder();
@@ -231,7 +236,18 @@ public class ESRDataImporterCamt54v02
 					.transactionKey(mkTrxKey(txDtl))
 					.build();
 			transactions.add(esrTransaction);
+			
+			if (ESRType.TYPE_QRR.getCode().equals(esrTransaction.getType()))
+			{
+				countQRR++;
+			}
 		}
+		
+		if (countQRR != transactions.size())
+		{
+				throw new AdempiereException(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES);
+		}
+		
 		return transactions;
 	}
 	

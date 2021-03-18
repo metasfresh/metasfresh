@@ -459,7 +459,7 @@ public class ESRDataLoaderUtil
 	
 	private boolean isQRR(@NonNull final I_ESR_ImportLine importLine)
 	{
-		return X_ESR_ImportLine.TYPE_QRR.equals(importLine.getType());
+		return ESRType.TYPE_QRR.getCode().equals(importLine.getType());
 	}
 	
 

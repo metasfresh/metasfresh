@@ -38,6 +38,7 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.util.Services;
@@ -209,6 +210,8 @@ public class ESRDataImporterCamt54v06
 	{
 		final List<ESRTransaction> transactions = new ArrayList<>();
 
+		int countQRR = 0;
+		
 		for (final EntryTransaction8 txDtl : ntryDtl.getTxDtls())
 		{
 			final ESRTransactionBuilder trxBuilder = ESRTransaction.builder();
@@ -228,6 +231,17 @@ public class ESRDataImporterCamt54v06
 					.transactionKey(mkTrxKey(txDtl))
 					.build();
 			transactions.add(esrTransaction);
+			
+
+			if (ESRType.TYPE_QRR.getCode().equals(esrTransaction.getType()))
+			{
+				countQRR++;
+			}
+		}
+		
+		if (countQRR != transactions.size())
+		{
+				throw new AdempiereException(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES);
 		}
 		return transactions;
 	}
