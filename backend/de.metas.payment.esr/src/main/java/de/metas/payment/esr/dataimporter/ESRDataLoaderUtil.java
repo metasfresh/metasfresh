@@ -420,9 +420,9 @@ public class ESRDataLoaderUtil
 		
 		if (isQRR(importLine))
 		{
-			final String QR_IBAN = StringUtils.cleanWhitespace(bankAccount.getQR_IBAN());
-			final String IBAN = StringUtils.cleanWhitespace(bankAccount.getIBAN());
-			final String SEPA_CreditorIdentifier = StringUtils.cleanWhitespace(bankAccount.getSEPA_CreditorIdentifier());
+			final String QR_IBAN = StringUtils.trimBlankToNull(bankAccount.getQR_IBAN());
+			final String IBAN = StringUtils.trimBlankToNull(bankAccount.getIBAN());
+			final String SEPA_CreditorIdentifier = StringUtils.trimBlankToNull(bankAccount.getSEPA_CreditorIdentifier());
 			
 			if (! ( QR_IBAN.equals(StringUtils.cleanWhitespace(postAcctNo)) 
 					|| IBAN.equals(StringUtils.cleanWhitespace(postAcctNo))
