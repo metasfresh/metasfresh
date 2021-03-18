@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.common.rest_api.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.EmptyUtil;
 import de.metas.security.IRoleDAO;
 import de.metas.security.Role;
 import de.metas.user.UserId;
