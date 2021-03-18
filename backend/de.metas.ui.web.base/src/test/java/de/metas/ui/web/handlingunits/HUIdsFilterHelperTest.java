@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsSqlDocumentFilterConverter;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 
 /*
