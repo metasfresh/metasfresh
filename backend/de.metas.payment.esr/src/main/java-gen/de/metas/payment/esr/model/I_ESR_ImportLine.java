@@ -1,6 +1,9 @@
 package de.metas.payment.esr.model;
 
+import java.math.BigDecimal;
+
 import javax.annotation.Nullable;
+
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ESR_ImportLine
