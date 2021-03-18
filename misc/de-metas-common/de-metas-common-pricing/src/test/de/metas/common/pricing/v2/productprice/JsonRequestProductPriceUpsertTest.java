@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-pricing
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.rest_api.pricing.productprice;
+package de.metas.common.pricing.v2.productprice;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -66,17 +66,18 @@ public class JsonRequestProductPriceUpsertTest
 				.priceLimit(BigDecimal.valueOf(10))
 				.priceList(BigDecimal.valueOf(10))
 				.priceStd(BigDecimal.valueOf(0))
-				.seqNo("0")
-				.active("true")
+				.seqNo(0)
+				.active(true)
 				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+				.uomCode("PCE")
 				.build();
 
-		final JsonRequestProductPriceItemUpsert requestItem = createJsonRequestProductPriceItemUpsertBuilder()
+		final JsonRequestProductPriceUpsertItem requestItem = createJsonRequestProductPriceUpsertItemBuilder()
 				.productPriceIdentifier("1234")
 				.jsonRequestProductPrice(jsonRequestProductPrice)
 				.build();
 
-		final ImmutableList.Builder<JsonRequestProductPriceItemUpsert> requestItems = ImmutableList.builder();
+		final ImmutableList.Builder<JsonRequestProductPriceUpsertItem> requestItems = ImmutableList.builder();
 		requestItems.add(requestItem);
 
 		testSerializeDeserialize(createJsonRequestProductPriceUpsertBuilder()
@@ -88,7 +89,7 @@ public class JsonRequestProductPriceUpsertTest
 	@Builder(builderMethodName = "createJsonRequestProductPriceUpsertBuilder",
 			builderClassName = "JsonRequestProductPriceUpsertBuilder")
 	private JsonRequestProductPriceUpsert createJsonRequestProductPriceUpsert(
-			final List<JsonRequestProductPriceItemUpsert> requestItems,
+			final List<JsonRequestProductPriceUpsertItem> requestItems,
 			final SyncAdvise syncAdvise
 	)
 	{
@@ -98,15 +99,14 @@ public class JsonRequestProductPriceUpsertTest
 				.build();
 	}
 
-
-	@Builder(builderMethodName = "createJsonRequestProductPriceItemUpsertBuilder",
-			builderClassName = "JsonRequestProductPriceItemUpsertBuilder")
-	private JsonRequestProductPriceItemUpsert createJsonRequestProductPriceItemUpsert(
+	@Builder(builderMethodName = "createJsonRequestProductPriceUpsertItemBuilder",
+			builderClassName = "JsonRequestProductPriceUpsertItemBuilder")
+	private JsonRequestProductPriceUpsertItem createJsonRequestProductPriceUpsertItem(
 			final String productPriceIdentifier,
 			final JsonRequestProductPrice jsonRequestProductPrice
 	)
 	{
-		return JsonRequestProductPriceItemUpsert.builder()
+		return JsonRequestProductPriceUpsertItem.builder()
 				.productPriceIdentifier(productPriceIdentifier)
 				.jsonRequestProductPrice(jsonRequestProductPrice)
 				.build();
@@ -121,14 +121,15 @@ public class JsonRequestProductPriceUpsertTest
 			final BigDecimal priceLimit,
 			final BigDecimal priceList,
 			final BigDecimal priceStd,
-			final String seqNo,
-			final String active,
-			final SyncAdvise syncAdvise
+			final Integer seqNo,
+			final boolean active,
+			final SyncAdvise syncAdvise,
+			final String uomCode
 	)
 	{
 		final JsonRequestProductPrice jsonRequestProductPrice = new JsonRequestProductPrice();
 		jsonRequestProductPrice.setOrgCode(orgCode);
-		jsonRequestProductPrice.setProductId(productIdentifier);
+		jsonRequestProductPrice.setProductIdentifier(productIdentifier);
 		jsonRequestProductPrice.setTaxCategory(taxCategory);
 		jsonRequestProductPrice.setPriceLimit(priceLimit);
 		jsonRequestProductPrice.setPriceList(priceList);
@@ -136,6 +137,7 @@ public class JsonRequestProductPriceUpsertTest
 		jsonRequestProductPrice.setSeqNo(seqNo);
 		jsonRequestProductPrice.setActive(active);
 		jsonRequestProductPrice.setSyncAdvise(syncAdvise);
+		jsonRequestProductPrice.setUomCode(uomCode);
 
 		return jsonRequestProductPrice;
 	}

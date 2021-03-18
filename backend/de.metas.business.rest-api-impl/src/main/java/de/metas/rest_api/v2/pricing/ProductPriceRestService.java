@@ -179,7 +179,7 @@ public class ProductPriceRestService
 		}
 
 		return JsonResponseUpsertItem.builder()
-				.identifier(priceListVersionIdentifier)
+				.identifier(jsonRequest.getProductPriceIdentifier())
 				.metasfreshId(JsonMetasfreshId.of(productPriceId.getRepoId()))
 				.syncOutcome(syncOutcome)
 				.build();

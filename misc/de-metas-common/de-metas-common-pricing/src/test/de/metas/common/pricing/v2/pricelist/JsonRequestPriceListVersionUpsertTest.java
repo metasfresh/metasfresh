@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-pricing
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,12 +20,17 @@
  * #L%
  */
 
-package de.metas.common.rest_api.pricing.pricelist;
+package de.metas.common.pricing.v2.pricelist;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.collect.ImmutableList;
+import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersion;
+import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsert;
+import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsertItem;
 import de.metas.common.rest_api.SyncAdvise;
 import lombok.Builder;
 import org.assertj.core.api.Assertions;
@@ -33,8 +38,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.List;
 
-public class JsonPriceListVersionRequestTest
+public class JsonRequestPriceListVersionUpsertTest
 {
 	private ObjectMapper objectMapper;
 
@@ -50,7 +57,8 @@ public class JsonPriceListVersionRequestTest
 				.findAndRegisterModules()
 				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-				.enable(MapperFeature.USE_ANNOTATIONS);
+				.enable(MapperFeature.USE_ANNOTATIONS)
+				.registerModule(new JavaTimeModule());
 	}
 
 	@Test
@@ -60,14 +68,22 @@ public class JsonPriceListVersionRequestTest
 				.orgCode("test-code")
 				.priceListIdentifier("ext-123")
 				.description("test-description")
-				.validFrom("true")
-				.active("true")
+				.validFrom(Instant.parse("2019-11-22T00:00:00Z"))
+				.active(true)
 				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 				.build();
 
+		final JsonRequestPriceListVersionUpsertItem jsonRequestPriceListVersionUpsertItem =
+				createJsonRequestPriceListVersionUpsertItemBuilder()
+						.priceListVersionIdentifier("test")
+						.jsonRequestPriceListVersion(jsonRequestPriceListVersion)
+						.build();
+
+		final ImmutableList.Builder<JsonRequestPriceListVersionUpsertItem> requestItems = ImmutableList.builder();
+		requestItems.add(jsonRequestPriceListVersionUpsertItem);
+
 		testSerializeDeserialize(createJsonRequestPriceListVersionUpsertBuilder()
-										 .priceListVersionIdentifier("test")
-										 .jsonRequestPriceListVersion(jsonRequestPriceListVersion)
+										 .requestItems(requestItems.build())
 										 .syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 										 .build());
 	}
@@ -75,15 +91,26 @@ public class JsonPriceListVersionRequestTest
 	@Builder(builderMethodName = "createJsonRequestPriceListVersionUpsertBuilder",
 			builderClassName = "JsonRequestPriceListVersionUpsertBuilder")
 	private JsonRequestPriceListVersionUpsert createJsonRequestPriceListVersionUpsert(
-			final String priceListVersionIdentifier,
-			final JsonRequestPriceListVersion jsonRequestPriceListVersion,
+			final List<JsonRequestPriceListVersionUpsertItem> requestItems,
 			final SyncAdvise syncAdvise
 	)
 	{
 		return JsonRequestPriceListVersionUpsert.builder()
+				.requestItems(requestItems)
+				.syncAdvise(syncAdvise)
+				.build();
+	}
+
+	@Builder(builderMethodName = "createJsonRequestPriceListVersionUpsertItemBuilder",
+			builderClassName = "JsonRequestPriceListVersionUpsertItemBuilder")
+	private JsonRequestPriceListVersionUpsertItem createJsonRequestPriceListVersionUpsertItem(
+			final String priceListVersionIdentifier,
+			final JsonRequestPriceListVersion jsonRequestPriceListVersion
+	)
+	{
+		return JsonRequestPriceListVersionUpsertItem.builder()
 				.priceListVersionIdentifier(priceListVersionIdentifier)
 				.jsonRequestPriceListVersion(jsonRequestPriceListVersion)
-				.syncAdvise(syncAdvise)
 				.build();
 	}
 
@@ -92,8 +119,8 @@ public class JsonPriceListVersionRequestTest
 	private JsonRequestPriceListVersion createJsonRequestPriceListVersion(
 			final String priceListIdentifier,
 			final String orgCode,
-			final String validFrom,
-			final String active,
+			final Instant validFrom,
+			final boolean active,
 			final String description,
 			final SyncAdvise syncAdvise
 	)

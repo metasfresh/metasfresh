@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-pricing
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.rest_api.pricing.pricelist;
+package de.metas.common.pricing.v2.productprice;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -33,8 +33,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 
-public class JsonRequestPriceListVersionTest
+public class JsonRequestProductPriceTest
 {
 	private ObjectMapper objectMapper;
 
@@ -56,46 +57,58 @@ public class JsonRequestPriceListVersionTest
 	@Test
 	public void test() throws Exception
 	{
-		testSerializeDeserialize(createJsonRequestPriceListVersionBuilder()
+		testSerializeDeserialize(createJsonRequestProductPriceBuilder()
 										 .orgCode("test-code")
-										 .priceListIdentifier("ext-123")
-										 .description("test-description")
-										 .validFrom("true")
-										 .active("true")
+										 .productIdentifier("123")
+										 .taxCategory(TaxCategory.NORMAL)
+										 .priceLimit(BigDecimal.valueOf(10))
+										 .priceList(BigDecimal.valueOf(10))
+										 .priceStd(BigDecimal.valueOf(0))
+										 .seqNo(0)
+										 .active(true)
 										 .syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+										 .uomCode("PCE")
 										 .build());
 	}
 
-	@Builder(builderMethodName = "createJsonRequestPriceListVersionBuilder",
-			builderClassName = "JsonRequestPriceListVersionBuilder")
-	private JsonRequestPriceListVersion createJsonRequestPriceListVersion(
-			final String priceListIdentifier,
+	@Builder(builderMethodName = "createJsonRequestProductPriceBuilder",
+			builderClassName = "JsonRequestProductPriceBuilder")
+	private JsonRequestProductPrice createJsonRequestProductPrice(
 			final String orgCode,
-			final String validFrom,
-			final String active,
-			final String description,
-			final SyncAdvise syncAdvise
+			final String productIdentifier,
+			final TaxCategory taxCategory,
+			final BigDecimal priceLimit,
+			final BigDecimal priceList,
+			final BigDecimal priceStd,
+			final Integer seqNo,
+			final boolean active,
+			final SyncAdvise syncAdvise,
+			final String uomCode
 	)
 	{
-		final JsonRequestPriceListVersion jsonRequestPriceListVersion = new JsonRequestPriceListVersion();
-		jsonRequestPriceListVersion.setOrgCode(orgCode);
-		jsonRequestPriceListVersion.setPriceListIdentifier(priceListIdentifier);
-		jsonRequestPriceListVersion.setDescription(description);
-		jsonRequestPriceListVersion.setValidFrom(validFrom);
-		jsonRequestPriceListVersion.setActive(active);
-		jsonRequestPriceListVersion.setSyncAdvise(syncAdvise);
+		final JsonRequestProductPrice jsonRequestProductPrice = new JsonRequestProductPrice();
+		jsonRequestProductPrice.setOrgCode(orgCode);
+		jsonRequestProductPrice.setProductIdentifier(productIdentifier);
+		jsonRequestProductPrice.setTaxCategory(TaxCategory.NORMAL);
+		jsonRequestProductPrice.setPriceLimit(priceLimit);
+		jsonRequestProductPrice.setPriceList(priceList);
+		jsonRequestProductPrice.setPriceStd(priceStd);
+		jsonRequestProductPrice.setSeqNo(seqNo);
+		jsonRequestProductPrice.setActive(active);
+		jsonRequestProductPrice.setSyncAdvise(syncAdvise);
+		jsonRequestProductPrice.setUomCode(uomCode);
 
-		return jsonRequestPriceListVersion;
+		return jsonRequestProductPrice;
 	}
 
-	private void testSerializeDeserialize(final JsonRequestPriceListVersion obj) throws IOException
+	private void testSerializeDeserialize(final JsonRequestProductPrice obj) throws IOException
 	{
 		System.out.println("Object: " + obj);
 
 		final String json = objectMapper.writeValueAsString(obj);
 		System.out.println("Object->JSON: " + json);
 
-		final JsonRequestPriceListVersion objDeserialized = objectMapper.readValue(json, obj.getClass());
+		final JsonRequestProductPrice objDeserialized = objectMapper.readValue(json, obj.getClass());
 		System.out.println("Object deserialized: " + objDeserialized);
 		Assertions.assertThat(objDeserialized).isEqualTo(obj);
 	}

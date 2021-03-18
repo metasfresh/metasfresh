@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-common-pricing
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.rest_api.pricing.productprice;
+package de.metas.common.pricing.v2.productprice;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.math.BigDecimal;
 
-public class JsonRequestProductPriceTest
+public class JsonRequestProductPriceUpsertItemTest
 {
 	private ObjectMapper objectMapper;
 
@@ -57,17 +57,36 @@ public class JsonRequestProductPriceTest
 	@Test
 	public void test() throws Exception
 	{
-		testSerializeDeserialize(createJsonRequestProductPriceBuilder()
-										 .orgCode("test-code")
-										 .productIdentifier("123")
-										 .taxCategory(TaxCategory.NORMAL)
-										 .priceLimit(BigDecimal.valueOf(10))
-										 .priceList(BigDecimal.valueOf(10))
-										 .priceStd(BigDecimal.valueOf(0))
-										 .seqNo("0")
-										 .active("true")
-										 .syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+		final JsonRequestProductPrice jsonUpsertProductPriceRequest = createJsonRequestProductPriceBuilder()
+				.orgCode("test-code")
+				.productIdentifier("123")
+				.taxCategory(TaxCategory.NORMAL)
+				.priceLimit(BigDecimal.valueOf(10))
+				.priceList(BigDecimal.valueOf(10))
+				.priceStd(BigDecimal.valueOf(0))
+				.seqNo(0)
+				.active(true)
+				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+				.uomCode("PCE")
+				.build();
+
+		testSerializeDeserialize(createJsonRequestProductPriceUpsertItemBuilder()
+										 .productPriceIdentifier("test")
+										 .jsonUpsertProductPriceRequest(jsonUpsertProductPriceRequest)
 										 .build());
+	}
+
+	@Builder(builderMethodName = "createJsonRequestProductPriceUpsertItemBuilder",
+			builderClassName = "JsonRequestProductPriceUpsertItemBuilder")
+	private JsonRequestProductPriceUpsertItem createJsonRequestProductPriceUpsertItem(
+			final String productPriceIdentifier,
+			final JsonRequestProductPrice jsonUpsertProductPriceRequest
+	)
+	{
+		return JsonRequestProductPriceUpsertItem.builder()
+				.productPriceIdentifier(productPriceIdentifier)
+				.jsonRequestProductPrice(jsonUpsertProductPriceRequest)
+				.build();
 	}
 
 	@Builder(builderMethodName = "createJsonRequestProductPriceBuilder",
@@ -79,33 +98,35 @@ public class JsonRequestProductPriceTest
 			final BigDecimal priceLimit,
 			final BigDecimal priceList,
 			final BigDecimal priceStd,
-			final String seqNo,
-			final String active,
-			final SyncAdvise syncAdvise
+			final Integer seqNo,
+			final boolean active,
+			final SyncAdvise syncAdvise,
+			final String uomCode
 	)
 	{
 		final JsonRequestProductPrice jsonRequestProductPrice = new JsonRequestProductPrice();
 		jsonRequestProductPrice.setOrgCode(orgCode);
-		jsonRequestProductPrice.setProductId(productIdentifier);
-		jsonRequestProductPrice.setTaxCategory(TaxCategory.NORMAL);
+		jsonRequestProductPrice.setProductIdentifier(productIdentifier);
+		jsonRequestProductPrice.setTaxCategory(taxCategory);
 		jsonRequestProductPrice.setPriceLimit(priceLimit);
 		jsonRequestProductPrice.setPriceList(priceList);
 		jsonRequestProductPrice.setPriceStd(priceStd);
 		jsonRequestProductPrice.setSeqNo(seqNo);
 		jsonRequestProductPrice.setActive(active);
 		jsonRequestProductPrice.setSyncAdvise(syncAdvise);
+		jsonRequestProductPrice.setUomCode(uomCode);
 
 		return jsonRequestProductPrice;
 	}
 
-	private void testSerializeDeserialize(final JsonRequestProductPrice obj) throws IOException
+	private void testSerializeDeserialize(final JsonRequestProductPriceUpsertItem obj) throws IOException
 	{
 		System.out.println("Object: " + obj);
 
 		final String json = objectMapper.writeValueAsString(obj);
 		System.out.println("Object->JSON: " + json);
 
-		final JsonRequestProductPrice objDeserialized = objectMapper.readValue(json, obj.getClass());
+		final JsonRequestProductPriceUpsertItem objDeserialized = objectMapper.readValue(json, obj.getClass());
 		System.out.println("Object deserialized: " + objDeserialized);
 		Assertions.assertThat(objDeserialized).isEqualTo(obj);
 	}

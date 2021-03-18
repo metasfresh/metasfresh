@@ -25,6 +25,8 @@ package de.metas.cucumber.stepdefs;
 import de.metas.contracts.FlatrateTransitionId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
+import de.metas.product.ProductCategoryId;
+import de.metas.uom.UomId;
 import org.adempiere.warehouse.WarehouseId;
 
 public class StepDefConstants
@@ -35,4 +37,6 @@ public class StepDefConstants
 	public static final OrgId ORG_ID = OrgId.ofRepoId(1000000);
 	public static final CountryId COUNTRY_ID = CountryId.ofRepoId(101);
 	public static final FlatrateTransitionId FLATRATE_TRANSITION_ID = FlatrateTransitionId.ofRepoId(1000003);
+	public static final ProductCategoryId PRODUCT_CATEGORY_STANDARD_ID = ProductCategoryId.ofRepoId(1000000);
+	public static final UomId PCE_UOM_ID = UomId.ofRepoId(100);
 }
