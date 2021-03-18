@@ -20,28 +20,31 @@
  * #L%
  */
 
-package de.metas.externalreference;
+package de.metas.externalreference.product;
 
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.externalreference.IExternalReferenceType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.adempiere.exceptions.AdempiereException;
 
-import static de.metas.externalreference.model.X_S_ExternalReference.EXTERNALSYSTEM_ALBERTA;
+import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Product;
 
 @AllArgsConstructor
 @Getter
-public enum AlbertaExternalSystem implements IExternalSystem
+public enum ProductExternalReferenceType implements IExternalReferenceType
 {
-	ALBERTA(EXTERNALSYSTEM_ALBERTA);
+	PRODUCT(TYPE_Product, I_M_Product.Table_Name);
 
-	public String code;
+	private final String code;
+	private final String tableName;
 
-	public static AlbertaExternalSystem ofCode(final String code)
+	public static ProductExternalReferenceType ofCode(final String code)
 	{
-		if (ALBERTA.getCode().equals(code))
+		if (PRODUCT.getCode().equals(code))
 		{
-			return ALBERTA;
+			return PRODUCT;
 		}
-		throw new AdempiereException("Unsupported code " + code + " for AlbertaExternalSystem. Hint: only 'ALBERTA' is allowed");
+		throw new AdempiereException("Unsupported code " + code + " for ProductExternalReferenceType. Hint: only 'Product' is allowed");
 	}
 }

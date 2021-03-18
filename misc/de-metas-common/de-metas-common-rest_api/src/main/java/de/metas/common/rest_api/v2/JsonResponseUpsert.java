@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalreference
+ * de-metas-common-bpartner
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,28 +20,20 @@
  * #L%
  */
 
-package de.metas.externalreference;
+package de.metas.common.rest_api.v2;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import org.adempiere.exceptions.AdempiereException;
+import io.swagger.annotations.ApiModel;
+import lombok.Builder;
+import lombok.Singular;
+import lombok.Value;
 
-import static de.metas.externalreference.model.X_S_ExternalReference.EXTERNALSYSTEM_ALBERTA;
+import java.util.List;
 
-@AllArgsConstructor
-@Getter
-public enum AlbertaExternalSystem implements IExternalSystem
+@ApiModel("Can be used as endpoint response if only one sort of entities was updated")
+@Value
+@Builder
+public class JsonResponseUpsert
 {
-	ALBERTA(EXTERNALSYSTEM_ALBERTA);
-
-	public String code;
-
-	public static AlbertaExternalSystem ofCode(final String code)
-	{
-		if (ALBERTA.getCode().equals(code))
-		{
-			return ALBERTA;
-		}
-		throw new AdempiereException("Unsupported code " + code + " for AlbertaExternalSystem. Hint: only 'ALBERTA' is allowed");
-	}
+	@Singular
+	List<JsonResponseUpsertItem> responseItems;
 }

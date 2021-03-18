@@ -22,33 +22,26 @@
 
 package de.metas.externalreference;
 
-import lombok.NonNull;
-import org.springframework.stereotype.Service;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.adempiere.exceptions.AdempiereException;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import static de.metas.externalreference.model.X_S_ExternalReference.EXTERNALSYSTEM_Other;
 
-@Service
-public class ExternalSystems
+@AllArgsConstructor
+@Getter
+public enum OtherExternalSystem implements IExternalSystem
 {
-	public ExternalSystems()
-	{
-		registerExternalSystem(NullExternalSystem.NULL);
-		registerExternalSystem(AlbertaExternalSystem.ALBERTA);
-		registerExternalSystem(Shopware6ExternalSystem.SHOPWARE6);
-		registerExternalSystem(OtherExternalSystem.OTHER);
-	}
+	OTHER(EXTERNALSYSTEM_Other);
 
-	private final Map<String, IExternalSystem> systemsByCode = new HashMap<>();
+	public String code;
 
-	public void registerExternalSystem(@NonNull final IExternalSystem system)
+	public static OtherExternalSystem ofCode(final String code)
 	{
-		systemsByCode.put(system.getCode(), system);
-	}
-
-	public Optional<IExternalSystem> ofCode(final String code)
-	{
-		return Optional.ofNullable(systemsByCode.get(code));
+		if (OTHER.getCode().equals(code))
+		{
+			return OTHER;
+		}
+		throw new AdempiereException("Unsupported code " + code + " for Shopware6ExternalSystem. Hint: only 'Shopware6' is allowed");
 	}
 }

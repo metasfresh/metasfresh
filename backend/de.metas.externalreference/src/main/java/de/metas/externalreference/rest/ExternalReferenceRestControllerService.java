@@ -41,6 +41,7 @@ import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.organization.impl.OrgDAO;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import org.slf4j.Logger;
