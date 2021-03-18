@@ -12,6 +12,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.esr.dataimporter.ESRStatement;
@@ -56,7 +57,7 @@ import lombok.NonNull;
  */
 public class ESRDataImporterV11 implements IESRDataImporter
 {
-	public final static String ERR_WRONG_CTRL_LINE_LENGTH = "ESR_Wrong_Ctrl_Line_Length";
+	public final static  AdMessageKey ERR_WRONG_CTRL_LINE_LENGTH =  AdMessageKey.of("ESR_Wrong_Ctrl_Line_Length");
 
 	private static final transient Logger logger = LogManager.getLogger(ESRDataImporterV11.class);
 

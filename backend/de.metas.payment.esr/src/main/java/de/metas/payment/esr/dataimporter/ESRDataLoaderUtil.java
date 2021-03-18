@@ -9,7 +9,6 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
-import org.compiere.util.Util;
 
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
@@ -19,6 +18,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.organization.IOrgDAO;
@@ -67,19 +67,19 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ESRDataLoaderUtil
 {
-	private static final String ERR_ESR_DOES_NOT_BELONG_TO_INVOICE_2P = "de.metas.payment.esr.EsrDoesNotBelongToInvoice";
+	private static final AdMessageKey ERR_ESR_DOES_NOT_BELONG_TO_INVOICE_2P = AdMessageKey.of("de.metas.payment.esr.EsrDoesNotBelongToInvoice");
 
-	private static final String ERR_NO_ESR_NO_FOUND_IN_DB_1P = "de.metas.payment.esr.NoEsrNoFoundInDB";
+	private static final AdMessageKey ERR_NO_ESR_NO_FOUND_IN_DB_1P = AdMessageKey.of("de.metas.payment.esr.NoEsrNoFoundInDB");
 
-	public static final String ESR_UNFIT_INVOICE_ORG = "ESR_Unfit_Invoice_Org";
+	public static final AdMessageKey ESR_UNFIT_INVOICE_ORG = AdMessageKey.of("ESR_Unfit_Invoice_Org");
 
-	public static final String ESR_UNFIT_BPARTNER_ORG = "ESR_Unfit_BPartner_Org";
+	public static final AdMessageKey ESR_UNFIT_BPARTNER_ORG = AdMessageKey.of("ESR_Unfit_BPartner_Org");
 
-	public static final String ERR_UNFIT_BPARTNER_VALUES = "ESR_Unfit_BPartner_Values";
+	public static final AdMessageKey ERR_UNFIT_BPARTNER_VALUES = AdMessageKey.of("ESR_Unfit_BPartner_Values");
 
-	public static final String ERR_UNFIT_DOCUMENT_NOS = "ESR_Unfit_DocumentNo";
+	public static final AdMessageKey ERR_UNFIT_DOCUMENT_NOS = AdMessageKey.of("ESR_Unfit_DocumentNo");
 
-	public static final String ERR_WRONG_POST_BANK_ACCOUNT = "ESR_Wrong_Post_Bank_Account";
+	public static final AdMessageKey ERR_WRONG_POST_BANK_ACCOUNT = AdMessageKey.of("ESR_Wrong_Post_Bank_Account");
 
 	private final IBPBankAccountDAO bpBankAccountRepo = Services.get(IBPBankAccountDAO.class);
 	private final IESRBPBankAccountDAO esrbpBankAccountRepo = Services.get(IESRBPBankAccountDAO.class);

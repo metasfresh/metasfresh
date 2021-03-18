@@ -78,9 +78,9 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	@VisibleForTesting
 	static final BigDecimal CTRL_QTY_NOT_YET_SET = BigDecimal.TEN.negate();
 
-	protected static final String MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = "ESR_CAMT54_UnsupportedCreditDebitCode";
+	protected static final AdMessageKey MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P =  AdMessageKey.of("ESR_CAMT54_UnsupportedCreditDebitCode");
 
-	protected static final String MSG_BANK_ACCOUNT_MISMATCH_2P = "ESR_CAMT54_BankAccountMismatch";
+	protected static final AdMessageKey MSG_BANK_ACCOUNT_MISMATCH_2P =  AdMessageKey.of("ESR_CAMT54_BankAccountMismatch");
 	
 	protected static final AdMessageKey MSG_MULTIPLE_TRANSACTIONS_TYPES = AdMessageKey.of("ESR_CAMT54_MultipleTransactionsTypes");
 

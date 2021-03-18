@@ -15,7 +15,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.apache.ecs.xhtml.tr;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -24,7 +23,6 @@ import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.currency.ICurrencyDAO;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.money.CurrencyId;
 import de.metas.payment.camt054_001_02.AccountNotification2;
@@ -43,8 +41,8 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
-import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.util.Services;
 import lombok.NonNull;
