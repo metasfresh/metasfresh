@@ -140,6 +140,11 @@ public class RESTUtil
 	@Nullable
 	public static SyncAdvise mapSyncAdvise(@NonNull final String syncAdvise)
 	{
+		if (EmptyUtil.isBlank(syncAdvise))
+		{
+			return null;
+		}
+
 		switch (syncAdvise)
 		{
 			case "CREATE_OR_MERGE":
@@ -149,14 +154,7 @@ public class RESTUtil
 			case "READ_ONLY":
 				return SyncAdvise.READ_ONLY;
 			default:
-				if (EmptyUtil.isBlank(syncAdvise))
-				{
-					return null;
-				}
-				else
-				{
-					throw new AdempiereException("Invalid SyncAdvise: " + syncAdvise);
-				}
+				throw new AdempiereException("Invalid SyncAdvise: " + syncAdvise);
 		}
 	}
 }
