@@ -51,7 +51,16 @@ public class BankAccount
 
 	@Nullable
 	String esrRenderedAccountNo;
+	
+	@Nullable
+	String IBAN;
+	
+	@Nullable
+	String QR_IBAN;
 
+	@Nullable
+	String SEPA_CreditorIdentifier;
+	
 	@NonNull
 	CurrencyId currencyId;
 

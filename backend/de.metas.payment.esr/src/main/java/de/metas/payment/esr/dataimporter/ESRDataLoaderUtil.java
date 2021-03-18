@@ -9,6 +9,7 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
+import org.compiere.util.Util;
 
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
@@ -415,27 +416,52 @@ public class ESRDataLoaderUtil
 		final BankAccount bankAccount = bpBankAccountRepo.getById(BankAccountId.ofRepoId(bankAccountRecordId));
 
 		final String postAcctNo = importLine.getESRPostParticipantNumber();
-
-		final String renderedPostAccountNo = bankAccount.getEsrRenderedAccountNo();
-		final String unrenderedPostAcctNo = unrenderPostAccountNo(renderedPostAccountNo);
-
-		final boolean esrLineFitsBankAcctESRPostAcct = unrenderedPostAcctNo.equals(postAcctNo);
-
-		final List<I_ESR_PostFinanceUserNumber> postFinanceUserNumbers = esrbpBankAccountRepo
-				.retrieveESRPostFinanceUserNumbers(BankAccountId.ofRepoId(bankAccountRecordId));
-
-		final boolean existsFittingPostFinanceUserNumber = existsPostFinanceUserNumberFitsPostAcctNo(postFinanceUserNumbers, postAcctNo);
-
-		final boolean esrNumbersFit = esrLineFitsBankAcctESRPostAcct || existsFittingPostFinanceUserNumber;
-
-		if (!esrNumbersFit)
+		
+		
+		if (isQRR(importLine))
+		{
+			final String QR_IBAN = StringUtils.cleanWhitespace(bankAccount.getQR_IBAN());
+			final String IBAN = StringUtils.cleanWhitespace(bankAccount.getIBAN());
+			final String SEPA_CreditorIdentifier = StringUtils.cleanWhitespace(bankAccount.getSEPA_CreditorIdentifier());
+			
+			if (! ( QR_IBAN.equals(StringUtils.cleanWhitespace(postAcctNo)) 
+					|| IBAN.equals(StringUtils.cleanWhitespace(postAcctNo))
+					|| SEPA_CreditorIdentifier.equals(StringUtils.cleanWhitespace(postAcctNo))))
+			{
+				ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
+						new Object[] { QR_IBAN, postAcctNo }));
+			}
+		}
+		else
 		{
 
-			ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
-					new Object[] { postAcctNo }));
+			final String renderedPostAccountNo = bankAccount.getEsrRenderedAccountNo();
+			final String unrenderedPostAcctNo = unrenderPostAccountNo(renderedPostAccountNo);
+
+			final boolean esrLineFitsBankAcctESRPostAcct = unrenderedPostAcctNo.equals(postAcctNo);
+
+			final List<I_ESR_PostFinanceUserNumber> postFinanceUserNumbers = esrbpBankAccountRepo
+					.retrieveESRPostFinanceUserNumbers(BankAccountId.ofRepoId(bankAccountRecordId));
+
+			final boolean existsFittingPostFinanceUserNumber = existsPostFinanceUserNumberFitsPostAcctNo(postFinanceUserNumbers, postAcctNo);
+
+			final boolean esrNumbersFit = esrLineFitsBankAcctESRPostAcct || existsFittingPostFinanceUserNumber;
+
+			if (!esrNumbersFit)
+			{
+
+				ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
+						new Object[] { postAcctNo }));
+			}
 		}
 
 	}
+	
+	private boolean isQRR(@NonNull final I_ESR_ImportLine importLine)
+	{
+		return X_ESR_ImportLine.TYPE_QRR.equals(importLine.getType());
+	}
+	
 
 	private boolean existsPostFinanceUserNumberFitsPostAcctNo(final List<I_ESR_PostFinanceUserNumber> postFinanceUserNumbers, @NonNull final String postAcctNo)
 	{
