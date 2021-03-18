@@ -27,6 +27,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -141,6 +142,8 @@ public class ProductPriceRepository
 				.priceStd(record.getPriceStd())
 				.taxCategoryId(TaxCategoryId.ofRepoId(record.getC_TaxCategory_ID()))
 				.isActive(record.isActive())
+				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
+				.seqNo(record.getSeqNo())
 				.build();
 	}
 }

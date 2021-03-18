@@ -198,7 +198,7 @@ public class ProductPriceRestService
 		}
 		else
 		{
-			productPriceBuilder.priceLimit(existingRecord.getPriceLimit());
+			productPriceBuilder.priceList(existingRecord.getPriceList());
 		}
 
 		//isActive
@@ -220,7 +220,7 @@ public class ProductPriceRestService
 		else
 		{
 			// the update_remove case is ignored as the C_UOM_ID is a mandatory column
-			productPriceBuilder.isActive(existingRecord.getIsActive());
+			productPriceBuilder.uomId(existingRecord.getUomId());
 		}
 
 
