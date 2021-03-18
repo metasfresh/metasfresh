@@ -26,8 +26,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.servicerepair.customerreturns.AlreadyShippedHUsInPreviousSystem;
-import de.metas.servicerepair.customerreturns.AlreadyShippedHUsInPreviousSystemRepository;
 import de.metas.servicerepair.customerreturns.HUsToReturnViewContext;
+import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -45,7 +45,8 @@ import java.time.LocalDate;
 
 public class HUsToReturn_CreateShippedHU extends HUsToReturnViewBasedProcess implements IProcessPrecondition, IProcessParametersCallout
 {
-	private final AlreadyShippedHUsInPreviousSystemRepository alreadyShippedHUsInPreviousSystemRepository = SpringContextHolder.instance.getBean(AlreadyShippedHUsInPreviousSystemRepository.class);
+	private final RepairCustomerReturnsService repairCustomerReturnsService = SpringContextHolder.instance.getBean(RepairCustomerReturnsService.class);
+
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -84,7 +85,9 @@ public class HUsToReturn_CreateShippedHU extends HUsToReturnViewBasedProcess imp
 	{
 		if (PARAM_SerialNo.equals(parameterName))
 		{
-			final AlreadyShippedHUsInPreviousSystem result = alreadyShippedHUsInPreviousSystemRepository.getBySerialNo(serialNo).orElse(null);
+			final AlreadyShippedHUsInPreviousSystem result = repairCustomerReturnsService
+					.searchAlreadyShippedHUsInPreviousSystemRepositoryBySerialNo(serialNo)
+					.orElse(null);
 			if (result != null)
 			{
 				productId = result.getProductId();
