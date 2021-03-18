@@ -67,6 +67,9 @@ public class ESRTransaction
 	@NonNull
 	private final String trxType;
 	
+	@NonNull
+	private final String type;
+	
 	@Singular
 	private final List<String> errorMsgs;
 

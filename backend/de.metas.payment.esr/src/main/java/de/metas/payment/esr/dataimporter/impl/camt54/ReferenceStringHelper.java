@@ -58,6 +58,11 @@ public class ReferenceStringHelper
 	 * This constant is used as value in {@code /BkToCstmrDbtCdtNtfctn/Ntfctn/Ntry/NtryDtls/TxDtls/RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Prtry} to indicate that the references given in {@code CdtrRefInf} is an ESR number.
 	 */
 	private static final String ISR_REFERENCE = "ISR Reference";
+	
+	/**
+	 * This constant is used as value in {@code /BkToCstmrDbtCdtNtfctn/Ntfctn/Ntry/NtryDtls/TxDtls/RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Prtry} to indicate that the references given in {@code CdtrRefInf} is an QRR code.
+	 */
+	private static final String QRR_REFERENCE = "QRR";
 
 	/**
 	 * extractAndSetEsrReference for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
@@ -120,6 +125,40 @@ public class ReferenceStringHelper
 			}
 		}
 	}
+	
+	
+	public void extractAndSetType(
+			@NonNull final EntryTransaction8 txDtls,
+			@NonNull final ESRTransactionBuilder trxBuilder)
+	{
+		final Optional<String> type = extractType(txDtls);
+		if (type.isPresent())
+		{
+			trxBuilder.type(type.get());
+		}
+		else
+		{
+			// fallback to esr type
+			trxBuilder.type(ISR_REFERENCE);
+		}
+	}
+
+	public void extractAndSetType(
+			@NonNull final EntryTransaction2 txDtls,
+			@NonNull final ESRTransactionBuilder trxBuilder)
+	{
+		final Optional<String> type = extractType(txDtls);
+		if (type.isPresent())
+		{
+			trxBuilder.type(type.get());
+		}
+		else
+		{
+			// fallback to esr type
+			trxBuilder.type(ISR_REFERENCE);
+		}
+	}
+	
 
 	/**
 	 * Gets <code>TxDtls/RmtInf/Strd/CdtrRefInf/Ref</code><br>
@@ -138,11 +177,12 @@ public class ReferenceStringHelper
 		final Optional<String> esrReferenceNumberString = txDtls.getRmtInf().getStrd().stream()
 				.map(strd -> strd.getCdtrRefInf())
 
-				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE
-				.filter(cdtrRefInf -> cdtrRefInf != null
-						&& cdtrRefInf.getTp() != null
+				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
+				.filter(cdtrRefInf -> cdtrRefInf != null 
+				        && cdtrRefInf.getTp() != null
 						&& cdtrRefInf.getTp().getCdOrPrtry() != null
-						&& cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE))
+						&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE)
+								|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(QRR_REFERENCE)))
 
 				.map(cdtrRefInf -> cdtrRefInf.getRef())
 				.findFirst();
@@ -167,11 +207,12 @@ public class ReferenceStringHelper
 		final Optional<String> esrReferenceNumberString = txDtls.getRmtInf().getStrd().stream()
 				.map(strd -> strd.getCdtrRefInf())
 
-				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE
+				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
 				.filter(cdtrRefInf -> cdtrRefInf != null
 						&& cdtrRefInf.getTp() != null
 						&& cdtrRefInf.getTp().getCdOrPrtry() != null
-						&& cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE))
+						&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE)
+								|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(QRR_REFERENCE)))
 
 				.map(cdtrRefInf -> cdtrRefInf.getRef())
 				.findFirst();
@@ -198,7 +239,37 @@ public class ReferenceStringHelper
 		return esrReferenceNumberString;
 	}
 	
+	private Optional<String> extractType(@NonNull final EntryTransaction8 txDtls)
+	{
+		return txDtls.getRmtInf().getStrd().stream()
+				.map(strd -> strd.getCdtrRefInf())
 
+				.filter(cdtrRefInf -> cdtrRefInf != null
+						&& cdtrRefInf.getTp() != null
+						&& cdtrRefInf.getTp().getCdOrPrtry() != null
+						&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE)
+								|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(QRR_REFERENCE)))
+
+				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
+				.findFirst();
+	}
+
+	private Optional<String> extractType(@NonNull final EntryTransaction2 txDtls)
+	{
+		return txDtls.getRmtInf().getStrd().stream()
+				.map(strd -> strd.getCdtrRefInf())
+
+				.filter(cdtrRefInf -> cdtrRefInf != null
+						&& cdtrRefInf.getTp() != null
+						&& cdtrRefInf.getTp().getCdOrPrtry() != null
+						&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE)
+								|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(QRR_REFERENCE)))
+
+				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
+				.findFirst();
+	}
+	
+	
 	/**
 	 * extractReferenceFallback for version 2 <code>BankToCustomerDebitCreditNotificationV02</code>
 	 * 
