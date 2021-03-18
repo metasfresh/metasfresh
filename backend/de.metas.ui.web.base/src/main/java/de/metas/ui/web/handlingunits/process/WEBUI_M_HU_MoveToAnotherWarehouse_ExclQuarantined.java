@@ -32,7 +32,7 @@ import java.util.stream.Stream;
  * #L%
  */
 
-public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_HU_MoveToAnotherWarehouse_Helper
+public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_HU_MoveToAnotherWarehouse_Template
 {
 	public static final AdMessageKey MSG_WEBUI_HUs_IN_Quarantine = AdMessageKey.of("WEBUI_HUs_IN_Quarantine");
 

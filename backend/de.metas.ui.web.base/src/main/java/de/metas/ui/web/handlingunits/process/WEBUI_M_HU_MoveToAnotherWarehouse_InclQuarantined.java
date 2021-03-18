@@ -31,7 +31,7 @@ package de.metas.ui.web.handlingunits.process;
  *         This process is completely similar with the basic structure for HU moving process.
  *
  */
-public class WEBUI_M_HU_MoveToAnotherWarehouse_InclQuarantined extends WEBUI_M_HU_MoveToAnotherWarehouse_Helper
+public class WEBUI_M_HU_MoveToAnotherWarehouse_InclQuarantined extends WEBUI_M_HU_MoveToAnotherWarehouse_Template
 {
 
 	@Override
