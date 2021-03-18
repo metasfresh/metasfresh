@@ -24,6 +24,8 @@ package de.metas.externalreference;
 
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
+import de.metas.externalreference.product.ProductExternalReferenceType;
+import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +43,8 @@ public class ExternalReferenceTypes
 		registerType(NullExternalReferenceType.NULL);
 		registerType(BPartnerExternalReferenceType.BPARTNER);
 		registerType(BPLocationExternalReferenceType.BPARTNER_LOCATION);
+		registerType(ProductExternalReferenceType.PRODUCT);
+		registerType(ProductCategoryExternalReferenceType.PRODUCT_CATEGORY);
 	}
 
 	public void registerType(@NonNull final IExternalReferenceType type)

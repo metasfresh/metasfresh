@@ -1,24 +1,5 @@
 package de.metas.rest_api.product;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.ZoneId;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BPartner_Product;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.logging.LogManager;
@@ -32,6 +13,24 @@ import de.metas.user.UserId;
 import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L

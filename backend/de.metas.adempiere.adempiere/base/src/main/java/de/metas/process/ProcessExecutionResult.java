@@ -949,7 +949,7 @@ public class ProcessExecutionResult
 		@JsonCreator
 		private WebuiViewToOpen(
 				@JsonProperty("viewId") @NonNull final String viewId,
-				@JsonProperty("profileId") final String profileId,
+				@JsonProperty("profileId") @Nullable final String profileId,
 				@JsonProperty("target") @NonNull final ViewOpenTarget target)
 		{
 			this.viewId = viewId;

@@ -86,7 +86,6 @@ public class ExternalSystem_Config_StepDef
 				externalSystemConfigAlberta.setExternalSystemValue(externalSystemChildValue);
 				externalSystemConfigAlberta.setApiKey("notImportant");
 				externalSystemConfigAlberta.setBaseURL("notImportant.com");
-				externalSystemConfigAlberta.setName("notImportant");
 				externalSystemConfigAlberta.setTenant("notImportant");
 				externalSystemConfigAlberta.setIsActive(true);
 				InterfaceWrapperHelper.save(externalSystemConfigAlberta);

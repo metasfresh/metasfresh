@@ -1,13 +1,11 @@
 package de.metas.ui.web.view.descriptor;
 
-import java.util.Objects;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+
+import java.util.Objects;
 
 /*
  * #%L
@@ -72,13 +70,7 @@ public class SqlViewRowsWhereClause
 
 	public String toSqlString()
 	{
-		final SqlAndParams sqlAndParams = toSqlAndParams();
-		if (sqlAndParams.hasParams())
-		{
-			throw new AdempiereException("Cannot convert SQL to String because it has parameters: " + sqlAndParams);
-		}
-
-		return sqlAndParams.getSql();
+		return toSqlAndParams().toSqlStringInlineParams();
 	}
 
 	public <T> IQueryFilter<T> toQueryFilter()

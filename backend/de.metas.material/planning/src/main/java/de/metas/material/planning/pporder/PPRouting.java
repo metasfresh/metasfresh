@@ -55,6 +55,7 @@ public class PPRouting
 	@Nullable UserId userInChargeId;
 	@NonNull PPRoutingActivityId firstActivityId;
 	@NonNull @Default ImmutableList<PPRoutingActivity> activities = ImmutableList.of();
+	@NonNull @Default ImmutableList<PPRoutingProduct> products = ImmutableList.of();
 
 	public boolean isValidAtDate(final LocalDateTime dateTime)
 	{

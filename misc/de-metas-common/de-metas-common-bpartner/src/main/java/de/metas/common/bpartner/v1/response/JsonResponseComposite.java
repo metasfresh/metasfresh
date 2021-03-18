@@ -50,10 +50,9 @@ import lombok.Value;
 		+ "Note that given the respective use-case, either `bpartner.code` `bpartner.externalId` might be `null`, but not both at once.")
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class JsonResponseComposite
+public class JsonResponseComposite
 {
-	// TODO if an org is given, then verify whether the current user has access to the given org
-	@ApiModelProperty
+	@ApiModelProperty(required = true, value = "The `AD_Org.Value` of the `C_BPartner`'s AD_Org_ID")
 	@JsonInclude(Include.NON_NULL)
 	String orgCode;
 
@@ -69,7 +68,7 @@ public final class JsonResponseComposite
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonResponseComposite(
-			@JsonProperty("orgCode") @Nullable final String orgCode,
+			@JsonProperty("orgCode") @NonNull final String orgCode,
 			@JsonProperty("bpartner") @NonNull final JsonResponseBPartner bpartner,
 			@JsonProperty("locations") @Singular final List<JsonResponseLocation> locations,
 			@JsonProperty("contacts") @Singular final List<JsonResponseContact> contacts)

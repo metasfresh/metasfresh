@@ -261,7 +261,7 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
-        
+
         <dependency>
             <groupId>de.metas.fresh</groupId>
             <artifactId>de.metas.fresh.base</artifactId>
@@ -572,6 +572,14 @@
             <type>zip</type>
         </dependency>
 
+        <dependency>
+            <groupId>de.metas.vertical.healthcare.alberta</groupId>
+            <artifactId>de.metas.vertical.healthcare.alberta</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
+        
         <dependency>
             <groupId>de.metas.servicerepair</groupId>
             <artifactId>de.metas.servicerepair.base</artifactId>

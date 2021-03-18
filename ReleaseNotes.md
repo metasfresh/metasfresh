@@ -9,6 +9,27 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.163
+## Features
+* metasfresh
+  * [#10748](https://github.com/metasfresh/metasfresh/issues/10748) Improve and extend copy discount lines on product
+  * [#10756](https://github.com/metasfresh/metasfresh/issues/10756) Precision in sync with BE
+  * [#10766](https://github.com/metasfresh/metasfresh/issues/10766) Extend external system status window
+  * [#10767](https://github.com/metasfresh/metasfresh/issues/10767) Token-based authentication
+  * [#10769](https://github.com/metasfresh/metasfresh/issues/10769) Business Partner Advanced Search
+  * [#10775](https://github.com/metasfresh/metasfresh/issues/10775) Alberta dedicated Camel route: sync Pharmacy
+  * [#10778](https://github.com/metasfresh/metasfresh/issues/10778) Manufacturing Order improvement: FiFo for reversed issue cases, report error
+  * [#10789](https://github.com/metasfresh/metasfresh/issues/10789) Clone Product with `M_Product_Acct` records
+  * [#10790](https://github.com/metasfresh/metasfresh/issues/10790) Service Repair Scripts
+  * [#10793](https://github.com/metasfresh/metasfresh/issues/10793) Display `PP_Order` attribute in HU only if in attribute set
+  * [#10798](https://github.com/metasfresh/metasfresh/pull/10798) Picking Terminal 1: Search by Barcode
+  * [#10805](https://github.com/metasfresh/metasfresh/issues/10805) Add a print format for Customs Invoice
+
+## Fixes
+* metasfresh
+  * [#10765](https://github.com/metasfresh/metasfresh/issues/10765) Invalid `viewId`: null on payment allocations
+  * [#10800](https://github.com/metasfresh/metasfresh/pull/10800) `EDI_Desadv_GenerateSSCCLabels` fixes
+
 # metasfresh 5.162
 ## Features
 * metasfresh

@@ -63,6 +63,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.TableRecordMDC;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeCacheByLookupKey;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
@@ -72,6 +73,7 @@ import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidEntityException;
@@ -189,6 +191,7 @@ public class JsonRetrieverService
 
 	@Getter
 	private final String identifier;
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public JsonRetrieverService(
 			@NonNull final BPartnerQueryService bPartnerQueryService,
@@ -237,12 +240,15 @@ public class JsonRetrieverService
 
 	private JsonResponseComposite toJson(@NonNull final BPartnerComposite bpartnerComposite)
 	{
-		final BPartner bpartner = bpartnerComposite.getBpartner();
-
-		try (final MDCCloseable methodMDC = MDC.putCloseable("method", "JsonRetrieverService.toJson(BPartnerComposite)");
-				final MDCCloseable bpartnerMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner != null ? bpartner.getId() : null))
+        final BPartner bpartner = bpartnerComposite.getBpartner();
+        
+		try (final MDCCloseable ignored = MDC.putCloseable("method", "JsonRetrieverService.toJson(BPartnerComposite)");
+             final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner != null ? bpartner.getId() : null))
 		{
-			final JsonResponseCompositeBuilder result = JsonResponseComposite.builder();
+		    final String orgCode = orgDAO.retrieveOrgValue(bpartnerComposite.getOrgId());
+		
+			final JsonResponseCompositeBuilder result = JsonResponseComposite.builder()
+					.orgCode(orgCode);
 
 			// bpartner
 			result.bpartner(toJson(bpartner));
@@ -334,8 +340,7 @@ public class JsonRetrieverService
 			return null;
 		}
 		final BPGroup bpGroup = bpGroupRepository.getbyId(bpGroupId);
-		final String groupName = bpGroup.getName();
-		return groupName;
+        return bpGroup.getName();
 	}
 
 	private JsonResponseContact toJson(

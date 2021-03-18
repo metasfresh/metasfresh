@@ -24,6 +24,7 @@ package de.metas.remittanceadvice;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -45,6 +46,11 @@ public class RemittanceAdviceId implements RepoIdAware
 		return repoId > 0 ? new RemittanceAdviceId(repoId) : null;
 	}
 
+	public static int toRepoId(@Nullable final RemittanceAdviceId remittanceAdviceId)
+	{
+		return remittanceAdviceId != null ? remittanceAdviceId.getRepoId() : -1;
+	}
+	
 	int repoId;
 
 	private RemittanceAdviceId(final int repoId)

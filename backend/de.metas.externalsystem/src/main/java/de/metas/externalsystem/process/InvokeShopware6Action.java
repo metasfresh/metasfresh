@@ -24,6 +24,7 @@ package de.metas.externalsystem.process;
 
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
@@ -35,7 +36,8 @@ import lombok.NonNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class InvokeShopware6Action extends InvokeExternalSystemProcess {
+public class InvokeShopware6Action extends InvokeExternalSystemProcess
+{
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -47,9 +49,10 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess {
 		}
 		else
 		{
-			// note: we can blindly get the first I_ExternalSystem_Config_Shopware6, because the checkPreconditionsApplicable impl made sure there is exactly one.
-			id = getSelectedIncludedRecordIds(I_ExternalSystem_Config_Shopware6.class).stream().findFirst().get();
+			id = externalSystemConfigDAO.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()), getExternalSystemType())
+					.get().getId().getRepoId();
 		}
+
 		return ExternalSystemShopware6ConfigId.ofRepoId(id);
 	}
 
@@ -80,5 +83,11 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess {
 				.stream()
 				.filter(recordRef -> I_ExternalSystem_Config_Shopware6.Table_Name.equals(recordRef.getTableName()))
 				.count();
+	}
+
+	@NonNull
+	protected ExternalSystemType getExternalSystemType()
+	{
+		return ExternalSystemType.Shopware6;
 	}
 }
