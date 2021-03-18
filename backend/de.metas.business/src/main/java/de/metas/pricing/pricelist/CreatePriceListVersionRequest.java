@@ -44,7 +44,7 @@ public class CreatePriceListVersionRequest
 	@NonNull
 	Instant validFrom;
 
-	@NonNull
+	@Nullable
 	Boolean isActive;
 
 	@Nullable

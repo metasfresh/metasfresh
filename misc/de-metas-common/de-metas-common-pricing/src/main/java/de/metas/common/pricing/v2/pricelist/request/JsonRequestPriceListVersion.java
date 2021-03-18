@@ -26,11 +26,11 @@ import de.metas.common.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
 import java.time.Instant;
 
-@Getter
 @ToString
 @EqualsAndHashCode
 public class JsonRequestPriceListVersion
@@ -44,17 +44,25 @@ public class JsonRequestPriceListVersion
 	@ApiModelProperty(required = true)
 	private Instant validFrom;
 
-	@ApiModelProperty(required = true)
+	@Getter
 	private Boolean active;
 
+	@ApiModelProperty(hidden = true)
+	@Getter
+	private boolean activeSet;
+
+	@Getter
 	private String description;
 
 	@ApiModelProperty(hidden = true)
+	@Getter
 	private boolean descriptionSet;
 
+	@Getter
 	private SyncAdvise syncAdvise;
 
 	@ApiModelProperty(hidden = true)
+	@Getter
 	private boolean syncAdviseSet;
 
 	public void setOrgCode(final String orgCode)
@@ -62,9 +70,21 @@ public class JsonRequestPriceListVersion
 		this.orgCode = orgCode;
 	}
 
+	@NonNull
+	public String getOrgCode()
+	{
+		return orgCode;
+	}
+
 	public void setPriceListIdentifier(final String priceListIdentifier)
 	{
 		this.priceListIdentifier = priceListIdentifier;
+	}
+
+	@NonNull
+	public String getPriceListIdentifier()
+	{
+		return priceListIdentifier;
 	}
 
 	public void setDescription(final String description)
@@ -78,9 +98,16 @@ public class JsonRequestPriceListVersion
 		this.validFrom = validFrom;
 	}
 
+	@NonNull
+	public Instant getValidFrom()
+	{
+		return validFrom;
+	}
+
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
+		this.activeSet = true;
 	}
 
 	public void setSyncAdvise(final SyncAdvise syncAdvise)

@@ -78,7 +78,11 @@ public class PriceListVersionRepository
 		record.setM_PriceList_ID(request.getPriceListId().getRepoId());
 
 		record.setValidFrom(TimeUtil.asTimestamp(request.getValidFrom()));
-		record.setIsActive(request.getIsActive());
+
+		if (request.getIsActive() != null)
+		{
+			record.setIsActive(request.getIsActive());
+		}
 
 		record.setDescription(request.getDescription());
 

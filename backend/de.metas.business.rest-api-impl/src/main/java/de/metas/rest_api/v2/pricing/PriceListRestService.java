@@ -159,7 +159,6 @@ public class PriceListRestService
 	{
 		final PriceListVersion.PriceListVersionBuilder priceListVersionBuilder = PriceListVersion.builder()
 				.priceListVersionId(existingPriceListVersion.getPriceListVersionId())
-				.isActive(jsonRequest.getActive())
 				.validFrom(jsonRequest.getValidFrom());
 
 		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
@@ -182,6 +181,16 @@ public class PriceListRestService
 		else
 		{
 			priceListVersionBuilder.description(existingPriceListVersion.getDescription());
+		}
+
+		if (jsonRequest.isActiveSet())
+		{
+			priceListVersionBuilder.isActive(jsonRequest.getActive());
+		}
+		else
+		{
+			//the update_remove case is intentionally ignored here as `active` is a mandatory column
+			priceListVersionBuilder.isActive(existingPriceListVersion.getIsActive());
 		}
 
 		return priceListVersionBuilder.build();
