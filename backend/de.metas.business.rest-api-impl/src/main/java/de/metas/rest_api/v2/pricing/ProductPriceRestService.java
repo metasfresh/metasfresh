@@ -224,7 +224,7 @@ public class ProductPriceRestService
 		}
 
 
-		//uomId
+		//seqNo
 		if (jsonRequest.isSeqNoSet())
 		{
 			productPriceBuilder.seqNo(jsonRequest.getSeqNo());
