@@ -8,7 +8,7 @@ INSERT INTO ExternalSystem_Config (AD_Client_ID,AD_Org_ID,CamelURL,Created,Creat
 
 -- 2021-03-16T19:30:17.180Z
 -- URL zum Konzept
-INSERT INTO ExternalSystem_Config_Shopware6 (AD_Client_ID,AD_Org_ID,BaseURL,Client_Id,Client_Secret,Created,CreatedBy,ExternalSystem_Config_ID,ExternalSystem_Config_Shopware6_ID,ExternalSystemValue,IsActive,Updated,UpdatedBy) VALUES (1000000,1000000,'Base-URL','Zugrangs-ID','Sicherheitsshlüssel',TO_TIMESTAMP('2021-03-16 20:30:17','YYYY-MM-DD HH24:MI:SS'),100,540001,540000,'Shopware6-Konfig','Y',TO_TIMESTAMP('2021-03-16 20:30:17','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO ExternalSystem_Config_Shopware6 (AD_Client_ID,AD_Org_ID,BaseURL,Client_Id,Client_Secret,Created,CreatedBy,ExternalSystem_Config_ID,ExternalSystem_Config_Shopware6_ID,ExternalSystemValue,IsActive,Updated,UpdatedBy) VALUES (1000000,1000000,'Base-URL','Zugrangs-ID','Sicherheitsschlüssel',TO_TIMESTAMP('2021-03-16 20:30:17','YYYY-MM-DD HH24:MI:SS'),100,540001,540000,'Shopware6-Konfig','Y',TO_TIMESTAMP('2021-03-16 20:30:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-03-16T19:30:19.988Z

@@ -23,7 +23,9 @@
 package de.metas.rest_api.v2.product;
 
 import de.metas.Profiles;
+import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
+import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.logging.LogManager;
@@ -33,6 +35,10 @@ import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v2.product.command.GetProductsCommand;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Product;
@@ -41,6 +47,9 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,6 +60,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.ORG_CODE_PARAMETER_DOC;
 import static de.metas.common.product.v2.response.ProductsQueryParams.AD_PINSTANCE_ID;
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE;
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CONFIG_TYPE;
@@ -66,15 +76,18 @@ public class ProductsRestController
 	private final ProductsServicesFacade productsServicesFacade;
 	private final AlbertaProductService albertaProductService;
 	private final ExternalSystemService externalSystemService;
+	private final ProductRestService productRestService;
 
 	public ProductsRestController(
 			@NonNull final ProductsServicesFacade productsServicesFacade,
 			@NonNull final AlbertaProductService albertaProductService,
-			@NonNull final ExternalSystemService externalSystemService)
+			@NonNull final ExternalSystemService externalSystemService,
+			@NonNull final ProductRestService productRestService)
 	{
 		this.productsServicesFacade = productsServicesFacade;
 		this.albertaProductService = albertaProductService;
 		this.externalSystemService = externalSystemService;
+		this.productRestService = productRestService;
 	}
 
 	@GetMapping
@@ -107,7 +120,7 @@ public class ProductsRestController
 			queryParameters.put(AD_PINSTANCE_ID, String.valueOf(pInstanceId));
 			queryParameters.put(EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE, String.valueOf(externalSystemChildConfigValue));
 			queryParameters.put(EXTERNAL_SYSTEM_CONFIG_TYPE, String.valueOf(externalSystemConfigType));
-			logExportedProducts(queryParameters, externalSystemType,pInstanceId, response);
+			logExportedProducts(queryParameters, externalSystemType, pInstanceId, response);
 
 			return ResponseEntity.ok(response);
 		}
@@ -118,6 +131,25 @@ public class ProductsRestController
 			return ResponseEntity.badRequest()
 					.body(JsonErrors.ofThrowable(ex, adLanguage));
 		}
+	}
+
+	@ApiOperation("Create or update products and corresponding Bpartner-products.")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully created or updated product(s)"),
+			@ApiResponse(code = 401, message = "You are not authorized to create or update the resource"),
+			@ApiResponse(code = 403, message = "Accessing the resource you were trying to reach is forbidden"),
+			@ApiResponse(code = 422, message = "The request entity could not be processed")
+	})
+	@PutMapping("{orgCode}")
+	public ResponseEntity<JsonResponseUpsert> upsertProducts(
+			@ApiParam(required = true, value = ORG_CODE_PARAMETER_DOC)
+			@PathVariable("orgCode") @Nullable final String orgCode,
+			@RequestBody @NonNull final JsonRequestProductUpsert request)
+
+	{
+		final JsonResponseUpsert responseUpsert = productRestService.upsertProducts(orgCode, request);
+
+		return ResponseEntity.ok().body(responseUpsert);
 	}
 
 	private void logExportedProducts(

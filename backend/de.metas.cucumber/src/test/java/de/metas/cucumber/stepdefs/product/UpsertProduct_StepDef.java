@@ -222,7 +222,7 @@ public class UpsertProduct_StepDef
 		dataTableEntries.forEach(dataTableEntry -> {
 			final String externalSystemName = DataTableUtil.extractStringForColumnName(dataTableEntry, "ExternalSystem.Code");
 			final String externalId = DataTableUtil.extractStringForColumnName(dataTableEntry, "ExternalReference");
-			final IExternalReferenceType externalReferenceType = getExternalReferenceType(DataTableUtil.extractStringForColumnName(dataTableEntry, "ExternalReference.Code"));
+			final IExternalReferenceType externalReferenceType = getExternalReferenceType(DataTableUtil.extractStringForColumnName(dataTableEntry, "ExternalReferenceType.Code"));
 
 			final JsonMetasfreshId metasfreshId;
 			if (externalReferenceType.equals(BPartnerExternalReferenceType.BPARTNER))
