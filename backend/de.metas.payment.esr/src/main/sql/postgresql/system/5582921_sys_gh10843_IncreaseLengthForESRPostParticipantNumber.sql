@@ -1,0 +1,1 @@
+ALTER TABLE esr_importline ALTER COLUMN esrpostparticipantnumber TYPE varchar(25);
