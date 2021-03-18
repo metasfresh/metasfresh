@@ -51,7 +51,11 @@ export class RawWidget extends PureComponent {
     const { rawWidget } = this;
 
     if (rawWidget.current && autoFocus) {
-      rawWidget.current.focus();
+      try {
+        rawWidget.current.focus();
+      } catch (e) {
+        console.error(`Custom widget doesn't have 'focus' function defined`);
+      }
     }
 
     if (textSelected) {
