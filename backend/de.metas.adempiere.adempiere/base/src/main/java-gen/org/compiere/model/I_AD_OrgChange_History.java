@@ -139,6 +139,46 @@ public interface I_AD_OrgChange_History
 	String COLUMNNAME_AD_OrgTo_ID = "AD_OrgTo_ID";
 
 	/**
+	 * Set Partner From.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_From_ID (int C_BPartner_From_ID);
+
+	/**
+	 * Get Partner From.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_From_ID();
+
+	String COLUMNNAME_C_BPartner_From_ID = "C_BPartner_From_ID";
+
+	/**
+	 * Set Partner To.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_To_ID (int C_BPartner_To_ID);
+
+	/**
+	 * Get Partner To.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_To_ID();
+
+	String COLUMNNAME_C_BPartner_To_ID = "C_BPartner_To_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -162,6 +202,27 @@ public interface I_AD_OrgChange_History
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Org Change Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDate_OrgChange (@Nullable java.sql.Timestamp Date_OrgChange);
+
+	/**
+	 * Get Org Change Date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDate_OrgChange();
+
+	ModelColumn<I_AD_OrgChange_History, Object> COLUMN_Date_OrgChange = new ModelColumn<>(I_AD_OrgChange_History.class, "Date_OrgChange", null);
+	String COLUMNNAME_Date_OrgChange = "Date_OrgChange";
 
 	/**
 	 * Set Active.

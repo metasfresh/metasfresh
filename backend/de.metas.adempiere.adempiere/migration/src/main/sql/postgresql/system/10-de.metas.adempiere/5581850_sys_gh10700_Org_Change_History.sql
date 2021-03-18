@@ -218,3 +218,193 @@ UPDATE AD_Column SET AD_Reference_Value_ID=322,Updated=TO_TIMESTAMP('2021-03-11 
 /* DDL */ CREATE TABLE public.AD_OrgChange_History (AD_Client_ID NUMERIC(10) NOT NULL, AD_OrgChange_History_ID NUMERIC(10) NOT NULL, AD_Org_From_ID NUMERIC(10), AD_Org_ID NUMERIC(10) NOT NULL, AD_Org_Mapping_ID NUMERIC(10), AD_OrgTo_ID NUMERIC(10), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT AD_OrgChange_History_Key PRIMARY KEY (AD_OrgChange_History_ID), CONSTRAINT ADOrgFrom_ADOrgChangeHistory FOREIGN KEY (AD_Org_From_ID) REFERENCES public.AD_Org DEFERRABLE INITIALLY DEFERRED, CONSTRAINT ADOrgMapping_ADOrgChangeHistory FOREIGN KEY (AD_Org_Mapping_ID) REFERENCES public.AD_Org_Mapping DEFERRABLE INITIALLY DEFERRED, CONSTRAINT ADOrgTo_ADOrgChangeHistory FOREIGN KEY (AD_OrgTo_ID) REFERENCES public.AD_Org DEFERRABLE INITIALLY DEFERRED)
 ;
 
+
+
+
+
+
+
+
+
+
+
+-- 2021-03-18T09:57:30.282Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,578873,0,'C_BPartner_From_ID',TO_TIMESTAMP('2021-03-18 11:57:29','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Partner From','Partner From',TO_TIMESTAMP('2021-03-18 11:57:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-03-18T09:57:30.298Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=578873 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2021-03-18T09:57:46.695Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,578874,0,'C_BPartner_To_ID',TO_TIMESTAMP('2021-03-18 11:57:46','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Partner To','Partner To',TO_TIMESTAMP('2021-03-18 11:57:46','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-03-18T09:57:46.701Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=578874 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2021-03-18T09:58:19.977Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,573232,578873,0,30,541252,541601,'C_BPartner_From_ID',TO_TIMESTAMP('2021-03-18 11:58:19','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Partner From',0,0,TO_TIMESTAMP('2021-03-18 11:58:19','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2021-03-18T09:58:19.980Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=573232 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-03-18T09:58:20.010Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_Column_Translation_From_AD_Element(578873) 
+;
+
+-- 2021-03-18T09:58:20.700Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('AD_OrgChange_History','ALTER TABLE public.AD_OrgChange_History ADD COLUMN C_BPartner_From_ID NUMERIC(10)')
+;
+
+-- 2021-03-18T09:58:20.722Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE AD_OrgChange_History ADD CONSTRAINT CBPartnerFrom_ADOrgChangeHistory FOREIGN KEY (C_BPartner_From_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED
+;
+
+
+
+
+
+
+
+-- 2021-03-18T11:05:05.871Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,573233,578875,0,15,541601,'Date_OrgChange',TO_TIMESTAMP('2021-03-18 13:05:05','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,7,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Org Change Date',0,0,TO_TIMESTAMP('2021-03-18 13:05:05','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2021-03-18T11:05:05.887Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=573233 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-03-18T11:05:05.901Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_Column_Translation_From_AD_Element(578875) 
+;
+
+-- 2021-03-18T11:05:06.301Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('AD_OrgChange_History','ALTER TABLE public.AD_OrgChange_History ADD COLUMN Date_OrgChange TIMESTAMP WITHOUT TIME ZONE')
+;
+
+-- 2021-03-18T11:05:30.178Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,573234,578874,0,30,541252,541601,'C_BPartner_To_ID',TO_TIMESTAMP('2021-03-18 13:05:30','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Partner To',0,0,TO_TIMESTAMP('2021-03-18 13:05:30','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2021-03-18T11:05:30.185Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=573234 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-03-18T11:05:30.193Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_Column_Translation_From_AD_Element(578874) 
+;
+
+-- 2021-03-18T11:05:30.561Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('AD_OrgChange_History','ALTER TABLE public.AD_OrgChange_History ADD COLUMN C_BPartner_To_ID NUMERIC(10)')
+;
+
+-- 2021-03-18T11:05:30.572Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+ALTER TABLE AD_OrgChange_History ADD CONSTRAINT CBPartnerTo_ADOrgChangeHistory FOREIGN KEY (C_BPartner_To_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED
+;
+
+
+
+
+-- 2021-03-18T15:07:15.588Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET AD_Window_ID=541055,Updated=TO_TIMESTAMP('2021-03-18 17:07:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=541601
+;
+
+-- 2021-03-18T15:07:59.388Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Tab_ID,IsDisplayed,DisplayLength,IsSameLine,IsHeading,IsFieldOnly,IsEncrypted,AD_Client_ID,IsActive,Created,CreatedBy,IsReadOnly,Updated,UpdatedBy,AD_Field_ID,IsDisplayedGrid,AD_Column_ID,Name,AD_Org_ID,EntityType) VALUES (543611,'N',10,'N','N','N','N',0,'Y',TO_TIMESTAMP('2021-03-18 17:07:59','YYYY-MM-DD HH24:MI:SS'),100,'N',TO_TIMESTAMP('2021-03-18 17:07:59','YYYY-MM-DD HH24:MI:SS'),100,638562,'N',573232,'Partner From',0,'D')
+;
+
+-- 2021-03-18T15:07:59.391Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Help,Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Help,t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=638562 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-03-18T15:07:59.395Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578873) 
+;
+
+-- 2021-03-18T15:07:59.410Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=638562
+;
+
+-- 2021-03-18T15:07:59.413Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(638562)
+;
+
+-- 2021-03-18T15:07:59.551Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Tab_ID,IsDisplayed,DisplayLength,IsSameLine,IsHeading,IsFieldOnly,IsEncrypted,AD_Client_ID,IsActive,Created,CreatedBy,IsReadOnly,Updated,UpdatedBy,AD_Field_ID,IsDisplayedGrid,AD_Column_ID,Name,AD_Org_ID,EntityType) VALUES (543611,'N',7,'N','N','N','N',0,'Y',TO_TIMESTAMP('2021-03-18 17:07:59','YYYY-MM-DD HH24:MI:SS'),100,'N',TO_TIMESTAMP('2021-03-18 17:07:59','YYYY-MM-DD HH24:MI:SS'),100,638563,'N',573233,'Org Change Date',0,'D')
+;
+
+-- 2021-03-18T15:07:59.552Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Help,Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Help,t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=638563 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-03-18T15:07:59.554Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578875) 
+;
+
+-- 2021-03-18T15:07:59.557Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=638563
+;
+
+-- 2021-03-18T15:07:59.559Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(638563)
+;
+
+-- 2021-03-18T15:07:59.682Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Tab_ID,IsDisplayed,DisplayLength,IsSameLine,IsHeading,IsFieldOnly,IsEncrypted,AD_Client_ID,IsActive,Created,CreatedBy,IsReadOnly,Updated,UpdatedBy,AD_Field_ID,IsDisplayedGrid,AD_Column_ID,Name,AD_Org_ID,EntityType) VALUES (543611,'N',10,'N','N','N','N',0,'Y',TO_TIMESTAMP('2021-03-18 17:07:59','YYYY-MM-DD HH24:MI:SS'),100,'N',TO_TIMESTAMP('2021-03-18 17:07:59','YYYY-MM-DD HH24:MI:SS'),100,638564,'N',573234,'Partner To',0,'D')
+;
+
+-- 2021-03-18T15:07:59.685Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Help,Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Help,t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=638564 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-03-18T15:07:59.687Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578874) 
+;
+
+-- 2021-03-18T15:07:59.690Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=638564
+;
+
+-- 2021-03-18T15:07:59.692Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(638564)
+;
+
+

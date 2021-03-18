@@ -331,3 +331,27 @@ UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-03-16 17:4
 
 
 
+
+
+
+-- 2021-03-18T10:02:12.162Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,578875,0,'Date_OrgChange',TO_TIMESTAMP('2021-03-18 12:02:11','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Org Change Date','Org Change Date',TO_TIMESTAMP('2021-03-18 12:02:11','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-03-18T10:02:12.173Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=578875 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2021-03-18T10:02:34.904Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET AD_Element_ID=578875, ColumnName='Date_OrgChange', Description=NULL, Help=NULL, Name='Org Change Date',Updated=TO_TIMESTAMP('2021-03-18 12:02:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541948
+;
+
+
+
+
+
+
+

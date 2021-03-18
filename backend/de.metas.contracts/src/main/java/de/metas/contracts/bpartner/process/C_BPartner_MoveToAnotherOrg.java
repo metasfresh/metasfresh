@@ -47,7 +47,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.bpartner.repository.OrgChangeRepository;
-import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
 import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.bpartner.service.OrgChangeService;
 import de.metas.organization.OrgId;
@@ -77,7 +76,7 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 	@Param(parameterName = "M_Product_ID")
 	private ProductId p_membershipProductId;
 
-	@Param(parameterName = "DateFrom", mandatory = true)
+	@Param(parameterName = "Date_OrgChange", mandatory = true)
 	private LocalDate p_startDate;
 
 	@Param(parameterName = "IsShowMembershipParameter", mandatory = true)
@@ -95,12 +94,11 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 				.bpartnerId(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
 				.startDate(p_startDate)
 				.membershipProductId(p_membershipProductId)
+				.orgFromId(OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID()))
 				.orgToId(p_orgTargetId)
 				.build();
 
-		final OrgChangeBPartnerComposite initialBPartnerComposite = orgChangeRepo.getByIdAndOrgChangeDate(orgChangeRequest.getBpartnerId(),
-																										  orgChangeRequest.getStartDate());
-		service.moveBPartnerToOrg(orgChangeRequest);
+		orgChangeRepo.moveToNewOrg(orgChangeRequest);
 
 		return MSG_OK;
 	}
@@ -144,7 +142,7 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		if ("DateFrom".equals(parameter.getColumnName()))
+		if ("Date_OrgChange".equals(parameter.getColumnName()))
 		{
 			return SystemTime.asLocalDate().plusDays(1);
 		}

@@ -350,6 +350,7 @@ final class BPartnerCompositesLoader
 				.value(trimBlankToNull(contactRecord.getValue()))
 				.firstName(trimBlankToNull(contactRecord.getFirstname()))
 				.lastName(trimBlankToNull(contactRecord.getLastname()))
+				.name(trimBlankToNull(contactRecord.getName()))
 				.newsletter(contactRecord.isNewsletter())
 				.phone(trimBlankToNull(contactRecord.getPhone()))
 				.mobilePhone(trimBlankToNull(contactRecord.getMobilePhone()))

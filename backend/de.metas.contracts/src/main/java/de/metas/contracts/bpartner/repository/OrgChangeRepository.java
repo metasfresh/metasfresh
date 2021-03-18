@@ -22,23 +22,30 @@
 
 package de.metas.contracts.bpartner.repository;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
 import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -52,6 +59,8 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -68,22 +77,28 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @Repository
 public class OrgChangeRepository
 {
+	private static final Logger logger = LogManager.getLogger(OrgChangeRepository.class);
+	final ILoggable loggable = Loggables.withLogger(logger, Level.INFO);
+
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	final BPartnerCompositeRepository bPartnerCompositeRepo;
+	final OrgMappingRepository orgMappingRepo;
 
-	public OrgChangeRepository(final BPartnerCompositeRepository bPartnerCompositeRepo)
+	public OrgChangeRepository(@NonNull final BPartnerCompositeRepository bPartnerCompositeRepo,
+			@NonNull final OrgMappingRepository orgMappingRepo)
 	{
 		this.bPartnerCompositeRepo = bPartnerCompositeRepo;
+		this.orgMappingRepo = orgMappingRepo;
 	}
 
 	//TODO Try to use a domain object instead of the service
 
 	public OrgChangeBPartnerComposite getByIdAndOrgChangeDate(@NonNull final BPartnerId bpartnerId, @NonNull final LocalDate orgChangeDate)
 	{
-		final OrgMappingId orgMappingId = getCreateOrgMappingId(bpartnerId);
+		final OrgMappingId orgMappingId = orgMappingRepo.getCreateOrgMappingId(bpartnerId);
 		final BPartnerComposite bPartnerComposite = bPartnerCompositeRepo.getById(bpartnerId);
 
 		return OrgChangeBPartnerComposite.builder()
@@ -103,24 +118,41 @@ public class OrgChangeRepository
 		final BPartnerId newBPartnerId = getOrCreateCounterpartBPartner(orgChangeRequest, orgMappingId);
 
 		// gets the partner with all the active and inactive locations, users and bank accounts
-		final BPartnerComposite newBPartnerComposite = bPartnerCompositeRepo.getById(newBPartnerId);
+		BPartnerComposite destinationBPartnerComposite = prepareDestinationForOrgSwitch(newBPartnerId);
 
-		final List<BPartnerLocation> newLocations = getOrCreateLocations(orgChangeRequest, orgChangeBPartnerComposite, newBPartnerComposite);
+		final List<BPartnerLocation> newLocations = getOrCreateLocations(orgChangeRequest, orgChangeBPartnerComposite, destinationBPartnerComposite);
 
-		final List<BPartnerContact> newContacts = getOrCreateContacts(orgChangeRequest, orgChangeBPartnerComposite, newBPartnerComposite);
-		final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(orgChangeRequest, orgChangeBPartnerComposite, newBPartnerComposite);
+		final List<BPartnerContact> newContacts = getOrCreateContacts(orgChangeRequest, orgChangeBPartnerComposite, destinationBPartnerComposite);
+		final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(orgChangeRequest, orgChangeBPartnerComposite, destinationBPartnerComposite);
 
-		newBPartnerComposite.toBuilder()
+		destinationBPartnerComposite = destinationBPartnerComposite.toBuilder()
 				.locations(newLocations)
 				.contacts(newContacts)
 				.bankAccounts(newBPBankAccounts)
 				.build();
 
-		bPartnerCompositeRepo.save(newBPartnerComposite);
+		bPartnerCompositeRepo.save(destinationBPartnerComposite);
 
 		saveOrgChangeBPartnerComposite(orgChangeBPartnerComposite);
-		createOrgChangeHistory(orgMappingId, orgChangeBPartnerComposite.getBPartnerComposite().getOrgId(), orgChangeRequest.getOrgToId());
+		createOrgChangeHistory(orgChangeRequest, orgMappingId, destinationBPartnerComposite);
 
+	}
+
+	private BPartnerComposite prepareDestinationForOrgSwitch(final BPartnerId newBPartnerId)
+	{
+		final BPartnerComposite destinationBPartnerComposite = bPartnerCompositeRepo.getById(newBPartnerId);
+
+		final List<BPartnerLocation> existingLocationsInDestinationPartner = destinationBPartnerComposite.getLocations();
+
+		unmarkDefaultLocations(existingLocationsInDestinationPartner);
+
+		final List<BPartnerContact> existingContactsInDestinationPartner = destinationBPartnerComposite.getContacts();
+
+		unmarkDefaultContacts(existingContactsInDestinationPartner);
+
+		bPartnerCompositeRepo.save(destinationBPartnerComposite);
+
+		return destinationBPartnerComposite;
 	}
 
 	private List<BPartnerBankAccount> getOrCreateBPBankAccounts(@NonNull final OrgChangeRequest orgChangeRequest,
@@ -132,18 +164,18 @@ public class OrgChangeRepository
 		final List<BPartnerBankAccount> newBankAccounts = new ArrayList<>();
 		for (final BPartnerBankAccount existingBankAccountInInitialPartner : existingBankAccountsInInitialPartner)
 		{
-			final OrgMappingId bankAccountOrgMappingId = getCreateOrgMappingId(existingBankAccountInInitialPartner);
+			final OrgMappingId bankAccountOrgMappingId = orgMappingRepo.getCreateOrgMappingId(existingBankAccountInInitialPartner);
 
 			existingBankAccountInInitialPartner.setOrgMappingId(bankAccountOrgMappingId);
-			final Optional<BPartnerBankAccount> matchingBankAccount = existingBankAccountsInNewPartner.stream()
+			final BPartnerBankAccount matchingBankAccount = existingBankAccountsInNewPartner.stream()
 					.filter(bankAccount -> bankAccount.getOrgMappingId() == bankAccountOrgMappingId)
-					.findFirst();
+					.findFirst()
+					.orElse(null);
 
 			if (matchingBankAccount != null)
 			{
-				final BPartnerBankAccount existingBankAccount = matchingBankAccount.get();
-				existingBankAccount.setActive(true);
-				newBankAccounts.add(existingBankAccount);
+				matchingBankAccount.setActive(true);
+				newBankAccounts.add(matchingBankAccount);
 			}
 			else
 			{
@@ -167,34 +199,62 @@ public class OrgChangeRepository
 
 	private List<BPartnerLocation> getOrCreateLocations(@NonNull final OrgChangeRequest orgChangeRequest,
 			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
-			@NonNull final BPartnerComposite newBPartnerComposite)
+			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
-		final List<BPartnerLocation> existingLocationsInInitialPartner = orgChangeBPartnerComposite.getBPartnerComposite().getLocations();
-		final List<BPartnerLocation> existingLocationsInNewPartner = newBPartnerComposite.getLocations();
+		final List<BPartnerLocation> existingLocationsInInitialPartner = orgChangeBPartnerComposite
+				.getBPartnerComposite()
+				.getLocations();
+
+		final List<BPartnerLocation> existingLocationsInDestinationPartner = destinationBPartnerComposite.getLocations();
 
 		final List<BPartnerLocation> newLocations = new ArrayList<>();
 		for (final BPartnerLocation existingLocationInInitialPartner : existingLocationsInInitialPartner)
 		{
-			final OrgMappingId locationOrgMappingId = getCreateOrgMappingId(existingLocationInInitialPartner);
+			final OrgMappingId locationOrgMappingId = orgMappingRepo.getCreateOrgMappingId(existingLocationInInitialPartner);
 			existingLocationInInitialPartner.setOrgMappingId(locationOrgMappingId);
 
-			final Optional<BPartnerLocation> matchingLocation = existingLocationsInNewPartner.stream()
-					.filter(location -> location.getOrgMappingId() == locationOrgMappingId)
-					.findFirst();
+			final BPartnerLocation matchingLocation = existingLocationsInDestinationPartner.stream()
+					.filter(location -> OrgMappingId.equals(locationOrgMappingId, location.getOrgMappingId()))
+					.findFirst()
+					.orElse(null);
 
 			if (matchingLocation != null)
 			{
-				final BPartnerLocation existingLocation = matchingLocation.get();
-				existingLocation.setActive(true);
-				newLocations.add(existingLocation);
+				matchingLocation.setLocationType(existingLocationInInitialPartner.getLocationType());
+				matchingLocation.setActive(true);
 			}
 			else
 			{
-				BPartnerLocation newLocation = createNewLocation(existingLocationInInitialPartner, orgChangeRequest);
+				final BPartnerLocation newLocation = createNewLocation(existingLocationInInitialPartner, orgChangeRequest);
 				newLocations.add(newLocation);
 			}
 		}
 		return newLocations;
+	}
+
+	private void unmarkDefaultLocations(final List<BPartnerLocation> locations)
+	{
+		for (BPartnerLocation location : locations)
+		{
+			final BPartnerLocationType type = location.getLocationType();
+			type.setBillToDefault(false);
+			type.setShipToDefault(false);
+		}
+	}
+
+	private void unmarkDefaultContacts(final List<BPartnerContact> contacts)
+	{
+		for (BPartnerContact contact : contacts)
+		{
+			final BPartnerContactType contactType = contact.getContactType();
+
+			contactType.setDefaultContact(false);
+			contactType.setBillToDefault(false);
+			contactType.setPurchaseDefault(false);
+			contactType.setSalesDefault(false);
+			contactType.setShipToDefault(false);
+
+		}
 	}
 
 	private List<BPartnerContact> getOrCreateContacts(final OrgChangeRequest orgChangeRequest, final OrgChangeBPartnerComposite orgChangeBPartnerComposite, final BPartnerComposite newBPartnerComposite)
@@ -205,22 +265,22 @@ public class OrgChangeRepository
 		final List<BPartnerContact> newContacts = new ArrayList<>();
 		for (final BPartnerContact existingContactInInitialPartner : existingContactsInInitialPartner)
 		{
-			final OrgMappingId contactOrgMappingId = getCreateOrgMappingId(existingContactInInitialPartner);
+			final OrgMappingId contactOrgMappingId = orgMappingRepo.getCreateOrgMappingId(existingContactInInitialPartner);
 			existingContactInInitialPartner.setOrgMappingId(contactOrgMappingId);
 
-			final Optional<BPartnerContact> matchingContact = existingContactsInNewPartner.stream()
+			final BPartnerContact matchingContact = existingContactsInNewPartner.stream()
 					.filter(contact -> contactOrgMappingId.equals(contact.getOrgMappingId()))
-					.findFirst();
+					.findFirst()
+					.orElse(null);
 
 			if (matchingContact != null)
 			{
-				final BPartnerContact existingContact = matchingContact.get();
-				existingContact.setActive(true);
-				newContacts.add(existingContact);
+				matchingContact.setActive(true);
+				newContacts.add(matchingContact);
 			}
 			else
 			{
-				BPartnerContact newContact = createNewContact(existingContactInInitialPartner, orgChangeRequest);
+				final BPartnerContact newContact = createNewContact(existingContactInInitialPartner, orgChangeRequest);
 				newContacts.add(newContact);
 			}
 		}
@@ -286,67 +346,37 @@ public class OrgChangeRepository
 				.build();
 	}
 
-	private OrgMappingId getCreateOrgMappingId(final BPartnerId bpartnerId)
-	{
-		final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bpartnerId);
 
-		OrgMappingId orgMappingId = OrgMappingId.ofRepoIdOrNull(bPartnerRecord.getAD_Org_Mapping_ID());
 
-		if (orgMappingId == null)
-		{
-			orgMappingId = createOrgMappingForBPartner(bPartnerRecord);
 
-			bPartnerRecord.setAD_Org_Mapping_ID(orgMappingId.getRepoId());
 
-			save(bPartnerRecord);
-		}
 
-		return orgMappingId;
-	}
 
-	private OrgMappingId getCreateOrgMappingId(final BPartnerLocation existingLocationInInitialPartner)
-	{
 
-		final I_AD_Org_Mapping orgMapping = newInstance(I_AD_Org_Mapping.class);
-
-		orgMapping.setAD_Org_ID(0);
-		orgMapping.setAD_Table_ID(getTableId(I_C_BPartner_Location.class));
-		orgMapping.setValue(existingLocationInInitialPartner.getName());
-
-		save(orgMapping);
-
-		return OrgMappingId.ofRepoId(orgMapping.getAD_Org_Mapping_ID());
-	}
-
-	private OrgMappingId getCreateOrgMappingId(final BPartnerContact existingContactInInitialPartner)
-	{
-		final I_AD_Org_Mapping orgMapping = newInstance(I_AD_Org_Mapping.class);
-
-		orgMapping.setAD_Org_ID(0);
-		orgMapping.setAD_Table_ID(getTableId(I_C_BP_BankAccount.class));
-		orgMapping.setValue(existingContactInInitialPartner.getValue());
-
-		save(orgMapping);
-
-		return OrgMappingId.ofRepoId(orgMapping.getAD_Org_Mapping_ID());
-	}
-
-	private OrgMappingId getCreateOrgMappingId(final BPartnerBankAccount existingBankAccountInInitialPartner)
-	{
-		final I_AD_Org_Mapping orgMapping = newInstance(I_AD_Org_Mapping.class);
-
-		orgMapping.setAD_Org_ID(0);
-		orgMapping.setAD_Table_ID(getTableId(I_C_BP_BankAccount.class));
-		orgMapping.setValue(existingBankAccountInInitialPartner.getIban());
-
-		save(orgMapping);
-
-		return OrgMappingId.ofRepoId(orgMapping.getAD_Org_Mapping_ID());
-	}
 
 	public boolean hasMembershipSubscriptions(final @NonNull BPartnerId bPartnerId, final @NonNull LocalDate orgChangeDate)
 	{
-		return createMembershipRunningSubscriptionQuery(bPartnerId, orgChangeDate).anyMatch();
+		final IQuery<I_C_Flatrate_Term> membershipRunningSubscriptionQuery = createMembershipRunningSubscriptionQuery(bPartnerId, orgChangeDate);
+
+		final I_C_Flatrate_Term membershipSubscription = membershipRunningSubscriptionQuery.stream().findFirst().orElse(null);
+
+		if (membershipSubscription == null)
+		{
+			loggable.addLog("Org change date={}; current date={}; BPartner {} -> no membership subscriptions",
+							orgChangeDate,
+							SystemTime.asDate(),
+							bPartnerId);
+		}
+		else
+		{
+			loggable.addLog("Org change date={}; current date={}; BPartner {} -> membership subscription {}",
+							orgChangeDate,
+							SystemTime.asDate(),
+							bPartnerId,
+							membershipSubscription);
+		}
+
+		return membershipSubscription != null;
 	}
 
 	public boolean hasAnyMembershipProduct(final OrgId orgId)
@@ -359,7 +389,6 @@ public class OrgChangeRepository
 									 membershipCategoryQuery)
 				.create()
 				.anyMatch();
-
 	}
 
 	public I_M_Product getNewOrgProductForMapping(final ProductId productId, final OrgId orgId)
@@ -427,30 +456,24 @@ public class OrgChangeRepository
 	// 	return cloneBPartner(orgChangeRequest, orgMappingId);
 	// }
 
-	private void createOrgChangeHistory(@NonNull final OrgMappingId orgMappingId,
-			final OrgId orgFromId,
-			final OrgId orgToId)
+	private void createOrgChangeHistory(
+			@NonNull final OrgChangeRequest orgChangeRequest,
+			@NonNull final OrgMappingId orgMappingId,
+			@NonNull final BPartnerComposite bPartnerToComposite)
 	{
 		final I_AD_OrgChange_History orgChangeHistory = newInstance(I_AD_OrgChange_History.class);
-		orgChangeHistory.setAD_Org_From_ID(orgFromId.getRepoId());
-		orgChangeHistory.setAD_OrgTo_ID(orgToId.getRepoId());
+
+		orgChangeHistory.setAD_Org_From_ID(orgChangeRequest.getOrgFromId().getRepoId());
+		orgChangeHistory.setAD_OrgTo_ID(orgChangeRequest.getOrgToId().getRepoId());
 		orgChangeHistory.setAD_Org_Mapping_ID(orgMappingId.getRepoId());
+		orgChangeHistory.setC_BPartner_From_ID(orgChangeRequest.getBpartnerId().getRepoId());
+		orgChangeHistory.setC_BPartner_To_ID(bPartnerToComposite.getBpartner().getId().getRepoId());
+		orgChangeHistory.setDate_OrgChange(TimeUtil.asTimestamp(orgChangeRequest.getStartDate()));
 
 		save(orgChangeHistory);
 	}
 
-	private OrgMappingId createOrgMappingForBPartner(@NonNull final I_C_BPartner bPartnerRecord)
-	{
-		final I_AD_Org_Mapping orgMapping = newInstance(I_AD_Org_Mapping.class);
 
-		orgMapping.setAD_Org_ID(0);
-		orgMapping.setAD_Table_ID(getTableId(I_C_BPartner.class));
-		orgMapping.setValue(bPartnerRecord.getValue());
-
-		save(orgMapping);
-
-		return OrgMappingId.ofRepoId(orgMapping.getAD_Org_Mapping_ID());
-	}
 
 	private BPartnerId getOrCreateCounterpartBPartner(@NonNull final OrgChangeRequest orgChangeRequest, @NonNull final OrgMappingId orgMappingId)
 	{

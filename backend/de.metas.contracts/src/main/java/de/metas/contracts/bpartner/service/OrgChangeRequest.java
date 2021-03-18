@@ -38,6 +38,8 @@ public class OrgChangeRequest
 {
 	@NonNull BPartnerId bpartnerId;
 
+	@NonNull OrgId orgFromId;
+
 	@NonNull OrgId orgToId;
 
 	@NonNull LocalDate startDate;
