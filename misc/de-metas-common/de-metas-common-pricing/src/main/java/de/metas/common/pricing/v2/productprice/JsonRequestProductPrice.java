@@ -26,6 +26,7 @@ import de.metas.common.rest_api.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
 import java.math.BigDecimal;
@@ -57,7 +58,7 @@ public class JsonRequestProductPrice
 	@ApiModelProperty(hidden = true)
 	private boolean priceListSet;
 
-	private String seqNo;
+	private Integer seqNo;
 
 	@ApiModelProperty(hidden = true)
 	private boolean seqNoSet;
@@ -72,12 +73,18 @@ public class JsonRequestProductPrice
 	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
 
+	@ApiModelProperty
+	private String uomCode;
+
+	@ApiModelProperty(hidden = true)
+	private boolean uomCodeSet;
+
 	public void setOrgCode(final String orgCode)
 	{
 		this.orgCode = orgCode;
 	}
 
-	public void setProductId(final String productId)
+	public void setProductIdentifier(final String productId)
 	{
 		this.productIdentifier = productId;
 	}
@@ -99,7 +106,7 @@ public class JsonRequestProductPrice
 		this.priceStd = priceStd;
 	}
 
-	public void setSeqNo(final String seqNo)
+	public void setSeqNo(final Integer seqNo)
 	{
 		this.seqNo = seqNo;
 		this.seqNoSet = true;
@@ -120,5 +127,35 @@ public class JsonRequestProductPrice
 	{
 		this.syncAdvise = syncAdvise;
 		this.syncAdviseSet = true;
+	}
+
+	public void setUomCode(final String uomCode)
+	{
+		this.uomCode = uomCode;
+		this.uomCodeSet = true;
+	}
+
+	@NonNull
+	public String getOrgCode()
+	{
+		return orgCode;
+	}
+
+	@NonNull
+	public String getProductIdentifier()
+	{
+		return productIdentifier;
+	}
+
+	@NonNull
+	public TaxCategory getTaxCategory()
+	{
+		return taxCategory;
+	}
+
+	@NonNull
+	public BigDecimal getPriceStd()
+	{
+		return priceStd;
 	}
 }

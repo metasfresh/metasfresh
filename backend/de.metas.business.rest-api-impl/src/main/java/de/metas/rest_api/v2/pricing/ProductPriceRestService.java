@@ -42,9 +42,13 @@ import de.metas.pricing.ProductPriceId;
 import de.metas.pricing.productprice.CreateProductPriceRequest;
 import de.metas.pricing.productprice.ProductPrice;
 import de.metas.pricing.productprice.ProductPriceRepository;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -60,6 +64,8 @@ import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 public class ProductPriceRestService
 {
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final ProductPriceRepository productPriceRepository;
@@ -205,6 +211,30 @@ public class ProductPriceRestService
 			productPriceBuilder.isActive(existingRecord.getIsActive());
 		}
 
+		//uomId
+		if (jsonRequest.isUomCodeSet())
+		{
+			final UomId uomId = uomDao.getUomIdByX12DE355(X12DE355.ofCode(jsonRequest.getUomCode()));
+			productPriceBuilder.uomId(uomId);
+		}
+		else
+		{
+			// the update_remove case is ignored as the C_UOM_ID is a mandatory column
+			productPriceBuilder.isActive(existingRecord.getIsActive());
+		}
+
+
+		//uomId
+		if (jsonRequest.isSeqNoSet())
+		{
+			productPriceBuilder.seqNo(jsonRequest.getSeqNo());
+		}
+		else
+		{
+			// the update_remove case is ignored as the SeqNo is a mandatory column
+			productPriceBuilder.seqNo(existingRecord.getSeqNo());
+		}
+
 		return productPriceBuilder.build();
 	}
 
@@ -220,13 +250,19 @@ public class ProductPriceRestService
 
 		final TaxCategoryId taxCategoryId = getTaxCategoryId(jsonRequest.getTaxCategory());
 
+		final UomId uomId = jsonRequest.isUomCodeSet()
+				? uomDao.getUomIdByX12DE355(X12DE355.ofCode(jsonRequest.getUomCode()))
+				: productBL.getStockUOMId(productId);
+
 		final CreateProductPriceRequest.CreateProductPriceRequestBuilder requestBuilder = CreateProductPriceRequest.builder()
 				.orgId(orgId)
 				.taxCategoryId(taxCategoryId)
 				.productId(productId)
 				.priceListVersionId(priceListVersionId)
 				.priceStd(jsonRequest.getPriceStd())
-				.isActive(jsonRequest.getActive());
+				.uomId(uomId)
+				.isActive(jsonRequest.getActive())
+				.seqNo(jsonRequest.getSeqNo());
 
 		if (jsonRequest.isPriceLimitSet())
 		{

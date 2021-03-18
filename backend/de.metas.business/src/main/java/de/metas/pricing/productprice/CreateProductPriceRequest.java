@@ -66,4 +66,7 @@ public class CreateProductPriceRequest
 
 	@NonNull
 	UomId uomId;
+
+	@Nullable
+	Integer seqNo;
 }

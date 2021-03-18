@@ -73,4 +73,7 @@ public class ProductPrice
 
 	@NonNull
 	UomId uomId;
+
+	@NonNull
+	Integer seqNo;
 }

@@ -87,6 +87,12 @@ public class ProductPriceRepository
 		{
 			record.setIsActive(request.getIsActive());
 		}
+
+		if (request.getSeqNo() != null)
+		{
+			record.setSeqNo(request.getSeqNo());
+		}
+
 		return record;
 	}
 
@@ -105,6 +111,7 @@ public class ProductPriceRepository
 
 		record.setC_UOM_ID(request.getUomId().getRepoId());
 		record.setC_TaxCategory_ID(request.getTaxCategoryId().getRepoId());
+		record.setSeqNo(request.getSeqNo());
 
 		record.setIsActive(request.getIsActive());
 
