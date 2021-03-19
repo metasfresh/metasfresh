@@ -17,7 +17,6 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import io.swagger.annotations.ApiModel;
-import javafx.stage.Window;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -158,7 +157,7 @@ public final class JSONDocumentLayout
 			final ImmutableSet<DetailId> tabIdsToInline = elementsByTabIdToInline.keySet();
 
 			final ArrayList<JSONDocumentLayoutTab> jsonTabs = new ArrayList<>();
-			for (DocumentLayoutDetailDescriptor tab : layout.getDetails())
+			for (final DocumentLayoutDetailDescriptor tab : layout.getDetails())
 			{
 				final JSONDocumentLayoutTab jsonTab = JSONDocumentLayoutTab.ofOrNull(tab, options);
 				if (jsonTab == null)
