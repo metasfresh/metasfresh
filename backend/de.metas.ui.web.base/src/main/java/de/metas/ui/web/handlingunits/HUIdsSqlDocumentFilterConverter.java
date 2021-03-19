@@ -47,6 +47,8 @@ public final class HUIdsSqlDocumentFilterConverter implements SqlDocumentFilterC
 
 	@VisibleForTesting
 	static final String SQL_TRUE = "1=1";
+	@VisibleForTesting
+	static final String SQL_FALSE = "1=0";
 
 	HUIdsSqlDocumentFilterConverter()
 	{
