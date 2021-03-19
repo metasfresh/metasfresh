@@ -115,7 +115,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	/**
 	 * @deprecated in all cases i can imagine, if the caller has a {@code bpartnerLocationId}, they need the actual record, even if it is inactive.
-	 * Think e.g. of a completed shipment. Therefore, please consder using {@link #getBPartnerLocationByIdEvenInactive(BPartnerLocationId)} instead.
+	 * Think e.g. of a completed shipment. Therefore, please consider using {@link #getBPartnerLocationByIdEvenInactive(BPartnerLocationId)} instead.
 	 */
 	@Deprecated
 	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
