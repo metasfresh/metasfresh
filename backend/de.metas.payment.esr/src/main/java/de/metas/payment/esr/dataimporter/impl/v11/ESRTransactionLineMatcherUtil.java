@@ -9,6 +9,7 @@ import java.util.Date;
 
 import org.compiere.util.Env;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
@@ -42,13 +43,13 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public class ESRTransactionLineMatcherUtil
 {
-	public static final String ERR_WRONG_REGULAR_LINE_LENGTH = "ESR_Wrong_Regular_Line_Length";
+	public static final  AdMessageKey ERR_WRONG_REGULAR_LINE_LENGTH =  AdMessageKey.of("ESR_Wrong_Regular_Line_Length");
 
-	public static final String ERR_WRONG_NUMBER_FORMAT_AMOUNT = "ESR_Wrong_Number_Format_Amount";
+	public static final  AdMessageKey ERR_WRONG_NUMBER_FORMAT_AMOUNT =  AdMessageKey.of("ESR_Wrong_Number_Format_Amount");
 
-	public static final String ERR_WRONG_PAYMENT_DATE = "ESR_Wrong_Payment_Date";
+	public static final  AdMessageKey ERR_WRONG_PAYMENT_DATE =  AdMessageKey.of("ESR_Wrong_Payment_Date");
 
-	public static final String ERR_WRONG_ACCOUNT_DATE = "ESR_Wrong_Account_Date";
+	public static final  AdMessageKey ERR_WRONG_ACCOUNT_DATE =  AdMessageKey.of("ESR_Wrong_Account_Date");
 
 
 	/**

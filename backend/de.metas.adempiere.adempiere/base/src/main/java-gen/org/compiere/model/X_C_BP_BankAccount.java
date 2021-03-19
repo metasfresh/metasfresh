@@ -11,16 +11,16 @@ import java.util.Properties;
 public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_BankAccount, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -649509635L;
+	private static final long serialVersionUID = 1873200297L;
 
     /** Standard Constructor */
-    public X_C_BP_BankAccount (Properties ctx, int C_BP_BankAccount_ID, String trxName)
+    public X_C_BP_BankAccount (final Properties ctx, final int C_BP_BankAccount_ID, final String trxName)
     {
       super (ctx, C_BP_BankAccount_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_BP_BankAccount (Properties ctx, ResultSet rs, String trxName)
+    public X_C_BP_BankAccount (final Properties ctx, final ResultSet rs, final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -28,121 +28,13 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setA_City (java.lang.String A_City)
-	{
-		set_Value (COLUMNNAME_A_City, A_City);
-	}
-
-	@Override
-	public java.lang.String getA_City() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_A_City);
-	}
-
-	@Override
-	public void setA_Country (java.lang.String A_Country)
-	{
-		set_Value (COLUMNNAME_A_Country, A_Country);
-	}
-
-	@Override
-	public java.lang.String getA_Country() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_A_Country);
-	}
-
-	@Override
-	public void setA_EMail (java.lang.String A_EMail)
-	{
-		set_Value (COLUMNNAME_A_EMail, A_EMail);
-	}
-
-	@Override
-	public java.lang.String getA_EMail() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_A_EMail);
-	}
-
-	@Override
-	public void setA_Ident_DL (java.lang.String A_Ident_DL)
-	{
-		set_Value (COLUMNNAME_A_Ident_DL, A_Ident_DL);
-	}
-
-	@Override
-	public java.lang.String getA_Ident_DL() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_A_Ident_DL);
-	}
-
-	@Override
-	public void setA_Ident_SSN (java.lang.String A_Ident_SSN)
-	{
-		set_Value (COLUMNNAME_A_Ident_SSN, A_Ident_SSN);
-	}
-
-	@Override
-	public java.lang.String getA_Ident_SSN() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_A_Ident_SSN);
-	}
-
-	@Override
-	public void setA_Name (java.lang.String A_Name)
-	{
-		set_Value (COLUMNNAME_A_Name, A_Name);
-	}
-
-	@Override
-	public java.lang.String getA_Name() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_A_Name);
-	}
-
-	@Override
-	public void setA_State (java.lang.String A_State)
-	{
-		set_Value (COLUMNNAME_A_State, A_State);
-	}
-
-	@Override
-	public java.lang.String getA_State() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_A_State);
-	}
-
-	@Override
-	public void setA_Street (java.lang.String A_Street)
-	{
-		set_Value (COLUMNNAME_A_Street, A_Street);
-	}
-
-	@Override
-	public java.lang.String getA_Street() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_A_Street);
-	}
-
-	@Override
-	public void setA_Zip (java.lang.String A_Zip)
-	{
-		set_Value (COLUMNNAME_A_Zip, A_Zip);
-	}
-
-	@Override
-	public java.lang.String getA_Zip() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_A_Zip);
-	}
-
-	@Override
-	public void setAccountNo (java.lang.String AccountNo)
+	public void setAccountNo (final java.lang.String AccountNo)
 	{
 		set_Value (COLUMNNAME_AccountNo, AccountNo);
 	}
@@ -150,22 +42,130 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public java.lang.String getAccountNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_AccountNo);
+		return get_ValueAsString(COLUMNNAME_AccountNo);
 	}
 
 	@Override
-	public void setAD_User_ID (int AD_User_ID)
+	public void setA_City (final java.lang.String A_City)
+	{
+		set_Value (COLUMNNAME_A_City, A_City);
+	}
+
+	@Override
+	public java.lang.String getA_City() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_City);
+	}
+
+	@Override
+	public void setA_Country (final java.lang.String A_Country)
+	{
+		set_Value (COLUMNNAME_A_Country, A_Country);
+	}
+
+	@Override
+	public java.lang.String getA_Country() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_Country);
+	}
+
+	@Override
+	public void setAD_User_ID (final int AD_User_ID)
 	{
 		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
 	}
 
 	@Override
 	public int getAD_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
+	}
+
+	@Override
+	public void setA_EMail (final java.lang.String A_EMail)
+	{
+		set_Value (COLUMNNAME_A_EMail, A_EMail);
+	}
+
+	@Override
+	public java.lang.String getA_EMail() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_EMail);
+	}
+
+	@Override
+	public void setA_Ident_DL (final java.lang.String A_Ident_DL)
+	{
+		set_Value (COLUMNNAME_A_Ident_DL, A_Ident_DL);
+	}
+
+	@Override
+	public java.lang.String getA_Ident_DL() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_Ident_DL);
+	}
+
+	@Override
+	public void setA_Ident_SSN (final java.lang.String A_Ident_SSN)
+	{
+		set_Value (COLUMNNAME_A_Ident_SSN, A_Ident_SSN);
+	}
+
+	@Override
+	public java.lang.String getA_Ident_SSN() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_Ident_SSN);
+	}
+
+	@Override
+	public void setA_Name (final java.lang.String A_Name)
+	{
+		set_Value (COLUMNNAME_A_Name, A_Name);
+	}
+
+	@Override
+	public java.lang.String getA_Name() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_Name);
+	}
+
+	@Override
+	public void setA_State (final java.lang.String A_State)
+	{
+		set_Value (COLUMNNAME_A_State, A_State);
+	}
+
+	@Override
+	public java.lang.String getA_State() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_State);
+	}
+
+	@Override
+	public void setA_Street (final java.lang.String A_Street)
+	{
+		set_Value (COLUMNNAME_A_Street, A_Street);
+	}
+
+	@Override
+	public java.lang.String getA_Street() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_Street);
+	}
+
+	@Override
+	public void setA_Zip (final java.lang.String A_Zip)
+	{
+		set_Value (COLUMNNAME_A_Zip, A_Zip);
+	}
+
+	@Override
+	public java.lang.String getA_Zip() 
+	{
+		return get_ValueAsString(COLUMNNAME_A_Zip);
 	}
 
 	/** 
@@ -178,16 +178,15 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	/** Sparkonto = S */
 	public static final String BANKACCOUNTTYPE_Sparkonto = "S";
 	@Override
-	public void setBankAccountType (java.lang.String BankAccountType)
+	public void setBankAccountType (final java.lang.String BankAccountType)
 	{
-
 		set_Value (COLUMNNAME_BankAccountType, BankAccountType);
 	}
 
 	@Override
 	public java.lang.String getBankAccountType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BankAccountType);
+		return get_ValueAsString(COLUMNNAME_BankAccountType);
 	}
 
 	/** 
@@ -206,25 +205,24 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	/** Provision = P */
 	public static final String BPBANKACCTUSE_Provision = "P";
 	@Override
-	public void setBPBankAcctUse (java.lang.String BPBankAcctUse)
+	public void setBPBankAcctUse (final java.lang.String BPBankAcctUse)
 	{
-
 		set_Value (COLUMNNAME_BPBankAcctUse, BPBankAcctUse);
 	}
 
 	@Override
 	public java.lang.String getBPBankAcctUse() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BPBankAcctUse);
+		return get_ValueAsString(COLUMNNAME_BPBankAcctUse);
 	}
 
 	@Override
-	public void setC_Bank_ID (int C_Bank_ID)
+	public void setC_Bank_ID (final int C_Bank_ID)
 	{
 		if (C_Bank_ID < 1) 
 			set_Value (COLUMNNAME_C_Bank_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Bank_ID, Integer.valueOf(C_Bank_ID));
+			set_Value (COLUMNNAME_C_Bank_ID, C_Bank_ID);
 	}
 
 	@Override
@@ -234,27 +232,12 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID)
-	{
-		if (C_BP_BankAccount_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, Integer.valueOf(C_BP_BankAccount_ID));
-	}
-
-	@Override
-	public int getC_BP_BankAccount_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
-	}
-
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
 	@Override
@@ -264,12 +247,27 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setC_Currency_ID (int C_Currency_ID)
+	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
+	{
+		if (C_BP_BankAccount_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
+	}
+
+	@Override
+	public int getC_BP_BankAccount_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
 			set_Value (COLUMNNAME_C_Currency_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
 	}
 
 	@Override
@@ -279,9 +277,9 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setCreditCardExpMM (int CreditCardExpMM)
+	public void setCreditCardExpMM (final int CreditCardExpMM)
 	{
-		set_Value (COLUMNNAME_CreditCardExpMM, Integer.valueOf(CreditCardExpMM));
+		set_Value (COLUMNNAME_CreditCardExpMM, CreditCardExpMM);
 	}
 
 	@Override
@@ -291,9 +289,9 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setCreditCardExpYY (int CreditCardExpYY)
+	public void setCreditCardExpYY (final int CreditCardExpYY)
 	{
-		set_Value (COLUMNNAME_CreditCardExpYY, Integer.valueOf(CreditCardExpYY));
+		set_Value (COLUMNNAME_CreditCardExpYY, CreditCardExpYY);
 	}
 
 	@Override
@@ -303,7 +301,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setCreditCardNumber (java.lang.String CreditCardNumber)
+	public void setCreditCardNumber (final java.lang.String CreditCardNumber)
 	{
 		set_Value (COLUMNNAME_CreditCardNumber, CreditCardNumber);
 	}
@@ -311,7 +309,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public java.lang.String getCreditCardNumber() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CreditCardNumber);
+		return get_ValueAsString(COLUMNNAME_CreditCardNumber);
 	}
 
 	/** 
@@ -334,20 +332,19 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	/** Purchase Card = P */
 	public static final String CREDITCARDTYPE_PurchaseCard = "P";
 	@Override
-	public void setCreditCardType (java.lang.String CreditCardType)
+	public void setCreditCardType (final java.lang.String CreditCardType)
 	{
-
 		set_Value (COLUMNNAME_CreditCardType, CreditCardType);
 	}
 
 	@Override
 	public java.lang.String getCreditCardType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CreditCardType);
+		return get_ValueAsString(COLUMNNAME_CreditCardType);
 	}
 
 	@Override
-	public void setCreditCardVV (java.lang.String CreditCardVV)
+	public void setCreditCardVV (final java.lang.String CreditCardVV)
 	{
 		set_Value (COLUMNNAME_CreditCardVV, CreditCardVV);
 	}
@@ -355,11 +352,11 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public java.lang.String getCreditCardVV() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CreditCardVV);
+		return get_ValueAsString(COLUMNNAME_CreditCardVV);
 	}
 
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -367,11 +364,11 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override
-	public void setESR_RenderedAccountNo (java.lang.String ESR_RenderedAccountNo)
+	public void setESR_RenderedAccountNo (final java.lang.String ESR_RenderedAccountNo)
 	{
 		set_Value (COLUMNNAME_ESR_RenderedAccountNo, ESR_RenderedAccountNo);
 	}
@@ -379,11 +376,11 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public java.lang.String getESR_RenderedAccountNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ESR_RenderedAccountNo);
+		return get_ValueAsString(COLUMNNAME_ESR_RenderedAccountNo);
 	}
 
 	@Override
-	public void setESR_RenderedReceiver (java.lang.String ESR_RenderedReceiver)
+	public void setESR_RenderedReceiver (final java.lang.String ESR_RenderedReceiver)
 	{
 		set_Value (COLUMNNAME_ESR_RenderedReceiver, ESR_RenderedReceiver);
 	}
@@ -391,11 +388,11 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public java.lang.String getESR_RenderedReceiver() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ESR_RenderedReceiver);
+		return get_ValueAsString(COLUMNNAME_ESR_RenderedReceiver);
 	}
 
 	@Override
-	public void setIBAN (java.lang.String IBAN)
+	public void setIBAN (final java.lang.String IBAN)
 	{
 		set_Value (COLUMNNAME_IBAN, IBAN);
 	}
@@ -403,13 +400,13 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public java.lang.String getIBAN() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_IBAN);
+		return get_ValueAsString(COLUMNNAME_IBAN);
 	}
 
 	@Override
-	public void setIsACH (boolean IsACH)
+	public void setIsACH (final boolean IsACH)
 	{
-		set_Value (COLUMNNAME_IsACH, Boolean.valueOf(IsACH));
+		set_Value (COLUMNNAME_IsACH, IsACH);
 	}
 
 	@Override
@@ -419,9 +416,9 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setIsDefault (boolean IsDefault)
+	public void setIsDefault (final boolean IsDefault)
 	{
-		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
+		set_Value (COLUMNNAME_IsDefault, IsDefault);
 	}
 
 	@Override
@@ -431,9 +428,9 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setIsDefaultESR (boolean IsDefaultESR)
+	public void setIsDefaultESR (final boolean IsDefaultESR)
 	{
-		set_Value (COLUMNNAME_IsDefaultESR, Boolean.valueOf(IsDefaultESR));
+		set_Value (COLUMNNAME_IsDefaultESR, IsDefaultESR);
 	}
 
 	@Override
@@ -443,9 +440,9 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setIsEsrAccount (boolean IsEsrAccount)
+	public void setIsEsrAccount (final boolean IsEsrAccount)
 	{
-		set_Value (COLUMNNAME_IsEsrAccount, Boolean.valueOf(IsEsrAccount));
+		set_Value (COLUMNNAME_IsEsrAccount, IsEsrAccount);
 	}
 
 	@Override
@@ -455,7 +452,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -463,7 +460,19 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setQR_IBAN (final java.lang.String QR_IBAN)
+	{
+		set_Value (COLUMNNAME_QR_IBAN, QR_IBAN);
+	}
+
+	@Override
+	public java.lang.String getQR_IBAN() 
+	{
+		return get_ValueAsString(COLUMNNAME_QR_IBAN);
 	}
 
 	/** 
@@ -478,16 +487,15 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	/** Unavailable = X */
 	public static final String R_AVSADDR_Unavailable = "X";
 	@Override
-	public void setR_AvsAddr (java.lang.String R_AvsAddr)
+	public void setR_AvsAddr (final java.lang.String R_AvsAddr)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_R_AvsAddr, R_AvsAddr);
 	}
 
 	@Override
 	public java.lang.String getR_AvsAddr() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_R_AvsAddr);
+		return get_ValueAsString(COLUMNNAME_R_AvsAddr);
 	}
 
 	/** 
@@ -502,20 +510,19 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	/** Unavailable = X */
 	public static final String R_AVSZIP_Unavailable = "X";
 	@Override
-	public void setR_AvsZip (java.lang.String R_AvsZip)
+	public void setR_AvsZip (final java.lang.String R_AvsZip)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_R_AvsZip, R_AvsZip);
 	}
 
 	@Override
 	public java.lang.String getR_AvsZip() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_R_AvsZip);
+		return get_ValueAsString(COLUMNNAME_R_AvsZip);
 	}
 
 	@Override
-	public void setRoutingNo (java.lang.String RoutingNo)
+	public void setRoutingNo (final java.lang.String RoutingNo)
 	{
 		set_Value (COLUMNNAME_RoutingNo, RoutingNo);
 	}
@@ -523,11 +530,11 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public java.lang.String getRoutingNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_RoutingNo);
+		return get_ValueAsString(COLUMNNAME_RoutingNo);
 	}
 
 	@Override
-	public void setSEPA_CreditorIdentifier (java.lang.String SEPA_CreditorIdentifier)
+	public void setSEPA_CreditorIdentifier (final java.lang.String SEPA_CreditorIdentifier)
 	{
 		set_Value (COLUMNNAME_SEPA_CreditorIdentifier, SEPA_CreditorIdentifier);
 	}
@@ -535,6 +542,6 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	@Override
 	public java.lang.String getSEPA_CreditorIdentifier() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_SEPA_CreditorIdentifier);
+		return get_ValueAsString(COLUMNNAME_SEPA_CreditorIdentifier);
 	}
 }
