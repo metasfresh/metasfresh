@@ -7,5 +7,11 @@ public interface EbayConstants {
 	String ROUTE_PROPERTY_CURRENT_ORDER = "currentOrder";
 	String ROUTE_PROPERTY_ORDER_DELIVERIES = "orderDeliveries";
 	String ROUTE_PROPERTY_ORG_CODE = "orgCode";
+	
+	
+	//Additional Params
+	String PARAM_API_AUTH_CODE = "authCode";
+	String PARAM_API_MODE = "apiMode";
+	
 
 }
