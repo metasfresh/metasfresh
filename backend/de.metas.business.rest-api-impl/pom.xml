@@ -129,6 +129,24 @@
             <version>${metasfresh.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.vertical.healthcare.alberta</groupId>
+            <artifactId>de.metas.vertical.healthcare.alberta</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.product</groupId>
+            <artifactId>de-metas-common-product</artifactId>
+            <version>${metasfresh-common.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.pricing</groupId>
+            <artifactId>de-metas-common-pricing</artifactId>
+            <version>${metasfresh-common.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 </project>
