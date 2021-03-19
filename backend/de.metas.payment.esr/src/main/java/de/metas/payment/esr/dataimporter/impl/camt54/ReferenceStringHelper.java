@@ -11,6 +11,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.payment.camt054_001_02.EntryTransaction2;
 import de.metas.payment.camt054_001_06.EntryTransaction8;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.util.Services;
 
 import lombok.NonNull;
@@ -55,15 +56,6 @@ public class ReferenceStringHelper
 	@VisibleForTesting
 	static final AdMessageKey MSG_MISSING_ESR_REFERENCE = AdMessageKey.of("ESR_CAMT54_Missing_ESR_Reference");
 
-	/**
-	 * This constant is used as value in {@code /BkToCstmrDbtCdtNtfctn/Ntfctn/Ntry/NtryDtls/TxDtls/RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Prtry} to indicate that the references given in {@code CdtrRefInf} is an ESR number.
-	 */
-	private static final String ISR_REFERENCE = "ISR Reference";
-	
-	/**
-	 * This constant is used as value in {@code /BkToCstmrDbtCdtNtfctn/Ntfctn/Ntry/NtryDtls/TxDtls/RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Prtry} to indicate that the references given in {@code CdtrRefInf} is an QRR code.
-	 */
-	private static final String QRR_REFERENCE = "QRR";
 
 	/**
 	 * extractAndSetEsrReference for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
@@ -140,7 +132,7 @@ public class ReferenceStringHelper
 		else
 		{
 			// fallback to esr type
-			trxBuilder.type(ISR_REFERENCE);
+			trxBuilder.type(ESRType.TYPE_ESR.getCode());
 		}
 	}
 
@@ -156,7 +148,7 @@ public class ReferenceStringHelper
 		else
 		{
 			// fallback to esr type
-			trxBuilder.type(ISR_REFERENCE);
+			trxBuilder.type(ESRType.TYPE_ESR.getCode());
 		}
 	}
 	
@@ -182,8 +174,8 @@ public class ReferenceStringHelper
 				.filter(cdtrRefInf -> cdtrRefInf != null 
 				        && cdtrRefInf.getTp() != null
 						&& cdtrRefInf.getTp().getCdOrPrtry() != null
-						&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE)
-								|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(QRR_REFERENCE)))
+						&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR)
+								|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR)))
 
 				.map(cdtrRefInf -> cdtrRefInf.getRef())
 				.findFirst();
@@ -212,8 +204,8 @@ public class ReferenceStringHelper
 				.filter(cdtrRefInf -> cdtrRefInf != null
 						&& cdtrRefInf.getTp() != null
 						&& cdtrRefInf.getTp().getCdOrPrtry() != null
-						&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE)
-								|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(QRR_REFERENCE)))
+						&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR)
+								|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR)))
 
 				.map(cdtrRefInf -> cdtrRefInf.getRef())
 				.findFirst();
@@ -248,8 +240,8 @@ public class ReferenceStringHelper
 				.filter(cdtrRefInf -> cdtrRefInf != null
 						&& cdtrRefInf.getTp() != null
 						&& cdtrRefInf.getTp().getCdOrPrtry() != null
-						&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE)
-								|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(QRR_REFERENCE)))
+						&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
+								|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode())))
 
 				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
 				.findFirst();
@@ -263,8 +255,8 @@ public class ReferenceStringHelper
 				.filter(cdtrRefInf -> cdtrRefInf != null
 						&& cdtrRefInf.getTp() != null
 						&& cdtrRefInf.getTp().getCdOrPrtry() != null
-						&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE)
-								|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(QRR_REFERENCE)))
+						&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
+								|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode())))
 
 				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
 				.findFirst();
