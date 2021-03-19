@@ -973,7 +973,7 @@ table {
 .rotate-enter-active {
   opacity: 1;
   transform: translateX(0);
-  transition: opacity 300ms, transform 300ms;
+  transition: opacity 1000ms, transform 1000ms;
 }
 .rotate-exit {
   opacity: 1;
@@ -981,5 +981,26 @@ table {
 .rotate-exit-active {
   opacity: 0;
   transform: scale(0.9);
-  transition: opacity 300ms, transform 300ms;
+  transition: opacity 1000ms, transform 1000ms;
 }
+
+/** FADE */
+.fade-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+.fade-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 200ms, transform 200ms;
+}
+.fade-exit {
+  opacity: 1;
+}
+.fade-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 200ms, transform 200ms;
+}
+
+
