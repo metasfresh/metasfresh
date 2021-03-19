@@ -98,7 +98,7 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 				.orgToId(p_orgTargetId)
 				.build();
 
-		orgChangeRepo.moveToNewOrg(orgChangeRequest);
+		service.moveToNewOrg(orgChangeRequest);
 
 		return MSG_OK;
 	}

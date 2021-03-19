@@ -22,36 +22,378 @@
 
 package de.metas.contracts.bpartner.service;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.OrgMappingId;
+import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.BPartnerContactType;
+import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.contracts.bpartner.repository.OrgChangeRepository;
+import de.metas.contracts.bpartner.repository.OrgMappingRepository;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class OrgChangeService
 {
+
+	private static final Logger logger = LogManager.getLogger(OrgChangeService.class);
+	final ILoggable loggable = Loggables.withLogger(logger, Level.INFO);
+
 	final OrgChangeRepository orgChangeRepo;
 	final BPartnerCompositeRepository bpCompositeRepo;
+	final OrgMappingRepository orgMappingRepo;
 
-	public OrgChangeService(final @NonNull OrgChangeRepository orgChangeRepo,
-			final @NonNull BPartnerCompositeRepository bpCompositeRepo)
+	public OrgChangeService(@NonNull final OrgChangeRepository orgChangeRepo,
+			@NonNull final BPartnerCompositeRepository bpCompositeRepo,
+			@NonNull final OrgMappingRepository orgMappingRepo)
 	{
 		this.orgChangeRepo = orgChangeRepo;
 		this.bpCompositeRepo = bpCompositeRepo;
+		this.orgMappingRepo = orgMappingRepo;
 	}
 
-	public void moveBPartnerToOrg(final @NonNull OrgChangeRequest orgChangeRequest)
+	public void moveToNewOrg(@NonNull final OrgChangeRequest orgChangeRequest)
 	{
-		final OrgChangeBPartnerComposite initialBPartnerComposite = orgChangeRepo.getByIdAndOrgChangeDate(orgChangeRequest.getBpartnerId(),
-																										  orgChangeRequest.getStartDate());
+		final OrgChangeBPartnerComposite orgChangeBPartnerComposite = orgChangeRepo.getByIdAndOrgChangeDate(orgChangeRequest.getBpartnerId(), orgChangeRequest.getStartDate());
 
+		final OrgMappingId orgMappingId = orgChangeBPartnerComposite.getBPartnerOrgMappingId();
 
+		final BPartnerId newBPartnerId = orgChangeRepo.getOrCreateCounterpartBPartner(orgChangeRequest, orgMappingId);
 
+		// gets the partner with all the active and inactive locations, users and bank accounts
+		BPartnerComposite destinationBPartnerComposite = bpCompositeRepo.getById(newBPartnerId);
+
+		final List<BPartnerLocation> newLocations = getOrCreateLocations(orgChangeBPartnerComposite, destinationBPartnerComposite);
+
+		final List<BPartnerContact> newContacts = getOrCreateContacts(orgChangeBPartnerComposite, destinationBPartnerComposite);
+		final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(orgChangeBPartnerComposite, destinationBPartnerComposite);
+
+		destinationBPartnerComposite = destinationBPartnerComposite.toBuilder()
+				.locations(newLocations)
+				.contacts(newContacts)
+				.bankAccounts(newBPBankAccounts)
+				.build();
+
+		bpCompositeRepo.save(destinationBPartnerComposite);
+
+		orgChangeRepo.saveOrgChangeBPartnerComposite(orgChangeBPartnerComposite);
+		orgChangeRepo.createOrgChangeHistory(orgChangeRequest, orgMappingId, destinationBPartnerComposite);
+	}
+
+	private List<BPartnerLocation> getOrCreateLocations(
+			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+			@NonNull final BPartnerComposite destinationBPartnerComposite)
+	{
+		final List<BPartnerLocation> locationsInSourcePartner = orgChangeBPartnerComposite
+				.getBPartnerComposite()
+				.getLocations();
+
+		final DefaultLocations sourceDefaultLocations = getDefaultLocations(locationsInSourcePartner);
+		unmarkDefaultLocationsFromDestination(sourceDefaultLocations, destinationBPartnerComposite);
+
+		final List<BPartnerLocation> existingLocationsInDestinationPartner = destinationBPartnerComposite.getLocations();
+		final List<BPartnerLocation> destinationLocations = new ArrayList<>();
+
+		for (final BPartnerLocation sourceLocation : locationsInSourcePartner)
+		{
+			final OrgMappingId locationOrgMappingId = orgMappingRepo.getCreateOrgMappingId(sourceLocation);
+			sourceLocation.setOrgMappingId(locationOrgMappingId);
+
+			final BPartnerLocation matchingLocation = existingLocationsInDestinationPartner.stream()
+					.filter(location -> OrgMappingId.equals(locationOrgMappingId, location.getOrgMappingId()))
+					.findFirst()
+					.orElse(null);
+
+			if (matchingLocation != null)
+			{
+				final BPartnerLocationType newLocationType = updateMatchingLocationType(
+						sourceDefaultLocations,
+						sourceLocation,
+						matchingLocation);
+
+				matchingLocation.setLocationType(newLocationType);
+				matchingLocation.setActive(true);
+
+				loggable.addLog("Location {} from the existing partner {} was preserved.",
+								matchingLocation,
+								destinationBPartnerComposite.getBpartner());
+			}
+			else
+			{
+				final BPartnerLocation newLocation = orgChangeRepo.createNewLocation(sourceLocation);
+				destinationLocations.add(newLocation);
+
+				loggable.addLog("Location {} was created for the destination partner {}.",
+								newLocation,
+								destinationBPartnerComposite.getBpartner());
+			}
+		}
+
+		return destinationLocations;
+	}
+
+	public List<BPartnerContact> getOrCreateContacts(
+			final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+			final BPartnerComposite destinationBPartnerComposite)
+	{
+		final List<BPartnerContact> contactsInSourcePartner = orgChangeBPartnerComposite
+				.getBPartnerComposite()
+				.getContacts();
+
+		final DefaultContacts sourceDefaultContacts = getDefaultContacts(contactsInSourcePartner);
+		unmarkDefaultContactsFromDestination(sourceDefaultContacts, destinationBPartnerComposite);
+
+		final List<BPartnerContact> existingContactsInDestinationPartner = destinationBPartnerComposite.getContacts();
+
+		final List<BPartnerContact> newContacts = new ArrayList<>();
+		for (final BPartnerContact sourceContact : contactsInSourcePartner)
+		{
+			final OrgMappingId contactOrgMappingId = orgMappingRepo.getCreateOrgMappingId(sourceContact);
+			sourceContact.setOrgMappingId(contactOrgMappingId);
+
+			final BPartnerContact matchingContact = existingContactsInDestinationPartner.stream()
+					.filter(contact -> contactOrgMappingId.equals(contact.getOrgMappingId()))
+					.findFirst()
+					.orElse(null);
+
+			if (matchingContact != null)
+			{
+				final BPartnerContactType newContactType = updateMatchingContactType(
+						sourceDefaultContacts,
+						sourceContact,
+						matchingContact);
+
+				matchingContact.setContactType(newContactType);
+				matchingContact.setActive(true);
+
+				loggable.addLog("Contact {} from the existing partner {} was preserved.",
+								matchingContact,
+								destinationBPartnerComposite.getBpartner());
+			}
+			else
+			{
+				final BPartnerContact newContact = orgChangeRepo.createNewContact(sourceContact);
+				newContacts.add(newContact);
+
+				loggable.addLog("Contact {} was created for the destination partner {}.",
+								newContact,
+								destinationBPartnerComposite.getBpartner());
+			}
+		}
+
+		return newContacts;
+	}
+
+	private BPartnerContactType updateMatchingContactType(
+			@NonNull final DefaultContacts sourceDefaultContacts,
+			@NonNull final BPartnerContact sourceContact,
+			@NonNull final BPartnerContact matchingContact)
+	{
+		final BPartnerContactType existingContactType = sourceContact.getContactType();
+
+		final BPartnerContactType newContactType = existingContactType.deepCopy();
+
+		if (!sourceDefaultContacts.isFoundDefaultContact())
+		{
+			newContactType.setDefaultContact(matchingContact.getContactType().getIsDefaultContactOr(false));
+		}
+		if (!sourceDefaultContacts.isFoundBillToDefaultContact())
+		{
+			newContactType.setBillToDefault(matchingContact.getContactType().getIsBillToDefaultOr(false));
+		}
+		if (!sourceDefaultContacts.isFoundShipToDefaultContact())
+		{
+			newContactType.setShipToDefault(matchingContact.getContactType().getIsShipToDefaultOr(false));
+		}
+		if (!sourceDefaultContacts.isFoundSalesDefaultContact())
+		{
+			newContactType.setSalesDefault(matchingContact.getContactType().getIsSalesDefaultOr(false));
+		}
+		if (!sourceDefaultContacts.isFoundPurchaseDefaultContact())
+		{
+			newContactType.setPurchaseDefault(matchingContact.getContactType().getIsPurchaseDefaultOr(false));
+		}
+		return newContactType;
+	}
+
+	private BPartnerLocationType updateMatchingLocationType(
+			@NonNull final DefaultLocations sourceDefaultLocations,
+			@NonNull final BPartnerLocation sourceLocation,
+			@NonNull final BPartnerLocation matchingLocation)
+	{
+		final BPartnerLocationType existingLocationType = sourceLocation.getLocationType();
+
+		final BPartnerLocationType newLocationType = existingLocationType.deepCopy();
+
+		if (!sourceDefaultLocations.isFoundBillToDefaultLocation())
+		{
+			newLocationType.setBillToDefault(matchingLocation.getLocationType().getIsBillToDefaultOr(false));
+		}
+		if (!sourceDefaultLocations.isFoundShipToDefaultLocation())
+		{
+			newLocationType.setShipToDefault(matchingLocation.getLocationType().getIsShipToDefaultOr(false));
+		}
+
+		return newLocationType;
+	}
+
+	private void unmarkDefaultContactsFromDestination(@NonNull final DefaultContacts sourceDefaultContacts,
+			@NonNull final BPartnerComposite destinationBPartnerComposite)
+	{
+		final List<BPartnerContact> destinationContacts = destinationBPartnerComposite.getContacts();
+
+		if (sourceDefaultContacts.isFoundDefaultContact())
+		{
+			orgChangeRepo.unmarkDefaultContacts(destinationContacts);
+			loggable.addLog("The default contact will be the counterpart of the initial contact {}."
+									+ " Mark all the remaining contacts in the destination partner {} as non-default",
+							sourceDefaultContacts.getDefaultContact(), destinationBPartnerComposite.getBpartner());
+		}
+
+		if (sourceDefaultContacts.isFoundBillToDefaultContact())
+		{
+			orgChangeRepo.unmarkBillToDefaultContacts(destinationContacts);
+			loggable.addLog("The billToDefault contact will be the counterpart of the initial contact {}."
+									+ " Mark all the remaining contacts in the destination partner {} as non-billToDefault",
+							sourceDefaultContacts.getBillToDefaultContact(), destinationBPartnerComposite.getBpartner());
+		}
+
+		if (sourceDefaultContacts.isFoundShipToDefaultContact())
+		{
+			orgChangeRepo.unmarkShipToDefaultContacts(destinationContacts);
+			loggable.addLog("The shipToDefault contact will be the counterpart of the initial contact {}."
+									+ " Mark all the remaining contacts in the destination partner {} as non-shipToDefault",
+							sourceDefaultContacts.getShipToDefaultContact(), destinationBPartnerComposite.getBpartner());
+		}
+
+		if (sourceDefaultContacts.isFoundSalesDefaultContact())
+		{
+			orgChangeRepo.unmarkSalesDefaultContacts(destinationContacts);
+			loggable.addLog("The salesDefault contact will be the counterpart of the initial contact {}."
+									+ " Mark all the remaining contacts in the destination partner {} as non-salesDefault",
+							sourceDefaultContacts.getSalesDefaultContact(), destinationBPartnerComposite.getBpartner());
+		}
+
+		if (sourceDefaultContacts.isFoundPurchaseDefaultContact())
+		{
+			orgChangeRepo.unmarkPurchaseDefaultContacts(destinationContacts);
+			loggable.addLog("The purchaseDefault contact will be the counterpart of the initial contact {}."
+									+ " Mark all the remaining contacts in the destination partner {} as non-purchaseDefault",
+							sourceDefaultContacts.getPurchaseDefaultContact(), destinationBPartnerComposite.getBpartner());
+		}
+	}
+
+	private DefaultContacts getDefaultContacts(final List<BPartnerContact> contactsInSourcePartner)
+	{
+		final BPartnerContact defaultContact = orgChangeRepo.getDefaultContactOrNull(contactsInSourcePartner);
+		final BPartnerContact billToDefaultContact = orgChangeRepo.getBillToDefaultContactOrNull(contactsInSourcePartner);
+		final BPartnerContact shipToDefaultContact = orgChangeRepo.getShipToDefaultContactOrNull(contactsInSourcePartner);
+		final BPartnerContact salesDefaultContact = orgChangeRepo.getSalesDefaultContactOrNull(contactsInSourcePartner);
+		final BPartnerContact purchaseDefaultContact = orgChangeRepo.getPurchaseDefaultContactOrNull(contactsInSourcePartner);
+
+		return DefaultContacts.builder()
+				.defaultContact(defaultContact)
+				.foundDefaultContact(defaultContact != null)
+
+				.shipToDefaultContact(shipToDefaultContact)
+				.foundShipToDefaultContact(shipToDefaultContact != null)
+
+				.billToDefaultContact(billToDefaultContact)
+				.foundBillToDefaultContact(billToDefaultContact != null)
+
+				.salesDefaultContact(salesDefaultContact)
+				.foundSalesDefaultContact(salesDefaultContact != null)
+
+				.purchaseDefaultContact(purchaseDefaultContact)
+				.foundPurchaseDefaultContact(purchaseDefaultContact != null)
+				.build();
+	}
+
+	private DefaultLocations getDefaultLocations(final List<BPartnerLocation> locationsInSourcePartner)
+	{
+		final BPartnerLocation billToDefaultLocation = orgChangeRepo.getBillToDefaultLocationOrNull(locationsInSourcePartner);
+		final BPartnerLocation shipTpDefaultLocation = orgChangeRepo.getShipToDefaultLocationOrNull(locationsInSourcePartner);
+
+		return DefaultLocations.builder()
+				.billToDefaultLocation(billToDefaultLocation)
+				.foundBillToDefaultLocation(billToDefaultLocation != null)
+
+				.shipToDefaultLocation(shipTpDefaultLocation)
+				.foundShipToDefaultLocation(shipTpDefaultLocation != null)
+				.build();
+	}
+
+	private void unmarkDefaultLocationsFromDestination(@NonNull final DefaultLocations sourceDefaultLocations,
+			@NonNull final BPartnerComposite destinationBPartnerComposite)
+	{
+		final List<BPartnerLocation> destinationLocations = destinationBPartnerComposite.getLocations();
+
+		if (sourceDefaultLocations.isFoundBillToDefaultLocation())
+		{
+			orgChangeRepo.unmarkBillToDefaultLocations(destinationLocations);
+			loggable.addLog("The billToDefault location will be the counterpart of the initial location {}."
+									+ " Mark all the remaining locations in the destination partner {} as non-billToDefault",
+							sourceDefaultLocations.getBillToDefaultLocation(), destinationBPartnerComposite.getBpartner());
+		}
+
+		if (sourceDefaultLocations.isFoundShipToDefaultLocation())
+		{
+			orgChangeRepo.unmarkShipToDefaultLocations(destinationLocations);
+			loggable.addLog("The shipToDefault location will be the counterpart of the initial location {}."
+									+ " Mark all the remaining locations in the destination partner {} as non-shipToDefault",
+							sourceDefaultLocations.getShipToDefaultLocation(), destinationBPartnerComposite.getBpartner());
+		}
+	}
+
+	public List<BPartnerBankAccount> getOrCreateBPBankAccounts(
+			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+			@NonNull final BPartnerComposite destinationBPartnerComposite)
+	{
+		final List<BPartnerBankAccount> sourceBankAccounts = orgChangeBPartnerComposite
+				.getBPartnerComposite()
+				.getBankAccounts();
+
+		final List<BPartnerBankAccount> existingBankAccountsInDestinationPartner =
+				destinationBPartnerComposite
+						.getBankAccounts();
+
+		final List<BPartnerBankAccount> newBankAccounts = new ArrayList<>();
+
+		for (final BPartnerBankAccount sourceBankAccount : sourceBankAccounts)
+		{
+			final OrgMappingId bankAccountOrgMappingId = orgMappingRepo.getCreateOrgMappingId(sourceBankAccount);
+
+			sourceBankAccount.setOrgMappingId(bankAccountOrgMappingId);
+			final BPartnerBankAccount matchingBankAccount = existingBankAccountsInDestinationPartner.stream()
+					.filter(bankAccount -> bankAccount.getOrgMappingId() == bankAccountOrgMappingId)
+					.findFirst()
+					.orElse(null);
+
+			if (matchingBankAccount != null)
+			{
+				matchingBankAccount.setActive(true);
+			}
+			else
+			{
+				final BPartnerBankAccount newBankAccount = orgChangeRepo.createNewBankAccount(sourceBankAccount);
+				newBankAccounts.add(newBankAccount);
+			}
+		}
+		return newBankAccounts;
 	}
 
 	public boolean hasMembershipSubscriptions(final @NonNull BPartnerId partnerId, final @NonNull LocalDate maxSubscriptionDate)
