@@ -79,3 +79,6 @@ UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Die Datei kann nicht verarb
 UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-03-18 16:21:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545027
 ;
 
+
+UPDATE ad_ref_list SET value = 'ISR Reference', valuename='ESR' WHERE ad_ref_list_id = 542349;
+

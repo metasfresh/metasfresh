@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_ImportLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1907825013L;
+	private static final long serialVersionUID = 243864233L;
 
     /** Standard Constructor */
     public X_ESR_ImportLine (final Properties ctx, final int ESR_ImportLine_ID, final String trxName)
@@ -569,8 +569,8 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	public static final int TYPE_AD_Reference_ID=541287;
 	/** QRR = QRR */
 	public static final String TYPE_QRR = "QRR";
-	/** ISR Reference = ESR */
-	public static final String TYPE_ISRReference = "ESR";
+	/** ISR Reference = ISR Reference */
+	public static final String TYPE_ESR = "ISR Reference";
 	@Override
 	public void setType (final java.lang.String Type)
 	{

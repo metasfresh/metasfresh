@@ -164,7 +164,7 @@ public class ESRDataImporterV11 implements IESRDataImporter
 				final Date accountingDate = ESRTransactionLineMatcherUtil.extractAccountingDate(currentTextLine);
 				esrTransactionBuilder.accountingDate(accountingDate);
 				
-				esrTransactionBuilder.type(X_ESR_ImportLine.TYPE_ISRReference);
+				esrTransactionBuilder.type(X_ESR_ImportLine.TYPE_ESR);
 			}
 			else
 			{

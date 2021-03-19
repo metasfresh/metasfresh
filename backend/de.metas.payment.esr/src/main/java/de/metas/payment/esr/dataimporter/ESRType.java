@@ -36,7 +36,7 @@ import lombok.NonNull;
 public enum ESRType implements ReferenceListAwareEnum
 {
 	TYPE_QRR(X_ESR_ImportLine.TYPE_QRR),
-	TYPE_ISRReference(X_ESR_ImportLine.TYPE_ISRReference);
+	TYPE_ISRReference(X_ESR_ImportLine.TYPE_ESR);
 
 	@Getter
 	private final String code;
