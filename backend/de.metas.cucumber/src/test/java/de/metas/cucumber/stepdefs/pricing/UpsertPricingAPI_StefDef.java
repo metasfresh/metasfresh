@@ -164,7 +164,7 @@ public class UpsertPricingAPI_StefDef
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(row, "Identifier");
 		final String orgCode = DataTableUtil.extractStringOrNullForColumnName(row, "OrgCode");
-		final String priceListIdentifier = DataTableUtil.extractStringForColumnName(row, "M_PriceList.Identifier");
+		final String priceListIdentifier = DataTableUtil.extractStringForColumnName(row, "M_PriceList_ID");
 		final String description = DataTableUtil.extractStringForColumnName(row, "Description");
 		final Instant validFrom = DataTableUtil.extractInstantForColumnName(row, "ValidFrom");
 		final String isActiveValue = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.IsActive");
@@ -189,7 +189,7 @@ public class UpsertPricingAPI_StefDef
 	{
 		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "Identifier");
 		final String orgCode = DataTableUtil.extractStringOrNullForColumnName(row, "OrgCode");
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID.Identifier");
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID");
 
 		final String priceStd = DataTableUtil.extractStringForColumnName(row, "PriceStd");
 		final String priceLimit = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.PriceLimit");

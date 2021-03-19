@@ -72,7 +72,7 @@ public class M_PriceList_StepDef
 
 	private void createM_PricingSystem(@NonNull final Map<String, String> row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, "Identifier");
+		final String identifier = DataTableUtil.extractStringForColumnName(row, "M_PricingSystem_ID");
 		final String name = DataTableUtil.extractStringForColumnName(row, "Name");
 		final String value = DataTableUtil.extractStringForColumnName(row, "Value");
 		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.Description");
@@ -98,8 +98,8 @@ public class M_PriceList_StepDef
 
 	private void createM_PriceList(@NonNull final Map<String, String> row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, "Identifier");
-		final String pricingSystemIdentifier = DataTableUtil.extractStringForColumnName(row, "M_PricingSystem_ID.Identifier");
+		final String identifier = DataTableUtil.extractStringForColumnName(row, "M_PriceList_ID");
+		final String pricingSystemIdentifier = DataTableUtil.extractStringForColumnName(row, "M_PricingSystem_ID");
 		final String countryCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.C_Country.CountryCode");
 		final String isoCode = DataTableUtil.extractStringForColumnName(row, "C_Currency.ISO_Code");
 		final String name = DataTableUtil.extractStringForColumnName(row, "Name");

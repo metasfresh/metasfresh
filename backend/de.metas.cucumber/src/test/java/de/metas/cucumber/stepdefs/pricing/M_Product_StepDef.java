@@ -37,7 +37,7 @@ public class M_Product_StepDef
 	public final ProductCategoryId standardCategoryId = StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
 	public final UomId PCEUOMId = StepDefConstants.PCE_UOM_ID;
 
-	@And("metasfresh contains M_Product with identifier {string}")
+	@And("metasfresh contains M_Product with M_Product_ID {string}")
 	public void add_M_Product(@NonNull final String productIdentifier)
 	{
 		final I_M_Product mockedProduct = newInstance(I_M_Product.class);
