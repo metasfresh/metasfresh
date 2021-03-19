@@ -298,7 +298,7 @@ class NavigationTree extends Component {
   };
 
   renderTree = () => {
-    const { rootResults, queriedResults, query } = this.state;
+    const { queriedResults, query } = this.state;
 
     return (
       <div className="sitemap">
@@ -326,7 +326,7 @@ class NavigationTree extends Component {
         </div>
 
         <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced">
-          {rootResults.caption}
+          {/* {rootResults.caption} */}
         </p>
 
         <div className="column-wrapper">
