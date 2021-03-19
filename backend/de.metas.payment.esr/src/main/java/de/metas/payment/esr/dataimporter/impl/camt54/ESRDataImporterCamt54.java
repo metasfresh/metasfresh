@@ -20,6 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 
 import ch.qos.logback.classic.Level;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.payment.camt054_001_02.BankToCustomerDebitCreditNotificationV02;
 import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
@@ -77,9 +78,11 @@ public class ESRDataImporterCamt54 implements IESRDataImporter
 	@VisibleForTesting
 	static final BigDecimal CTRL_QTY_NOT_YET_SET = BigDecimal.TEN.negate();
 
-	protected static final String MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P = "ESR_CAMT54_UnsupportedCreditDebitCode";
+	protected static final AdMessageKey MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P =  AdMessageKey.of("ESR_CAMT54_UnsupportedCreditDebitCode");
 
-	protected static final String MSG_BANK_ACCOUNT_MISMATCH_2P = "ESR_CAMT54_BankAccountMismatch";
+	protected static final AdMessageKey MSG_BANK_ACCOUNT_MISMATCH_2P =  AdMessageKey.of("ESR_CAMT54_BankAccountMismatch");
+	
+	protected static final AdMessageKey MSG_MULTIPLE_TRANSACTIONS_TYPES = AdMessageKey.of("ESR_CAMT54_MultipleTransactionsTypes");
 
 	private static final transient Logger logger = LogManager.getLogger(ESRDataImporterCamt54.class);
 
