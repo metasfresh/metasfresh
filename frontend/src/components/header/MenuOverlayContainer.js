@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { getWindowBreadcrumb } from '../../actions/MenuActions';
 import MenuOverlayItem from './MenuOverlayItem';
+import { propTypes } from 'pigeon-maps';
 
 class MenuOverlayContainer extends Component {
   constructor(props) {
@@ -34,13 +35,19 @@ class MenuOverlayContainer extends Component {
       onUpdateData,
       transparentBookmarks,
       onKeyDown,
+      indexOrder,
     } = this.props;
+
+    let menuOverlayClasses = 'menu-overlay-node-container js-menu-container ';
+    menuOverlayClasses =
+      indexOrder === 1 ? `${menuOverlayClasses} mt-0 ` : menuOverlayClasses;
+
     return (
       <div
         tabIndex={0}
         onKeyDown={onKeyDown}
         className={
-          'menu-overlay-node-container js-menu-container ' +
+          `${menuOverlayClasses}` +
           (deep
             ? 'menu-overlay-node-spaced '
             : 'menu-overlay-expanded-link-spaced js-menu-main-container')
@@ -143,6 +150,7 @@ MenuOverlayContainer.propTypes = {
   onUpdateData: PropTypes.bool,
   transparentBookmarks: PropTypes.bool,
   onKeyDown: PropTypes.func,
+  indexOrder: PropTypes.number,
 };
 
 export default connect()(MenuOverlayContainer);
