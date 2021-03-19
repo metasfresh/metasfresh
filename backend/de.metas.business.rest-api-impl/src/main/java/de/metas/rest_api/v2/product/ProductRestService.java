@@ -34,9 +34,11 @@ import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
+import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
 import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.IExternalReferenceType;
@@ -61,6 +63,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.X_M_Product;
@@ -85,6 +88,7 @@ public class ProductRestService
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ProductRepository productRepository;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
@@ -96,7 +100,34 @@ public class ProductRestService
 	}
 
 	@NonNull
-	public JsonResponseUpsertItem createOrUpdateProduct(
+	public JsonResponseUpsert upsertProducts(
+			@Nullable final String orgCode,
+			@NonNull final JsonRequestProductUpsert request)
+	{
+		return trxManager.callInNewTrx(() -> upsertProductsWithinTrx(orgCode, request));
+	}
+
+	@NonNull
+	private JsonResponseUpsert upsertProductsWithinTrx(
+			@Nullable final String orgCode,
+			@NonNull final JsonRequestProductUpsert request)
+
+	{
+		final SyncAdvise syncAdvise = request.getSyncAdvise();
+
+		final List<JsonResponseUpsertItem> responseList =
+				request.getRequestItems()
+						.stream()
+						.map(reqItem -> upsertProductItem(reqItem, syncAdvise, orgCode))
+						.collect(Collectors.toList());
+
+		return JsonResponseUpsert.builder()
+				.responseItems(responseList)
+				.build();
+	}
+
+	@NonNull
+	private JsonResponseUpsertItem upsertProductItem(
 			@NonNull final JsonRequestProductUpsertItem jsonRequestProductUpsertItem,
 			@NonNull final SyncAdvise parentSyncAdvise,
 			@Nullable final String orgCode)

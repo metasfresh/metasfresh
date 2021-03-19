@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-bpartner
+ * de.metas.business
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,24 +20,53 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2;
+package de.metas.pricing.productprice;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModel;
+import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.uom.UomId;
 import lombok.Builder;
-import lombok.Singular;
+import lombok.NonNull;
 import lombok.Value;
 
-import java.util.List;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
-@ApiModel("Can be used as endpoint response if only one sort of entities was updated")
 @Value
 @Builder
-@JsonDeserialize(builder = JsonResponseUpsert.JsonResponseUpsertBuilder.class)
-public class JsonResponseUpsert
+public class CreateProductPriceRequest
 {
-	@Singular
-	@JsonProperty("responseItems")
-	List<JsonResponseUpsertItem> responseItems;
+	@NonNull
+	OrgId orgId;
+
+	@NonNull
+	ProductId productId;
+
+	@NonNull
+	PriceListVersionId priceListVersionId;
+
+	@NonNull
+	BigDecimal priceStd;
+
+	@Nullable
+	Boolean isActive;
+
+	@NonNull
+	@Builder.Default
+	BigDecimal priceList = BigDecimal.ZERO;
+
+	@NonNull
+	@Builder.Default
+	BigDecimal priceLimit = BigDecimal.ZERO;
+
+	@NonNull
+	TaxCategoryId taxCategoryId;
+
+	@NonNull
+	UomId uomId;
+
+	@Nullable
+	Integer seqNo;
 }

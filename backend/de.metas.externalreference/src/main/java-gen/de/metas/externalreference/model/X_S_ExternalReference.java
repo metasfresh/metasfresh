@@ -154,6 +154,12 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_Product = "Product";
 	/** ProductCategory = ProductCategory */
 	public static final String TYPE_ProductCategory = "ProductCategory";
+	/** PriceList = PriceList */
+	public static final String TYPE_PriceList = "PriceList";
+	/** PriceListVersion = PriceListVersion */
+	public static final String TYPE_PriceListVersion = "PriceListVersion";
+	/** ProductPrice = ProductPrice */
+	public static final String TYPE_ProductPrice = "ProductPrice";
 	@Override
 	public void setType (final String Type)
 	{

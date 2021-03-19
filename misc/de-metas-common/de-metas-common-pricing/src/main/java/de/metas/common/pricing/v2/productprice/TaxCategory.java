@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-bpartner
+ * de-metas-common-pricing
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,24 +20,23 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2;
+package de.metas.common.pricing.v2.productprice;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModel;
-import lombok.Builder;
-import lombok.Singular;
-import lombok.Value;
+import de.pentabyte.springfox.ApiEnum;
+import lombok.Getter;
 
-import java.util.List;
-
-@ApiModel("Can be used as endpoint response if only one sort of entities was updated")
-@Value
-@Builder
-@JsonDeserialize(builder = JsonResponseUpsert.JsonResponseUpsertBuilder.class)
-public class JsonResponseUpsert
+public enum TaxCategory
 {
-	@Singular
-	@JsonProperty("responseItems")
-	List<JsonResponseUpsertItem> responseItems;
+	@ApiEnum("Specifies in which type the tax category is")
+	NORMAL("Normal"),
+	REDUCED("Reduced"),
+	TAXFREE("TaxFree");
+
+	@Getter
+	private final String value;
+
+	TaxCategory(final String value)
+	{
+		this.value = value;
+	}
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-bpartner
+ * de.metas.business
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,24 +20,34 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2;
+package de.metas.pricing.pricelist;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModel;
+import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListId;
 import lombok.Builder;
-import lombok.Singular;
+import lombok.NonNull;
 import lombok.Value;
 
-import java.util.List;
+import javax.annotation.Nullable;
+import java.time.Instant;
 
-@ApiModel("Can be used as endpoint response if only one sort of entities was updated")
 @Value
 @Builder
-@JsonDeserialize(builder = JsonResponseUpsert.JsonResponseUpsertBuilder.class)
-public class JsonResponseUpsert
+public class CreatePriceListVersionRequest
 {
-	@Singular
-	@JsonProperty("responseItems")
-	List<JsonResponseUpsertItem> responseItems;
+	@NonNull
+	OrgId orgId;
+
+	@NonNull
+	PriceListId priceListId;
+
+	@NonNull
+	Instant validFrom;
+
+	@Nullable
+	Boolean isActive;
+
+	@Nullable
+	String description;
+
 }
