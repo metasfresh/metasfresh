@@ -1,16 +1,5 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
-import static de.metas.util.Check.assumeNotNull;
-
-import java.util.Optional;
-import java.util.function.Function;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.util.Env;
-
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.FieldType;
@@ -34,6 +23,16 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.util.Env;
+
+import java.util.Optional;
+import java.util.function.Function;
+
+import static de.metas.util.Check.assumeNotNull;
 
 /*
  * #%L
@@ -73,7 +72,9 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 		this.dataEntryRecordRepository = dataEntryRecordRepository;
 	}
 
-	/** Retrieves *or* creates the single child document for the given query's parent document and entity descriptor */
+	/**
+	 * Retrieves *or* creates the single child document for the given query's parent document and entity descriptor
+	 */
 	@Override
 	public OrderedDocumentsList retrieveDocuments(
 			@NonNull final DocumentQuery query,
@@ -89,7 +90,9 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 		return documentsCollector;
 	}
 
-	/** Retrieves *or* creates the single child document for the given query's parent document and entity descriptor */
+	/**
+	 * Retrieves *or* creates the single child document for the given query's parent document and entity descriptor
+	 */
 	@Override
 	public Document retrieveDocument(
 			@NonNull final DocumentQuery query,
@@ -238,8 +241,8 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 		final DataEntryRecordQuery dataEntryRecordQuery = extractDataEntryRecordQuery(document);
 
 		final DataEntryRecord dataEntryRecord = dataEntryRecordRepository
-					.getBy(dataEntryRecordQuery)
-					.orElse(createDataEntryRecord(document));
+				.getBy(dataEntryRecordQuery)
+				.orElseGet(() -> createDataEntryRecord(document));
 
 		boolean refreshNeeded = updateDataEntryRecord(document, dataEntryRecord);
 		dataEntryRecordRepository.save(dataEntryRecord);
