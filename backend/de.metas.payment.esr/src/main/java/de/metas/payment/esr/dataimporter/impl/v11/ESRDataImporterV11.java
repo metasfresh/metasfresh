@@ -19,6 +19,7 @@ import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Check;
@@ -164,7 +165,7 @@ public class ESRDataImporterV11 implements IESRDataImporter
 				final Date accountingDate = ESRTransactionLineMatcherUtil.extractAccountingDate(currentTextLine);
 				esrTransactionBuilder.accountingDate(accountingDate);
 				
-				esrTransactionBuilder.type(X_ESR_ImportLine.TYPE_ESR);
+				esrTransactionBuilder.type(ESRType.TYPE_ESR);
 			}
 			else
 			{

@@ -417,21 +417,11 @@ public class ESRDataLoaderUtil
 
 		final String postAcctNo = importLine.getESRPostParticipantNumber();
 		
-		
-		if (isQRR(importLine))
+		if (isQRR(importLine) && !bankAccount.isAccountNoMatching(postAcctNo))
 		{
-			final String QR_IBAN = StringUtils.trimBlankToNull(bankAccount.getQR_IBAN());
-			final String IBAN = StringUtils.trimBlankToNull(bankAccount.getIBAN());
-			final String SEPA_CreditorIdentifier = StringUtils.trimBlankToNull(bankAccount.getSEPA_CreditorIdentifier());
-			
-			final String postAcctNoCleaned = StringUtils.cleanWhitespace(postAcctNo);
-			if (! (postAcctNoCleaned.equals(QR_IBAN) 
-					|| postAcctNoCleaned.equals(IBAN)
-					|| postAcctNoCleaned.equals(SEPA_CreditorIdentifier)))
-			{
-				ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
-						new Object[] { QR_IBAN, postAcctNo }));
-			}
+
+			ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
+					new Object[] { bankAccount, postAcctNo }));
 		}
 		else
 		{
@@ -458,7 +448,7 @@ public class ESRDataLoaderUtil
 
 	}
 	
-	private boolean isQRR(@NonNull final I_ESR_ImportLine importLine)
+	private static boolean isQRR(@NonNull final I_ESR_ImportLine importLine)
 	{
 		return ESRType.TYPE_QRR.getCode().equals(importLine.getType());
 	}

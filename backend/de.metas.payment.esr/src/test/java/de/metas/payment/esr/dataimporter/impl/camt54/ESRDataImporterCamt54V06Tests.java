@@ -18,6 +18,7 @@ import de.metas.payment.camt054_001_06.EntryDetails7;
 import de.metas.payment.camt054_001_06.ReportEntry8;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 
@@ -315,7 +316,7 @@ public class ESRDataImporterCamt54V06Tests
 		final ESRStatement importData = new ESRDataImporterCamt54(newInstance(I_ESR_Import.class), inputStream).importData();
 		
 		assertThat(importData.getTransactions())
-		.filteredOn(t -> t.getType().equals(X_ESR_ImportLine.TYPE_QRR))
+		.filteredOn(t -> t.getType().equals(ESRType.TYPE_QRR))
 		.hasSize(10)
 		.allSatisfy(t -> {
 			assertThat(t.getEsrParticipantNo()).isNotEmpty();

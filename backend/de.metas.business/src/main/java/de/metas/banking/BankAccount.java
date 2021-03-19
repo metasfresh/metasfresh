@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -66,4 +67,19 @@ public class BankAccount
 
 	@NonNull
 	OrgId orgId;
+	
+	
+	public boolean isAccountNoMatching(@NonNull final String accountNo) 
+	{
+		final String QR_IBAN = StringUtils.trimBlankToNull(getQR_IBAN());
+		final String IBAN = StringUtils.trimBlankToNull(getIBAN());
+		final String SEPA_CreditorIdentifier = StringUtils.trimBlankToNull(getSEPA_CreditorIdentifier());
+		
+		final String postAcctNoCleaned = StringUtils.cleanWhitespace(accountNo);
+		
+		return postAcctNoCleaned.equals(QR_IBAN) 
+				|| postAcctNoCleaned.equals(IBAN)
+				|| postAcctNoCleaned.equals(SEPA_CreditorIdentifier);
+		
+	}
 }

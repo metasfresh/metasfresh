@@ -235,7 +235,7 @@ public class ESRDataImporterCamt54v02
 					.build();
 			transactions.add(esrTransaction);
 			
-			if (ESRType.TYPE_QRR.getCode().equals(esrTransaction.getType()))
+			if (ESRType.TYPE_QRR.equals(esrTransaction.getType()))
 			{
 				countQRR++;
 			}

@@ -258,7 +258,7 @@ public class ESRImportBL implements IESRImportBL
 		importLine.setAmount(esrTransaction.getAmount());
 		importLine.setESRTrxType(esrTransaction.getTrxType());
 		importLine.setESRLineText(esrTransaction.getTransactionKey());
-		importLine.setType(esrTransaction.getType());
+		importLine.setType(esrTransaction.getType().getCode());
 
 		esrImportDAO.save(importLine);
 		return importLine;
