@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { getWindowBreadcrumb } from '../../actions/MenuActions';
 import MenuOverlayItem from './MenuOverlayItem';
-import { propTypes } from 'pigeon-maps';
 
 class MenuOverlayContainer extends Component {
   constructor(props) {
