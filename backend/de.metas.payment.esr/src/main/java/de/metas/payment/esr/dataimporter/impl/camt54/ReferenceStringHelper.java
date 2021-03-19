@@ -8,7 +8,6 @@ import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.payment.camt054_001_02.CreditorReferenceInformation2;
 import de.metas.payment.camt054_001_02.EntryTransaction2;
 import de.metas.payment.camt054_001_06.EntryTransaction8;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
@@ -171,11 +170,7 @@ public class ReferenceStringHelper
 				.map(strd -> strd.getCdtrRefInf())
 
 				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
-				.filter(cdtrRefInf -> cdtrRefInf != null 
-				        && cdtrRefInf.getTp() != null
-						&& cdtrRefInf.getTp().getCdOrPrtry() != null
-						&& isSupportedESRType(cdtrRefInf))
-
+				.filter(cdtrRefInf -> isSupportedESRType(cdtrRefInf))
 				.map(cdtrRefInf -> cdtrRefInf.getRef())
 				.findFirst();
 		return esrReferenceNumberString;
@@ -200,11 +195,7 @@ public class ReferenceStringHelper
 				.map(strd -> strd.getCdtrRefInf())
 
 				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
-				.filter(cdtrRefInf -> cdtrRefInf != null
-						&& cdtrRefInf.getTp() != null
-						&& cdtrRefInf.getTp().getCdOrPrtry() != null
-						&& isSupportedESRType(cdtrRefInf))
-				.filter(cdtrRefInf -> cdtrRefInf != null)
+				.filter(cdtrRefInf -> isSupportedESRType(cdtrRefInf))
 				.map(cdtrRefInf -> cdtrRefInf.getRef())
 				.findFirst();
 		return esrReferenceNumberString;
@@ -234,12 +225,7 @@ public class ReferenceStringHelper
 	{
 		return txDtls.getRmtInf().getStrd().stream()
 				.map(strd -> strd.getCdtrRefInf())
-
-				.filter(cdtrRefInf -> cdtrRefInf != null
-						&& cdtrRefInf.getTp() != null
-						&& cdtrRefInf.getTp().getCdOrPrtry() != null
-						&& isSupportedESRType(cdtrRefInf))
-
+				.filter(cdtrRefInf -> isSupportedESRType(cdtrRefInf))
 				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
 				.map(r ->  ESRType.ofNullableCode(r))
 				.findFirst();
@@ -248,32 +234,33 @@ public class ReferenceStringHelper
 
 	private Optional<ESRType> extractType(@NonNull final EntryTransaction2 txDtls)
 	{
+		
 		return txDtls.getRmtInf().getStrd().stream()
 				.map(strd -> strd.getCdtrRefInf())
-
-				.filter(cdtrRefInf -> cdtrRefInf != null
-						&& cdtrRefInf.getTp() != null
-						&& cdtrRefInf.getTp().getCdOrPrtry() != null
-						&& isSupportedESRType(cdtrRefInf))
-
+				.filter(cdtrRefInf -> isSupportedESRType(cdtrRefInf))
 				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
 				.map(r ->  ESRType.ofNullableCode(r))
 				.findFirst();
 
 	}
 
-	private static boolean isSupportedESRType(CreditorReferenceInformation2 cdtrRefInf)
+	private static boolean isSupportedESRType(de.metas.payment.camt054_001_02.CreditorReferenceInformation2 cdtrRefInf)
 	{
-		return cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
-				|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode());
+		return cdtrRefInf != null
+				&& cdtrRefInf.getTp() != null
+				&& cdtrRefInf.getTp().getCdOrPrtry() != null
+				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
+						|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
 	}
-	
+
 	private static boolean isSupportedESRType(de.metas.payment.camt054_001_06.CreditorReferenceInformation2 cdtrRefInf)
 	{
-		return cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
-				|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode());
+		return cdtrRefInf != null
+				&& cdtrRefInf.getTp() != null
+				&& cdtrRefInf.getTp().getCdOrPrtry() != null
+				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
+						|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
 	}
-	
 	
 	/**
 	 * extractReferenceFallback for version 2 <code>BankToCustomerDebitCreditNotificationV02</code>
