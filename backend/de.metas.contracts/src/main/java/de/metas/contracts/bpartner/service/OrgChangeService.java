@@ -386,11 +386,19 @@ public class OrgChangeService
 			if (matchingBankAccount != null)
 			{
 				matchingBankAccount.setActive(true);
+
+				loggable.addLog("Bank Account {} from the existing partner {} was preserved.",
+								matchingBankAccount,
+								destinationBPartnerComposite.getBpartner());
 			}
 			else
 			{
 				final BPartnerBankAccount newBankAccount = orgChangeRepo.createNewBankAccount(sourceBankAccount);
 				newBankAccounts.add(newBankAccount);
+
+				loggable.addLog("Bank Account {} was created for the destination partner {}.",
+								newBankAccount,
+								destinationBPartnerComposite.getBpartner());
 			}
 		}
 		return newBankAccounts;
