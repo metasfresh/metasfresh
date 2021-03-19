@@ -404,6 +404,7 @@ public class PaymentsViewAllocateCommandTest
 				// Check output
 				assertThat(payableDocument)
 						.usingRecursiveComparison()
+						.ignoringFields("reference.modelRef.timestamp")
 						.isEqualTo(PayableDocument.builder()
 								.invoiceId(invoiceRow.getInvoiceId())
 								.bpartnerId(bpartnerId)

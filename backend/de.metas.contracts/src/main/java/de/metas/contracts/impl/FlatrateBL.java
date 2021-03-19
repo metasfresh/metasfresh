@@ -592,7 +592,7 @@ public class FlatrateBL implements IFlatrateBL
 				shipToLocationId,
 				isSOTrx);
 
-		newCand.setC_Tax_ID(taxId.getRepoId());
+		newCand.setC_Tax_ID(TaxId.toRepoId(taxId)); // guard against NPEs in unit tests
 
 		setILCandHandler(ctx, newCand);
 
