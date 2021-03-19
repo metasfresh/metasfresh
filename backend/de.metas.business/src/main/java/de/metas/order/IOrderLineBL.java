@@ -37,15 +37,19 @@ import de.metas.util.lang.Percent;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public interface IOrderLineBL extends ISingletonService
 {
-
 	// task 08002
 	String DYNATTR_DoNotRecalculatePrices = IOrderLineBL.class.getName() + "#DoNotRecalcualtePrices";
+
+	List<I_C_OrderLine> getByOrderIds(final Set<OrderId> orderIds);
 
 	Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 
@@ -62,9 +66,6 @@ public interface IOrderLineBL extends ISingletonService
 
 	/**
 	 * Creates a new order line using the given {@code order} as header.
-	 *
-	 * @param order
-	 * @return
 	 */
 	<T extends I_C_OrderLine> T createOrderLine(org.compiere.model.I_C_Order order, final Class<T> orderLineClass);
 
@@ -82,7 +83,6 @@ public interface IOrderLineBL extends ISingletonService
 	 * <p>
 	 * <b>Note: does not touch the PriceUOM</b>
 	 *
-	 * @param orderLine
 	 * @param precision, if <code>>= 0</code> then the result will be rounded to this precision. Otherwise the precision of the order's price list will be used.
 	 */
 	void updatePriceActual(I_C_OrderLine orderLine, CurrencyPrecision precision);
@@ -90,14 +90,12 @@ public interface IOrderLineBL extends ISingletonService
 	/**
 	 * Utility method to subtract the given <code>discount</code> (in percent!) from the given <code>priceEntered</code> and return the result.
 	 *
-	 * @param baseAmount
 	 * @param discount   the discount to subtract in percent (between 0 and 100). Example: 10
 	 * @param precision  the precision of the expected result (relevant for rounding)
-	 * @return
 	 * @deprecated Use {@link Percent#subtractFromBase(BigDecimal, int)}
 	 */
 	@Deprecated
-	default BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, int precision)
+	default BigDecimal subtractDiscount(final BigDecimal baseAmount, final BigDecimal discount, final int precision)
 	{
 		return Percent.of(discount).subtractFromBase(baseAmount, precision);
 	}
@@ -114,7 +112,6 @@ public interface IOrderLineBL extends ISingletonService
 	 * <li>a M_ProductPrice exists for the orderLine's product and PLV
 	 * </ul>
 	 *
-	 * @param orderLine
 	 * @return C_TaxCategory_ID
 	 * @throws ProductNotOnPriceListException if the product's pricing info could not be retrieved.
 	 * @see de.metas.util.Check#assume(boolean, String, Object...)
@@ -133,10 +130,6 @@ public interface IOrderLineBL extends ISingletonService
 	 * Sets the product ID and optionally also the UOM.
 	 * <p>
 	 * Important note: what we do <b>not</b> set there is the price-UOM because that one is set only together with the price.
-	 *
-	 * @param orderLine
-	 * @param productId
-	 * @param setUomFromProduct
 	 */
 	void setProductId(org.compiere.model.I_C_OrderLine orderLine, ProductId productId, boolean setUomFromProduct);
 
@@ -146,10 +139,8 @@ public interface IOrderLineBL extends ISingletonService
 	 * <li>the C_Order's price list</li>
 	 * <li>the date being taken from order/orderLine's DatePromised date</li>
 	 * </ul>
-	 *
-	 * @param orderLine
-	 * @return
 	 */
+	@Nullable
 	I_M_PriceList_Version getPriceListVersion(I_C_OrderLine orderLine);
 
 	void updateLineNetAmtFromQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
@@ -160,8 +151,7 @@ public interface IOrderLineBL extends ISingletonService
 	 * Update the given <code>ol</code>'s {@link org.compiere.model.I_C_OrderLine#COLUMNNAME_QtyReserved QtyReserved}<br>
 	 * Do <b>not</b> save the order line.
 	 *
-	 * @param ol
-	 * @task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
+	 * Task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
 	 */
 	void updateQtyReserved(I_C_OrderLine ol);
 
@@ -204,9 +194,6 @@ public interface IOrderLineBL extends ISingletonService
 
 	/**
 	 * Copy the details from the original order line into the new order line of the counter document
-	 *
-	 * @param line
-	 * @param fromLine
 	 */
 	void copyOrderLineCounter(org.compiere.model.I_C_OrderLine line, org.compiere.model.I_C_OrderLine fromLine);
 
@@ -216,7 +203,6 @@ public interface IOrderLineBL extends ISingletonService
 	 * The reason for this is that the packing instructions are not the same for both orgs and we cannot use them inter-org.
 	 * Later in the life of the counter document the packing material lines will be created based on the correct data from the new org.
 	 *
-	 * @param fromLine
 	 * @return true if the line shall be copied and false if not
 	 */
 	boolean isAllowedCounterLineCopy(org.compiere.model.I_C_OrderLine fromLine);

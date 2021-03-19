@@ -20,6 +20,8 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.exceptions.WarehouseLocatorConflictException;
@@ -28,6 +30,7 @@ import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
@@ -127,6 +130,8 @@ public class MInOutLine extends X_M_InOutLine
 	 */
 	public void setOrderLine(I_C_OrderLine oLine, int M_Locator_ID, BigDecimal Qty)
 	{
+		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+
 		setC_OrderLine_ID(oLine.getC_OrderLine_ID());
 		setLine(oLine.getLine());
 		setC_UOM_ID(oLine.getC_UOM_ID());
@@ -174,14 +179,13 @@ public class MInOutLine extends X_M_InOutLine
 		setDescription(oLine.getDescription());
 		setIsDescription(oLine.isDescription());
 		//
-		setC_Project_ID(oLine.getC_Project_ID());
+
 		setC_ProjectPhase_ID(oLine.getC_ProjectPhase_ID());
 		setC_ProjectTask_ID(oLine.getC_ProjectTask_ID());
-		setC_Activity_ID(oLine.getC_Activity_ID());
-		setC_Campaign_ID(oLine.getC_Campaign_ID());
 		setAD_OrgTrx_ID(oLine.getAD_OrgTrx_ID());
-		setUser1_ID(oLine.getUser1_ID());
-		setUser2_ID(oLine.getUser2_ID());
+
+		final Dimension orderLineDimensions = dimensionService.getFromRecord(oLine);
+		dimensionService.updateRecord(this, orderLineDimensions);
 	}	// setOrderLine
 
 	/**
@@ -194,6 +198,8 @@ public class MInOutLine extends X_M_InOutLine
 	 */
 	public void setInvoiceLine(MInvoiceLine iLine, int M_Locator_ID, BigDecimal Qty)
 	{
+		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+
 		setC_OrderLine_ID(iLine.getC_OrderLine_ID());
 		setLine(iLine.getLine());
 		setC_UOM_ID(iLine.getC_UOM_ID());
@@ -221,14 +227,14 @@ public class MInOutLine extends X_M_InOutLine
 		setDescription(iLine.getDescription());
 		setIsDescription(iLine.isDescription());
 		//
-		setC_Project_ID(iLine.getC_Project_ID());
 		setC_ProjectPhase_ID(iLine.getC_ProjectPhase_ID());
 		setC_ProjectTask_ID(iLine.getC_ProjectTask_ID());
-		setC_Activity_ID(iLine.getC_Activity_ID());
-		setC_Campaign_ID(iLine.getC_Campaign_ID());
+
 		setAD_OrgTrx_ID(iLine.getAD_OrgTrx_ID());
-		setUser1_ID(iLine.getUser1_ID());
-		setUser2_ID(iLine.getUser2_ID());
+
+		final Dimension invoiceLineDimension = dimensionService.getFromRecord(iLine);
+		dimensionService.updateRecord(this,invoiceLineDimension);
+
 	}	// setInvoiceLine
 
 	/**

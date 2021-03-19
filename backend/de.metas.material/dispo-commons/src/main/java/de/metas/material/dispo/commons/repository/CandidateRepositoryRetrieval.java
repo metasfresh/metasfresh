@@ -5,6 +5,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
@@ -43,6 +45,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -80,6 +83,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 @Service
 public class CandidateRepositoryRetrieval
 {
+	private final DimensionService dimensionService;
+
+	public CandidateRepositoryRetrieval(@NonNull final DimensionService dimensionService)
+	{
+		this.dimensionService = dimensionService;
+	}
+
 	/**
 	 * Load and return <b>the</b> single record this has the given {@code id} as parentId.
 	 */
@@ -127,6 +137,7 @@ public class CandidateRepositoryRetrieval
 	@VisibleForTesting
 	Optional<Candidate> fromCandidateRecord(final I_MD_Candidate candidateRecordOrNull)
 	{
+
 		if (candidateRecordOrNull == null || isNew(candidateRecordOrNull) || candidateRecordOrNull.getMD_Candidate_ID() <= 0)
 		{
 			return Optional.empty();
@@ -146,7 +157,7 @@ public class CandidateRepositoryRetrieval
 		final int hasPurchaseDetail = purchaseDetailOrNull == null ? 0 : 1;
 
 		Check.errorIf(hasProductionDetail + hasDistributionDetail + hasPurchaseDetail > 1,
-				"A candidate may not have both a distribution, production and a production detail; candidateRecord={}", candidateRecordOrNull);
+					  "A candidate may not have both a distribution, production and a production detail; candidateRecord={}", candidateRecordOrNull);
 
 		final DemandDetail demandDetailOrNull = createDemandDetailOrNull(candidateRecordOrNull);
 
@@ -158,6 +169,9 @@ public class CandidateRepositoryRetrieval
 		}
 
 		builder.transactionDetails(createTransactionDetails(candidateRecordOrNull));
+
+		final Dimension candidateDimension = dimensionService.getFromRecord(candidateRecordOrNull);
+		builder.dimension(candidateDimension);
 
 		return Optional.of(builder.build());
 	}
@@ -176,11 +190,11 @@ public class CandidateRepositoryRetrieval
 	private CandidateBuilder createAndInitializeBuilder(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final Timestamp dateProjected = Preconditions.checkNotNull(candidateRecord.getDateProjected(),
-				"Given parameter candidateRecord needs to have a not-null dateProjected; candidateRecord=%s",
-				candidateRecord);
+																   "Given parameter candidateRecord needs to have a not-null dateProjected; candidateRecord=%s",
+																   candidateRecord);
 		final String md_candidate_type = Preconditions.checkNotNull(candidateRecord.getMD_Candidate_Type(),
-				"Given parameter candidateRecord needs to have a not-null MD_Candidate_Type; candidateRecord=%s",
-				candidateRecord);
+																	"Given parameter candidateRecord needs to have a not-null MD_Candidate_Type; candidateRecord=%s",
+																	candidateRecord);
 
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(
 				candidateRecord.getM_Product_ID(),
@@ -239,7 +253,7 @@ public class CandidateRepositoryRetrieval
 	private static ProductionDetail createProductionDetailOrNull(@NonNull final I_MD_Candidate candidateRecord)
 	{
 		final I_MD_Candidate_Prod_Detail //
-		productionDetailRecord = RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
+				productionDetailRecord = RepositoryCommons.retrieveSingleCandidateDetail(candidateRecord, I_MD_Candidate_Prod_Detail.class);
 		if (productionDetailRecord == null)
 		{
 			return null;
@@ -360,8 +374,8 @@ public class CandidateRepositoryRetrieval
 	{
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.productionDetailsQuery(ProductionDetailsQuery.builder()
-						.ppOrderId(ppOrderId)
-						.build())
+												.ppOrderId(ppOrderId)
+												.build())
 				.build();
 		return retrieveOrderedByDateAndSeqNo(query);
 	}

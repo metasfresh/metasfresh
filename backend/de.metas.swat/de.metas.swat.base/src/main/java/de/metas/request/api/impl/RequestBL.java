@@ -2,6 +2,7 @@ package de.metas.request.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.QualityNoteId;
 import de.metas.inout.api.IQualityNoteDAO;
@@ -11,6 +12,7 @@ import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.request.RequestId;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestBL;
 import de.metas.request.api.IRequestDAO;
@@ -34,6 +36,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /*
@@ -62,15 +65,27 @@ public class RequestBL implements IRequestBL
 {
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IRequestDAO requestsRepo = Services.get(IRequestDAO.class);
 
 	@VisibleForTesting
-	protected static final String MSG_R_Request_From_InOut_Summary = "R_Request_From_InOut_Summary";
+	static final AdMessageKey MSG_R_Request_From_InOut_Summary = AdMessageKey.of("R_Request_From_InOut_Summary");
+
+	@Override
+	public I_R_Request getById(@NonNull final RequestId id)
+	{
+		return requestsRepo.getById(id);
+	}
+
+	@Override
+	public void save(@NonNull final I_R_Request request)
+	{
+		requestsRepo.save(request);
+	}
 
 	@Override
 	public I_R_Request createRequestFromInOutLineWithQualityIssues(@NonNull final I_M_InOutLine line)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 		if (Check.isEmpty(line.getQualityDiscountPercent()))
 		{
 			// Shall not happen. Do nothing
@@ -106,6 +121,7 @@ public class RequestBL implements IRequestBL
 
 	}
 
+	@Nullable
 	private I_M_QualityNote getQualityNoteOrNull(@NonNull final I_M_InOutLine line)
 	{
 		final IQualityNoteDAO qualityNoteDAO = Services.get(IQualityNoteDAO.class);
@@ -191,7 +207,6 @@ public class RequestBL implements IRequestBL
 
 	private I_R_Request createRequest(final RequestCandidate requestCandidate)
 	{
-		final IRequestDAO requestsRepo = Services.get(IRequestDAO.class);
 		return requestsRepo.createRequest(requestCandidate);
 	}
 

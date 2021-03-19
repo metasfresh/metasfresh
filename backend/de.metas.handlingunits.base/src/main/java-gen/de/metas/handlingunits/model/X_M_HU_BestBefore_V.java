@@ -1,134 +1,99 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_BestBefore_V
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_HU_BestBefore_V extends org.compiere.model.PO implements I_M_HU_BestBefore_V, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1296080015L;
+	private static final long serialVersionUID = 83716577L;
 
     /** Standard Constructor */
-    public X_M_HU_BestBefore_V (Properties ctx, int M_HU_BestBefore_V_ID, String trxName)
+    public X_M_HU_BestBefore_V (final Properties ctx, final int M_HU_BestBefore_V_ID, @Nullable final String trxName)
     {
       super (ctx, M_HU_BestBefore_V_ID, trxName);
-      /** if (M_HU_BestBefore_V_ID == 0)
-        {
-        } */
     }
 
     /** Load Constructor */
-    public X_M_HU_BestBefore_V (Properties ctx, ResultSet rs, String trxName)
+    public X_M_HU_BestBefore_V (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Min. Garantie-Tage.
-		@param GuaranteeDaysMin 
-		Mindestanzahl Garantie-Tage
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setGuaranteeDaysMin (int GuaranteeDaysMin)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		set_ValueNoCheck (COLUMNNAME_GuaranteeDaysMin, Integer.valueOf(GuaranteeDaysMin));
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
-	/** Get Min. Garantie-Tage.
-		@return Mindestanzahl Garantie-Tage
-	  */
 	@Override
-	public int getGuaranteeDaysMin () 
+	public void setGuaranteeDaysMin (final int GuaranteeDaysMin)
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_GuaranteeDaysMin);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		set_ValueNoCheck (COLUMNNAME_GuaranteeDaysMin, GuaranteeDaysMin);
 	}
 
-	/** Set Best Before Date.
-		@param HU_BestBeforeDate Best Before Date	  */
 	@Override
-	public void setHU_BestBeforeDate (java.sql.Timestamp HU_BestBeforeDate)
+	public int getGuaranteeDaysMin() 
+	{
+		return get_ValueAsInt(COLUMNNAME_GuaranteeDaysMin);
+	}
+
+	@Override
+	public void setHU_BestBeforeDate (final @Nullable java.sql.Timestamp HU_BestBeforeDate)
 	{
 		set_ValueNoCheck (COLUMNNAME_HU_BestBeforeDate, HU_BestBeforeDate);
 	}
 
-	/** Get Best Before Date.
-		@return Best Before Date	  */
 	@Override
-	public java.sql.Timestamp getHU_BestBeforeDate () 
+	public java.sql.Timestamp getHU_BestBeforeDate() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_HU_BestBeforeDate);
+		return get_ValueAsTimestamp(COLUMNNAME_HU_BestBeforeDate);
 	}
 
-	/** Set Expired.
-		@param HU_Expired Expired	  */
 	@Override
-	public void setHU_Expired (java.lang.String HU_Expired)
+	public void setHU_Expired (final @Nullable java.lang.String HU_Expired)
 	{
 		set_ValueNoCheck (COLUMNNAME_HU_Expired, HU_Expired);
 	}
 
-	/** Get Expired.
-		@return Expired	  */
 	@Override
-	public java.lang.String getHU_Expired () 
+	public java.lang.String getHU_Expired() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_HU_Expired);
+		return get_ValueAsString(COLUMNNAME_HU_Expired);
 	}
 
-	/** Set Expiring Warning Date.
-		@param HU_ExpiredWarnDate Expiring Warning Date	  */
 	@Override
-	public void setHU_ExpiredWarnDate (java.sql.Timestamp HU_ExpiredWarnDate)
+	public void setHU_ExpiredWarnDate (final @Nullable java.sql.Timestamp HU_ExpiredWarnDate)
 	{
 		set_ValueNoCheck (COLUMNNAME_HU_ExpiredWarnDate, HU_ExpiredWarnDate);
 	}
 
-	/** Get Expiring Warning Date.
-		@return Expiring Warning Date	  */
 	@Override
-	public java.sql.Timestamp getHU_ExpiredWarnDate () 
+	public java.sql.Timestamp getHU_ExpiredWarnDate() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_HU_ExpiredWarnDate);
+		return get_ValueAsTimestamp(COLUMNNAME_HU_ExpiredWarnDate);
 	}
 
-	/** Set Handling Unit.
-		@param M_HU_ID Handling Unit	  */
 	@Override
-	public void setM_HU_ID (int M_HU_ID)
+	public void setM_HU_ID (final int M_HU_ID)
 	{
 		if (M_HU_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_ID, M_HU_ID);
 	}
 
-	/** Get Handling Unit.
-		@return Handling Unit	  */
 	@Override
-	public int getM_HU_ID () 
+	public int getM_HU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_ID);
 	}
 }

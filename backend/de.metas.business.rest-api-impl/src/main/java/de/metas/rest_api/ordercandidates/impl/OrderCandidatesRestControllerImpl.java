@@ -56,7 +56,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.bpartner.impl.BpartnerRestController;
-import de.metas.rest_api.exception.MissingResourceException;
+import de.metas.util.web.exception.MissingResourceException;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
@@ -65,8 +65,8 @@ import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.utils.ApiAPMHelper;
 import de.metas.rest_api.utils.JsonErrors;
-import de.metas.security.PermissionServiceFactories;
-import de.metas.security.PermissionServiceFactory;
+import de.metas.security.permissions2.PermissionServiceFactories;
+import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.common.util.CoalesceUtil;
@@ -160,7 +160,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 			// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
 			// (at least currently) part of the respective caching keys.
 			final JsonOLCandCreateBulkResponse //
-			response = trxManager.callInNewTrx(() -> creatOrderLineCandidatesBulk(bulkRequest, masterdataProvider));
+					response = trxManager.callInNewTrx(() -> creatOrderLineCandidatesBulk(bulkRequest, masterdataProvider));
 
 			//
 			return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -191,7 +191,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 				() -> bulkRequest.getRequests()
 						.stream()
 						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider)),
-						ApiAPMHelper.createMetadataFor("CreateOrUpdateMasterDataBulk"));
+				ApiAPMHelper.createMetadataFor("CreateOrUpdateMasterDataBulk"));
 	}
 
 	private void createOrUpdateMasterdata(

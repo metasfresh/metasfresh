@@ -43,7 +43,7 @@ public class JsonPrice
 	String currencyCode;
 
 	@ApiModelProperty(position = 30, required = true, //
-			value = "Identify which unit of measurment this about")
+			value = "Identify which unit of measurement this about")
 	String priceUomCode;
 
 	@Builder

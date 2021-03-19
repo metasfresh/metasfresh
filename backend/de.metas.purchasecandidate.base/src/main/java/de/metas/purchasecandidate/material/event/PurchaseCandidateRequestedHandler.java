@@ -1,31 +1,23 @@
 package de.metas.purchasecandidate.material.event;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.Collection;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.TimeUtil;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.dimension.Dimension;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
+import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
@@ -34,6 +26,16 @@ import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -105,6 +107,21 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 
 		final I_C_UOM uomRecord = loadOutOfTrx(product.getUomId().getRepoId(), I_C_UOM.class);
 
+		final Dimension dimension = Dimension.builder()
+				.activityId(ActivityId.ofRepoIdOrNull(event.getActivityId()))
+				.campaignId(event.getCampaignId())
+				.projectId(ProjectId.ofRepoIdOrNull(event.getProjectId()))
+				.userElement1Id(event.getUserElementId1())
+				.userElement2Id(event.getUserElementId2())
+				.userElementString1(event.getUserElementString1())
+				.userElementString2(event.getUserElementString2())
+				.userElementString3(event.getUserElementString3())
+				.userElementString4(event.getUserElementString4())
+				.userElementString5(event.getUserElementString5())
+				.userElementString6(event.getUserElementString6())
+				.userElementString7(event.getUserElementString7())
+				.build();
+
 		final PurchaseCandidate newPurchaseCandidate = PurchaseCandidate
 				.builder()
 				.groupReference(DemandGroupReference.EMPTY)
@@ -112,6 +129,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.vendorProductNo(vendorProductInfos.getVendorProductNo()) // mandatory
 				.purchaseDatePromised(TimeUtil.asZonedDateTime(materialDescriptor.getDate())) // dateRequired
 
+				.dimension(dimension)
 				.orgId(orgId)
 				.processed(false)
 				.productId(product.getId())
@@ -122,6 +140,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.salesOrderAndLineIdOrNull(orderandLineIdOrNull)
 
 				.warehouseId(materialDescriptor.getWarehouseId())
+				.forecastLineId(ForecastLineId.ofRepoIdOrNull(event.getForecastId(), event.getForecastLineId()))
 				.build();
 
 		saveCandidateAndPostCreatedEvent(event, newPurchaseCandidate);

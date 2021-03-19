@@ -31,6 +31,7 @@ import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.service.ILoginService;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.service.IRfQService;
+import de.metas.procurement.webui.service.UserConfirmationService;
 import de.metas.procurement.webui.util.DateUtils;
 import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,15 +57,18 @@ public class RfQRestController
 	private final ILoginService loginService;
 	private final IRfQService rfqService;
 	private final IProductSuppliesService productSuppliesService;
+	private final UserConfirmationService userConfirmationService;
 
 	public RfQRestController(
 			@NonNull final ILoginService loginService,
 			@NonNull final IRfQService rfqService,
-			@NonNull final IProductSuppliesService productSuppliesService)
+			@NonNull final IProductSuppliesService productSuppliesService,
+			@NonNull final UserConfirmationService userConfirmationService)
 	{
 		this.loginService = loginService;
 		this.rfqService = rfqService;
 		this.productSuppliesService = productSuppliesService;
+		this.userConfirmationService = userConfirmationService;
 	}
 
 	@GetMapping
@@ -90,7 +94,8 @@ public class RfQRestController
 	{
 		final User loggedUser = loginService.getLoggedInUser();
 		final Rfq rfq = rfqService.changeActiveRfq(request, loggedUser);
-		return toJsonRfq(rfq, loginService.getLocale());
+		return toJsonRfq(rfq, loginService.getLocale())
+				.withCountUnconfirmed(userConfirmationService.getCountUnconfirmed(loggedUser));
 	}
 
 	private JsonRfqsList toJsonRfqsList(final List<Rfq> rfqsList, @NonNull final Locale locale)
@@ -123,7 +128,9 @@ public class RfQRestController
 				.build();
 	}
 
-	private static ArrayList<JsonRfqQty> toJsonRfqQtysList(final Rfq rfq, final Locale locale)
+	private static ArrayList<JsonRfqQty> toJsonRfqQtysList(
+			@NonNull final Rfq rfq,
+			@NonNull final Locale locale)
 	{
 		final ArrayList<JsonRfqQty> jsonRfqQtys = new ArrayList<>();
 
@@ -132,30 +139,40 @@ public class RfQRestController
 			final RfqQty rfqQty = rfq.getRfqQtyByDate(date);
 
 			final JsonRfqQty jsonRfqQty = rfqQty != null
-					? toJsonRfqQty(rfqQty, locale)
-					: toZeroJsonRfqQty(date, locale);
+					? toJsonRfqQty(rfqQty, rfq.getQtyCUInfo(), locale)
+					: toZeroJsonRfqQty(date, rfq.getQtyCUInfo(), locale);
 
 			jsonRfqQtys.add(jsonRfqQty);
 		}
 		return jsonRfqQtys;
 	}
 
-	private static JsonRfqQty toJsonRfqQty(@NonNull final RfqQty rfqQty, @NonNull final Locale locale)
+	private static JsonRfqQty toJsonRfqQty(
+			@NonNull final RfqQty rfqQty,
+			@NonNull final String uom,
+			@NonNull final Locale locale)
 	{
+		final BigDecimal qtyPromised = rfqQty.getQtyPromisedUserEntered();
+
 		return JsonRfqQty.builder()
 				.date(rfqQty.getDatePromised())
 				.dayCaption(DateUtils.getDayName(rfqQty.getDatePromised(), locale))
-				.qtyPromised(rfqQty.getQtyPromisedUserEntered())
+				.qtyPromised(qtyPromised)
+				.qtyPromisedRendered(renderQty(qtyPromised, uom, locale))
 				.confirmedByUser(rfqQty.isConfirmedByUser())
 				.build();
 	}
 
-	private static JsonRfqQty toZeroJsonRfqQty(@NonNull final LocalDate date, @NonNull final Locale locale)
+	private static JsonRfqQty toZeroJsonRfqQty(
+			@NonNull final LocalDate date,
+			@NonNull final String uom,
+			@NonNull final Locale locale)
 	{
 		return JsonRfqQty.builder()
 				.date(date)
 				.dayCaption(DateUtils.getDayName(date, locale))
 				.qtyPromised(BigDecimal.ZERO)
+				.qtyPromisedRendered(renderQty(BigDecimal.ZERO, uom, locale))
 				.confirmedByUser(true)
 				.build();
 	}

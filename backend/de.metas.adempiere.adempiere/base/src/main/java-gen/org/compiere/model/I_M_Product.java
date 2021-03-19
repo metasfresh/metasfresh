@@ -1,14 +1,14 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 /** Generated Interface for M_Product
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
-public interface I_M_Product
+@SuppressWarnings("unused")
+public interface I_M_Product 
 {
 
 	String Table_Name = "M_Product";
@@ -189,27 +189,6 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_CustomerLabelName = new ModelColumn<>(I_M_Product.class, "CustomerLabelName", null);
 	String COLUMNNAME_CustomerLabelName = "CustomerLabelName";
-
-	/**
-	 * Set Haddex Check Date.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDateHaddexCheck (@Nullable java.sql.Timestamp DateHaddexCheck);
-
-	/**
-	 * Get Haddex Check Date.
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getDateHaddexCheck();
-
-	ModelColumn<I_M_Product, Object> COLUMN_DateHaddexCheck = new ModelColumn<>(I_M_Product.class, "DateHaddexCheck", null);
-	String COLUMNNAME_DateHaddexCheck = "DateHaddexCheck";
 
 	/**
 	 * Set Description.
@@ -474,6 +453,29 @@ public interface I_M_Product
 	String COLUMNNAME_GuaranteeDaysMin = "GuaranteeDaysMin";
 
 	/**
+	 * Set GuaranteeMonths.
+	 * Guarantee time in months
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGuaranteeMonths (@Nullable java.lang.String GuaranteeMonths);
+
+	/**
+	 * Get GuaranteeMonths.
+	 * Guarantee time in months
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getGuaranteeMonths();
+
+	ModelColumn<I_M_Product, Object> COLUMN_GuaranteeMonths = new ModelColumn<>(I_M_Product.class, "GuaranteeMonths", null);
+	String COLUMNNAME_GuaranteeMonths = "GuaranteeMonths";
+
+	/**
 	 * Set Haddex Check.
 	 *
 	 * <br>Type: YesNo
@@ -494,26 +496,6 @@ public interface I_M_Product
 	ModelColumn<I_M_Product, Object> COLUMN_HaddexCheck = new ModelColumn<>(I_M_Product.class, "HaddexCheck", null);
 	String COLUMNNAME_HaddexCheck = "HaddexCheck";
 
-	/**
-	 * Set Haddex Control Nr..
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setHaddexControlNr (@Nullable java.lang.String HaddexControlNr);
-
-	/**
-	 * Get Haddex Control Nr..
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getHaddexControlNr();
-
-	ModelColumn<I_M_Product, Object> COLUMN_HaddexControlNr = new ModelColumn<>(I_M_Product.class, "HaddexControlNr", null);
-	String COLUMNNAME_HaddexControlNr = "HaddexControlNr";
 
 	/**
 	 * Set Help.

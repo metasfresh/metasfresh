@@ -32,8 +32,6 @@ import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.product.ProductId;
@@ -54,8 +52,13 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.QtyCalculationsBOM;
+import org.eevolution.api.QtyCalculationsBOMLine;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -70,13 +73,13 @@ import java.util.function.UnaryOperator;
 @Service
 public class PPOrderBOMBL implements IPPOrderBOMBL
 {
-	private final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
+	private final IProductBOMBL bomBL = Services.get(IProductBOMBL.class);
+	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
-	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@Override
 	public I_PP_Order_BOMLine getOrderBOMLineById(@NonNull final PPOrderBOMLineId orderBOMLineId)
@@ -245,29 +248,10 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@VisibleForTesting
 	QtyCalculationsBOMLine toQtyCalculationsBOMLine(@NonNull final PPOrderLine ppOrderBOMLine)
 	{
-		final I_PP_Product_BOMLine bomLine = productBOMsRepo.getBOMLineById(ppOrderBOMLine.getProductBomLineId());
-		return toQtyCalculationsBOMLine(bomLine);
-	}
-
-	private QtyCalculationsBOMLine toQtyCalculationsBOMLine(@NonNull final I_PP_Product_BOMLine productBOMLine)
-	{
-		final ProductBOMId bomId = ProductBOMId.ofRepoId(productBOMLine.getPP_Product_BOM_ID());
-		final I_PP_Product_BOM bom = productBOMsRepo.getById(bomId);
-
-		return QtyCalculationsBOMLine.builder()
-				.bomProductId(ProductId.ofRepoId(bom.getM_Product_ID()))
-				.bomProductUOM(uomsRepo.getById(bom.getC_UOM_ID()))
-				.componentType(BOMComponentType.ofCode(productBOMLine.getComponentType()))
-				//
-				.productId(ProductId.ofRepoId(productBOMLine.getM_Product_ID()))
-				.qtyPercentage(productBOMLine.isQtyPercentage())
-				.qtyForOneFinishedGood(productBOMLine.getQtyBOM())
-				.percentOfFinishedGood(Percent.of(productBOMLine.getQtyBatch()))
-				.scrap(Percent.of(productBOMLine.getScrap()))
-				//
-				.uom(uomsRepo.getById(productBOMLine.getC_UOM_ID()))
-				//
-				.build();
+		final I_PP_Product_BOMLine bomLine = bomDAO.getBOMLineById(ppOrderBOMLine.getProductBomLineId());
+		final ProductBOMId bomId = ProductBOMId.ofRepoId(bomLine.getPP_Product_BOM_ID());
+		final I_PP_Product_BOM bom = bomDAO.getById(bomId);
+		return bomBL.toQtyCalculationsBOMLine(bomLine, bom);
 	}
 
 	@VisibleForTesting
@@ -277,7 +261,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	{
 		return QtyCalculationsBOMLine.builder()
 				.bomProductId(ProductId.ofRepoId(order.getM_Product_ID()))
-				.bomProductUOM(uomsRepo.getById(order.getC_UOM_ID()))
+				.bomProductUOM(uomDAO.getById(order.getC_UOM_ID()))
 				.componentType(BOMComponentType.ofCode(orderBOMLine.getComponentType()))
 				//
 				.productId(ProductId.ofRepoId(orderBOMLine.getM_Product_ID()))
@@ -310,13 +294,13 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		}
 
 		final ProductId bomProductId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final I_PP_Product_BOM bom = productBOMsRepo.getDefaultBOMByProductId(bomProductId).orElse(null);
+		final I_PP_Product_BOM bom = bomDAO.getDefaultBOMByProductId(bomProductId).orElse(null);
 		if (bom == null)
 		{
 			return;
 		}
 
-		for (final I_PP_Product_BOMLine productBOMLine : productBOMsRepo.retrieveLines(bom))
+		for (final I_PP_Product_BOMLine productBOMLine : bomDAO.retrieveLines(bom))
 		{
 			createOrderBOMLineFromPhantomLine(orderBOMLine, productBOMLine, qtyOrdered);
 		}
@@ -351,7 +335,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public I_C_UOM getBOMLineUOM(@NonNull final I_PP_Order_BOMLine bomLine)
 	{
 		final UomId uomId = getBOMLineUOMId(bomLine);
-		return uomsRepo.getById(uomId);
+		return uomDAO.getById(uomId);
 	}
 
 	@NonNull

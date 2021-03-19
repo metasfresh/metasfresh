@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.process;
 
 import com.google.common.collect.ImmutableMap;
@@ -11,6 +8,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_AD_Process;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -59,6 +58,7 @@ public enum ProcessType implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
+	@Nullable
 	public static String toCodeOrNull(final ProcessType type)
 	{
 		return type != null ? type.getCode() : null;
@@ -88,7 +88,7 @@ public enum ProcessType implements ReferenceListAwareEnum
 
 	public static ImmutableSet<ProcessType> getTypesRunnableFromAppRestController()
 	{
-		return ImmutableSet.of(SQL,Excel,POSTGREST);
+		return ImmutableSet.of(SQL, Excel, POSTGREST);
 	}
 
 }

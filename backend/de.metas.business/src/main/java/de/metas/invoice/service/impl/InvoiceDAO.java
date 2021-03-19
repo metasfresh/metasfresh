@@ -25,6 +25,9 @@ package de.metas.invoice.service.impl;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_InvoiceTax;
@@ -41,6 +44,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class InvoiceDAO extends AbstractInvoiceDAO
 {

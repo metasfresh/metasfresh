@@ -57,8 +57,8 @@ import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest.CreateRe
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;

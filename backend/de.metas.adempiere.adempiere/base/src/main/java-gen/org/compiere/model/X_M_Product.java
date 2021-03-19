@@ -1,18 +1,19 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Product
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1432272720L;
+	private static final long serialVersionUID = 1570676505L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -35,7 +36,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setAdditional_produktinfos (final java.lang.String Additional_produktinfos)
+	public void setAdditional_produktinfos (final @Nullable java.lang.String Additional_produktinfos)
 	{
 		set_Value (COLUMNNAME_Additional_produktinfos, Additional_produktinfos);
 	}
@@ -89,7 +90,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setClassification (final java.lang.String Classification)
+	public void setClassification (final @Nullable java.lang.String Classification)
 	{
 		set_Value (COLUMNNAME_Classification, Classification);
 	}
@@ -101,7 +102,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setCustomerLabelName (final java.lang.String CustomerLabelName)
+	public void setCustomerLabelName (final @Nullable java.lang.String CustomerLabelName)
 	{
 		set_Value (COLUMNNAME_CustomerLabelName, CustomerLabelName);
 	}
@@ -113,19 +114,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setDateHaddexCheck (final java.sql.Timestamp DateHaddexCheck)
-	{
-		set_Value (COLUMNNAME_DateHaddexCheck, DateHaddexCheck);
-	}
-
-	@Override
-	public java.sql.Timestamp getDateHaddexCheck() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_DateHaddexCheck);
-	}
-
-	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -137,7 +126,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setDescriptionURL (final java.lang.String DescriptionURL)
+	public void setDescriptionURL (final @Nullable java.lang.String DescriptionURL)
 	{
 		set_Value (COLUMNNAME_DescriptionURL, DescriptionURL);
 	}
@@ -161,7 +150,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setDiscontinuedBy (final java.sql.Timestamp DiscontinuedBy)
+	public void setDiscontinuedBy (final @Nullable java.sql.Timestamp DiscontinuedBy)
 	{
 		set_Value (COLUMNNAME_DiscontinuedBy, DiscontinuedBy);
 	}
@@ -173,7 +162,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setDocumentNote (final java.lang.String DocumentNote)
+	public void setDocumentNote (final @Nullable java.lang.String DocumentNote)
 	{
 		set_Value (COLUMNNAME_DocumentNote, DocumentNote);
 	}
@@ -185,7 +174,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setExternalId (final java.lang.String ExternalId)
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
 	}
@@ -197,7 +186,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setGroup1 (final java.lang.String Group1)
+	public void setGroup1 (final @Nullable java.lang.String Group1)
 	{
 		set_Value (COLUMNNAME_Group1, Group1);
 	}
@@ -209,7 +198,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setGroup2 (final java.lang.String Group2)
+	public void setGroup2 (final @Nullable java.lang.String Group2)
 	{
 		set_Value (COLUMNNAME_Group2, Group2);
 	}
@@ -230,7 +219,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/** PriceAndQty = Q */
 	public static final String GROUPCOMPENSATIONAMTTYPE_PriceAndQty = "Q";
 	@Override
-	public void setGroupCompensationAmtType (final java.lang.String GroupCompensationAmtType)
+	public void setGroupCompensationAmtType (final @Nullable java.lang.String GroupCompensationAmtType)
 	{
 		set_Value (COLUMNNAME_GroupCompensationAmtType, GroupCompensationAmtType);
 	}
@@ -251,7 +240,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/** Discount = D */
 	public static final String GROUPCOMPENSATIONTYPE_Discount = "D";
 	@Override
-	public void setGroupCompensationType (final java.lang.String GroupCompensationType)
+	public void setGroupCompensationType (final @Nullable java.lang.String GroupCompensationType)
 	{
 		set_Value (COLUMNNAME_GroupCompensationType, GroupCompensationType);
 	}
@@ -263,7 +252,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setGTIN (final java.lang.String GTIN)
+	public void setGTIN (final @Nullable java.lang.String GTIN)
 	{
 		set_Value (COLUMNNAME_GTIN, GTIN);
 	}
@@ -286,6 +275,29 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return get_ValueAsInt(COLUMNNAME_GuaranteeDaysMin);
 	}
 
+	/** 
+	 * GuaranteeMonths AD_Reference_ID=541258
+	 * Reference name: GuaranteeMonths
+	 */
+	public static final int GUARANTEEMONTHS_AD_Reference_ID=541258;
+	/** 12 = 12 */
+	public static final String GUARANTEEMONTHS_12 = "12";
+	/** 24 = 24 */
+	public static final String GUARANTEEMONTHS_24 = "24";
+	/** 36 = 36 */
+	public static final String GUARANTEEMONTHS_36 = "36";
+	@Override
+	public void setGuaranteeMonths (final @Nullable java.lang.String GuaranteeMonths)
+	{
+		set_Value (COLUMNNAME_GuaranteeMonths, GuaranteeMonths);
+	}
+
+	@Override
+	public java.lang.String getGuaranteeMonths() 
+	{
+		return get_ValueAsString(COLUMNNAME_GuaranteeMonths);
+	}
+
 	@Override
 	public void setHaddexCheck (final boolean HaddexCheck)
 	{
@@ -299,19 +311,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setHaddexControlNr (final java.lang.String HaddexControlNr)
-	{
-		set_Value (COLUMNNAME_HaddexControlNr, HaddexControlNr);
-	}
-
-	@Override
-	public java.lang.String getHaddexControlNr() 
-	{
-		return get_ValueAsString(COLUMNNAME_HaddexControlNr);
-	}
-
-	@Override
-	public void setHelp (final java.lang.String Help)
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
@@ -323,7 +323,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setImageURL (final java.lang.String ImageURL)
+	public void setImageURL (final @Nullable java.lang.String ImageURL)
 	{
 		set_Value (COLUMNNAME_ImageURL, ImageURL);
 	}
@@ -335,7 +335,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIngredients (final java.lang.String Ingredients)
+	public void setIngredients (final @Nullable java.lang.String Ingredients)
 	{
 		set_Value (COLUMNNAME_Ingredients, Ingredients);
 	}
@@ -700,7 +700,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/** QuotationBOMProduct = Q */
 	public static final String M_PRODUCTPLANNINGSCHEMA_SELECTOR_QuotationBOMProduct = "Q";
 	@Override
-	public void setM_ProductPlanningSchema_Selector (final java.lang.String M_ProductPlanningSchema_Selector)
+	public void setM_ProductPlanningSchema_Selector (final @Nullable java.lang.String M_ProductPlanningSchema_Selector)
 	{
 		set_Value (COLUMNNAME_M_ProductPlanningSchema_Selector, M_ProductPlanningSchema_Selector);
 	}
@@ -736,7 +736,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/** No = N */
 	public static final String MRP_EXCLUDE_No = "N";
 	@Override
-	public void setMRP_Exclude (final java.lang.String MRP_Exclude)
+	public void setMRP_Exclude (final @Nullable java.lang.String MRP_Exclude)
 	{
 		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
 	}
@@ -760,7 +760,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setNetWeight (final BigDecimal NetWeight)
+	public void setNetWeight (final @Nullable BigDecimal NetWeight)
 	{
 		set_Value (COLUMNNAME_NetWeight, NetWeight);
 	}
@@ -788,7 +788,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setPackageSize (final java.lang.String PackageSize)
+	public void setPackageSize (final @Nullable java.lang.String PackageSize)
 	{
 		set_Value (COLUMNNAME_PackageSize, PackageSize);
 	}
@@ -976,7 +976,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setShelfHeight (final BigDecimal ShelfHeight)
+	public void setShelfHeight (final @Nullable BigDecimal ShelfHeight)
 	{
 		set_Value (COLUMNNAME_ShelfHeight, ShelfHeight);
 	}
@@ -1001,7 +1001,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setSKU (final java.lang.String SKU)
+	public void setSKU (final @Nullable java.lang.String SKU)
 	{
 		set_Value (COLUMNNAME_SKU, SKU);
 	}
@@ -1025,7 +1025,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setUnitsPerPallet (final BigDecimal UnitsPerPallet)
+	public void setUnitsPerPallet (final @Nullable BigDecimal UnitsPerPallet)
 	{
 		set_Value (COLUMNNAME_UnitsPerPallet, UnitsPerPallet);
 	}
@@ -1038,7 +1038,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setUPC (final java.lang.String UPC)
+	public void setUPC (final @Nullable java.lang.String UPC)
 	{
 		set_Value (COLUMNNAME_UPC, UPC);
 	}
@@ -1062,7 +1062,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setVersionNo (final java.lang.String VersionNo)
+	public void setVersionNo (final @Nullable java.lang.String VersionNo)
 	{
 		set_Value (COLUMNNAME_VersionNo, VersionNo);
 	}
@@ -1074,7 +1074,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setVolume (final BigDecimal Volume)
+	public void setVolume (final @Nullable BigDecimal Volume)
 	{
 		set_Value (COLUMNNAME_Volume, Volume);
 	}
@@ -1087,7 +1087,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setWarehouse_temperature (final java.lang.String Warehouse_temperature)
+	public void setWarehouse_temperature (final @Nullable java.lang.String Warehouse_temperature)
 	{
 		set_Value (COLUMNNAME_Warehouse_temperature, Warehouse_temperature);
 	}
@@ -1099,7 +1099,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setWeight (final BigDecimal Weight)
+	public void setWeight (final @Nullable BigDecimal Weight)
 	{
 		set_Value (COLUMNNAME_Weight, Weight);
 	}

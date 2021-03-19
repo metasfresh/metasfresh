@@ -10,9 +10,9 @@ import org.junit.Test;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.common.rest_api.JsonErrorItem;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestContact;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.common.bpartner.request.JsonRequestBPartner;
+import de.metas.common.bpartner.request.JsonRequestContact;
+import de.metas.common.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.common.JsonDocTypeInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;

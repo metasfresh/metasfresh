@@ -10,38 +10,40 @@ package de.metas.handlingunits;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.util.Check;
+import lombok.NonNull;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.util.Check;
-
 public class CompositeDocumentLUTUConfigurationHandler<T> implements IDocumentLUTUConfigurationHandler<List<T>>
 {
+	public static <T> CompositeDocumentLUTUConfigurationHandler<T> of(@NonNull final IDocumentLUTUConfigurationHandler<T> handler)
+	{
+		return new CompositeDocumentLUTUConfigurationHandler<>(handler);
+	}
+
 	private final IDocumentLUTUConfigurationHandler<T> handler;
 
-	public CompositeDocumentLUTUConfigurationHandler(final IDocumentLUTUConfigurationHandler<T> handler)
+	private CompositeDocumentLUTUConfigurationHandler(@NonNull final IDocumentLUTUConfigurationHandler<T> handler)
 	{
-		super();
-		Check.assumeNotNull(handler, "handler not null");
 		this.handler = handler;
-
 	}
 
 	@Override
@@ -63,10 +65,8 @@ public class CompositeDocumentLUTUConfigurationHandler<T> implements IDocumentLU
 	}
 
 	@Override
-	public void setCurrentLUTUConfiguration(final List<T> documentLines, final I_M_HU_LUTU_Configuration lutuConfiguration)
+	public void setCurrentLUTUConfiguration(@NonNull final List<T> documentLines, final I_M_HU_LUTU_Configuration lutuConfiguration)
 	{
-		Check.assumeNotNull(documentLines, "documentLines not null");
-
 		for (final T documentLine : documentLines)
 		{
 			handler.setCurrentLUTUConfiguration(documentLine, lutuConfiguration);
@@ -87,7 +87,7 @@ public class CompositeDocumentLUTUConfigurationHandler<T> implements IDocumentLU
 		Check.assumeNotEmpty(documentLines, "documentLines not empty");
 
 		final Set<Integer> seenConfigurationIds = new HashSet<>();
-		final List<I_M_HU_LUTU_Configuration> altConfigurations = new ArrayList<I_M_HU_LUTU_Configuration>(documentLines.size());
+		final List<I_M_HU_LUTU_Configuration> altConfigurations = new ArrayList<>(documentLines.size());
 
 		//
 		// Main configuration
@@ -131,10 +131,8 @@ public class CompositeDocumentLUTUConfigurationHandler<T> implements IDocumentLU
 	}
 
 	@Override
-	public void save(final List<T> documentLines)
+	public void save(@NonNull final List<T> documentLines)
 	{
-		Check.assumeNotNull(documentLines, "documentLine not null");
-
 		for (final T documentLine : documentLines)
 		{
 			handler.save(documentLine);

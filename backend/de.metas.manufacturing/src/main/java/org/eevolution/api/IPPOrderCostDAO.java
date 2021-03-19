@@ -1,6 +1,5 @@
 package org.eevolution.api;
 
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 

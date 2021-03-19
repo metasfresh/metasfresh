@@ -37,7 +37,7 @@ public class ProjectType
 	ProjectTypeId id;
 
 	@NonNull
-	String projectCategory;
+	ProjectCategory projectCategory;
 
 	@Nullable
 	DocSequenceId docSequenceId;

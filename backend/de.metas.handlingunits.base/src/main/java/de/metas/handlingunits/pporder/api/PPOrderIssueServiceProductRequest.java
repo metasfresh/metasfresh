@@ -22,8 +22,8 @@
 
 package de.metas.handlingunits.pporder.api;
 
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,4 +37,6 @@ public class PPOrderIssueServiceProductRequest
 
 	@NonNull
 	PPOrderBOMLineId ppOrderBOMLineId;
+
+	boolean overrideExistingValues;
 }

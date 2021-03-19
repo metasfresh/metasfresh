@@ -1,13 +1,14 @@
 package de.metas.security.permissions.record_access;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogsRepository;
+import de.metas.security.Principal;
+import de.metas.security.permissions.Access;
+import de.metas.user.UserGroupRepository;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -17,17 +18,11 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import com.google.common.collect.ImmutableList;
+import java.util.Arrays;
+import java.util.Optional;
 
-import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.event.log.EventLogService;
-import de.metas.security.Principal;
-import de.metas.security.permissions.Access;
-import de.metas.security.permissions.record_access.handlers.RecordAccessHandler;
-import de.metas.user.UserGroupRepository;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import lombok.NonNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /*
  * #%L
@@ -66,11 +61,12 @@ public class UserGroupRecordAccessServiceTest
 		SpringContextHolder.registerJUnitBean(new EventLogService(mock(EventLogsRepository.class)));
 
 		userGroupRecordAccessService = new RecordAccessService(
-				new RecordAccessConfigService(Optional.<List<RecordAccessHandler>> empty()),
-				new UserGroupRepository(),
-				new PlainEventBusFactory());
+				new RecordAccessRepository(),
+				new RecordAccessConfigService(Optional.empty()),
+				new UserGroupRepository());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private RecordAccess grantAccessAndTest(@NonNull final TableRecordReference recordRef, final Access permission)
 	{
 		final ImmutableList<RecordAccess> recordAcceses = grantAccessesAndTest(recordRef, permission);
@@ -116,135 +112,5 @@ public class UserGroupRecordAccessServiceTest
 	{
 		final TableRecordReference order = TableRecordReference.of("C_Order", 123);
 		grantAccessesAndTest(order, Access.READ, Access.WRITE);
-	}
-
-	@Nested
-	public class copyAccess
-	{
-		@Test
-		public void existingRW_grantRW_revokeRW()
-		{
-			final TableRecordReference order = TableRecordReference.of("C_Order", 123);
-			final TableRecordReference newBPartner = TableRecordReference.of("C_BPartner", 1);
-			final TableRecordReference previousBPartner = TableRecordReference.of("C_BPartner", 2);
-
-			grantAccessesAndTest(order, Access.READ, Access.WRITE);
-			grantAccessesAndTest(newBPartner, Access.READ, Access.WRITE);
-			grantAccessesAndTest(previousBPartner, Access.READ, Access.WRITE);
-
-			userGroupRecordAccessService.copyAccess(RecordAccessCopyRequest.builder()
-					.target(order)
-					.grantFrom(newBPartner)
-					.revokeFrom(previousBPartner)
-					.issuer(ISSUER)
-					.requestedBy(UserId.ofRepoId(555))
-					.build());
-
-			final ImmutableList<RecordAccess> accessRecords = userGroupRecordAccessService.getAccessesByRecordAndIssuer(order, ISSUER);
-			assertThat(accessRecords).hasSize(2);
-
-			{
-				final RecordAccess accessRecord = accessRecords.get(0);
-				assertThat(accessRecord.getRecordRef()).isEqualTo(order);
-				assertThat(accessRecord.getPrincipal()).isEqualTo(USER_ID);
-				assertThat(accessRecord.getPermission()).isEqualTo(Access.READ);
-				assertThat(accessRecord.getIssuer()).isEqualTo(ISSUER);
-				assertThat(accessRecord.getCreatedBy()).isEqualTo(UserId.ofRepoId(111));
-				assertThat(accessRecord.getId()).isNotNull();
-				assertThat(accessRecord.getParentId()).isNull();
-				assertThat(accessRecord.getRootId()).isEqualTo(accessRecord.getId());
-			}
-			{
-				final RecordAccess accessRecord = accessRecords.get(1);
-				assertThat(accessRecord.getRecordRef()).isEqualTo(order);
-				assertThat(accessRecord.getPrincipal()).isEqualTo(USER_ID);
-				assertThat(accessRecord.getPermission()).isEqualTo(Access.WRITE);
-				assertThat(accessRecord.getIssuer()).isEqualTo(ISSUER);
-				assertThat(accessRecord.getCreatedBy()).isEqualTo(UserId.ofRepoId(111));
-				assertThat(accessRecord.getId()).isNotNull();
-				assertThat(accessRecord.getParentId()).isNull();
-				assertThat(accessRecord.getRootId()).isEqualTo(accessRecord.getId());
-			}
-		}
-
-		@Test
-		public void existingNONE_grantREAD()
-		{
-			final TableRecordReference order = TableRecordReference.of("C_Order", 123);
-			final TableRecordReference newBPartner = TableRecordReference.of("C_BPartner", 1);
-			final TableRecordReference previousBPartner = TableRecordReference.of("C_BPartner", 2);
-
-			final RecordAccess newBPartner_read = grantAccessAndTest(newBPartner, Access.READ);
-
-			userGroupRecordAccessService.copyAccess(RecordAccessCopyRequest.builder()
-					.target(order)
-					.grantFrom(newBPartner)
-					.revokeFrom(previousBPartner)
-					.issuer(ISSUER)
-					.requestedBy(UserId.ofRepoId(555))
-					.build());
-
-			final ImmutableList<RecordAccess> accessRecords = userGroupRecordAccessService.getAccessesByRecordAndIssuer(order, ISSUER);
-			assertThat(accessRecords).hasSize(1);
-
-			{
-				final RecordAccess accessRecord = accessRecords.get(0);
-				assertThat(accessRecord.getRecordRef()).isEqualTo(order);
-				assertThat(accessRecord.getPrincipal()).isEqualTo(USER_ID);
-				assertThat(accessRecord.getPermission()).isEqualTo(Access.READ);
-				assertThat(accessRecord.getIssuer()).isEqualTo(ISSUER);
-				assertThat(accessRecord.getCreatedBy()).isEqualTo(UserId.ofRepoId(555));
-				assertThat(accessRecord.getId()).isNotNull();
-				assertThat(accessRecord.getParentId()).isEqualTo(newBPartner_read.getId());
-				assertThat(accessRecord.getRootId()).isEqualTo(newBPartner_read.getRootId());
-			}
-		}
-
-		@Test
-		public void existingREAD_revokeREAD()
-		{
-			final TableRecordReference order = TableRecordReference.of("C_Order", 123);
-			final TableRecordReference newBPartner = TableRecordReference.of("C_BPartner", 1);
-			final TableRecordReference previousBPartner = TableRecordReference.of("C_BPartner", 2);
-
-			grantAccessAndTest(order, Access.READ);
-			grantAccessAndTest(previousBPartner, Access.READ);
-
-			userGroupRecordAccessService.copyAccess(RecordAccessCopyRequest.builder()
-					.target(order)
-					.grantFrom(newBPartner)
-					.revokeFrom(previousBPartner)
-					.issuer(ISSUER)
-					.requestedBy(UserId.ofRepoId(555))
-					.build());
-
-			final ImmutableList<RecordAccess> accessRecords = userGroupRecordAccessService.getAccessesByRecordAndIssuer(order, ISSUER);
-			assertThat(accessRecords).hasSize(0);
-		}
-
-		@Test
-		public void existingREAD_revokeREAD_grantREAD()
-		{
-			final TableRecordReference order = TableRecordReference.of("C_Order", 123);
-			final TableRecordReference newBPartner = TableRecordReference.of("C_BPartner", 1);
-			final TableRecordReference previousBPartner = TableRecordReference.of("C_BPartner", 2);
-
-			final RecordAccess order_read = grantAccessAndTest(order, Access.READ);
-			grantAccessAndTest(newBPartner, Access.READ);
-			grantAccessAndTest(previousBPartner, Access.READ);
-
-			userGroupRecordAccessService.copyAccess(RecordAccessCopyRequest.builder()
-					.target(order)
-					.grantFrom(newBPartner)
-					.revokeFrom(previousBPartner)
-					.issuer(ISSUER)
-					.requestedBy(UserId.ofRepoId(555))
-					.build());
-
-			final ImmutableList<RecordAccess> accessRecords = userGroupRecordAccessService.getAccessesByRecordAndIssuer(order, ISSUER);
-			assertThat(accessRecords).hasSize(1);
-
-			assertThat(accessRecords.get(0)).isEqualTo(order_read);
-		}
 	}
 }

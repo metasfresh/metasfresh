@@ -396,7 +396,7 @@ public class PaymentBLTest
 
 			assertThatThrownBy(() -> paymentBL.markReconciledAndSave(payment, bankStatementLine2))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageStartingWith("Payment was already reconciled");
+					.hasMessageStartingWith("Payment with DocumentNo=");
 		}
 	}
 

@@ -24,76 +24,6 @@
 	</properties>
 
 	<dependencies>
-
-		<!-- Spring -->
-		<dependency>
-			<groupId>org.springframework.session</groupId>
-			<artifactId>spring-session</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-websocket</artifactId>
-		</dependency>
-
-		<!-- TODO: enable this dependency when we will really implement spring 
-			security -->
-		<!-- <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-security</artifactId> 
-			</dependency> -->
-
-		<!-- see http://codecentric.github.io/spring-boot-admin/1.5.0/#client-applications -->
-		<!-- there are exclusions to avoid dependency version convergence issues 
-			(i.e. to satisfy the enforcer plugin) -->
-		<dependency>
-			<groupId>de.codecentric</groupId>
-			<artifactId>spring-boot-admin-starter-client</artifactId>
-			<version>${spring-boot-admin.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-web</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-boot</artifactId>
-					<groupId>org.springframework.boot</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-boot-starter-web</artifactId>
-					<groupId>org.springframework.boot</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>21.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
-		<!-- Adempiere dependencies -->
-		<dependency>
-			<groupId>de.metas.fresh</groupId>
-			<artifactId>de.metas.fresh.base</artifactId>
-			<version>${metasfresh.version}</version>
-			<exclusions>
-				<!-- TODO: i think we shall remove this dep. from de.metas.fresh.base 
-					!!! -->
-				<exclusion>
-					<groupId>de.metas.adempiere.adempiere</groupId>
-					<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
 		<dependency>
 			<groupId>de.metas.ui.web</groupId>
 			<artifactId>de.metas.ui.web.base</artifactId>
@@ -101,131 +31,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.purchasecandidate</groupId>
-			<artifactId>de.metas.purchasecandidate.base</artifactId>
+			<groupId>de.metas.servicerepair</groupId>
+			<artifactId>de.metas.servicerepair.webui</artifactId>
 			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<!-- note that the code is not called by metasfresh-webui-api (currently!) 
-			but there are model interceptors etc that should be present -->
-		<dependency>
-			<groupId>de.metas.vertical.pharma</groupId>
-			<artifactId>metasfresh-pharma</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.vertical.pharma</groupId>
-			<artifactId>metasfresh-pharma.msv3.server-peer-metasfresh</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${metasfresh.version}</version>
-			<scope>test</scope>
-			<classifier>tests</classifier>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.business</groupId>
-			<artifactId>de.metas.business</artifactId>
-			<version>${metasfresh.version}</version>
-			<scope>test</scope>
-			<classifier>tests</classifier>
-		</dependency>
-
-		<!-- required to display ATP info in sales and purchase contexts -->
-		<dependency>
-			<groupId>de.metas.material</groupId>
-			<artifactId>metasfresh-material-dispo-commons</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.handlingunits</groupId>
-			<artifactId>de.metas.handlingunits.base</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>tests</classifier>
-			<scope>test</scope>
-		</dependency>
-        <dependency>
-            <groupId>de.metas.manufacturing</groupId>
-            <artifactId>de.metas.manufacturing</artifactId>
-            <version>10.0.0</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-        </dependency>
-
-		<dependency>
-			<groupId>de.metas.device.adempiere</groupId>
-			<artifactId>de.metas.device.adempiere</artifactId>
-			<version>10.0.0</version>
-		</dependency>
-
-
-		<!-- Elasticsearch -->
-		<dependency>
-			<groupId>de.metas.elasticsearch</groupId>
-			<artifactId>de.metas.elasticsearch.server</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-elasticsearch</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>com.google.guava</groupId>
-					<artifactId>guava</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>commons-cli</groupId>
-					<artifactId>commons-cli</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<!-- Required for elasticsearch -->
-			<groupId>net.java.dev.jna</groupId>
-			<artifactId>jna</artifactId>
-		</dependency>
-
-		<!-- Swagger -->
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger2</artifactId>
-			<version>${springfox-swagger.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.google.guava</groupId>
-					<artifactId>guava</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>io.springfox</groupId>
-			<artifactId>springfox-swagger-ui</artifactId>
-			<version>${springfox-swagger.version}</version>
-		</dependency>
-
-		<!-- https://github.com/hoereth/springfox-enum-plugin -->
-		<dependency>
-			<groupId>de.pentabyte</groupId>
-			<artifactId>springfox-enum-plugin</artifactId>
-			<version>1.1.1</version>
 		</dependency>
 
 		<!-- logging -->
@@ -234,21 +42,6 @@
 			<groupId>net.logstash.logback</groupId>
 			<artifactId>logstash-logback-encoder</artifactId>
 		</dependency>
-
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<version>${mockito.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>io.takari.junit</groupId>
-			<artifactId>takari-cpsuite </artifactId>
-			<version>1.2.7</version>
-			<scope>test</scope>
-		</dependency>
-
 	</dependencies>
 
 	<build>

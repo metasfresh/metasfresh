@@ -1,175 +1,118 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for RV_M_HU_Storage_InvoiceHistory
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_RV_M_HU_Storage_InvoiceHistory extends org.compiere.model.PO implements I_RV_M_HU_Storage_InvoiceHistory, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1850435464L;
+	private static final long serialVersionUID = 284018895L;
 
     /** Standard Constructor */
-    public X_RV_M_HU_Storage_InvoiceHistory (Properties ctx, int RV_M_HU_Storage_InvoiceHistory_ID, String trxName)
+    public X_RV_M_HU_Storage_InvoiceHistory (final Properties ctx, final int RV_M_HU_Storage_InvoiceHistory_ID, @Nullable final String trxName)
     {
       super (ctx, RV_M_HU_Storage_InvoiceHistory_ID, trxName);
-      /** if (RV_M_HU_Storage_InvoiceHistory_ID == 0)
-        {
-        } */
     }
 
     /** Load Constructor */
-    public X_RV_M_HU_Storage_InvoiceHistory (Properties ctx, ResultSet rs, String trxName)
+    public X_RV_M_HU_Storage_InvoiceHistory (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set ASIKey for HUStorage.
-		@param HUStorageASIKey ASIKey for HUStorage	  */
+	/** Load Meta Data */
 	@Override
-	public void setHUStorageASIKey (java.lang.String HUStorageASIKey)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setHUStorageASIKey (final @Nullable java.lang.String HUStorageASIKey)
 	{
 		set_ValueNoCheck (COLUMNNAME_HUStorageASIKey, HUStorageASIKey);
 	}
 
-	/** Get ASIKey for HUStorage.
-		@return ASIKey for HUStorage	  */
 	@Override
-	public java.lang.String getHUStorageASIKey () 
+	public java.lang.String getHUStorageASIKey() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_HUStorageASIKey);
+		return get_ValueAsString(COLUMNNAME_HUStorageASIKey);
 	}
 
-	/** Set Lagerort.
-		@param M_Locator_ID 
-		Lagerort im Lager
-	  */
 	@Override
-	public void setM_Locator_ID (int M_Locator_ID)
+	public void setM_Locator_ID (final int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Locator_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Locator_ID, M_Locator_ID);
 	}
 
-	/** Get Lagerort.
-		@return Lagerort im Lager
-	  */
 	@Override
-	public int getM_Locator_ID () 
+	public int getM_Locator_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Locator_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Locator_ID);
 	}
 
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
-	/** Set Bestand.
-		@param QtyOnHand 
-		Bestand
-	  */
 	@Override
-	public void setQtyOnHand (java.math.BigDecimal QtyOnHand)
+	public void setQtyOnHand (final @Nullable BigDecimal QtyOnHand)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyOnHand, QtyOnHand);
 	}
 
-	/** Get Bestand.
-		@return Bestand
-	  */
 	@Override
-	public java.math.BigDecimal getQtyOnHand () 
+	public BigDecimal getQtyOnHand() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOnHand);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOnHand);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Bestellt/ Beauftragt.
-		@param QtyOrdered 
-		Bestellt/ Beauftragt
-	  */
 	@Override
-	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
+	public void setQtyOrdered (final @Nullable BigDecimal QtyOrdered)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
-	/** Get Bestellt/ Beauftragt.
-		@return Bestellt/ Beauftragt
-	  */
 	@Override
-	public java.math.BigDecimal getQtyOrdered () 
+	public BigDecimal getQtyOrdered() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOrdered);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Offen.
-		@param QtyReserved 
-		Offene Menge
-	  */
 	@Override
-	public void setQtyReserved (java.math.BigDecimal QtyReserved)
+	public void setQtyReserved (final @Nullable BigDecimal QtyReserved)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyReserved, QtyReserved);
 	}
 
-	/** Get Offen.
-		@return Offene Menge
-	  */
 	@Override
-	public java.math.BigDecimal getQtyReserved () 
+	public BigDecimal getQtyReserved() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReserved);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReserved);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

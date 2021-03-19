@@ -5,7 +5,7 @@ Feature: material-dispo updates on shipment-schedule events
 
   Scenario: shipment-schedule without stock or ATP
     Given metasfresh initially has no MD_Candidate data
-    When metasfresh receives a shipmentScheduleCreatedEvent
+    When metasfresh receives a ShipmentScheduleCreatedEvent
       | M_Product_ID | M_ShipmentSchedule_ID | PreparationDate         | Qty |
       | 2005577      | 123                   | 2020-12-12T23:59:00.00Z | 10  |
     Then metasfresh has this MD_Candidate data
@@ -20,7 +20,7 @@ Feature: material-dispo updates on shipment-schedule events
     Given metasfresh initially has this MD_Candidate data
       | Type         | BusinessCase | M_Product_ID | Time                    | Qty | ATP |
       | INVENTORY_UP |              | 2005577      | 2020-12-12T10:00:00.00Z | 100 | 100 |
-    When metasfresh receives a shipmentScheduleCreatedEvent
+    When metasfresh receives a ShipmentScheduleCreatedEvent
       | M_Product_ID | M_ShipmentSchedule_ID | PreparationDate         | Qty |
       | 2005577      | 123                   | 2020-12-12T23:59:00.00Z | 10  |
     Then metasfresh has this MD_Candidate data
@@ -30,3 +30,5 @@ Feature: material-dispo updates on shipment-schedule events
     And metasfresh has this MD_Candidate_Demand_Detail data
       | MD_Candidate_ID.Identifier | M_ShipmentSchedule_ID |
       | c_2                        | 123                   |
+
+  

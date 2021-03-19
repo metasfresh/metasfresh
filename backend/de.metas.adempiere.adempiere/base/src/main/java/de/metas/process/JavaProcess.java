@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import de.metas.common.util.time.SystemTime;
@@ -100,9 +101,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	//
 	// Transaction management
 	/** Process Main transaction */
-	private ITrx m_trx = ITrx.TRX_None;
+	@Nullable private ITrx m_trx = ITrx.TRX_None;
 	private Boolean m_trxIsLocal;
-	private ImmutableReference<String> m_trxNameThreadInheritedBackup;
+	@Nullable private ImmutableReference<String> m_trxNameThreadInheritedBackup;
 	private boolean m_dbConstraintsChanged = false;
 	/** Transaction name prefix (in case of local transaction) */
 	private static final String TRXNAME_Prefix = "JavaProcess";
@@ -138,7 +139,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	/**
 	 * @return current active {@link JavaProcess}; never returns null
 	 */
-	public static final <T extends JavaProcess> T currentInstance()
+	public static <T extends JavaProcess> T currentInstance()
 	{
 		@SuppressWarnings("unchecked")
 		final T currentInstances = (T)currentInstanceHolder.get();
@@ -149,18 +150,10 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return currentInstances;
 	}
 
-	public static final <T extends JavaProcess> T currentInstance(final Class<T> type)
-	{
-		return currentInstance();
-	}
-
 	/**
 	 * Set the current process instance, assuming that none is set right now. If one is already set, then throw an exception.
-	 *
-	 * @param instance
-	 * @return
 	 */
-	public static final IAutoCloseable temporaryChangeCurrentInstance(@NonNull final Object instance)
+	public static IAutoCloseable temporaryChangeCurrentInstance(@NonNull final Object instance)
 	{
 		final boolean overrideCurrentInstance = false;
 		return temporaryChangeCurrentInstance(instance, overrideCurrentInstance);
@@ -168,11 +161,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Set the current process instance. If one is already set, then overwrite it.
-	 *
-	 * @param instance
-	 * @return
 	 */
-	public static final IAutoCloseable temporaryChangeCurrentInstanceOverriding(final Object instance)
+	public static IAutoCloseable temporaryChangeCurrentInstanceOverriding(final Object instance)
 	{
 		final boolean overrideCurrentInstance = true;
 		return temporaryChangeCurrentInstance(instance, overrideCurrentInstance);
@@ -180,12 +170,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 *
-	 * @param instance
 	 * @param overrideCurrentInstance of {@code false} and there is already an instance set, then throw an exception.
-	 *
-	 * @return
 	 */
-	private static final IAutoCloseable temporaryChangeCurrentInstance(@NonNull final Object instance, final boolean overrideCurrentInstance)
+	private static IAutoCloseable temporaryChangeCurrentInstance(@NonNull final Object instance, final boolean overrideCurrentInstance)
 	{
 		final Object previousInstance = currentInstanceHolder.get();
 		if (!overrideCurrentInstance && previousInstance != null && !Util.same(previousInstance, instance))
@@ -253,8 +240,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	{
 		Check.assume(this == currentInstance(), "This process shall be the current active instance: {}", this);
 
-		try (final MDCCloseable pinstanceMDC = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, pi.getPinstanceId());
-				final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, pi.getAdProcessId()))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_AD_PInstance.Table_Name, pi.getPinstanceId());
+				final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, pi.getAdProcessId()))
 		{
 			// Initialize process instance state from given process instance info.
 			init(pi);
@@ -264,8 +251,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 			m_trx = ITrx.TRX_None;
 
 			boolean success = false;
-			try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(this);
-					final IAutoCloseable contextRestorer = Env.switchContext(_ctx); // FRESH-314: make sure our derived context will always be used
+			try (final IAutoCloseable ignored2 = Loggables.temporarySetLoggable(this);
+					final IAutoCloseable ignored3 = Env.switchContext(_ctx) // FRESH-314: make sure our derived context will always be used
 			)
 			{
 				//
@@ -382,17 +369,14 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		// nothing at this level
 	}
 
-	private final Field getAnnotatedParamField(final ProcessClassParamInfo paramInfo)
+	private Field getAnnotatedParamField(final ProcessClassParamInfo paramInfo)
 	{
-		final Map<ArrayKey, Field> processFields = _fieldsIndexedByFieldKey;
 		final ArrayKey fieldKey = paramInfo.getFieldKey();
-		return processFields.get(fieldKey);
+		return ((Map<ArrayKey, Field>)_fieldsIndexedByFieldKey).get(fieldKey);
 	}
 
 	/**
 	 * Load "@Param" annotated parameters from {@link ProcessInfo}.
-	 *
-	 * @param failIfNotValid
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void loadParametersFromContext(final boolean failIfNotValid)
@@ -421,10 +405,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 *
 	 * If the parameter value is not valid (e.g. mandatory required but was null),
 	 * this method won't fail but will simply not set the value.
-	 *
-	 * @param parameterName
-	 * @param isParameterTo
-	 * @param source
 	 */
 	public final void loadParameterValueNoFail(final String parameterName, final IRangeAwareParams source)
 	{
@@ -452,13 +432,12 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return parametersCallout != null;
 	}
 
-	private final Collection<ProcessClassParamInfo> getParameterInfos(final String parameterName)
+	private Collection<ProcessClassParamInfo> getParameterInfos(final String parameterName)
 	{
 		final ProcessInfo pi = getProcessInfo();
 		final ProcessClassInfo processClassInfo = pi.getProcessClassInfo();
 
-		final Collection<ProcessClassParamInfo> parameterInfos = processClassInfo.getParameterInfos(parameterName);
-		return parameterInfos;
+		return processClassInfo.getParameterInfos(parameterName);
 	}
 
 	public final IRangeAwareParams getParametersFromAnnotatedFields()
@@ -484,7 +463,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return RangeAwareParams.ofMaps(values, valuesTo);
 	}
 
-	private final Object getAnnotatedParamFieldValue(final ProcessClassParamInfo paramInfo)
+	@Nullable
+	private Object getAnnotatedParamFieldValue(final ProcessClassParamInfo paramInfo)
 	{
 		final Field field = getAnnotatedParamField(paramInfo);
 		if (field == null)
@@ -494,8 +474,12 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 		try
 		{
-			final Object fieldValue = field.get(this);
-			return fieldValue;
+			if(!field.isAccessible())
+			{
+				field.setAccessible(true);
+			}
+
+			return field.get(this);
 		}
 		catch (final Exception ex)
 		{
@@ -506,11 +490,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Asserts we are running out of transaction.
-	 *
-	 * @param trx
-	 * @param stage
 	 */
-	private final void assertOutOfTransaction(final ITrx trx, final String stage)
+	private void assertOutOfTransaction(final ITrx trx, final String stage)
 	{
 		// Make sure we are really running out-of-transaction
 		if (!trxManager.isNull(trx))
@@ -533,7 +514,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 *
 	 * @param trxExisting existing transaction, if any
 	 */
-	private final void startTrx(final ITrx trxExisting)
+	private void startTrx(final ITrx trxExisting)
 	{
 		// NOTE: in endTrx() method we shall do the reverse operations, BUT in reversed order than in startTrx().
 
@@ -580,10 +561,8 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * Ends current transaction, if a local transaction.
 	 *
 	 * This method can be called as many times as possible and even if the transaction was not started before.
-	 *
-	 * @param success
 	 */
-	private final void endTrx(final boolean success)
+	private void endTrx(final boolean success)
 	{
 		// NOTE: in endTrx() method we shall do the reverse operations, BUT in reversed order than in startTrx().
 
@@ -639,7 +618,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		}
 	}
 
-	private final void setProcessResultOK(final String msg)
+	private void setProcessResultOK(final String msg)
 	{
 		final String msgTrl;
 		if (Check.isEmpty(msg, true))
@@ -654,7 +633,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		getResult().markAsSuccess(msgTrl);
 	}
 
-	private final void setProcessResultError(final Throwable e)
+	private void setProcessResultError(final Throwable e)
 	{
 		//
 		// Get error message
@@ -666,15 +645,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 		//
 		// Check if it's really an error
-		final boolean error;
-		if (e instanceof ProcessCanceledException)
-		{
-			error = false;
-		}
-		else
-		{
-			error = true;
-		}
+		final boolean error = !(e instanceof ProcessCanceledException);
 
 		//
 		// Update ProcessInfo's result
@@ -700,7 +671,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * <li>calls {@link #prepare()}
 	 * </ul>
 	 */
-	private final void prepareProcess()
+	private void prepareProcess()
 	{
 		// Load annotated process parameters,
 		// but this time we need to fail in case some parameters are not valid.
@@ -758,8 +729,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	/**
 	 * Schedule runnable to be executed whenever the current transaction is committed.
 	 * If there is no current transaction, the runnable will be executed right away.
-	 *
-	 * @param runnable
 	 */
 	protected final void runAfterCommit(@NonNull final Runnable runnable)
 	{
@@ -825,7 +794,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return processInfo;
 	}
 
-	private final ProcessInfo getProcessInfoOrNull()
+	private ProcessInfo getProcessInfoOrNull()
 	{
 		return _processInfo;
 	}
@@ -835,6 +804,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return getProcessInfo().getResult();
 	}
 
+	@Nullable
 	protected final ProcessExecutionResult getResultOrNull()
 	{
 		final ProcessInfo processInfo = getProcessInfoOrNull();
@@ -895,7 +865,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID using current transaction (i.e. {@link #getTrxName()}).
 	 *
-	 * @param modelClass
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
 	 * @deprecated use proper Repository
@@ -1022,8 +991,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	/**
 	 * Sets if the process logs (if any) shall be displayed to user
-	 *
-	 * @param showProcessLogsPolicy
 	 */
 	protected final void setShowProcessLogs(final ShowProcessLogs showProcessLogsPolicy)
 	{
@@ -1063,6 +1030,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 *
 	 * @return the transaction name
 	 */
+	@Nullable
 	public final String get_TrxName()
 	{
 		final ITrx trx = m_trx;
@@ -1071,11 +1039,13 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	// org.adempiere.model.IContextAware#getTrxName()
 	@Override
+	@Nullable
 	public final String getTrxName()
 	{
 		return get_TrxName();
 	}
 
+	@Nullable
 	protected final String getTableName()
 	{
 		return getProcessInfo().getTableNameOrNull();
@@ -1089,7 +1059,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * <li>else an exception is thrown
 	 * </ul>
 	 *
-	 * @param modelClass
 	 * @return query builder which will provide selected record(s)
 	 */
 	protected final <ModelType> IQueryBuilder<ModelType> retrieveSelectedRecordsQueryBuilder(final Class<ModelType> modelClass)
@@ -1128,27 +1097,16 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	}
 
 	/**
-	 * Sets the record to be selected in window, after this process is executed (applies only when the process was started from a user window).
-	 *
-	 * @param recordToSelectAfterExecution
-	 */
-	protected final void setRecordToSelectAfterExecution(final TableRecordReference recordToSelectAfterExecution)
-	{
-		getResult().setRecordToSelectAfterExecution(recordToSelectAfterExecution);
-	}
-
-	/**
 	 * Exceptions to be thrown if we want to cancel the process run.
 	 *
 	 * If this exception is thrown:
 	 * <ul>
 	 * <li>the process will be terminated right away
 	 * <li>transaction (if any) will be rolled back
-	 * <li>process summary message will be set from this exception message (i.e. {@link ProcessInfo#getSummary()})
-	 * <li>process will NOT be flagged as error (i.e. {@link ProcessInfo#isError()} will return <code>false</code>)
+	 * <li>process summary message will be set from this exception message
+	 * <li>process will NOT be flagged as error
 	 * </ul>
 	 */
-	@SuppressWarnings("serial")
 	public static final class ProcessCanceledException extends AdempiereException
 	{
 		@VisibleForTesting

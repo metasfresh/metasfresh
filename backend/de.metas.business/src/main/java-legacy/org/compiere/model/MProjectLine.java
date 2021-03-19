@@ -1,5 +1,12 @@
 package org.compiere.model;
 
+import de.metas.cache.CacheMgt;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
 
 import java.math.BigDecimal;
@@ -41,33 +48,33 @@ public class MProjectLine extends X_C_ProjectLine
 		super(ctx, rs, trxName);
 	}
 
-	public MProjectLine(final MProject project)
+	public MProjectLine(final I_C_Project project)
 	{
-		this(project.getCtx(), 0, project.get_TrxName());
-		setClientOrg(project);
+		this(InterfaceWrapperHelper.getCtx(project),
+				0,
+				InterfaceWrapperHelper.getTrxName(project));
+
+		setClientOrg(project.getAD_Client_ID(), project.getAD_Org_ID());
 		setC_Project_ID(project.getC_Project_ID());    // Parent
 		setLine();
 	}
 
 	private void setLine()
 	{
-		setLine(DB.getSQLValue(get_TrxName(),
+		setLine(DB.getSQLValueEx(get_TrxName(),
 				"SELECT COALESCE(MAX(Line),0)+10 FROM C_ProjectLine WHERE C_Project_ID=?", getC_Project_ID()));
 	}
 
 	/**
 	 * Set Product, committed qty, etc.
 	 */
-	public void setMProjectIssue(final MProjectIssue pi)
+	public void setMProjectIssue(@NonNull final I_C_ProjectIssue pi)
 	{
 		setC_ProjectIssue_ID(pi.getC_ProjectIssue_ID());
 		setM_Product_ID(pi.getM_Product_ID());
 		setCommittedQty(pi.getMovementQty());
-		if (getDescription() != null)
-		{
-			setDescription(pi.getDescription());
-		}
-	}    //	setMProjectIssue
+		setDescription(pi.getDescription());
+	}
 
 	private MProject getProject()
 	{
@@ -144,7 +151,9 @@ public class MProjectLine extends X_C_ProjectLine
 			}
 			else if (getM_Product_Category_ID() > 0)
 			{
-				final MProductCategory category = MProductCategory.get(getCtx(), getM_Product_Category_ID());
+				final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(getM_Product_Category_ID());
+				final IProductDAO productDAO = Services.get(IProductDAO.class);
+				final I_M_Product_Category category = productDAO.getProductCategoryById(productCategoryId);
 				final BigDecimal marginEach = category.getPlannedMargin();
 				setPlannedMarginAmt(marginEach.multiply(getPlannedQty()));
 			}
@@ -153,11 +162,10 @@ public class MProjectLine extends X_C_ProjectLine
 		//	Phase/Task
 		if (is_ValueChanged(COLUMNNAME_C_ProjectTask_ID) && getC_ProjectTask_ID() > 0)
 		{
-			final MProjectTask pt = new MProjectTask(getCtx(), getC_ProjectTask_ID(), get_TrxName());
-			if (pt == null || pt.get_ID() == 0)
+			final I_C_ProjectTask pt = InterfaceWrapperHelper.create(getCtx(), getC_ProjectTask_ID(), I_C_ProjectTask.class, get_TrxName());
+			if (pt.getC_ProjectTask_ID() <= 0)
 			{
-				log.warn("Project Task Not Found - ID=" + getC_ProjectTask_ID());
-				return false;
+				throw new AdempiereException("Project Task Not Found - ID=" + getC_ProjectTask_ID());
 			}
 			else
 			{
@@ -168,10 +176,9 @@ public class MProjectLine extends X_C_ProjectLine
 		if (is_ValueChanged(COLUMNNAME_C_ProjectPhase_ID) && getC_ProjectPhase_ID() > 0)
 		{
 			final MProjectPhase pp = new MProjectPhase(getCtx(), getC_ProjectPhase_ID(), get_TrxName());
-			if (pp == null || pp.get_ID() == 0)
+			if (pp.get_ID() <= 0)
 			{
-				log.warn("Project Phase Not Found - " + getC_ProjectPhase_ID());
-				return false;
+				throw new AdempiereException("Project Phase Not Found - " + getC_ProjectPhase_ID());
 			}
 			else
 			{
@@ -194,11 +201,8 @@ public class MProjectLine extends X_C_ProjectLine
 	{
 		updateHeader();
 		return success;
-	}    //	afterDelete
+	}
 
-	/**
-	 * Update Header
-	 */
 	private void updateHeader()
 	{
 		final String sql = DB.convertSqlToNative("UPDATE C_Project p "
@@ -216,5 +220,7 @@ public class MProjectLine extends X_C_ProjectLine
 		{
 			log.warn("updateHeader - #{}", no);
 		}
+
+		CacheMgt.get().reset(I_C_Project.Table_Name, getC_Project_ID());
 	}
 }

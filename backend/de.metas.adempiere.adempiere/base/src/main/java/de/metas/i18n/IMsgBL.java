@@ -42,9 +42,6 @@ public interface IMsgBL extends ISingletonService
 	/**
 	 * Get translated text message for AD_Message
 	 * 
-	 * @param adLanguage AD_Language
-	 * @param adMessage AD_Message
-	 * @param params parameters
 	 * @return translated text
 	 */
 	String getMsg(String adLanguage, AdMessageKey message, Object[] params);
@@ -61,7 +58,7 @@ public interface IMsgBL extends ISingletonService
 	String getMsg(Properties ctx, AdMessageKey adMessage);
 
 	@Deprecated
-	default String getMsg(Properties ctx, String adMessage)
+	default String getMsg(final Properties ctx, final String adMessage)
 	{
 		return getMsg(ctx, AdMessageKey.of(adMessage));
 	}
@@ -69,15 +66,12 @@ public interface IMsgBL extends ISingletonService
 	/**
 	 * Get translated text message for AD_Message
 	 * 
-	 * @param ctx Context to retrieve language
-	 * @param adMessage AD_Message
-	 * @param params
 	 * @return translated text
 	 */
 	String getMsg(Properties ctx, AdMessageKey adMessage, Object[] params);
 
 	@Deprecated
-	default String getMsg(Properties ctx, String adMessage, Object[] params)
+	default String getMsg(final Properties ctx, final String adMessage, final Object[] params)
 	{
 		return getMsg(ctx, AdMessageKey.of(adMessage), params);
 	}
@@ -93,9 +87,6 @@ public interface IMsgBL extends ISingletonService
 	/**
 	 * Get translated text message for AD_Message
 	 * 
-	 * @param ctx Context to retrieve language
-	 * @param adMessage Message Key
-	 * @param getText if true only return Text, if false only return Tip
 	 * @return translated text
 	 */
 	String getMsg(Properties ctx, AdMessageKey adMessage, boolean text);
@@ -146,7 +137,7 @@ public interface IMsgBL extends ISingletonService
 	 * @return AD_Message as translatable string
 	 * @see #translatable(String)
 	 */
-	ITranslatableString getTranslatableMsgText(AdMessageKey adMessage, Object... msgParameters);
+	ITranslatableString getTranslatableMsgText(AdMessageKey adMessage, @Nullable Object... msgParameters);
 
 	@Deprecated
 	default ITranslatableString getTranslatableMsgText(@NonNull final String adMessage, @Nullable final Object... msgParameters)
@@ -174,7 +165,7 @@ public interface IMsgBL extends ISingletonService
 	/**
 	 * Gets AD_Language/message map
 	 * 
-	 * @param adLanguage
+	 * @param adLanguage language key
 	 * @param prefix prefix used to match the AD_Messages (keys)
 	 * @param removePrefix if true, the prefix will be cut out from the AD_Message keys that will be returned
 	 * @return a map of "AD_Message" (might be with the prefix removed) to "translated message" pairs

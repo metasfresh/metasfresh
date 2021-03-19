@@ -32,14 +32,15 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
         return
     }
 
-    // set the root-pom's parent pom. Although the parent pom is avaialbe via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
+    // set the root-pom's parent pom. Although the parent pom is available via relativePath, we need it to be this build's version then the root pom is deployed to our maven-repo
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DparentVersion=${env.MF_VERSION} ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:update-parent"
 
     // set the artifact version of everything below de.metas.esb/pom.xml
     sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set"
 
-    // update the versions of metas dependencies that are external to the de.metas.esb reactor modules
-    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DallowSnapshots=false -DgenerateBackupPoms=true -DprocessDependencies=true -DprocessParent=true -DexcludeReactor=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:use-latest-versions"
+    // resolve the version property ${metasfresh-common.version} in the pom.xml
+    final String commonPropertyParam = "-Dproperty=metasfresh-common.version -DnewVersion=LATEST"
+    sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode ${mvnConf.resolveParams} -DallowDowngrade=true ${commonPropertyParam} ${VERSIONS_PLUGIN}:update-property"
 
     // build and install
     // about -Dmetasfresh.assembly.descriptor.version: the versions plugin can't update the version of our shared assembly descriptor de.metas.assemblies. Therefore we need to provide the version from outside via this property

@@ -35,10 +35,13 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
+import de.metas.order.OrderId;
+import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.reservation.PaymentReservationService;
+import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -47,6 +50,7 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -68,36 +72,50 @@ import java.util.Optional;
 @Callout(I_C_Order.class)
 public class C_Order
 {
-	public static final C_Order INSTANCE = new C_Order();
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	private final OrderLineDetailRepository orderLineDetailRepository;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
 	private static final AdMessageKey MSG_SELECT_CONTACT_WITH_VALID_EMAIL = AdMessageKey.of("de.metas.order.model.interceptor.C_Order.PleaseSelectAContactWithValidEmailAddress");
 
-	private C_Order()
+	public C_Order(final OrderLineDetailRepository orderLineDetailRepository)
 	{
+		this.orderLineDetailRepository = orderLineDetailRepository;
+		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
+		programmaticCalloutProvider.registerAnnotatedCallout(this);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_M_PriceList_ID })
 	public void onPriceListChangeInterceptor(final I_C_Order order)
 	{
-		onPriceListchange(order);
+		onPriceListChange(order);
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_M_PriceList_ID)
 	public void onPriceListChangeCallout(final I_C_Order order)
 	{
-		onPriceListchange(order);
+		onPriceListChange(order);
 	}
 
-	private void onPriceListchange(final I_C_Order order)
+	private void onPriceListChange(final I_C_Order order)
 	{
-		if (order.getM_PriceList_ID() <= 0)
+		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
+		if (priceListId == null)
 		{
 			return;
 		}
 
-		final I_M_PriceList pl = Services.get(IPriceListDAO.class).getById(order.getM_PriceList_ID());
+		final I_M_PriceList pl = priceListDAO.getById(priceListId);
 
 		order.setM_PricingSystem_ID(pl.getM_PricingSystem_ID());
 		order.setC_Currency_ID(pl.getC_Currency_ID());
@@ -105,27 +123,28 @@ public class C_Order
 	}
 
 	// 03409: Context menu fixes (2012101810000086)
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
-			// I checked the code of OrderBL.updateAddresses() and MOrderLine.setHeaderInfo() to get this list
-			I_C_Order.COLUMNNAME_C_BPartner_ID,
-			I_C_Order.COLUMNNAME_C_BPartner_Location_ID,
-			I_C_Order.COLUMNNAME_AD_User_ID,
-			I_C_Order.COLUMNNAME_DropShip_BPartner_ID,
-			I_C_Order.COLUMNNAME_DropShip_Location_ID,
-			I_C_Order.COLUMNNAME_DropShip_User_ID,
-			I_C_Order.COLUMNNAME_M_PriceList_ID,
-			I_C_Order.COLUMNNAME_IsSOTrx,
-			I_C_Order.COLUMNNAME_C_Currency_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = {
+					// I checked the code of OrderBL.updateAddresses() and MOrderLine.setHeaderInfo() to get this list
+					I_C_Order.COLUMNNAME_C_BPartner_ID,
+					I_C_Order.COLUMNNAME_C_BPartner_Location_ID,
+					I_C_Order.COLUMNNAME_AD_User_ID,
+					I_C_Order.COLUMNNAME_DropShip_BPartner_ID,
+					I_C_Order.COLUMNNAME_DropShip_Location_ID,
+					I_C_Order.COLUMNNAME_DropShip_User_ID,
+					I_C_Order.COLUMNNAME_M_PriceList_ID,
+					I_C_Order.COLUMNNAME_IsSOTrx,
+					I_C_Order.COLUMNNAME_C_Currency_ID })
 	public void updateOrderLineAddresses(final I_C_Order order)
 	{
-		Services.get(IOrderBL.class).updateAddresses(order);
+		orderBL.updateAddresses(order);
 	}
 
 	//	// 04579 Cannot change order's warehouse (2013071510000103)
 	//	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	//	public void unreserveStock(final I_C_Order order) throws Exception
 	//	{
-	//		for (final I_C_OrderLine orderLine : Services.get(IOrderPA.class).retrieveOrderLines(order, I_C_OrderLine.class))
+	//		for (final I_C_OrderLine orderLine : orderDAO.retrieveOrderLines(order, I_C_OrderLine.class))
 	//		{
 	//			if (orderLine.getQtyReserved().signum() <= 0)
 	//			{
@@ -144,14 +163,14 @@ public class C_Order
 	//			// task 08002
 	//			InterfaceWrapperHelper.setDynAttribute(orderLine, IOrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.TRUE);
 	//
-	//			InterfaceWrapperHelper.save(orderLine);
+	//			orderDAO.save(orderLine);
 	//
-	//			Services.get(IOrderPA.class).reserveStock(orderLine.getC_Order(), orderLine);
+	//			orderDAO.reserveStock(orderLine.getC_Order(), orderLine);
 	//
 	//			orderLine.setQtyOrdered(qtyOrdered);
 	//			orderLine.setQtyEntered(qtyEntered);
 	//			orderLine.setLineNetAmt(lineNetAmt);
-	//			InterfaceWrapperHelper.save(orderLine);
+	//			orderDAO.save(orderLine);
 	//
 	//			// task 08002
 	//			InterfaceWrapperHelper.setDynAttribute(orderLine, IOrderLineBL.DYNATTR_DoNotRecalculatePrices, Boolean.FALSE);
@@ -160,31 +179,27 @@ public class C_Order
 
 	/**
 	 * Updates <code>C_OrderLine.QtyReserved</code> of the given order's lines when the Doctype or DocStatus changes.
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
 	 */
-	@ModelChange(timings = {
-			ModelValidator.TYPE_BEFORE_NEW,
-			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
-			I_C_Order.COLUMNNAME_C_DocType_ID,
-			I_C_Order.COLUMNNAME_DocStatus })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					I_C_Order.COLUMNNAME_C_DocType_ID,
+					I_C_Order.COLUMNNAME_DocStatus })
 	public void updateReserved(final I_C_Order order)
 	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order, I_C_OrderLine.class);
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
 			orderLineBL.updateQtyReserved(orderLine);
-			InterfaceWrapperHelper.save(orderLine);
+			orderDAO.save(orderLine);
 		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
 	public void setDeliveryViaRule(final I_C_Order order)
 	{
-		final DeliveryViaRule deliveryViaRule = Services.get(IOrderBL.class).evaluateOrderDeliveryViaRule(order);
+		final DeliveryViaRule deliveryViaRule = orderBL.evaluateOrderDeliveryViaRule(order);
 
 		if (deliveryViaRule != null)
 		{
@@ -192,39 +207,69 @@ public class C_Order
 		}
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void beforeDelete(@NonNull final I_C_Order order)
+	{
+		unlinkSalesOrders(order);
+		unlinkThisProposalFromGeneratedSalesOrders(order);
+		unlinkThisSalesOrderFromProposal(order);
+		orderLineDetailRepository.deleteByOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
+	}
+
 	/**
 	 * If a purchase order is deleted, then an< sales orders need to un-reference it to avoid an FK-constraint-error
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
 	 */
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void unlinkSalesOrders(final I_C_Order order)
+	private void unlinkSalesOrders(final I_C_Order order)
 	{
-		final List<I_C_Order> referencingOrders = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order.class, order)
+		final List<I_C_Order> referencingOrders = queryBL.createQueryBuilder(I_C_Order.class, order)
 				.addEqualsFilter(org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID, order.getC_Order_ID())
 				.create()
 				.list(I_C_Order.class);
 		for (final I_C_Order referencingOrder : referencingOrders)
 		{
 			referencingOrder.setLink_Order_ID(-1);
-			InterfaceWrapperHelper.save(referencingOrder);
+			orderDAO.save(referencingOrder);
 		}
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void unlinkRefProposals(final I_C_Order order)
+	/**
+	 * When deleting a proposal/quotation, unlink all generated sales orders from it
+	 */
+	private void unlinkThisProposalFromGeneratedSalesOrders(final I_C_Order proposal)
 	{
-		final List<I_C_Order> referencingOrders = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order.class, order)
-				.addEqualsFilter(org.compiere.model.I_C_Order.COLUMNNAME_Ref_Proposal_ID, order.getC_Order_ID())
+		if (!orderBL.isSalesProposalOrQuotation(proposal))
+		{
+			return;
+		}
+
+		final List<I_C_Order> linkedSalesOrders = queryBL.createQueryBuilder(I_C_Order.class, proposal)
+				.addEqualsFilter(org.compiere.model.I_C_Order.COLUMNNAME_Ref_Proposal_ID, proposal.getC_Order_ID())
 				.create()
 				.list(I_C_Order.class);
+		if (linkedSalesOrders.isEmpty())
+		{
+			return;
+		}
 
+		for (final I_C_Order salesOrder : linkedSalesOrders)
+		{
+			salesOrder.setRef_Proposal_ID(-1);
+			orderDAO.save(salesOrder);
+		}
+	}
+
+	private void unlinkThisSalesOrderFromProposal(final I_C_Order salesOrder)
+	{
+		final List<I_C_Order> referencingOrders = queryBL.createQueryBuilder(I_C_Order.class)
+				.addEqualsFilter(org.compiere.model.I_C_Order.COLUMNNAME_Ref_Order_ID, salesOrder.getC_Order_ID())
+				.create()
+				.list(I_C_Order.class);
 		for (final I_C_Order referencingOrder : referencingOrders)
 		{
-			referencingOrder.setRef_Proposal_ID(-1);
-			InterfaceWrapperHelper.save(referencingOrder);
+			referencingOrder.setRef_Order_ID(-1);
+			orderDAO.save(referencingOrder);
 		}
 	}
 
@@ -232,7 +277,7 @@ public class C_Order
 	public void checkPricingConditionsInOrderLines(final I_C_Order order)
 	{
 		checkPaymentRuleWithReservation(order);
-		Services.get(IOrderLinePricingConditions.class).failForMissingPricingConditions(order);
+		orderLinePricingConditions.failForMissingPricingConditions(order);
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_PaymentRule)
@@ -242,17 +287,17 @@ public class C_Order
 
 		if (errorMessage != null)
 		{
-			final ITranslatableString msgText = Services.get(IMsgBL.class).getTranslatableMsgText(errorMessage);
+			final ITranslatableString msgText = msgBL.getTranslatableMsgText(errorMessage);
 			calloutField.fireDataStatusEEvent(
 					msgText.translate(Env.getAD_Language()),
 					msgText.translate(Env.getAD_Language()), // this appears onHover
 					true);
 		}
-		else
-		{
-			// TODO teo: there's no way to remove the callout error right now, unless the user reloads the page.
-			//  	It will always appear when changing the PaymentRule after it was set once.
-		}
+		//else
+		//{
+		// TODO teo: there's no way to remove the callout error right now, unless the user reloads the page.
+		//  	It will always appear when changing the PaymentRule after it was set once.
+		//}
 	}
 
 	private void checkPaymentRuleWithReservation(@NonNull final I_C_Order salesOrder)
@@ -281,15 +326,13 @@ public class C_Order
 			return null;
 		}
 
-		final IOrderBL ordersService = Services.get(IOrderBL.class);
-		final boolean hasBillToContactId = ordersService.hasBillToContactId(salesOrder);
+		final boolean hasBillToContactId = orderBL.hasBillToContactId(salesOrder);
 		if (!hasBillToContactId)
 		{
 			return MSG_SELECT_CONTACT_WITH_VALID_EMAIL;
 		}
 
-		final BPartnerContactId billToContactId = ordersService.getBillToContactId(salesOrder);
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final BPartnerContactId billToContactId = orderBL.getBillToContactId(salesOrder);
 
 		if (!bpartnerDAO.hasEmailAddress(billToContactId))
 		{
@@ -307,7 +350,7 @@ public class C_Order
 			return;
 		}
 
-		if (Check.isBlank(order.getExternalId()))
+		if (order.getExternalId() == null || Check.isBlank(order.getExternalId()))
 		{
 			return;
 		}
@@ -317,14 +360,12 @@ public class C_Order
 			return;
 		}
 
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final boolean autoAssignEnabled = sysConfigBL.getBooleanValue(AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, false, order.getAD_Client_ID(), order.getAD_Org_ID());
 		if (!autoAssignEnabled)
 		{
 			return;
 		}
 
-		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 		final Optional<I_C_Payment> paymentOptional = paymentDAO.getByExternalOrderId(ExternalId.of(order.getExternalId()), OrgId.ofRepoId(order.getAD_Org_ID()));
 
 		if (!paymentOptional.isPresent())
@@ -337,13 +378,13 @@ public class C_Order
 		// Without it MPayment.setC_Order_ID fails because it tries to read the C_DocType_ID from the order
 		// 		and since the order is not yet saved => only C_DocType_Target_ID has value and C_DocType_ID doesn't (is 0).
 		// Therefore we use this save to flush the order.
-		Services.get(IOrderDAO.class).save(order);
+		orderDAO.save(order);
 
 		final I_C_Payment payment = paymentOptional.get();
 		order.setC_Payment_ID(payment.getC_Payment_ID());
 		payment.setC_Order_ID(order.getC_Order_ID());
 
-		InterfaceWrapperHelper.save(payment);
+		paymentDAO.save(payment);
 	}
 
 	@ModelChange(timings = {
@@ -357,13 +398,13 @@ public class C_Order
 	{
 		if (!InterfaceWrapperHelper.isCopying(order))
 		{
-			Services.get(IOrderBL.class).updateDescriptionFromDocTypeTargetId(order);
+			orderBL.updateDescriptionFromDocTypeTargetId(order);
 		}
 	}
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
-			ModelValidator.TYPE_BEFORE_CHANGE
+			ModelValidator.TYPE_BEFORE_CHANGE,
 	}, ifColumnsChanged = {
 			I_C_Order.COLUMNNAME_DropShip_Location_ID
 	})
@@ -375,6 +416,31 @@ public class C_Order
 			return;
 		}
 
-		Services.get(IOrderBL.class).setPriceList(order);
+		orderBL.setPriceList(order);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_C_BPartner_ID,
+			I_C_Order.COLUMNNAME_DatePromised })
+	public void validateHaddexOnChange(final I_C_Order order)
+	{
+		validateHaddex(order);
+	}
+
+	@DocValidate(timings = {
+			ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void validateHaddexOnComplete(final I_C_Order order)
+	{
+		// validate on order completion to prevent cases when a partner or product became haddex relevant after the order was created but before it was completed
+		validateHaddex(order);
+	}
+
+	private void validateHaddex(final I_C_Order order)
+	{
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
+
+		orderBL.validateHaddexOrder(order);
 	}
 }

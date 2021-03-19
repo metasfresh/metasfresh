@@ -80,6 +80,10 @@ public class ProductDAO implements IProductDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	final static int ONE_YEAR_DAYS = 365;
+	final static int TWO_YEAR_DAYS = 730;
+	final static int THREE_YEAR_DAYS = 1095;
+
 	private final CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId>builder()
 			.tableName(I_M_Product_Category.Table_Name)
 			.initialCapacity(1)
@@ -313,7 +317,7 @@ public class ProductDAO implements IProductDAO
 		}
 
 		final I_M_Product product = getById(productId);
-		return product != null && product.isActive() ? ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()) : null;
+		return product != null ? ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()) : null;
 	}
 
 	@Nullable
@@ -506,12 +510,32 @@ public class ProductDAO implements IProductDAO
 		{
 			return productRecord.getGuaranteeDaysMin();
 		}
+		else if (Check.isNotBlank(productRecord.getGuaranteeMonths()))
+		{
+			return getGuaranteeMonthsInDays(productId);
+		}
 		else
 		{
 			final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
 			final I_M_Product_Category productCategoryRecord = getProductCategoryById(productCategoryId);
 			return productCategoryRecord.getGuaranteeDaysMin();
 		}
+	}
+
+	@Override
+	public int getGuaranteeMonthsInDays(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		if(product != null && Check.isNotBlank(product.getGuaranteeMonths()))
+		{
+			switch (product.getGuaranteeMonths()) {
+				case X_M_Product.GUARANTEEMONTHS_12: return ONE_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_24: return TWO_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_36: return THREE_YEAR_DAYS;
+				default: return 0;
+			}
+		}
+		return 0;
 	}
 
 	@Override

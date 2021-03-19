@@ -74,8 +74,6 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 * Sets locator to be used for newly created HUs.
 	 *
 	 * If Parent HU Item is set then locator will be used from there and this one will be ignored.
-	 *
-	 * @param locator
 	 */
 	IHUProducerAllocationDestination setLocatorId(final LocatorId locatorId);
 
@@ -83,8 +81,6 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 * Sets BPartner to be used for newly created HUs.
 	 *
 	 * If BPartner is not set, the one from load {@link IAllocationRequest} will be used.
-	 *
-	 * @param bpartner
 	 */
 	IHUProducerAllocationDestination setBPartnerId(BPartnerId bpartnerId);
 
@@ -94,8 +90,6 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 * Sets BPartner Location to be used for newly created HUs.
 	 *
 	 * If BPartner Location is not set, the one from load {@link IAllocationRequest} will be used.
-	 *
-	 * @param bpartnerLocationId
 	 */
 	IHUProducerAllocationDestination setC_BPartner_Location_ID(int bpartnerLocationId);
 

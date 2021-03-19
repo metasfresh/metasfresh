@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.rest_api.common.SyncAdvise;
+import de.metas.common.rest_api.SyncAdvise;
 import de.metas.util.lang.ExternalId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -48,29 +48,27 @@ public class JsonProductInfo
 	}
 
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
 			value = "This translates to `M_Product.Value`. At least one of `code` or `externalId` is mandatory")
 	@JsonInclude(Include.NON_NULL)
-	private String code;
+	String code;
 
 	@ApiModelProperty( //
-			allowEmptyValue = false, //
 			value = "This translates to `M_Product.ExternalId`. At least one of `code` or `externalId` is mandatory")
 	@JsonInclude(Include.NON_NULL)
-	private ExternalId externalId;
+	ExternalId externalId;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to `M_Product.Name`.\n"
 					+ "If this is empty, and a product with the given {@link #code} does not yet exist, then the request will fail.")
 	@JsonInclude(Include.NON_NULL)
-	private String name;
+	String name;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to `M_Product.ProductType`.\n"
 					+ "If this is empty, and a product with the given {@link #code} does not yet exist, then the request will fail.")
-	private Type type;
+	Type type;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
@@ -78,17 +76,17 @@ public class JsonProductInfo
 					+ "The respective UOM needs to exist in metasfresh and then its ID is set as `M_Product.C_UOM_ID`.\n"
 					+ "If this property is empty, and a product with the given `code` does not yet exist, then the request will fail.")
 	@JsonInclude(Include.NON_NULL)
-	private String uomCode;
+	String uomCode;
 
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			value = "This translates to `M_ProductPrice.PriceStd`. \n"
 					+ "IMPORTANT: this is used only when the product is created. If product exists, priceStd is IGNORED.")
 	@JsonInclude(Include.NON_NULL)
-	private BigDecimal priceStd;
+	BigDecimal priceStd;
 
 	@JsonInclude(Include.NON_NULL)
-	private SyncAdvise syncAdvise;
+	SyncAdvise syncAdvise;
 
 	@Builder(toBuilder = true)
 	@JsonCreator

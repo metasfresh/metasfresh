@@ -1,5 +1,9 @@
 package org.adempiere.ad.window.model.interceptor;
 
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
+import de.metas.translation.api.IElementTranslationBL;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -15,9 +19,6 @@ import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Window;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.translation.api.IElementTranslationBL;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -45,10 +46,21 @@ import de.metas.util.Services;
 @Component
 public class AD_Window
 {
+	private final IADElementDAO adElementDAO = Services.get(IADElementDAO.class);
+	private final IElementTranslationBL elementTranslationBL = Services.get(IElementTranslationBL.class);
+	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
+
+	public AD_Window(
+			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
+	{
+		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
+	}
+
 	@Init
 	public void init()
 	{
-		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
+		programmaticCalloutProvider.registerAnnotatedCallout(this);
 	}
 
 	@CalloutMethod(columnNames = I_AD_Window.COLUMNNAME_AD_Element_ID)
@@ -58,7 +70,7 @@ public class AD_Window
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Tab.COLUMNNAME_AD_Element_ID)
-	public void onBeforeWindoSave_WhenElementIdChanged(final I_AD_Window window)
+	public void onBeforeWindowSave_WhenElementIdChanged(final I_AD_Window window)
 	{
 		updateWindowFromElement(window);
 	}
@@ -70,6 +82,12 @@ public class AD_Window
 		recreateElementLinkForWindow(window);
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	public void onAfterWindowSave_AssertNoCyclesInWindowCustomizationsChain(@NonNull final I_AD_Window window)
+	{
+		customizedWindowInfoMapRepository.assertNoCycles(AdWindowId.ofRepoId(window.getAD_Window_ID()));
+	}
+
 	private void updateWindowFromElement(final I_AD_Window window)
 	{
 		// do not copy translations from element to window
@@ -78,7 +96,6 @@ public class AD_Window
 			return;
 		}
 
-		final IADElementDAO adElementDAO = Services.get(IADElementDAO.class);
 		final I_AD_Element windowElement = adElementDAO.getById(window.getAD_Element_ID());
 		if (windowElement == null)
 		{
@@ -100,7 +117,7 @@ public class AD_Window
 			return;
 		}
 
-		Services.get(IElementTranslationBL.class).updateWindowTranslationsFromElement(windowElementId);
+		elementTranslationBL.updateWindowTranslationsFromElement(windowElementId);
 	}
 
 	private void recreateElementLinkForWindow(final I_AD_Window window)

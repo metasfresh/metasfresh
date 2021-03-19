@@ -23,7 +23,9 @@
 package de.metas.inoutcandidate.process;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -40,6 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 public class M_ShipmentSchedule_ChangeExportStatus extends JavaProcess implements IProcessPrecondition
 {
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
 	private static final AdMessageKey MSG_NO_UNPROCESSED_LINES = AdMessageKey.of("shipmentschedule.noUnprocessedLines");
 
@@ -84,7 +87,7 @@ public class M_ShipmentSchedule_ChangeExportStatus extends JavaProcess implement
 
 		// update delivery date
 		// no invalidation
-		shipmentSchedulePA.updateExportStatus(exportStatus, pinstanceId);
+		shipmentScheduleBL.updateExportStatus(APIExportStatus.ofCode(exportStatus), pinstanceId);
 
 		return MSG_OK;
 	}

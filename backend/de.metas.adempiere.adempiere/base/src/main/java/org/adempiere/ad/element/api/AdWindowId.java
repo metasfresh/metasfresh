@@ -71,7 +71,7 @@ public class AdWindowId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(final AdWindowId id1, final AdWindowId id2)
+	public static boolean equals(@Nullable final AdWindowId id1, @Nullable final AdWindowId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

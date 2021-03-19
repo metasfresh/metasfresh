@@ -163,7 +163,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 *
 	 * @throws AdempiereException if the invoice candidate does not have the AD_Table_ID/Record_ID set
 	 */
-	void invalidateCandsWithSameReference(I_C_Invoice_Candidate ic);
+	void invalidateCandsWithSameTableReference(I_C_Invoice_Candidate ic);
 
 	void invalidateCandsForProductGroup(I_M_ProductGroup pg);
 
@@ -200,7 +200,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void updateDateInvoiced(LocalDate dateInvoiced, PInstanceId selectionId);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId, boolean)}, but updates the <code>DateAcct</code> column.
+	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId)}, but updates the <code>DateAcct</code> column.
 	 *
 	 * task 08437
 	 */
@@ -209,14 +209,14 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void updateNullDateAcctFromDateInvoiced(PInstanceId selectionId);
 
 	/**
-	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId, String)}, but updates the <code>POReference</code> column.
+	 * Similar to {@link #updateDateInvoiced(LocalDate, PInstanceId)}, but updates the <code>POReference</code> column.
 	 */
 	void updatePOReference(String poReference, PInstanceId selectionId);
 
 	void updateApprovalForInvoicingToTrue(@NonNull PInstanceId selectionId);
 
 	/**
-	 * Updates the {@link I_C_Invoice_Candidate#COLUMN_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.
+	 * Updates the {@link I_C_Invoice_Candidate#COLUMNNAME_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.
 	 * The ID those ICs are updated with is taken from the selected IC with the smallest {@code C_Invoice_Candidate_ID} that has a {@code C_PaymentTerm_ID}.
 	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/3809
@@ -299,10 +299,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <b>Important:</b> do not filter by the lines' <code>M_InOut.DocStatus</code>, i.e. also reversed lines are returned by this.
 	 * <p>
 	 * FIXME debug to see why c_invoicecandidate_inoutline have duplicates and take the inoutlines from there for now takes it via orderline.
-	 *
-	 * @param ic
-	 * @param clazz
-	 * @return
 	 */
 	<T extends org.compiere.model.I_M_InOutLine> List<T> retrieveInOutLinesForCandidate(I_C_Invoice_Candidate ic, Class<T> clazz);
 
@@ -324,8 +320,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Save given invoice candidate.
 	 *
 	 * If there were any errors encountered while saving, this method will save the errors fields directly in database.
-	 *
-	 * @param invoiceCandidate
 	 */
 	void save(I_C_Invoice_Candidate invoiceCandidate);
 
@@ -333,9 +327,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	/**
 	 * Return all invoice candidates that have Processed='N'
-	 *
-	 * @param contextAware
-	 * @return
 	 */
 	Iterator<I_C_Invoice_Candidate> retrieveNonProcessed(IContextAware contextAware);
 

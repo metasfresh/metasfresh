@@ -98,6 +98,7 @@ public final class CandidatesQuery
 				.orgId(candidate.getOrgId())
 				//.status(candidate.getStatus())
 				.businessCase(candidate.getBusinessCase())
+
 				.type(candidate.getType());
 
 		if (includeParentId)

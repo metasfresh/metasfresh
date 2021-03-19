@@ -2,7 +2,7 @@
  * #%L
  * de.metas.serviceprovider.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,31 +22,53 @@
 
 package de.metas.serviceprovider.external;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.externalreference.ExternalSystems;
+import de.metas.externalreference.IExternalSystem;
+import de.metas.order.InvoiceRule;
+import de.metas.serviceprovider.model.X_S_ExternalProjectReference;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import static de.metas.serviceprovider.model.X_S_ExternalProjectReference.EXTERNALSYSTEM_Everhour;
-import static de.metas.serviceprovider.model.X_S_ExternalProjectReference.EXTERNALSYSTEM_Github;
-
 @AllArgsConstructor
 @Getter
-public enum ExternalSystem
+public enum ExternalSystem implements IExternalSystem
 {
-	GITHUB(EXTERNALSYSTEM_Github),
-	EVERHOUR(EXTERNALSYSTEM_Everhour);
+	GITHUB(X_S_ExternalProjectReference.EXTERNALSYSTEM_Github),
+	EVERHOUR(X_S_ExternalProjectReference.EXTERNALSYSTEM_Everhour);
 
-	private final String value;
+	private final String code;
+
+	public static ExternalSystem cast(final IExternalSystem externalSystem)
+	{
+		return (ExternalSystem)externalSystem;
+	}
 
 	@NonNull
 	public static Optional<ExternalSystem> of(@NonNull final String code)
 	{
 		return Stream.of(values())
-				.filter( type -> type.getValue().equals(code))
+				.filter(type -> type.getCode().equals(code))
 				.findFirst();
 	}
+
+	public static ExternalSystem ofCode(@NonNull final String code)
+	{
+		final ExternalSystem type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + ExternalSystem.class + " found for code: " + code);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, ExternalSystem> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), ExternalSystem::getCode);
 }
 

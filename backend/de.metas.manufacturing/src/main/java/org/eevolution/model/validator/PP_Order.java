@@ -1,14 +1,13 @@
 package org.eevolution.model.validator;
 
 import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeDAO;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLineId;
@@ -36,6 +35,7 @@ import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.X_PP_Order;
 
@@ -44,18 +44,30 @@ import java.sql.Timestamp;
 @Interceptor(I_PP_Order.class)
 public class PP_Order
 {
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
+	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	private final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
+	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	private final PPOrderPojoConverter ppOrderConverter;
 	private final PostMaterialEventService materialEventService;
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
+	private final IPPOrderBOMBL ppOrderBOMBL;
 
 	public PP_Order(
 			@NonNull final PPOrderPojoConverter ppOrderConverter,
 			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory)
+			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
+			@NonNull final IPPOrderBOMBL ppOrderBOMBL)
 	{
 		this.ppOrderConverter = ppOrderConverter;
 		this.materialEventService = materialEventService;
 		this.documentNoBuilderFactory = documentNoBuilderFactory;
+		this.ppOrderBOMBL = ppOrderBOMBL;
 	}
 
 	@Init
@@ -73,14 +85,12 @@ public class PP_Order
 			final I_PP_Order ppOrder,
 			final ModelChangeType changeType)
 	{
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-
 		//
 		// If UOM not filled, get it from Product
 		if (ppOrder.getC_UOM_ID() <= 0)
 		{
 			final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
-			final UomId uomId = Services.get(IProductBL.class).getStockUOMId(productId);
+			final UomId uomId = productBL.getStockUOMId(productId);
 			ppOrder.setC_UOM_ID(uomId.getRepoId());
 		}
 
@@ -96,7 +106,7 @@ public class PP_Order
 		if (ppOrder.getM_Locator_ID() <= 0 || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_M_Warehouse_ID))
 		{
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
-			final LocatorId locatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
+			final LocatorId locatorId = warehouseBL.getDefaultLocatorId(warehouseId);
 			ppOrder.setM_Locator_ID(locatorId.getRepoId());
 		}
 
@@ -127,7 +137,7 @@ public class PP_Order
 				&& ppOrder.getC_OrderLine().getM_AttributeSetInstance_ID() > 0)
 		{
 			final I_M_AttributeSetInstance asi = ppOrder.getC_OrderLine().getM_AttributeSetInstance();
-			final I_M_AttributeSetInstance asiCopy = Services.get(IAttributeDAO.class).copy(asi);
+			final I_M_AttributeSetInstance asiCopy = attributeDAO.copy(asi);
 			ppOrder.setM_AttributeSetInstance(asiCopy);
 		}
 
@@ -137,7 +147,7 @@ public class PP_Order
 				&& ppOrder.getC_OrderLine_ID() > 0)
 		{
 			final OrderLineId orderLineId = OrderLineId.ofRepoId(ppOrder.getC_OrderLine_ID());
-			final ProjectId projectId = Services.get(IOrderBL.class).getProjectIdOrNull(orderLineId);
+			final ProjectId projectId = orderBL.getProjectIdOrNull(orderLineId);
 			ppOrder.setC_Project_ID(ProjectId.toRepoId(projectId));
 		}
 
@@ -165,21 +175,22 @@ public class PP_Order
 		if (changeType.isNew()
 				|| InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_C_DocType_ID))
 		{
-			final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(ppOrder.getC_DocType_ID());
-			final I_C_DocType docType = docTypeId != null
-					? Services.get(IDocTypeDAO.class).getById(docTypeId)
-					: null;
+			final I_C_DocType docType = DocTypeId.optionalOfRepoId(ppOrder.getC_DocType_ID())
+					.map(docTypeBL::getById)
+					.orElse(null);
 			if (docType != null)
 			{
 				ppOrder.setOrderType(docType.getDocSubType());
+				ppOrder.setDocBaseType(docType.getDocBaseType());
 			}
 			else
 			{
 				ppOrder.setOrderType(null);
+				ppOrder.setDocBaseType(null);
 			}
 		}
-		
-		if(changeType.isNew() || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_CanBeExportedFrom))
+
+		if (changeType.isNew() || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_CanBeExportedFrom))
 		{
 			ppOrderBL.updateCanBeExportedAfter(ppOrder);
 		}
@@ -194,14 +205,12 @@ public class PP_Order
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyEntered)
 	public void updateAndPostEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
 	{
-		final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
-
 		if (ppOrderBL.isSomethingProcessed(ppOrderRecord))
 		{
 			throw new LiberoException("Cannot quantity is not allowed because there is something already processed on this order"); // TODO: trl
 		}
 
-		 final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord);
+		final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord);
 
 		final PPOrderId orderId = PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID());
 		deleteWorkflowAndBOM(orderId);
@@ -214,21 +223,19 @@ public class PP_Order
 
 	private void deleteWorkflowAndBOM(final PPOrderId orderId)
 	{
-		Services.get(IPPOrderRoutingRepository.class).deleteByOrderId(orderId);
-		Services.get(IPPOrderBOMDAO.class).deleteByOrderId(orderId);
+		ppOrderRoutingRepository.deleteByOrderId(orderId);
+		ppOrderBOMDAO.deleteByOrderId(orderId);
 	}
 
 	private void createWorkflowAndBOM(final I_PP_Order ppOrder)
 	{
-		Services.get(IPPOrderBL.class).createOrderRouting(ppOrder);
-		Services.get(IPPOrderBOMBL.class).createOrderBOMAndLines(ppOrder);
+		ppOrderBL.createOrderRouting(ppOrder);
+		ppOrderBOMBL.createOrderBOMAndLines(ppOrder);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeDelete(@NonNull final I_PP_Order ppOrder)
 	{
-		final IPPOrderCostBL orderCostsService = Services.get(IPPOrderCostBL.class);
-
 		//
 		// Delete depending records
 		final String docStatus = ppOrder.getDocStatus();

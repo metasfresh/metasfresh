@@ -43,6 +43,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * {@link IDocOutboundProducer} base implementation.
  *
@@ -104,7 +106,7 @@ public abstract class AbstractDocOutboundProducer implements IDocOutboundProduce
 	}
 
 	@Override
-	public boolean accept(final Object model)
+	public boolean accept(@Nullable final Object model)
 	{
 		if (model == null)
 		{

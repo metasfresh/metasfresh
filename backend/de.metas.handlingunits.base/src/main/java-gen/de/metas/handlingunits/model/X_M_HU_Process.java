@@ -1,51 +1,38 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_Process
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_HU_Process extends org.compiere.model.PO implements I_M_HU_Process, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 595341497L;
+	private static final long serialVersionUID = -1015251039L;
 
     /** Standard Constructor */
-    public X_M_HU_Process (Properties ctx, int M_HU_Process_ID, String trxName)
+    public X_M_HU_Process (final Properties ctx, final int M_HU_Process_ID, @Nullable final String trxName)
     {
       super (ctx, M_HU_Process_ID, trxName);
-      /** if (M_HU_Process_ID == 0)
-        {
-			setAD_Process_ID (0);
-			setIsApplyToCUs (false); // N
-			setIsApplyToLUs (false); // N
-			setIsApplyToTopLevelHUsOnly (false); // N
-			setIsApplyToTUs (false); // N
-			setIsProvideAsUserAction (true); // Y
-			setM_HU_Process_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_HU_Process (Properties ctx, ResultSet rs, String trxName)
+    public X_M_HU_Process (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
 	public org.compiere.model.I_AD_Process getAD_Process()
@@ -54,152 +41,84 @@ public class X_M_HU_Process extends org.compiere.model.PO implements I_M_HU_Proc
 	}
 
 	@Override
-	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process)
+	public void setAD_Process(final org.compiere.model.I_AD_Process AD_Process)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class, AD_Process);
 	}
 
-	/** Set Prozess.
-		@param AD_Process_ID 
-		Prozess oder Bericht
-	  */
 	@Override
-	public void setAD_Process_ID (int AD_Process_ID)
+	public void setAD_Process_ID (final int AD_Process_ID)
 	{
 		if (AD_Process_ID < 1) 
 			set_Value (COLUMNNAME_AD_Process_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Process_ID, Integer.valueOf(AD_Process_ID));
+			set_Value (COLUMNNAME_AD_Process_ID, AD_Process_ID);
 	}
 
-	/** Get Prozess.
-		@return Prozess oder Bericht
-	  */
 	@Override
-	public int getAD_Process_ID () 
+	public int getAD_Process_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Process_ID);
 	}
 
-	/** Set Auf CUs anwenden.
-		@param IsApplyToCUs Auf CUs anwenden	  */
 	@Override
-	public void setIsApplyToCUs (boolean IsApplyToCUs)
+	public void setIsApplyToCUs (final boolean IsApplyToCUs)
 	{
-		set_Value (COLUMNNAME_IsApplyToCUs, Boolean.valueOf(IsApplyToCUs));
+		set_Value (COLUMNNAME_IsApplyToCUs, IsApplyToCUs);
 	}
 
-	/** Get Auf CUs anwenden.
-		@return Auf CUs anwenden	  */
 	@Override
-	public boolean isApplyToCUs () 
+	public boolean isApplyToCUs() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsApplyToCUs);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsApplyToCUs);
 	}
 
-	/** Set Auf LUs anwenden.
-		@param IsApplyToLUs Auf LUs anwenden	  */
 	@Override
-	public void setIsApplyToLUs (boolean IsApplyToLUs)
+	public void setIsApplyToLUs (final boolean IsApplyToLUs)
 	{
-		set_Value (COLUMNNAME_IsApplyToLUs, Boolean.valueOf(IsApplyToLUs));
+		set_Value (COLUMNNAME_IsApplyToLUs, IsApplyToLUs);
 	}
 
-	/** Get Auf LUs anwenden.
-		@return Auf LUs anwenden	  */
 	@Override
-	public boolean isApplyToLUs () 
+	public boolean isApplyToLUs() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsApplyToLUs);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsApplyToLUs);
 	}
 
-	/** Set Nur auf Top-Level HU anwenden.
-		@param IsApplyToTopLevelHUsOnly Nur auf Top-Level HU anwenden	  */
 	@Override
-	public void setIsApplyToTopLevelHUsOnly (boolean IsApplyToTopLevelHUsOnly)
+	public void setIsApplyToTopLevelHUsOnly (final boolean IsApplyToTopLevelHUsOnly)
 	{
-		set_Value (COLUMNNAME_IsApplyToTopLevelHUsOnly, Boolean.valueOf(IsApplyToTopLevelHUsOnly));
+		set_Value (COLUMNNAME_IsApplyToTopLevelHUsOnly, IsApplyToTopLevelHUsOnly);
 	}
 
-	/** Get Nur auf Top-Level HU anwenden.
-		@return Nur auf Top-Level HU anwenden	  */
 	@Override
-	public boolean isApplyToTopLevelHUsOnly () 
+	public boolean isApplyToTopLevelHUsOnly() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsApplyToTopLevelHUsOnly);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsApplyToTopLevelHUsOnly);
 	}
 
-	/** Set Auf TUs anwenden.
-		@param IsApplyToTUs Auf TUs anwenden	  */
 	@Override
-	public void setIsApplyToTUs (boolean IsApplyToTUs)
+	public void setIsApplyToTUs (final boolean IsApplyToTUs)
 	{
-		set_Value (COLUMNNAME_IsApplyToTUs, Boolean.valueOf(IsApplyToTUs));
+		set_Value (COLUMNNAME_IsApplyToTUs, IsApplyToTUs);
 	}
 
-	/** Get Auf TUs anwenden.
-		@return Auf TUs anwenden	  */
 	@Override
-	public boolean isApplyToTUs () 
+	public boolean isApplyToTUs() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsApplyToTUs);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsApplyToTUs);
 	}
 
-	/** Set Als Benutzeraktion verfügbar machen.
-		@param IsProvideAsUserAction 
-		Entscheidet, ob der Prozess als Aktion im Handling-Unit-Editor (WebUI und SwingUI) auswählbar sein soll.
-	  */
 	@Override
-	public void setIsProvideAsUserAction (boolean IsProvideAsUserAction)
+	public void setIsProvideAsUserAction (final boolean IsProvideAsUserAction)
 	{
-		set_Value (COLUMNNAME_IsProvideAsUserAction, Boolean.valueOf(IsProvideAsUserAction));
+		set_Value (COLUMNNAME_IsProvideAsUserAction, IsProvideAsUserAction);
 	}
 
-	/** Get Als Benutzeraktion verfügbar machen.
-		@return Entscheidet, ob der Prozess als Aktion im Handling-Unit-Editor (WebUI und SwingUI) auswählbar sein soll.
-	  */
 	@Override
-	public boolean isProvideAsUserAction () 
+	public boolean isProvideAsUserAction() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsProvideAsUserAction);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsProvideAsUserAction);
 	}
 
 	@Override
@@ -209,52 +128,38 @@ public class X_M_HU_Process extends org.compiere.model.PO implements I_M_HU_Proc
 	}
 
 	@Override
-	public void setM_HU_PI(de.metas.handlingunits.model.I_M_HU_PI M_HU_PI)
+	public void setM_HU_PI(final de.metas.handlingunits.model.I_M_HU_PI M_HU_PI)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, M_HU_PI);
 	}
 
-	/** Set Packvorschrift.
-		@param M_HU_PI_ID Packvorschrift	  */
 	@Override
-	public void setM_HU_PI_ID (int M_HU_PI_ID)
+	public void setM_HU_PI_ID (final int M_HU_PI_ID)
 	{
 		if (M_HU_PI_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_PI_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_PI_ID, Integer.valueOf(M_HU_PI_ID));
+			set_Value (COLUMNNAME_M_HU_PI_ID, M_HU_PI_ID);
 	}
 
-	/** Get Packvorschrift.
-		@return Packvorschrift	  */
 	@Override
-	public int getM_HU_PI_ID () 
+	public int getM_HU_PI_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_ID);
 	}
 
-	/** Set Handling Unit Process.
-		@param M_HU_Process_ID Handling Unit Process	  */
 	@Override
-	public void setM_HU_Process_ID (int M_HU_Process_ID)
+	public void setM_HU_Process_ID (final int M_HU_Process_ID)
 	{
 		if (M_HU_Process_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_Process_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_Process_ID, Integer.valueOf(M_HU_Process_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_Process_ID, M_HU_Process_ID);
 	}
 
-	/** Get Handling Unit Process.
-		@return Handling Unit Process	  */
 	@Override
-	public int getM_HU_Process_ID () 
+	public int getM_HU_Process_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Process_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_Process_ID);
 	}
 }

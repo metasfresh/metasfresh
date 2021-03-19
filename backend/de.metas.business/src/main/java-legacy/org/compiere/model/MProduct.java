@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import de.metas.organization.OrgId;
+import de.metas.product.ProductCategoryId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
@@ -234,8 +235,10 @@ public class MProduct extends X_M_Product
 	 */
 	public boolean isCreateAsset()
 	{
-		MProductCategory pc = MProductCategory.get(getCtx(), getM_Product_Category_ID());
-		return pc.getA_Asset_Group_ID() != 0;
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(getM_Product_Category_ID());
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final I_M_Product_Category pc = productDAO.getProductCategoryById(productCategoryId);
+		return pc.getA_Asset_Group_ID() > 0;
 	}	// isCreated
 
 	/**
@@ -245,8 +248,10 @@ public class MProduct extends X_M_Product
 	 */
 	public boolean isOneAssetPerUOM()
 	{
-		MProductCategory pc = MProductCategory.get(getCtx(), getM_Product_Category_ID());
-		if (pc.getA_Asset_Group_ID() == 0)
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(getM_Product_Category_ID());
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final I_M_Product_Category pc = productDAO.getProductCategoryById(productCategoryId);
+		if (pc.getA_Asset_Group_ID() <= 0)
 		{
 			return false;
 		}

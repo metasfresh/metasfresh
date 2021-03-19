@@ -40,7 +40,6 @@ import de.metas.manufacturing.generatedcomponents.GeneratedComponentRequest;
 import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -60,6 +59,7 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
@@ -135,6 +135,7 @@ class PPOrderIssueServiceProductCommand
 				.qty(qtyToIssueForOneFinishedGood.intValueExact())
 				.attributes(ImmutableAttributeSet.copyOf(attributes))
 				.clientId(ClientId.ofRepoId(singleItemHU.getAD_Client_ID()))
+				.overrideExistingValues(request.isOverrideExistingValues())
 				.build());
 
 		if (attributesToChange.isEmpty())

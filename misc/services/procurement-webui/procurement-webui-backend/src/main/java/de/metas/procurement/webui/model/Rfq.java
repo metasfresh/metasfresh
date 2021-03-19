@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 
@@ -100,7 +101,7 @@ public class Rfq extends AbstractSyncConfirmAwareEntity
 	@Setter
 	private String currencyCode;
 
-	@OneToMany(fetch = FetchType.EAGER, mappedBy = "rfq", cascade = CascadeType.REMOVE, orphanRemoval = true)
+	@OneToMany(fetch = FetchType.EAGER, mappedBy = "rfq", cascade = CascadeType.ALL, orphanRemoval = true)
 	private final List<RfqQty> quantities = new ArrayList<>();
 
 	@Getter

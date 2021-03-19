@@ -35,7 +35,7 @@ import org.compiere.util.Util.ArrayKey;
 
 public class PlainMRPDAO extends MRPDAO
 {
-	private final Map<ArrayKey, BigDecimal> qtysOnHandsMap = new HashMap<ArrayKey, BigDecimal>();
+	private final Map<ArrayKey, BigDecimal> qtysOnHandsMap = new HashMap<>();
 
 	@Override
 	public final BigDecimal getQtyOnHand(final Properties ctx, final int M_Warehouse_ID, final int M_Product_ID, final String trxName)
@@ -66,36 +66,10 @@ public class PlainMRPDAO extends MRPDAO
 		qtysOnHandsMap.put(key, qtyOnHand);
 	}
 
-	private final ArrayKey mkKey(final I_M_Warehouse warehouse, final I_M_Product product)
+	private ArrayKey mkKey(final I_M_Warehouse warehouse, final I_M_Product product)
 	{
 		final int warehouseId = warehouse.getM_Warehouse_ID();
 		final int productId = product.getM_Product_ID();
-		final ArrayKey key = Util.mkKey(warehouseId, productId);
-		return key;
-	}
-
-	@Override
-	public String getDocumentNo(final int PP_MRP_ID)
-	{
-		// TODO: not implemented
-		return "(PP_MRP_ID=" + PP_MRP_ID + ")";
-	}
-
-	/**
-	 * 
-	 * @param warehouse
-	 * @param product
-	 * @param qtyOnHandToAdd QtyOnHand to add (could be also negative in case you want to subtract)
-	 */
-	public void addQtyOnHand(final I_M_Warehouse warehouse, final I_M_Product product, final BigDecimal qtyOnHandToAdd)
-	{
-		final ArrayKey key = mkKey(warehouse, product);
-		BigDecimal qtyOnHandOld = qtysOnHandsMap.get(key);
-		if (qtyOnHandOld == null)
-		{
-			qtyOnHandOld = BigDecimal.ZERO;
-		}
-		final BigDecimal qtyOnHandNew = qtyOnHandOld.add(qtyOnHandToAdd);
-		qtysOnHandsMap.put(key, qtyOnHandNew);
+		return Util.mkKey(warehouseId, productId);
 	}
 }

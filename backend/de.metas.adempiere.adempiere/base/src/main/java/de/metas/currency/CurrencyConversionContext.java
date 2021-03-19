@@ -1,7 +1,6 @@
 package de.metas.currency;
 
 import com.google.common.base.MoreObjects;
-import de.metas.currency.FixedConversionRateMap.FixedConversionRate;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -63,17 +62,8 @@ public class CurrencyConversionContext
 		}
 	}
 
-	public CurrencyConversionContext withFixedConversionRate(
-			@NonNull final CurrencyId fromCurrencyId,
-			@NonNull final CurrencyId toCurrencyId,
-			@NonNull final BigDecimal multiplyRate)
+	public CurrencyConversionContext withFixedConversionRate(@NonNull final FixedConversionRate rate)
 	{
-		final FixedConversionRate rate = FixedConversionRate.builder()
-				.fromCurrencyId(fromCurrencyId)
-				.toCurrencyId(toCurrencyId)
-				.multiplyRate(multiplyRate)
-				.build();
-
 		return toBuilder()
 				.fixedConversionRates(fixedConversionRates.addingConversionRate(rate))
 				.build();

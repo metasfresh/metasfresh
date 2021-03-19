@@ -22,14 +22,13 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.function.Function;
-
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.ILUTUConfigurationEditor;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+
+import javax.annotation.Nullable;
+import java.util.function.Function;
 
 /**
  * Interface used to manage (create, update, edit etc) the LU/TU configuration of a particular document line.
@@ -37,8 +36,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
  * Under the hood, it uses {@link IDocumentLUTUConfigurationHandler}.
  *
  * @author tsa
- *
- * @param <T> document line type
  */
 public interface IDocumentLUTUConfigurationManager
 {
@@ -46,41 +43,27 @@ public interface IDocumentLUTUConfigurationManager
 	 * Convenience method to create a new configuration and use the given <code>converter</code> to alter it, then return the result.
 	 *
 	 * NOTE: the edited configuration will be pushed back to the model.
-	 *
-	 * @param lutuConfigurationEditor
-	 * @return
 	 */
+	@Nullable
 	I_M_HU_LUTU_Configuration createAndEdit(final Function<I_M_HU_LUTU_Configuration, I_M_HU_LUTU_Configuration> converter);
 
 	/**
 	 * Gets current LU/TU configuration if exists. If not, a new one is created but is not set back to underlying document line.
-	 *
-	 * @return
 	 */
 	I_M_HU_LUTU_Configuration getCreateLUTUConfiguration();
 
 	/**
-	 *
-	 * @return
 	 * @see IDocumentLUTUConfigurationHandler#getCurrentLUTUConfigurationOrNull(Object)
 	 */
 	I_M_HU_LUTU_Configuration getCurrentLUTUConfigurationOrNull();
 
-	List<I_M_HU_LUTU_Configuration> getCurrentLUTUConfigurationAlternatives();
-
 	/**
 	 * Sets given configuration to underlying document line and save that line.
-	 *
-	 * @param lutuConfiguration
 	 */
 	void setCurrentLUTUConfigurationAndSave(I_M_HU_LUTU_Configuration lutuConfiguration);
 
 	/**
 	 * Updates given LU/TU Configuration from underlying document line.
-	 *
-	 * @param lutuConfiguration
-	 *
-	 * @see IDocumentLUTUConfigurationHandler#updateLUTUConfiguration(I_M_HU_LUTU_Configuration, Object).
 	 */
 	void updateLUTUConfigurationFromModel(I_M_HU_LUTU_Configuration lutuConfiguration);
 
@@ -89,7 +72,6 @@ public interface IDocumentLUTUConfigurationManager
 	/**
 	 * Suggest {@link I_M_HU_PI_Item_Product} to be used.
 	 *
-	 * @param documentLine
 	 * @return PI Item Product or Virtual PI's Item Product if nothing else found; never return null
 	 * @see IDocumentLUTUConfigurationHandler#getM_HU_PI_Item_Product(Object)
 	 */

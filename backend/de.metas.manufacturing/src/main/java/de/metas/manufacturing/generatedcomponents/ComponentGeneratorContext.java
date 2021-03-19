@@ -43,6 +43,7 @@ public class ComponentGeneratorContext
 	@NonNull ImmutableAttributeSet existingAttributes;
 	@NonNull ComponentGeneratorParams parameters;
 	@NonNull ClientId clientId;
+	boolean overrideExistingValues;
 
 	@NonNull
 	public DocSequenceId getSequenceId()
@@ -62,7 +63,12 @@ public class ComponentGeneratorContext
 		final ImmutableList.Builder<AttributeCode> attributesLeftToGenerate = ImmutableList.builder();
 		for (final AttributeCode attr : supportedAttributes)
 		{
-			if (existingAttributes.hasAttribute(attr) && Check.isEmpty(existingAttributes.getValueAsString(attr)))
+			if (!existingAttributes.hasAttribute(attr))
+			{
+				continue;
+			}
+
+			if (isOverrideExistingValues() || Check.isEmpty(existingAttributes.getValueAsString(attr)))
 			{
 				attributesLeftToGenerate.add(attr);
 			}
