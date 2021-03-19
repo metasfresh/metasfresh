@@ -413,7 +413,8 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public boolean existsAndIsActive(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
-		return getBPartnerLocationById(bpartnerLocationId) != null;
+		final I_C_BPartner_Location bPartnerLocationRecord = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		return bPartnerLocationRecord != null && bPartnerLocationRecord.isActive();
 	}
 
 	@Override
