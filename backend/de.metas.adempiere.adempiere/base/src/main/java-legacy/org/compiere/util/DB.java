@@ -1833,7 +1833,7 @@ public class DB
 	 * @param param
 	 * @return parameter as SQL code
 	 */
-	public String TO_SQL(final Object param)
+	public String TO_SQL(@Nullable final Object param)
 	{
 		// TODO: check and refactor together with buildSqlList(...)
 		if (param == null)
@@ -2188,7 +2188,7 @@ public class DB
 	/**
 	 * Create persistent selection in T_Selection table
 	 */
-	public void createT_Selection(@NonNull final PInstanceId pinstanceId, final Iterable<Integer> selection, final String trxName)
+	public void createT_Selection(@NonNull final PInstanceId pinstanceId, final Iterable<Integer> selection, @Nullable final String trxName)
 	{
 		final int pinstanceRepoId = pinstanceId.getRepoId();
 
@@ -2242,7 +2242,7 @@ public class DB
 
 	public void createT_Selection(
 			@NonNull final PInstanceId selectionId, 
-			@NonNull final Set<? extends RepoIdAware> selection, 
+			@NonNull final Collection<? extends RepoIdAware> selection,
 			@Nullable final String trxName)
 	{
 		final ImmutableList<Integer> ids = RepoIdAwares.asRepoIds(selection);

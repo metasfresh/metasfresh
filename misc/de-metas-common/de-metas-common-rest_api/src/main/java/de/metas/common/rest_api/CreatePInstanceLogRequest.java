@@ -27,20 +27,21 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import java.util.List;
 
 @Value
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CreatePInstanceLogRequest
+public class CreatePInstanceLogRequest//
 {
 	@NonNull
 	List<JsonPInstanceLog> logs;
 
 	@Builder
 	@JsonCreator
-	private CreatePInstanceLogRequest(@JsonProperty("logs") @NonNull final List<JsonPInstanceLog> logs)
+	private CreatePInstanceLogRequest(@JsonProperty("logs") @Singular @NonNull final List<JsonPInstanceLog> logs)
 	{
 		this.logs = logs;
 	}

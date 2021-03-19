@@ -1,17 +1,5 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
-import static de.metas.util.Check.assumeNotNull;
-
-import java.util.Optional;
-import java.util.function.Function;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.util.Env;
-
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntrySubTabId;
 import de.metas.dataentry.FieldType;
@@ -35,6 +23,16 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.util.Env;
+
+import java.util.Optional;
+import java.util.function.Function;
+
+import static de.metas.util.Check.assumeNotNull;
 
 /*
  * #%L
@@ -74,7 +72,9 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 		this.dataEntryRecordRepository = dataEntryRecordRepository;
 	}
 
-	/** Retrieves *or* creates the single child document for the given query's parent document and entity descriptor */
+	/**
+	 * Retrieves *or* creates the single child document for the given query's parent document and entity descriptor
+	 */
 	@Override
 	public OrderedDocumentsList retrieveDocuments(
 			@NonNull final DocumentQuery query,
@@ -90,7 +90,9 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 		return documentsCollector;
 	}
 
-	/** Retrieves *or* creates the single child document for the given query's parent document and entity descriptor */
+	/**
+	 * Retrieves *or* creates the single child document for the given query's parent document and entity descriptor
+	 */
 	@Override
 	public Document retrieveDocument(
 			@NonNull final DocumentQuery query,
@@ -110,7 +112,7 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 		final Function<DocumentId, Document> existingDocumentsSupplier = query.getExistingDocumentsSupplier();
 
 		final DetailId detailId = query.getEntityDescriptor().getDetailId();
-		final DataEntrySubTabId dataEntrySubTabId = extractDataEntrySubGroupId(detailId);
+		final DataEntrySubTabId dataEntrySubTabId = extractDataEntrySubTabId(detailId);
 		final TableRecordReference parentRecordReference = extractParentRecordReference(parentDocument);
 
 		final DataEntryRecordQuery dataEntryRecordQuery = DataEntryRecordQuery.builder()
@@ -172,7 +174,7 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 			@NonNull final Document parentDocument)
 	{
 		final TableRecordReference parentRecordReference = extractParentRecordReference(parentDocument);
-		final DataEntrySubTabId subGroupId = extractDataEntrySubGroupId(entityDescriptor.getDetailId());
+		final DataEntrySubTabId subGroupId = extractDataEntrySubTabId(entityDescriptor.getDetailId());
 
 		return createDocumentId(subGroupId, parentRecordReference);
 	}
@@ -205,13 +207,13 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 	private static DataEntryRecordQuery extractDataEntryRecordQuery(@NonNull final Document document)
 	{
 		final DetailId detailId = document.getEntityDescriptor().getDetailId();
-		final DataEntrySubTabId subGroupId = extractDataEntrySubGroupId(detailId);
+		final DataEntrySubTabId dataEntrySubTabId = extractDataEntrySubTabId(detailId);
 
 		final Document parentDocument = document.getParentDocument();
 		final TableRecordReference parentRecordReference = extractParentRecordReference(parentDocument);
 
 		return DataEntryRecordQuery.builder()
-				.dataEntrySubTabId(subGroupId)
+				.dataEntrySubTabId(dataEntrySubTabId)
 				.recordId(parentRecordReference.getRecord_ID())
 				.build();
 	}
@@ -236,19 +238,11 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 	{
 		assertValidState(document);
 
-		final DataEntryRecord dataEntryRecord;
-		if (document.isNew())
-		{
-			dataEntryRecord = createDataEntryRecord(document);
-		}
-		else
-		{
-			final DataEntryRecordQuery dataEntryRecordQuery = extractDataEntryRecordQuery(document);
+		final DataEntryRecordQuery dataEntryRecordQuery = extractDataEntryRecordQuery(document);
 
-			dataEntryRecord = dataEntryRecordRepository
-					.getBy(dataEntryRecordQuery)
-					.orElseThrow(() -> new AdempiereException("Unable to retrieve dataEntryRecord for query=" + dataEntryRecordQuery));
-		}
+		final DataEntryRecord dataEntryRecord = dataEntryRecordRepository
+				.getBy(dataEntryRecordQuery)
+				.orElseGet(() -> createDataEntryRecord(document));
 
 		boolean refreshNeeded = updateDataEntryRecord(document, dataEntryRecord);
 		dataEntryRecordRepository.save(dataEntryRecord);
@@ -294,15 +288,15 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 
 	private static DataEntryRecord createDataEntryRecord(@NonNull final Document document)
 	{
-
-		final TableRecordReference parentReference = extractParentRecordReference(document.getParentDocument());
-
 		final DetailId detailId = document.getEntityDescriptor().getDetailId();
-		final DataEntrySubTabId dataEntrySubTabId = extractDataEntrySubGroupId(detailId);
+		final DataEntrySubTabId dataEntrySubTabId = extractDataEntrySubTabId(detailId);
+
+		final Document parentDocument = document.getParentDocument();
+		final TableRecordReference parentRecordReference = extractParentRecordReference(parentDocument);
 
 		return DataEntryRecord.builder()
-				.mainRecord(parentReference)
 				.dataEntrySubTabId(dataEntrySubTabId)
+				.mainRecord(parentRecordReference)
 				.build();
 	}
 
@@ -316,12 +310,12 @@ public class DataEntrySubTabBindingRepository implements DocumentsRepository
 		return parentReference;
 	}
 
-	private static DataEntrySubTabId extractDataEntrySubGroupId(@NonNull final DetailId detailId)
+	private static DataEntrySubTabId extractDataEntrySubTabId(@NonNull final DetailId detailId)
 	{
-		final int subGroupId = detailId.getIdInt();
+		final int subTabId = detailId.getIdInt();
 		Check.assume(detailId.getIdPrefix().equals(I_DataEntry_SubTab.Table_Name), "The given document.entityDescriptor.detailId needs to have prefix={}", I_DataEntry_SubTab.Table_Name);
 
-		final DataEntrySubTabId dataEntrySubTabId = DataEntrySubTabId.ofRepoId(subGroupId);
+		final DataEntrySubTabId dataEntrySubTabId = DataEntrySubTabId.ofRepoId(subTabId);
 		return dataEntrySubTabId;
 	}
 

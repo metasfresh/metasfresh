@@ -2,7 +2,6 @@ package de.metas.rest_api.product.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
 import de.metas.bpartner.BPartnerId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;

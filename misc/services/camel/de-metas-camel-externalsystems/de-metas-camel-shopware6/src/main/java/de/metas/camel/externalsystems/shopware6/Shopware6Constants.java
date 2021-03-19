@@ -34,8 +34,10 @@ public interface Shopware6Constants
 	String PARAMETERS_DATE_GTE =  "gte";
 
 	//camel route properties
-	String ROUTE_PROPERTY_SHOPWARE_CLIENT = "shopware-client";
-	String ROUTE_PROPERTY_CURRENT_ORDER = "slack";
+	String ROUTE_PROPERTY_SHOPWARE_CLIENT = "shopwareClient";
+	String ROUTE_PROPERTY_CURRENT_ORDER = "currentOrder";
+	String ROUTE_PROPERTY_ORDER_DELIVERIES = "orderDeliveries";
+	String ROUTE_PROPERTY_ORG_CODE = "orgCode";
 
 	//nodes
 	String JSON_NODE_DATA = "data";
@@ -43,5 +45,8 @@ public interface Shopware6Constants
 	//shopware client
 	int CONNECTION_TIMEOUT_SECONDS = 600;
 	int READ_TIMEOUT_SECONDS = 600;
+
+	//
+	String EXTERNAL_ID_PREFIX = "ext-";
 
 }

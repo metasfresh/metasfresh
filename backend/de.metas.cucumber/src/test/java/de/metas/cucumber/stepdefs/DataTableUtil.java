@@ -30,6 +30,7 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -206,4 +207,12 @@ public class DataTableUtil
 		return string;
 	}
 
+	@Nullable
+	public String extractValueOrNull(@Nullable final String value)
+	{
+		if (value == null || value.equals("null"))
+			return null;
+
+		return value;
+	}
 }

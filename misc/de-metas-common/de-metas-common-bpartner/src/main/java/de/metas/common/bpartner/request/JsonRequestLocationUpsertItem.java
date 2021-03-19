@@ -22,16 +22,18 @@
 
 package de.metas.common.bpartner.request;
 
-import static de.metas.common.rest_api.SwaggerDocConstants.*;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+
+import static de.metas.common.rest_api.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
 
 @Value
 @Builder(toBuilder = true)
@@ -48,12 +50,18 @@ public class JsonRequestLocationUpsertItem
 	@NonNull
 	JsonRequestLocation location;
 
+	@ApiModelProperty(position = 30, value = "Id of the business partner location from an external system. ")
+	@Nullable
+	JsonSingleExternalReferenceCreateReq locationExternalRef;
+
 	@JsonCreator
 	public JsonRequestLocationUpsertItem(
-			@NonNull @JsonProperty("locationIdentifier") String locationIdentifier,
-			@NonNull @JsonProperty("location") JsonRequestLocation location)
+			@NonNull @JsonProperty("locationIdentifier") final String locationIdentifier,
+			@NonNull @JsonProperty("location") final JsonRequestLocation location,
+			@Nullable @JsonProperty("locationExternalRef") final JsonSingleExternalReferenceCreateReq locationExternalRef)
 	{
 		this.locationIdentifier = locationIdentifier;
 		this.location = location;
+		this.locationExternalRef = locationExternalRef;
 	}
 }

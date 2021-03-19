@@ -22,7 +22,11 @@
 
 package de.metas.camel.externalsystems.shopware6.processor;
 
+import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDeliveries;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDelivery;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.JsonExternalSystemName;
@@ -30,44 +34,69 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ESR_TYPE_BPARTNER;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ESR_TYPE_BPARTNER_LOCATION;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_CURRENT_ORDER;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_ORDER_DELIVERIES;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_SHOPWARE_CLIENT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWARE6_SYSTEM_NAME;
+import static de.metas.camel.externalsystems.shopware6.processor.ProcessorHelper.getPropertyOrThrowError;
 
 public class CreateBPartnerESRQueryProcessor implements Processor
 {
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
 		final JsonOrder order = exchange.getIn().getBody(JsonOrder.class);
 
-		final JsonExternalReferenceLookupRequest lookupRequest = buildESRLookupRequest(order);
+		final ShopwareClient shopwareClient = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SHOPWARE_CLIENT, ShopwareClient.class);
+
+		final JsonOrderDeliveries orderDeliveries = shopwareClient.getDeliveries(order.getId())
+				.orElseThrow(() -> new RuntimeException("Missing shipping address for orderId:" + order.getId()));
+
+		final List<JsonOrderAddress> shippingAddressList = orderDeliveries.getData().stream()
+				.map(JsonOrderDelivery::getShippingOrderAddress)
+				.collect(Collectors.toList());
+
+		final JsonExternalReferenceLookupRequest lookupRequest = buildESRLookupRequest(order, shippingAddressList);
 
 		exchange.getIn().setBody(lookupRequest);
 
 		exchange.setProperty(ROUTE_PROPERTY_CURRENT_ORDER, order);
+		exchange.setProperty(ROUTE_PROPERTY_ORDER_DELIVERIES, orderDeliveries);
 	}
 
 	@NonNull
-	private JsonExternalReferenceLookupRequest buildESRLookupRequest(@NonNull final JsonOrder order)
+	private JsonExternalReferenceLookupRequest buildESRLookupRequest(
+			@NonNull final JsonOrder order,
+			@NonNull final List<JsonOrderAddress> shippingAddressList)
 	{
-		final String customerId = order.getOrderCustomer().getCustomerId();
-
-		final JsonExternalReferenceLookupItem customerLookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(customerId)
-				.type(ESR_TYPE_BPARTNER)
-				.build();
-
-		final JsonExternalReferenceLookupItem billingAddressLookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(order.getBillingAddressId())
+		final Function<String,JsonExternalReferenceLookupItem> externalIdToBPLocationLookupFunc = (externalId) -> JsonExternalReferenceLookupItem.builder()
+				.id(externalId)
 				.type(ESR_TYPE_BPARTNER_LOCATION)
 				.build();
 
-		return JsonExternalReferenceLookupRequest.builder()
-				.systemName(JsonExternalSystemName.of(SHOPWARE6_SYSTEM_NAME))
-				.item(customerLookupItem)
-				.item(billingAddressLookupItem)
+		final JsonExternalReferenceLookupItem customerLookupItem = JsonExternalReferenceLookupItem.builder()
+				.id(order.getOrderCustomer().getCustomerId())
+				.type(ESR_TYPE_BPARTNER)
 				.build();
+
+		final JsonExternalReferenceLookupRequest.JsonExternalReferenceLookupRequestBuilder externalRefLookupReqBuilder = JsonExternalReferenceLookupRequest.builder()
+				.systemName(JsonExternalSystemName.of(SHOPWARE6_SYSTEM_NAME))
+				.item(customerLookupItem);
+
+		final JsonExternalReferenceLookupItem billingAddressLookupItem = externalIdToBPLocationLookupFunc.apply(order.getBillingAddressId());
+		externalRefLookupReqBuilder.item(billingAddressLookupItem);
+
+		shippingAddressList.stream()
+				.map(JsonOrderAddress::getId)
+				.map(externalIdToBPLocationLookupFunc)
+				.forEach(externalRefLookupReqBuilder::item);
+
+		return externalRefLookupReqBuilder.build();
 	}
 }

@@ -36,7 +36,8 @@ public enum PathSegmentsEnum
 	DELIVERIES("deliveries"),
 	ORDER_ADDRESS("order-address"),
 	OATH("oauth"),
-	TOKEN("token");
+	TOKEN("token"),
+	COUNTRY("country");
 
 	private final String value;
 }

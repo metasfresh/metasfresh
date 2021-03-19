@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -26,6 +25,7 @@ import org.compiere.model.I_M_Transaction;
 import org.compiere.model.X_M_Transaction;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
@@ -86,7 +86,7 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 	BigDecimal minimumPrice;
 	@NonNull
 	LocalDate movementDate;
-	boolean onlyStockedProducts;
+	@Nullable Boolean onlyStockedProducts;
 	@NonNull
 	HuForInventoryLineFactory huForInventoryLineFactory;
 
@@ -105,13 +105,13 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 			.put(X_M_Transaction.MOVEMENTTYPE_WorkOrderMinus, 12)
 			.build();
 
-	final Comparator<TransactionContext> TRANSACTIONS_BY_MOVEMENTTYPE_REVERSED_COMPARATOR = //
+	Comparator<TransactionContext> TRANSACTIONS_BY_MOVEMENTTYPE_REVERSED_COMPARATOR = //
 			Comparator.<TransactionContext, Integer>comparing(transaction -> MOVEMENT_TYPE_ORDERING.get(transaction.getMovementType())).reversed();
 
-	final Comparator<TransactionContext> TRANSACTIONS_BY_MOVEMENDATE_COMPARATOR = //
-			Comparator.<TransactionContext, LocalDate>comparing(transaction -> transaction.getMovementDate());
+	Comparator<TransactionContext> TRANSACTIONS_BY_MOVEMENDATE_COMPARATOR = //
+			Comparator.<TransactionContext, LocalDate>comparing(TransactionContext::getMovementDate);
 
-	final Comparator<TransactionContext> TRANSACTIONS_COMPARATOR = TRANSACTIONS_BY_MOVEMENTTYPE_REVERSED_COMPARATOR
+	Comparator<TransactionContext> TRANSACTIONS_COMPARATOR = TRANSACTIONS_BY_MOVEMENTTYPE_REVERSED_COMPARATOR
 			.thenComparing(TRANSACTIONS_BY_MOVEMENDATE_COMPARATOR);
 
 	@Builder
@@ -119,7 +119,7 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 			final int maxLocators,
 			@NonNull final BigDecimal minimumPrice,
 			@NonNull final LocalDate movementDate,
-			final boolean onlyStockedProducts,
+			@Nullable final Boolean onlyStockedProducts,
 			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory)
 	{
 		this.maxLocators = maxLocators;
@@ -133,7 +133,6 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 	public Stream<HuForInventoryLine> streamHus()
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder().setOnlyTopLevelHUs();
 
@@ -148,7 +147,10 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 
 		huQueryBuilder.addOnlyInWarehouseIds(warehouseIds);
 		huQueryBuilder.addOnlyInLocatorIds(locatorIds);
-		huQueryBuilder.setOnlyStockedProducts(onlyStockedProducts);
+		if (onlyStockedProducts != null)
+		{
+			huQueryBuilder.setOnlyStockedProducts(onlyStockedProducts);
+		}
 
 		huQueryBuilder.addHUStatusToInclude(X_M_HU.HUSTATUS_Active);
 
@@ -168,10 +170,10 @@ public class LeastRecentTransactionStrategy implements HUsForInventoryStrategy
 	@Value
 	static private class TransactionContext
 	{
-		final int locatorId;
-		final @NonNull ProductId productId;
-		final @NonNull String movementType;
-		final @NonNull LocalDate movementDate;
+		int locatorId;
+		@NonNull ProductId productId;
+		@NonNull String movementType;
+		@NonNull LocalDate movementDate;
 	}
 
 	private ImmutableSet<Integer> retrieveLocatorIds()

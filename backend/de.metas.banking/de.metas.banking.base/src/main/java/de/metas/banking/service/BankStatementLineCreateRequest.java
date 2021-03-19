@@ -76,6 +76,9 @@ public class BankStatementLineCreateRequest
 
 	ChargeId chargeId;
 
+	@Nullable
+	int debitorOrCreditorId;
+
 	@Builder
 	private BankStatementLineCreateRequest(
 			@NonNull final BankStatementId bankStatementId,
@@ -100,6 +103,7 @@ public class BankStatementLineCreateRequest
 			@Nullable final Money chargeAmt,
 			@Nullable final Money interestAmt,
 			@Nullable final ChargeId chargeId,
+			final int debitorOrCreditorId,
 			//
 			@Nullable final ElectronicFundsTransfer eft)
 	{
@@ -125,6 +129,7 @@ public class BankStatementLineCreateRequest
 		this.chargeAmt = chargeAmt != null ? chargeAmt : statementAmt.toZero();
 		this.interestAmt = interestAmt != null ? interestAmt : statementAmt.toZero();
 		this.chargeId = chargeId;
+		this.debitorOrCreditorId = debitorOrCreditorId;
 		Money.getCommonCurrencyIdOfAll(this.statementAmt, this.trxAmt, this.chargeAmt, this.interestAmt);
 		//
 		this.eft = eft;

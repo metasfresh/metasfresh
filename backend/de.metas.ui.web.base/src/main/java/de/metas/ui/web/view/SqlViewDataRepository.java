@@ -149,9 +149,10 @@ class SqlViewDataRepository implements IViewDataRepository
 		// Set rowsMatchingFilter
 		{
 			final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
-			final String rowsMatchingFilterString = filterConverters.getSql(SqlParamsCollector.notCollecting(), filters, sqlOpts, context);
+			final SqlParamsCollector rowsMatchingFilterParams = SqlParamsCollector.newInstance();
+			final String rowsMatchingFilterString = filterConverters.getSql(rowsMatchingFilterParams, filters, sqlOpts, context);
 			final SqlAndParams rowsMatchingFilter = !Check.isBlank(rowsMatchingFilterString)
-					? SqlAndParams.of(rowsMatchingFilterString)
+					? SqlAndParams.of(rowsMatchingFilterString, rowsMatchingFilterParams)
 					: null;
 
 			sqlWhereClause = sqlWhereClause.withRowsMatchingFilter(rowsMatchingFilter);

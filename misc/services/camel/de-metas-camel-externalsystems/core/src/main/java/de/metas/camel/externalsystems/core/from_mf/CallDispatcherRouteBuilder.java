@@ -29,8 +29,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.springframework.stereotype.Component;
+
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 
 @Component
 public class CallDispatcherRouteBuilder extends RouteBuilder
@@ -51,6 +54,10 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 		jacksonDataFormat.setCamelContext(getContext());
 		jacksonDataFormat.setObjectMapper(objectMapper);
 		jacksonDataFormat.setUnmarshalType(JsonExternalSystemRequest.class);
+
+		errorHandler(defaultErrorHandler());
+		onException(Exception.class)
+				.to(StaticEndpointBuilders.direct(MF_ERROR_ROUTE_ID));
 
 		// assuming that we have server.port=8095 in the application.properties, you can call this EP with http://localhost:8095/camel/do
 		rest("/").produces("text/plain") // TODO fix

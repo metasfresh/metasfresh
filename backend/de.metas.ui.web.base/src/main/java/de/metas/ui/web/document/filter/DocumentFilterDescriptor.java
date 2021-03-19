@@ -19,15 +19,21 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import com.google.common.collect.Maps;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.BarcodeScannerType;
+import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import de.metas.ui.web.document.filter.json.JSONDocumentFilterParam;
 import de.metas.ui.web.window.datatypes.DebugProperties;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -153,9 +159,65 @@ public final class DocumentFilterDescriptor
 		return parameter;
 	}
 
+	public DocumentFilter unwrap(@NonNull final JSONDocumentFilter jsonFilter)
+	{
+		final DocumentFilter.DocumentFilterBuilder filter = DocumentFilter.builder()
+				.setFilterId(jsonFilter.getFilterId())
+				.setFacetFilter(isFacetFilter());
+
+		final Map<String, JSONDocumentFilterParam> jsonParams = Maps.uniqueIndex(jsonFilter.getParameters(), JSONDocumentFilterParam::getParameterName);
+
+		for (final DocumentFilterParamDescriptor paramDescriptor : getParameters())
+		{
+			final String parameterName = paramDescriptor.getParameterName();
+			final JSONDocumentFilterParam jsonParam = jsonParams.get(parameterName);
+
+			// If parameter is missing: skip it if no required, else throw exception
+			if (jsonParam == null)
+			{
+				if (paramDescriptor.isMandatory())
+				{
+					throw new IllegalArgumentException("Parameter '" + parameterName + "' was not provided");
+				}
+				continue;
+			}
+
+			final Object value = paramDescriptor.convertValueFromJson(jsonParam.getValue());
+			final Object valueTo = paramDescriptor.convertValueFromJson(jsonParam.getValueTo());
+
+			// If there was no value/valueTo provided: skip it if no required, else throw exception
+			if (value == null && valueTo == null)
+			{
+				if (paramDescriptor.isMandatory())
+				{
+					throw new IllegalArgumentException("Parameter '" + parameterName + "' has no value");
+				}
+				continue;
+			}
+
+			filter.addParameter(DocumentFilterParam.builder()
+										.setFieldName(paramDescriptor.getFieldName())
+										.setOperator(paramDescriptor.getOperator())
+										.setValue(value)
+										.setValueTo(valueTo)
+										.build());
+		}
+
+		for (final DocumentFilterParam internalParam : getInternalParameters())
+		{
+			filter.addInternalParameter(internalParam);
+		}
+
+		return filter.build();
+	}
+
+
 	//
 	//
 	//
+	//
+	//
+
 	public static final class Builder
 	{
 		private String filterId;
@@ -201,8 +263,8 @@ public final class DocumentFilterDescriptor
 							nextParamIndexByFieldName.put(fieldName, nextParamIndex + 1);
 						}
 					})
-					.map(paramBuilder -> paramBuilder.build())
-					.collect(GuavaCollectors.toImmutableMapByKey(param -> param.getParameterName()));
+					.map(DocumentFilterParamDescriptor.Builder::build)
+					.collect(GuavaCollectors.toImmutableMapByKey(DocumentFilterParamDescriptor::getParameterName));
 		}
 
 		public Builder setFilterId(final String filterId)
@@ -235,6 +297,7 @@ public final class DocumentFilterDescriptor
 			return this;
 		}
 
+		@Nullable
 		public ITranslatableString getDisplayNameTrls()
 		{
 			if (displayNameTrls != null)
@@ -256,7 +319,7 @@ public final class DocumentFilterDescriptor
 			return this;
 		}
 
-		public Builder setInlineRenderMode(DocumentFilterInlineRenderMode inlineRenderMode)
+		public Builder setInlineRenderMode(final DocumentFilterInlineRenderMode inlineRenderMode)
 		{
 			this.inlineRenderMode = inlineRenderMode;
 			return this;
@@ -267,7 +330,7 @@ public final class DocumentFilterDescriptor
 			return inlineRenderMode != null ? inlineRenderMode : DocumentFilterInlineRenderMode.BUTTON;
 		}
 
-		public Builder setParametersLayoutType(PanelLayoutType parametersLayoutType)
+		public Builder setParametersLayoutType(final PanelLayoutType parametersLayoutType)
 		{
 			this.parametersLayoutType = parametersLayoutType;
 			return this;
@@ -278,7 +341,7 @@ public final class DocumentFilterDescriptor
 			return parametersLayoutType != null ? parametersLayoutType : PanelLayoutType.Panel;
 		}
 
-		public Builder setFacetFilter(boolean facetFilter)
+		public Builder setFacetFilter(final boolean facetFilter)
 		{
 			this.facetFilter = facetFilter;
 			return this;
@@ -304,12 +367,12 @@ public final class DocumentFilterDescriptor
 		public Collector<DocumentFilterParamDescriptor.Builder, ?, Builder> collectParameters()
 		{
 			final Supplier<List<DocumentFilterParamDescriptor.Builder>> supplier = ArrayList::new;
-			final BiConsumer<List<DocumentFilterParamDescriptor.Builder>, DocumentFilterParamDescriptor.Builder> accumulator = (list, filter) -> list.add(filter);
+			final BiConsumer<List<DocumentFilterParamDescriptor.Builder>, DocumentFilterParamDescriptor.Builder> accumulator = List::add;
 			final BinaryOperator<List<DocumentFilterParamDescriptor.Builder>> combiner = (list1, list2) -> {
 				list1.addAll(list2);
 				return list1;
 			};
-			final Function<List<DocumentFilterParamDescriptor.Builder>, Builder> finisher = (params) -> addParameters(params);
+			final Function<List<DocumentFilterParamDescriptor.Builder>, Builder> finisher = this::addParameters;
 
 			return Collector.of(supplier, accumulator, combiner, finisher);
 		}

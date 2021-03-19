@@ -14,8 +14,15 @@ import javax.annotation.Nullable;
 
 public interface IUserBL extends ISingletonService
 {
-	HashableString getUserPassword(I_AD_User user);
+	I_AD_User getById(@NonNull UserId userId);
 
+	I_AD_User getByPasswordResetCode(@NonNull String passwordResetCode);
+
+	String extractUserLogin(I_AD_User user);
+
+	HashableString extractUserPassword(I_AD_User user);
+
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	boolean isPasswordMatching(I_AD_User user, HashableString password);
 
 	void createResetPasswordByEMailRequest(String userId);
