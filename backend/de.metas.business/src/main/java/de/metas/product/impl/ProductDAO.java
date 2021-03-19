@@ -53,6 +53,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
