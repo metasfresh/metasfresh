@@ -199,11 +199,13 @@ public final class JSONDocumentLayoutElementField
 
 	@JsonProperty("advSearchWindowId")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable private String advSearchWindowId;
+	@Nullable
+	private String advSearchWindowId;
 
 	@JsonProperty("advSearchCaption")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@Nullable private String advSearchCaption;
+	@Nullable
+	private String advSearchCaption;
 
 	//
 	// Lookup
@@ -220,7 +222,8 @@ public final class JSONDocumentLayoutElementField
 	private final Integer lookupSearchStartDelayMillis;
 
 	@JsonIgnore
-	@Nullable private final String lookupTableName;
+	@Nullable
+	private final String lookupTableName;
 
 	//
 	// Zoom
@@ -285,8 +288,8 @@ public final class JSONDocumentLayoutElementField
 			@JsonProperty("devices") final List<JSONDeviceDescriptor> devices,
 			@JsonProperty("newRecordWindowId") final String newRecordWindowId,
 			@JsonProperty("newRecordCaption") final String newRecordCaption,
-			@JsonProperty("advSearchWindowId") final String advSearchWindowId,
-			@JsonProperty("advSearchCaption") final String advSearchCaption,
+			@Nullable @JsonProperty("advSearchWindowId") final String advSearchWindowId,
+			@Nullable @JsonProperty("advSearchCaption") final String advSearchCaption,
 			//
 			@JsonProperty("source") final JSONLookupSource source,
 			@JsonProperty("lookupSearchStringMinLength") final Integer lookupSearchStringMinLength,
@@ -365,7 +368,7 @@ public final class JSONDocumentLayoutElementField
 
 		// avoid enabling advanced search assistant for included tabs,
 		// because atm frontend does not support it.
-		if(tabId != null)
+		if (tabId != null)
 		{
 			return;
 		}
