@@ -23,6 +23,7 @@
 package de.metas.order;
 
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
@@ -41,9 +42,12 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
 
+import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -81,6 +85,9 @@ public interface IOrderBL extends ISingletonService
 
 	BPartnerLocationId getBillToLocationId(I_C_Order order);
 
+	@Nullable
+	BPartnerId getEffectiveBillPartnerId(@NonNull I_C_Order orderRecord);
+		
 	@NonNull BPartnerContactId getBillToContactId(I_C_Order order);
 
 	/**
