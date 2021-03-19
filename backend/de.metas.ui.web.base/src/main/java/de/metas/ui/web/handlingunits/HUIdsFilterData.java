@@ -29,7 +29,6 @@ import lombok.NonNull;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
-import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Optional;
