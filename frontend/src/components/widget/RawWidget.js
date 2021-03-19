@@ -1,5 +1,5 @@
 import React, { createRef, PureComponent } from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+// import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
@@ -633,17 +633,17 @@ export class RawWidget extends PureComponent {
               })}
               title={valueDescription}
             >
-              <ReactCSSTransitionGroup
+              {/* <ReactCSSTransitionGroup 
                 transitionName="fade"
                 transitionEnterTimeout={200}
                 transitionLeaveTimeout={200}
-              >
-                {errorPopup &&
-                  validStatus &&
-                  !validStatus.valid &&
-                  !validStatus.initialValue &&
-                  this.renderErrorPopup(validStatus.reason)}
-              </ReactCSSTransitionGroup>
+              > */}
+              {errorPopup &&
+                validStatus &&
+                !validStatus.valid &&
+                !validStatus.initialValue &&
+                this.renderErrorPopup(validStatus.reason)}
+              {/* </ReactCSSTransitionGroup> */}
               {widgetBody}
             </div>
             {fields[0].devices && !widgetData[0].readonly && (

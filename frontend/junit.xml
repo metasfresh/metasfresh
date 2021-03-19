@@ -1,235 +1,275 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="jest tests" tests="306" failures="0" time="48.146">
-  <testsuite name="FiltersActions general" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="3.471" tests="8">
-    <testcase classname="FiltersActions general should call DELETE_FILTER action with correct payload" name="FiltersActions general should call DELETE_FILTER action with correct payload" time="0.005">
+<testsuites name="jest tests" tests="310" failures="6" time="17.532">
+  <testsuite name="Loader test" errors="0" failures="2" skipped="0" timestamp="2021-03-19T06:55:44" time="4.137" tests="3">
+    <testcase classname="Loader test renders without errors" name="Loader test renders without errors" time="0.065">
+      <failure>Invariant Violation: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it&apos;s defined in, or you might have mixed up default and named imports.
+    at invariant (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom-server.node.development.js:58:15)
+    at ReactDOMServerRenderer.render (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom-server.node.development.js:3443:7)
+    at ReactDOMServerRenderer.read (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom-server.node.development.js:3161:29)
+    at Object.renderToStaticMarkup (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom-server.node.development.js:3661:27)
+    at Object.render (/Users/petrica/metasfresh/frontend/node_modules/enzyme-adapter-react-16/src/ReactSixteenAdapter.js:776:31)
+    at render (/Users/petrica/metasfresh/frontend/node_modules/enzyme/src/render.js:21:25)
+    at Object.&lt;anonymous&gt; (/Users/petrica/metasfresh/frontend/src/__tests__/components/app/Loader.test.js:7:21)
+    at Object.asyncJestTest (/Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/jasmineAsyncInstall.js:106:37)
+    at /Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:45:12
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:28:19)
+    at /Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:75:41
+    at processTicksAndRejections (node:internal/process/task_queues:94:5)</failure>
     </testcase>
-    <testcase classname="FiltersActions general dispatches &apos;CREATE_FILTER&apos; action when creating the filters" name="FiltersActions general dispatches &apos;CREATE_FILTER&apos; action when creating the filters" time="0.002">
+    <testcase classname="Loader test renders normal loader" name="Loader test renders normal loader" time="0.003">
+      <failure>Invariant Violation: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it&apos;s defined in, or you might have mixed up default and named imports.
+    at invariant (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom-server.node.development.js:58:15)
+    at ReactDOMServerRenderer.render (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom-server.node.development.js:3443:7)
+    at ReactDOMServerRenderer.read (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom-server.node.development.js:3161:29)
+    at Object.renderToStaticMarkup (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom-server.node.development.js:3661:27)
+    at Object.render (/Users/petrica/metasfresh/frontend/node_modules/enzyme-adapter-react-16/src/ReactSixteenAdapter.js:776:31)
+    at render (/Users/petrica/metasfresh/frontend/node_modules/enzyme/src/render.js:21:25)
+    at Object.&lt;anonymous&gt; (/Users/petrica/metasfresh/frontend/src/__tests__/components/app/Loader.test.js:14:21)
+    at Object.asyncJestTest (/Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/jasmineAsyncInstall.js:106:37)
+    at /Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:45:12
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:28:19)
+    at /Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:75:41
+    at processTicksAndRejections (node:internal/process/task_queues:94:5)</failure>
     </testcase>
-    <testcase classname="FiltersActions general dispatches &apos;CLEAR_ALL_FILTERS&apos; action when clearing the filters" name="FiltersActions general dispatches &apos;CLEAR_ALL_FILTERS&apos; action when clearing the filters" time="0">
-    </testcase>
-    <testcase classname="FiltersActions general dispatches &apos;UPDATE_FLAG_NOTVALIDFIELDS&apos; action " name="FiltersActions general dispatches &apos;UPDATE_FLAG_NOTVALIDFIELDS&apos; action " time="0.001">
-    </testcase>
-    <testcase classname="FiltersActions general dispatches &apos;UPDATE_ACTIVE_FILTERS&apos; action when creating the filters" name="FiltersActions general dispatches &apos;UPDATE_ACTIVE_FILTERS&apos; action when creating the filters" time="0.001">
-    </testcase>
-    <testcase classname="FiltersActions general dispatches &apos;FILTER_UPDATE_WIDGET_SHOWN&apos; action " name="FiltersActions general dispatches &apos;FILTER_UPDATE_WIDGET_SHOWN&apos; action " time="0.001">
-    </testcase>
-    <testcase classname="FiltersActions general dispatches &apos;CLEAR_STATIC_FILTERS&apos; action " name="FiltersActions general dispatches &apos;CLEAR_STATIC_FILTERS&apos; action " time="0.001">
-    </testcase>
-    <testcase classname="FiltersActions general dispatches &apos;UPDATE_INLINE_FILTER&apos; action " name="FiltersActions general dispatches &apos;UPDATE_INLINE_FILTER&apos; action " time="0">
-    </testcase>
-  </testsuite>
-  <testsuite name="Checkbox component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="3.538" tests="3">
-    <testcase classname="Checkbox component rendering tests: renders without errors" name="Checkbox component rendering tests: renders without errors" time="0.023">
-    </testcase>
-    <testcase classname="Checkbox component rendering tests: renders without errors with props set" name="Checkbox component rendering tests: renders without errors with props set" time="0.006">
-    </testcase>
-    <testcase classname="Checkbox component functional tests renders without errors with props set" name="Checkbox component functional tests renders without errors with props set" time="0.086">
-    </testcase>
-  </testsuite>
-  <testsuite name="Views reducer for `view` type" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="3.583" tests="17">
-    <testcase classname="Views reducer for `view` type should return the initial state" name="Views reducer for `view` type should return the initial state" time="0.006">
-    </testcase>
-    <testcase classname="Views reducer for `view` type Should handle FETCH_LAYOUT" name="Views reducer for `view` type Should handle FETCH_LAYOUT" time="0.002">
-    </testcase>
-    <testcase classname="Views reducer for `view` type Should handle FETCH_LAYOUT_ERROR" name="Views reducer for `view` type Should handle FETCH_LAYOUT_ERROR" time="0.001">
-    </testcase>
-    <testcase classname="Views reducer for `view` type Should handle FETCH_DOCUMENT" name="Views reducer for `view` type Should handle FETCH_DOCUMENT" time="0.001">
-    </testcase>
-    <testcase classname="Views reducer for `view` type Should handle FETCH_DOCUMENT_ERROR" name="Views reducer for `view` type Should handle FETCH_DOCUMENT_ERROR" time="0">
-    </testcase>
-    <testcase classname="Views reducer for `view` type Should handle CREATE_VIEW" name="Views reducer for `view` type Should handle CREATE_VIEW" time="0">
-    </testcase>
-    <testcase classname="Views reducer for `view` type Should handle DELETE_VIEW" name="Views reducer for `view` type Should handle DELETE_VIEW" time="0.001">
-    </testcase>
-    <testcase classname="Views reducer for `view` type Should handle RESET_VIEW" name="Views reducer for `view` type Should handle RESET_VIEW" time="0.001">
-    </testcase>
-    <testcase classname="Views reducer for `modals` type Should handle FETCH_LAYOUT" name="Views reducer for `modals` type Should handle FETCH_LAYOUT" time="0.001">
-    </testcase>
-    <testcase classname="Views reducer for `modals` type Should handle CREATE_VIEW_ERROR" name="Views reducer for `modals` type Should handle CREATE_VIEW_ERROR" time="0">
-    </testcase>
-    <testcase classname="Views reducer for `modals` type Should handle &apos;TOGGLE_INCLUDED_VIEW&apos;" name="Views reducer for `modals` type Should handle &apos;TOGGLE_INCLUDED_VIEW&apos;" time="0">
-    </testcase>
-    <testcase classname="Views reducer for `modals` type Should handle &apos;SET_INCLUDED_VIEW&apos;" name="Views reducer for `modals` type Should handle &apos;SET_INCLUDED_VIEW&apos;" time="0.001">
-    </testcase>
-    <testcase classname="Views reducer for `modals` type Should handle &apos;UNSET_INCLUDED_VIEW&apos;" name="Views reducer for `modals` type Should handle &apos;UNSET_INCLUDED_VIEW&apos;" time="0">
-    </testcase>
-    <testcase classname="Views reducer for `modals` type Should handle &apos;UNSET_INCLUDED_VIEW&apos; when the &apos;windowId&apos; has changed" name="Views reducer for `modals` type Should handle &apos;UNSET_INCLUDED_VIEW&apos; when the &apos;windowId&apos; has changed" time="0.001">
-    </testcase>
-    <testcase classname="Views reducer for `modals` type Should handle &apos;UNSET_INCLUDED_VIEW&apos; when the &apos;windowId&apos; has changed, but &apos;forceClose&apos; is true" name="Views reducer for `modals` type Should handle &apos;UNSET_INCLUDED_VIEW&apos; when the &apos;windowId&apos; has changed, but &apos;forceClose&apos; is true" time="0">
-    </testcase>
-    <testcase classname="Views reducer for `modals` type Should handle FILTER_VIEW" name="Views reducer for `modals` type Should handle FILTER_VIEW" time="0">
-    </testcase>
-    <testcase classname="Views reducer for `modals` type Should handle UPDATE_VIEW_DATA_SUCCESS" name="Views reducer for `modals` type Should handle UPDATE_VIEW_DATA_SUCCESS" time="0.001">
+    <testcase classname="Loader test renders bootstrap loader" name="Loader test renders bootstrap loader" time="0.014">
     </testcase>
   </testsuite>
-  <testsuite name="Amount component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="3.699" tests="1">
-    <testcase classname="Amount component renders without errors" name="Amount component renders without errors" time="0.026">
+  <testsuite name="TableContextMenu" errors="0" failures="4" skipped="0" timestamp="2021-03-19T06:55:44" time="4.61" tests="4">
+    <testcase classname="TableContextMenu renders without errors with the given props" name="TableContextMenu renders without errors with the given props" time="0.166">
+      <failure>Invariant Violation: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it&apos;s defined in, or you might have mixed up default and named imports.
+
+Check the render method of `Loader`.
+    at invariant (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:55:15)
+    at createFiberFromTypeAndProps (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:10217:11)
+    at createFiberFromElement (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:10238:15)
+    at createChild (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:12025:28)
+    at reconcileChildrenArray (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:12276:25)
+    at reconcileChildFibers (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:12599:14)
+    at reconcileChildren (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:14402:28)
+    at updateHostComponent (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:14863:3)
+    at beginWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:15649:14)
+    at performUnitOfWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:19312:12)
+    at workLoop (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:19352:24)
+    at renderRoot (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:19435:7)
+    at performWorkOnRoot (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20342:7)
+    at performWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20254:7)
+    at performSyncWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20228:3)
+    at Object.batchedUpdates$1 [as unstable_batchedUpdates] (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20443:7)
+    at Object.act (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom-test-utils.development.js:1161:27)
+    at wrapAct (/Users/petrica/metasfresh/frontend/node_modules/enzyme-adapter-react-16/src/ReactSixteenAdapter.js:370:13)
+    at Object.render (/Users/petrica/metasfresh/frontend/node_modules/enzyme-adapter-react-16/src/ReactSixteenAdapter.js:439:16)
+    at new ReactWrapper (/Users/petrica/metasfresh/frontend/node_modules/enzyme/src/ReactWrapper.js:115:16)
+    at mount (/Users/petrica/metasfresh/frontend/node_modules/enzyme/src/mount.js:10:10)
+    at Object.&lt;anonymous&gt; (/Users/petrica/metasfresh/frontend/src/__tests__/components/table/TableContextMenu.test.js:41:31)
+    at Object.asyncJestTest (/Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/jasmineAsyncInstall.js:106:37)
+    at /Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:45:12
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:28:19)
+    at /Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:75:41
+    at processTicksAndRejections (node:internal/process/task_queues:94:5)</failure>
     </testcase>
-    <testcase classname="Amount component renders devices widget" name="Amount component renders devices widget" time="0">
+    <testcase classname="TableContextMenu has the tooltip present when row is selected" name="TableContextMenu has the tooltip present when row is selected" time="0.014">
+      <failure>Invariant Violation: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it&apos;s defined in, or you might have mixed up default and named imports.
+
+Check the render method of `Loader`.
+    at invariant (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:55:15)
+    at createFiberFromTypeAndProps (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:10217:11)
+    at createFiberFromElement (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:10238:15)
+    at createChild (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:12025:28)
+    at reconcileChildrenArray (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:12276:25)
+    at reconcileChildFibers (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:12599:14)
+    at reconcileChildren (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:14402:28)
+    at updateHostComponent (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:14863:3)
+    at beginWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:15649:14)
+    at performUnitOfWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:19312:12)
+    at workLoop (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:19352:24)
+    at renderRoot (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:19435:7)
+    at performWorkOnRoot (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20342:7)
+    at performWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20254:7)
+    at performSyncWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20228:3)
+    at Object.batchedUpdates$1 [as unstable_batchedUpdates] (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20443:7)
+    at Object.act (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom-test-utils.development.js:1161:27)
+    at wrapAct (/Users/petrica/metasfresh/frontend/node_modules/enzyme-adapter-react-16/src/ReactSixteenAdapter.js:370:13)
+    at Object.render (/Users/petrica/metasfresh/frontend/node_modules/enzyme-adapter-react-16/src/ReactSixteenAdapter.js:439:16)
+    at new ReactWrapper (/Users/petrica/metasfresh/frontend/node_modules/enzyme/src/ReactWrapper.js:115:16)
+    at mount (/Users/petrica/metasfresh/frontend/node_modules/enzyme/src/mount.js:10:10)
+    at Object.&lt;anonymous&gt; (/Users/petrica/metasfresh/frontend/src/__tests__/components/table/TableContextMenu.test.js:58:31)
+    at Object.asyncJestTest (/Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/jasmineAsyncInstall.js:106:37)
+    at /Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:45:12
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:28:19)
+    at /Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:75:41
+    at processTicksAndRejections (node:internal/process/task_queues:94:5)</failure>
     </testcase>
-  </testsuite>
-  <testsuite name="Tables reducer" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="3.725" tests="7">
-    <testcase classname="Tables reducer should return the initial state" name="Tables reducer should return the initial state" time="0.006">
+    <testcase classname="TableContextMenu should have open selected keymap" name="TableContextMenu should have open selected keymap" time="0.012">
+      <failure>Invariant Violation: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it&apos;s defined in, or you might have mixed up default and named imports.
+
+Check the render method of `Loader`.
+    at invariant (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:55:15)
+    at createFiberFromTypeAndProps (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:10217:11)
+    at createFiberFromElement (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:10238:15)
+    at createChild (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:12025:28)
+    at reconcileChildrenArray (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:12276:25)
+    at reconcileChildFibers (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:12599:14)
+    at reconcileChildren (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:14402:28)
+    at updateHostComponent (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:14863:3)
+    at beginWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:15649:14)
+    at performUnitOfWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:19312:12)
+    at workLoop (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:19352:24)
+    at renderRoot (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:19435:7)
+    at performWorkOnRoot (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20342:7)
+    at performWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20254:7)
+    at performSyncWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20228:3)
+    at Object.batchedUpdates$1 [as unstable_batchedUpdates] (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20443:7)
+    at Object.act (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom-test-utils.development.js:1161:27)
+    at wrapAct (/Users/petrica/metasfresh/frontend/node_modules/enzyme-adapter-react-16/src/ReactSixteenAdapter.js:370:13)
+    at Object.render (/Users/petrica/metasfresh/frontend/node_modules/enzyme-adapter-react-16/src/ReactSixteenAdapter.js:439:16)
+    at new ReactWrapper (/Users/petrica/metasfresh/frontend/node_modules/enzyme/src/ReactWrapper.js:115:16)
+    at mount (/Users/petrica/metasfresh/frontend/node_modules/enzyme/src/mount.js:10:10)
+    at Object.&lt;anonymous&gt; (/Users/petrica/metasfresh/frontend/src/__tests__/components/table/TableContextMenu.test.js:72:31)
+    at Object.asyncJestTest (/Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/jasmineAsyncInstall.js:106:37)
+    at /Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:45:12
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:28:19)
+    at /Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:75:41
+    at processTicksAndRejections (node:internal/process/task_queues:94:5)</failure>
     </testcase>
-    <testcase classname="Tables reducer Should handle CREATE_TABLE" name="Tables reducer Should handle CREATE_TABLE" time="0.002">
-    </testcase>
-    <testcase classname="Tables reducer Should handle CREATE_TABLE with no rows" name="Tables reducer Should handle CREATE_TABLE with no rows" time="0.001">
-    </testcase>
-    <testcase classname="Tables reducer Should handle UPDATE_TABLE" name="Tables reducer Should handle UPDATE_TABLE" time="0.003">
-    </testcase>
-    <testcase classname="Tables reducer Should handle DELETE_TABLE" name="Tables reducer Should handle DELETE_TABLE" time="0">
-    </testcase>
-    <testcase classname="Tables reducer Should handle SET_ACTIVE_SORT" name="Tables reducer Should handle SET_ACTIVE_SORT" time="0.002">
-    </testcase>
-    <testcase classname="Tables reducer Should update selection UPDATE_TABLE_SELECTION" name="Tables reducer Should update selection UPDATE_TABLE_SELECTION" time="0.001">
-    </testcase>
-  </testsuite>
-  <testsuite name="TableHeader" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="3.748" tests="3">
-    <testcase classname="TableHeader renders without errors with the given props" name="TableHeader renders without errors with the given props" time="0.018">
-    </testcase>
-    <testcase classname="TableHeader should have indent present" name="TableHeader should have indent present" time="0.001">
-    </testcase>
-    <testcase classname="TableHeader should call `onTableSort` when cell is clicked" name="TableHeader should call `onTableSort` when cell is clicked" time="0.097">
-    </testcase>
-  </testsuite>
-  <testsuite name="WindowHandler helper functions" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="3.862" tests="12">
-    <testcase classname="WindowHandler helper functions getData should return state.windowHandler.master.data" name="WindowHandler helper functions getData should return state.windowHandler.master.data" time="0.008">
-    </testcase>
-    <testcase classname="WindowHandler helper functions getData should return state.windowHandler.modal.data" name="WindowHandler helper functions getData should return state.windowHandler.modal.data" time="0.001">
-    </testcase>
-    <testcase classname="WindowHandler helper functions getMasterDocStatus should return values from state.windowHandler.master.data[DocStatus/DocAction]" name="WindowHandler helper functions getMasterDocStatus should return values from state.windowHandler.master.data[DocStatus/DocAction]" time="0.002">
-    </testcase>
-    <testcase classname="WindowHandler helper functions getElementWidgetData should return state.windowHandler.master.data[fieldName]" name="WindowHandler helper functions getElementWidgetData should return state.windowHandler.master.data[fieldName]" time="0.002">
-    </testcase>
-    <testcase classname="WindowHandler helper functions getElementWidgetData should return state.windowHandler.modal.data[fieldName]" name="WindowHandler helper functions getElementWidgetData should return state.windowHandler.modal.data[fieldName]" time="0.002">
-    </testcase>
-    <testcase classname="WindowHandler helper functions getProcessWidgetData should return state.windowHandler.modal.data[fieldName]" name="WindowHandler helper functions getProcessWidgetData should return state.windowHandler.modal.data[fieldName]" time="0.001">
-    </testcase>
-    <testcase classname="WindowHandler helper functions getElementWidgetFields should return state.master.layout[path].fields" name="WindowHandler helper functions getElementWidgetFields should return state.master.layout[path].fields" time="0.002">
-    </testcase>
-    <testcase classname="WindowHandler helper functions getElementWidgetFields should return state.modal.layout[path].fields" name="WindowHandler helper functions getElementWidgetFields should return state.modal.layout[path].fields" time="0.001">
-    </testcase>
-    <testcase classname="WindowHandler helper functions getProcessWidgetFields should return state.modal.layout[path].fields" name="WindowHandler helper functions getProcessWidgetFields should return state.modal.layout[path].fields" time="0.001">
-    </testcase>
-    <testcase classname="WindowHandler reducer should return the initial state" name="WindowHandler reducer should return the initial state" time="0.002">
-    </testcase>
-    <testcase classname="WindowHandler reducer Should handle INIT_LAYOUT_SUCCESS" name="WindowHandler reducer Should handle INIT_LAYOUT_SUCCESS" time="0.002">
-    </testcase>
-    <testcase classname="WindowHandler reducer Should handle INIT_DATA_SUCCESS" name="WindowHandler reducer Should handle INIT_DATA_SUCCESS" time="0.001">
-    </testcase>
-  </testsuite>
-  <testsuite name="PrintingOptions test" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="3.838" tests="1">
-    <testcase classname="PrintingOptions test renders without errors" name="PrintingOptions test renders without errors" time="0.024">
-    </testcase>
-  </testsuite>
-  <testsuite name="CommentsPanelForm test" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="3.846" tests="1">
-    <testcase classname="CommentsPanelForm test renders without errors" name="CommentsPanelForm test renders without errors" time="0.027">
-    </testcase>
-  </testsuite>
-  <testsuite name="QuickActions" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="3.86" tests="7">
-    <testcase classname="QuickActions call &apos;FETCH_QUICK_ACTIONS_SUCCESS&apos; on fetching actions" name="QuickActions call &apos;FETCH_QUICK_ACTIONS_SUCCESS&apos; on fetching actions" time="0.025">
-    </testcase>
-    <testcase classname="QuickActions call &apos;FETCH_QUICK_ACTIONS_FAILURE&apos; on failed actions fetching" name="QuickActions call &apos;FETCH_QUICK_ACTIONS_FAILURE&apos; on failed actions fetching" time="0.004">
-    </testcase>
-    <testcase classname="QuickActions call &apos;DELETE_QUICK_ACTIONS&apos; with correct payload" name="QuickActions call &apos;DELETE_QUICK_ACTIONS&apos; with correct payload" time="0">
-    </testcase>
-    <testcase classname="QuickActions not fetch quick actions when there&apos;s already a pending request" name="QuickActions not fetch quick actions when there&apos;s already a pending request" time="0.002">
-    </testcase>
-    <testcase classname="QuickActions fetch included parent&apos;s quick actions" name="QuickActions fetch included parent&apos;s quick actions" time="0.013">
-    </testcase>
-    <testcase classname="QuickActions fetch included parent and child quick actions" name="QuickActions fetch included parent and child quick actions" time="0.007">
-    </testcase>
-    <testcase classname="QuickActions fetch underlying view&apos;s actions when modal with included view is visible" name="QuickActions fetch underlying view&apos;s actions when modal with included view is visible" time="0.006">
-    </testcase>
-  </testsuite>
-  <testsuite name="TablePagination" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="3.949" tests="4">
-    <testcase classname="TablePagination renders without errors with the given props" name="TablePagination renders without errors with the given props" time="0.089">
-    </testcase>
-    <testcase classname="TablePagination Page 2 should be selected" name="TablePagination Page 2 should be selected" time="0.014">
-    </testcase>
-    <testcase classname="TablePagination should contain page-link-compressed when compressed is true" name="TablePagination should contain page-link-compressed when compressed is true" time="0.01">
-    </testcase>
-    <testcase classname="TablePagination should not contain page-link-compressed when compressed is false" name="TablePagination should not contain page-link-compressed when compressed is false" time="0.017">
-    </testcase>
-  </testsuite>
-  <testsuite name="ViewActions synchronous" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="3.977" tests="13">
-    <testcase classname="ViewActions synchronous should call DELETE_VIEW action with correct payload" name="ViewActions synchronous should call DELETE_VIEW action with correct payload" time="0.004">
-    </testcase>
-    <testcase classname="ViewActions synchronous should call RESET_VIEW action with correct payload" name="ViewActions synchronous should call RESET_VIEW action with correct payload" time="0">
-    </testcase>
-    <testcase classname="ViewActions synchronous should call TOGGLE_INCLUDED_VIEW action with correct payload" name="ViewActions synchronous should call TOGGLE_INCLUDED_VIEW action with correct payload" time="0.001">
-    </testcase>
-    <testcase classname="ViewActions synchronous should call SET_INCLUDED_VIEW action with correct payload" name="ViewActions synchronous should call SET_INCLUDED_VIEW action with correct payload" time="0.001">
-    </testcase>
-    <testcase classname="ViewActions synchronous should call UNSET_INCLUDED_VIEW action with correct payload" name="ViewActions synchronous should call UNSET_INCLUDED_VIEW action with correct payload" time="0.001">
-    </testcase>
-    <testcase classname="ViewActions thunks dispatches &apos;FETCH_LAYOUT_PENDING/SUCCESS&apos; when fetching layout data" name="ViewActions thunks dispatches &apos;FETCH_LAYOUT_PENDING/SUCCESS&apos; when fetching layout data" time="0.029">
-    </testcase>
-    <testcase classname="ViewActions thunks dispatches &apos;CREATE_VIEW*&apos; and &apos;CREATE_TABLE&apos; actions when fetching view data" name="ViewActions thunks dispatches &apos;CREATE_VIEW*&apos; and &apos;CREATE_TABLE&apos; actions when fetching view data" time="0.007">
-    </testcase>
-    <testcase classname="ViewActions thunks dispatches &apos;FETCH_DOCUMENT_*&apos; and &apos;CREATE_TABLE&apos; actions when fetching modal&apos;s rows data" name="ViewActions thunks dispatches &apos;FETCH_DOCUMENT_*&apos; and &apos;CREATE_TABLE&apos; actions when fetching modal&apos;s rows data" time="0.011">
-    </testcase>
-    <testcase classname="ViewActions thunks dispatches &apos;FETCH_DOCUMENT_*&apos; and &apos;UPDATE_TABLE&apos; actions when fetching view rows data" name="ViewActions thunks dispatches &apos;FETCH_DOCUMENT_*&apos; and &apos;UPDATE_TABLE&apos; actions when fetching view rows data" time="0.007">
-    </testcase>
-    <testcase classname="ViewActions thunks dispatches &apos;CREATE_FILTER&apos; with properly formatted filters when fetching filtered view rows data" name="ViewActions thunks dispatches &apos;CREATE_FILTER&apos; with properly formatted filters when fetching filtered view rows data" time="0.014">
-    </testcase>
-    <testcase classname="ViewActions thunks dispatches &apos;TOGGLE_INCLUDED_VIEW&apos; and &apos;SET_INCLUDED_VIEW&apos; actions when
-   fetching view rows data for included views" name="ViewActions thunks dispatches &apos;TOGGLE_INCLUDED_VIEW&apos; and &apos;SET_INCLUDED_VIEW&apos; actions when
-   fetching view rows data for included views" time="0.004">
-    </testcase>
-    <testcase classname="ViewActions thunks dispatches &apos;SET_INCLUDED_VIEW&apos; action with viewId from the &apos;includedView&apos; when it exists" name="ViewActions thunks dispatches &apos;SET_INCLUDED_VIEW&apos; action with viewId from the &apos;includedView&apos; when it exists" time="0.009">
-    </testcase>
-    <testcase classname="ViewActions thunks dispatches &apos;UPDATE_VIEW_DATA&apos; when fetching header properties for views" name="ViewActions thunks dispatches &apos;UPDATE_VIEW_DATA&apos; when fetching header properties for views" time="0.01">
-    </testcase>
-    <testcase classname="ViewActions thunks dispatches &apos;FILTER_VIEW_*&apos; when the view is filtered" name="ViewActions thunks dispatches &apos;FILTER_VIEW_*&apos; when the view is filtered" time="0">
-    </testcase>
-  </testsuite>
-  <testsuite name="TableActions general" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="3.998" tests="12">
-    <testcase classname="TableActions general should call DELETE_TABLE action with correct payload" name="TableActions general should call DELETE_TABLE action with correct payload" time="0.008">
-    </testcase>
-    <testcase classname="TableActions general dispatches &apos;SET_ACTIVE_SORT&apos; action when setting active sort" name="TableActions general dispatches &apos;SET_ACTIVE_SORT&apos; action when setting active sort" time="0.005">
-    </testcase>
-    <testcase classname="TableActions general should call UPDATE_TABLE_SELECTION action with correct payload" name="TableActions general should call UPDATE_TABLE_SELECTION action with correct payload" time="0.001">
-    </testcase>
-    <testcase classname="TableActions general should call DESELECT_TABLE_ROWS action with correct payload" name="TableActions general should call DESELECT_TABLE_ROWS action with correct payload" time="0.001">
-    </testcase>
-    <testcase classname="TableActions grid dispatches &apos;CREATE_TABLE&apos; action when creating a new view" name="TableActions grid dispatches &apos;CREATE_TABLE&apos; action when creating a new view" time="0.006">
-    </testcase>
-    <testcase classname="TableActions grid dispatches &apos;UPDATE_TABLE&apos; action after loading data to the view" name="TableActions grid dispatches &apos;UPDATE_TABLE&apos; action after loading data to the view" time="0.011">
-    </testcase>
-    <testcase classname="TableActions grid dispatches &apos;UPDATE_TABLE&apos; action after loading collapsible data to the view" name="TableActions grid dispatches &apos;UPDATE_TABLE&apos; action after loading collapsible data to the view" time="0">
-    </testcase>
-    <testcase classname="TableActions grid dispatches &apos;CREATE_TABLE&apos; action when browsing an existing view but table is not yet created" name="TableActions grid dispatches &apos;CREATE_TABLE&apos; action when browsing an existing view but table is not yet created" time="0.01">
-    </testcase>
-    <testcase classname="TableActions grid should call UPDATE_TABLE_SELECTION and TOGGLE/SET_INCLUDED_VIEW actions on selection change" name="TableActions grid should call UPDATE_TABLE_SELECTION and TOGGLE/SET_INCLUDED_VIEW actions on selection change" time="0.017">
-    </testcase>
-    <testcase classname="TableActions grid should call DESELECT_TABLE_ROWS and TOGGLE/SET_INCLUDED_VIEW actions on deselecting rows" name="TableActions grid should call DESELECT_TABLE_ROWS and TOGGLE/SET_INCLUDED_VIEW actions on deselecting rows" time="0.009">
-    </testcase>
-    <testcase classname="TableActions tab dispatches &apos;CREATE_TABLE&apos; action when creating a new tab" name="TableActions tab dispatches &apos;CREATE_TABLE&apos; action when creating a new tab" time="0.001">
-    </testcase>
-    <testcase classname="TableActions tab dispatches &apos;UPDATE_TABLE&apos; action when loading details view layout" name="TableActions tab dispatches &apos;UPDATE_TABLE&apos; action when loading details view layout" time="0.007">
-    </testcase>
-    <testcase classname="TableActions tab dispatches &apos;UPDATE_TABLE&apos; action when populating table with rows data" name="TableActions tab dispatches &apos;UPDATE_TABLE&apos; action when populating table with rows data" time="0.059">
+    <testcase classname="TableContextMenu should shouw delete shortcut when handleDelete function is passed" name="TableContextMenu should shouw delete shortcut when handleDelete function is passed" time="0.013">
+      <failure>Invariant Violation: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: undefined. You likely forgot to export your component from the file it&apos;s defined in, or you might have mixed up default and named imports.
+
+Check the render method of `Loader`.
+    at invariant (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:55:15)
+    at createFiberFromTypeAndProps (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:10217:11)
+    at createFiberFromElement (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:10238:15)
+    at createChild (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:12025:28)
+    at reconcileChildrenArray (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:12276:25)
+    at reconcileChildFibers (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:12599:14)
+    at reconcileChildren (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:14402:28)
+    at updateHostComponent (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:14863:3)
+    at beginWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:15649:14)
+    at performUnitOfWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:19312:12)
+    at workLoop (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:19352:24)
+    at renderRoot (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:19435:7)
+    at performWorkOnRoot (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20342:7)
+    at performWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20254:7)
+    at performSyncWork (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20228:3)
+    at Object.batchedUpdates$1 [as unstable_batchedUpdates] (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom.development.js:20443:7)
+    at Object.act (/Users/petrica/metasfresh/frontend/node_modules/react-dom/cjs/react-dom-test-utils.development.js:1161:27)
+    at wrapAct (/Users/petrica/metasfresh/frontend/node_modules/enzyme-adapter-react-16/src/ReactSixteenAdapter.js:370:13)
+    at Object.render (/Users/petrica/metasfresh/frontend/node_modules/enzyme-adapter-react-16/src/ReactSixteenAdapter.js:439:16)
+    at new ReactWrapper (/Users/petrica/metasfresh/frontend/node_modules/enzyme/src/ReactWrapper.js:115:16)
+    at mount (/Users/petrica/metasfresh/frontend/node_modules/enzyme/src/mount.js:10:10)
+    at Object.&lt;anonymous&gt; (/Users/petrica/metasfresh/frontend/src/__tests__/components/table/TableContextMenu.test.js:85:31)
+    at Object.asyncJestTest (/Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/jasmineAsyncInstall.js:106:37)
+    at /Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:45:12
+    at new Promise (&lt;anonymous&gt;)
+    at mapper (/Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:28:19)
+    at /Users/petrica/metasfresh/frontend/node_modules/jest-jasmine2/build/queueRunner.js:75:41
+    at processTicksAndRejections (node:internal/process/task_queues:94:5)</failure>
     </testcase>
   </testsuite>
-  <testsuite name="WindowActions thunks" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="4.021" tests="12">
-    <testcase classname="WindowActions thunks init dispatches &apos;INIT_WINDOW&apos; and &apos;INIT_DATA_SUCCESS&apos; actions" name="WindowActions thunks init dispatches &apos;INIT_WINDOW&apos; and &apos;INIT_DATA_SUCCESS&apos; actions" time="0.037">
+  <testsuite name="TableQuickInput" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:44" time="5.1" tests="2">
+    <testcase classname="TableQuickInput renders without errors" name="TableQuickInput renders without errors" time="0.059">
+    </testcase>
+    <testcase classname="TableQuickInput renders without error 22s" name="TableQuickInput renders without error 22s" time="0.02">
+    </testcase>
+  </testsuite>
+  <testsuite name="TableCell" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:44" time="5.312" tests="4">
+    <testcase classname="TableCell renders without errors with the given props" name="TableCell renders without errors with the given props" time="0.019">
+    </testcase>
+    <testcase classname="TableCell renders notification indicator" name="TableCell renders notification indicator" time="0.003">
+    </testcase>
+    <testcase classname="TableCell Changing the widget type should be present in the output" name="TableCell Changing the widget type should be present in the output" time="0.002">
+    </testcase>
+    <testcase classname="TableCell On escape input remains the same" name="TableCell On escape input remains the same" time="0.009">
+    </testcase>
+  </testsuite>
+  <testsuite name="WidgetWrapper disconnected" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:44" time="5.387" tests="3">
+    <testcase classname="WidgetWrapper disconnected renders MasterWidget without errors with the given props for document status" name="WidgetWrapper disconnected renders MasterWidget without errors with the given props for document status" time="0.047">
+    </testcase>
+    <testcase classname="WidgetWrapper disconnected renders RawWidget without errors with the given props for Element widget" name="WidgetWrapper disconnected renders RawWidget without errors with the given props for Element widget" time="0.038">
+    </testcase>
+    <testcase classname="WidgetWrapper disconnected renders RawWidget without errors with the given props for Table widget" name="WidgetWrapper disconnected renders RawWidget without errors with the given props for Table widget" time="0.027">
+    </testcase>
+  </testsuite>
+  <testsuite name="RawWidget component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:44" time="5.489" tests="18">
+    <testcase classname="RawWidget component generic tests using LongText widget: renders widget without errors" name="RawWidget component generic tests using LongText widget: renders widget without errors" time="0.064">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using LongText widget: renders nothing when widget is not displayed" name="RawWidget component generic tests using LongText widget: renders nothing when widget is not displayed" time="0.007">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using LongText widget: doesn&apos;t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed" name="RawWidget component generic tests using LongText widget: doesn&apos;t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed" time="0.09">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using LongText widget: calls `handlePatch` on `{enter}/{tab}` keydown" name="RawWidget component generic tests using LongText widget: calls `handlePatch` on `{enter}/{tab}` keydown" time="0.022">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using LongText widget: doesn&apos;t call `handlePatch` on `{shift}{enter}` keydown" name="RawWidget component generic tests using LongText widget: doesn&apos;t call `handlePatch` on `{shift}{enter}` keydown" time="0.016">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using LongText widget: correct handlers/prop functions are called on focus/blur" name="RawWidget component generic tests using LongText widget: correct handlers/prop functions are called on focus/blur" time="0.02">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using Text widget: renders widget without errors" name="RawWidget component generic tests using Text widget: renders widget without errors" time="0.007">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using Text widget: renders nothing when widget is not displayed" name="RawWidget component generic tests using Text widget: renders nothing when widget is not displayed" time="0.002">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using Text widget: doesn&apos;t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed" name="RawWidget component generic tests using Text widget: doesn&apos;t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed" time="0.022">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using Text widget: calls `handlePatch` on `{enter}/{tab}` keydown" name="RawWidget component generic tests using Text widget: calls `handlePatch` on `{enter}/{tab}` keydown" time="0.023">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using Text widget: correct handlers/prop functions are called on focus/blur" name="RawWidget component generic tests using Text widget: correct handlers/prop functions are called on focus/blur" time="0.03">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using Text widget: behaves correctly when selecting, removing and typing in new value" name="RawWidget component generic tests using Text widget: behaves correctly when selecting, removing and typing in new value" time="0.044">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using Integer widget: renders widget without errors" name="RawWidget component generic tests using Integer widget: renders widget without errors" time="0.008">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using Integer widget: renders nothing when widget is not displayed" name="RawWidget component generic tests using Integer widget: renders nothing when widget is not displayed" time="0.001">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using Integer widget: doesn&apos;t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed" name="RawWidget component generic tests using Integer widget: doesn&apos;t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed" time="0.02">
+    </testcase>
+    <testcase classname="RawWidget component generic tests using Integer widget: calls `handlePatch` on `{enter}/{tab}` keydown" name="RawWidget component generic tests using Integer widget: calls `handlePatch` on `{enter}/{tab}` keydown" time="0.021">
+    </testcase>
+    <testcase classname="RawWidget component Shows a normal border when input does not exceeds the char limit" name="RawWidget component Shows a normal border when input does not exceeds the char limit" time="0.018">
+    </testcase>
+    <testcase classname="RawWidget component Shows a red border when input exceeds the char limit" name="RawWidget component Shows a red border when input exceeds the char limit" time="0.016">
+    </testcase>
+  </testsuite>
+  <testsuite name="Table row (TableRow)" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:44" time="5.572" tests="3">
+    <testcase classname="Table row (TableRow) renders without errors" name="Table row (TableRow) renders without errors" time="0.025">
+    </testcase>
+    <testcase classname="Table row (TableRow) output matches snapshot" name="Table row (TableRow) output matches snapshot" time="0.047">
+    </testcase>
+    <testcase classname="Table row (TableRow) row re-renders after data changed" name="Table row (TableRow) row re-renders after data changed" time="0.186">
+    </testcase>
+  </testsuite>
+  <testsuite name="InlineTab component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:44" time="5.755" tests="5">
+    <testcase classname="InlineTab component rendering tests: renders without errors" name="InlineTab component rendering tests: renders without errors" time="0.008">
+    </testcase>
+    <testcase classname="InlineTab component rendering tests: renders the InlineTab item correctly" name="InlineTab component rendering tests: renders the InlineTab item correctly" time="0.025">
+    </testcase>
+    <testcase classname="InlineTab component renders the InlineTab item collapsed when isOpen is true" name="InlineTab component renders the InlineTab item collapsed when isOpen is true" time="0.084">
+    </testcase>
+    <testcase classname="InlineTab component renders the InlineTab item unexpanded when isOpen is false" name="InlineTab component renders the InlineTab item unexpanded when isOpen is false" time="0.004">
+    </testcase>
+    <testcase classname="InlineTab component renders the deletion prompt" name="InlineTab component renders the deletion prompt" time="0.251">
+    </testcase>
+  </testsuite>
+  <testsuite name="WindowActions thunks" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:49" time="1.64" tests="12">
+    <testcase classname="WindowActions thunks init dispatches &apos;INIT_WINDOW&apos; and &apos;INIT_DATA_SUCCESS&apos; actions" name="WindowActions thunks init dispatches &apos;INIT_WINDOW&apos; and &apos;INIT_DATA_SUCCESS&apos; actions" time="0.091">
     </testcase>
     <testcase classname="WindowActions thunks init dispatches &apos;SET_PROCESS_STATE_PENDING&apos; action when setting process state pending" name="WindowActions thunks init dispatches &apos;SET_PROCESS_STATE_PENDING&apos; action when setting process state pending" time="0.001">
     </testcase>
-    <testcase classname="WindowActions thunks init dispatches &apos;SET_PROCESS_STATE_SAVED&apos; action when setting process state pending" name="WindowActions thunks init dispatches &apos;SET_PROCESS_STATE_SAVED&apos; action when setting process state pending" time="0.001">
+    <testcase classname="WindowActions thunks init dispatches &apos;SET_PROCESS_STATE_SAVED&apos; action when setting process state pending" name="WindowActions thunks init dispatches &apos;SET_PROCESS_STATE_SAVED&apos; action when setting process state pending" time="0">
     </testcase>
-    <testcase classname="WindowActions thunks init &apos;handler response error in initWindow&apos;" name="WindowActions thunks init &apos;handler response error in initWindow&apos;" time="0.005">
+    <testcase classname="WindowActions thunks init &apos;handler response error in initWindow&apos;" name="WindowActions thunks init &apos;handler response error in initWindow&apos;" time="0.021">
     </testcase>
-    <testcase classname="WindowActions thunks init properly loads request data for &apos;INIT_DATA_SUCCESS&apos; actions" name="WindowActions thunks init properly loads request data for &apos;INIT_DATA_SUCCESS&apos; actions" time="0.03">
+    <testcase classname="WindowActions thunks init properly loads request data for &apos;INIT_DATA_SUCCESS&apos; actions" name="WindowActions thunks init properly loads request data for &apos;INIT_DATA_SUCCESS&apos; actions" time="0.064">
     </testcase>
     <testcase classname="WindowActions thunks init dispatches &apos;UPDATE_TABLE&apos; action when tab is fetched" name="WindowActions thunks init dispatches &apos;UPDATE_TABLE&apos; action when tab is fetched" time="0">
     </testcase>
-    <testcase classname="WindowActions thunks process create a process opening an included view in a raw modal" name="WindowActions thunks process create a process opening an included view in a raw modal" time="0.015">
+    <testcase classname="WindowActions thunks process create a process opening an included view in a raw modal" name="WindowActions thunks process create a process opening an included view in a raw modal" time="0.038">
     </testcase>
-    <testcase classname="WindowActions thunks process create a process opening an included view in a raw modal with included view" name="WindowActions thunks process create a process opening an included view in a raw modal with included view" time="0.006">
+    <testcase classname="WindowActions thunks process create a process opening an included view in a raw modal with included view" name="WindowActions thunks process create a process opening an included view in a raw modal with included view" time="0.025">
     </testcase>
-    <testcase classname="WindowActions thunks process opens view in the modal from a process" name="WindowActions thunks process opens view in the modal from a process" time="0.001">
+    <testcase classname="WindowActions thunks process opens view in the modal from a process" name="WindowActions thunks process opens view in the modal from a process" time="0.002">
     </testcase>
     <testcase classname="WindowActions thunks process sets included view in the store from a process" name="WindowActions thunks process sets included view in the store from a process" time="0.001">
     </testcase>
@@ -237,488 +277,236 @@
     </testcase>
     <testcase classname="WindowActions thunks Printing Actions reset printing options is called" name="WindowActions thunks Printing Actions reset printing options is called" time="0.001">
     </testcase>
-    <testcase classname="WindowActions thunks Printing Actions triggers action to toggle the printing option" name="WindowActions thunks Printing Actions triggers action to toggle the printing option" time="0">
+    <testcase classname="WindowActions thunks Printing Actions triggers action to toggle the printing option" name="WindowActions thunks Printing Actions triggers action to toggle the printing option" time="0.001">
     </testcase>
   </testsuite>
-  <testsuite name="QuickActions standalone component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:10" time="4.042" tests="2">
-    <testcase classname="QuickActions standalone component rendering tests: renders nothing when no actions" name="QuickActions standalone component rendering tests: renders nothing when no actions" time="0.077">
+  <testsuite name="InlineTabWrapper component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:44" time="5.897" tests="6">
+    <testcase classname="InlineTabWrapper component rendering tests: renders without errors" name="InlineTabWrapper component rendering tests: renders without errors" time="0.009">
+    </testcase>
+    <testcase classname="InlineTabWrapper component rendering tests: renders a line properly" name="InlineTabWrapper component rendering tests: renders a line properly" time="0.14">
+    </testcase>
+    <testcase classname="InlineTabWrapper component renders more lines properly" name="InlineTabWrapper component renders more lines properly" time="0.037">
+    </testcase>
+    <testcase classname="InlineTabWrapper component renders the form in full screen correctly" name="InlineTabWrapper component renders the form in full screen correctly" time="0.057">
+    </testcase>
+    <testcase classname="InlineTabWrapper component renders the add new form" name="InlineTabWrapper component renders the add new form" time="0.242">
+    </testcase>
+    <testcase classname="InlineTabWrapper component show error correctly" name="InlineTabWrapper component show error correctly" time="0.024">
+    </testcase>
+  </testsuite>
+  <testsuite name="Attributes component" errors="0" failures="0" skipped="1" timestamp="2021-03-19T06:55:44" time="6.004" tests="3">
+    <testcase classname="Attributes component renders without errors" name="Attributes component renders without errors" time="0.019">
+    </testcase>
+    <testcase classname="Attributes component handlers test toggle triggers init" name="Attributes component handlers test toggle triggers init" time="1.018">
+    </testcase>
+    <testcase classname="Attributes component handlers test keydown triggers onHandleKeyDown" name="Attributes component handlers test keydown triggers onHandleKeyDown" time="0">
+      <skipped/>
+    </testcase>
+  </testsuite>
+  <testsuite name="Filters tests" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:44" time="6.076" tests="6">
+    <testcase classname="Filters tests renders without errors" name="Filters tests renders without errors" time="0.032">
+    </testcase>
+    <testcase classname="Filters tests renders active filters caption" name="Filters tests renders active filters caption" time="0.009">
+    </testcase>
+    <testcase classname="Filters tests opens dropdown and filter details" name="Filters tests opens dropdown and filter details" time="0.294">
+    </testcase>
+    <testcase classname="Filters tests Temporary bloated filter tests clears list filters and applies without error" name="Filters tests Temporary bloated filter tests clears list filters and applies without error" time="0.262">
+    </testcase>
+    <testcase classname="Filters tests Temporary bloated filter tests supports `false` values for checkbox widgets" name="Filters tests Temporary bloated filter tests supports `false` values for checkbox widgets" time="0.34">
+    </testcase>
+    <testcase classname="Filters tests Temporary bloated filter tests supports filters without parameters" name="Filters tests Temporary bloated filter tests supports filters without parameters" time="0.044">
+    </testcase>
+  </testsuite>
+  <testsuite name="ViewActions synchronous" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:49" time="1.563" tests="13">
+    <testcase classname="ViewActions synchronous should call DELETE_VIEW action with correct payload" name="ViewActions synchronous should call DELETE_VIEW action with correct payload" time="0.004">
+    </testcase>
+    <testcase classname="ViewActions synchronous should call RESET_VIEW action with correct payload" name="ViewActions synchronous should call RESET_VIEW action with correct payload" time="0.001">
+    </testcase>
+    <testcase classname="ViewActions synchronous should call TOGGLE_INCLUDED_VIEW action with correct payload" name="ViewActions synchronous should call TOGGLE_INCLUDED_VIEW action with correct payload" time="0.006">
+    </testcase>
+    <testcase classname="ViewActions synchronous should call SET_INCLUDED_VIEW action with correct payload" name="ViewActions synchronous should call SET_INCLUDED_VIEW action with correct payload" time="0.001">
+    </testcase>
+    <testcase classname="ViewActions synchronous should call UNSET_INCLUDED_VIEW action with correct payload" name="ViewActions synchronous should call UNSET_INCLUDED_VIEW action with correct payload" time="0.001">
+    </testcase>
+    <testcase classname="ViewActions thunks dispatches &apos;FETCH_LAYOUT_PENDING/SUCCESS&apos; when fetching layout data" name="ViewActions thunks dispatches &apos;FETCH_LAYOUT_PENDING/SUCCESS&apos; when fetching layout data" time="0.073">
+    </testcase>
+    <testcase classname="ViewActions thunks dispatches &apos;CREATE_VIEW*&apos; and &apos;CREATE_TABLE&apos; actions when fetching view data" name="ViewActions thunks dispatches &apos;CREATE_VIEW*&apos; and &apos;CREATE_TABLE&apos; actions when fetching view data" time="0.02">
+    </testcase>
+    <testcase classname="ViewActions thunks dispatches &apos;FETCH_DOCUMENT_*&apos; and &apos;CREATE_TABLE&apos; actions when fetching modal&apos;s rows data" name="ViewActions thunks dispatches &apos;FETCH_DOCUMENT_*&apos; and &apos;CREATE_TABLE&apos; actions when fetching modal&apos;s rows data" time="0.048">
+    </testcase>
+    <testcase classname="ViewActions thunks dispatches &apos;FETCH_DOCUMENT_*&apos; and &apos;UPDATE_TABLE&apos; actions when fetching view rows data" name="ViewActions thunks dispatches &apos;FETCH_DOCUMENT_*&apos; and &apos;UPDATE_TABLE&apos; actions when fetching view rows data" time="0.032">
+    </testcase>
+    <testcase classname="ViewActions thunks dispatches &apos;CREATE_FILTER&apos; with properly formatted filters when fetching filtered view rows data" name="ViewActions thunks dispatches &apos;CREATE_FILTER&apos; with properly formatted filters when fetching filtered view rows data" time="0.035">
+    </testcase>
+    <testcase classname="ViewActions thunks dispatches &apos;TOGGLE_INCLUDED_VIEW&apos; and &apos;SET_INCLUDED_VIEW&apos; actions when
+   fetching view rows data for included views" name="ViewActions thunks dispatches &apos;TOGGLE_INCLUDED_VIEW&apos; and &apos;SET_INCLUDED_VIEW&apos; actions when
+   fetching view rows data for included views" time="0.021">
+    </testcase>
+    <testcase classname="ViewActions thunks dispatches &apos;SET_INCLUDED_VIEW&apos; action with viewId from the &apos;includedView&apos; when it exists" name="ViewActions thunks dispatches &apos;SET_INCLUDED_VIEW&apos; action with viewId from the &apos;includedView&apos; when it exists" time="0.017">
+    </testcase>
+    <testcase classname="ViewActions thunks dispatches &apos;UPDATE_VIEW_DATA&apos; when fetching header properties for views" name="ViewActions thunks dispatches &apos;UPDATE_VIEW_DATA&apos; when fetching header properties for views" time="0.009">
+    </testcase>
+    <testcase classname="ViewActions thunks dispatches &apos;FILTER_VIEW_*&apos; when the view is filtered" name="ViewActions thunks dispatches &apos;FILTER_VIEW_*&apos; when the view is filtered" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="MultiSelect component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:50" time="1.09" tests="4">
+    <testcase classname="MultiSelect component rendering tests: renders without errors when selection is present" name="MultiSelect component rendering tests: renders without errors when selection is present" time="0.018">
+    </testcase>
+    <testcase classname="MultiSelect component rendering tests: renders without errors when no selection is made" name="MultiSelect component rendering tests: renders without errors when no selection is made" time="0.011">
+    </testcase>
+    <testcase classname="MultiSelect component functional tests when we have an item in options and is not checked result should contain any checked input" name="MultiSelect component functional tests when we have an item in options and is not checked result should contain any checked input" time="0.095">
+    </testcase>
+    <testcase classname="MultiSelect component functional tests the function should be called" name="MultiSelect component functional tests the function should be called" time="0.007">
+    </testcase>
+  </testsuite>
+  <testsuite name="TableActions general" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:50" time="1.376" tests="12">
+    <testcase classname="TableActions general should call DELETE_TABLE action with correct payload" name="TableActions general should call DELETE_TABLE action with correct payload" time="0.002">
+    </testcase>
+    <testcase classname="TableActions general dispatches &apos;SET_ACTIVE_SORT&apos; action when setting active sort" name="TableActions general dispatches &apos;SET_ACTIVE_SORT&apos; action when setting active sort" time="0.004">
+    </testcase>
+    <testcase classname="TableActions general should call UPDATE_TABLE_SELECTION action with correct payload" name="TableActions general should call UPDATE_TABLE_SELECTION action with correct payload" time="0.002">
+    </testcase>
+    <testcase classname="TableActions general should call DESELECT_TABLE_ROWS action with correct payload" name="TableActions general should call DESELECT_TABLE_ROWS action with correct payload" time="0">
+    </testcase>
+    <testcase classname="TableActions grid dispatches &apos;CREATE_TABLE&apos; action when creating a new view" name="TableActions grid dispatches &apos;CREATE_TABLE&apos; action when creating a new view" time="0.006">
+    </testcase>
+    <testcase classname="TableActions grid dispatches &apos;UPDATE_TABLE&apos; action after loading data to the view" name="TableActions grid dispatches &apos;UPDATE_TABLE&apos; action after loading data to the view" time="0.011">
+    </testcase>
+    <testcase classname="TableActions grid dispatches &apos;UPDATE_TABLE&apos; action after loading collapsible data to the view" name="TableActions grid dispatches &apos;UPDATE_TABLE&apos; action after loading collapsible data to the view" time="0">
+    </testcase>
+    <testcase classname="TableActions grid dispatches &apos;CREATE_TABLE&apos; action when browsing an existing view but table is not yet created" name="TableActions grid dispatches &apos;CREATE_TABLE&apos; action when browsing an existing view but table is not yet created" time="0.012">
+    </testcase>
+    <testcase classname="TableActions grid should call UPDATE_TABLE_SELECTION and TOGGLE/SET_INCLUDED_VIEW actions on selection change" name="TableActions grid should call UPDATE_TABLE_SELECTION and TOGGLE/SET_INCLUDED_VIEW actions on selection change" time="0.028">
+    </testcase>
+    <testcase classname="TableActions grid should call DESELECT_TABLE_ROWS and TOGGLE/SET_INCLUDED_VIEW actions on deselecting rows" name="TableActions grid should call DESELECT_TABLE_ROWS and TOGGLE/SET_INCLUDED_VIEW actions on deselecting rows" time="0.019">
+    </testcase>
+    <testcase classname="TableActions tab dispatches &apos;CREATE_TABLE&apos; action when creating a new tab" name="TableActions tab dispatches &apos;CREATE_TABLE&apos; action when creating a new tab" time="0.001">
+    </testcase>
+    <testcase classname="TableActions tab dispatches &apos;UPDATE_TABLE&apos; action when loading details view layout" name="TableActions tab dispatches &apos;UPDATE_TABLE&apos; action when loading details view layout" time="0.009">
+    </testcase>
+    <testcase classname="TableActions tab dispatches &apos;UPDATE_TABLE&apos; action when populating table with rows data" name="TableActions tab dispatches &apos;UPDATE_TABLE&apos; action when populating table with rows data" time="0.065">
+    </testcase>
+  </testsuite>
+  <testsuite name="RawList component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:50" time="1.414" tests="8">
+    <testcase classname="RawList component rendering tests: renders without errors" name="RawList component rendering tests: renders without errors" time="0.012">
+    </testcase>
+    <testcase classname="RawList component rendering tests: renders with selection dropdown toggled properly" name="RawList component rendering tests: renders with selection dropdown toggled properly" time="0.174">
+    </testcase>
+    <testcase classname="RawList component functional tests list focuses and toggles on click" name="RawList component functional tests list focuses and toggles on click" time="0.055">
+    </testcase>
+    <testcase classname="RawList component functional tests list handles key events" name="RawList component functional tests list handles key events" time="0.01">
+    </testcase>
+    <testcase classname="RawList component functional tests list focuses and toggles on click" name="RawList component functional tests list focuses and toggles on click" time="0.049">
+    </testcase>
+    <testcase classname="RawList component functional tests list hides dropdown after selecting an option" name="RawList component functional tests list hides dropdown after selecting an option" time="0.054">
+    </testcase>
+    <testcase classname="RawList component functional tests list blurs and stays hidden after selecting an option" name="RawList component functional tests list blurs and stays hidden after selecting an option" time="0.011">
+    </testcase>
+    <testcase classname="RawList component functional tests with elements attached to dummy element focused list blurs on tab" name="RawList component functional tests with elements attached to dummy element focused list blurs on tab" time="0.012">
+    </testcase>
+  </testsuite>
+  <testsuite name="Application" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:44" time="6.946" tests="1">
+    <testcase classname="Application renders without errors" name="Application renders without errors" time="0.011">
+    </testcase>
+  </testsuite>
+  <testsuite name="QuickActions" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:50" time="1.347" tests="7">
+    <testcase classname="QuickActions call &apos;FETCH_QUICK_ACTIONS_SUCCESS&apos; on fetching actions" name="QuickActions call &apos;FETCH_QUICK_ACTIONS_SUCCESS&apos; on fetching actions" time="0.069">
+    </testcase>
+    <testcase classname="QuickActions call &apos;FETCH_QUICK_ACTIONS_FAILURE&apos; on failed actions fetching" name="QuickActions call &apos;FETCH_QUICK_ACTIONS_FAILURE&apos; on failed actions fetching" time="0.016">
+    </testcase>
+    <testcase classname="QuickActions call &apos;DELETE_QUICK_ACTIONS&apos; with correct payload" name="QuickActions call &apos;DELETE_QUICK_ACTIONS&apos; with correct payload" time="0.001">
+    </testcase>
+    <testcase classname="QuickActions not fetch quick actions when there&apos;s already a pending request" name="QuickActions not fetch quick actions when there&apos;s already a pending request" time="0.002">
+    </testcase>
+    <testcase classname="QuickActions fetch included parent&apos;s quick actions" name="QuickActions fetch included parent&apos;s quick actions" time="0.037">
+    </testcase>
+    <testcase classname="QuickActions fetch included parent and child quick actions" name="QuickActions fetch included parent and child quick actions" time="0.037">
+    </testcase>
+    <testcase classname="QuickActions fetch underlying view&apos;s actions when modal with included view is visible" name="QuickActions fetch underlying view&apos;s actions when modal with included view is visible" time="0.017">
+    </testcase>
+  </testsuite>
+  <testsuite name="Modal test" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:50" time="1.816" tests="2">
+    <testcase classname="Modal test renders without errors" name="Modal test renders without errors" time="0.066">
+    </testcase>
+    <testcase classname="Modal test calls startProcess when initializing a modal of &apos;process&apos; type" name="Modal test calls startProcess when initializing a modal of &apos;process&apos; type" time="0.074">
+    </testcase>
+  </testsuite>
+  <testsuite name="MasterWidget component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:50" time="1.332" tests="6">
+    <testcase classname="MasterWidget component renders widget without errors" name="MasterWidget component renders widget without errors" time="0.044">
+    </testcase>
+    <testcase classname="MasterWidget component clears stored value, when `clearValue` prop is present" name="MasterWidget component clears stored value, when `clearValue` prop is present" time="0.008">
+    </testcase>
+    <testcase classname="MasterWidget component sets and clears the updated state value when widget value has changed" name="MasterWidget component sets and clears the updated state value when widget value has changed" time="0.01">
+    </testcase>
+    <testcase classname="MasterWidget component does not call `updatePropertyValue` on patch" name="MasterWidget component does not call `updatePropertyValue` on patch" time="0.002">
+    </testcase>
+    <testcase classname="MasterWidget component does not call `updatePropertyValue` on patch #2" name="MasterWidget component does not call `updatePropertyValue` on patch #2" time="0.002">
+    </testcase>
+    <testcase classname="MasterWidget component calls `updatePropertyValue` and  on patch" name="MasterWidget component calls `updatePropertyValue` and  on patch" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="QuickActions standalone component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:50" time="1.345" tests="2">
+    <testcase classname="QuickActions standalone component rendering tests: renders nothing when no actions" name="QuickActions standalone component rendering tests: renders nothing when no actions" time="0.071">
     </testcase>
     <testcase classname="QuickActions standalone component rendering tests: renders actions" name="QuickActions standalone component rendering tests: renders actions" time="0.023">
     </testcase>
   </testsuite>
-  <testsuite name="Composed project reducer" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:13" time="0.982" tests="1">
-    <testcase classname="Composed project reducer should return the initial state" name="Composed project reducer should return the initial state" time="0.002">
+  <testsuite name="RawLookup component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:51" time="1.203" tests="5">
+    <testcase classname="RawLookup component generic tests using QuickAction&apos;s type widget: renders widget without errors" name="RawLookup component generic tests using QuickAction&apos;s type widget: renders widget without errors" time="0.077">
+    </testcase>
+    <testcase classname="RawLookup component generic tests using QuickAction&apos;s type widget: doesn&apos;t focus input and sets default value accordingly" name="RawLookup component generic tests using QuickAction&apos;s type widget: doesn&apos;t focus input and sets default value accordingly" time="0.016">
+    </testcase>
+    <testcase classname="RawLookup component generic tests using QuickAction&apos;s type widget: calls focus/blur handlers properly" name="RawLookup component generic tests using QuickAction&apos;s type widget: calls focus/blur handlers properly" time="0.022">
+    </testcase>
+    <testcase classname="RawLookup component generic tests using QuickAction&apos;s type widget: calls handleValueChanged after defaultValue was updated" name="RawLookup component generic tests using QuickAction&apos;s type widget: calls handleValueChanged after defaultValue was updated" time="0.016">
+    </testcase>
+    <testcase classname="RawLookup component generic tests using QuickAction&apos;s type widget: none option added for non-mandatory field after defaultValue updated" name="RawLookup component generic tests using QuickAction&apos;s type widget: none option added for non-mandatory field after defaultValue updated" time="0.022">
     </testcase>
   </testsuite>
-  <testsuite name="DocumentList helpers" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:13" time="0.904" tests="2">
-    <testcase classname="DocumentList helpers Row helpers - mergeRows" name="DocumentList helpers Row helpers - mergeRows" time="0">
-    </testcase>
-    <testcase classname="DocumentList helpers Row helpers removes rows correctly" name="DocumentList helpers Row helpers removes rows correctly" time="0.001">
-    </testcase>
-    <testcase classname="DocumentList helpers Date manipulation function formatDateWithZeros should format corectly the date when only one char is inputed for month or day" name="DocumentList helpers Date manipulation function formatDateWithZeros should format corectly the date when only one char is inputed for month or day" time="0.002">
+  <testsuite name="EntryTable" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:51" time="1.283" tests="1">
+    <testcase classname="EntryTable renders without errors with the given props" name="EntryTable renders without errors with the given props" time="0.028">
     </testcase>
   </testsuite>
-  <testsuite name="InlineTab - actions general" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:13" time="1.244" tests="7">
-    <testcase classname="InlineTab - actions general should call UPDATE_INLINE_TAB_ITEM_FIELDS action with correct payload" name="InlineTab - actions general should call UPDATE_INLINE_TAB_ITEM_FIELDS action with correct payload" time="0.005">
-    </testcase>
-    <testcase classname="InlineTab - actions general should call UPDATE_INLINE_TAB_WRAPPER_FIELDS action with correct payload" name="InlineTab - actions general should call UPDATE_INLINE_TAB_WRAPPER_FIELDS action with correct payload" time="0.003">
-    </testcase>
-    <testcase classname="InlineTab - actions general should call SET_INLINE_TAB_WRAPPER_DATA action with correct payload" name="InlineTab - actions general should call SET_INLINE_TAB_WRAPPER_DATA action with correct payload" time="0.002">
-    </testcase>
-    <testcase classname="InlineTab - actions general should call SET_INLINE_TAB_SHOW_MORE action with correct payload" name="InlineTab - actions general should call SET_INLINE_TAB_SHOW_MORE action with correct payload" time="0.002">
-    </testcase>
-    <testcase classname="InlineTab - actions general should call SET_INLINE_TAB_LAYOUT_AND_DATA action with correct payload" name="InlineTab - actions general should call SET_INLINE_TAB_LAYOUT_AND_DATA action with correct payload" time="0.002">
-    </testcase>
-    <testcase classname="InlineTab - actions general should call SET_INLINE_TAB_ADD_NEW action with correct payload" name="InlineTab - actions general should call SET_INLINE_TAB_ADD_NEW action with correct payload" time="0.003">
-    </testcase>
-    <testcase classname="InlineTab - actions general should call SET_INLINE_TAB_ITEM_PROP action with correct payload" name="InlineTab - actions general should call SET_INLINE_TAB_ITEM_PROP action with correct payload" time="0.004">
-    </testcase>
-  </testsuite>
-  <testsuite name="keyshortcuts/index.js" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:13" time="1.16" tests="3">
-    <testcase classname="keyshortcuts/index.js should export ShortcutProvider" name="keyshortcuts/index.js should export ShortcutProvider" time="0.001">
-    </testcase>
-    <testcase classname="keyshortcuts/index.js should export Shortcut" name="keyshortcuts/index.js should export Shortcut" time="0.001">
-    </testcase>
-    <testcase classname="keyshortcuts/index.js should export generateHotkeys" name="keyshortcuts/index.js should export generateHotkeys" time="0">
-    </testcase>
-  </testsuite>
-  <testsuite name="Table helpers" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:13" time="1.017" tests="13">
-    <testcase classname="Table helpers TableCell functions createAmmount works correctly" name="Table helpers TableCell functions createAmmount works correctly" time="0.004">
+  <testsuite name="Table helpers" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:51" time="1.136" tests="13">
+    <testcase classname="Table helpers TableCell functions createAmmount works correctly" name="Table helpers TableCell functions createAmmount works correctly" time="0.013">
     </testcase>
     <testcase classname="Table helpers TableCell functions createSpecialField works correctly" name="Table helpers TableCell functions createSpecialField works correctly" time="0.001">
     </testcase>
     <testcase classname="Table helpers TableCell functions fieldValueToString works correctly when null value given" name="Table helpers TableCell functions fieldValueToString works correctly when null value given" time="0.001">
     </testcase>
-    <testcase classname="Table helpers TableCell functions fieldValueToString works correctly when array value given" name="Table helpers TableCell functions fieldValueToString works correctly when array value given" time="0.001">
+    <testcase classname="Table helpers TableCell functions fieldValueToString works correctly when array value given" name="Table helpers TableCell functions fieldValueToString works correctly when array value given" time="0">
     </testcase>
-    <testcase classname="Table helpers TableCell functions fieldValueToString works correctly when boolean true value given" name="Table helpers TableCell functions fieldValueToString works correctly when boolean true value given" time="0">
+    <testcase classname="Table helpers TableCell functions fieldValueToString works correctly when boolean true value given" name="Table helpers TableCell functions fieldValueToString works correctly when boolean true value given" time="0.001">
     </testcase>
-    <testcase classname="Table helpers TableCell functions fieldValueToString works correctly when boolean false value given" name="Table helpers TableCell functions fieldValueToString works correctly when boolean false value given" time="0">
+    <testcase classname="Table helpers TableCell functions fieldValueToString works correctly when boolean false value given" name="Table helpers TableCell functions fieldValueToString works correctly when boolean false value given" time="0.001">
     </testcase>
-    <testcase classname="Table helpers TableCell functions fieldValueToString works correctly when Date type given" name="Table helpers TableCell functions fieldValueToString works correctly when Date type given" time="0.05">
+    <testcase classname="Table helpers TableCell functions fieldValueToString works correctly when Date type given" name="Table helpers TableCell functions fieldValueToString works correctly when Date type given" time="0.039">
     </testcase>
-    <testcase classname="Table helpers fieldValueToString works correctly when Date type given" name="Table helpers fieldValueToString works correctly when Date type given" time="0.007">
+    <testcase classname="Table helpers fieldValueToString works correctly when Date type given" name="Table helpers fieldValueToString works correctly when Date type given" time="0.015">
     </testcase>
-    <testcase classname="Table helpers fieldValueToString works correctly when DateTime type given" name="Table helpers fieldValueToString works correctly when DateTime type given" time="0.006">
+    <testcase classname="Table helpers fieldValueToString works correctly when DateTime type given" name="Table helpers fieldValueToString works correctly when DateTime type given" time="0.007">
     </testcase>
-    <testcase classname="Table helpers fieldValueToString works correctly when ZoneDateTime type given" name="Table helpers fieldValueToString works correctly when ZoneDateTime type given" time="0.003">
+    <testcase classname="Table helpers fieldValueToString works correctly when ZoneDateTime type given" name="Table helpers fieldValueToString works correctly when ZoneDateTime type given" time="0.001">
     </testcase>
-    <testcase classname="Table helpers fieldValueToString works correctly when Timestamp type given" name="Table helpers fieldValueToString works correctly when Timestamp type given" time="0.007">
+    <testcase classname="Table helpers fieldValueToString works correctly when Timestamp type given" name="Table helpers fieldValueToString works correctly when Timestamp type given" time="0.008">
     </testcase>
     <testcase classname="Table helpers fieldValueToString works correctly when Amount fieldType type given" name="Table helpers fieldValueToString works correctly when Amount fieldType type given" time="0.001">
     </testcase>
     <testcase classname="Table helpers fieldValueToString works correctly when special type Color fieldType type given" name="Table helpers fieldValueToString works correctly when special type Color fieldType type given" time="0">
     </testcase>
   </testsuite>
-  <testsuite name="TableContextMenu" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:13" time="1.242" tests="4">
-    <testcase classname="TableContextMenu renders without errors with the given props" name="TableContextMenu renders without errors with the given props" time="0.066">
+  <testsuite name="Table component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:44" time="7.469" tests="6">
+    <testcase classname="Table component renders without errors with bare props" name="Table component renders without errors with bare props" time="0.014">
     </testcase>
-    <testcase classname="TableContextMenu has the tooltip present when row is selected" name="TableContextMenu has the tooltip present when row is selected" time="0.014">
+    <testcase classname="Table component props passed are correctly set within the wrapper" name="Table component props passed are correctly set within the wrapper" time="0.611">
     </testcase>
-    <testcase classname="TableContextMenu should have open selected keymap" name="TableContextMenu should have open selected keymap" time="0.013">
+    <testcase classname="Table component renders empty table when there are no rows" name="Table component renders empty table when there are no rows" time="0.016">
     </testcase>
-    <testcase classname="TableContextMenu should shouw delete shortcut when handleDelete function is passed" name="TableContextMenu should shouw delete shortcut when handleDelete function is passed" time="0.014">
+    <testcase classname="Table component renders without errors with store data" name="Table component renders without errors with store data" time="0.518">
     </testcase>
-  </testsuite>
-  <testsuite name="CommentsPanelListing test" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:13" time="0.947" tests="1">
-    <testcase classname="CommentsPanelListing test renders without errors" name="CommentsPanelListing test renders without errors" time="0.02">
+    <testcase classname="Table component No row is selected if selection is empty" name="Table component No row is selected if selection is empty" time="0.436">
     </testcase>
-  </testsuite>
-  <testsuite name="Actions reducer" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:14" time="0.931" tests="7">
-    <testcase classname="Actions reducer should return the initial state" name="Actions reducer should return the initial state" time="0.001">
-    </testcase>
-    <testcase classname="Actions reducer Should handle FETCH_QUICK_ACTIONS" name="Actions reducer Should handle FETCH_QUICK_ACTIONS" time="0.002">
-    </testcase>
-    <testcase classname="Actions reducer Should handle FETCH_QUICK_ACTIONS_SUCCESS" name="Actions reducer Should handle FETCH_QUICK_ACTIONS_SUCCESS" time="0.001">
-    </testcase>
-    <testcase classname="Actions reducer Should handle FETCH_QUICK_ACTIONS_SUCCESS and delete actions marked with `toDelete`" name="Actions reducer Should handle FETCH_QUICK_ACTIONS_SUCCESS and delete actions marked with `toDelete`" time="0.001">
-    </testcase>
-    <testcase classname="Actions reducer Should handle FETCH_QUICK_ACTIONS_SUCCESS" name="Actions reducer Should handle FETCH_QUICK_ACTIONS_SUCCESS" time="0.001">
-    </testcase>
-    <testcase classname="Actions reducer Should handle DELETE_QUICK_ACTIONS" name="Actions reducer Should handle DELETE_QUICK_ACTIONS" time="0.001">
-    </testcase>
-    <testcase classname="Actions reducer Should handle DELETE_QUICK_ACTIONS and mark pending QA as `toDelete`" name="Actions reducer Should handle DELETE_QUICK_ACTIONS and mark pending QA as `toDelete`" time="0.001">
-    </testcase>
-  </testsuite>
-  <testsuite name="ShortcutProvider" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:13" time="1.05" tests="18">
-    <testcase classname="ShortcutProvider should return children" name="ShortcutProvider should return children" time="0.001">
-    </testcase>
-    <testcase classname="ShortcutProvider should clean up event listeners" name="ShortcutProvider should clean up event listeners" time="0.001">
-    </testcase>
-    <testcase classname="ShortcutProvider should expose context" name="ShortcutProvider should expose context" time="0.001">
-    </testcase>
-    <testcase classname="ShortcutProvider subscribe should be able to subscribe to hotkeys" name="ShortcutProvider subscribe should be able to subscribe to hotkeys" time="0.001">
-    </testcase>
-    <testcase classname="ShortcutProvider subscribe should warn when trying to subscribe to a not defined shortcut" name="ShortcutProvider subscribe should warn when trying to subscribe to a not defined shortcut" time="0.009">
-    </testcase>
-    <testcase classname="ShortcutProvider unsubscribe should be able to unsubscribe from hotkeys" name="ShortcutProvider unsubscribe should be able to unsubscribe from hotkeys" time="0">
-    </testcase>
-    <testcase classname="ShortcutProvider unsubscribe should not modify other handlers when unsubscribing" name="ShortcutProvider unsubscribe should not modify other handlers when unsubscribing" time="0.001">
-    </testcase>
-    <testcase classname="ShortcutProvider unsubscribe should warn when trying to unsubscribe from a not defined hotkey" name="ShortcutProvider unsubscribe should warn when trying to unsubscribe from a not defined hotkey" time="0.001">
-    </testcase>
-    <testcase classname="ShortcutProvider unsubscribe should warn when trying to unsubscribe a not subscribed handler" name="ShortcutProvider unsubscribe should warn when trying to unsubscribe a not subscribed handler" time="0.009">
-    </testcase>
-    <testcase classname="ShortcutProvider handleKeyDown should return when key is not defined" name="ShortcutProvider handleKeyDown should return when key is not defined" time="0">
-    </testcase>
-    <testcase classname="ShortcutProvider handleKeyDown should not fire multiple times for a single key" name="ShortcutProvider handleKeyDown should not fire multiple times for a single key" time="0.002">
-    </testcase>
-    <testcase classname="ShortcutProvider handleKeyDown should call latest registered handler for that hotkey" name="ShortcutProvider handleKeyDown should call latest registered handler for that hotkey" time="0.001">
-    </testcase>
-    <testcase classname="ShortcutProvider handleKeyDown should call the latest valid handler registered for that hotkey" name="ShortcutProvider handleKeyDown should call the latest valid handler registered for that hotkey" time="0.003">
-    </testcase>
-    <testcase classname="ShortcutProvider handleKeyDown should call handler with event as argument" name="ShortcutProvider handleKeyDown should call handler with event as argument" time="0.007">
-    </testcase>
-    <testcase classname="ShortcutProvider handleKeyDown should warn when handler is not a function" name="ShortcutProvider handleKeyDown should warn when handler is not a function" time="0.002">
-    </testcase>
-    <testcase classname="ShortcutProvider handleKeyUp should return when key is not defined" name="ShortcutProvider handleKeyUp should return when key is not defined" time="0">
-    </testcase>
-    <testcase classname="ShortcutProvider handleKeyUp should take key out of sequence" name="ShortcutProvider handleKeyUp should take key out of sequence" time="0.008">
-    </testcase>
-    <testcase classname="ShortcutProvider handleBlur should reset key sequence" name="ShortcutProvider handleBlur should reset key sequence" time="0.001">
-    </testcase>
-  </testsuite>
-  <testsuite name="MultiSelect component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:13" time="1.037" tests="4">
-    <testcase classname="MultiSelect component rendering tests: renders without errors when selection is present" name="MultiSelect component rendering tests: renders without errors when selection is present" time="0.017">
-    </testcase>
-    <testcase classname="MultiSelect component rendering tests: renders without errors when no selection is made" name="MultiSelect component rendering tests: renders without errors when no selection is made" time="0.007">
-    </testcase>
-    <testcase classname="MultiSelect component functional tests when we have an item in options and is not checked result should contain any checked input" name="MultiSelect component functional tests when we have an item in options and is not checked result should contain any checked input" time="0.107">
-    </testcase>
-    <testcase classname="MultiSelect component functional tests the function should be called" name="MultiSelect component functional tests the function should be called" time="0.01">
-    </testcase>
-  </testsuite>
-  <testsuite name="Shortcut" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:14" time="0.876" tests="4">
-    <testcase classname="Shortcut should return null from render()" name="Shortcut should return null from render()" time="0.001">
-    </testcase>
-    <testcase classname="Shortcut should subscribe when mounting" name="Shortcut should subscribe when mounting" time="0.002">
-    </testcase>
-    <testcase classname="Shortcut should unsubscribe when unmounting" name="Shortcut should unsubscribe when unmounting" time="0.001">
-    </testcase>
-    <testcase classname="Shortcut should unsubscribe the same attributes which were subscribed" name="Shortcut should unsubscribe the same attributes which were subscribed" time="0.001">
-    </testcase>
-  </testsuite>
-  <testsuite name="CharacterLimitInfo component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:14" time="0.906" tests="4">
-    <testcase classname="CharacterLimitInfo component rendering tests: renders without errors" name="CharacterLimitInfo component rendering tests: renders without errors" time="0.014">
-    </testcase>
-    <testcase classname="CharacterLimitInfo component rendering tests: renders muted text when chars typed are near the max allowed limit" name="CharacterLimitInfo component rendering tests: renders muted text when chars typed are near the max allowed limit" time="0.001">
-    </testcase>
-    <testcase classname="CharacterLimitInfo component rendering tests: renders the red text when when chars typed are exceeding the max allowed limit" name="CharacterLimitInfo component rendering tests: renders the red text when when chars typed are exceeding the max allowed limit" time="0.001">
-    </testcase>
-    <testcase classname="CharacterLimitInfo component rendering tests: does not render any muted text or error text if input chars is not near the max limit" name="CharacterLimitInfo component rendering tests: does not render any muted text or error text if input chars is not near the max limit" time="0.006">
-    </testcase>
-  </testsuite>
-  <testsuite name="Widget helpers" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:14" time="1.005" tests="17">
-    <testcase classname="Widget helpers getClassNames returns default values" name="Widget helpers getClassNames returns default values" time="0.002">
-    </testcase>
-    <testcase classname="Widget helpers getClassNames handles icon/forcedPrimary parameters" name="Widget helpers getClassNames handles icon/forcedPrimary parameters" time="0.001">
-    </testcase>
-    <testcase classname="Widget helpers getClassNames return proper values from props" name="Widget helpers getClassNames return proper values from props" time="0.001">
-    </testcase>
-    <testcase classname="Widget helpers getFormatForDateField returns default format" name="Widget helpers getFormatForDateField returns default format" time="0">
-    </testcase>
-    <testcase classname="Widget helpers getFormatForDateField returns default format" name="Widget helpers getFormatForDateField returns default format" time="0.001">
-    </testcase>
-    <testcase classname="Widget helpers getFormatForDateField returns default format" name="Widget helpers getFormatForDateField returns default format" time="0">
-    </testcase>
-    <testcase classname="Widget helpers getFormattedDate returns formatted date string if it&apos;s already a Moment object" name="Widget helpers getFormattedDate returns formatted date string if it&apos;s already a Moment object" time="0.007">
-    </testcase>
-    <testcase classname="Widget helpers getFormattedDate returns a string with default formatting if it&apos;s already a Moment object" name="Widget helpers getFormattedDate returns a string with default formatting if it&apos;s already a Moment object" time="0.001">
-    </testcase>
-    <testcase classname="Widget helpers getFormattedDate returns formatted string for date string" name="Widget helpers getFormattedDate returns formatted string for date string" time="0.002">
-    </testcase>
-    <testcase classname="Widget helpers getFormattedDate returns a string with default formatting for date string" name="Widget helpers getFormattedDate returns a string with default formatting for date string" time="0">
-    </testcase>
-    <testcase classname="Widget helpers getFormattedDate returns &apos;null&apos; for no value" name="Widget helpers getFormattedDate returns &apos;null&apos; for no value" time="0.001">
-    </testcase>
-    <testcase classname="Widget helpers isNumberField function createAmmount works correctly" name="Widget helpers isNumberField function createAmmount works correctly" time="0.001">
-    </testcase>
-    <testcase classname="Widget helpers formatValueByWidgetType function works correctly" name="Widget helpers formatValueByWidgetType function works correctly" time="0.001">
-    </testcase>
-    <testcase classname="Widget helpers validatePrecision function works correctly" name="Widget helpers validatePrecision function works correctly" time="0.001">
-    </testcase>
-    <testcase classname="Widget helpers validatePrecision function test null and empty object as value" name="Widget helpers validatePrecision function test null and empty object as value" time="0.001">
-    </testcase>
-    <testcase classname="Widget helpers getWidgetField return the widget name" name="Widget helpers getWidgetField return the widget name" time="0">
-    </testcase>
-    <testcase classname="Widget helpers getWidgetField return the widget name for filter widget" name="Widget helpers getWidgetField return the widget name for filter widget" time="0.001">
-    </testcase>
-  </testsuite>
-  <testsuite name="mergePartialGroupToGroupsArray" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:14" time="1.034" tests="4">
-    <testcase classname="mergePartialGroupToGroupsArray add to empty array" name="mergePartialGroupToGroupsArray add to empty array" time="0.001">
-    </testcase>
-    <testcase classname="mergePartialGroupToGroupsArray add new group" name="mergePartialGroupToGroupsArray add new group" time="0.004">
-    </testcase>
-    <testcase classname="mergePartialGroupToGroupsArray add miscGroup" name="mergePartialGroupToGroupsArray add miscGroup" time="0.001">
-    </testcase>
-    <testcase classname="mergePartialGroupToGroupsArray add to existing group" name="mergePartialGroupToGroupsArray add to existing group" time="0.006">
-    </testcase>
-  </testsuite>
-  <testsuite name="CommentsPanel test" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:13" time="1.349" tests="1">
-    <testcase classname="CommentsPanel test renders without errors" name="CommentsPanel test renders without errors" time="0.03">
-    </testcase>
-  </testsuite>
-  <testsuite name="extractUniqueKey" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:14" time="0.919" tests="3">
-    <testcase classname="extractUniqueKey int targetWindowId without category" name="extractUniqueKey int targetWindowId without category" time="0.001">
-    </testcase>
-    <testcase classname="extractUniqueKey string targetWindowId without category" name="extractUniqueKey string targetWindowId without category" time="0">
-    </testcase>
-    <testcase classname="extractUniqueKey string targetWindowId with category" name="extractUniqueKey string targetWindowId with category" time="0.001">
-    </testcase>
-  </testsuite>
-  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:14" time="0.95" tests="1">
-    <testcase classname=" BlankPage renders correctly" name=" BlankPage renders correctly" time="0.018">
-    </testcase>
-  </testsuite>
-  <testsuite name="CustomerNumberInput component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:14" time="0.961" tests="3">
-    <testcase classname="CustomerNumberInput component rendering tests: renders without errors" name="CustomerNumberInput component rendering tests: renders without errors" time="0.019">
-    </testcase>
-    <testcase classname="CustomerNumberInput component rendering tests: renders disabled state" name="CustomerNumberInput component rendering tests: renders disabled state" time="0.003">
-    </testcase>
-    <testcase classname="CustomerNumberInput component functional tests renders without errors with props set" name="CustomerNumberInput component functional tests renders without errors with props set" time="0.008">
-    </testcase>
-  </testsuite>
-  <testsuite name="mergeReferencesToReferences" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:14" time="0.946" tests="4">
-    <testcase classname="mergeReferencesToReferences add to empty array" name="mergeReferencesToReferences add to empty array" time="0.003">
-    </testcase>
-    <testcase classname="mergeReferencesToReferences add a non existing item" name="mergeReferencesToReferences add a non existing item" time="0.003">
-    </testcase>
-    <testcase classname="mergeReferencesToReferences add existing item but with higher priority" name="mergeReferencesToReferences add existing item but with higher priority" time="0.001">
-    </testcase>
-    <testcase classname="mergeReferencesToReferences add existing item but with lower priority" name="mergeReferencesToReferences add existing item but with lower priority" time="0">
-    </testcase>
-  </testsuite>
-  <testsuite name="Calendar" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:14" time="0.977" tests="1">
-    <testcase classname="Calendar renders without errors" name="Calendar renders without errors" time="0.008">
-    </testcase>
-  </testsuite>
-  <testsuite name="General helpers" errors="0" failures="0" skipped="4" timestamp="2021-03-16T13:44:14" time="0.902" tests="6">
-    <testcase classname="General helpers getTab get tab from a flat array" name="General helpers getTab get tab from a flat array" time="0">
-      <skipped/>
-    </testcase>
-    <testcase classname="General helpers getTab find tab in a nested array" name="General helpers getTab find tab in a nested array" time="0">
-      <skipped/>
-    </testcase>
-    <testcase classname="General helpers getTab return null, when tab can&apos;t be found" name="General helpers getTab return null, when tab can&apos;t be found" time="0">
-      <skipped/>
-    </testcase>
-    <testcase classname="General helpers getTab return null, when nested tab can&apos;t be found" name="General helpers getTab return null, when nested tab can&apos;t be found" time="0">
-      <skipped/>
-    </testcase>
-    <testcase classname="General helpers updateTab updates tab in a flat array" name="General helpers updateTab updates tab in a flat array" time="0.002">
-    </testcase>
-    <testcase classname="General helpers updateTab updates tab in a nested array" name="General helpers updateTab updates tab in a nested array" time="0.007">
-    </testcase>
-  </testsuite>
-  <testsuite name="ComponentsPanelListingItem test" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:14" time="0.939" tests="1">
-    <testcase classname="ComponentsPanelListingItem test renders without errors" name="ComponentsPanelListingItem test renders without errors" time="0.03">
-    </testcase>
-  </testsuite>
-  <testsuite name="Switch component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:14" time="0.931" tests="1">
-    <testcase classname="Switch component renders without errors" name="Switch component renders without errors" time="0.027">
-    </testcase>
-  </testsuite>
-  <testsuite name="Password component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="0.893" tests="1">
-    <testcase classname="Password component renders without errors" name="Password component renders without errors" time="0.027">
-    </testcase>
-    <testcase classname="Password component renders password as text" name="Password component renders password as text" time="0">
-    </testcase>
-  </testsuite>
-  <testsuite name="Loader test" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="0.914" tests="3">
-    <testcase classname="Loader test renders without errors" name="Loader test renders without errors" time="0.025">
-    </testcase>
-    <testcase classname="Loader test renders normal loader" name="Loader test renders normal loader" time="0.003">
-    </testcase>
-    <testcase classname="Loader test renders bootstrap loader" name="Loader test renders bootstrap loader" time="0.002">
-    </testcase>
-  </testsuite>
-  <testsuite name="generateHotkeys" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="0.918" tests="4">
-    <testcase classname="generateHotkeys should return an object" name="generateHotkeys should return an object" time="0.011">
-    </testcase>
-    <testcase classname="generateHotkeys should transform a key map to a map of hotkeys" name="generateHotkeys should transform a key map to a map of hotkeys" time="0">
-    </testcase>
-    <testcase classname="generateHotkeys should warn about duplicate keys" name="generateHotkeys should warn about duplicate keys" time="0.008">
-    </testcase>
-    <testcase classname="generateHotkeys should warn about blacklisted hotkeys" name="generateHotkeys should warn about blacklisted hotkeys" time="0.004">
-    </testcase>
-  </testsuite>
-  <testsuite name="EntryTable" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="2.558" tests="1">
-    <testcase classname="EntryTable renders without errors with the given props" name="EntryTable renders without errors with the given props" time="0.042">
-    </testcase>
-  </testsuite>
-  <testsuite name="TableQuickInput" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="2.636" tests="2">
-    <testcase classname="TableQuickInput renders without errors" name="TableQuickInput renders without errors" time="0.047">
-    </testcase>
-    <testcase classname="TableQuickInput renders without error 22s" name="TableQuickInput renders without error 22s" time="0.028">
-    </testcase>
-  </testsuite>
-  <testsuite name="RawList component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="2.75" tests="8">
-    <testcase classname="RawList component rendering tests: renders without errors" name="RawList component rendering tests: renders without errors" time="0.012">
-    </testcase>
-    <testcase classname="RawList component rendering tests: renders with selection dropdown toggled properly" name="RawList component rendering tests: renders with selection dropdown toggled properly" time="0.208">
-    </testcase>
-    <testcase classname="RawList component functional tests list focuses and toggles on click" name="RawList component functional tests list focuses and toggles on click" time="0.1">
-    </testcase>
-    <testcase classname="RawList component functional tests list handles key events" name="RawList component functional tests list handles key events" time="0.02">
-    </testcase>
-    <testcase classname="RawList component functional tests list focuses and toggles on click" name="RawList component functional tests list focuses and toggles on click" time="0.078">
-    </testcase>
-    <testcase classname="RawList component functional tests list hides dropdown after selecting an option" name="RawList component functional tests list hides dropdown after selecting an option" time="0.084">
-    </testcase>
-    <testcase classname="RawList component functional tests list blurs and stays hidden after selecting an option" name="RawList component functional tests list blurs and stays hidden after selecting an option" time="0.017">
-    </testcase>
-    <testcase classname="RawList component functional tests with elements attached to dummy element focused list blurs on tab" name="RawList component functional tests with elements attached to dummy element focused list blurs on tab" time="0.028">
-    </testcase>
-  </testsuite>
-  <testsuite name="WidgetWrapper disconnected" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="3.902" tests="3">
-    <testcase classname="WidgetWrapper disconnected renders MasterWidget without errors with the given props for document status" name="WidgetWrapper disconnected renders MasterWidget without errors with the given props for document status" time="0.05">
-    </testcase>
-    <testcase classname="WidgetWrapper disconnected renders RawWidget without errors with the given props for Element widget" name="WidgetWrapper disconnected renders RawWidget without errors with the given props for Element widget" time="0.032">
-    </testcase>
-    <testcase classname="WidgetWrapper disconnected renders RawWidget without errors with the given props for Table widget" name="WidgetWrapper disconnected renders RawWidget without errors with the given props for Table widget" time="0.025">
-    </testcase>
-  </testsuite>
-  <testsuite name="TableFilter" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="3.401" tests="1">
-    <testcase classname="TableFilter renders without errors with the given props" name="TableFilter renders without errors with the given props" time="0.077">
-    </testcase>
-  </testsuite>
-  <testsuite name="InlineTab component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="3.435" tests="5">
-    <testcase classname="InlineTab component rendering tests: renders without errors" name="InlineTab component rendering tests: renders without errors" time="0.002">
-    </testcase>
-    <testcase classname="InlineTab component rendering tests: renders the InlineTab item correctly" name="InlineTab component rendering tests: renders the InlineTab item correctly" time="0.01">
-    </testcase>
-    <testcase classname="InlineTab component renders the InlineTab item collapsed when isOpen is true" name="InlineTab component renders the InlineTab item collapsed when isOpen is true" time="0.093">
-    </testcase>
-    <testcase classname="InlineTab component renders the InlineTab item unexpanded when isOpen is false" name="InlineTab component renders the InlineTab item unexpanded when isOpen is false" time="0.005">
-    </testcase>
-    <testcase classname="InlineTab component renders the deletion prompt" name="InlineTab component renders the deletion prompt" time="0.295">
-    </testcase>
-  </testsuite>
-  <testsuite name="SelectionDropdown component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:18" time="1.071" tests="5">
-    <testcase classname="SelectionDropdown component renders without errors" name="SelectionDropdown component renders without errors" time="0.012">
-    </testcase>
-    <testcase classname="SelectionDropdown component renders loading state" name="SelectionDropdown component renders loading state" time="0.009">
-    </testcase>
-    <testcase classname="SelectionDropdown component properly handles keyboard events and selects options" name="SelectionDropdown component properly handles keyboard events and selects options" time="0.031">
-    </testcase>
-    <testcase classname="SelectionDropdown component properly handles keyboard events and selects options" name="SelectionDropdown component properly handles keyboard events and selects options" time="0.014">
-    </testcase>
-    <testcase classname="SelectionDropdown component properly handles keyboard events and selects options" name="SelectionDropdown component properly handles keyboard events and selects options" time="0.011">
-    </testcase>
-  </testsuite>
-  <testsuite name="TableCell" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="3.823" tests="4">
-    <testcase classname="TableCell renders without errors with the given props" name="TableCell renders without errors with the given props" time="0.015">
-    </testcase>
-    <testcase classname="TableCell renders notification indicator" name="TableCell renders notification indicator" time="0.004">
-    </testcase>
-    <testcase classname="TableCell Changing the widget type should be present in the output" name="TableCell Changing the widget type should be present in the output" time="0.002">
-    </testcase>
-    <testcase classname="TableCell On escape input remains the same" name="TableCell On escape input remains the same" time="0.009">
-    </testcase>
-  </testsuite>
-  <testsuite name="MasterWidget component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:18" time="1.221" tests="6">
-    <testcase classname="MasterWidget component renders widget without errors" name="MasterWidget component renders widget without errors" time="0.037">
-    </testcase>
-    <testcase classname="MasterWidget component clears stored value, when `clearValue` prop is present" name="MasterWidget component clears stored value, when `clearValue` prop is present" time="0.01">
-    </testcase>
-    <testcase classname="MasterWidget component sets and clears the updated state value when widget value has changed" name="MasterWidget component sets and clears the updated state value when widget value has changed" time="0.008">
-    </testcase>
-    <testcase classname="MasterWidget component does not call `updatePropertyValue` on patch" name="MasterWidget component does not call `updatePropertyValue` on patch" time="0.002">
-    </testcase>
-    <testcase classname="MasterWidget component does not call `updatePropertyValue` on patch #2" name="MasterWidget component does not call `updatePropertyValue` on patch #2" time="0.01">
-    </testcase>
-    <testcase classname="MasterWidget component calls `updatePropertyValue` and  on patch" name="MasterWidget component calls `updatePropertyValue` and  on patch" time="0.002">
-    </testcase>
-  </testsuite>
-  <testsuite name="RawLookup component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:18" time="1.046" tests="5">
-    <testcase classname="RawLookup component generic tests using QuickAction&apos;s type widget: renders widget without errors" name="RawLookup component generic tests using QuickAction&apos;s type widget: renders widget without errors" time="0.03">
-    </testcase>
-    <testcase classname="RawLookup component generic tests using QuickAction&apos;s type widget: doesn&apos;t focus input and sets default value accordingly" name="RawLookup component generic tests using QuickAction&apos;s type widget: doesn&apos;t focus input and sets default value accordingly" time="0.01">
-    </testcase>
-    <testcase classname="RawLookup component generic tests using QuickAction&apos;s type widget: calls focus/blur handlers properly" name="RawLookup component generic tests using QuickAction&apos;s type widget: calls focus/blur handlers properly" time="0.016">
-    </testcase>
-    <testcase classname="RawLookup component generic tests using QuickAction&apos;s type widget: calls handleValueChanged after defaultValue was updated" name="RawLookup component generic tests using QuickAction&apos;s type widget: calls handleValueChanged after defaultValue was updated" time="0.009">
-    </testcase>
-    <testcase classname="RawLookup component generic tests using QuickAction&apos;s type widget: none option added for non-mandatory field after defaultValue updated" name="RawLookup component generic tests using QuickAction&apos;s type widget: none option added for non-mandatory field after defaultValue updated" time="0.01">
-    </testcase>
-  </testsuite>
-  <testsuite name="RawWidget component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="3.936" tests="18">
-    <testcase classname="RawWidget component generic tests using LongText widget: renders widget without errors" name="RawWidget component generic tests using LongText widget: renders widget without errors" time="0.065">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using LongText widget: renders nothing when widget is not displayed" name="RawWidget component generic tests using LongText widget: renders nothing when widget is not displayed" time="0.002">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using LongText widget: doesn&apos;t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed" name="RawWidget component generic tests using LongText widget: doesn&apos;t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed" time="0.119">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using LongText widget: calls `handlePatch` on `{enter}/{tab}` keydown" name="RawWidget component generic tests using LongText widget: calls `handlePatch` on `{enter}/{tab}` keydown" time="0.024">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using LongText widget: doesn&apos;t call `handlePatch` on `{shift}{enter}` keydown" name="RawWidget component generic tests using LongText widget: doesn&apos;t call `handlePatch` on `{shift}{enter}` keydown" time="0.016">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using LongText widget: correct handlers/prop functions are called on focus/blur" name="RawWidget component generic tests using LongText widget: correct handlers/prop functions are called on focus/blur" time="0.027">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using Text widget: renders widget without errors" name="RawWidget component generic tests using Text widget: renders widget without errors" time="0.006">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using Text widget: renders nothing when widget is not displayed" name="RawWidget component generic tests using Text widget: renders nothing when widget is not displayed" time="0.002">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using Text widget: doesn&apos;t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed" name="RawWidget component generic tests using Text widget: doesn&apos;t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed" time="0.022">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using Text widget: calls `handlePatch` on `{enter}/{tab}` keydown" name="RawWidget component generic tests using Text widget: calls `handlePatch` on `{enter}/{tab}` keydown" time="0.015">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using Text widget: correct handlers/prop functions are called on focus/blur" name="RawWidget component generic tests using Text widget: correct handlers/prop functions are called on focus/blur" time="0.017">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using Text widget: behaves correctly when selecting, removing and typing in new value" name="RawWidget component generic tests using Text widget: behaves correctly when selecting, removing and typing in new value" time="0.048">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using Integer widget: renders widget without errors" name="RawWidget component generic tests using Integer widget: renders widget without errors" time="0.004">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using Integer widget: renders nothing when widget is not displayed" name="RawWidget component generic tests using Integer widget: renders nothing when widget is not displayed" time="0.001">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using Integer widget: doesn&apos;t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed" name="RawWidget component generic tests using Integer widget: doesn&apos;t call `handlePatch` on `{enter}/{tab}` keydown if nothing changed" time="0.018">
-    </testcase>
-    <testcase classname="RawWidget component generic tests using Integer widget: calls `handlePatch` on `{enter}/{tab}` keydown" name="RawWidget component generic tests using Integer widget: calls `handlePatch` on `{enter}/{tab}` keydown" time="0.019">
-    </testcase>
-    <testcase classname="RawWidget component Shows a normal border when input does not exceeds the char limit" name="RawWidget component Shows a normal border when input does not exceeds the char limit" time="0.015">
-    </testcase>
-    <testcase classname="RawWidget component Shows a red border when input exceeds the char limit" name="RawWidget component Shows a red border when input exceeds the char limit" time="0.019">
-    </testcase>
-  </testsuite>
-  <testsuite name="Table row (TableRow)" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="4.122" tests="3">
-    <testcase classname="Table row (TableRow) renders without errors" name="Table row (TableRow) renders without errors" time="0.019">
-    </testcase>
-    <testcase classname="Table row (TableRow) output matches snapshot" name="Table row (TableRow) output matches snapshot" time="0.04">
-    </testcase>
-    <testcase classname="Table row (TableRow) row re-renders after data changed" name="Table row (TableRow) row re-renders after data changed" time="0.163">
-    </testcase>
-  </testsuite>
-  <testsuite name="Modal test" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:18" time="1.214" tests="2">
-    <testcase classname="Modal test renders without errors" name="Modal test renders without errors" time="0.043">
-    </testcase>
-    <testcase classname="Modal test calls startProcess when initializing a modal of &apos;process&apos; type" name="Modal test calls startProcess when initializing a modal of &apos;process&apos; type" time="0.04">
-    </testcase>
-  </testsuite>
-  <testsuite name="Attributes component" errors="0" failures="0" skipped="1" timestamp="2021-03-16T13:44:16" time="4.288" tests="3">
-    <testcase classname="Attributes component renders without errors" name="Attributes component renders without errors" time="0.01">
-    </testcase>
-    <testcase classname="Attributes component handlers test toggle triggers init" name="Attributes component handlers test toggle triggers init" time="1.013">
-    </testcase>
-    <testcase classname="Attributes component handlers test keydown triggers onHandleKeyDown" name="Attributes component handlers test keydown triggers onHandleKeyDown" time="0">
-      <skipped/>
-    </testcase>
-  </testsuite>
-  <testsuite name="Application" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="5.237" tests="1">
-    <testcase classname="Application renders without errors" name="Application renders without errors" time="0.006">
-    </testcase>
-  </testsuite>
-  <testsuite name="Table component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:15" time="4.564" tests="6">
-    <testcase classname="Table component renders without errors with bare props" name="Table component renders without errors with bare props" time="0.009">
-    </testcase>
-    <testcase classname="Table component props passed are correctly set within the wrapper" name="Table component props passed are correctly set within the wrapper" time="0.624">
-    </testcase>
-    <testcase classname="Table component renders empty table when there are no rows" name="Table component renders empty table when there are no rows" time="0.013">
-    </testcase>
-    <testcase classname="Table component renders without errors with store data" name="Table component renders without errors with store data" time="0.374">
-    </testcase>
-    <testcase classname="Table component No row is selected if selection is empty" name="Table component No row is selected if selection is empty" time="0.236">
-    </testcase>
-    <testcase classname="Table component Cell is selected and row focused" name="Table component Cell is selected and row focused" time="0.19">
+    <testcase classname="Table component Cell is selected and row focused" name="Table component Cell is selected and row focused" time="0.43">
     </testcase>
     <testcase classname="Table component Lookup widget is focused on selecting row" name="Table component Lookup widget is focused on selecting row" time="0">
     </testcase>
@@ -753,32 +541,408 @@
     <testcase classname="Table component Textarea widget is re-focused on select after traversing back" name="Table component Textarea widget is re-focused on select after traversing back" time="0">
     </testcase>
   </testsuite>
-  <testsuite name="Filters tests" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:19" time="1.47" tests="6">
-    <testcase classname="Filters tests renders without errors" name="Filters tests renders without errors" time="0.009">
+  <testsuite name="WindowHandler helper functions" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:51" time="1.189" tests="12">
+    <testcase classname="WindowHandler helper functions getData should return state.windowHandler.master.data" name="WindowHandler helper functions getData should return state.windowHandler.master.data" time="0.002">
     </testcase>
-    <testcase classname="Filters tests renders active filters caption" name="Filters tests renders active filters caption" time="0.004">
+    <testcase classname="WindowHandler helper functions getData should return state.windowHandler.modal.data" name="WindowHandler helper functions getData should return state.windowHandler.modal.data" time="0.001">
     </testcase>
-    <testcase classname="Filters tests opens dropdown and filter details" name="Filters tests opens dropdown and filter details" time="0.159">
+    <testcase classname="WindowHandler helper functions getMasterDocStatus should return values from state.windowHandler.master.data[DocStatus/DocAction]" name="WindowHandler helper functions getMasterDocStatus should return values from state.windowHandler.master.data[DocStatus/DocAction]" time="0.002">
     </testcase>
-    <testcase classname="Filters tests Temporary bloated filter tests clears list filters and applies without error" name="Filters tests Temporary bloated filter tests clears list filters and applies without error" time="0.139">
+    <testcase classname="WindowHandler helper functions getElementWidgetData should return state.windowHandler.master.data[fieldName]" name="WindowHandler helper functions getElementWidgetData should return state.windowHandler.master.data[fieldName]" time="0.003">
     </testcase>
-    <testcase classname="Filters tests Temporary bloated filter tests supports `false` values for checkbox widgets" name="Filters tests Temporary bloated filter tests supports `false` values for checkbox widgets" time="0.163">
+    <testcase classname="WindowHandler helper functions getElementWidgetData should return state.windowHandler.modal.data[fieldName]" name="WindowHandler helper functions getElementWidgetData should return state.windowHandler.modal.data[fieldName]" time="0.002">
     </testcase>
-    <testcase classname="Filters tests Temporary bloated filter tests supports filters without parameters" name="Filters tests Temporary bloated filter tests supports filters without parameters" time="0.018">
+    <testcase classname="WindowHandler helper functions getProcessWidgetData should return state.windowHandler.modal.data[fieldName]" name="WindowHandler helper functions getProcessWidgetData should return state.windowHandler.modal.data[fieldName]" time="0.001">
+    </testcase>
+    <testcase classname="WindowHandler helper functions getElementWidgetFields should return state.master.layout[path].fields" name="WindowHandler helper functions getElementWidgetFields should return state.master.layout[path].fields" time="0.002">
+    </testcase>
+    <testcase classname="WindowHandler helper functions getElementWidgetFields should return state.modal.layout[path].fields" name="WindowHandler helper functions getElementWidgetFields should return state.modal.layout[path].fields" time="0.002">
+    </testcase>
+    <testcase classname="WindowHandler helper functions getProcessWidgetFields should return state.modal.layout[path].fields" name="WindowHandler helper functions getProcessWidgetFields should return state.modal.layout[path].fields" time="0.001">
+    </testcase>
+    <testcase classname="WindowHandler reducer should return the initial state" name="WindowHandler reducer should return the initial state" time="0.002">
+    </testcase>
+    <testcase classname="WindowHandler reducer Should handle INIT_LAYOUT_SUCCESS" name="WindowHandler reducer Should handle INIT_LAYOUT_SUCCESS" time="0.002">
+    </testcase>
+    <testcase classname="WindowHandler reducer Should handle INIT_DATA_SUCCESS" name="WindowHandler reducer Should handle INIT_DATA_SUCCESS" time="0.002">
     </testcase>
   </testsuite>
-  <testsuite name="InlineTabWrapper component" errors="0" failures="0" skipped="0" timestamp="2021-03-16T13:44:20" time="2.797" tests="6">
-    <testcase classname="InlineTabWrapper component rendering tests: renders without errors" name="InlineTabWrapper component rendering tests: renders without errors" time="0.003">
+  <testsuite name="FiltersActions general" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:51" time="1.08" tests="8">
+    <testcase classname="FiltersActions general should call DELETE_FILTER action with correct payload" name="FiltersActions general should call DELETE_FILTER action with correct payload" time="0.002">
     </testcase>
-    <testcase classname="InlineTabWrapper component rendering tests: renders a line properly" name="InlineTabWrapper component rendering tests: renders a line properly" time="0.047">
+    <testcase classname="FiltersActions general dispatches &apos;CREATE_FILTER&apos; action when creating the filters" name="FiltersActions general dispatches &apos;CREATE_FILTER&apos; action when creating the filters" time="0">
     </testcase>
-    <testcase classname="InlineTabWrapper component renders more lines properly" name="InlineTabWrapper component renders more lines properly" time="0.015">
+    <testcase classname="FiltersActions general dispatches &apos;CLEAR_ALL_FILTERS&apos; action when clearing the filters" name="FiltersActions general dispatches &apos;CLEAR_ALL_FILTERS&apos; action when clearing the filters" time="0">
     </testcase>
-    <testcase classname="InlineTabWrapper component renders the form in full screen correctly" name="InlineTabWrapper component renders the form in full screen correctly" time="0.015">
+    <testcase classname="FiltersActions general dispatches &apos;UPDATE_FLAG_NOTVALIDFIELDS&apos; action " name="FiltersActions general dispatches &apos;UPDATE_FLAG_NOTVALIDFIELDS&apos; action " time="0.001">
     </testcase>
-    <testcase classname="InlineTabWrapper component renders the add new form" name="InlineTabWrapper component renders the add new form" time="0.095">
+    <testcase classname="FiltersActions general dispatches &apos;UPDATE_ACTIVE_FILTERS&apos; action when creating the filters" name="FiltersActions general dispatches &apos;UPDATE_ACTIVE_FILTERS&apos; action when creating the filters" time="0.001">
     </testcase>
-    <testcase classname="InlineTabWrapper component show error correctly" name="InlineTabWrapper component show error correctly" time="0.006">
+    <testcase classname="FiltersActions general dispatches &apos;FILTER_UPDATE_WIDGET_SHOWN&apos; action " name="FiltersActions general dispatches &apos;FILTER_UPDATE_WIDGET_SHOWN&apos; action " time="0.001">
+    </testcase>
+    <testcase classname="FiltersActions general dispatches &apos;CLEAR_STATIC_FILTERS&apos; action " name="FiltersActions general dispatches &apos;CLEAR_STATIC_FILTERS&apos; action " time="0.001">
+    </testcase>
+    <testcase classname="FiltersActions general dispatches &apos;UPDATE_INLINE_FILTER&apos; action " name="FiltersActions general dispatches &apos;UPDATE_INLINE_FILTER&apos; action " time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="Widget helpers" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:51" time="1.178" tests="17">
+    <testcase classname="Widget helpers getClassNames returns default values" name="Widget helpers getClassNames returns default values" time="0.003">
+    </testcase>
+    <testcase classname="Widget helpers getClassNames handles icon/forcedPrimary parameters" name="Widget helpers getClassNames handles icon/forcedPrimary parameters" time="0.001">
+    </testcase>
+    <testcase classname="Widget helpers getClassNames return proper values from props" name="Widget helpers getClassNames return proper values from props" time="0.001">
+    </testcase>
+    <testcase classname="Widget helpers getFormatForDateField returns default format" name="Widget helpers getFormatForDateField returns default format" time="0">
+    </testcase>
+    <testcase classname="Widget helpers getFormatForDateField returns default format" name="Widget helpers getFormatForDateField returns default format" time="0.001">
+    </testcase>
+    <testcase classname="Widget helpers getFormatForDateField returns default format" name="Widget helpers getFormatForDateField returns default format" time="0">
+    </testcase>
+    <testcase classname="Widget helpers getFormattedDate returns formatted date string if it&apos;s already a Moment object" name="Widget helpers getFormattedDate returns formatted date string if it&apos;s already a Moment object" time="0.002">
+    </testcase>
+    <testcase classname="Widget helpers getFormattedDate returns a string with default formatting if it&apos;s already a Moment object" name="Widget helpers getFormattedDate returns a string with default formatting if it&apos;s already a Moment object" time="0.001">
+    </testcase>
+    <testcase classname="Widget helpers getFormattedDate returns formatted string for date string" name="Widget helpers getFormattedDate returns formatted string for date string" time="0.001">
+    </testcase>
+    <testcase classname="Widget helpers getFormattedDate returns a string with default formatting for date string" name="Widget helpers getFormattedDate returns a string with default formatting for date string" time="0.001">
+    </testcase>
+    <testcase classname="Widget helpers getFormattedDate returns &apos;null&apos; for no value" name="Widget helpers getFormattedDate returns &apos;null&apos; for no value" time="0">
+    </testcase>
+    <testcase classname="Widget helpers isNumberField function createAmmount works correctly" name="Widget helpers isNumberField function createAmmount works correctly" time="0.001">
+    </testcase>
+    <testcase classname="Widget helpers formatValueByWidgetType function works correctly" name="Widget helpers formatValueByWidgetType function works correctly" time="0.001">
+    </testcase>
+    <testcase classname="Widget helpers validatePrecision function works correctly" name="Widget helpers validatePrecision function works correctly" time="0.001">
+    </testcase>
+    <testcase classname="Widget helpers validatePrecision function test null and empty object as value" name="Widget helpers validatePrecision function test null and empty object as value" time="0.001">
+    </testcase>
+    <testcase classname="Widget helpers getWidgetField return the widget name" name="Widget helpers getWidgetField return the widget name" time="0.001">
+    </testcase>
+    <testcase classname="Widget helpers getWidgetField return the widget name for filter widget" name="Widget helpers getWidgetField return the widget name for filter widget" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="SelectionDropdown component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:51" time="1.178" tests="5">
+    <testcase classname="SelectionDropdown component renders without errors" name="SelectionDropdown component renders without errors" time="0.015">
+    </testcase>
+    <testcase classname="SelectionDropdown component renders loading state" name="SelectionDropdown component renders loading state" time="0.006">
+    </testcase>
+    <testcase classname="SelectionDropdown component properly handles keyboard events and selects options" name="SelectionDropdown component properly handles keyboard events and selects options" time="0.048">
+    </testcase>
+    <testcase classname="SelectionDropdown component properly handles keyboard events and selects options" name="SelectionDropdown component properly handles keyboard events and selects options" time="0.018">
+    </testcase>
+    <testcase classname="SelectionDropdown component properly handles keyboard events and selects options" name="SelectionDropdown component properly handles keyboard events and selects options" time="0.019">
+    </testcase>
+  </testsuite>
+  <testsuite name="TablePagination" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:51" time="1.299" tests="4">
+    <testcase classname="TablePagination renders without errors with the given props" name="TablePagination renders without errors with the given props" time="0.055">
+    </testcase>
+    <testcase classname="TablePagination Page 2 should be selected" name="TablePagination Page 2 should be selected" time="0.017">
+    </testcase>
+    <testcase classname="TablePagination should contain page-link-compressed when compressed is true" name="TablePagination should contain page-link-compressed when compressed is true" time="0.027">
+    </testcase>
+    <testcase classname="TablePagination should not contain page-link-compressed when compressed is false" name="TablePagination should not contain page-link-compressed when compressed is false" time="0.019">
+    </testcase>
+  </testsuite>
+  <testsuite name="CommentsPanel test" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:52" time="1.216" tests="1">
+    <testcase classname="CommentsPanel test renders without errors" name="CommentsPanel test renders without errors" time="0.02">
+    </testcase>
+  </testsuite>
+  <testsuite name="keyshortcuts/index.js" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:52" time="1.162" tests="3">
+    <testcase classname="keyshortcuts/index.js should export ShortcutProvider" name="keyshortcuts/index.js should export ShortcutProvider" time="0.001">
+    </testcase>
+    <testcase classname="keyshortcuts/index.js should export Shortcut" name="keyshortcuts/index.js should export Shortcut" time="0.001">
+    </testcase>
+    <testcase classname="keyshortcuts/index.js should export generateHotkeys" name="keyshortcuts/index.js should export generateHotkeys" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="Views reducer for `view` type" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:52" time="1.195" tests="17">
+    <testcase classname="Views reducer for `view` type should return the initial state" name="Views reducer for `view` type should return the initial state" time="0.004">
+    </testcase>
+    <testcase classname="Views reducer for `view` type Should handle FETCH_LAYOUT" name="Views reducer for `view` type Should handle FETCH_LAYOUT" time="0.002">
+    </testcase>
+    <testcase classname="Views reducer for `view` type Should handle FETCH_LAYOUT_ERROR" name="Views reducer for `view` type Should handle FETCH_LAYOUT_ERROR" time="0.001">
+    </testcase>
+    <testcase classname="Views reducer for `view` type Should handle FETCH_DOCUMENT" name="Views reducer for `view` type Should handle FETCH_DOCUMENT" time="0.002">
+    </testcase>
+    <testcase classname="Views reducer for `view` type Should handle FETCH_DOCUMENT_ERROR" name="Views reducer for `view` type Should handle FETCH_DOCUMENT_ERROR" time="0">
+    </testcase>
+    <testcase classname="Views reducer for `view` type Should handle CREATE_VIEW" name="Views reducer for `view` type Should handle CREATE_VIEW" time="0.001">
+    </testcase>
+    <testcase classname="Views reducer for `view` type Should handle DELETE_VIEW" name="Views reducer for `view` type Should handle DELETE_VIEW" time="0.001">
+    </testcase>
+    <testcase classname="Views reducer for `view` type Should handle RESET_VIEW" name="Views reducer for `view` type Should handle RESET_VIEW" time="0">
+    </testcase>
+    <testcase classname="Views reducer for `modals` type Should handle FETCH_LAYOUT" name="Views reducer for `modals` type Should handle FETCH_LAYOUT" time="0">
+    </testcase>
+    <testcase classname="Views reducer for `modals` type Should handle CREATE_VIEW_ERROR" name="Views reducer for `modals` type Should handle CREATE_VIEW_ERROR" time="0.001">
+    </testcase>
+    <testcase classname="Views reducer for `modals` type Should handle &apos;TOGGLE_INCLUDED_VIEW&apos;" name="Views reducer for `modals` type Should handle &apos;TOGGLE_INCLUDED_VIEW&apos;" time="0.001">
+    </testcase>
+    <testcase classname="Views reducer for `modals` type Should handle &apos;SET_INCLUDED_VIEW&apos;" name="Views reducer for `modals` type Should handle &apos;SET_INCLUDED_VIEW&apos;" time="0.001">
+    </testcase>
+    <testcase classname="Views reducer for `modals` type Should handle &apos;UNSET_INCLUDED_VIEW&apos;" name="Views reducer for `modals` type Should handle &apos;UNSET_INCLUDED_VIEW&apos;" time="0">
+    </testcase>
+    <testcase classname="Views reducer for `modals` type Should handle &apos;UNSET_INCLUDED_VIEW&apos; when the &apos;windowId&apos; has changed" name="Views reducer for `modals` type Should handle &apos;UNSET_INCLUDED_VIEW&apos; when the &apos;windowId&apos; has changed" time="0">
+    </testcase>
+    <testcase classname="Views reducer for `modals` type Should handle &apos;UNSET_INCLUDED_VIEW&apos; when the &apos;windowId&apos; has changed, but &apos;forceClose&apos; is true" name="Views reducer for `modals` type Should handle &apos;UNSET_INCLUDED_VIEW&apos; when the &apos;windowId&apos; has changed, but &apos;forceClose&apos; is true" time="0.002">
+    </testcase>
+    <testcase classname="Views reducer for `modals` type Should handle FILTER_VIEW" name="Views reducer for `modals` type Should handle FILTER_VIEW" time="0.002">
+    </testcase>
+    <testcase classname="Views reducer for `modals` type Should handle UPDATE_VIEW_DATA_SUCCESS" name="Views reducer for `modals` type Should handle UPDATE_VIEW_DATA_SUCCESS" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="ShortcutProvider" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:52" time="1.266" tests="18">
+    <testcase classname="ShortcutProvider should return children" name="ShortcutProvider should return children" time="0.001">
+    </testcase>
+    <testcase classname="ShortcutProvider should clean up event listeners" name="ShortcutProvider should clean up event listeners" time="0.001">
+    </testcase>
+    <testcase classname="ShortcutProvider should expose context" name="ShortcutProvider should expose context" time="0.001">
+    </testcase>
+    <testcase classname="ShortcutProvider subscribe should be able to subscribe to hotkeys" name="ShortcutProvider subscribe should be able to subscribe to hotkeys" time="0">
+    </testcase>
+    <testcase classname="ShortcutProvider subscribe should warn when trying to subscribe to a not defined shortcut" name="ShortcutProvider subscribe should warn when trying to subscribe to a not defined shortcut" time="0.047">
+    </testcase>
+    <testcase classname="ShortcutProvider unsubscribe should be able to unsubscribe from hotkeys" name="ShortcutProvider unsubscribe should be able to unsubscribe from hotkeys" time="0">
+    </testcase>
+    <testcase classname="ShortcutProvider unsubscribe should not modify other handlers when unsubscribing" name="ShortcutProvider unsubscribe should not modify other handlers when unsubscribing" time="0.001">
+    </testcase>
+    <testcase classname="ShortcutProvider unsubscribe should warn when trying to unsubscribe from a not defined hotkey" name="ShortcutProvider unsubscribe should warn when trying to unsubscribe from a not defined hotkey" time="0.001">
+    </testcase>
+    <testcase classname="ShortcutProvider unsubscribe should warn when trying to unsubscribe a not subscribed handler" name="ShortcutProvider unsubscribe should warn when trying to unsubscribe a not subscribed handler" time="0.005">
+    </testcase>
+    <testcase classname="ShortcutProvider handleKeyDown should return when key is not defined" name="ShortcutProvider handleKeyDown should return when key is not defined" time="0.001">
+    </testcase>
+    <testcase classname="ShortcutProvider handleKeyDown should not fire multiple times for a single key" name="ShortcutProvider handleKeyDown should not fire multiple times for a single key" time="0.001">
+    </testcase>
+    <testcase classname="ShortcutProvider handleKeyDown should call latest registered handler for that hotkey" name="ShortcutProvider handleKeyDown should call latest registered handler for that hotkey" time="0.002">
+    </testcase>
+    <testcase classname="ShortcutProvider handleKeyDown should call the latest valid handler registered for that hotkey" name="ShortcutProvider handleKeyDown should call the latest valid handler registered for that hotkey" time="0.002">
+    </testcase>
+    <testcase classname="ShortcutProvider handleKeyDown should call handler with event as argument" name="ShortcutProvider handleKeyDown should call handler with event as argument" time="0.001">
+    </testcase>
+    <testcase classname="ShortcutProvider handleKeyDown should warn when handler is not a function" name="ShortcutProvider handleKeyDown should warn when handler is not a function" time="0.001">
+    </testcase>
+    <testcase classname="ShortcutProvider handleKeyUp should return when key is not defined" name="ShortcutProvider handleKeyUp should return when key is not defined" time="0">
+    </testcase>
+    <testcase classname="ShortcutProvider handleKeyUp should take key out of sequence" name="ShortcutProvider handleKeyUp should take key out of sequence" time="0.001">
+    </testcase>
+    <testcase classname="ShortcutProvider handleBlur should reset key sequence" name="ShortcutProvider handleBlur should reset key sequence" time="0.009">
+    </testcase>
+  </testsuite>
+  <testsuite name="Tables reducer" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:52" time="1.281" tests="7">
+    <testcase classname="Tables reducer should return the initial state" name="Tables reducer should return the initial state" time="0.015">
+    </testcase>
+    <testcase classname="Tables reducer Should handle CREATE_TABLE" name="Tables reducer Should handle CREATE_TABLE" time="0.002">
+    </testcase>
+    <testcase classname="Tables reducer Should handle CREATE_TABLE with no rows" name="Tables reducer Should handle CREATE_TABLE with no rows" time="0.001">
+    </testcase>
+    <testcase classname="Tables reducer Should handle UPDATE_TABLE" name="Tables reducer Should handle UPDATE_TABLE" time="0.005">
+    </testcase>
+    <testcase classname="Tables reducer Should handle DELETE_TABLE" name="Tables reducer Should handle DELETE_TABLE" time="0.001">
+    </testcase>
+    <testcase classname="Tables reducer Should handle SET_ACTIVE_SORT" name="Tables reducer Should handle SET_ACTIVE_SORT" time="0.001">
+    </testcase>
+    <testcase classname="Tables reducer Should update selection UPDATE_TABLE_SELECTION" name="Tables reducer Should update selection UPDATE_TABLE_SELECTION" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="InlineTab - actions general" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:52" time="1.385" tests="7">
+    <testcase classname="InlineTab - actions general should call UPDATE_INLINE_TAB_ITEM_FIELDS action with correct payload" name="InlineTab - actions general should call UPDATE_INLINE_TAB_ITEM_FIELDS action with correct payload" time="0.006">
+    </testcase>
+    <testcase classname="InlineTab - actions general should call UPDATE_INLINE_TAB_WRAPPER_FIELDS action with correct payload" name="InlineTab - actions general should call UPDATE_INLINE_TAB_WRAPPER_FIELDS action with correct payload" time="0.002">
+    </testcase>
+    <testcase classname="InlineTab - actions general should call SET_INLINE_TAB_WRAPPER_DATA action with correct payload" name="InlineTab - actions general should call SET_INLINE_TAB_WRAPPER_DATA action with correct payload" time="0.002">
+    </testcase>
+    <testcase classname="InlineTab - actions general should call SET_INLINE_TAB_SHOW_MORE action with correct payload" name="InlineTab - actions general should call SET_INLINE_TAB_SHOW_MORE action with correct payload" time="0.002">
+    </testcase>
+    <testcase classname="InlineTab - actions general should call SET_INLINE_TAB_LAYOUT_AND_DATA action with correct payload" name="InlineTab - actions general should call SET_INLINE_TAB_LAYOUT_AND_DATA action with correct payload" time="0.002">
+    </testcase>
+    <testcase classname="InlineTab - actions general should call SET_INLINE_TAB_ADD_NEW action with correct payload" name="InlineTab - actions general should call SET_INLINE_TAB_ADD_NEW action with correct payload" time="0.003">
+    </testcase>
+    <testcase classname="InlineTab - actions general should call SET_INLINE_TAB_ITEM_PROP action with correct payload" name="InlineTab - actions general should call SET_INLINE_TAB_ITEM_PROP action with correct payload" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="CustomerNumberInput component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:52" time="1.194" tests="3">
+    <testcase classname="CustomerNumberInput component rendering tests: renders without errors" name="CustomerNumberInput component rendering tests: renders without errors" time="0.006">
+    </testcase>
+    <testcase classname="CustomerNumberInput component rendering tests: renders disabled state" name="CustomerNumberInput component rendering tests: renders disabled state" time="0.002">
+    </testcase>
+    <testcase classname="CustomerNumberInput component functional tests renders without errors with props set" name="CustomerNumberInput component functional tests renders without errors with props set" time="0.004">
+    </testcase>
+  </testsuite>
+  <testsuite name="mergeReferencesToReferences" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:53" time="1.192" tests="4">
+    <testcase classname="mergeReferencesToReferences add to empty array" name="mergeReferencesToReferences add to empty array" time="0.001">
+    </testcase>
+    <testcase classname="mergeReferencesToReferences add a non existing item" name="mergeReferencesToReferences add a non existing item" time="0.003">
+    </testcase>
+    <testcase classname="mergeReferencesToReferences add existing item but with higher priority" name="mergeReferencesToReferences add existing item but with higher priority" time="0.001">
+    </testcase>
+    <testcase classname="mergeReferencesToReferences add existing item but with lower priority" name="mergeReferencesToReferences add existing item but with lower priority" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="DocList" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:44" time="9.42" tests="1">
+    <testcase classname="DocList included views grid renders without errors and loads quick actions" name="DocList included views grid renders without errors and loads quick actions" time="1.552">
+    </testcase>
+  </testsuite>
+  <testsuite name="CommentsPanelForm test" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:53" time="1.361" tests="1">
+    <testcase classname="CommentsPanelForm test renders without errors" name="CommentsPanelForm test renders without errors" time="0.028">
+    </testcase>
+  </testsuite>
+  <testsuite name="Checkbox component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:53" time="1.312" tests="3">
+    <testcase classname="Checkbox component rendering tests: renders without errors" name="Checkbox component rendering tests: renders without errors" time="0.027">
+    </testcase>
+    <testcase classname="Checkbox component rendering tests: renders without errors with props set" name="Checkbox component rendering tests: renders without errors with props set" time="0.008">
+    </testcase>
+    <testcase classname="Checkbox component functional tests renders without errors with props set" name="Checkbox component functional tests renders without errors with props set" time="0.108">
+    </testcase>
+  </testsuite>
+  <testsuite name="Calendar" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:53" time="1.204" tests="1">
+    <testcase classname="Calendar renders without errors" name="Calendar renders without errors" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="Composed project reducer" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:53" time="1.328" tests="1">
+    <testcase classname="Composed project reducer should return the initial state" name="Composed project reducer should return the initial state" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="Actions reducer" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:53" time="1.171" tests="7">
+    <testcase classname="Actions reducer should return the initial state" name="Actions reducer should return the initial state" time="0.002">
+    </testcase>
+    <testcase classname="Actions reducer Should handle FETCH_QUICK_ACTIONS" name="Actions reducer Should handle FETCH_QUICK_ACTIONS" time="0.002">
+    </testcase>
+    <testcase classname="Actions reducer Should handle FETCH_QUICK_ACTIONS_SUCCESS" name="Actions reducer Should handle FETCH_QUICK_ACTIONS_SUCCESS" time="0.001">
+    </testcase>
+    <testcase classname="Actions reducer Should handle FETCH_QUICK_ACTIONS_SUCCESS and delete actions marked with `toDelete`" name="Actions reducer Should handle FETCH_QUICK_ACTIONS_SUCCESS and delete actions marked with `toDelete`" time="0.001">
+    </testcase>
+    <testcase classname="Actions reducer Should handle FETCH_QUICK_ACTIONS_SUCCESS" name="Actions reducer Should handle FETCH_QUICK_ACTIONS_SUCCESS" time="0.001">
+    </testcase>
+    <testcase classname="Actions reducer Should handle DELETE_QUICK_ACTIONS" name="Actions reducer Should handle DELETE_QUICK_ACTIONS" time="0.007">
+    </testcase>
+    <testcase classname="Actions reducer Should handle DELETE_QUICK_ACTIONS and mark pending QA as `toDelete`" name="Actions reducer Should handle DELETE_QUICK_ACTIONS and mark pending QA as `toDelete`" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="DocumentList helpers" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:53" time="1.241" tests="2">
+    <testcase classname="DocumentList helpers Row helpers - mergeRows" name="DocumentList helpers Row helpers - mergeRows" time="0">
+    </testcase>
+    <testcase classname="DocumentList helpers Row helpers removes rows correctly" name="DocumentList helpers Row helpers removes rows correctly" time="0.001">
+    </testcase>
+    <testcase classname="DocumentList helpers Date manipulation function formatDateWithZeros should format corectly the date when only one char is inputed for month or day" name="DocumentList helpers Date manipulation function formatDateWithZeros should format corectly the date when only one char is inputed for month or day" time="0.003">
+    </testcase>
+  </testsuite>
+  <testsuite name="mergePartialGroupToGroupsArray" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:53" time="1.12" tests="4">
+    <testcase classname="mergePartialGroupToGroupsArray add to empty array" name="mergePartialGroupToGroupsArray add to empty array" time="0.002">
+    </testcase>
+    <testcase classname="mergePartialGroupToGroupsArray add new group" name="mergePartialGroupToGroupsArray add new group" time="0.002">
+    </testcase>
+    <testcase classname="mergePartialGroupToGroupsArray add miscGroup" name="mergePartialGroupToGroupsArray add miscGroup" time="0.004">
+    </testcase>
+    <testcase classname="mergePartialGroupToGroupsArray add to existing group" name="mergePartialGroupToGroupsArray add to existing group" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="ComponentsPanelListingItem test" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:53" time="1.103" tests="1">
+    <testcase classname="ComponentsPanelListingItem test renders without errors" name="ComponentsPanelListingItem test renders without errors" time="0.04">
+    </testcase>
+  </testsuite>
+  <testsuite name="CommentsPanelListing test" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:53" time="1.173" tests="1">
+    <testcase classname="CommentsPanelListing test renders without errors" name="CommentsPanelListing test renders without errors" time="0.01">
+    </testcase>
+  </testsuite>
+  <testsuite name="Amount component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:53" time="1.324" tests="1">
+    <testcase classname="Amount component renders without errors" name="Amount component renders without errors" time="0.026">
+    </testcase>
+    <testcase classname="Amount component renders devices widget" name="Amount component renders devices widget" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="General helpers" errors="0" failures="0" skipped="4" timestamp="2021-03-19T06:55:54" time="0.923" tests="6">
+    <testcase classname="General helpers getTab get tab from a flat array" name="General helpers getTab get tab from a flat array" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="General helpers getTab find tab in a nested array" name="General helpers getTab find tab in a nested array" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="General helpers getTab return null, when tab can&apos;t be found" name="General helpers getTab return null, when tab can&apos;t be found" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="General helpers getTab return null, when nested tab can&apos;t be found" name="General helpers getTab return null, when nested tab can&apos;t be found" time="0">
+      <skipped/>
+    </testcase>
+    <testcase classname="General helpers updateTab updates tab in a flat array" name="General helpers updateTab updates tab in a flat array" time="0.001">
+    </testcase>
+    <testcase classname="General helpers updateTab updates tab in a nested array" name="General helpers updateTab updates tab in a nested array" time="0.001">
+    </testcase>
+  </testsuite>
+  <testsuite name="PrintingOptions test" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:54" time="1.007" tests="1">
+    <testcase classname="PrintingOptions test renders without errors" name="PrintingOptions test renders without errors" time="0.007">
+    </testcase>
+  </testsuite>
+  <testsuite name="CharacterLimitInfo component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:54" time="0.985" tests="4">
+    <testcase classname="CharacterLimitInfo component rendering tests: renders without errors" name="CharacterLimitInfo component rendering tests: renders without errors" time="0.011">
+    </testcase>
+    <testcase classname="CharacterLimitInfo component rendering tests: renders muted text when chars typed are near the max allowed limit" name="CharacterLimitInfo component rendering tests: renders muted text when chars typed are near the max allowed limit" time="0.001">
+    </testcase>
+    <testcase classname="CharacterLimitInfo component rendering tests: renders the red text when when chars typed are exceeding the max allowed limit" name="CharacterLimitInfo component rendering tests: renders the red text when when chars typed are exceeding the max allowed limit" time="0.007">
+    </testcase>
+    <testcase classname="CharacterLimitInfo component rendering tests: does not render any muted text or error text if input chars is not near the max limit" name="CharacterLimitInfo component rendering tests: does not render any muted text or error text if input chars is not near the max limit" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="extractUniqueKey" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:54" time="0.961" tests="3">
+    <testcase classname="extractUniqueKey int targetWindowId without category" name="extractUniqueKey int targetWindowId without category" time="0.001">
+    </testcase>
+    <testcase classname="extractUniqueKey string targetWindowId without category" name="extractUniqueKey string targetWindowId without category" time="0">
+    </testcase>
+    <testcase classname="extractUniqueKey string targetWindowId with category" name="extractUniqueKey string targetWindowId with category" time="0.006">
+    </testcase>
+  </testsuite>
+  <testsuite name="Password component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:54" time="0.884" tests="1">
+    <testcase classname="Password component renders without errors" name="Password component renders without errors" time="0.005">
+    </testcase>
+    <testcase classname="Password component renders password as text" name="Password component renders password as text" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="generateHotkeys" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:54" time="0.883" tests="4">
+    <testcase classname="generateHotkeys should return an object" name="generateHotkeys should return an object" time="0.001">
+    </testcase>
+    <testcase classname="generateHotkeys should transform a key map to a map of hotkeys" name="generateHotkeys should transform a key map to a map of hotkeys" time="0.001">
+    </testcase>
+    <testcase classname="generateHotkeys should warn about duplicate keys" name="generateHotkeys should warn about duplicate keys" time="0.003">
+    </testcase>
+    <testcase classname="generateHotkeys should warn about blacklisted hotkeys" name="generateHotkeys should warn about blacklisted hotkeys" time="0.002">
+    </testcase>
+  </testsuite>
+  <testsuite name="Switch component" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:54" time="0.854" tests="1">
+    <testcase classname="Switch component renders without errors" name="Switch component renders without errors" time="0.008">
+    </testcase>
+  </testsuite>
+  <testsuite name="undefined" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:54" time="0.88" tests="1">
+    <testcase classname=" BlankPage renders correctly" name=" BlankPage renders correctly" time="0.012">
+    </testcase>
+  </testsuite>
+  <testsuite name="Shortcut" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:54" time="0.71" tests="4">
+    <testcase classname="Shortcut should return null from render()" name="Shortcut should return null from render()" time="0.001">
+    </testcase>
+    <testcase classname="Shortcut should subscribe when mounting" name="Shortcut should subscribe when mounting" time="0">
+    </testcase>
+    <testcase classname="Shortcut should unsubscribe when unmounting" name="Shortcut should unsubscribe when unmounting" time="0">
+    </testcase>
+    <testcase classname="Shortcut should unsubscribe the same attributes which were subscribed" name="Shortcut should unsubscribe the same attributes which were subscribed" time="0">
+    </testcase>
+  </testsuite>
+  <testsuite name="TableHeader" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:53" time="3.322" tests="3">
+    <testcase classname="TableHeader renders without errors with the given props" name="TableHeader renders without errors with the given props" time="0.009">
+    </testcase>
+    <testcase classname="TableHeader should have indent present" name="TableHeader should have indent present" time="0.001">
+    </testcase>
+    <testcase classname="TableHeader should call `onTableSort` when cell is clicked" name="TableHeader should call `onTableSort` when cell is clicked" time="0.05">
+    </testcase>
+  </testsuite>
+  <testsuite name="TableFilter" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:52" time="4.51" tests="1">
+    <testcase classname="TableFilter renders without errors with the given props" name="TableFilter renders without errors with the given props" time="0.037">
+    </testcase>
+  </testsuite>
+  <testsuite name="MasterWindowContainer" errors="0" failures="0" skipped="0" timestamp="2021-03-19T06:55:44" time="15.969" tests="3">
+    <testcase classname="MasterWindowContainer websocket tests reacts to websocket events and updates the UI correctly" name="MasterWindowContainer websocket tests reacts to websocket events and updates the UI correctly" time="2.349">
+    </testcase>
+    <testcase classname="MasterWindowContainer websocket tests removes old and includes new rows on ws event" name="MasterWindowContainer websocket tests removes old and includes new rows on ws event" time="5.503">
+    </testcase>
+    <testcase classname="MasterWindowContainer &apos;integration&apos; tests: renders without errors" name="MasterWindowContainer &apos;integration&apos; tests: renders without errors" time="0.204">
     </testcase>
   </testsuite>
 </testsuites>
