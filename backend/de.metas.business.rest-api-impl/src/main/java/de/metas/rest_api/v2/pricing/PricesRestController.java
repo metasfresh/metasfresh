@@ -40,10 +40,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RequestMapping(value = {
-		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/prices",
-		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/prices",
-		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/prices" })
+import static de.metas.common.pricing.v2.constants.SwaggerDocConstants.PRICE_LIST_VERSION_IDENTIFIER;
+
+@RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/prices" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class PricesRestController
@@ -81,7 +80,7 @@ public class PricesRestController
 	})
 	@PutMapping("/priceListVersions/{priceListVersionIdentifier}/productPrices")
 	public ResponseEntity<JsonResponseUpsert> putProductPriceByPriceListVersionIdentifier(
-			@ApiParam(required = true, value = "String")
+			@ApiParam(required = true, value = PRICE_LIST_VERSION_IDENTIFIER)
 			@PathVariable("priceListVersionIdentifier") //
 			@NonNull final String priceListVersionIdentifier,
 

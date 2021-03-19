@@ -31,11 +31,13 @@ import lombok.ToString;
 
 import java.time.Instant;
 
+import static de.metas.common.pricing.v2.constants.SwaggerDocConstants.PRICE_LIST_IDENTIFIER;
+
 @ToString
 @EqualsAndHashCode
 public class JsonRequestPriceListVersion
 {
-	@ApiModelProperty(required = true)
+	@ApiModelProperty(required = true, value = PRICE_LIST_IDENTIFIER)
 	private String priceListIdentifier;
 
 	@ApiModelProperty(required = true)

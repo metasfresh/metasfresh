@@ -31,6 +31,8 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 
+import static de.metas.common.pricing.v2.constants.SwaggerDocConstants.PRODUCT_IDENTIFIER;
+
 @Getter
 @ToString
 @EqualsAndHashCode
@@ -39,7 +41,7 @@ public class JsonRequestProductPrice
 	@ApiModelProperty(required = true)
 	private String orgCode;
 
-	@ApiModelProperty(required = true)
+	@ApiModelProperty(required = true, value = PRODUCT_IDENTIFIER)
 	private String productIdentifier;
 
 	@ApiModelProperty(required = true)

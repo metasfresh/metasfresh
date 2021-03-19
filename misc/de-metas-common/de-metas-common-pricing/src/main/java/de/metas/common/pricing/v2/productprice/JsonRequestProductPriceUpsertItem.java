@@ -24,6 +24,7 @@ package de.metas.common.pricing.v2.productprice;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.pricing.v2.constants.SwaggerDocConstants;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -34,7 +35,10 @@ import lombok.Value;
 @ApiModel
 public class JsonRequestProductPriceUpsertItem
 {
-	@ApiModelProperty(position = 10, dataType = "java.lang.String")
+	@ApiModelProperty(
+			position = 10,
+			dataType = "java.lang.String",
+			value = SwaggerDocConstants.PRODUCT_PRICE_IDENTIFIER)
 	@JsonProperty("productPriceIdentifier")
 	@NonNull
 	String productPriceIdentifier;
