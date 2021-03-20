@@ -47,6 +47,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.bpartner.repository.OrgChangeRepository;
+import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
 import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.bpartner.service.OrgChangeService;
 import de.metas.organization.OrgId;
@@ -59,6 +60,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
@@ -127,7 +129,10 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 
 			final LocalDate orgChangeDate = CoalesceUtil.coalesce(p_startDate, SystemTime.asLocalDate());
 
-			if (service.hasMembershipSubscriptions(partnerId, orgChangeDate) && service.hasAnyMembershipProduct(p_orgTargetId))
+			final OrgChangeBPartnerComposite orgChangePartnerComposite = orgChangeRepo.getByIdAndOrgChangeDate(partnerId, orgChangeDate);
+
+			if ((orgChangePartnerComposite.hasMembershipSubscriptions())
+					&& service.hasAnyMembershipProduct(p_orgTargetId))
 			{
 				isShowMembershipParameter = true;
 			}

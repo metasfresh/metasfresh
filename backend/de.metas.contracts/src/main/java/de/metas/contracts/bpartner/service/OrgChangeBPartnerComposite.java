@@ -25,12 +25,16 @@ package de.metas.contracts.bpartner.service;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.contracts.FlatrateTerm;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,21 +48,31 @@ public class OrgChangeBPartnerComposite
 
 	private OrgMappingId bPartnerOrgMappingId;
 
-	private List<FlatrateTermId> membershipSubscriptions; // TODO create object
+	private List<FlatrateTerm> membershipSubscriptions; // TODO create object
 
-	private List<FlatrateTermId> nonMembershipSubscriptions;
+	private List<FlatrateTerm> nonMembershipSubscriptions;
+
+	private ProductId membershipProductId;
 
 	@Builder(toBuilder = true)
 	private OrgChangeBPartnerComposite(
 			@NonNull final BPartnerComposite bPartnerComposite,
 			@NonNull final OrgMappingId bPartnerOrgMappingId,
-			@Singular final List<FlatrateTermId> membershipSubscriptions,
-			@Singular final List<FlatrateTermId> nonMembershipSubscriptions)
+			@Nullable final ProductId membershipProductId,
+			@Singular final List<FlatrateTerm> membershipSubscriptions,
+			@Singular final List<FlatrateTerm> nonMembershipSubscriptions)
 	{
 		this.bPartnerComposite = bPartnerComposite;
 		this.bPartnerOrgMappingId = bPartnerOrgMappingId;
 
-		this.membershipSubscriptions = new ArrayList<>(coalesce(membershipSubscriptions, ImmutableList.of()));
-		this.nonMembershipSubscriptions = new ArrayList<>(coalesce(nonMembershipSubscriptions, ImmutableList.of()));
+		this.membershipProductId = membershipProductId;
+		this.membershipSubscriptions = membershipSubscriptions;
+		this.nonMembershipSubscriptions = nonMembershipSubscriptions;
 	}
+
+	public boolean hasMembershipSubscriptions()
+	{
+		return !Check.isEmpty(membershipSubscriptions);
+	}
+
 }

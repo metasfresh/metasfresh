@@ -32,19 +32,25 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.contracts.FlatrateTerm;
+import de.metas.contracts.IContractChangeBL;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.bpartner.repository.OrgChangeRepository;
 import de.metas.contracts.bpartner.repository.OrgMappingRepository;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class OrgChangeService
@@ -56,6 +62,10 @@ public class OrgChangeService
 	final OrgChangeRepository orgChangeRepo;
 	final BPartnerCompositeRepository bpCompositeRepo;
 	final OrgMappingRepository orgMappingRepo;
+
+	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
+
+	final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	public OrgChangeService(@NonNull final OrgChangeRepository orgChangeRepo,
 			@NonNull final BPartnerCompositeRepository bpCompositeRepo,
@@ -82,6 +92,9 @@ public class OrgChangeService
 		final List<BPartnerContact> newContacts = getOrCreateContacts(orgChangeBPartnerComposite, destinationBPartnerComposite);
 		final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(orgChangeBPartnerComposite, destinationBPartnerComposite);
 
+		createMembershipFlatrateTerms(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
+		createNonMembershipFlatrateTerms(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
+
 		destinationBPartnerComposite = destinationBPartnerComposite.toBuilder()
 				.locations(newLocations)
 				.contacts(newContacts)
@@ -91,7 +104,51 @@ public class OrgChangeService
 		bpCompositeRepo.save(destinationBPartnerComposite);
 
 		orgChangeRepo.saveOrgChangeBPartnerComposite(orgChangeBPartnerComposite);
+
+		cancelSubscriptionsFor(orgChangeBPartnerComposite, orgChangeRequest);
+
 		orgChangeRepo.createOrgChangeHistory(orgChangeRequest, orgMappingId, destinationBPartnerComposite);
+	}
+
+	private void cancelSubscriptionsFor(final OrgChangeBPartnerComposite orgChangeBPartnerComposite, final OrgChangeRequest orgChangeRequest)
+	{
+		final IContractChangeBL.ContractChangeParameters contractChangeParameters = IContractChangeBL.ContractChangeParameters.builder()
+				.changeDate(Objects.requireNonNull(TimeUtil.asTimestamp(orgChangeRequest.getStartDate())))
+				.isCloseInvoiceCandidate(true)
+				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_SubscriptionSwitch) // TODO: add a new one for org change?
+				.isCreditOpenInvoices(false)
+				.action(IContractChangeBL.ChangeTerm_ACTION_SwitchContract) // TODO Is this ok?
+				.build();
+
+		orgChangeBPartnerComposite.getMembershipSubscriptions()
+				.stream()
+				.map(FlatrateTerm::getFlatrateTermId)
+				.map(flatrateDAO::getById)
+				.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
+
+		orgChangeBPartnerComposite.getNonMembershipSubscriptions()
+				.stream()
+				.map(FlatrateTerm::getFlatrateTermId)
+				.map(flatrateDAO::getById)
+				.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
+
+	}
+
+	private void createNonMembershipFlatrateTerms(
+			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+			@NonNull final BPartnerComposite destinationBPartnerComposite,
+			@NonNull final OrgChangeRequest orgChangeRequest)
+	{
+		orgChangeRepo.createNonMembershipSubscriptionTerm(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
+
+	}
+
+	private void createMembershipFlatrateTerms(
+			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+			@NonNull final BPartnerComposite destinationBPartnerComposite,
+			@NonNull final OrgChangeRequest orgChangeRequest)
+	{
+		orgChangeRepo.createMembershipSubscriptionTerm(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
 	}
 
 	private List<BPartnerLocation> getOrCreateLocations(
@@ -378,8 +435,9 @@ public class OrgChangeService
 			final OrgMappingId bankAccountOrgMappingId = orgMappingRepo.getCreateOrgMappingId(sourceBankAccount);
 
 			sourceBankAccount.setOrgMappingId(bankAccountOrgMappingId);
+
 			final BPartnerBankAccount matchingBankAccount = existingBankAccountsInDestinationPartner.stream()
-					.filter(bankAccount -> bankAccount.getOrgMappingId() == bankAccountOrgMappingId)
+					.filter(bankAccount -> OrgMappingId.equals(bankAccountOrgMappingId, bankAccount.getOrgMappingId()))
 					.findFirst()
 					.orElse(null);
 
@@ -404,14 +462,25 @@ public class OrgChangeService
 		return newBankAccounts;
 	}
 
-	public boolean hasMembershipSubscriptions(final @NonNull BPartnerId partnerId, final @NonNull LocalDate maxSubscriptionDate)
-	{
-		return orgChangeRepo.hasMembershipSubscriptions(partnerId, maxSubscriptionDate);
-	}
-
 	public boolean hasAnyMembershipProduct(final OrgId orgId)
 	{
 		return orgChangeRepo.hasAnyMembershipProduct(orgId);
 	}
+
+	// public void closeContracts() TODO
+	// {
+	//
+	// 	final IContractChangeBL.ContractChangeParameters contractChangeParameters = IContractChangeBL.ContractChangeParameters.builder()
+	// 			.changeDate(changeDate)
+	// 			.isCloseInvoiceCandidate(true)
+	// 			.terminationMemo(terminationMemo)
+	// 			.terminationReason(terminationReason)
+	// 			.isCreditOpenInvoices(isCreditOpenInvoices)
+	// 			.action(action)
+	// 			.build();
+	//
+	// 	final Iterable<I_C_Flatrate_Term> flatrateTerms = retrieveSelection(getPinstanceId());
+	// 	flatrateTerms.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
+	// }
 
 }
