@@ -45,6 +45,7 @@ import de.metas.rest_api.v2.product.ProductsServicesFacade;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.vertical.healthcare.alberta.service.AlbertaCompositeProductInfo;
+import de.metas.vertical.healthcare.alberta.service.AlbertaPackagingUnit;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
 import de.metas.vertical.healthcare.alberta.service.GetAlbertaProductsInfoRequest;
 import lombok.Builder;
@@ -259,14 +260,11 @@ public class GetProductsCommand
 				? null
 				: albertaCompositeProductInfo.getAlbertaPackagingUnitList()
 				.stream()
-				.map(albertaPackagingUnit ->
-							 JsonAlbertaPackagingUnit.builder()
-									 .quantity(albertaPackagingUnit.getQuantity())
-									 .unit(albertaPackagingUnit.getUnit())
-									 .build())
+				.map(this::mapToJsonAlbertaPackagingUnit)
 				.collect(ImmutableList.toImmutableList());
 
 		return JsonAlbertaProductInfo.builder()
+				.albertaProductId(albertaCompositeProductInfo.getAlbertaArticleId())
 				.additionalDescription(albertaCompositeProductInfo.getAdditionalDescription())
 				.assortmentType(albertaCompositeProductInfo.getAssortmentType())
 				.inventoryType(albertaCompositeProductInfo.getInventoryType())
@@ -329,5 +327,14 @@ public class GetProductsCommand
 				.map(ExternalSystemAlbertaConfig::cast)
 				.map(ExternalSystemAlbertaConfig::getPharmacyPriceListId)
 				.orElse(null);
+	}
+
+	@NonNull
+	private JsonAlbertaPackagingUnit mapToJsonAlbertaPackagingUnit(@NonNull final AlbertaPackagingUnit albertaPackagingUnit)
+	{
+		return JsonAlbertaPackagingUnit.builder()
+				.quantity(albertaPackagingUnit.getQuantity())
+				.unit(albertaPackagingUnit.getUnit())
+				.build();
 	}
 }

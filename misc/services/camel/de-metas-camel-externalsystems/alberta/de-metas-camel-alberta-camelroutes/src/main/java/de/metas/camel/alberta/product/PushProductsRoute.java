@@ -25,15 +25,20 @@ package de.metas.camel.alberta.product;
 import de.metas.camel.alberta.ProcessorHelper;
 import de.metas.camel.alberta.product.processor.PushProductsProcessor;
 import de.metas.camel.alberta.product.processor.RetrieveProductsProcessor;
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
+import de.metas.common.product.v2.response.JsonProduct;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.time.Instant;
+import java.util.List;
 
 import static de.metas.camel.alberta.CamelRouteUtil.setupJacksonDataFormatFor;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
@@ -65,9 +70,14 @@ public class PushProductsRoute extends RouteBuilder
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonGetProductsResponse.class))
 
 				.process(this::processProductsResponseFromMF)
-				.split(body())
-					.to(StaticEndpointBuilders.direct(PROCESS_PRODUCT_ROUTE_ID))
-				.end()
+				.choice()
+					.when(body().isNull())
+						.log(LoggingLevel.INFO, "Nothing to do! No products pulled from MF!")
+					.otherwise()
+						.split(body())
+							.to(StaticEndpointBuilders.direct(PROCESS_PRODUCT_ROUTE_ID))
+						.end()
+				.endChoice()
 
 				.process((exchange) -> ProcessorHelper.logProcessMessage(exchange, PUSH_PRODUCTS + " route finalized work!" + Instant.now(),
 																		 exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class)));
@@ -75,18 +85,25 @@ public class PushProductsRoute extends RouteBuilder
 		from(StaticEndpointBuilders.direct(PROCESS_PRODUCT_ROUTE_ID))
 				.routeId(PROCESS_PRODUCT_ROUTE_ID)
 				.log("Route invoked")
-				.process(new PushProductsProcessor());
+				.process(new PushProductsProcessor())
+				.choice()
+					//.when(header(HEADER_ARTICLE_TO_REPORT_PRESENT_FLAG).isEqualTo(false))
+					.when(bodyAs(JsonRequestExternalReferenceUpsert.class).isNull())
+						.log(LoggingLevel.INFO, "Nothing to do! No JsonRequestExternalReferenceUpsert found!")
+					.otherwise()
+						.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI + "}}")
+				.endChoice();
+		//@formatter:on
 	}
 
 	private void processProductsResponseFromMF(@NonNull final Exchange exchange)
 	{
 		final JsonGetProductsResponse response = exchange.getIn().getBody(JsonGetProductsResponse.class);
 
-		if (response == null || CollectionUtils.isEmpty(response.getProducts()))
-		{
-			throw new RuntimeException("Empty response from metasfresh!");
-		}
+		final List<JsonProduct> products = (response != null && !CollectionUtils.isEmpty(response.getProducts()))
+				? response.getProducts()
+				: null;
 
-		exchange.getIn().setBody(response.getProducts());
+		exchange.getIn().setBody(products);
 	}
 }

@@ -66,6 +66,9 @@ public class AlbertaCompositeProductProducer
 	Map<ProductId, I_M_ProductPrice> productId2ProductPrice;
 
 	@NonNull
+	Function<ProductId, Optional<String>> getAlbertaArticleIdSupplier;
+
+	@NonNull
 	public ImmutableMap<ProductId, AlbertaCompositeProductInfo> getAlbertaInfoByProductId()
 	{
 		return getProductIdSet()
@@ -80,7 +83,9 @@ public class AlbertaCompositeProductProducer
 	private AlbertaCompositeProductInfo getProductCompositeInfoFor(@NonNull final ProductId productId)
 	{
 		final AlbertaCompositeProductInfo.AlbertaCompositeProductInfoBuilder compositeProductBuilder = AlbertaCompositeProductInfo.builder();
-		compositeProductBuilder.productId(productId);
+		compositeProductBuilder
+				.productId(productId)
+				.albertaArticleId(getAlbertaArticleIdSupplier.apply(productId).orElse(null));
 
 		final Optional<List<I_M_Product_AlbertaPackagingUnit>> packagingUnitRecords = Optional.ofNullable(product2PackagingUnits.get(productId));
 		packagingUnitRecords.map(records -> records.stream()
@@ -160,7 +165,6 @@ public class AlbertaCompositeProductProducer
 				.map(I_M_Product_AlbertaArticle::getUpdated)
 				.map(Timestamp::toInstant)
 				.ifPresent(updateTimestamps::add);
-
 
 		Optional.ofNullable(productPrice)
 				.map(I_M_ProductPrice::getUpdated)

@@ -23,15 +23,23 @@
 package de.metas.camel.alberta.product.processor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.alberta.product.PurchaseRatingEnum;
+import de.metas.common.externalreference.JsonExternalReferenceItem;
+import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
+import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.alberta.JsonAlbertaPackagingUnit;
 import de.metas.common.product.v2.response.alberta.JsonAlbertaProductInfo;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import io.swagger.client.model.Article;
+import io.swagger.client.model.ArticleMapping;
 import io.swagger.client.model.PackagingUnit;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -39,6 +47,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static de.metas.camel.alberta.ProcessorHelper.getPropertyOrThrowError;
+import static de.metas.camel.alberta.product.PushProductsRouteConstants.ALBERTA_EXTERNAL_REFERENCE_SYSTEM;
+import static de.metas.camel.alberta.product.PushProductsRouteConstants.HEADER_ARTICLE_TO_REPORT_PRESENT_FLAG;
+import static de.metas.camel.alberta.product.PushProductsRouteConstants.PRODUCT_EXTERNAL_REFERENCE_TYPE;
 import static de.metas.camel.alberta.product.PushProductsRouteConstants.ROUTE_PROPERTY_ALBERTA_PRODUCT_API;
 
 public class PushProductsProcessor implements Processor
@@ -50,8 +61,27 @@ public class PushProductsProcessor implements Processor
 
 		final JsonProduct jsonProduct = exchange.getIn().getBody(JsonProduct.class);
 
+		if (jsonProduct == null)
+		{
+			throw new RuntimeException("No JsonProduct found in the exchange body!");
+		}
+
+		final boolean isUpdate = jsonProduct.getAlbertaProductInfo() != null
+				&& !StringUtils.isEmpty(jsonProduct.getAlbertaProductInfo().getAlbertaProductId());
+
 		jsonProductToArticle(jsonProduct)
-				.ifPresent(albertaProductApi::upsertProduct);
+				.map(article -> isUpdate
+						? albertaProductApi.updateProductFallbackAdd(article)
+						: albertaProductApi.addProductFallbackUpdate(article))
+				.map(articleMapping -> buildUpsertExternalRefRequest(articleMapping, jsonProduct.getId()))
+				.ifPresentOrElse(externalRef -> {
+									 exchange.getIn().setHeader(HEADER_ARTICLE_TO_REPORT_PRESENT_FLAG, true);
+									 exchange.getIn().setBody(externalRef);
+								 },
+								 () -> {
+									 exchange.getIn().setHeader(HEADER_ARTICLE_TO_REPORT_PRESENT_FLAG, false);
+									 exchange.getIn().setBody(null);
+								 });
 	}
 
 	private Optional<Article> jsonProductToArticle(@NonNull final JsonProduct product)
@@ -76,6 +106,7 @@ public class PushProductsProcessor implements Processor
 
 		article.additionalDescription(albertaProductInfo.getAdditionalDescription())
 				.size(albertaProductInfo.getSize())
+				.purchaseRating(PurchaseRatingEnum.getValueByCodeOrNull(albertaProductInfo.getPurchaseRating()))
 				.inventoryType(albertaProductInfo.getInventoryType() != null ? new BigDecimal(albertaProductInfo.getInventoryType()): null)
 				.status(albertaProductInfo.getStatus() != null ? new BigDecimal(albertaProductInfo.getStatus()) : null)
 				.medicalAidPositionNumber(albertaProductInfo.getMedicalAidPositionNumber())
@@ -83,7 +114,6 @@ public class PushProductsProcessor implements Processor
 				.assortmentType(albertaProductInfo.getAssortmentType() != null ? new BigDecimal(albertaProductInfo.getAssortmentType()) : null)
 				.pharmacyPrice(albertaProductInfo.getPharmacyPrice() != null ? String.valueOf(albertaProductInfo.getPharmacyPrice()) : null)
 				.fixedPrice(albertaProductInfo.getFixedPrice() != null ? String.valueOf(albertaProductInfo.getFixedPrice()) : null)
-				.purchaseRating(albertaProductInfo.getPurchaseRating() != null ? new BigDecimal(albertaProductInfo.getPurchaseRating()) : null)
 				.therapyIds(albertaProductInfo.getTherapyIds())
 				.billableTherapies(albertaProductInfo.getBillableTherapies())
 				.packagingUnits(toPackageUnitList(albertaProductInfo.getPackagingUnits()));
@@ -108,5 +138,22 @@ public class PushProductsProcessor implements Processor
 							.unit(mfPackageUnit.getUnit());
 				})
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private JsonRequestExternalReferenceUpsert buildUpsertExternalRefRequest(
+			@NonNull final ArticleMapping articleMapping,
+			@NonNull final JsonMetasfreshId productId)
+	{
+		return JsonRequestExternalReferenceUpsert.builder()
+				.systemName(JsonExternalSystemName.of(ALBERTA_EXTERNAL_REFERENCE_SYSTEM))
+				.externalReferenceItem(JsonExternalReferenceItem.builder()
+											   .metasfreshId(productId)
+											   .lookupItem(JsonExternalReferenceLookupItem.builder()
+																   .type(PRODUCT_EXTERNAL_REFERENCE_TYPE)
+																   .id(articleMapping.getId().toString())
+																   .build())
+											   .build())
+				.build();
 	}
 }

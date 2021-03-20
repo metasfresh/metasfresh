@@ -25,5 +25,13 @@ package de.metas.camel.alberta.product;
 public interface PushProductsRouteConstants
 {
 	String ROUTE_PROPERTY_ALBERTA_PRODUCT_API = "AlbertaProductApi";
+	String HEADER_ARTICLE_TO_REPORT_PRESENT_FLAG = "ArticleToReportPresentFlag";
+
+	// FIXME: might be a good idea to expose somehow all those ExternalSystem enums in a common module
+	//keep in sync with de.metas.externalsystem.ExternalSystemType.Alberta
 	String ALBERTA_EXTERNAL_SYSTEM_CONFIG_TYPE = "Alberta";
+	// keep in sync with de.metas.externalreference.AlbertaExternalSystem.ALBERTA
+	String ALBERTA_EXTERNAL_REFERENCE_SYSTEM = "ALBERTA";
+	//keep in sync with de.metas.externalreference.product.ProductExternalReferenceType.PRODUCT
+	String PRODUCT_EXTERNAL_REFERENCE_TYPE = "Product";
 }

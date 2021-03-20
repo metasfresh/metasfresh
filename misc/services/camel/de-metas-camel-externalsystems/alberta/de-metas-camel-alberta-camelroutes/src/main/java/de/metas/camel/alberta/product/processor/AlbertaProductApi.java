@@ -27,6 +27,7 @@ import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.DefaultApi;
 import io.swagger.client.model.Article;
+import io.swagger.client.model.ArticleMapping;
 import lombok.NonNull;
 import lombok.Value;
 import org.springframework.http.HttpStatus;
@@ -49,17 +50,18 @@ public class AlbertaProductApi
 		return new AlbertaProductApi(defaultApi, connectionDetails);
 	}
 
-	public void upsertProduct(@NonNull final Article article)
+	@NonNull
+	public ArticleMapping updateProductFallbackAdd(@NonNull final Article article)
 	{
 		try
 		{
-			defaultApi.addArticle(connectionDetails.getApiKey(), connectionDetails.getTenant(), article);
+			return defaultApi.updateArticle(connectionDetails.getApiKey(), connectionDetails.getTenant(), article.getCustomerNumber(), article);
 		}
 		catch (final ApiException exception)
 		{
-			if (exception.getCode() == HttpStatus.METHOD_NOT_ALLOWED.value())
+			if (exception.getCode() == HttpStatus.BAD_REQUEST.value())
 			{
-				updateProduct(article);
+				return addArticle(article);
 			}
 			else
 			{
@@ -68,11 +70,43 @@ public class AlbertaProductApi
 		}
 	}
 
-	private void updateProduct(@NonNull final Article article)
+	@NonNull
+	public ArticleMapping addProductFallbackUpdate(@NonNull final Article article)
 	{
 		try
 		{
-			defaultApi.updateArticle(connectionDetails.getApiKey(), connectionDetails.getTenant(), article.getCustomerNumber(), article);
+			return defaultApi.addArticle(connectionDetails.getApiKey(), connectionDetails.getTenant(), article);
+		}
+		catch (final ApiException exception)
+		{
+			if (exception.getCode() == HttpStatus.METHOD_NOT_ALLOWED.value())
+			{
+				return updateArticle(article);
+			}
+			else
+			{
+				throw new RuntimeException(exception);
+			}
+		}
+	}
+
+	private ArticleMapping updateArticle(@NonNull final Article article)
+	{
+		try
+		{
+			return defaultApi.updateArticle(connectionDetails.getApiKey(), connectionDetails.getTenant(), article.getCustomerNumber(), article);
+		}
+		catch (final ApiException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
+	private ArticleMapping addArticle(@NonNull final Article article)
+	{
+		try
+		{
+			return defaultApi.addArticle(connectionDetails.getApiKey(), connectionDetails.getTenant(), article);
 		}
 		catch (final ApiException e)
 		{
