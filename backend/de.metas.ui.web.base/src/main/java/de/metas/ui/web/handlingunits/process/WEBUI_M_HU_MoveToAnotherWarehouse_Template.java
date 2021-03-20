@@ -87,8 +87,8 @@ abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Template extends HUEditorProces
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	@ProcessParamLookupValuesProvider(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, numericKey = true, lookupSource = LookupSource.lookup)
-	public LookupValuesList getAvailableWarehouses(final LookupDataSourceContext evalCtx)
+	@OverridingMethodsMustInvokeSuper
+	protected LookupValuesList getAvailableWarehouses(final LookupDataSourceContext evalCtx)
 	{
 		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = handlingUnitsDAO.retrieveWarehousesWhichContainNoneOf(streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList()));
 
