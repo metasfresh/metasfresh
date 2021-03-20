@@ -50,7 +50,8 @@ public class ExternalReferenceRepository
 	private final ExternalReferenceTypes externalReferenceTypes;
 	private final ExternalSystems externalSystems;
 
-	public ExternalReferenceRepository(@NonNull final IQueryBL queryBL,
+	public ExternalReferenceRepository(
+			@NonNull final IQueryBL queryBL,
 			@NonNull final ExternalSystems externalSystems,
 			@NonNull final ExternalReferenceTypes externalReferenceTypes)
 	{

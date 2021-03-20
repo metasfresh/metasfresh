@@ -31,7 +31,9 @@ import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
+import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.externalreference.ExternalReferenceRepository;
@@ -41,6 +43,7 @@ import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.organization.impl.OrgDAO;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -49,6 +52,8 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 @Component
 public class ExternalReferenceRestControllerService
@@ -204,5 +209,30 @@ public class ExternalReferenceRestControllerService
 				.build();
 
 		performInsert(orgCode, jsonExternalReferenceCreateRequest);
+	}
+
+
+	@NonNull
+	public Optional<JsonMetasfreshId> getJsonMetasfreshIdFromExternalReference(
+			@NonNull final String orgCode,
+			@NonNull final ExternalIdentifier externalIdentifier,
+			@NonNull final IExternalReferenceType externalReferenceType)
+	{
+		final JsonExternalSystemName externalSystemName = JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem());
+
+		final JsonExternalReferenceLookupRequest lookupRequest = JsonExternalReferenceLookupRequest.builder()
+				.systemName(externalSystemName)
+				.item(JsonExternalReferenceLookupItem.builder()
+							  .type(externalReferenceType.getCode())
+							  .id(externalIdentifier.asExternalValueAndSystem().getValue())
+							  .build())
+				.build();
+
+		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgCode, lookupRequest);
+		return lookupResponse.getItems()
+				.stream()
+				.map(JsonExternalReferenceItem::getMetasfreshId)
+				.filter(Objects::nonNull)
+				.findFirst();
 	}
 }
