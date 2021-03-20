@@ -26,7 +26,6 @@ import org.adempiere.util.lang.SynchronizedMutable;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -82,7 +81,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 
 		this.huIdsFilterData = HUIdsFilterHelper.extractFilterData(stickyFilters)
 				.map(HUIdsFilterData::copy)
-				.orElseGet(HUIdsFilterData::newEmpty);
+				.orElseGet(HUIdsFilterData::acceptAll);
 
 		final DocumentFilterList stickyFiltersWithoutHUIdsFilter = stickyFilters.stream()
 				.filter(HUIdsFilterHelper::isNotHUIdsFilter)

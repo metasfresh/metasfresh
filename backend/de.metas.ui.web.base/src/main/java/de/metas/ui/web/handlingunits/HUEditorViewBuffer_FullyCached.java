@@ -87,7 +87,7 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 
 		this.huIdsFilterData = HUIdsFilterHelper.extractFilterData(stickyFilters)
 				.map(HUIdsFilterData::copy)
-				.orElseGet(HUIdsFilterData::newEmpty);
+				.orElseGet(HUIdsFilterData::acceptAll);
 
 		stickyFiltersWithoutHUIdsFilter = stickyFilters.stream()
 				.filter(HUIdsFilterHelper::isNotHUIdsFilter)

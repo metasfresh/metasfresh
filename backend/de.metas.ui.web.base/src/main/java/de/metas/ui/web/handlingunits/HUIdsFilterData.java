@@ -43,20 +43,11 @@ public final class HUIdsFilterData
 	 *
 	 * @param huIds may be empty, but not null. Empty means that <b>no</b> HU will be matched.
 	 */
-	public static HUIdsFilterData ofHUIds(@NonNull final Collection<HuId> huIds)
-	{
-		return new HUIdsFilterData(huIds, null);
-	}
+	public static HUIdsFilterData ofHUIds(@NonNull final Collection<HuId> huIds) { return new HUIdsFilterData(huIds); }
 
-	public static HUIdsFilterData ofHUQuery(@NonNull final IHUQueryBuilder initialHUQuery)
-	{
-		return new HUIdsFilterData(null, initialHUQuery);
-	}
+	public static HUIdsFilterData ofHUQuery(@NonNull final IHUQueryBuilder initialHUQuery) { return new HUIdsFilterData(initialHUQuery); }
 
-	public static HUIdsFilterData newEmpty()
-	{
-		return new HUIdsFilterData(null, null);
-	}
+	public static HUIdsFilterData acceptAll() { return new HUIdsFilterData(); }
 
 	/**
 	 * Important: {@code null} means "no restriction" (i.e. we can select allHUs) whereas empty means that no HU matches the filter.
@@ -64,18 +55,32 @@ public final class HUIdsFilterData
 	@Nullable private final ImmutableSet<HuId> initialHUIds;
 	@Nullable private final IHUQueryBuilder initialHUQuery;
 
-	/**
-	 * Empty list means "no restriction".
-	 */
 	private final HashSet<HuId> mustHUIds;
 	private final HashSet<HuId> shallNotHUIds;
 
-	private HUIdsFilterData(
-			@Nullable final Collection<HuId> initialHUIds,
-			@Nullable final IHUQueryBuilder initialHUQuery)
+	private HUIdsFilterData(@NonNull final Collection<HuId> initialHUIds)
 	{
-		this.initialHUIds = initialHUIds == null ? null : ImmutableSet.copyOf(initialHUIds);
-		this.initialHUQuery = initialHUQuery != null ? initialHUQuery.copy() : null;
+		this.initialHUIds = ImmutableSet.copyOf(initialHUIds);
+		this.initialHUQuery = null;
+		mustHUIds = new HashSet<>();
+		shallNotHUIds = new HashSet<>();
+	}
+
+	private HUIdsFilterData(@NonNull final IHUQueryBuilder initialHUQuery)
+	{
+		this.initialHUIds = null;
+		this.initialHUQuery = initialHUQuery.copy();
+		mustHUIds = new HashSet<>();
+		shallNotHUIds = new HashSet<>();
+	}
+
+	/**
+	 * Accept All constructor
+	 */
+	private HUIdsFilterData()
+	{
+		this.initialHUIds = null;
+		this.initialHUQuery = null;
 		mustHUIds = new HashSet<>();
 		shallNotHUIds = new HashSet<>();
 	}
@@ -91,7 +96,13 @@ public final class HUIdsFilterData
 
 	public HUIdsFilterData copy() { return new HUIdsFilterData(this); }
 
-	public boolean isAcceptAll() { return initialHUQuery == null && initialHUIds == null && mustHUIds.isEmpty() && shallNotHUIds.isEmpty(); }
+	public boolean isAcceptAll() { return initialHUQuery == null && initialHUIds == null && mustHUIds.isEmpty(); }
+
+	public boolean isAcceptNone()
+	{
+		return initialHUQuery == null
+				&& getFixedHUIds().filter(ImmutableSet::isEmpty).isPresent();
+	}
 
 	public boolean hasNoInitialHUQuery() { return initialHUQuery == null; }
 
@@ -122,18 +133,27 @@ public final class HUIdsFilterData
 		mustHUIds.removeAll(shallNotHUIdsToAdd);
 	}
 
+	/**
+	 * @return fixed HU Ids; Optional.empty() means that the fixed HU Ids could not be determined (i.e. we have an initial HU query too)
+	 */
 	public Optional<ImmutableSet<HuId>> getFixedHUIds()
 	{
-		if (initialHUIds == null && mustHUIds.isEmpty())
+		// If there is an initialHUQuery specified we don't know the effective HU Ids
+		if (initialHUQuery != null)
 		{
-			return Optional.empty(); // no restrictions
+			return Optional.empty();
 		}
 
-		final Set<HuId> initialHUIdsOrEmpty = initialHUIds != null ? initialHUIds : ImmutableSet.of();
+		if (initialHUIds == null && mustHUIds.isEmpty())
+		{
+			return Optional.empty();
+		}
 
-		final ImmutableSet<HuId> fixedHUIds = Stream.concat(initialHUIdsOrEmpty.stream(), mustHUIds.stream())
-				.filter(huId -> !shallNotHUIds.contains(huId)) // not excluded
+		final ImmutableSet<HuId> fixedHUIds = Stream.concat(
+				initialHUIds != null ? initialHUIds.stream() : Stream.empty(),
+				mustHUIds.stream())
 				.distinct()
+				.filter(huId -> !shallNotHUIds.contains(huId)) // not excluded
 				.collect(ImmutableSet.toImmutableSet());
 
 		return Optional.of(fixedHUIds);

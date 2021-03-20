@@ -1,18 +1,23 @@
 package de.metas.ui.web.handlingunits;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.reservation.HUReservationRepository;
-import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.assertj.core.api.ObjectAssert;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-
-import javax.annotation.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,41 +52,103 @@ public class HUIdsSqlDocumentFilterConverterTest
 		SpringContextHolder.registerJUnitBean(HUReservationRepository.class);
 	}
 
-	@Nullable
-	private String getSql(final DocumentFilter filter)
+	private ObjectAssert<SqlAndParams> assertThatGetSqlOf(final HUIdsFilterData huIdsFilterData)
 	{
 		final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
-		return HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER.getSql(
-				SqlParamsCollector.newInstance(),
-				filter,
+		final SqlParamsCollector sqlParams = SqlParamsCollector.newInstance();
+		final String sql = HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER.getSql(
+				sqlParams,
+				HUIdsFilterHelper.createFilter(huIdsFilterData),
 				SqlOptions.usingTableAlias("dummyTableAlias"),
 				context);
+
+		assert sql != null;
+		return assertThat(SqlAndParams.of(sql, sqlParams));
 	}
 
 	@Nested
-	class getSql
+	class acceptAll
 	{
-
 		@Test
-		void newEmpty()
+		void acceptAll_test()
 		{
-			final DocumentFilter filter = HUIdsFilterHelper.createFilter(HUIdsFilterData.newEmpty());
-			assertThat(getSql(filter)).isEqualTo(HUIdsSqlDocumentFilterConverter.SQL_TRUE);
+			assertAcceptAll(HUIdsFilterData.acceptAll());
 		}
 
-		@Nested
-		class ofHUIds
+		private void assertAcceptAll(final HUIdsFilterData data)
 		{
-			/**
-			 * Verifies that if {@link HUIdsFilterHelper#createFilter(java.util.Collection)} is called with an empty list,
-			 * then the filter's SQL does <b>not</b> select every single f**king HU on this planet.
-			 */
-			@Test
-			void emptyInitialHUIds()
-			{
-				final DocumentFilter noHusFilter = HUIdsFilterHelper.createFilter(ImmutableList.of());
-				assertThat(getSql(noHusFilter)).isEqualTo(HUIdsSqlDocumentFilterConverter.SQL_FALSE);
-			}
+			assertThatGetSqlOf(data)
+					.isEqualTo(SqlAndParams.of(HUIdsSqlDocumentFilterConverter.SQL_TRUE));
+		}
+
+		@Test
+		void acceptAll_then_addMustHUIds()
+		{
+			final HUIdsFilterData data = HUIdsFilterData.acceptAll();
+			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
+			assertThatGetSqlOf(data)
+					.isEqualTo(SqlAndParams.of("(M_HU_ID=?)", 1));
+		}
+
+		@Test
+		void acceptAll_then_addMustHUIds_then_addShallNotHUIds()
+		{
+			final HUIdsFilterData data = HUIdsFilterData.acceptAll();
+			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
+			data.shallNotHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
+			assertAcceptAll(data);
+		}
+	}
+
+	@Nested
+	class ofHUIds
+	{
+		/**
+		 * Verifies that if {@link HUIdsFilterHelper#createFilter(java.util.Collection)} is called with an empty list,
+		 * then the filter's SQL does <b>not</b> select every single f**king HU on this planet.
+		 */
+		@Test
+		void initialEmpty()
+		{
+			assertThatGetSqlOf(HUIdsFilterData.ofHUIds(ImmutableList.of()))
+					.extracting(SqlAndParams::getSql)
+					.isEqualTo(HUIdsSqlDocumentFilterConverter.SQL_FALSE);
+		}
+
+		@Test
+		void initialEmpty_then_addMustHUIds()
+		{
+			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of());
+			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
+			assertThatGetSqlOf(data)
+					.isEqualTo(SqlAndParams.of("(M_HU_ID=?)", 1));
+		}
+
+		@Test
+		void initialNotEmpty()
+		{
+			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
+			assertThatGetSqlOf(data)
+					.isEqualTo(SqlAndParams.of("(M_HU_ID=?)", 1));
+		}
+
+		@Test
+		void initialNotEmpty_then_addMustHUIds()
+		{
+			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
+			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(2)));
+			assertThatGetSqlOf(data)
+					.isEqualTo(SqlAndParams.of("(M_HU_ID IN (?,?))", 1, 2));
+		}
+
+		@Test
+		void initialNotEmpty_then_addMustHUIds_then_addShallNotHUIds()
+		{
+			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
+			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(2)));
+			data.shallNotHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
+			assertThatGetSqlOf(data)
+					.isEqualTo(SqlAndParams.of("(M_HU_ID=?) AND (NOT (M_HU_ID=?))", 2, 1));
 		}
 	}
 }

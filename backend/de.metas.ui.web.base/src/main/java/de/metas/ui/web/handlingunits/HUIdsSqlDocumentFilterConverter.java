@@ -72,6 +72,10 @@ public final class HUIdsSqlDocumentFilterConverter implements SqlDocumentFilterC
 		{
 			return SQL_TRUE; // no restrictions were specified; pass through
 		}
+		else if(huIdsFilter.isAcceptNone())
+		{
+			return SQL_FALSE;
+		}
 		else
 		{
 			final IHUQueryBuilder huQuery = toHUQuery(huIdsFilter);
@@ -82,7 +86,8 @@ public final class HUIdsSqlDocumentFilterConverter implements SqlDocumentFilterC
 	@NonNull
 	private IHUQueryBuilder toHUQuery(final HUIdsFilterData huIdsFilter)
 	{
-		Check.assume(!huIdsFilter.isAcceptAll(), "not an accept all filter: {}", huIdsFilter);
+		Check.assume(!huIdsFilter.isAcceptAll(), "shall not be an accept all filter: {}", huIdsFilter);
+		Check.assume(!huIdsFilter.isAcceptNone(), "shall not be an accept none filter: {}", huIdsFilter);
 
 		IHUQueryBuilder huQuery = huIdsFilter.getInitialHUQueryOrNull();
 		if (huQuery == null)
