@@ -1,7 +1,7 @@
-DROP VIEW IF EXISTS db_columns_fk
+DROP VIEW IF EXISTS db_columns_fk$new
 ;
 
-CREATE OR REPLACE VIEW db_columns_fk AS
+CREATE OR REPLACE VIEW db_columns_fk$new AS
 SELECT v.TableName
      , v.ColumnName
      , v.table_ref                       AS Ref_TableName
@@ -163,6 +163,19 @@ AND NOT EXISTS (
 */
 -- ORDER BY v.tablename, v.table_ref, v.columnname
 ;
+
+SELECT db_alter_view(
+               'db_columns_fk',
+               (SELECT view_definition
+                FROM information_schema.views
+                WHERE views.table_name = 'db_columns_fk$new')
+           )
+;
+
+DROP VIEW IF EXISTS db_columns_fk$new
+;
+
+
 
 COMMENT ON VIEW db_columns_fk IS 'Can be used to identify and fix missing FK constraints. Also used by org.compiere.model.MColumn.getConstraint()
 See https://github.com/metasfresh/metasfresh/issues/539'
