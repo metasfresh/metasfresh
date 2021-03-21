@@ -44,12 +44,17 @@ public class GenericZoomIntoTableInfo
 	@Nullable GenericZoomIntoTableWindow defaultPOWindow;
 	@NonNull ImmutableList<GenericZoomIntoTableWindow> otherWindows;
 
+	@Nullable String parentTableName;
+	@Nullable String parentLinkColumnName;
+
 	@Builder
 	private GenericZoomIntoTableInfo(
 			@NonNull final String tableName,
 			@NonNull final String keyColumnName,
 			final boolean hasIsSOTrxColumn,
-			@NonNull final List<GenericZoomIntoTableWindow> windows)
+			@NonNull final List<GenericZoomIntoTableWindow> windows,
+			@Nullable final String parentTableName,
+			@Nullable final String parentLinkColumnName)
 	{
 		this.tableName = tableName;
 		this.keyColumnName = keyColumnName;
@@ -116,6 +121,9 @@ public class GenericZoomIntoTableInfo
 		this.defaultPOWindow = defaultPOWindow;
 
 		this.otherWindows = ImmutableList.copyOf(otherWindows);
+
+		this.parentTableName = parentTableName;
+		this.parentLinkColumnName = parentLinkColumnName;
 	}
 
 	private GenericZoomIntoTableInfo(
@@ -133,6 +141,8 @@ public class GenericZoomIntoTableInfo
 				.stream()
 				.map(window -> withCustomizedWindow(window, customizedWindowInfoMap))
 				.collect(ImmutableList.toImmutableList());
+		this.parentTableName = from.parentTableName;
+		this.parentLinkColumnName = from.parentLinkColumnName;
 	}
 
 	@Nullable

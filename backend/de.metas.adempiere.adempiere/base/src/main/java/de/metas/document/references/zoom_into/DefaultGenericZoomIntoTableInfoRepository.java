@@ -45,12 +45,24 @@ public class DefaultGenericZoomIntoTableInfoRepository implements GenericZoomInt
 				ImmutableList.of(tableName),
 				this::retrieveTableWindow);
 
-		return GenericZoomIntoTableInfo.builder()
+		final GenericZoomIntoTableInfo.GenericZoomIntoTableInfoBuilder builder = GenericZoomIntoTableInfo.builder()
 				.tableName(tableName)
 				.keyColumnName(poInfo.getKeyColumnName())
 				.hasIsSOTrxColumn(poInfo.hasColumnName("IsSOTrx"))
-				.windows(windows)
-				.build();
+				.windows(windows);
+
+		if(tableName.endsWith("Line"))
+		{
+			final String parentTableName = tableName.substring(0, tableName.length() - "Line".length());
+			final String parentLinkColumnName = parentTableName + "_ID";
+			if(poInfo.hasColumnName(parentLinkColumnName))
+			{
+				builder.parentTableName(parentTableName);
+				builder.parentLinkColumnName(parentLinkColumnName);
+			}
+		}
+
+		return builder.build();
 	}
 
 	private GenericZoomIntoTableWindow retrieveTableWindow(final ResultSet rs) throws SQLException
