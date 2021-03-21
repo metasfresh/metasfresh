@@ -67,7 +67,6 @@ FROM (
               AD_Column c,
               AD_Reference r
          WHERE t.ad_table_id = c.ad_table_id
-           -- AND t.tablename LIKE 'ASP|_%' ESCAPE '|'
            -- AND TRIM(COALESCE(c.columnsql, '')) = '' -- consider virtual columns because we need the in views like ad_table_related_windows_v
            AND c.ad_reference_id = r.ad_reference_id
            AND (c.ad_reference_id IN (19 /*Table Direct*/)
@@ -94,7 +93,6 @@ FROM (
               AD_Ref_Table rt,
               AD_Table tr
          WHERE t.ad_table_id = c.ad_table_id
-           -- AND t.tablename LIKE 'ASP|_%' ESCAPE '|'
            -- AND TRIM(COALESCE(c.columnsql, '')) = '' -- consider virtual columns because we need the in views like ad_table_related_windows_v
            AND c.ad_reference_id = r.ad_reference_id
            AND (c.ad_reference_id IN (18 /*Table*/)
@@ -150,18 +148,6 @@ WHERE
 -- Make sure table exists in database
 -- gh #539: this view shall even work for non-existing tables because we want to use it to create a part of the table DDL when the ColumnSync process is executed
 -- AND EXISTS (SELECT 1 FROM pg_tables WHERE tablename = LOWER (v.tablename))
-
--- exclude already existing foreign keys
-/*
-AND NOT EXISTS (
-    SELECT 1
-    FROM db_constraints c
-    WHERE
-    c.tablename=LOWER(v.tablename) AND c.columnname=LOWER(v.columnname)
-    AND c.constraint_type IN ('p','f')
-)
-*/
--- ORDER BY v.tablename, v.table_ref, v.columnname
 ;
 
 SELECT db_alter_view(
