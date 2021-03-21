@@ -119,7 +119,6 @@ FROM (
                      WHEN c.AD_Reference_ID = 21 THEN 'C_Location'
                      WHEN c.AD_Reference_ID = 31 THEN 'M_Locator'
                      WHEN c.AD_Reference_ID = 35 THEN 'M_AttributeSetInstance'
-                                                 ELSE NULL
                  END)                                                           AS table_ref
               , t.EntityType                                                    AS TableName_EntityType
               , c.EntityType                                                    AS ColumnName_EntityType
@@ -139,9 +138,9 @@ FROM (
              , 35 -- Product Attribute - M_AttributeSetInstance_ID
              )
      ) v
-WHERE 1 = 1
+WHERE
   -- Exclude Standard Columns
-  AND v.columnname NOT IN ('AD_Client_ID', 'AD_Org_ID', 'CreatedBy', 'UpdatedBy')
+    v.columnname NOT IN ('AD_Client_ID', 'AD_Org_ID', 'CreatedBy', 'UpdatedBy')
   -- Exclude Temporary Tables
   AND v.tablename NOT LIKE 'T|_%' ESCAPE '|'
     AND v.tablename NOT IN ('Test')
