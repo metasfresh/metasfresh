@@ -68,7 +68,7 @@ FROM (
               AD_Reference r
          WHERE t.ad_table_id = c.ad_table_id
            -- AND t.tablename LIKE 'ASP|_%' ESCAPE '|'
-           AND TRIM(COALESCE(c.columnsql, '')) = ''
+           -- AND TRIM(COALESCE(c.columnsql, '')) = '' -- consider virtual columns because we need the in views like ad_table_related_windows_v
            AND c.ad_reference_id = r.ad_reference_id
            AND (c.ad_reference_id IN (19 /*Table Direct*/)
              OR (c.ad_reference_id IN (30 /*Search*/)
@@ -95,7 +95,7 @@ FROM (
               AD_Table tr
          WHERE t.ad_table_id = c.ad_table_id
            -- AND t.tablename LIKE 'ASP|_%' ESCAPE '|'
-           AND TRIM(COALESCE(c.columnsql, '')) = ''
+           -- AND TRIM(COALESCE(c.columnsql, '')) = '' -- consider virtual columns because we need the in views like ad_table_related_windows_v
            AND c.ad_reference_id = r.ad_reference_id
            AND (c.ad_reference_id IN (18 /*Table*/)
              OR (c.ad_reference_id IN (30 /*Search*/)
