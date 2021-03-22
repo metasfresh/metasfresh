@@ -7,6 +7,7 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for C_OLCand
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_C_OLCand 
 {
 
@@ -52,7 +53,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_AD_DataDestination_ID = "AD_DataDestination_ID";
 
 	/**
-	 * Set Eingabequelle.
+	 * Set Inputsource.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -61,7 +62,7 @@ public interface I_C_OLCand
 	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
 
 	/**
-	 * Get Eingabequelle.
+	 * Get Inputsource.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -504,7 +505,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 
 	/**
-	 * Set Auftragskandidat.
+	 * Set Orderline Candidate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -513,7 +514,7 @@ public interface I_C_OLCand
 	void setC_OLCand_ID (int C_OLCand_ID);
 
 	/**
-	 * Get Auftragskandidat.
+	 * Get Orderline Candidate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -523,6 +524,27 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_C_OLCand_ID = new ModelColumn<>(I_C_OLCand.class, "C_OLCand_ID", null);
 	String COLUMNNAME_C_OLCand_ID = "C_OLCand_ID";
+
+	/**
+	 * Set Grouping key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCompensationGroupKey (@Nullable java.lang.String CompensationGroupKey);
+
+	/**
+	 * Get Grouping key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCompensationGroupKey();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_CompensationGroupKey = new ModelColumn<>(I_C_OLCand.class, "CompensationGroupKey", null);
+	String COLUMNNAME_CompensationGroupKey = "CompensationGroupKey";
 
 	/**
 	 * Set Payment Term.
