@@ -639,6 +639,8 @@ class DocumentListContainer extends Component {
   /**
    * @method resetInitialFilters
    * @summary resets the initial filters
+   * @param {string} filterId
+   * @param {string} parameterName
    */
   resetInitialFilters = (filterId, parameterName) => {
     let { initialValuesNulled } = this.state;
