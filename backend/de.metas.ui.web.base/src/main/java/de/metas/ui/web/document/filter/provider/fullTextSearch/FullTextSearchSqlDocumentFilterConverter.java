@@ -4,12 +4,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -83,7 +88,7 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 		final FullTextSearchFilterContext ftsContext = filter.getParameterValueAs(PARAM_Context);
 		Check.assumeNotNull(ftsContext, "Parameter ftsContext is not null"); // shall not happen
 		logger.trace("context: {}", ftsContext);
-		final Client elasticsearchClient = ftsContext.getElasticsearchClient();
+		final RestHighLevelClient elasticsearchClient = ftsContext.getElasticsearchClient();
 		final String esIndexName = ftsContext.getEsIndexName();
 		final String keyColumnName = ftsContext.getKeyColumnName();
 		final String esKeyColumnName = ftsContext.getEsKeyColumnName();
@@ -91,10 +96,24 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 		final QueryBuilder query = QueryBuilders.multiMatchQuery(text, ftsContext.getEsSearchFieldNamesAsArray());
 		logger.trace("ES query: {}", query);
 
-		final SearchResponse searchResponse = elasticsearchClient.prepareSearch(esIndexName)
-				.setQuery(query)
-				.setExplain(logger.isTraceEnabled())
-				.get();
+		
+		final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+		sourceBuilder.query(query);
+
+		final SearchRequest searchRequest = new SearchRequest();
+		searchRequest.indices(esIndexName);
+		searchRequest.source(sourceBuilder);
+
+		final SearchResponse searchResponse;
+		try
+		{
+			searchResponse = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT);
+		}
+		catch(java.io.IOException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e); 
+		}
+
 		logger.trace("ES response: {}", searchResponse);
 
 		final List<Integer> recordIds = Stream.of(searchResponse.getHits().getHits())
@@ -114,8 +133,7 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 
 	private int extractId(final SearchHit hit, final String esKeyColumnName)
 	{
-		final Map<String, Object> source = hit.getSource();
+		final Map<String, Object> source = hit.getSourceAsMap();
 		return NumberUtils.asInt(source.get(esKeyColumnName), -1);
 	}
-
 }

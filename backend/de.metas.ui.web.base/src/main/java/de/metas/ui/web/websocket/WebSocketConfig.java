@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.metas.ui.web.WebuiURLs;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
@@ -21,9 +22,9 @@ import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.messaging.support.ChannelInterceptorAdapter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.config.annotation.AbstractWebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.messaging.AbstractSubProtocolEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
@@ -58,26 +59,25 @@ import lombok.NonNull;
 
 @Configuration
 @EnableWebSocketMessageBroker
-public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 {
 	private static final Logger logger = LogManager.getLogger(WebSocketConfig.class);
 
 	private static final String ENDPOINT = "/stomp";
 
 	@Override
-	public void registerStompEndpoints(final StompEndpointRegistry registry)
+	public void registerStompEndpoints(@NonNull final StompEndpointRegistry registry)
 	{
+		final String frontendURL = WebuiURLs.newInstance().getFrontendURL();
 		// the endpoint for websocket connections
 		registry.addEndpoint(ENDPOINT)
-				.setAllowedOrigins("*") // FIXME: for now we allow any origin
+				.setAllowedOrigins(frontendURL) // we can't allow '*' anymore, see https://github.com/spring-projects/spring-framework/issues/26111
 				.addInterceptors(new WebsocketHandshakeInterceptor())
-				.withSockJS()
-		//
-		;
+				.withSockJS();
 	}
 
 	@Override
-	public void configureMessageBroker(final MessageBrokerRegistry config)
+	public void configureMessageBroker(@NonNull final MessageBrokerRegistry config)
 	{
 		// use the /topic prefix for outgoing Websocket communication
 		config.enableSimpleBroker(
@@ -94,7 +94,7 @@ public class WebSocketConfig extends AbstractWebSocketMessageBrokerConfigurer
 	}
 
 	@Override
-	public void configureClientOutboundChannel(final ChannelRegistration registration)
+	public void configureClientOutboundChannel(@NonNull final ChannelRegistration registration)
 	{
 		//
 		// IMPORTANT: make sure we are using only one thread for sending outbound messages.

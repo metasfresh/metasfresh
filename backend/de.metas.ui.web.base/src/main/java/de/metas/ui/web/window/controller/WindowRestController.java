@@ -802,13 +802,9 @@ public class WindowRestController
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
-
 		final DetailId selectedTabId = DetailId.fromJson(selectedTabIdStr);
 		final DocumentIdsSelection selectedRowIds = DocumentIdsSelection.ofCommaSeparatedString(selectedRowIdsAsStr);
-		final Set<TableRecordReference> selectedIncludedRecords = selectedRowIds.stream()
-				.map(rowId -> rootDocumentPath.createChildPath(selectedTabId, rowId))
-				.map(documentCollection::getTableRecordReference)
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<TableRecordReference> selectedIncludedRecords = getTableRecordReferences(rootDocumentPath, selectedTabId, selectedRowIds);
 
 		return getDocumentActions(
 				rootDocumentPath,
@@ -816,6 +812,28 @@ public class WindowRestController
 				selectedIncludedRecords,
 				returnDisabled,
 				DisplayPlace.SingleDocumentActionsMenu);
+	}
+
+	private ImmutableSet<TableRecordReference> getTableRecordReferences(
+			@NonNull final DocumentPath rootDocumentPath,
+			@Nullable final DetailId tabId,
+			@NonNull final DocumentIdsSelection selectedRowIds)
+	{
+		if(selectedRowIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		if(tabId == null)
+		{
+			throw new AdempiereException("selectedTabId shall be specified when selectedRowIds is set");
+		}
+
+		return selectedRowIds.stream()
+				.filter(DocumentId::isInt) // consider only int keys because only those can be converted to TableRecordReference
+				.map(rowId -> rootDocumentPath.createChildPath(tabId, rowId))
+				.map(documentCollection::getTableRecordReference)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/topActions")

@@ -7,8 +7,10 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
+import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
 import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.slf4j.Logger;
 
@@ -25,6 +27,7 @@ import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -59,7 +62,7 @@ public class KPIField
 	@FunctionalInterface
 	public interface BucketValueExtractor
 	{
-		Object extractValue(final String containingAggName, final MultiBucketsAggregation.Bucket bucket);
+		Object extractValue(String containingAggName, InternalMultiBucketAggregation.InternalBucket bucket);
 	}
 
 	private static final Logger logger = LogManager.getLogger(KPIField.class);
@@ -105,7 +108,7 @@ public class KPIField
 		bucketValueExtractor = createBucketValueExtractor(esPath);
 	}
 
-	private static BucketValueExtractor createBucketValueExtractor(final List<String> path)
+	private static BucketValueExtractor createBucketValueExtractor(@NonNull final List<String> path)
 	{
 		if (path.size() == 1)
 		{
@@ -119,7 +122,7 @@ public class KPIField
 				return (containingAggName, bucket) -> bucket.getKeyAsString();
 			}
 		}
-
+		
 		return (containingAggName, bucket) -> bucket.getProperty(containingAggName, path);
 	}
 

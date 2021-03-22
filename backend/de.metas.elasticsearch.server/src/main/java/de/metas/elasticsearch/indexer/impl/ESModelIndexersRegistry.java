@@ -6,9 +6,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.Nullable;
 
+import de.metas.elasticsearch.impl.ESSystemEnabledCondition;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -21,11 +22,13 @@ import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.indexer.ESModelIndexerDataSources;
 import de.metas.elasticsearch.indexer.IESIndexerResult;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
-import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.elasticsearch.indexer.SqlESModelIndexerDataSource;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -49,7 +52,9 @@ import lombok.NonNull;
  * #L%
  */
 
-public class ESModelIndexersRegistry implements IESModelIndexersRegistry
+@Service
+@Conditional(ESSystemEnabledCondition.class)
+public class ESModelIndexersRegistry
 {
 	private static final Logger logger = LogManager.getLogger(ESModelIndexersRegistry.class);
 
@@ -57,21 +62,21 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 
 	private final ConcurrentHashMap<ESModelIndexerId, IESModelIndexer> indexersById = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<String, ImmutableList<IESModelIndexer>> indexersByModelTableName = new ConcurrentHashMap<>();
+	
+	private final RestHighLevelClient elasticsearchClient;
+	private final ObjectMapper jsonObjectMapper;
 
-	@Autowired
-	private Client elasticsearchClient;
-
-	@Autowired
-	private ObjectMapper jsonObjectMapper;
-
-	public ESModelIndexersRegistry()
+	public ESModelIndexersRegistry(
+			@NonNull final RestHighLevelClient elasticsearchClient,
+			@NonNull final  ObjectMapper jsonObjectMapper)
 	{
-		SpringContextHolder.instance.autowire(this);
-
+		this.elasticsearchClient = elasticsearchClient; 
+		this.jsonObjectMapper = jsonObjectMapper;
+		
 		logger.info("Elastic search client: {}", elasticsearchClient);
 	}
 
-	/* package */Client getElasticsearchClient()
+	/* package */RestHighLevelClient getElasticsearchClient()
 	{
 		return elasticsearchClient;
 	}
@@ -81,8 +86,7 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 		return jsonObjectMapper;
 	}
 
-	@Override
-	public Collection<IESModelIndexer> getModelIndexersByTableName(final String modelTableName)
+	public Collection<IESModelIndexer> getModelIndexersByTableName(@NonNull final String modelTableName)
 	{
 		final ImmutableList<IESModelIndexer> modelIndexers = indexersByModelTableName.get(modelTableName);
 		if (modelIndexers == null)
@@ -92,8 +96,7 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 		return modelIndexers;
 	}
 
-	@Override
-	public IESModelIndexer getModelIndexerById(final ESModelIndexerId modelIndexerId)
+	public IESModelIndexer getModelIndexerById(@NonNull final ESModelIndexerId modelIndexerId)
 	{
 		final IESModelIndexer indexer = indexersById.get(modelIndexerId);
 		if (indexer == null)
@@ -103,8 +106,7 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 		return indexer;
 	}
 
-	@Override
-	public void addModelIndexer(final ESModelIndexerConfigBuilder config)
+	public void addModelIndexer(@NonNull final ESModelIndexerConfigBuilder config)
 	{
 		final IESModelIndexer indexer = new ESModelIndexerFactory(this, config)
 				.indexSettingsJson(config.getIndexSettingsJson())
@@ -142,7 +144,7 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 		}
 	}
 
-	private void createIndexAndAddAllModels(final IESModelIndexer indexer)
+	private void createIndexAndAddAllModels(@NonNull final IESModelIndexer indexer)
 	{
 		final boolean indexJustCreated = indexer.createUpdateIndex();
 		logger.info("Created/Updated index mapping for {}", indexer);
@@ -180,7 +182,6 @@ public class ESModelIndexersRegistry implements IESModelIndexersRegistry
 		}
 	}
 
-	@Override
 	public Optional<IESModelIndexer> getFullTextSearchModelIndexer(final String modelTableName)
 	{
 		return getModelIndexersByTableName(modelTableName)

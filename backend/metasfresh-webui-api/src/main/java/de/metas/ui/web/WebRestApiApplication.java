@@ -45,13 +45,12 @@ import org.compiere.Adempiere.RunMode;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.elasticsearch.common.logging.ESLoggerFactory;
-import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -88,7 +87,7 @@ public class WebRestApiApplication
 		}
 
 		// Make sure slf4j is used (by default, in v2.4.4 log4j is used, see https://github.com/metasfresh/metasfresh-webui-api/issues/757)
-		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
+		//ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
 
 		final CommandLineParser.CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
 
@@ -107,7 +106,7 @@ public class WebRestApiApplication
 
 			new SpringApplicationBuilder(WebRestApiApplication.class)
 					.headless(Boolean.parseBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
-					.web(true)
+					.web(WebApplicationType.SERVLET)
 					.profiles(activeProfiles.toArray(new String[0]))
 					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
@@ -149,10 +148,11 @@ public class WebRestApiApplication
 	}
 
 	@Bean
-	public EmbeddedServletContainerCustomizer servletContainerCustomizer()
+	public WebServerFactoryCustomizer servletContainerCustomizer()
 	{
 		return servletContainer -> {
-			final TomcatEmbeddedServletContainerFactory tomcatContainerFactory = (TomcatEmbeddedServletContainerFactory)servletContainer;
+			final TomcatServletWebServerFactory tomcatContainerFactory = (TomcatServletWebServerFactory)servletContainer;
+			
 			tomcatContainerFactory.addConnectorCustomizers(connector -> {
 				final AbstractHttp11Protocol<?> httpProtocol = (AbstractHttp11Protocol<?>)connector.getProtocolHandler();
 				httpProtocol.setCompression("on");

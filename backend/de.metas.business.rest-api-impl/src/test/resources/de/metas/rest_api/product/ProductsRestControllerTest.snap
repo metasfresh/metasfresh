@@ -31,9 +31,9 @@ de.metas.rest_api.product.ProductsRestControllerTest.getProducts_standardCase=[ 
     } ],
     "createdUpdatedInfo" : {
       "createdBy" : 100,
-      "created" : "2019-09-05T03:20:14.000000500+02:00[Europe/Berlin]",
+      "created" : "2019-09-05T03:20:14.0000005+02:00",
       "updatedBy" : 100,
-      "updated" : "2019-09-05T03:21:22.000000501+02:00[Europe/Berlin]"
+      "updated" : "2019-09-05T03:21:22.000000501+02:00"
     }
   }, {
     "id" : 100006,
@@ -45,9 +45,9 @@ de.metas.rest_api.product.ProductsRestControllerTest.getProducts_standardCase=[ 
     "bpartners" : [ ],
     "createdUpdatedInfo" : {
       "createdBy" : 100,
-      "created" : "2019-09-05T03:20:14.000000500+02:00[Europe/Berlin]",
+      "created" : "2019-09-05T03:20:14.0000005+02:00",
       "updatedBy" : 100,
-      "updated" : "2019-09-05T03:21:22.000000501+02:00[Europe/Berlin]"
+      "updated" : "2019-09-05T03:21:22.000000501+02:00"
     }
   } ]
 } ]
