@@ -25,9 +25,7 @@ package de.metas.rest_api.v2.product;
 import de.metas.Profiles;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
-import de.metas.common.rest_api.SyncAdvise;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
-import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.audit.CreateExportAuditRequest;
 import de.metas.logging.LogManager;
@@ -59,7 +57,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -150,15 +147,9 @@ public class ProductsRestController
 			@RequestBody @NonNull final JsonRequestProductUpsert request)
 
 	{
-		final SyncAdvise syncAdvise = request.getSyncAdvise();
+		final JsonResponseUpsert responseUpsert = productRestService.upsertProducts(orgCode, request);
 
-		final List<JsonResponseUpsertItem> responseList =
-				request.getRequestItems()
-						.stream()
-						.map(reqItem -> productRestService.createOrUpdateProduct(reqItem, syncAdvise, orgCode))
-						.collect(Collectors.toList());
-
-		return ResponseEntity.ok().body(JsonResponseUpsert.builder().responseItems(responseList).build());
+		return ResponseEntity.ok().body(responseUpsert);
 	}
 
 	private void logExportedProducts(
