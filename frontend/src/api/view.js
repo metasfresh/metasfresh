@@ -276,3 +276,57 @@ export function advSearchRequest({
     }
   );
 }
+
+/**
+ *
+ * @param {*} windowId
+ * @param {*} viewId
+ * @param {*} rowId
+ */
+export function getViewAttributesRequest(windowId, viewId, rowId) {
+  return get(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/attributes`
+  );
+}
+
+export function getViewAttributesLayoutRequest(windowId, viewId, rowId) {
+  return get(
+    `${
+      config.API_URL
+    }/documentView/${windowId}/${viewId}/${rowId}/attributes/layout`
+  );
+}
+
+export function patchViewAttributes(windowId, viewId, rowId, property, value) {
+  const payload = createPatchRequestPayload(property, value);
+
+  return patch(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/attributes`,
+    payload
+  );
+}
+
+export function getViewAttributeDropdown(windowId, viewId, rowId, attribute) {
+  return get(
+    `${
+      config.API_URL
+    }/documentView/${windowId}/${viewId}/${rowId}/attributes/attribute/${attribute}/dropdown`
+  );
+}
+
+export function getViewAttributeTypeahead(
+  windowId,
+  viewId,
+  rowId,
+  attribute,
+  query
+) {
+  return get(
+    `${config.API_URL}/documentView/
+      ${windowId}/
+      ${viewId}/
+      ${rowId}/attributes/attribute/
+      ${attribute}/typeahead?query=
+      ${encodeURIComponent(query)}`
+  );
+}

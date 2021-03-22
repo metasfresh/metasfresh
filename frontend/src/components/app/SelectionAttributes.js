@@ -4,9 +4,9 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import {
-  getViewAttributes,
-  getViewAttributesLayout,
-} from '../../actions/ViewAttributesActions';
+  getViewAttributesRequest,
+  getViewAttributesLayoutRequest,
+} from '../../api';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
 
 import RawWidget from '../widget/RawWidget';
@@ -30,13 +30,13 @@ class SelectionAttributes extends PureComponent {
       selected,
       DLWrapperSetData,
       DLWrapperSetLayout,
-      shouldNotUpdate,
+      // shouldNotUpdate,
       supportAttribute,
     } = this.props;
 
-    if (shouldNotUpdate) {
-      return;
-    }
+    // if (shouldNotUpdate) {
+    //   return;
+    // }
 
     if (
       !prevProps ||
@@ -65,10 +65,10 @@ class SelectionAttributes extends PureComponent {
       DLWrapperSetData,
       DLWrapperSetLayout,
     } = this.props;
-    getViewAttributesLayout(windowId, viewId, selected[0])
+    getViewAttributesLayoutRequest(windowId, viewId, selected[0])
       .then((response) => {
         DLWrapperSetLayout(response.data.elements);
-        return getViewAttributes(windowId, viewId, selected[0]);
+        return getViewAttributesRequest(windowId, viewId, selected[0]);
       })
       .then((response) => {
         DLWrapperSetData(response.data.fieldsByName, response.data.id);
@@ -175,13 +175,13 @@ SelectionAttributes.propTypes = {
   viewId: PropTypes.string,
   DLWrapperSetLayout: PropTypes.func,
   DLWrapperSetData: PropTypes.func,
-  shouldNotUpdate: PropTypes.bool,
+  // shouldNotUpdate: PropTypes.bool,
   DLWrapperData: PropTypes.any,
   DLWrapperDataId: PropTypes.string,
   DLWrapperHandleChange: PropTypes.func,
   DLWrapperHandlePatch: PropTypes.func,
   setClickOutsideLock: PropTypes.func,
-  entity: PropTypes.any,
+  entity: PropTypes.string,
   DLWrapperLayout: PropTypes.array,
   supportAttribute: PropTypes.bool,
   allowShortcut: PropTypes.func.isRequired,

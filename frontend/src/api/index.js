@@ -27,6 +27,11 @@ import {
   patchRequest,
   quickActionsRequest,
   advSearchRequest,
+  getViewAttributesRequest,
+  getViewAttributesLayoutRequest,
+  patchViewAttributes,
+  getViewAttributeDropdown,
+  getViewAttributeTypeahead,
 } from './view';
 import {
   loginRequest,
@@ -86,4 +91,9 @@ export {
   startProcess,
   topActionsRequest,
   advSearchRequest,
+  getViewAttributesRequest,
+  getViewAttributesLayoutRequest,
+  patchViewAttributes,
+  getViewAttributeDropdown,
+  getViewAttributeTypeahead,
 };

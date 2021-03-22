@@ -1,7 +1,9 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
+import { connect } from 'react-redux';
 
-import { patchViewAttributes } from '../actions/ViewAttributesActions';
+import { fetchViewAttributes, fetchViewAttributesLayout } from '../actions/IndependentWidgetsActions';
+import { patchViewAttributes } from '../api';
 import { parseToDisplay } from '../utils/documentListHelper';
 
 import SelectionAttributes from './app/SelectionAttributes';
@@ -11,7 +13,7 @@ import SelectionAttributes from './app/SelectionAttributes';
  * @module DocumentList
  * @extends PureComponent
  */
-export default class DataLayoutWrapper extends PureComponent {
+class DataLayoutWrapper extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -23,11 +25,37 @@ export default class DataLayoutWrapper extends PureComponent {
   }
 
   componentDidMount = () => {
+    const {
+      windowId,
+      viewId,
+      selected,
+      fetchViewAttributes,
+      fetchViewAttributesLayout,
+    } = this.props;
+    const rowId = selected[0];
+
+    console.log('SELECTED: ', rowId, selected)
+
     this.mounted = true;
+
+    fetchViewAttributesLayout({ windowId, viewId, rowId });
+    fetchViewAttributes({ windowId, viewId, rowId });
   };
 
   componentWillUnmount = () => {
+    // const {
+    //   windowId,
+    //   viewId,
+    //   selected,
+    //   fetchViewAttributes,
+    //   fetchViewAttributesLayout,
+    // } = this.props;
+    // const rowId = selected[0];
+
     this.mounted = false;
+
+    // fetchViewAttributesLayout({ windowId, viewId, rowId });
+    // fetchViewAttributes({ windowId, viewId, rowId });
   };
 
   handleChange = (field, value) => {
@@ -72,18 +100,23 @@ export default class DataLayoutWrapper extends PureComponent {
   };
 
   setData = (data, dataId, cb) => {
+    // console.log('DLW.setData: ', dataId, data)
+
     const preparedData = parseToDisplay(data);
     this.mounted &&
       this.setState(
         {
           data: preparedData,
-          dataId,
+          // sometimes it's a number, and React complains about wrong type
+          dataId: dataId + '',
         },
         cb
       );
   };
 
   setLayout = (layout, cb) => {
+    // console.log('DLW.setLayout: ', layout);
+
     this.mounted &&
       this.setState(
         {
@@ -94,11 +127,8 @@ export default class DataLayoutWrapper extends PureComponent {
   };
 
   render() {
-    const { layout, data } = this.state;
+    const { layout, data, dataId } = this.state;
     const { className } = this.props;
-
-    // sometimes it's a number, and React complains about wrong type
-    const dataId = this.state.dataId + '';
 
     return (
       <div className={className}>
@@ -120,6 +150,28 @@ export default class DataLayoutWrapper extends PureComponent {
 DataLayoutWrapper.propTypes = {
   windowId: PropTypes.string,
   viewId: PropTypes.string,
+  selected: PropTypes.array,
+  inBackground: PropTypes.bool,
   children: PropTypes.node,
   className: PropTypes.string,
+  entity: PropTypes.string,
+  supportAttribute: PropTypes.bool,
+  setClickOutsideLock: PropTypes.func,
+  fetchViewAttributes: PropTypes.func,
+  fetchViewAttributesLayout: PropTypes.func,
 };
+
+// const mapStateToProps = (state, props) => {
+//   return {
+
+//   };
+// }
+
+export default connect(
+  // mapStateToProps,
+  null,
+  {
+    fetchViewAttributes,
+    fetchViewAttributesLayout,
+  }
+)(DataLayoutWrapper);
