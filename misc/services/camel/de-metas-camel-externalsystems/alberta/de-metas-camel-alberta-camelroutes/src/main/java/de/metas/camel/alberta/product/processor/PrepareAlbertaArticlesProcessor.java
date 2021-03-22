@@ -23,6 +23,8 @@
 package de.metas.camel.alberta.product.processor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.alberta.product.PurchaseRatingEnum;
+import de.metas.camel.alberta.product.UpsertArticleRequest;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.alberta.JsonAlbertaPackagingUnit;
 import de.metas.common.product.v2.response.alberta.JsonAlbertaProductInfo;
@@ -38,23 +40,25 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
-import static de.metas.camel.alberta.ProcessorHelper.getPropertyOrThrowError;
-import static de.metas.camel.alberta.product.PushProductsRouteConstants.ROUTE_PROPERTY_ALBERTA_PRODUCT_API;
-
-public class PushProductsProcessor implements Processor
+public class PrepareAlbertaArticlesProcessor implements Processor
 {
 	@Override
 	public void process(final Exchange exchange)
 	{
-		final AlbertaProductApi albertaProductApi = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_ALBERTA_PRODUCT_API, AlbertaProductApi.class);
-
 		final JsonProduct jsonProduct = exchange.getIn().getBody(JsonProduct.class);
 
-		jsonProductToArticle(jsonProduct)
-				.ifPresent(albertaProductApi::upsertProduct);
+		if (jsonProduct == null)
+		{
+			throw new RuntimeException("No JsonProduct found in the exchange body!");
+		}
+
+		final UpsertArticleRequest upsertArticleRequest = jsonProductToUpsertArticle(jsonProduct)
+				.orElse(null);
+
+		exchange.getIn().setBody(upsertArticleRequest);
 	}
 
-	private Optional<Article> jsonProductToArticle(@NonNull final JsonProduct product)
+	private Optional<UpsertArticleRequest> jsonProductToUpsertArticle(@NonNull final JsonProduct product)
 	{
 		if (product.getAlbertaProductInfo() == null || CollectionUtils.isEmpty(product.getAlbertaProductInfo().getPackagingUnits()))
 		{
@@ -76,19 +80,23 @@ public class PushProductsProcessor implements Processor
 
 		article.additionalDescription(albertaProductInfo.getAdditionalDescription())
 				.size(albertaProductInfo.getSize())
-				.inventoryType(albertaProductInfo.getInventoryType() != null ? new BigDecimal(albertaProductInfo.getInventoryType()): null)
+				.purchaseRating(PurchaseRatingEnum.getValueByCodeOrNull(albertaProductInfo.getPurchaseRating()))
+				.inventoryType(albertaProductInfo.getInventoryType() != null ? new BigDecimal(albertaProductInfo.getInventoryType()) : null)
 				.status(albertaProductInfo.getStatus() != null ? new BigDecimal(albertaProductInfo.getStatus()) : null)
 				.medicalAidPositionNumber(albertaProductInfo.getMedicalAidPositionNumber())
 				.stars(albertaProductInfo.getStars())
 				.assortmentType(albertaProductInfo.getAssortmentType() != null ? new BigDecimal(albertaProductInfo.getAssortmentType()) : null)
 				.pharmacyPrice(albertaProductInfo.getPharmacyPrice() != null ? String.valueOf(albertaProductInfo.getPharmacyPrice()) : null)
 				.fixedPrice(albertaProductInfo.getFixedPrice() != null ? String.valueOf(albertaProductInfo.getFixedPrice()) : null)
-				.purchaseRating(albertaProductInfo.getPurchaseRating() != null ? new BigDecimal(albertaProductInfo.getPurchaseRating()) : null)
 				.therapyIds(albertaProductInfo.getTherapyIds())
 				.billableTherapies(albertaProductInfo.getBillableTherapies())
 				.packagingUnits(toPackageUnitList(albertaProductInfo.getPackagingUnits()));
 
-		return Optional.of(article);
+		return Optional.of(UpsertArticleRequest.builder()
+								   .article(article)
+								   .productId(product.getId())
+								   .firstExport(product.getAlbertaProductInfo().getAlbertaProductId() == null)
+								   .build());
 	}
 
 	@Nullable

@@ -94,7 +94,6 @@ public class ProductsRestControllerTest
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 
 		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade();
-		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO());
 
 		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(), new ExternalSystemExportAuditRepo());
 		final ProductRepository productRepository = new ProductRepository();
@@ -105,6 +104,7 @@ public class ProductsRestControllerTest
 
 		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
+		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
 
 		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService);
 
