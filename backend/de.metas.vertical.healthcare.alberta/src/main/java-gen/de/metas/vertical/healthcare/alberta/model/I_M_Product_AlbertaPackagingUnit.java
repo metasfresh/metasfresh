@@ -1,8 +1,9 @@
 package de.metas.vertical.healthcare.alberta.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Product_AlbertaPackagingUnit
  *  @author metasfresh (generated) 
@@ -58,7 +59,7 @@ public interface I_M_Product_AlbertaPackagingUnit
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setArticleUnit (java.lang.String ArticleUnit);
+	void setArticleUnit (String ArticleUnit);
 
 	/**
 	 * Get Unit.
@@ -67,7 +68,7 @@ public interface I_M_Product_AlbertaPackagingUnit
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getArticleUnit();
+	String getArticleUnit();
 
 	ModelColumn<I_M_Product_AlbertaPackagingUnit, Object> COLUMN_ArticleUnit = new ModelColumn<>(I_M_Product_AlbertaPackagingUnit.class, "ArticleUnit", null);
 	String COLUMNNAME_ArticleUnit = "ArticleUnit";
@@ -121,7 +122,7 @@ public interface I_M_Product_AlbertaPackagingUnit
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set M_Product_AlbertaPackagingUnit.
+	 * Set Alberta packaging units.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -130,7 +131,7 @@ public interface I_M_Product_AlbertaPackagingUnit
 	void setM_Product_AlbertaPackagingUnit_ID (int M_Product_AlbertaPackagingUnit_ID);
 
 	/**
-	 * Get M_Product_AlbertaPackagingUnit.
+	 * Get Alberta packaging units.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -146,7 +147,7 @@ public interface I_M_Product_AlbertaPackagingUnit
 	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setM_Product_ID (int M_Product_ID);
@@ -156,7 +157,7 @@ public interface I_M_Product_AlbertaPackagingUnit
 	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getM_Product_ID();

@@ -148,6 +148,12 @@
             <version>${metasfresh-common.version}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.common.pricing</groupId>
+            <artifactId>de-metas-common-pricing</artifactId>
+            <version>${metasfresh-common.version}</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 </project>

@@ -54,6 +54,7 @@
         <module>de-metas-common-shipping</module>
         <module>de-metas-common-util</module>
         <module>de-metas-common-product</module>
+        <module>de-metas-common-pricing</module>
     </modules>
 
     <dependencies>
