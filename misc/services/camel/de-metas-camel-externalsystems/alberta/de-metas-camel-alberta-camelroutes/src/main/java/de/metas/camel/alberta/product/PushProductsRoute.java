@@ -23,7 +23,8 @@
 package de.metas.camel.alberta.product;
 
 import de.metas.camel.alberta.ProcessorHelper;
-import de.metas.camel.alberta.product.processor.PushProductsProcessor;
+import de.metas.camel.alberta.product.processor.PrepareAlbertaArticlesProcessor;
+import de.metas.camel.alberta.product.processor.PushArticlesProcessor;
 import de.metas.camel.alberta.product.processor.RetrieveProductsProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
@@ -51,6 +52,10 @@ public class PushProductsRoute extends RouteBuilder
 	public static final String PUSH_PRODUCTS = "Alberta-pushProducts";
 	public static final String PROCESS_PRODUCT_ROUTE_ID = "Alberta-pushProduct";
 
+	public static final String RETRIEVE_PRODUCTS_PROCESSOR_ID = "RetrieveProductsProcessor";
+	public static final String PREPARE_ARTICLE_PROCESSOR_ID = "PrepareArticleProcessor";
+	public static final String PUSH_ARTICLE_PROCESSOR_ID = "PushArticleProcessor";
+
 	@Override
 	public void configure()
 	{
@@ -64,7 +69,7 @@ public class PushProductsRoute extends RouteBuilder
 				.routeId(PUSH_PRODUCTS)
 				.log("Route invoked")
 				.streamCaching()
-				.process(new RetrieveProductsProcessor())
+				.process(new RetrieveProductsProcessor()).id(RETRIEVE_PRODUCTS_PROCESSOR_ID)
 
 				.to(StaticEndpointBuilders.direct(MF_GET_PRODUCTS_ROUTE_ID))
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonGetProductsResponse.class))
@@ -85,9 +90,9 @@ public class PushProductsRoute extends RouteBuilder
 		from(StaticEndpointBuilders.direct(PROCESS_PRODUCT_ROUTE_ID))
 				.routeId(PROCESS_PRODUCT_ROUTE_ID)
 				.log("Route invoked")
-				.process(new PushProductsProcessor())
+				.process(new PrepareAlbertaArticlesProcessor()).id(PREPARE_ARTICLE_PROCESSOR_ID)
+				.process(new PushArticlesProcessor()).id(PUSH_ARTICLE_PROCESSOR_ID)
 				.choice()
-					//.when(header(HEADER_ARTICLE_TO_REPORT_PRESENT_FLAG).isEqualTo(false))
 					.when(bodyAs(JsonRequestExternalReferenceUpsert.class).isNull())
 						.log(LoggingLevel.INFO, "Nothing to do! No JsonRequestExternalReferenceUpsert found!")
 					.otherwise()

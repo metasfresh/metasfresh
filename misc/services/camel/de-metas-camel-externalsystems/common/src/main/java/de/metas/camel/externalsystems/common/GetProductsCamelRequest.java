@@ -36,7 +36,7 @@ import javax.annotation.Nullable;
 public class GetProductsCamelRequest
 {
 	@Nullable
-	@JsonProperty("pInstanceId")
+	@JsonProperty("pinstanceId")
 	JsonMetasfreshId pInstanceId;
 
 	@Nullable

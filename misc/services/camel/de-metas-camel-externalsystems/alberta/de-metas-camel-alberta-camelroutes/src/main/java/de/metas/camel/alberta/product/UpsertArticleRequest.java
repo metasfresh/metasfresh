@@ -22,15 +22,27 @@
 
 package de.metas.camel.alberta.product;
 
-public interface PushProductsRouteConstants
-{
-	String ROUTE_PROPERTY_ALBERTA_PRODUCT_API = "AlbertaProductApi";
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import io.swagger.client.model.Article;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-	// FIXME: might be a good idea to expose somehow all those ExternalSystem enums in a common module
-	//keep in sync with de.metas.externalsystem.ExternalSystemType.Alberta
-	String ALBERTA_EXTERNAL_SYSTEM_CONFIG_TYPE = "Alberta";
-	// keep in sync with de.metas.externalreference.AlbertaExternalSystem.ALBERTA
-	String ALBERTA_EXTERNAL_REFERENCE_SYSTEM = "ALBERTA";
-	//keep in sync with de.metas.externalreference.product.ProductExternalReferenceType.PRODUCT
-	String PRODUCT_EXTERNAL_REFERENCE_TYPE = "Product";
+@Value
+@Builder
+@JsonDeserialize(builder = UpsertArticleRequest.UpsertArticleRequestBuilder.class)
+public class UpsertArticleRequest
+{
+	@NonNull
+	@JsonProperty("productId")
+	JsonMetasfreshId productId;
+
+	@NonNull
+	@JsonProperty("article")
+	Article article;
+
+	@JsonProperty("firstExport")
+	boolean firstExport;
 }

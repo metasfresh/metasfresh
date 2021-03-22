@@ -28,18 +28,22 @@ import io.swagger.client.ApiException;
 import io.swagger.client.api.DefaultApi;
 import io.swagger.client.model.Article;
 import io.swagger.client.model.ArticleMapping;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
 import org.springframework.http.HttpStatus;
 
-@Value
+@AllArgsConstructor
+@EqualsAndHashCode
+@Getter
 public class AlbertaProductApi
 {
 	@NonNull
-	DefaultApi defaultApi;
+	private final DefaultApi defaultApi;
 
 	@NonNull
-	AlbertaConnectionDetails connectionDetails;
+	private final AlbertaConnectionDetails connectionDetails;
 
 	@NonNull
 	public static AlbertaProductApi of(@NonNull final AlbertaConnectionDetails connectionDetails)
