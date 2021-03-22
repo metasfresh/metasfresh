@@ -327,11 +327,6 @@ ALTER TABLE AD_OrgChange_History ADD CONSTRAINT CBPartnerTo_ADOrgChangeHistory F
 
 
 
--- 2021-03-18T15:07:15.588Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Table SET AD_Window_ID=541055,Updated=TO_TIMESTAMP('2021-03-18 17:07:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=541601
-;
-
 -- 2021-03-18T15:07:59.388Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Tab_ID,IsDisplayed,DisplayLength,IsSameLine,IsHeading,IsFieldOnly,IsEncrypted,AD_Client_ID,IsActive,Created,CreatedBy,IsReadOnly,Updated,UpdatedBy,AD_Field_ID,IsDisplayedGrid,AD_Column_ID,Name,AD_Org_ID,EntityType) VALUES (543611,'N',10,'N','N','N','N',0,'Y',TO_TIMESTAMP('2021-03-18 17:07:59','YYYY-MM-DD HH24:MI:SS'),100,'N',TO_TIMESTAMP('2021-03-18 17:07:59','YYYY-MM-DD HH24:MI:SS'),100,638562,'N',573232,'Partner From',0,'D')
