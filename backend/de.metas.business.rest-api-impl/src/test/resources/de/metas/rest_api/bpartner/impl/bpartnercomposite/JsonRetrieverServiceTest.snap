@@ -20,8 +20,8 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561134,
-            "nanos": 560000000
+            "seconds": 1561133,
+            "nanos": 544000000
           },
           "entries": [ ]
         },
@@ -61,8 +61,8 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
         },
         "lastChangedByUserId": 30,
         "lastChangedTimestamp": {
-          "seconds": 1561134,
-          "nanos": 560000000
+          "seconds": 1561133,
+          "nanos": 544000000
         },
         "entries": [ ]
       }
@@ -87,8 +87,8 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561134,
-            "nanos": 560000000
+            "seconds": 1561133,
+            "nanos": 544000000
           },
           "entries": [ ]
         },
@@ -135,7 +135,7 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
           "userId": 30
         },
         "lastName": "contactRecord.lastName",
-        "name": "jsonContact.name-UPDATED",
+        "name": "contactRecord.name",
         "newsletter": false,
         "phone": "contactRecord.phone",
         "value": "contactRecord.value"
@@ -163,8 +163,8 @@ de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverServiceTest.retri
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561134,
-            "nanos": 560000000
+            "seconds": 1561133,
+            "nanos": 544000000
           },
           "entries": [ ]
         },
