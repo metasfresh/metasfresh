@@ -9,6 +9,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.IQuery;
 import org.compiere.util.Env;
@@ -141,7 +142,7 @@ public class PMM_GenerateOrdersEnqueuer
 		return queryBuilder
 				.addOnlyActiveRecordsFilter()
 				.filter(lockManager.getNotLockedFilter(I_PMM_PurchaseCandidate.class))
-				.addNotEqualsFilter(I_PMM_PurchaseCandidate.COLUMN_QtyToOrder, BigDecimal.ZERO)
+				.addCompareFilter(I_PMM_PurchaseCandidate.COLUMNNAME_QtyToOrder, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
 				.orderBy()
 				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_AD_Org_ID)
 				.addColumn(I_PMM_PurchaseCandidate.COLUMNNAME_M_Warehouse_ID)
