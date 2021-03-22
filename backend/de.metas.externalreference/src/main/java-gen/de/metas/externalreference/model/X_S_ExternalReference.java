@@ -150,8 +150,6 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_Bpartner = "BPartner";
 	/** BPartnerLocation = BPartnerLocation */
 	public static final String TYPE_BPartnerLocation = "BPartnerLocation";
-	/** BPartnerContact = BPartnerContact */
-	public static final String TYPE_BPartnerContact = "BPartnerContact";
 	/** Product = Product */
 	public static final String TYPE_Product = "Product";
 	/** ProductCategory = ProductCategory */
