@@ -1049,7 +1049,7 @@ import lombok.NonNull;
 	@Override
 	public HUQueryBuilder addOnlyHUIds(@Nullable final Collection<Integer> onlyHUIds)
 	{
-		if (onlyHUIds == null)
+		if (onlyHUIds == null || onlyHUIds.isEmpty())
 		{
 			return this;
 		}

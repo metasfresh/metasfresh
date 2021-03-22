@@ -7,7 +7,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
@@ -19,16 +18,15 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.collections.IteratorUtils;
 import de.metas.util.collections.PagedIterator.PageFetcher;
+import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.util.lang.Mutables;
 import org.adempiere.util.lang.SynchronizedMutable;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -65,9 +63,8 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	private final DocumentFilterList stickyFilters;
 
 	private final HUIdsFilterData huIdsFilterData;
-	private Supplier<ViewRowIdsOrderedSelection> defaultSelectionFactory;
-	private final SynchronizedMutable<ViewRowIdsOrderedSelection> defaultSelectionRef;
-	private final transient ConcurrentHashMap<DocumentQueryOrderByList, ViewRowIdsOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
+	private final DefaultSelectionHolder defaultSelectionHolder;
+	private final ConcurrentHashMap<DocumentQueryOrderByList, ViewRowIdsOrderedSelection> selectionsByOrderBys = new ConcurrentHashMap<>();
 
 	private final CCache<DocumentId, HUEditorRow> cache_huRowsById = CCache.newLRUCache(I_M_HU.Table_Name + "#HUEditorRows#by#Id", 100, 2);
 
@@ -77,31 +74,28 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 			@NonNull final DocumentFilterList stickyFilters,
 			@NonNull final DocumentFilterList filters,
 			final DocumentQueryOrderByList orderBys,
-			final SqlDocumentFilterConverterContext context)
+			final SqlDocumentFilterConverterContext filterConverterCtx)
 	{
 		this.viewEvaluationCtx = ViewEvaluationCtx.newInstanceFromCurrentContext();
 		this.huEditorRepo = huEditorRepo;
 
-		HUIdsFilterData huIdsFilterData = HUIdsFilterHelper.extractFilterDataOrNull(stickyFilters);
-		if (huIdsFilterData == null)
-		{
-			huIdsFilterData = HUIdsFilterData.newEmpty();
-		}
-		else
-		{
-			huIdsFilterData = huIdsFilterData.copy();
-		}
-		this.huIdsFilterData = huIdsFilterData;
+		this.huIdsFilterData = HUIdsFilterHelper.extractFilterData(stickyFilters)
+				.map(HUIdsFilterData::copy)
+				.orElseGet(HUIdsFilterData::acceptAll);
 
 		final DocumentFilterList stickyFiltersWithoutHUIdsFilter = stickyFilters.stream()
 				.filter(HUIdsFilterHelper::isNotHUIdsFilter)
 				.collect(DocumentFilterList.toDocumentFilterList());
 		this.stickyFilters = stickyFiltersWithoutHUIdsFilter.mergeWith(HUIdsFilterHelper.createFilter(huIdsFilterData));
 
-		final DocumentFilterList filtersAll = this.stickyFilters.mergeWith(filters);
-
-		defaultSelectionFactory = () -> huEditorRepo.createSelection(getViewEvaluationCtx(), viewId, filtersAll, orderBys, context);
-		defaultSelectionRef = Mutables.synchronizedMutable(defaultSelectionFactory.get());
+		defaultSelectionHolder = DefaultSelectionHolder.builder()
+				.huEditorViewRepository(huEditorRepo)
+				.viewEvaluationCtx(viewEvaluationCtx)
+				.viewId(viewId)
+				.filters(this.stickyFilters.mergeWith(filters))
+				.orderBys(orderBys)
+				.filterConverterCtx(filterConverterCtx)
+				.build();
 	}
 
 	@Override
@@ -112,7 +106,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 
 	private ViewRowIdsOrderedSelection getDefaultSelection()
 	{
-		return defaultSelectionRef.computeIfNull(defaultSelectionFactory);
+		return defaultSelectionHolder.get();
 	}
 
 	private ViewRowIdsOrderedSelection getSelection(final DocumentQueryOrderByList orderBys)
@@ -137,15 +131,11 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	/**
 	 * @return true if selection was really changed
 	 */
-	private boolean changeSelection(final UnaryOperator<ViewRowIdsOrderedSelection> mapper)
+	private boolean changeSelection(@NonNull final UnaryOperator<ViewRowIdsOrderedSelection> mapper)
 	{
-		final ViewRowIdsOrderedSelection defaultSelectionOld = defaultSelectionRef.getValue();
-
-		defaultSelectionRef.computeIfNull(defaultSelectionFactory); // make sure it's not null (might be null if it was invalidated)
-		final ViewRowIdsOrderedSelection defaultSelectionNew = defaultSelectionRef.compute(mapper);
+		final boolean changed = defaultSelectionHolder.change(mapper);
 		selectionsByOrderBys.clear(); // invalidate all the other selections, let it recompute when needed
-
-		return !Objects.equals(defaultSelectionOld, defaultSelectionNew);
+		return changed;
 	}
 
 	@Override
@@ -163,11 +153,7 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 	@Override
 	public void invalidateAll()
 	{
-		defaultSelectionRef.computeIfNotNull(defaultSelection -> {
-			huEditorRepo.deleteSelection(defaultSelection);
-			return null;
-		});
-
+		defaultSelectionHolder.delete();
 		huEditorRepo.invalidateCache();
 		cache_huRowsById.reset();
 	}
@@ -330,28 +316,71 @@ public class HUEditorViewBuffer_HighVolume implements HUEditorViewBuffer
 
 	public static boolean isHighVolume(final DocumentFilterList stickyFilters)
 	{
-		final HUIdsFilterData huIdsFilterData = HUIdsFilterHelper.extractFilterDataOrNull(stickyFilters);
-		if (huIdsFilterData == null)
-		{
-			return true;
-		}
-
-		final Set<HuId> huIds = huIdsFilterData.getInitialHUIds();
-		if (huIds == null)
-		{
-			// null means no restrictions, so we might have a lot of HUs
-			return true; // high volume
-		}
-		else if (huIds.isEmpty())
-		{
-			// no HUs will be allowed
-			return false; // not high volume
-		}
-		else
-		{
-			// consider high volume if it's above give threshold
-			return huIds.size() >= HIGHVOLUME_THRESHOLD;
-		}
+		final HUIdsFilterData huIdsFilterData = HUIdsFilterHelper.extractFilterData(stickyFilters).orElse(null);
+		return huIdsFilterData == null || huIdsFilterData.isPossibleHighVolume(HIGHVOLUME_THRESHOLD);
 	}
 
+	private static class DefaultSelectionHolder
+	{
+		private final HUEditorViewRepository huEditorViewRepository;
+		private final ViewEvaluationCtx viewEvaluationCtx;
+		private final ViewId viewId;
+		private final DocumentFilterList filters;
+		private final DocumentQueryOrderByList orderBys;
+		private final SqlDocumentFilterConverterContext filterConverterCtx;
+
+		private final SynchronizedMutable<ViewRowIdsOrderedSelection> defaultSelectionRef;
+
+		@Builder
+		private DefaultSelectionHolder(
+				@NonNull final HUEditorViewRepository huEditorViewRepository,
+				final ViewEvaluationCtx viewEvaluationCtx,
+				final ViewId viewId,
+				@NonNull final DocumentFilterList filters,
+				@Nullable final DocumentQueryOrderByList orderBys,
+				final SqlDocumentFilterConverterContext filterConverterCtx)
+		{
+			this.huEditorViewRepository = huEditorViewRepository;
+			this.viewEvaluationCtx = viewEvaluationCtx;
+			this.viewId = viewId;
+			this.filters = filters;
+			this.orderBys = orderBys;
+			this.filterConverterCtx = filterConverterCtx;
+
+			defaultSelectionRef = Mutables.synchronizedMutable(create());
+
+		}
+
+		private ViewRowIdsOrderedSelection create()
+		{
+			return huEditorViewRepository.createSelection(viewEvaluationCtx, viewId, filters, orderBys, filterConverterCtx);
+		}
+
+		public ViewRowIdsOrderedSelection get()
+		{
+			return defaultSelectionRef.computeIfNull(this::create);
+		}
+
+		/**
+		 * @return true if selection was really changed
+		 */
+		public boolean change(@NonNull final UnaryOperator<ViewRowIdsOrderedSelection> mapper)
+		{
+			final ViewRowIdsOrderedSelection defaultSelectionOld = defaultSelectionRef.getValue();
+
+			defaultSelectionRef.computeIfNull(this::create); // make sure it's not null (might be null if it was invalidated)
+			final ViewRowIdsOrderedSelection defaultSelectionNew = defaultSelectionRef.compute(mapper);
+
+			return !ViewRowIdsOrderedSelection.equals(defaultSelectionOld, defaultSelectionNew);
+		}
+
+		public void delete()
+		{
+			defaultSelectionRef.computeIfNotNull(defaultSelection -> {
+				huEditorViewRepository.deleteSelection(defaultSelection);
+				return null;
+			});
+		}
+
+	}
 }
