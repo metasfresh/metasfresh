@@ -23,6 +23,11 @@
 package de.metas.vertical.healthcare.alberta.service;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.externalreference.AlbertaExternalSystem;
+import de.metas.externalreference.ExternalReference;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
+import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -45,10 +50,12 @@ public class AlbertaProductService
 {
 	private final AlbertaProductDAO albertaProductDAO;
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final ExternalReferenceRepository externalReferenceRepository;
 
-	public AlbertaProductService(final AlbertaProductDAO albertaProductDAO)
+	public AlbertaProductService(final AlbertaProductDAO albertaProductDAO, final ExternalReferenceRepository externalReferenceRepository)
 	{
 		this.albertaProductDAO = albertaProductDAO;
+		this.externalReferenceRepository = externalReferenceRepository;
 	}
 
 	@NonNull
@@ -86,6 +93,20 @@ public class AlbertaProductService
 				.product2BillableTherapies(albertaProductDAO.getBillableTherapies(dataQuery))
 				.product2Therapies(albertaProductDAO.getTherapies(dataQuery))
 				.product2PackagingUnits(albertaProductDAO.getPackagingUnits(dataQuery))
+				.getAlbertaArticleIdSupplier(this::getAlbertaArticleIdByProductId)
 				.build();
+	}
+
+	@NonNull
+	private Optional<String> getAlbertaArticleIdByProductId(@NonNull final ProductId productId)
+	{
+		final GetExternalReferenceByRecordIdReq getExternalReferenceByRecordIdReq = GetExternalReferenceByRecordIdReq.builder()
+				.recordId(productId.getRepoId())
+				.externalSystem(AlbertaExternalSystem.ALBERTA)
+				.externalReferenceType(ProductExternalReferenceType.PRODUCT)
+				.build();
+
+		return externalReferenceRepository.getExternalReferenceByMFReference(getExternalReferenceByRecordIdReq)
+				.map(ExternalReference::getExternalReference);
 	}
 }

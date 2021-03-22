@@ -1,15 +1,8 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.Comparator;
-import java.util.List;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.HUMovementResult;
@@ -26,6 +19,10 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Services;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.Comparator;
+import java.util.List;
 
 /*
  * #%L
@@ -54,15 +51,13 @@ import de.metas.util.Services;
  * Is extended by specific processes, depending of their particular requirements
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 
-public abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Helper extends HUEditorProcessTemplate implements IProcessPrecondition
+abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Template extends HUEditorProcessTemplate implements IProcessPrecondition
 {
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-	final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 
 	private HUMovementResult movementResult = null;
 
@@ -83,10 +78,7 @@ public abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Helper extends HUEditorP
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(WEBUI_HU_Constants.MSG_WEBUI_ONLY_TOP_LEVEL_HU));
 		}
 
-		final boolean activeTopLevelHUsSelected = streamSelectedHUs(Select.ONLY_TOPLEVEL)
-				.filter(huRecord -> huStatusBL.isPhysicalHU(huRecord))
-				.findAny()
-				.isPresent();
+		final boolean activeTopLevelHUsSelected = streamSelectedHUs(Select.ONLY_TOPLEVEL).anyMatch(huStatusBL::isPhysicalHU);
 		if (!activeTopLevelHUsSelected)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no physical (etc active) hus selected");
@@ -95,8 +87,8 @@ public abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Helper extends HUEditorP
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	@ProcessParamLookupValuesProvider(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, numericKey = true, lookupSource = LookupSource.lookup)
-	public LookupValuesList getAvailableWarehouses(final LookupDataSourceContext evalCtx)
+	@OverridingMethodsMustInvokeSuper
+	protected LookupValuesList getAvailableWarehouses(final LookupDataSourceContext evalCtx)
 	{
 		final List<org.compiere.model.I_M_Warehouse> warehousesToLoad = handlingUnitsDAO.retrieveWarehousesWhichContainNoneOf(streamSelectedHUs(Select.ONLY_TOPLEVEL).collect(ImmutableList.toImmutableList()));
 
@@ -121,11 +113,9 @@ public abstract class WEBUI_M_HU_MoveToAnotherWarehouse_Helper extends HUEditorP
 	@Override
 	protected void postProcess(final boolean success)
 	{
-		// Invalidate the view
-		// On refresh we expect the HUs we moved, to not be present here anymore.
 		if (movementResult != null)
 		{
-			getView().removeHUsAndInvalidate(movementResult.getHusMoved());
+			getView().invalidateAll();
 		}
 	}
 
