@@ -166,6 +166,12 @@
             <version>${spring-boot.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        
         <!-- Swagger -->
         <dependency>
             <groupId>io.springfox</groupId>

@@ -676,6 +676,10 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                         <ignoreClass>javax.servlet.*</ignoreClass>
                                         <ignoreClass>org.milyn.*</ignoreClass>
                                         <ignoreClass>com.sun.xml.bind.*</ignoreClass>
+
+                                        <!--  Found in: net.jcip:jcip-annotations:jar:1.0:compile
+                                             com.google.code.findbugs:annotations:jar:3.0.1:compile -->
+                                        <ignoreClass>net.jcip.annotations.*</ignoreClass>
                                     </ignoreClasses>
 
                                     <dependencies>

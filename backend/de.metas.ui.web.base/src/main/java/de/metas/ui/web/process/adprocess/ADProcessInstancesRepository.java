@@ -48,7 +48,6 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.Env;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -310,7 +309,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		return processInfoBuilder.build();
 	}
 
-	private ImmutableSet<TableRecordReference> extractSelectedIncludedRecords(final @NotNull CreateProcessInstanceRequest request)
+	private ImmutableSet<TableRecordReference> extractSelectedIncludedRecords(final @NonNull CreateProcessInstanceRequest request)
 	{
 		return request.getSelectedIncludedDocumentPaths()
 				.stream()
