@@ -69,6 +69,10 @@ public class ShortTermContactIndex
 
 	public BPartnerContact extract(@NonNull final MetasfreshId metasfreshId)
 	{
+		if(bpartnerId == null){
+			throw new AdempiereException("The provided contact belongs to another bpartner instance.");
+		}
+
 		final BPartnerContactId bpartnerContactId = BPartnerContactId.of(bpartnerId, UserId.ofRepoId(metasfreshId.getValue()));
 		final BPartnerContact result = id2Contact.get(bpartnerContactId);
 
