@@ -18,7 +18,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
-// import org.springframework.boot.autoconfigure.web.ErrorAttributes;
 import org.springframework.boot.web.error.ErrorAttributeOptions;
 import org.springframework.boot.web.servlet.error.ErrorAttributes;
 import org.springframework.core.Ordered;
@@ -295,23 +294,6 @@ public class WebuiExceptionHandler implements ErrorAttributes, HandlerExceptionR
 
 		return exception;
 	}
-	
-	// @Override
-	// public Throwable getError(final RequestAttributes requestAttributes)
-	// {
-	// 	Throwable exception = getAttribute(requestAttributes, REQUEST_ATTR_EXCEPTION);
-	// 	if (exception == null)
-	// 	{
-	// 		exception = getAttribute(requestAttributes, RequestDispatcher.ERROR_EXCEPTION);
-	// 	}
-	//
-	// 	if (exception != null)
-	// 	{
-	// 		exception = AdempiereException.extractCause(exception);
-	// 	}
-	//
-	// 	return exception;
-	// }
 
 	@SuppressWarnings("unchecked")
 	private static <T> T getAttribute(final RequestAttributes requestAttributes, final String name)

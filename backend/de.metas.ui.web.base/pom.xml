@@ -31,13 +31,6 @@
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-security</artifactId>-->
-<!--        </dependency>-->
-
-        <!-- there are exclusions to avoid dependency version convergence issues 
-        (i.e. to satisfy the enforcer plugin) -->
         <dependency>
             <groupId>de.codecentric</groupId>
             <artifactId>spring-boot-admin-starter-client</artifactId>
@@ -62,8 +55,7 @@
             <artifactId>de.metas.fresh.base</artifactId>
             <version>${metasfresh.version}</version>
             <exclusions>
-                <!-- TODO: i think we shall remove this dep. from de.metas.fresh.base 
-                    !!! -->
+                <!-- TODO: i think we shall remove this dep. from de.metas.fresh.base !!! -->
                 <exclusion>
                     <groupId>de.metas.adempiere.adempiere</groupId>
                     <artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
@@ -134,7 +126,6 @@
             <version>10.0.0</version>
         </dependency>
 
-
         <!-- Elasticsearch -->
         <dependency>
             <groupId>de.metas.elasticsearch</groupId>
@@ -169,44 +160,11 @@
             </exclusions>
         </dependency>
 
-        <!-- Required for elasticsearch -->
-        <!--		<dependency>-->
-        <!--			<groupId>net.java.dev.jna</groupId>-->
-        <!--			<artifactId>jna</artifactId>-->
-        <!--			<version>4.2.2</version>-->
-        <!--		</dependency>-->
-
-        <!--		<dependency>-->
-        <!--			<groupId>org.elasticsearch.client</groupId>-->
-        <!--			<artifactId>transport</artifactId>-->
-        <!--&lt;!&ndash;			<version>5.0.0</version>&ndash;&gt;-->
-        <!--		</dependency>-->
-        <!--		<dependency>-->
-        <!--			<groupId>org.elasticsearch</groupId>-->
-        <!--			<artifactId>elasticsearch</artifactId>-->
-        <!--		</dependency>-->
-        <!--		-->
-        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-autoconfigure -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
             <version>${spring-boot.version}</version>
         </dependency>
-
-        <!--		&lt;!&ndash; https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-autoconfigure &ndash;&gt;-->
-        <!--		<dependency>-->
-        <!--			<groupId>org.springframework.boot</groupId>-->
-        <!--			<artifactId>spring-boot-autoconfigure</artifactId>-->
-        <!--			<version>2.4.3</version>-->
-        <!--		</dependency>-->
-
-
-        <!--		&lt;!&ndash; https://mvnrepository.com/artifact/org.springframework.session/spring-session &ndash;&gt;-->
-        <!--		<dependency>-->
-        <!--			<groupId>org.springframework.session</groupId>-->
-        <!--			<artifactId>spring-session</artifactId>-->
-        <!--			<version>1.3.0.RELEASE</version>-->
-        <!--		</dependency>-->
 
         <!-- Swagger -->
         <dependency>
@@ -252,5 +210,6 @@
             <version>1.2.7</version>
             <scope>test</scope>
         </dependency>
+        
     </dependencies>
 </project>

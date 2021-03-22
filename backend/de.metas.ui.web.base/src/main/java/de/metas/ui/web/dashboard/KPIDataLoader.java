@@ -54,286 +54,333 @@ import lombok.NonNull;
  * #L%
  */
 
-public class KPIDataLoader {
-    public static final KPIDataLoader newInstance(
-            @NonNull final RestHighLevelClient elasticsearchClient,
-            @NonNull final KPI kpi,
-            @NonNull final JSONOptions jsonOptions) {
-        return new KPIDataLoader(elasticsearchClient, kpi, jsonOptions);
-    }
+public class KPIDataLoader
+{
+	public static final KPIDataLoader newInstance(
+			@NonNull final RestHighLevelClient elasticsearchClient,
+			@NonNull final KPI kpi,
+			@NonNull final JSONOptions jsonOptions)
+	{
+		return new KPIDataLoader(elasticsearchClient, kpi, jsonOptions);
+	}
 
-    private static final Logger logger = LogManager.getLogger(KPIDataLoader.class);
+	private static final Logger logger = LogManager.getLogger(KPIDataLoader.class);
 
-    private final RestHighLevelClient elasticsearchClient;
-    private final KPI kpi;
-    private final JSONOptions jsonOptions;
+	private final RestHighLevelClient elasticsearchClient;
+	private final KPI kpi;
+	private final JSONOptions jsonOptions;
 
-    private TimeRange mainTimeRange;
-    private List<TimeRange> timeRanges;
+	private TimeRange mainTimeRange;
+	private List<TimeRange> timeRanges;
 
-    private boolean formatValues = false;
+	private boolean formatValues = false;
 
-    private BiFunction<KPIField, TimeRange, String> fieldNameExtractor = (field, timeRange) -> field.getFieldName();
-    private BiFunction<InternalMultiBucketAggregation.InternalBucket, TimeRange, Object> dataSetValueKeyExtractor = (bucket, timeRange) -> bucket.getKey();
+	private BiFunction<KPIField, TimeRange, String> fieldNameExtractor = (field, timeRange) -> field.getFieldName();
+	private BiFunction<InternalMultiBucketAggregation.InternalBucket, TimeRange, Object> dataSetValueKeyExtractor = (bucket, timeRange) -> bucket.getKey();
 
-    private KPIDataLoader(
-            @NonNull final RestHighLevelClient elasticsearchClient,
-            @NonNull final KPI kpi,
-            @NonNull final JSONOptions jsonOptions) {
-        this.elasticsearchClient = elasticsearchClient;
-        this.kpi = kpi;
-        this.jsonOptions = jsonOptions;
-    }
+	private KPIDataLoader(
+			@NonNull final RestHighLevelClient elasticsearchClient,
+			@NonNull final KPI kpi,
+			@NonNull final JSONOptions jsonOptions)
+	{
+		this.elasticsearchClient = elasticsearchClient;
+		this.kpi = kpi;
+		this.jsonOptions = jsonOptions;
+	}
 
-    public KPIDataLoader setTimeRange(final TimeRange mainTimeRange) {
-        this.mainTimeRange = mainTimeRange;
+	public KPIDataLoader setTimeRange(final TimeRange mainTimeRange)
+	{
+		this.mainTimeRange = mainTimeRange;
 
-        final ImmutableList.Builder<TimeRange> timeRanges = ImmutableList.builder();
-        timeRanges.add(mainTimeRange);
+		final ImmutableList.Builder<TimeRange> timeRanges = ImmutableList.builder();
+		timeRanges.add(mainTimeRange);
 
-        //
-        //
-        final Duration compareOffset = kpi.getCompareOffset();
-        if (compareOffset != null) {
-            timeRanges.add(TimeRange.offset(mainTimeRange, compareOffset));
+		//
+		final Duration compareOffset = kpi.getCompareOffset();
+		if (compareOffset != null)
+		{
+			timeRanges.add(TimeRange.offset(mainTimeRange, compareOffset));
 
-            //
-            // Offset fieldName extractor
-            fieldNameExtractor = (field, timeRange) -> {
-                if (timeRange.isMainTimeRange()) {
-                    return field.getFieldName();
-                } else if (field.isGroupBy()) {
-                    return "_" + field.getOffsetFieldName();
-                } else {
-                    return field.getOffsetFieldName();
-                }
-            };
+			//
+			// Offset fieldName extractor
+			fieldNameExtractor = (field, timeRange) -> {
+				if (timeRange.isMainTimeRange())
+				{
+					return field.getFieldName();
+				}
+				else if (field.isGroupBy())
+				{
+					return "_" + field.getOffsetFieldName();
+				}
+				else
+				{
+					return field.getOffsetFieldName();
+				}
+			};
 
-            //
-            // Offset dataSet value(item) key extractor (i.e. on which key we shall join the result of our queries)
-            final KPIField groupByField = kpi.getGroupByField();
-            if (groupByField.getValueType().isDate()) {
-                dataSetValueKeyExtractor = (bucket, timeRange) -> {
-                    final long millis = convertToMillis(bucket.getKey());
-                    return formatValue(groupByField, timeRange.subtractOffset(millis));
-                };
-            } else {
-                dataSetValueKeyExtractor = (bucket, timeRange) -> formatValue(groupByField, bucket.getKey());
-            }
-        }
+			//
+			// Offset dataSet value(item) key extractor (i.e. on which key we shall join the result of our queries)
+			final KPIField groupByField = kpi.getGroupByField();
+			if (groupByField.getValueType().isDate())
+			{
+				dataSetValueKeyExtractor = (bucket, timeRange) -> {
+					final long millis = convertToMillis(bucket.getKey());
+					return formatValue(groupByField, timeRange.subtractOffset(millis));
+				};
+			}
+			else
+			{
+				dataSetValueKeyExtractor = (bucket, timeRange) -> formatValue(groupByField, bucket.getKey());
+			}
+		}
 
-        this.timeRanges = timeRanges.build();
+		this.timeRanges = timeRanges.build();
 
-        return this;
-    }
+		return this;
+	}
 
-    /**
-     * @param formatValues true if the loader shall format the values and make them user friendly
-     */
-    public KPIDataLoader setFormatValues(final boolean formatValues) {
-        this.formatValues = formatValues;
-        return this;
-    }
+	/**
+	 * @param formatValues true if the loader shall format the values and make them user friendly
+	 */
+	public KPIDataLoader setFormatValues(final boolean formatValues)
+	{
+		this.formatValues = formatValues;
+		return this;
+	}
 
-    private boolean isFormatValues() {
-        return formatValues;
-    }
+	private boolean isFormatValues()
+	{
+		return formatValues;
+	}
 
-    /**
-     * Checks if KPI's elasticsearch Index and Type exists
-     */
-    public KPIDataLoader assertESTypesExists() {
-        //final IndicesClient indicesClient = elasticsearchClient.indices();
-        // final IndicesAdminClient admin = elasticsearchClient.admin()
-        // 		.indices();
+	/**
+	 * Checks if KPI's elasticsearch Index and Type exists
+	 */
+	public KPIDataLoader assertESTypesExists()
+	{
+		//
+		// Check index exists
+		final String esSearchIndex = kpi.getESSearchIndex();
+		final GetIndexRequest request = new GetIndexRequest(esSearchIndex);
+		try
+		{
+			final boolean indexExists = elasticsearchClient.indices().exists(request, RequestOptions.DEFAULT);
+			if (!indexExists)
+			{
+				throw new AdempiereException("ES index '" + esSearchIndex + "' not found");
+			}
+		}
+		catch (java.io.IOException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 
-        //
-        // Check index exists
-        final String esSearchIndex = kpi.getESSearchIndex();
-        final GetIndexRequest request = new GetIndexRequest(esSearchIndex);
-        try {
-            final boolean indexExists = elasticsearchClient.indices().exists(request, RequestOptions.DEFAULT);
-            if (!indexExists) {
-                throw new AdempiereException("ES index '" + esSearchIndex + "' not found");
-            }
-        } catch (java.io.IOException e) {
-            throw AdempiereException.wrapIfNeeded(e);
-        }
+		// final GetIndexResponse indexResponse = admin.prepareGetIndex()
+		// 		.addIndices(esSearchIndex)
+		// 		.get();
+		// final List<String> indexesFound = Arrays.asList(indexResponse.getIndices());
+		// if (!indexesFound.contains(esSearchIndex))
+		// {
+		// 	throw new AdempiereException("ES index '" + esSearchIndex + "' not found in " + indexesFound);
+		// }
+		// logger.debug("Indexes found: {}", indexesFound);
 
-        // final GetIndexResponse indexResponse = admin.prepareGetIndex()
-        // 		.addIndices(esSearchIndex)
-        // 		.get();
-        // final List<String> indexesFound = Arrays.asList(indexResponse.getIndices());
-        // if (!indexesFound.contains(esSearchIndex))
-        // {
-        // 	throw new AdempiereException("ES index '" + esSearchIndex + "' not found in " + indexesFound);
-        // }
-        // logger.debug("Indexes found: {}", indexesFound);
+		//
+		// Check type exists
+		// TODO figure out how to port
+		// final String esTypes = kpi.getESSearchTypes();
+		// final boolean esTypesExists = admin.prepareTypesExists(esSearchIndex)
+		// 		.setTypes(kpi.getESSearchTypes())
+		// 		.get()
+		// 		.isExists();
+		// if (!esTypesExists)
+		// {
+		// 	throw new AdempiereException("Elasticseatch types " + esTypes + " does not exist");
+		// }
 
-        //
-        // Check type exists
-        // TODO figure out how to port
-        // final String esTypes = kpi.getESSearchTypes();
-        // final boolean esTypesExists = admin.prepareTypesExists(esSearchIndex)
-        // 		.setTypes(kpi.getESSearchTypes())
-        // 		.get()
-        // 		.isExists();
-        // if (!esTypesExists)
-        // {
-        // 	throw new AdempiereException("Elasticseatch types " + esTypes + " does not exist");
-        // }
+		// All good
+		return this;
+	}
 
-        // All good
-        return this;
-    }
+	public KPIDataResult retrieveData()
+	{
+		final Stopwatch duration = Stopwatch.createStarted();
 
-    public KPIDataResult retrieveData() {
-        final Stopwatch duration = Stopwatch.createStarted();
+		logger.trace("Retrieving data for {}, range={}", kpi, mainTimeRange);
+		final KPIDataResult.Builder data = KPIDataResult.builder()
+				.setRange(mainTimeRange);
 
-        logger.trace("Retrieving data for {}, range={}", kpi, mainTimeRange);
-        final KPIDataResult.Builder data = KPIDataResult.builder()
-                .setRange(mainTimeRange);
+		timeRanges.forEach(timeRange -> loadData(data, timeRange));
 
-        timeRanges.forEach(timeRange -> loadData(data, timeRange));
+		return data
+				.setTook(duration.stop())
+				.build();
+	}
 
-        return data
-                .setTook(duration.stop())
-                .build();
-    }
+	private void loadData(final KPIDataResult.Builder data, final TimeRange timeRange)
+	{
+		logger.trace("Loading data for {}", timeRange);
 
-    private void loadData(final KPIDataResult.Builder data, final TimeRange timeRange) {
-        logger.trace("Loading data for {}", timeRange);
+		//
+		// Create query evaluation context
+		final Evaluatee evalCtx = Evaluatees.mapBuilder()
+				.put("MainFromMillis", data.getRange().getFromMillis())
+				.put("MainToMillis", data.getRange().getToMillis())
+				.put("FromMillis", timeRange.getFromMillis())
+				.put("ToMillis", timeRange.getToMillis())
+				.build()
+				// Fallback to user context
+				.andComposeWith(Evaluatees.ofCtx(Env.getCtx()));
 
-        //
-        // Create query evaluation context
-        final Evaluatee evalCtx = Evaluatees.mapBuilder()
-                .put("MainFromMillis", data.getRange().getFromMillis())
-                .put("MainToMillis", data.getRange().getToMillis())
-                .put("FromMillis", timeRange.getFromMillis())
-                .put("ToMillis", timeRange.getToMillis())
-                .build()
-                // Fallback to user context
-                .andComposeWith(Evaluatees.ofCtx(Env.getCtx()));
+		//
+		// Resolve esQuery's variables
+		final IStringExpression esQuery = kpi.getESQuery();
+		final String esQueryParsed = esQuery.evaluate(evalCtx, OnVariableNotFound.Preserve);
 
-        //
-        // Resolve esQuery's variables
-        final IStringExpression esQuery = kpi.getESQuery();
-        final String esQueryParsed = esQuery.evaluate(evalCtx, OnVariableNotFound.Preserve);
+		//
+		// Execute the query
+		final SearchResponse response;
+		try
+		{
+			logger.trace("Executing: \n{}", esQueryParsed);
 
-        //
-        // Execute the query
-        final SearchResponse response;
-        try {
-            logger.trace("Executing: \n{}", esQueryParsed);
+			final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+			sourceBuilder.query(QueryBuilders.queryStringQuery(esQueryParsed));
 
-            final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-            sourceBuilder.query(QueryBuilders.queryStringQuery(esQueryParsed));
+			final SearchRequest searchRequest = new SearchRequest();
+			searchRequest.indices(kpi.getESSearchIndex());
+			searchRequest.searchType(kpi.getESSearchTypes());
+			searchRequest.source(sourceBuilder);
 
-            final SearchRequest searchRequest = new SearchRequest();
-            searchRequest.indices(kpi.getESSearchIndex());
-            searchRequest.searchType(kpi.getESSearchTypes());
-            searchRequest.source(sourceBuilder);
+			response = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT);
 
-            response = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT);
+			logger.trace("Got response: \n{}", response);
+		}
+		catch (final NoNodeAvailableException e)
+		{
+			// elastic search transport error => nothing to do about it
+			throw new AdempiereException("" + e.getLocalizedMessage() + "."
+					+ "\nIf you want to disable the elasticsearch system then you can set `" + ESSystem.SYSCONFIG_PostKpiEvents + "` to `N`.", e);
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException("Failed executing query for " + this + ": " + e.getLocalizedMessage()
+					+ "\nQuery: " + esQueryParsed, e);
+		}
 
-            // response = elasticsearchClient.prepareSearch(kpi.getESSearchIndex())
-            // 		.setTypes(kpi.getESSearchTypes())
-            // 		.setQuery(QueryBuilders.queryStringQuery(esQueryParsed))
-            // 		// .setExplain(true) // enable it only for debugging
-            // 		.get();
+		//
+		// Fetch data
+		try
+		{
+			final List<Aggregation> aggregations = response.getAggregations().asList();
 
-            logger.trace("Got response: \n{}", response);
-        } catch (final NoNodeAvailableException e) {
-            // elastic search transport error => nothing to do about it
-            throw new AdempiereException("" + e.getLocalizedMessage() + "."
-                    + "\nIf you want to disable the elasticsearch system then you can set `" + ESSystem.SYSCONFIG_PostKpiEvents + "` to `N`.", e);
-        } catch (final Exception e) {
-            throw new AdempiereException("Failed executing query for " + this + ": " + e.getLocalizedMessage()
-                    + "\nQuery: " + esQueryParsed, e);
-        }
+			for (final Aggregation agg : aggregations)
+			{
+				if (agg instanceof InternalMultiBucketAggregation)
+				{
+					final String aggName = agg.getName();
+					final InternalMultiBucketAggregation multiBucketsAggregation = (InternalMultiBucketAggregation)agg;
+					final List<InternalMultiBucketAggregation.InternalBucket> buckets = multiBucketsAggregation.getBuckets();
+					for (final InternalMultiBucketAggregation.InternalBucket bucket : buckets)
+					{
+						final Object key = dataSetValueKeyExtractor.apply(bucket, timeRange);
 
-        //
-        // Fetch data
-        try {
-            final List<Aggregation> aggregations = response.getAggregations().asList();
+						for (final KPIField field : kpi.getFields())
+						{
+							final Object value = field.getBucketValueExtractor().extractValue(aggName, bucket);
+							final Object jsonValue = formatValue(field, value);
+							if (jsonValue == null)
+							{
+								continue;
+							}
 
-            for (final Aggregation agg : aggregations) {
-                if (agg instanceof InternalMultiBucketAggregation) {
-                    final String aggName = agg.getName();
-                    final InternalMultiBucketAggregation multiBucketsAggregation = (InternalMultiBucketAggregation) agg;
-                    final List<InternalMultiBucketAggregation.InternalBucket> buckets = multiBucketsAggregation.getBuckets();
-                    for (final InternalMultiBucketAggregation.InternalBucket bucket : buckets) {
-                        final Object key = dataSetValueKeyExtractor.apply(bucket, timeRange);
+							final String fieldName = fieldNameExtractor.apply(field, timeRange);
 
-                        for (final KPIField field : kpi.getFields()) {
-                            final Object value = field.getBucketValueExtractor().extractValue(aggName, bucket);
-                            final Object jsonValue = formatValue(field, value);
-                            if (jsonValue == null) {
-                                continue;
-                            }
+							data.putValue(aggName, key, fieldName, jsonValue);
+						}
 
-                            final String fieldName = fieldNameExtractor.apply(field, timeRange);
+						//
+						// Make sure the groupByField's value is present in our dataSet value.
+						// If not exist, we can use the key as it's value.
+						final KPIField groupByField = kpi.getGroupByFieldOrNull();
+						if (groupByField != null)
+						{
+							data.putValueIfAbsent(aggName, key, groupByField.getFieldName(), key);
+						}
+					}
+				}
+				else if (agg instanceof NumericMetricsAggregation.SingleValue)
+				{
+					final NumericMetricsAggregation.SingleValue singleValueAggregation = (NumericMetricsAggregation.SingleValue)agg;
 
-                            data.putValue(aggName, key, fieldName, jsonValue);
-                        }
+					final String key = "NO_KEY"; // N/A
 
-                        //
-                        // Make sure the groupByField's value is present in our dataSet value.
-                        // If not exist, we can use the key as it's value.
-                        final KPIField groupByField = kpi.getGroupByFieldOrNull();
-                        if (groupByField != null) {
-                            data.putValueIfAbsent(aggName, key, groupByField.getFieldName(), key);
-                        }
-                    }
-                } else if (agg instanceof NumericMetricsAggregation.SingleValue) {
-                    final NumericMetricsAggregation.SingleValue singleValueAggregation = (NumericMetricsAggregation.SingleValue) agg;
+					for (final KPIField field : kpi.getFields())
+					{
+						final Object value;
+						if ("value".equals(field.getESPathAsString()))
+						{
+							value = singleValueAggregation.value();
+						}
+						else
+						{
+							throw new IllegalStateException("Only ES path ending with 'value' allowed for field: " + field);
+						}
 
-                    final String key = "NO_KEY"; // N/A
+						final Object jsonValue = field.convertValueToJson(value, jsonOptions);
+						data.putValue(agg.getName(), key, field.getFieldName(), jsonValue);
+					}
+				}
+				else
+				{
+					new AdempiereException("Aggregation type not supported: " + agg.getClass())
+							.throwIfDeveloperModeOrLogWarningElse(logger);
+				}
+			}
+		}
+		catch (final Exception e)
+		{
+			throw new AdempiereException(e.getLocalizedMessage()
+					+ "\n KPI: " + this
+					+ "\n Query: " + esQueryParsed
+					+ "\n Response: " + response, e);
 
-                    for (final KPIField field : kpi.getFields()) {
-                        final Object value;
-                        if ("value".equals(field.getESPathAsString())) {
-                            value = singleValueAggregation.value();
-                        } else {
-                            throw new IllegalStateException("Only ES path ending with 'value' allowed for field: " + field);
-                        }
+		}
+	}
 
-                        final Object jsonValue = field.convertValueToJson(value, jsonOptions);
-                        data.putValue(agg.getName(), key, field.getFieldName(), jsonValue);
-                    }
-                } else {
-                    new AdempiereException("Aggregation type not supported: " + agg.getClass())
-                            .throwIfDeveloperModeOrLogWarningElse(logger);
-                }
-            }
-        } catch (final Exception e) {
-            throw new AdempiereException(e.getLocalizedMessage()
-                    + "\n KPI: " + this
-                    + "\n Query: " + esQueryParsed
-                    + "\n Response: " + response, e);
+	private Object formatValue(final KPIField field, final Object value)
+	{
+		if (isFormatValues())
+		{
+			return field.convertValueToJsonUserFriendly(value, jsonOptions);
+		}
+		else
+		{
+			return field.convertValueToJson(value, jsonOptions);
+		}
+	}
 
-        }
-    }
-
-    private Object formatValue(final KPIField field, final Object value) {
-        if (isFormatValues()) {
-            return field.convertValueToJsonUserFriendly(value, jsonOptions);
-        } else {
-            return field.convertValueToJson(value, jsonOptions);
-        }
-    }
-
-    private static final long convertToMillis(final Object valueObj) {
-        if (valueObj == null) {
-            return 0;
-        } else if (valueObj instanceof org.joda.time.DateTime) {
-            return ((org.joda.time.DateTime) valueObj).getMillis();
-        } else if (valueObj instanceof Long) {
-            return ((Long) valueObj).longValue();
-        } else if (valueObj instanceof Number) {
-            return ((Number) valueObj).longValue();
-        } else {
-            throw new AdempiereException("Cannot convert " + valueObj + " to millis.");
-        }
-    }
+	private static final long convertToMillis(final Object valueObj)
+	{
+		if (valueObj == null)
+		{
+			return 0;
+		}
+		else if (valueObj instanceof org.joda.time.DateTime)
+		{
+			return ((org.joda.time.DateTime)valueObj).getMillis();
+		}
+		else if (valueObj instanceof Long)
+		{
+			return ((Long)valueObj).longValue();
+		}
+		else if (valueObj instanceof Number)
+		{
+			return ((Number)valueObj).longValue();
+		}
+		else
+		{
+			throw new AdempiereException("Cannot convert " + valueObj + " to millis.");
+		}
+	}
 }

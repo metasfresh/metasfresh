@@ -113,10 +113,7 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 		{
 			throw AdempiereException.wrapIfNeeded(e); 
 		}
-		// final SearchResponse searchResponse = elasticsearchClient.prepareSearch(esIndexName)
-		// 		.setQuery(query)
-		// 		.setExplain(logger.isTraceEnabled())
-		// 		.get();
+
 		logger.trace("ES response: {}", searchResponse);
 
 		final List<Integer> recordIds = Stream.of(searchResponse.getHits().getHits())
@@ -139,5 +136,4 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 		final Map<String, Object> source = hit.getSourceAsMap();
 		return NumberUtils.asInt(source.get(esKeyColumnName), -1);
 	}
-
 }

@@ -1,8 +1,5 @@
 package de.metas.elasticsearch;
 
-// import org.elasticsearch.common.logging.ESLoggerFactory;
-// import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
-
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
 import de.metas.logging.LogManager;
@@ -36,13 +33,6 @@ import org.slf4j.Logger;
 public class ESServer
 {
 	private final static transient Logger logger = LogManager.getLogger(ESServer.class);
-
-	public ESServer()
-	{
-		// Make sure slf4j is used.
-		// (by default, log4j is used)
-		// ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory()); // FIXME: shall we use log4j-over-slf4j?!
-	}
 
 	public void installConfig(@NonNull final ESModelIndexerConfigBuilder config)
 	{

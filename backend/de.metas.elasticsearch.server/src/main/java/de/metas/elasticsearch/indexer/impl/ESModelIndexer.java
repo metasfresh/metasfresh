@@ -458,7 +458,6 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Override
 	public IESIndexerResult addToIndex(@NonNull final ESModelIndexerDataSource dataSource)
 	{
-		//final BulkRequestBuilder bulkRequest = elasticsearchClient.prepareBulk();
 		BulkRequest bulkRequest = new BulkRequest();
 
 		try
