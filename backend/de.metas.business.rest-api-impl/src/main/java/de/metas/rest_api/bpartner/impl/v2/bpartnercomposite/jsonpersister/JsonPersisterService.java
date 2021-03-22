@@ -63,13 +63,17 @@ import de.metas.common.bpartner.v2.response.JsonResponseUpsert.JsonResponseUpser
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem.JsonResponseUpsertItemBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem.SyncOutcome;
-import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalreference.IExternalReferenceType;
+import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
+import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.Language;
@@ -77,21 +81,13 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeRestUtils;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.ShortTermBankAccountIndex;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.ShortTermContactIndex;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.ShortTermLocationIndex;
 import de.metas.rest_api.bpartner.impl.v2.JsonRequestConsolidateService;
+import de.metas.rest_api.bpartner.impl.v2.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.bpartner.impl.v2.bpartnercomposite.JsonRetrieverService;
-import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.utils.IdentifierString.Type;
-import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import de.metas.util.StringUtils;
-import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidIdentifierException;
-import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.Data;
 import lombok.Getter;
@@ -99,16 +95,22 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.externalreference.ExternalIdentifier.Type.EXTERNAL_REFERENCE;
+import static de.metas.externalreference.ExternalIdentifier.Type.METASFRESH_ID;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
 
@@ -162,7 +164,7 @@ public class JsonPersisterService
 
 		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
 		final String rawBpartnerIdentifier = requestItem.getBpartnerIdentifier();
-		final IdentifierString bpartnerIdentifier = IdentifierString.of(rawBpartnerIdentifier);
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(rawBpartnerIdentifier);
 		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.getBPartnerComposite(orgId, bpartnerIdentifier);
 
 		final JsonResponseBPartnerCompositeUpsertItemUnderConstrunction resultBuilder = new JsonResponseBPartnerCompositeUpsertItemUnderConstrunction();
@@ -203,9 +205,10 @@ public class JsonPersisterService
 				bpartnerComposite,
 				effectiveSyncAdvise);
 
-		handleExternalReferenceRecords(requestItem, bpartnerComposite, orgCode);
+		final JsonResponseBPartnerCompositeUpsertItem result = resultBuilder.build();
+		handleExternalReferenceRecords(result, orgCode);
 
-		return resultBuilder.build();
+		return result;
 	}
 
 	@Data
@@ -254,12 +257,13 @@ public class JsonPersisterService
 	}
 
 	public JsonResponseUpsertItem persist(
-			@NonNull final IdentifierString contactIdentifier,
+			@NonNull final ExternalIdentifier contactIdentifier,
 			@NonNull final JsonRequestContact jsonContact,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final BPartnerContactQuery contactQuery = createContactQuery(contactIdentifier);
-		final Optional<BPartnerCompositeAndContactId> optionalContactIdAndBPartner = bpartnerCompositeRepository.getByContact(contactQuery);
+		final Optional<BPartnerContactQuery> contactQuery = createContactQuery(contactIdentifier);
+		final Optional<BPartnerCompositeAndContactId> optionalContactIdAndBPartner =
+				contactQuery.isPresent() ? bpartnerCompositeRepository.getByContact(contactQuery.get()) : Optional.empty();
 
 		final BPartnerContact contact;
 		final BPartnerComposite bpartnerComposite;
@@ -279,16 +283,18 @@ public class JsonPersisterService
 		{
 			if (parentSyncAdvise.isFailIfNotExists())
 			{
-				throw MissingResourceException.builder().resourceName("contact").resourceIdentifier(contactIdentifier.toJson()).parentResource(jsonContact).build()
+				throw MissingResourceException.builder().resourceName("contact").resourceIdentifier(contactIdentifier.getRawValue()).parentResource(jsonContact).build()
 						.setParameter("effectiveSyncAdvise", parentSyncAdvise);
 			}
-			if (jsonContact.getMetasfreshBPartnerId() == null)
-			{
-				throw new MissingPropertyException("JsonContact.metasfreshBPartnerId", jsonContact);
-			}
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(jsonContact.getMetasfreshBPartnerId().getValue());
 
-			bpartnerComposite = bpartnerCompositeRepository.getById(bpartnerId);
+			final Optional<BPartnerId> bpartnerId = getBPartnerId(jsonContact.getBpartnerIdentifier());
+
+			if (!bpartnerId.isPresent())
+			{
+				throw new AdempiereException("External identifier could not be resolved and it is mandatory for insert. External identifier: " + jsonContact.getBpartnerIdentifier());
+			}
+
+			bpartnerComposite = bpartnerCompositeRepository.getById(bpartnerId.get());
 
 			contact = BPartnerContact.builder().build();
 			bpartnerComposite.getContacts().add(contact);
@@ -299,39 +305,71 @@ public class JsonPersisterService
 
 		bpartnerCompositeRepository.save(bpartnerComposite);
 
-		// might be different from contactIdentifier
-		final IdentifierString identifierAfterUpdate = jsonRequestConsolidateService.extractIdentifier(contactIdentifier.getType(), contact);
+		final Optional<BPartnerContact> persistedContact = bpartnerComposite.extractContactByHandle(contactIdentifier.getRawValue());
 
-		final Optional<BPartnerContact> persistedContact = bpartnerComposite.extractContact(BPartnerCompositeRestUtils.createContactFilterFor(identifierAfterUpdate));
+		final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(BPartnerContactId.toRepoId(persistedContact.get().getId()));
 
-		return JsonResponseUpsertItem.builder()
-				.identifier(contactIdentifier.getRawIdentifierString())
-				.metasfreshId(JsonMetasfreshId.of(BPartnerContactId.toRepoId(persistedContact.get().getId())))
+		final JsonResponseUpsertItem responseUpsertItem = JsonResponseUpsertItem.builder()
+				.identifier(contactIdentifier.getRawValue())
+				.metasfreshId(metasfreshId)
 				.syncOutcome(syncOutcome)
 				.build();
+
+		final JsonSingleExternalReferenceCreateReq externalReferenceCreateReq =
+				contactIdentifier.asJsonSingleExternalReferenceCreateReq(ExternalUserReferenceType.USER_ID, metasfreshId);
+		externalReferenceRestControllerService.performInsertIfMissing(externalReferenceCreateReq, null);
+
+		return responseUpsertItem;
 	}
 
-	private static BPartnerContactQuery createContactQuery(
-			@NonNull final IdentifierString contactIdentifier)
+	private Optional<BPartnerId> getBPartnerId(@NonNull final String bPartnerIdentifier)
+	{
+		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(bPartnerIdentifier);
+
+		switch (externalIdentifier.getType())
+		{
+			case METASFRESH_ID:
+				return Optional.of(BPartnerId.ofRepoId(externalIdentifier.asMetasfreshId().getValue()));
+
+			case EXTERNAL_REFERENCE:
+				final Optional<MetasfreshId> metasfreshId =
+						jsonRetrieverService.resolveExternalReference(null, externalIdentifier, BPartnerExternalReferenceType.BPARTNER);
+
+				return metasfreshId.map(id -> BPartnerId.ofRepoId(id.getValue()));
+
+			default:
+				throw new AdempiereException("Unsupported external identifier: " + bPartnerIdentifier);
+		}
+	}
+
+	private Optional<BPartnerContactQuery> createContactQuery(
+			@NonNull final ExternalIdentifier contactIdentifier)
 	{
 		final BPartnerContactQueryBuilder contactQuery = BPartnerContactQuery.builder();
 
 		switch (contactIdentifier.getType())
 		{
-			case EXTERNAL_ID:
-				contactQuery.externalId(JsonExternalIds.toExternalIdOrNull(contactIdentifier.asJsonExternalId()));
+			case EXTERNAL_REFERENCE:
+				final Optional<MetasfreshId> metasfreshId =
+						jsonRetrieverService.resolveExternalReference(null, contactIdentifier, ExternalUserReferenceType.USER_ID);
+
+				if (metasfreshId.isPresent())
+				{
+					contactQuery.userId(UserId.ofRepoId(metasfreshId.get().getValue()));
+				}
+				else
+				{
+					return Optional.empty();
+				}
 				break;
 			case METASFRESH_ID:
-				final UserId userId = contactIdentifier.asMetasfreshId(UserId::ofRepoId);
+				final UserId userId = UserId.ofRepoId(contactIdentifier.asMetasfreshId().getValue());
 				contactQuery.userId(userId);
 				break;
-			case VALUE:
-				contactQuery.value(contactIdentifier.asValue());
-				break;
 			default:
-				throw new InvalidIdentifierException(contactIdentifier);
+				throw new InvalidIdentifierException(contactIdentifier.getRawValue());
 		}
-		return contactQuery.build();
+		return Optional.of(contactQuery.build());
 	}
 
 	/**
@@ -341,7 +379,7 @@ public class JsonPersisterService
 	 */
 	public Optional<JsonResponseUpsert> persistForBPartner(
 			@Nullable final String orgCode,
-			@NonNull final IdentifierString bpartnerIdentifier,
+			@NonNull final ExternalIdentifier bpartnerIdentifier,
 			@NonNull final JsonRequestLocationUpsert jsonRequestLocationUpsert,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
@@ -363,7 +401,7 @@ public class JsonPersisterService
 		final Map<String, JsonResponseUpsertItemBuilder> identifierToBuilder = new HashMap<>();
 		for (final JsonRequestLocationUpsertItem requestItem : requestItems)
 		{
-			final JsonResponseUpsertItemBuilder responseItemBuilder = syncJsonLocation(requestItem, effectiveSyncAdvise, shortTermIndex);
+			final JsonResponseUpsertItemBuilder responseItemBuilder = syncJsonLocation(bpartnerComposite.getOrgId(), requestItem, effectiveSyncAdvise, shortTermIndex);
 
 			// we don't know the metasfreshId yet, so for now just store what we know into the map
 			identifierToBuilder.put(requestItem.getLocationIdentifier(), responseItemBuilder);
@@ -375,14 +413,17 @@ public class JsonPersisterService
 		final JsonResponseUpsertBuilder response = JsonResponseUpsert.builder();
 		for (final JsonRequestLocationUpsertItem requestItem : requestItems)
 		{
-			final IdentifierString locationIdentifier = IdentifierString.of(requestItem.getLocationIdentifier());
-			final BPartnerLocation bpartnerLocation = shortTermIndex.extractAndMarkUsed(locationIdentifier);
+			final Optional<BPartnerLocation> bpartnerLocation = bpartnerComposite.extractLocationByHandle(requestItem.getLocationIdentifier());
 
-			final JsonResponseUpsertItem responseItem = identifierToBuilder
-					.get(requestItem.getLocationIdentifier())
-					.metasfreshId(JsonMetasfreshId.of(BPartnerLocationId.toRepoId(bpartnerLocation.getId())))
-					.build();
-			response.responseItem(responseItem);
+			if (bpartnerLocation.isPresent())
+			{
+				final JsonResponseUpsertItem responseItem = identifierToBuilder
+						.get(requestItem.getLocationIdentifier())
+						.metasfreshId(JsonMetasfreshId.of(BPartnerLocationId.toRepoId(bpartnerLocation.get().getId())))
+						.build();
+				response.responseItem(responseItem);
+			}
+
 		}
 
 		return Optional.of(response.build());
@@ -393,7 +434,7 @@ public class JsonPersisterService
 	 */
 	public Optional<JsonResponseUpsert> persistForBPartner(
 			@Nullable final String orgCode,
-			@NonNull final IdentifierString bpartnerIdentifier,
+			@NonNull final ExternalIdentifier bpartnerIdentifier,
 			@NonNull final JsonRequestContactUpsert jsonContactUpsert,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
@@ -413,7 +454,7 @@ public class JsonPersisterService
 		final Map<String, JsonResponseUpsertItemBuilder> identifierToBuilder = new HashMap<>();
 		for (final JsonRequestContactUpsertItem requestItem : jsonContactUpsert.getRequestItems())
 		{
-			final JsonResponseUpsertItemBuilder responseItemBuilder = syncJsonContact(requestItem, effectiveSyncAdvise, shortTermIndex);
+			final JsonResponseUpsertItemBuilder responseItemBuilder = syncJsonContact(bpartnerComposite.getOrgId(), requestItem, effectiveSyncAdvise, shortTermIndex);
 
 			// we don't know the metasfreshId yet, so for now just store what we know into the map
 			identifierToBuilder.put(requestItem.getContactIdentifier(), responseItemBuilder);
@@ -442,7 +483,7 @@ public class JsonPersisterService
 	 */
 	public Optional<JsonResponseUpsert> persistForBPartner(
 			@Nullable final String orgCode,
-			@NonNull final IdentifierString bpartnerIdentifier,
+			@NonNull final ExternalIdentifier bpartnerIdentifier,
 			@NonNull final JsonRequestBankAccountsUpsert jsonBankAccountsUpsert,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
@@ -580,7 +621,6 @@ public class JsonPersisterService
 			return BooleanWithReason.falseBecause("JsonRequestComposite does not include a JsonRequestBPartner");
 		}
 
-		// note that if the BPartner wouldn't exist, we weren't here
 		final SyncAdvise effCompositeSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
 		if (bpartnerCompositeIsNew && effCompositeSyncAdvise.isFailIfNotExists())
@@ -793,7 +833,7 @@ public class JsonPersisterService
 		{
 			result.put(
 					contactRequestItem.getContactIdentifier(),
-					syncJsonContact(contactRequestItem, contactsSyncAdvise, shortTermIndex));
+					syncJsonContact(bpartnerComposite.getOrgId(), contactRequestItem, contactsSyncAdvise, shortTermIndex));
 		}
 
 		// if we have contacts with e.g. isBillToDefault, then make sure that none of the previously existing locations also have such a default flag
@@ -872,12 +912,27 @@ public class JsonPersisterService
 	}
 
 	private JsonResponseUpsertItemBuilder syncJsonContact(
+			@NonNull final OrgId orgId,
 			@NonNull final JsonRequestContactUpsertItem jsonContact,
 			@NonNull final SyncAdvise parentSyncAdvise,
 			@NonNull final ShortTermContactIndex shortTermIndex)
 	{
-		final IdentifierString contactIdentifier = IdentifierString.of(jsonContact.getContactIdentifier());
-		final BPartnerContact existingContact = shortTermIndex.extract(contactIdentifier);
+		final ExternalIdentifier contactIdentifier = ExternalIdentifier.of(jsonContact.getContactIdentifier());
+		BPartnerContact existingContact = null;
+
+		if (ExternalIdentifier.Type.EXTERNAL_REFERENCE.equals(contactIdentifier.getType()))
+		{
+			final Optional<MetasfreshId> metasfreshId =
+					jsonRetrieverService.resolveExternalReference(orgId, contactIdentifier, ExternalUserReferenceType.USER_ID);
+			if (metasfreshId.isPresent())
+			{
+				existingContact = shortTermIndex.extract(metasfreshId.get());
+			}
+		}
+		else
+		{
+			existingContact = shortTermIndex.extract(contactIdentifier);
+		}
 
 		final JsonResponseUpsertItemBuilder result = JsonResponseUpsertItem.builder()
 				.identifier(jsonContact.getContactIdentifier());
@@ -897,7 +952,7 @@ public class JsonPersisterService
 				throw MissingResourceException.builder().resourceName("contact").resourceIdentifier(jsonContact.getContactIdentifier()).parentResource(jsonContact).build()
 						.setParameter("parentSyncAdvise", parentSyncAdvise);
 			}
-			else if (Type.METASFRESH_ID.equals(contactIdentifier.getType()))
+			else if (METASFRESH_ID.equals(contactIdentifier.getType()))
 			{
 				throw MissingResourceException.builder().resourceName("contact").resourceIdentifier(jsonContact.getContactIdentifier()).parentResource(jsonContact)
 						.detail(TranslatableStrings.constant("With this type, only updates are allowed."))
@@ -908,8 +963,6 @@ public class JsonPersisterService
 			syncOutcome = SyncOutcome.CREATED;
 		}
 
-		contact.addHandle(contactIdentifier.getRawIdentifierString());
-
 		result.syncOutcome(syncOutcome);
 		if (!Objects.equals(SyncOutcome.NOTHING_DONE, syncOutcome))
 		{
@@ -919,13 +972,11 @@ public class JsonPersisterService
 	}
 
 	private void syncJsonToContact(
-			@NonNull final IdentifierString contactIdentifier,
+			@NonNull final ExternalIdentifier contactIdentifier,
 			@NonNull final JsonRequestContact jsonBPartnerContact,
 			@NonNull final BPartnerContact contact,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final SyncAdvise syncAdvise = coalesce(jsonBPartnerContact.getSyncAdvise(), parentSyncAdvise);
-
 		// active
 		if (jsonBPartnerContact.isActiveSet())
 		{
@@ -1009,6 +1060,8 @@ public class JsonPersisterService
 				contact.setNewsletter(jsonBPartnerContact.getNewsletter());
 			}
 		}
+
+		contact.addHandle(contactIdentifier.getRawValue());
 
 		final BPartnerContactType bpartnerContactType = syncJsonToContactType(jsonBPartnerContact);
 		contact.setContactType(bpartnerContactType);
@@ -1126,7 +1179,7 @@ public class JsonPersisterService
 		{
 			result.put(
 					locationRequestItem.getLocationIdentifier(),
-					syncJsonLocation(locationRequestItem, locationsSyncAdvise, shortTermIndex));
+					syncJsonLocation(bpartnerComposite.getOrgId(), locationRequestItem, locationsSyncAdvise, shortTermIndex));
 		}
 
 		// if we have location with isBillToDefault or isShipToDefault, then make sure that none of the previously existing locations also have such a default flag
@@ -1272,12 +1325,28 @@ public class JsonPersisterService
 	}
 
 	private JsonResponseUpsertItemBuilder syncJsonLocation(
+			@NonNull final OrgId orgId,
 			@NonNull final JsonRequestLocationUpsertItem locationUpsertItem,
 			@NonNull final SyncAdvise parentSyncAdvise,
 			@NonNull final ShortTermLocationIndex shortTermIndex)
 	{
-		final IdentifierString locationIdentifier = IdentifierString.of(locationUpsertItem.getLocationIdentifier());
-		final BPartnerLocation existingLocation = shortTermIndex.extractAndMarkUsed(locationIdentifier);
+		final ExternalIdentifier locationIdentifier = ExternalIdentifier.of(locationUpsertItem.getLocationIdentifier());
+
+		BPartnerLocation existingLocation = null;
+
+		if (ExternalIdentifier.Type.EXTERNAL_REFERENCE.equals(locationIdentifier.getType()))
+		{
+			final Optional<MetasfreshId> metasfreshId =
+					jsonRetrieverService.resolveExternalReference(orgId, locationIdentifier, BPLocationExternalReferenceType.BPARTNER_LOCATION);
+			if (metasfreshId.isPresent())
+			{
+				existingLocation = shortTermIndex.extractAndMarkUsed(metasfreshId.get());
+			}
+		}
+		else
+		{
+			existingLocation = shortTermIndex.extractAndMarkUsed(locationIdentifier);
+		}
 
 		final JsonResponseUpsertItemBuilder resultBuilder = JsonResponseUpsertItem.builder()
 				.identifier(locationUpsertItem.getLocationIdentifier());
@@ -1301,7 +1370,7 @@ public class JsonPersisterService
 						.build()
 						.setParameter("effectiveSyncAdvise", parentSyncAdvise);
 			}
-			else if (Type.METASFRESH_ID.equals(locationIdentifier.getType()))
+			else if (METASFRESH_ID.equals(locationIdentifier.getType()))
 			{
 				throw MissingResourceException.builder()
 						.resourceName("location")
@@ -1480,101 +1549,58 @@ public class JsonPersisterService
 		return locationType.build();
 	}
 
-	private void handleExternalReferenceRecords(
-			@NonNull final JsonRequestBPartnerUpsertItem jsonRequestBPartnerUpsertItem,
-			@NonNull final BPartnerComposite bpartnerComposite,
-			@Nullable final String orgCode)
+	private Optional<JsonSingleExternalReferenceCreateReq> mapToJsonSingleExternalReferenceCreateReq(
+			@NonNull final JsonResponseUpsertItem responseUpsertItem,
+			@NonNull final IExternalReferenceType externalReferenceType)
 	{
-
-		//1. handle bPartner external ref if any
-		if (jsonRequestBPartnerUpsertItem.getBpartnerComposite().getBPartnerReferenceCreateRequest() != null)
+		if (responseUpsertItem != null && SyncOutcome.CREATED.equals(responseUpsertItem.getSyncOutcome()))
 		{
-			insertBPartnerExternalReferenceIfMissing(jsonRequestBPartnerUpsertItem.getBpartnerComposite().getBPartnerReferenceCreateRequest(), bpartnerComposite, orgCode);
+			final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(responseUpsertItem.getIdentifier());
+			if (externalIdentifier.getType().equals(EXTERNAL_REFERENCE))
+			{
+				return Optional.of(externalIdentifier.asJsonSingleExternalReferenceCreateReq(externalReferenceType, responseUpsertItem.getMetasfreshId()));
+			}
+
 		}
 
-		//2. handle bPartner location external ref if any
-		final JsonRequestLocationUpsert upsertLocationRequest = jsonRequestBPartnerUpsertItem.getBpartnerComposite().getLocationsNotNull();
+		return Optional.empty();
+	}
 
-		if (Check.isEmpty(upsertLocationRequest.getRequestItems()))
+	private void handleExternalReferenceRecords(@NonNull final JsonResponseBPartnerCompositeUpsertItem result, final String orgCode)
+	{
+		final Set<JsonSingleExternalReferenceCreateReq> externalReferenceCreateReqs = new HashSet<>();
+
+		final JsonResponseUpsertItem bPartnerResult = result.getResponseBPartnerItem();
+		final Optional<JsonSingleExternalReferenceCreateReq> singleExternalReferenceCreateReq =
+				mapToJsonSingleExternalReferenceCreateReq(bPartnerResult, BPartnerExternalReferenceType.BPARTNER);
+
+		singleExternalReferenceCreateReq.ifPresent(externalReferenceCreateReqs::add);
+
+		final List<JsonResponseUpsertItem> bPartnerLocationsResult = result.getResponseLocationItems();
+		if (!CollectionUtils.isEmpty(bPartnerLocationsResult))
 		{
-			return;//nothing more to do
+			externalReferenceCreateReqs.addAll(bPartnerLocationsResult
+													   .stream()
+													   .map(bPartnerLocation -> mapToJsonSingleExternalReferenceCreateReq(bPartnerLocation,
+																														  BPLocationExternalReferenceType.BPARTNER_LOCATION))
+													   .filter(Optional::isPresent)
+													   .map(Optional::get)
+													   .collect(Collectors.toSet()));
 		}
 
-		final Map<ExternalId, JsonMetasfreshId> externalLocationId2MetasfreshId = Check.isEmpty(bpartnerComposite.getLocations())
-				? ImmutableMap.of()
-				: bpartnerComposite.getLocations()
-				.stream()
-				.filter(location -> location.getExternalId() != null && location.getId() != null)
-				.collect(ImmutableMap.toImmutableMap(
-						BPartnerLocation::getExternalId,
-						location -> JsonMetasfreshId.of(location.getId().getRepoId()))
-				);
-
-		insertBPLocationExternalRefIfMissing(upsertLocationRequest.getRequestItems(), externalLocationId2MetasfreshId, orgCode);
-	}
-
-	private void insertBPartnerExternalReferenceIfMissing(
-			@NonNull final JsonSingleExternalReferenceCreateReq externalReferenceCreateReq,
-			@NonNull final BPartnerComposite bpartnerComposite,
-			@Nullable final String orgCode)
-	{
-		final BPartnerId bPartnerId = bpartnerComposite.getBpartner() != null && bpartnerComposite.getBpartner().getId() != null
-				? bpartnerComposite.getBpartner().getId()
-				: null;
-
-		if (bPartnerId == null)
+		final List<JsonResponseUpsertItem> bPartnerContactItems = result.getResponseContactItems();
+		if (!CollectionUtils.isEmpty(bPartnerContactItems))
 		{
-			throw new AdempiereException("bPartnerComposite.getBpartner().getId() should never be null at this stage!")
-					.appendParametersToMessage()
-					.setParameter("BPartnerComposite", bpartnerComposite);
+			externalReferenceCreateReqs.addAll(bPartnerContactItems
+													   .stream()
+													   .map(bPartnerContact -> mapToJsonSingleExternalReferenceCreateReq(bPartnerContact,
+																														 ExternalUserReferenceType.USER_ID))
+													   .filter(Optional::isPresent)
+													   .map(Optional::get)
+													   .collect(Collectors.toSet()));
 		}
 
-		final JsonSingleExternalReferenceCreateReq createRequest =
-				buildExternalRefWithMetasfreshId(externalReferenceCreateReq, JsonMetasfreshId.of(bPartnerId.getRepoId()));
+		externalReferenceCreateReqs.forEach(externalReferenceCreateReq -> externalReferenceRestControllerService.performInsertIfMissing(externalReferenceCreateReq, orgCode));
 
-		externalReferenceRestControllerService.performInsertIfMissing(createRequest, orgCode);
-	}
-
-	private void insertBPLocationExternalRefIfMissing(
-			@NonNull final List<JsonRequestLocationUpsertItem> requestItems,
-			@NonNull final Map<ExternalId, JsonMetasfreshId> externalLocationId2MetasfreshId,
-			@Nullable final String orgCode)
-	{
-
-		requestItems.stream()
-				.map(JsonRequestLocationUpsertItem::getLocationExternalRef)
-				.filter(Objects::nonNull)
-				.map(locationExternalRef -> {
-					final ExternalId locationExternalId = ExternalId.of(locationExternalRef.getExternalReferenceItem().getLookupItem().getId());
-
-					return Optional.ofNullable(externalLocationId2MetasfreshId.get(locationExternalId))
-							.map(locationMFId -> buildExternalRefWithMetasfreshId(locationExternalRef, locationMFId))
-							.orElseGet(() -> {
-								logger.warn("*** WARN in insertBPLocationExternalRefIfMissing: no metasfreshId was found for the externalId: {}! "
-										+ "If this happened, something went wrong while upserting the bPartnerLocations", locationExternalId);
-								return null;
-							});
-				})
-				.filter(Objects::nonNull)
-				.forEach(createExternalRefReq -> externalReferenceRestControllerService.performInsertIfMissing(createExternalRefReq, orgCode));
-	}
-
-	@NonNull
-	private JsonSingleExternalReferenceCreateReq buildExternalRefWithMetasfreshId(
-			@NonNull final JsonSingleExternalReferenceCreateReq externalReferenceCreateReq,
-			@NonNull final JsonMetasfreshId metasfreshId)
-	{
-
-		final JsonExternalReferenceItem referenceItemWithMFId = JsonExternalReferenceItem
-				.builder()
-				.metasfreshId(metasfreshId)
-				.version(externalReferenceCreateReq.getExternalReferenceItem().getVersion())
-				.lookupItem(externalReferenceCreateReq.getExternalReferenceItem().getLookupItem())
-				.build();
-
-		return JsonSingleExternalReferenceCreateReq.builder()
-				.systemName(externalReferenceCreateReq.getSystemName())
-				.externalReferenceItem(referenceItemWithMFId)
-				.build();
 	}
 }

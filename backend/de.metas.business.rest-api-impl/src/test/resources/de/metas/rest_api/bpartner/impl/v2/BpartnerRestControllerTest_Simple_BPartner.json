@@ -1,7 +1,7 @@
   {
     "requestItems": [
       {
-        "bpartnerIdentifier": "val-1234567",
+        "bpartnerIdentifier": "ext-ALBERTA-1234567",
         "bpartnerComposite": {
           "bpartner": {
             "code": "other12345",

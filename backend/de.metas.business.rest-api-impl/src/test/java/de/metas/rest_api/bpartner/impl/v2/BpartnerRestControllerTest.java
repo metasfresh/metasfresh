@@ -56,14 +56,16 @@ import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
-import de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil;
 import de.metas.rest_api.bpartner.impl.v2.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
@@ -71,11 +73,11 @@ import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
-import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -94,23 +96,26 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.InputStream;
 import java.util.Optional;
 
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_ORG_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_USER_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BBPARTNER_LOCATION_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_EXTERNAL_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_LOCATION_GLN;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_VALUE;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BP_GROUP_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.createBPartnerData;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.AD_ORG_ID;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.AD_USER_ID;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.C_BBPARTNER_LOCATION_ID;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.C_BPARTNER_EXTERNAL_ID;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.C_BPARTNER_ID;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.C_BPARTNER_LOCATION_EXTERNAL_ID;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.C_BPARTNER_LOCATION_GLN;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.C_BP_GROUP_ID;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.C_CONTACT_EXTERNAL_ID;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.EXTERNAL_SYSTEM_NAME;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.createBPartnerData;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.createExternalReference;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -118,8 +123,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class BpartnerRestControllerTest
@@ -128,6 +132,7 @@ class BpartnerRestControllerTest
 
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
 	private CurrencyRepository currencyRepository;
+	private ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
 	@BeforeAll
 	static void beforeAll()
@@ -148,6 +153,15 @@ class BpartnerRestControllerTest
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
+		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
+
+		final ExternalSystems externalSystems = new ExternalSystems();
+
+		final ExternalReferenceRepository externalReferenceRepository =
+				new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
+
+		externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
+
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
@@ -160,7 +174,7 @@ class BpartnerRestControllerTest
 				new BPGroupRepository(),
 				new GreetingRepository(),
 				currencyRepository,
-				Mockito.mock(ExternalReferenceRestControllerService.class));
+				externalReferenceRestControllerService);
 
 		bpartnerRestController = new BpartnerRestController(
 				new de.metas.rest_api.bpartner.impl.v2.BPartnerEndpointService(jsonServiceFactory),
@@ -179,9 +193,12 @@ class BpartnerRestControllerTest
 
 	@Test
 	void retrieveBPartner_ext()
+
 	{
+		final String bPartnerExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_BPARTNER_EXTERNAL_ID);
+
 		// invoke the method under test
-		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("ext-" + C_BPARTNER_EXTERNAL_ID);
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(bPartnerExternalIdentifier);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
@@ -204,8 +221,10 @@ class BpartnerRestControllerTest
 	@Test
 	void retrieveBPartner_gln()
 	{
+		final String bPartnerExternalIdentifier = String.join("-", "gln", C_BPARTNER_LOCATION_GLN);
+
 		// invoke the method under test
-		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("gln-" + C_BPARTNER_LOCATION_GLN);
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner(bPartnerExternalIdentifier);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
@@ -214,12 +233,15 @@ class BpartnerRestControllerTest
 	}
 
 	@Test
-	void retrieveBPartnerContact()
+	void retrieveBPartnerContact_id()
 	{
+		final String bPartnerExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_BPARTNER_EXTERNAL_ID);
+		final String bPartnerContactExternalIdentifier = Integer.toString(AD_USER_ID);
+
 		// invoke the method under test
 		final ResponseEntity<JsonResponseContact> result = bpartnerRestController.retrieveBPartnerContact(
-				"ext-" + C_BPARTNER_EXTERNAL_ID,
-				Integer.toString(AD_USER_ID));
+				bPartnerExternalIdentifier,
+				bPartnerContactExternalIdentifier);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
@@ -228,12 +250,66 @@ class BpartnerRestControllerTest
 	}
 
 	@Test
-	void retrieveBPartnerLocation()
+	void retrieveBPartnerContact_ext()
 	{
+		final String bPartnerExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_BPARTNER_EXTERNAL_ID);
+		final String bPartnerContactExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_CONTACT_EXTERNAL_ID);
+
+		// invoke the method under test
+		final ResponseEntity<JsonResponseContact> result = bpartnerRestController.retrieveBPartnerContact(
+				bPartnerExternalIdentifier,
+				bPartnerContactExternalIdentifier);
+
+		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		final JsonResponseContact resultBody = result.getBody();
+
+		expect(resultBody).toMatchSnapshot();
+	}
+
+	@Test
+	void retrieveBPartnerLocation_id()
+	{
+		final String bPartnerExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_BPARTNER_EXTERNAL_ID);
+		final String bPartnerLocationExternalIdentifier = String.valueOf(C_BBPARTNER_LOCATION_ID);
+
 		// invoke the method under test
 		final ResponseEntity<JsonResponseLocation> result = bpartnerRestController.retrieveBPartnerLocation(
-				"ext-" + C_BPARTNER_EXTERNAL_ID,
-				"gln-" + C_BPARTNER_LOCATION_GLN);
+				bPartnerExternalIdentifier,
+				bPartnerLocationExternalIdentifier);
+
+		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		final JsonResponseLocation resultBody = result.getBody();
+
+		expect(resultBody).toMatchSnapshot();
+	}
+
+	@Test
+	void retrieveBPartnerLocation_ext()
+	{
+		final String bPartnerExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_BPARTNER_EXTERNAL_ID);
+		final String bPartnerLocationExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_BPARTNER_LOCATION_EXTERNAL_ID);
+
+		// invoke the method under test
+		final ResponseEntity<JsonResponseLocation> result = bpartnerRestController.retrieveBPartnerLocation(
+				bPartnerExternalIdentifier,
+				bPartnerLocationExternalIdentifier);
+
+		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+		final JsonResponseLocation resultBody = result.getBody();
+
+		expect(resultBody).toMatchSnapshot();
+	}
+
+	@Test
+	void retrieveBPartnerLocation_gln()
+	{
+		final String bPartnerExternalIdentifier = String.join("-", "ext", EXTERNAL_SYSTEM_NAME, C_BPARTNER_EXTERNAL_ID);
+		final String bPartnerLocationExternalIdentifier = String.join("-", "gln", C_BPARTNER_LOCATION_GLN);
+
+		// invoke the method under test
+		final ResponseEntity<JsonResponseLocation> result = bpartnerRestController.retrieveBPartnerLocation(
+				bPartnerExternalIdentifier,
+				bPartnerLocationExternalIdentifier);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseLocation resultBody = result.getBody();
@@ -252,11 +328,8 @@ class BpartnerRestControllerTest
 		createCountryRecord("CH");
 		createCountryRecord("DE");
 
-		// final String externalId = C_BPARTNER_EXTERNAL_ID + "_2"; TODO https://github.com/metasfresh/metasfresh/issues/10784
-		final String value = C_BPARTNER_VALUE + "_2";
-		final JsonRequestComposite bpartnerComposite = MockedDataUtil
-				//.createMockBPartner("ext-" + externalId)
-				.createMockBPartner("val-"+value);
+		final String bPartnerIdentifier = "ext-" + EXTERNAL_SYSTEM_NAME + "-b1_" + C_BPARTNER_EXTERNAL_ID;
+		final JsonRequestComposite bpartnerComposite = MockedDataUtil.createMockBPartner(bPartnerIdentifier);
 
 		assertThat(bpartnerComposite.getContactsNotNull().getRequestItems()).hasSize(2); // guard
 		assertThat(bpartnerComposite.getLocationsNotNull().getRequestItems()).hasSize(2);// guard
@@ -265,8 +338,7 @@ class BpartnerRestControllerTest
 		bpartner.setGroup(BP_GROUP_RECORD_NAME);
 
 		final JsonRequestBPartnerUpsertItem requestItem = JsonRequestBPartnerUpsertItem.builder()
-				//.bpartnerIdentifier("ext-" + externalId)
-				.bpartnerIdentifier("val-" + value)
+				.bpartnerIdentifier(bPartnerIdentifier)
 				.bpartnerComposite(bpartnerComposite)
 				.build();
 
@@ -278,12 +350,10 @@ class BpartnerRestControllerTest
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
-		// JSONObjectMapper.forClass(JsonRequestBPartnerUpsert.class).writeValueAsString(bpartnerUpsertRequest);
 		// invoke the method under test
 		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
-		// final JsonMetasfreshId metasfreshId = assertUpsertResultOK(result, "ext-" + externalId);
-		final JsonMetasfreshId metasfreshId = assertUpsertResultOK(result, "val-" + value);  // TODO https://github.com/metasfresh/metasfresh/issues/10784
+		final JsonMetasfreshId metasfreshId = assertUpsertResultOK(result, bPartnerIdentifier);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(metasfreshId.getValue());
 
 		final BPartnerComposite persistedResult = bpartnerCompositeRepository.getById(bpartnerId);
@@ -295,33 +365,31 @@ class BpartnerRestControllerTest
 		assertThat(POJOLookupMap.get().getRecords(I_C_Location.class)).hasSize(initialLocationRecordCount + 2);
 	}
 
-	// TODO https://github.com/metasfresh/metasfresh/issues/10784
-	// /**
-	//  * Verifies that you can identify a bpartner by {@code ext-1234567} and then updated its external id to {@code 1234567otherExternalId}.
-	//  */
-	// @Test
-	// void createOrUpdateBPartner_update_builder()
-	// {
-	// 	JsonRequestBPartner partner = new JsonRequestBPartner();
-	// 	partner.setCompanyName("otherCompanyName");
-	// 	// partner.setExternalId(JsonExternalId.of("1234567otherExternalId")); TODO https://github.com/metasfresh/metasfresh/issues/10784
-	//
-	// 	partner.setCode("other12345");
-	// 	final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
-	// 			.syncAdvise(SyncAdvise.builder()
-	// 					.ifExists(IfExists.UPDATE_MERGE)
-	// 					.ifNotExists(IfNotExists.CREATE)
-	// 					.build())
-	// 			.requestItem(JsonRequestBPartnerUpsertItem.builder()
-	// 					.bpartnerIdentifier("ext-1234567")
-	// 					.bpartnerComposite(JsonRequestComposite.builder()
-	// 							.bpartner(partner)
-	// 							.build())
-	// 					.build())
-	// 			.build();
-	//
-	// 	createOrUpdateBPartner_update_performTest(bpartnerUpsertRequest);
-	// }
+	/**
+	 * Verifies that you can identify a bpartner by {@code ext-ALBERTA-1234567} and then updated its code.
+	 */
+	@Test
+	void createOrUpdateBPartner_update_builder()
+	{
+		JsonRequestBPartner partner = new JsonRequestBPartner();
+		partner.setCompanyName("otherCompanyName");
+
+		partner.setCode("other12345");
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
+				.syncAdvise(SyncAdvise.builder()
+									.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
+									.ifNotExists(SyncAdvise.IfNotExists.CREATE)
+									.build())
+				.requestItem(JsonRequestBPartnerUpsertItem.builder()
+									 .bpartnerIdentifier("ext-ALBERTA-1234567")
+									 .bpartnerComposite(JsonRequestComposite.builder()
+																.bpartner(partner)
+																.build())
+									 .build())
+				.build();
+
+		createOrUpdateBPartner_update_performTest(bpartnerUpsertRequest);
+	}
 
 	/**
 	 * Like {@link #createOrUpdateBPartner_update_builder()}, but get the rest file from a JSON string
@@ -334,78 +402,6 @@ class BpartnerRestControllerTest
 
 		assertThat(bpartnerRecord.getBPartner_Parent_ID()).isLessThanOrEqualTo(0);
 	}
-
-	/**
-	 * Verifies a small&simple JSON that identifies a BPartner by its value and then updates that value.
-	 */
-	@Test
-	void createOrUpdateBPartner_update_C_BPartner_Value_OK()
-	{
-		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_update_C_BPartner_Value.json");
-
-		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
-		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
-		bpartnerRecord.setName("bpartnerRecord.name");
-		bpartnerRecord.setValue("12345"); // keep in sync with the JSON file
-		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
-		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
-		saveRecord(bpartnerRecord);
-
-		final RecordCounts inititalCounts = new RecordCounts();
-
-		// invoke the method under test
-		bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
-
-		inititalCounts.assertCountsUnchanged();
-
-		// verify that the bpartner-record was updated
-		refresh(bpartnerRecord);
-		assertThat(bpartnerRecord.getValue()).isEqualTo("12345_updated");
-
-	}
-
-	// TODO https://github.com/metasfresh/metasfresh/issues/10784
-	// /**
-	//  * Like {@link #createOrUpdateBPartner_update_C_BPartner_Value_OK()}, but updates a location's externalId
-	//  */
-	// @Test
-	// void createOrUpdateBPartner_update_C_BP_Location_ExternalId()
-	// {
-	// 	final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_update_C_BP_Location_ExternalId.json");
-	//
-	// 	final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
-	// 	bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
-	// 	bpartnerRecord.setName("bpartnerRecord.name");
-	// 	bpartnerRecord.setValue("12345"); // keep in sync with the JSON file
-	// 	bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
-	// 	bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
-	// 	saveRecord(bpartnerRecord);
-	//
-	// 	final I_C_Country countryRecord = newInstance(I_C_Country.class);
-	// 	countryRecord.setCountryCode("DE");
-	// 	saveRecord(countryRecord);
-	//
-	// 	final I_C_Location locationRecord = newInstance(I_C_Location.class);
-	// 	locationRecord.setC_Country_ID(countryRecord.getC_Country_ID());
-	// 	saveRecord(locationRecord);
-	//
-	// 	final I_C_BPartner_Location bpartnerLocationRecord = newInstance(I_C_BPartner_Location.class);
-	// 	bpartnerLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
-	// 	bpartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
-	// 	bpartnerLocationRecord.setExternalId("123"); // keep in sync with the JSON file
-	// 	saveRecord(bpartnerLocationRecord);
-	//
-	// 	final RecordCounts inititalCounts = new RecordCounts();
-	//
-	// 	// invoke the method under test
-	// 	bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
-	//
-	// 	inititalCounts.assertCountsUnchanged();
-	//
-	// 	// verify that the bpartner-record was updated
-	// 	refresh(bpartnerLocationRecord);
-	// 	assertThat(bpartnerLocationRecord.getExternalId()).isEqualTo("123_updated");
-	// }
 
 	/**
 	 * Update a bpartner and insert a location at the same time.
@@ -422,6 +418,7 @@ class BpartnerRestControllerTest
 		assertThat(bpartnerUpsertRequest.getRequestItems().get(0).getBpartnerComposite().getLocationsNotNull().getRequestItems()).hasSize(1);
 
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
+		bpartnerRecord.setC_BPartner_ID(12345);
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
 		bpartnerRecord.setName("bpartnerRecord.name");
 		bpartnerRecord.setValue("12345");
@@ -429,14 +426,14 @@ class BpartnerRestControllerTest
 		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		saveRecord(bpartnerRecord);
 
-		final RecordCounts inititalCounts = new RecordCounts();
+		final RecordCounts initialCounts = new RecordCounts();
 
 		// invoke the method under test
 		bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
 
-		inititalCounts.assertBPartnerCountChangedBy(0);
-		inititalCounts.assertUserCountChangedBy(0);
-		inititalCounts.assertLocationCountChangedBy(1);
+		initialCounts.assertBPartnerCountChangedBy(0);
+		initialCounts.assertUserCountChangedBy(0);
+		initialCounts.assertLocationCountChangedBy(1);
 
 		// verify that the bpartner-record was updated
 		refresh(bpartnerRecord);
@@ -444,7 +441,7 @@ class BpartnerRestControllerTest
 		assertThat(bpartnerRecord.getName()).isEqualTo("bpartnerRecord.name_updated");
 
 		// use the rest controller to get the json that we can then verify
-		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("val-12345");
+		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("12345");
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 		expect(resultBody).toMatchSnapshot();
@@ -458,7 +455,7 @@ class BpartnerRestControllerTest
 	@Test
 	void createOrUpdateBPartner_update_C_BPartner_Value_NoSuchPartner()
 	{
-		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_update_C_BPartner_Value.json");
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_update_C_BPartner_ExternalReference.json");
 
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
@@ -481,8 +478,6 @@ class BpartnerRestControllerTest
 	void createOrUpdateBPartner_duplicate_location()
 	{
 		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = loadUpsertRequest("BpartnerRestControllerTest_duplicate_location.json");
-
-		createBPartnerData(0);
 
 		// invoke the method under test
 		bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
@@ -523,13 +518,14 @@ class BpartnerRestControllerTest
 	{
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
-		bpartnerRecord.setExternalId("1234567");
 		bpartnerRecord.setName("bpartnerRecord.name");
 		bpartnerRecord.setValue("bpartnerRecord.value");
 		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
 		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		bpartnerRecord.setBPartner_Parent_ID(123); // in one test this shall be updated to null
 		saveRecord(bpartnerRecord);
+
+		createExternalReference("1234567", "BPartner", bpartnerRecord.getC_BPartner_ID());
 
 		final RecordCounts initialCounts = new RecordCounts();
 
@@ -541,7 +537,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getBody().getResponseItems()).hasSize(1);
 		final JsonResponseBPartnerCompositeUpsertItem jsonResponseCompositeUpsertItem = result.getBody().getResponseItems().get(0);
 
-		assertThat(jsonResponseCompositeUpsertItem.getResponseBPartnerItem().getIdentifier()).isEqualTo("ext-1234567");
+		assertThat(jsonResponseCompositeUpsertItem.getResponseBPartnerItem().getIdentifier()).isEqualTo("ext-ALBERTA-1234567");
 		assertThat(jsonResponseCompositeUpsertItem.getResponseBPartnerItem().getMetasfreshId().getValue()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 
 		// verify that the bpartner-record was updated
@@ -601,14 +597,15 @@ class BpartnerRestControllerTest
 	@Test
 	void createOrUpdateContact_create()
 	{
-		final JsonRequestContactUpsertItem jsonContact = MockedDataUtil.createMockContact("newContact-");
+		final JsonRequestContactUpsertItem jsonContact = MockedDataUtil.createMockContact("newContact");
+		final String bPartnerIdentifier = "ext-" + EXTERNAL_SYSTEM_NAME + "-" + C_BPARTNER_EXTERNAL_ID;
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// invoke the method under test
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateContact(
-				"gln-" + C_BPARTNER_LOCATION_GLN,
+				bPartnerIdentifier,
 				JsonRequestContactUpsert.builder().requestItem(jsonContact).build());
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
@@ -631,13 +628,12 @@ class BpartnerRestControllerTest
 		expect(persistedResult).toMatchSnapshot();
 	}
 
-	// TODO https://github.com/metasfresh/metasfresh/issues/10784
-	// @Test
-	// void createOrUpdateContact_update_extContactIdentifier()
-	// {
-	// 	final BPartnerComposite persistedResult = perform_createOrUpdateContact_update("ext-" + AD_USER_EXTERNAL_ID); 
-	// 	expect(persistedResult).toMatchSnapshot();
-	// }
+	@Test
+	void createOrUpdateContact_update_extContactIdentifier()
+	{
+		final BPartnerComposite persistedResult = perform_createOrUpdateContact_update("ext-" + EXTERNAL_SYSTEM_NAME + "-" + AD_USER_EXTERNAL_ID);
+		expect(persistedResult).toMatchSnapshot();
+	}
 
 	@Test
 	void createOrUpdateContact_update_idContactIdentifier()
@@ -651,19 +647,18 @@ class BpartnerRestControllerTest
 		final JsonRequestContact jsonContact = new JsonRequestContact();
 		jsonContact.setName("jsonContact.name-UPDATED");
 		jsonContact.setCode("jsonContact.code-UPDATED");
-		jsonContact.setMetasfreshBPartnerId(JsonMetasfreshId.of(C_BPARTNER_ID));
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// invoke the method under test
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateContact(
-				"val-" + C_BPARTNER_VALUE,
+				"ext-" + EXTERNAL_SYSTEM_NAME + "-" + C_BPARTNER_EXTERNAL_ID,
 				JsonRequestContactUpsert.builder().requestItem(JsonRequestContactUpsertItem
-						.builder()
-						.contactIdentifier(contactIdentifier)
-						.contact(jsonContact)
-						.build()).build());
+																	   .builder()
+																	   .contactIdentifier(contactIdentifier)
+																	   .contact(jsonContact)
+																	   .build()).build());
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
 
@@ -689,14 +684,14 @@ class BpartnerRestControllerTest
 	void createOrUpdateLocation_create()
 	{
 		createCountryRecord("DE");
-		final JsonRequestLocationUpsertItem jsonLocation = MockedDataUtil.createMockLocation("newLocation-", "DE");
+		final JsonRequestLocationUpsertItem jsonLocation = MockedDataUtil.createMockLocation("newLocation", "DE");
 
 		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// invoke the method under test
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateLocation(
-				"ext-" + C_BPARTNER_EXTERNAL_ID,
+				"ext-" + EXTERNAL_SYSTEM_NAME + "-" + C_BPARTNER_EXTERNAL_ID,
 				JsonRequestLocationUpsert.builder().requestItem(jsonLocation).build());
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
@@ -709,7 +704,7 @@ class BpartnerRestControllerTest
 
 		final JsonMetasfreshId metasfreshId = responseItem.getMetasfreshId();
 
-		final BPartnerQuery query = BPartnerQuery.builder().externalId(ExternalId.of(C_BPARTNER_EXTERNAL_ID)).build();
+		final BPartnerQuery query = BPartnerQuery.builder().bPartnerId(BPartnerId.ofRepoId(C_BPARTNER_ID)).build();
 		final ImmutableList<BPartnerComposite> persistedPage = bpartnerCompositeRepository.getByQuery(query);
 
 		assertThat(persistedPage).hasSize(1);
@@ -730,9 +725,9 @@ class BpartnerRestControllerTest
 				IdentifierString.ofRepoId(C_BPARTNER_ID).toJson(),
 				JsonRequestBankAccountsUpsert.builder()
 						.requestItem(JsonRequestBankAccountUpsertItem.builder()
-								.iban("iban-1")
-								.currencyCode("EUR")
-								.build())
+											 .iban("iban-1")
+											 .currencyCode("EUR")
+											 .build())
 						.build());
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);

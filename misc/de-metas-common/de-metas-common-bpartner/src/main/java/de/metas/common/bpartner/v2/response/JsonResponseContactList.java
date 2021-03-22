@@ -24,7 +24,7 @@ package de.metas.common.bpartner.v2.response;
 
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.rest_api.v1.JsonPagingDescriptor;
+import de.metas.common.rest_api.common.JsonPagingDescriptor;
 import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.NonNull;

@@ -1,7 +1,7 @@
   {
     "requestItems": [
       {
-        "bpartnerIdentifier": "val-12345",
+        "bpartnerIdentifier": "12345",
         "bpartnerComposite": {
           "bpartner": {
             "name": "bpartnerRecord.name_updated"
@@ -9,7 +9,7 @@
           "locations": {
             "requestItems": [
                 {
-                    "locationIdentifier": "gln-123456",
+                    "locationIdentifier": "ext-ALBERTA-123456",
                     "location": {
                       "billToDefault": true,
                       "postal": "5040",

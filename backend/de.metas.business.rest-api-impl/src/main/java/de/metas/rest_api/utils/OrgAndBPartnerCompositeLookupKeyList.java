@@ -24,6 +24,7 @@ package de.metas.rest_api.utils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.externalreference.ExternalIdentifier;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import lombok.Value;
@@ -46,6 +47,22 @@ public class OrgAndBPartnerCompositeLookupKeyList
 	{
 		return ofSingleLookupKey(
 				orgId, BPartnerCompositeLookupKey.ofIdentifierString(identifierString)
+		);
+	}
+
+	public static OrgAndBPartnerCompositeLookupKeyList ofMetasfreshId(
+			@NonNull final OrgId orgId, @NonNull final MetasfreshId metasfreshId)
+	{
+		return ofSingleLookupKey(
+				orgId, BPartnerCompositeLookupKey.ofMetasfreshId(metasfreshId)
+		);
+	}
+
+	public static OrgAndBPartnerCompositeLookupKeyList ofExternalIdentifier(
+			@NonNull final OrgId orgId, @NonNull final ExternalIdentifier externalIdentifier)
+	{
+		return ofSingleLookupKey(
+				orgId, BPartnerCompositeLookupKey.ofExternalIdentifier(externalIdentifier)
 		);
 	}
 

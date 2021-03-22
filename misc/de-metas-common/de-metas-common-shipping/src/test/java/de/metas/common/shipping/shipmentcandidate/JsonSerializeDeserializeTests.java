@@ -30,7 +30,7 @@ import de.metas.common.rest_api.v1.JsonAttributeInstance;
 import de.metas.common.rest_api.v1.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.JsonErrorItem;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.common.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipment.JsonCreateShipmentRequest;

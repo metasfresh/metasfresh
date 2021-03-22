@@ -25,7 +25,7 @@ package de.metas.rest_api.bpartner.impl.v2;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v1.request.JsonRequestComposite;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.rest_api.bpartner.impl.v1.JsonRequestConsolidateService;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -43,12 +43,12 @@ class JsonRequestConsolidateServiceTest
 			"ext-123, abc, abc"
 	})
 	void consolidateBPartnerExternalId(
-			String bpartnerIdentifier,
-			String initialBPartnerExternalId,
-			String expectedBPartnerExternalId)
+			final String bpartnerIdentifier,
+			final String initialBPartnerExternalId,
+			final String expectedBPartnerExternalId)
 	{
 		// given
-		final de.metas.rest_api.bpartner.impl.v1.JsonRequestConsolidateService jsonRequestConsolidateService = new JsonRequestConsolidateService();
+		final JsonRequestConsolidateService jsonRequestConsolidateService = new JsonRequestConsolidateService();
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		if (!"DONT_SET".equals(initialBPartnerExternalId))

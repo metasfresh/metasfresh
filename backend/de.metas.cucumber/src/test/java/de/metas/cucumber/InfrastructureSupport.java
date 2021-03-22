@@ -71,7 +71,7 @@ public class InfrastructureSupport
 		rabbitPassword = rabbitMQContainer.getAdminPassword();
 
 		final boolean runAgainstDockerizedDatabase = true;
-		//final boolean runAgainstDockerizedDatabase = false;
+		//final boolean runAgainstDockerizedDatabase = false;//
 		if (runAgainstDockerizedDatabase)
 		{
 			final String fullImageName = "metasfresh/metasfresh-db:latest";

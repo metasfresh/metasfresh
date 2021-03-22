@@ -31,7 +31,7 @@ import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.bpartner.impl.v1.JsonRequestConsolidateService;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
@@ -48,12 +48,12 @@ import org.mockito.Mockito;
 
 import java.util.Optional;
 
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_ORG_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_EXTERNAL_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_VALUE;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BP_GROUP_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.createBPartnerData;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.AD_ORG_ID;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.C_BPARTNER_EXTERNAL_ID;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.C_BPARTNER_VALUE;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.C_BP_GROUP_ID;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.createBPartnerData;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;

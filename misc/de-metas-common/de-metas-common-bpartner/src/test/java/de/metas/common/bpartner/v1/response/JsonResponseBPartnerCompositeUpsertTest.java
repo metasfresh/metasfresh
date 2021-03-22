@@ -23,7 +23,7 @@
 package de.metas.common.bpartner.v1.response;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 

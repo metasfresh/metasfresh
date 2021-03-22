@@ -18,7 +18,7 @@ import de.metas.rest_api.bpartner.impl.v1.bpartnercomposite.JsonServiceFactory;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v1.request.JsonRequestContact;
 import de.metas.common.bpartner.v1.request.JsonRequestLocation;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.common.rest_api.v1.SyncAdvise.IfExists;
 import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;

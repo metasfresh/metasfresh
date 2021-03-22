@@ -39,9 +39,9 @@ import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.rest_api.v2.SyncAdvise.IfNotExists;
+import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.bpartner.impl.v2.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.impl.v2.bpartnercomposite.jsonpersister.JsonPersisterService;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
@@ -66,11 +66,11 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.NEXT_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.SINCE_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.NEXT_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.SINCE_DOC;
 
 @RequestMapping(value = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bpartner")
 @RestController
@@ -124,7 +124,7 @@ public class BpartnerRestController
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr)
 	{
-		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
 		final Optional<JsonResponseComposite> result = bpartnerEndpointService.retrieveBPartner(orgCode, bpartnerIdentifier);
 		return okOrNotFound(result);
 	}
@@ -172,8 +172,8 @@ public class BpartnerRestController
 			@PathVariable("locationIdentifier") //
 			@NonNull final String locationIdentifierStr)
 	{
-		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
-		final IdentifierString locationIdentifier = IdentifierString.of(locationIdentifierStr);
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
+		final ExternalIdentifier locationIdentifier = ExternalIdentifier.of(locationIdentifierStr);
 
 		final Optional<JsonResponseLocation> location = bpartnerEndpointService.retrieveBPartnerLocation(orgCode, bpartnerIdentifier, locationIdentifier);
 		return okOrNotFound(location);
@@ -221,8 +221,8 @@ public class BpartnerRestController
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifierStr)
 	{
-		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
-		final IdentifierString contactIdentifier = IdentifierString.of(contactIdentifierStr);
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
+		final ExternalIdentifier contactIdentifier = ExternalIdentifier.of(contactIdentifierStr);
 
 		final Optional<JsonResponseContact> contact = bpartnerEndpointService.retrieveBPartnerContact(orgCode, bpartnerIdentifier, contactIdentifier);
 		return okOrNotFound(contact);
@@ -351,7 +351,7 @@ public class BpartnerRestController
 
 			@RequestBody @NonNull final JsonRequestLocationUpsert jsonLocation)
 	{
-		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
@@ -409,7 +409,7 @@ public class BpartnerRestController
 
 			@RequestBody @NonNull final JsonRequestContactUpsert jsonContactUpsert)
 	{
-		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 
@@ -467,7 +467,7 @@ public class BpartnerRestController
 
 			@RequestBody @NonNull final JsonRequestBankAccountsUpsert bankAccounts)
 	{
-		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
 
 		final JsonPersisterService persister = jsonServiceFactory.createPersister();
 		final Optional<JsonResponseUpsert> response = persister.persistForBPartner(

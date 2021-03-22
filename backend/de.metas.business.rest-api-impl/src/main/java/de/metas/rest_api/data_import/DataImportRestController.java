@@ -3,7 +3,7 @@ package de.metas.rest_api.data_import;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.rest_api.v1.JsonErrorItem;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.impexp.ActualImportRecordsResult;
 import de.metas.impexp.AsyncImportRecordsResponse;
 import de.metas.impexp.DataImportRequest;

@@ -22,9 +22,8 @@
 
 package de.metas.common.bpartner.v2.request;
 
-import de.metas.common.rest_api.v1.JsonExternalId;
-import de.metas.common.rest_api.v1.JsonInvoiceRule;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonInvoiceRule;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

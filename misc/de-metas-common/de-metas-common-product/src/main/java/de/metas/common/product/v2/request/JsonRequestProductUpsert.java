@@ -25,7 +25,7 @@ package de.metas.common.product.v2.request;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -35,7 +35,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.List;
 
-import static de.metas.common.rest_api.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Value

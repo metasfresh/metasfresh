@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrderBOMLine;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.common.shipping.JsonProduct;
 import de.metas.error.AdIssueId;

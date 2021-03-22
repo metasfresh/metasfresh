@@ -26,7 +26,7 @@ import de.metas.RestUtils;
 import de.metas.common.rest_api.v1.CreatePInstanceLogRequest;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.JsonErrorItem;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonPInstanceLog;
 import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
 import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponseItem;

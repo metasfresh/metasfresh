@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.common.rest_api.v1.JsonExternalId;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
@@ -34,6 +33,7 @@ import de.metas.organization.OrgId;
 import de.metas.rest_api.bpartner.impl.v2.JsonRequestConsolidateService;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import org.adempiere.ad.table.MockLogEntriesRepository;
@@ -48,12 +48,12 @@ import org.mockito.Mockito;
 
 import java.util.Optional;
 
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_ORG_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_EXTERNAL_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_VALUE;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BP_GROUP_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.createBPartnerData;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.AD_ORG_ID;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.C_BPARTNER_ID;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.C_BPARTNER_VALUE;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.C_BP_GROUP_ID;
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.createBPartnerData;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -111,7 +111,7 @@ class JsonRetrieverServiceTest
 	{
 		final OrgAndBPartnerCompositeLookupKeyList bpartnerLookupKeys = OrgAndBPartnerCompositeLookupKeyList.of(
 				orgId, ImmutableList.of(
-						BPartnerCompositeLookupKey.ofJsonExternalId(JsonExternalId.of(C_BPARTNER_EXTERNAL_ID)),
+						BPartnerCompositeLookupKey.ofMetasfreshId(MetasfreshId.of(C_BPARTNER_ID)),
 						BPartnerCompositeLookupKey.ofCode(C_BPARTNER_VALUE))
 		);
 
@@ -133,8 +133,8 @@ class JsonRetrieverServiceTest
 		final Optional<BPartnerComposite> result = jsonRetrieverService.getBPartnerComposite(bpartnerLookupKey);
 
 		final OrgAndBPartnerCompositeLookupKey bpartnerLookupKey2 = OrgAndBPartnerCompositeLookupKey.of(
-				BPartnerCompositeLookupKey.ofJsonExternalId(JsonExternalId.of(C_BPARTNER_EXTERNAL_ID)),
-				orgId);
+				BPartnerCompositeLookupKey.ofMetasfreshId(MetasfreshId.of(C_BPARTNER_ID)), orgId);
+
 		final Optional<BPartnerComposite> result2 = jsonRetrieverService.getBPartnerCompositeAssertCacheHit(ImmutableList.of(bpartnerLookupKey2));
 
 		assertThat(result2).isNotSameAs(result); // not sameAs, because the composite is mutable and the retriever shall give us own own instance each time.

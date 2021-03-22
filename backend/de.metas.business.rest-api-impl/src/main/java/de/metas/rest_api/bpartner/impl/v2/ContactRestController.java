@@ -33,9 +33,9 @@ import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.rest_api.v2.SyncAdvise.IfNotExists;
+import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.bpartner.impl.v2.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.impl.v2.bpartnercomposite.jsonpersister.JsonPersisterService;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -56,9 +56,9 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.NEXT_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.SINCE_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.NEXT_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.SINCE_DOC;
 
 @RequestMapping(value = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/contact")
 @RestController
@@ -91,7 +91,7 @@ public class ContactRestController
 			@PathVariable("contactIdentifier") //
 			@NonNull final String contactIdentifierStr)
 	{
-		final IdentifierString contactIdentifier = IdentifierString.of(contactIdentifierStr);
+		final ExternalIdentifier contactIdentifier = ExternalIdentifier.of(contactIdentifierStr);
 
 		final Optional<JsonResponseContact> contact = bpartnerEndpointService.retrieveContact(contactIdentifier);
 		return toResponseEntity(contact);
@@ -138,7 +138,7 @@ public class ContactRestController
 		for (final JsonRequestContactUpsertItem requestItem : contacts.getRequestItems())
 		{
 			final JsonResponseUpsertItem responseItem = persister.persist(
-					IdentifierString.of(requestItem.getContactIdentifier()),
+					ExternalIdentifier.of(requestItem.getContactIdentifier()),
 					requestItem.getContact(),
 					syncAdvise);
 			response.responseItem(responseItem);

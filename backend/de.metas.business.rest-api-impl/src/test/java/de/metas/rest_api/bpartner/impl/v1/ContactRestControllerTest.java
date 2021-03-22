@@ -22,16 +22,16 @@
 
 package de.metas.rest_api.bpartner.impl.v1;
 
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_ORG_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_USER_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.AD_USER_VALUE;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BPARTNER_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.C_BP_GROUP_ID;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.createBPartnerData;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.resetTimeSource;
-import static de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil.setupTimeSource;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.AD_ORG_ID;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.AD_USER_ID;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.AD_USER_VALUE;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.C_BPARTNER_ID;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.C_BP_GROUP_ID;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.createBPartnerData;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.resetTimeSource;
+import static de.metas.rest_api.bpartner.impl.v1.BPartnerRecordsUtil.setupTimeSource;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -42,10 +42,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Optional;
 
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
-import de.metas.rest_api.bpartner.impl.BPartnerRecordsUtil;
+import de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil;
 import de.metas.rest_api.bpartner.impl.v1.bpartnercomposite.JsonServiceFactory;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.table.RecordChangeLogEntry;

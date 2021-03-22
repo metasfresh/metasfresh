@@ -22,7 +22,7 @@
 
 package de.metas.common.pricing.v2.productprice;
 
-import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

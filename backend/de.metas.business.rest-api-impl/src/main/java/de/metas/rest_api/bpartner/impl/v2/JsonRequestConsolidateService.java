@@ -22,18 +22,15 @@
 
 package de.metas.rest_api.bpartner.impl.v2;
 
-import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestComposite;
-import de.metas.common.bpartner.v2.request.JsonRequestContact;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
-import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.utils.IdentifierString.Type;
+import de.metas.externalreference.ExternalIdentifier;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -53,10 +50,10 @@ public class JsonRequestConsolidateService
 	 */
 	public void consolidateWithIdentifier(@NonNull final JsonRequestBPartnerUpsertItem requestItem)
 	{
-		final IdentifierString identifierString = IdentifierString.of(requestItem.getBpartnerIdentifier());
+		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(requestItem.getBpartnerIdentifier());
 		final JsonRequestComposite bpartnerComposite = requestItem.getBpartnerComposite();
 
-		consolidateBPartnerWithIdentifier(identifierString, bpartnerComposite.getBpartner());
+		consolidateBPartnerWithIdentifier(externalIdentifier, bpartnerComposite.getBpartner());
 
 		consolidateWithIdentifier(bpartnerComposite.getContactsNotNull());
 
@@ -85,7 +82,7 @@ public class JsonRequestConsolidateService
 	 * @return the identifier string which the given {@code jsonBPartner} will have *after* if was synched and persistes in metasfresh.
 	 */
 	private void consolidateBPartnerWithIdentifier(
-			@NonNull final IdentifierString identifierString,
+			@NonNull final ExternalIdentifier identifierString,
 			@Nullable final JsonRequestBPartner jsonBPartner)
 	{
 		if (jsonBPartner == null)
@@ -98,14 +95,8 @@ public class JsonRequestConsolidateService
 			case METASFRESH_ID:
 				// nothing to do; the bpartner-JSON has no metasfresh-ID to consolidate with
 				break;
-			case VALUE:
-				if (!jsonBPartner.isCodeSet())
-				{
-					jsonBPartner.setCode(identifierString.asValue());
-				}
+			case EXTERNAL_REFERENCE:
 				break;
-			case INTERNALNAME:
-				throw new InvalidIdentifierException(identifierString);
 			case GLN:
 				// GLN-identifierString is valid for bPartner-lookup, but we can't consolidate the given jsonBPartner with it
 				break;
@@ -119,78 +110,47 @@ public class JsonRequestConsolidateService
 
 	private void consolidateWithIdentifier(@NonNull final JsonRequestLocationUpsertItem requestItem)
 	{
-		final IdentifierString identifierString = IdentifierString.of(requestItem.getLocationIdentifier());
+		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(requestItem.getLocationIdentifier());
 		final JsonRequestLocation jsonLocation = requestItem.getLocation();
 
-		switch (identifierString.getType())
+		switch (externalIdentifier.getType())
 		{
 			case METASFRESH_ID:
 				// nothing to do; the bpartner-JSON has no metasfresh-ID to consolidate with
 				break;
-			case VALUE:
-				throw new InvalidIdentifierException(identifierString);
-			case INTERNALNAME:
-				throw new InvalidIdentifierException(identifierString);
+			case EXTERNAL_REFERENCE:
+				break;
 			case GLN:
 				if (jsonLocation.isGlnSet())
 				{
-					jsonLocation.setGln(identifierString.asGLN().getCode());
+					jsonLocation.setGln(externalIdentifier.asGLN().getCode());
 				}
 				break;
 			default:
-				throw new AdempiereException("Unexpected IdentifierString.Type=" + identifierString.getType())
+				throw new AdempiereException("Unexpected IdentifierString.Type=" + externalIdentifier.getType())
 						.appendParametersToMessage()
-						.setParameter("identifierString", identifierString)
+						.setParameter("externalIdentifier", externalIdentifier)
 						.setParameter("jsonRequestLocationUpsertItem", requestItem);
 		}
 	}
 
 	private void consolidateWithIdentifier(@NonNull final JsonRequestContactUpsertItem requestItem)
 	{
-		final IdentifierString identifierString = IdentifierString.of(requestItem.getContactIdentifier());
-		final JsonRequestContact jsonContact = requestItem.getContact();
-
-		switch (identifierString.getType())
+		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(requestItem.getContactIdentifier());
+		switch (externalIdentifier.getType())
 		{
 			case METASFRESH_ID:
 				// nothing to do; the bpartner-JSON has no metasfresh-ID to consolidate with
 				break;
-			case VALUE:
-				if (!jsonContact.isCodeSet())
-				{
-					jsonContact.setCode(identifierString.asValue());
-				}
+			case EXTERNAL_REFERENCE:
 				break;
-			case INTERNALNAME:
-				throw new InvalidIdentifierException(identifierString);
 			case GLN:
-				throw new InvalidIdentifierException(identifierString);
+				throw new InvalidIdentifierException(externalIdentifier.getRawValue());
 			default:
-				throw new AdempiereException("Unexpected IdentifierString.Type=" + identifierString.getType())
+				throw new AdempiereException("Unexpected IdentifierString.Type=" + externalIdentifier.getType())
 						.appendParametersToMessage()
-						.setParameter("identifierString", identifierString)
+						.setParameter("externalIdentifier", externalIdentifier)
 						.setParameter("jsonRequestContactUpsertItem", requestItem);
-		}
-	}
-
-	/**
-	 * Assumes that the given {@code contact} has a property that matches the given type.
-	 * This is the case if {@link #consolidateWithIdentifier(JsonRequestContactUpsert)} was called on the contact's respective json request item.
-	 */
-	public IdentifierString extractIdentifier(@NonNull final Type type, @NonNull final BPartnerContact contact)
-	{
-		switch (type)
-		{
-			case METASFRESH_ID:
-				return IdentifierString.ofRepoId(contact.getId().getRepoId());
-			case EXTERNAL_ID:
-				return IdentifierString.of(IdentifierString.PREFIX_EXTERNAL_ID + contact.getExternalId().getValue());
-			case VALUE:
-				return IdentifierString.of(IdentifierString.PREFIX_VALUE + contact.getValue());
-			default:
-				throw new AdempiereException("Unexpected IdentifierString.Type=" + type)
-						.appendParametersToMessage()
-						.setParameter("bpartnerContact", contact);
 		}
 	}
 }

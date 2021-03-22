@@ -38,7 +38,7 @@ import de.metas.common.bpartner.v1.request.JsonRequestLocation;
 import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsertItem;
 import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;

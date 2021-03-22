@@ -54,9 +54,17 @@ import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
 import de.metas.common.changelog.JsonChangeLogItem;
 import de.metas.common.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.externalreference.JsonExternalReferenceItem;
+import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
+import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
+import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.externalreference.IExternalReferenceType;
+import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
+import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
@@ -64,11 +72,10 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeCacheByLookupKey;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import de.metas.user.UserId;
@@ -184,6 +191,7 @@ public class JsonRetrieverService
 	private final transient BPGroupRepository bpGroupRepository;
 
 	private final transient GreetingRepository greetingRepository;
+	private final ExternalReferenceRestControllerService externalReferenceService;
 
 	private final transient BPartnerCompositeCacheByLookupKey cache;
 
@@ -195,18 +203,22 @@ public class JsonRetrieverService
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
+			final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final String identifier)
 	{
 		this.bPartnerQueryService = bPartnerQueryService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.greetingRepository = greetingRepository;
+		this.externalReferenceService = externalReferenceService;
 		this.identifier = identifier;
 
 		this.cache = new BPartnerCompositeCacheByLookupKey(identifier);
 	}
 
-	public Optional<JsonResponseComposite> getJsonBPartnerComposite(@NonNull OrgId orgId, @NonNull final IdentifierString bpartnerIdentifier)
+	public Optional<JsonResponseComposite> getJsonBPartnerComposite(
+			@NonNull final OrgId orgId,
+			@NonNull final ExternalIdentifier bpartnerIdentifier)
 	{
 		return getBPartnerComposite(orgId, bpartnerIdentifier).map(this::toJson);
 	}
@@ -432,9 +444,27 @@ public class JsonRetrieverService
 
 	public Optional<BPartnerComposite> getBPartnerComposite(
 			@NonNull final OrgId orgId,
-			@NonNull final IdentifierString bpartnerIdentifier)
+			@NonNull final ExternalIdentifier bpartnerIdentifier)
 	{
-		final OrgAndBPartnerCompositeLookupKeyList bpartnerIdLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofIdentifierString(orgId, bpartnerIdentifier);
+		final OrgAndBPartnerCompositeLookupKeyList bpartnerIdLookupKey;
+
+		if (ExternalIdentifier.Type.EXTERNAL_REFERENCE.equals(bpartnerIdentifier.getType()))
+		{
+			final Optional<MetasfreshId> metasfreshId = resolveExternalReference(orgId, bpartnerIdentifier, BPartnerExternalReferenceType.BPARTNER);
+			if (metasfreshId.isPresent())
+			{
+				bpartnerIdLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofMetasfreshId(orgId, metasfreshId.get());
+			}
+			else
+			{
+				return Optional.empty();
+			}
+		}
+		else
+		{
+			bpartnerIdLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofExternalIdentifier(orgId, bpartnerIdentifier);
+		}
+
 		return getBPartnerComposite(bpartnerIdLookupKey);
 	}
 
@@ -445,6 +475,30 @@ public class JsonRetrieverService
 
 		final Collection<BPartnerComposite> bpartnerComposites = cache.getAllOrLoad(singleBPartnerLookupKeys, this::retrieveBPartnerComposites);
 		return extractResult(bpartnerComposites);
+	}
+
+	@NonNull
+	public Optional<MetasfreshId> resolveExternalReference(
+			@Nullable final OrgId orgId,
+			@NonNull final ExternalIdentifier externalIdentifier,
+			@NonNull final IExternalReferenceType externalReferenceType)
+	{
+		final JsonExternalReferenceLookupRequest externalReferenceLookupRequest =
+				externalIdentifier.asJsonExternalReferenceLookupRequest(externalReferenceType);
+
+		final JsonExternalReferenceLookupResponse lookupResponse = externalReferenceService.performLookup(orgId, externalReferenceLookupRequest);
+
+		if (lookupResponse != null && !isEmpty(lookupResponse.getItems()))
+		{
+			final JsonExternalReferenceItem externalReferenceItem = lookupResponse.getItems().get(0);
+			if (externalReferenceItem.getMetasfreshId() != null)
+			{
+				final MetasfreshId metasfreshId = MetasfreshId.of(externalReferenceItem.getMetasfreshId());
+				return Optional.of(metasfreshId);
+			}
+		}
+
+		return Optional.empty();
 	}
 
 	/**
@@ -537,11 +591,15 @@ public class JsonRetrieverService
 		return OrgAndBPartnerCompositeLookupKeyList.of(bPartnerComposite.getOrgId(), result.build());
 	}
 
-	public Optional<JsonResponseContact> getContact(@NonNull final IdentifierString contactIdentifier)
+	public Optional<JsonResponseContact> getContact(@NonNull final ExternalIdentifier contactIdentifier)
 	{
-		final BPartnerContactQuery contactQuery = createContactQuery(contactIdentifier);
+		final Optional<BPartnerContactQuery> contactQuery = createContactQuery(contactIdentifier);
+		if (!contactQuery.isPresent())
+		{
+			return Optional.empty();
+		}
 
-		final Optional<BPartnerCompositeAndContactId> optionalContactIdAndBPartner = bpartnerCompositeRepository.getByContact(contactQuery);
+		final Optional<BPartnerCompositeAndContactId> optionalContactIdAndBPartner = bpartnerCompositeRepository.getByContact(contactQuery.get());
 		if (!optionalContactIdAndBPartner.isPresent())
 		{
 			return Optional.empty();
@@ -556,26 +614,34 @@ public class JsonRetrieverService
 				.map(c -> toJson(c, bpartnerComposite.getBpartner().getLanguage()));
 	}
 
-	private static BPartnerContactQuery createContactQuery(@NonNull final IdentifierString identifier)
+	private Optional<BPartnerContactQuery> createContactQuery(@NonNull final ExternalIdentifier identifier)
 	{
 		final BPartnerContactQueryBuilder query = BPartnerContactQuery.builder();
 
 		switch (identifier.getType())
 		{
-			case EXTERNAL_ID:
-				query.externalId(identifier.asExternalId());
-				break;
-			case VALUE:
-				query.value(identifier.asValue());
+			case EXTERNAL_REFERENCE:
+				final Optional<MetasfreshId> metasfreshId =
+						resolveExternalReference(null, identifier, ExternalUserReferenceType.USER_ID);
+
+				if (metasfreshId.isPresent())
+				{
+					query.userId(UserId.ofRepoId(metasfreshId.get().getValue()));
+				}
+				else
+				{
+					return Optional.empty();
+				}
+
 				break;
 			case METASFRESH_ID:
-				final UserId userId = identifier.asMetasfreshId(UserId::ofRepoId);
+				final UserId userId = UserId.ofRepoId(identifier.asMetasfreshId().getValue());
 				query.userId(userId);
 				break;
 			default:
 				throw new AdempiereException("Unexpected type=" + identifier.getType());
 		}
 
-		return query.build();
+		return Optional.of(query.build());
 	}
 }

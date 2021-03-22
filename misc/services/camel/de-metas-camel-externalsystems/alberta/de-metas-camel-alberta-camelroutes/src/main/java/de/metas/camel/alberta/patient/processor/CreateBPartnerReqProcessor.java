@@ -27,7 +27,7 @@ import de.metas.camel.alberta.patient.BPartnerUpsertRequestProducer;
 import de.metas.camel.externalsystems.common.BPUpsertCamelRequest;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;

@@ -30,7 +30,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v1.request.JsonRequestComposite;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 
 class JsonRequestConsolidateServiceTest
 {
@@ -43,9 +43,9 @@ class JsonRequestConsolidateServiceTest
 			"ext-123, abc, abc"
 	})
 	void consolidateBPartnerExternalId(
-			String bpartnerIdentifier,
-			String initialBPartnerExternalId,
-			String expectedBPartnerExternalId)
+			final String bpartnerIdentifier,
+			final String initialBPartnerExternalId,
+			final String expectedBPartnerExternalId)
 	{
 		// given
 		final JsonRequestConsolidateService jsonRequestConsolidateService = new JsonRequestConsolidateService();

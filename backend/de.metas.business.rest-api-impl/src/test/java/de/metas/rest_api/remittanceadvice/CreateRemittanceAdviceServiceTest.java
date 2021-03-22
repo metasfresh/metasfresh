@@ -24,7 +24,7 @@ package de.metas.rest_api.remittanceadvice;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRequest;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceResponse;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdvice;

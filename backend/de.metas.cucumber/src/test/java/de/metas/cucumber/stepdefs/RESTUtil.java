@@ -22,7 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.security.IRoleDAO;
@@ -153,6 +153,27 @@ public class RESTUtil
 				return SyncAdvise.JUST_CREATE_IF_NOT_EXISTS;
 			case "READ_ONLY":
 				return SyncAdvise.READ_ONLY;
+			default:
+				throw new AdempiereException("Invalid SyncAdvise: " + syncAdvise);
+		}
+	}
+
+	@Nullable
+	public static de.metas.common.rest_api.v1.SyncAdvise mapSyncAdviseV1(@NonNull final String syncAdvise)
+	{
+		if (EmptyUtil.isBlank(syncAdvise))
+		{
+			return null;
+		}
+
+		switch (syncAdvise)
+		{
+			case "CREATE_OR_MERGE":
+				return de.metas.common.rest_api.v1.SyncAdvise.CREATE_OR_MERGE;
+			case "JUST_CREATE_IF_NOT_EXISTS":
+				return de.metas.common.rest_api.v1.SyncAdvise.JUST_CREATE_IF_NOT_EXISTS;
+			case "READ_ONLY":
+				return de.metas.common.rest_api.v1.SyncAdvise.READ_ONLY;
 			default:
 				throw new AdempiereException("Invalid SyncAdvise: " + syncAdvise);
 		}

@@ -33,14 +33,15 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert.JsonRequestLocationUpsertBuilder;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
-import de.metas.rest_api.utils.IdentifierString;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.utils.MetasfreshId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import java.util.UUID;
 
+import static de.metas.rest_api.bpartner.impl.v2.BPartnerRecordsUtil.EXTERNAL_SYSTEM_NAME;
 import static org.assertj.core.api.Assertions.fail;
 
 @UtilityClass
@@ -70,19 +71,16 @@ public class MockedDataUtil
 		bPartner.setUrl("bPartner.url");
 		bPartner.setVatId("bPartner.vatId");
 
-		final IdentifierString bpartnerIdentifier = IdentifierString.of(bpartnerIdentifierStr);
+		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
 
 		switch (bpartnerIdentifier.getType())
 		{
-			case EXTERNAL_ID:
-				// TODO https://github.com/metasfresh/metasfresh/issues/10784
-				// bPartner.setCode("code");
-				// bPartner.setExternalId(bpartnerIdentifier.asJsonExternalId());
-				// break;
-			case VALUE:
-				bPartner.setCode(bpartnerIdentifier.asValue());
-				//bPartner.setExternalId(JsonExternalId.of("externalId")); TODO https://github.com/metasfresh/metasfresh/issues/10784
+			case EXTERNAL_REFERENCE:
 				break;
+			case METASFRESH_ID:
+				break;
+			case GLN:
+				break; //todo implement
 			default:
 				fail("bpartnerIdentifier is not supported by this mockup method; bpartnerIdentifier={}", bpartnerIdentifier);
 				break;
@@ -109,7 +107,7 @@ public class MockedDataUtil
 			@NonNull final String prefix,
 			@NonNull final String countryCode)
 	{
-		// final String externalId = prefix + "_externalId"; TODO https://github.com/metasfresh/metasfresh/issues/10784
+		final String externalId = prefix + "_externalId";
 
 		final JsonRequestLocation location = new JsonRequestLocation();
 		location.setAddress1(prefix + "_address1");
@@ -119,30 +117,27 @@ public class MockedDataUtil
 		location.setRegion(prefix + "_region");
 		location.setCity(prefix + "_city");
 		location.setCountryCode(countryCode);
-		//location.setExternalId(JsonExternalId.of(externalId)); TODO https://github.com/metasfresh/metasfresh/issues/10784
 		location.setGln(prefix + "_gln");
 		location.setPostal(prefix + "_postal");
 
 		return JsonRequestLocationUpsertItem.builder()
-				//.locationIdentifier("ext-" + externalId) TODO https://github.com/metasfresh/metasfresh/issues/10784
-				.locationIdentifier("gln-" + prefix + "_gln")
+				.locationIdentifier("ext-" + EXTERNAL_SYSTEM_NAME + "-" + externalId)
+				// .locationIdentifier("gln-" + prefix + "_gln")
 				.location(location)
 				.build();
 	}
 
 	public JsonRequestContactUpsertItem createMockContact(@NonNull final String prefix)
 	{
-		//final String externalId = prefix + "_externalId"; TODO https://github.com/metasfresh/metasfresh/issues/10784
+		final String externalId = prefix + "_externalId";
 
 		final JsonRequestContact jsonRequestContact = new JsonRequestContact();
 		jsonRequestContact.setEmail(prefix + "_email@email.net");
-		// jsonRequestContact.setExternalId(JsonExternalId.of(externalId)); TODO https://github.com/metasfresh/metasfresh/issues/10784
 		jsonRequestContact.setName(prefix + "_name");
 		jsonRequestContact.setPhone(prefix + "_phone");
 
 		return JsonRequestContactUpsertItem.builder()
-				//.contactIdentifier("ext-" + externalId) TODO https://github.com/metasfresh/metasfresh/issues/10784
-				.contactIdentifier("val-" + prefix + "_value")
+				.contactIdentifier("ext-" + EXTERNAL_SYSTEM_NAME + "-" + externalId)
 				.contact(jsonRequestContact)
 				.build();
 	}

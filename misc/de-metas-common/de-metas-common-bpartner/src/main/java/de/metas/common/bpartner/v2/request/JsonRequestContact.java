@@ -22,8 +22,6 @@
 
 package de.metas.common.bpartner.v2.request;
 
-import de.metas.common.rest_api.v1.JsonExternalId;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
@@ -38,10 +36,7 @@ import static de.metas.common.rest_api.v1.SwaggerDocConstants.PARENT_SYNC_ADVISE
 public class JsonRequestContact
 {
 	@ApiModelProperty(position = 20, dataType = "java.lang.Integer")
-	private JsonMetasfreshId metasfreshBPartnerId;
-
-	@ApiModelProperty(hidden = true)
-	private boolean metasfreshBPartnerIdSet;
+	private String bpartnerIdentifier;
 
 	@ApiModelProperty(position = 30, value = "Translated to `AD_User.Value`")
 	private String code;
@@ -187,12 +182,6 @@ public class JsonRequestContact
 	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
 
-	public void setMetasfreshBPartnerId(final JsonMetasfreshId metasfreshBPartnerId)
-	{
-		this.metasfreshBPartnerId = metasfreshBPartnerId;
-		this.metasfreshBPartnerIdSet = true;
-	}
-
 	public void setCode(final String code)
 	{
 		this.code = code;
@@ -311,5 +300,10 @@ public class JsonRequestContact
 	{
 		this.syncAdvise = syncAdvise;
 		this.syncAdviseSet = true;
+	}
+
+	public void setBpartnerIdentifier(final String bpartnerIdentifier)
+	{
+		this.bpartnerIdentifier = bpartnerIdentifier;
 	}
 }

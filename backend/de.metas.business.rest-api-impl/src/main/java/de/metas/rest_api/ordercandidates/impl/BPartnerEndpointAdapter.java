@@ -24,7 +24,7 @@ import de.metas.common.bpartner.v1.response.JsonResponseComposite;
 import de.metas.common.bpartner.v1.response.JsonResponseContact;
 import de.metas.common.bpartner.v1.response.JsonResponseLocation;
 import de.metas.common.bpartner.v1.response.JsonResponseUpsertItem;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.bpartner.impl.v1.BpartnerRestController;

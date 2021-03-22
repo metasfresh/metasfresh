@@ -91,6 +91,7 @@ public class JsonServiceFactory
 				bpartnerCompositeRepository,
 				bpGroupRepository,
 				greetingRepository,
+				externalReferenceService,
 				identifier);
 	}
 }

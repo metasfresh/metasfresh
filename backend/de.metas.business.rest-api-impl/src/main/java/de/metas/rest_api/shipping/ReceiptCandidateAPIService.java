@@ -33,7 +33,7 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.common.rest_api.v1.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.JsonErrorItem;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.common.shipping.JsonProduct;
 import de.metas.common.shipping.JsonProduct.JsonProductBuilder;

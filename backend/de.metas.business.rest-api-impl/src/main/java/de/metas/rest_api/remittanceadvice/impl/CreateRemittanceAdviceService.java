@@ -29,7 +29,7 @@ import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRequest;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceResponse;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceResponseItem;

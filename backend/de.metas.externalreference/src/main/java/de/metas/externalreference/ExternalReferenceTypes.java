@@ -48,6 +48,7 @@ public class ExternalReferenceTypes
 		registerType(BPLocationExternalReferenceType.BPARTNER_LOCATION);
 		registerType(ProductExternalReferenceType.PRODUCT);
 		registerType(ProductCategoryExternalReferenceType.PRODUCT_CATEGORY);
+		registerType(ExternalUserReferenceType.USER_ID);
 		registerType(PriceListExternalReferenceType.PRICE_LIST);
 		registerType(PriceListVersionExternalReferenceType.PRICE_LIST_VERSION);
 		registerType(ProductPriceExternalReferenceType.PRODUCT_PRICE);

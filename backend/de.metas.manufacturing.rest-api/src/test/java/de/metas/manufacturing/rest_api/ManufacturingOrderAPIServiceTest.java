@@ -18,7 +18,7 @@ import de.metas.common.manufacturing.JsonResponseReceiveFromManufacturingOrder;
 import de.metas.common.manufacturing.Outcome;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.JsonErrorItem;
-import de.metas.common.rest_api.v1.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
