@@ -22,7 +22,7 @@
 
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands;
 
-import de.metas.rest_api.bpartner.impl.v1.BpartnerRestController;
+import de.metas.rest_api.v1.bpartner.BpartnerRestController;
 import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;

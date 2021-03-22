@@ -56,7 +56,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.attachment.JsonAttachmentType;
-import de.metas.rest_api.bpartner.impl.v1.BpartnerRestController;
+import de.metas.rest_api.v1.bpartner.BpartnerRestController;
 import de.metas.util.web.exception.MissingResourceException;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;

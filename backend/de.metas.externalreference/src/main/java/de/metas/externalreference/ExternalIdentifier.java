@@ -23,12 +23,6 @@
 package de.metas.externalreference;
 
 import de.metas.bpartner.GLN;
-import de.metas.common.externalreference.JsonExternalReferenceItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
-import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
-import de.metas.common.externalsystem.JsonExternalSystemName;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
 import lombok.AllArgsConstructor;
@@ -54,15 +48,11 @@ public class ExternalIdentifier
 	String rawValue;
 
 	@Nullable
-	GLN gln;
-
-	@Nullable
 	ExternalReferenceValueAndSystem externalReferenceValueAndSystem;
 
 	private ExternalIdentifier(
 			@NonNull final Type type,
 			@NonNull final String rawValue,
-			@Nullable final GLN gln,
 			@Nullable final ExternalReferenceValueAndSystem externalReferenceValueAndSystem)
 	{
 		if (Type.EXTERNAL_REFERENCE.equals(type) && externalReferenceValueAndSystem == null)
@@ -73,15 +63,6 @@ public class ExternalIdentifier
 					.setParameter("type", type);
 		}
 
-		if (Type.GLN.equals(type) && gln == null)
-		{
-			throw new AdempiereException("gln cannot be null for type: GLN!")
-					.appendParametersToMessage()
-					.setParameter("rawValue", rawValue)
-					.setParameter("type", type);
-		}
-
-		this.gln = gln;
 		this.type = type;
 		this.rawValue = rawValue;
 		this.externalReferenceValueAndSystem = externalReferenceValueAndSystem;
@@ -101,7 +82,7 @@ public class ExternalIdentifier
 	{
 		if (Type.METASFRESH_ID.pattern.matcher(identifier).matches())
 		{
-			return new ExternalIdentifier(Type.METASFRESH_ID, identifier, null, null);
+			return new ExternalIdentifier(Type.METASFRESH_ID, identifier, null);
 		}
 
 		final Matcher externalReferenceMatcher = Type.EXTERNAL_REFERENCE.pattern.matcher(identifier);
@@ -114,13 +95,13 @@ public class ExternalIdentifier
 					.value(externalReferenceMatcher.group(2))
 					.build();
 
-			return new ExternalIdentifier(Type.EXTERNAL_REFERENCE, identifier, null, valueAndSystem);
+			return new ExternalIdentifier(Type.EXTERNAL_REFERENCE, identifier, valueAndSystem);
 		}
 
 		final Matcher glnMatcher = Type.GLN.pattern.matcher(identifier);
 		if (glnMatcher.matches())
 		{
-			return new ExternalIdentifier(Type.GLN, identifier, GLN.ofString(glnMatcher.group(1)), null);
+			return new ExternalIdentifier(Type.GLN, identifier, null);
 		}
 
 		throw new AdempiereException("Unknown externalId type!")
@@ -154,50 +135,15 @@ public class ExternalIdentifier
 		Check.assume(Type.GLN.equals(type),
 					 "The type of this instance needs to be {}; this={}", Type.GLN, this);
 
-		return gln;
-	}
+		final Matcher glnMatcher = Type.GLN.pattern.matcher(rawValue);
 
-	@NonNull
-	public JsonExternalReferenceLookupRequest asJsonExternalReferenceLookupRequest(@NonNull final IExternalReferenceType externalReferenceType)
-	{
-		Check.assume(Type.EXTERNAL_REFERENCE.equals(type),
-					 "The type of this instance needs to be {}; this={}", Type.EXTERNAL_REFERENCE, this);
-		Check.assumeNotNull(externalReferenceValueAndSystem,
-							"externalReferenceValueAndSystem cannot be null to EXTERNAL_REFERENCE type!");
+		if(glnMatcher.find()){
+			return GLN.ofString(glnMatcher.group(1));
+		}
+		else {
+			throw new AdempiereException("External identifier of GLN parsing failed. External Identifier:" + rawValue);
+		}
 
-		final JsonExternalReferenceLookupItem jsonExternalReferenceLookupItem =
-			JsonExternalReferenceLookupItem.builder()
-					.id(externalReferenceValueAndSystem.getValue())
-					.type(externalReferenceType.getCode())
-					.build();
-
-		return JsonExternalReferenceLookupRequest.builder()
-				.systemName(JsonExternalSystemName.of(externalReferenceValueAndSystem.getExternalSystem()))
-				.item(jsonExternalReferenceLookupItem)
-				.build();
-	}
-
-	@NonNull
-	public JsonSingleExternalReferenceCreateReq asJsonSingleExternalReferenceCreateReq(
-			@NonNull final IExternalReferenceType externalReferenceType,
-			@NonNull final JsonMetasfreshId metasfreshId)
-	{
-		Check.assume(Type.EXTERNAL_REFERENCE.equals(type),
-					 "The type of this instance needs to be {}; this={}", Type.EXTERNAL_REFERENCE, this);
-		Check.assumeNotNull(externalReferenceValueAndSystem,
-							"externalReferenceValueAndSystem cannot be null to EXTERNAL_REFERENCE type!");
-
-		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(externalReferenceValueAndSystem.getValue())
-				.type(externalReferenceType.getCode())
-				.build();
-
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.of(externalReferenceLookupItem, metasfreshId);
-
-		return JsonSingleExternalReferenceCreateReq.builder()
-				.systemName(JsonExternalSystemName.of(externalReferenceValueAndSystem.getExternalSystem()))
-				.externalReferenceItem(externalReferenceItem)
-				.build();
 	}
 
 	@AllArgsConstructor

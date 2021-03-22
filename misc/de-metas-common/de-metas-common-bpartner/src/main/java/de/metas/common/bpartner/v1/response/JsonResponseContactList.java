@@ -29,7 +29,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.common.rest_api.common.JsonPagingDescriptor;
+import de.metas.common.rest_api.v1.JsonPagingDescriptor;
 import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.NonNull;

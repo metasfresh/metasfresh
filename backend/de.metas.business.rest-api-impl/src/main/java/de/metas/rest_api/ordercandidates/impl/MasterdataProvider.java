@@ -24,7 +24,7 @@ import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery.PaymentTermQueryBuilder;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.rest_api.bpartner.impl.v1.BpartnerRestController;
+import de.metas.rest_api.v1.bpartner.BpartnerRestController;
 import de.metas.common.bpartner.v1.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v1.response.JsonResponseContact;
 import de.metas.common.bpartner.v1.response.JsonResponseLocation;

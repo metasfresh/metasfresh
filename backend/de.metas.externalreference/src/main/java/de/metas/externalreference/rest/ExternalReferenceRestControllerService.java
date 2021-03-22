@@ -231,6 +231,19 @@ public class ExternalReferenceRestControllerService
 			@NonNull final ExternalIdentifier externalIdentifier,
 			@NonNull final IExternalReferenceType externalReferenceType)
 	{
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
+
+		return getJsonMetasfreshIdFromExternalReference(orgId,externalIdentifier,externalReferenceType);
+	}
+
+	@NonNull
+	public Optional<JsonMetasfreshId> getJsonMetasfreshIdFromExternalReference(
+			@Nullable OrgId orgId,
+			@NonNull final ExternalIdentifier externalIdentifier,
+			@NonNull final IExternalReferenceType externalReferenceType)
+	{
+		orgId = orgId != null ? orgId : Env.getOrgId();
+
 		final JsonExternalSystemName externalSystemName = JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem());
 
 		final JsonExternalReferenceLookupRequest lookupRequest = JsonExternalReferenceLookupRequest.builder()
@@ -241,7 +254,7 @@ public class ExternalReferenceRestControllerService
 							  .build())
 				.build();
 
-		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgCode, lookupRequest);
+		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgId, lookupRequest);
 		return lookupResponse.getItems()
 				.stream()
 				.map(JsonExternalReferenceItem::getMetasfreshId)
