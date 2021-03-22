@@ -41,6 +41,8 @@ import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.springframework.stereotype.Component;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+
 @Component
 public class GetAlbertaPatientsRouteBuilder extends RouteBuilder
 {
@@ -52,7 +54,7 @@ public class GetAlbertaPatientsRouteBuilder extends RouteBuilder
 	{
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
-				.to("direct:Error-Route");
+				.to(StaticEndpointBuilders.direct(MF_ERROR_ROUTE_ID));
 
 		//@formatter:off
 		// this EP's name is matching the JsonExternalSystemRequest's ExternalSystem and Command

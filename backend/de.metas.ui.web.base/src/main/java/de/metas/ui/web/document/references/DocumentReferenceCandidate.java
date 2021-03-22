@@ -6,10 +6,10 @@ import java.util.Optional;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.references.ZoomInfo;
-import de.metas.document.references.ZoomInfoCandidate;
-import de.metas.document.references.ZoomTargetWindow;
-import de.metas.document.references.ZoomTargetWindowEvaluationContext;
+import de.metas.document.references.related_documents.ZoomInfo;
+import de.metas.document.references.related_documents.ZoomInfoCandidate;
+import de.metas.document.references.related_documents.ZoomTargetWindow;
+import de.metas.document.references.related_documents.ZoomTargetWindowEvaluationContext;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.provider.userQuery.MQueryDocumentFilterHelper;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -48,10 +48,10 @@ public class DocumentReferenceCandidate
 			return ImmutableList.of();
 		}
 
-		final ZoomTargetWindowEvaluationContext alreadySeenWindowIds = new ZoomTargetWindowEvaluationContext();
+		final ZoomTargetWindowEvaluationContext context = new ZoomTargetWindowEvaluationContext();
 
 		return candidates.stream()
-				.map(candidate -> candidate.evaluate(alreadySeenWindowIds).orElse(null))
+				.map(candidate -> candidate.evaluate(context).orElse(null))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -73,9 +73,9 @@ public class DocumentReferenceCandidate
 				.map(zoomInfo -> toDocumentReference(zoomInfo, filterCaption));
 	}
 
-	private Optional<DocumentReference> evaluate(@NonNull final ZoomTargetWindowEvaluationContext alreadySeenWindowIds)
+	private Optional<DocumentReference> evaluate(@NonNull final ZoomTargetWindowEvaluationContext context)
 	{
-		return zoomInfoCandidate.evaluate(alreadySeenWindowIds)
+		return zoomInfoCandidate.evaluate(context)
 				.map(zoomInfo -> toDocumentReference(zoomInfo, filterCaption));
 	}
 

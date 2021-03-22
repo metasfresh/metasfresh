@@ -23,6 +23,7 @@ interface Props extends RouteComponentProps<MatchParams> {
 @observer
 class ProductWeeklyEdit extends React.Component<Props> {
   private qtyInput = React.createRef<HTMLInputElement>();
+  private isUnmounting = false;
 
   componentDidMount(): void {
     document.addEventListener('focusout', this.handleFocusOut);
@@ -65,9 +66,13 @@ class ProductWeeklyEdit extends React.Component<Props> {
     const { store, history } = this.props;
     const { navigation } = store;
 
-    this.qtyInput.current.blur();
-    navigation.removeViewFromHistory();
-    history.goBack();
+    if (!this.isUnmounting) {
+      this.isUnmounting = true;
+
+      this.qtyInput.current.blur();
+      navigation.removeViewFromHistory();
+      history.goBack();
+    }
   };
 
   render(): ReactElement {
@@ -106,7 +111,7 @@ class ProductWeeklyEdit extends React.Component<Props> {
                   }}
                   onKeyUp={(e) => {
                     if (e.key === 'Enter') {
-                      this.qtyInput.current.blur();
+                      this.handleFocusOut();
                     }
                   }}
                   step="1"

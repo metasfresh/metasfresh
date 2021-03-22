@@ -3,7 +3,7 @@ package de.metas.purchasecandidate.reminder;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -263,7 +263,7 @@ public class PurchaseCandidateReminderScheduler implements InitializingBean
 
 	private WindowId getWindowId(final String tableName)
 	{
-		final AdWindowId adWindowId = RecordZoomWindowFinder.findAdWindowId(tableName).get();
+		final AdWindowId adWindowId = RecordWindowFinder.findAdWindowId(tableName).get();
 		return WindowId.of(adWindowId);
 	}
 

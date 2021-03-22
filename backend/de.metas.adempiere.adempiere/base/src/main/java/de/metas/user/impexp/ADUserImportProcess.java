@@ -245,7 +245,7 @@ public class ADUserImportProcess extends SimpleImportProcessTemplate<I_I_User>
 		user.setMobilePhone(importRecord.getMobilePhone());
 		// user.gen
 
-		final de.metas.adempiere.model.I_AD_User loginUser = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
+		final I_AD_User loginUser = InterfaceWrapperHelper.create(user, I_AD_User.class);
 		loginUser.setLogin(importRecord.getLogin());
 		loginUser.setIsSystemUser(importRecord.isSystemUser());
 

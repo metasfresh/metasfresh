@@ -3,7 +3,7 @@ package de.metas.ui.web.document.references;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-import de.metas.document.references.ZoomInfoId;
+import de.metas.document.references.related_documents.ZoomInfoId;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;

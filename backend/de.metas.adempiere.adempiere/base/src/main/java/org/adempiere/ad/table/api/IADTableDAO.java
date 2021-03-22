@@ -34,6 +34,7 @@ import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_SQLColumn_SourceTableColumn;
 import org.compiere.model.I_AD_Table;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -79,6 +80,7 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	String retrieveTableName(AdTableId adTableId);
 
+	@Nullable
 	default String retrieveTableName(final int adTableId)
 	{
 		// guard against 0 AD_Table_ID
@@ -116,11 +118,13 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	boolean isExistingTable(String tableName);
 
+	@Deprecated
 	Optional<AdWindowId> retrieveWindowId(String tableName);
 
 	/**
 	 * @return default window name, in context language.
 	 */
+	@Deprecated
 	String retrieveWindowName(Properties ctx, String tableName);
 
 	/**
@@ -134,7 +138,6 @@ public interface IADTableDAO extends ISingletonService
 	 * @param tableName  case insensitive
 	 * @param columnName case insensitive
 	 * @param trxname    may be <code>null</code>. If you call this method with null, then the query builder will be created with {@link org.adempiere.ad.trx.api.ITrx#TRXNAME_None}.
-	 * @return
 	 */
 	IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(String tableName, String columnName, String trxname);
 

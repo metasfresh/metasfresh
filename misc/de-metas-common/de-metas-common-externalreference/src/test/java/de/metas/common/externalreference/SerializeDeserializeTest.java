@@ -84,9 +84,10 @@ class SerializeDeserializeTest
 	{
 		final JsonExternalReferenceCreateRequest build = JsonExternalReferenceCreateRequest.builder()
 				.systemName(JsonExternalSystemName.of("systemName"))
-				.item(JsonExternalReferenceItem.of(
-						JsonExternalReferenceLookupItem.builder().id("item1Id").type("item1Type").build(),
-						JsonMetasfreshId.of(24)))
+				.item(JsonExternalReferenceItem.builder()
+					  .lookupItem(JsonExternalReferenceLookupItem.builder().id("item1Id").type("item1Type").build())
+					  .metasfreshId(JsonMetasfreshId.of(24))
+					  .version("Version").build())
 				.item(JsonExternalReferenceItem.of(
 						JsonExternalReferenceLookupItem.builder().id("item2Id").type("item2Type").build(),
 						JsonMetasfreshId.of(25)))

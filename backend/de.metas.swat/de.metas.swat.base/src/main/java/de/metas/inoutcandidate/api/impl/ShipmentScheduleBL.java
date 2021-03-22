@@ -1,9 +1,9 @@
 package de.metas.inoutcandidate.api.impl;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
@@ -30,12 +30,12 @@ import de.metas.lang.SOTrx;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
-import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -45,6 +45,7 @@ import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
@@ -68,6 +69,7 @@ import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
@@ -94,6 +96,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
@@ -171,6 +174,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public boolean allMissingSchedsWillBeCreatedLater()
@@ -471,8 +475,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.getCatchUOMId(productId)
 				.map(UomId::getRepoId)
 				.orElse(null);
-
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 		final ICompositeQueryUpdater<I_M_ShipmentSchedule> queryUpdater = queryBL
 				.createCompositeQueryUpdater(I_M_ShipmentSchedule.class)
@@ -907,5 +909,32 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		}
 
 		return Quantity.of(qtyDelivered, uom);
+	}
+
+	@Override
+	public void updateExportStatus(@NonNull final APIExportStatus newExportStatus, @NonNull final PInstanceId pinstanceId)
+	{
+		final AtomicInteger allCounter = new AtomicInteger(0);
+		final AtomicInteger updatedCounter = new AtomicInteger(0);
+
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.setOnlySelection(pinstanceId)
+				.create()
+				.iterateAndStream()
+				.forEach(record ->
+				{
+					allCounter.incrementAndGet();
+					if (Objects.equals(record.getExportStatus(), newExportStatus.getCode()))
+					{
+						return;
+					}
+					record.setExportStatus(newExportStatus.getCode());
+					updateCanBeExportedAfter(record);
+					InterfaceWrapperHelper.saveRecord(record);
+
+					updatedCounter.incrementAndGet();
+				});
+
+		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} out of {} M_ShipmentSchedule", updatedCounter.get(), allCounter.get());
 	}
 }

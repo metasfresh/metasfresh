@@ -1,6 +1,5 @@
 package de.metas.ordercandidate.api;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -16,6 +15,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
@@ -37,6 +37,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -53,6 +54,7 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MNote;
 import org.compiere.model.X_C_Order;
@@ -98,6 +100,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 class OLCandOrderFactory
 {
 	private static final Logger logger = LogManager.getLogger(OLCandOrderFactory.class);
+	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
@@ -468,18 +471,18 @@ class OLCandOrderFactory
 
 	private I_AD_Note createOrderCompleteErrorNote(final String errorMsg)
 	{
-		final I_AD_User user = userDAO.getById(userInChargeId);
+		final org.compiere.model.I_AD_User user = userDAO.getById(userInChargeId);
 
 		final String candidateIdsAsString = candidates.stream()
 				.map(OLCand::getId)
 				.map(String::valueOf)
 				.collect(Collectors.joining(", "));
-		final String adLanguage = user.getC_BPartner().getAD_Language();
+		final Language adLanguage = userBL.getUserLanguage(user);
 
 		final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId.getRepoId(), ITrx.TRXNAME_None);
 		note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
 		note.setReference(errorMsg);
-		note.setTextMsg(msgBL.getMsg(adLanguage, MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P, new Object[] { candidateIdsAsString }));
+		note.setTextMsg(msgBL.getMsg(adLanguage.getAD_Language(), MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P, new Object[] { candidateIdsAsString }));
 		save(note);
 
 		return note;

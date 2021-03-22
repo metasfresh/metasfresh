@@ -59,5 +59,8 @@ public class ExternalReference
 	@NonNull
 	String externalReference;
 
+	@Nullable
+	String version;
+
 	int recordId;
 }

@@ -1,11 +1,8 @@
 package de.metas.document.archive.mailrecipient;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import org.springframework.stereotype.Repository;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.archive.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.Language;
@@ -13,6 +10,9 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.springframework.stereotype.Repository;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -39,6 +39,15 @@ import lombok.NonNull;
 @Repository
 public class DocOutBoundRecipientRepository
 {
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bpartnerBL;
+
+	public DocOutBoundRecipientRepository(
+			@NonNull final IBPartnerBL bpartnerBL)
+	{
+		this.bpartnerBL = bpartnerBL;
+	}
+
 	public DocOutBoundRecipient getById(@NonNull final DocOutBoundRecipientId id)
 	{
 		final I_AD_User userRecord = loadOutOfTrx(id.getRepoId(), I_AD_User.class);
@@ -49,8 +58,7 @@ public class DocOutBoundRecipientRepository
 	{
 		final Language userLanguage = Language.asLanguage(userRecord.getAD_Language());
 
-		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
-		final Language bPartnerLanguage = bPartnerBL.getLanguageForModel(userRecord).orElse(null);
+		final Language bPartnerLanguage = bpartnerBL.getLanguageForModel(userRecord).orElse(null);
 
 		return DocOutBoundRecipient.builder()
 				.id(DocOutBoundRecipientId.ofRepoId(userRecord.getAD_User_ID()))
@@ -63,10 +71,11 @@ public class DocOutBoundRecipientRepository
 
 	private boolean computeInvoiceAsEmail(@NonNull final I_AD_User userRecord)
 	{
-		if (userRecord.getC_BPartner_ID() > 0)
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
+		if (bpartnerId != null)
 		{
-			final I_C_BPartner bPartnerRecord = create(userRecord.getC_BPartner(), I_C_BPartner.class);
-			final String isInvoiceEmailEnabled = bPartnerRecord.getIsInvoiceEmailEnabled();
+			final I_C_BPartner bpartnerRecord = bpartnerDAO.getById(bpartnerId, I_C_BPartner.class);
+			final String isInvoiceEmailEnabled = bpartnerRecord.getIsInvoiceEmailEnabled();
 			if (!Check.isEmpty(isInvoiceEmailEnabled, true))
 			{
 				return StringUtils.toBoolean(isInvoiceEmailEnabled); // we have our result

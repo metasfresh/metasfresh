@@ -70,6 +70,7 @@ import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -240,7 +241,14 @@ public class HUTransformService
 		final boolean qtyCuExceedsCuHU = qtyCU.compareTo(getMaximumQtyCU(cuOrAggregateHU, qtyCU.getUOM())) >= 0;
 		final boolean huIsCU = !handlingUnitsBL.isAggregateHU(cuOrAggregateHU);
 
-		if (qtyCuExceedsCuHU && huIsCU)
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		final IHUStorage storage = storageFactory.getStorage(cuOrAggregateHU);
+
+		final I_C_UOM huUOM = storage.getC_UOMOrNull();
+		final UomId huUOMId = UomId.ofRepoId(huUOM == null ? -1 : huUOM.getC_UOM_ID());
+		final boolean isSameUOM = qtyCU.getUomId().equals(huUOMId);
+
+		if (qtyCuExceedsCuHU && huIsCU && isSameUOM)
 		{
 			// deal with the complete cuHU, i.e. no partial quantity will remain at the source.
 			final I_M_HU_Item cuParentItem = handlingUnitsDAO.retrieveParentItem(cuOrAggregateHU);

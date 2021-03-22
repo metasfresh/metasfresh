@@ -150,7 +150,7 @@ import java.util.Set;
 	// Data retrieval options
 	private boolean _errorIfNoHUs = false;
 	private String _errorIfNoHUs_ADMessage = null;
-	private boolean onlyStockedProducts;
+	@Nullable private Boolean onlyStockedProducts;
 
 	public HUQueryBuilder(@NonNull final HUReservationRepository huReservationRepository)
 	{
@@ -361,17 +361,14 @@ import java.util.Set;
 		{
 			filters.addInArrayOrAllFilter(I_M_HU.COLUMNNAME_C_BPartner_Location_ID, _onlyWithBPartnerLocationIds);
 		}
-
-		if (onlyStockedProducts)
+		if (onlyStockedProducts != null)
 		{
 			final IQueryBuilder<I_M_HU_Storage> huStoragesQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Storage.class, getContextProvider())
 					.addOnlyActiveRecordsFilter();
-
 			final IQuery<I_M_Product> productQueryBuilder = queryBL.createQueryBuilder(I_M_Product.class, getContextProvider())
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true)
+					.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, onlyStockedProducts)
 					.create();
-
 			huStoragesQueryBuilder.addInSubQueryFilter(I_M_HU_Storage.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productQueryBuilder);
 			filters.addInSubQueryFilter(I_M_HU.COLUMNNAME_M_HU_ID, I_M_HU_Storage.COLUMNNAME_M_HU_ID, huStoragesQueryBuilder.create());
 		}

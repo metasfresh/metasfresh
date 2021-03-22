@@ -98,7 +98,7 @@ public class MailRestController
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/mail";
 
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
-	private final IUserBL usersService = Services.get(IUserBL.class);
+	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final UserSession userSession;
 	private final WebuiMailRepository mailRepo;
@@ -161,7 +161,7 @@ public class MailRestController
 		userSession.assertLoggedIn();
 
 		final UserId adUserId = userSession.getLoggedUserId();
-		usersService.assertCanSendEMail(adUserId);
+		userBL.assertCanSendEMail(adUserId);
 
 		final IntegerLookupValue from = IntegerLookupValue.of(adUserId.getRepoId(), userSession.getUserFullname() + " <" + userSession.getUserEmail() + "> ");
 		final DocumentPath contextDocumentPath = JSONDocumentPath.toDocumentPathOrNull(request.getDocumentPath());
@@ -224,7 +224,7 @@ public class MailRestController
 		final EMailCustomType mailCustomType = null;
 
 		final UserId fromUserId = webuiEmail.getFrom().getIdAs(UserId::ofRepoId);
-		final UserEMailConfig userEmailConfig = usersService.getEmailConfigById(fromUserId);
+		final UserEMailConfig userEmailConfig = userBL.getEmailConfigById(fromUserId);
 
 		final List<EMailAddress> toList = extractEMailAddreses(webuiEmail.getTo()).collect(ImmutableList.toImmutableList());
 		if (toList.isEmpty())
