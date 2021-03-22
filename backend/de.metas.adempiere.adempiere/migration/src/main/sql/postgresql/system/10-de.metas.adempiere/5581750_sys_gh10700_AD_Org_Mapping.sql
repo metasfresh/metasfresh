@@ -28,6 +28,13 @@ CREATE SEQUENCE AD_ORG_MAPPING_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 ST
 
 -----------
 
+INSERT INTO AD_Element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname,
+ entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew) 
+VALUES (578815, 0, 0, 'Y', '2021-03-10 17:37:08.000000', 100, '2021-03-10 17:37:08.000000', 100, 'AD_Org_Mapping_ID', 
+'D', 'Org Mapping', 'Org Mapping', null, null, null, null, null, null, null, null, null, null, null);
+
+
+
 
 
 -- 2021-03-10T18:10:53.269Z
@@ -137,7 +144,11 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-03-10T18:10:55.173Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FieldLength,IsActive,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsCalculated,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,573094,578815,0,13,541596,'AD_Org_Mapping_ID',TO_TIMESTAMP('2021-03-10 20:10:55','YYYY-MM-DD HH24:MI:SS'),100,'N','D',10,'Y','N','N','N','N','N','Y','Y','N','N','Y','N','N','Org Mapping',0,TO_TIMESTAMP('2021-03-10 20:10:55','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,
+FieldLength,IsActive,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsCalculated,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,
+IsSyncDatabase,IsTranslated,IsUpdateable,Name,SeqNo,Updated,UpdatedBy,Version) VALUES (0,573094,578815,0,13,541596,'AD_Org_Mapping_ID',
+TO_TIMESTAMP('2021-03-10 20:10:55','YYYY-MM-DD HH24:MI:SS'),100,'N','D',10,'Y','N','N','N','N','N','Y','Y','N','N','Y','N','N','Org Mapping',
+0,TO_TIMESTAMP('2021-03-10 20:10:55','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2021-03-10T18:10:55.178Z
