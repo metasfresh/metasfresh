@@ -40,5 +40,5 @@ UPDATE AD_Index_Table SET EntityType='D',Updated=TO_TIMESTAMP('2021-03-21 14:31:
 
 -- 2021-03-21T12:31:05.296Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE INDEX idx_ExternalSystemExportAudit_RecordId_TableId_System ON ExternalSystem_ExportAudit (Record_ID,AD_Table_ID,ExternalSystemType) WHERE IsActive='Y'
+CREATE INDEX idx_ExternalSystemExportAudit_RecordId_TableId_System ON ExternalSystem_ExportAudit (Record_ID,AD_Table_ID,ExternalSystemType)
 ;
