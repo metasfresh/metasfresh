@@ -3,13 +3,24 @@ package de.metas.bpartner.model.interceptor;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import de.metas.logging.LogManager;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordFactory;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BP_PrintFormat;
+import org.compiere.model.I_C_BP_Withholding;
+import org.compiere.model.I_C_BPartner_CreditLimit;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_BPartner_Product_Stats;
+import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.ModelValidator;
 
 import com.google.common.collect.ImmutableList;
@@ -25,6 +36,7 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.ILocationBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -53,9 +65,11 @@ public class C_BPartner
 {
 	private static final String MSG_CycleDetectedError = "CycleDetectedError";
 
-	final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-	final ILocationBL locationBL = Services.get(ILocationBL.class);
-	final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final static transient Logger logger = LogManager.getLogger(C_BPartner.class);
 
 	@Init
 	public void init()
@@ -75,9 +89,8 @@ public class C_BPartner
 	 * Makes sure that a new bPartner gets a C_BPartner_Stats record.
 	 * We do this because there is at least one hard-coded inner join between the two (in CalloutOrder).
 	 * Note that in the DB we have an FK-constraint with "on delete cascade".
-	 *
-	 * @param bpartner
-	 * @task https://github.com/metasfresh/metasfresh/issues/2121
+	 * <p>
+	 * task https://github.com/metasfresh/metasfresh/issues/2121
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void createBPartnerStatsRecord(@NonNull final I_C_BPartner bpartner)
@@ -113,8 +126,7 @@ public class C_BPartner
 			return;
 		}
 
-		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-		final List<BPartnerId> parentPath = bpartnersRepo.getParentsUpToTheTopInTrx(parentBPartnerId);
+		final List<BPartnerId> parentPath = bPartnerDAO.getParentsUpToTheTopInTrx(parentBPartnerId);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		if (parentPath.contains(bpartnerId))
 		{
@@ -123,11 +135,70 @@ public class C_BPartner
 					.add(bpartnerId)
 					.build();
 
-			final String bpNames = bpartnersRepo.getBPartnerNamesByIds(path)
+			final String bpNames = bPartnerDAO.getBPartnerNamesByIds(path)
 					.stream()
 					.collect(Collectors.joining(" -> "));
 			throw new AdempiereException("@" + MSG_CycleDetectedError + "@: " + bpNames)
 					.markAsUserValidationError();
 		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteBPartnerLocations(@NonNull final I_C_BPartner bpartner)
+	{
+		int deleteCount = 0;
+		deleteCount = queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.create()
+				.delete();
+		logger.info("Deleted {} C_BPartner_Location records", deleteCount);
+
+		deleteCount = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.create()
+				.delete();
+		logger.info("Deleted {} C_BPartner_Product records", deleteCount);
+
+		deleteCount = queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.create()
+				.delete();
+		logger.info("Deleted {} C_BPartner_CreditLimit records", deleteCount);
+
+		deleteCount = queryBL.createQueryBuilder(I_C_BPartner_Product_Stats.class)
+				.addEqualsFilter(I_C_BPartner_Product_Stats.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.create()
+				.delete();
+		logger.info("Deleted {} C_BPartner_Product_Stats records", deleteCount);
+
+		deleteCount = queryBL.createQueryBuilder(I_C_BPartner_Stats.class)
+				.addEqualsFilter(I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.create()
+				.delete();
+		logger.info("Deleted {} C_BPartner_Stats records", deleteCount);
+
+		deleteCount = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.create()
+				.delete();
+		logger.info("Deleted {} C_BP_BankAccount records", deleteCount);
+
+		deleteCount = queryBL.createQueryBuilder(I_C_BP_PrintFormat.class)
+				.addEqualsFilter(I_C_BP_PrintFormat.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.create()
+				.delete();
+		logger.info("Deleted {} C_BP_PrintFormat records", deleteCount);
+
+		deleteCount = queryBL.createQueryBuilder(I_C_BP_Withholding.class)
+				.addEqualsFilter(I_C_BP_Withholding.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.create()
+				.delete();
+		logger.info("Deleted {} C_BP_Withholding records", deleteCount);
+
+		deleteCount = queryBL.createQueryBuilder(I_AD_User.class)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bpartner.getC_BPartner_ID())
+				.create()
+				.delete();
+		logger.info("Deleted {} AD_User records", deleteCount);
 	}
 }
