@@ -48,6 +48,7 @@ import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.process.FlatrateTermCreator;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -584,7 +585,15 @@ public class OrgChangeRepository
 		final I_C_Flatrate_Term membershipTerm = flatrateBL.createTerm(flatrateTermRequest);
 
 		membershipTerm.setPlannedQtyPerUnit(sourceMembershipSubscription.getPlannedQtyPerUnit());
-		membershipTerm.setDropShip_Location_ID(retrieveCounterpartLocationOrNull(sourceMembershipSubscription.getShipToLocationId(), orgChangeRequest.getOrgToId()));
+		membershipTerm.setC_UOM_ID(newOrgMembershipProduct.getC_UOM_ID());
+
+
+		final I_C_BPartner_Location billToLocation = retrieveCounterpartLocationOrNull(sourceMembershipSubscription.getBillLocationId(), orgChangeRequest.getOrgToId());
+		membershipTerm.setBill_Location_ID(billToLocation == null ? -1 : billToLocation.getC_BPartner_Location_ID());
+
+
+		final I_C_BPartner_Location shipToLocation = retrieveCounterpartLocationOrNull(sourceMembershipSubscription.getShipToLocationId(), orgChangeRequest.getOrgToId());
+		membershipTerm.setDropShip_Location_ID(shipToLocation == null ? -1 : shipToLocation.getC_BPartner_Location_ID());
 
 
 		final IEditablePricingContext initialContext = pricingBL.createInitialContext(orgChangeRequest.getOrgToId(),
@@ -593,6 +602,9 @@ public class OrgChangeRepository
 																					  Quantity.of(sourceMembershipSubscription.getPlannedQtyPerUnit(),
 																								  uomDAO.getById(newOrgMembershipProduct.getC_UOM_ID())),
 																					  SOTrx.SALES);
+
+		initialContext.setPriceDate(orgChangeRequest.getStartDate());
+		initialContext.setCountryId(CountryId.ofRepoIdOrNull(billToLocation == null ? -1 : billToLocation.getC_Location().getC_Country_ID()));
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(initialContext);
 
@@ -607,7 +619,7 @@ public class OrgChangeRepository
 
 	}
 
-	private int retrieveCounterpartLocationOrNull(final BPartnerLocationId locationId, final OrgId orgId)
+	private I_C_BPartner_Location retrieveCounterpartLocationOrNull(final BPartnerLocationId locationId, final OrgId orgId)
 	{
 		final I_C_BPartner_Location sourceLocationRecord = bpartnerDAO.getBPartnerLocationById(locationId);
 
@@ -616,7 +628,7 @@ public class OrgChangeRepository
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID, orgId)
 				.orderByDescending(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID)
 				.create()
-				.firstId();
+				.first(I_C_BPartner_Location.class);
 	}
 
 	private IPricingResult calculateFlatrateTermPrice(@NonNull final I_C_Flatrate_Term newTerm)
