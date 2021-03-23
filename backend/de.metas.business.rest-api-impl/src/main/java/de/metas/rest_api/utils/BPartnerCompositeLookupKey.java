@@ -2,7 +2,6 @@ package de.metas.rest_api.utils;
 
 import de.metas.bpartner.GLN;
 import de.metas.common.rest_api.v1.JsonExternalId;
-import de.metas.externalreference.ExternalIdentifier;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -82,19 +81,6 @@ public class BPartnerCompositeLookupKey
 				return BPartnerCompositeLookupKey.ofGln(bpartnerIdentifier.asGLN());
 			case METASFRESH_ID:
 				return BPartnerCompositeLookupKey.ofMetasfreshId(bpartnerIdentifier.asMetasfreshId());
-			default:
-				throw new AdempiereException("Unexpected type=" + bpartnerIdentifier.getType());
-		}
-	}
-
-	public static BPartnerCompositeLookupKey ofExternalIdentifier(@NonNull final ExternalIdentifier bpartnerIdentifier)
-	{
-		switch (bpartnerIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				return BPartnerCompositeLookupKey.ofMetasfreshId(bpartnerIdentifier.asMetasfreshId());
-			case GLN:
-				return BPartnerCompositeLookupKey.ofGln(bpartnerIdentifier.asGLN());
 			default:
 				throw new AdempiereException("Unexpected type=" + bpartnerIdentifier.getType());
 		}

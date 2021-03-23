@@ -1,17 +1,8 @@
-package de.metas.rest_api.utils.v2;
-
-import de.metas.common.rest_api.v2.JsonPagingDescriptor;
-import de.metas.common.rest_api.v2.JsonPagingDescriptor.JsonPagingDescriptorBuilder;
-import de.metas.dao.selection.pagination.PageDescriptor;
-import de.metas.dao.selection.pagination.QueryResultPage;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 /*
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,6 +19,15 @@ import lombok.experimental.UtilityClass;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.rest_api.v2.util;
+
+import de.metas.common.rest_api.v2.JsonPagingDescriptor;
+import de.metas.common.rest_api.v2.JsonPagingDescriptor.JsonPagingDescriptorBuilder;
+import de.metas.dao.selection.pagination.PageDescriptor;
+import de.metas.dao.selection.pagination.QueryResultPage;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class JsonConverters
