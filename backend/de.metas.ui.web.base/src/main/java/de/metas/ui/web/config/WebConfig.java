@@ -10,6 +10,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
+import de.metas.ui.web.WebuiURLs;
 import lombok.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,8 +58,13 @@ public class WebConfig implements WebMvcConfigurer
 	public CookieSerializer cookieSerializer()
 	{
 		final DefaultCookieSerializer serializer = new DefaultCookieSerializer();
-		serializer.setSameSite("None");
-		serializer.setUseSecureCookie(true);
+		
+		final WebuiURLs webuiURLs = WebuiURLs.newInstance();
+		if(webuiURLs.isCrossSiteUsageAllowed())
+		{
+			serializer.setSameSite("None");
+			serializer.setUseSecureCookie(true);
+		}
 		return serializer;
 	}
 	
