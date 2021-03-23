@@ -76,6 +76,7 @@ public class RESTUtil
 		final I_AD_User_AuthToken userAuthTokenRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_User_AuthToken.class);
 		userAuthTokenRecord.setAD_User_ID(userId.getRepoId());
 		userAuthTokenRecord.setAD_Role_ID(role.getId().getRepoId());
+		userAuthTokenRecord.setAD_Org_ID(1000000);
 		InterfaceWrapperHelper.saveRecord(userAuthTokenRecord);
 
 		return userAuthTokenRecord.getAuthToken();

@@ -66,17 +66,19 @@ import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem.SyncOutcome;
 import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
-import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
+import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
+import de.metas.externalreference.bpartner.BPartnerValueExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.i18n.BooleanWithReason;
@@ -85,11 +87,12 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
-import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
@@ -97,6 +100,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
@@ -122,6 +126,7 @@ import static de.metas.util.Check.isBlank;
 public class JsonPersisterService
 {
 	private static final Logger logger = LogManager.getLogger(JsonPersisterService.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
@@ -155,10 +160,18 @@ public class JsonPersisterService
 		this.identifier = assumeNotEmpty(identifier, "Param Identifier may not be empty");
 	}
 
+	public JsonResponseBPartnerCompositeUpsertItem persist(
+			@Nullable final String orgCode,
+			@NonNull final JsonRequestBPartnerUpsertItem requestItem,
+			@NonNull final SyncAdvise parentSyncAdvise)
+	{
+		return trxManager.callInNewTrx(() -> persistWithinTrx(orgCode, requestItem, parentSyncAdvise));
+	}
+
 	/**
 	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
 	 */
-	public JsonResponseBPartnerCompositeUpsertItem persist(
+	private JsonResponseBPartnerCompositeUpsertItem persistWithinTrx(
 			@Nullable final String orgCode,
 			@NonNull final JsonRequestBPartnerUpsertItem requestItem,
 			@NonNull final SyncAdvise parentSyncAdvise)
@@ -261,6 +274,15 @@ public class JsonPersisterService
 	}
 
 	public JsonResponseUpsertItem persist(
+			@NonNull final ExternalIdentifier contactIdentifier,
+			@NonNull final JsonRequestContact jsonContact,
+			@NonNull final SyncAdvise parentSyncAdvise)
+	{
+		return trxManager.callInNewTrx(() -> persistWithinTrx(contactIdentifier, jsonContact, parentSyncAdvise));
+
+	}
+
+	public JsonResponseUpsertItem persistWithinTrx(
 			@NonNull final ExternalIdentifier contactIdentifier,
 			@NonNull final JsonRequestContact jsonContact,
 			@NonNull final SyncAdvise parentSyncAdvise)
@@ -387,12 +409,21 @@ public class JsonPersisterService
 		return Optional.of(contactQuery.build());
 	}
 
+	public Optional<JsonResponseUpsert> persistForBPartner(
+			@Nullable final String orgCode,
+			@NonNull final ExternalIdentifier bpartnerIdentifier,
+			@NonNull final JsonRequestLocationUpsert jsonRequestLocationUpsert,
+			@NonNull final SyncAdvise parentSyncAdvise)
+	{
+		return trxManager.callInNewTrx(() -> persistForBPartnerWithinTrx(orgCode, bpartnerIdentifier, jsonRequestLocationUpsert, parentSyncAdvise));
+	}
+
 	/**
 	 * Adds or updates the given locations. Leaves all unrelated locations of the same bPartner untouched
 	 *
 	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
 	 */
-	public Optional<JsonResponseUpsert> persistForBPartner(
+	private Optional<JsonResponseUpsert> persistForBPartnerWithinTrx(
 			@Nullable final String orgCode,
 			@NonNull final ExternalIdentifier bpartnerIdentifier,
 			@NonNull final JsonRequestLocationUpsert jsonRequestLocationUpsert,
@@ -444,10 +475,19 @@ public class JsonPersisterService
 		return Optional.of(response.build());
 	}
 
+	public Optional<JsonResponseUpsert> persistForBPartner(
+			@Nullable final String orgCode,
+			@NonNull final ExternalIdentifier bpartnerIdentifier,
+			@NonNull final JsonRequestContactUpsert jsonContactUpsert,
+			@NonNull final SyncAdvise parentSyncAdvise)
+	{
+		return trxManager.callInNewTrx(() -> persistForBPartnerWithinTrx(orgCode, bpartnerIdentifier, jsonContactUpsert, parentSyncAdvise));
+	}
+
 	/**
 	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
 	 */
-	public Optional<JsonResponseUpsert> persistForBPartner(
+	private Optional<JsonResponseUpsert> persistForBPartnerWithinTrx(
 			@Nullable final String orgCode,
 			@NonNull final ExternalIdentifier bpartnerIdentifier,
 			@NonNull final JsonRequestContactUpsert jsonContactUpsert,
@@ -493,10 +533,19 @@ public class JsonPersisterService
 		return Optional.of(response.build());
 	}
 
+	public Optional<JsonResponseUpsert> persistForBPartner(
+			@Nullable final String orgCode,
+			@NonNull final ExternalIdentifier bpartnerIdentifier,
+			@NonNull final JsonRequestBankAccountsUpsert jsonBankAccountsUpsert,
+			@NonNull final SyncAdvise parentSyncAdvise)
+	{
+		return trxManager.callInNewTrx(() -> persistForBPartnerWithinTrx(orgCode, bpartnerIdentifier, jsonBankAccountsUpsert, parentSyncAdvise));
+	}
+
 	/**
 	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
 	 */
-	public Optional<JsonResponseUpsert> persistForBPartner(
+	public Optional<JsonResponseUpsert> persistForBPartnerWithinTrx(
 			@Nullable final String orgCode,
 			@NonNull final ExternalIdentifier bpartnerIdentifier,
 			@NonNull final JsonRequestBankAccountsUpsert jsonBankAccountsUpsert,
@@ -578,6 +627,14 @@ public class JsonPersisterService
 		// supplement the metasfreshiId which we now have after the "save()"
 		resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().metasfreshId(JsonMetasfreshId.of(BPartnerId.toRepoId(bpartnerComposite.getBpartner().getId())));
 
+		if (jsonRequestComposite.getBpartner() != null)
+		{
+			handleBPartnerValueExternalReference(
+					JsonMetasfreshId.of(bpartnerComposite.getBpartner().getId().getRepoId()),
+					jsonRequestComposite.getBpartner().getCode(),
+					jsonRequestComposite.getOrgCode());
+		}
+
 		final ImmutableMap<String, JsonResponseUpsertItemBuilder> jsonResponseContactUpsertItemBuilders = resultBuilder.getJsonResponseContactUpsertItems();
 		for (final JsonRequestContactUpsertItem requestItem : jsonRequestComposite.getContactsNotNull().getRequestItems())
 		{
@@ -604,6 +661,34 @@ public class JsonPersisterService
 			final JsonResponseUpsertItemBuilder builder = jsonResponseBankAccountUpsertItemBuilders.get(requestItem.getIban());
 			final Optional<BPartnerBankAccount> bankAccount = bpartnerComposite.getBankAccountByIBAN(requestItem.getIban());
 			builder.metasfreshId(JsonMetasfreshId.of(BPartnerBankAccountId.toRepoId(bankAccount.get().getId())));
+		}
+	}
+
+	private void handleBPartnerValueExternalReference(
+			@NonNull final JsonMetasfreshId metasfreshId,
+			@Nullable final String bPartnerCode,
+			@Nullable final String orgCode)
+	{
+		if (bPartnerCode != null)
+		{
+			final ExternalBusinessKey externalBusinessKey = ExternalBusinessKey.of(bPartnerCode);
+			if (externalBusinessKey.getType().equals(ExternalBusinessKey.Type.EXTERNAL_REFERENCE))
+			{
+				final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
+						.id(externalBusinessKey.asExternalValueAndSystem().getValue())
+						.type(BPartnerValueExternalReferenceType.BPARTNER_VALUE.getCode())
+						.build();
+
+				final JsonExternalReferenceItem externalReferenceItem =
+						JsonExternalReferenceItem.of(externalReferenceLookupItem, metasfreshId);
+
+				final JsonRequestExternalReferenceUpsert externalReferenceUpsert = JsonRequestExternalReferenceUpsert.builder()
+						.systemName(JsonExternalSystemName.of(externalBusinessKey.asExternalValueAndSystem().getExternalSystem()))
+						.externalReferenceItem(externalReferenceItem)
+						.build();
+
+				externalReferenceRestControllerService.performUpsert(externalReferenceUpsert, orgCode);
+			}
 		}
 	}
 
@@ -672,7 +757,12 @@ public class JsonPersisterService
 		// code / value
 		if (jsonBPartner.isCodeSet())
 		{
-			bpartner.setValue(StringUtils.trim(jsonBPartner.getCode()));
+			final ExternalBusinessKey externalBusinessKey = ExternalBusinessKey.of(jsonBPartner.getCode());
+			if (externalBusinessKey.getType().equals(ExternalBusinessKey.Type.VALUE))
+			{
+				bpartner.setValue(StringUtils.trim(externalBusinessKey.asValue()));
+
+			}
 		}
 
 		// globalId

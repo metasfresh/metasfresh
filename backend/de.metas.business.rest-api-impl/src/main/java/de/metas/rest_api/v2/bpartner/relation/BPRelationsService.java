@@ -42,6 +42,7 @@ import de.metas.util.Services;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
@@ -61,6 +62,7 @@ public class BPRelationsService
 
 	private final JsonServiceFactory jsonServiceFactory;
 	private final IBPRelationDAO bpRelationDAO = Services.get(IBPRelationDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public BPRelationsService(@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
@@ -112,8 +114,16 @@ public class BPRelationsService
 
 		return builder.build();
 	}
+	public void createOrUpdateRelations(
+			@NonNull final OrgId orgId,
+			@NonNull final ExternalIdentifier bpartnerIdentifier,
+			@Nullable final ExternalIdentifier locationIdentifier,
+			@NonNull final List<JsonRequestBPRelationTarget> relatesTo)
+	{
+		trxManager.callInNewTrx(() -> createOrUpdateRelationsWithinTrx(orgId, bpartnerIdentifier, locationIdentifier, relatesTo));
+	}
 
-	public void createOrUpdateRelations(@NonNull final OrgId orgId,
+	public Optional<BPartnerComposite> createOrUpdateRelationsWithinTrx(@NonNull final OrgId orgId,
 			@NonNull final ExternalIdentifier bpartnerIdentifier,
 			@Nullable final ExternalIdentifier locationIdentifier,
 			@NonNull final List<JsonRequestBPRelationTarget> relatesTo)
@@ -132,6 +142,8 @@ public class BPRelationsService
 		final Stream<BPRelation> relations = relatesTo.stream().map(relatedBp -> fromJson(bpartner, location, relatedBp));
 
 		relations.forEach(relation -> bpRelationDAO.saveOrUpdate(orgId, relation));
+
+		return bPartnerComposite;
 	}
 
 	@NonNull

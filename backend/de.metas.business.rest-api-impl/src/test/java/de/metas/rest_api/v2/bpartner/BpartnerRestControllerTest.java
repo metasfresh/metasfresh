@@ -61,14 +61,16 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
+import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
-import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
@@ -392,6 +394,32 @@ class BpartnerRestControllerTest
 	}
 
 	/**
+	 * Verifies that you can identify a bpartner by {@code ext-ALBERTA-1234567} and then updated its code.
+	 */
+	@Test
+	void createOrUpdateBPartner_update_withExternalBusinessKey()
+	{
+		JsonRequestBPartner partner = new JsonRequestBPartner();
+		partner.setCompanyName("otherCompanyName");
+
+		partner.setCode("ext-ALBERTA-esb");
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
+				.syncAdvise(SyncAdvise.builder()
+									.ifExists(SyncAdvise.IfExists.UPDATE_MERGE)
+									.ifNotExists(SyncAdvise.IfNotExists.CREATE)
+									.build())
+				.requestItem(JsonRequestBPartnerUpsertItem.builder()
+									 .bpartnerIdentifier("ext-ALBERTA-1234567")
+									 .bpartnerComposite(JsonRequestComposite.builder()
+																.bpartner(partner)
+																.build())
+									 .build())
+				.build();
+
+		createOrUpdateBPartner_update_performTest(bpartnerUpsertRequest);
+	}
+
+	/**
 	 * Like {@link #createOrUpdateBPartner_update_builder()}, but get the rest file from a JSON string
 	 */
 	@Test
@@ -516,10 +544,11 @@ class BpartnerRestControllerTest
 
 	private I_C_BPartner createOrUpdateBPartner_update_performTest(@NonNull final JsonRequestBPartnerUpsert bpartnerUpsertRequest)
 	{
+		final String initialValue = "bpartnerRecord.value";
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
 		bpartnerRecord.setName("bpartnerRecord.name");
-		bpartnerRecord.setValue("bpartnerRecord.value");
+		bpartnerRecord.setValue(initialValue);
 		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
 		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		bpartnerRecord.setBPartner_Parent_ID(123); // in one test this shall be updated to null
@@ -543,7 +572,19 @@ class BpartnerRestControllerTest
 		// verify that the bpartner-record was updated
 		refresh(bpartnerRecord);
 		assertThat(bpartnerRecord.getCompanyName()).isEqualTo("otherCompanyName");
-		assertThat(bpartnerRecord.getValue()).isEqualTo("other12345");
+
+		final ExternalBusinessKey externalBusinessKey =
+				ExternalBusinessKey.of(bpartnerUpsertRequest.getRequestItems().get(0).getBpartnerComposite().getBpartner().getCode());
+
+		if (externalBusinessKey.getType().equals(ExternalBusinessKey.Type.VALUE))
+		{
+			assertThat(bpartnerRecord.getValue()).isEqualTo(externalBusinessKey.asValue());
+		}
+		else if (externalBusinessKey.getType().equals(ExternalBusinessKey.Type.EXTERNAL_REFERENCE))
+		{
+			assertThat(bpartnerRecord.getValue()).isEqualTo(initialValue);
+			initialCounts.assertExternalReferencesCountChangedBy(1);
+		}
 		return bpartnerRecord;
 	}
 
@@ -554,6 +595,7 @@ class BpartnerRestControllerTest
 		int initialUserRecordCount;
 		int initialBPartnerLocationRecordCount;
 		int initialLocationRecordCount;
+		int initialExternalReferencesRecordCount;
 
 		private RecordCounts()
 		{
@@ -561,6 +603,7 @@ class BpartnerRestControllerTest
 			initialUserRecordCount = POJOLookupMap.get().getRecords(I_AD_User.class).size();
 			initialBPartnerLocationRecordCount = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class).size();
 			initialLocationRecordCount = POJOLookupMap.get().getRecords(I_C_Location.class).size();
+			initialExternalReferencesRecordCount = POJOLookupMap.get().getRecords(I_S_ExternalReference.class).size();
 		}
 
 		private void assertCountsUnchanged()
@@ -584,6 +627,11 @@ class BpartnerRestControllerTest
 		private void assertBPartnerCountChangedBy(final int offset)
 		{
 			assertThat(POJOLookupMap.get().getRecords(I_C_BPartner.class)).hasSize(initialBPartnerRecordCount + offset);
+		}
+
+		public void assertExternalReferencesCountChangedBy(final int offset)
+		{
+			assertThat(POJOLookupMap.get().getRecords(I_S_ExternalReference.class)).hasSize(initialExternalReferencesRecordCount + offset);
 		}
 	}
 
