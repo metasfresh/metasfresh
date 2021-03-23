@@ -568,39 +568,92 @@ public class OrgChangeRepository
 			return;
 		}
 
+		createTerm(destinationBPartnerComposite, orgChangeRequest, newOrgMembershipProduct, sourceMembershipSubscription);
+
+	}
+
+	public void createNonMembershipSubscriptionTerm(final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+			final BPartnerComposite destinationBPartnerComposite,
+			final OrgChangeRequest orgChangeRequest)
+	{
+		final List<FlatrateTerm> nonMembershipSubscriptions = orgChangeBPartnerComposite.getNonMembershipSubscriptions();
+
+		if (Check.isEmpty(nonMembershipSubscriptions))
+		{
+			loggable.addLog("No subscription for non-membership products will be created for the partner {} "
+									+ "because no such subscriptions were found in the initial partner {}.",
+							destinationBPartnerComposite.getBpartner(),
+							orgChangeBPartnerComposite.getBPartnerComposite().getBpartner());
+			return;
+
+		}
+
 		final I_C_BPartner partner = bpartnerDAO.getById(destinationBPartnerComposite.getBpartner().getId());
 
-		final I_AD_User user = retrieveCounterpartUserOrNull(sourceMembershipSubscription.getUserId(), destinationBPartnerComposite.getOrgId());
+		final Iterator<I_C_BPartner> it = queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
+				.create()
+				.iterate(I_C_BPartner.class);
+
+		for (final FlatrateTerm subscription : nonMembershipSubscriptions)
+		{
+			final I_M_Product counterpartProduct = retrieveCounterpartProductOrNull(
+					subscription.getProductId(),
+					orgChangeRequest.getOrgToId());
+
+			if (counterpartProduct == null)
+			{
+				loggable.addLog("No counterpart product was found for the product {}. This means no counterpart subscription of {} will be"
+										+ "created for the parnter {}",
+								subscription.getProductId(),
+								subscription,
+								destinationBPartnerComposite.getBpartner());
+			}
+			else
+			{
+				createTerm(destinationBPartnerComposite,
+						   orgChangeRequest,
+						   counterpartProduct,
+						   subscription);
+			}
+		}
+	}
+
+	private void createTerm(final BPartnerComposite destinationBPartnerComposite,
+			final OrgChangeRequest orgChangeRequest,
+			final I_M_Product newProduct,
+			final FlatrateTerm sourceSubscription)
+	{
+		final I_C_BPartner partner = bpartnerDAO.getById(destinationBPartnerComposite.getBpartner().getId());
+
+		final I_AD_User user = retrieveCounterpartUserOrNull(sourceSubscription.getUserId(), destinationBPartnerComposite.getOrgId());
 
 		final CreateFlatrateTermRequest flatrateTermRequest = CreateFlatrateTermRequest.builder()
 				.context(PlainContextAware.newWithThreadInheritedTrx(Env.getCtx()))
 				.bPartner(partner)
 				.startDate(TimeUtil.asTimestamp(orgChangeRequest.getStartDate()))
 				.isSimulation(false)
-				.conditions(flatrateDAO.getConditionsById(sourceMembershipSubscription.getFlartareConditionsId()))
-				.productAndCategoryId(ProductAndCategoryId.of(newOrgMembershipProduct.getM_Product_ID(), newOrgMembershipProduct.getM_Product_Category_ID()))
+				.conditions(flatrateDAO.getConditionsById(sourceSubscription.getFlartareConditionsId()))
+				.productAndCategoryId(ProductAndCategoryId.of(newProduct.getM_Product_ID(), newProduct.getM_Product_Category_ID()))
 				.userInCharge(user)
 				.build();
 
 		final I_C_Flatrate_Term membershipTerm = flatrateBL.createTerm(flatrateTermRequest);
 
-		membershipTerm.setPlannedQtyPerUnit(sourceMembershipSubscription.getPlannedQtyPerUnit());
-		membershipTerm.setC_UOM_ID(newOrgMembershipProduct.getC_UOM_ID());
+		membershipTerm.setPlannedQtyPerUnit(sourceSubscription.getPlannedQtyPerUnit());
+		membershipTerm.setC_UOM_ID(newProduct.getC_UOM_ID());
 
-
-		final I_C_BPartner_Location billToLocation = retrieveCounterpartLocationOrNull(sourceMembershipSubscription.getBillLocationId(), orgChangeRequest.getOrgToId());
+		final I_C_BPartner_Location billToLocation = retrieveCounterpartLocationOrNull(sourceSubscription.getBillLocationId(), orgChangeRequest.getOrgToId());
 		membershipTerm.setBill_Location_ID(billToLocation == null ? -1 : billToLocation.getC_BPartner_Location_ID());
 
-
-		final I_C_BPartner_Location shipToLocation = retrieveCounterpartLocationOrNull(sourceMembershipSubscription.getShipToLocationId(), orgChangeRequest.getOrgToId());
+		final I_C_BPartner_Location shipToLocation = retrieveCounterpartLocationOrNull(sourceSubscription.getShipToLocationId(), orgChangeRequest.getOrgToId());
 		membershipTerm.setDropShip_Location_ID(shipToLocation == null ? -1 : shipToLocation.getC_BPartner_Location_ID());
 
-
 		final IEditablePricingContext initialContext = pricingBL.createInitialContext(orgChangeRequest.getOrgToId(),
-																					  ProductId.ofRepoId(newOrgMembershipProduct.getM_Product_ID()),
+																					  ProductId.ofRepoId(newProduct.getM_Product_ID()),
 																					  destinationBPartnerComposite.getBpartner().getId(),
-																					  Quantity.of(sourceMembershipSubscription.getPlannedQtyPerUnit(),
-																								  uomDAO.getById(newOrgMembershipProduct.getC_UOM_ID())),
+																					  Quantity.of(sourceSubscription.getPlannedQtyPerUnit(),
+																								  uomDAO.getById(newProduct.getC_UOM_ID())),
 																					  SOTrx.SALES);
 
 		initialContext.setPriceDate(orgChangeRequest.getStartDate());
@@ -616,7 +669,6 @@ public class OrgChangeRepository
 		save(membershipTerm);
 
 		flatrateBL.complete(membershipTerm);
-
 	}
 
 	private I_C_BPartner_Location retrieveCounterpartLocationOrNull(final BPartnerLocationId locationId, final OrgId orgId)
@@ -677,61 +729,6 @@ public class OrgChangeRepository
 		}
 
 		return counterpartProduct;
-	}
-
-	public void createNonMembershipSubscriptionTerm(final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
-			final BPartnerComposite destinationBPartnerComposite,
-			final OrgChangeRequest orgChangeRequest)
-	{
-		final List<FlatrateTerm> nonMembershipSubscriptions = orgChangeBPartnerComposite.getNonMembershipSubscriptions();
-
-		if (Check.isEmpty(nonMembershipSubscriptions))
-		{
-			loggable.addLog("No subscription for non-membership products will be created for the partner {} "
-									+ "because no such subscriptions were found in the initial partner {}.",
-							destinationBPartnerComposite.getBpartner(),
-							orgChangeBPartnerComposite.getBPartnerComposite().getBpartner());
-			return;
-
-		}
-
-		final I_C_BPartner partner = bpartnerDAO.getById(destinationBPartnerComposite.getBpartner().getId());
-
-		final Iterator<I_C_BPartner> it = queryBL.createQueryBuilder(I_C_BPartner.class)
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID())
-				.create()
-				.iterate(I_C_BPartner.class);
-
-		for (final FlatrateTerm subscription : nonMembershipSubscriptions)
-		{
-			final I_M_Product counterpartProduct = retrieveCounterpartProductOrNull(
-					subscription.getProductId(),
-					orgChangeRequest.getOrgToId());
-
-			final I_AD_User user = retrieveCounterpartUserOrNull(subscription.getUserId(), destinationBPartnerComposite.getOrgId());
-
-			if (counterpartProduct == null)
-			{
-				loggable.addLog("No counterpart product was found for the product {}. This means no counterpart subscription of {} will be"
-										+ "created for the parnter {}",
-								subscription.getProductId(),
-								subscription,
-								destinationBPartnerComposite.getBpartner());
-			}
-			else
-			{
-				final FlatrateTermCreator subscriptionCreator = FlatrateTermCreator.builder()
-						.bPartners(() -> it)
-						.startDate(TimeUtil.asTimestamp(orgChangeRequest.getStartDate()))
-						.isSimulation(false)
-						.conditions(flatrateDAO.getConditionsById(subscription.getFlartareConditionsId()))
-						.product(counterpartProduct)
-						.userInCharge(user)
-						.build();
-
-				subscriptionCreator.createTermsForBPartners();
-			}
-		}
 	}
 
 }
