@@ -1,5 +1,6 @@
 package de.metas.servicerepair.customerreturns.process;
 
+import com.google.common.base.Suppliers;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
@@ -17,6 +18,8 @@ import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.process.IADPInstanceDAO;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
@@ -29,6 +32,7 @@ import de.metas.servicerepair.customerreturns.AlreadyShippedHUsInPreviousSystem;
 import de.metas.servicerepair.customerreturns.HUsToReturnViewContext;
 import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -42,31 +46,41 @@ import org.compiere.model.I_M_InOut;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Supplier;
 
-public class HUsToReturn_CreateShippedHU extends HUsToReturnViewBasedProcess implements IProcessPrecondition, IProcessParametersCallout
+public class HUsToReturn_CreateShippedHU
+		extends HUsToReturnViewBasedProcess
+		implements IProcessPrecondition, IProcessDefaultParametersProvider, IProcessParametersCallout
 {
 	private final RepairCustomerReturnsService repairCustomerReturnsService = SpringContextHolder.instance.getBean(RepairCustomerReturnsService.class);
-
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
+	//
 	// parameters
-	@Param(parameterName = "M_Product_ID", mandatory = true)
-	private ProductId productId;
-
 	private static final String PARAM_SerialNo = "SerialNo";
 	@Param(parameterName = PARAM_SerialNo, mandatory = true)
 	private String serialNo;
 
-	@Param(parameterName = "WarrantyStartDate")
+	public static final String PARAM_M_Product_ID = "M_Product_ID";
+	@Param(parameterName = PARAM_M_Product_ID, mandatory = true)
+	private ProductId productId;
+
+	public static final String PARAM_WarrantyStartDate = "WarrantyStartDate";
+	@Param(parameterName = PARAM_WarrantyStartDate)
 	@Nullable private LocalDate warrantyStartDate;
 
-	@Param(parameterName = "C_BPartner_Customer_ID")
+	public static final String PARAM_C_BPartner_Customer_ID = "C_BPartner_Customer_ID";
+	@Param(parameterName = PARAM_C_BPartner_Customer_ID)
 	@Nullable private BPartnerId customerId;
 
+	//
 	// state
+	private final Supplier<AlreadyShippedHUsInPreviousSystem> defaultParamsSuppler = Suppliers.memoize(this::computeDefaultParamsOrNull);
 	private I_M_InOut _customerReturns; // lazy
 
 	@Override
@@ -78,6 +92,55 @@ public class HUsToReturn_CreateShippedHU extends HUsToReturnViewBasedProcess imp
 		}
 
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	@Nullable
+	@Override
+	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
+	{
+		final AlreadyShippedHUsInPreviousSystem defaultParams = defaultParamsSuppler.get();
+		if(defaultParams != null)
+		{
+			final String columnName = parameter.getColumnName();
+			if (PARAM_SerialNo.equals(columnName))
+			{
+				return defaultParams.getSerialNo();
+			}
+			else if(PARAM_M_Product_ID.equals(columnName))
+			{
+				return defaultParams.getProductId();
+			}
+			else if(PARAM_WarrantyStartDate.equals(columnName))
+			{
+				return defaultParams.getWarrantyStartDate();
+			}
+			else if(PARAM_C_BPartner_Customer_ID.equals(columnName))
+			{
+				return defaultParams.getCustomerId();
+			}
+		}
+
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+	}
+
+	@Nullable
+	private AlreadyShippedHUsInPreviousSystem computeDefaultParamsOrNull()
+	{
+		return getSerialNoFromViewFilters()
+				.flatMap(repairCustomerReturnsService::searchAlreadyShippedHUsInPreviousSystemRepositoryBySerialNo)
+				.orElse(null);
+	}
+
+	private Optional<String> getSerialNoFromViewFilters()
+	{
+		return getView()
+				.getFilters()
+				.stream()
+				.map(filter -> filter.getParameterOrNull(PARAM_SerialNo))
+				.filter(Objects::nonNull)
+				.map(filterParam -> StringUtils.trimBlankToNull(filterParam.getValueAsString()))
+				.filter(Objects::nonNull)
+				.findFirst();
 	}
 
 	@Override
