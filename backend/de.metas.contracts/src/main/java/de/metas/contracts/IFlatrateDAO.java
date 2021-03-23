@@ -123,6 +123,8 @@ public interface IFlatrateDAO extends ISingletonService
 
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_BPartner bPartner, I_C_Flatrate_Conditions flatrateConditions);
 
+	I_C_Flatrate_Term getById(@NonNull FlatrateTermId flatrateTermId);
+
 	/**
 	 * This method calls {@link #retrieveTerms(Properties, int, Timestamp, int, int, int, String)} using the given invoice candidates values as parameters.
 	 */
@@ -131,6 +133,8 @@ public interface IFlatrateDAO extends ISingletonService
 	List<I_C_Flatrate_Term> retrieveTerms(Properties ctx, int bill_BPartner_ID, Timestamp dateOrdered, int m_Product_Category_ID, int m_Product_ID, int c_Charge_ID, String trxName);
 
 	List<I_C_Flatrate_Term> retrieveTerms(TermsQuery query);
+
+	I_C_Flatrate_Conditions getConditionsById (ConditionsId flatrateConditionsId);
 
 	@Value
 	@Builder
