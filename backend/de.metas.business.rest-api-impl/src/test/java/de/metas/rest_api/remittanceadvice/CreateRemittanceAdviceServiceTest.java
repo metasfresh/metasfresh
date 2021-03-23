@@ -359,7 +359,7 @@ class CreateRemittanceAdviceServiceTest
 		assertThat(c_remittanceAdvice.getDocumentNo()).isEqualTo(CREATED_DOCUMENT_NB);
 		assertThat(c_remittanceAdvice.getExternalDocumentNo()).isEqualTo(DOCUMENT_NB);
 		assertThat(TimeUtil.asInstant(c_remittanceAdvice.getDateDoc())).isEqualTo(Instant.parse(DOCUMENT_DATE));
-		assertThat(c_remittanceAdvice.getSendAt()).isEqualTo(null);
+		assertThat(c_remittanceAdvice.getSendAt()).isNull();
 
 		assertThat(c_remittanceAdvice.getC_DocType_ID()).isEqualTo(docTypeRMADV.getC_DocType_ID());
 		assertThat(c_remittanceAdvice.getC_Payment_Doctype_Target_ID()).isEqualTo(docTypeARR.getC_DocType_ID());

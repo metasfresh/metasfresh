@@ -45,6 +45,15 @@
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 		</dependency>
 
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.security</groupId>-->
+<!--			<artifactId>spring-security-config</artifactId>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.security</groupId>-->
+<!--			<artifactId>spring-security-web</artifactId>-->
+<!--		</dependency>-->
+		
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
 			<artifactId>tomcat-embed-jasper</artifactId>
@@ -104,7 +113,6 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Servlet API -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
@@ -165,6 +173,6 @@
 			<artifactId>janino</artifactId>
 		</dependency>
 
-	</dependencies>
+    </dependencies>
 
 </project>

@@ -10,6 +10,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
+import lombok.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -51,7 +52,7 @@ public class WebConfig extends WebMvcConfigurerAdapter
 	public static final String PARAM_RowId = "rowId";
 
 	@Override
-	public void addCorsMappings(final CorsRegistry registry)
+	public void addCorsMappings(@NonNull final CorsRegistry registry)
 	{
 		// FIXME: for now we enable CORS for the whole REST API
 		// registry.addMapping(ENDPOINT_ROOT + "/**");

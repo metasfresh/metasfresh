@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.elasticsearch.client.RestHighLevelClient;
 
 /*
  * #%L
@@ -37,7 +38,7 @@ import lombok.Value;
 public class FullTextSearchFilterContext
 {
 	@NonNull
-	final Client elasticsearchClient;
+	final RestHighLevelClient elasticsearchClient;
 	@NonNull
 	final String modelTableName;
 	@NonNull
