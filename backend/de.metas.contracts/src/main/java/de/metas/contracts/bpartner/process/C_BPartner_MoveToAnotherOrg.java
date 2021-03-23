@@ -118,7 +118,7 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
-		if ("AD_Org_Target_ID".equals(parameterName))
+		if ("AD_Org_Target_ID".equals(parameterName) || "Date_OrgChange".equals(parameterName))
 		{
 			if(p_orgTargetId == null)
 			{
@@ -150,6 +150,12 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 		{
 			return SystemTime.asLocalDate().plusDays(1);
 		}
+
+		// if("M_Product_ID".equals(parameter.getColumnName()))
+		// {
+		// TODO :Find the cheapest membership product
+		// 	return orgChangeRepo.getCheapestMembershipProduct(p_orgTargetId, p_startDate);
+		// }
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 }

@@ -92,8 +92,7 @@ public class OrgChangeService
 		final List<BPartnerContact> newContacts = getOrCreateContacts(orgChangeBPartnerComposite, destinationBPartnerComposite);
 		final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(orgChangeBPartnerComposite, destinationBPartnerComposite);
 
-		createMembershipFlatrateTerms(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
-		createNonMembershipFlatrateTerms(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
+
 
 		destinationBPartnerComposite = destinationBPartnerComposite.toBuilder()
 				.locations(newLocations)
@@ -104,6 +103,9 @@ public class OrgChangeService
 		bpCompositeRepo.save(destinationBPartnerComposite);
 
 		orgChangeRepo.saveOrgChangeBPartnerComposite(orgChangeBPartnerComposite);
+
+		createMembershipFlatrateTerms(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
+		createNonMembershipFlatrateTerms(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
 
 		cancelSubscriptionsFor(orgChangeBPartnerComposite, orgChangeRequest);
 

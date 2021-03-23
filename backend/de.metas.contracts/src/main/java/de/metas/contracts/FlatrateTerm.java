@@ -23,9 +23,11 @@
 package de.metas.contracts;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.process.FlatrateTermCreator;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.Data;
@@ -34,6 +36,7 @@ import lombok.Value;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
@@ -44,7 +47,13 @@ public class FlatrateTerm
 
 	private OrgId orgId;
 
-	private BPartnerId bPartnerID;
+	private BPartnerId billPartnerID;
+
+	private BPartnerLocationId billLocationId;
+
+	private BPartnerId shiToBPartnerId;
+
+	private BPartnerLocationId shipToLocationId;
 
 	private ProductId productId;
 
@@ -67,5 +76,9 @@ public class FlatrateTerm
 
 	private
 	FlartrateTermStatus status;
+	
+	private BigDecimal plannedQtyPerUnit;
+
+	private UomId uomId;
 
 }

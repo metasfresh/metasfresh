@@ -52,20 +52,16 @@ public class OrgChangeBPartnerComposite
 
 	private List<FlatrateTerm> nonMembershipSubscriptions;
 
-	private ProductId membershipProductId;
-
 	@Builder(toBuilder = true)
 	private OrgChangeBPartnerComposite(
 			@NonNull final BPartnerComposite bPartnerComposite,
 			@NonNull final OrgMappingId bPartnerOrgMappingId,
-			@Nullable final ProductId membershipProductId,
 			@Singular final List<FlatrateTerm> membershipSubscriptions,
 			@Singular final List<FlatrateTerm> nonMembershipSubscriptions)
 	{
 		this.bPartnerComposite = bPartnerComposite;
 		this.bPartnerOrgMappingId = bPartnerOrgMappingId;
 
-		this.membershipProductId = membershipProductId;
 		this.membershipSubscriptions = membershipSubscriptions;
 		this.nonMembershipSubscriptions = nonMembershipSubscriptions;
 	}
