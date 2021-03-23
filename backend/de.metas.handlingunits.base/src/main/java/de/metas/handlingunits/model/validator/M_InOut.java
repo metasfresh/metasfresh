@@ -144,6 +144,18 @@ public class M_InOut
 
 	private void updateAttributes(@NonNull final I_M_InOut shipment)
 	{
+		// Make sure we deal with a shipment
+		if(!shipment.isSOTrx())
+		{
+			return;
+		}
+
+		// make sure we are not dealing with a customer return
+		if (returnsServiceFacade.isCustomerReturn(shipment))
+		{
+			return;
+		}
+
 		final List<I_M_HU> hus = inOutDAO.retrieveHandlingUnits(shipment);
 		for (final I_M_HU hu : hus)
 		{
