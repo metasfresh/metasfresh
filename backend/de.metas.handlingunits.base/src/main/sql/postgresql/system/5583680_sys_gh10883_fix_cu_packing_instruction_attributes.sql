@@ -43,6 +43,6 @@ UPDATE M_HU_PI_Attribute SET updated='2021-03-24 13:04:05.125539 +01:00', update
 
 UPDATE M_HU_PI_Attribute SET updated='2021-03-24 13:04:05.125539 +01:00', updatedby=99, c_uom_id=540017 /*KG*/ WHERE m_hu_pi_version_id = 101 AND seqno IN (10/*weightgross*/, 15/*WeightNet*/, 20/*weightare*/);
 
-UPDATE M_HU_PI_Attribute SET updated='2021-03-24 13:04:05.125539 +01:00', updatedby=99, isreadonly='Y' WHERE m_hu_pi_version_id = 101 AND seqno IN (5/*WeightNet*/, 20/*weightare*/);
+UPDATE M_HU_PI_Attribute SET updated='2021-03-24 13:04:05.125539 +01:00', updatedby=99, isreadonly='Y' WHERE m_hu_pi_version_id = 101 AND seqno IN (15/*WeightNet*/, 20/*weightare*/);
 
-UPDATE M_HU_PI_Attribute SET updated='2021-03-24 13:04:05.125539 +01:00', updatedby=99, propagationtype='BOTU'/*bottom-up*/ WHERE m_hu_pi_version_id = 101 AND seqno IN (20/*weightare*/);
+UPDATE M_HU_PI_Attribute SET updated='2021-03-24 13:04:05.125539 +01:00', updatedby=99, propagationtype='BOTU'/*bottom-up*/, aggregationstrategy_javaclass_id=50000/*SUM*/ WHERE m_hu_pi_version_id = 101 AND seqno IN (20/*weightare*/);
