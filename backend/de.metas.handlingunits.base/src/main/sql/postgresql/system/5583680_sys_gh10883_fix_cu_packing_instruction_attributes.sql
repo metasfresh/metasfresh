@@ -39,12 +39,10 @@ UPDATE M_HU_PI_Attribute
 SET updated='2021-03-24 13:04:05.125539 +01:00', updatedby=99, hu_tansferstrategy_javaclass_id=540026 /*skip*/
 WHERE M_HU_PI_Attribute_ID = 1000020; /*WeightGross*/
 
---SELECT * FROM M_HU_PI_Attribute WHERE m_hu_pi_version_id = 100 AND seqno = 30
-
 UPDATE M_HU_PI_Attribute SET updated='2021-03-24 13:04:05.125539 +01:00', updatedby=99, seqno=15 WHERE m_hu_pi_version_id = 101 AND seqno IN (5/*WeightNet*/);
 
 UPDATE M_HU_PI_Attribute SET updated='2021-03-24 13:04:05.125539 +01:00', updatedby=99, c_uom_id=540017 /*KG*/ WHERE m_hu_pi_version_id = 101 AND seqno IN (10/*weightgross*/, 15/*WeightNet*/, 20/*weightare*/);
 
-UPDATE M_HU_PI_Attribute SET updated='2021-03-24 13:04:05.125539 +01:00', updatedby=99, isreadonly='Y' WHERE m_hu_pi_version_id = 100 AND seqno IN (5/*WeightNet*/, 20/*weightare*/);
+UPDATE M_HU_PI_Attribute SET updated='2021-03-24 13:04:05.125539 +01:00', updatedby=99, isreadonly='Y' WHERE m_hu_pi_version_id = 101 AND seqno IN (5/*WeightNet*/, 20/*weightare*/);
 
-UPDATE M_HU_PI_Attribute SET updated='2021-03-24 13:04:05.125539 +01:00', updatedby=99, propagationtype='BOTU'/*bottom-up*/ WHERE m_hu_pi_version_id = 100 AND seqno IN (20/*weightare*/);
+UPDATE M_HU_PI_Attribute SET updated='2021-03-24 13:04:05.125539 +01:00', updatedby=99, propagationtype='BOTU'/*bottom-up*/ WHERE m_hu_pi_version_id = 101 AND seqno IN (20/*weightare*/);
