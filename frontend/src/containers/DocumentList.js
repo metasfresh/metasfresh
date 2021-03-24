@@ -638,10 +638,13 @@ class DocumentListContainer extends Component {
 
   /**
    * @method resetInitialFilters
-   * @summary ToDo: Describe the method.
+   * @summary resets the initial filters
+   * @param {string} filterId
+   * @param {string} parameterName
    */
   resetInitialFilters = (filterId, parameterName) => {
     let { initialValuesNulled } = this.state;
+
     let filterParams = initialValuesNulled.get(filterId);
 
     if (!filterParams && parameterName) {
@@ -651,9 +654,9 @@ class DocumentListContainer extends Component {
     }
 
     if (!parameterName) {
-      initialValuesNulled = initialValuesNulled.delete(filterId);
+      initialValuesNulled.delete(filterId);
     } else {
-      initialValuesNulled = initialValuesNulled.set(filterId, filterParams);
+      initialValuesNulled.set(filterId, filterParams);
     }
 
     this.setState({

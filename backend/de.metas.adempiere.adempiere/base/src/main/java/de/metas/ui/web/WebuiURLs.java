@@ -58,6 +58,8 @@ public class WebuiURLs
 	private static final String PARAM_viewId = "viewId";
 	private static final String PARAM_ResetPasswordToken = "token";
 
+	public static final String SYSCONFIG_IsCrossSiteUsageAllowed = "webui.frontend.allow-cross-site-usage";
+	
 	public static final String SYSCONFIG_FRONTEND_URL = "webui.frontend.url";
 	private static final String SYSCONFIG_DOCUMENT_PATH = "webui.frontend.path.document";
 	private static final String SYSCONFIG_VIEW_PATH = "webui.frontend.path.view";
@@ -144,5 +146,11 @@ public class WebuiURLs
 		return getFrontendURL(SYSCONFIG_RESET_PASSWORD_PATH, ImmutableMap.<String, Object> builder()
 				.put(PARAM_ResetPasswordToken, token)
 				.build());
+	}
+
+	public boolean isCrossSiteUsageAllowed()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_IsCrossSiteUsageAllowed, false);
 	}
 }
