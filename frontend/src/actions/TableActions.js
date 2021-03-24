@@ -1,4 +1,4 @@
-import { reduce, cloneDeep, get, find } from 'lodash';
+import { reduce, cloneDeep, get, find, uniqBy } from 'lodash';
 
 import { createCollapsedMap, flattenRows } from '../utils/documentListHelper';
 import * as types from '../constants/ActionTypes';
@@ -320,9 +320,18 @@ export function updateGridTableData(tableId, rows) {
 
     if (state.tables) {
       const table = state.tables[tableId];
-      const { indentSupported, expandedDepth, keyProperty } = table;
+      const {
+        indentSupported,
+        expandedDepth,
+        keyProperty,
+        collapsible,
+      } = table;
+
       if (rows.length && indentSupported) {
         rows = flattenRows(rows);
+        // table rows are already flattened so we will end up with duplicates from
+        // `includedDocuments` being flattened again
+        rows = uniqBy(rows, 'id');
       }
 
       dispatch(updateTableData(tableId, rows, keyProperty));
@@ -332,7 +341,7 @@ export function updateGridTableData(tableId, rows) {
           createCollapsedRows({
             tableId,
             rows,
-            indentSupported,
+            collapsible,
             expandedDepth,
             keyProperty,
           })
