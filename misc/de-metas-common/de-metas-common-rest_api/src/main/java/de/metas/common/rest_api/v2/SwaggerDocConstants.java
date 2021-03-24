@@ -29,6 +29,10 @@ public class SwaggerDocConstants
 			+ "* or something like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n"
 			+ "* or something like `gln-<C_Bartner_Location.GLN>`\n";
 
+	public static final String BPARTNER_VALUE_DOC = "Code of the bPartner in question. Can be\n"
+			+ "* a plain `C_BPartner.Value`\n"
+			+ "* or an External Business Key like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n";
+
 	public static final String CONTACT_IDENTIFIER_DOC = "Identifier of the contact in question. Can be\n"
 			+ "* a plain `<AD_User_ID>`\n"
 			+ "* or something like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n";

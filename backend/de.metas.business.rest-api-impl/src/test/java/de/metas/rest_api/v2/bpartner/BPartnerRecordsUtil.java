@@ -28,6 +28,8 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.money.CurrencyId;
 import de.metas.user.UserId;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_User;
@@ -191,13 +193,27 @@ public class BPartnerRecordsUtil
 		saveRecord(externalReference);
 	}
 
+	public static I_S_ExternalReference getExternalReference(final String externalId, final String externalReferenceType)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_S_ExternalReference.class)
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalId)
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, externalReferenceType)
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID, AD_ORG_ID)
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, EXTERNAL_SYSTEM_NAME)
+				.create()
+				.firstOnly(I_S_ExternalReference.class);
+	}
+
 	private static void setCreatedByAndWhen(final Object model, final UserId adUserId)
 	{
 		InterfaceWrapperHelper.setValue(model, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, adUserId.getRepoId());
 		InterfaceWrapperHelper.setValue(model, InterfaceWrapperHelper.COLUMNNAME_Created, de.metas.common.util.time.SystemTime.asTimestamp());
 	}
 
-	/** Set time source to one static value so that we know which created/updated timestamps to expect in our created records */
+	/**
+	 * Set time source to one static value so that we know which created/updated timestamps to expect in our created records
+	 */
 	public static void setupTimeSource()
 	{
 		SystemTime.setTimeSource(() -> 1561133544); // Fri, 21 Jun 2019 16:12:24 GMT

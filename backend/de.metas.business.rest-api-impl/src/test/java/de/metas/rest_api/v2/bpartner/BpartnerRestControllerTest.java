@@ -65,6 +65,7 @@ import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
+import de.metas.externalreference.bpartner.BPartnerValueExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
@@ -118,6 +119,7 @@ import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.C_CONTACT_EXTERN
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.EXTERNAL_SYSTEM_NAME;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.createBPartnerData;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.createExternalReference;
+import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.getExternalReference;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -538,8 +540,7 @@ class BpartnerRestControllerTest
 		final JsonResponseBPartnerCompositeUpsertItem responseCompositeItem = resultBody.getResponseItems().get(0);
 		assertThat(responseCompositeItem.getResponseBPartnerItem().getIdentifier()).isEqualTo(bpartnerIdentifier);
 
-		final JsonMetasfreshId metasfreshId = responseCompositeItem.getResponseBPartnerItem().getMetasfreshId();
-		return metasfreshId;
+		return responseCompositeItem.getResponseBPartnerItem().getMetasfreshId();
 	}
 
 	private I_C_BPartner createOrUpdateBPartner_update_performTest(@NonNull final JsonRequestBPartnerUpsert bpartnerUpsertRequest)
@@ -584,6 +585,10 @@ class BpartnerRestControllerTest
 		{
 			assertThat(bpartnerRecord.getValue()).isEqualTo(initialValue);
 			initialCounts.assertExternalReferencesCountChangedBy(1);
+			final I_S_ExternalReference externalReference = getExternalReference(externalBusinessKey.asExternalValueAndSystem().getValue(),
+																				 BPartnerValueExternalReferenceType.BPARTNER_VALUE.getCode());
+
+			assertThat(externalReference.getRecord_ID()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 		}
 		return bpartnerRecord;
 	}

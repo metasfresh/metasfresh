@@ -669,27 +669,33 @@ public class JsonPersisterService
 			@Nullable final String bPartnerCode,
 			@Nullable final String orgCode)
 	{
-		if (bPartnerCode != null)
+		if (bPartnerCode == null)
 		{
-			final ExternalBusinessKey externalBusinessKey = ExternalBusinessKey.of(bPartnerCode);
-			if (externalBusinessKey.getType().equals(ExternalBusinessKey.Type.EXTERNAL_REFERENCE))
-			{
-				final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-						.id(externalBusinessKey.asExternalValueAndSystem().getValue())
-						.type(BPartnerValueExternalReferenceType.BPARTNER_VALUE.getCode())
-						.build();
-
-				final JsonExternalReferenceItem externalReferenceItem =
-						JsonExternalReferenceItem.of(externalReferenceLookupItem, metasfreshId);
-
-				final JsonRequestExternalReferenceUpsert externalReferenceUpsert = JsonRequestExternalReferenceUpsert.builder()
-						.systemName(JsonExternalSystemName.of(externalBusinessKey.asExternalValueAndSystem().getExternalSystem()))
-						.externalReferenceItem(externalReferenceItem)
-						.build();
-
-				externalReferenceRestControllerService.performUpsert(externalReferenceUpsert, orgCode);
-			}
+			return;
 		}
+
+		final ExternalBusinessKey externalBusinessKey = ExternalBusinessKey.of(bPartnerCode);
+
+		if (!externalBusinessKey.getType().equals(ExternalBusinessKey.Type.EXTERNAL_REFERENCE))
+		{
+			return;
+		}
+
+		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
+				.id(externalBusinessKey.asExternalValueAndSystem().getValue())
+				.type(BPartnerValueExternalReferenceType.BPARTNER_VALUE.getCode())
+				.build();
+
+		final JsonExternalReferenceItem externalReferenceItem =
+				JsonExternalReferenceItem.of(externalReferenceLookupItem, metasfreshId);
+
+		final JsonRequestExternalReferenceUpsert externalReferenceUpsert = JsonRequestExternalReferenceUpsert.builder()
+				.systemName(JsonExternalSystemName.of(externalBusinessKey.asExternalValueAndSystem().getExternalSystem()))
+				.externalReferenceItem(externalReferenceItem)
+				.build();
+
+		externalReferenceRestControllerService.performUpsert(externalReferenceUpsert, orgCode);
+
 	}
 
 	private void syncJsonToOrg(

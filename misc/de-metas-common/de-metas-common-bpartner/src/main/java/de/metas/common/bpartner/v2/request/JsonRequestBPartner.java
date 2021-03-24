@@ -31,7 +31,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_VALUE_DOC;
 
 @Getter
 @ToString
@@ -40,7 +41,7 @@ import static de.metas.common.rest_api.v1.SwaggerDocConstants.PARENT_SYNC_ADVISE
 public class JsonRequestBPartner
 {
 	@ApiModelProperty(position = 20,  //
-			value = "This translates to `C_BPartner.Value`.")
+			value = BPARTNER_VALUE_DOC)
 	private String code;
 
 	@ApiModelProperty(hidden = true)

@@ -114,15 +114,4 @@ public class ExternalBusinessKey
 
 		private final Pattern pattern;
 	}
-
-	@Value
-	@Builder
-	public static class ExternalReferenceValueAndSystem
-	{
-		@NonNull
-		String externalSystem;
-
-		@NonNull
-		String value;
-	}
 }

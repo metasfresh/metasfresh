@@ -35,6 +35,7 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.ExternalReferenceValueAndSystem;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productprice.ProductPriceExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
@@ -359,7 +360,7 @@ public class ProductPriceRestService
 	{
 		Check.assume(externalProductPriceIdentifier.getType().equals(ExternalIdentifier.Type.EXTERNAL_REFERENCE), "ExternalIdentifier must be of type external reference.");
 
-		final ExternalIdentifier.ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalProductPriceIdentifier.asExternalValueAndSystem();
+		final ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalProductPriceIdentifier.asExternalValueAndSystem();
 
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
 				.id(externalReferenceValueAndSystem.getValue())
