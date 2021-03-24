@@ -24,7 +24,7 @@ package de.metas.camel.alberta.product;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.client.model.Article;
 import lombok.Builder;
 import lombok.NonNull;
