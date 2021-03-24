@@ -47,8 +47,6 @@ public class CORSFilter implements Filter
 {
 	private static final transient Logger logger = LogManager.getLogger(CORSFilter.class);
 
-	private static final String SYSCONFIG_IsCORSEnabled = "webui.frontend.cors.enabled";
-
 	private final WebuiURLs webuiURLs = WebuiURLs.newInstance();
 
 	public CORSFilter()
@@ -99,7 +97,8 @@ public class CORSFilter implements Filter
 
 	private String getAccessControlAllowOrigin(final String requestOrigin)
 	{
-		if (isCORSEnabled())
+		final boolean corsEnabled = !webuiURLs.isCrossSiteUsageAllowed(); 
+		if (corsEnabled)
 		{
 			final String frontendURL = webuiURLs.getFrontendURL();
 			if (!Check.isEmpty(frontendURL, true))
@@ -108,18 +107,11 @@ public class CORSFilter implements Filter
 			}
 			else
 			{
-				logger.warn("Accepting any CORS Origin because even though CORS are enabled, the FrontendURL is not set.\n Please and set `{}` sysconfig or disable CORS (`{}` sysconfig).", WebuiURLs.SYSCONFIG_FRONTEND_URL, SYSCONFIG_IsCORSEnabled);
+				logger.warn("Accepting any CORS Origin because even though CORS are enabled, the FrontendURL is not set.\n Please and set `{}` SysConfig or allow cross-site-usage (`{}` sysconfig).", WebuiURLs.SYSCONFIG_FRONTEND_URL, WebuiURLs.SYSCONFIG_IsCrossSiteUsageAllowed);
 			}
 		}
 
 		// Fallback
-		final String accessControlAllowOrigin = Check.isEmpty(requestOrigin, true) ? "*" : requestOrigin;
-		return accessControlAllowOrigin;
-	}
-
-	private boolean isCORSEnabled()
-	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		return sysConfigBL.getBooleanValue(SYSCONFIG_IsCORSEnabled, true);
+		return Check.isEmpty(requestOrigin, true) ? "*" : requestOrigin;
 	}
 }
