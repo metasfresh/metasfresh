@@ -71,9 +71,9 @@ public class BankAccount
 	
 	public boolean isAccountNoMatching(@NonNull final String accountNo) 
 	{
-		final String QR_IBAN = StringUtils.trimBlankToNull(getQR_IBAN());
-		final String IBAN = StringUtils.trimBlankToNull(getIBAN());
-		final String SEPA_CreditorIdentifier = StringUtils.trimBlankToNull(getSEPA_CreditorIdentifier());
+		final String QR_IBAN = StringUtils.cleanWhitespace(getQR_IBAN());
+		final String IBAN = StringUtils.cleanWhitespace(getIBAN());
+		final String SEPA_CreditorIdentifier = StringUtils.cleanWhitespace(getSEPA_CreditorIdentifier());
 		
 		final String postAcctNoCleaned = StringUtils.cleanWhitespace(accountNo);
 		
