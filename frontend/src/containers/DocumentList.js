@@ -644,9 +644,7 @@ class DocumentListContainer extends Component {
    */
   resetInitialFilters = (filterId, parameterName) => {
     let { initialValuesNulled } = this.state;
-    initialValuesNulled = !initialValuesNulled // safety check for the case when we already cleared the initialValues
-      ? new Map()
-      : initialValuesNulled;
+
     let filterParams = initialValuesNulled.get(filterId);
 
     if (!filterParams && parameterName) {
@@ -656,9 +654,9 @@ class DocumentListContainer extends Component {
     }
 
     if (!parameterName) {
-      initialValuesNulled = initialValuesNulled.delete(filterId);
+      initialValuesNulled.delete(filterId);
     } else {
-      initialValuesNulled = initialValuesNulled.set(filterId, filterParams);
+      initialValuesNulled.set(filterId, filterParams);
     }
 
     this.setState({
