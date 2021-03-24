@@ -189,4 +189,18 @@ public class StringUtilsTest
 			assertThat(StringUtils.trimBlankToNull(s)).isSameAs(s);
 		}
 	}
+	
+	@Test
+	public void test_cleanWhitespace()
+	{
+		assertThat(StringUtils.cleanWhitespace("")).isEqualTo("");
+		assertThat(StringUtils.cleanWhitespace(" ")).isEqualTo("");
+		assertThat(StringUtils.cleanWhitespace(" \t\n ")).isEqualTo("");
+		assertThat(StringUtils.cleanWhitespace(" \taaaa\n ")).isEqualTo("aaaa");
+
+		{
+			final String s = "test";
+			assertThat(StringUtils.cleanWhitespace(s)).isSameAs(s);
+		}
+	}
 }
