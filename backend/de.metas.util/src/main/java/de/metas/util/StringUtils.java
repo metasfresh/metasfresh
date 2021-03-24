@@ -1,5 +1,25 @@
 package de.metas.util;
 
+import java.math.BigDecimal;
+import java.text.Format;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.slf4j.helpers.FormattingTuple;
+import org.slf4j.helpers.MessageFormatter;
+
+import com.google.common.base.CharMatcher;
+
 /*
  * #%L
  * de.metas.util
@@ -24,22 +44,6 @@ package de.metas.util;
 
 import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.slf4j.helpers.FormattingTuple;
-import org.slf4j.helpers.MessageFormatter;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.text.Format;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public final class StringUtils
 {
@@ -642,8 +646,10 @@ public final class StringUtils
 		{
 			return in;
 		}
-		return in.replaceAll("\\s","");
+		
+		return CharMatcher.whitespace().removeFrom(in);
 	}    // cleanWhitespace
+
 	
 	/**
 	 * remove white space from the begin
