@@ -30,7 +30,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 
 @Value
 @Builder(toBuilder = true)

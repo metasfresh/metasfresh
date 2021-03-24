@@ -109,7 +109,7 @@ public class ShortTermContactIndex
 					return null;
 				}
 			case EXTERNAL_REFERENCE:
-				return null;
+				throw new AdempiereException("Type EXTERNAL_REFERENCE is not allowed. The identifier should be resolved to a METASFRESH_ID.");
 			default:
 				throw new InvalidIdentifierException(contactIdentifier.getRawValue());
 		}

@@ -33,7 +33,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
 
 @Value
 @Builder(toBuilder = true)

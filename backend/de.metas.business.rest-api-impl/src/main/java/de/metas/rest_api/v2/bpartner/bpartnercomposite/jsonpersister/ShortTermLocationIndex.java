@@ -109,7 +109,7 @@ public class ShortTermLocationIndex
 			case GLN:
 				return gln2Location.get(locationIdentifier.asGLN());
 			case EXTERNAL_REFERENCE:
-				return null;
+				throw new AdempiereException("Type EXTERNAL_REFERENCE is not allowed. The identifier should be resolved to a METASFRESH_ID.");
 			default:
 				throw new InvalidIdentifierException(locationIdentifier.getRawValue());
 		}

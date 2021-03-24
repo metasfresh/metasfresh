@@ -41,7 +41,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @ApiModel(description = "A BPartner with `n` contacts and `n` locations.\n")

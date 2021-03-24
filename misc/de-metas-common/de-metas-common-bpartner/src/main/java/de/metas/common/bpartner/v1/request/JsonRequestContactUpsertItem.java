@@ -40,7 +40,8 @@ public class JsonRequestContactUpsertItem
 	@ApiModelProperty(allowEmptyValue = false, position = 10, //
 			value = CONTACT_IDENTIFIER_DOC + "\n"//
 					+ "If the identifier is an `<AD_User_ID>`, then it is assumed that the resource exists in metasfresh.\n"
-					+ "If a new contact is created and the actual contact has no different identifier, then this identifier is stored within the newly created contact.") //
+					+ "If a new contact is created and the actual contact has no different identifier, then this identifier is stored within the newly created contact."
+					+ "This is deprecated and will no longer be available with v2.") //
 	@NonNull
 	final String contactIdentifier;
 

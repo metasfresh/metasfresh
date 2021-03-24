@@ -35,7 +35,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.util.List;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.CREATE_OR_MERGE_SYNC_ADVISE_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.CREATE_OR_MERGE_SYNC_ADVISE_DOC;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Value

@@ -42,7 +42,7 @@ public class JsonRequestBPartner
 {
 	@ApiModelProperty(position = 10,  //
 			dataType = "java.lang.String", //
-			value = "This translates to `C_BPartner.ExternalId`.")
+			value = "This translates to `C_BPartner.ExternalId`. This is deprecated and will no longer be available with v2.")
 	private JsonExternalId externalId;
 
 	@ApiModelProperty(hidden = true)

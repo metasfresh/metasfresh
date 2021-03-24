@@ -120,10 +120,10 @@ public class BPRelationsService
 			@Nullable final ExternalIdentifier locationIdentifier,
 			@NonNull final List<JsonRequestBPRelationTarget> relatesTo)
 	{
-		trxManager.callInNewTrx(() -> createOrUpdateRelationsWithinTrx(orgId, bpartnerIdentifier, locationIdentifier, relatesTo));
+		trxManager.runInNewTrx(() -> createOrUpdateRelationsWithinTrx(orgId, bpartnerIdentifier, locationIdentifier, relatesTo));
 	}
 
-	public Optional<BPartnerComposite> createOrUpdateRelationsWithinTrx(@NonNull final OrgId orgId,
+	public void createOrUpdateRelationsWithinTrx(@NonNull final OrgId orgId,
 			@NonNull final ExternalIdentifier bpartnerIdentifier,
 			@Nullable final ExternalIdentifier locationIdentifier,
 			@NonNull final List<JsonRequestBPRelationTarget> relatesTo)
@@ -142,8 +142,6 @@ public class BPRelationsService
 		final Stream<BPRelation> relations = relatesTo.stream().map(relatedBp -> fromJson(bpartner, location, relatedBp));
 
 		relations.forEach(relation -> bpRelationDAO.saveOrUpdate(orgId, relation));
-
-		return bPartnerComposite;
 	}
 
 	@NonNull

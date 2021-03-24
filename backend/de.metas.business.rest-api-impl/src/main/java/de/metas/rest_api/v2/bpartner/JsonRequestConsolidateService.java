@@ -31,7 +31,6 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
@@ -93,9 +92,10 @@ public class JsonRequestConsolidateService
 		switch (identifierString.getType())
 		{
 			case METASFRESH_ID:
-				// nothing to do; the bpartner-JSON has no metasfresh-ID to consolidate with
+				// nothing to do; the JsonRequestBPartner has no metasfresh-ID to consolidate with
 				break;
 			case EXTERNAL_REFERENCE:
+				// nothing to do
 				break;
 			case GLN:
 				// GLN-identifierString is valid for bPartner-lookup, but we can't consolidate the given jsonBPartner with it
@@ -116,9 +116,10 @@ public class JsonRequestConsolidateService
 		switch (externalIdentifier.getType())
 		{
 			case METASFRESH_ID:
-				// nothing to do; the bpartner-JSON has no metasfresh-ID to consolidate with
+				// nothing to do; the JsonRequestLocationUpsertItem has no metasfresh-ID to consolidate with
 				break;
 			case EXTERNAL_REFERENCE:
+				// nothing to do
 				break;
 			case GLN:
 				if (jsonLocation.isGlnSet())
@@ -140,12 +141,11 @@ public class JsonRequestConsolidateService
 		switch (externalIdentifier.getType())
 		{
 			case METASFRESH_ID:
-				// nothing to do; the bpartner-JSON has no metasfresh-ID to consolidate with
+				// nothing to do; the JsonRequestContactUpsertItem has no metasfresh-ID to consolidate with
 				break;
 			case EXTERNAL_REFERENCE:
+				// nothing to do
 				break;
-			case GLN:
-				throw new InvalidIdentifierException(externalIdentifier.getRawValue());
 			default:
 				throw new AdempiereException("Unexpected IdentifierString.Type=" + externalIdentifier.getType())
 						.appendParametersToMessage()

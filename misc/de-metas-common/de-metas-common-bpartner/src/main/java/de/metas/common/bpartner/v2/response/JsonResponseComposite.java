@@ -29,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.rest_api.v1.JsonExternalId;
 import de.metas.common.util.EmptyUtil;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -76,14 +75,6 @@ public final class JsonResponseComposite
 		this.bpartner = bpartner;
 		this.locations = coalesce(locations, ImmutableList.of());
 		this.contacts = coalesce(contacts, ImmutableList.of());
-
-		final boolean lokupValuesAreOk = !EmptyUtil.isEmpty(bpartner.getCode(), true)
-				|| bpartner.getExternalId() != null
-				|| !extractLocationGlns().isEmpty();
-		if (!lokupValuesAreOk)
-		{
-			throw new RuntimeException("At least one of bpartner.code, bpartner.externalId or one location.gln needs to be non-empty; this=" + this);
-		}
 	}
 
 	public ImmutableList<String> extractLocationGlns()
@@ -95,14 +86,4 @@ public final class JsonResponseComposite
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public JsonResponseComposite withExternalId(@NonNull final JsonExternalId externalId)
-	{
-		if (Objects.equals(externalId, bpartner.getExternalId()))
-		{
-			return this; // nothing to do
-		}
-		return toBuilder()
-				.bpartner(bpartner.toBuilder().externalId(externalId).build())
-				.build();
-	}
 }

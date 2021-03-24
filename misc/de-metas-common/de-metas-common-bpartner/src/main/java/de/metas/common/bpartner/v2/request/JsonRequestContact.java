@@ -22,13 +22,14 @@
 
 package de.metas.common.bpartner.v2.request;
 
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 
 @Getter
 @ToString
@@ -36,7 +37,10 @@ import static de.metas.common.rest_api.v1.SwaggerDocConstants.PARENT_SYNC_ADVISE
 public class JsonRequestContact
 {
 	@ApiModelProperty(position = 20, dataType = "java.lang.Integer")
-	private String bpartnerIdentifier;
+	private JsonMetasfreshId metasfreshBPartnerId;
+
+	@ApiModelProperty(hidden = true)
+	private boolean metasfreshBPartnerIdSet;
 
 	@ApiModelProperty(position = 30, value = "Translated to `AD_User.Value`")
 	private String code;
@@ -302,8 +306,9 @@ public class JsonRequestContact
 		this.syncAdviseSet = true;
 	}
 
-	public void setBpartnerIdentifier(final String bpartnerIdentifier)
+	public void setMetasfreshBPartnerId(final JsonMetasfreshId metasfreshBPartnerId)
 	{
-		this.bpartnerIdentifier = bpartnerIdentifier;
+		this.metasfreshBPartnerId = metasfreshBPartnerId;
+		this.metasfreshBPartnerIdSet = true;
 	}
 }

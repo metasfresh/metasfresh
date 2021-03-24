@@ -27,7 +27,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
-import de.metas.common.rest_api.v1.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -64,9 +63,6 @@ public class JsonResponseContact
 
 	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
 	JsonMetasfreshId metasfreshId;
-
-	@ApiModelProperty(dataType = "java.lang.String")
-	JsonExternalId externalId;
 
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	JsonMetasfreshId metasfreshBPartnerId;
@@ -140,7 +136,6 @@ public class JsonResponseContact
 	@JsonCreator
 	private JsonResponseContact(
 			@JsonProperty(METASFRESH_ID) @Nullable final JsonMetasfreshId metasfreshId,
-			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
 			@JsonProperty(METASFRESH_BPARTNER_ID) @Nullable final JsonMetasfreshId metasfreshBPartnerId,
 			@JsonProperty(ACTIVE) final boolean active,
 			@JsonProperty(CODE) @Nullable final String code,
@@ -182,7 +177,6 @@ public class JsonResponseContact
 		this.fax = fax;
 		this.mobilePhone = mobilePhone;
 		this.metasfreshId = metasfreshId;
-		this.externalId = externalId;
 		this.metasfreshBPartnerId = metasfreshBPartnerId;
 
 		this.active = active;

@@ -27,7 +27,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
-import de.metas.common.rest_api.v1.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -71,14 +70,6 @@ public class JsonResponseBPartner
 	@JsonProperty(METASFRESH_ID)
 	@JsonInclude(Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
-
-	@ApiModelProperty( //
-			required = false, //
-			dataType = "java.lang.String", //
-			value = "This translates to `C_BPartner.ExternalId`.")
-	@JsonProperty(EXTERNAL_ID)
-	@JsonInclude(Include.NON_NULL)
-	JsonExternalId externalId;
 
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.Value`.")
 	@JsonProperty(CODE)
@@ -180,7 +171,6 @@ public class JsonResponseBPartner
 	@Builder(toBuilder = true)
 	private JsonResponseBPartner(
 			@JsonProperty(METASFRESH_ID) @NonNull final JsonMetasfreshId metasfreshId,
-			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
 			@JsonProperty(CODE) @Nullable final String code, // usually metasfresh makes sure it's not null; but in unit-tests it might be; also, let's just return the result here, and avoid throwing an NPE
 			@JsonProperty(GLOBAL_ID) @Nullable final String globalId,
 			@JsonProperty(ACTIVE) @NonNull final Boolean active,
@@ -203,7 +193,6 @@ public class JsonResponseBPartner
 			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
-		this.externalId = externalId;
 		this.code = code;
 		this.globalId = globalId;
 		this.active = active;

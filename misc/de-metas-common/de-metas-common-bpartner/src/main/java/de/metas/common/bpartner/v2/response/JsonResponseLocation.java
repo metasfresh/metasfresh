@@ -27,7 +27,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
-import de.metas.common.rest_api.v1.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -63,12 +62,6 @@ public class JsonResponseLocation
 
 	@ApiModelProperty(dataType = "java.lang.Integer")
 	JsonMetasfreshId metasfreshId;
-
-	@ApiModelProperty(
-			dataType = "java.lang.String", //
-			value = "This translates to `C_BPartner_Location.ExternalId`.\n"
-					+ "Needs to be unique over all business partners (not only the one this location belongs to).")
-	private JsonExternalId externalId;
 
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean active;
@@ -129,7 +122,6 @@ public class JsonResponseLocation
 	@JsonCreator
 	private JsonResponseLocation(
 			@JsonProperty(METASFRESH_ID) @NonNull final JsonMetasfreshId metasfreshId,
-			@JsonProperty(EXTERNAL_ID) @Nullable final JsonExternalId externalId,
 			@JsonProperty(NAME) @Nullable final String name,
 			@JsonProperty(BPARTNERNAME) @Nullable final String bpartnerName,
 			@JsonProperty(ACTIVE) @NonNull final Boolean active,
@@ -153,7 +145,6 @@ public class JsonResponseLocation
 	{
 		this.metasfreshId = metasfreshId;
 		this.gln = gln;
-		this.externalId = externalId;
 
 		this.active = active;
 
