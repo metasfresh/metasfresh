@@ -96,7 +96,7 @@ public final class HUIdsFilterData
 
 	public HUIdsFilterData copy() { return new HUIdsFilterData(this); }
 
-	public boolean isAcceptAll() { return initialHUQuery == null && initialHUIds == null && mustHUIds.isEmpty(); }
+	public boolean isAcceptAll() { return initialHUQuery == null && initialHUIds == null && mustHUIds.isEmpty() && shallNotHUIds.isEmpty(); }
 
 	public boolean isAcceptNone()
 	{
@@ -109,6 +109,12 @@ public final class HUIdsFilterData
 	@Nullable
 	public IHUQueryBuilder getInitialHUQueryOrNull() { return initialHUQuery != null ? initialHUQuery.copy() : null; }
 
+	@Nullable
+	public ImmutableSet<HuId> getInitialHUIdsOrNull()
+	{
+		return initialHUIds;
+	}
+
 	public void mustHUIds(@NonNull final Collection<HuId> mustHUIdsToAdd)
 	{
 		if (mustHUIdsToAdd.isEmpty())
@@ -119,6 +125,8 @@ public final class HUIdsFilterData
 		mustHUIds.addAll(mustHUIdsToAdd);
 		shallNotHUIds.removeAll(mustHUIdsToAdd);
 	}
+
+	public ImmutableSet<HuId> getMustHUIds() { return ImmutableSet.copyOf(mustHUIds); }
 
 	public ImmutableSet<HuId> getShallNotHUIds() { return ImmutableSet.copyOf(shallNotHUIds); }
 
@@ -144,14 +152,12 @@ public final class HUIdsFilterData
 			return Optional.empty();
 		}
 
-		if (initialHUIds == null && mustHUIds.isEmpty())
+		if (initialHUIds == null)
 		{
 			return Optional.empty();
 		}
 
-		final ImmutableSet<HuId> fixedHUIds = Stream.concat(
-				initialHUIds != null ? initialHUIds.stream() : Stream.empty(),
-				mustHUIds.stream())
+		final ImmutableSet<HuId> fixedHUIds = Stream.concat(initialHUIds.stream(), mustHUIds.stream())
 				.distinct()
 				.filter(huId -> !shallNotHUIds.contains(huId)) // not excluded
 				.collect(ImmutableSet.toImmutableSet());

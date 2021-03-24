@@ -58,7 +58,7 @@ class HUIdsFilterDataTest
 			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
 			assertThat(data.isAcceptAll()).isFalse();
 			assertThat(data.isAcceptNone()).isFalse();
-			assertThat(data.getFixedHUIds()).contains(ImmutableSet.of(HuId.ofRepoId(1)));
+			assertThat(data.getFixedHUIds()).isEmpty();
 			assertThat(data.hasNoInitialHUQuery()).isTrue();
 		}
 
@@ -68,7 +68,10 @@ class HUIdsFilterDataTest
 			final HUIdsFilterData data = HUIdsFilterData.acceptAll();
 			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
 			data.shallNotHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
-			assertAcceptAll(data);
+			assertThat(data.isAcceptAll()).isFalse();
+			assertThat(data.isAcceptNone()).isFalse();
+			assertThat(data.getFixedHUIds()).isEmpty();
+			assertThat(data.hasNoInitialHUQuery()).isTrue();
 		}
 	}
 
@@ -76,7 +79,7 @@ class HUIdsFilterDataTest
 	class ofHUIds
 	{
 		@Test
-		void initialEmpty()
+		void initialEmpty() // aka acceptNone
 		{
 			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of());
 			assertThat(data.isAcceptAll()).isFalse();

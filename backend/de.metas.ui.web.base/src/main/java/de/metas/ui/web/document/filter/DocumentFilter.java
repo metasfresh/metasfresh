@@ -353,7 +353,7 @@ public final class DocumentFilter
 			return this;
 		}
 
-		private void addInternalParameterName(final String parameterName)
+		private void addInternalParameterName(@NonNull final String parameterName)
 		{
 			if (internalParameterNames == null)
 			{

@@ -1,9 +1,15 @@
 package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
+import com.google.common.collect.ImmutableList;
+import com.jgoodies.common.base.Objects;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
+import de.metas.ui.web.document.filter.sql.SqlFilter;
+import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import org.compiere.util.DB;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -12,17 +18,9 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-import com.jgoodies.common.base.Objects;
-
-import de.metas.logging.LogManager;
-import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
-import de.metas.ui.web.window.model.sql.SqlOptions;
-import de.metas.util.Check;
-import de.metas.util.NumberUtils;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -68,8 +66,7 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 	}
 
 	@Override
-	public String getSql(
-			final SqlParamsCollector sqlParamsOut,
+	public SqlFilter getSql(
 			final DocumentFilter filter,
 			final SqlOptions sqlOpts,
 			final SqlDocumentFilterConverterContext context)
@@ -77,7 +74,7 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 		final String text = filter.getParameterValueAsString(PARAM_SearchText);
 		if (Check.isEmpty(text, true))
 		{
-			return "1=1";
+			return SqlFilter.ACCEPT_ALL;
 		}
 
 		final FullTextSearchFilterContext ftsContext = filter.getParameterValueAs(PARAM_Context);
@@ -105,11 +102,11 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 		logger.trace("Record IDs: {}", recordIds);
 		if (recordIds.isEmpty())
 		{
-			return "1=0";
+			return SqlFilter.ACCEPT_NONE;
 		}
 
 		final String keyColumnNameFQ = sqlOpts.getTableNameOrAlias() + "." + keyColumnName;
-		return DB.buildSqlList(keyColumnNameFQ, recordIds, null);
+		return SqlFilter.of(DB.buildSqlList(keyColumnNameFQ, recordIds, null));
 	}
 
 	private int extractId(final SearchHit hit, final String esKeyColumnName)

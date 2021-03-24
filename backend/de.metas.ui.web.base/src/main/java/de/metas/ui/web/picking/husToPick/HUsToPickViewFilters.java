@@ -14,6 +14,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
+import de.metas.ui.web.document.filter.sql.SqlFilter;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -103,8 +104,7 @@ class HUsToPickViewFilters
 		}
 
 		@Override
-		public String getSql(
-				final SqlParamsCollector sqlParamsOut,
+		public SqlFilter getSql(
 				final DocumentFilter filter,
 				final SqlOptions sqlOpts,
 				final SqlDocumentFilterConverterContext context)
@@ -117,8 +117,9 @@ class HUsToPickViewFilters
 			final String barcode = filter.getParameterValueAsString(PARAM_Barcode);
 			final int locatorId = Services.get(IWarehouseDAO.class).retrieveLocatorIdByBarcode(barcode);
 
+			final SqlParamsCollector sqlParamsOut = SqlParamsCollector.newInstance();
 			final String sql = sqlOpts.getTableNameOrAlias() + "." + I_M_HU.COLUMNNAME_M_Locator_ID + "=" + sqlParamsOut.placeholder(locatorId);
-			return sql;
+			return SqlFilter.of(sql, sqlParamsOut);
 		}
 	}
 
@@ -152,7 +153,7 @@ class HUsToPickViewFilters
 		}
 
 		@Override
-		public String getSql(SqlParamsCollector sqlParamsOut, DocumentFilter filter, SqlOptions sqlOpts, SqlDocumentFilterConverterContext context)
+		public SqlFilter getSql(DocumentFilter filter, SqlOptions sqlOpts, SqlDocumentFilterConverterContext context)
 		{
 			if (!HU_IDS_FilterId.equals(filter.getFilterId()))
 			{
@@ -162,18 +163,18 @@ class HUsToPickViewFilters
 			final int shipmentScheduleId = context.getPropertyAsInt(PARAM_CurrentShipmentScheduleId, -1);
 			if (shipmentScheduleId <= 0)
 			{
-				return "/* no shipment schedule */ 1=0";
+				return SqlFilter.of("/* no shipment schedule */ 1=0");
 			}
 
 			final boolean considerAttributes = filter.getParameterValueAsBoolean(PARAM_ConsiderAttributes, false);
 			final List<Integer> huIds = retrieveAvailableHuIdsForCurrentShipmentScheduleId(shipmentScheduleId, considerAttributes);
 			if (huIds.isEmpty())
 			{
-				return "/* no M_HU_IDs */ 1=0";
+				return SqlFilter.of("/* no M_HU_IDs */ 1=0");
 			}
 
 			final String sql = sqlOpts.getTableNameOrAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID + " IN " + DB.buildSqlList(huIds);
-			return sql;
+			return SqlFilter.of(sql);
 		}
 	}
 

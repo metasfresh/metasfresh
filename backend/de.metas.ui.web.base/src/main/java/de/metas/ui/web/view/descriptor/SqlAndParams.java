@@ -6,6 +6,7 @@ import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -40,6 +41,9 @@ import java.util.Optional;
 @Value
 public class SqlAndParams
 {
+	public static SqlAndParams ACCEPT_ALL = new SqlAndParams(ConstantQueryFilter.of(true).getSql(), null);
+	public static SqlAndParams ACCEPT_NONE = new SqlAndParams(ConstantQueryFilter.of(false).getSql(), null);
+
 	public static Builder builder()
 	{
 		return new Builder();
@@ -61,7 +65,7 @@ public class SqlAndParams
 		return of(sql, sqlParams != null ? sqlParams.toLiveList() : null);
 	}
 
-	public static SqlAndParams of(final CharSequence sql, final Object... sqlParamsArray)
+	public static SqlAndParams of(final CharSequence sql, @Nullable final Object... sqlParamsArray)
 	{
 		return new SqlAndParams(sql, sqlParamsArray);
 	}
@@ -72,19 +76,39 @@ public class SqlAndParams
 				.orElseThrow(() -> new AdempiereException("No non null SQLs found in " + sqlAndParamsCollection));
 	}
 
-	public static Optional<SqlAndParams> andNullables(final SqlAndParams... sqlAndParamsCollection)
+	public static Optional<SqlAndParams> andNullables(@Nullable final SqlAndParams... sqlAndParamsCollection)
 	{
-		if (sqlAndParamsCollection == null || sqlAndParamsCollection.length == 0)
+		return sqlAndParamsCollection != null && sqlAndParamsCollection.length > 0
+				? andNullables(Arrays.asList(sqlAndParamsCollection))
+				: Optional.empty();
+	}
+
+	public static Optional<SqlAndParams> andNullables(@Nullable final Iterable<SqlAndParams> sqlAndParamsIterable)
+	{
+		return joinNullables("AND", sqlAndParamsIterable);
+	}
+
+	public static Optional<SqlAndParams> orNullables(@Nullable final SqlAndParams... sqlAndParamsCollection)
+	{
+		return sqlAndParamsCollection != null && sqlAndParamsCollection.length > 0
+				? orNullables(Arrays.asList(sqlAndParamsCollection))
+				: Optional.empty();
+	}
+
+	public static Optional<SqlAndParams> orNullables(@Nullable final Iterable<SqlAndParams> sqlAndParamsIterable)
+	{
+		return joinNullables("OR", sqlAndParamsIterable);
+	}
+
+	private static Optional<SqlAndParams> joinNullables(
+			@NonNull final String joinKeyword,
+			@Nullable final Iterable<SqlAndParams> sqlAndParamsIterable)
+	{
+		if (sqlAndParamsIterable == null)
 		{
 			return Optional.empty();
 		}
-
-		return andNullables(Arrays.asList(sqlAndParamsCollection));
-	}
-
-	public static Optional<SqlAndParams> andNullables(final Collection<SqlAndParams> sqlAndParamsCollection)
-	{
-		if (sqlAndParamsCollection == null || sqlAndParamsCollection.isEmpty())
+		if (sqlAndParamsIterable instanceof Collection && ((Collection<?>)sqlAndParamsIterable).isEmpty())
 		{
 			return Optional.empty();
 		}
@@ -92,7 +116,7 @@ public class SqlAndParams
 		int countNotNulls = 0;
 		SqlAndParams firstNotNull = null;
 		Builder builder = null;
-		for (final SqlAndParams sqlAndParams : sqlAndParamsCollection)
+		for (final SqlAndParams sqlAndParams : sqlAndParamsIterable)
 		{
 			if (sqlAndParams == null || sqlAndParams.isEmpty())
 			{
@@ -108,14 +132,15 @@ public class SqlAndParams
 				if (builder == null)
 				{
 					builder = builder();
-					builder.append("(").append(firstNotNull).append(")");
+					builder.appendWithBracketsIfRequiredWhenJoining(firstNotNull);
 				}
 
 				if (!builder.isEmpty())
 				{
-					builder.append(" AND ");
+					builder.append(" ").append(joinKeyword).append(" ");
 				}
-				builder.append("(").append(sqlAndParams).append(")");
+
+				builder.appendWithBracketsIfRequiredWhenJoining(sqlAndParams);
 			}
 
 			countNotNulls++;
@@ -135,11 +160,17 @@ public class SqlAndParams
 		}
 	}
 
+	private boolean isBracketsRequiredWhenJoining()
+	{
+		return !isAcceptAll() && !isAcceptNone();
+	}
+
 	String sql;
 	List<Object> sqlParams;
 
 	private SqlAndParams(@NonNull final CharSequence sql, @Nullable final Object[] sqlParamsArray)
 	{
+		// IMPORTANT: do not trim the sql. Let it as it is.
 		this.sql = sql.toString();
 		this.sqlParams = sqlParamsArray != null && sqlParamsArray.length > 0 ? Arrays.asList(sqlParamsArray) : ImmutableList.of();
 	}
@@ -165,6 +196,61 @@ public class SqlAndParams
 		return Check.isBlank(sql) && !hasParams();
 	}
 
+	public SqlAndParams and(@NonNull final SqlAndParams other)
+	{
+		if (this.isEmpty())
+		{
+			return other;
+		}
+		else if (other.isEmpty())
+		{
+			return this;
+		}
+		else
+		{
+			return andNullables(this, other)
+					.orElseThrow(() -> new AdempiereException("Cannot AND join: " + this + " and " + other)); // shall not happen
+		}
+	}
+
+	public SqlAndParams or(@NonNull final SqlAndParams other)
+	{
+		if (this.isEmpty())
+		{
+			return other;
+		}
+		else if (other.isEmpty())
+		{
+			return this;
+		}
+		else
+		{
+			return orNullables(this, other)
+					.orElseThrow(() -> new AdempiereException("Cannot OR join: " + this + " and " + other)); // shall not happen
+		}
+	}
+
+	public SqlAndParams andNot(@NonNull final SqlAndParams other)
+	{
+		return builder()
+				.appendWithBracketsIfRequiredWhenJoining(this)
+				.append(" AND NOT ")
+				.appendWithBracketsIfRequiredWhenJoining(other)
+				.build();
+	}
+
+	public SqlAndParams not()
+	{
+		return SqlAndParams.builder()
+				.append("NOT ")
+				.appendWithBracketsIfRequiredWhenJoining(this)
+				.build();
+	}
+
+	public boolean isAcceptAll() { return this.equals(ACCEPT_ALL); }
+
+	public boolean isAcceptNone() { return this.equals(ACCEPT_NONE); }
+
 	//
 	//
 	// ---------------
@@ -183,6 +269,7 @@ public class SqlAndParams
 		/**
 		 * @deprecated I think you wanted to call {@link #build()}
 		 */
+		@Override
 		@Deprecated
 		public String toString()
 		{
@@ -260,6 +347,18 @@ public class SqlAndParams
 		public Builder append(@NonNull final SqlAndParams other)
 		{
 			return append(other.sql, other.sqlParams);
+		}
+
+		private Builder appendWithBracketsIfRequiredWhenJoining(@NonNull final SqlAndParams other)
+		{
+			return other.isBracketsRequiredWhenJoining()
+					? append("(").append(other).append(")")
+					: append(other);
+		}
+
+		public Builder appendParam(@Nullable final Object param)
+		{
+			return append("?", param);
 		}
 	}
 }

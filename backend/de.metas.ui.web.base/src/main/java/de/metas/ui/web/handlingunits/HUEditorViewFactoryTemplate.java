@@ -47,7 +47,7 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
+import de.metas.ui.web.document.filter.sql.SqlFilter;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IViewFactory;
@@ -73,7 +73,6 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
@@ -479,8 +478,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		}
 
 		@Override
-		public String getSql(
-				@NonNull final SqlParamsCollector sqlParamsOut,
+		public SqlFilter getSql(
 				@NonNull final DocumentFilter filter,
 				final SqlOptions sqlOpts_NOTUSED,
 				@NonNull final SqlDocumentFilterConverterContext context)
@@ -508,16 +506,13 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.listIds(HuId::ofRepoId);
 			if (huIds.isEmpty())
 			{
-				return ConstantQueryFilter.of(false).getSql();
+				return SqlFilter.ACCEPT_NONE;
 			}
 
 			final ImmutableSet<HuId> topLevelHuIds = Services.get(IHandlingUnitsBL.class).getTopLevelHUs(huIds);
 
 			final ISqlQueryFilter sqlQueryFilter = new InArrayQueryFilter<>(I_M_HU.COLUMNNAME_M_HU_ID, topLevelHuIds);
-
-			final String sql = sqlQueryFilter.getSql();
-			sqlParamsOut.collectAll(sqlQueryFilter);
-			return sql;
+			return SqlFilter.of(sqlQueryFilter);
 		}
 	}
 

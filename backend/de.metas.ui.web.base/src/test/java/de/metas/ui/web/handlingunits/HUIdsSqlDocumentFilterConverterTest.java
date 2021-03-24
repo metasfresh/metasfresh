@@ -3,16 +3,12 @@ package de.metas.ui.web.handlingunits;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.model.sql.SqlOptions;
-import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.ObjectAssert;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
@@ -45,25 +41,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUIdsSqlDocumentFilterConverterTest
 {
+	private CompositeSqlDocumentFilterConverter converters;
+
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(HUReservationRepository.class);
+
+		converters = CompositeSqlDocumentFilterConverter.builder()
+				.converter(HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER)
+				.converter(new OtherFilterConverter())
+				.build();
 	}
 
-	private ObjectAssert<SqlAndParams> assertThatGetSqlOf(final HUIdsFilterData huIdsFilterData)
+	private ObjectAssert<SqlAndParams> assertThatGetSqlOf(final DocumentFilterList filters)
 	{
-		final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
-		final SqlParamsCollector sqlParams = SqlParamsCollector.newInstance();
-		final String sql = HUIdsFilterHelper.SQL_DOCUMENT_FILTER_CONVERTER.getSql(
-				sqlParams,
-				HUIdsFilterHelper.createFilter(huIdsFilterData),
+		final SqlAndParams sql = converters.getSql(
+				filters,
 				SqlOptions.usingTableAlias("dummyTableAlias"),
-				context);
+				SqlDocumentFilterConverterContext.EMPTY)
+				.toSqlAndParams()
+				.orElse(null);
 
-		assert sql != null;
-		return assertThat(SqlAndParams.of(sql, sqlParams));
+		return assertThat(sql);
 	}
 
 	@Nested
@@ -72,13 +73,13 @@ public class HUIdsSqlDocumentFilterConverterTest
 		@Test
 		void acceptAll_test()
 		{
-			assertAcceptAll(HUIdsFilterData.acceptAll());
-		}
+			final HUIdsFilterData data = HUIdsFilterData.acceptAll();
+			final DocumentFilterList filter = DocumentFilterList.of(
+					HUIdsFilterHelper.createFilter(data),
+					OtherFilterConverter.newFilter());
 
-		private void assertAcceptAll(final HUIdsFilterData data)
-		{
-			assertThatGetSqlOf(data)
-					.isEqualTo(SqlAndParams.of(HUIdsSqlDocumentFilterConverter.SQL_TRUE));
+			assertThatGetSqlOf(filter).isEqualTo(SqlAndParams.of(
+					"((OTHER_FILTER_CLAUSE) OR (OTHER_FILTER_INCLUDE_CLAUSE)) AND NOT (OTHER_FILTER_EXCLUDE_CLAUSE)"));
 		}
 
 		@Test
@@ -86,18 +87,48 @@ public class HUIdsSqlDocumentFilterConverterTest
 		{
 			final HUIdsFilterData data = HUIdsFilterData.acceptAll();
 			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
-			assertThatGetSqlOf(data)
-					.isEqualTo(SqlAndParams.of("(M_HU_ID=?)", 1));
+
+			final DocumentFilterList filter = DocumentFilterList.of(
+					HUIdsFilterHelper.createFilter(data),
+					OtherFilterConverter.newFilter());
+
+			assertThatGetSqlOf(filter).isEqualTo(SqlAndParams.of(
+					"((OTHER_FILTER_CLAUSE) OR (M_HU_ID=?) OR (OTHER_FILTER_INCLUDE_CLAUSE)) AND NOT (OTHER_FILTER_EXCLUDE_CLAUSE)",
+					1));
 		}
 
 		@Test
-		void acceptAll_then_addMustHUIds_then_addShallNotHUIds()
+		void acceptAll_then_mustId1_then_shallNot1()
 		{
 			final HUIdsFilterData data = HUIdsFilterData.acceptAll();
 			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
 			data.shallNotHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
-			assertAcceptAll(data);
+
+			final DocumentFilterList filter = DocumentFilterList.of(
+					HUIdsFilterHelper.createFilter(data),
+					OtherFilterConverter.newFilter());
+
+			assertThatGetSqlOf(filter).isEqualTo(SqlAndParams.of(
+					"((OTHER_FILTER_CLAUSE) OR (OTHER_FILTER_INCLUDE_CLAUSE)) AND NOT ((M_HU_ID=?) OR (OTHER_FILTER_EXCLUDE_CLAUSE))",
+					1));
 		}
+
+		@Test
+		void acceptAll_then_mustId1_then_shallNot2()
+		{
+			final HUIdsFilterData data = HUIdsFilterData.acceptAll();
+			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
+			data.shallNotHUIds(ImmutableSet.of(HuId.ofRepoId(2)));
+
+			final DocumentFilterList filter = DocumentFilterList.of(
+					HUIdsFilterHelper.createFilter(data),
+					OtherFilterConverter.newFilter());
+
+			assertThatGetSqlOf(filter).isEqualTo(SqlAndParams.of(
+				"((OTHER_FILTER_CLAUSE) OR (M_HU_ID=?) OR (OTHER_FILTER_INCLUDE_CLAUSE)) AND NOT ((M_HU_ID=?) OR (OTHER_FILTER_EXCLUDE_CLAUSE))",
+				1,2));
+		}
+
 	}
 
 	@Nested
@@ -110,9 +141,13 @@ public class HUIdsSqlDocumentFilterConverterTest
 		@Test
 		void initialEmpty()
 		{
-			assertThatGetSqlOf(HUIdsFilterData.ofHUIds(ImmutableList.of()))
-					.extracting(SqlAndParams::getSql)
-					.isEqualTo(HUIdsSqlDocumentFilterConverter.SQL_FALSE);
+			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableList.of());
+			final DocumentFilterList filter = DocumentFilterList.of(
+					HUIdsFilterHelper.createFilter(data),
+					OtherFilterConverter.newFilter());
+
+			assertThatGetSqlOf(filter).isEqualTo(SqlAndParams.of(
+					"1=0"));
 		}
 
 		@Test
@@ -120,16 +155,25 @@ public class HUIdsSqlDocumentFilterConverterTest
 		{
 			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of());
 			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
-			assertThatGetSqlOf(data)
-					.isEqualTo(SqlAndParams.of("(M_HU_ID=?)", 1));
+			final DocumentFilterList filter = DocumentFilterList.of(
+					HUIdsFilterHelper.createFilter(data),
+					OtherFilterConverter.newFilter());
+
+			assertThatGetSqlOf(filter).isEqualTo(SqlAndParams.of(
+					"((M_HU_ID=?) OR (OTHER_FILTER_INCLUDE_CLAUSE)) AND NOT (OTHER_FILTER_EXCLUDE_CLAUSE)",
+					1));
 		}
 
 		@Test
 		void initialNotEmpty()
 		{
 			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
-			assertThatGetSqlOf(data)
-					.isEqualTo(SqlAndParams.of("(M_HU_ID=?)", 1));
+			final DocumentFilterList filter = DocumentFilterList.of(
+					HUIdsFilterHelper.createFilter(data),
+					OtherFilterConverter.newFilter());
+
+			assertThatGetSqlOf(filter).isEqualTo(SqlAndParams.of(
+					"(((M_HU_ID=?) AND (OTHER_FILTER_CLAUSE)) OR (OTHER_FILTER_INCLUDE_CLAUSE)) AND NOT (OTHER_FILTER_EXCLUDE_CLAUSE)", 1));
 		}
 
 		@Test
@@ -137,8 +181,14 @@ public class HUIdsSqlDocumentFilterConverterTest
 		{
 			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
 			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(2)));
-			assertThatGetSqlOf(data)
-					.isEqualTo(SqlAndParams.of("(M_HU_ID IN (?,?))", 1, 2));
+
+			final DocumentFilterList filter = DocumentFilterList.of(
+					HUIdsFilterHelper.createFilter(data),
+					OtherFilterConverter.newFilter());
+
+			assertThatGetSqlOf(filter).isEqualTo(SqlAndParams.of(
+					"(((M_HU_ID=?) AND (OTHER_FILTER_CLAUSE)) OR (M_HU_ID=?) OR (OTHER_FILTER_INCLUDE_CLAUSE)) AND NOT (OTHER_FILTER_EXCLUDE_CLAUSE)",
+					1, 2));
 		}
 
 		@Test
@@ -147,8 +197,14 @@ public class HUIdsSqlDocumentFilterConverterTest
 			final HUIdsFilterData data = HUIdsFilterData.ofHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
 			data.mustHUIds(ImmutableSet.of(HuId.ofRepoId(2)));
 			data.shallNotHUIds(ImmutableSet.of(HuId.ofRepoId(1)));
-			assertThatGetSqlOf(data)
-					.isEqualTo(SqlAndParams.of("(M_HU_ID=?) AND (NOT (M_HU_ID=?))", 2, 1));
+
+			final DocumentFilterList filter = DocumentFilterList.of(
+					HUIdsFilterHelper.createFilter(data),
+					OtherFilterConverter.newFilter());
+
+			assertThatGetSqlOf(filter).isEqualTo(SqlAndParams.of(
+					"(((M_HU_ID=?) AND (OTHER_FILTER_CLAUSE)) OR (M_HU_ID=?) OR (OTHER_FILTER_INCLUDE_CLAUSE)) AND NOT ((M_HU_ID=?) OR (OTHER_FILTER_EXCLUDE_CLAUSE))",
+					1, 2, 1));
 		}
 	}
 }

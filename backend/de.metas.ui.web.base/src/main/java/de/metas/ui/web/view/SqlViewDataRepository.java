@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.metas.ui.web.document.filter.sql.SqlFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -149,10 +150,9 @@ class SqlViewDataRepository implements IViewDataRepository
 		// Set rowsMatchingFilter
 		{
 			final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
-			final String rowsMatchingFilterString = filterConverters.getSql(SqlParamsCollector.notCollecting(), filters, sqlOpts, context);
-			final SqlAndParams rowsMatchingFilter = !Check.isBlank(rowsMatchingFilterString)
-					? SqlAndParams.of(rowsMatchingFilterString)
-					: null;
+			final SqlAndParams rowsMatchingFilter = filterConverters.getSql(filters, sqlOpts, context)
+					.toSqlAndParams()
+					.orElse(null);
 
 			sqlWhereClause = sqlWhereClause.withRowsMatchingFilter(rowsMatchingFilter);
 		}

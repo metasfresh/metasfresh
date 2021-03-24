@@ -139,6 +139,7 @@ public final class SqlViewSelectionQueryBuilder
 		return _viewBinding.flatMapEffectiveFieldNames(orderBy);
 	}
 
+	@Nullable
 	private SqlAndParams buildSqlFiltersOrNull(
 			@NonNull final DocumentFilterList filters,
 			@NonNull final SqlDocumentFilterConverterContext context,
@@ -149,11 +150,10 @@ public final class SqlViewSelectionQueryBuilder
 			return null;
 		}
 
-		final SqlParamsCollector sqlParamsOut = SqlParamsCollector.newInstance();
-		final String sql = getSqlDocumentFilterConverter().getSql(sqlParamsOut, filters, sqlOpts, context);
-		return Check.isNotBlank(sql)
-				? SqlAndParams.of(sql, sqlParamsOut.toList())
-				: null;
+		return getSqlDocumentFilterConverter()
+				.getSql(filters, sqlOpts, context)
+				.toSqlAndParams()
+				.orElse(null);
 	}
 
 	private SqlDocumentFilterConverter getSqlDocumentFilterConverter()
