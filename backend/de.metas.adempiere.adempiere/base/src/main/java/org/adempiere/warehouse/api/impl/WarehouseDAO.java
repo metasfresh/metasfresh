@@ -132,7 +132,7 @@ public class WarehouseDAO implements IWarehouseDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream(I_M_Warehouse_Routing.class)
-				.map(record -> toWarehouseRouting(record))
+				.map(WarehouseDAO::toWarehouseRouting)
 				.collect(ImmutableList.toImmutableList());
 
 		return WarehouseRoutingsIndex.of(routings);
@@ -624,39 +624,39 @@ public class WarehouseDAO implements IWarehouseDAO
 	@Override
 	public WarehouseId retrieveWarehouseIdBy(@NonNull final WarehouseQuery query)
 	{
-		final IQueryBuilder<I_M_Product> queryBuilder;
+		final IQueryBuilder<I_M_Warehouse> queryBuilder;
 		if (query.isOutOfTrx())
 		{
 			queryBuilder = Services
 					.get(IQueryBL.class)
-					.createQueryBuilderOutOfTrx(I_M_Product.class)
+					.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
 					.setOption(IQuery.OPTION_ReturnReadOnlyRecords, true);
 		}
 		else
 		{
 			queryBuilder = Services
 					.get(IQueryBL.class)
-					.createQueryBuilder(I_M_Product.class);
+					.createQueryBuilder(I_M_Warehouse.class);
 		}
 
 		if (query.isIncludeAnyOrg())
 		{
 			queryBuilder
-					.addInArrayFilter(I_M_Product.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
-					.orderByDescending(I_M_Product.COLUMNNAME_AD_Org_ID);
+					.addInArrayFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
+					.orderByDescending(I_M_Warehouse.COLUMNNAME_AD_Org_ID);
 		}
 		else
 		{
-			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Org_ID, query.getOrgId());
+			queryBuilder.addEqualsFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, query.getOrgId());
 		}
 
 		if (!isEmpty(query.getValue(), true))
 		{
-			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_Value, query.getValue().trim());
+			queryBuilder.addEqualsFilter(I_M_Warehouse.COLUMNNAME_Value, query.getValue().trim());
 		}
 		if (query.getExternalId() != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_Product.COLUMNNAME_ExternalId, query.getExternalId().getValue().trim());
+			queryBuilder.addEqualsFilter(I_M_Warehouse.COLUMNNAME_ExternalId, query.getExternalId().getValue().trim());
 		}
 
 		final int productRepoId = queryBuilder

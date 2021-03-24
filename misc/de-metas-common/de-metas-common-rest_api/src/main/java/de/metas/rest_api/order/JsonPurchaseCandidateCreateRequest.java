@@ -39,14 +39,14 @@ import java.util.List;
 public class JsonPurchaseCandidateCreateRequest
 {
 	@ApiModelProperty(position = 10, required = true)
-	List<JsonPurchaseCandidateCreateItem> items;
+	List<JsonPurchaseCandidateCreateItem> purchaseCandidates;
 
 	@Builder
 	@JsonCreator
 	private JsonPurchaseCandidateCreateRequest(
-			@JsonProperty("purchaseCandidates") @Singular @NonNull final List<JsonPurchaseCandidateCreateItem> items)
+			@JsonProperty("purchaseCandidates") @Singular @NonNull final List<JsonPurchaseCandidateCreateItem> purchaseCandidates)
 	{
-		this.items = items;
+		this.purchaseCandidates = purchaseCandidates;
 	}
 
 }

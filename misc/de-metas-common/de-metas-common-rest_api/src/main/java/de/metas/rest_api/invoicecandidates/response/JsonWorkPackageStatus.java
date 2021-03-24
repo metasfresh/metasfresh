@@ -22,9 +22,12 @@
 
 package de.metas.rest_api.invoicecandidates.response;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -44,4 +47,16 @@ public class JsonWorkPackageStatus
 
 	boolean readyForProcessing;
 
+	@Builder
+	@JsonCreator
+	public JsonWorkPackageStatus(@JsonProperty("metasfreshId") @NonNull final JsonMetasfreshId metasfreshId,
+			@JsonProperty("error") @Nullable final String error,
+			@JsonProperty("enqueued") final Instant enqueued,
+			@JsonProperty("readyForProcessing") final boolean readyForProcessing)
+	{
+		this.metasfreshId = metasfreshId;
+		this.error = error;
+		this.enqueued = enqueued;
+		this.readyForProcessing = readyForProcessing;
+	}
 }

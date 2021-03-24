@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.v1.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.rest_api.invoicecandidates.response.JsonWorkPackageStatus;
 import lombok.Builder;
 import lombok.NonNull;
@@ -35,6 +36,7 @@ import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
@@ -66,15 +68,15 @@ public class JsonPurchaseCandidate
 			@JsonProperty("externalLineId") @NonNull final JsonExternalId externalLineId,
 			@JsonProperty("metasfreshId") @NonNull final JsonMetasfreshId metasfreshId,
 			@JsonProperty("processed") final boolean processed,
-			@JsonProperty("purchaseOrders") @NonNull @Singular final List<JsonPurchaseOrder> purchaseOrders,
+			@JsonProperty("purchaseOrders") @Nullable @Singular final List<JsonPurchaseOrder> purchaseOrders,
 			@JsonProperty("workPackages") @Nullable @Singular final List<JsonWorkPackageStatus> workPackages)
 	{
 		this.externalHeaderId = externalHeaderId;
 		this.externalLineId = externalLineId;
 		this.metasfreshId = metasfreshId;
 		this.processed = processed;
-		this.purchaseOrders = purchaseOrders;
-		this.workPackages = workPackages;
+		this.purchaseOrders = CoalesceUtil.coalesce(purchaseOrders, Collections.emptyList());
+		this.workPackages = CoalesceUtil.coalesce(workPackages, Collections.emptyList());
 	}
 
 }

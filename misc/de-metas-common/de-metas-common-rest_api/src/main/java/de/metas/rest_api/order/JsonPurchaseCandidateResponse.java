@@ -39,6 +39,8 @@ import java.util.List;
 public class JsonPurchaseCandidateResponse
 {
 	@ApiModelProperty(position = 10, required = true)
+	@JsonProperty("purchaseCandidates")
+	@Singular
 	List<JsonPurchaseCandidate> purchaseCandidates;
 
 	@Builder

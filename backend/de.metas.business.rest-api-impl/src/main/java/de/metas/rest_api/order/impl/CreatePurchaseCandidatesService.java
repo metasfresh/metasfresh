@@ -30,6 +30,7 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonExternalId;
 import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.common.rest_api.v2.JsonRequestAttributeSetInstance;
 import de.metas.common.rest_api.v2.JsonRequestAttributeInstance;
@@ -110,6 +111,9 @@ public class CreatePurchaseCandidatesService
 		final PurchaseCandidateId save = purchaseCandidateRepo.save(purchaseCandidate);
 		return JsonPurchaseCandidate.builder()
 				.metasfreshId(JsonMetasfreshId.of(save.getRepoId()))
+				.externalHeaderId(JsonExternalId.of(purchaseCandidate.getExternalHeaderId().getValue()))
+				.externalLineId(JsonExternalId.of(purchaseCandidate.getExternalLineId().getValue()))
+				.processed(false)
 				.build();
 	}
 
