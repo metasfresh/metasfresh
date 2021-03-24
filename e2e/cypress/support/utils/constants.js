@@ -32,7 +32,9 @@ export class RewriteURL {
 
   static QuickActions = `rest/api/documentView/.*/quickActions?`;
 
-  static REFERENCES = `/rest/api/window/.*/references/sse$`;  
+  static Filters = `rest/api/documentView/.*/filter`;
+
+  static REFERENCES = `/rest/api/window/.*/references/sse$`;
   // ^^ It seems there is an issue with SSE network requests support in cypress. On current version 4.6.0 they are not tracked
 
   static DocActionDropdown = `/rest/api/window/[0-9]+/[0-9]+/field/DocAction/dropdown`;

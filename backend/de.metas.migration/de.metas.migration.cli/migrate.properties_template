@@ -7,7 +7,7 @@
 
 #example: remote DB via SSL-tunnel
 #METASFRESH_DB_SERVER=localhost
-#METASFRESH_DB_PORT=5678
+#METASFRESH_DB_PORT=15432
 
 METASFRESH_DB_SERVER=<DBMS hostname> # e.g. localhost
 METASFRESH_DB_PORT=<DBMS hostname> # e.g. 5432

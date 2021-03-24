@@ -7,7 +7,7 @@ import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.X_AD_Process;
-import org.compiere.wf.api.IADWorkflowBL;
+import de.metas.workflow.service.IADWorkflowBL;
 
 import de.metas.document.engine.DocumentTableFields;
 import de.metas.process.IADProcessBL;

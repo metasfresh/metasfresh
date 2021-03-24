@@ -55,22 +55,6 @@ class DocList extends PureComponent {
     viewId && updateUri(pathname, query, updatedQuery);
   };
 
-  /**
-   * @method handleUpdateParentSelectedIds
-   * @summary ToDo: Describe the method.
-   */
-  handleUpdateParentSelectedIds = (childSelection) => {
-    this.masterDocumentList.updateQuickActions(childSelection);
-  };
-
-  /**
-   * @method handleDocListRef
-   * @summary Store ref to the main DocumentList
-   */
-  handleDocListRef = (ref) => {
-    this.masterDocumentList = ref;
-  };
-
   render() {
     const {
       windowId,
@@ -103,7 +87,6 @@ class DocList extends PureComponent {
         processStatus={processStatus}
         includedView={includedView}
         modalHidden={!modal.visible && !rawModal.visible}
-        masterDocumentList={this.masterDocumentList}
       >
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
 
@@ -113,7 +96,6 @@ class DocList extends PureComponent {
           })}
         >
           <DocumentList
-            ref={this.handleDocListRef}
             type="grid"
             updateUri={this.updateUriCallback}
             windowId={windowId}
@@ -121,7 +103,6 @@ class DocList extends PureComponent {
             includedView={includedView}
             inBackground={rawModal.visible}
             inModal={modal.visible}
-            fetchQuickActionsOnInit
             processStatus={processStatus}
             disablePaginationShortcuts={modal.visible || rawModal.visible}
             sort={queryCopy.sort}
@@ -144,9 +125,7 @@ class DocList extends PureComponent {
                 defaultViewId={includedView.viewId}
                 parentWindowType={windowId}
                 parentDefaultViewId={viewId}
-                updateParentSelectedIds={this.handleUpdateParentSelectedIds}
                 viewProfileId={includedView.viewProfileId}
-                fetchQuickActionsOnInit
                 processStatus={processStatus}
                 isIncluded
                 inBackground={false}

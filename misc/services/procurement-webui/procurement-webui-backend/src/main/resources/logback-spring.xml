@@ -1,0 +1,24 @@
+<configuration>
+	<!-- NOTE: this configuration is based on base.xml -->
+
+	<include resource="org/springframework/boot/logging/logback/defaults.xml" />
+	
+	<!-- Override defaults -->
+	<property name="USER_SESSION_INFO" value="[%16.16X{RemoteAddr:-}][%20.-20X{LoggedUser:-}][%X{SessionId}/%X{UIId}][%X{UserAgent:-}]" />
+	
+	<property name="CONSOLE_LOG_PATTERN" value="%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(${LOG_LEVEL_PATTERN:-%5p}) %clr(${PID:- }){magenta} ${USER_SESSION_INFO} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+	
+	<property name="FILE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p} ${PID:- } ${USER_SESSION_INFO} --- [%t] %-40.40logger{39} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"/>
+	
+	<!--  copied from base.xml -->
+	<property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-/tmp}}/}spring.log}"/>
+	
+	<include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+	
+	<include resource="org/springframework/boot/logging/logback/file-appender.xml" />
+	
+	<root level="INFO">
+		<appender-ref ref="CONSOLE" />
+		<appender-ref ref="FILE" />
+	</root>
+</configuration>

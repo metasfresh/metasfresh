@@ -1,28 +1,14 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.util.Check.assumeNotEmpty;
-import static de.metas.util.Check.isBlank;
-import static de.metas.util.Check.isEmpty;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
+import de.metas.bpartner.BPartnerBankAccountId;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerBankAccount;
@@ -37,55 +23,70 @@ import de.metas.bpartner.composite.BPartnerLocationType.BPartnerLocationTypeBuil
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilder;
+import de.metas.common.bpartner.request.JsonRequestBPartner;
+import de.metas.common.bpartner.request.JsonRequestBPartnerUpsertItem;
+import de.metas.common.bpartner.request.JsonRequestBankAccountUpsertItem;
+import de.metas.common.bpartner.request.JsonRequestBankAccountsUpsert;
+import de.metas.common.bpartner.request.JsonRequestComposite;
+import de.metas.common.bpartner.request.JsonRequestContact;
+import de.metas.common.bpartner.request.JsonRequestContactUpsert;
+import de.metas.common.bpartner.request.JsonRequestContactUpsertItem;
+import de.metas.common.bpartner.request.JsonRequestLocation;
+import de.metas.common.bpartner.request.JsonRequestLocationUpsert;
+import de.metas.common.bpartner.request.JsonRequestLocationUpsertItem;
+import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsertItem;
+import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsertItem.JsonResponseBPartnerCompositeUpsertItemBuilder;
+import de.metas.common.bpartner.response.JsonResponseUpsert;
+import de.metas.common.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
+import de.metas.common.bpartner.response.JsonResponseUpsertItem;
+import de.metas.common.bpartner.response.JsonResponseUpsertItem.JsonResponseUpsertItemBuilder;
+import de.metas.common.bpartner.response.JsonResponseUpsertItem.SyncOutcome;
+import de.metas.common.externalreference.JsonExternalReferenceItem;
+import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
+import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.SyncAdvise.IfExists;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.order.InvoiceRule;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.organization.OrgQuery;
 import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonRetrieverService;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
-import de.metas.rest_api.bpartner.request.JsonRequestBankAccountUpsertItem;
-import de.metas.rest_api.bpartner.request.JsonRequestBankAccountsUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestComposite;
-import de.metas.rest_api.bpartner.request.JsonRequestContact;
-import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsertItem;
-import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsertItem;
-import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsertItem.JsonResponseBPartnerCompositeUpsertItemBuilder;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem.JsonResponseUpsertItemBuilder;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem.SyncOutcome;
-import de.metas.rest_api.common.MetasfreshId;
-import de.metas.rest_api.common.SyncAdvise;
-import de.metas.rest_api.common.SyncAdvise.IfExists;
-import de.metas.rest_api.exception.InvalidIdentifierException;
-import de.metas.rest_api.exception.MissingPropertyException;
-import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.user.UserId;
-import de.metas.util.Services;
+import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.ExternalId;
+import de.metas.util.web.exception.InvalidIdentifierException;
+import de.metas.util.web.exception.MissingPropertyException;
+import de.metas.util.web.exception.MissingResourceException;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import static de.metas.RestUtils.retrieveOrgIdOrDefault;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.util.Check.assumeNotEmpty;
+import static de.metas.util.Check.isBlank;
 
 /*
  * #%L
@@ -116,10 +117,14 @@ public class JsonPersisterService
 
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
+	private final transient ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final transient BPGroupRepository bpGroupRepository;
 	private final transient CurrencyRepository currencyRepository;
 
+	/**
+	 * A unique indentifier for this instance.
+	 */
 	@Getter
 	private final String identifier;
 
@@ -129,10 +134,12 @@ public class JsonPersisterService
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final String identifier)
 	{
 		this.jsonRetrieverService = jsonRetrieverService;
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
+		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.currencyRepository = currencyRepository;
@@ -140,16 +147,21 @@ public class JsonPersisterService
 		this.identifier = assumeNotEmpty(identifier, "Param Identifier may not be empty");
 	}
 
+	/**
+	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
+	 */
 	public JsonResponseBPartnerCompositeUpsertItem persist(
+			@Nullable final String orgCode,
 			@NonNull final JsonRequestBPartnerUpsertItem requestItem,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		// TODO: add support to retrieve without changelog; we don't need changelog here;
 		// but! make sure we don't screw up caching
 
+		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
 		final String rawBpartnerIdentifier = requestItem.getBpartnerIdentifier();
 		final IdentifierString bpartnerIdentifier = IdentifierString.of(rawBpartnerIdentifier);
-		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier);
+		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.getBPartnerComposite(orgId, bpartnerIdentifier);
 
 		final JsonResponseBPartnerCompositeUpsertItemUnderConstrunction resultBuilder = new JsonResponseBPartnerCompositeUpsertItemUnderConstrunction();
 		resultBuilder.setJsonResponseBPartnerUpsertItemBuilder(JsonResponseUpsertItem.builder().identifier(rawBpartnerIdentifier));
@@ -188,6 +200,8 @@ public class JsonPersisterService
 				jsonRequestComposite,
 				bpartnerComposite,
 				effectiveSyncAdvise);
+
+		handleExternalReferenceRecords(requestItem, bpartnerComposite, orgCode);
 
 		return resultBuilder.build();
 	}
@@ -290,12 +304,13 @@ public class JsonPersisterService
 
 		return JsonResponseUpsertItem.builder()
 				.identifier(contactIdentifier.getRawIdentifierString())
-				.metasfreshId(MetasfreshId.of(persistedContact.get().getId()))
+				.metasfreshId(JsonMetasfreshId.of(BPartnerContactId.toRepoId(persistedContact.get().getId())))
 				.syncOutcome(syncOutcome)
 				.build();
 	}
 
-	private static BPartnerContactQuery createContactQuery(@NonNull final IdentifierString contactIdentifier)
+	private static BPartnerContactQuery createContactQuery(
+			@NonNull final IdentifierString contactIdentifier)
 	{
 		final BPartnerContactQueryBuilder contactQuery = BPartnerContactQuery.builder();
 
@@ -319,13 +334,18 @@ public class JsonPersisterService
 
 	/**
 	 * Adds or updates the given locations. Leaves all unrelated locations of the same bPartner untouched
+	 *
+	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
 	 */
 	public Optional<JsonResponseUpsert> persistForBPartner(
+			@Nullable final String orgCode,
 			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final JsonRequestLocationUpsert jsonRequestLocationUpsert,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier);
+		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
+
+		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.getBPartnerComposite(orgId, bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty(); // 404
@@ -358,7 +378,7 @@ public class JsonPersisterService
 
 			final JsonResponseUpsertItem responseItem = identifierToBuilder
 					.get(requestItem.getLocationIdentifier())
-					.metasfreshId(MetasfreshId.of(bpartnerLocation.getId()))
+					.metasfreshId(JsonMetasfreshId.of(BPartnerLocationId.toRepoId(bpartnerLocation.getId())))
 					.build();
 			response.responseItem(responseItem);
 		}
@@ -366,12 +386,18 @@ public class JsonPersisterService
 		return Optional.of(response.build());
 	}
 
+	/**
+	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
+	 */
 	public Optional<JsonResponseUpsert> persistForBPartner(
+			@Nullable final String orgCode,
 			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final JsonRequestContactUpsert jsonContactUpsert,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier);
+		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
+
+		final Optional<BPartnerComposite> optBPartnerComposite = jsonRetrieverService.getBPartnerComposite(orgId, bpartnerIdentifier);
 		if (!optBPartnerComposite.isPresent())
 		{
 			return Optional.empty(); // 404
@@ -401,7 +427,7 @@ public class JsonPersisterService
 
 			final JsonResponseUpsertItem responseItem = identifierToBuilder
 					.get(requestItem.getContactIdentifier())
-					.metasfreshId(MetasfreshId.of(bpartnerContact.getId()))
+					.metasfreshId(JsonMetasfreshId.of(BPartnerContactId.toRepoId(bpartnerContact.getId())))
 					.build();
 			response.responseItem(responseItem);
 		}
@@ -409,12 +435,20 @@ public class JsonPersisterService
 		return Optional.of(response.build());
 	}
 
+	/**
+	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
+	 */
 	public Optional<JsonResponseUpsert> persistForBPartner(
+			@Nullable final String orgCode,
 			@NonNull final IdentifierString bpartnerIdentifier,
 			@NonNull final JsonRequestBankAccountsUpsert jsonBankAccountsUpsert,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final BPartnerComposite bpartnerComposite = jsonRetrieverService.getBPartnerComposite(bpartnerIdentifier).orElse(null);
+		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
+
+		final BPartnerComposite bpartnerComposite = jsonRetrieverService
+				.getBPartnerComposite(orgId, bpartnerIdentifier)
+				.orElse(null);
 		if (bpartnerComposite == null)
 		{
 			return Optional.empty(); // 404
@@ -444,7 +478,7 @@ public class JsonPersisterService
 
 			final JsonResponseUpsertItem responseItem = identifierToBuilder
 					.get(requestItem.getIban())
-					.metasfreshId(MetasfreshId.of(bankAccount.getId()))
+					.metasfreshId(JsonMetasfreshId.of(BPartnerBankAccountId.toRepoId(bankAccount.getId())))
 					.build();
 			response.responseItem(responseItem);
 		}
@@ -484,7 +518,7 @@ public class JsonPersisterService
 
 		//
 		// supplement the metasfreshiId which we now have after the "save()"
-		resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().metasfreshId(MetasfreshId.of(bpartnerComposite.getBpartner().getId()));
+		resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().metasfreshId(JsonMetasfreshId.of(BPartnerId.toRepoId(bpartnerComposite.getBpartner().getId())));
 
 		final ImmutableMap<String, JsonResponseUpsertItemBuilder> jsonResponseContactUpsertItemBuilders = resultBuilder.getJsonResponseContactUpsertItems();
 		for (final JsonRequestContactUpsertItem requestItem : jsonRequestComposite.getContactsNotNull().getRequestItems())
@@ -493,7 +527,7 @@ public class JsonPersisterService
 
 			final JsonResponseUpsertItemBuilder builder = jsonResponseContactUpsertItemBuilders.get(originalIdentifier);
 			final Optional<BPartnerContact> contact = bpartnerComposite.extractContactByHandle(originalIdentifier);
-			builder.metasfreshId(MetasfreshId.of(contact.get().getId()));
+			builder.metasfreshId(JsonMetasfreshId.of(BPartnerContactId.toRepoId(contact.get().getId())));
 		}
 
 		final ImmutableMap<String, JsonResponseUpsertItemBuilder> jsonResponseLocationUpsertItemBuilders = resultBuilder.getJsonResponseLocationUpsertItems();
@@ -503,7 +537,7 @@ public class JsonPersisterService
 
 			final JsonResponseUpsertItemBuilder builder = jsonResponseLocationUpsertItemBuilders.get(originalIdentifier);
 			final Optional<BPartnerLocation> location = bpartnerComposite.extractLocationByHandle(originalIdentifier);
-			builder.metasfreshId(MetasfreshId.of(location.get().getId()));
+			builder.metasfreshId(JsonMetasfreshId.of(BPartnerLocationId.toRepoId(location.get().getId())));
 		}
 
 		final ImmutableMap<String, JsonResponseUpsertItemBuilder> jsonResponseBankAccountUpsertItemBuilders = resultBuilder.getJsonResponseBankAccountUpsertItems();
@@ -511,7 +545,7 @@ public class JsonPersisterService
 		{
 			final JsonResponseUpsertItemBuilder builder = jsonResponseBankAccountUpsertItemBuilders.get(requestItem.getIban());
 			final Optional<BPartnerBankAccount> bankAccount = bpartnerComposite.getBankAccountByIBAN(requestItem.getIban());
-			builder.metasfreshId(MetasfreshId.of(bankAccount.get().getId()));
+			builder.metasfreshId(JsonMetasfreshId.of(BPartnerBankAccountId.toRepoId(bankAccount.get().getId())));
 		}
 	}
 
@@ -528,20 +562,7 @@ public class JsonPersisterService
 			return;
 		}
 
-		final OrgId orgId;
-		final String orgCode = jsonBPartnerComposite.getOrgCode();
-		if (!isEmpty(orgCode, true))
-		{
-			orgId = Services.get(IOrgDAO.class)
-					.retrieveOrgIdBy(OrgQuery.ofValue(orgCode))
-					.orElseThrow(() -> MissingResourceException.builder()
-							.resourceName("organisation")
-							.resourceIdentifier(orgCode).build());
-		}
-		else
-		{
-			orgId = Env.getOrgId();
-		}
+		final OrgId orgId = retrieveOrgIdOrDefault(jsonBPartnerComposite.getOrgCode());
 		bpartnerComposite.setOrgId(orgId);
 	}
 
@@ -752,7 +773,7 @@ public class JsonPersisterService
 			}
 			else
 			{
-				bpartner.setInvoiceRule(InvoiceRule.ofCode(jsonBPartner.getInvoiceRule().toString()));
+				bpartner.setInvoiceRule(BPartnerCompositeRestUtils.getInvoiceRule(jsonBPartner.getInvoiceRule()));
 			}
 		}
 		else if (isUpdateRemove)
@@ -766,7 +787,7 @@ public class JsonPersisterService
 		if (jsonBPartner.isParentIdSet())
 		{
 			// TODO make sure in the repo that the parent-bpartner is reachable
-			bpartner.setParentId(BPartnerId.ofRepoIdOrNull(MetasfreshId.toValue(jsonBPartner.getParentId())));
+			bpartner.setParentId(BPartnerId.ofRepoIdOrNull(JsonMetasfreshId.toValue(jsonBPartner.getParentId())));
 		}
 		else if (isUpdateRemove)
 		{
@@ -1659,5 +1680,104 @@ public class JsonPersisterService
 		}
 
 		return locationType.build();
+	}
+
+	private void handleExternalReferenceRecords(
+			@NonNull final JsonRequestBPartnerUpsertItem jsonRequestBPartnerUpsertItem,
+			@NonNull final BPartnerComposite bpartnerComposite,
+			@Nullable final String orgCode)
+	{
+
+		//1. handle bPartner external ref if any
+		if (jsonRequestBPartnerUpsertItem.getBpartnerComposite().getBPartnerReferenceCreateRequest() != null)
+		{
+			insertBPartnerExternalReferenceIfMissing(jsonRequestBPartnerUpsertItem.getBpartnerComposite().getBPartnerReferenceCreateRequest(), bpartnerComposite, orgCode);
+		}
+
+		//2. handle bPartner location external ref if any
+		final JsonRequestLocationUpsert upsertLocationRequest = jsonRequestBPartnerUpsertItem.getBpartnerComposite().getLocationsNotNull();
+
+		if (Check.isEmpty(upsertLocationRequest.getRequestItems()))
+		{
+			return;//nothing more to do
+		}
+
+		final Map<ExternalId, JsonMetasfreshId> externalLocationId2MetasfreshId = Check.isEmpty(bpartnerComposite.getLocations())
+				? ImmutableMap.of()
+				: bpartnerComposite.getLocations()
+				.stream()
+				.filter(location -> location.getExternalId() != null && location.getId() != null)
+				.collect(ImmutableMap.toImmutableMap(
+						BPartnerLocation::getExternalId,
+						location -> JsonMetasfreshId.of(location.getId().getRepoId()))
+				);
+
+		insertBPLocationExternalRefIfMissing(upsertLocationRequest.getRequestItems(), externalLocationId2MetasfreshId, orgCode);
+	}
+
+	private void insertBPartnerExternalReferenceIfMissing(
+			@NonNull final JsonSingleExternalReferenceCreateReq externalReferenceCreateReq,
+			@NonNull final BPartnerComposite bpartnerComposite,
+			@Nullable final String orgCode)
+	{
+		final BPartnerId bPartnerId = bpartnerComposite.getBpartner() != null && bpartnerComposite.getBpartner().getId() != null
+				? bpartnerComposite.getBpartner().getId()
+				: null;
+
+		if (bPartnerId == null)
+		{
+			throw new AdempiereException("bPartnerComposite.getBpartner().getId() should never be null at this stage!")
+					.appendParametersToMessage()
+					.setParameter("BPartnerComposite", bpartnerComposite);
+		}
+
+		final JsonSingleExternalReferenceCreateReq createRequest =
+				buildExternalRefWithMetasfreshId(externalReferenceCreateReq, JsonMetasfreshId.of(bPartnerId.getRepoId()));
+
+		externalReferenceRestControllerService.performInsertIfMissing(createRequest, orgCode);
+	}
+
+	private void insertBPLocationExternalRefIfMissing(
+			@NonNull final List<JsonRequestLocationUpsertItem> requestItems,
+			@NonNull final Map<ExternalId, JsonMetasfreshId> externalLocationId2MetasfreshId,
+			@Nullable final String orgCode)
+	{
+
+		requestItems.stream()
+				.map(JsonRequestLocationUpsertItem::getLocationExternalRef)
+				.filter(Objects::nonNull)
+				.map(locationExternalRef ->  {
+					final ExternalId locationExternalId = ExternalId.of(locationExternalRef.getExternalReferenceItem().getLookupItem().getId());
+
+					return Optional.ofNullable(externalLocationId2MetasfreshId.get(locationExternalId))
+							.map(locationMFId -> buildExternalRefWithMetasfreshId(locationExternalRef, locationMFId))
+							.orElseGet(() -> {
+								logger.warn("*** WARN in insertBPLocationExternalRefIfMissing: no metasfreshId was found for the externalId: {}! "
+													+ "If this happened, something went wrong while upserting the bPartnerLocations", locationExternalId);
+								return null;
+							});
+				})
+				.filter(Objects::nonNull)
+				.forEach(createExternalRefReq -> externalReferenceRestControllerService.performInsertIfMissing(createExternalRefReq, orgCode) );
+	}
+
+
+	@NonNull
+	private JsonSingleExternalReferenceCreateReq buildExternalRefWithMetasfreshId(
+			@NonNull final JsonSingleExternalReferenceCreateReq externalReferenceCreateReq,
+			@NonNull final JsonMetasfreshId metasfreshId)
+	{
+
+		final JsonExternalReferenceItem referenceItemWithMFId = JsonExternalReferenceItem
+				.builder()
+				.metasfreshId(metasfreshId)
+				.version(externalReferenceCreateReq.getExternalReferenceItem().getVersion())
+				.lookupItem(externalReferenceCreateReq.getExternalReferenceItem().getLookupItem())
+				.build();
+
+		return JsonSingleExternalReferenceCreateReq.builder()
+				.systemName(externalReferenceCreateReq.getSystemName())
+				.externalReferenceItem(referenceItemWithMFId)
+				.build();
 	}
 }

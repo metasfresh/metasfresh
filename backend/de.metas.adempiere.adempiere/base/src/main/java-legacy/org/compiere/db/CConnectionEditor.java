@@ -58,7 +58,6 @@ public class CConnectionEditor extends JComponent
 	 */
 	public CConnectionEditor()
 	{
-		super();
 		setName("ConnectionEditor");
 		CConnectionEditor_MouseListener ml = new CConnectionEditor_MouseListener();
 		
@@ -213,7 +212,7 @@ public class CConnectionEditor extends JComponent
 	{
 		if (m_value == null)
 			return "";
-		return m_value.getName();
+		return m_value.getDbHost();
 	}   //  getDisplay
 
 	/**
@@ -223,23 +222,17 @@ public class CConnectionEditor extends JComponent
 	{
 		m_text.setText(getDisplay());
 		
-		final boolean isAppsServerOK = m_value != null && m_value.isAppsServerOK(false);
 		final boolean isDatabaseOK = m_value != null && m_value.isDatabaseOK();
-		
-		final boolean isAppsServerOrDatabaseOK = isAppsServerOK || isDatabaseOK;
-		final boolean isAppsServerAndDatabaseOK = isAppsServerOK && isDatabaseOK;
 
 		// Mark the text field as error if both AppsServer and DB connections are not established
-		setBackground(!isAppsServerOrDatabaseOK);
+		setBackground(!isDatabaseOK);
 
 		// Mark the connection indicator button as error if any of AppsServer or DB connection is not established. 
-		btnConnection.setBackground(isAppsServerAndDatabaseOK ? AdempierePLAF.getFieldBackground_Normal() : AdempierePLAF.getFieldBackground_Error());
+		btnConnection.setBackground(isDatabaseOK ? AdempierePLAF.getFieldBackground_Normal() : AdempierePLAF.getFieldBackground_Error());
 	}
 
 	/**
 	 * Add Action Listener
-	 * 
-	 * @param l
 	 */
 	public synchronized void addActionListener(final ActionListener l)
 	{

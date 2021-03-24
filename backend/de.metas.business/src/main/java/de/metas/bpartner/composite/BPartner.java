@@ -60,6 +60,7 @@ public class BPartner
 	public static final String GROUP_ID = "groupId";
 	public static final String VENDOR = "vendor";
 	public static final String CUSTOMER = "customer";
+	public static final String COMPANY = "company";
 	public static final String VAT_ID = "vatId";
 
 	/** May be null if the bpartner was not yet saved. */
@@ -93,6 +94,7 @@ public class BPartner
 
 	private boolean vendor;
 	private boolean customer;
+	private boolean company;
 
 	private InvoiceRule invoiceRule;
 
@@ -127,6 +129,7 @@ public class BPartner
 			@Nullable final InvoiceRule invoiceRule,
 			@Nullable final Boolean vendor,
 			@Nullable final Boolean customer,
+			@Nullable final Boolean company,
 			@Nullable final String vatId,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final String shipmentAllocationBestBeforePolicy)
@@ -150,6 +153,7 @@ public class BPartner
 		this.invoiceRule = invoiceRule;
 		this.vendor = coalesce(vendor, false);
 		this.customer = coalesce(customer, false);
+		this.company = coalesce(company, false);
 		this.vatId = vatId;
 
 		this.changeLog = changeLog;

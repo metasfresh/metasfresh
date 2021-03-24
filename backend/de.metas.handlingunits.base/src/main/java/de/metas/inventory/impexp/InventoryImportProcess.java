@@ -12,6 +12,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -41,7 +42,6 @@ import org.slf4j.Logger;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
@@ -74,13 +74,49 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_I_Inventory;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.X_I_Inventory;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.function.UnaryOperator;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Import {@link I_I_Inventory} to {@link I_M_Inventory}.
@@ -125,7 +161,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	protected Map<String, Object> getImportTableDefaultValues()
 	{
 		return ImmutableMap.<String, Object> builder()
-				.put(I_I_Inventory.COLUMNNAME_InventoryDate, SystemTime.asDayTimestamp())
+				.put(I_I_Inventory.COLUMNNAME_InventoryDate, de.metas.common.util.time.SystemTime.asDayTimestamp())
 				.build();
 	}
 
@@ -221,7 +257,8 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	{
 		if (huAggregationType == null)
 		{
-			return DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory);
+			// #10656 There is no inventory doctype without a subtype. Consider the AggregatedHUInventory as a default
+			return AggregationType.MULTIPLE_HUS.getDocBaseAndSubType();
 		}
 		else
 		{
@@ -322,7 +359,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		final List<InventoryLineHU> inventoryLineHUs;
 		if (!hus.isEmpty())
 		{
-			inventoryLineHUs = toInventoryLineHUs(hus);
+			inventoryLineHUs = toInventoryLineHUs(hus, productId, qtyCount.getUomId());
 		}
 		else
 		{
@@ -336,7 +373,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		//
 		final InventoryLine inventoryLine = inventoryRepository.toInventoryLine(inventoryLineRecord)
 				.withInventoryLineHUs(inventoryLineHUs)
-				.distributeQtyCountToHUs(qtyCount);
+				.distributeQtyCountToHUs(qtyCount, uomConversionBL);
 
 		inventoryRepository.saveInventoryLineHURecords(inventoryLine, inventoryId);
 
@@ -345,10 +382,15 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 		importRecord.setM_InventoryLine_ID(inventoryLineRecord.getM_InventoryLine_ID());
 	}
 
-	private List<InventoryLineHU> toInventoryLineHUs(final List<HuForInventoryLine> hus)
+	private List<InventoryLineHU> toInventoryLineHUs(
+			@NonNull final List<HuForInventoryLine> hus,
+			@NonNull final ProductId productId,
+			@NonNull final UomId targetUomId)
 	{
+		final UnaryOperator<Quantity> uomConverter = qty -> uomConversionBL.convertQuantityTo(qty, productId, targetUomId);
 		return hus.stream()
 				.map(DraftInventoryLinesCreator::toInventoryLineHU)
+				.map(inventoryLineHU -> inventoryLineHU.convertQuantities(uomConverter))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -387,10 +429,12 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	AttributeSetInstanceId extractASI(@NonNull final I_I_Inventory importRecord)
 	{
 		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
-		if (!productBL.isInstanceAttribute(productId))
-		{
-			return AttributeSetInstanceId.NONE;
-		}
+
+		// Always extract an ASI. Even if the product has no ASI, the HUs that we might want to match with might have Attributes that need to be matched against importRecord
+		// if (!productBL.isInstanceAttribute(productId))
+		// {
+		// 	return AttributeSetInstanceId.NONE;
+		// }
 
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(productId);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());

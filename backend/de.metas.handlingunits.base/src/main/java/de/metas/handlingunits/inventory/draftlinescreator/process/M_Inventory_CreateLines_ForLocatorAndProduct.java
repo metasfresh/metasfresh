@@ -1,18 +1,18 @@
 package de.metas.handlingunits.inventory.draftlinescreator.process;
 
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.LocatorAndProductStrategy;
+import de.metas.handlingunits.inventory.draftlinescreator.ProductStockFilter;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.process.Param;
 import de.metas.product.ProductId;
 import lombok.NonNull;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -46,16 +46,28 @@ public class M_Inventory_CreateLines_ForLocatorAndProduct extends DraftInventory
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_ID)
 	private int productId;
 
+	@Param(parameterName = "StockFilterOption")
+	private String stockFilterOption;
+
 	@Override
 	protected LocatorAndProductStrategy createStrategy(@NonNull final Inventory inventory)
 	{
 		final WarehouseId warehouseId = inventory.getWarehouseId();
 
-		return HUsForInventoryStrategies.locatorAndProduct()
+		final LocatorAndProductStrategy.LocatorAndProductStrategyBuilder builder = HUsForInventoryStrategies.locatorAndProduct()
 				.warehouseId(warehouseId)
 				.locatorId(LocatorId.ofRepoIdOrNull(warehouseId, locatorId))
 				.productId(ProductId.ofRepoIdOrNull(productId))
-				.huForInventoryLineFactory(huForInventoryLineFactory)
-				.build();
+				.huForInventoryLineFactory(huForInventoryLineFactory);
+		switch (ProductStockFilter.of(stockFilterOption))
+		{
+			case STOCKED:
+				builder.onlyStockedProducts(true);
+				break;
+			case NON_STOCKED:
+				builder.onlyStockedProducts(false);
+				break;
+		}
+		return builder.build();
 	}
 }

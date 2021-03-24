@@ -58,7 +58,6 @@ import com.sun.mail.smtp.SMTPMessage;
 
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.logging.LogManager;
-import de.metas.session.jaxrs.IServerService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -266,18 +265,8 @@ public final class EMail implements Serializable
 
 		//
 		// Send the email now
-		final Mailbox mailbox = getMailbox();
-		final boolean sendEmailsFromServer = mailbox.isSendEmailsFromServer() && Ini.isSwingClient();
-		if (sendEmailsFromServer)
-		{
-			final EMailSentStatus sentStatus = Services.get(IServerService.class).sendEMail(this);
-			return setStatus(sentStatus);
-		}
-		else
-		{
-			final EMailSentStatus sentStatus = sendNow();
-			return setStatus(sentStatus);
-		}
+		final EMailSentStatus sentStatus = sendNow();
+		return setStatus(sentStatus);
 	}	// send
 
 	private EMailSentStatus sendNow()
@@ -417,11 +406,6 @@ public final class EMail implements Serializable
 	 * Sets recipients.
 	 *
 	 * <b>NOTE: If {@link #getDebugMailToAddress()} returns a valid mail address, it will send to that instead!</b>
-	 *
-	 * @param message
-	 * @param type
-	 * @param addresses
-	 * @throws MessagingException
 	 */
 	private void setRecipients(
 			final SMTPMessage message,

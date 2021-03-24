@@ -27,6 +27,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
@@ -68,6 +69,7 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -76,7 +78,6 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -449,7 +450,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
 
-		final int taxId = Services.get(ITaxBL.class).getTax(
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
 				term,
 				taxCategoryId,
@@ -460,7 +461,7 @@ public class FlatrateBL implements IFlatrateBL
 				shipToLocationId,
 				isSOTrx);
 
-		newCand.setC_Tax_ID(taxId);
+		newCand.setC_Tax_ID(taxId.getRepoId());
 
 		setILCandHandler(ctx, newCand);
 
@@ -580,7 +581,7 @@ public class FlatrateBL implements IFlatrateBL
 		final boolean isSOTrx = true;
 
 		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
-		final int taxId = Services.get(ITaxBL.class).getTax(
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
 				term,
 				taxCategoryId,
@@ -591,7 +592,7 @@ public class FlatrateBL implements IFlatrateBL
 				shipToLocationId,
 				isSOTrx);
 
-		newCand.setC_Tax_ID(taxId);
+		newCand.setC_Tax_ID(taxId.getRepoId());
 
 		setILCandHandler(ctx, newCand);
 

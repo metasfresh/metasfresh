@@ -1,0 +1,70 @@
+de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsertTest.serializeDeserializeTest=[
+  {
+    "responseItems": [
+      {
+        "responseBPartnerItem": {
+          "identifier": "val-12345",
+          "metasfreshId": 23,
+          "syncOutcome": "CREATED"
+        },
+        "responseLocationItems": [
+          {
+            "identifier": "ext-12345",
+            "metasfreshId": 24,
+            "syncOutcome": "UPDATED"
+          }
+        ],
+        "responseContactItems": [
+          {
+            "identifier": "ext-12345",
+            "metasfreshId": 24,
+            "syncOutcome": "UPDATED"
+          }
+        ],
+        "responseBankAccountItems": [
+          {
+            "identifier": "ext-12345",
+            "metasfreshId": 24,
+            "syncOutcome": "NOTHING_DONE"
+          }
+        ]
+      }
+    ]
+  }
+]
+
+
+de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsertTest.serializeDeserializeTest=[
+  {
+    "responseItems": [
+      {
+        "responseBPartnerItem": {
+          "identifier": "val-12345",
+          "metasfreshId": 23,
+          "syncOutcome": "CREATED"
+        },
+        "responseLocationItems": [
+          {
+            "identifier": "ext-12345",
+            "metasfreshId": 24,
+            "syncOutcome": "UPDATED"
+          }
+        ],
+        "responseContactItems": [
+          {
+            "identifier": "ext-12345",
+            "metasfreshId": 24,
+            "syncOutcome": "UPDATED"
+          }
+        ],
+        "responseBankAccountItems": [
+          {
+            "identifier": "ext-12345",
+            "metasfreshId": 24,
+            "syncOutcome": "NOTHING_DONE"
+          }
+        ]
+      }
+    ]
+  }
+]

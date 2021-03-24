@@ -54,5 +54,27 @@
         ]
       }
     ]
+  },
+  "data2": {
+    "windowId": "540345",
+    "viewId": "540345-B6",
+    "profileId": "groupByProduct",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 2,
+    "orderBy": [
+      {
+        "fieldName": "ProductOrBPartner",
+        "ascending": true
+      }
+    ],
+    "queryLimit": 5000,
+    "type": "540345"
+  },
+  "data3_payments": {
+    "includedViewId": "invoicesToAllocate-OY",
+    "includedWindowId": "invoicesToAllocate",
+    "includedParentWindowId": "540759"
   }
 }

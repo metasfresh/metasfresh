@@ -1,23 +1,22 @@
 package org.eevolution.api;
 
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
+import de.metas.manufacturing.order.exportaudit.APIExportStatus;
+import de.metas.material.planning.pporder.OrderQtyChangeRequest;
+import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.process.PInstanceId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.compiere.model.I_C_OrderLine;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.manufacturing.order.exportaudit.APIExportStatus;
-import de.metas.material.planning.pporder.OrderQtyChangeRequest;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
-import de.metas.process.PInstanceId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 public interface IPPOrderBL extends ISingletonService
 {
+	I_PP_Order getById(@NonNull PPOrderId id);
+
 	I_PP_Order createOrder(PPOrderCreateRequest request);
 
 	void setDefaults(I_PP_Order ppOrder);
@@ -29,7 +28,7 @@ public interface IPPOrderBL extends ISingletonService
 	/**
 	 * Set QtyBatchSize and QtyBatchs using Workflow and QtyOrdered
 	 *
-	 * @param order    MO
+	 * @param order                    MO
 	 * @param alwaysUpdateQtyBatchSize if true, will set QtyBatchSize even if is already set (QtyBatchSize!=0)
 	 */
 	void updateQtyBatchs(
@@ -42,6 +41,8 @@ public interface IPPOrderBL extends ISingletonService
 	boolean isSomethingProcessed(I_PP_Order ppOrder);
 
 	void addQty(OrderQtyChangeRequest request);
+
+	PPOrderQuantities getQuantities(I_PP_Order order);
 
 	/**
 	 * Gets the "direct" order line.
@@ -66,8 +67,8 @@ public interface IPPOrderBL extends ISingletonService
 	 */
 	void setDocType(
 			I_PP_Order ppOrder,
-			String docBaseType,
-			String docSubType);
+			PPOrderDocBaseType docBaseType,
+			@Nullable String docSubType);
 
 	void closeOrder(PPOrderId ppOrderId);
 
@@ -83,6 +84,8 @@ public interface IPPOrderBL extends ISingletonService
 	void createOrderRouting(I_PP_Order ppOrder);
 
 	void closeAllActivities(PPOrderId orderId);
+
+	void uncloseActivities(@NonNull PPOrderId orderId);
 
 	Optional<QtyCalculationsBOM> getOpenPickingOrderBOM(PPOrderId pickingOrderId);
 

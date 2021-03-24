@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.email.EMail;
 import de.metas.email.EMailCustomType;
 import de.metas.email.MailService;
@@ -37,7 +37,6 @@ import de.metas.email.mailboxes.ClientEMailConfig;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.notification.UserNotificationRequest.TargetAction;
@@ -270,7 +269,7 @@ public class NotificationSenderTemplate
 			return Optional.empty();
 		}
 
-		final RecordZoomWindowFinder recordWindowFinder = RecordZoomWindowFinder.newInstance(targetRecordAction.getRecord());
+		final RecordWindowFinder recordWindowFinder = RecordWindowFinder.newInstance(targetRecordAction.getRecord());
 		return recordWindowFinder.findAdWindowId();
 	}
 
@@ -286,7 +285,7 @@ public class NotificationSenderTemplate
 			final String adLanguage = request.getADLanguageOrGet(Env::getADLanguageOrBaseLanguage);
 			return msgBL.getMsg(
 					adLanguage,
-					AdMessageKey.of(request.getSubjectADMessage()),
+					request.getSubjectADMessage(),
 					request.getSubjectADMessageParams());
 		}
 
@@ -322,7 +321,7 @@ public class NotificationSenderTemplate
 			return prepareMessageFormatter(request)
 					.html(html)
 					.adLanguage(request.getADLanguageOrGet(Env::getADLanguageOrBaseLanguage))
-					.format(AdMessageKey.of(request.getContentADMessage()), request.getContentADMessageParams());
+					.format(request.getContentADMessage(), request.getContentADMessageParams());
 		}
 
 		return "";

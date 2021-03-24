@@ -113,6 +113,7 @@ class WidgetRenderer extends PureComponent {
       onSetWidgetType,
       onHandleProcess,
       forwardedRef,
+      disconnected,
     } = this.props;
     const { tabIndex, onFocus } = widgetProperties;
     const widgetValue = get(widgetProperties, ['value'], null);
@@ -181,6 +182,7 @@ class WidgetRenderer extends PureComponent {
       tabIndex,
       autoFocus,
       readonly,
+      disconnected,
     };
 
     switch (widgetType) {
@@ -534,7 +536,6 @@ class WidgetRenderer extends PureComponent {
             attributeType="pattribute"
             viewId={viewId}
             onFocus={onFocus}
-            onBlur={onBlurWithParams}
             rowIndex={rowIndex}
             updateHeight={updateHeight}
           />
@@ -578,7 +579,7 @@ class WidgetRenderer extends PureComponent {
             readonly={readonly}
             className={this.getClassNames()}
             onChange={(value) =>
-              this.handlePatch(widgetField, {
+              onPatch(widgetField, {
                 values: value,
               })
             }

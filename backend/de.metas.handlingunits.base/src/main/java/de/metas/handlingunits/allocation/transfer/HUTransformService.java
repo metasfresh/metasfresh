@@ -25,6 +25,8 @@ package de.metas.handlingunits.allocation.transfer;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
@@ -68,12 +70,11 @@ import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -235,12 +236,19 @@ public class HUTransformService
 			@NonNull final Quantity qtyCU,
 			final boolean keepCUsUnderSameParent)
 	{
-		Check.assume(qtyCU.signum() > 0, "Paramater qtyCU={} needs to be >0; (source-)cuOrAggregateHU={}", qtyCU, cuOrAggregateHU);
+		Check.assume(qtyCU.signum() > 0, "Parameter qtyCU={} needs to be >0; (source-)cuOrAggregateHU={}", qtyCU, cuOrAggregateHU);
 
 		final boolean qtyCuExceedsCuHU = qtyCU.compareTo(getMaximumQtyCU(cuOrAggregateHU, qtyCU.getUOM())) >= 0;
 		final boolean huIsCU = !handlingUnitsBL.isAggregateHU(cuOrAggregateHU);
 
-		if (qtyCuExceedsCuHU && huIsCU)
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		final IHUStorage storage = storageFactory.getStorage(cuOrAggregateHU);
+
+		final I_C_UOM huUOM = storage.getC_UOMOrNull();
+		final UomId huUOMId = UomId.ofRepoId(huUOM == null ? -1 : huUOM.getC_UOM_ID());
+		final boolean isSameUOM = qtyCU.getUomId().equals(huUOMId);
+
+		if (qtyCuExceedsCuHU && huIsCU && isSameUOM)
 		{
 			// deal with the complete cuHU, i.e. no partial quantity will remain at the source.
 			final I_M_HU_Item cuParentItem = handlingUnitsDAO.retrieveParentItem(cuOrAggregateHU);
@@ -272,7 +280,7 @@ public class HUTransformService
 			}
 		}
 
-		// we split even if cuOrAggregateHU's qty is equalt to qtyCU, because we want a CU without packaging; not an aggregated TU
+		// we split even if cuOrAggregateHU's qty is equal to qtyCU, because we want a CU without packaging; not an aggregated TU
 		final HUProducerDestination destination = HUProducerDestination.ofVirtualPI();
 		final IHUProductStorage singleProductStorage = getSingleProductStorage(cuOrAggregateHU);
 		HUSplitBuilderCoreEngine.builder()

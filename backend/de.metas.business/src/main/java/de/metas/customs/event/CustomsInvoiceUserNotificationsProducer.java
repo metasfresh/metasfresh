@@ -3,6 +3,7 @@ package de.metas.customs.event;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Customs_Invoice;
@@ -55,7 +56,7 @@ public class CustomsInvoiceUserNotificationsProducer
 			.build();
 
 	private static final AdWindowId WINDOW_CUSTOMS_INVOICE = AdWindowId.ofRepoId(540643); // FIXME: HARDCODED
-	private static final String MSG_Event_CustomsInvoiceGenerated = "Event_CustomsInvoiceGenerated";
+	private static final AdMessageKey MSG_Event_CustomsInvoiceGenerated = AdMessageKey.of("Event_CustomsInvoiceGenerated");
 
 	private CustomsInvoiceUserNotificationsProducer()
 	{

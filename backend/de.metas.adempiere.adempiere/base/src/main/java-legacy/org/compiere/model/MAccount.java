@@ -100,6 +100,7 @@ public class MAccount extends X_C_ValidCombination
 				.setUser2_ID(User2_ID)
 				.setUserElement1_ID(UserElement1_ID)
 				.setUserElement2_ID(UserElement2_ID)
+
 				.build();
 		return get(ctx, dim);
 	}	// get
@@ -143,6 +144,13 @@ public class MAccount extends X_C_ValidCombination
 		newAccount.setUser2_ID(dimension.getUser2_ID());
 		newAccount.setUserElement1_ID(dimension.getUserElement1_ID());
 		newAccount.setUserElement2_ID(dimension.getUserElement2_ID());
+		newAccount.setUserElementString1(dimension.getUserElementString1());
+		newAccount.setUserElementString2(dimension.getUserElementString2());
+		newAccount.setUserElementString3(dimension.getUserElementString3());
+		newAccount.setUserElementString4(dimension.getUserElementString4());
+		newAccount.setUserElementString5(dimension.getUserElementString5());
+		newAccount.setUserElementString6(dimension.getUserElementString6());
+		newAccount.setUserElementString7(dimension.getUserElementString7());
 		InterfaceWrapperHelper.save(newAccount);
 		logger.debug("New: {}", newAccount);
 		return newAccount;
@@ -178,6 +186,13 @@ public class MAccount extends X_C_ValidCombination
 		vc.setUser2_ID(dimension.getUser2_ID());
 		vc.setUserElement1_ID(dimension.getUserElement1_ID());
 		vc.setUserElement2_ID(dimension.getUserElement2_ID());
+		vc.setUserElementString1(dimension.getUserElementString1());
+		vc.setUserElementString2(dimension.getUserElementString2());
+		vc.setUserElementString3(dimension.getUserElementString3());
+		vc.setUserElementString4(dimension.getUserElementString4());
+		vc.setUserElementString5(dimension.getUserElementString5());
+		vc.setUserElementString6(dimension.getUserElementString6());
+		vc.setUserElementString7(dimension.getUserElementString7());
 		InterfaceWrapperHelper.save(vc);
 		
 		return vc;

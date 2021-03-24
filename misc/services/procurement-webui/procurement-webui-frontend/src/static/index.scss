@@ -1,0 +1,272 @@
+@import 'bulma/bulma.sass';
+@import './variables.scss';
+@import './prognose.scss';
+
+* {
+  box-sizing: border-box;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: 0 0 0px 1000px white inset;
+}
+
+html {
+  width: 100%;
+  height: 100%;
+  // background-color: #f6f6f6;
+  background-color: $grey-lighter;
+}
+
+body {
+  color: black;
+  line-height: 1.5;
+  width: 100%;
+  height: 100%;
+}
+
+#root {
+  background-color: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.fullsize {
+  width: 100%;
+  height: 100%;
+}
+
+.section {
+  padding-top: 1rem;
+  padding-bottom: 5.5rem;
+  width: 100%;
+}
+
+.header {
+  border-bottom: 1px solid $base-border;
+  box-shadow: 0 0.05em 0.4em -0.125em rgba(10, 10, 10, 0.1);
+  position: absolute;
+  top: 0;
+}
+
+.header {
+  .header-title {
+    flex: 2;
+    text-align: center;
+
+    .title {
+      white-space: nowrap;
+      padding-right: 5px;
+    }
+  }
+
+  .header-aligner {
+    visibility: hidden;
+  }
+}
+
+.view {
+  overflow-y: auto;
+  position: absolute;
+  background-color: white;
+  -webkit-overflow-scrolling: touch;
+  transition: transform .2s ease-in-out;
+}
+
+.view-enter {
+  transform: translate(-100%, 0);
+}
+
+.view-enter-active {
+  transform: translate(0, 0);
+}
+
+.view-exit {
+  transform: translate(-100%, 0);
+}
+
+.view-exit-active {
+  transform: translate(-90%, 0);
+}
+
+.page {
+  width: 100%;
+  margin-top: 5.2rem;
+}
+
+.login-view {
+  box-shadow: 0 0.05em 0.4em -0.125em rgba(10, 10, 10, 0.1);
+
+  input:focus,
+  input:active {
+    border-color: $base-elements;
+    background-color: $yellow-background;
+  }
+}
+
+.login-poweredby-logo {
+  position: fixed;
+  bottom: 0;
+  right: 1rem;
+}
+
+.daily-nav {
+  width: 100%;
+  color: $base-color;
+
+    .columns {
+      padding: 0rem 1rem;
+      border-top: 1px solid $base-border;
+      border-bottom: 1px solid $base-border;
+    }
+
+    .rows {
+      display: flex;
+      flex-direction: column;
+      text-align: center;
+      font-size: 20px;
+    }
+
+    .arrow-navigation {
+      color: $base-elements;
+      padding: 1rem 0;
+    }
+}
+
+footer {
+  min-height: 4.5rem !important;
+
+  .link {
+    display: block;
+    color: $base-elements;
+
+    svg {
+      font-size: 2.25rem;
+    }
+  }
+
+  .link-text {
+    padding-top: 2px;
+    line-height: 1;
+  }
+}
+
+.back-bottom-nav {
+  border-top: 1px solid $base-border;
+
+  .nav-text {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+}
+
+.icons-bottom-nav {
+  .link {
+    width: 20%;
+    align-items: center;
+    border-top: 1px solid $base-border;
+    border-right: 1px solid $base-elements;
+  }
+}
+
+.unconfirmed-count {
+  position: absolute;
+  color: white;
+  width: 22px;
+  height: 22px;
+  top: 5px;
+  text-align: center;
+  line-height: 1rem;
+  padding-top: 3px;
+  right: 8px;
+  padding-left: 1px;
+  overflow: hidden;
+  white-space: nowrap;
+  border-radius: 11px;
+  background-color: $danger-red;
+}
+
+.preserve-new-lines {
+  white-space: pre-wrap;
+}
+
+input[type=number]::-webkit-inner-spin-button {
+  cursor: pointer;
+}
+
+.product {
+  margin-top: 0.4rem;
+  .no-p {
+    padding: 0px;
+  }
+  .green-check {
+    color: $base-elements;
+  }
+}
+
+.product-input {
+  font-size: 80px;
+  width: 100%;
+  text-align: right;
+  color: $product-input;
+  font-weight: 500;
+}
+.product-input:focus {
+  outline-color: $base-color;
+  color: $base-elements;
+}
+
+.product-input::selection {
+  background: $base-elements;
+  color: $white-background;
+}
+
+.reset-password-form {
+  .is-text {
+    color: black;
+  }
+}
+
+.green-color {
+  color: $base-elements;
+}
+
+.is-medium.input {
+  background: $yellow-background !important;
+}
+
+.week-days {
+  margin-bottom: calc(9rem + 1px);
+}
+
+.bt-1 {
+  border-top: 1px solid $grey-light;
+}
+.bb-1 {
+  border-bottom: 1px solid $grey-light;
+}
+.br-0 {
+  border-right: 0px !important;
+}
+
+.is-green-bg {
+  background-color: $base-elements !important;
+}
+
+.is-green-text {
+  color: $base-elements;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active  {
+    -webkit-box-shadow: 0 0 0 30px $yellow-background inset !important;
+}

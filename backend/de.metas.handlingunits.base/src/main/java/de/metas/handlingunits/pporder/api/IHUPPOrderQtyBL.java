@@ -36,6 +36,7 @@ public interface IHUPPOrderQtyBL extends ISingletonService
 
 	static I_C_UOM extractUOM(@NonNull final I_PP_Order_Qty ppOrderQty)
 	{
-		return Services.get(IUOMDAO.class).getById(ppOrderQty.getC_UOM_ID());
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		return uomDAO.getById(ppOrderQty.getC_UOM_ID());
 	}
 }

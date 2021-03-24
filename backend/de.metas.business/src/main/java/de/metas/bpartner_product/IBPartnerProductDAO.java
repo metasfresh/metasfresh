@@ -49,9 +49,7 @@ public interface IBPartnerProductDAO extends ISingletonService
 	/**
 	 * Retrieves all C_BPartner_Products for selected vendor
 	 *
-	 * @param ctx
 	 * @param Vendor_ID C_BPartner_ID
-	 * @param filter
 	 * @return C_BPartner_Products for Vendor_ID
 	 */
 	List<I_C_BPartner_Product> retrieveBPartnerForProduct(Properties ctx, BPartnerId Vendor_ID, ProductId productId, OrgId orgId);
@@ -59,9 +57,6 @@ public interface IBPartnerProductDAO extends ISingletonService
 	/**
 	 * Retrieves single {@link I_C_BPartner_Product} association for the given product and partner. THe association must have the given ad_Org_ID or ad_org_id = 0
 	 *
-	 * @param partner
-	 * @param product
-	 * @param organization
 	 * @return the BPartner-Product association or null
 	 */
 	I_C_BPartner_Product retrieveBPartnerProductAssociation(I_C_BPartner partner, I_M_Product product, final OrgId orgId);
@@ -69,10 +64,6 @@ public interface IBPartnerProductDAO extends ISingletonService
 	/**
 	 * Retrieves single {@link I_C_BPartner_Product} association. If there isn't an association for the given org, check if there isn't one for the org *
 	 *
-	 * @param ctx
-	 * @param bpartnerId
-	 * @param productId
-	 * @param orgId
 	 * @return the BPartner-Product association per org or null
 	 */
 	I_C_BPartner_Product retrieveBPartnerProductAssociation(Properties ctx, BPartnerId bpartnerId, ProductId productId, OrgId orgId);
@@ -81,9 +72,6 @@ public interface IBPartnerProductDAO extends ISingletonService
 	 * Retrieves the BP Product entry either if it is used for customer and has the BP = customerPartner (and has a bp vendor set)
 	 * of is the currentVendor. The BP Product must be of the given org or of the org 0
 	 *
-	 * @param customerPartner
-	 * @param product
-	 * @param org
 	 * @return first entry, order by BP vendor and org_ID, nulls last
 	 */
 	I_C_BPartner_Product retrieveBPProductForCustomer(I_C_BPartner customerPartner, I_M_Product product, OrgId orgId);

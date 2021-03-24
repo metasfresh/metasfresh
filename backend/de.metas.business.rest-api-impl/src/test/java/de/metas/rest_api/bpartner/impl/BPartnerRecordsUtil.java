@@ -3,6 +3,7 @@ package de.metas.rest_api.bpartner.impl;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_User;
@@ -19,7 +20,6 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyId;
 import de.metas.user.UserId;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -95,7 +95,7 @@ public class BPartnerRecordsUtil
 			final I_AD_User contactRecord = newInstance(I_AD_User.class);
 			contactRecord.setAD_User_ID(adUserId.getRepoId());
 			contactRecord.setAD_Org_ID(AD_ORG_ID);
-			contactRecord.setC_BPartner(bpartnerRecord);
+			contactRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 			contactRecord.setExternalId(AD_USER_EXTERNAL_ID + idOffSetStr);
 			contactRecord.setValue(AD_USER_VALUE + idOffSetStr);
 			contactRecord.setName("contactRecord.name" + idOffSetStr);
@@ -162,7 +162,7 @@ public class BPartnerRecordsUtil
 	private static void setCreatedByAndWhen(final Object model, final UserId adUserId)
 	{
 		InterfaceWrapperHelper.setValue(model, InterfaceWrapperHelper.COLUMNNAME_CreatedBy, adUserId.getRepoId());
-		InterfaceWrapperHelper.setValue(model, InterfaceWrapperHelper.COLUMNNAME_Created, SystemTime.asTimestamp());
+		InterfaceWrapperHelper.setValue(model, InterfaceWrapperHelper.COLUMNNAME_Created, de.metas.common.util.time.SystemTime.asTimestamp());
 	}
 
 	/** Set time source to one static value so that we know which created/updated timestamps to expect in our created records */
@@ -173,7 +173,7 @@ public class BPartnerRecordsUtil
 
 	public static void resetTimeSource()
 	{
-		SystemTime.resetTimeSource();
+		de.metas.common.util.time.SystemTime.resetTimeSource();
 	}
 
 }

@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -119,10 +120,10 @@ public class GridTabVO implements Evaluatee, Serializable
 
 		try
 		{
-			vo.AD_Tab_ID = rs.getInt("AD_Tab_ID");
-			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_AD_Tab_ID, String.valueOf(vo.AD_Tab_ID));
+			vo.adTabId = AdTabId.ofRepoId(rs.getInt("AD_Tab_ID"));
+			Env.setContext(vo.ctx, vo.WindowNo, vo.TabNo, GridTab.CTX_AD_Tab_ID, String.valueOf(vo.adTabId.getRepoId()));
 
-			vo.templateTabId = rs.getInt(I_AD_Tab.COLUMNNAME_Template_Tab_ID);
+			vo.templateTabId = AdTabId.ofRepoIdOrNull(rs.getInt(I_AD_Tab.COLUMNNAME_Template_Tab_ID));
 
 			vo.internalName = rs.getString("InternalName");
 
@@ -179,7 +180,7 @@ public class GridTabVO implements Evaluatee, Serializable
 				{
 					vo.addLoadErrorMessage("TrlTab Not displayed (BaseTrl=" + Env.isBaseTranslation(vo.TableName) + ", MultiLingual=" + Env.isMultiLingualDocument(vo.ctx)+")"); // metas: 01934
 					logger.info("TrlTab Not displayed - AD_Tab_ID="
-							+ vo.AD_Tab_ID + "=" + vo.name + ", Table=" + vo.TableName
+							+ vo.adTabId + "=" + vo.name + ", Table=" + vo.TableName
 							+ ", BaseTrl=" + Env.isBaseTranslation(vo.TableName)
 							+ ", MultiLingual=" + Env.isMultiLingualDocument(vo.ctx));
 					return false;
@@ -190,7 +191,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			if (!showAdvanced && "Y".equals(rs.getString("IsAdvancedTab")))
 			{
 				vo.addLoadErrorMessage("AdvancedTab Not displayed"); // metas: 1934
-				logger.info("AdvancedTab Not displayed - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo.name);
+				logger.info("AdvancedTab Not displayed - AD_Tab_ID=" + vo.adTabId + " " + vo.name);
 				return false;
 			}
 
@@ -198,7 +199,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			if (!showAcct && "Y".equals(rs.getString("IsInfoTab")))
 			{
 				vo.addLoadErrorMessage("AcctTab Not displayed"); // metas: 1934
-				logger.debug("AcctTab Not displayed - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo.name);
+				logger.debug("AcctTab Not displayed - AD_Tab_ID=" + vo.adTabId + " " + vo.name);
 				return false;
 			}
 
@@ -235,14 +236,14 @@ public class GridTabVO implements Evaluatee, Serializable
 				if (!role.canView(vo.AccessLevel))	// No Access
 				{
 					vo.addLoadErrorMessage("No Role Access - AccessLevel=" + vo.AccessLevel + ", UserLevel=" + role.getUserLevel()); // 01934
-					logger.debug("No Role Access - AD_Tab_ID={} {}", vo.AD_Tab_ID, vo.name);
+					logger.debug("No Role Access - AD_Tab_ID={} {}", vo.adTabId, vo.name);
 					return false;
 				}	//	Used by MField.getDefault
 
 				if (!role.isTableAccess(vo.AD_Table_ID, Access.READ))
 				{
 					vo.addLoadErrorMessage("No Table Access (AD_Table_ID="+vo.AD_Table_ID+")"); // 01934
-					logger.debug("No Table Access - AD_Tab_ID={} {}", vo.AD_Tab_ID, vo.name);
+					logger.debug("No Table Access - AD_Tab_ID={} {}", vo.adTabId, vo.name);
 					return false;
 				}
 			}
@@ -373,7 +374,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		if (!MUserDefWin.apply(vo))
 		{
 			vo.addLoadErrorMessage("Hidden by UserDef"); // 01934
-			logger.debug("Hidden by UserDef - AD_Tab_ID=" + vo.AD_Tab_ID + " " + vo.name);
+			logger.debug("Hidden by UserDef - AD_Tab_ID=" + vo.adTabId + " " + vo.name);
 			return false;
 		}
 
@@ -434,11 +435,6 @@ public class GridTabVO implements Evaluatee, Serializable
 		return sql.toString();
 	}   // getSQL
 
-	/**************************************************************************
-	 *  Private constructor - must use Factory
-	 *  @param Ctx context
-	 *  @param windowNo window
-	 */
 	private GridTabVO (final Properties ctx, final int windowNo, final int tabNo, final boolean loadAllLanguages, final boolean applyRolePermissions)
 	{
 		this.ctx = ctx;
@@ -462,8 +458,8 @@ public class GridTabVO implements Evaluatee, Serializable
 	private final boolean applyRolePermissions;
 
 	/**	Tab	ID			*/
-	private int AD_Tab_ID;
-	private int templateTabId;
+	private AdTabId adTabId;
+	private AdTabId templateTabId;
 
 	@Getter
 	private String internalName;
@@ -561,7 +557,7 @@ public class GridTabVO implements Evaluatee, Serializable
 				.add("TableName", TableName)
 				.add("TabNo", TabNo)
 				.add("TabLevel", TabLevel)
-				.add("AD_Tab_ID", AD_Tab_ID)
+				.add("AD_Tab_ID", adTabId)
 				.toString();
 	}
 
@@ -579,7 +575,7 @@ public class GridTabVO implements Evaluatee, Serializable
 							.setTabNo(getTabNo())
 							.setAdWindowId(getAdWindowId())
 							.setAD_Tab_ID(getAD_Tab_ID())
-							.setTemplateTabId(getTemplateTabId())
+							.setTemplateTabId(AdTabId.toRepoId(getTemplateTabId()))
 							.setTabReadOnly(isReadOnly())
 							.setLoadAllLanguages(loadAllLanguages)
 							.setApplyRolePermissions(applyRolePermissions)
@@ -719,19 +715,13 @@ public class GridTabVO implements Evaluatee, Serializable
 		return Env.getContext (ctx, WindowNo, variableName, false);	// not just window
 	}	//	get_ValueAsString
 
-	/**
-	 * 	Clone
-	 * 	@param Ctx context
-	 * 	@param windowNo no
-	 *	@return MTabVO or null
-	 */
 	protected GridTabVO clone(final Properties ctx, final int windowNo)
 	{
 		final GridTabVO clone = new GridTabVO(ctx, windowNo, this.TabNo, this.loadAllLanguages, this.applyRolePermissions);
 		clone.adWindowId = adWindowId;
-		Env.setContext(ctx, windowNo, clone.TabNo, GridTab.CTX_AD_Tab_ID, String.valueOf(clone.AD_Tab_ID));
+		Env.setContext(ctx, windowNo, clone.TabNo, GridTab.CTX_AD_Tab_ID, clone.adTabId != null ? String.valueOf(clone.adTabId.getRepoId()) : null);
 		//
-		clone.AD_Tab_ID = AD_Tab_ID;
+		clone.adTabId = adTabId;
 		clone.name = name;
 		clone.nameTrls = nameTrls == null ? null : new HashMap<>(nameTrls);
 		Env.setContext(ctx, windowNo, clone.TabNo, GridTab.CTX_Name, clone.name);
@@ -786,7 +776,7 @@ public class GridTabVO implements Evaluatee, Serializable
 			final ImmutableList.Builder<GridFieldVO> cloneFields = ImmutableList.builder();
 			for (final GridFieldVO field : fields)
 			{
-				final GridFieldVO cloneField = field.clone(ctx, windowNo, TabNo, adWindowId, AD_Tab_ID, IsReadOnly);
+				final GridFieldVO cloneField = field.clone(ctx, windowNo, TabNo, adWindowId, AdTabId.toRepoId(adTabId), IsReadOnly);
 				if (cloneField == null)
 				{
 					continue;
@@ -925,12 +915,21 @@ public class GridTabVO implements Evaluatee, Serializable
 		return adWindowId;
 	}
 
-	public int getAD_Tab_ID()
+	public AdTabId getAdTabId()
 	{
-		return AD_Tab_ID;
+		return adTabId;
 	}
 
-	public int getTemplateTabId()
+	/**
+	 * @deprecated Please use {@link #getAD_Tab_ID()}
+	 */
+	@Deprecated
+	public int getAD_Tab_ID()
+	{
+		return AdTabId.toRepoId(getAdTabId());
+	}
+
+	public AdTabId getTemplateTabId()
 	{
 		return templateTabId;
 	}
@@ -962,8 +961,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	}
 
 	/**
-	 * Gets max records to be queried (overrides the settings from AD_Role).
-	 * @return
+	 * @return  max records to be queried (overrides the settings from AD_Role).
 	 */
 	public int getMaxQueryRecords()
 	{

@@ -1,23 +1,7 @@
 package de.metas.handlingunits.generichumodel;
 
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Properties;
-
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.X_M_Attribute;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContextFactory;
@@ -39,6 +23,24 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.X_M_Attribute;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.Properties;
+
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 
 /*
  * #%L
@@ -110,6 +112,7 @@ class HURepositoryTest
 	@Test
 	void getById()
 	{
+		// given
 		final Properties ctx = Env.getCtx();
 		final IMutableHUContext huContext = Services.get(IHUContextFactory.class).createMutableHUContext(ctx, ClientAndOrgId.ofClientAndOrg(Env.getAD_Client_ID(), Env.getAD_Org_ID(ctx)));
 
@@ -122,6 +125,8 @@ class HURepositoryTest
 
 		final I_M_HU_PI_Attribute huPIAttributerecord = huTestHelper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(attrRecord)
 				.setM_HU_PI(handlingUnitsDAO.getIncludedPI(huPIItemPallet)));
+
+		setupPackagingGTINs();
 
 		final I_M_HU lu = huTestHelper.createLU(
 				huContext,
@@ -137,16 +142,21 @@ class HURepositoryTest
 		huAttrRecord.setM_HU_PI_Attribute_ID(huPIAttributerecord.getM_HU_PI_Attribute_ID());
 		saveRecord(huAttrRecord);
 
-		// invoke the method under test
+		// when
 		final HU result = huRepository.getById(HuId.ofRepoId(lu.getM_HU_ID()));
 
+		// then
 		assertThat(result.getProductQtysInStockUOM()).hasSize(1);
 		assertThat(result.getProductQtysInStockUOM().get(productId).toBigDecimal()).isEqualByComparingTo("49");
 		assertThat(result.getAttributes().getValueAsString(HUAttributeConstants.ATTR_SSCC18_Value)).isEqualTo(sscc18String);
 
+		assertThat(result.getPackagingGTINs()).containsExactly(
+				entry(BPartnerId.ofRepoId(10), "LU-GTIN1"),
+				entry(BPartnerId.ofRepoId(20), "LU-GTIN2"));
+
 		assertThat(result.getChildHUs())
 				.hasSize(10)
-				.extracting(hu -> hu.getProductQtysInStockUOM().get(productId))
+				.extracting(childHU -> childHU.getProductQtysInStockUOM().get(productId))
 				.containsOnly(
 						new Quantity(new BigDecimal("5"), uomRecord),
 						new Quantity(new BigDecimal("5"), uomRecord),
@@ -158,5 +168,30 @@ class HURepositoryTest
 						new Quantity(new BigDecimal("5"), uomRecord),
 						new Quantity(new BigDecimal("5"), uomRecord),
 						new Quantity(new BigDecimal("4"), uomRecord));
+
+		assertThat(result.getChildHUs()).allSatisfy(childHU -> {
+			assertThat(childHU.getPackagingGTINs()).containsExactly(entry(BPartnerId.ofRepoId(10), "TU-GTIN1"));
+		});
+	}
+
+	private void setupPackagingGTINs()
+	{
+		final I_C_BPartner_Product bPartnerProductLURecord1 = newInstance(I_C_BPartner_Product.class);
+		bPartnerProductLURecord1.setM_Product_ID(huTestHelper.pmPalet.getM_Product_ID());
+		bPartnerProductLURecord1.setC_BPartner_ID(10);
+		bPartnerProductLURecord1.setGTIN("LU-GTIN1");
+		saveRecord(bPartnerProductLURecord1);
+
+		final I_C_BPartner_Product bPartnerProductLURecord2 = newInstance(I_C_BPartner_Product.class);
+		bPartnerProductLURecord2.setM_Product_ID(huTestHelper.pmPalet.getM_Product_ID());
+		bPartnerProductLURecord2.setC_BPartner_ID(20);
+		bPartnerProductLURecord2.setGTIN("LU-GTIN2");
+		saveRecord(bPartnerProductLURecord2);
+
+		final I_C_BPartner_Product bPartnerProductTURecord1 = newInstance(I_C_BPartner_Product.class);
+		bPartnerProductTURecord1.setM_Product_ID(huTestHelper.pmIFCO.getM_Product_ID());
+		bPartnerProductTURecord1.setC_BPartner_ID(10);
+		bPartnerProductTURecord1.setGTIN("TU-GTIN1");
+		saveRecord(bPartnerProductTURecord1);
 	}
 }

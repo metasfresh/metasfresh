@@ -30,8 +30,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.AdArchive;
@@ -39,20 +38,22 @@ import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveEventManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.function.Function;
 import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class ArchiveDAO implements IArchiveDAO
 {
@@ -65,7 +66,7 @@ public class ArchiveDAO implements IArchiveDAO
 	public List<I_AD_Archive> retrieveArchives(final Properties ctx, final String whereClause)
 	{
 		final StringBuilder wc = new StringBuilder();
-		final List<Object> sqlParams = new ArrayList<Object>();
+		final List<Object> sqlParams = new ArrayList<>();
 
 		wc.append(I_AD_Archive.COLUMNNAME_AD_Client_ID).append("=?");
 		sqlParams.add(Env.getAD_Client_ID(ctx));
@@ -82,39 +83,39 @@ public class ArchiveDAO implements IArchiveDAO
 	}
 
 	@Override
-	public List<I_AD_Archive> retrieveLastArchives(final Properties ctx, final ITableRecordReference recordRef, final int limit)
+	public List<I_AD_Archive> retrieveLastArchives(
+			@NonNull final Properties ctx,
+			@NonNull final TableRecordReference recordRef,
+			@NonNull final QueryLimit limit)
 	{
 		return retrieveArchivesQuery(ctx, recordRef)
-				//
-				.orderBy()
-				.addColumn(I_AD_Archive.COLUMN_Created, Direction.Descending, Nulls.Last)
-				.endOrderBy()
-				//
+				.orderByDescending(I_AD_Archive.COLUMNNAME_Created)
 				.setLimit(limit)
-				//
 				.create()
 				.list(I_AD_Archive.class);
 	}
 
 	@Override
-	public I_AD_Archive retrieveArchiveOrNull(final Properties ctx, final ITableRecordReference recordRef, final int archiveId)
+	@Nullable
+	public I_AD_Archive retrieveArchiveOrNull(final TableRecordReference recordRef, final ArchiveId archiveId)
 	{
-		return retrieveArchivesQuery(ctx, recordRef)
-				.addEqualsFilter(I_AD_Archive.COLUMN_AD_Archive_ID, archiveId)
+		return retrieveArchivesQuery(Env.getCtx(), recordRef)
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Archive_ID, archiveId)
 				.create()
 				.firstOnly(I_AD_Archive.class);
 	}
 
-	private IQueryBuilder<I_AD_Archive> retrieveArchivesQuery(final Properties ctx, final ITableRecordReference recordRef)
+	private IQueryBuilder<I_AD_Archive> retrieveArchivesQuery(final Properties ctx, final TableRecordReference recordRef)
 	{
 		return queryBL
 				.createQueryBuilder(I_AD_Archive.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Archive.COLUMN_AD_Table_ID, recordRef.getAD_Table_ID())
-				.addEqualsFilter(I_AD_Archive.COLUMN_Record_ID, recordRef.getRecord_ID());
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_AD_Archive.COLUMNNAME_Record_ID, recordRef.getRecord_ID());
 	}
 
 	@Override
+	@Nullable
 	public <T> T retrieveReferencedModel(final I_AD_Archive archive, final Class<T> modelClass)
 	{
 		// TODO: use org.adempiere.ad.dao.cache.impl.TableRecordCacheLocal<ParentModelType>
@@ -139,14 +140,7 @@ public class ArchiveDAO implements IArchiveDAO
 		final Properties ctx = InterfaceWrapperHelper.getCtx(archive);
 		final String trxName = InterfaceWrapperHelper.getTrxName(archive);
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableId);
-		final T model = InterfaceWrapperHelper.create(ctx, tableName, recordId, modelClass, trxName);
-		return model;
-	}
-
-	@Override
-	public <T extends I_AD_Archive> T retrievePDFArchiveForModel(final Object model, final Class<T> archiveClass)
-	{
-		return null; // nothing at this level
+		return InterfaceWrapperHelper.create(ctx, tableName, recordId, modelClass, trxName);
 	}
 
 	@Override
@@ -163,7 +157,7 @@ public class ArchiveDAO implements IArchiveDAO
 
 		return queryBuilder.create()
 				.iterateAndStream()
-				.map(log -> retrieveLastArchives(Env.getCtx(), TableRecordReference.ofReferenced(log), 1).stream().findFirst())
+				.map(log -> retrieveLastArchives(Env.getCtx(), TableRecordReference.ofReferenced(log), QueryLimit.ONE).stream().findFirst())
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.map(arch -> AdArchive.builder().id(ArchiveId.ofRepoId(arch.getAD_Archive_ID())).archiveData(archiveBL.getBinaryData(arch)).build());
@@ -176,4 +170,17 @@ public class ArchiveDAO implements IArchiveDAO
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_AD_Archive.COLUMN_AD_Archive_ID, ids).create().iterateAndStream().filter(Objects::nonNull).forEach(archive -> archiveEventManager.firePdfUpdate(archive, userId));
 	}
+
+	@Override
+	public <T extends I_AD_Archive> T retrieveArchive(@NonNull final ArchiveId archiveId, @NonNull final Class<T> modelClass)
+	{
+		final T archive = loadOutOfTrx(archiveId, modelClass);
+
+		if (archive == null)
+		{
+			throw new AdempiereException("@NotFound@ @AD_Archive_ID@: " + archiveId);
+		}
+		return archive;
+	}
+
 }

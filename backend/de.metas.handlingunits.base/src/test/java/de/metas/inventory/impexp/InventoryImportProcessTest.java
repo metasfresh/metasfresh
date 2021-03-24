@@ -1,6 +1,7 @@
 package de.metas.inventory.impexp;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
@@ -8,11 +9,11 @@ import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.impexp.format.ImportTableDescriptorRepository;
 import de.metas.impexp.processing.DBFunctionsRepository;
+import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.impexp.InventoryImportProcess.InventoryGroupKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -152,9 +153,9 @@ public class InventoryImportProcessTest
 			final I_I_Inventory importRecord = newInstance(I_I_Inventory.class);
 			importRecord.setM_Product_ID(productId.getRepoId());
 
-			final Timestamp bestBeforeDate = SystemTime.asTimestamp();
+			final Timestamp bestBeforeDate = de.metas.common.util.time.SystemTime.asTimestamp();
 			final Timestamp dateReceived = SystemTime.asTimestamp();
-			final ZonedDateTime date = SystemTime.asZonedDateTime();
+			final ZonedDateTime date = de.metas.common.util.time.SystemTime.asZonedDateTime();
 			importRecord.setHU_BestBeforeDate(bestBeforeDate);
 			importRecord.setLot("1234");
 			importRecord.setTE("te1111");
@@ -191,8 +192,8 @@ public class InventoryImportProcessTest
 			final I_I_Inventory importRecord = newInstance(I_I_Inventory.class);
 			importRecord.setM_Product_ID(productId.getRepoId());
 
-			final ZonedDateTime bestBeforeDate = SystemTime.asZonedDateTime();
-			final ZonedDateTime dateReceived = SystemTime.asZonedDateTime();
+			final ZonedDateTime bestBeforeDate = de.metas.common.util.time.SystemTime.asZonedDateTime();
+			final ZonedDateTime dateReceived = de.metas.common.util.time.SystemTime.asZonedDateTime();
 			importRecord.setHU_BestBeforeDate(TimeUtil.asTimestamp(bestBeforeDate));
 			importRecord.setLot("1234");
 			importRecord.setTE("TE-OK");
@@ -257,7 +258,7 @@ public class InventoryImportProcessTest
 					.ctx(Env.getCtx())
 					.name("Inventory DocType for " + orgId)
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-					.docSubType(null)
+					.docSubType(InventoryDocSubType.AggregatedHUInventory.getCode())
 					.adOrgId(orgId.getRepoId())
 					.build());
 		}

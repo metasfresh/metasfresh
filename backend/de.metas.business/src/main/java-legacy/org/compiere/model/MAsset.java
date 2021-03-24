@@ -22,6 +22,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -149,8 +151,10 @@ public class MAsset extends X_A_Asset
 		//	Line
 		MProduct product = shipLine.getProduct();
 		setM_Product_ID(product.getM_Product_ID());
-		
-		final MProductCategory pc = MProductCategory.get(getCtx(), product.getM_Product_Category_ID());
+
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(product.getM_Product_Category_ID());
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final I_M_Product_Category pc = productDAO.getProductCategoryById(productCategoryId);
 		setA_Asset_Group_ID(pc.getA_Asset_Group_ID());
 		//	Guarantee & Version
 		//setGuaranteeDate(TimeUtil.addDays(shipment.getMovementDate(), product.getGuaranteeDays())); // metas-tsa: M_Product.GuaranteeDays is not a field anymore 

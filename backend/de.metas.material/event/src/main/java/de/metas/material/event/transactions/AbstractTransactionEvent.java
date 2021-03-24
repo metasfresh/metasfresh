@@ -1,6 +1,7 @@
 package de.metas.material.event.transactions;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.inout.InOutAndLineId;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
@@ -68,12 +69,13 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 	private final boolean directMovementWarehouse;
 
 	private final int ppOrderId;
-
 	private final int ppOrderLineId;
 
 	private final int ddOrderId;
-
 	private final int ddOrderLineId;
+
+	private final int inventoryId;
+	private final int inventoryLineId;
 
 	private final Collection<HUDescriptor> huOnHandQtyChangeDescriptors;
 
@@ -89,6 +91,8 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 			final int ppOrderLineId,
 			final int ddOrderId,
 			final int ddOrderLineId,
+			final int inventoryId,
+			final int inventoryLineId,
 			final int transactionId,
 			final boolean directMovementWarehouse,
 			final Collection<HUDescriptor> huOnHandQtyChangeDescriptors)
@@ -107,11 +111,15 @@ public abstract class AbstractTransactionEvent implements MaterialEvent
 		this.receiptId = receiptId;
 		this.shipmentId = shipmentId;
 
-		this.ddOrderLineId = ddOrderLineId;
 		this.ddOrderId = ddOrderId;
+		this.ddOrderLineId = ddOrderLineId;
 
-		this.ppOrderLineId = ppOrderLineId;
 		this.ppOrderId = ppOrderId;
+		this.ppOrderLineId = ppOrderLineId;
+
+		// note: they are not yet persisted
+		this.inventoryId = inventoryId;
+		this.inventoryLineId = inventoryLineId;
 
 		this.directMovementWarehouse = directMovementWarehouse;
 	}

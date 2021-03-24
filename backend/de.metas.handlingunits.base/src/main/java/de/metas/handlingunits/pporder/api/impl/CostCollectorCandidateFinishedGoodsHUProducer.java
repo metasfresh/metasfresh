@@ -9,7 +9,7 @@ import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -79,9 +79,9 @@ final class CostCollectorCandidateFinishedGoodsHUProducer extends AbstractPPOrde
 	}
 
 	@Override
-	protected void setAssignedHUs(final Collection<I_M_HU> hus)
+	protected void addAssignedHUs(final Collection<I_M_HU> hus)
 	{
 		final I_PP_Order ppOrder = getPP_Order();
-		huPPOrderBL.setAssignedHandlingUnits(ppOrder, hus);
+		huPPOrderBL.addAssignedHandlingUnits(ppOrder, hus);
 	}
 }

@@ -1,62 +1,55 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for RV_HU_Quantities
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_RV_HU_Quantities 
 {
 
-    /** TableName=RV_HU_Quantities */
-    public static final String Table_Name = "RV_HU_Quantities";
+	String Table_Name = "RV_HU_Quantities";
 
-    /** AD_Table_ID=540598 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540598 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set ASI Key.
@@ -65,7 +58,7 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setASIKey (java.lang.String ASIKey);
+	void setASIKey (@Nullable java.lang.String ASIKey);
 
 	/**
 	 * Get ASI Key.
@@ -74,12 +67,10 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getASIKey();
+	@Nullable java.lang.String getASIKey();
 
-    /** Column definition for ASIKey */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_ASIKey = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "ASIKey", null);
-    /** Column name ASIKey */
-    public static final String COLUMNNAME_ASIKey = "ASIKey";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_ASIKey = new ModelColumn<>(I_RV_HU_Quantities.class, "ASIKey", null);
+	String COLUMNNAME_ASIKey = "ASIKey";
 
 	/**
 	 * Set Attributwerte.
@@ -88,7 +79,7 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setASIKeyName (java.lang.String ASIKeyName);
+	void setASIKeyName (@Nullable java.lang.String ASIKeyName);
 
 	/**
 	 * Get Attributwerte.
@@ -97,111 +88,101 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getASIKeyName();
+	@Nullable java.lang.String getASIKeyName();
 
-    /** Column definition for ASIKeyName */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_ASIKeyName = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "ASIKeyName", null);
-    /** Column name ASIKeyName */
-    public static final String COLUMNNAME_ASIKeyName = "ASIKeyName";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_ASIKeyName = new ModelColumn<>(I_RV_HU_Quantities.class, "ASIKeyName", null);
+	String COLUMNNAME_ASIKeyName = "ASIKeyName";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	int getC_UOM_ID();
 
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	@Nullable java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_Created = new ModelColumn<>(I_RV_HU_Quantities.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_IsActive = new ModelColumn<>(I_RV_HU_Quantities.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Wird Eingekauft.
+	 * Set Eingekauft.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPurchased (boolean IsPurchased);
+	void setIsPurchased (boolean IsPurchased);
 
 	/**
-	 * Get Wird Eingekauft.
+	 * Get Eingekauft.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isPurchased();
+	boolean isPurchased();
 
-    /** Column definition for IsPurchased */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_IsPurchased = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "IsPurchased", null);
-    /** Column name IsPurchased */
-    public static final String COLUMNNAME_IsPurchased = "IsPurchased";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_IsPurchased = new ModelColumn<>(I_RV_HU_Quantities.class, "IsPurchased", null);
+	String COLUMNNAME_IsPurchased = "IsPurchased";
 
 	/**
 	 * Set Verkauft.
@@ -211,7 +192,7 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSold (boolean IsSold);
+	void setIsSold (boolean IsSold);
 
 	/**
 	 * Get Verkauft.
@@ -221,12 +202,10 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isSold();
+	boolean isSold();
 
-    /** Column definition for IsSold */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_IsSold = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "IsSold", null);
-    /** Column name IsSold */
-    public static final String COLUMNNAME_IsSold = "IsSold";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_IsSold = new ModelColumn<>(I_RV_HU_Quantities.class, "IsSold", null);
+	String COLUMNNAME_IsSold = "IsSold";
 
 	/**
 	 * Set Packvorschrift-Produkt Zuordnung.
@@ -235,7 +214,7 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_PI_Item_Product (java.lang.String M_HU_PI_Item_Product);
+	void setM_HU_PI_Item_Product (@Nullable java.lang.String M_HU_PI_Item_Product);
 
 	/**
 	 * Get Packvorschrift-Produkt Zuordnung.
@@ -244,58 +223,54 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getM_HU_PI_Item_Product();
+	@Nullable java.lang.String getM_HU_PI_Item_Product();
 
-    /** Column definition for M_HU_PI_Item_Product */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_M_HU_PI_Item_Product = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "M_HU_PI_Item_Product", null);
-    /** Column name M_HU_PI_Item_Product */
-    public static final String COLUMNNAME_M_HU_PI_Item_Product = "M_HU_PI_Item_Product";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_M_HU_PI_Item_Product = new ModelColumn<>(I_RV_HU_Quantities.class, "M_HU_PI_Item_Product", null);
+	String COLUMNNAME_M_HU_PI_Item_Product = "M_HU_PI_Item_Product";
 
 	/**
-	 * Set Produkt Kategorie.
-	 * Kategorie eines Produktes
+	 * Set Product Category.
+	 * Category of a Product
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_Category_ID (int M_Product_Category_ID);
+	void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
-	 * Get Produkt Kategorie.
-	 * Kategorie eines Produktes
+	 * Get Product Category.
+	 * Category of a Product
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_Category_ID();
+	int getM_Product_Category_ID();
 
-    /** Column name M_Product_Category_ID */
-    public static final String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
+	String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Produktname.
@@ -305,7 +280,7 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProductName (java.lang.String ProductName);
+	void setProductName (@Nullable java.lang.String ProductName);
 
 	/**
 	 * Get Produktname.
@@ -315,39 +290,35 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getProductName();
+	@Nullable java.lang.String getProductName();
 
-    /** Column definition for ProductName */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_ProductName = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "ProductName", null);
-    /** Column name ProductName */
-    public static final String COLUMNNAME_ProductName = "ProductName";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_ProductName = new ModelColumn<>(I_RV_HU_Quantities.class, "ProductName", null);
+	String COLUMNNAME_ProductName = "ProductName";
 
 	/**
-	 * Set Produktschlüssel.
-	 * Produkt-Identifikator;
- "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
+	 * Set Product Value.
+	 * Product identifier;
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProductValue (java.lang.String ProductValue);
+	void setProductValue (@Nullable java.lang.String ProductValue);
 
 	/**
-	 * Get Produktschlüssel.
-	 * Produkt-Identifikator;
- "val-<Suchschlüssel>", "ext-<Externe Id>" oder interne M_Product_ID
+	 * Get Product Value.
+	 * Product identifier;
+ "val-<search key>", "ext-<external id>" or internal M_Product_ID
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getProductValue();
+	@Nullable java.lang.String getProductValue();
 
-    /** Column definition for ProductValue */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_ProductValue = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "ProductValue", null);
-    /** Column name ProductValue */
-    public static final String COLUMNNAME_ProductValue = "ProductValue";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_ProductValue = new ModelColumn<>(I_RV_HU_Quantities.class, "ProductValue", null);
+	String COLUMNNAME_ProductValue = "ProductValue";
 
 	/**
 	 * Set Available Quantity.
@@ -357,7 +328,7 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyAvailable (java.math.BigDecimal QtyAvailable);
+	void setQtyAvailable (@Nullable BigDecimal QtyAvailable);
 
 	/**
 	 * Get Available Quantity.
@@ -367,12 +338,10 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyAvailable();
+	BigDecimal getQtyAvailable();
 
-    /** Column definition for QtyAvailable */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_QtyAvailable = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "QtyAvailable", null);
-    /** Column name QtyAvailable */
-    public static final String COLUMNNAME_QtyAvailable = "QtyAvailable";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_QtyAvailable = new ModelColumn<>(I_RV_HU_Quantities.class, "QtyAvailable", null);
+	String COLUMNNAME_QtyAvailable = "QtyAvailable";
 
 	/**
 	 * Set Bestand.
@@ -382,7 +351,7 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyOnHand (java.math.BigDecimal QtyOnHand);
+	void setQtyOnHand (@Nullable BigDecimal QtyOnHand);
 
 	/**
 	 * Get Bestand.
@@ -392,88 +361,79 @@ public interface I_RV_HU_Quantities
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyOnHand();
+	BigDecimal getQtyOnHand();
 
-    /** Column definition for QtyOnHand */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_QtyOnHand = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "QtyOnHand", null);
-    /** Column name QtyOnHand */
-    public static final String COLUMNNAME_QtyOnHand = "QtyOnHand";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_QtyOnHand = new ModelColumn<>(I_RV_HU_Quantities.class, "QtyOnHand", null);
+	String COLUMNNAME_QtyOnHand = "QtyOnHand";
 
 	/**
-	 * Set Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
+	 * Set Qty Ordered.
+	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
+	void setQtyOrdered (@Nullable BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
+	 * Get Qty Ordered.
+	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyOrdered();
+	BigDecimal getQtyOrdered();
 
-    /** Column definition for QtyOrdered */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_QtyOrdered = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "QtyOrdered", null);
-    /** Column name QtyOrdered */
-    public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_QtyOrdered = new ModelColumn<>(I_RV_HU_Quantities.class, "QtyOrdered", null);
+	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set Offen.
-	 * Offene Menge
+	 * Set Open Qty.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyReserved (java.math.BigDecimal QtyReserved);
+	void setQtyReserved (@Nullable BigDecimal QtyReserved);
 
 	/**
-	 * Get Offen.
-	 * Offene Menge
+	 * Get Open Qty.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyReserved();
+	BigDecimal getQtyReserved();
 
-    /** Column definition for QtyReserved */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_QtyReserved = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "QtyReserved", null);
-    /** Column name QtyReserved */
-    public static final String COLUMNNAME_QtyReserved = "QtyReserved";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_QtyReserved = new ModelColumn<>(I_RV_HU_Quantities.class, "QtyReserved", null);
+	String COLUMNNAME_QtyReserved = "QtyReserved";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	@Nullable java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_RV_HU_Quantities, Object>(I_RV_HU_Quantities.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_RV_HU_Quantities, Object> COLUMN_Updated = new ModelColumn<>(I_RV_HU_Quantities.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -25,10 +25,14 @@ package org.eevolution.util;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
@@ -51,7 +55,7 @@ public class ProductBOMLineBuilder
 	private BigDecimal _qtyBOM;
 
 	// we need some issue method to avoid NPE when creating the lightweight PPOrdeRLine pojo;
-	private String _issueMethod = X_PP_Order_BOMLine.ISSUEMETHOD_Issue;
+	private BOMComponentIssueMethod _issueMethod = BOMComponentIssueMethod.Issue;
 
 	private BigDecimal _scrap;
 	private BigDecimal _qtyBatch;
@@ -82,12 +86,12 @@ public class ProductBOMLineBuilder
 	{
 		final I_PP_Product_BOMLine bomLine = InterfaceWrapperHelper.newInstance(I_PP_Product_BOMLine.class, getContext());
 		bomLine.setPP_Product_BOM(getPP_Product_BOM());
-		bomLine.setM_Product(getM_Product());
-		bomLine.setC_UOM(getC_UOM());
+		bomLine.setM_Product_ID(getProductId().getRepoId());
+		bomLine.setC_UOM_ID(getUomId().getRepoId());
 
 		bomLine.setIsCritical(false);
 		bomLine.setComponentType(_componentType != null ? _componentType.getCode() : null);
-		bomLine.setIssueMethod(_issueMethod);
+		bomLine.setIssueMethod(BOMComponentIssueMethod.toCodeOrNull(_issueMethod));
 
 		bomLine.setIsQtyPercentage(_isQtyPercentage);
 		bomLine.setQtyBOM(_qtyBOM); // used when QtyPercentage=false
@@ -106,10 +110,10 @@ public class ProductBOMLineBuilder
 		return this;
 	}
 
-	private I_M_Product getM_Product()
+	private ProductId getProductId()
 	{
 		Check.assumeNotNull(_product, "_product not null");
-		return _product;
+		return ProductId.ofRepoId(_product.getM_Product_ID());
 	}
 
 	public ProductBOMLineBuilder uom(final I_C_UOM uom)
@@ -118,25 +122,15 @@ public class ProductBOMLineBuilder
 		return this;
 	}
 
-	private I_C_UOM getC_UOM()
+	private UomId getUomId()
 	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
 		if (this._uom != null)
 		{
-			return this._uom;
+			return UomId.ofRepoId(this._uom.getC_UOM_ID());
 		}
 
-		I_C_UOM uom = null;
-
-		final I_M_Product product = getM_Product();
-		if (product != null)
-		{
-			uom = uomDAO.getById(product.getC_UOM_ID());
-		}
-
-		Check.assumeNotNull(uom, "uom not null");
-		return uom;
+		final IProductBL productBL = Services.get(IProductBL.class);
+		return productBL.getStockUOMId(getProductId());
 	}
 
 	public ProductBOMLineBuilder setIsQtyPercentage(final boolean isQtyPercentage)
@@ -213,12 +207,9 @@ public class ProductBOMLineBuilder
 	}
 
 	/**
-	 * The default is {@link X_PP_Product_BOMLine#ISSUEMETHOD_Issue}.
-	 *
-	 * @param issueMethod
-	 * @return
+	 * The default is {@link BOMComponentIssueMethod#Issue}.
 	 */
-	public ProductBOMLineBuilder setIssueMethod(final String issueMethod)
+	public ProductBOMLineBuilder setIssueMethod(final BOMComponentIssueMethod issueMethod)
 	{
 		this._issueMethod = issueMethod;
 		return this;

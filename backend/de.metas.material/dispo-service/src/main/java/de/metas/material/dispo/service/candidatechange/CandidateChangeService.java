@@ -1,22 +1,21 @@
 package de.metas.material.dispo.service.candidatechange;
 
-import java.util.Collection;
-import java.util.Map;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
+import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler.OnNewOrChangeAdvise;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.Map;
 
 /*
  * #%L
@@ -53,15 +52,22 @@ public class CandidateChangeService
 		logger.info("Handlers: {}", type2handler);
 	}
 
+	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
+	{
+		return onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
+	}
+
 	/**
 	 * Persists the given candidate and decides if further events shall be fired.
 	 */
-	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
+	public Candidate onCandidateNewOrChange(
+			@NonNull final Candidate candidate,
+			@NonNull final OnNewOrChangeAdvise advise)
 	{
 		candidate.validateNonStockCandidate();
 
 		final CandidateHandler candidateChangeHandler = getHandlerFor(candidate);
-		return candidateChangeHandler.onCandidateNewOrChange(candidate);
+		return candidateChangeHandler.onCandidateNewOrChange(candidate, advise);
 	}
 
 	public void onCandidateDelete(@NonNull final Candidate candidate)

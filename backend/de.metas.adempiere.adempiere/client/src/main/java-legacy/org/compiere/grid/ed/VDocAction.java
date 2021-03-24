@@ -16,33 +16,6 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-
-import org.adempiere.plaf.AdempierePLAF;
-import org.compiere.apps.ADialog;
-import org.compiere.apps.AEnv;
-import org.compiere.apps.ConfirmPanel;
-import org.compiere.model.GridTab;
-import org.compiere.swing.CComboBox;
-import org.compiere.swing.CDialog;
-import org.compiere.swing.CPanel;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.wf.MWFActivity;
-import org.slf4j.Logger;
-
 import de.metas.adempiere.form.IClientUI;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocActionOptionsContext;
@@ -54,6 +27,28 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.util.Services;
+import de.metas.workflow.execution.WFProcessRepository;
+import org.adempiere.plaf.AdempierePLAF;
+import org.compiere.SpringContextHolder;
+import org.compiere.apps.ADialog;
+import org.compiere.apps.AEnv;
+import org.compiere.apps.ConfirmPanel;
+import org.compiere.model.GridTab;
+import org.compiere.swing.CComboBox;
+import org.compiere.swing.CDialog;
+import org.compiere.swing.CPanel;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Displays valid Document Action Options based on context
@@ -218,7 +213,8 @@ public class VDocAction extends CDialog
 		/**
 		 * Check Existence of Workflow Activities
 		 */
-		final String wfStatus = MWFActivity.getActiveInfo(Env.getCtx(), m_AD_Table_ID, Record_ID);
+		final WFProcessRepository wfProcessRepository = SpringContextHolder.instance.getBean(WFProcessRepository.class);
+		final String wfStatus = wfProcessRepository.getActiveInfo(m_AD_Table_ID, Record_ID);
 		if (wfStatus != null)
 		{
 			ADialog.error(m_WindowNo, this, "WFActiveForRecord", wfStatus);
@@ -228,7 +224,7 @@ public class VDocAction extends CDialog
 		// Status Change
 		if (!checkStatus(m_mTab.getTableName(), Record_ID, DocStatus))
 		{
-			ADialog.error(m_WindowNo, this, "DocumentStatusChanged");
+			ADialog.error(m_WindowNo, this, "DocumentStatusChangedError");
 			return;
 		}
 

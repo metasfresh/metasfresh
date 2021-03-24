@@ -38,6 +38,8 @@ public class DataTypeInfo
 {
 	@NonNull
 	String javaCode;
+	boolean javaCodeFullyQualified;
+
 	@NonNull
 	Class<?> typeClass;
 	boolean primitiveType;
@@ -61,6 +63,7 @@ public class DataTypeInfo
 
 		final int displayType = columnInfo.getDisplayType();
 		final String javaCode;
+		final boolean isJavaCodeFullyQualified;
 		final boolean primitive;
 		NullableType nullableValueSetter = columnInfo.isMandatory() ? NullableType.NON_NULL : NullableType.NULLABLE;
 		NullableType nullableValueGetter = columnInfo.isMandatory() ? NullableType.NON_NULL : NullableType.NULLABLE;
@@ -69,6 +72,7 @@ public class DataTypeInfo
 		{
 			typeClass = boolean.class;
 			javaCode = "boolean";
+			isJavaCodeFullyQualified = false;
 			primitive = true;
 			nullableValueSetter = NullableType.DOES_NOT_APPLY;
 			nullableValueGetter = NullableType.DOES_NOT_APPLY;
@@ -78,6 +82,7 @@ public class DataTypeInfo
 		{
 			typeClass = int.class;
 			javaCode = "int";
+			isJavaCodeFullyQualified = false;
 			primitive = true;
 			nullableValueSetter = NullableType.DOES_NOT_APPLY;
 			nullableValueGetter = NullableType.DOES_NOT_APPLY;
@@ -87,6 +92,7 @@ public class DataTypeInfo
 		{
 			typeClass = BigDecimal.class;
 			javaCode = typeClass.getSimpleName();
+			isJavaCodeFullyQualified = false;
 			primitive = false;
 			nullableValueGetter = NullableType.NON_NULL; // getter never returns null
 			nullableValueObject = NullableType.DOES_NOT_APPLY;
@@ -96,17 +102,20 @@ public class DataTypeInfo
 		{
 			typeClass = byte[].class;
 			javaCode = "byte[]";
+			isJavaCodeFullyQualified = false;
 			primitive = true;
 			nullableValueObject = NullableType.DOES_NOT_APPLY;
 		}
 		else
 		{
 			javaCode = typeClass.getName(); // metas: always use FQ names
+			isJavaCodeFullyQualified = true;
 			primitive = false;
 		}
 
 		return DataTypeInfo.builder()
 				.javaCode(javaCode)
+				.javaCodeFullyQualified(isJavaCodeFullyQualified)
 				.typeClass(typeClass)
 				.primitiveType(primitive)
 				.displayType(displayType)

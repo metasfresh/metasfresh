@@ -81,8 +81,8 @@ import java.util.stream.Collectors;
 
 	private BPartnerId _bpartnerId = null;
 	private int _bpartnerLocationId = -1;
-	private I_M_HU_Item _parentItem = null;
-	private I_M_HU_PI_Item_Product _piip = null;
+	@Nullable private I_M_HU_Item _parentItem = null;
+	@Nullable private I_M_HU_PI_Item_Product _piip = null;
 	private LocatorId _locatorId = null;
 
 	private boolean _huPlanningReceiptOwnerPM = false; // DB default false
@@ -94,7 +94,7 @@ import java.util.stream.Collectors;
 	 */
 	private String _huStatus = X_M_HU.HUSTATUS_Planning;
 
-	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
+	@Nullable private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 
 	public HUBuilder(@NonNull final IHUContext huContext)
 	{
@@ -129,17 +129,19 @@ import java.util.stream.Collectors;
 	}
 
 	@Override
-	public IHUBuilder setM_HU_Item_Parent(final I_M_HU_Item parentItem)
+	public IHUBuilder setM_HU_Item_Parent(@Nullable final I_M_HU_Item parentItem)
 	{
 		_parentItem = parentItem;
 		return this;
 	}
 
+	@Nullable
 	protected I_M_HU_Item getM_HU_Item_Parent()
 	{
 		return _parentItem;
 	}
 
+	@Nullable
 	protected I_M_HU_PI_Item_Product getM_HU_PI_Item_Product()
 	{
 		return _piip;
@@ -200,6 +202,7 @@ import java.util.stream.Collectors;
 		return this;
 	}
 
+	@Nullable
 	protected I_M_HU_LUTU_Configuration getM_HU_LUTU_Configuration()
 	{
 		return _lutuConfiguration;
@@ -218,6 +221,7 @@ import java.util.stream.Collectors;
 		return _huPlanningReceiptOwnerPM;
 	}
 
+	@Nullable
 	private Map<AttributeId, Object> getInitialAttributeValueDefaults()
 	{
 		return getHUContext().getProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue);
@@ -252,10 +256,6 @@ import java.util.stream.Collectors;
 
 	/**
 	 * Note that currently this method does not really do work recursive since we registered {@link HUBuilder.HUItemNodeIncludedHUBuilderNOOP} do get the downstream nodes for HU items.
-	 *
-	 * @param huPIVersion
-	 * @param parentItem
-	 * @return
 	 */
 	private I_M_HU createInstanceRecursively(@NonNull final I_M_HU_PI_Version huPIVersion, @Nullable final I_M_HU_Item parentItem)
 	{
@@ -323,8 +323,6 @@ import java.util.stream.Collectors;
 	 *
 	 * It will use {@link #getM_HU_Item_Parent()} as it's parent.
 	 *
-	 * @param huPIVersion
-	 * @return
 	 * @see #createHUInstance(I_M_HU_PI_Version, I_M_HU_Item)
 	 */
 	private I_M_HU createHUInstance(final I_M_HU_PI_Version huPIVersion)
@@ -342,7 +340,7 @@ import java.util.stream.Collectors;
 	 * @param parentItem parent HU Item to link on
 	 * @return created {@link I_M_HU}.
 	 */
-	private I_M_HU createHUInstance(final I_M_HU_PI_Version huPIVersion, final I_M_HU_Item parentItem)
+	private I_M_HU createHUInstance(final I_M_HU_PI_Version huPIVersion, @Nullable final I_M_HU_Item parentItem)
 	{
 		final IHUContext huContext = getHUContext();
 
@@ -416,7 +414,7 @@ import java.util.stream.Collectors;
 
 		//
 		// 07970: Set M_HU.M_HU_PI_Item_Product_ID
-		final I_M_HU_PI_Item_Product piip = getM_HU_PI_Item_ProductOrNull(lutuConfig, parentHU, hu);
+		final I_M_HU_PI_Item_Product piip = getM_HU_PI_Item_ProductOrNull(lutuConfig, parentHU);
 		hu.setM_HU_PI_Item_Product_ID(piip != null ? piip.getM_HU_PI_Item_Product_ID() : -1);
 
 		//
@@ -439,11 +437,10 @@ import java.util.stream.Collectors;
 	}
 
 	/**
-	 * @param parentHU
-	 * @param hu
 	 * @return Handling Unit PI Item Product or null, depending on the HU type and what's configured
 	 */
-	private I_M_HU_PI_Item_Product getM_HU_PI_Item_ProductOrNull(final I_M_HU_LUTU_Configuration lutuConfig, final I_M_HU parentHU, final I_M_HU hu)
+	@Nullable
+	private I_M_HU_PI_Item_Product getM_HU_PI_Item_ProductOrNull(@Nullable final I_M_HU_LUTU_Configuration lutuConfig, @Nullable final I_M_HU parentHU)
 	{
 		I_M_HU_PI_Item_Product piip = getM_HU_PI_Item_Product();
 		if (piip != null)

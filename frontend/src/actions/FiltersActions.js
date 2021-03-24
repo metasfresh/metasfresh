@@ -41,12 +41,12 @@ export function updateNotValidFields({ filterId, data }) {
 }
 
 /**
- * @method updateActiveFilter
- * @summary Updates the activeFilter in the store for the corresponding entity id
+ * @method updateActiveFilters
+ * @summary Updates the activeFilters in the store for the corresponding entity id
  */
-export function updateActiveFilter({ filterId, data }) {
+export function updateActiveFilters({ filterId, data }) {
   return {
-    type: types.UPDATE_ACTIVE_FILTER,
+    type: types.UPDATE_ACTIVE_FILTERS,
     payload: { id: filterId, data },
   };
 }
@@ -55,10 +55,10 @@ export function updateActiveFilter({ filterId, data }) {
  * @method updateInlineFilter
  * @summary Updates the InlineFilter value in the store for the corresponding entity id
  */
-export function updateInlineFilter({ filterId, data }) {
+export function updateInlineFilter({ filterId, parentFilterId, data }) {
   return {
     type: types.UPDATE_INLINE_FILTER,
-    payload: { filterId, data },
+    payload: { filterId, parentFilterId, data },
   };
 }
 

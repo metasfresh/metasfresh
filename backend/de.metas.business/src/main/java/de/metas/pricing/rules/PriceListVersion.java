@@ -3,6 +3,7 @@ package de.metas.pricing.rules;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import de.metas.common.util.time.SystemTime;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
@@ -28,7 +29,6 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /**

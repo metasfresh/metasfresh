@@ -1,13 +1,17 @@
 package de.metas.request.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.common.util.time.SystemTime;
+import de.metas.inout.api.impl.QualityNoteDAO;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.request.api.IRequestBL;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_R_Request;
 import org.compiere.model.I_R_RequestType;
@@ -17,15 +21,12 @@ import org.eevolution.model.I_DD_OrderLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.adempiere.model.I_AD_User;
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.inout.api.impl.QualityNoteDAO;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.request.api.IRequestBL;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -71,8 +72,9 @@ public class RequestBLTest
 		final I_R_RequestType soRequestType = createRequestType("RequestType");
 		createQualityNoteAttribute();
 
-		final I_R_Request request = requestBL.createRequestFromInOutLine(line);
+		final I_R_Request request = requestBL.createRequestFromInOutLineWithQualityIssues(line);
 
+		assertThat(request).isNotNull();
 		assertThat(request.getAD_Org_ID()).isEqualTo(line.getAD_Org_ID());
 		assertThat(request.getM_Product_ID()).isEqualTo(line.getM_Product_ID());
 		assertThat(request.getR_RequestType_ID()).isEqualTo(soRequestType.getR_RequestType_ID());
@@ -81,7 +83,7 @@ public class RequestBLTest
 		assertThat(request.getC_BPartner_ID()).isEqualTo(inout.getC_BPartner_ID());
 		assertThat(request.getAD_User_ID()).isEqualTo(inout.getAD_User_ID());
 		assertThat(request.getDateDelivered()).isEqualTo(inout.getMovementDate());
-		assertThat(request.getSummary()).isEqualTo(RequestBL.MSG_R_Request_From_InOut_Summary);
+		assertThat(request.getSummary()).isEqualTo(RequestBL.MSG_R_Request_From_InOut_Summary.toAD_Message());
 		assertThat(request.getConfidentialType()).isEqualTo(X_R_Request.CONFIDENTIALTYPE_Internal);
 		assertThat(request.getM_QualityNote_ID()).isLessThanOrEqualTo(0);
 		assertThat(request.getPerformanceType()).isNullOrEmpty();
@@ -115,6 +117,29 @@ public class RequestBLTest
 
 	}
 
+	@Test
+	public void createRequestFromOrder()
+	{
+		final I_C_Order order = createOrder();
+		final I_R_RequestType soRequestType = createRequestType("RequestType");
+
+		final I_R_Request request = requestBL.createRequestFromOrder(order);
+
+		assertThat(request.getAD_Org_ID()).isEqualTo(order.getAD_Org_ID());
+		assertThat(request.getM_Product_ID()).isEqualTo(-1);
+		assertThat(request.getR_RequestType_ID()).isEqualTo(soRequestType.getR_RequestType_ID());
+		assertThat(request.getAD_Table_ID()).isEqualTo(getTableId(I_C_Order.class));
+		assertThat(request.getRecord_ID()).isEqualTo(order.getC_Order_ID());
+		assertThat(request.getC_BPartner_ID()).isEqualTo(order.getC_BPartner_ID());
+		assertThat(request.getAD_User_ID()).isEqualTo(order.getAD_User_ID());
+		assertThat(request.getDateDelivered()).isEqualTo(order.getDatePromised());
+		assertThat(request.getSummary()).isEqualTo(" ");
+		assertThat(request.getConfidentialType()).isEqualTo(X_R_Request.CONFIDENTIALTYPE_Internal);
+		assertThat(request.getM_QualityNote_ID()).isLessThanOrEqualTo(-1);
+		assertThat(request.getPerformanceType()).isNullOrEmpty();
+
+	}
+
 	private I_DD_Order createDDOrder()
 	{
 		final I_DD_Order ddOrder = newInstance(I_DD_Order.class);
@@ -125,10 +150,31 @@ public class RequestBLTest
 
 		ddOrder.setAD_User(createUser("User 2"));
 
-		ddOrder.setDatePromised(SystemTime.asDayTimestamp());
+		ddOrder.setDatePromised(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		save(ddOrder);
 		return ddOrder;
+	}
+
+	private I_C_Order createOrder()
+	{
+		final I_C_Order order = newInstance(I_C_Order.class);
+
+		order.setIsSOTrx(true);
+		order.setC_BPartner_ID(createPartner("Partner 3").getC_BPartner_ID());
+		order.setAD_User_ID(createUser("User 3").getAD_User_ID());
+		order.setDatePromised(de.metas.common.util.time.SystemTime.asDayTimestamp());
+		order.setC_DocType_ID(createDocType().getC_DocType_ID());
+		save(order);
+		return order;
+	}
+
+	private I_C_DocType createDocType()
+	{
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+
+		save(docType);
+		return docType;
 	}
 
 	private I_DD_OrderLine createDDOrderLine(final I_DD_Order ddOrder)
@@ -142,15 +188,15 @@ public class RequestBLTest
 		return line;
 	}
 
-	private I_M_Attribute createQualityNoteAttribute()
+	private void createQualityNoteAttribute()
 	{
 		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
 		attribute.setValue(QualityNoteDAO.QualityNoteAttribute.getCode());
 
 		save(attribute);
-		return attribute;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_R_RequestType createRequestType(final String name)
 	{
 		final I_R_RequestType requestType = newInstance(I_R_RequestType.class);
@@ -198,9 +244,9 @@ public class RequestBLTest
 		return inout;
 	}
 
-	private I_AD_User createUser(final String name)
+	private org.compiere.model.I_AD_User createUser(final String name)
 	{
-		final I_AD_User user = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User user = newInstance(I_AD_User.class);
 		user.setName(name);
 		save(user);
 		return user;

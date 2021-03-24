@@ -1,7 +1,7 @@
-import deepUnfreeze from 'deep-unfreeze';
 import _ from 'lodash';
 
 import { DATE_FIELD_TYPES } from '../constants/Constants';
+import { deepUnfreeze } from '../utils';
 import { fieldValueToString } from '../utils/tableHelpers';
 import { getFormatForDateField, getFormattedDate } from './widgetHelpers';
 
@@ -58,18 +58,20 @@ export function formatFilters({ filtersData, filtersActive = [] }) {
  */
 export function getParentFilterFromFilterData({ filterId, filterData }) {
   let parentFilter = {};
-  filterData.forEach((filter) => {
-    if (filter.filterId && filter.filterId === filterId) {
-      parentFilter = filter;
-    }
-    if (filter.includedFilters) {
-      filter.includedFilters.forEach((incFilter) => {
-        if (incFilter.filterId && incFilter.filterId === filterId) {
-          parentFilter = incFilter;
-        }
-      });
-    }
-  });
+
+  filterData &&
+    filterData.forEach((filter) => {
+      if (filter.filterId && filter.filterId === filterId) {
+        parentFilter = filter;
+      }
+      if (filter.includedFilters) {
+        filter.includedFilters.forEach((incFilter) => {
+          if (incFilter.filterId && incFilter.filterId === filterId) {
+            parentFilter = incFilter;
+          }
+        });
+      }
+    });
   return parentFilter;
 }
 
@@ -173,16 +175,6 @@ export function populateFiltersCaptions(filters) {
 }
 
 /**
- * @method filtersActiveContains
- * @summary returns a boolean value depending on the presence of the key withing the activeFilters passed array
- */
-export function filtersActiveContains({ filtersActive, key }) {
-  if (filtersActive.lenght === 0) return false;
-  const isPresent = filtersActive.filter((item) => item.filterId === key);
-  return isPresent.length ? true : false;
-}
-
-/**
  * @method setNewFiltersActive
  * @todo name is misleading. It suggests this is an action creator.
  * @summary returns a new array with filters that are going to be the active ones
@@ -217,6 +209,17 @@ function foundAmongActiveFilters({ storeActiveFilters, filterToAdd }) {
     if (item.filterId === filterToAdd.filterId) isPresent = true;
   });
   return isPresent;
+}
+
+/**
+ * @method filtersActiveContains
+ * @summary returns a boolean value depending on the presence of the key withing the activeFilters passed array
+ */
+export function filtersActiveContains({ filtersActive, key }) {
+  if (!filtersActive || filtersActive.lenght === 0) return false;
+  const isPresent = filtersActive.filter((item) => item.filterId === key);
+
+  return isPresent.length ? true : false;
 }
 
 /**

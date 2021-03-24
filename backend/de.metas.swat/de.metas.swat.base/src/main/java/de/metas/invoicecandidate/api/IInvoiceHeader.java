@@ -72,4 +72,6 @@ public interface IInvoiceHeader
 	boolean isTaxIncluded();
 
 	int getC_PaymentTerm_ID();
+
+	String getExternalId();
 }

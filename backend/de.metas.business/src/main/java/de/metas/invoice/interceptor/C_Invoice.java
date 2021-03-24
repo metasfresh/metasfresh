@@ -1,10 +1,35 @@
 package de.metas.invoice.interceptor;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
-
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.allocation.api.IAllocationBL;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.IDocumentLocationBL;
+import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.export.async.C_Invoice_CreateExportData;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.OrderId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.reservation.PaymentReservationCaptureRequest;
+import de.metas.payment.reservation.PaymentReservationService;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.ProductPrices;
+import de.metas.product.ProductId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -17,60 +42,19 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.allocation.api.IAllocationBL;
-import de.metas.allocation.api.IAllocationDAO;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.IDocumentLocationBL;
-import de.metas.document.engine.DocStatus;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.export.async.C_Invoice_CreateExportData;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.order.OrderId;
-import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.api.IPaymentDAO;
-import de.metas.payment.reservation.PaymentReservationCaptureRequest;
-import de.metas.payment.reservation.PaymentReservationService;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.pricing.service.ProductPrices;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 @Interceptor(I_C_Invoice.class)
 @Component
 public class C_Invoice // 03771
 {
 	private final PaymentReservationService paymentReservationService;
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	private final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
@@ -78,7 +62,6 @@ public class C_Invoice // 03771
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
@@ -149,13 +132,19 @@ public class C_Invoice // 03771
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_M_PriceList_ID })
 	public void removeMaterialLinesNotCorrespondingToPriceList(final I_C_Invoice invoice)
 	{
-		ZonedDateTime invoiceDate = TimeUtil.asZonedDateTime(invoice.getDateInvoiced());
-		if (invoiceDate == null)
+		final DocStatus docStatus = DocStatus.ofNullableCode(invoice.getDocStatus());
+		if (docStatus != null && docStatus.isCompletedOrClosedReversedOrVoided())
 		{
-			invoiceDate = SystemTime.asZonedDateTime();
+			return; // some metasfresh instances are customized allow changing bpartner locations on completed orders; this might trigger pricelist-changes - don't ask
 		}
 
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
+		final ZonedDateTime invoiceDate = CoalesceUtil.coalesceSuppliers(
+				() -> TimeUtil.asZonedDateTime(invoice.getDateInvoiced(), timeZone),
+				() -> SystemTime.asZonedDateTime(timeZone));
+
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
+
 		@SuppressWarnings("ConstantConditions")
 		final I_M_PriceList_Version priceListVersion = priceListDAO
 				.retrievePriceListVersionOrNull(PriceListId.ofRepoId(invoice.getM_PriceList_ID()), invoiceDate, processedPLVFiltering); // can be null
@@ -300,7 +289,7 @@ public class C_Invoice // 03771
 		final I_C_Order order = invoice.getC_Order();
 		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
 		{
-			final I_C_Payment payment = order.getC_Payment();
+			final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(order.getC_Payment_ID()));
 			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			paymentDAO.save(payment);
 
@@ -314,7 +303,7 @@ public class C_Invoice // 03771
 		final I_C_Order order = invoice.getC_Order();
 		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
 		{
-			final I_C_Payment payment = order.getC_Payment();
+			final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(order.getC_Payment_ID()));
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
 			testAndMarkAsPaid(invoice);
 		}

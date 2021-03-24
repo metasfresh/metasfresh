@@ -118,11 +118,11 @@ class Container extends PureComponent {
           {!modalHidden && (
             <Modal
               {...modal}
-              windowId={modal.type}
+              windowId={modal.windowId}
               dataId={modal.dataId ? modal.dataId : dataId}
               modalTitle={modal.title}
               viewId={modal.viewId}
-              parentWindowId={windowId}
+              documentType={windowId}
               rawModalWindowId={rawModal.windowId}
               parentDataId={dataId}
               parentViewId={viewId}
@@ -159,13 +159,6 @@ class Container extends PureComponent {
                   viewProfileId={rawModal.profileId}
                   setModalTitle={setRawModalTitle}
                   setModalDescription={setRawModalDescription}
-                  fetchQuickActionsOnInit={
-                    !(
-                      includedView &&
-                      includedView.windowId &&
-                      includedView.viewId
-                    )
-                  }
                   modalDescription={rawModal.description}
                   isModal
                   processStatus={processStatus}
@@ -186,7 +179,6 @@ class Container extends PureComponent {
                       defaultViewId={includedView.viewId}
                       parentDefaultViewId={rawModal.viewId}
                       parentWindowType={rawModal.windowId}
-                      fetchQuickActionsOnInit
                       isModal
                       isIncluded
                       processStatus={processStatus}

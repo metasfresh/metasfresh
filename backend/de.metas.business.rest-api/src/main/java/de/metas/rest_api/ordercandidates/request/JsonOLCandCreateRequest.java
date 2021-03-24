@@ -5,13 +5,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.rest_api.bpartner.SwaggerDocConstants;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestContact;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation;
+import de.metas.common.rest_api.SwaggerDocConstants;
+import de.metas.common.bpartner.request.JsonRequestBPartner;
+import de.metas.common.bpartner.request.JsonRequestContact;
+import de.metas.common.bpartner.request.JsonRequestLocation;
 import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.rest_api.common.MetasfreshId;
-import de.metas.rest_api.common.SyncAdvise;
+import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.common.rest_api.SyncAdvise;
 import de.metas.util.Check;
 import de.pentabyte.springfox.ApiEnum;
 import io.swagger.annotations.ApiModelProperty;
@@ -173,6 +173,10 @@ public class JsonOLCandCreateRequest
 	String poReference;
 
 	@ApiModelProperty( //
+			value = "Translates to `M_Warehouse.Value`. The looked up warehouse's ID is then set to `C_OLCand.M_Warehouse_ID`.")
+	String warehouseCode;
+
+	@ApiModelProperty(required = false, //
 			value = "Translates to `C_OLCand.M_Warehouse_Dest_ID`.")
 	String warehouseDestCode;
 
@@ -244,6 +248,7 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("currencyCode") final @Nullable String currencyCode,
 			@JsonProperty("discount") final @Nullable BigDecimal discount,
 			@JsonProperty("poReference") final @NonNull String poReference,
+			@JsonProperty("warehouseCode") final @Nullable String warehouseCode,
 			@JsonProperty("warehouseDestCode") final @Nullable String warehouseDestCode,
 			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType,
 			@JsonProperty("presetDateInvoiced") final @Nullable LocalDate presetDateInvoiced,
@@ -277,6 +282,7 @@ public class JsonOLCandCreateRequest
 		this.discount = discount;
 		this.poReference = poReference;
 		this.warehouseDestCode = warehouseDestCode;
+		this.warehouseCode = warehouseCode;
 		this.invoiceDocType = invoiceDocType;
 		this.presetDateInvoiced = presetDateInvoiced;
 		this.presetDateShipped = presetDateShipped;

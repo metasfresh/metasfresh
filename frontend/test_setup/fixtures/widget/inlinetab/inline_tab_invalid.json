@@ -1,0 +1,551 @@
+{
+  "wrapperData": {
+    "123_AD_Tab-222_2156435": [
+      {
+        "windowId": "123",
+        "id": "2156435",
+        "tabId": "AD_Tab-222",
+        "tabid": "AD_Tab-222",
+        "rowId": "2205254",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": 2205254,
+            "widgetType": "Integer"
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Client_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh AG"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Org_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Name": {
+            "field": "Name",
+            "value": "Amerikanisch-Samoa",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Name"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "GLN": {
+            "field": "GLN",
+            "value": "",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "GLN"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsActive": {
+            "field": "IsActive",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Switch",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsActive"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "C_Location_ID": {
+            "field": "C_Location_ID",
+            "value": {
+              "key": "2192371",
+              "caption": "American Samoa"
+            },
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Address",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "C_Location_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Address": {
+            "field": "Address",
+            "value": "American Samoa",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Address"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsShipTo": {
+            "field": "IsShipTo",
+            "value": true,
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsShipTo"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsShipToDefault": {
+            "field": "IsShipToDefault",
+            "value": true,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsShipToDefault"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsBillTo": {
+            "field": "IsBillTo",
+            "value": true,
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsBillTo"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsBillToDefault": {
+            "field": "IsBillToDefault",
+            "value": true,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsBillToDefault"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsHandOverLocation": {
+            "field": "IsHandOverLocation",
+            "value": false,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsHandOverLocation"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsRemitTo": {
+            "field": "IsRemitTo",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsRemitTo"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsReplicationLookupDefault": {
+            "field": "IsReplicationLookupDefault",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsReplicationLookupDefault"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "VisitorsAddress": {
+            "field": "VisitorsAddress",
+            "value": false,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "VisitorsAddress"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "BPartnerName": {
+            "field": "BPartnerName",
+            "value": "",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "BPartnerName"
+            },
+            "viewEditorRenderMode": "always"
+          }
+        },
+        "validStatus": {
+          "valid": true
+        },
+        "saveStatus": {
+          "deleted": false,
+          "saved": true,
+          "hasChanges": false,
+          "error": false,
+          "reason": "just loaded"
+        },
+        "standardActions": [
+          "new",
+          "advancedEdit",
+          "email",
+          "letter",
+          "delete",
+          "comments"
+        ],
+        "websocketEndpoint": "/document/123/2156435"
+      },
+      {
+        "windowId": "123",
+        "id": "2156435",
+        "tabId": "AD_Tab-222",
+        "tabid": "AD_Tab-222",
+        "rowId": "2205261",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": 2205261,
+            "widgetType": "Integer"
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "List",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Client_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "metasfresh AG"
+            },
+            "readonly": true,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Lookup",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "AD_Org_ID"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "Name": {
+            "field": "Name",
+            "value": ".",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "Name"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "GLN": {
+            "field": "GLN",
+            "value": "",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "GLN"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsActive": {
+            "field": "IsActive",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "Switch",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsActive"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "C_Location_ID": {
+            "field": "C_Location_ID",
+            "value": "",
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "lookupValuesStale": true,
+            "widgetType": "Address",
+            "validStatus": {
+              "valid": false,
+              "initialValue": true,
+              "reason": "Mandatory field C_Location_ID not filled",
+              "fieldName": "C_Location_ID"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "Address": {
+            "field": "Address",
+            "value": "",
+            "readonly": true,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "LongText",
+            "validStatus": {
+              "valid": false,
+              "initialValue": true,
+              "reason": "not validated yet"
+            },
+            "viewEditorRenderMode": "never"
+          },
+          "IsShipTo": {
+            "field": "IsShipTo",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsShipTo"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsShipToDefault": {
+            "field": "IsShipToDefault",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsShipToDefault"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsBillTo": {
+            "field": "IsBillTo",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsBillTo"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsBillToDefault": {
+            "field": "IsBillToDefault",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsBillToDefault"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsHandOverLocation": {
+            "field": "IsHandOverLocation",
+            "value": true,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsHandOverLocation"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsRemitTo": {
+            "field": "IsRemitTo",
+            "value": false,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsRemitTo"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "IsReplicationLookupDefault": {
+            "field": "IsReplicationLookupDefault",
+            "value": false,
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "IsReplicationLookupDefault"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "VisitorsAddress": {
+            "field": "VisitorsAddress",
+            "value": false,
+            "readonly": false,
+            "mandatory": true,
+            "displayed": true,
+            "widgetType": "YesNo",
+            "validStatus": {
+              "valid": true,
+              "initialValue": true,
+              "fieldName": "VisitorsAddress"
+            },
+            "viewEditorRenderMode": "always"
+          },
+          "BPartnerName": {
+            "field": "BPartnerName",
+            "value": "",
+            "readonly": false,
+            "mandatory": false,
+            "displayed": true,
+            "widgetType": "Text",
+            "validStatus": {
+              "valid": false,
+              "initialValue": true,
+              "reason": "not validated yet"
+            },
+            "viewEditorRenderMode": "always"
+          }
+        },
+        "validStatus": {
+          "valid": false,
+          "initialValue": true,
+          "reason": "Mandatory field C_Location_ID not filled",
+          "fieldName": "C_Location_ID"
+        },
+        "saveStatus": {
+          "deleted": false,
+          "saved": false,
+          "hasChanges": true,
+          "error": false,
+          "reason": "Mandatory field C_Location_ID not filled"
+        },
+        "standardActions": [
+          "new",
+          "advancedEdit",
+          "email",
+          "letter",
+          "delete",
+          "comments"
+        ],
+        "websocketEndpoint": "/document/123/2156435"
+      }
+    ]
+  },
+  "addNew": {
+    
+  },
+  "showMore": {
+    "123_AD_Tab-222_2156435": false
+  }
+}

@@ -22,6 +22,7 @@
 
 package de.metas.edi.esb.desadvexport.compudata;
 
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 
 import javax.xml.namespace.QName;
@@ -30,6 +31,7 @@ import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
+import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.spi.DataFormat;
 import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
@@ -50,11 +52,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 
 	private static final String EDI_DESADV_FILENAME_PATTERN = "edi.file.desadv.compudata.filename";
 
-	public static final String EP_EDI_DESADV_SINGLE_CONSUMER = "direct:edi.desadv.consumer.single";
 	public static final String EP_EDI_COMPUDATA_DESADV_CONSUMER = "direct:edi.desadv.consumer.aggregate";
-
-	public static final String EDI_DESADV_IS_TEST = "edi.props.desadv.isTest";
-	public static final String EDI_DESADV_IS_AGGREGATE = "edi.props.desadv.isAggregate";
 
 	public final static QName EDIDesadvFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIDesadvFeedback(null).getName();
 	public static final String METHOD_setEDIDesadvID = "setEDIDesadvID";
@@ -62,7 +60,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 	/**
 	 * The FILE folder where the EDI file will be stored
 	 */
-	public static final String EP_EDI_FILE_DESADV = "{{edi.file.desadv.compudata}}";
+	public static final String EP_EDI_FILE_DESADV = "edi.file.desadv.compudata";
 
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
@@ -74,18 +72,12 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 		getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
 		final String desadvFilenamePattern = Util.resolveProperty(getContext(), CompuDataDesadvRoute.EDI_DESADV_FILENAME_PATTERN);
-
-		final String isTest = Util.resolveProperty(getContext(), CompuDataDesadvRoute.EDI_DESADV_IS_TEST);
-
+		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_MF_DURABLE_ROUTING_KEY);
+		
 		from(CompuDataDesadvRoute.EP_EDI_COMPUDATA_DESADV_CONSUMER)
 				.routeId(ROUTE_ID)
 
 				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
-				.setProperty(CompuDataDesadvRoute.EDI_DESADV_IS_TEST).constant(isTest)
-
-				//
-				// Aggregate route (used for pivoting feedback)
-				.setProperty(CompuDataDesadvRoute.EDI_DESADV_IS_AGGREGATE).constant(true)
 
 				.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
 				.process(new Processor()
@@ -113,7 +105,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 				.setHeader(Exchange.FILE_NAME).simple(desadvFilenamePattern)
 
 				.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
-				.to(CompuDataDesadvRoute.EP_EDI_FILE_DESADV)
+				.to("{{" + CompuDataDesadvRoute.EP_EDI_FILE_DESADV + "}}")
 
 				.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<EDIDesadvFeedbackType>(EDIDesadvFeedbackType.class, CompuDataDesadvRoute.EDIDesadvFeedback_QNAME, CompuDataDesadvRoute.METHOD_setEDIDesadvID))
@@ -122,6 +114,9 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 				.marshal(jaxb)
 
 				.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
+						
+				.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
+				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
 	}
 }

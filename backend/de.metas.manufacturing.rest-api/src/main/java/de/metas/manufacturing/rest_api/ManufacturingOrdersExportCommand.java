@@ -38,7 +38,7 @@ import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit.Ma
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAuditItem;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.Product;

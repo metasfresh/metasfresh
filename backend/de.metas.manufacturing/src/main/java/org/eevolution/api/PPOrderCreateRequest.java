@@ -1,29 +1,28 @@
 package org.eevolution.api;
 
-import java.time.Instant;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.api.PPOrderCreateRequest.PPOrderCreateRequestBuilder;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.ProductPlanningId;
+import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.api.PPOrderCreateRequest.PPOrderCreateRequestBuilder;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
 
 /*
  * #%L
@@ -51,29 +50,33 @@ import lombok.Value;
 @JsonDeserialize(builder = PPOrderCreateRequestBuilder.class)
 public class PPOrderCreateRequest
 {
-	ClientAndOrgId clientAndOrgId;
-	ProductPlanningId productPlanningId;
-	MaterialDispoGroupId materialDispoGroupId;
-	ResourceId plantId;
-	WarehouseId warehouseId;
-	UserId plannerId;
+	@NonNull PPOrderDocBaseType docBaseType;
+	@NonNull ClientAndOrgId clientAndOrgId;
+	@Nullable ProductPlanningId productPlanningId;
+	@Nullable MaterialDispoGroupId materialDispoGroupId;
+	@NonNull ResourceId plantId;
+	@NonNull WarehouseId warehouseId;
+	@Nullable UserId plannerId;
 
-	ProductBOMId bomId;
-	ProductId productId;
-	AttributeSetInstanceId attributeSetInstanceId;
-	Quantity qtyRequired;
+	@Nullable ProductBOMId bomId;
+	@Nullable PPRoutingId routingId;
+	@NonNull ProductId productId;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
+	@NonNull Quantity qtyRequired;
 
-	Instant dateOrdered;
-	Instant datePromised;
-	Instant dateStartSchedule;
+	@NonNull Instant dateOrdered;
+	@NonNull Instant datePromised;
+	@NonNull Instant dateStartSchedule;
 
-	OrderLineId salesOrderLineId;
-	BPartnerId customerId;
+	@Nullable OrderLineId salesOrderLineId;
+	@Nullable BPartnerId customerId;
+	@Nullable ProjectId projectId;
 
-	Boolean completeDocument;
+	@Nullable Boolean completeDocument;
 
 	@Builder
 	PPOrderCreateRequest(
+			@Nullable final PPOrderDocBaseType docBaseType,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@Nullable final ProductPlanningId productPlanningId,
 			@Nullable final MaterialDispoGroupId materialDispoGroupId,
@@ -81,17 +84,20 @@ public class PPOrderCreateRequest
 			@NonNull final WarehouseId warehouseId,
 			@Nullable final UserId plannerId,
 			//
-			@Nullable ProductBOMId bomId,
-			@NonNull ProductId productId,
-			@Nullable AttributeSetInstanceId attributeSetInstanceId,
-			@NonNull Quantity qtyRequired,
+			@Nullable final ProductBOMId bomId,
+			@Nullable final PPRoutingId routingId,
 			//
-			@NonNull Instant dateOrdered,
-			@NonNull Instant datePromised,
+			@NonNull final ProductId productId,
+			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
+			@NonNull final Quantity qtyRequired,
+			//
+			@NonNull final Instant dateOrdered,
+			@NonNull final Instant datePromised,
 			@NonNull final Instant dateStartSchedule,
 			//
 			@Nullable final OrderLineId salesOrderLineId,
 			@Nullable final BPartnerId customerId,
+			@Nullable final ProjectId projectId,
 			//
 			final boolean pickingOrder,
 			//
@@ -99,6 +105,7 @@ public class PPOrderCreateRequest
 	{
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
+		this.docBaseType = docBaseType != null ? docBaseType : PPOrderDocBaseType.MANUFACTURING_ORDER;
 		this.clientAndOrgId = clientAndOrgId;
 		this.productPlanningId = productPlanningId;
 		this.materialDispoGroupId = materialDispoGroupId;
@@ -107,6 +114,8 @@ public class PPOrderCreateRequest
 		this.plannerId = plannerId;
 
 		this.bomId = bomId;
+		this.routingId = routingId;
+
 		this.productId = productId;
 		this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 		this.qtyRequired = qtyRequired;
@@ -117,6 +126,7 @@ public class PPOrderCreateRequest
 
 		this.salesOrderLineId = salesOrderLineId;
 		this.customerId = customerId;
+		this.projectId = projectId;
 
 		this.completeDocument = completeDocument;
 	}

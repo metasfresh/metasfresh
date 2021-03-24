@@ -45,6 +45,8 @@ import java.util.Properties;
 
 import javax.swing.JLabel;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.tax.api.TaxId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -96,7 +98,6 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import net.miginfocom.swing.MigLayout;
 
 public class CreateInvoiceCandidateDialog
@@ -435,14 +436,14 @@ public class CreateInvoiceCandidateDialog
 
 	private void configureC_Tax_ID(final IContextAware contextProvider, final I_M_Product product, final I_M_PricingSystem pricingSystem)
 	{
-		int priceTaxId = -1;
+		TaxId priceTaxId = null;
 		try
 		{
 			final Properties ctx = contextProvider.getCtx();
 
 			final TaxCategoryId taxCategoryId = null; // FIXME for accuracy, we will need the tax category
 
-			priceTaxId = Services.get(ITaxBL.class).getTax(
+			priceTaxId = Services.get(ITaxBL.class).getTaxNotNull(
 					ctx,
 					null, // no model
 					taxCategoryId,
@@ -461,11 +462,11 @@ public class CreateInvoiceCandidateDialog
 			return;
 		}
 
-		if (priceTaxId <= 0)
+		if (priceTaxId == null)
 		{
 			return;
 		}
-		taxField.setValue(priceTaxId);
+		taxField.setValue(priceTaxId.getRepoId());
 	}
 
 	private void configureC_Activity_ID(final IContextAware contextProvider, final I_M_Product product, final I_M_PricingSystem pricingSystem)

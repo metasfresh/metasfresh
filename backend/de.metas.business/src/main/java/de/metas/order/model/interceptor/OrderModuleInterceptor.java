@@ -1,33 +1,29 @@
 package de.metas.order.model.interceptor;
 
-import java.util.List;
-
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.event.Topic;
+import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.event.OrderUserNotifications;
+import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+
+import java.util.List;
 
 /**
- *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class OrderModuleInterceptor extends AbstractModuleInterceptor
 {
-	public static final OrderModuleInterceptor INSTANCE = new OrderModuleInterceptor();
-
-	private OrderModuleInterceptor()
-	{
-	}
+	private final OrderGroupCompensationChangesHandler groupChangesHandler = SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class);
+	private final OrderLineDetailRepository orderLineDetailRepository = SpringContextHolder.instance.getBean(OrderLineDetailRepository.class);
 
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
@@ -36,9 +32,10 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(final IModelValidationEngine engine)
+	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(de.metas.order.model.interceptor.C_Order.INSTANCE); // FRESH-348
+		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(orderLineDetailRepository)); // FRESH-348
+		engine.addModelValidator(new de.metas.order.model.interceptor.C_OrderLine(groupChangesHandler, orderLineDetailRepository));
 
 		//
 		// Elasticsearch indexing
@@ -50,11 +47,5 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 					.triggerOnDelete()
 					.buildAndInstall();
 		}
-	}
-
-	@Override
-	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
-	{
-		calloutsRegistry.registerAnnotatedCallout(de.metas.order.model.interceptor.C_Order.INSTANCE); // FRESH-348
 	}
 }

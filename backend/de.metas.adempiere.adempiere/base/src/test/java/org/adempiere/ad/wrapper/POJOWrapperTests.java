@@ -1,34 +1,7 @@
 package org.adempiere.ad.wrapper;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.Properties;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
+import de.metas.common.util.time.SystemTime;
+import de.metas.user.UserId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.POWrapper;
@@ -41,9 +14,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import de.metas.user.UserId;
-import de.metas.util.time.FixedTimeSource;
-import de.metas.util.time.SystemTime;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class POJOWrapperTests
 {
@@ -124,7 +99,8 @@ public class POJOWrapperTests
 		public void presetID()
 		{
 			final UserId userId = UserId.ofRepoId(111);
-			SystemTime.setTimeSource(new FixedTimeSource(LocalDate.of(2020, Month.FEBRUARY, 27).atStartOfDay()));
+			final ZonedDateTime now = ZonedDateTime.parse("2020-02-27T00:00:00+01:00[Europe/Berlin]");
+			SystemTime.setFixedTimeSource(now);
 
 			final Properties ctx = contextProvider.getCtx();
 			Env.setLoggedUserId(ctx, userId);
@@ -135,9 +111,9 @@ public class POJOWrapperTests
 
 			final POJOWrapper wrapper = POJOWrapper.getWrapper(record);
 			assertThat(wrapper.getValue(POJOWrapper.COLUMNNAME_CreatedBy, Object.class)).isEqualTo(userId.getRepoId());
-			assertThat(wrapper.getValue(POJOWrapper.COLUMNNAME_Created, Object.class)).isEqualTo(TimeUtil.getDay(2020, 02, 27));
+			assertThat(wrapper.getValue(POJOWrapper.COLUMNNAME_Created, Object.class)).isEqualTo(TimeUtil.asTimestamp(now));
 			assertThat(wrapper.getValue(POJOWrapper.COLUMNNAME_UpdatedBy, Object.class)).isEqualTo(userId.getRepoId());
-			assertThat(wrapper.getValue(POJOWrapper.COLUMNNAME_Updated, Object.class)).isEqualTo(TimeUtil.getDay(2020, 02, 27));
+			assertThat(wrapper.getValue(POJOWrapper.COLUMNNAME_Updated, Object.class)).isEqualTo(TimeUtil.asTimestamp(now));
 		}
 	}
 
@@ -345,8 +321,8 @@ public class POJOWrapperTests
 	}
 
 	/**
-	 * Making sure that if {@link POJOWrapper#refresh(Object, String)} is called, then the pojo's <code>trxName</code> is updated.
-	 *
+	 * Making sure that if {@link POJOWrapper#refresh(Object, boolean, String)} is called, then the pojo's <code>trxName</code> is updated.
+	 * <p>
 	 * We need this in order to make the {@link POJOWrapper} behave similar to the {@link POWrapper},
 	 * when they are called by {@link InterfaceWrapperHelper#refresh(Object, String)}.
 	 */

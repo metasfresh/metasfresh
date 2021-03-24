@@ -1,0 +1,331 @@
+{
+  "windowId": "123",
+  "type": "123",
+  "tabId": "AD_Tab-222",
+  "tabid": "AD_Tab-222",
+  "internalName": "C_BPartner_Location",
+  "caption": "Adresse",
+  "sections": [
+    {
+      "columns": [
+        {
+          "elementGroups": [
+            {
+              "type": "primary",
+              "internalName": "X_AD_UI_ElementGroup[AD_UI_ElementGroup_ID=1000034, Name=default, trxName=<<ThreadInherited>>]",
+              "elementsLine": [
+                {
+                  "elements": [
+                    {
+                      "caption": "Abw. Firmenname",
+                      "description": "",
+                      "widgetType": "Text",
+                      "maxLength": 255,
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "BPartnerName",
+                          "caption": "Abw. Firmenname",
+                          "emptyText": "leer",
+                          "clearValueText": "leer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Name",
+                      "description": "",
+                      "widgetType": "Text",
+                      "maxLength": 60,
+                      "size": "L",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "Name",
+                          "caption": "Name",
+                          "emptyText": "leer",
+                          "clearValueText": "leer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Anschrift",
+                      "description": "Adresse oder Anschrift",
+                      "widgetType": "Address",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "C_Location_ID",
+                          "caption": "Anschrift",
+                          "emptyText": "leer",
+                          "clearValueText": "leer",
+                          "source": "lookup",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Adresse",
+                      "description": "Anschrift",
+                      "widgetType": "LongText",
+                      "maxLength": 360,
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "Address",
+                          "caption": "Adresse",
+                          "emptyText": "leer",
+                          "clearValueText": "leer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "GLN",
+                      "description": "",
+                      "widgetType": "Text",
+                      "maxLength": 20,
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "GLN",
+                          "caption": "GLN",
+                          "emptyText": "leer",
+                          "clearValueText": "leer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Aktiv",
+                      "description": "Der Eintrag ist im System aktiv",
+                      "widgetType": "Switch",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "IsActive",
+                          "caption": "Aktiv",
+                          "emptyText": "leer",
+                          "clearValueText": "leer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Lieferadresse",
+                      "description": "Liefer-Adresse für den Geschäftspartner",
+                      "widgetType": "YesNo",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "IsShipTo",
+                          "caption": "Lieferadresse",
+                          "emptyText": "leer",
+                          "clearValueText": "leer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Lieferstandard",
+                      "description": "",
+                      "widgetType": "YesNo",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "IsShipToDefault",
+                          "caption": "Lieferstandard",
+                          "emptyText": "leer",
+                          "clearValueText": "leer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Rechnungsadresse",
+                      "description": "Rechnungs-Adresse für diesen Geschäftspartner",
+                      "widgetType": "YesNo",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "IsBillTo",
+                          "caption": "Rechnungsadresse",
+                          "emptyText": "leer",
+                          "clearValueText": "leer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Rechnungsstandard",
+                      "description": "",
+                      "widgetType": "YesNo",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "IsBillToDefault",
+                          "caption": "Rechnungsstandard",
+                          "emptyText": "leer",
+                          "clearValueText": "leer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Abladeort",
+                      "description": "",
+                      "widgetType": "YesNo",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "IsHandOverLocation",
+                          "caption": "Abladeort",
+                          "emptyText": "leer",
+                          "clearValueText": "leer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "EDI-Supplier-Addresse",
+                      "description": "Erstattungs-Adresse für den Lieferanten",
+                      "widgetType": "YesNo",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "IsRemitTo",
+                          "caption": "EDI-Supplier-Addresse",
+                          "emptyText": "leer",
+                          "clearValueText": "leer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Replikations Standardwert",
+                      "description": "",
+                      "widgetType": "YesNo",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "IsReplicationLookupDefault",
+                          "caption": "Replikations Standardwert",
+                          "emptyText": "leer",
+                          "clearValueText": "leer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Besuchsadresse",
+                      "description": "",
+                      "widgetType": "YesNo",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "VisitorsAddress",
+                          "caption": "Besuchsadresse",
+                          "emptyText": "leer",
+                          "clearValueText": "leer"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Sektion",
+                      "description": "Organisatorische Einheit des Mandanten",
+                      "widgetType": "Lookup",
+                      "size": "M",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "AD_Org_ID",
+                          "caption": "Sektion",
+                          "emptyText": "leer",
+                          "clearValueText": "leer",
+                          "source": "lookup",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500,
+                          "supportZoomInto": true
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "elements": [
+                    {
+                      "caption": "Mandant",
+                      "description": "Mandant für diese Installation.",
+                      "widgetType": "List",
+                      "size": "M",
+                      "viewEditorRenderMode": "never",
+                      "fields": [
+                        {
+                          "field": "AD_Client_ID",
+                          "caption": "Mandant",
+                          "emptyText": "leer",
+                          "clearValueText": "leer",
+                          "source": "list",
+                          "lookupSearchStringMinLength": -1,
+                          "lookupSearchStartDelayMillis": 500,
+                          "supportZoomInto": true
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "closableMode": "ALWAYS_OPEN"
+    }
+  ]
+}

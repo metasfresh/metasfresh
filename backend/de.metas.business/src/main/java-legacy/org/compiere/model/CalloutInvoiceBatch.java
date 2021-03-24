@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
@@ -36,8 +37,6 @@ import de.metas.logging.MetasfreshLastError;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-
 
 /**
  *	Callouts for Invoice Batch

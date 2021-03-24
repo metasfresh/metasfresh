@@ -39,6 +39,7 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.PlainContextAware;
@@ -77,7 +78,6 @@ import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
 import de.metas.tourplanning.model.validator.DeliveryDayAllocableInterceptor;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Base class (to be extended) for all Tour Planning tests.
@@ -156,7 +156,7 @@ public abstract class TourPlanningTestBase
 	@AfterEach
 	public final void afterEachTest()
 	{
-		SystemTime.resetTimeSource();
+		de.metas.common.util.time.SystemTime.resetTimeSource();
 	}
 
 	protected I_C_BPartner createBPartner(final String name)

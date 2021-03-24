@@ -30,6 +30,7 @@ import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Predicate;
+import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.model.ChoiceDefinition;
 import org.apache.camel.model.ProcessorDefinition;
 import org.apache.camel.spi.DataFormat;
@@ -38,6 +39,7 @@ import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -143,16 +145,16 @@ public class CompuDataOrdersRoute extends AbstractEDIRoute
 		ediToXMLOrdersRoute
 				.log(LoggingLevel.INFO, "Creating JAXB C_OLCand elements and splitting them by XML Document...")
 				.split().method(CompudataEDIOrdersBean.class, CompudataEDIOrdersBean.METHOD_createXMLDocument)
-					//
-					// aggregate exchanges back to List after data is sent to metasfresh so that we can move the EDI document to DONE
-					.aggregationStrategy(new ListAggregationStrategy())
-					//
-					.log(LoggingLevel.TRACE, "EDI: Marshalling XML Java Object -> XML document...")
-					.marshal(jaxb)
-					//
-					.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to metasfresh...")
-					.to("{{" + Constants.EP_AMQP_TO_MF + "}}")
-				.end();
+				//
+				// aggregate exchanges back to List after data is sent to metasfresh so that we can move the EDI document to DONE
+				.aggregationStrategy(new ListAggregationStrategy())
+				//
+				.log(LoggingLevel.TRACE, "EDI: Marshalling XML Java Object -> XML document...")
+				.marshal(jaxb)
+				//
+				.log(LoggingLevel.TRACE, "EDI: Sending XML Order document to metasfresh...")
+				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
+				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
 		// @formatter:on
 	}
 }

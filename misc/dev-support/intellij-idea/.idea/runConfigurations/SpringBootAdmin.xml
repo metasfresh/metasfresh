@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="SpringBootAdmin" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+  <configuration default="false" name="SpringBootAdmin" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" folderName="Less Used">
     <module name="metasfresh-admin" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="de.metas.admin.SpringBootAdminApplication" />
     <option name="VM_PARAMETERS" value="-Xmx60M" />

@@ -1,16 +1,15 @@
 package de.metas.order;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
-
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.Value;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -39,6 +38,7 @@ public class OrderAndLineId
 {
 	private static final Logger logger = LogManager.getLogger(OrderAndLineId.class);
 
+	@Nullable
 	public static OrderAndLineId ofRepoIdsOrNull(final int orderRepoId, final int orderLineRepoId)
 	{
 		if (orderLineRepoId <= 0)
@@ -53,9 +53,30 @@ public class OrderAndLineId
 		return ofRepoIds(orderRepoId, orderLineRepoId);
 	}
 
+	@Nullable
+	public static OrderAndLineId ofRepoIdsOrNull(@Nullable final OrderId orderId, final int orderLineRepoId)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(orderLineRepoId);
+		if (orderLineId == null)
+		{
+			return null;
+		}
+		if (orderId == null)
+		{
+			logger.warn("ofRepoIdsOrNull: Possible development error: orderLineRepoId={} while orderId=null. Returning null", orderLineRepoId);
+			return null;
+		}
+		return of(orderId, orderLineId);
+	}
+
 	public static OrderAndLineId ofRepoIds(final int orderRepoId, final int orderLineRepoId)
 	{
 		return new OrderAndLineId(OrderId.ofRepoId(orderRepoId), OrderLineId.ofRepoId(orderLineRepoId));
+	}
+
+	public static OrderAndLineId ofRepoIds(@NonNull final OrderId orderId, final int orderLineRepoId)
+	{
+		return new OrderAndLineId(orderId, OrderLineId.ofRepoId(orderLineRepoId));
 	}
 
 	public static OrderAndLineId of(final OrderId orderId, final OrderLineId orderLineId)
@@ -83,6 +104,11 @@ public class OrderAndLineId
 		return orderAndLineIds.stream().map(OrderAndLineId::getOrderLineRepoId).collect(ImmutableSet.toImmutableSet());
 	}
 
+	public static Set<OrderLineId> getOrderLineIds(final Collection<OrderAndLineId> orderAndLineIds)
+	{
+		return orderAndLineIds.stream().map(OrderAndLineId::getOrderLineId).collect(ImmutableSet.toImmutableSet());
+	}
+
 	OrderId orderId;
 	OrderLineId orderLineId;
 
@@ -102,7 +128,7 @@ public class OrderAndLineId
 		return orderLineId.getRepoId();
 	}
 
-	public static boolean equals(final OrderAndLineId o1, final OrderAndLineId o2)
+	public static boolean equals(@Nullable final OrderAndLineId o1, @Nullable final OrderAndLineId o2)
 	{
 		return Objects.equals(o1, o2);
 	}

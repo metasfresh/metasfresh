@@ -49,7 +49,7 @@ class DBVersionGetter
 	private static final String SELECT_DB_VERSION_SQL = "SELECT DBVersion FROM public.AD_System";
 
 	public String retrieveDBVersion(
-			@NonNull final Settings settings,
+			@NonNull final DBConnectionSettings settings,
 			@NonNull final String dbName)
 	{
 		final IDatabase dbConnection = dbConnectionMaker.createDummyDatabase(settings, dbName);

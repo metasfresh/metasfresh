@@ -1,28 +1,13 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
-import static de.metas.util.Check.isEmpty;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.RecordChangeLog;
-import org.adempiere.ad.table.RecordChangeLogEntry;
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.bpartner.BPGroup;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
@@ -38,6 +23,16 @@ import de.metas.bpartner.composite.repository.SinceQuery;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.common.bpartner.response.JsonResponseBPartner;
+import de.metas.common.bpartner.response.JsonResponseComposite;
+import de.metas.common.bpartner.response.JsonResponseComposite.JsonResponseCompositeBuilder;
+import de.metas.common.bpartner.response.JsonResponseContact;
+import de.metas.common.bpartner.response.JsonResponseLocation;
+import de.metas.common.changelog.JsonChangeInfo;
+import de.metas.common.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
+import de.metas.common.changelog.JsonChangeLogItem;
+import de.metas.common.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
+import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.greeting.Greeting;
@@ -46,27 +41,32 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.TableRecordMDC;
-import de.metas.rest_api.bpartner.response.JsonResponseBPartner;
-import de.metas.rest_api.bpartner.response.JsonResponseComposite;
-import de.metas.rest_api.bpartner.response.JsonResponseComposite.JsonResponseCompositeBuilder;
-import de.metas.rest_api.bpartner.response.JsonResponseContact;
-import de.metas.rest_api.bpartner.response.JsonResponseLocation;
-import de.metas.rest_api.changelog.JsonChangeInfo;
-import de.metas.rest_api.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
-import de.metas.rest_api.changelog.JsonChangeLogItem;
-import de.metas.rest_api.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
-import de.metas.rest_api.common.MetasfreshId;
-import de.metas.rest_api.exception.InvalidEntityException;
+import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;
+import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
+import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
+import de.metas.util.web.exception.InvalidEntityException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.table.RecordChangeLog;
+import org.adempiere.ad.table.RecordChangeLogEntry;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.function.Function;
+
+import static de.metas.util.Check.isEmpty;
 
 /*
  * #%L
@@ -93,9 +93,11 @@ import lombok.ToString;
 @ToString
 public class JsonRetrieverService
 {
-	/** Mapping between {@link JsonResponseBPartner} property names and REST-API properties names */
+	/**
+	 * Mapping between {@link JsonResponseBPartner} property names and REST-API properties names
+	 */
 	private static final ImmutableMap<String, String> BPARTNER_FIELD_MAP = ImmutableMap
-			.<String, String> builder()
+			.<String, String>builder()
 			.put(BPartner.VALUE, JsonResponseBPartner.CODE)
 			.put(BPartner.COMPANY_NAME, JsonResponseBPartner.COMPANY_NAME)
 			.put(BPartner.EXTERNAL_ID, JsonResponseBPartner.EXTERNAL_ID)
@@ -113,12 +115,15 @@ public class JsonRetrieverService
 			.put(BPartner.URL_3, JsonResponseBPartner.URL_3)
 			.put(BPartner.VENDOR, JsonResponseBPartner.VENDOR)
 			.put(BPartner.CUSTOMER, JsonResponseBPartner.CUSTOMER)
+			.put(BPartner.COMPANY, JsonResponseBPartner.COMPANY)
 			.put(BPartner.VAT_ID, JsonResponseBPartner.VAT_ID)
 			.build();
 
-	/** Mapping between {@link JsonResponseContact} property names and REST-API properties names */
+	/**
+	 * Mapping between {@link JsonResponseContact} property names and REST-API properties names
+	 */
 	private static final ImmutableMap<String, String> CONTACT_FIELD_MAP = ImmutableMap
-			.<String, String> builder()
+			.<String, String>builder()
 			.put(BPartnerContact.EMAIL, JsonResponseContact.EMAIL)
 			.put(BPartnerContact.EXTERNAL_ID, JsonResponseContact.EXTERNAL_ID)
 			.put(BPartnerContact.VALUE, JsonResponseContact.CODE)
@@ -146,9 +151,11 @@ public class JsonRetrieverService
 
 			.build();
 
-	/** Mapping between {@link JsonResponseLocation} property names and REST-API properties names */
+	/**
+	 * Mapping between {@link JsonResponseLocation} property names and REST-API properties names
+	 */
 	private static final ImmutableMap<String, String> LOCATION_FIELD_MAP = ImmutableMap
-			.<String, String> builder()
+			.<String, String>builder()
 			.put(BPartnerLocation.EXTERNAL_ID, JsonResponseLocation.EXTERNAL_ID)
 			.put(BPartnerLocation.GLN, JsonResponseLocation.GLN)
 			.put(BPartnerLocation.ID, JsonResponseLocation.METASFRESH_ID)
@@ -198,9 +205,9 @@ public class JsonRetrieverService
 		this.cache = new BPartnerCompositeCacheByLookupKey(identifier);
 	}
 
-	public Optional<JsonResponseComposite> getJsonBPartnerComposite(@NonNull final IdentifierString bpartnerIdentifier)
+	public Optional<JsonResponseComposite> getJsonBPartnerComposite(@NonNull OrgId orgId, @NonNull final IdentifierString bpartnerIdentifier)
 	{
-		return getBPartnerComposite(bpartnerIdentifier).map(this::toJson);
+		return getBPartnerComposite(orgId, bpartnerIdentifier).map(this::toJson);
 	}
 
 	public Optional<QueryResultPage<JsonResponseComposite>> getJsonBPartnerComposites(
@@ -267,17 +274,18 @@ public class JsonRetrieverService
 				.externalId(JsonConverters.toJsonOrNull(bpartner.getExternalId()))
 				.group(convertIdToGroupName(bpartner.getGroupId()))
 				.language(Language.asLanguageStringOrNull(bpartner.getLanguage()))
-				.metasfreshId(MetasfreshId.ofOrNull(bpartner.getId()))
+				.metasfreshId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartner.getId())))
 				.name(bpartner.getName())
 				.name2(bpartner.getName2())
 				.name3(bpartner.getName3())
-				.parentId(MetasfreshId.ofNullable(bpartner.getParentId()))
+				.parentId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartner.getParentId())))
 				.phone(bpartner.getPhone())
 				.url(bpartner.getUrl())
 				.url2(bpartner.getUrl2())
 				.url3(bpartner.getUrl3())
 				.vendor(bpartner.isVendor())
 				.customer(bpartner.isCustomer())
+				.company(bpartner.isCompany())
 				.vatId(bpartner.getVatId())
 				.changeInfo(jsonChangeInfo)
 				.build();
@@ -293,9 +301,9 @@ public class JsonRetrieverService
 		}
 
 		final JsonChangeInfoBuilder jsonChangeInfo = JsonChangeInfo.builder()
-				.createdBy(MetasfreshId.ofOrNull(recordChangeLog.getCreatedByUserId()))
+				.createdBy(JsonMetasfreshId.ofOrNull(UserId.toRepoId(recordChangeLog.getCreatedByUserId())))
 				.createdMillis(recordChangeLog.getCreatedTimestamp().toEpochMilli())
-				.lastUpdatedBy(MetasfreshId.ofOrNull(recordChangeLog.getLastChangedByUserId()))
+				.lastUpdatedBy(JsonMetasfreshId.ofOrNull(UserId.toRepoId(recordChangeLog.getLastChangedByUserId())))
 				.lastUpdatedMillis(recordChangeLog.getLastChangedTimestamp().toEpochMilli());
 
 		for (final RecordChangeLogEntry entry : recordChangeLog.getEntries())
@@ -308,7 +316,7 @@ public class JsonRetrieverService
 
 			final JsonChangeLogItemBuilder jsonChangeLogItem = JsonChangeLogItem.builder()
 					.fieldName(columnMap.get(columnName))
-					.updatedBy(MetasfreshId.ofOrNull(entry.getChangedByUserId()))
+					.updatedBy(JsonMetasfreshId.ofOrNull(UserId.toRepoId(entry.getChangedByUserId())))
 					.updatedMillis(entry.getChangedTimestamp().toEpochMilli())
 					.newValue(String.valueOf(entry.getValueNew()))
 					.oldValue(String.valueOf(entry.getValueOld()));
@@ -335,8 +343,8 @@ public class JsonRetrieverService
 	{
 		try
 		{
-			final MetasfreshId metasfreshId = MetasfreshId.of(contact.getId());
-			final MetasfreshId metasfreshBPartnerId = MetasfreshId.of(contact.getId().getBpartnerId());
+			final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(BPartnerContactId.toRepoId(contact.getId()));
+			final JsonMetasfreshId metasfreshBPartnerId = JsonMetasfreshId.of(BPartnerId.toRepoId(contact.getId().getBpartnerId()));
 
 			final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(contact.getChangeLog(), CONTACT_FIELD_MAP);
 
@@ -402,7 +410,7 @@ public class JsonRetrieverService
 					.district(location.getDistrict())
 					.externalId(JsonConverters.toJsonOrNull(location.getExternalId()))
 					.gln(GLN.toCode(location.getGln()))
-					.metasfreshId(MetasfreshId.of(location.getId()))
+					.metasfreshId(JsonMetasfreshId.of(BPartnerLocationId.toRepoId(location.getId())))
 					.poBox(location.getPoBox())
 					.postal(location.getPostal())
 					.region(location.getRegion())
@@ -421,21 +429,28 @@ public class JsonRetrieverService
 		}
 	}
 
-	public Optional<BPartnerComposite> getBPartnerComposite(@NonNull final IdentifierString bpartnerIdentifier)
+	public Optional<BPartnerComposite> getBPartnerComposite(
+			@NonNull final OrgId orgId,
+			@NonNull final IdentifierString bpartnerIdentifier)
 	{
-		final BPartnerCompositeLookupKey bpartnerIdLookupKey = BPartnerCompositeLookupKey.ofIdentifierString(bpartnerIdentifier);
-		return getBPartnerComposite(ImmutableList.of(bpartnerIdLookupKey));
+		final OrgAndBPartnerCompositeLookupKeyList bpartnerIdLookupKey = OrgAndBPartnerCompositeLookupKeyList.ofIdentifierString(orgId, bpartnerIdentifier);
+		return getBPartnerComposite(bpartnerIdLookupKey);
 	}
 
-	Optional<BPartnerComposite> getBPartnerComposite(@NonNull final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys)
+	Optional<BPartnerComposite> getBPartnerComposite(
+			@NonNull final OrgAndBPartnerCompositeLookupKeyList bpartnerLookupKeys)
 	{
-		final Collection<BPartnerComposite> bpartnerComposites = cache.getAllOrLoad(bpartnerLookupKeys, this::retrieveBPartnerComposites);
+		final ImmutableList<OrgAndBPartnerCompositeLookupKey> singleBPartnerLookupKeys = bpartnerLookupKeys.asSingeKeys();
+
+		final Collection<BPartnerComposite> bpartnerComposites = cache.getAllOrLoad(singleBPartnerLookupKeys, this::retrieveBPartnerComposites);
 		return extractResult(bpartnerComposites);
 	}
 
-	/** Visible to verify that caching actually works the way we expect it to (=> performance) */
+	/**
+	 * Visible to verify that caching actually works the way we expect it to (=> performance)
+	 */
 	@VisibleForTesting
-	Optional<BPartnerComposite> getBPartnerCompositeAssertCacheHit(@NonNull final ImmutableList<BPartnerCompositeLookupKey> bpartnerLookupKeys)
+	Optional<BPartnerComposite> getBPartnerCompositeAssertCacheHit(@NonNull final ImmutableList<OrgAndBPartnerCompositeLookupKey> bpartnerLookupKeys)
 	{
 		final Collection<BPartnerComposite> bpartnerComposites = cache.getAssertAllCached(bpartnerLookupKeys);
 		return extractResult(bpartnerComposites);
@@ -452,9 +467,13 @@ public class JsonRetrieverService
 		return result == null ? Optional.empty() : Optional.of(result.deepCopy());
 	}
 
-	private ImmutableMap<BPartnerCompositeLookupKey, BPartnerComposite> retrieveBPartnerComposites(
-			@NonNull final Collection<BPartnerCompositeLookupKey> queryLookupKeys)
+	/**
+	 * @return a map where multiple lookup keys all map to the single BPartnerComposite that we just retrieved.
+	 */
+	private ImmutableMap<OrgAndBPartnerCompositeLookupKey, BPartnerComposite> retrieveBPartnerComposites(
+			@NonNull final Collection<OrgAndBPartnerCompositeLookupKey> singleQueryLookupKeys)
 	{
+		final OrgAndBPartnerCompositeLookupKeyList queryLookupKeys = OrgAndBPartnerCompositeLookupKeyList.ofSingleLookupKeys(singleQueryLookupKeys);
 		final BPartnerQuery query = bPartnerQueryService.createQuery(queryLookupKeys);
 		final Optional<BPartnerComposite> bpartnerComposite;
 		try
@@ -474,18 +493,18 @@ public class JsonRetrieverService
 
 		final BPartnerComposite singleElement = bpartnerComposite.get();
 
-		final HashSet<BPartnerCompositeLookupKey> allLookupKeys = new HashSet<>(queryLookupKeys);
-		allLookupKeys.addAll(extractBPartnerLookupKeys(singleElement));
+		final OrgAndBPartnerCompositeLookupKeyList allLookupKeys = queryLookupKeys.union(extractBPartnerLookupKeys(singleElement));
 
-		final ImmutableMap.Builder<BPartnerCompositeLookupKey, BPartnerComposite> result = ImmutableMap.builder();
-		for (final BPartnerCompositeLookupKey bpartnerLookupKey : allLookupKeys)
+		final ImmutableMap.Builder<OrgAndBPartnerCompositeLookupKey, BPartnerComposite> result = ImmutableMap.builder();
+		for (final BPartnerCompositeLookupKey bpartnerLookupKey : allLookupKeys.getCompositeLookupKeys())
 		{
-			result.put(bpartnerLookupKey, singleElement);
+			final OrgAndBPartnerCompositeLookupKey singleLookupKey = OrgAndBPartnerCompositeLookupKey.of(bpartnerLookupKey, allLookupKeys.getOrgId());
+			result.put(singleLookupKey, singleElement);
 		}
 		return result.build();
 	}
 
-	private static final Collection<BPartnerCompositeLookupKey> extractBPartnerLookupKeys(@NonNull final BPartnerComposite bPartnerComposite)
+	private static OrgAndBPartnerCompositeLookupKeyList extractBPartnerLookupKeys(@NonNull final BPartnerComposite bPartnerComposite)
 	{
 		final ImmutableList.Builder<BPartnerCompositeLookupKey> result = ImmutableList.builder();
 
@@ -514,7 +533,7 @@ public class JsonRetrieverService
 			}
 		}
 
-		return result.build();
+		return OrgAndBPartnerCompositeLookupKeyList.of(bPartnerComposite.getOrgId(), result.build());
 	}
 
 	public Optional<JsonResponseContact> getContact(@NonNull final IdentifierString contactIdentifier)

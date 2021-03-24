@@ -1,83 +1,77 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_HU_Reservation
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_HU_Reservation 
 {
 
-    /** TableName=M_HU_Reservation */
-    public static final String Table_Name = "M_HU_Reservation";
+	String Table_Name = "M_HU_Reservation";
 
-    /** AD_Table_ID=540988 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540988 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Kunde.
+	 * Set Business Partner .
+	 * Identifies a Business Partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID);
+	void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID);
 
 	/**
-	 * Get Kunde.
+	 * Get Business Partner .
+	 * Identifies a Business Partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_Customer_ID();
+	int getC_BPartner_Customer_ID();
 
-    /** Column name C_BPartner_Customer_ID */
-    public static final String COLUMNNAME_C_BPartner_Customer_ID = "C_BPartner_Customer_ID";
+	String COLUMNNAME_C_BPartner_Customer_ID = "C_BPartner_Customer_ID";
 
 	/**
 	 * Set Auftragsposition.
@@ -87,7 +81,7 @@ public interface I_M_HU_Reservation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_OrderLineSO_ID (int C_OrderLineSO_ID);
+	void setC_OrderLineSO_ID (int C_OrderLineSO_ID);
 
 	/**
 	 * Get Auftragsposition.
@@ -97,92 +91,106 @@ public interface I_M_HU_Reservation
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_OrderLineSO_ID();
+	int getC_OrderLineSO_ID();
 
-	public org.compiere.model.I_C_OrderLine getC_OrderLineSO();
+	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLineSO();
 
-	public void setC_OrderLineSO(org.compiere.model.I_C_OrderLine C_OrderLineSO);
+	void setC_OrderLineSO(@Nullable org.compiere.model.I_C_OrderLine C_OrderLineSO);
 
-    /** Column definition for C_OrderLineSO_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Reservation, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLineSO_ID = new org.adempiere.model.ModelColumn<I_M_HU_Reservation, org.compiere.model.I_C_OrderLine>(I_M_HU_Reservation.class, "C_OrderLineSO_ID", org.compiere.model.I_C_OrderLine.class);
-    /** Column name C_OrderLineSO_ID */
-    public static final String COLUMNNAME_C_OrderLineSO_ID = "C_OrderLineSO_ID";
+	ModelColumn<I_M_HU_Reservation, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLineSO_ID = new ModelColumn<>(I_M_HU_Reservation.class, "C_OrderLineSO_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLineSO_ID = "C_OrderLineSO_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	int getC_UOM_ID();
 
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Reservation, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU_Reservation, Object>(I_M_HU_Reservation.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_HU_Reservation, Object> COLUMN_Created = new ModelColumn<>(I_M_HU_Reservation.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Reservation, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_HU_Reservation, Object>(I_M_HU_Reservation.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_HU_Reservation, Object> COLUMN_IsActive = new ModelColumn<>(I_M_HU_Reservation.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set M_HU_Reservation.
@@ -191,7 +199,7 @@ public interface I_M_HU_Reservation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_Reservation_ID (int M_HU_Reservation_ID);
+	void setM_HU_Reservation_ID (int M_HU_Reservation_ID);
 
 	/**
 	 * Get M_HU_Reservation.
@@ -200,65 +208,58 @@ public interface I_M_HU_Reservation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_Reservation_ID();
+	int getM_HU_Reservation_ID();
 
-    /** Column definition for M_HU_Reservation_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Reservation, Object> COLUMN_M_HU_Reservation_ID = new org.adempiere.model.ModelColumn<I_M_HU_Reservation, Object>(I_M_HU_Reservation.class, "M_HU_Reservation_ID", null);
-    /** Column name M_HU_Reservation_ID */
-    public static final String COLUMNNAME_M_HU_Reservation_ID = "M_HU_Reservation_ID";
+	ModelColumn<I_M_HU_Reservation, Object> COLUMN_M_HU_Reservation_ID = new ModelColumn<>(I_M_HU_Reservation.class, "M_HU_Reservation_ID", null);
+	String COLUMNNAME_M_HU_Reservation_ID = "M_HU_Reservation_ID";
 
 	/**
-	 * Set Offen.
-	 * Offene Menge
+	 * Set Open Qty.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyReserved (java.math.BigDecimal QtyReserved);
+	void setQtyReserved (BigDecimal QtyReserved);
 
 	/**
-	 * Get Offen.
-	 * Offene Menge
+	 * Get Open Qty.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyReserved();
+	BigDecimal getQtyReserved();
 
-    /** Column definition for QtyReserved */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Reservation, Object> COLUMN_QtyReserved = new org.adempiere.model.ModelColumn<I_M_HU_Reservation, Object>(I_M_HU_Reservation.class, "QtyReserved", null);
-    /** Column name QtyReserved */
-    public static final String COLUMNNAME_QtyReserved = "QtyReserved";
+	ModelColumn<I_M_HU_Reservation, Object> COLUMN_QtyReserved = new ModelColumn<>(I_M_HU_Reservation.class, "QtyReserved", null);
+	String COLUMNNAME_QtyReserved = "QtyReserved";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Reservation, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_HU_Reservation, Object>(I_M_HU_Reservation.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_HU_Reservation, Object> COLUMN_Updated = new ModelColumn<>(I_M_HU_Reservation.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set CU.
@@ -268,7 +269,7 @@ public interface I_M_HU_Reservation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setVHU_ID (int VHU_ID);
+	void setVHU_ID (int VHU_ID);
 
 	/**
 	 * Get CU.
@@ -278,14 +279,12 @@ public interface I_M_HU_Reservation
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getVHU_ID();
+	int getVHU_ID();
 
-	public de.metas.handlingunits.model.I_M_HU getVHU();
+	de.metas.handlingunits.model.I_M_HU getVHU();
 
-	public void setVHU(de.metas.handlingunits.model.I_M_HU VHU);
+	void setVHU(de.metas.handlingunits.model.I_M_HU VHU);
 
-    /** Column definition for VHU_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Reservation, de.metas.handlingunits.model.I_M_HU> COLUMN_VHU_ID = new org.adempiere.model.ModelColumn<I_M_HU_Reservation, de.metas.handlingunits.model.I_M_HU>(I_M_HU_Reservation.class, "VHU_ID", de.metas.handlingunits.model.I_M_HU.class);
-    /** Column name VHU_ID */
-    public static final String COLUMNNAME_VHU_ID = "VHU_ID";
+	ModelColumn<I_M_HU_Reservation, de.metas.handlingunits.model.I_M_HU> COLUMN_VHU_ID = new ModelColumn<>(I_M_HU_Reservation.class, "VHU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_VHU_ID = "VHU_ID";
 }

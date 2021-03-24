@@ -1,62 +1,55 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_HU_PackingMaterial
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_HU_PackingMaterial 
 {
 
-    /** TableName=M_HU_PackingMaterial */
-    public static final String Table_Name = "M_HU_PackingMaterial";
+	String Table_Name = "M_HU_PackingMaterial";
 
-    /** AD_Table_ID=540519 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540519 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 7 - System - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Zulässiges Verpackungsvolumen.
@@ -66,7 +59,7 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAllowedPackingVolume (java.math.BigDecimal AllowedPackingVolume);
+	void setAllowedPackingVolume (@Nullable BigDecimal AllowedPackingVolume);
 
 	/**
 	 * Get Zulässiges Verpackungsvolumen.
@@ -76,12 +69,10 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getAllowedPackingVolume();
+	BigDecimal getAllowedPackingVolume();
 
-    /** Column definition for AllowedPackingVolume */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_AllowedPackingVolume = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "AllowedPackingVolume", null);
-    /** Column name AllowedPackingVolume */
-    public static final String COLUMNNAME_AllowedPackingVolume = "AllowedPackingVolume";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_AllowedPackingVolume = new ModelColumn<>(I_M_HU_PackingMaterial.class, "AllowedPackingVolume", null);
+	String COLUMNNAME_AllowedPackingVolume = "AllowedPackingVolume";
 
 	/**
 	 * Set Zulässiges Verpackungsgewicht.
@@ -91,7 +82,7 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAllowedPackingWeight (java.math.BigDecimal AllowedPackingWeight);
+	void setAllowedPackingWeight (@Nullable BigDecimal AllowedPackingWeight);
 
 	/**
 	 * Get Zulässiges Verpackungsgewicht.
@@ -101,35 +92,32 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getAllowedPackingWeight();
+	BigDecimal getAllowedPackingWeight();
 
-    /** Column definition for AllowedPackingWeight */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_AllowedPackingWeight = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "AllowedPackingWeight", null);
-    /** Column name AllowedPackingWeight */
-    public static final String COLUMNNAME_AllowedPackingWeight = "AllowedPackingWeight";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_AllowedPackingWeight = new ModelColumn<>(I_M_HU_PackingMaterial.class, "AllowedPackingWeight", null);
+	String COLUMNNAME_AllowedPackingWeight = "AllowedPackingWeight";
 
 	/**
-	 * Set Einheit Abessungen.
-	 * Maßeinheit für die Abmessungen (Höhe, Breite, Länge) des Packmittels, sowie Grundmaßeinheit für alle Volumenangaben.
+	 * Set UOM for Dimensions.
+	 * Unit of measurement for the dimensions (height, width, length) of the packaging material, and basic unit of measurement for all volume specifications.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_Dimension_ID (int C_UOM_Dimension_ID);
+	void setC_UOM_Dimension_ID (int C_UOM_Dimension_ID);
 
 	/**
-	 * Get Einheit Abessungen.
-	 * Maßeinheit für die Abmessungen (Höhe, Breite, Länge) des Packmittels, sowie Grundmaßeinheit für alle Volumenangaben.
+	 * Get UOM for Dimensions.
+	 * Unit of measurement for the dimensions (height, width, length) of the packaging material, and basic unit of measurement for all volume specifications.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_Dimension_ID();
+	int getC_UOM_Dimension_ID();
 
-    /** Column name C_UOM_Dimension_ID */
-    public static final String COLUMNNAME_C_UOM_Dimension_ID = "C_UOM_Dimension_ID";
+	String COLUMNNAME_C_UOM_Dimension_ID = "C_UOM_Dimension_ID";
 
 	/**
 	 * Set Einheit Gewicht.
@@ -138,7 +126,7 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_Weight_ID (int C_UOM_Weight_ID);
+	void setC_UOM_Weight_ID (int C_UOM_Weight_ID);
 
 	/**
 	 * Get Einheit Gewicht.
@@ -147,61 +135,55 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_Weight_ID();
+	int getC_UOM_Weight_ID();
 
-    /** Column name C_UOM_Weight_ID */
-    public static final String COLUMNNAME_C_UOM_Weight_ID = "C_UOM_Weight_ID";
+	String COLUMNNAME_C_UOM_Weight_ID = "C_UOM_Weight_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Created = new ModelColumn<>(I_M_HU_PackingMaterial.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Description = new ModelColumn<>(I_M_HU_PackingMaterial.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Übervolumentoleranz.
@@ -211,7 +193,7 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setExcessVolumeTolerance (java.math.BigDecimal ExcessVolumeTolerance);
+	void setExcessVolumeTolerance (@Nullable BigDecimal ExcessVolumeTolerance);
 
 	/**
 	 * Get Übervolumentoleranz.
@@ -221,12 +203,10 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getExcessVolumeTolerance();
+	BigDecimal getExcessVolumeTolerance();
 
-    /** Column definition for ExcessVolumeTolerance */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_ExcessVolumeTolerance = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "ExcessVolumeTolerance", null);
-    /** Column name ExcessVolumeTolerance */
-    public static final String COLUMNNAME_ExcessVolumeTolerance = "ExcessVolumeTolerance";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_ExcessVolumeTolerance = new ModelColumn<>(I_M_HU_PackingMaterial.class, "ExcessVolumeTolerance", null);
+	String COLUMNNAME_ExcessVolumeTolerance = "ExcessVolumeTolerance";
 
 	/**
 	 * Set Übergewichtstoleranz.
@@ -236,7 +216,7 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setExcessWeightTolerance (java.math.BigDecimal ExcessWeightTolerance);
+	void setExcessWeightTolerance (@Nullable BigDecimal ExcessWeightTolerance);
 
 	/**
 	 * Get Übergewichtstoleranz.
@@ -246,12 +226,10 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getExcessWeightTolerance();
+	BigDecimal getExcessWeightTolerance();
 
-    /** Column definition for ExcessWeightTolerance */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_ExcessWeightTolerance = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "ExcessWeightTolerance", null);
-    /** Column name ExcessWeightTolerance */
-    public static final String COLUMNNAME_ExcessWeightTolerance = "ExcessWeightTolerance";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_ExcessWeightTolerance = new ModelColumn<>(I_M_HU_PackingMaterial.class, "ExcessWeightTolerance", null);
+	String COLUMNNAME_ExcessWeightTolerance = "ExcessWeightTolerance";
 
 	/**
 	 * Set Füllgrad.
@@ -261,7 +239,7 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setFillingLevel (java.math.BigDecimal FillingLevel);
+	void setFillingLevel (@Nullable BigDecimal FillingLevel);
 
 	/**
 	 * Get Füllgrad.
@@ -271,12 +249,10 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getFillingLevel();
+	BigDecimal getFillingLevel();
 
-    /** Column definition for FillingLevel */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_FillingLevel = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "FillingLevel", null);
-    /** Column name FillingLevel */
-    public static final String COLUMNNAME_FillingLevel = "FillingLevel";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_FillingLevel = new ModelColumn<>(I_M_HU_PackingMaterial.class, "FillingLevel", null);
+	String COLUMNNAME_FillingLevel = "FillingLevel";
 
 	/**
 	 * Set Höhe.
@@ -285,7 +261,7 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHeight (java.math.BigDecimal Height);
+	void setHeight (@Nullable BigDecimal Height);
 
 	/**
 	 * Get Höhe.
@@ -294,37 +270,33 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getHeight();
+	BigDecimal getHeight();
 
-    /** Column definition for Height */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Height = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "Height", null);
-    /** Column name Height */
-    public static final String COLUMNNAME_Height = "Height";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Height = new ModelColumn<>(I_M_HU_PackingMaterial.class, "Height", null);
+	String COLUMNNAME_Height = "Height";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_IsActive = new ModelColumn<>(I_M_HU_PackingMaterial.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Geschlossen.
@@ -333,7 +305,7 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsClosed (boolean IsClosed);
+	void setIsClosed (boolean IsClosed);
 
 	/**
 	 * Get Geschlossen.
@@ -342,12 +314,10 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isClosed();
+	boolean isClosed();
 
-    /** Column definition for IsClosed */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_IsClosed = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "IsClosed", null);
-    /** Column name IsClosed */
-    public static final String COLUMNNAME_IsClosed = "IsClosed";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_IsClosed = new ModelColumn<>(I_M_HU_PackingMaterial.class, "IsClosed", null);
+	String COLUMNNAME_IsClosed = "IsClosed";
 
 	/**
 	 * Set Länge.
@@ -356,7 +326,7 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLength (java.math.BigDecimal Length);
+	void setLength (@Nullable BigDecimal Length);
 
 	/**
 	 * Get Länge.
@@ -365,58 +335,53 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getLength();
+	BigDecimal getLength();
 
-    /** Column definition for Length */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Length = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "Length", null);
-    /** Column name Length */
-    public static final String COLUMNNAME_Length = "Length";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Length = new ModelColumn<>(I_M_HU_PackingMaterial.class, "Length", null);
+	String COLUMNNAME_Length = "Length";
 
 	/**
-	 * Set Packmittel.
+	 * Set Packing Material.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_PackingMaterial_ID (int M_HU_PackingMaterial_ID);
+	void setM_HU_PackingMaterial_ID (int M_HU_PackingMaterial_ID);
 
 	/**
-	 * Get Packmittel.
+	 * Get Packing Material.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_PackingMaterial_ID();
+	int getM_HU_PackingMaterial_ID();
 
-    /** Column definition for M_HU_PackingMaterial_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_M_HU_PackingMaterial_ID = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "M_HU_PackingMaterial_ID", null);
-    /** Column name M_HU_PackingMaterial_ID */
-    public static final String COLUMNNAME_M_HU_PackingMaterial_ID = "M_HU_PackingMaterial_ID";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_M_HU_PackingMaterial_ID = new ModelColumn<>(I_M_HU_PackingMaterial.class, "M_HU_PackingMaterial_ID", null);
+	String COLUMNNAME_M_HU_PackingMaterial_ID = "M_HU_PackingMaterial_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Name.
@@ -425,7 +390,7 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -434,12 +399,10 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Name = new ModelColumn<>(I_M_HU_PackingMaterial.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Stapelbarkeitsfaktor.
@@ -449,7 +412,7 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setStackabilityFactor (int StackabilityFactor);
+	void setStackabilityFactor (int StackabilityFactor);
 
 	/**
 	 * Get Stapelbarkeitsfaktor.
@@ -459,40 +422,35 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getStackabilityFactor();
+	int getStackabilityFactor();
 
-    /** Column definition for StackabilityFactor */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_StackabilityFactor = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "StackabilityFactor", null);
-    /** Column name StackabilityFactor */
-    public static final String COLUMNNAME_StackabilityFactor = "StackabilityFactor";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_StackabilityFactor = new ModelColumn<>(I_M_HU_PackingMaterial.class, "StackabilityFactor", null);
+	String COLUMNNAME_StackabilityFactor = "StackabilityFactor";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Updated = new ModelColumn<>(I_M_HU_PackingMaterial.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Breite.
@@ -501,7 +459,7 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setWidth (java.math.BigDecimal Width);
+	void setWidth (@Nullable BigDecimal Width);
 
 	/**
 	 * Get Breite.
@@ -510,10 +468,8 @@ public interface I_M_HU_PackingMaterial
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getWidth();
+	BigDecimal getWidth();
 
-    /** Column definition for Width */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Width = new org.adempiere.model.ModelColumn<I_M_HU_PackingMaterial, Object>(I_M_HU_PackingMaterial.class, "Width", null);
-    /** Column name Width */
-    public static final String COLUMNNAME_Width = "Width";
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Width = new ModelColumn<>(I_M_HU_PackingMaterial.class, "Width", null);
+	String COLUMNNAME_Width = "Width";
 }

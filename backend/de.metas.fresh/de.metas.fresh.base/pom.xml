@@ -20,7 +20,7 @@
 	<properties>
 		<!-- empty property because the sql migration dir already contains a list 
 			of base directories -->
-		<migration-sql-basedir></migration-sql-basedir>
+		<migration-sql-basedir/>
 		<metasfresh.version>[1,10.0.0]</metasfresh.version>
 	</properties>
 
@@ -109,6 +109,18 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.externalreference</groupId>
+			<artifactId>de.metas.externalreference</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.externalsystem</groupId>
+			<artifactId>de.metas.externalsystem</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>de.metas.contracts</groupId>
 			<artifactId>de.metas.contracts</artifactId>
@@ -215,12 +227,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.handlingunits</groupId>
-			<artifactId>de.metas.handlingunits.client</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-cockpit</artifactId>
 			<version>${metasfresh.version}</version>
@@ -235,12 +241,6 @@
 		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>de.metas.jax.rs</groupId>
-			<artifactId>de.metas.jax.rs</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 
@@ -330,6 +330,12 @@
 		<dependency>
 			<groupId>de.metas.material</groupId>
 			<artifactId>metasfresh-material-dispo-service</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.servicerepair</groupId>
+			<artifactId>de.metas.servicerepair.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 

@@ -26,7 +26,6 @@ package de.metas.edi.sscc18;
 import java.math.BigDecimal;
 import java.util.List;
 
-import de.metas.adempiere.form.terminal.table.annotation.TableInfo;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
@@ -44,29 +43,20 @@ import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
  * @author tsa
  *
  */
-// NOTE: because there is a bug in JXTable code which is not sorting correctly primitive types (i.e. int) we are using Integer
-// see org.jdesktop.swingx.sort.TableSortController.getComparator(int)
 public interface IPrintableDesadvLineSSCC18Labels
 {
-	@TableInfo(hidden = true)
 	I_EDI_DesadvLine getEDI_DesadvLine();
 
-	@TableInfo(displayName = "Line", translate = true, seqNo = 10, prototypeValue = "0000")
 	Integer getLineNo();
 
-	@TableInfo(displayName = "ProductValue", translate = true, seqNo = 20)
 	String getProductValue();
 
-	@TableInfo(displayName = "ProductName", translate = true, seqNo = 30, prototypeValue = "Raschelsacke Goldgelb mit Verschlussband 20kg (Ballen à 1000 Stk)")
 	String getProductName();
 
-	@TableInfo(displayName = "ExistingSSCC18sCount", translate = true, seqNo = 40, prototypeValue = "000")
 	Integer getExistingSSCC18sCount();
 
-	@TableInfo(hidden = true)
 	List<I_EDI_DesadvLine_Pack> getExistingSSCC18s();
 
-	@TableInfo(displayName = "RequiredSSCC18sCount", translate = true, seqNo = 50, prototypeValue = "00000000000000000000")
 	BigDecimal getRequiredSSCC18sCount();
 
 	void setRequiredSSCC18sCount(BigDecimal requiredSSCC18sCount);

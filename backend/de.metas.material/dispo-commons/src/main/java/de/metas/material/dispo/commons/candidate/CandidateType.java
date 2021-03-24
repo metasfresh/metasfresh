@@ -1,11 +1,14 @@
 package de.metas.material.dispo.commons.candidate;
 
 import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -62,9 +65,7 @@ public enum CandidateType implements ReferenceListAwareEnum
 
 	ATTRIBUTES_CHANGED_FROM(X_MD_Candidate.MD_CANDIDATE_TYPE_ATTRIBUTES_CHANGED_FROM),
 
-	ATTRIBUTES_CHANGED_TO(X_MD_Candidate.MD_CANDIDATE_TYPE_ATTRIBUTES_CHANGED_TO)
-
-	;
+	ATTRIBUTES_CHANGED_TO(X_MD_Candidate.MD_CANDIDATE_TYPE_ATTRIBUTES_CHANGED_TO);
 
 	@Getter
 	private final String code;

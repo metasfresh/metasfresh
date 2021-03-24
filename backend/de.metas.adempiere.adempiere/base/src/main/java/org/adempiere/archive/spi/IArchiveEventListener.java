@@ -25,6 +25,8 @@ package org.adempiere.archive.spi;
 import de.metas.email.EMailAddress;
 import de.metas.email.mailboxes.UserEMailConfig;
 import de.metas.user.UserId;
+import org.adempiere.archive.api.ArchiveEmailSentStatus;
+import org.adempiere.archive.api.ArchivePrintOutStatus;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.compiere.model.I_AD_Archive;
 
@@ -40,22 +42,37 @@ public interface IArchiveEventListener
 		// nothing
 	}
 
-	default void onPdfUpdate(I_AD_Archive archive, UserId userId, String action)
+	default void onPdfUpdate(
+			I_AD_Archive archive,
+			UserId userId,
+			String action)
 	{
 		// nothing
 	}
 
-	default void onEmailSent(I_AD_Archive archive, String action, UserEMailConfig user, EMailAddress from, EMailAddress to, EMailAddress cc, EMailAddress bcc, String status)
+	default void onEmailSent(
+			final I_AD_Archive archive,
+			final UserEMailConfig user,
+			final EMailAddress from,
+			final EMailAddress to,
+			final EMailAddress cc,
+			final EMailAddress bcc,
+			final ArchiveEmailSentStatus status)
 	{
 		// nothing
 	}
 
-	default void onPrintOut(I_AD_Archive archive, UserId userId, String printerName, int copies, String status)
+	default void onPrintOut(
+			final I_AD_Archive archive,
+			final UserId userId,
+			final String printerName,
+			final int copies,
+			final ArchivePrintOutStatus status)
 	{
 		// nothing
 	}
 
-	default void onVoidDocument(I_AD_Archive archive)
+	default void onVoidDocument(final I_AD_Archive archive)
 	{
 		// nothing
 	}

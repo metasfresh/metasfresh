@@ -98,7 +98,7 @@ java_params=" \
  -Dsun.misc.URLClassPath.disableJarChecking=${java_disable_jar_checking} \
  -Xmx${java_max_heap}\
  -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=${java_heap_dump_path} \
- -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=${debug_port} \
+ -agentlib:jdwp=transport=dt_socket,server=y,suspend=${debug_suspend},address=*:${debug_port} \
  -Dspring.profiles.active=${spring_active_profiles} \
 "
 
