@@ -1,7 +1,6 @@
 package de.metas.ui.web.dashboard;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -11,15 +10,18 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
-import org.elasticsearch.action.admin.indices.get.GetIndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.IndicesAdminClient;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation.Bucket;
+import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
+
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 
 import com.google.common.base.Stopwatch;
@@ -55,7 +57,7 @@ import lombok.NonNull;
 public class KPIDataLoader
 {
 	public static final KPIDataLoader newInstance(
-			@NonNull final Client elasticsearchClient,
+			@NonNull final RestHighLevelClient elasticsearchClient,
 			@NonNull final KPI kpi,
 			@NonNull final JSONOptions jsonOptions)
 	{
@@ -64,7 +66,7 @@ public class KPIDataLoader
 
 	private static final Logger logger = LogManager.getLogger(KPIDataLoader.class);
 
-	private final Client elasticsearchClient;
+	private final RestHighLevelClient elasticsearchClient;
 	private final KPI kpi;
 	private final JSONOptions jsonOptions;
 
@@ -74,10 +76,10 @@ public class KPIDataLoader
 	private boolean formatValues = false;
 
 	private BiFunction<KPIField, TimeRange, String> fieldNameExtractor = (field, timeRange) -> field.getFieldName();
-	private BiFunction<Bucket, TimeRange, Object> dataSetValueKeyExtractor = (bucket, timeRange) -> bucket.getKey();
+	private BiFunction<InternalMultiBucketAggregation.InternalBucket, TimeRange, Object> dataSetValueKeyExtractor = (bucket, timeRange) -> bucket.getKey();
 
 	private KPIDataLoader(
-			@NonNull final Client elasticsearchClient,
+			@NonNull final RestHighLevelClient elasticsearchClient,
 			@NonNull final KPI kpi,
 			@NonNull final JSONOptions jsonOptions)
 	{
@@ -93,7 +95,6 @@ public class KPIDataLoader
 		final ImmutableList.Builder<TimeRange> timeRanges = ImmutableList.builder();
 		timeRanges.add(mainTimeRange);
 
-		//
 		//
 		final Duration compareOffset = kpi.getCompareOffset();
 		if (compareOffset != null)
@@ -157,33 +158,45 @@ public class KPIDataLoader
 	 */
 	public KPIDataLoader assertESTypesExists()
 	{
-		final IndicesAdminClient admin = elasticsearchClient.admin()
-				.indices();
-
 		//
 		// Check index exists
 		final String esSearchIndex = kpi.getESSearchIndex();
-		final GetIndexResponse indexResponse = admin.prepareGetIndex()
-				.addIndices(esSearchIndex)
-				.get();
-		final List<String> indexesFound = Arrays.asList(indexResponse.getIndices());
-		if (!indexesFound.contains(esSearchIndex))
+		final GetIndexRequest request = new GetIndexRequest(esSearchIndex);
+		try
 		{
-			throw new AdempiereException("ES index '" + esSearchIndex + "' not found in " + indexesFound);
+			final boolean indexExists = elasticsearchClient.indices().exists(request, RequestOptions.DEFAULT);
+			if (!indexExists)
+			{
+				throw new AdempiereException("ES index '" + esSearchIndex + "' not found");
+			}
 		}
-		logger.debug("Indexes found: {}", indexesFound);
+		catch (java.io.IOException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+
+		// final GetIndexResponse indexResponse = admin.prepareGetIndex()
+		// 		.addIndices(esSearchIndex)
+		// 		.get();
+		// final List<String> indexesFound = Arrays.asList(indexResponse.getIndices());
+		// if (!indexesFound.contains(esSearchIndex))
+		// {
+		// 	throw new AdempiereException("ES index '" + esSearchIndex + "' not found in " + indexesFound);
+		// }
+		// logger.debug("Indexes found: {}", indexesFound);
 
 		//
 		// Check type exists
-		final String esTypes = kpi.getESSearchTypes();
-		final boolean esTypesExists = admin.prepareTypesExists(esSearchIndex)
-				.setTypes(kpi.getESSearchTypes())
-				.get()
-				.isExists();
-		if (!esTypesExists)
-		{
-			throw new AdempiereException("Elasticseatch types " + esTypes + " does not exist");
-		}
+		// TODO figure out how to port
+		// final String esTypes = kpi.getESSearchTypes();
+		// final boolean esTypesExists = admin.prepareTypesExists(esSearchIndex)
+		// 		.setTypes(kpi.getESSearchTypes())
+		// 		.get()
+		// 		.isExists();
+		// if (!esTypesExists)
+		// {
+		// 	throw new AdempiereException("Elasticseatch types " + esTypes + " does not exist");
+		// }
 
 		// All good
 		return this;
@@ -231,11 +244,15 @@ public class KPIDataLoader
 		{
 			logger.trace("Executing: \n{}", esQueryParsed);
 
-			response = elasticsearchClient.prepareSearch(kpi.getESSearchIndex())
-					.setTypes(kpi.getESSearchTypes())
-					.setSource(esQueryParsed)
-					// .setExplain(true) // enable it only for debugging
-					.get();
+			final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+			sourceBuilder.query(QueryBuilders.queryStringQuery(esQueryParsed));
+
+			final SearchRequest searchRequest = new SearchRequest();
+			searchRequest.indices(kpi.getESSearchIndex());
+			searchRequest.searchType(kpi.getESSearchTypes());
+			searchRequest.source(sourceBuilder);
+
+			response = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT);
 
 			logger.trace("Got response: \n{}", response);
 		}
@@ -259,12 +276,12 @@ public class KPIDataLoader
 
 			for (final Aggregation agg : aggregations)
 			{
-				if (agg instanceof MultiBucketsAggregation)
+				if (agg instanceof InternalMultiBucketAggregation)
 				{
 					final String aggName = agg.getName();
-					final MultiBucketsAggregation multiBucketsAggregation = (MultiBucketsAggregation)agg;
-
-					for (final Bucket bucket : multiBucketsAggregation.getBuckets())
+					final InternalMultiBucketAggregation multiBucketsAggregation = (InternalMultiBucketAggregation)agg;
+					final List<InternalMultiBucketAggregation.InternalBucket> buckets = multiBucketsAggregation.getBuckets();
+					for (final InternalMultiBucketAggregation.InternalBucket bucket : buckets)
 					{
 						final Object key = dataSetValueKeyExtractor.apply(bucket, timeRange);
 

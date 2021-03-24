@@ -85,7 +85,7 @@ public final class WebRestApiContextProvider implements ContextProvider, Seriali
 		return ctxProxy;
 	}
 
-	private final Properties getActualContext()
+	private Properties getActualContext()
 	{
 		//
 		// IMPORTANT: this method will be called very often, so please make sure it's FAST!

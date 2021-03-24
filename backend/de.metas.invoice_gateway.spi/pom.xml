@@ -12,8 +12,8 @@
 	<artifactId>metasfresh-invoice_gateway.spi</artifactId>
 
 	<properties>
-		<migration-sql-basedir></migration-sql-basedir>
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+		<migration-sql-basedir/>
+		<metasfresh.version>10.0.0</metasfresh.version>
 	</properties>
 
 	<dependencies>
@@ -24,6 +24,12 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -40,6 +46,11 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.code.findbugs</groupId>
+			<artifactId>jsr305</artifactId>
 		</dependency>
 
 	</dependencies>

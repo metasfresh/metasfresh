@@ -4,9 +4,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-import org.elasticsearch.client.Client;
+import de.metas.elasticsearch.impl.ESSystemEnabledCondition;
+import lombok.NonNull;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -65,19 +67,28 @@ import io.swagger.annotations.ApiParam;
 
 @RestController
 @RequestMapping(value = DashboardRestController.ENDPOINT)
+@Conditional(ESSystemEnabledCondition.class)
 public class DashboardRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/dashboard";
-
 	private static final Logger logger = LogManager.getLogger(DashboardRestController.class);
-	@Autowired
-	private UserSession userSession;
-	@Autowired
-	private UserDashboardRepository userDashboardRepo;
-	@Autowired
-	private Client elasticsearchClient;
-	@Autowired
-	private WebsocketSender websocketSender;
+	
+	private final UserSession userSession;
+	private final UserDashboardRepository userDashboardRepo;
+	private final RestHighLevelClient elasticsearchClient;
+	private final WebsocketSender websocketSender;
+
+	public DashboardRestController(
+			@NonNull final UserSession userSession,
+			@NonNull final UserDashboardRepository userDashboardRepo,
+			@NonNull final RestHighLevelClient elasticsearchClient,
+			@NonNull final WebsocketSender websocketSender)
+	{
+		this.userSession = userSession;
+		this.userDashboardRepo = userDashboardRepo;
+		this.elasticsearchClient = elasticsearchClient;
+		this.websocketSender = websocketSender;
+	}
 
 	private JSONOptions newJSONOpts()
 	{
@@ -184,7 +195,7 @@ public class DashboardRestController
 		return addDashboardItem(jsonRequest, DashboardWidgetType.TargetIndicator);
 	}
 
-	private final JSONDashboardItem addDashboardItem(final JsonUserDashboardItemAddRequest jsonRequest, final DashboardWidgetType widgetType)
+	private JSONDashboardItem addDashboardItem(final JsonUserDashboardItemAddRequest jsonRequest, final DashboardWidgetType widgetType)
 	{
 		userSession.assertLoggedIn();
 

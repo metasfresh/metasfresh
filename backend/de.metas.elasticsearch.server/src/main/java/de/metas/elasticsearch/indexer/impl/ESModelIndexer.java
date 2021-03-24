@@ -13,16 +13,23 @@ import javax.annotation.concurrent.Immutable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
+import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.delete.DeleteRequestBuilder;
-import org.elasticsearch.action.index.IndexRequestBuilder;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.IndicesAdminClient;
+import org.elasticsearch.action.delete.DeleteRequest;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.support.IndicesOptions;
+import org.elasticsearch.action.support.master.AcknowledgedResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.CreateIndexResponse;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.client.indices.PutMappingRequest;
+import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -77,7 +84,7 @@ public final class ESModelIndexer implements IESModelIndexer
 	// services
 	private static final transient Logger logger = LogManager.getLogger(ESModelIndexer.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final Client elasticsearchClient;
+	private final RestHighLevelClient elasticsearchClient;
 	private final ObjectMapper jsonObjectMapper;
 
 	@Getter
@@ -102,7 +109,7 @@ public final class ESModelIndexer implements IESModelIndexer
 
 	@Builder
 	private ESModelIndexer(
-			@NonNull final Client elasticsearchClient,
+			@NonNull final RestHighLevelClient elasticsearchClient,
 			@NonNull final ObjectMapper jsonObjectMapper,
 			@NonNull final ESModelIndexerId id,
 			@NonNull final String modelTableName,
@@ -163,25 +170,21 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Override
 	public void deleteIndex()
 	{
-		final IndicesAdminClient indices = elasticsearchClient.admin().indices();
-
-		//
-		// Create index if does not exist
 		final String indexName = getIndexName();
-		final boolean indexExists = indices
-				.prepareExists(indexName)
-				.get()
-				.isExists();
-		if (!indexExists)
-		{
-			// nothing to delete
-			return;
-		}
+		DeleteIndexRequest deleteIndexRequest = new DeleteIndexRequest(indexName);
+		deleteIndexRequest.indicesOptions(IndicesOptions.lenientExpandOpen());
 
-		final boolean acknowledged = indices.prepareDelete(indexName)
-				.get()
-				.isAcknowledged();
-		if (!acknowledged)
+		final AcknowledgedResponse response;
+		try
+		{
+			response = elasticsearchClient
+					.indices()
+					.delete(deleteIndexRequest, RequestOptions.DEFAULT);
+		}catch(IOException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+		if (!response.isAcknowledged())
 		{
 			throw new AdempiereException("Cannot delete index: " + indexName);
 		}
@@ -208,17 +211,29 @@ public final class ESModelIndexer implements IESModelIndexer
 
 	private void createIndex()
 	{
-		final IndicesAdminClient indices = elasticsearchClient.admin().indices();
 		final String indexName = getIndexName();
 
-		final CreateIndexRequestBuilder requestBuilder = indices.prepareCreate(indexName);
+		final CreateIndexRequest request = new CreateIndexRequest(indexName);
+
 		if (!Check.isEmpty(indexSettingsJson, true))
 		{
-			requestBuilder.setSettings(indexSettingsJson);
+			final Settings settings = Settings.builder().loadFromSource(indexSettingsJson, XContentType.JSON).build();
+			request.settings(settings);
 		}
 
-		final boolean acknowledged = requestBuilder.get().isAcknowledged();
-		if (!acknowledged)
+		final CreateIndexResponse createIndexResponse;
+		try
+		{
+			createIndexResponse = elasticsearchClient
+					.indices()
+					.create(request, RequestOptions.DEFAULT);
+		}
+		catch (IOException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+		
+		if (!createIndexResponse.isAcknowledged())
 		{
 			throw new AdempiereException("Cannot create index: " + indexName);
 		}
@@ -228,30 +243,35 @@ public final class ESModelIndexer implements IESModelIndexer
 
 	private boolean checkIndexExists()
 	{
-		final IndicesAdminClient indices = elasticsearchClient.admin().indices();
 		final String indexName = getIndexName();
-		return indices
-				.prepareExists(indexName)
-				.get()
-				.isExists();
+		final GetIndexRequest request = new GetIndexRequest(indexName);
+
+		try
+		{
+			return elasticsearchClient
+					.indices().
+							exists(request, RequestOptions.DEFAULT);
+		}
+		catch (final IOException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 	}
 
-	private final void createUpdateIndexTypeMapping()
+	private void createUpdateIndexTypeMapping()
 	{
-		final IndicesAdminClient indices = elasticsearchClient.admin().indices();
-
+		final String indexType = getIndexType();
 		XContentBuilder indexTypeMappingBuilder = null;
 		String mapping = null;
 		try
 		{
 			indexTypeMappingBuilder = XContentFactory.jsonBuilder();
-
 			indexTypeMappingBuilder.startObject();
 			appendMapping_DynamicTemplates(indexTypeMappingBuilder);
 			appendMapping_Properties(indexTypeMappingBuilder);
 			indexTypeMappingBuilder.endObject();
-
-			mapping = indexTypeMappingBuilder.string();
+			indexTypeMappingBuilder.field("type", indexType);
+			mapping = toString(indexTypeMappingBuilder);
 		}
 		catch (final Exception ex)
 		{
@@ -265,11 +285,12 @@ public final class ESModelIndexer implements IESModelIndexer
 		try
 		{
 			final String indexName = getIndexName();
-			final String indexType = getIndexType();
-			final PutMappingResponse putMappingResponse = indices.preparePutMapping(indexName)
-					.setType(indexType)
-					.setSource(mapping)
-					.get();
+
+			final PutMappingRequest request = new PutMappingRequest(indexName);
+			request.source(mapping, XContentType.JSON);
+
+			final AcknowledgedResponse putMappingResponse = elasticsearchClient.indices().putMapping(request, RequestOptions.DEFAULT);
+
 			if (!putMappingResponse.isAcknowledged())
 			{
 				throw new AdempiereException("Put mapping was not acknowledged for " + this);
@@ -290,7 +311,7 @@ public final class ESModelIndexer implements IESModelIndexer
 		}
 	}
 
-	private final void appendMapping_DynamicTemplates(final XContentBuilder builder) throws IOException
+	private void appendMapping_DynamicTemplates(final XContentBuilder builder) throws IOException
 	{
 		final ESModelIndexerProfile profile = getProfile();
 		final ESIndexType stringIndexType;
@@ -344,7 +365,7 @@ public final class ESModelIndexer implements IESModelIndexer
 		builder.endObject();
 	}
 
-	private static final String toStringOrNull(final XContentBuilder builder)
+	private static String toStringOrNull(final XContentBuilder builder)
 	{
 		if (builder == null)
 		{
@@ -353,29 +374,35 @@ public final class ESModelIndexer implements IESModelIndexer
 
 		try
 		{
-			return builder.string();
+			return toString(builder);
 		}
-		catch (final IOException e)
+		catch (final Exception e)
 		{
 			e.printStackTrace();
 			return null;
 		}
 	}
 
-	private Stream<IndexRequestBuilder> createIndexRequestsAndStream(final Object model)
+	private static String toString(final XContentBuilder builder)
+	{
+		builder.close();
+		return builder.getOutputStream().toString();
+	}
+
+	private Stream<IndexRequest> createIndexRequestsAndStream(final Object model)
 	{
 		// NOTE: for debugging purposes we are checking it each time
 		// createUpdateIndex();
 
 		//
 		// model (parent) index requests
-		final Stream<IndexRequestBuilder> result = Stream.of(model)
+		final Stream<IndexRequest> result = Stream.of(model)
 				.map(this::createIndexRequestForModel);
 
 		return result;
 	}
 
-	private IndexRequestBuilder createIndexRequestForModel(final Object model)
+	private IndexRequest createIndexRequestForModel(final Object model)
 	{
 		final IESModelDenormalizer modelDenormalizer = getModelDenormalizer();
 
@@ -395,9 +422,9 @@ public final class ESModelIndexer implements IESModelIndexer
 
 			esDocumentJson = jsonObjectMapper.writeValueAsString(esDocument);
 
-			final IndexRequestBuilder indexRequestBuilder = elasticsearchClient.prepareIndex(getIndexName(), getIndexType(), esDocumentId);
-			indexRequestBuilder.setSource(esDocumentJson);
-			return indexRequestBuilder;
+			return new IndexRequest(getIndexName()).id(esDocumentId)
+					//.type(getIndexType()) "types are in the process of being removed
+					.source(XContentType.JSON, esDocumentJson);
 		}
 		catch (final Exception e)
 		{
@@ -431,7 +458,7 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Override
 	public IESIndexerResult addToIndex(@NonNull final ESModelIndexerDataSource dataSource)
 	{
-		final BulkRequestBuilder bulkRequest = elasticsearchClient.prepareBulk();
+		BulkRequest bulkRequest = new BulkRequest();
 
 		try
 		{
@@ -444,7 +471,8 @@ public final class ESModelIndexer implements IESModelIndexer
 				return IESIndexerResult.NULL;
 			}
 
-			final BulkResponse bulkResponse = bulkRequest.execute().actionGet();
+			final BulkResponse bulkResponse = elasticsearchClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+			
 			final IESIndexerResult esResponse = ESIndexerResult.of(bulkResponse);
 
 			logger.debug("Added {}", esResponse);
@@ -466,14 +494,15 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Override
 	public IESIndexerResult removeFromIndexByIds(final Collection<String> ids)
 	{
-		final BulkRequestBuilder bulkRequest = elasticsearchClient.prepareBulk();
+		final BulkRequest bulkRequest = new BulkRequest();
 
 		try
 		{
 			createDeleteRequests(ids)
 					.forEach(bulkRequest::add);
 
-			final BulkResponse bulkResponse = bulkRequest.execute().actionGet();
+						
+			final BulkResponse bulkResponse = elasticsearchClient.bulk(bulkRequest, RequestOptions.DEFAULT);
 			final IESIndexerResult esResponse = ESIndexerResult.of(bulkResponse);
 
 			logger.debug("Deleted {}", esResponse);
@@ -492,13 +521,13 @@ public final class ESModelIndexer implements IESModelIndexer
 		}
 	}
 
-	private Stream<DeleteRequestBuilder> createDeleteRequests(final Collection<String> ids)
+	private Stream<DeleteRequest> createDeleteRequests(final Collection<String> ids)
 	{
 		return ids.stream()
 				.flatMap(this::createDeleteRequests);
 	}
 
-	private Stream<DeleteRequestBuilder> createDeleteRequests(final String id)
+	private Stream<DeleteRequest> createDeleteRequests(final String id)
 	{
 		Check.assumeNotEmpty(id, "id is not empty");
 
@@ -506,10 +535,10 @@ public final class ESModelIndexer implements IESModelIndexer
 		// model (parent) delete requests
 		final String indexName = getIndexName();
 		final String indexType = getIndexType();
-		final Stream<DeleteRequestBuilder> result = Stream.of(id)
-				.map(currentId -> elasticsearchClient.prepareDelete(indexName, indexType, currentId));
-
-		return result;
+		
+		return Stream.of(new DeleteRequest(indexName)
+				//.type(indexType) "Deprecated - Types are in the process of being removed."
+				.id(id));
 	}
 
 	@Override
@@ -526,7 +555,7 @@ public final class ESModelIndexer implements IESModelIndexer
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private final String toFieldNameFQ(final String fieldName)
+	private String toFieldNameFQ(final String fieldName)
 	{
 		final String parentAttributeName = getParentAttributeName();
 		return parentAttributeName != null ? parentAttributeName + "." + fieldName : fieldName;
