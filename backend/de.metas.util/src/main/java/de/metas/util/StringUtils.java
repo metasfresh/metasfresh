@@ -636,30 +636,15 @@ public final class StringUtils
 	 * @param in in
 	 * @return cleaned string
 	 */
-	public static String cleanWhitespace(String in)
+	public static String cleanWhitespace(@Nullable String in)
 	{
-		final char[] inArray = in.toCharArray();
-		final StringBuffer out = new StringBuffer(inArray.length);
-		boolean lastWasSpace = false;
-		for (final char c : inArray)
+		if (in == null)
 		{
-			if (Character.isWhitespace(c))
-			{
-				if (!lastWasSpace)
-				{
-					out.append(' ');
-				}
-				lastWasSpace = true;
-			}
-			else
-			{
-				out.append(c);
-				lastWasSpace = false;
-			}
+			return in;
 		}
-		return out.toString();
+		return in.replaceAll("\\s","");
 	}    // cleanWhitespace
-
+	
 	/**
 	 * remove white space from the begin
 	 */
