@@ -328,7 +328,7 @@ public class JsonPersisterService
 			syncOutcome = SyncOutcome.CREATED;
 		}
 
-		syncJsonToContact(contactIdentifier, jsonContact, contact, parentSyncAdvise);
+		syncJsonToContact(contactIdentifier, jsonContact, contact);
 
 		bpartnerCompositeRepository.save(bpartnerComposite);
 
@@ -1082,7 +1082,7 @@ public class JsonPersisterService
 		result.syncOutcome(syncOutcome);
 		if (!Objects.equals(SyncOutcome.NOTHING_DONE, syncOutcome))
 		{
-			syncJsonToContact(contactIdentifier, jsonContact.getContact(), contact, parentSyncAdvise);
+			syncJsonToContact(contactIdentifier, jsonContact.getContact(), contact);
 		}
 		return result;
 	}
@@ -1090,8 +1090,7 @@ public class JsonPersisterService
 	private void syncJsonToContact(
 			@NonNull final ExternalIdentifier contactIdentifier,
 			@NonNull final JsonRequestContact jsonBPartnerContact,
-			@NonNull final BPartnerContact contact,
-			@NonNull final SyncAdvise parentSyncAdvise)
+			@NonNull final BPartnerContact contact)
 	{
 		// active
 		if (jsonBPartnerContact.isActiveSet())

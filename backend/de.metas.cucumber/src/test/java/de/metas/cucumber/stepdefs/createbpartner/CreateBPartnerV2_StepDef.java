@@ -254,13 +254,11 @@ public class CreateBPartnerV2_StepDef
 	private JsonRequestContactUpsertItem mapContactRequestItem(@NonNull final Map<String, String> dataTableRow)
 	{
 		final String contactIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "contactIdentifier");
-		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "bpartnerIdentifier");
 		final String name = DataTableUtil.extractStringForColumnName(dataTableRow, "Name");
 		final String email = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Email");
 		final String fax = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Fax");
 
 		final JsonRequestContact jsonRequestContact = new JsonRequestContact();
-		jsonRequestContact.setBpartnerIdentifier(bpartnerIdentifier);
 		jsonRequestContact.setName(name);
 		jsonRequestContact.setEmail(email);
 		jsonRequestContact.setFax(fax);
