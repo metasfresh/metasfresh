@@ -26,7 +26,7 @@ public class SwaggerDocConstants
 {
 	public static final String BPARTNER_IDENTIFIER_DOC = "Identifier of the bPartner in question. Can be\n"
 			+ "* a plain `<C_BPartner_ID>`\n"
-			+ "* or something like `ext-<C_Bartner.ExternalId>`\n"
+			+ "* or something like `ext-<C_Bartner.ExternalId> (This is deprecated and will no longer be available with v2)`\n"
 			+ "* or something like `val-<C_Bartner.Value>`\n"
 			+ "* or something like `gln-<C_Bartner_Location.GLN>`\n";
 
@@ -42,11 +42,11 @@ public class SwaggerDocConstants
 
 	public static final String CONTACT_IDENTIFIER_DOC = "Identifier of the contact in question. Can be\n"
 			+ "* a plain `<AD_User_ID>`\n"
-			+ "* or something like `ext-<AD_User_ID.ExternalId>`";
+			+ "* or something like `ext-<AD_User_ID.ExternalId>` (This is deprecated and will no longer be available with v2)";
 
 	public static final String LOCATION_IDENTIFIER_DOC = "Identifier of the location in question. Can be\n"
 			+ "* a plain `<C_BPartner_Location_ID>`\n"
-			+ "* or something like `ext-<C_BPartner_Location_ID.ExternalId>`\n"
+			+ "* or something like `ext-<C_BPartner_Location_ID.ExternalId>` (This is deprecated and will no longer be available with v2)\n"
 			+ "* or something like `gln-<C_BPartner_Location_ID.GLN>`\n";
 
 	public static final String DATASOURCE_IDENTIFIER_DOC = "An identifier can be\n"
