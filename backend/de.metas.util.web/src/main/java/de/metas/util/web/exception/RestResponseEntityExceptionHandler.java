@@ -24,7 +24,7 @@ package de.metas.util.web.exception;
 
 import de.metas.Profiles;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
-import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.v1.JsonError;
 import de.metas.dao.selection.pagination.PageNotFoundException;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;

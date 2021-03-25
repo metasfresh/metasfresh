@@ -1,7 +1,7 @@
 package de.metas.rest_api.utils;
 
-import de.metas.common.rest_api.JsonAttributeInstance;
-import de.metas.common.rest_api.JsonAttributeSetInstance;
+import de.metas.common.rest_api.v1.JsonAttributeInstance;
+import de.metas.common.rest_api.v1.JsonAttributeSetInstance;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
