@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.OrgId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.compiere.model.I_C_BP_Group;
@@ -90,6 +91,7 @@ public class TestCommissionContract
 	 * Supposed to be invoked from {@link TestCommissionConfig}.
 	 */
 	I_C_Flatrate_Term createContractData(
+			@NonNull final OrgId orgId,
 			@NonNull final Integer C_Flatrate_Conditions_ID,
 			@NonNull final ProductId commissionProductId)
 	{
@@ -97,7 +99,8 @@ public class TestCommissionContract
 
 		final I_C_Flatrate_Term termRecord = newInstance(I_C_Flatrate_Term.class);
 		POJOWrapper.setInstanceName(termRecord, effectiveContractName);
-
+		termRecord.setAD_Org_ID(OrgId.toRepoId(orgId));
+		
 		final I_C_BPartner exitingBPartnerRecord = POJOLookupMap.get().getFirstOnly(I_C_BPartner.class, bpRecord -> salesRepName.equals(bpRecord.getName()));
 		if (exitingBPartnerRecord == null)
 		{
@@ -105,6 +108,7 @@ public class TestCommissionContract
 			
 			final I_C_BPartner salesRepBPartnerRecord = newInstance(I_C_BPartner.class);
 			POJOWrapper.setInstanceName(salesRepBPartnerRecord, salesRepName);
+			salesRepBPartnerRecord.setAD_Org_ID(OrgId.toRepoId(orgId));
 			salesRepBPartnerRecord.setName(salesRepName);
 			salesRepBPartnerRecord.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
 			saveRecord(salesRepBPartnerRecord);
