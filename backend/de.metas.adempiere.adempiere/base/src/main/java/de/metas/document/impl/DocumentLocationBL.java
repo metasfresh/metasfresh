@@ -64,7 +64,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 			return;
 		}
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(location.getC_BPartner_ID(), location.getC_BPartner_Location_ID());
-		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationById(bpartnerLocationId);
+		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 
 		final I_AD_User user;
 		if (location.getAD_User_ID() > 0)
@@ -198,7 +198,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 
 		
 		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(docHandOverLocation.getHandOver_Partner_ID(), docHandOverLocation.getHandOver_Location_ID());
-		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationById(bpLocationId);
+		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(bpLocationId);
 
 		final I_AD_User user;
 		if (docHandOverLocation.getHandOver_User_ID() > 0)

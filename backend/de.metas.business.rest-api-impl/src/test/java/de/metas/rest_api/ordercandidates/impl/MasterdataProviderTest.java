@@ -187,7 +187,8 @@ public class MasterdataProviderTest
 		final OrgInfo orgInfo = orgsRepo.getOrgInfoById(orgId);
 		assertThat(orgInfo.getOrgBPartnerLocationId()).isNotNull();
 
-		final I_C_BPartner_Location orgBPLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(orgInfo.getOrgBPartnerLocationId());
+		final I_C_BPartner_Location orgBPLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(orgInfo.getOrgBPartnerLocationId());
+		assertThat(orgBPLocation.isActive()).isTrue(); // guard
 		assertThat(orgBPLocation.getExternalId()).isEqualTo(jsonBPartnerLocation.getExternalId().getValue());
 		assertThat(orgBPLocation.getC_Location().getC_Country_ID()).isEqualTo(countryRecord.getC_Country_ID());
 
