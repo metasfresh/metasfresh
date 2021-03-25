@@ -23,7 +23,6 @@
 package de.metas.externalreference;
 
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
-import de.metas.externalreference.bpartner.BPartnerValueExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.pricelist.PriceListExternalReferenceType;
 import de.metas.externalreference.pricelist.PriceListVersionExternalReferenceType;
@@ -47,7 +46,7 @@ public class ExternalReferenceTypes
 		registerType(NullExternalReferenceType.NULL);
 		registerType(BPartnerExternalReferenceType.BPARTNER);
 		registerType(BPLocationExternalReferenceType.BPARTNER_LOCATION);
-		registerType(BPartnerValueExternalReferenceType.BPARTNER_VALUE);
+		registerType(BPartnerExternalReferenceType.BPARTNER_VALUE);
 		registerType(ProductExternalReferenceType.PRODUCT);
 		registerType(ProductCategoryExternalReferenceType.PRODUCT_CATEGORY);
 		registerType(ExternalUserReferenceType.USER_ID);

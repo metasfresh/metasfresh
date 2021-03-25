@@ -65,12 +65,11 @@ import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
-import de.metas.externalreference.bpartner.BPartnerValueExternalReferenceType;
+import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
@@ -586,7 +585,7 @@ class BpartnerRestControllerTest
 			assertThat(bpartnerRecord.getValue()).isEqualTo(initialValue);
 			initialCounts.assertExternalReferencesCountChangedBy(1);
 			final I_S_ExternalReference externalReference = getExternalReference(externalBusinessKey.asExternalValueAndSystem().getValue(),
-																				 BPartnerValueExternalReferenceType.BPARTNER_VALUE.getCode());
+																				 BPartnerExternalReferenceType.BPARTNER_VALUE.getCode());
 
 			assertThat(externalReference.getRecord_ID()).isEqualTo(bpartnerRecord.getC_BPartner_ID());
 		}
@@ -775,7 +774,7 @@ class BpartnerRestControllerTest
 	void createOrUpdateBankAccount_create()
 	{
 		final ResponseEntity<JsonResponseUpsert> result = bpartnerRestController.createOrUpdateBankAccount(
-				IdentifierString.ofRepoId(C_BPARTNER_ID).toJson(),
+				String.valueOf(C_BPARTNER_ID),
 				JsonRequestBankAccountsUpsert.builder()
 						.requestItem(JsonRequestBankAccountUpsertItem.builder()
 											 .iban("iban-1")

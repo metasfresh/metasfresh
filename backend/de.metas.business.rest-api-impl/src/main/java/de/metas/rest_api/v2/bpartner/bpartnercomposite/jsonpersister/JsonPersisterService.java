@@ -79,7 +79,6 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
-import de.metas.externalreference.bpartner.BPartnerValueExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.i18n.BooleanWithReason;
@@ -688,7 +687,7 @@ public class JsonPersisterService
 
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
 				.id(externalBusinessKey.asExternalValueAndSystem().getValue())
-				.type(BPartnerValueExternalReferenceType.BPARTNER_VALUE.getCode())
+				.type(BPartnerExternalReferenceType.BPARTNER_VALUE.getCode())
 				.build();
 
 		final JsonExternalReferenceItem externalReferenceItem =
