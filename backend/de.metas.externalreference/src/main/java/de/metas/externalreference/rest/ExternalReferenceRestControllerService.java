@@ -34,6 +34,7 @@ import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
@@ -238,11 +239,11 @@ public class ExternalReferenceRestControllerService
 
 	@NonNull
 	public Optional<JsonMetasfreshId> getJsonMetasfreshIdFromExternalReference(
-			@Nullable OrgId orgId,
+			@Nullable final OrgId orgId,
 			@NonNull final ExternalIdentifier externalIdentifier,
 			@NonNull final IExternalReferenceType externalReferenceType)
 	{
-		orgId = orgId != null ? orgId : Env.getOrgId();
+		final OrgId orgIdToUse = CoalesceUtil.coalesceSuppliers(() -> orgId, () -> Env.getOrgId());
 
 		final JsonExternalSystemName externalSystemName = JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem());
 
@@ -254,7 +255,7 @@ public class ExternalReferenceRestControllerService
 							  .build())
 				.build();
 
-		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgId, lookupRequest);
+		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgIdToUse, lookupRequest);
 		return lookupResponse.getItems()
 				.stream()
 				.map(JsonExternalReferenceItem::getMetasfreshId)
