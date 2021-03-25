@@ -386,7 +386,10 @@ public class PurchaseCandidateRepository
 		record.setIsManualPrice(purchaseCandidate.isManualPrice());
 		record.setIsManualDiscount(purchaseCandidate.isManualDiscount());
 		record.setIsTaxIncluded(purchaseCandidate.isTaxIncluded());
-		record.setC_TaxCategory_ID(purchaseCandidate.getTaxCategoryId().getRepoId());
+		if (purchaseCandidate.getTaxCategoryId() != null)
+		{
+			record.setC_TaxCategory_ID(purchaseCandidate.getTaxCategoryId().getRepoId());
+		}
 		saveRecord(record);
 		purchaseCandidate.markSaved(PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));
 
