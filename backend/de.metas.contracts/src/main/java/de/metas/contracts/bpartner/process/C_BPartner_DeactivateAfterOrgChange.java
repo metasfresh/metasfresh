@@ -23,6 +23,8 @@
 package de.metas.contracts.bpartner.process;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -36,11 +38,13 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -52,7 +56,11 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 
 	private void deactivateBPartnersAndRelatedEntries()
 	{
-		final LocalDate today = SystemTime.asLocalDate();
+		final OrgId orgId = OrgId.ofRepoId( Env.getAD_Org_ID(Env.getCtx()));
+
+		final ZoneId loginTimeZone = orgDAO.getTimeZone(orgId);
+
+		final LocalDate today = SystemTime.asLocalDate(loginTimeZone);
 
 		final List<Integer> partnerIdsToDeactivate = queryBL.createQueryBuilder(I_AD_OrgChange_History.class)
 				.addEqualsFilter(I_AD_OrgChange_History.COLUMNNAME_Date_OrgChange, today)

@@ -22,7 +22,6 @@
 
 package de.metas.contracts.bpartner.service;
 
-import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
 import lombok.Builder;
 import lombok.Value;

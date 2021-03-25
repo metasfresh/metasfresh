@@ -22,35 +22,30 @@
 
 package de.metas.contracts.bpartner.service;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.contracts.FlatrateTerm;
-import de.metas.contracts.FlatrateTermId;
-import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.Singular;
+import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-@Data
+@Value
 public class OrgChangeBPartnerComposite
 {
-	private BPartnerComposite bPartnerComposite;
+	BPartnerComposite bPartnerComposite;
 
-	private OrgMappingId bPartnerOrgMappingId;
+	OrgMappingId bPartnerOrgMappingId;
 
-	private List<FlatrateTerm> membershipSubscriptions; // TODO create object
+	List<FlatrateTerm> membershipSubscriptions;
 
-	private List<FlatrateTerm> nonMembershipSubscriptions;
+	List<FlatrateTerm> nonMembershipSubscriptions;
 
 	@Builder(toBuilder = true)
 	private OrgChangeBPartnerComposite(
@@ -69,6 +64,77 @@ public class OrgChangeBPartnerComposite
 	public boolean hasMembershipSubscriptions()
 	{
 		return !Check.isEmpty(membershipSubscriptions);
+	}
+
+	public DefaultLocations getDefaultLocations()
+	{
+		final BPartnerLocation billToDefaultLocation = getBillToDefaultLocationOrNull();
+		final BPartnerLocation shipTpDefaultLocation = getShipToDefaultLocationOrNull();
+
+		return DefaultLocations.builder()
+				.billToDefaultLocation(billToDefaultLocation)
+				.foundBillToDefaultLocation(billToDefaultLocation != null)
+
+				.shipToDefaultLocation(shipTpDefaultLocation)
+				.foundShipToDefaultLocation(shipTpDefaultLocation != null)
+				.build();
+	}
+
+	@Nullable
+	public BPartnerLocation getBillToDefaultLocationOrNull()
+	{
+		return getBPartnerComposite()
+				.extractLocation(l -> l.getLocationType().getIsBillToDefaultOr(false))
+				.orElse(null);
+
+	}
+
+	@Nullable
+	public BPartnerLocation getShipToDefaultLocationOrNull()
+	{
+		return getBPartnerComposite()
+				.extractLocation(l -> l.getLocationType().getIsShipToDefaultOr(false))
+				.orElse(null);
+	}
+
+	@Nullable
+	public BPartnerContact getDefaultContactOrNull()
+	{
+		return getBPartnerComposite()
+				.extractContact(c -> c.getContactType().getIsDefaultContactOr(false))
+				.orElse(null);
+	}
+
+	@Nullable
+	public BPartnerContact getBillToDefaultContactOrNull()
+	{
+		return getBPartnerComposite()
+				.extractContact(c -> c.getContactType().getIsBillToDefaultOr(false))
+				.orElse(null);
+	}
+
+	@Nullable
+	public BPartnerContact getShipToDefaultContactOrNull()
+	{
+		return getBPartnerComposite()
+				.extractContact(c -> c.getContactType().getIsShipToDefaultOr(false))
+				.orElse(null);
+	}
+
+	@Nullable
+	public BPartnerContact getPurchaseDefaultContactOrNull()
+	{
+		return getBPartnerComposite()
+				.extractContact(c -> c.getContactType().getIsPurchaseDefaultOr(false))
+				.orElse(null);
+	}
+
+	@Nullable
+	public BPartnerContact getSalesDefaultContactOrNull()
+	{
+		return getBPartnerComposite()
+				.extractContact(c -> c.getContactType().getIsSalesDefaultOr(false))
+				.orElse(null);
 	}
 
 }

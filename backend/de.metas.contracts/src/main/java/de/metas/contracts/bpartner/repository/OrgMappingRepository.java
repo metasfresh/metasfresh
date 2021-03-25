@@ -24,7 +24,6 @@ package de.metas.contracts.bpartner.repository;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
-import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
@@ -59,7 +58,7 @@ public class OrgMappingRepository
 		return OrgMappingId.ofRepoId(orgMapping.getAD_Org_Mapping_ID());
 	}
 
-	public OrgMappingId getCreateOrgMappingId(final BPartnerLocation location)
+	public OrgMappingId getCreateOrgMappingId(@NonNull final BPartnerLocation location)
 	{
 		final OrgMappingId orgMappingId = location.getOrgMappingId();
 		if (orgMappingId != null)
@@ -78,7 +77,7 @@ public class OrgMappingRepository
 		return OrgMappingId.ofRepoId(orgMapping.getAD_Org_Mapping_ID());
 	}
 
-	public OrgMappingId getCreateOrgMappingId(final BPartnerBankAccount existingBankAccountInInitialPartner)
+	public OrgMappingId getCreateOrgMappingId(@NonNull final BPartnerBankAccount existingBankAccountInInitialPartner)
 	{
 		final OrgMappingId orgMappingId = existingBankAccountInInitialPartner.getOrgMappingId();
 		if (orgMappingId != null)
@@ -97,7 +96,7 @@ public class OrgMappingRepository
 		return OrgMappingId.ofRepoId(orgMapping.getAD_Org_Mapping_ID());
 	}
 
-	public OrgMappingId getCreateOrgMappingId(final BPartnerContact contact)
+	public OrgMappingId getCreateOrgMappingId(@NonNull final BPartnerContact contact)
 	{
 		final OrgMappingId orgMappingId = contact.getOrgMappingId();
 		if (orgMappingId != null)
@@ -116,7 +115,7 @@ public class OrgMappingRepository
 		return OrgMappingId.ofRepoId(orgMapping.getAD_Org_Mapping_ID());
 	}
 
-	public OrgMappingId getCreateOrgMappingId(final BPartnerId bpartnerId)
+	public OrgMappingId getCreateOrgMappingId(@NonNull final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner bPartnerRecord = bPartnerDAO.getById(bpartnerId);
 
