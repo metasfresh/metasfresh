@@ -147,6 +147,8 @@ public class CreatePurchaseCandidatesService
 
 		final AttributeSetInstanceId attributeSetInstanceId = getAttributeSetInstanceId(request.getAttributeSetInstance());
 
+		final BigDecimal actualPrice = request.isManualPrice() ? request.getPrice().getValue() : priceAndDiscount.getPriceStd();
+
 		return PurchaseCandidate.builder()
 				.orgId(orgId)
 				.externalHeaderId(ExternalId.of(request.getExternalHeaderId()))
@@ -161,7 +163,10 @@ public class CreatePurchaseCandidatesService
 				.groupReference(DemandGroupReference.EMPTY)
 				.price(priceAndDiscount.getPriceStd())
 				.discount(request.isManualDiscount() ? Percent.of(request.getDiscount()) : priceAndDiscount.getDiscount())
-				.actualPrice(request.isManualPrice() ? request.getPrice().getValue() : priceAndDiscount.getPriceStd())
+				.discountInternal(priceAndDiscount.getDiscount())
+				.actualPrice(actualPrice)
+				.isTaxIncluded(priceAndDiscount.isTaxIncluded())
+				.taxCategoryId(priceAndDiscount.getTaxCategoryId())
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.source(PurchaseCandidateSource.Api)
 				.build();

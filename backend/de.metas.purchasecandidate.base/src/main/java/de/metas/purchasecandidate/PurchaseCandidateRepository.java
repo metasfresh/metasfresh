@@ -27,6 +27,7 @@ import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -360,7 +361,6 @@ public class PurchaseCandidateRepository
 		record.setIsPrepared(purchaseCandidate.isPrepared());
 		record.setIsRequisitionCreated(purchaseCandidate.isReqCreated());
 		record.setProcessed(purchaseCandidate.isProcessed());
-
 		if (purchaseCandidate.getExternalHeaderId() != null)
 		{
 			record.setExternalHeaderId(purchaseCandidate.getExternalHeaderId().getValue());
@@ -379,9 +379,14 @@ public class PurchaseCandidateRepository
 		{
 			record.setDiscount(purchaseCandidate.getDiscount().toBigDecimal());
 		}
+		if (purchaseCandidate.getDiscountInternal() != null)
+		{
+			record.setDiscountInternal(purchaseCandidate.getDiscountInternal().toBigDecimal());
+		}
 		record.setIsManualPrice(purchaseCandidate.isManualPrice());
 		record.setIsManualDiscount(purchaseCandidate.isManualDiscount());
-
+		record.setIsTaxIncluded(purchaseCandidate.isTaxIncluded());
+		record.setC_TaxCategory_ID(purchaseCandidate.getTaxCategoryId().getRepoId());
 		saveRecord(record);
 		purchaseCandidate.markSaved(PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));
 
@@ -486,9 +491,12 @@ public class PurchaseCandidateRepository
 				.dimension(recordDimension)
 				.price(record.getPriceInternal())
 				.actualPrice(record.getPriceEntered())
-				.discount(Percent.of(record.getDiscount()))
+				.discount(Percent.ofNullable(record.getDiscount()))
+				.discountInternal(Percent.ofNullable(record.getDiscountInternal()))
 				.isManualDiscount(record.isManualDiscount())
 				.isManualPrice(record.isManualPrice())
+				.isTaxIncluded(record.isTaxIncluded())
+				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(record.getC_TaxCategory_ID()))
 				//
 				.build();
 

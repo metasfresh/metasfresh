@@ -245,6 +245,28 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_TaxCategory_ID (int C_TaxCategory_ID);
+
+	/**
+	 * Get Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_TaxCategory_ID();
+
+	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
+
+	/**
 	 * Set UOM.
 	 * Unit of Measure
 	 *

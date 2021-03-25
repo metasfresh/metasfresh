@@ -16,6 +16,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem.PurchaseOrderItemBuilder;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -107,8 +108,11 @@ public class PurchaseCandidate
 	private final BigDecimal price;
 	private final BigDecimal actualPrice;
 	private final Percent discount;
+	private final Percent discountInternal;
 	private final boolean isManualDiscount;
 	private final boolean isManualPrice;
+	private final boolean isTaxIncluded;
+	private final TaxCategoryId taxCategoryId;
 
 	@Builder
 	private PurchaseCandidate(
@@ -145,10 +149,16 @@ public class PurchaseCandidate
 			@Nullable final BigDecimal price,
 			@Nullable final BigDecimal actualPrice,
 			@Nullable final Percent discount,
+			final Percent discountInternal,
 			final boolean isManualDiscount,
-			final boolean isManualPrice)
+			final boolean isManualPrice,
+			final boolean isTaxIncluded,
+			@Nullable final TaxCategoryId taxCategoryId)
 	{
 		this.id = id;
+		this.discountInternal = discountInternal;
+		this.isTaxIncluded = isTaxIncluded;
+		this.taxCategoryId = taxCategoryId;
 		immutableFields = PurchaseCandidateImmutableFields.builder()
 				.groupReference(groupReference)
 				.salesOrderAndLineIdOrNull(salesOrderAndLineIdOrNull)
@@ -226,6 +236,9 @@ public class PurchaseCandidate
 		discount = from.discount;
 		isManualDiscount = from.isManualDiscount;
 		isManualPrice = from.isManualPrice;
+		isTaxIncluded = from.isTaxIncluded;
+		taxCategoryId = from.taxCategoryId;
+		discountInternal = from.discountInternal;
 	}
 
 	public PurchaseCandidate copy()
