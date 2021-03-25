@@ -24,10 +24,12 @@ package de.metas.purchasecandidate;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 
 public enum PurchaseCandidateSource implements ReferenceListAwareEnum
@@ -57,6 +59,16 @@ public enum PurchaseCandidateSource implements ReferenceListAwareEnum
 			throw new AdempiereException("No " + PurchaseCandidateSource.class + " found for code: " + code);
 		}
 		return type;
+	}
+
+	@Nullable
+	public static PurchaseCandidateSource ofCodeOrNull(@Nullable final String code)
+	{
+		if (Check.isBlank(code))
+		{
+			return null;
+		}
+		return ofCode(code);
 	}
 
 }

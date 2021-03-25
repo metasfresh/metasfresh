@@ -10,7 +10,6 @@ import de.metas.calendar.CalendarId;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
-import de.metas.invoice.InvoiceId;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -47,8 +46,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -59,13 +56,10 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -367,12 +361,24 @@ public class PurchaseCandidateRepository
 		record.setIsRequisitionCreated(purchaseCandidate.isReqCreated());
 		record.setProcessed(purchaseCandidate.isProcessed());
 
-		record.setExternalHeaderId(purchaseCandidate.getExternalHeaderId().getValue());
-		record.setExternalLineId(purchaseCandidate.getExternalLineId().getValue());
-		record.setSource(purchaseCandidate.getSource().getCode());
+		if (purchaseCandidate.getExternalHeaderId() != null)
+		{
+			record.setExternalHeaderId(purchaseCandidate.getExternalHeaderId().getValue());
+		}
+		if (purchaseCandidate.getExternalLineId() != null)
+		{
+			record.setExternalLineId(purchaseCandidate.getExternalLineId().getValue());
+		}
+		if (purchaseCandidate.getSource() != null)
+		{
+			record.setSource(purchaseCandidate.getSource().getCode());
+		}
 		record.setPriceInternal(purchaseCandidate.getPrice());
 		record.setPriceEntered(purchaseCandidate.getActualPrice());
-		record.setDiscount(purchaseCandidate.getDiscount().toBigDecimal());
+		if (purchaseCandidate.getDiscount() != null)
+		{
+			record.setDiscount(purchaseCandidate.getDiscount().toBigDecimal());
+		}
 		record.setIsManualPrice(purchaseCandidate.isManualPrice());
 		record.setIsManualDiscount(purchaseCandidate.isManualDiscount());
 
@@ -467,9 +473,9 @@ public class PurchaseCandidateRepository
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(record.getM_AttributeSetInstance_ID()))
 				.vendorProductNo(productsRepo.retrieveProductValueByProductId(ProductId.ofRepoId(record.getM_Product_ID())))
-				.externalLineId(ExternalId.of(record.getExternalLineId()))
-				.externalHeaderId(ExternalId.of(record.getExternalHeaderId()))
-				.source(PurchaseCandidateSource.ofCode(record.getSource()))
+				.externalLineId(ExternalId.ofOrNull(record.getExternalLineId()))
+				.externalHeaderId(ExternalId.ofOrNull(record.getExternalHeaderId()))
+				.source(PurchaseCandidateSource.ofCodeOrNull(record.getSource()))
 				//
 				.qtyToPurchase(qtyToPurchase)
 				//
@@ -478,9 +484,6 @@ public class PurchaseCandidateRepository
 				.aggregatePOs(record.isAggregatePO())
 				//
 				.dimension(recordDimension)
-				.externalHeaderId(ExternalId.of(record.getExternalHeaderId()))
-				.externalLineId(ExternalId.of(record.getExternalLineId()))
-				.source(PurchaseCandidateSource.ofCode(record.getSource()))
 				.price(record.getPriceInternal())
 				.actualPrice(record.getPriceEntered())
 				.discount(Percent.of(record.getDiscount()))

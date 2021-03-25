@@ -42,10 +42,10 @@ import lombok.Value;
 @Builder
 class PurchaseCandidateImmutableFields
 {
-	@NonNull
+	@Nullable
 	ExternalId externalHeaderId;
 
-	@NonNull
+	@Nullable
 	ExternalId externalLineId;
 
 	@Nullable
@@ -77,5 +77,5 @@ class PurchaseCandidateImmutableFields
 
 	@Nullable Dimension dimension;
 
-	@NonNull PurchaseCandidateSource source;
+	@Nullable PurchaseCandidateSource source;
 }

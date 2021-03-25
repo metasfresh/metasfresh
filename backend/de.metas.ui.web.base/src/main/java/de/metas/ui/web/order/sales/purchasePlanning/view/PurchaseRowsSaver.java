@@ -23,6 +23,7 @@ import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
@@ -248,11 +249,12 @@ class PurchaseRowsSaver
 					.profitInfoOrNull(profitInfo)
 					.forecastLineId(candidatesGroup.getForecastLineId())
 					.dimension(candidatesGroup.getDimension())
+					.source(PurchaseCandidateSource.SalesOrder)
 					//
 					.build();
 
 			candidatesChanged.add(newCandidate);
-			qtyToPurchaseRemainingOfGroup = qtyToPurchaseRemainingOfGroup.toZero();
+			qtyToPurchaseRemainingOfGroup.toZero();
 		}
 
 		return candidatesChanged;

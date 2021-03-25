@@ -114,8 +114,8 @@ public class PurchaseCandidate
 	private PurchaseCandidate(
 			final PurchaseCandidateId id,
 
-			@NonNull final ExternalId externalHeaderId,
-			@NonNull final ExternalId externalLineId,
+			@Nullable final ExternalId externalHeaderId,
+			@Nullable final ExternalId externalLineId,
 			@NonNull final DemandGroupReference groupReference,
 			@Nullable final OrderAndLineId salesOrderAndLineIdOrNull,
 
@@ -141,10 +141,10 @@ public class PurchaseCandidate
 			final boolean aggregatePOs,
 			@Nullable final ForecastLineId forecastLineId,
 			@Nullable final Dimension dimension,
-			@NonNull final PurchaseCandidateSource source,
-			@NonNull final BigDecimal price,
-			@NonNull final BigDecimal actualPrice,
-			@NonNull final Percent discount,
+			@Nullable final PurchaseCandidateSource source,
+			@Nullable final BigDecimal price,
+			@Nullable final BigDecimal actualPrice,
+			@Nullable final Percent discount,
 			final boolean isManualDiscount,
 			final boolean isManualPrice)
 	{
@@ -335,17 +335,17 @@ public class PurchaseCandidate
 		return state.isReqCreated();
 	}
 
-	public @NonNull PurchaseCandidateSource getSource()
+	public @Nullable PurchaseCandidateSource getSource()
 	{
 		return getImmutableFields().getSource();
 	}
 
-	public @NonNull ExternalId getExternalLineId()
+	public @Nullable ExternalId getExternalLineId()
 	{
 		return getImmutableFields().getExternalLineId();
 	}
 
-	public @NonNull ExternalId getExternalHeaderId()
+	public @Nullable ExternalId getExternalHeaderId()
 	{
 		return getImmutableFields().getExternalHeaderId();
 	}
