@@ -1059,6 +1059,9 @@ public interface I_C_Flatrate_Term
 	 */
 	int getM_Product_ID();
 
+	/** Column definition for M_Product_ID */
+	org.adempiere.model.ModelColumn<I_C_Flatrate_Term, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Term.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
+
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**

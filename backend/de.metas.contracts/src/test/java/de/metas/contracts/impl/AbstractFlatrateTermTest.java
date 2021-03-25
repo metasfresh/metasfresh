@@ -360,11 +360,11 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_BPartner_Location bpLocation = getBpLocation();
 		final I_AD_User user = getUser();
 
-		contract.setBill_Location(bpLocation);
-		contract.setBill_User(user);
-		contract.setDropShip_BPartner(getBpartner());
-		contract.setDropShip_Location(bpLocation);
-		contract.setDropShip_User(user);
+		contract.setBill_Location_ID(bpLocation.getC_BPartner_Location_ID());
+		contract.setBill_User_ID(user.getAD_User_ID());
+		contract.setDropShip_BPartner_ID(getBpartner().getC_BPartner_ID());
+		contract.setDropShip_Location_ID(bpLocation.getC_BPartner_Location_ID());
+		contract.setDropShip_User_ID(user.getAD_User_ID());
 		contract.setPriceActual(PRICE_TEN);
 		contract.setPlannedQtyPerUnit(QTY_ONE);
 		contract.setMasterStartDate(startDate);

@@ -506,8 +506,8 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		queryBuilder
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_Bill_BPartner_ID, bPartner.getC_BPartner_ID())
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, flatrateConditions.getC_Flatrate_Conditions_ID())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartner.getC_BPartner_ID())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditions.getC_Flatrate_Conditions_ID())
 				.filterByClientId();
 
 		final IQueryOrderBy orderBy = queryBuilder.orderBy()

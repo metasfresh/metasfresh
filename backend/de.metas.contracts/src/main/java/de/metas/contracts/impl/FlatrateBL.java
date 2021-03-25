@@ -1278,7 +1278,7 @@ public class FlatrateBL implements IFlatrateBL
 		updateEndDate(nextTransition, nextTerm);
 		updateNoticeDate(nextTransition, nextTerm);
 
-		nextTerm.setM_PricingSystem(currentTerm.getM_PricingSystem());
+		nextTerm.setM_PricingSystem_ID(currentTerm.getM_PricingSystem_ID());
 		nextTerm.setDropShip_BPartner_ID(currentTerm.getDropShip_BPartner_ID());
 		nextTerm.setDropShip_Location_ID(currentTerm.getDropShip_Location_ID());
 
@@ -1643,10 +1643,10 @@ public class FlatrateBL implements IFlatrateBL
 
 		newTerm.setStartDate(startDate);
 		newTerm.setEndDate(startDate); // will be updated later
-		newTerm.setDropShip_BPartner(bPartner);
+		newTerm.setDropShip_BPartner_ID(bPartner.getC_BPartner_ID());
 
 		newTerm.setBill_BPartner_ID(billPartnerLocation.getC_BPartner_ID()); // note that in case of bPartner relations, this might be a different partner than 'bPartner'.
-		newTerm.setBill_Location(billPartnerLocation);
+		newTerm.setBill_Location_ID(billPartnerLocation.getC_BPartner_Location_ID());
 
 		if (userInCharge == null)
 		{
@@ -1654,7 +1654,7 @@ public class FlatrateBL implements IFlatrateBL
 		}
 		else
 		{
-			newTerm.setAD_User_InCharge(userInCharge);
+			newTerm.setAD_User_InCharge_ID(userInCharge.getAD_User_ID());
 		}
 
 		final I_C_Flatrate_Data data = flatrateDAO.retriveOrCreateFlatrateData(bPartner);
@@ -1702,10 +1702,12 @@ public class FlatrateBL implements IFlatrateBL
 			final boolean hasOverlappingTerms = hasOverlappingTerms(term);
 			if (hasOverlappingTerms)
 			{
+				final I_C_BPartner billBPartnerRecord = bPartnerDAO.getById(term.getBill_BPartner_ID());
+
 				Loggables.addLog(Services.get(IMsgBL.class).getMsg(
 						Env.getCtx(),
 						MSG_HasOverlapping_Term,
-						new Object[] { term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue() }));
+						new Object[] { term.getC_Flatrate_Term_ID(), billBPartnerRecord.getValue() }));
 				return;
 			}
 		}
