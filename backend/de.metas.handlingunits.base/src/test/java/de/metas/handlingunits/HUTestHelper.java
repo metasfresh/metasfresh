@@ -1682,7 +1682,6 @@ public class HUTestHelper
 	 *
 	 * @param mtrx the load's source. Also provides the context.
 	 * @param huPI a "simple" PI that contains one HU-item which links to one child-HU PI
-	 * @return
 	 */
 	public List<I_M_HU> createHUsFromSimplePI(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
 	{
@@ -1963,9 +1962,6 @@ public class HUTestHelper
 
 	/**
 	 * Join given <code>tradingUnits</code> to the <code>loadingUnit</code>
-	 *
-	 * @param loadingUnit
-	 * @param tradingUnits
 	 */
 	public void joinHUs(final IHUContext huContext, final I_M_HU loadingUnit, final Collection<I_M_HU> tradingUnits)
 	{
@@ -2032,11 +2028,10 @@ public class HUTestHelper
 	 * Commits {@link #trxName} and writes the given {@code hu} as XML to std-out. The commit might break some tests.
 	 * Please only use this method temporarily to debug tests and comment it out again when the tests are fixed.
 	 *
-	 * @param hu
 	 * @deprecated please only use temporarily for debugging.
 	 */
 	@Deprecated
-	public void commitAndDumpHU(I_M_HU hu)
+	public void commitAndDumpHU(@NonNull final I_M_HU hu)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		if (!trxManager.isNull(trxName))
@@ -2049,11 +2044,9 @@ public class HUTestHelper
 
 	/**
 	 * Similar to {@link #commitAndDumpHU(I_M_HU)}.
-	 *
-	 * @param hus
 	 */
 	@Deprecated
-	public void commitAndDumpHUs(List<I_M_HU> hus)
+	public void commitAndDumpHUs(@NonNull final List<I_M_HU> hus)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		if (!trxManager.isNull(trxName))

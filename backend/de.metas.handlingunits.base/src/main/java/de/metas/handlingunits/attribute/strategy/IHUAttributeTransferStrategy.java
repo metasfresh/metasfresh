@@ -29,15 +29,10 @@ public interface IHUAttributeTransferStrategy extends IAttributeStrategy
 {
 	/**
 	 * Transfer attribute between storages for given request.
-	 *
-	 * @param request
-	 * @param attribute
 	 */
 	void transferAttribute(IHUAttributeTransferRequest request, I_M_Attribute attribute);
 
 	/**
-	 * @param request
-	 * @param attribute
 	 * @return true if the value of the given attribute can be transferred for this the request
 	 */
 	boolean isTransferable(IHUAttributeTransferRequest request, I_M_Attribute attribute);
