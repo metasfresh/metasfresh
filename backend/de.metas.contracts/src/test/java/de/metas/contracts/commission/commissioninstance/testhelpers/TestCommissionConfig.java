@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.HashMap;
 import java.util.List;
 
+import de.metas.organization.OrgId;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_BPartner;
 
@@ -53,6 +54,9 @@ import lombok.Value;
 @Builder
 public class TestCommissionConfig
 {
+	@NonNull
+	OrgId orgId;
+	
 	@Default
 	int pointsPrecision = 2;
 
@@ -75,6 +79,7 @@ public class TestCommissionConfig
 	public ConfigData createConfigData()
 	{
 		final I_C_HierarchyCommissionSettings settingsRecord = newInstance(I_C_HierarchyCommissionSettings.class);
+		settingsRecord.setAD_Org_ID(OrgId.toRepoId(orgId));
 		settingsRecord.setPointsPrecision(pointsPrecision);
 		settingsRecord.setCommission_Product_ID(commissionProductId.getRepoId());
 		settingsRecord.setIsSubtractLowerLevelCommissionFromBase(subtractLowerLevelCommissionFromBase);
@@ -82,6 +87,7 @@ public class TestCommissionConfig
 		saveRecord(settingsRecord);
 
 		final I_C_Flatrate_Conditions conditionsRecord = newInstance(I_C_Flatrate_Conditions.class);
+		conditionsRecord.setAD_Org_ID(OrgId.toRepoId(orgId));
 		conditionsRecord.setC_HierarchyCommissionSettings_ID(settingsRecord.getC_HierarchyCommissionSettings_ID());
 		conditionsRecord.setDocStatus(IDocument.STATUS_Completed);
 		saveRecord(conditionsRecord);
@@ -89,7 +95,7 @@ public class TestCommissionConfig
 		final ImmutableMap.Builder<String, CommissionSettingsLineId> name2CommissionSettingsLineId = ImmutableMap.builder();
 		for (final TestCommissionConfigLine configLineTestRecord : configLineTestRecords)
 		{
-			final IPair<String, CommissionSettingsLineId> configLineResult = configLineTestRecord.createConfigLineData(settingsRecord.getC_HierarchyCommissionSettings_ID());
+			final IPair<String, CommissionSettingsLineId> configLineResult = configLineTestRecord.createConfigLineData(orgId, settingsRecord.getC_HierarchyCommissionSettings_ID());
 			name2CommissionSettingsLineId.put(configLineResult.getLeft(), configLineResult.getRight());
 		}
 
@@ -101,6 +107,7 @@ public class TestCommissionConfig
 		for (final TestCommissionContract contractTestRecord : contractTestRecords)
 		{
 			final I_C_Flatrate_Term termRecord = contractTestRecord.createContractData(
+					orgId,
 					conditionsRecord.getC_Flatrate_Conditions_ID(),
 					commissionProductId);
 			bpartnerId2flatrateTermId.put(
@@ -124,6 +131,7 @@ public class TestCommissionConfig
 		}
 
 		return new ConfigData(
+				orgId,
 				HierarchyConfigId.ofRepoId(settingsRecord.getC_HierarchyCommissionSettings_ID()),
 				bpartnerId2flatrateTermId.build(),
 				name2bpartnerId.build(),
@@ -133,6 +141,7 @@ public class TestCommissionConfig
 	@Value
 	public static class ConfigData
 	{
+		@NonNull OrgId orgId;
 		HierarchyConfigId hierarchyConfigId;
 		ImmutableMap<BPartnerId, FlatrateTermId> bpartnerId2FlatrateTermId;
 		ImmutableMap<String, BPartnerId> name2BPartnerId;
