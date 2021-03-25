@@ -22,7 +22,6 @@
 
 package de.metas.rest_api.v2.product;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
@@ -36,11 +35,12 @@ import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.ExternalReferenceValueAndSystem;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.product.ProductExternalReferenceType;
@@ -74,7 +74,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
@@ -147,7 +146,7 @@ public class ProductRestService
 		{
 			if (effectiveSyncAdvise.getIfExists().isUpdate())
 			{
-				final Product product = syncProductWithJson(jsonRequestProduct, existingProduct.get(), org, effectiveSyncAdvise);
+				final Product product = syncProductWithJson(jsonRequestProduct, existingProduct.get(), org);
 				productRepository.updateProduct(product);
 				createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, product.getId(), org);
 
@@ -185,7 +184,7 @@ public class ProductRestService
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(identifier);
 		Check.assume(externalIdentifier.getType().equals(ExternalIdentifier.Type.EXTERNAL_REFERENCE), "ExternalId is not of type external reference.");
 
-		final ExternalIdentifier.ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalIdentifier.asExternalValueAndSystem();
+		final ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalIdentifier.asExternalValueAndSystem();
 
 		final JsonExternalSystemName systemName = JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem());
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
@@ -307,24 +306,6 @@ public class ProductRestService
 	{
 		if (jsonRequestBPartnerProductsUpsert != null)
 		{
-			if (effectiveSyncAdvise.getIfExists().isUpdateRemove())
-			{
-				final List<BPartnerProduct> bPartnerProducts = productRepository.getByProductId(productId);
-				final Set<BPartnerId> jsonBpartnerIds =
-						jsonRequestBPartnerProductsUpsert
-								.stream()
-								.map(jsonBpartnerProduct -> getBPartnerId(ExternalIdentifier.of(jsonBpartnerProduct.getBpartnerIdentifier()), org.getValue()))
-								.collect(ImmutableSet.toImmutableSet());
-
-				final List<BPartnerId> bPartnerProductsToRemove =
-						bPartnerProducts.stream()
-								.map(BPartnerProduct::getBPartnerId)
-								.filter(bp -> !jsonBpartnerIds.contains(bp))
-								.collect(Collectors.toList());
-
-				productRepository.inactivateBpartnerProducts(bPartnerProductsToRemove, productId);
-			}
-
 			jsonRequestBPartnerProductsUpsert.forEach(jsonRequestBPartnerProductUpsert ->
 															  createOrUpdateBpartnerProduct(jsonRequestBPartnerProductUpsert,
 																							effectiveSyncAdvise,
@@ -350,7 +331,7 @@ public class ProductRestService
 		{
 			if (effectiveSyncAdvise.getIfExists().isUpdate())
 			{
-				final BPartnerProduct bPartnerProduct = syncBPartnerProductWithJson(jsonRequestBPartnerProductUpsert, existingBPartnerProduct, effectiveSyncAdvise, bPartnerId);
+				final BPartnerProduct bPartnerProduct = syncBPartnerProductWithJson(jsonRequestBPartnerProductUpsert, existingBPartnerProduct, bPartnerId);
 				productRepository.updateBPartnerProduct(bPartnerProduct);
 			}
 		}
@@ -418,10 +399,8 @@ public class ProductRestService
 	private BPartnerProduct syncBPartnerProductWithJson(
 			@NonNull final JsonRequestBPartnerProductUpsert jsonRequestBPartnerProductUpsert,
 			@NonNull final BPartnerProduct existingBPartnerProduct,
-			@NonNull final SyncAdvise effectiveSyncAdvise,
 			@NonNull final BPartnerId bPartnerId)
 	{
-		final boolean isUpdateRemove = effectiveSyncAdvise.getIfExists().isUpdateRemove();
 		final BPartnerProduct.BPartnerProductBuilder builder = BPartnerProduct.builder();
 
 		// bpartner
@@ -456,10 +435,6 @@ public class ProductRestService
 		{
 			builder.seqNo(jsonRequestBPartnerProductUpsert.getSeqNo());
 		}
-		else if (isUpdateRemove)
-		{
-			builder.seqNo(null);
-		}
 		else
 		{
 			builder.seqNo(existingBPartnerProduct.getSeqNo());
@@ -469,10 +444,6 @@ public class ProductRestService
 		if (jsonRequestBPartnerProductUpsert.isProductNoSet())
 		{
 			builder.productNo(jsonRequestBPartnerProductUpsert.getProductNo());
-		}
-		else if (isUpdateRemove)
-		{
-			builder.productNo(null);
 		}
 		else
 		{
@@ -484,10 +455,6 @@ public class ProductRestService
 		{
 			builder.description(jsonRequestBPartnerProductUpsert.getDescription());
 		}
-		else if (isUpdateRemove)
-		{
-			builder.description(null);
-		}
 		else
 		{
 			builder.description(existingBPartnerProduct.getDescription());
@@ -497,10 +464,6 @@ public class ProductRestService
 		if (jsonRequestBPartnerProductUpsert.isExclusionFromSalesReasonSet())
 		{
 			builder.exclusionFromSalesReason(jsonRequestBPartnerProductUpsert.getExclusionFromSalesReason());
-		}
-		else if (isUpdateRemove)
-		{
-			builder.exclusionFromSalesReason(null);
 		}
 		else
 		{
@@ -512,10 +475,6 @@ public class ProductRestService
 		{
 			builder.cuEAN(jsonRequestBPartnerProductUpsert.getCuEAN());
 		}
-		else if (isUpdateRemove)
-		{
-			builder.cuEAN(null);
-		}
 		else
 		{
 			builder.cuEAN(existingBPartnerProduct.getCuEAN());
@@ -525,10 +484,6 @@ public class ProductRestService
 		if (jsonRequestBPartnerProductUpsert.isGtinSet())
 		{
 			builder.gtin(jsonRequestBPartnerProductUpsert.getGtin());
-		}
-		else if (isUpdateRemove)
-		{
-			builder.gtin(null);
 		}
 		else
 		{
@@ -540,10 +495,6 @@ public class ProductRestService
 		{
 			builder.customerLabelName(jsonRequestBPartnerProductUpsert.getCustomerLabelName());
 		}
-		else if (isUpdateRemove)
-		{
-			builder.customerLabelName(null);
-		}
 		else
 		{
 			builder.customerLabelName(existingBPartnerProduct.getCustomerLabelName());
@@ -553,10 +504,6 @@ public class ProductRestService
 		if (jsonRequestBPartnerProductUpsert.isIngredientsSet())
 		{
 			builder.ingredients(jsonRequestBPartnerProductUpsert.getIngredients());
-		}
-		else if (isUpdateRemove)
-		{
-			builder.ingredients(null);
 		}
 		else
 		{
@@ -623,10 +570,8 @@ public class ProductRestService
 	private Product syncProductWithJson(
 			@NonNull final JsonRequestProduct jsonRequestProductUpsertItem,
 			@NonNull final Product existingProduct,
-			@NonNull final I_AD_Org org,
-			@NonNull final SyncAdvise syncAdvise)
+			@NonNull final I_AD_Org org)
 	{
-		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
 		final Product.ProductBuilder builder = Product.builder();
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
@@ -677,10 +622,6 @@ public class ProductRestService
 		{
 			builder.ean(jsonRequestProductUpsertItem.getEan());
 		}
-		else if (isUpdateRemove)
-		{
-			builder.ean(null);
-		}
 		else
 		{
 			builder.ean(existingProduct.getEan());
@@ -691,10 +632,6 @@ public class ProductRestService
 		{
 			builder.gtin(jsonRequestProductUpsertItem.getGtin());
 		}
-		else if (isUpdateRemove)
-		{
-			builder.gtin(null);
-		}
 		else
 		{
 			builder.gtin(existingProduct.getGtin());
@@ -704,10 +641,6 @@ public class ProductRestService
 		if (jsonRequestProductUpsertItem.isDescriptionSet())
 		{
 			builder.description(TranslatableStrings.constant(jsonRequestProductUpsertItem.getDescription()));
-		}
-		else if (isUpdateRemove)
-		{
-			builder.description(TranslatableStrings.empty());
 		}
 		else
 		{

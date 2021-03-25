@@ -22,6 +22,7 @@
 
 package de.metas.externalreference;
 
+import de.metas.bpartner.GLN;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
 import lombok.AllArgsConstructor;
@@ -34,6 +35,8 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static de.metas.util.Check.isEmpty;
 
 @Value
 public class ExternalIdentifier
@@ -65,6 +68,15 @@ public class ExternalIdentifier
 		this.externalReferenceValueAndSystem = externalReferenceValueAndSystem;
 	}
 
+	public static ExternalIdentifier ofOrNull(@Nullable final String rawIdentifierString)
+	{
+		if (isEmpty(rawIdentifierString, true))
+		{
+			return null;
+		}
+		return of(rawIdentifierString);
+	}
+
 	@NonNull
 	public static ExternalIdentifier of(@NonNull final String identifier)
 	{
@@ -84,6 +96,12 @@ public class ExternalIdentifier
 					.build();
 
 			return new ExternalIdentifier(Type.EXTERNAL_REFERENCE, identifier, valueAndSystem);
+		}
+
+		final Matcher glnMatcher = Type.GLN.pattern.matcher(identifier);
+		if (glnMatcher.matches())
+		{
+			return new ExternalIdentifier(Type.GLN, identifier, null);
 		}
 
 		throw new AdempiereException("Unknown externalId type!")
@@ -111,24 +129,31 @@ public class ExternalIdentifier
 		return MetasfreshId.of(Integer.parseInt(rawValue));
 	}
 
+	@NonNull
+	public GLN asGLN()
+	{
+		Check.assume(Type.GLN.equals(type),
+					 "The type of this instance needs to be {}; this={}", Type.GLN, this);
+
+		final Matcher glnMatcher = Type.GLN.pattern.matcher(rawValue);
+
+		if(glnMatcher.find()){
+			return GLN.ofString(glnMatcher.group(1));
+		}
+		else {
+			throw new AdempiereException("External identifier of GLN parsing failed. External Identifier:" + rawValue);
+		}
+
+	}
+
 	@AllArgsConstructor
 	@Getter
 	public enum Type
 	{
 		METASFRESH_ID(Pattern.compile("^\\d+$")),
-		EXTERNAL_REFERENCE(Pattern.compile("(?:^ext-)([a-zA-Z0-9]+)-(.+)"));
+		EXTERNAL_REFERENCE(Pattern.compile("(?:^ext-)([a-zA-Z0-9]+)-(.+)")),
+		GLN(Pattern.compile("(?:^gln)-(.+)"));
 
 		private final Pattern pattern;
-	}
-
-	@Value
-	@Builder
-	public static class ExternalReferenceValueAndSystem
-	{
-		@NonNull
-		String externalSystem;
-
-		@NonNull
-		String value;
 	}
 }

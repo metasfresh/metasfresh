@@ -186,19 +186,16 @@ public interface IAttributeStorage extends IAttributeSet
 	String getPropagationType(I_M_Attribute attribute);
 
 	/**
-	 * @param attribute
 	 * @return {@link IAttributeAggregationStrategy} the linked aggregation strategy
 	 */
 	IAttributeAggregationStrategy retrieveAggregationStrategy(I_M_Attribute attribute);
 
 	/**
-	 * @param attribute
 	 * @return {@link IAttributeSplitterStrategy} the linked splitter strategy
 	 */
 	IAttributeSplitterStrategy retrieveSplitterStrategy(I_M_Attribute attribute);
 
 	/**
-	 * @param attribute
 	 * @return {@link IHUAttributeTransferStrategy} the linked transfer strategy which will be used to transfer an attribute from another {@link IAttributeStorage}.
 	 */
 	IHUAttributeTransferStrategy retrieveTransferStrategy(I_M_Attribute attribute);
@@ -206,7 +203,6 @@ public interface IAttributeStorage extends IAttributeSet
 	/**
 	 *
 	 * @param ctx evaluation context
-	 * @param attribute
 	 * @return true if given attribute is readonly for user
 	 */
 	boolean isReadonlyUI(final IAttributeValueContext ctx, I_M_Attribute attribute);
@@ -220,9 +216,7 @@ public interface IAttributeStorage extends IAttributeSet
 
 	/**
 	 * Set attribute's value with NO propagation.
-	 *
-	 * @param attribute
-	 * @param value
+     *
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
 	void setValueNoPropagate(AttributeCode attributeCode, Object value);

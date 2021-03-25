@@ -26,7 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.product.v2.response.alberta.JsonAlbertaPackagingUnit;
 import de.metas.common.product.v2.response.alberta.JsonAlbertaProductInfo;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;

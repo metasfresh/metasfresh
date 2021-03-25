@@ -33,7 +33,8 @@ import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.externalsystem.JsonExternalSystemName;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
@@ -48,6 +49,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -79,10 +81,10 @@ public class ExternalReferenceRestControllerService
 	}
 
 	public JsonExternalReferenceLookupResponse performLookup(
-			@Nullable final String orgCode,
+			@Nullable OrgId orgId,
 			@NonNull final JsonExternalReferenceLookupRequest request)
 	{
-		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
+		orgId = orgId != null ? orgId : Env.getOrgId();
 
 		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
@@ -92,6 +94,15 @@ public class ExternalReferenceRestControllerService
 		final ImmutableMap<ExternalReferenceQuery, ExternalReference> externalReferences = externalReferenceRepository.getExternalReferences(queries);
 
 		return createResponseFromRepoResult(externalReferences);
+	}
+
+	public JsonExternalReferenceLookupResponse performLookup(
+			@Nullable final String orgCode,
+			@NonNull final JsonExternalReferenceLookupRequest request)
+	{
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
+
+		return performLookup(orgId, request);
 	}
 
 	private ImmutableSet<ExternalReferenceQuery> extractRepoQueries(
@@ -221,6 +232,19 @@ public class ExternalReferenceRestControllerService
 			@NonNull final ExternalIdentifier externalIdentifier,
 			@NonNull final IExternalReferenceType externalReferenceType)
 	{
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
+
+		return getJsonMetasfreshIdFromExternalReference(orgId,externalIdentifier,externalReferenceType);
+	}
+
+	@NonNull
+	public Optional<JsonMetasfreshId> getJsonMetasfreshIdFromExternalReference(
+			@Nullable final OrgId orgId,
+			@NonNull final ExternalIdentifier externalIdentifier,
+			@NonNull final IExternalReferenceType externalReferenceType)
+	{
+		final OrgId orgIdToUse = CoalesceUtil.coalesceSuppliers(() -> orgId, () -> Env.getOrgId());
+
 		final JsonExternalSystemName externalSystemName = JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem());
 
 		final JsonExternalReferenceLookupRequest lookupRequest = JsonExternalReferenceLookupRequest.builder()
@@ -231,7 +255,7 @@ public class ExternalReferenceRestControllerService
 							  .build())
 				.build();
 
-		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgCode, lookupRequest);
+		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgIdToUse, lookupRequest);
 		return lookupResponse.getItems()
 				.stream()
 				.map(JsonExternalReferenceItem::getMetasfreshId)
