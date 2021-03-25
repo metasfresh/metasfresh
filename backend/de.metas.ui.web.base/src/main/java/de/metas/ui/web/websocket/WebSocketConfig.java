@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.StompWebSocketEndpointRegistration;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 import org.springframework.web.socket.messaging.AbstractSubProtocolEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -68,10 +69,19 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 	@Override
 	public void registerStompEndpoints(@NonNull final StompEndpointRegistry registry)
 	{
-		final String frontendURL = WebuiURLs.newInstance().getFrontendURL();
-		// the endpoint for websocket connections
-		registry.addEndpoint(ENDPOINT)
-				.setAllowedOrigins(frontendURL) // we can't allow '*' anymore, see https://github.com/spring-projects/spring-framework/issues/26111
+		final StompWebSocketEndpointRegistration endpoint = registry.addEndpoint(ENDPOINT);
+
+		final WebuiURLs webuiURLs = WebuiURLs.newInstance();
+		if (webuiURLs.isCrossSiteUsageAllowed())
+		{
+			// we can't allow '*' anymore, see https://github.com/spring-projects/spring-framework/issues/26111	
+			endpoint.setAllowedOriginPatterns("http://*", "https://*");
+		}
+		else
+		{
+			endpoint.setAllowedOrigins(webuiURLs.getFrontendURL()); // the endpoint for websocket connections	
+		}
+		endpoint
 				.addInterceptors(new WebsocketHandshakeInterceptor())
 				.withSockJS();
 	}
@@ -152,7 +162,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 		private static final Logger logger = LogManager.getLogger(WebsocketHandshakeInterceptor.class);
 
 		@Override
-		public boolean beforeHandshake(final ServerHttpRequest request, final ServerHttpResponse response, final WebSocketHandler wsHandler, final Map<String, Object> attributes) throws Exception
+		public boolean beforeHandshake(@NonNull final ServerHttpRequest request, final ServerHttpResponse response, final WebSocketHandler wsHandler, final Map<String, Object> attributes) throws Exception
 		{
 			final UserSession userSession = UserSession.getCurrentOrNull();
 			if (userSession == null)
@@ -185,12 +195,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 	//
 	//
 
-	private static final WebsocketTopicName extractTopicName(final AbstractSubProtocolEvent event)
+	private static WebsocketTopicName extractTopicName(final AbstractSubProtocolEvent event)
 	{
 		return WebsocketTopicName.ofString(SimpMessageHeaderAccessor.getDestination(event.getMessage().getHeaders()));
 	}
 
-	private static final WebsocketSubscriptionId extractUniqueSubscriptionId(final AbstractSubProtocolEvent event)
+	private static WebsocketSubscriptionId extractUniqueSubscriptionId(final AbstractSubProtocolEvent event)
 	{
 		final MessageHeaders headers = event.getMessage().getHeaders();
 		final WebsocketSessionId sessionId = WebsocketSessionId.ofString(SimpMessageHeaderAccessor.getSessionId(headers));
