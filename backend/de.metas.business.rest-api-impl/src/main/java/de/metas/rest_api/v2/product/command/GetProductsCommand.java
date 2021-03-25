@@ -31,7 +31,7 @@ import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.product.v2.response.alberta.JsonAlbertaPackagingUnit;
 import de.metas.common.product.v2.response.alberta.JsonAlbertaProductInfo;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;

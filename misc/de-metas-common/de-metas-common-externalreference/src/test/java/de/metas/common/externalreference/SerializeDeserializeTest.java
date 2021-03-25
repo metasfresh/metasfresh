@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import de.metas.common.externalsystem.JsonExternalSystemName;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

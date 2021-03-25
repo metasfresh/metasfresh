@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;

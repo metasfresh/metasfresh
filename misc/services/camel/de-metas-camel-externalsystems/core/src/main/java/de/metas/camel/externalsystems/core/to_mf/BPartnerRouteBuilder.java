@@ -27,7 +27,7 @@ import de.metas.camel.externalsystems.common.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
-import de.metas.common.bpartner.request.JsonRequestBPartnerUpsert;
+import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsert;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;

@@ -1,6 +1,6 @@
 package de.metas.rest_api.common;
 
-import de.metas.common.rest_api.JsonInvoiceRule;
+import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Value;

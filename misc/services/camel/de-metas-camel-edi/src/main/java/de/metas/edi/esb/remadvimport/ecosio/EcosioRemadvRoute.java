@@ -24,8 +24,8 @@ package de.metas.edi.esb.remadvimport.ecosio;
 
 import at.erpel.schemas._1p0.messaging.message.ErpelMessageType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceRequest;
-import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceResponse;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRequest;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceResponse;
 import de.metas.edi.esb.commons.Util;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;

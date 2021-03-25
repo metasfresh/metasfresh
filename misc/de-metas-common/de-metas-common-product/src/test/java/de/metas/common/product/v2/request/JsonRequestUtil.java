@@ -22,7 +22,7 @@
 
 package de.metas.common.product.v2.request;
 
-import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.v2.SyncAdvise;
 
 import java.util.Collections;
 

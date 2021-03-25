@@ -28,13 +28,12 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDeliveries;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDelivery;
-import de.metas.common.bpartner.request.JsonRequestBPartnerUpsert;
+import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsert;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import java.util.List;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_CURRENT_ORDER;

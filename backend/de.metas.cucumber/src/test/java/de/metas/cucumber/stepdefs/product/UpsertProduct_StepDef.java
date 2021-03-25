@@ -28,7 +28,7 @@ import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.RESTUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;

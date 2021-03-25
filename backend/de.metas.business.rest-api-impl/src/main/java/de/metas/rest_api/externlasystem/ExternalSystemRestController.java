@@ -23,9 +23,9 @@
 package de.metas.rest_api.externlasystem;
 
 import de.metas.Profiles;
-import de.metas.common.rest_api.CreatePInstanceLogRequest;
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.issue.JsonCreateIssueResponse;
+import de.metas.common.rest_api.v1.CreatePInstanceLogRequest;
+import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;

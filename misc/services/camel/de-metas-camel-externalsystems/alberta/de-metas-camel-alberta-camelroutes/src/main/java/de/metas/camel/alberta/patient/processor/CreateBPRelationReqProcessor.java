@@ -23,13 +23,13 @@
 package de.metas.camel.alberta.patient.processor;
 
 import de.metas.camel.externalsystems.common.BPRelationsCamelRequest;
-import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsert;
-import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsertItem;
-import de.metas.common.bpartner.response.JsonResponseUpsertItem;
+import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsert;
+import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsertItem;
+import de.metas.common.bpartner.v1.response.JsonResponseUpsertItem;
 import de.metas.common.bprelation.JsonBPRelationRole;
 import de.metas.common.bprelation.request.JsonRequestBPRelationTarget;
 import de.metas.common.bprelation.request.JsonRequestBPRelationsUpsert;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
