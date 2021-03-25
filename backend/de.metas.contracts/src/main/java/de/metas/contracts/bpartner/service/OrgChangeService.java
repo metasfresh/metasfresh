@@ -115,7 +115,7 @@ public class OrgChangeService
 		final IContractChangeBL.ContractChangeParameters contractChangeParameters = IContractChangeBL.ContractChangeParameters.builder()
 				.changeDate(Objects.requireNonNull(TimeUtil.asTimestamp(orgChangeRequest.getStartDate())))
 				.isCloseInvoiceCandidate(true)
-				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_General)
+				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_OrgChange)
 				.isCreditOpenInvoices(false)
 				.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
 				.build();
