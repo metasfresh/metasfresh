@@ -38,16 +38,31 @@ import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.bpartner.repository.OrgChangeRepository;
 import de.metas.contracts.bpartner.repository.OrgMappingRepository;
 import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.request.RequestTypeId;
+import de.metas.request.api.IRequestBL;
+import de.metas.request.api.IRequestTypeDAO;
+import de.metas.request.api.RequestCandidate;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_OrgChange_History;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_R_Request;
+import org.compiere.model.X_R_Request;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -57,15 +72,22 @@ public class OrgChangeService
 {
 
 	private static final Logger logger = LogManager.getLogger(OrgChangeService.class);
-	final ILoggable loggable = Loggables.withLogger(logger, Level.INFO);
+	private final ILoggable loggable = Loggables.withLogger(logger, Level.INFO);
 
-	final OrgChangeRepository orgChangeRepo;
-	final BPartnerCompositeRepository bpCompositeRepo;
-	final OrgMappingRepository orgMappingRepo;
+	private final AdMessageKey MSG_OrgChangeSummary = AdMessageKey.of("R_Request_OrgChange_Summary");
 
+	private final OrgChangeRepository orgChangeRepo;
+	private final BPartnerCompositeRepository bpCompositeRepo;
+	private final OrgMappingRepository orgMappingRepo;
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 
-	final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
+
+	private final IRequestBL requestBL = Services.get(IRequestBL.class);
 
 	public OrgChangeService(@NonNull final OrgChangeRepository orgChangeRepo,
 			@NonNull final BPartnerCompositeRepository bpCompositeRepo,
@@ -107,7 +129,10 @@ public class OrgChangeService
 
 		cancelSubscriptionsFor(orgChangeBPartnerComposite, orgChangeRequest);
 
-		orgChangeRepo.createOrgChangeHistory(orgChangeRequest, orgMappingId, destinationBPartnerComposite);
+		final OrgChangeHistoryId orgChangeHistoryId = orgChangeRepo.createOrgChangeHistory(orgChangeRequest, orgMappingId, destinationBPartnerComposite);
+
+		createOrgSwitchRequest(orgChangeHistoryId);
+
 	}
 
 	private void cancelSubscriptionsFor(final OrgChangeBPartnerComposite orgChangeBPartnerComposite, final OrgChangeRequest orgChangeRequest)
@@ -451,13 +476,10 @@ public class OrgChangeService
 		}
 	}
 
-
-
 	public boolean hasAnyMembershipProduct(final OrgId orgId)
 	{
 		return orgChangeRepo.hasAnyMembershipProduct(orgId);
 	}
-
 
 	public void saveOrgChangeBPartnerComposite(@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite)
 	{
@@ -466,8 +488,38 @@ public class OrgChangeService
 		bPartnerComposite.getBpartner().setOrgMappingId(orgChangeBPartnerComposite.getBPartnerOrgMappingId());
 
 		bpCompositeRepo.save(bPartnerComposite);
+	}
 
-		// TODO subscriptions
+	private I_R_Request createOrgSwitchRequest(@NonNull OrgChangeHistoryId orgChangeHistoryId)
+	{
+		final RequestTypeId requestTypeId = requestTypeDAO.retrieveOrgChangeRequestTypeId();
+		final I_AD_OrgChange_History orgChangeHistoryRecord = orgChangeRepo.getOrgChangeHistoryById(orgChangeHistoryId);
+
+		final OrgId orgId = OrgId.ofRepoId(orgChangeHistoryRecord.getAD_OrgTo_ID());
+
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		final ZonedDateTime requestDate = TimeUtil.asZonedDateTime(orgChangeHistoryRecord.getDate_OrgChange(), timeZone);
+
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(orgChangeHistoryRecord.getC_BPartner_To_ID());
+
+		final String summary = msgBL.getMsg(Env.getCtx(), MSG_OrgChangeSummary, new Object[] {
+				orgChangeHistoryRecord.getAD_Org_From_ID(),
+				orgChangeHistoryRecord.getAD_OrgTo_ID(),
+				orgChangeHistoryRecord.getDate_OrgChange() });
+
+		final RequestCandidate requestCandidate = RequestCandidate.builder()
+				.summary(summary)
+				.confidentialType(X_R_Request.CONFIDENTIALTYPE_PartnerConfidential)
+				.orgId(orgId)
+				.recordRef(TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId))
+				.requestTypeId(requestTypeId)
+				.partnerId(bPartnerId)
+				.dateDelivered(requestDate)
+
+				.build();
+
+		return requestBL.createRequest(requestCandidate);
+
 	}
 
 }

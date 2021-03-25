@@ -43,8 +43,11 @@ import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
+import de.metas.contracts.bpartner.service.OrgChangeHistoryId;
 import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -58,6 +61,10 @@ import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
+import de.metas.request.RequestTypeId;
+import de.metas.request.api.IRequestBL;
+import de.metas.request.api.IRequestTypeDAO;
+import de.metas.request.api.RequestCandidate;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -70,12 +77,15 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_OrgChange_History;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.I_R_Request;
+import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -85,11 +95,13 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copy;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -98,19 +110,23 @@ public class OrgChangeRepository
 {
 	private static final Logger logger = LogManager.getLogger(OrgChangeRepository.class);
 	final ILoggable loggable = Loggables.withLogger(logger, Level.INFO);
+	
 
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
-	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	final IProductDAO productDAO = Services.get(IProductDAO.class);
-	final IPricingBL pricingBL = Services.get(IPricingBL.class);
-	final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
-	final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-	final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	final IUserDAO userDAO = Services.get(IUserDAO.class);
 
-	final BPartnerCompositeRepository bPartnerCompositeRepo;
-	final OrgMappingRepository orgMappingRepo;
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IRequestBL requestBL = Services.get((IRequestBL.class));
+
+
+	private final BPartnerCompositeRepository bPartnerCompositeRepo;
+	private final OrgMappingRepository orgMappingRepo;
 
 	public OrgChangeRepository(@NonNull final BPartnerCompositeRepository bPartnerCompositeRepo,
 			@NonNull final OrgMappingRepository orgMappingRepo)
@@ -299,7 +315,7 @@ public class OrgChangeRepository
 				.create();
 	}
 
-	public void createOrgChangeHistory(
+	public OrgChangeHistoryId createOrgChangeHistory(
 			@NonNull final OrgChangeRequest orgChangeRequest,
 			@NonNull final OrgMappingId orgMappingId,
 			@NonNull final BPartnerComposite bPartnerToComposite)
@@ -314,6 +330,8 @@ public class OrgChangeRepository
 		orgChangeHistory.setDate_OrgChange(TimeUtil.asTimestamp(orgChangeRequest.getStartDate()));
 
 		save(orgChangeHistory);
+
+		return OrgChangeHistoryId.ofRepoId(orgChangeHistory.getAD_OrgChange_History_ID());
 	}
 
 	public BPartnerId getOrCreateCounterpartBPartner(@NonNull final OrgChangeRequest orgChangeRequest, @NonNull final OrgMappingId orgMappingId)
@@ -570,6 +588,12 @@ public class OrgChangeRepository
 		}
 
 		return counterpartProduct;
+	}
+
+
+	public I_AD_OrgChange_History getOrgChangeHistoryById(@NonNull final OrgChangeHistoryId orgChangeHistoryId)
+	{
+		return load(orgChangeHistoryId, I_AD_OrgChange_History.class);
 	}
 
 }
