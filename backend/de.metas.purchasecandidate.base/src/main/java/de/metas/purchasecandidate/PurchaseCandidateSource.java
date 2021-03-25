@@ -24,6 +24,7 @@ package de.metas.purchasecandidate;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.purchasecandidate.model.X_C_PurchaseCandidate;
 import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
@@ -34,9 +35,9 @@ import java.util.Arrays;
 
 public enum PurchaseCandidateSource implements ReferenceListAwareEnum
 {
-	MaterialDisposition("MD"),
-	SalesOrder("SO"),
-	Api("API");
+	MaterialDisposition(X_C_PurchaseCandidate.SOURCE_MaterialDisposition),
+	SalesOrder(X_C_PurchaseCandidate.SOURCE_SalesOrder),
+	Api(X_C_PurchaseCandidate.SOURCE_API);
 
 	String code;
 	private static final ImmutableMap<String, PurchaseCandidateSource> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), PurchaseCandidateSource::getCode);

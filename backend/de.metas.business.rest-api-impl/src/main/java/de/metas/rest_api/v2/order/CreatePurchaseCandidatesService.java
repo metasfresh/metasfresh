@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.rest_api.order.impl;
+package de.metas.rest_api.v2.order;
 
 import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
@@ -56,12 +56,14 @@ import de.metas.rest_api.order.JsonVendor;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.utils.RestApiUtils;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
@@ -121,7 +123,7 @@ public class CreatePurchaseCandidatesService
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(request.getOrgCode());
 		final ProductId productId = getProductByIdentifier(orgId, request.getProductIdentifier());
-		final Quantity quantity = getQuantity(request);
+		final Quantity quantity = RestApiUtils.getQuantity(request);
 		final BPartnerId vendorId = getBPartnerId(orgId, request.getVendor());
 		final ZonedDateTime datePromised = getOrDefaultDatePromised(request.getPurchaseDatePromised(), orgId);
 		final BigDecimal discount = getDiscount(request);
@@ -140,7 +142,6 @@ public class CreatePurchaseCandidatesService
 				.quantity(quantity)
 				.bpartnerId(vendorId)
 				.datePromised(datePromised)
-				.discount(discount)
 				.countryId(bpartnerDAO.getDefaultShipToLocationCountryIdOrNull(vendorId))
 				.build();
 		final IPricingResult priceAndDiscount = getPriceAndDiscount(pricingInfo);
@@ -214,19 +215,6 @@ public class CreatePurchaseCandidatesService
 	}
 
 	@NonNull
-	private Quantity getQuantity(final JsonPurchaseCandidateCreateItem request)
-	{
-		final JsonQuantity jsonQuantity = request.getQty();
-		final String uomCode = jsonQuantity.getUomCode();
-		final Optional<I_C_UOM> uom = uomDAO.getByX12DE355IfExists(X12DE355.ofCode(uomCode));
-		if (!uom.isPresent())
-		{
-			throw MissingResourceException.builder().resourceIdentifier("quantity.uomCode").resourceIdentifier(uomCode).build();
-		}
-		return Quantity.of(jsonQuantity.getQty(), uom.get());
-	}
-
-	@NonNull
 	private BPartnerId getBPartnerId(final OrgId orgId,
 			@NonNull final JsonVendor vendor)
 	{
@@ -287,24 +275,16 @@ public class CreatePurchaseCandidatesService
 			}
 			else
 			{
-				handleIncorrectProductIdentifier(productIdentifier);
+				throw new InvalidIdentifierException(productIdentifier);
 			}
 			result = productDAO.retrieveProductIdBy(builder.build());
 		}
 		if (result == null)
 		{
-			handleIncorrectProductIdentifier(productIdentifier);
+			throw new InvalidIdentifierException(productIdentifier);
 		}
 
 		return result;
-	}
-
-	private void handleIncorrectProductIdentifier(final String productIdentifier)
-	{
-		throw MissingResourceException.builder()
-				.resourceName("productIdentifier")
-				.resourceIdentifier(productIdentifier)
-				.build();
 	}
 
 	@NonNull
@@ -332,24 +312,17 @@ public class CreatePurchaseCandidatesService
 			}
 			else
 			{
-				handleIncorrectWarehouseIdentifier(warehouseIdentifier);
+				throw new InvalidIdentifierException(warehouseIdentifier);
 			}
 			result = warehouseDAO.retrieveWarehouseIdBy(builder.build());
 		}
 		if (result == null)
 		{
-			handleIncorrectWarehouseIdentifier(warehouseIdentifier);
+			throw new InvalidIdentifierException(warehouseIdentifier);
 		}
 
 		return result;
 	}
 
-	private void handleIncorrectWarehouseIdentifier(final String warehouseIdentifier)
-	{
-		throw MissingResourceException.builder()
-				.resourceName("warehouseIdentifier")
-				.resourceIdentifier(warehouseIdentifier)
-				.build();
-	}
 
 }

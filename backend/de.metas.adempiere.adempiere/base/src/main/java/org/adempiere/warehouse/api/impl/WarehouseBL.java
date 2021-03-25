@@ -48,6 +48,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class WarehouseBL implements IWarehouseBL
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override
 	public I_M_Warehouse getById(@NonNull final WarehouseId warehouseId)
@@ -135,7 +136,7 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		Check.assumeNotNull(warehouse, "warehouse not null");
 
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(),warehouse.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bpLocation = bPartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(),warehouse.getC_BPartner_Location_ID()));
 		Check.assumeNotNull(bpLocation, "C_BPartner_Location_ID not null for {}", warehouse);
 
 		final I_C_Location location = bpLocation.getC_Location();

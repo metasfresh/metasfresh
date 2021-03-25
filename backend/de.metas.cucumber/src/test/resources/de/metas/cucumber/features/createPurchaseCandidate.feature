@@ -23,7 +23,6 @@ Feature: create or update Purchase Candidate
     And the purchase candidate request is set in context
     When the metasfresh REST-API endpoint path 'api/v2-pre/order/purchase/createCandidates' receives a 'POST' request with the payload from context and responds with '200' status code
 
-  Scenario: create a purchase candidate
     Then verify if data is persisted correctly for purchase candidate
 
   Scenario: enqueue purchase candidate for order creation

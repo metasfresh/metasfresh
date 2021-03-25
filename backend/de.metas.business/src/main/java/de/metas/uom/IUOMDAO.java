@@ -79,6 +79,4 @@ public interface IUOMDAO extends ISingletonService
 
 	@NonNull
 	UOMType getUOMTypeById(UomId uomId);
-
-	I_C_UOM getByProductID(ProductId productId);
 }

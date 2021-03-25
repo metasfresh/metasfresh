@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.rest_api.order.impl;
+package de.metas.rest_api.v2.order;
 
 import de.metas.i18n.TranslatableStrings;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;

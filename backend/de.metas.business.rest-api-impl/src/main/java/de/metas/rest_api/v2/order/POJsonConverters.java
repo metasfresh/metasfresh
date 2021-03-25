@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.rest_api.order.impl;
+package de.metas.rest_api.v2.order;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
@@ -39,14 +39,13 @@ final class POJsonConverters
 {
 	public static JsonEnqueueForInvoicingResponse toJson(@NonNull final IInvoiceCandidateEnqueueResult enqueueResult)
 	{
-		final JsonEnqueueForInvoicingResponse invoiceCandidateResult = JsonEnqueueForInvoicingResponse.builder()
+		return JsonEnqueueForInvoicingResponse.builder()
 				.invoiceCandidateEnqueuedCount(enqueueResult.getInvoiceCandidateEnqueuedCount())
 				.summaryTranslated(enqueueResult.getSummaryTranslated(Env.getCtx()))
 				.totalNetAmtToInvoiceChecksum(enqueueResult.getTotalNetAmtToInvoiceChecksum())
 				.workpackageEnqueuedCount(enqueueResult.getWorkpackageEnqueuedCount())
 				.workpackageQueueSizeBeforeEnqueueing(enqueueResult.getWorkpackageQueueSizeBeforeEnqueueing())
 				.build();
-		return invoiceCandidateResult;
 	}
 
 	public static List<ExternalHeaderIdWithExternalLineIds> fromJson(@NonNull final List<JsonPurchaseCandidateReference> candidates)

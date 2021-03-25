@@ -47,13 +47,19 @@ public class M_Warehouse
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
-	
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
 	@CalloutMethod(columnNames = I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
 	public void syncLocation(final I_M_Warehouse warehouse)
 	{
-		final I_C_BPartner_Location bpLocation = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(),warehouse.getC_BPartner_Location_ID()));
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID());
+		if (bpartnerLocationId == null)
+		{
+			return;
+		}
+
+		final I_C_BPartner_Location bpLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		if (bpLocation == null)
 		{
 			return;

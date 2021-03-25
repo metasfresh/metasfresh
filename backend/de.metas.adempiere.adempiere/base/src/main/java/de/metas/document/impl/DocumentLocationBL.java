@@ -48,6 +48,7 @@ import de.metas.util.Services;
 public class DocumentLocationBL implements IDocumentLocationBL
 {
 
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override
@@ -129,7 +130,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 				return;
 			}
 
-			final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(WarehouseId.ofRepoId(warehouseId));
+			final I_M_Warehouse warehouse = warehouseDAO.getById(WarehouseId.ofRepoId(warehouseId));
 			final String address = makeWarehouseAddress(warehouse);
 			docDeliveryLocation.setDeliveryToAddress(address);
 			return;

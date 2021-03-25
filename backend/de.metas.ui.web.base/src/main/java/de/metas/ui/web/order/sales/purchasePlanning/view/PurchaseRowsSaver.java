@@ -209,7 +209,6 @@ class PurchaseRowsSaver
 			lastCandidate.setQtyToPurchase(lastCandidate.getQtyToPurchase().add(qtyToPurchaseRemainingOfGroup));
 			lastCandidate.setPurchaseDatePromised(purchaseDatePromised);
 
-			qtyToPurchaseRemainingOfGroup = qtyToPurchaseRemainingOfGroup.toZero();
 		}
 		//
 		// If there is remaining qty to purchase but no purchase candidate to add to then create a new candidate
@@ -254,7 +253,6 @@ class PurchaseRowsSaver
 					.build();
 
 			candidatesChanged.add(newCandidate);
-			qtyToPurchaseRemainingOfGroup.toZero();
 		}
 
 		return candidatesChanged;

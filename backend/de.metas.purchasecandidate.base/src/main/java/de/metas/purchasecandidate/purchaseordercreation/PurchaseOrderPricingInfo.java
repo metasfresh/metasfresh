@@ -51,6 +51,4 @@ public class PurchaseOrderPricingInfo
 	@NonNull ProductId productId;
 	@Nullable CountryId countryId;
 	@NonNull Quantity quantity;
-	@NonNull BigDecimal discount;
-	@Nullable BigDecimal priceEntered;
 }

@@ -203,13 +203,4 @@ public class UOMDAO implements IUOMDAO
 		final I_C_UOM uom = getById(uomId);
 		return UOMType.ofNullableCodeOrOther(uom.getUOMType());
 	}
-
-	@Override
-	public I_C_UOM getByProductID(final ProductId productId)
-	{
-		return queryBL.createQueryBuilder(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, productId)
-				.andCollect(I_M_Product.COLUMNNAME_C_UOM_ID, I_C_UOM.class)
-				.create().first();
-	}
 }
