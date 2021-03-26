@@ -180,12 +180,6 @@ class InlineTabWrapper extends PureComponent {
 
     if (!tabData) return false;
 
-    // const inlineFieldsDisplayOrder = [
-    //   'Name',
-    //   'Address',
-    //   'Firstname',
-    //   'Lastname',
-    // ];
     const inlineFieldsDisplayOrder = this.getFieldsDisplayOrder(elements);
 
     return (
