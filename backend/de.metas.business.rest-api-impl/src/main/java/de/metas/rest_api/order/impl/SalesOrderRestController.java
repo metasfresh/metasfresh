@@ -1,9 +1,31 @@
 package de.metas.rest_api.order.impl;
 
-import java.io.IOException;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.Profiles;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryId;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
 import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.order.OrderFactory;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.rest_api.order.JsonSalesOrder;
+import de.metas.rest_api.order.JsonSalesOrderAttachment;
+import de.metas.rest_api.order.JsonSalesOrderCreateRequest;
+import de.metas.rest_api.order.JsonSalesOrderLine;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.web.MetasfreshRestAPIConstants;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -22,32 +44,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.Profiles;
-import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryId;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerQuery;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.order.OrderFactory;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.rest_api.attachment.JsonAttachmentType;
-import de.metas.rest_api.order.JsonSalesOrder;
-import de.metas.rest_api.order.JsonSalesOrderAttachment;
-import de.metas.rest_api.order.JsonSalesOrderCreateRequest;
-import de.metas.rest_api.order.JsonSalesOrderLine;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.web.MetasfreshRestAPIConstants;
-import lombok.NonNull;
+import java.io.IOException;
+import java.util.List;
 
 /*
  * #%L

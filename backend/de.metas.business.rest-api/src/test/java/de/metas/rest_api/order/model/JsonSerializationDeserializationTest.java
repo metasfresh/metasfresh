@@ -1,24 +1,21 @@
 package de.metas.rest_api.order.model;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import de.metas.JsonObjectMapperHolder;
-import de.metas.rest_api.attachment.JsonAttachmentType;
+import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
 import de.metas.rest_api.order.JsonSalesOrder;
 import de.metas.rest_api.order.JsonSalesOrderAttachment;
 import de.metas.rest_api.order.JsonSalesOrderCreateRequest;
 import de.metas.rest_api.order.JsonSalesOrderLine;
 import lombok.NonNull;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 /*
  * #%L

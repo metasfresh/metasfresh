@@ -22,11 +22,11 @@
 
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands;
 
-import de.metas.rest_api.v1.bpartner.BpartnerRestController;
+import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateBulkRequest;
+import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateRequest;
 import de.metas.common.rest_api.v1.SyncAdvise;
-import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
-import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
-import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
+import de.metas.rest_api.v1.bpartner.BpartnerRestController;
+import de.metas.rest_api.v1.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.util.JSONObjectMapper;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ImportConfigRepository;
@@ -48,7 +48,7 @@ import java.util.List;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class XmlToOLCandsServiceTest
 {

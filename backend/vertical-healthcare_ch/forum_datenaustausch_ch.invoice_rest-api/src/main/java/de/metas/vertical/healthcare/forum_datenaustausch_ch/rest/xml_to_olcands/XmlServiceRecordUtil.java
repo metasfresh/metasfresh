@@ -23,8 +23,8 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateRequest;
-import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
+import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateRequest;
+import de.metas.common.ordercandidates.v1.request.JsonProductInfo;
 import de.metas.util.Check;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordDRGType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RecordDrugType;

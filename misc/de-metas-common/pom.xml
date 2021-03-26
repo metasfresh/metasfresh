@@ -55,6 +55,7 @@
         <module>de-metas-common-util</module>
         <module>de-metas-common-product</module>
         <module>de-metas-common-pricing</module>
+        <module>de-metas-common-ordercandidates</module>
     </modules>
 
     <dependencies>

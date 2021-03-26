@@ -1,12 +1,14 @@
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest;
 
-import static de.metas.attachments.AttachmentTags.TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF;
-import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE;
-import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER;
-
-import java.io.IOException;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.common.ordercandidates.v1.response.JsonAttachment;
+import de.metas.rest_api.v1.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,15 +20,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.common.collect.ImmutableList;
+import java.io.IOException;
 
-import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
-import de.metas.rest_api.ordercandidates.response.JsonAttachment;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import lombok.NonNull;
+import static de.metas.attachments.AttachmentTags.TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF;
+import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_BELONGS_TO_EXTERNAL_REFERENCE;
+import static de.metas.invoice_gateway.spi.InvoiceExportClientFactory.ATTACHMENT_TAGNAME_EXPORT_PROVIDER;
 
 /*
  * #%L
