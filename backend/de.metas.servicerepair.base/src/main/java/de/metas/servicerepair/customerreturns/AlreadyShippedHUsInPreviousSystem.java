@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.servicerepair.base
+ * de.metas.servicerepair.webui
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,32 +20,23 @@
  * #L%
  */
 
-package de.metas.servicerepair.project.repository.requests;
+package de.metas.servicerepair.customerreturns;
 
-import de.metas.handlingunits.HuId;
-import de.metas.inout.InOutAndLineId;
-import de.metas.organization.OrgId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
-import de.metas.project.ProjectId;
-import de.metas.quantity.Quantity;
-import de.metas.servicerepair.customerreturns.WarrantyCase;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 @Value
 @Builder
-public class CreateRepairProjectTaskRequest
+public class AlreadyShippedHUsInPreviousSystem
 {
-	@NonNull ProjectId projectId;
-	@NonNull OrgId orgId;
-	@NonNull InOutAndLineId customerReturnLineId;
-
+	@NonNull String serialNo;
 	@NonNull ProductId productId;
-	@NonNull @Builder.Default AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
-	@NonNull WarrantyCase warrantyCase;
-	@NonNull Quantity qtyRequired;
-
-	@NonNull HuId repairVhuId;
+	@Nullable BPartnerId customerId;
+	@Nullable LocalDate warrantyStartDate;
 }
