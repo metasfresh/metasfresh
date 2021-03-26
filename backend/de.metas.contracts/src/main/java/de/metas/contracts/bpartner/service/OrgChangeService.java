@@ -533,9 +533,9 @@ public class OrgChangeService
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(orgChangeHistoryRecord.getC_BPartner_To_ID());
 
 		final String summary = msgBL.getMsg(Env.getCtx(), MSG_OrgChangeSummary, new Object[] {
-				orgDAO.getById(orgChangeHistoryRecord.getAD_Org_From_ID()),
-				orgDAO.getById(orgChangeHistoryRecord.getAD_OrgTo_ID()),
-				orgChangeHistoryRecord.getDate_OrgChange() });
+				orgDAO.getById(orgChangeHistoryRecord.getAD_Org_From_ID()).getName(),
+				orgDAO.getById(orgChangeHistoryRecord.getAD_OrgTo_ID()).getName(),
+				TimeUtil.asDate(requestDate)});
 
 		final RequestCandidate requestCandidate = RequestCandidate.builder()
 				.summary(summary)

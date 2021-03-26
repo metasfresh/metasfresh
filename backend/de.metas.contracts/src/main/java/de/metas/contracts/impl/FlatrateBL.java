@@ -1625,12 +1625,13 @@ public class FlatrateBL implements IFlatrateBL
 		else
 		{
 			if (!flatrateDAO.retrieveTerms(ctx,
-										   bPartner.getC_BPartner_ID(),
-										   null,
-										   productAndCategoryId.getProductCategoryId().getRepoId(),
-										   productAndCategoryId.getProductId().getRepoId(),
-										   -1,
-										   trxName).isEmpty())
+					OrgId.ofRepoId(bPartner.getAD_Org_ID()),
+					bPartner.getC_BPartner_ID(),
+					null,
+					productAndCategoryId.getProductCategoryId().getRepoId(),
+					productAndCategoryId.getProductId().getRepoId(),
+					-1,
+					trxName).isEmpty())
 			{
 				notCreatedReason.append(" already has a term;");
 				dontCreateTerm = true;
