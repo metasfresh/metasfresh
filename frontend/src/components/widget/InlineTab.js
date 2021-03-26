@@ -231,6 +231,7 @@ InlineTab.propTypes = {
   updateDataValidStatus: PropTypes.func.isRequired,
   setInlineTabItemProp: PropTypes.func.isRequired,
   isOpen: PropTypes.bool,
+  isGerman: PropTypes.bool,
 };
 
 /**
