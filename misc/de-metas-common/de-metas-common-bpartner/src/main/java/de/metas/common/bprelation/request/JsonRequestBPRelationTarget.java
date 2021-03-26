@@ -24,7 +24,7 @@ package de.metas.common.bprelation.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.SwaggerDocConstants;
+import de.metas.common.rest_api.v1.SwaggerDocConstants;
 import de.metas.common.bprelation.JsonBPRelationRole;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

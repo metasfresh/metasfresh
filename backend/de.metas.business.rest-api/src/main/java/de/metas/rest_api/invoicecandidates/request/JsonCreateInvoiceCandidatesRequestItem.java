@@ -1,9 +1,9 @@
 package de.metas.rest_api.invoicecandidates.request;
 
-import static de.metas.common.rest_api.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,8 +16,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.common.rest_api.JsonExternalId;
-import de.metas.common.rest_api.JsonInvoiceRule;
+import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import de.metas.rest_api.common.JsonPrice;
 import de.metas.rest_api.common.JsonSOTrx;
 import io.swagger.annotations.ApiModelProperty;

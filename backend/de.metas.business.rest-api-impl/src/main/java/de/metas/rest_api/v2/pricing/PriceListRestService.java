@@ -30,11 +30,12 @@ import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersion;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsert;
 import de.metas.common.pricing.v2.pricelist.request.JsonRequestPriceListVersionUpsertItem;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.ExternalReferenceValueAndSystem;
 import de.metas.externalreference.pricelist.PriceListExternalReferenceType;
 import de.metas.externalreference.pricelist.PriceListVersionExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
@@ -115,8 +116,8 @@ public class PriceListRestService
 			{
 				final PriceListVersion priceListVersion = syncJsonToPriceListVersion(
 						jsonRequestPriceListVersion,
-						existingRecord.get(),
-						effectiveSyncAdvise);
+						existingRecord.get()
+				);
 
 				final PriceListVersion updatedPriceListVersion = priceListVersionRepository.savePriceListVersion(priceListVersion);
 
@@ -181,14 +182,12 @@ public class PriceListRestService
 	@NonNull
 	private PriceListVersion syncJsonToPriceListVersion(
 			@NonNull final JsonRequestPriceListVersion jsonRequest,
-			@NonNull final PriceListVersion existingPriceListVersion,
-			@NonNull final SyncAdvise syncAdvise)
+			@NonNull final PriceListVersion existingPriceListVersion)
 	{
 		final PriceListVersion.PriceListVersionBuilder priceListVersionBuilder = PriceListVersion.builder()
 				.priceListVersionId(existingPriceListVersion.getPriceListVersionId())
 				.validFrom(jsonRequest.getValidFrom());
 
-		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
 
 		final OrgId orgId = retrieveOrgIdOrDefault(jsonRequest.getOrgCode());
 		priceListVersionBuilder.orgId(orgId);
@@ -200,10 +199,6 @@ public class PriceListRestService
 		if (jsonRequest.isDescriptionSet())
 		{
 			priceListVersionBuilder.description(jsonRequest.getDescription());
-		}
-		else if (isUpdateRemove)
-		{
-			priceListVersionBuilder.description(null);
 		}
 		else
 		{
@@ -278,7 +273,7 @@ public class PriceListRestService
 	{
 		Check.assume(externalPriceListVersionIdentifier.getType().equals(ExternalIdentifier.Type.EXTERNAL_REFERENCE), "ExternalIdentifier must be of type external reference.");
 
-		final ExternalIdentifier.ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalPriceListVersionIdentifier.asExternalValueAndSystem();
+		final ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalPriceListVersionIdentifier.asExternalValueAndSystem();
 
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
 				.id(externalReferenceValueAndSystem.getValue())

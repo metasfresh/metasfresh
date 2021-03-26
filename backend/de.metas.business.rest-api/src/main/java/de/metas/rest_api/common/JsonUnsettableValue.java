@@ -2,8 +2,8 @@ package de.metas.rest_api.common;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
-import de.metas.common.rest_api.SyncAdvise;
-import de.metas.common.rest_api.SyncAdvise.IfExists;
+import de.metas.common.rest_api.v1.SyncAdvise;
+import de.metas.common.rest_api.v1.SyncAdvise.IfExists;
 import lombok.NonNull;
 
 /*
