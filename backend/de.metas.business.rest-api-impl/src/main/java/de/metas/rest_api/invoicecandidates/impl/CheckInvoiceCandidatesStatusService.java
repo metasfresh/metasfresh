@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.util.TimeUtil;
@@ -147,7 +148,7 @@ public class CheckInvoiceCandidatesStatusService
 				.error(workPackageRecord.getErrorMsg())
 				.enqueued(TimeUtil.asInstant(workPackageRecord.getCreated()))
 				.readyForProcessing(workPackageRecord.isReadyForProcessing())
-				.metasfreshId(MetasfreshId.of(workPackageRecord.getC_Queue_WorkPackage_ID()))
+				.metasfreshId(JsonMetasfreshId.of(workPackageRecord.getC_Queue_WorkPackage_ID()))
 				.build();
 	}
 

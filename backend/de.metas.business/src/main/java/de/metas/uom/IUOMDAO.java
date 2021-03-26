@@ -23,6 +23,7 @@
 package de.metas.uom;
 
 import de.metas.i18n.ITranslatableString;
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
@@ -78,4 +79,6 @@ public interface IUOMDAO extends ISingletonService
 
 	@NonNull
 	UOMType getUOMTypeById(UomId uomId);
+
+	I_C_UOM getByProductID(ProductId productId);
 }

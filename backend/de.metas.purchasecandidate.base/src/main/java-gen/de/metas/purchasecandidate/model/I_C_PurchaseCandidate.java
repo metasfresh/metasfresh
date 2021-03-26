@@ -290,6 +290,113 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_DemandReference = "DemandReference";
 
 	/**
+	 * Set Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDiscount (@Nullable BigDecimal Discount);
+
+	/**
+	 * Get Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDiscount();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Discount = new ModelColumn<>(I_C_PurchaseCandidate.class, "Discount", null);
+	String COLUMNNAME_Discount = "Discount";
+
+	/**
+	 * Set DiscountEff.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDiscountEff (@Nullable BigDecimal DiscountEff);
+
+	/**
+	 * Get DiscountEff.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDiscountEff();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_DiscountEff = new ModelColumn<>(I_C_PurchaseCandidate.class, "DiscountEff", null);
+	String COLUMNNAME_DiscountEff = "DiscountEff";
+
+	/**
+	 * Set DiscountInternal.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDiscountInternal (@Nullable BigDecimal DiscountInternal);
+
+	/**
+	 * Get DiscountInternal.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDiscountInternal();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_DiscountInternal = new ModelColumn<>(I_C_PurchaseCandidate.class, "DiscountInternal", null);
+	String COLUMNNAME_DiscountInternal = "DiscountInternal";
+
+	/**
+	 * Set External Header ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalHeaderId (@Nullable java.lang.String ExternalHeaderId);
+
+	/**
+	 * Get External Header ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalHeaderId();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ExternalHeaderId = new ModelColumn<>(I_C_PurchaseCandidate.class, "ExternalHeaderId", null);
+	String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
+
+	/**
+	 * Set External Line ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalLineId (@Nullable java.lang.String ExternalLineId);
+
+	/**
+	 * Get External Line ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalLineId();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_C_PurchaseCandidate.class, "ExternalLineId", null);
+	String COLUMNNAME_ExternalLineId = "ExternalLineId";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -334,6 +441,48 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_IsAggregatePO = "IsAggregatePO";
 
 	/**
+	 * Set Discount Manual.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualDiscount (boolean IsManualDiscount);
+
+	/**
+	 * Get Discount Manual.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualDiscount();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsManualDiscount = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsManualDiscount", null);
+	String COLUMNNAME_IsManualDiscount = "IsManualDiscount";
+
+	/**
+	 * Set Manual Price.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualPrice (boolean IsManualPrice);
+
+	/**
+	 * Get Manual Price.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualPrice();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsManualPrice = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsManualPrice", null);
+	String COLUMNNAME_IsManualPrice = "IsManualPrice";
+
+	/**
 	 * Set Prepared.
 	 *
 	 * <br>Type: YesNo
@@ -374,6 +523,29 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsRequisitionCreated = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsRequisitionCreated", null);
 	String COLUMNNAME_IsRequisitionCreated = "IsRequisitionCreated";
+
+	/**
+	 * Set Price incl. Tax.
+	 * Tax is included in the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsTaxIncluded (boolean IsTaxIncluded);
+
+	/**
+	 * Get Price incl. Tax.
+	 * Tax is included in the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isTaxIncluded();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsTaxIncluded = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsTaxIncluded", null);
+	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
 
 	/**
 	 * Set Attributes.
@@ -501,6 +673,94 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_M_WarehousePO_ID = "M_WarehousePO_ID";
 
 	/**
+	 * Set Price diff..
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setPriceDifference (@Nullable BigDecimal PriceDifference);
+
+	/**
+	 * Get Price diff..
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getPriceDifference();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceDifference = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceDifference", null);
+	String COLUMNNAME_PriceDifference = "PriceDifference";
+
+	/**
+	 * Set Price imp..
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceEntered (@Nullable BigDecimal PriceEntered);
+
+	/**
+	 * Get Price imp..
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPriceEntered();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceEntered = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceEntered", null);
+	String COLUMNNAME_PriceEntered = "PriceEntered";
+
+	/**
+	 * Set Price override.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceEntered_Override (@Nullable BigDecimal PriceEntered_Override);
+
+	/**
+	 * Get Price override.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPriceEntered_Override();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceEntered_Override = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceEntered_Override", null);
+	String COLUMNNAME_PriceEntered_Override = "PriceEntered_Override";
+
+	/**
+	 * Set Price.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceInternal (@Nullable BigDecimal PriceInternal);
+
+	/**
+	 * Get Price.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPriceInternal();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceInternal = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceInternal", null);
+	String COLUMNNAME_PriceInternal = "PriceInternal";
+
+	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
@@ -570,7 +830,7 @@ public interface I_C_PurchaseCandidate
 	/**
 	 * Set Bestelldatum.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -579,7 +839,7 @@ public interface I_C_PurchaseCandidate
 	/**
 	 * Get Bestelldatum.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -694,6 +954,27 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ReminderDate = new ModelColumn<>(I_C_PurchaseCandidate.class, "ReminderDate", null);
 	String COLUMNNAME_ReminderDate = "ReminderDate";
+
+	/**
+	 * Set Source.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSource (@Nullable java.lang.String Source);
+
+	/**
+	 * Get Source.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSource();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Source = new ModelColumn<>(I_C_PurchaseCandidate.class, "Source", null);
+	String COLUMNNAME_Source = "Source";
 
 	/**
 	 * Get Updated.

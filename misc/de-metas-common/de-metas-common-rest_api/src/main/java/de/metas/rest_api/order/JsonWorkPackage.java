@@ -1,20 +1,8 @@
-package de.metas.rest_api.invoicecandidates.response;
-
-import java.time.Instant;
-
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-import de.metas.rest_api.utils.MetasfreshId;
-import lombok.Builder;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.business.rest-api
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,18 +20,8 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class JsonWorkPackageStatus
+package de.metas.rest_api.order;
+
+public class JsonWorkPackage
 {
-	MetasfreshId metasfreshId;
-
-	@Nullable
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	String error;
-
-	Instant enqueued;
-
-	boolean readyForProcessing;
-
 }

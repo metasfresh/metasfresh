@@ -22,6 +22,8 @@
 
 package org.adempiere.warehouse.api.impl;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -133,7 +135,7 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		Check.assumeNotNull(warehouse, "warehouse not null");
 
-		final I_C_BPartner_Location bpLocation = warehouse.getC_BPartner_Location();
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(),warehouse.getC_BPartner_Location_ID()));
 		Check.assumeNotNull(bpLocation, "C_BPartner_Location_ID not null for {}", warehouse);
 
 		final I_C_Location location = bpLocation.getC_Location();

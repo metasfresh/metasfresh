@@ -26,6 +26,8 @@ package de.metas.document.impl;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -45,6 +47,9 @@ import de.metas.util.Services;
 
 public class DocumentLocationBL implements IDocumentLocationBL
 {
+
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 	@Override
 	public void setBPartnerAddress(final IDocumentLocation location)
 	{
@@ -124,7 +129,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 				return;
 			}
 
-			final I_M_Warehouse warehouse = docDeliveryLocation.getM_Warehouse();
+			final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(WarehouseId.ofRepoId(warehouseId));
 			final String address = makeWarehouseAddress(warehouse);
 			docDeliveryLocation.setDeliveryToAddress(address);
 			return;
@@ -159,7 +164,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 	}
 
 	/**
-	 * Builds the warehouse address by using {@link I_M_Warehouse#getC_BPartner_Location()}
+	 * Builds the warehouse address by using {@link I_M_Warehouse#getC_BPartner_Location_ID()}
 	 *
 	 * @return address string
 	 */
@@ -170,8 +175,8 @@ public class DocumentLocationBL implements IDocumentLocationBL
 			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@ (@M_Warehouse_ID@:" + warehouse.getName() + ")");
 		}
 
-		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.create(warehouse.getC_BPartner_Location(), I_C_BPartner_Location.class);
-		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpLocation.getC_BPartner_ID());
+		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.create(bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(),warehouse.getC_BPartner_Location_ID())), I_C_BPartner_Location.class);
+		final I_C_BPartner bpartner = bpartnerDAO.getById(bpLocation.getC_BPartner_ID());
 
 		// There is no contact available for warehouse
 		final I_AD_User bpContact = null;

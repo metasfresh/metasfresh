@@ -1,49 +1,20 @@
 package de.metas.purchasecandidate;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionService;
-import de.metas.mforecast.impl.ForecastLineId;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
-import java.util.Objects;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.CalendarId;
 import de.metas.calendar.ICalendarDAO;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
+import de.metas.invoice.InvoiceId;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
+import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
@@ -63,7 +34,43 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.calendar.IBusinessDayMatcher;
 import de.metas.util.calendar.NullBusinessDayMatcher;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import de.metas.util.lang.ExternalId;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -349,7 +356,7 @@ public class PurchaseCandidateRepository
 		record.setM_Forecast_ID(forecastLineId == null ? -1 : forecastLineId.getForecastId().getRepoId());
 		record.setM_ForecastLine_ID(forecastLineId == null ? -1 : forecastLineId.getRepoId());
 
-		if(purchaseCandidate.getDimension() != null)
+		if (purchaseCandidate.getDimension() != null)
 		{
 			dimensionService.updateRecord(record, purchaseCandidate.getDimension());
 		}
@@ -359,6 +366,15 @@ public class PurchaseCandidateRepository
 		record.setIsPrepared(purchaseCandidate.isPrepared());
 		record.setIsRequisitionCreated(purchaseCandidate.isReqCreated());
 		record.setProcessed(purchaseCandidate.isProcessed());
+
+		record.setExternalHeaderId(purchaseCandidate.getExternalHeaderId().getValue());
+		record.setExternalLineId(purchaseCandidate.getExternalLineId().getValue());
+		record.setSource(purchaseCandidate.getSource().getCode());
+		record.setPriceInternal(purchaseCandidate.getPrice());
+		record.setPriceEntered(purchaseCandidate.getActualPrice());
+		record.setDiscount(purchaseCandidate.getDiscount().toBigDecimal());
+		record.setIsManualPrice(purchaseCandidate.isManualPrice());
+		record.setIsManualDiscount(purchaseCandidate.isManualDiscount());
 
 		saveRecord(record);
 		purchaseCandidate.markSaved(PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));
@@ -451,6 +467,9 @@ public class PurchaseCandidateRepository
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(record.getM_AttributeSetInstance_ID()))
 				.vendorProductNo(productsRepo.retrieveProductValueByProductId(ProductId.ofRepoId(record.getM_Product_ID())))
+				.externalLineId(ExternalId.of(record.getExternalLineId()))
+				.externalHeaderId(ExternalId.of(record.getExternalHeaderId()))
+				.source(PurchaseCandidateSource.ofCode(record.getSource()))
 				//
 				.qtyToPurchase(qtyToPurchase)
 				//
@@ -459,6 +478,14 @@ public class PurchaseCandidateRepository
 				.aggregatePOs(record.isAggregatePO())
 				//
 				.dimension(recordDimension)
+				.externalHeaderId(ExternalId.of(record.getExternalHeaderId()))
+				.externalLineId(ExternalId.of(record.getExternalLineId()))
+				.source(PurchaseCandidateSource.ofCode(record.getSource()))
+				.price(record.getPriceInternal())
+				.actualPrice(record.getPriceEntered())
+				.discount(Percent.of(record.getDiscount()))
+				.isManualDiscount(record.isManualDiscount())
+				.isManualPrice(record.isManualPrice())
 				//
 				.build();
 
@@ -553,4 +580,77 @@ public class PurchaseCandidateRepository
 				.notificationTime(reminderDate)
 				.build();
 	}
+
+	public List<PurchaseCandidate> getByExternal(@NonNull final List<ExternalHeaderIdWithExternalLineIds> ids)
+	{
+		return convertToIQuery(ids)
+				.list()
+				.stream()
+				.map(this::toPurchaseCandidate)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public List<PurchaseCandidateId> getIdsByExternal(@NonNull final List<ExternalHeaderIdWithExternalLineIds> ids)
+	{
+		return convertToIQuery(ids)
+				.listIds()
+				.stream()
+				.map(PurchaseCandidateId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private IQuery<I_C_PurchaseCandidate> convertToIQuery(@NonNull final List<ExternalHeaderIdWithExternalLineIds> ids)
+	{
+		final IQueryBuilder<I_C_PurchaseCandidate> queryBuilder = queryBL
+				.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, false) /* exploding ORs to unions works only with simple cases, but e.g. currently not if we want to use IQuery.createSelection() down the line */
+				.setJoinOr();
+		for (final ExternalHeaderIdWithExternalLineIds id : ids)
+		{
+			queryBuilder.filter(toFilter(id));
+		}
+		queryBuilder.orderBy(I_C_PurchaseCandidate.COLUMN_C_PurchaseCandidate_ID);
+		return queryBuilder.create();
+	}
+
+	private ICompositeQueryFilter<I_C_PurchaseCandidate> toFilter(@NonNull final ExternalHeaderIdWithExternalLineIds externalIds)
+	{
+		final String headerIdAsString = externalIds.getExternalHeaderId().getValue();
+
+		final ImmutableList<String> lineIdsAsString = externalIds
+				.getExternalLineIds()
+				.stream()
+				.map(ExternalId::getValue)
+				.collect(ImmutableList.toImmutableList());
+
+		return queryBL
+				.createCompositeQueryFilter(I_C_PurchaseCandidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_ExternalHeaderId, headerIdAsString)
+				.addInArrayOrAllFilter(I_C_PurchaseCandidate.COLUMN_ExternalLineId, lineIdsAsString);
+	}
+
+	public ImmutableSet<OrderId> getOrderIdsForPurchaseCandidates(final PurchaseCandidateId candidate)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMN_C_PurchaseCandidate_ID, candidate)
+				//
+				// Collect invoice lines
+				.andCollect(I_C_PurchaseCandidate_Alloc.COLUMN_C_OrderLinePO_ID)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.orderBy()
+				.addColumn(I_C_OrderLine.COLUMN_C_OrderLine_ID)
+				.endOrderBy()
+				//
+				// Execute query
+				.create()
+				.list(I_C_OrderLine.class)
+				.stream()
+				.map(I_C_OrderLine::getC_Order_ID)
+				.map(OrderId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 }
