@@ -252,7 +252,9 @@ public class LookupDAO implements ILookupDAO
 		final TableRefInfo tableRefInfo = getTableRefInfoMap().getByIdOrNull(referenceId);
 		if (tableRefInfo == null)
 		{
-			logger.error("Cannot retrieve tableRefInfo for {}. Returning null.", referenceId);
+ 			// NOTE: don't use logger.error because that call ErrorManager which will call POInfo which called this method.
+			System.err.println("Cannot retrieve tableRefInfo for " + referenceId + ". Returning null.");
+			// logger.error("Cannot retrieve tableRefInfo for {}. Returning null.", referenceId);
 			return null;
 		}
 
