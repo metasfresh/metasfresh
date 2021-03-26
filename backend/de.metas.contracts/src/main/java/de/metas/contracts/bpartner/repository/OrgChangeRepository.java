@@ -219,41 +219,7 @@ public class OrgChangeRepository
 		}
 	}
 
-	public void unmarkBillToDefaultContacts(final List<BPartnerContact> contacts)
-	{
-		for (final BPartnerContact contact : contacts)
-		{
-			final BPartnerContactType contactType = contact.getContactType();
-			contactType.setBillToDefault(false);
-		}
-	}
 
-	public void unmarkPurchaseDefaultContacts(final List<BPartnerContact> contacts)
-	{
-		for (final BPartnerContact contact : contacts)
-		{
-			final BPartnerContactType contactType = contact.getContactType();
-			contactType.setPurchaseDefault(false);
-		}
-	}
-
-	public void unmarkSalesDefaultContacts(final List<BPartnerContact> contacts)
-	{
-		for (final BPartnerContact contact : contacts)
-		{
-			final BPartnerContactType contactType = contact.getContactType();
-			contactType.setSalesDefault(false);
-		}
-	}
-
-	public void unmarkShipToDefaultContacts(final List<BPartnerContact> contacts)
-	{
-		for (final BPartnerContact contact : contacts)
-		{
-			final BPartnerContactType contactType = contact.getContactType();
-			contactType.setShipToDefault(false);
-		}
-	}
 
 	public boolean hasAnyMembershipProduct(@NonNull final OrgId orgId)
 	{

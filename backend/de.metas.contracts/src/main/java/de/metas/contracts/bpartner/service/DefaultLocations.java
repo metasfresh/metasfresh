@@ -34,9 +34,15 @@ public class DefaultLocations
 {
 	@Nullable
 	BPartnerLocation billToDefaultLocation;
-	boolean foundBillToDefaultLocation;
+	public boolean isFoundBillToDefaultLocation()
+	{
+		return billToDefaultLocation != null;
+	}
 
 	@Nullable
 	BPartnerLocation shipToDefaultLocation;
-	boolean foundShipToDefaultLocation;
+	public boolean isFoundShipToDefaultLocation()
+	{
+		return shipToDefaultLocation != null;
+	}
 }

@@ -30,6 +30,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.compiere.model.I_AD_OrgChange_History;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -41,6 +42,12 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 
+/*
+ * This process is scheduled to be run each night to deactivate bpartners
+ * (and their locations, contacts and bank accounts)
+ * that were moved to another organization and are scheduled to be deactivated
+ * at a given date via AD_OrgChange_History
+ */
 public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -56,19 +63,24 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 
 	private void deactivateBPartnersAndRelatedEntries()
 	{
-		final OrgId orgId = OrgId.ofRepoId( Env.getAD_Org_ID(Env.getCtx()));
+		final OrgId orgId = OrgId.ofRepoId(Env.getAD_Org_ID(Env.getCtx()));
 
 		final ZoneId loginTimeZone = orgDAO.getTimeZone(orgId);
 
 		final LocalDate today = SystemTime.asLocalDate(loginTimeZone);
 
 		final List<Integer> partnerIdsToDeactivate = queryBL.createQueryBuilder(I_AD_OrgChange_History.class)
-				.addEqualsFilter(I_AD_OrgChange_History.COLUMNNAME_Date_OrgChange, today)
+				.addCompareFilter(I_AD_OrgChange_History.COLUMNNAME_Date_OrgChange, CompareQueryFilter.Operator.LESS_OR_EQUAL, today)
 				.andCollectChildren(I_AD_OrgChange_History.COLUMNNAME_C_BPartner_From_ID, I_C_BPartner.class)
 				.create()
 				.listIds();
 
-		if(Check.isEmpty(partnerIdsToDeactivate))
+		partnerIdsToDeactivate.stream()
+				.forEach(
+						partnerId -> addLog("Business Partner {} was deactivated because it was moved to another organization.",
+											partnerId));
+
+		if (Check.isEmpty(partnerIdsToDeactivate))
 		{
 			// nothing to do
 			return;
@@ -77,8 +89,8 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 		deactivateUsers(partnerIdsToDeactivate, today);
 		deactivateLocations(partnerIdsToDeactivate, today);
 		deactivatePartners(partnerIdsToDeactivate, today);
-
 	}
+
 	private void deactivateBankAccounts(final List<Integer> partnerIds, final LocalDate date)
 	{
 		final ICompositeQueryUpdater<I_C_BP_BankAccount> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_BP_BankAccount.class)
@@ -89,8 +101,9 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 				.createQueryBuilder(I_C_BP_BankAccount.class)
 				.addInArrayFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, partnerIds)
 				.create()
-				.updateDirectly(queryUpdater);
+				.update(queryUpdater);
 	}
+
 	private void deactivateUsers(final List<Integer> partnerIds, final LocalDate date)
 	{
 		final ICompositeQueryUpdater<I_AD_User> queryUpdater = queryBL.createCompositeQueryUpdater(I_AD_User.class)
@@ -101,7 +114,7 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 				.createQueryBuilder(I_AD_User.class)
 				.addInArrayFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, partnerIds)
 				.create()
-				.updateDirectly(queryUpdater);
+				.update(queryUpdater);
 	}
 
 	private void deactivateLocations(final List<Integer> partnerIds, final LocalDate date)
@@ -114,9 +127,8 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 				.createQueryBuilder(I_C_BPartner_Location.class)
 				.addInArrayFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, partnerIds)
 				.create()
-				.updateDirectly(queryUpdater);
+				.update(queryUpdater);
 	}
-
 
 	private void deactivatePartners(final List<Integer> partnerIds, final LocalDate date)
 	{
@@ -128,8 +140,6 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 				.createQueryBuilder(I_C_BPartner.class)
 				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, partnerIds)
 				.create()
-				.updateDirectly(queryUpdater);
+				.update(queryUpdater);
 	}
-
-
 }

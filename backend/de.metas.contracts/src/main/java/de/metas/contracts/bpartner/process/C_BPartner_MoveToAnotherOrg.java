@@ -71,16 +71,21 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 		IProcessParametersCallout,
 		IProcessDefaultParametersProvider
 {
-	@Param(parameterName = "AD_Org_Target_ID", mandatory = true)
+	public static final String PARAM_AD_ORG_TARGET_ID = "AD_Org_Target_ID";
+	public static final String PARAM_M_PRODUCT_ID = "M_Product_ID";
+	public static final String PARAM_DATE_ORG_CHANGE = "Date_OrgChange";
+	public static final String PARAM_IS_SHOW_MEMBERSHIP_PARAMETER = "IsShowMembershipParameter";
+
+	@Param(parameterName = PARAM_AD_ORG_TARGET_ID, mandatory = true)
 	private OrgId p_orgTargetId;
 
-	@Param(parameterName = "M_Product_ID")
+	@Param(parameterName = PARAM_M_PRODUCT_ID)
 	private ProductId p_membershipProductId;
 
-	@Param(parameterName = "Date_OrgChange", mandatory = true)
+	@Param(parameterName = PARAM_DATE_ORG_CHANGE, mandatory = true)
 	private LocalDate p_startDate;
 
-	@Param(parameterName = "IsShowMembershipParameter", mandatory = true)
+	@Param(parameterName = PARAM_IS_SHOW_MEMBERSHIP_PARAMETER, mandatory = true)
 	private boolean isShowMembershipParameter;
 
 	final OrgChangeRepository orgChangeRepo = SpringContextHolder.instance.getBean(OrgChangeRepository.class);
@@ -118,7 +123,7 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
-		if ("AD_Org_Target_ID".equals(parameterName) || "Date_OrgChange".equals(parameterName))
+		if (PARAM_AD_ORG_TARGET_ID.equals(parameterName) || PARAM_DATE_ORG_CHANGE.equals(parameterName))
 		{
 			if(p_orgTargetId == null)
 			{
@@ -146,16 +151,11 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		if ("Date_OrgChange".equals(parameter.getColumnName()))
+		if (PARAM_DATE_ORG_CHANGE.equals(parameter.getColumnName()))
 		{
 			return SystemTime.asLocalDate().plusDays(1);
 		}
 
-		// if("M_Product_ID".equals(parameter.getColumnName()))
-		// {
-		// TODO :Find the cheapest membership product
-		// 	return orgChangeRepo.getCheapestMembershipProduct(p_orgTargetId, p_startDate);
-		// }
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 }

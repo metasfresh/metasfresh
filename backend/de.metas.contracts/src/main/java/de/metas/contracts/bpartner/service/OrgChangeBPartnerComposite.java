@@ -73,10 +73,7 @@ public class OrgChangeBPartnerComposite
 
 		return DefaultLocations.builder()
 				.billToDefaultLocation(billToDefaultLocation)
-				.foundBillToDefaultLocation(billToDefaultLocation != null)
-
 				.shipToDefaultLocation(shipTpDefaultLocation)
-				.foundShipToDefaultLocation(shipTpDefaultLocation != null)
 				.build();
 	}
 

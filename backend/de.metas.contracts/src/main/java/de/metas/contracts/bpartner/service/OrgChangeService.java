@@ -125,13 +125,6 @@ public class OrgChangeService
 		bpCompositeRepo.save(destinationBPartnerComposite);
 
 		saveOrgChangeBPartnerComposite(orgChangeBPartnerComposite);
-		//
-		// final BPartnerComposite finalDestinationBPartnerComposite = destinationBPartnerComposite;
-
-		// Services.get(ITrxManager.class)
-		// 		.getCurrentTrxListenerManagerOrAutoCommit()
-		// 		.newEventListener(ITrxListenerManager.TrxEventTiming.AFTER_COMMIT)
-		// 		.registerHandlingMethod(trx -> createFlatrateTerms(orgChangeBPartnerComposite, finalDestinationBPartnerComposite, orgChangeRequest));
 
 		createFlatrateTerms(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
 
@@ -427,7 +420,7 @@ public class OrgChangeService
 
 		if (sourceDefaultContacts.isFoundBillToDefaultContact())
 		{
-			orgChangeRepo.unmarkBillToDefaultContacts(destinationContacts);
+			unmarkBillToDefaultContacts(destinationContacts);
 			loggable.addLog("The billToDefault contact will be the counterpart of the initial contact {}."
 									+ " ->  Mark all the remaining contacts in the destination partner {} as non-billToDefault",
 							sourceDefaultContacts.getBillToDefaultContact(), destinationBPartnerComposite.getBpartner());
@@ -435,7 +428,7 @@ public class OrgChangeService
 
 		if (sourceDefaultContacts.isFoundShipToDefaultContact())
 		{
-			orgChangeRepo.unmarkShipToDefaultContacts(destinationContacts);
+			unmarkShipToDefaultContacts(destinationContacts);
 			loggable.addLog("The shipToDefault contact will be the counterpart of the initial contact {}."
 									+ " ->  Mark all the remaining contacts in the destination partner {} as non-shipToDefault",
 							sourceDefaultContacts.getShipToDefaultContact(), destinationBPartnerComposite.getBpartner());
@@ -443,7 +436,7 @@ public class OrgChangeService
 
 		if (sourceDefaultContacts.isFoundSalesDefaultContact())
 		{
-			orgChangeRepo.unmarkSalesDefaultContacts(destinationContacts);
+			unmarkSalesDefaultContacts(destinationContacts);
 			loggable.addLog("The salesDefault contact will be the counterpart of the initial contact {}."
 									+ " -> Mark all the remaining contacts in the destination partner {} as non-salesDefault",
 							sourceDefaultContacts.getSalesDefaultContact(), destinationBPartnerComposite.getBpartner());
@@ -451,7 +444,7 @@ public class OrgChangeService
 
 		if (sourceDefaultContacts.isFoundPurchaseDefaultContact())
 		{
-			orgChangeRepo.unmarkPurchaseDefaultContacts(destinationContacts);
+			unmarkPurchaseDefaultContacts(destinationContacts);
 			loggable.addLog("The purchaseDefault contact will be the counterpart of the initial contact {}."
 									+ " -> Mark all the remaining contacts in the destination partner {} as non-purchaseDefault",
 							sourceDefaultContacts.getPurchaseDefaultContact(), destinationBPartnerComposite.getBpartner());
@@ -535,7 +528,7 @@ public class OrgChangeService
 		final String summary = msgBL.getMsg(Env.getCtx(), MSG_OrgChangeSummary, new Object[] {
 				orgDAO.getById(orgChangeHistoryRecord.getAD_Org_From_ID()).getName(),
 				orgDAO.getById(orgChangeHistoryRecord.getAD_OrgTo_ID()).getName(),
-				TimeUtil.asDate(requestDate)});
+				TimeUtil.asDate(requestDate) });
 
 		final RequestCandidate requestCandidate = RequestCandidate.builder()
 				.summary(summary)
@@ -550,6 +543,42 @@ public class OrgChangeService
 
 		return requestBL.createRequest(requestCandidate);
 
+	}
+
+	public void unmarkBillToDefaultContacts(final List<BPartnerContact> contacts)
+	{
+		for (final BPartnerContact contact : contacts)
+		{
+			final BPartnerContactType contactType = contact.getContactType();
+			contactType.setBillToDefault(false);
+		}
+	}
+
+	public void unmarkPurchaseDefaultContacts(final List<BPartnerContact> contacts)
+	{
+		for (final BPartnerContact contact : contacts)
+		{
+			final BPartnerContactType contactType = contact.getContactType();
+			contactType.setPurchaseDefault(false);
+		}
+	}
+
+	public void unmarkSalesDefaultContacts(final List<BPartnerContact> contacts)
+	{
+		for (final BPartnerContact contact : contacts)
+		{
+			final BPartnerContactType contactType = contact.getContactType();
+			contactType.setSalesDefault(false);
+		}
+	}
+
+	public void unmarkShipToDefaultContacts(final List<BPartnerContact> contacts)
+	{
+		for (final BPartnerContact contact : contacts)
+		{
+			final BPartnerContactType contactType = contact.getContactType();
+			contactType.setShipToDefault(false);
+		}
 	}
 
 }
