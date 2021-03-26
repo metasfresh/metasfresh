@@ -12,6 +12,7 @@ import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -599,6 +600,10 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public void setBPartnerSalesRepIdOutOfTrx(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerId salesRepBPartnerId)
 	{
+		if (bPartnerId.equals(salesRepBPartnerId))
+		{
+			return;
+		}
 		final I_C_BPartner bPartnerRecord = bpartnersRepo.getByIdOutOfTrx(bPartnerId);
 
 		final int salesRepBPartnerIdInt = salesRepBPartnerId != null ? salesRepBPartnerId.getRepoId() : -1;

@@ -1,19 +1,6 @@
 package de.metas.bpartner.model.interceptor;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.annotations.Init;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.CopyRecordFactory;
-import org.compiere.model.ModelValidator;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerPOCopyRecordSupport;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -25,6 +12,16 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.ILocationBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.CopyRecordFactory;
+import org.compiere.model.ModelValidator;
+
+import java.util.List;
 
 /*
  * #%L
@@ -54,7 +51,6 @@ public class C_BPartner
 	private static final String MSG_CycleDetectedError = "CycleDetectedError";
 
 	final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-	final ILocationBL locationBL = Services.get(ILocationBL.class);
 	final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
 	@Init
@@ -123,11 +119,17 @@ public class C_BPartner
 					.add(bpartnerId)
 					.build();
 
-			final String bpNames = bpartnersRepo.getBPartnerNamesByIds(path)
-					.stream()
-					.collect(Collectors.joining(" -> "));
+			final String bpNames = String.join(" -> ", bpartnersRepo.getBPartnerNamesByIds(path));
 			throw new AdempiereException("@" + MSG_CycleDetectedError + "@: " + bpNames)
 					.markAsUserValidationError();
 		}
+	}
+
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE}, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, I_C_BPartner.COLUMNNAME_C_BPartner_ID })
+	public void validateSalesRep(final I_C_BPartner partner)
+	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
+		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(partner.getC_BPartner_SalesRep_ID());
+		bPartnerDAO.validateSalesRep(bPartnerId, salesRepId);
 	}
 }

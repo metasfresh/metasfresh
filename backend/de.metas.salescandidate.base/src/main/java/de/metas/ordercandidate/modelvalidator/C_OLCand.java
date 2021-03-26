@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.api.IBPRelationDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.logging.TableRecordMDC;
 import de.metas.ordercandidate.api.IOLCandDAO;
@@ -315,6 +316,14 @@ public class C_OLCand
 				.addSetColumnValue(I_C_Order.COLUMNNAME_POReference, olCand.getPOReference());
 
 		updateOrdersQuery.create().update(poReferenceUpdater);
+	}
+
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE}, ifColumnsChanged = { I_C_OLCand.COLUMNNAME_C_BPartner_SalesRep_ID, I_C_OLCand.COLUMNNAME_C_BPartner_ID })
+	public void validateSalesRep(final I_C_OLCand cand)
+	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(CoalesceUtil.firstGreaterThanZero(cand.getBill_BPartner_ID(), cand.getC_BPartner_ID()));
+		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(cand.getC_BPartner_SalesRep_ID());
+		bPartnerDAO.validateSalesRep(bPartnerId, salesRepId);
 	}
 
 	@Init

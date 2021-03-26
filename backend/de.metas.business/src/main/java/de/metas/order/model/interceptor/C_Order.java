@@ -25,6 +25,7 @@ package de.metas.order.model.interceptor;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -194,6 +195,17 @@ public class C_Order
 			orderLineBL.updateQtyReserved(orderLine);
 			orderDAO.save(orderLine);
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					I_C_Order.COLUMNNAME_C_BPartner_ID,
+					I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID })
+	public void validateSalesRep(final I_C_Order order)
+	{
+		final BPartnerId bPartnerId = orderBL.getEffectiveBillPartnerId(order);
+		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_SalesRep_ID());
+		bpartnerDAO.validateSalesRep(bPartnerId, salesRepId);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })

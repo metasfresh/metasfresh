@@ -1,7 +1,12 @@
 package de.metas.contracts.commission.salesrep.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptor;
+import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorFactory;
+import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorService;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -14,13 +19,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptor;
-import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorFactory;
-import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorService;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -51,6 +50,7 @@ public class C_Invoice
 {
 	private DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory;
 	private DocumentSalesRepDescriptorService documentSalesRepDescriptorService;
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public C_Invoice(
 			@NonNull final DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory,
@@ -86,6 +86,7 @@ public class C_Invoice
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID)
 	public void updateSalesPartnerInInvoice(@NonNull final I_C_Invoice invoiceRecord)
 	{
+
 		final DocumentSalesRepDescriptor documentSalesRepDescriptor = documentSalesRepDescriptorFactory.forDocumentRecord(invoiceRecord);
 
 		documentSalesRepDescriptorService.updateFromSalesRep(documentSalesRepDescriptor);
@@ -121,7 +122,7 @@ public class C_Invoice
 		}
 
 		final BPartnerId salesBPartnerId = BPartnerId.ofRepoIdOrNull(invoiceRecord.getC_BPartner_SalesRep_ID());
-		if (salesBPartnerId == null)
+		if (salesBPartnerId == null || customerBPartnerId.equals(salesBPartnerId))
 		{
 			return; // leave the master data untouched
 		}
@@ -131,5 +132,13 @@ public class C_Invoice
 		final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(customerBPartnerId);
 		billBPartnerRecord.setC_BPartner_SalesRep_ID(salesBPartnerId.getRepoId());
 		saveRecord(billBPartnerRecord);
+	}
+
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE}, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_SalesRep_ID, I_C_Invoice.COLUMNNAME_C_BPartner_ID })
+	public void validateSalesRep(final I_C_Invoice invoice)
+	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(invoice.getC_BPartner_SalesRep_ID());
+		bpartnerDAO.validateSalesRep(bPartnerId, salesRepId);
 	}
 }
