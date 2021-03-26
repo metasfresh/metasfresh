@@ -100,6 +100,12 @@ class InlineTab extends PureComponent {
     );
   };
 
+  formatHeaderDataUsingType = (fieldValue) => {
+    if (typeof fieldValue === 'number') return '' + fieldValue;
+    if (typeof fieldValue === 'string') return fieldValue;
+    if (typeof fieldValue === 'object') return fieldValue.caption;
+  };
+
   render() {
     const {
       id: docId,
@@ -135,7 +141,11 @@ class InlineTab extends PureComponent {
               if (fieldsByName[fieldKey]) {
                 return (
                   <Fragment key={`${fieldKey}_${index}`}>
-                    <span>{fieldsByName[fieldKey].value}</span>
+                    <span>
+                      {this.formatHeaderDataUsingType(
+                        fieldsByName[fieldKey].value
+                      )}
+                    </span>
                     <span>&nbsp;&nbsp;</span>
                   </Fragment>
                 );
