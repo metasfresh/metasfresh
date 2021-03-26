@@ -52,9 +52,6 @@ public class CreateFlatrateTermRequest
 	@NonNull
 	I_C_BPartner bPartner;
 
-	@Nullable
-	BPartnerLocationId bpartnerLocationId;
-
 	@NonNull
 	I_C_Flatrate_Conditions conditions;
 

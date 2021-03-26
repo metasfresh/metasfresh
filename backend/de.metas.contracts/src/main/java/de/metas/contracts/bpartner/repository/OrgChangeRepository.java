@@ -219,8 +219,6 @@ public class OrgChangeRepository
 		}
 	}
 
-
-
 	public boolean hasAnyMembershipProduct(@NonNull final OrgId orgId)
 	{
 		return createMembershipProductQuery(orgId).anyMatch();
@@ -464,8 +462,8 @@ public class OrgChangeRepository
 
 		final CreateFlatrateTermRequest flatrateTermRequest = CreateFlatrateTermRequest.builder()
 				.context(PlainContextAware.newWithThreadInheritedTrx(Env.getCtx()))
+				.orgId(orgChangeRequest.getOrgToId())
 				.bPartner(partner)
-				.bpartnerLocationId(billBPartnerLocation.getId())
 				.startDate(startDate)
 				.isSimulation(false)
 				.conditions(flatrateDAO.getConditionsById(sourceSubscription.getFlartareConditionsId()))
@@ -473,20 +471,20 @@ public class OrgChangeRepository
 				.userInCharge(user)
 				.build();
 
-		final I_C_Flatrate_Term membershipTerm = flatrateBL.createTerm(flatrateTermRequest);
+		final I_C_Flatrate_Term term = flatrateBL.createTerm(flatrateTermRequest);
 
-		membershipTerm.setPlannedQtyPerUnit(sourceSubscription.getPlannedQtyPerUnit());
-		membershipTerm.setC_UOM_ID(newProduct.getC_UOM_ID());
+		term.setPlannedQtyPerUnit(sourceSubscription.getPlannedQtyPerUnit());
+		term.setC_UOM_ID(newProduct.getC_UOM_ID());
 
+		term.setDropShip_Location_ID(shipBPartnerLocation.getId().getRepoId());
 
-		membershipTerm.setDropShip_Location_ID(shipBPartnerLocation.getId().getRepoId());
-
-		final IEditablePricingContext initialContext = pricingBL.createInitialContext(orgChangeRequest.getOrgToId(),
-																					  ProductId.ofRepoId(newProduct.getM_Product_ID()),
-																					  destinationBPartnerComposite.getBpartner().getId(),
-																					  Quantity.of(sourceSubscription.getPlannedQtyPerUnit(),
-																								  uomDAO.getById(newProduct.getC_UOM_ID())),
-																					  SOTrx.SALES);
+		final IEditablePricingContext initialContext = pricingBL
+				.createInitialContext(orgChangeRequest.getOrgToId(),
+									  ProductId.ofRepoId(newProduct.getM_Product_ID()),
+									  destinationBPartnerComposite.getBpartner().getId(),
+									  Quantity.of(sourceSubscription.getPlannedQtyPerUnit(),
+												  uomDAO.getById(newProduct.getC_UOM_ID())),
+									  SOTrx.SALES);
 
 		initialContext.setPriceDate(orgChangeRequest.getStartDate());
 
@@ -496,14 +494,14 @@ public class OrgChangeRepository
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(initialContext);
 
-		membershipTerm.setM_PricingSystem_ID(pricingResult.getPricingSystemId() == null ? -1 : pricingResult.getPricingSystemId().getRepoId());
-		membershipTerm.setC_Currency_ID(pricingResult.getCurrencyRepoId());
+		term.setM_PricingSystem_ID(pricingResult.getPricingSystemId() == null ? -1 : pricingResult.getPricingSystemId().getRepoId());
+		term.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
-		calculateFlatrateTermPrice(membershipTerm);
+		calculateFlatrateTermPrice(term);
 
-		saveRecord(membershipTerm);
+		saveRecord(term);
 
-		flatrateBL.complete(membershipTerm);
+		flatrateBL.complete(term);
 	}
 
 	@Nullable

@@ -24,9 +24,6 @@ package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.IProductAcctDAO;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
@@ -1602,13 +1599,11 @@ public class FlatrateBL implements IFlatrateBL
 			dontCreateTerm = true;
 		}
 
-		final BPartnerLocationId bpartnerLocationId = request.getBpartnerLocationId();
-
 		final I_C_BPartner_Location billPartnerLocation = bPartnerDAO.retrieveBillToLocation(ctx, bPartner.getC_BPartner_ID(),
 																							 true,            // alsoTryBPartnerRelation
 																							 trxName);
 
-		if (billPartnerLocation == null && bpartnerLocationId == null)
+		if (billPartnerLocation == null)
 		{
 			notCreatedReason.append(" has no billTo location;");
 			dontCreateTerm = true;
@@ -1625,13 +1620,13 @@ public class FlatrateBL implements IFlatrateBL
 		else
 		{
 			if (!flatrateDAO.retrieveTerms(ctx,
-					OrgId.ofRepoId(bPartner.getAD_Org_ID()),
-					bPartner.getC_BPartner_ID(),
-					null,
-					productAndCategoryId.getProductCategoryId().getRepoId(),
-					productAndCategoryId.getProductId().getRepoId(),
-					-1,
-					trxName).isEmpty())
+										   OrgId.ofRepoId(bPartner.getAD_Org_ID()),
+										   bPartner.getC_BPartner_ID(),
+										   null,
+										   productAndCategoryId.getProductCategoryId().getRepoId(),
+										   productAndCategoryId.getProductId().getRepoId(),
+										   -1,
+										   trxName).isEmpty())
 			{
 				notCreatedReason.append(" already has a term;");
 				dontCreateTerm = true;
@@ -1652,8 +1647,8 @@ public class FlatrateBL implements IFlatrateBL
 		newTerm.setEndDate(startDate); // will be updated later
 		newTerm.setDropShip_BPartner_ID(bPartner.getC_BPartner_ID());
 
-		newTerm.setBill_BPartner_ID(bpartnerLocationId == null ? billPartnerLocation.getC_BPartner_ID() : bpartnerLocationId.getBpartnerId().getRepoId()); // note that in case of bPartner relations, this might be a different partner than 'bPartner'.
-		newTerm.setBill_Location_ID(bpartnerLocationId == null ? billPartnerLocation.getC_BPartner_Location_ID() : bpartnerLocationId.getRepoId());
+		newTerm.setBill_BPartner_ID(billPartnerLocation.getC_BPartner_ID()); // note that in case of bPartner relations, this might be a different partner than 'bPartner'.
+		newTerm.setBill_Location_ID(billPartnerLocation.getC_BPartner_Location_ID());
 
 		if (userInCharge == null)
 		{
