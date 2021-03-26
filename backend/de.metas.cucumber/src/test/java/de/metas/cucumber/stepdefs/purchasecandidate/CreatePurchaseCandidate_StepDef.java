@@ -27,11 +27,11 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
-import de.metas.common.rest_api.JsonExternalId;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.JsonQuantity;
-import de.metas.common.rest_api.JsonRequestAttributeSetInstance;
-import de.metas.common.rest_api.JsonResponseAttributeInstance;
+import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonQuantity;
+import de.metas.common.rest_api.v2.JsonRequestAttributeSetInstance;
+import de.metas.common.rest_api.v2.JsonRequestAttributeInstance;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.APIResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -168,19 +168,17 @@ public class CreatePurchaseCandidate_StepDef
 	}
 
 	@Nullable
-	private JsonResponseAttributeInstance mapAttribute(final Map<String, String> map)
+	private JsonRequestAttributeInstance mapAttribute(final Map<String, String> map)
 	{
-		final String attributeName = DataTableUtil.extractStringOrNullForColumnName(map, "attributeName");
 		final String attributeCode = DataTableUtil.extractStringOrNullForColumnName(map, "attributeCode");
 		final String valueStr = DataTableUtil.extractStringOrNullForColumnName(map, "valueStr");
 		final BigDecimal valueNumber = DataTableUtil.extractBigDecimalOrNullForColumnName(map, "valueNumber");
 		final ZonedDateTime valueDate = DataTableUtil.extractZonedDateTimeOrNullForColumnName(map, "valueDate");
-		if (CoalesceUtil.coalesce(attributeName, attributeCode, valueStr, valueNumber, valueDate) == null)
+		if (CoalesceUtil.coalesce(attributeCode, valueStr, valueNumber, valueDate) == null)
 		{
 			return null;
 		}
-		return JsonResponseAttributeInstance.builder()
-				.attributeName(attributeName)
+		return JsonRequestAttributeInstance.builder()
 				.attributeCode(attributeCode)
 				.valueStr(valueStr)
 				.valueDate(TimeUtil.asLocalDate(valueDate))
@@ -270,7 +268,7 @@ public class CreatePurchaseCandidate_StepDef
 
 	private JsonRequestAttributeSetInstance mapAttributes(final List<Map<String, String>> asMaps)
 	{
-		final List<JsonResponseAttributeInstance> attributes = asMaps.stream()
+		final List<JsonRequestAttributeInstance> attributes = asMaps.stream()
 				.map(this::mapAttribute)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
