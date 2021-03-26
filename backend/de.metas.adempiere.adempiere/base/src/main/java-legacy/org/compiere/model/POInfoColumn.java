@@ -133,12 +133,12 @@ public final class POInfoColumn implements Serializable
 		IsAllowLogging = isAllowLogging;
 	}   // Column
 
-	private boolean isSearchDisplayType(final int displayType)
+	private static boolean isSearchDisplayType(final int displayType)
 	{
 		return org.compiere.util.DisplayType.Search == displayType;
 	}
 
-	private boolean isTableDisplayType(final int displayType)
+	private static boolean isTableDisplayType(final int displayType)
 	{
 		return org.compiere.util.DisplayType.Table == displayType;
 	}
@@ -173,7 +173,7 @@ public final class POInfoColumn implements Serializable
 	/** PK */
 	final boolean IsKey;
 	/** FK to Parent */
-	final boolean IsParent;
+	private final boolean IsParent;
 	/** Translated */
 	private final boolean IsTranslated;
 	/** Encrypted */
@@ -311,9 +311,19 @@ public final class POInfoColumn implements Serializable
 		return IsMandatory;
 	}
 
+	public boolean isKey()
+	{
+		return IsKey;
+	}
+
 	public boolean isParent()
 	{
 		return IsParent;
+	}
+
+	public boolean isStaleable()
+	{
+		return IsStaleable;
 	}
 
 	public int getAD_Val_Rule_ID()
