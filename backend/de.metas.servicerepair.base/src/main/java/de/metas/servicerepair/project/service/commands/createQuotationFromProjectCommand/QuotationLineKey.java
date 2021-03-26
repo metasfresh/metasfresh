@@ -23,6 +23,7 @@
 package de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand;
 
 import de.metas.product.ProductId;
+import de.metas.servicerepair.customerreturns.WarrantyCase;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.uom.UomId;
@@ -41,6 +42,7 @@ class QuotationLineKey
 	@NonNull ServiceRepairProjectCostCollectorType type;
 	@NonNull ProductId productId;
 	@NonNull @Builder.Default AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
+	@NonNull @Builder.Default WarrantyCase warrantyCase = WarrantyCase.NO;
 	@NonNull UomId uomId;
 	@Nullable ServiceRepairProjectCostCollectorId singleCostCollectorId;
 

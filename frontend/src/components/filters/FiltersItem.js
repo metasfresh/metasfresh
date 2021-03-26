@@ -364,6 +364,7 @@ class FiltersItem extends PureComponent {
   handleApply = () => {
     const { applyFilters, closeFilterMenu, returnBackToDropdown } = this.props;
     const { filter, activeFilter } = this.state;
+
     if (
       (filter &&
         filter.parametersLayoutType === 'singleOverlayField' &&

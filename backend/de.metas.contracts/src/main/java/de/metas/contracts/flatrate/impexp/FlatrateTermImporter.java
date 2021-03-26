@@ -11,6 +11,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -88,6 +89,7 @@ import java.util.Properties;
 		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 
 		final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
+			.orgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
 			.context(PlainContextAware.newWithThreadInheritedTrx())
 			.bPartner(importRecord.getC_BPartner())
 			.conditions(importRecord.getC_Flatrate_Conditions())

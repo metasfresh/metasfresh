@@ -83,7 +83,7 @@ class NavigationTree extends Component {
       openModal({
         title: caption,
         windowId: windowType,
-        moadlType: type,
+        modalType: type,
         isAdvanced,
       })
     );

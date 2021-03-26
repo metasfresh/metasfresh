@@ -76,6 +76,7 @@ public class FlatrateDAOTest extends ContractsTestBase
 
 		final List<I_C_Flatrate_Term> result = new FlatrateDAO().retrieveTerms(
 				Env.getCtx(),
+				Env.getOrgId(),
 				bpartner.getC_BPartner_ID(),
 				now,
 				0,

@@ -63,6 +63,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.IPeriodBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -115,7 +116,7 @@ public class ESRImportBL implements IESRImportBL
 
 	private static final String MSG_GroupLinesNegativeAmount = "GroupLinesNegativeAmount";
 
-	private static final String ESR_NO_HAS_WRONG_ORG_2P = "de.metas.payment.esr.EsrNoHasWrongOrg";
+	private static final  AdMessageKey ESR_NO_HAS_WRONG_ORG_2P =  AdMessageKey.of("de.metas.payment.esr.EsrNoHasWrongOrg");
 
 	/**
 	 * Filled by {@link #registerActionHandler(String, IESRActionHandler)}.
@@ -257,6 +258,7 @@ public class ESRImportBL implements IESRImportBL
 		importLine.setAmount(esrTransaction.getAmount());
 		importLine.setESRTrxType(esrTransaction.getTrxType());
 		importLine.setESRLineText(esrTransaction.getTransactionKey());
+		importLine.setType(esrTransaction.getType().getCode());
 
 		esrImportDAO.save(importLine);
 		return importLine;

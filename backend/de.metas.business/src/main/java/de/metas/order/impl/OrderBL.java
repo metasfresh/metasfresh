@@ -107,6 +107,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 public class OrderBL implements IOrderBL
 {
@@ -879,6 +880,15 @@ public class OrderBL implements IOrderBL
 				: BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
 	}
 
+	@Override
+	@Nullable
+	public BPartnerId getEffectiveBillPartnerId(@NonNull final I_C_Order orderRecord)
+	{
+		return BPartnerId.ofRepoIdOrNull(firstGreaterThanZero(
+				orderRecord.getBill_BPartner_ID(),
+				orderRecord.getC_BPartner_ID()));
+	}
+	
 	@Override
 	@NonNull
 	public BPartnerContactId getBillToContactId(@NonNull final I_C_Order order)
