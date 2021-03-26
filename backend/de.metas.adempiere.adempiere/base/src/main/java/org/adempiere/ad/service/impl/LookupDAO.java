@@ -30,6 +30,7 @@ import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.cache.CCache;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.reflist.ReferenceId;
 import de.metas.security.permissions.UIDisplayedEntityTypes;
@@ -246,30 +247,36 @@ public class LookupDAO implements ILookupDAO
 	}
 
 	@Override
+	public ExplainedOptional<TableRefInfo> getTableRefInfo(final int referenceRepoId)
+	{
+		final ReferenceId referenceId = ReferenceId.ofRepoId(referenceRepoId);
+		return getTableRefInfoMap().getById(referenceId);
+	}
+
+	@Override
 	public TableRefInfo retrieveTableRefInfo(final int referenceRepoId)
 	{
 		final ReferenceId referenceId = ReferenceId.ofRepoId(referenceRepoId);
-		final TableRefInfo tableRefInfo = getTableRefInfoMap().getByIdOrNull(referenceId);
-		if (tableRefInfo == null)
+		final ExplainedOptional<TableRefInfo> tableRefInfo = getTableRefInfoMap().getById(referenceId);
+		if (tableRefInfo.isPresent())
 		{
- 			// NOTE: don't use logger.error because that call ErrorManager which will call POInfo which called this method.
-			System.err.println("Cannot retrieve tableRefInfo for " + referenceId + ". Returning null.");
+			return tableRefInfo.get();
+		}
+		else
+		{
+			// NOTE: don't use logger.error because that call ErrorManager which will call POInfo which called this method.
+			System.err.println("Cannot retrieve tableRefInfo for " + referenceId + " because " + tableRefInfo.getExplanation().getDefaultValue()
+					+ ". Returning null.");
 			// logger.error("Cannot retrieve tableRefInfo for {}. Returning null.", referenceId);
 			return null;
 		}
-
-		return tableRefInfo;
 	}
 
 	@Override
 	public boolean isTableReference(final int referenceRepoId)
 	{
 		final ReferenceId referenceId = ReferenceId.ofRepoIdOrNull(referenceRepoId);
-		if(referenceId == null)
-		{
-			return false;
-		}
-		return getTableRefInfoMap().getByIdOrNull(referenceId) != null;
+		return referenceId != null && getTableRefInfoMap().hasTableReference(referenceId);
 	}
 
 	private TableRefInfoMap getTableRefInfoMap()
@@ -297,13 +304,16 @@ public class LookupDAO implements ILookupDAO
 				+ ", r.Name as ReferenceName"
 				+ ", t.TooltipType as TooltipType "
 				+ ", rt.AD_Reference_ID "
+				+ ", r.IsActive as Ref_IsActive"
+				+ ", rt.IsActive as RefTable_IsActive"
+				+ ", t.IsActive as Table_IsActive"
 				// #2340 Also collect information about the ref table being a reference target
 				+ " FROM AD_Ref_Table rt"
 				+ " INNER JOIN AD_Reference r on (r.AD_Reference_ID=rt.AD_Reference_ID)"
 				+ " INNER JOIN AD_Table t ON (rt.AD_Table_ID=t.AD_Table_ID)"
 				+ " INNER JOIN AD_Column ck ON (rt.AD_Key=ck.AD_Column_ID)" // key-column
 				+ " LEFT OUTER JOIN AD_Column cd ON (rt.AD_Display=cd.AD_Column_ID) " // display-column
-				+ " WHERE r.IsActive='Y' AND rt.IsActive='Y' AND t.IsActive='Y'";
+				+ " ORDER BY rt.AD_Reference_ID";
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -312,11 +322,11 @@ public class LookupDAO implements ILookupDAO
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 			rs = pstmt.executeQuery();
 
-			final ImmutableMap.Builder<ReferenceId, TableRefInfo> map = ImmutableMap.builder();
+			final ImmutableMap.Builder<ReferenceId, ExplainedOptional<TableRefInfo>> map = ImmutableMap.builder();
 			while (rs.next())
 			{
 				final ReferenceId referenceId = ReferenceId.ofRepoId(rs.getInt("AD_Reference_ID"));
-				final TableRefInfo tableRefInfo = retrieveTableRefInfo(rs);
+				final ExplainedOptional<TableRefInfo> tableRefInfo = retrieveTableRefInfo(rs);
 				map.put(referenceId, tableRefInfo);
 			}
 
@@ -334,9 +344,24 @@ public class LookupDAO implements ILookupDAO
 		}
 	}
 
-	private static TableRefInfo retrieveTableRefInfo(final ResultSet rs) throws SQLException
+	private static ExplainedOptional<TableRefInfo> retrieveTableRefInfo(final ResultSet rs) throws SQLException
 	{
+		final ReferenceId referenceId = ReferenceId.ofRepoId(rs.getInt("AD_Reference_ID"));
 		final String TableName = rs.getString(1);
+
+		if (!StringUtils.toBoolean(rs.getString("Ref_IsActive")))
+		{
+			return ExplainedOptional.emptyBecause("AD_Reference with AD_Reference_ID=" + referenceId.getRepoId() + " is not active");
+		}
+		if (!StringUtils.toBoolean(rs.getString("RefTable_IsActive")))
+		{
+			return ExplainedOptional.emptyBecause("AD_Ref_Table with AD_Reference_ID=" + referenceId.getRepoId() + " is not active");
+		}
+		if (!StringUtils.toBoolean(rs.getString("Table_IsActive")))
+		{
+			return ExplainedOptional.emptyBecause("Table " + TableName + " is not active");
+		}
+
 		final String KeyColumn = rs.getString(2);
 		final String DisplayColumn = rs.getString(3);
 		final boolean isValueDisplayed = StringUtils.toBoolean(rs.getString(4));
@@ -352,9 +377,8 @@ public class LookupDAO implements ILookupDAO
 		final boolean showInactiveValues = StringUtils.toBoolean(rs.getString(14));
 		final String referenceName = rs.getString("ReferenceName");
 		final TooltipType tooltipType = TooltipType.ofCode(rs.getString("TooltipType"));
-		final ReferenceId referenceId = ReferenceId.ofRepoId(rs.getInt("AD_Reference_ID"));
 
-		return TableRefInfo.builder()
+		return ExplainedOptional.of(TableRefInfo.builder()
 				.identifier("AD_Reference[ID=" + referenceId.getRepoId() + ",Name=" + referenceName + "]")
 				.tableName(TableName)
 				.keyColumn(KeyColumn)
@@ -370,9 +394,8 @@ public class LookupDAO implements ILookupDAO
 				.autoComplete(autoComplete)
 				.showInactiveValues(showInactiveValues)
 				.tooltipType(tooltipType)
-				.build();
+				.build());
 	}
-
 
 	@Override
 	@Cached
@@ -664,13 +687,13 @@ public class LookupDAO implements ILookupDAO
 			return item;
 		}
 
-		private final boolean isActive(final ResultSet rs) throws SQLException
+		private boolean isActive(final ResultSet rs) throws SQLException
 		{
 			final boolean isActive = DisplayType.toBoolean(rs.getString(MLookupFactory.COLUMNINDEX_IsActive));
 			return isActive;
 		}
 
-		private final boolean isDisplayedInUI(final ResultSet rs) throws SQLException
+		private boolean isDisplayedInUI(final ResultSet rs) throws SQLException
 		{
 			if (entityTypeColumnIndex <= 0)
 			{
@@ -688,7 +711,7 @@ public class LookupDAO implements ILookupDAO
 					: true;
 		}
 
-		private final String getDisplayName(final ResultSet rs, final boolean isActive) throws SQLException
+		private String getDisplayName(final ResultSet rs, final boolean isActive) throws SQLException
 		{
 			String name = rs.getString(MLookupFactory.COLUMNINDEX_DisplayName);
 			if (!isActive)
@@ -810,7 +833,7 @@ public class LookupDAO implements ILookupDAO
 		return sql;
 	}
 
-	private static final String injectWhereClause(String sql, final String validation)
+	private static String injectWhereClause(String sql, final String validation)
 	{
 		if (Check.isEmpty(validation, true))
 		{
@@ -977,9 +1000,9 @@ public class LookupDAO implements ILookupDAO
 
 	private static class TableRefInfoMap
 	{
-		private final ImmutableMap<ReferenceId, TableRefInfo> map;
+		private final ImmutableMap<ReferenceId, ExplainedOptional<TableRefInfo>> map;
 
-		public TableRefInfoMap(final Map<ReferenceId, TableRefInfo> map)
+		public TableRefInfoMap(final Map<ReferenceId, ExplainedOptional<TableRefInfo>> map)
 		{
 			this.map = ImmutableMap.copyOf(map);
 		}
@@ -992,9 +1015,18 @@ public class LookupDAO implements ILookupDAO
 					.toString();
 		}
 
-		public TableRefInfo getByIdOrNull(@NonNull final ReferenceId referenceId)
+		public boolean hasTableReference(@NonNull final ReferenceId referenceId)
 		{
-			return map.get(referenceId);
+			final ExplainedOptional<TableRefInfo> result = map.get(referenceId);
+			return result != null && result.isPresent();
+		}
+
+		public ExplainedOptional<TableRefInfo> getById(@NonNull final ReferenceId referenceId)
+		{
+			final ExplainedOptional<TableRefInfo> result = map.get(referenceId);
+			return result != null
+					? result
+					: ExplainedOptional.emptyBecause("Unknown AD_Reference_ID=" + referenceId.getRepoId());
 		}
 	}
 }

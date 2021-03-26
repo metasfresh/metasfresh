@@ -22,6 +22,7 @@
 
 package org.adempiere.ad.service;
 
+import de.metas.i18n.ExplainedOptional;
 import de.metas.util.ISingletonService;
 import de.metas.util.collections.BlindIterator;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -102,6 +103,8 @@ public interface ILookupDAO extends ISingletonService
 	}
 
 	IColumnInfo retrieveColumnInfo(int adColumnId);
+
+	ExplainedOptional<TableRefInfo> getTableRefInfo(int referenceRepoId);
 
 	/**
 	 * In case the {@link TableRefInfo} was not found, an warning is logged.
