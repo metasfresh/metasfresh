@@ -22,6 +22,7 @@
 
 package de.metas.contracts;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.product.ProductAndCategoryId;
 import lombok.Builder;
@@ -46,6 +47,9 @@ public class CreateFlatrateTermRequest
 	 */
 	@NonNull
 	I_C_BPartner bPartner;
+
+	@Nullable
+	BPartnerLocationId bpartnerLocationId;
 
 	@NonNull
 	I_C_Flatrate_Conditions conditions;

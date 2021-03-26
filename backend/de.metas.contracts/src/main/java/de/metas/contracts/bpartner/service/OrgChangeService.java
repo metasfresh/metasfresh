@@ -114,7 +114,9 @@ public class OrgChangeService
 		final List<BPartnerContact> newContacts = getOrCreateContacts(orgChangeBPartnerComposite, destinationBPartnerComposite);
 		final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(orgChangeBPartnerComposite, destinationBPartnerComposite);
 
-		destinationBPartnerComposite = destinationBPartnerComposite.toBuilder()
+		destinationBPartnerComposite = destinationBPartnerComposite.deepCopy()
+				.toBuilder()
+
 				.locations(newLocations)
 				.contacts(newContacts)
 				.bankAccounts(newBPBankAccounts)
@@ -123,9 +125,15 @@ public class OrgChangeService
 		bpCompositeRepo.save(destinationBPartnerComposite);
 
 		saveOrgChangeBPartnerComposite(orgChangeBPartnerComposite);
+		//
+		// final BPartnerComposite finalDestinationBPartnerComposite = destinationBPartnerComposite;
 
-		createMembershipFlatrateTerms(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
-		createNonMembershipFlatrateTerms(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
+		// Services.get(ITrxManager.class)
+		// 		.getCurrentTrxListenerManagerOrAutoCommit()
+		// 		.newEventListener(ITrxListenerManager.TrxEventTiming.AFTER_COMMIT)
+		// 		.registerHandlingMethod(trx -> createFlatrateTerms(orgChangeBPartnerComposite, finalDestinationBPartnerComposite, orgChangeRequest));
+
+		createFlatrateTerms(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
 
 		cancelSubscriptionsFor(orgChangeBPartnerComposite, orgChangeRequest);
 
@@ -133,6 +141,19 @@ public class OrgChangeService
 
 		createOrgSwitchRequest(orgChangeHistoryId);
 
+	}
+
+	private void createFlatrateTerms(@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+			@NonNull final BPartnerComposite destinationBPartnerComposite,
+			@NonNull final OrgChangeRequest orgChangeRequest)
+	{
+		createMembershipFlatrateTerms(orgChangeBPartnerComposite,
+									  destinationBPartnerComposite,
+									  orgChangeRequest);
+
+		createNonMembershipFlatrateTerms(orgChangeBPartnerComposite,
+										 destinationBPartnerComposite,
+										 orgChangeRequest);
 	}
 
 	private void cancelSubscriptionsFor(final OrgChangeBPartnerComposite orgChangeBPartnerComposite, final OrgChangeRequest orgChangeRequest)
@@ -217,7 +238,10 @@ public class OrgChangeService
 			}
 			else
 			{
-				final BPartnerLocation newLocation = sourceLocation.toBuilder().active(true).build();
+				final BPartnerLocation newLocation = sourceLocation.toBuilder()
+						.id(null)
+						.active(true)
+						.build();
 				destinationLocations.add(newLocation);
 
 				loggable.addLog("Location {} was created for the destination partner {}.",
@@ -269,7 +293,10 @@ public class OrgChangeService
 			}
 			else
 			{
-				final BPartnerContact newContact = sourceContact.toBuilder().active(true).build();
+				final BPartnerContact newContact = sourceContact.toBuilder()
+						.id(null)
+						.active(true)
+						.build();
 
 				newContacts.add(newContact);
 
@@ -317,7 +344,10 @@ public class OrgChangeService
 			}
 			else
 			{
-				final BPartnerBankAccount newBankAccount = sourceBankAccount.toBuilder().active(true).build();
+				final BPartnerBankAccount newBankAccount = sourceBankAccount.toBuilder()
+						.id(null)
+						.active(true)
+						.build();
 
 				newBankAccounts.add(newBankAccount);
 

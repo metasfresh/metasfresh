@@ -50,6 +50,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -104,14 +105,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.copy;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class OrgChangeRepository
 {
 	private static final Logger logger = LogManager.getLogger(OrgChangeRepository.class);
 	final ILoggable loggable = Loggables.withLogger(logger, Level.INFO);
-	
-
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -122,11 +122,10 @@ public class OrgChangeRepository
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
-	private final IRequestBL requestBL = Services.get((IRequestBL.class));
-
 
 	private final BPartnerCompositeRepository bPartnerCompositeRepo;
 	private final OrgMappingRepository orgMappingRepo;
+	private ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
 	public OrgChangeRepository(@NonNull final BPartnerCompositeRepository bPartnerCompositeRepo,
 			@NonNull final OrgMappingRepository orgMappingRepo)
@@ -387,7 +386,7 @@ public class OrgChangeRepository
 										membershipProductQuery)
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Quit.getCode())
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_MasterEndDate, CompareQueryFilter.Operator.GREATER, orgChangeDate)
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, orgChangeDate)
 				.create()
 				.listIds(FlatrateTermId::ofRepoId);
 	}
@@ -477,6 +476,22 @@ public class OrgChangeRepository
 	{
 		final I_C_BPartner partner = bpartnerDAO.getById(destinationBPartnerComposite.getBpartner().getId());
 
+		final BPartnerLocation billBPartnerLocation = destinationBPartnerComposite.extractBillToLocation().orElseGet(null);
+
+		if (billBPartnerLocation == null)
+		{
+			loggable.addLog("No BillTo Location found in partner {} -> no flatrate term will be created", partner);
+			return;
+		}
+
+		final BPartnerLocation shipBPartnerLocation = destinationBPartnerComposite.extractShipToLocation().orElseGet(null);
+
+		if (shipBPartnerLocation == null)
+		{
+			loggable.addLog("No shipTo Location found in partner {} -> no flatrate term will be created", partner);
+			return;
+		}
+
 		final I_AD_User user = retrieveCounterpartUserOrNull(sourceSubscription.getUserId(), destinationBPartnerComposite.getOrgId());
 
 		final Timestamp startDate = TimeUtil.asTimestamp(orgChangeRequest.getStartDate());
@@ -484,6 +499,7 @@ public class OrgChangeRepository
 		final CreateFlatrateTermRequest flatrateTermRequest = CreateFlatrateTermRequest.builder()
 				.context(PlainContextAware.newWithThreadInheritedTrx(Env.getCtx()))
 				.bPartner(partner)
+				.bpartnerLocationId(billBPartnerLocation.getId())
 				.startDate(startDate)
 				.isSimulation(false)
 				.conditions(flatrateDAO.getConditionsById(sourceSubscription.getFlartareConditionsId()))
@@ -496,11 +512,8 @@ public class OrgChangeRepository
 		membershipTerm.setPlannedQtyPerUnit(sourceSubscription.getPlannedQtyPerUnit());
 		membershipTerm.setC_UOM_ID(newProduct.getC_UOM_ID());
 
-		final I_C_BPartner_Location billToLocation = retrieveCounterpartLocationOrNull(sourceSubscription.getBillLocationId(), orgChangeRequest.getOrgToId());
-		membershipTerm.setBill_Location_ID(billToLocation == null ? -1 : billToLocation.getC_BPartner_Location_ID());
 
-		final I_C_BPartner_Location shipToLocation = retrieveCounterpartLocationOrNull(sourceSubscription.getShipToLocationId(), orgChangeRequest.getOrgToId());
-		membershipTerm.setDropShip_Location_ID(shipToLocation == null ? -1 : shipToLocation.getC_BPartner_Location_ID());
+		membershipTerm.setDropShip_Location_ID(shipBPartnerLocation.getId().getRepoId());
 
 		final IEditablePricingContext initialContext = pricingBL.createInitialContext(orgChangeRequest.getOrgToId(),
 																					  ProductId.ofRepoId(newProduct.getM_Product_ID()),
@@ -510,7 +523,10 @@ public class OrgChangeRepository
 																					  SOTrx.SALES);
 
 		initialContext.setPriceDate(orgChangeRequest.getStartDate());
-		initialContext.setCountryId(CountryId.ofRepoIdOrNull(billToLocation == null ? -1 : billToLocation.getC_Location().getC_Country_ID()));
+
+		final CountryId countryId = countryDAO.getCountryIdByCountryCode(billBPartnerLocation.getCountryCode());
+
+		initialContext.setCountryId(countryId);
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(initialContext);
 
@@ -519,7 +535,7 @@ public class OrgChangeRepository
 
 		calculateFlatrateTermPrice(membershipTerm);
 
-		save(membershipTerm);
+		saveRecord(membershipTerm);
 
 		flatrateBL.complete(membershipTerm);
 	}
@@ -530,7 +546,7 @@ public class OrgChangeRepository
 	{
 		final I_C_BPartner_Location sourceLocationRecord = bpartnerDAO.getBPartnerLocationById(locationId);
 
-		return queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+		return queryBL.createQueryBuilderOutOfTrx(I_C_BPartner_Location.class)
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_AD_Org_Mapping_ID, sourceLocationRecord.getAD_Org_Mapping_ID())
 				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID, orgId)
 				.orderByDescending(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID)
@@ -589,7 +605,6 @@ public class OrgChangeRepository
 
 		return counterpartProduct;
 	}
-
 
 	public I_AD_OrgChange_History getOrgChangeHistoryById(@NonNull final OrgChangeHistoryId orgChangeHistoryId)
 	{
