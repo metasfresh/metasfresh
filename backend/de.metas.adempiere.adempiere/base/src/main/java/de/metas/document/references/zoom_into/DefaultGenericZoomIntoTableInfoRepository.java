@@ -23,22 +23,39 @@
 package de.metas.document.references.zoom_into;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.StringUtils;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.POInfo;
 import org.compiere.util.DB;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 public class DefaultGenericZoomIntoTableInfoRepository implements GenericZoomIntoTableInfoRepository
 {
+	private static final String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
 	@Override
 	public GenericZoomIntoTableInfo retrieveTableInfo(@NonNull final String tableName)
 	{
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		if(poInfo == null)
+		{
+			throw new AdempiereException("No table info found for "+tableName);
+		}
+
+		final String keyColumnName = poInfo.getKeyColumnName();
+		if (keyColumnName == null)
+		{
+			throw new AdempiereException("Table without single key column does not support zoom into: " + tableName);
+		}
 
 		final @NonNull List<GenericZoomIntoTableWindow> windows = DB.retrieveRows(
 				"SELECT * FROM ad_table_windows_v where TableName=?",
@@ -47,19 +64,17 @@ public class DefaultGenericZoomIntoTableInfoRepository implements GenericZoomInt
 
 		final GenericZoomIntoTableInfo.GenericZoomIntoTableInfoBuilder builder = GenericZoomIntoTableInfo.builder()
 				.tableName(tableName)
-				.keyColumnName(poInfo.getKeyColumnName())
-				.hasIsSOTrxColumn(poInfo.hasColumnName("IsSOTrx"))
+				.keyColumnName(keyColumnName)
+				.hasIsSOTrxColumn(poInfo.hasColumnName(COLUMNNAME_IsSOTrx))
 				.windows(windows);
 
-		if(tableName.endsWith("Line"))
+		final ParentLink parentLink = CoalesceUtil.coalesceSuppliers(
+				() -> getParentLink_HeaderForLine(poInfo),
+				() -> getParentLink_SingleParentColumn(poInfo));
+		if (parentLink != null)
 		{
-			final String parentTableName = tableName.substring(0, tableName.length() - "Line".length());
-			final String parentLinkColumnName = parentTableName + "_ID";
-			if(poInfo.hasColumnName(parentLinkColumnName))
-			{
-				builder.parentTableName(parentTableName);
-				builder.parentLinkColumnName(parentLinkColumnName);
-			}
+			builder.parentTableName(parentLink.getParentTableName());
+			builder.parentLinkColumnName(parentLink.getLinkColumnName());
 		}
 
 		return builder.build();
@@ -75,4 +90,68 @@ public class DefaultGenericZoomIntoTableInfoRepository implements GenericZoomInt
 				.tabSqlWhereClause(StringUtils.trimBlankToNull(rs.getString("tab_whereClause")))
 				.build();
 	}
+
+	@Value
+	@Builder
+	private static class ParentLink
+	{
+		@NonNull String linkColumnName;
+		@NonNull String parentTableName;
+	}
+
+	@Nullable
+	private ParentLink getParentLink_HeaderForLine(@NonNull final POInfo poInfo)
+	{
+		final String tableName = poInfo.getTableName();
+		if (!tableName.endsWith("Line"))
+		{
+			return null;
+		}
+
+		final String parentTableName = tableName.substring(0, tableName.length() - "Line".length());
+		final String parentLinkColumnName = parentTableName + "_ID";
+		if (!poInfo.hasColumnName(parentLinkColumnName))
+		{
+			return null;
+		}
+
+		// virtual column parent link is not supported
+		if (poInfo.isVirtualColumn(parentLinkColumnName))
+		{
+			return null;
+		}
+
+		return ParentLink.builder()
+				.linkColumnName(parentLinkColumnName)
+				.parentTableName(parentTableName)
+				.build();
+	}
+
+	@Nullable
+	private ParentLink getParentLink_SingleParentColumn(@NonNull final POInfo poInfo)
+	{
+		final String parentLinkColumnName = poInfo.getSingleParentColumnName().orElse(null);
+		if (parentLinkColumnName == null)
+		{
+			return null;
+		}
+
+		// virtual column parent link is not supported
+		if (poInfo.isVirtualColumn(parentLinkColumnName))
+		{
+			return null;
+		}
+
+		final String parentTableName = poInfo.getReferencedTableNameOrNull(parentLinkColumnName);
+		if (parentTableName == null)
+		{
+			return null;
+		}
+
+		return ParentLink.builder()
+				.linkColumnName(parentLinkColumnName)
+				.parentTableName(parentTableName)
+				.build();
+	}
+
 }

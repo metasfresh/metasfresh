@@ -1400,4 +1400,28 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		return m_columns[index].isPasswordColumn();
 
 	}
+
+	public Optional<String> getSingleParentColumnName()
+	{
+		String singleColumnName = null;
+		for(final POInfoColumn column : m_columns)
+		{
+			if(!column.isParent())
+			{
+				continue;
+			}
+
+			if(singleColumnName != null)
+			{
+				// more than one parent columns found
+				return Optional.empty();
+			}
+			else
+				{
+				singleColumnName = column.getColumnName();
+			}
+		}
+
+		return Optional.ofNullable(singleColumnName);
+	}
 }   // POInfo
