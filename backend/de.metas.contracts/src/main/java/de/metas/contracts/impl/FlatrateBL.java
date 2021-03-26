@@ -1619,6 +1619,7 @@ public class FlatrateBL implements IFlatrateBL
 		else
 		{
 			if (!flatrateDAO.retrieveTerms(ctx,
+					request.getOrgId(),
 					bPartner.getC_BPartner_ID(),
 					null,
 					productAndCategoryId.getProductCategoryId().getRepoId(),
@@ -1639,7 +1640,7 @@ public class FlatrateBL implements IFlatrateBL
 		final I_C_Flatrate_Term newTerm = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class, bPartner);
 		newTerm.setC_Flatrate_Conditions(conditions);
 		newTerm.setC_UOM_ID(conditions.getC_UOM_ID());
-		newTerm.setAD_Org_ID(bPartner.getAD_Org_ID());
+		newTerm.setAD_Org_ID(OrgId.toRepoId(request.getOrgId()));
 
 		newTerm.setStartDate(startDate);
 		newTerm.setEndDate(startDate); // will be updated later

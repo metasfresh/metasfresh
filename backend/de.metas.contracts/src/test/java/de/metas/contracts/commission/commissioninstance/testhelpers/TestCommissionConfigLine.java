@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import javax.annotation.Nullable;
 
+import de.metas.organization.OrgId;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 
@@ -59,9 +60,12 @@ public class TestCommissionConfigLine
 	Integer seqNo;
 
 	/** supposed to be invoked from {@link TestCommissionConfig}. */
-	IPair<String, CommissionSettingsLineId> createConfigLineData(final int C_HierarchyCommissionSettings)
+	IPair<String, CommissionSettingsLineId> createConfigLineData(
+			@NonNull final OrgId orgId,
+			final int C_HierarchyCommissionSettings)
 	{
 		final I_C_CommissionSettingsLine settingsLineRecord = newInstance(I_C_CommissionSettingsLine.class);
+		settingsLineRecord.setAD_Org_ID(OrgId.toRepoId(orgId));
 		settingsLineRecord.setC_HierarchyCommissionSettings_ID(C_HierarchyCommissionSettings);
 		settingsLineRecord.setSeqNo(seqNo);
 		settingsLineRecord.setPercentOfBasePoints(new java.math.BigDecimal(percentOfBasePoints));

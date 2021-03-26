@@ -21,6 +21,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -56,6 +57,7 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -124,7 +126,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		final int m_Product_ID = ic.getM_Product_ID();
 		final int c_Charge_ID = ic.getC_Charge_ID();
 
-		return retrieveTerms(ctx, bill_BPartner_ID, dateOrdered, m_Product_Category_ID, m_Product_ID, c_Charge_ID, trxName);
+		return retrieveTerms(ctx, OrgId.ofRepoId(ic.getAD_Org_ID()), bill_BPartner_ID, dateOrdered, m_Product_Category_ID, m_Product_ID, c_Charge_ID, trxName);
 	}
 
 	@Override
@@ -136,12 +138,13 @@ public class FlatrateDAO implements IFlatrateDAO
 		final int m_Product_ID = ProductId.toRepoId(query.getProductId());
 		final int c_Charge_ID = ChargeId.toRepoId(query.getChargeId());
 
-		return retrieveTerms(Env.getCtx(), bPartnerIds, dateOrdered, m_Product_Category_ID, m_Product_ID, c_Charge_ID, ITrx.TRXNAME_None);
+		return retrieveTerms(Env.getCtx(), query.getOrgId(), bPartnerIds, dateOrdered, m_Product_Category_ID, m_Product_ID, c_Charge_ID, ITrx.TRXNAME_None);
 	}
 
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(
 			final @CacheCtx Properties ctx,
+			@NonNull final OrgId orgId,
 			final int bill_BPartner_ID,
 			final Timestamp dateOrdered,
 			final int m_Product_Category_ID,
@@ -149,12 +152,13 @@ public class FlatrateDAO implements IFlatrateDAO
 			final int c_Charge_ID,
 			final @CacheTrx String trxName)
 	{
-		return retrieveTerms(ctx, ImmutableList.of(bill_BPartner_ID), dateOrdered, m_Product_Category_ID, m_Product_ID, c_Charge_ID, trxName);
+		return retrieveTerms(ctx, orgId, ImmutableList.of(bill_BPartner_ID), dateOrdered, m_Product_Category_ID, m_Product_ID, c_Charge_ID, trxName);
 	}
 
 	@Cached
 	public List<I_C_Flatrate_Term> retrieveTerms(
 			final @CacheCtx Properties ctx,
+			@NonNull final OrgId orgId,
 			final ImmutableList<Integer> bPartnerIds,
 			final Timestamp dateOrdered,
 			final int m_Product_Category_ID,
@@ -166,7 +170,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		final boolean filterByCharge = c_Charge_ID > 0;
 		final boolean filterByProduct = m_Product_ID > 0;
 
-		boolean filterByMatchingRecord = filterByProductCategory || filterByProduct || filterByCharge;
+		final boolean filterByMatchingRecord = filterByProductCategory || filterByProduct || filterByCharge;
 		final IQueryBuilder<I_C_Flatrate_Conditions> fcQueryBuilder;
 		if (filterByMatchingRecord)
 		{
@@ -198,9 +202,10 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.addNotEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_Type_Conditions, X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee)
 				.create();
-
+	
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_AD_Org_ID, orgId)
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerIds)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, dateOrdered)

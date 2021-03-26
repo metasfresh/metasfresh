@@ -168,7 +168,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(il.getC_Invoice_ID());
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
-		final I_C_BPartner_Location locationTo = bpartnerDAO.getBPartnerLocationById(partnerLocationId);
+		final I_C_BPartner_Location locationTo = bpartnerDAO.getBPartnerLocationByIdEvenInactive(partnerLocationId);
 
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(il))
 		{
@@ -200,7 +200,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			if (taxId == null)
 			{
-				final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+				final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
 
 				throw TaxNotFoundException.builder()
 						.taxCategoryId(taxCategoryId)
@@ -454,7 +454,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		{
 			return null;
 		}
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
 
 		return CountryId.ofRepoId(bPartnerLocationRecord.getC_Location().getC_Country_ID());
 	}
