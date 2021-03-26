@@ -62,7 +62,7 @@ import de.metas.elasticsearch.indexer.IESIndexerResult;
 	@Override
 	public long getDurationInMillis()
 	{
-		return esResponse.getTookInMillis();
+		return esResponse.getTook().millis();
 	}
 
 	private String getDurationAsString()
@@ -120,7 +120,7 @@ import de.metas.elasticsearch.indexer.IESIndexerResult;
 					count++;
 				}
 			}
-			
+
 			_countFailures = count;
 		}
 		return _countFailures;

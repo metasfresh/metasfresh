@@ -1,7 +1,8 @@
 package de.metas.vertical.healthcare.alberta.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for M_Product_AlbertaTherapy
  *  @author metasfresh (generated) 
@@ -99,7 +100,7 @@ public interface I_M_Product_AlbertaTherapy
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set M_Product_AlbertaTherapy.
+	 * Set Alberta therapies.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -108,7 +109,7 @@ public interface I_M_Product_AlbertaTherapy
 	void setM_Product_AlbertaTherapy_ID (int M_Product_AlbertaTherapy_ID);
 
 	/**
-	 * Get M_Product_AlbertaTherapy.
+	 * Get Alberta therapies.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -124,7 +125,7 @@ public interface I_M_Product_AlbertaTherapy
 	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setM_Product_ID (int M_Product_ID);
@@ -134,7 +135,7 @@ public interface I_M_Product_AlbertaTherapy
 	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getM_Product_ID();
@@ -148,7 +149,7 @@ public interface I_M_Product_AlbertaTherapy
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setTherapy (java.lang.String Therapy);
+	void setTherapy (String Therapy);
 
 	/**
 	 * Get Therapy.
@@ -157,7 +158,7 @@ public interface I_M_Product_AlbertaTherapy
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getTherapy();
+	String getTherapy();
 
 	ModelColumn<I_M_Product_AlbertaTherapy, Object> COLUMN_Therapy = new ModelColumn<>(I_M_Product_AlbertaTherapy.class, "Therapy", null);
 	String COLUMNNAME_Therapy = "Therapy";
@@ -195,7 +196,7 @@ public interface I_M_Product_AlbertaTherapy
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setValue (@Nullable java.lang.String Value);
+	void setValue (@Nullable String Value);
 
 	/**
 	 * Get Search Key.
@@ -205,7 +206,7 @@ public interface I_M_Product_AlbertaTherapy
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getValue();
+	@Nullable String getValue();
 
 	ModelColumn<I_M_Product_AlbertaTherapy, Object> COLUMN_Value = new ModelColumn<>(I_M_Product_AlbertaTherapy.class, "Value", null);
 	String COLUMNNAME_Value = "Value";

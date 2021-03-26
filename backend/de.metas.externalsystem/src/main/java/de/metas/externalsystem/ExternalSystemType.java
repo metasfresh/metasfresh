@@ -39,7 +39,9 @@ import java.util.Arrays;
 public enum ExternalSystemType implements ReferenceListAwareEnum
 {
 	Alberta(X_ExternalSystem_Config.TYPE_Alberta, "Alberta", InvokeAlbertaAction.class.getName()),
-	Shopware6(X_ExternalSystem_Config.TYPE_Shopware6, "Shopware6", InvokeShopware6Action.class.getName());
+	Shopware6(X_ExternalSystem_Config.TYPE_Shopware6, "Shopware6", InvokeShopware6Action.class.getName()),
+	Other(X_ExternalSystem_Config.TYPE_Other, "Other", null)
+	;
 
 	@Getter
 	private final String code;
@@ -58,7 +60,7 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	}
 
 	@Nullable
-	public static ExternalSystemType ofNullableCode(final String code)
+	public static ExternalSystemType ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}

@@ -3,6 +3,9 @@ package de.metas.elasticsearch.process;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
+import de.metas.process.*;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
@@ -11,12 +14,8 @@ import com.google.common.base.Stopwatch;
 import de.metas.elasticsearch.indexer.ESModelIndexerDataSources;
 import de.metas.elasticsearch.indexer.IESIndexerResult;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
-import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.elasticsearch.indexer.SqlESModelIndexerDataSource;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
-import de.metas.process.JavaProcess;
-import de.metas.process.Param;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -40,10 +39,11 @@ import de.metas.util.Services;
  * #L%
  */
 
-public abstract class AbstractModelIndexerProcess extends JavaProcess
+public abstract class AbstractModelIndexerProcess extends JavaProcess implements IProcessPrecondition
 {
 	// services
-	protected final transient IESModelIndexersRegistry modelIndexingService = Services.get(IESModelIndexersRegistry.class);
+    /** This is null if elastic search is switched off */
+	protected final transient ESModelIndexersRegistry modelIndexingService = SpringContextHolder.instance.getBeanOr(ESModelIndexersRegistry.class, null);
 
 	@Param(parameterName = "WhereClause")
 	private String p_WhereClause = null;
@@ -64,11 +64,15 @@ public abstract class AbstractModelIndexerProcess extends JavaProcess
 
 	protected abstract Collection<IESModelIndexer> getModelIndexers();
 
-	public AbstractModelIndexerProcess()
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		SpringContextHolder.instance.autowire(this);
+        if (modelIndexingService == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("ESSystem is not active");
+		}
+		return ProcessPreconditionsResolution.accept();
 	}
-
+	
 	@Override
 	protected final String doIt()
 	{

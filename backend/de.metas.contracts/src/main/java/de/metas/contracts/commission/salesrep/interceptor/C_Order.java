@@ -5,6 +5,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptor;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorFactory;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorService;
+import de.metas.order.IOrderBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -19,6 +20,8 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -50,8 +53,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-	private DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory;
-	private DocumentSalesRepDescriptorService documentSalesRepDescriptorService;
+	private final DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory;
+	private final DocumentSalesRepDescriptorService documentSalesRepDescriptorService;
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	public C_Order(
 			@NonNull final DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory,
@@ -119,15 +123,14 @@ public class C_Order
 		{
 			return;
 		}
-
-		final BPartnerId effectiveBillPartnerId = extractEffectiveBillPartnerId(orderRecord);
+		final BPartnerId effectiveBillPartnerId = orderBL.getEffectiveBillPartnerId(orderRecord);
 		if (effectiveBillPartnerId == null)
 		{
 			return; // no customer whose master data we we could update
 		}
 
 		final BPartnerId salesBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_SalesRep_ID());
-		if (salesBPartnerId == null)
+		if (salesBPartnerId == null && salesBPartnerId.equals(effectiveBillPartnerId))
 		{
 			return; // leave the master data untouched
 		}
@@ -149,12 +152,5 @@ public class C_Order
 		}
 
 		throw documentSalesRepDescriptorService.createMissingSalesRepException();
-	}
-
-	private BPartnerId extractEffectiveBillPartnerId(@NonNull final I_C_Order orderRecord)
-	{
-		return BPartnerId.ofRepoIdOrNull(firstGreaterThanZero(
-				orderRecord.getBill_BPartner_ID(),
-				orderRecord.getC_BPartner_ID()));
 	}
 }

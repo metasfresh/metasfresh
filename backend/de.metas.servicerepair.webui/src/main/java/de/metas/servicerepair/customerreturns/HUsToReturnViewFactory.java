@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inout.InOutId;
+import de.metas.servicerepair.customerreturns.process.HUsToReturn_CreateShippedHU;
 import de.metas.servicerepair.customerreturns.process.HUsToReturn_SelectHU;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
@@ -90,7 +91,8 @@ public class HUsToReturnViewFactory extends HUEditorViewFactoryTemplate
 		huViewBuilder.assertParameterSet(PARAM_HUsToReturnViewContext);
 
 		huViewBuilder.considerTableRelatedProcessDescriptors(false)
-				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(HUsToReturn_SelectHU.class));
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(HUsToReturn_SelectHU.class))
+				.addAdditionalRelatedProcessDescriptor(createProcessDescriptor(HUsToReturn_CreateShippedHU.class));
 	}
 
 	@Nullable

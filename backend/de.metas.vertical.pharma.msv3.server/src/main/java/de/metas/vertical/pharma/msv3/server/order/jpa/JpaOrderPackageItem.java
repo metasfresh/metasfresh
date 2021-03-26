@@ -49,6 +49,7 @@ public class JpaOrderPackageItem extends AbstractEntity
 {
 	@ManyToOne(fetch = FetchType.EAGER)
 	@NotNull
+	
 	private JpaOrderPackage orderPackage;
 	private long pzn;
 	private int qty;

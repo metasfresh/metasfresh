@@ -276,10 +276,10 @@ final class BPartnerCompositeSaver
 				{
 					postalQueryBuilder.addEqualsFilter(I_C_Postal.COLUMN_District, bpartnerLocation.getDistrict());
 				}
-				// else
-				// {
-					// prefer C_Postal records that have no district set
-				// }
+				if (!isEmpty(bpartnerLocation.getCountryCode(), true))
+				{
+					postalQueryBuilder.addEqualsFilter(I_C_Postal.COLUMN_C_Country_ID, locationRecord.getC_Country_ID());
+				}
 
 				postalQueryBuilder.orderBy().addColumn(I_C_Postal.COLUMNNAME_District, Direction.Ascending, Nulls.First);
 

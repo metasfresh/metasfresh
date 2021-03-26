@@ -37,6 +37,7 @@ public class ExternalSystems
 		registerExternalSystem(NullExternalSystem.NULL);
 		registerExternalSystem(AlbertaExternalSystem.ALBERTA);
 		registerExternalSystem(Shopware6ExternalSystem.SHOPWARE6);
+		registerExternalSystem(OtherExternalSystem.OTHER);
 	}
 
 	private final Map<String, IExternalSystem> systemsByCode = new HashMap<>();

@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.receipt.JsonCreateReceiptsRequest;
 import de.metas.common.receipt.JsonCreateReceiptsResponse;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.inout.InOutId;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.JsonErrors;

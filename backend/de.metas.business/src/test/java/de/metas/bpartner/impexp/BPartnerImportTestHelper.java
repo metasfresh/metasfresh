@@ -71,7 +71,7 @@ import lombok.experimental.UtilityClass;
 
 		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
-		final I_C_BPartner_Location bplocation = partnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(ibpartner.getC_BPartner_ID(), ibpartner.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bplocation = partnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(ibpartner.getC_BPartner_ID(), ibpartner.getC_BPartner_Location_ID()));
 		assertThat(bplocation).isNotNull();
 		assertThat(bplocation.getC_Location_ID()).isGreaterThan(0);
 		assertThat(bplocation.isBillToDefault()).isEqualTo(ibpartner.isBillToDefault());

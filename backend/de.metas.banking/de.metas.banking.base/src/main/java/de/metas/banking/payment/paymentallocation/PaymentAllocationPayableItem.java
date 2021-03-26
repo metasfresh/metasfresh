@@ -46,8 +46,13 @@ public class PaymentAllocationPayableItem
 	Amount serviceFeeAmt;
 	ClientAndOrgId clientAndOrgId;
 	Instant paymentDate;
+	
+	/** Payment-BPartner */
 	BPartnerId bPartnerId;
+	
 	InvoiceId invoiceId;
+	BPartnerId invoiceBPartnerId;
+	
 	String documentNo;
 	boolean isSOTrx;
 	LocalDate dateInvoiced;
@@ -61,8 +66,9 @@ public class PaymentAllocationPayableItem
 			@NonNull final OrgId orgId,
 			@NonNull final ClientId clientId,
 			@Nullable final Instant paymentDate,
-			final BPartnerId bPartnerId,
+			@NonNull final BPartnerId bPartnerId,
 			@NonNull final InvoiceId invoiceId,
+			@NonNull final BPartnerId invoiceBPartnerId,
 			@NonNull final String documentNo,
 			final boolean isSOTrx,
 			@NonNull final LocalDate dateInvoiced)
@@ -75,6 +81,7 @@ public class PaymentAllocationPayableItem
 		this.paymentDate = paymentDate == null ? Instant.now() : paymentDate;
 		this.bPartnerId = bPartnerId;
 		this.invoiceId = invoiceId;
+		this.invoiceBPartnerId = invoiceBPartnerId;
 		this.documentNo = documentNo;
 		this.isSOTrx = isSOTrx;
 		this.dateInvoiced = dateInvoiced;

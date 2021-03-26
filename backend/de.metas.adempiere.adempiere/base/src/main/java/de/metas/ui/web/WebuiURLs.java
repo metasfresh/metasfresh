@@ -14,6 +14,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -42,7 +44,7 @@ import lombok.NonNull;
  */
 public class WebuiURLs
 {
-	public static final WebuiURLs newInstance()
+	public static WebuiURLs newInstance()
 	{
 		return new WebuiURLs();
 	}
@@ -56,6 +58,8 @@ public class WebuiURLs
 	private static final String PARAM_viewId = "viewId";
 	private static final String PARAM_ResetPasswordToken = "token";
 
+	public static final String SYSCONFIG_IsCrossSiteUsageAllowed = "webui.frontend.allow-cross-site-usage";
+	
 	public static final String SYSCONFIG_FRONTEND_URL = "webui.frontend.url";
 	private static final String SYSCONFIG_DOCUMENT_PATH = "webui.frontend.path.document";
 	private static final String SYSCONFIG_VIEW_PATH = "webui.frontend.path.view";
@@ -71,6 +75,7 @@ public class WebuiURLs
 	 *
 	 * @return e.g. https://webui
 	 */
+	@Nullable
 	public String getFrontendURL()
 	{
 		final String url = sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL, "");
@@ -83,6 +88,7 @@ public class WebuiURLs
 		return url.trim();
 	}
 
+	@Nullable
 	private String getFrontendURL(@NonNull final String pathSysConfigName, final Map<String, Object> params)
 	{
 		String url = getFrontendURL();
@@ -140,5 +146,11 @@ public class WebuiURLs
 		return getFrontendURL(SYSCONFIG_RESET_PASSWORD_PATH, ImmutableMap.<String, Object> builder()
 				.put(PARAM_ResetPasswordToken, token)
 				.build());
+	}
+
+	public boolean isCrossSiteUsageAllowed()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_IsCrossSiteUsageAllowed, false);
 	}
 }

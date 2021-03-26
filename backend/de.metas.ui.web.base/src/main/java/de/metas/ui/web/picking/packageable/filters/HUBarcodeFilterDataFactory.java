@@ -50,22 +50,6 @@ class HUBarcodeFilterDataFactory implements ProductBarcodeFilterDataFactory
 		final String barcodeNorm = barcodeParam.trim();
 
 		final I_M_HU hu = services.getHUByBarcode(barcodeNorm).orElse(null);
-		if(hu == null)
-		{
-			return Optional.empty();
-		}
-
-		final ImmutableSet<ProductId> productIds = services.extractProductIds(hu);
-		final SqlAndParams sqlWhereClause = services.createSqlWhereClauseByProductIds(productIds).orElse(null);
-		if(sqlWhereClause == null)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(ProductBarcodeFilterData.builder()
-								   .barcode(barcodeNorm)
-								   .huId(HuId.ofRepoId(hu.getM_HU_ID()))
-								   .sqlWhereClause(sqlWhereClause)
-								   .build());
+		return services.createDataFromHU(barcodeNorm, hu);
 	}
 }

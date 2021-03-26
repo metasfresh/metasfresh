@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+	We received this file as camt.054-ESR-ASR_P_CH0309000000250090342_38000000_0_2016052723010603.xml
+	but renamed it for convenience. 
+	We also edited it to be a v02 file..i.e. added AmtDtls/InstdAmt around the NtryDtls' amount, and removed CdtDbtInd from the NtryDtls 
+ -->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:camt.054.001.02 camt.054.001.02.xsd">
+	<BkToCstmrDbtCdtNtfctn>
+		<GrpHdr>
+			<MsgId>20160527375204000015681</MsgId>
+			<CreDtTm>2016-05-27T23:00:57</CreDtTm>
+			<MsgPgntn>
+				<PgNb>1</PgNb>
+				<LastPgInd>true</LastPgInd>
+			</MsgPgntn>
+			<AddtlInf>Productive</AddtlInf>
+		</GrpHdr>
+		<Ntfctn>
+			<Id>20160527375204000015680</Id>
+			<CreDtTm>2016-05-27T23:00:57</CreDtTm>
+			<FrToDt>
+				<FrDtTm>2016-05-27T00:00:00</FrDtTm>
+				<ToDtTm>2016-05-27T23:59:59</ToDtTm>
+			</FrToDt>
+			<Acct>
+				<Id>
+					<IBAN>CH0309000000250090342</IBAN>
+				</Id>
+				<Ownr>
+					<Nm>Robert Schneider SA Grands magasins Biel/Bienne</Nm>
+				</Ownr>
+			</Acct>
+			<Ntry>
+				<NtryRef>CH0309000000250090342</NtryRef>
+				<Amt Ccy="CHF">1000.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<RvslInd>false</RvslInd>
+				<Sts>BOOK</Sts>
+				<BookgDt>
+					<Dt>2016-05-27</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2016-05-30</Dt>
+				</ValDt>
+				<AcctSvcrRef>20160530007602769939022000000012</AcctSvcrRef>
+				<BkTxCd>
+					<Domn>
+						<Cd>PMNT</Cd>
+						<Fmly>
+							<Cd>RCDT</Cd>
+							<SubFmlyCd>VCOM</SubFmlyCd>
+						</Fmly>
+					</Domn>
+				</BkTxCd>
+				<Chrgs>
+					<TtlChrgsAndTaxAmt Ccy="CHF">5.60</TtlChrgsAndTaxAmt>
+					<Rcrd>
+						<Amt Ccy="CHF">5.40</Amt>
+						<CdtDbtInd>DBIT</CdtDbtInd>
+						<ChrgInclInd>false</ChrgInclInd>
+						<Tp>
+							<Prtry>
+								<Id>2</Id>
+							</Prtry>
+						</Tp>
+					</Rcrd>
+					<Rcrd>
+						<Amt Ccy="CHF">0.20</Amt>
+						<CdtDbtInd>DBIT</CdtDbtInd>
+						<ChrgInclInd>false</ChrgInclInd>
+						<Tp>
+							<Prtry>
+								<Id>4</Id>
+							</Prtry>
+						</Tp>
+					</Rcrd>
+				</Chrgs>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>10</NbOfTxs>
+					</Btch>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>160527CH00T3L0GE</AcctSvcrRef>
+							<Prtry>
+								<Tp>04</Tp>
+								<Ref>20160526531801000100274</Ref>
+							</Prtry>
+						</Refs>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="CHF">100.00</Amt>
+							</InstdAmt>
+						</AmtDtls>
+						<BkTxCd>
+							<Domn>
+								<Cd>PMNT</Cd>
+								<Fmly>
+									<Cd>CNTR</Cd>
+									<SubFmlyCd>CDPT</SubFmlyCd>
+								</Fmly>
+							</Domn>
+						</BkTxCd>
+						<Chrgs>
+							<TtlChrgsAndTaxAmt Ccy="CHF">1.24</TtlChrgsAndTaxAmt>
+							<Rcrd>
+								<Amt Ccy="CHF">1.20</Amt>
+								<CdtDbtInd>DBIT</CdtDbtInd>
+								<ChrgInclInd>false</ChrgInclInd>
+								<Tp>
+									<Prtry>
+										<Id>2</Id>
+									</Prtry>
+								</Tp>
+							</Rcrd>
+							<Rcrd>
+								<Amt Ccy="CHF">0.04</Amt>
+								<CdtDbtInd>DBIT</CdtDbtInd>
+								<ChrgInclInd>false</ChrgInclInd>
+								<Tp>
+									<Prtry>
+										<Id>4</Id>
+									</Prtry>
+								</Tp>
+							</Rcrd>
+						</Chrgs>
+						<RltdAgts>
+							<DbtrAgt>
+								<FinInstnId>
+									<BICFI>POFICHBEXXX</BICFI>
+									<Nm>POSTFINANCE AG</Nm>
+									<PstlAdr>
+										<AdrLine>MINGERSTRASSE 20</AdrLine>
+										<AdrLine>3030 BERNE</AdrLine>
+									</PstlAdr>
+								</FinInstnId>
+							</DbtrAgt>
+						</RltdAgts>
+						<RmtInf>
+							<Strd>
+								<CdtrRefInf>
+									<Tp>
+										<CdOrPrtry>
+											<Prtry>QRR</Prtry>
+										</CdOrPrtry>
+									</Tp>
+									<Ref>000000000002015110002913192</Ref>
+								</CdtrRefInf>
+								<AddtlRmtInf>?REJECT?0</AddtlRmtInf>
+							</Strd>
+						</RmtInf>
+						<AddtlTxInf>Gutschrift QRR</AddtlTxInf>
+						<RltdDts>
+							<AccptncDtTm>2016-05-26T20:00:00</AccptncDtTm>
+						</RltdDts>
+					</TxDtls>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>160527CH00T3KWWA</AcctSvcrRef>
+							<Prtry>
+								<Tp>01</Tp>
+								<Ref>160527CH00T3KWWA</Ref>
+							</Prtry>
+						</Refs>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="CHF">50.00</Amt>
+							</InstdAmt>
+						</AmtDtls>
+						<BkTxCd>
+							<Domn>
+								<Cd>PMNT</Cd>
+								<Fmly>
+									<Cd>RCDT</Cd>
+									<SubFmlyCd>AUTT</SubFmlyCd>
+								</Fmly>
+							</Domn>
+						</BkTxCd>
+						<RltdPties>
+							<Dbtr>
+								<Nm>Rutschmann Pia</Nm>
+								<PstlAdr>
+									<StrtNm>Marktgasse</StrtNm>
+									<BldgNb>28</BldgNb>
+									<PstCd>9400</PstCd>
+									<TwnNm>Rorschach</TwnNm>
+									<Ctry>CH</Ctry>
+								</PstlAdr>
+							</Dbtr>
+						</RltdPties>
+						<RltdAgts>
+							<DbtrAgt>
+								<FinInstnId>
+									<BICFI>POFICHBEXXX</BICFI>
+									<Nm>POSTFINANCE AG</Nm>
+									<PstlAdr>
+										<AdrLine>MINGERSTRASSE 20</AdrLine>
+										<AdrLine>3030 BERNE</AdrLine>
+									</PstlAdr>
+								</FinInstnId>
+							</DbtrAgt>
+						</RltdAgts>
+						<RmtInf>
+							<Strd>
+								<CdtrRefInf>
+									<Tp>
+										<CdOrPrtry>
+											<Prtry>QRR</Prtry>
+										</CdOrPrtry>
+									</Tp>
+									<Ref>000000000002016030002820804</Ref>
+								</CdtrRefInf>
+								<AddtlRmtInf>?REJECT?0</AddtlRmtInf>
+							</Strd>
+						</RmtInf>
+						<RltdDts>
+							<AccptncDtTm>2016-05-27T20:00:00</AccptncDtTm>
+						</RltdDts>
+					</TxDtls>
+				</NtryDtls>
+				<AddtlNtryInf>SAMMELGUTSCHRIFT ESR VERARBEITUNG VOM 27.05.2016 KUNDENNUMMER 01-000000-4 PAKET ID: 160527CH000000RU</AddtlNtryInf>
+			</Ntry>
+			
+			
+			<Ntry>
+				<NtryRef>CH0309000000250090342</NtryRef>
+				<Amt Ccy="CHF">1000.00</Amt>
+				<CdtDbtInd>CRDT</CdtDbtInd>
+				<RvslInd>false</RvslInd>
+				<Sts>BOOK</Sts>
+				<BookgDt>
+					<Dt>2016-05-27</Dt>
+				</BookgDt>
+				<ValDt>
+					<Dt>2016-05-30</Dt>
+				</ValDt>
+				<AcctSvcrRef>20160530007602769939022000000012</AcctSvcrRef>
+				<BkTxCd>
+					<Domn>
+						<Cd>PMNT</Cd>
+						<Fmly>
+							<Cd>RCDT</Cd>
+							<SubFmlyCd>VCOM</SubFmlyCd>
+						</Fmly>
+					</Domn>
+				</BkTxCd>
+				<Chrgs>
+					<TtlChrgsAndTaxAmt Ccy="CHF">5.60</TtlChrgsAndTaxAmt>
+					<Rcrd>
+						<Amt Ccy="CHF">5.40</Amt>
+						<CdtDbtInd>DBIT</CdtDbtInd>
+						<ChrgInclInd>false</ChrgInclInd>
+						<Tp>
+							<Prtry>
+								<Id>2</Id>
+							</Prtry>
+						</Tp>
+					</Rcrd>
+					<Rcrd>
+						<Amt Ccy="CHF">0.20</Amt>
+						<CdtDbtInd>DBIT</CdtDbtInd>
+						<ChrgInclInd>false</ChrgInclInd>
+						<Tp>
+							<Prtry>
+								<Id>4</Id>
+							</Prtry>
+						</Tp>
+					</Rcrd>
+				</Chrgs>
+				<NtryDtls>
+					<Btch>
+						<NbOfTxs>10</NbOfTxs>
+					</Btch>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>160527CH00T3L0GE</AcctSvcrRef>
+							<Prtry>
+								<Tp>04</Tp>
+								<Ref>20160526531801000100274</Ref>
+							</Prtry>
+						</Refs>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="CHF">100.00</Amt>
+							</InstdAmt>
+						</AmtDtls>
+						<BkTxCd>
+							<Domn>
+								<Cd>PMNT</Cd>
+								<Fmly>
+									<Cd>CNTR</Cd>
+									<SubFmlyCd>CDPT</SubFmlyCd>
+								</Fmly>
+							</Domn>
+						</BkTxCd>
+						<Chrgs>
+							<TtlChrgsAndTaxAmt Ccy="CHF">1.24</TtlChrgsAndTaxAmt>
+							<Rcrd>
+								<Amt Ccy="CHF">1.20</Amt>
+								<CdtDbtInd>DBIT</CdtDbtInd>
+								<ChrgInclInd>false</ChrgInclInd>
+								<Tp>
+									<Prtry>
+										<Id>2</Id>
+									</Prtry>
+								</Tp>
+							</Rcrd>
+							<Rcrd>
+								<Amt Ccy="CHF">0.04</Amt>
+								<CdtDbtInd>DBIT</CdtDbtInd>
+								<ChrgInclInd>false</ChrgInclInd>
+								<Tp>
+									<Prtry>
+										<Id>4</Id>
+									</Prtry>
+								</Tp>
+							</Rcrd>
+						</Chrgs>
+						<RltdAgts>
+							<DbtrAgt>
+								<FinInstnId>
+									<BICFI>POFICHBEXXX</BICFI>
+									<Nm>POSTFINANCE AG</Nm>
+									<PstlAdr>
+										<AdrLine>MINGERSTRASSE 20</AdrLine>
+										<AdrLine>3030 BERNE</AdrLine>
+									</PstlAdr>
+								</FinInstnId>
+							</DbtrAgt>
+						</RltdAgts>
+						<RmtInf>
+							<Strd>
+								<CdtrRefInf>
+									<Tp>
+										<CdOrPrtry>
+											<Prtry>QRR</Prtry>
+										</CdOrPrtry>
+									</Tp>
+									<Ref>000000000002015110002913192</Ref>
+								</CdtrRefInf>
+								<AddtlRmtInf>?REJECT?0</AddtlRmtInf>
+							</Strd>
+						</RmtInf>
+						<RltdDts>
+							<AccptncDtTm>2016-05-26T20:00:00</AccptncDtTm>
+						</RltdDts>
+					</TxDtls>
+					<TxDtls>
+						<Refs>
+							<AcctSvcrRef>160527CH00T3KWWA</AcctSvcrRef>
+							<Prtry>
+								<Tp>01</Tp>
+								<Ref>160527CH00T3KWWA</Ref>
+							</Prtry>
+						</Refs>
+						<AmtDtls>
+							<InstdAmt>
+								<Amt Ccy="CHF">50.00</Amt>
+							</InstdAmt>
+						</AmtDtls>
+						<BkTxCd>
+							<Domn>
+								<Cd>PMNT</Cd>
+								<Fmly>
+									<Cd>RCDT</Cd>
+									<SubFmlyCd>AUTT</SubFmlyCd>
+								</Fmly>
+							</Domn>
+						</BkTxCd>
+						<RltdPties>
+							<Dbtr>
+								<Nm>Rutschmann Pia</Nm>
+								<PstlAdr>
+									<StrtNm>Marktgasse</StrtNm>
+									<BldgNb>28</BldgNb>
+									<PstCd>9400</PstCd>
+									<TwnNm>Rorschach</TwnNm>
+									<Ctry>CH</Ctry>
+								</PstlAdr>
+							</Dbtr>
+						</RltdPties>
+						<RltdAgts>
+							<DbtrAgt>
+								<FinInstnId>
+									<BICFI>POFICHBEXXX</BICFI>
+									<Nm>POSTFINANCE AG</Nm>
+									<PstlAdr>
+										<AdrLine>MINGERSTRASSE 20</AdrLine>
+										<AdrLine>3030 BERNE</AdrLine>
+									</PstlAdr>
+								</FinInstnId>
+							</DbtrAgt>
+						</RltdAgts>
+						<RmtInf>
+							<Strd>
+								<CdtrRefInf>
+									<Tp>
+										<CdOrPrtry>
+											<Prtry>ISR Reference</Prtry>
+										</CdOrPrtry>
+									</Tp>
+									<Ref>000000000002016030002820804</Ref>
+								</CdtrRefInf>
+								<AddtlRmtInf>?REJECT?0</AddtlRmtInf>
+							</Strd>
+						</RmtInf>
+						<RltdDts>
+							<AccptncDtTm>2016-05-27T20:00:00</AccptncDtTm>
+						</RltdDts>
+					</TxDtls>
+				</NtryDtls>
+				<AddtlNtryInf>SAMMELGUTSCHRIFT ESR VERARBEITUNG VOM 27.05.2016 KUNDENNUMMER 01-000000-4 PAKET ID: 160527CH000000RU</AddtlNtryInf>
+			</Ntry>
+
+		</Ntfctn>
+	</BkToCstmrDbtCdtNtfctn>
+</Document>

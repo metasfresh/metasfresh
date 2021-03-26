@@ -23,18 +23,22 @@
 package de.metas.rest_api.externlasystem.dto;
 
 import de.metas.RestUtils;
-import de.metas.common.rest_api.CreatePInstanceLogRequest;
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonErrorItem;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.JsonPInstanceLog;
-import de.metas.common.rest_api.issue.JsonCreateIssueResponse;
-import de.metas.common.rest_api.issue.JsonCreateIssueResponseItem;
+import de.metas.common.rest_api.v1.CreatePInstanceLogRequest;
+import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonPInstanceLog;
+import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
+import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponseItem;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.audit.CreateExportAuditRequest;
+import de.metas.externalsystem.audit.ExternalSystemExportAudit;
+import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
@@ -46,11 +50,13 @@ import de.metas.process.ProcessInfoLog;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_CHILD_CONFIG_ID;
@@ -67,10 +73,14 @@ public class ExternalSystemService
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final IADPInstanceDAO instanceDAO = Services.get(IADPInstanceDAO.class);
 	private final ExternalSystemConfigRepo externalSystemConfigRepo;
+	private final ExternalSystemExportAuditRepo externalSystemExportAuditRepo;
 
-	public ExternalSystemService(final ExternalSystemConfigRepo externalSystemConfigRepo)
+	public ExternalSystemService(
+			final ExternalSystemConfigRepo externalSystemConfigRepo,
+			final ExternalSystemExportAuditRepo externalSystemExportAuditRepo)
 	{
 		this.externalSystemConfigRepo = externalSystemConfigRepo;
+		this.externalSystemExportAuditRepo = externalSystemExportAuditRepo;
 	}
 
 	@NonNull
@@ -142,6 +152,27 @@ public class ExternalSystemService
 			logger.error("Could not save the given model; message={}; AD_Issue_ID={}", e.getLocalizedMessage(), issueId);
 			throw e;
 		}
+	}
+
+
+	@NonNull
+	public Optional<ExternalSystemParentConfig> getByTypeAndValue(@NonNull final ExternalSystemType type, @NonNull final String childConfigValue)
+	{
+		return externalSystemConfigRepo.getByTypeAndValue(type, childConfigValue);
+	}
+
+	@NonNull
+	public Optional<ExternalSystemExportAudit> getMostRecentByTableReferenceAndSystem(
+			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final ExternalSystemType externalSystemType)
+	{
+		return externalSystemExportAuditRepo.getMostRecentByTableReferenceAndSystem(tableRecordReference, externalSystemType);
+	}
+
+	@NonNull
+	public ExternalSystemExportAudit createESExportAudit(@NonNull final CreateExportAuditRequest request)
+	{
+		return externalSystemExportAuditRepo.createESExportAudit(request);
 	}
 
 	@NonNull

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 
-import de.metas.common.rest_api.JsonQuantity;
+import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.common.shipping.JsonProduct;
 import lombok.Builder;
 import lombok.Value;
