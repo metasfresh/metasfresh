@@ -190,7 +190,7 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		// #2895
 		engine.addModelValidator(AD_Ref_Table.instance);
 
-		engine.addModelValidator(org.adempiere.ad.column.model.interceptor.AD_Column.instance); // #2913
+		//engine.addModelValidator(org.adempiere.ad.column.model.interceptor.AD_Column.instance); // #2913
 		engine.addModelValidator(new org.adempiere.ad.column.model.interceptor.AD_SQLColumn_SourceTableColumn());
 
 		engine.addModelValidator(new AD_Element());
