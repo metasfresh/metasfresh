@@ -54,11 +54,10 @@ final class ByteArrayBackedDataSource implements DataSource
 	/**
 	 * Create a DataSource from a byte array
 	 *
-	 * @param name
-	 * @param type type e.g. text/html (see {@link MimeType}.TYPE_*)
+	 * @param mimeType type e.g. text/html (see {@link MimeType}.TYPE_*)
 	 * @param data data
 	 */
-	public static final ByteArrayBackedDataSource of(final String name, final String mimeType, final byte[] data)
+	public static ByteArrayBackedDataSource of(final String name, final String mimeType, final byte[] data)
 	{
 		return new ByteArrayBackedDataSource(name, mimeType, data);
 	}
@@ -68,10 +67,9 @@ final class ByteArrayBackedDataSource implements DataSource
 	 *
 	 * The mime type will be extracted from <code>filename</code>.
 	 *
-	 * @param filename
 	 * @param data data
 	 */
-	public static final ByteArrayBackedDataSource of(final String filename, final byte[] data)
+	public static ByteArrayBackedDataSource of(final String filename, final byte[] data)
 	{
 		Check.assumeNotEmpty(filename, "filename not empty");
 		final String mimeType = MimeType.getMimeType(filename);
@@ -128,8 +126,6 @@ final class ByteArrayBackedDataSource implements DataSource
 
 	/**
 	 * Throws exception
-	 *
-	 * @throws IOException
 	 */
 	@Override
 	public OutputStream getOutputStream() throws IOException

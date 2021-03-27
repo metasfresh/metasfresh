@@ -69,9 +69,9 @@ public interface IUserDAO extends ISingletonService
 	/**
 	 * @return user's full name or <code>?</code> if no found
 	 */
-	String retrieveUserFullname(int userRepoId);
+	String retrieveUserFullName(int userRepoId);
 
-	String retrieveUserFullname(UserId userId);
+	String retrieveUserFullName(UserId userId);
 
 	@Nullable
 	UserId retrieveUserIdByEMail(String email, ClientId adClientId);
