@@ -23,6 +23,7 @@ import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -88,9 +89,9 @@ public class POTrlRepository
 		return tableName + TRL_TABLE_SUFFIX;
 	}
 
-	public final POTrlInfo createPOTrlInfo(final String tableName, final String keyColumnName, final List<String> translatedColumnNames)
+	public final POTrlInfo createPOTrlInfo(final String tableName, @Nullable final String keyColumnName, final List<String> translatedColumnNames)
 	{
-		if (Check.isEmpty(keyColumnName))
+		if (keyColumnName == null || Check.isEmpty(keyColumnName))
 		{
 			return POTrlInfo.NOT_TRANSLATED;
 		}
@@ -167,7 +168,6 @@ public class POTrlRepository
 	/**
 	 * Update PO's translations if any.
 	 *
-	 * @param po
 	 * @return <ul>
 	 * <li>true if no translation or success
 	 * <li>false if error
@@ -263,7 +263,7 @@ public class POTrlRepository
 		return updatedCount >= 0;
 	}
 
-	private static String convertValueToSql(final Object value)
+	private static String convertValueToSql(@Nullable final Object value)
 	{
 		if (value == null)
 		{
@@ -289,12 +289,6 @@ public class POTrlRepository
 
 	/**
 	 * Particularly updates the translatable column for a given recordId and adLanguage.
-	 *
-	 * @param trlInfo
-	 * @param recordId
-	 * @param adLanguage
-	 * @param columnName
-	 * @param value
 	 */
 	public void updateTranslation(@NonNull final POTrlInfo trlInfo, final int recordId, @NonNull final String adLanguage, @NonNull final String columnName, final String value)
 	{
@@ -367,44 +361,8 @@ public class POTrlRepository
 				.build();
 	}
 
-	public IModelTranslation retriveByLanguage(final POTrlInfo trlInfo, final int recordId, final String AD_Language)
-	{
-		final String sql = trlInfo.getSqlSelectTrlByIdAndLanguage().get();
-		if (sql == null)
-		{
-			return NullModelTranslation.instance;
-		}
-
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		final Object[] params = new Object[] { recordId, AD_Language };
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			DB.setParameters(pstmt, params);
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				return retrieveTrl(rs, trlInfo);
-			}
-			else
-			{
-				return NullModelTranslation.instance;
-			}
-		}
-		catch (final SQLException e)
-		{
-			throw new DBException(e, sql, params);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
-		}
-	}
-
-	private final IModelTranslation retrieveTrl(final ResultSet rs, final POTrlInfo trlInfo) throws SQLException
+	@Nullable
+	private IModelTranslation retrieveTrl(final ResultSet rs, final POTrlInfo trlInfo) throws SQLException
 	{
 		final ImmutableMap.Builder<String, String> trlMapBuilder = ImmutableMap.builder();
 		for (final String columnName : trlInfo.getTranslatedColumnNames())
@@ -431,10 +389,6 @@ public class POTrlRepository
 	public ImmutableMap<String, IModelTranslation> retriveAllById(final POTrlInfo trlInfo, final int recordId)
 	{
 		final String sql = trlInfo.getSqlSelectTrlById().get();
-		if (sql == null)
-		{
-			return ImmutableMap.of();
-		}
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -462,26 +416,21 @@ public class POTrlRepository
 		}
 		catch (final SQLException e)
 		{
-			throw new DBException(e, sql.toString(), params);
+			throw new DBException(e, sql, params);
 		}
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 	}
 
 	/**
 	 * Builds the SQL to select from translation table (i.e. <code>SELECT ... FROM TableName_Trl WHERE KeyColumnName=? [AND AD_Language=?]</code>)
 	 *
-	 * @param tableName
-	 * @param keyColumnName
-	 * @param columnNames
 	 * @param byLanguageToo if <code>true</code> the returned SQL shall also filter by "AD_Language"
 	 * @return <ul>
 	 * <li>SQL select
-	 * <li>or {@link Optional#absent()} if table is not translatable or there are no translation columns
+	 * <li>or {@link Optional#empty()} if table is not translatable or there are no translation columns
 	 * </ul>
 	 */
 	private Optional<String> buildSqlSelectTrl(final String tableName, final String keyColumnName, final List<String> columnNames, final boolean byLanguageToo)
@@ -515,9 +464,6 @@ public class POTrlRepository
 	/**
 	 * if enabled, flags all translations as IsTranslated='N',
 	 * and also copy the changed fields from record to each translation ONLY in case the translation is same as the old field value was.
-	 *
-	 * @param model
-	 * @param enabled
 	 */
 	public final void setTrlUpdateModeAsUpdateIdenticalTrls(final Object model, final boolean enabled)
 	{

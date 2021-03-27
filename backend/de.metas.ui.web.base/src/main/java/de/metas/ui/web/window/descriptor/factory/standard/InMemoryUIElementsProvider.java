@@ -59,7 +59,7 @@ final class InMemoryUIElementsProvider implements IWindowUIElementsProvider, IWi
 	@Override
 	public void consume(final I_AD_UI_Section uiSection, final I_AD_Tab parent)
 	{
-		logger.info("Generated in memory {} for {}", uiSection, parent);
+		logger.debug("Generated in memory {} for {}", uiSection, parent);
 		final AdTabId adTabId = AdTabId.ofRepoId(parent.getAD_Tab_ID());
 		adTabId2sections.put(adTabId, uiSection);
 	}
@@ -90,7 +90,7 @@ final class InMemoryUIElementsProvider implements IWindowUIElementsProvider, IWi
 	@Override
 	public void consume(final I_AD_UI_Column uiColumn, final I_AD_UI_Section parent)
 	{
-		logger.info("Generated in memory {} for {}", uiColumn, parent);
+		logger.debug("Generated in memory {} for {}", uiColumn, parent);
 		section2columns.put(parent, uiColumn);
 	}
 
@@ -103,7 +103,7 @@ final class InMemoryUIElementsProvider implements IWindowUIElementsProvider, IWi
 	@Override
 	public void consume(final I_AD_UI_ElementGroup uiElementGroup, final I_AD_UI_Column parent)
 	{
-		logger.info("Generated in memory {} for {}", uiElementGroup, parent);
+		logger.debug("Generated in memory {} for {}", uiElementGroup, parent);
 		column2elementGroups.put(parent, uiElementGroup);
 	}
 
@@ -116,7 +116,7 @@ final class InMemoryUIElementsProvider implements IWindowUIElementsProvider, IWi
 	@Override
 	public void consume(final I_AD_UI_Element uiElement, final I_AD_UI_ElementGroup parent)
 	{
-		logger.info("Generated in memory {} for {}", uiElement, parent);
+		logger.debug("Generated in memory {} for {}", uiElement, parent);
 		elementGroup2elements.put(parent, uiElement);
 	}
 
@@ -135,7 +135,7 @@ final class InMemoryUIElementsProvider implements IWindowUIElementsProvider, IWi
 	@Override
 	public void consume(final I_AD_UI_ElementField uiElementField, final I_AD_UI_Element parent)
 	{
-		logger.info("Generated in memory {} for {}", uiElementField, parent);
+		logger.debug("Generated in memory {} for {}", uiElementField, parent);
 		element2elementFields.put(parent, uiElementField);
 	}
 

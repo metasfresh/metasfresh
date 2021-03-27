@@ -192,6 +192,7 @@ public class QuotationAggregator
 					.type(ServiceRepairProjectCostCollectorType.RepairingConsumption)
 					.productId(serviceProductId)
 					.uomId(serviceProductUomId)
+					.warrantyCase(costCollector.getWarrantyCase())
 					.build();
 		}
 		else if (type == ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
