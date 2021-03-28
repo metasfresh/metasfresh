@@ -77,7 +77,7 @@ public class UserDashboardRepository
 	@Autowired
 	private KPIRepository kpisRepo;
 
-	private final CCache<UserDashboardKey, Integer> key2dashboardId = CCache.<UserDashboardKey, Integer> newLRUCache(I_WEBUI_Dashboard.Table_Name + "#key2DashboardId", Integer.MAX_VALUE, 0);
+	private final CCache<UserDashboardKey, Integer> key2dashboardId = CCache.newLRUCache(I_WEBUI_Dashboard.Table_Name + "#key2DashboardId", Integer.MAX_VALUE, 0);
 
 	private final CCache<Integer, UserDashboard> dashboadsCache = CCache.<Integer, UserDashboard> builder()
 			.cacheName(I_WEBUI_Dashboard.Table_Name + "#UserDashboard")
@@ -185,7 +185,7 @@ public class UserDashboardRepository
 				.setUrl(itemPO.getURL())
 				.setSeqNo(itemPO.getSeqNo())
 				.setWidgetType(DashboardWidgetType.ofCode(itemPO.getWEBUI_DashboardWidgetType()))
-				.setKPI(() -> kpisRepo.getKPIOrNull(itemPO.getWEBUI_KPI_ID()))
+				.setKPI(() -> extractKPI(itemPO))
 				//
 				.setTimeRangeDefaults(KPITimeRangeDefaults.builder()
 						.defaultTimeRangeFromString(itemPO.getES_TimeRange())
@@ -193,6 +193,15 @@ public class UserDashboardRepository
 						.build())
 				//
 				.build();
+	}
+
+	@Nullable
+	private KPI extractKPI(final I_WEBUI_DashboardItem itemPO)
+	{
+		final KPIId kpiId = KPIId.ofRepoIdOrNull(itemPO.getWEBUI_KPI_ID());
+		return kpiId != null
+				? kpisRepo.getKPIOrNull(kpiId)
+				: null;
 	}
 
 	private void changeUserDashboardItemAndSave(@NonNull final I_WEBUI_DashboardItem itemPO, @NonNull final UserDashboardItemChangeRequest request)
@@ -260,9 +269,7 @@ public class UserDashboardRepository
 	 */
 	private void executeChangeActionsAndInvalidate(final int dashboardId, final List<Runnable> changeActions)
 	{
-		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, () -> {
-			changeActions.forEach(Runnable::run);
-		});
+		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, () -> changeActions.forEach(Runnable::run));
 
 		invalidateUserDashboard(dashboardId);
 	}
@@ -272,6 +279,7 @@ public class UserDashboardRepository
 		executeChangeActionsAndInvalidate(dashboardId, ImmutableList.of(changeAction));
 	}
 
+	@Nullable
 	private <R> R executeChangeActionAndInvalidateAndReturn(final int dashboardId, final Callable<R> changeAction)
 	{
 		final Mutable<R> result = new Mutable<>();
@@ -340,7 +348,7 @@ public class UserDashboardRepository
 				}
 
 				final int sqlNewSeqNo = newSeqNo * 10 + 10; // convert 0-based index to "10, 20, 30.." sequence number (starting from 10)
-				DB.setParameters(pstmt, new Object[] { sqlNewSeqNo, dashboardId, itemId });
+				DB.setParameters(pstmt, sqlNewSeqNo, dashboardId, itemId);
 				pstmt.addBatch();
 			}
 
@@ -435,8 +443,7 @@ public class UserDashboardRepository
 			changeUserDashboardItemAndSave(webuiDashboardItem, request.getChangeRequest());
 		}
 
-		final int itemId = webuiDashboardItem.getWEBUI_DashboardItem_ID();
-		return itemId;
+		return webuiDashboardItem.getWEBUI_DashboardItem_ID();
 	}
 
 	public void deleteUserDashboardItem(final UserDashboard dashboard, final DashboardWidgetType dashboardWidgetType, final int itemId)
@@ -449,11 +456,12 @@ public class UserDashboardRepository
 		});
 	}
 
-	public static enum DashboardItemPatchPath
+	public enum DashboardItemPatchPath
 	{
 		caption, interval, when, position
 	}
 
+	@Nullable
 	public UserDashboardItemChangeResult changeUserDashboardItem(final UserDashboard dashboard, final UserDashboardItemChangeRequest request)
 	{
 		final int dashboardId = dashboard.getId();
@@ -514,7 +522,7 @@ public class UserDashboardRepository
 				.listIds();
 	}
 
-	private final int retrieveLastSeqNo(final int dashboardId, final DashboardWidgetType dashboardWidgetType)
+	private int retrieveLastSeqNo(final int dashboardId, final DashboardWidgetType dashboardWidgetType)
 	{
 		final Integer maxSeqNo = queryBL.createQueryBuilder(I_WEBUI_DashboardItem.class)
 				.addEqualsFilter(I_WEBUI_DashboardItem.COLUMN_WEBUI_Dashboard_ID, dashboardId)
@@ -534,7 +542,7 @@ public class UserDashboardRepository
 	//
 	//
 	@Value(staticConstructor = "of")
-	public static final class UserDashboardKey
+	public static class UserDashboardKey
 	{
 		@Nullable
 		ClientId adClientId;

@@ -1,12 +1,10 @@
 package de.metas.elasticsearch;
 
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
+import de.metas.elasticsearch.impl.IESServer;
 import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
 
 /*
  * #%L
@@ -30,18 +28,26 @@ import org.slf4j.Logger;
  * #L%
  */
 
-public class ESServer
+public class ESServer implements IESServer
 {
-	private final static transient Logger logger = LogManager.getLogger(ESServer.class);
+	// private final static transient Logger logger = LogManager.getLogger(ESServer.class);
 
+	public ESServer()
+	{
+		// Make sure slf4j is used.
+		// (by default, log4j is used)
+		// ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory()); // FIXME: shall we use log4j-over-slf4j?!
+	}
+
+	@Override
 	public void installConfig(@NonNull final ESModelIndexerConfigBuilder config)
 	{
-		final IESSystem esSystem = Services.get(IESSystem.class);
-		if(!esSystem.isEnabled())
-		{
-			logger.info("installConfig - IESSystem.isEnabled() returned false; -> do nothing");
-			return;
-		}
+		// final IESSystem esSystem = Services.get(IESSystem.class);
+		// if (!esSystem.isEnabled())
+		// {
+		// 	logger.info("installConfig - IESSystem.isEnabled() returned false; -> do nothing");
+		// 	return;
+		// }
 		final ESModelIndexersRegistry esModelIndexersRegistry = SpringContextHolder.instance.getBean(ESModelIndexersRegistry.class);
 		esModelIndexersRegistry.addModelIndexer(config);
 	}

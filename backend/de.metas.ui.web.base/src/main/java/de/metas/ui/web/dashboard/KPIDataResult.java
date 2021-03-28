@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -112,7 +114,7 @@ public class KPIDataResult
 			return this;
 		}
 
-		public Builder putValue(final String dataSetName, final Object dataSetValueKey, final String fieldName, final Object jsonValue)
+		public Builder putValue(final String dataSetName, final Object dataSetValueKey, final String fieldName, @Nullable final Object jsonValue)
 		{
 			dataSet(dataSetName)
 					.putValue(dataSetValueKey, fieldName, jsonValue);

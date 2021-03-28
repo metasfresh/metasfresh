@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -36,7 +38,7 @@ public class KPIDataSetValue
 	@JsonProperty("_key")
 	private final Object _key;
 	@JsonIgnore
-	private final Map<String, Object> map = new HashMap<>();
+	private final HashMap<String, Object> map = new HashMap<>();
 
 	public KPIDataSetValue(final Object key)
 	{
@@ -58,13 +60,13 @@ public class KPIDataSetValue
 	}
 
 	@JsonAnySetter
-	public void put(final String fieldName, final Object jsonValue)
+	public void put(final String fieldName, @Nullable final Object jsonValue)
 	{
 		map.put(fieldName, jsonValue);
 	}
 
 	@JsonIgnore
-	public void putIfAbsent(final String fieldName, final Object jsonValue)
+	public void putIfAbsent(final String fieldName, @Nullable final Object jsonValue)
 	{
 		map.putIfAbsent(fieldName, jsonValue);
 	}

@@ -1,9 +1,11 @@
 package de.metas.ui.web.dashboard;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.function.BiFunction;
-
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
+import de.metas.elasticsearch.impl.ESSystem;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
@@ -16,21 +18,24 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
-import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.common.xcontent.XContentParser;
+import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.search.SearchModule;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
-
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.elasticsearch.impl.ESSystem;
-import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.List;
+import java.util.function.BiFunction;
 
 /*
  * #%L
@@ -56,7 +61,7 @@ import lombok.NonNull;
 
 public class KPIDataLoader
 {
-	public static final KPIDataLoader newInstance(
+	public static KPIDataLoader newInstance(
 			@NonNull final RestHighLevelClient elasticsearchClient,
 			@NonNull final KPI kpi,
 			@NonNull final JSONOptions jsonOptions)
@@ -160,7 +165,7 @@ public class KPIDataLoader
 	{
 		//
 		// Check index exists
-		final String esSearchIndex = kpi.getESSearchIndex();
+		final String esSearchIndex = kpi.getEsSearchIndex();
 		final GetIndexRequest request = new GetIndexRequest(esSearchIndex);
 		try
 		{
@@ -170,7 +175,7 @@ public class KPIDataLoader
 				throw new AdempiereException("ES index '" + esSearchIndex + "' not found");
 			}
 		}
-		catch (java.io.IOException e)
+		catch (final java.io.IOException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
@@ -234,7 +239,7 @@ public class KPIDataLoader
 
 		//
 		// Resolve esQuery's variables
-		final IStringExpression esQuery = kpi.getESQuery();
+		final IStringExpression esQuery = kpi.getEsQuery();
 		final String esQueryParsed = esQuery.evaluate(evalCtx, OnVariableNotFound.Preserve);
 
 		//
@@ -244,13 +249,10 @@ public class KPIDataLoader
 		{
 			logger.trace("Executing: \n{}", esQueryParsed);
 
-			final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
-			sourceBuilder.query(QueryBuilders.queryStringQuery(esQueryParsed));
-
-			final SearchRequest searchRequest = new SearchRequest();
-			searchRequest.indices(kpi.getESSearchIndex());
-			searchRequest.searchType(kpi.getESSearchTypes());
-			searchRequest.source(sourceBuilder);
+			final SearchRequest searchRequest = new SearchRequest()
+					.indices(kpi.getEsSearchIndex())
+					.searchType(kpi.getEsSearchTypes())
+					.source(toSearchSourceBuilder(esQueryParsed));
 
 			response = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT);
 
@@ -265,7 +267,9 @@ public class KPIDataLoader
 		catch (final Exception e)
 		{
 			throw new AdempiereException("Failed executing query for " + this + ": " + e.getLocalizedMessage()
-					+ "\nQuery: " + esQueryParsed, e);
+					+ "\n KPI: " + kpi
+					+ "\nQuery: " + esQueryParsed,
+					e);
 		}
 
 		//
@@ -333,6 +337,7 @@ public class KPIDataLoader
 				}
 				else
 				{
+					//noinspection ThrowableNotThrown
 					new AdempiereException("Aggregation type not supported: " + agg.getClass())
 							.throwIfDeveloperModeOrLogWarningElse(logger);
 				}
@@ -340,14 +345,32 @@ public class KPIDataLoader
 		}
 		catch (final Exception e)
 		{
-			throw new AdempiereException(e.getLocalizedMessage()
-					+ "\n KPI: " + this
+			throw new AdempiereException("Failed fetching data from elasticsearch response"
+					+ "\n KPI: " + kpi
 					+ "\n Query: " + esQueryParsed
-					+ "\n Response: " + response, e);
+					+ "\n Response: " + response,
+					e);
 
 		}
 	}
 
+	@NonNull
+	private static SearchSourceBuilder toSearchSourceBuilder(final String json) throws IOException
+	{
+		final SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+		final SearchModule searchModule = new SearchModule(Settings.EMPTY, false, ImmutableList.of());
+		try (final XContentParser parser = XContentFactory.xContent(XContentType.JSON)
+				.createParser(
+						new NamedXContentRegistry(searchModule.getNamedXContents()),
+						LoggingDeprecationHandler.INSTANCE,
+						json))
+		{
+			searchSourceBuilder.parseXContent(parser);
+		}
+		return searchSourceBuilder;
+	}
+
+	@Nullable
 	private Object formatValue(final KPIField field, final Object value)
 	{
 		if (isFormatValues())
@@ -360,7 +383,7 @@ public class KPIDataLoader
 		}
 	}
 
-	private static final long convertToMillis(final Object valueObj)
+	private static long convertToMillis(final Object valueObj)
 	{
 		if (valueObj == null)
 		{
@@ -372,7 +395,7 @@ public class KPIDataLoader
 		}
 		else if (valueObj instanceof Long)
 		{
-			return ((Long)valueObj).longValue();
+			return (Long)valueObj;
 		}
 		else if (valueObj instanceof Number)
 		{
