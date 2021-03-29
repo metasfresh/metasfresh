@@ -1,12 +1,6 @@
 package de.metas.elasticsearch;
 
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.elasticsearch.config.ESIncludedModelsConfig;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.config.FTSIndexConfig;
@@ -14,6 +8,10 @@ import de.metas.elasticsearch.config.FTSIndexIncludeConfig;
 import de.metas.elasticsearch.config.FTSIndexRepository;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Configuration;
 
 /*
  * #%L
@@ -43,8 +41,13 @@ public class FullTextSearchInitConfiguration extends AbstractModuleInterceptor
 	// services
 	private static final Logger logger = LogManager.getLogger(FullTextSearchInitConfiguration.class);
 	private final IESSystem esSystem = Services.get(IESSystem.class);
-	@Autowired
-	private FTSIndexRepository indexesRepo;
+	private final FTSIndexRepository indexesRepo;
+
+	public FullTextSearchInitConfiguration(
+			@NonNull final FTSIndexRepository indexesRepo)
+	{
+		this.indexesRepo = indexesRepo;
+	}
 
 	@Override
 	protected void onAfterInit()
@@ -57,6 +60,7 @@ public class FullTextSearchInitConfiguration extends AbstractModuleInterceptor
 		final IESSystem esSystem = Services.get(IESSystem.class);
 		if (!esSystem.isEnabled())
 		{
+			logger.info("Skip setup because elasticsearch System is not enabled");
 			return;
 		}
 

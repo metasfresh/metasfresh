@@ -5,7 +5,6 @@ import com.google.common.base.Stopwatch;
 import de.metas.CommandLineParser.CommandLineOptions;
 import de.metas.dao.selection.QuerySelectionToDeleteHelper;
 import de.metas.dao.selection.model.I_T_Query_Selection;
-import de.metas.elasticsearch.ESLoggingInit;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.ConnectionUtil;
@@ -46,7 +45,6 @@ import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -104,9 +102,6 @@ public class ServerBoot implements InitializingBean
 		logger.info("Begin of {} main-method ", ServerBoot.class);
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-
-		// Make sure slf4j is used (by default, log4j is used)
-		ESLoggingInit.init();
 
 		logger.info("Parse command line arguments (if any!)");
 		final CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
@@ -225,7 +220,7 @@ public class ServerBoot implements InitializingBean
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception
+	public void afterPropertiesSet()
 	{
 		if (clearQuerySelectionsRateInSeconds > 0)
 		{

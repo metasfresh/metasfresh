@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.elasticsearch.indexer.ESModelToIndex;
 import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -65,13 +66,13 @@ public class AsyncAddToIndexProcessor extends WorkpackageProcessorAdapter
 			throw new AdempiereException("No source models found");
 		}
 
-		final List<Object> modelsToAdd = new ArrayList<>();
+		final List<ESModelToIndex> modelsToAdd = new ArrayList<>();
 		final Set<String> modelIdsToRemove = new HashSet<>();
 		for (final Object model : allModels)
 		{
 			if (InterfaceWrapperHelper.isActive(model))
 			{
-				modelsToAdd.add(model);
+				modelsToAdd.add(ESModelToIndex.ofObject(model));
 			}
 			else
 			{

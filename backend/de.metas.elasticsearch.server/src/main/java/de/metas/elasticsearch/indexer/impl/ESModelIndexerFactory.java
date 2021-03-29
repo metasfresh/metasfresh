@@ -6,6 +6,7 @@ import de.metas.elasticsearch.config.ESIncludedModelsConfig;
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
+import de.metas.elasticsearch.config.ESTextAnalyzer;
 import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
@@ -56,7 +57,7 @@ final class ESModelIndexerFactory
 	private final ImmutableList<IESModelIndexerTrigger> triggers;
 
 	private String indexSettingsJson;
-	private String indexStringFullTextSearchAnalyzer;
+	private ESTextAnalyzer indexStringFullTextSearchAnalyzer;
 
 	ESModelIndexerFactory(
 			@NonNull final ESModelIndexersRegistry esModelIndexingService,
@@ -125,7 +126,7 @@ final class ESModelIndexerFactory
 		return this;
 	}
 
-	public ESModelIndexerFactory indexStringFullTextSearchAnalyzer(final String indexStringFullTextSearchAnalyzer)
+	public ESModelIndexerFactory indexStringFullTextSearchAnalyzer(final ESTextAnalyzer indexStringFullTextSearchAnalyzer)
 	{
 		this.indexStringFullTextSearchAnalyzer = indexStringFullTextSearchAnalyzer;
 		return this;

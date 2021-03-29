@@ -39,6 +39,8 @@ import lombok.NonNull;
 
 public class ESModelIndexingScheduler implements IESModelIndexingScheduler
 {
+	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+
 	@VisibleForTesting
 	static final String CLASSNAME_AddToIndexWorkpackageProcessor = "de.metas.elasticsearch.scheduler.async.AsyncAddToIndexProcessor";
 	@VisibleForTesting
@@ -60,14 +62,14 @@ public class ESModelIndexingScheduler implements IESModelIndexingScheduler
 		schedule(CLASSNAME_RemoveFromIndexWorkpackageProcessor, modelIndexerId, models);
 	}
 
-	private final void schedule(
+	private void schedule(
 			@NonNull final String workpackageProcessorClassname,
 			@NonNull final ESModelIndexerId modelIndexerId,
 			final List<? extends ITableRecordReference> models)
 	{
 		final Properties ctx = Env.getCtx();
 
-		Services.get(IWorkPackageQueueFactory.class)
+		workPackageQueueFactory
 				.getQueueForEnqueuing(ctx, workpackageProcessorClassname)
 				.newBlock()
 				.newWorkpackage()

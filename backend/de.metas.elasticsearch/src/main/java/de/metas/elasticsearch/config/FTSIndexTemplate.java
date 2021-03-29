@@ -33,5 +33,5 @@ public class FTSIndexTemplate
 	@NonNull
 	String name;
 	String settingsJson;
-	String indexStringFullTextSearchAnalyzer;
+	ESTextAnalyzer indexStringFullTextSearchAnalyzer;
 }

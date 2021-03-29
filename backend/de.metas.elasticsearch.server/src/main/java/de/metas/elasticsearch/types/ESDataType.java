@@ -32,7 +32,8 @@ package de.metas.elasticsearch.types;
 public enum ESDataType
 {
 	// String
-	String("string"),
+	Text("text"),
+	Keyword("keyword"),
 
 	// Numeric datatypes
 	Long("long"),

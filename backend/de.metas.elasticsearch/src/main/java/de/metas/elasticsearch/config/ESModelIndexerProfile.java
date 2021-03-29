@@ -1,6 +1,9 @@
 package de.metas.elasticsearch.config;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -24,16 +27,13 @@ import lombok.Getter;
  * #L%
  */
 
+@AllArgsConstructor
 public enum ESModelIndexerProfile
 {
-	KPI(null), //
-	FULL_TEXT_SEARCH("fts_analyzer");
+	KPI(null),
+	FULL_TEXT_SEARCH(ESTextAnalyzer.FULL_TEXT_SEARCH);
 
 	@Getter
-	private final String defaultAnalyzer;
-
-	private ESModelIndexerProfile(final String defaultAnalyzer)
-	{
-		this.defaultAnalyzer = defaultAnalyzer;
-	}
+	@Nullable
+	private final ESTextAnalyzer textAnalyzer;
 }

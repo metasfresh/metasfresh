@@ -1,27 +1,23 @@
 package de.metas.elasticsearch.denormalizers.impl;
 
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.PO;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
+import de.metas.elasticsearch.indexer.ESModelToIndex;
 import de.metas.elasticsearch.types.ESDataType;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * #%L
@@ -103,9 +99,10 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
-	public void appendMapping(final Object builderObj, @Nullable final String fieldName) throws IOException
+	public void appendMapping(
+			@NonNull final XContentBuilder builder,
+			@Nullable final String fieldName) throws IOException
 	{
-		final XContentBuilder builder = ESDenormalizerHelper.extractXContentBuilder(builderObj);
 		final boolean isTopLevel = fieldName == null;
 
 		if (!isTopLevel)
@@ -130,16 +127,15 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
-	public Map<String, Object> denormalize(final Object model)
+	public LinkedHashMap<String, Object> denormalizeModel(final ESModelToIndex model)
 	{
-		final Map<String, Object> result = new LinkedHashMap<>();
-		final PO po = InterfaceWrapperHelper.getPO(model);
+		final LinkedHashMap<String, Object> result = new LinkedHashMap<>();
 		for (final Map.Entry<String, ESPOModelDenormalizerColumn> columnNameAndDenorm : columnDenormalizers.entrySet())
 		{
 			final String columnName = columnNameAndDenorm.getKey();
 
 			final ESPOModelDenormalizerColumn columnValueExtractorAndDenormalizer = columnNameAndDenorm.getValue();
-			final Object valueDenorm = columnValueExtractorAndDenormalizer.extractValueAndDenormalize(po, columnName);
+			final Object valueDenorm = columnValueExtractorAndDenormalizer.extractValueAndDenormalize(model, columnName);
 			if (valueDenorm == null)
 			{
 				continue;
@@ -153,7 +149,7 @@ import javax.annotation.Nullable;
 
 	@Override
 	@Nullable
-	public String extractId(final Object model)
+	public String extractId(final ESModelToIndex model)
 	{
 		if (keyColumnName == null)
 		{

@@ -1,6 +1,7 @@
 package de.metas.elasticsearch.indexer;
 
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -30,5 +31,5 @@ import java.util.Iterator;
 @FunctionalInterface
 public interface ESModelIndexerDataSource
 {
-	Iterator<Object> getModelsToIndex();
+	Stream<ESModelToIndex> streamModelsToIndex();
 }

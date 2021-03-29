@@ -1,14 +1,14 @@
 package de.metas.elasticsearch.denormalizers.impl;
 
-import java.io.IOException;
-
-import org.elasticsearch.common.xcontent.XContentBuilder;
-
-import de.metas.elasticsearch.denormalizers.IESDenormalizer;
+import de.metas.elasticsearch.config.ESTextAnalyzer;
+import de.metas.elasticsearch.denormalizers.IESValueDenormalizer;
 import de.metas.elasticsearch.types.ESDataType;
-import de.metas.elasticsearch.types.ESIndexType;
 import lombok.NonNull;
 import lombok.ToString;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
 
 /*
  * #%L
@@ -33,50 +33,43 @@ import lombok.ToString;
  */
 
 @ToString
-final class PassThroughDenormalizer implements IESDenormalizer
+final class PassThroughValueDenormalizer implements IESValueDenormalizer
 {
-	public static final PassThroughDenormalizer of(
-			final ESDataType dataType,
-			final ESIndexType indexType,
-			final String analyzer)
+	public static PassThroughValueDenormalizer of(
+			@NonNull final ESDataType dataType,
+			@Nullable final ESTextAnalyzer textAnalyzer)
 	{
-		return new PassThroughDenormalizer(dataType, indexType, analyzer);
+		return new PassThroughValueDenormalizer(dataType, textAnalyzer);
 	}
 
-	private final ESDataType dataType;
-	private final ESIndexType indexType;
-	private final String analyzer;
+	@NonNull private final ESDataType dataType;
+	@Nullable private final ESTextAnalyzer textAnalyzer;
 
-	private PassThroughDenormalizer(
+	private PassThroughValueDenormalizer(
 			@NonNull final ESDataType dataType,
-			@NonNull final ESIndexType indexType,
-			final String analyzer)
+			@Nullable final ESTextAnalyzer textAnalyzer)
 	{
 		this.dataType = dataType;
-		this.indexType = indexType;
-		this.analyzer = analyzer;
+		this.textAnalyzer = textAnalyzer;
 	}
 
 	@Override
-	public void appendMapping(final Object builderObj, final String fieldName) throws IOException
+	public void appendMapping(final XContentBuilder builder, final String fieldName) throws IOException
 	{
-		final XContentBuilder builder = ESDenormalizerHelper.extractXContentBuilder(builderObj);
 		builder.startObject(fieldName);
 
 		builder.field("type", dataType.getEsTypeAsString());
-		builder.field("index", indexType.getEsTypeAsString());
+		//builder.field("fielddata", "true");
 
-		if (analyzer != null)
+		if (textAnalyzer != null)
 		{
-			builder.field("analyzer", analyzer);
+			builder.field("analyzer", textAnalyzer.getAnalyzerAsString());
 		}
 
 		builder.endObject();
 	}
 
+	@Nullable
 	@Override
-	public Object denormalize(final Object value)
-	{
-		return value;
-	}
+	public Object denormalizeValue(@Nullable final Object value) { return value; }
 }

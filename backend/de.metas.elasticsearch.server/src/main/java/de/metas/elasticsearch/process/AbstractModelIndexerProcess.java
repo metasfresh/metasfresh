@@ -64,6 +64,7 @@ public abstract class AbstractModelIndexerProcess extends JavaProcess implements
 
 	protected abstract Collection<IESModelIndexer> getModelIndexers();
 
+	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
         if (modelIndexingService == null)
@@ -84,9 +85,7 @@ public abstract class AbstractModelIndexerProcess extends JavaProcess implements
 
 		final Stopwatch duration = Stopwatch.createStarted();
 
-		modelIndexers
-				.stream()
-				.forEach(modelIndexer -> indexModelsFor(modelIndexer));
+		modelIndexers.forEach(this::indexModelsFor);
 
 		return "Indexed " + countAll + " documents, " + countErrors + " errors, took " + duration;
 	}

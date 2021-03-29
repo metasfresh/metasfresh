@@ -37,7 +37,7 @@ import de.metas.util.Check;
 
 public class ES_FTS_Index_Data extends AbstractModelIndexerProcess {
     // services
-    private FTSIndexRepository ftsIndexRepo = SpringContextHolder.instance.getBean(FTSIndexRepository.class);
+    private final FTSIndexRepository ftsIndexRepo = SpringContextHolder.instance.getBean(FTSIndexRepository.class);
 
     @Override
     protected Collection<IESModelIndexer> getModelIndexers() {

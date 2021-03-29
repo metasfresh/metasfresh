@@ -41,10 +41,9 @@ import de.metas.elasticsearch.indexer.IESIndexerResult;
 	private Integer _countOK; // lazy
 	private Integer _countFailures; // lazy
 
-	private ESIndexerResult(final BulkResponse esRespose)
+	private ESIndexerResult(final BulkResponse esResponse)
 	{
-		super();
-		esResponse = esRespose;
+		this.esResponse = esResponse;
 	}
 
 	@Override

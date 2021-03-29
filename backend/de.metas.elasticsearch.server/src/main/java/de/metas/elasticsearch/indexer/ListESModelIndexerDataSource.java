@@ -1,11 +1,10 @@
 package de.metas.elasticsearch.indexer;
 
-import java.util.Collection;
-import java.util.Iterator;
-
 import com.google.common.collect.ImmutableList;
-
 import lombok.ToString;
+
+import java.util.Collection;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -32,21 +31,21 @@ import lombok.ToString;
 @ToString
 public class ListESModelIndexerDataSource implements ESModelIndexerDataSource
 {
-	public static ListESModelIndexerDataSource of(final Collection<Object> modelsToIndex)
+	public static ListESModelIndexerDataSource of(final Collection<ESModelToIndex> modelsToIndex)
 	{
 		return new ListESModelIndexerDataSource(modelsToIndex);
 	}
 
-	private final ImmutableList<Object> modelsToIndex;
+	private final ImmutableList<ESModelToIndex> modelsToIndex;
 
-	private ListESModelIndexerDataSource(final Collection<Object> modelsToIndex)
+	private ListESModelIndexerDataSource(final Collection<ESModelToIndex> modelsToIndex)
 	{
 		this.modelsToIndex = ImmutableList.copyOf(modelsToIndex);
 	}
 
 	@Override
-	public Iterator<Object> getModelsToIndex()
+	public Stream<ESModelToIndex> streamModelsToIndex()
 	{
-		return modelsToIndex.iterator();
+		return modelsToIndex.stream();
 	}
 }

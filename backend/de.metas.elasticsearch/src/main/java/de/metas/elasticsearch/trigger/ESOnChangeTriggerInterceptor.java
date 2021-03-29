@@ -178,20 +178,20 @@ public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor imple
 		return NumberUtils.asInt(parentIdObj, -1);
 	}
 
-	private final void addToIndex(final Object model)
+	private void addToIndex(final Object model)
 	{
 		final int modelId = InterfaceWrapperHelper.getId(model);
 		addToIndex(modelId);
 	}
 
-	private final void addToIndex(final int modelId)
+	private void addToIndex(final int modelId)
 	{
 		Services.get(IESSystem.class)
 				.scheduler()
 				.addToIndex(modelIndexerId, modelTableName, ImmutableList.of(modelId));
 	}
 
-	private final void removeFromIndexes(final Object model)
+	private void removeFromIndexes(final Object model)
 	{
 		final int modelId = InterfaceWrapperHelper.getId(model);
 		Services.get(IESSystem.class)

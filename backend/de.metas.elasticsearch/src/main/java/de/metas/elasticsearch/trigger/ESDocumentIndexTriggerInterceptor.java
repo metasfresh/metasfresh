@@ -61,7 +61,6 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 	private static final Logger logger = LogManager.getLogger(ESDocumentIndexTriggerInterceptor.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final Class<DocumentType> triggeringDocumentClass;
 	private final String triggeringTableName;
 	private final String triggeringKeyColumnName;
 	//
@@ -75,7 +74,6 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 	/**
 	 * @param documentClass class of document which will trigger indexing
 	 * @param modelTableName table name of models that we will index
-	 * @param modelIdsExtractor function which returns the model IDs for a given document
 	 */
 	public ESDocumentIndexTriggerInterceptor(
 			@NonNull final Class<DocumentType> documentClass,
@@ -83,9 +81,8 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 			final String modelParentColumnName,
 			@NonNull final ESModelIndexerId modelIndexerId)
 	{
-		this.triggeringDocumentClass = documentClass;
 
-		triggeringTableName = InterfaceWrapperHelper.getTableName(triggeringDocumentClass);
+		triggeringTableName = InterfaceWrapperHelper.getTableName(documentClass);
 		if (!Services.get(IDocumentBL.class).isDocumentTable(triggeringTableName))
 		{
 			throw new IllegalArgumentException("Table " + triggeringTableName + " must be a document table");
@@ -140,8 +137,6 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 			{
 				case AFTER_COMPLETE:
 				case AFTER_CLOSE:
-					addToIndexes(document);
-					break;
 				case AFTER_REVERSECORRECT:
 				case AFTER_REVERSEACCRUAL:
 					addToIndexes(document);
@@ -166,15 +161,10 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 	{
 		try
 		{
-			switch (changeType)
+			if (changeType == ModelChangeType.BEFORE_DELETE)
 			{
-				case BEFORE_DELETE:
-					// NOTE: triggering on BEFORE because on AFTER we won't be able to fetch the model IDs
-					removeFromIndexes(model);
-					break;
-				default:
-					// nothing
-					break;
+				// NOTE: triggering on BEFORE because on AFTER we won't be able to fetch the model IDs
+				removeFromIndexes(model);
 			}
 		}
 		catch (final Exception ex)
@@ -183,7 +173,7 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 		}
 	}
 
-	private final List<Integer> retriveModelIds(final Object triggeringModel)
+	private List<Integer> retrieveModelIds(final Object triggeringModel)
 	{
 		final int documentId = InterfaceWrapperHelper.getId(triggeringModel);
 		return queryBL
@@ -193,17 +183,17 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 				.listIds();
 	}
 
-	private final void addToIndexes(final Object triggeringModelObj)
+	private void addToIndexes(final Object triggeringModelObj)
 	{
-		final List<Integer> modelIdsToIndex = retriveModelIds(triggeringModelObj);
+		final List<Integer> modelIdsToIndex = retrieveModelIds(triggeringModelObj);
 		Services.get(IESSystem.class)
 				.scheduler()
 				.addToIndex(modelIndexerId, modelTableName, modelIdsToIndex);
 		}
 
-	private final void removeFromIndexes(final Object triggeringModelObj)
+	private void removeFromIndexes(final Object triggeringModelObj)
 	{
-		final List<Integer> modelIdsToRemove = retriveModelIds(triggeringModelObj);
+		final List<Integer> modelIdsToRemove = retrieveModelIds(triggeringModelObj);
 		Services.get(IESSystem.class)
 				.scheduler()
 				.removeToIndex(modelIndexerId, modelTableName, modelIdsToRemove);

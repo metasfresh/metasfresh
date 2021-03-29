@@ -1,12 +1,13 @@
 package de.metas.elasticsearch.denormalizers;
 
+import de.metas.elasticsearch.config.ESModelIndexerProfile;
+import de.metas.elasticsearch.indexer.ESModelToIndex;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
-
-import de.metas.elasticsearch.config.ESModelIndexerProfile;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -30,13 +31,11 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-public interface IESModelDenormalizer extends IESDenormalizer
+public interface IESModelDenormalizer
 {
-	@Override
-	Map<String, Object> denormalize(Object value);
+	Map<String, Object> denormalizeModel(ESModelToIndex value);
 
-	@Override
-	void appendMapping(Object builderObj, @Nullable String fieldName) throws IOException;
+	void appendMapping(XContentBuilder builder, @Nullable String fieldName) throws IOException;
 
 	ESModelIndexerProfile getProfile();
 
@@ -49,7 +48,7 @@ public interface IESModelDenormalizer extends IESDenormalizer
 	 * Extracts the Elasticsearch document ID from given model.
 	 */
 	@Nullable
-	String extractId(Object model);
+	String extractId(ESModelToIndex model);
 
 	Set<String> getFullTextSearchFieldNames();
 }

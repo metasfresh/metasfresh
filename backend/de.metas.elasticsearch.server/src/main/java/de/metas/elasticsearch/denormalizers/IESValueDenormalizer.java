@@ -1,6 +1,11 @@
 package de.metas.elasticsearch.denormalizers;
 
+import de.metas.elasticsearch.indexer.ESModelToIndex;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+
+import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.Map;
 
 /*
  * #%L
@@ -12,37 +17,34 @@ import java.io.IOException;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface IESDenormalizer
+public interface IESValueDenormalizer
 {
 	/**
 	 * Denormalize given value.
-	 * 
-	 * @param value
+	 *
 	 * @return denormalized value in an Elasticsearch compatible format
 	 */
-	Object denormalize(Object value);
+	@Nullable
+	Object denormalizeValue(@Nullable Object value);
 
 	/**
-	 * 
-	 * @param builder mapping builder
-	 * @param fieldName
-	 *            <ul>
-	 *            <li>field name on which the mapping shall be added
-	 *            <li>or <code>null</code> in case the mapping is for ROOT (i.e. the index type).
-	 *            </ul>
-	 * @throws IOException
+	 * @param builder   mapping builder
+	 * @param fieldName <ul>
+	 *                  <li>field name on which the mapping shall be added
+	 *                  <li>or <code>null</code> in case the mapping is for ROOT (i.e. the index type).
+	 *                  </ul>
 	 */
-	void appendMapping(final Object builder, final String fieldName) throws IOException;
+	void appendMapping(final XContentBuilder builder, final String fieldName) throws IOException;
 }

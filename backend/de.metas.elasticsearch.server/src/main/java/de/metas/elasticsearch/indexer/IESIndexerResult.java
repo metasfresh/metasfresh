@@ -22,11 +22,12 @@ package de.metas.elasticsearch.indexer;
  * #L%
  */
 
+import javax.annotation.Nullable;
+
 /**
  * Indexer result.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IESIndexerResult
 {
@@ -68,6 +69,7 @@ public interface IESIndexerResult
 	/**
 	 * @return if {@link #hasFailures()} this method will return a concatenated string of each document failure message
 	 */
+	@Nullable
 	String getFailureMessage();
 
 	/**

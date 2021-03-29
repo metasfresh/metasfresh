@@ -6,17 +6,16 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
+import de.metas.elasticsearch.config.ESTextAnalyzer;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.indexer.ESModelIndexerDataSource;
+import de.metas.elasticsearch.indexer.ESModelToIndex;
 import de.metas.elasticsearch.indexer.IESIndexerResult;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
-import de.metas.elasticsearch.types.ESDataType;
-import de.metas.elasticsearch.types.ESIndexType;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.collections.IteratorUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -102,7 +101,7 @@ public final class ESModelIndexer implements IESModelIndexer
 	private final String parentLinkColumnName;
 
 	private final String indexSettingsJson;
-	private final String indexStringFullTextSearchAnalyzer;
+	private final ESTextAnalyzer indexStringFullTextSearchAnalyzer;
 
 	@Builder
 	private ESModelIndexer(
@@ -118,7 +117,7 @@ public final class ESModelIndexer implements IESModelIndexer
 			@Nullable final String parentLinkColumnName,
 			//
 			final String indexSettingsJson,
-			final String indexStringFullTextSearchAnalyzer)
+			final ESTextAnalyzer indexStringFullTextSearchAnalyzer)
 	{
 		this.elasticsearchClient = elasticsearchClient;
 		this.jsonObjectMapper = jsonObjectMapper;
@@ -265,7 +264,7 @@ public final class ESModelIndexer implements IESModelIndexer
 		{
 			indexTypeMappingBuilder = XContentFactory.jsonBuilder();
 			indexTypeMappingBuilder.startObject();
-			appendMapping_DynamicTemplates(indexTypeMappingBuilder);
+			//appendMapping_DynamicTemplates(indexTypeMappingBuilder);
 			appendMapping_Properties(indexTypeMappingBuilder);
 			indexTypeMappingBuilder.endObject();
 			mapping = toString(indexTypeMappingBuilder);
@@ -308,42 +307,42 @@ public final class ESModelIndexer implements IESModelIndexer
 		}
 	}
 
-	private void appendMapping_DynamicTemplates(final XContentBuilder builder) throws IOException
-	{
-		final ESModelIndexerProfile profile = getProfile();
-		final ESIndexType stringIndexType;
-		final String stringAnalyzer;
-		if (profile == ESModelIndexerProfile.FULL_TEXT_SEARCH)
-		{
-			stringIndexType = ESIndexType.Analyzed;
-			stringAnalyzer = indexStringFullTextSearchAnalyzer;
-		}
-		else
-		{
-			stringIndexType = ESIndexType.NotAnalyzed;
-			stringAnalyzer = null;
-		}
-
+	// private void appendMapping_DynamicTemplates(final XContentBuilder builder)
+	// {
+		// final ESModelIndexerProfile profile = getProfile();
+		// final ESIndexType stringIndexType;
+		// final ESTextAnalyzer stringAnalyzer;
+		// if (profile == ESModelIndexerProfile.FULL_TEXT_SEARCH)
+		// {
+		// 	stringIndexType = ESIndexType.Analyzed;
+		// 	stringAnalyzer = indexStringFullTextSearchAnalyzer;
+		// }
+		// else
+		// {
+		// 	stringIndexType = ESIndexType.NotAnalyzed;
+		// 	stringAnalyzer = null;
+		// }
 		//
-		//@formatter:off
-		builder
-			.startArray("dynamic_templates")
-				.startObject() // template begin
-					//
-					// String types: don't analyze them by default
-					.startObject(ESDataType.String.getEsTypeAsString())
-						.field("match_mapping_type", ESDataType.String.getEsTypeAsString())
-						.startObject("mapping")
-							.field("type", ESDataType.String.getEsTypeAsString())
-							.field("index", stringIndexType)
-							.field("analyzer", stringAnalyzer)
-						.endObject()
-					.endObject()
-					//
-				.endObject()// template end
-			.endArray(); // dynamic_templates end
-		//@formatter:on
-	}
+		// //
+		// //@formatter:off
+		// builder
+		// 	.startArray("dynamic_templates")
+		// 		.startObject() // template begin
+		// 			//
+		// 			// String types: don't analyze them by default
+		// 			.startObject(ESDataType.String.getEsTypeAsString())
+		// 				.field("match_mapping_type", ESDataType.String.getEsTypeAsString())
+		// 				.startObject("mapping")
+		// 					.field("type", ESDataType.String.getEsTypeAsString())
+		// 					.field("index", stringIndexType.getEsTypeAsString())
+		// 					.field("analyzer", stringAnalyzer != null ? stringAnalyzer.getAnalyzerAsString() : null)
+		// 				.endObject()
+		// 			.endObject()
+		// 			//
+		// 		.endObject()// template end
+		// 	.endArray(); // dynamic_templates end
+		// //@formatter:on
+	// }
 
 	private void appendMapping_Properties(final XContentBuilder builder) throws IOException
 	{
@@ -355,7 +354,6 @@ public final class ESModelIndexer implements IESModelIndexer
 		{
 			final String parentAttributeName = includedModelIndexer.getParentAttributeName();
 			final IESModelDenormalizer includedModelDenormalizer = includedModelIndexer.getModelDenormalizer();
-
 			includedModelDenormalizer.appendMapping(builder, parentAttributeName);
 		}
 
@@ -387,7 +385,7 @@ public final class ESModelIndexer implements IESModelIndexer
 		return builder.getOutputStream().toString();
 	}
 
-	private Stream<IndexRequest> createIndexRequestsAndStream(final Object model)
+	private Stream<IndexRequest> createIndexRequestsAndStream(final ESModelToIndex model)
 	{
 		// NOTE: for debugging purposes we are checking it each time
 		// createUpdateIndex();
@@ -397,7 +395,7 @@ public final class ESModelIndexer implements IESModelIndexer
 		return Stream.of(model).map(this::createIndexRequestForModel);
 	}
 
-	private IndexRequest createIndexRequestForModel(final Object model)
+	private IndexRequest createIndexRequestForModel(final ESModelToIndex model)
 	{
 		final IESModelDenormalizer modelDenormalizer = getModelDenormalizer();
 
@@ -408,7 +406,7 @@ public final class ESModelIndexer implements IESModelIndexer
 		{
 			esDocumentId = modelDenormalizer.extractId(model);
 
-			esDocument = modelDenormalizer.denormalize(model);
+			esDocument = modelDenormalizer.denormalizeModel(model);
 			for (final ESModelIndexer includedModelIndexer : includedModelIndexers)
 			{
 				final List<Map<String, Object>> includedDocuments = denormalizeIncludedForParent(model, includedModelIndexer);
@@ -441,14 +439,14 @@ public final class ESModelIndexer implements IESModelIndexer
 				.addEqualsFilter(includedModelIndexer.getParentLinkColumnName(), parentId)
 				.create()
 				.stream()
+				.map(ESModelToIndex::ofObject)
 				.map(includedModel -> denormalizeIncludedModel(includedModel, includedModelIndexer))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private Map<String, Object> denormalizeIncludedModel(final Object includedModel, final ESModelIndexer includedModelIndexer)
+	private static Map<String, Object> denormalizeIncludedModel(final ESModelToIndex includedModel, final ESModelIndexer includedModelIndexer)
 	{
-		final IESModelDenormalizer modelDenormalizer = includedModelIndexer.getModelDenormalizer();
-		return modelDenormalizer.denormalize(includedModel);
+		return includedModelIndexer.getModelDenormalizer().denormalizeModel(includedModel);
 	}
 
 	@Override
@@ -458,7 +456,7 @@ public final class ESModelIndexer implements IESModelIndexer
 
 		try
 		{
-			IteratorUtils.stream(dataSource.getModelsToIndex())
+			dataSource.streamModelsToIndex()
 					.flatMap(this::createIndexRequestsAndStream)
 					.forEach(bulkRequest::add);
 

@@ -1,8 +1,11 @@
 package de.metas.elasticsearch.indexer;
 
-import java.util.Iterator;
-import java.util.List;
-
+import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -11,12 +14,8 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.compiere.model.IQuery;
 
-import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.ToString;
+import java.util.List;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -69,7 +68,7 @@ public class SqlESModelIndexerDataSource implements ESModelIndexerDataSource
 	}
 
 	@Override
-	public Iterator<Object> getModelsToIndex()
+	public Stream<ESModelToIndex> streamModelsToIndex()
 	{
 		final ICompositeQueryFilter<Object> triggerFilters = queryBL.createCompositeQueryFilter(modelTableName)
 				.setDefaultAccept(true)
@@ -108,6 +107,6 @@ public class SqlESModelIndexerDataSource implements ESModelIndexerDataSource
 
 		//
 		// Execute query
-		return query.iterate(Object.class);
+		return query.stream().map(ESModelToIndex::ofObject);
 	}
 }

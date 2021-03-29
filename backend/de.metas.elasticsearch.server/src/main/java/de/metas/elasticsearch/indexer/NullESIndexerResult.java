@@ -1,5 +1,6 @@
 package de.metas.elasticsearch.indexer;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 /*
@@ -25,13 +26,12 @@ import javax.annotation.concurrent.Immutable;
  */
 
 @Immutable
-/* package */final class NullESIndexerResult implements IESIndexerResult
+/* package */ final class NullESIndexerResult implements IESIndexerResult
 {
 	public static final transient NullESIndexerResult instance = new NullESIndexerResult();
 
 	private NullESIndexerResult()
 	{
-		super();
 	}
 
 	@Override
@@ -71,6 +71,7 @@ import javax.annotation.concurrent.Immutable;
 	}
 
 	@Override
+	@Nullable
 	public String getFailureMessage()
 	{
 		return null;

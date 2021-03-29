@@ -43,7 +43,7 @@ public class ESModelIndexerDataSources
 				.build();
 	}
 
-	public static ListESModelIndexerDataSource ofCollection(final Collection<Object> modelsToIndex)
+	public static ListESModelIndexerDataSource ofCollection(final Collection<ESModelToIndex> modelsToIndex)
 	{
 		return ListESModelIndexerDataSource.of(modelsToIndex);
 	}
