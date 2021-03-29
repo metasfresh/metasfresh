@@ -51,7 +51,7 @@ search:
     - metasfresh_elasticsearch:/usr/share/elasticsearch/data
   environment:
     - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
-#    - "discovery.type=single-node"
+    - "discovery.type=single-node"
   restart: always
 postgrest:
   build: postgrest
