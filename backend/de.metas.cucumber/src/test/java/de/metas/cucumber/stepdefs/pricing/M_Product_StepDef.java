@@ -32,6 +32,10 @@ import org.compiere.model.I_M_Product;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * This is not the "normal" product stepDef, but one that creates just a static product with a given {@code M_Product_ID}.
+ * To set up actual product-data, see {@link de.metas.cucumber.stepdefs.M_Product_StepDef}.
+ */
 public class M_Product_StepDef
 {
 	public final ProductCategoryId standardCategoryId = StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;

@@ -25,11 +25,15 @@ package de.metas.cucumber.stepdefs;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.EmptyUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -38,8 +42,12 @@ import org.compiere.util.Env;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
 
 public class C_BPartner_StepDef
@@ -55,7 +63,7 @@ public class C_BPartner_StepDef
 	}
 
 	@Given("metasfresh contains C_BPartners:")
-	public void metasfresh_contains_c_bpartners(@NonNull final io.cucumber.datatable.DataTable dataTable)
+	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
@@ -74,8 +82,18 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setC_BP_Group_ID(BP_GROUP_ID);
 			bPartnerRecord.setIsVendor(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsVendor), false));
 			bPartnerRecord.setIsCustomer(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsCustomer), false));
+			bPartnerRecord.setIsSalesRep(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsSalesRep), false));
 
 			bPartnerRecord.setAD_Language(tableRow.get("OPT." + COLUMNNAME_AD_Language));
+
+			final String salesRepIdentifier = tableRow.get("OPT." + COLUMNNAME_C_BPartner_SalesRep_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			if (EmptyUtil.isNotBlank(salesRepIdentifier))
+			{
+				final I_C_BPartner salesRep = bPartnerTable.get(salesRepIdentifier);
+				assertThat(salesRep).as("Missing salesrep C_BPartner record for identifier=" + salesRepIdentifier).isNotNull();
+				
+				bPartnerRecord.setC_BPartner_SalesRep_ID(salesRep.getC_BPartner_ID());
+			}
 
 			final boolean alsoCreateLoction = InterfaceWrapperHelper.isNew(bPartnerRecord);
 			InterfaceWrapperHelper.saveRecord(bPartnerRecord);

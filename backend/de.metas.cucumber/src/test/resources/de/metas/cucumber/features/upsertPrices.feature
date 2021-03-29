@@ -5,10 +5,10 @@ Feature: Create or update using prices API
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   Scenario: Create price list version from external ref
-    Given metasfresh contains M_PricingSystem
+    Given metasfresh contains M_PricingSystems
       | M_PricingSystem_ID | Name                | Value                | OPT.Description            | OPT.IsActive |
       | 1                  | pricing_system_name | pricing_system_value | pricing_system_description | true         |
-    And metasfresh contains M_PriceList
+    And metasfresh contains M_PriceLists
       | M_PriceList_ID | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | 2              | 1                  | DE                        | CHF                 | price_list_name | null            | true  | false         | 2              | true         |
     When the user adds price list version data
