@@ -28,10 +28,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerContact;
-import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -195,7 +192,7 @@ public class OrgChangeRepository
 
 				.build();
 	}
-	
+
 	public boolean hasAnyMembershipProduct(@NonNull final OrgId orgId)
 	{
 		return createMembershipProductQuery(orgId).anyMatch();
@@ -486,20 +483,6 @@ public class OrgChangeRepository
 		saveRecord(term);
 
 		flatrateBL.complete(term);
-	}
-
-	@Nullable
-	private I_C_BPartner_Location retrieveCounterpartLocationOrNull(@NonNull final BPartnerLocationId locationId,
-			@NonNull final OrgId orgId)
-	{
-		final I_C_BPartner_Location sourceLocationRecord = bpartnerDAO.getBPartnerLocationById(locationId);
-
-		return queryBL.createQueryBuilderOutOfTrx(I_C_BPartner_Location.class)
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_AD_Org_Mapping_ID, sourceLocationRecord.getAD_Org_Mapping_ID())
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID, orgId)
-				.orderByDescending(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID)
-				.create()
-				.first(I_C_BPartner_Location.class);
 	}
 
 	private IPricingResult calculateFlatrateTermPrice(@NonNull final I_C_Flatrate_Term newTerm)

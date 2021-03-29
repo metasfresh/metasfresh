@@ -387,7 +387,7 @@ public class OrgChangeService
 
 		if (sourceDefaultContacts.isFoundDefaultContact())
 		{
-			orgChangeRepo.unmarkDefaultContacts(destinationContacts);
+			unmarkDefaultContacts(destinationContacts);
 			loggable.addLog("The default contact will be the counterpart of the initial contact {}."
 									+ " ->  Mark all the remaining contacts in the destination partner {} as non-default",
 							sourceDefaultContacts.getDefaultContact(), destinationBPartnerComposite.getBpartner());
@@ -459,7 +459,7 @@ public class OrgChangeService
 
 		if (sourceDefaultLocations.isFoundBillToDefaultLocation())
 		{
-			orgChangeRepo.unmarkBillToDefaultLocations(destinationLocations);
+			unmarkBillToDefaultLocations(destinationLocations);
 			loggable.addLog("The billToDefault location will be the counterpart of the initial location {}."
 									+ " -> Mark all the remaining locations in the destination partner {} as non-billToDefault",
 							sourceDefaultLocations.getBillToDefaultLocation(), destinationBPartnerComposite.getBpartner());
@@ -467,10 +467,37 @@ public class OrgChangeService
 
 		if (sourceDefaultLocations.isFoundShipToDefaultLocation())
 		{
-			orgChangeRepo.unmarkShipToDefaultLocations(destinationLocations);
+			unmarkShipToDefaultLocations(destinationLocations);
 			loggable.addLog("The shipToDefault location will be the counterpart of the initial location {}."
 									+ " -> Mark all the remaining locations in the destination partner {} as non-shipToDefault",
 							sourceDefaultLocations.getShipToDefaultLocation(), destinationBPartnerComposite.getBpartner());
+		}
+	}
+
+	public void unmarkBillToDefaultLocations(final List<BPartnerLocation> locations)
+	{
+		for (final BPartnerLocation location : locations)
+		{
+			final BPartnerLocationType type = location.getLocationType();
+			type.setBillToDefault(false);
+		}
+	}
+
+	public void unmarkShipToDefaultLocations(final List<BPartnerLocation> locations)
+	{
+		for (final BPartnerLocation location : locations)
+		{
+			final BPartnerLocationType type = location.getLocationType();
+			type.setShipToDefault(false);
+		}
+	}
+
+	public void unmarkDefaultContacts(final List<BPartnerContact> contacts)
+	{
+		for (final BPartnerContact contact : contacts)
+		{
+			final BPartnerContactType contactType = contact.getContactType();
+			contactType.setDefaultContact(false);
 		}
 	}
 
