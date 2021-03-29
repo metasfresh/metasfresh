@@ -123,7 +123,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class BPartnerDAO implements IBPartnerDAO
 {
-	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 	private static final Logger logger = LogManager.getLogger(BPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -1713,12 +1712,4 @@ public class BPartnerDAO implements IBPartnerDAO
 				.build();
 	}
 
-	@Override
-	public void validateSalesRep(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerId salesRepId)
-	{
-		if (bPartnerId.equals(salesRepId))
-		{
-			throw new AdempiereException(MSG_SALES_REP_EQUALS_BPARTNER);
-		}
-	}
 }

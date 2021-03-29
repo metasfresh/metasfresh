@@ -1,10 +1,13 @@
 package de.metas.order.interceptor;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
@@ -50,7 +53,7 @@ public class OrderTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(orderLineDetailRepository));
 	}

@@ -368,5 +368,4 @@ public interface IBPartnerDAO extends ISingletonService
 
 	BPartnerLocationId retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
 
-	void validateSalesRep(@NonNull BPartnerId bPartnerId, @Nullable BPartnerId salesRepId);
 }

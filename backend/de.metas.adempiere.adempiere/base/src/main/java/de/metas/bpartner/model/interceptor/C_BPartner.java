@@ -49,7 +49,6 @@ public class C_BPartner
 {
 	private static final String MSG_CycleDetectedError = "CycleDetectedError";
 
-	final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
 	@Init
@@ -129,6 +128,6 @@ public class C_BPartner
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(partner.getC_BPartner_SalesRep_ID());
-		bPartnerDAO.validateSalesRep(bPartnerId, salesRepId);
+		bPartnerBL.validateSalesRep(bPartnerId, salesRepId);
 	}
 }

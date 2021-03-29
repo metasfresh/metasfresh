@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.api.IBPRelationDAO;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -52,6 +53,7 @@ public class C_OLCand
 {
 	private final OLCandValidatorService olCandValidatorService;
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
 	public C_OLCand(@NonNull final OLCandValidatorService olCandValidatorService)
 	{
@@ -323,7 +325,7 @@ public class C_OLCand
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(CoalesceUtil.firstGreaterThanZero(cand.getBill_BPartner_ID(), cand.getC_BPartner_ID()));
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(cand.getC_BPartner_SalesRep_ID());
-		bPartnerDAO.validateSalesRep(bPartnerId, salesRepId);
+		bPartnerBL.validateSalesRep(bPartnerId, salesRepId);
 	}
 
 	@Init

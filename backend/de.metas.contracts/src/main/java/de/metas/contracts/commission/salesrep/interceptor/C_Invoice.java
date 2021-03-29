@@ -1,6 +1,7 @@
 package de.metas.contracts.commission.salesrep.interceptor;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptor;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorFactory;
@@ -50,7 +51,7 @@ public class C_Invoice
 {
 	private DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory;
 	private DocumentSalesRepDescriptorService documentSalesRepDescriptorService;
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	public C_Invoice(
 			@NonNull final DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory,
@@ -139,6 +140,6 @@ public class C_Invoice
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(invoice.getC_BPartner_SalesRep_ID());
-		bpartnerDAO.validateSalesRep(bPartnerId, salesRepId);
+		bpartnerBL.validateSalesRep(bPartnerId, salesRepId);
 	}
 }

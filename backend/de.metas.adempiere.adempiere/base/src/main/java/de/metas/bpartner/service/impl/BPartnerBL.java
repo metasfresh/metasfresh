@@ -52,6 +52,7 @@ import java.util.function.Function;
 public class BPartnerBL implements IBPartnerBL
 {
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
+	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 
 	private final IBPartnerDAO bpartnersRepo;
 	private final UserRepository userRepository;
@@ -694,5 +695,14 @@ public class BPartnerBL implements IBPartnerBL
 	public boolean isSalesRep(@NonNull final BPartnerId bpartnerId)
 	{
 		return getById(bpartnerId).isSalesRep();
+	}
+
+	@Override
+	public void validateSalesRep(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerId salesRepId)
+	{
+		if (bPartnerId.equals(salesRepId))
+		{
+			throw new AdempiereException(MSG_SALES_REP_EQUALS_BPARTNER);
+		}
 	}
 }

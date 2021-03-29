@@ -22,10 +22,15 @@
 
 package de.metas.contracts.commission.salesrep;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.business.BusinessTestHelper;
 import de.metas.contracts.commission.salesrep.interceptor.C_Invoice;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.junit.jupiter.api.Assertions;
@@ -41,14 +46,14 @@ public class InvoiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
+		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Invoice(new DocumentSalesRepDescriptorFactory(), new DocumentSalesRepDescriptorService()));
 	}
 
 	@Test
 	public void testSalesRepSameIdAsBPartner()
 	{
-		final I_C_BPartner partner = createPartner();
+		final I_C_BPartner partner = BusinessTestHelper.createBPartner("dummy1");
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner_ID(partner.getC_BPartner_ID());
 		invoice.setC_BPartner_SalesRep_ID(partner.getC_BPartner_ID());
@@ -57,15 +62,5 @@ public class InvoiceTest
 
 		Assertions.assertEquals(0, invoice.getC_BPartner_SalesRep_ID());
 
-	}
-
-	private I_C_BPartner createPartner()
-	{
-		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
-		partner.setName("dummy1");
-
-		save(partner);
-
-		return partner;
 	}
 }
