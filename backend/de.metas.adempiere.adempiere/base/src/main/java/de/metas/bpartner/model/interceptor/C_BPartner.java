@@ -9,7 +9,6 @@ import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.location.ILocationBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -125,7 +124,7 @@ public class C_BPartner
 		}
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE}, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, I_C_BPartner.COLUMNNAME_C_BPartner_ID })
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, I_C_BPartner.COLUMNNAME_C_BPartner_ID })
 	public void validateSalesRep(final I_C_BPartner partner)
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
