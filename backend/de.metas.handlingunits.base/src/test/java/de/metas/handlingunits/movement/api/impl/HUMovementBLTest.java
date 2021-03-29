@@ -101,11 +101,11 @@ public class HUMovementBLTest
 		final I_C_Activity activity = createActivity();
 
 		final I_M_Warehouse warehouseDest = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class, context);
-		warehouseDest.setC_Activity(activity);
+		warehouseDest.setC_Activity_ID(activity.getC_Activity_ID());
 		InterfaceWrapperHelper.save(warehouseDest);
 
 		final I_M_Locator locatorTo = InterfaceWrapperHelper.newInstance(I_M_Locator.class, context);
-		locatorTo.setM_Warehouse(warehouseDest);
+		locatorTo.setM_Warehouse_ID(warehouseDest.getM_Warehouse_ID());
 		InterfaceWrapperHelper.save(locatorTo);
 		return locatorTo;
 	}
