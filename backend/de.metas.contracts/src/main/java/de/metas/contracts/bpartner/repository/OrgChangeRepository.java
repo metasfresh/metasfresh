@@ -195,34 +195,7 @@ public class OrgChangeRepository
 
 				.build();
 	}
-
-	public void unmarkBillToDefaultLocations(final List<BPartnerLocation> locations)
-	{
-		for (final BPartnerLocation location : locations)
-		{
-			final BPartnerLocationType type = location.getLocationType();
-			type.setBillToDefault(false);
-		}
-	}
-
-	public void unmarkShipToDefaultLocations(final List<BPartnerLocation> locations)
-	{
-		for (final BPartnerLocation location : locations)
-		{
-			final BPartnerLocationType type = location.getLocationType();
-			type.setShipToDefault(false);
-		}
-	}
-
-	public void unmarkDefaultContacts(final List<BPartnerContact> contacts)
-	{
-		for (final BPartnerContact contact : contacts)
-		{
-			final BPartnerContactType contactType = contact.getContactType();
-			contactType.setDefaultContact(false);
-		}
-	}
-
+	
 	public boolean hasAnyMembershipProduct(@NonNull final OrgId orgId)
 	{
 		return createMembershipProductQuery(orgId).anyMatch();
