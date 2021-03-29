@@ -86,6 +86,7 @@ public class FlatrateTermPricing
 	private PriceListId retrievePriceListForTerm()
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 		final PricingSystemId pricingSystemIdToUse = PricingSystemId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(term.getM_PricingSystem_ID(), term.getC_Flatrate_Conditions().getM_PricingSystem_ID()));
 
@@ -97,7 +98,6 @@ public class FlatrateTermPricing
 
 		final BPartnerLocationId bpLocationIdToUse = dropShipLocationId != null ? dropShipLocationId : billLocationId;
 
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemIdToUse,
 				bpLocationIdToUse,
