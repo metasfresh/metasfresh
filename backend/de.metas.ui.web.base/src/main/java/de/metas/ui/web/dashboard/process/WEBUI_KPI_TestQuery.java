@@ -83,7 +83,7 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 		final KPIDataResult kpiData = KPIDataLoader.newInstance(elasticsearchClient, kpi, JSONOptions.newInstance())
 				.setTimeRange(timeRange)
 				.setFormatValues(true)
-				.assertESTypesExists()
+				.assertESIndexExists()
 				.retrieveData();
 
 		final String jsonData = jsonObjectMapper.writeValueAsString(kpiData);

@@ -174,13 +174,8 @@ public class KPIDataLoader
 		return formatValues;
 	}
 
-	/**
-	 * Checks if KPI's elasticsearch Index and Type exists
-	 */
-	public KPIDataLoader assertESTypesExists()
+	public KPIDataLoader assertESIndexExists()
 	{
-		//
-		// Check index exists
 		final String esSearchIndex = kpi.getEsSearchIndex();
 		final GetIndexRequest request = new GetIndexRequest(esSearchIndex);
 		try
@@ -190,37 +185,13 @@ public class KPIDataLoader
 			{
 				throw new AdempiereException("ES index '" + esSearchIndex + "' not found");
 			}
+
+			return this;
 		}
-		catch (final java.io.IOException e)
+		catch (final java.io.IOException ex)
 		{
-			throw AdempiereException.wrapIfNeeded(e);
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
-
-		// final GetIndexResponse indexResponse = admin.prepareGetIndex()
-		// 		.addIndices(esSearchIndex)
-		// 		.get();
-		// final List<String> indexesFound = Arrays.asList(indexResponse.getIndices());
-		// if (!indexesFound.contains(esSearchIndex))
-		// {
-		// 	throw new AdempiereException("ES index '" + esSearchIndex + "' not found in " + indexesFound);
-		// }
-		// logger.debug("Indexes found: {}", indexesFound);
-
-		//
-		// Check type exists
-		// TODO figure out how to port
-		// final String esTypes = kpi.getESSearchTypes();
-		// final boolean esTypesExists = admin.prepareTypesExists(esSearchIndex)
-		// 		.setTypes(kpi.getESSearchTypes())
-		// 		.get()
-		// 		.isExists();
-		// if (!esTypesExists)
-		// {
-		// 	throw new AdempiereException("Elasticseatch types " + esTypes + " does not exist");
-		// }
-
-		// All good
-		return this;
 	}
 
 	public KPIDataResult retrieveData()
@@ -277,14 +248,15 @@ public class KPIDataLoader
 		catch (final NoNodeAvailableException e)
 		{
 			// elastic search transport error => nothing to do about it
-			throw new AdempiereException("" + e.getLocalizedMessage() + "."
-					+ "\nIf you want to disable the elasticsearch system then you can set `" + ESSystem.SYSCONFIG_PostKpiEvents + "` to `N`.", e);
+			throw new AdempiereException("Cannot connect to elasticsearch node."
+					+ "\nIf you want to disable the elasticsearch system then you can set sysconfig `" + ESSystem.SYSCONFIG_PostKpiEvents + "` to `N`.",
+					e);
 		}
 		catch (final Exception e)
 		{
 			throw new AdempiereException("Failed executing query for " + this + ": " + e.getLocalizedMessage()
 					+ "\n KPI: " + kpi
-					+ "\nQuery: " + esQueryParsed,
+					+ "\n Query: " + esQueryParsed,
 					e);
 		}
 
