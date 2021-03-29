@@ -296,7 +296,7 @@ public class RecordInfo extends CDialog
 			return "?";
 		}
 
-		return userNamesById.computeIfAbsent(userId, usersRepo::retrieveUserFullname);
+		return userNamesById.computeIfAbsent(userId, usersRepo::retrieveUserFullName);
 	}
 
 	@Override

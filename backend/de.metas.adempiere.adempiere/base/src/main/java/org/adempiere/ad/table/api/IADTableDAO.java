@@ -49,6 +49,8 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	I_AD_Column retrieveColumn(String tableName, String columnName);
 
+	I_AD_Column retrieveColumnById(@NonNull AdColumnId columnId);
+
 	I_AD_Column retrieveColumn(AdTableId tableId, String columnName);
 
 	AdColumnId retrieveColumnId(AdTableId tableId, String columnName);

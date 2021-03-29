@@ -24,3 +24,13 @@ export function setCurrentActiveLocale(lang) {
   Moment.locale(lang);
   axios.defaults.headers.common['Accept-Language'] = lang;
 }
+
+/**
+ * @method isGermanLanguage
+ * @summary Returns boolean value if the language is german or not
+ */
+export function isGermanLanguage(languageObj) {
+  return languageObj && languageObj.key
+    ? languageObj.key.includes('de')
+    : false;
+}

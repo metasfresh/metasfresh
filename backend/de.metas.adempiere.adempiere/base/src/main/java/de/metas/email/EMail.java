@@ -43,6 +43,7 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.internet.MimePart;
 
+import de.metas.common.util.EmptyUtil;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 import org.springframework.core.io.Resource;
@@ -929,7 +930,7 @@ public final class EMail implements Serializable
 	{
 		// Local Character Set
 		String charSetName = Ini.getCharset().name();
-		if (charSetName == null || charSetName.isEmpty())
+		if (EmptyUtil.isBlank(charSetName))
 		{
 			charSetName = "iso-8859-1";	// WebEnv.ENCODING - alternative iso-8859-1
 		}

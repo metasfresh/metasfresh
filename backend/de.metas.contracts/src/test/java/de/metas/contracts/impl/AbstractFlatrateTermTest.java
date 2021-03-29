@@ -233,7 +233,7 @@ public abstract class AbstractFlatrateTermTest
 	{
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
 		warehouse.setName("WH");
-		warehouse.setAD_Org(helper.getOrg());
+		warehouse.setAD_Org_ID(helper.getOrg().getAD_Org_ID());
 		save(warehouse);
 	}
 

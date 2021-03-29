@@ -71,14 +71,14 @@ public class WorkflowBL implements IWorkflowBL
 		{
 			final UserId userResponsibleId = Env.getLoggedUserId(ctx); // logged user
 			docResponsible.setAD_User_Responsible_ID(userResponsibleId.getRepoId());
-			docResponsible.setAD_WF_Responsible_Name(userDAO.retrieveUserFullname(userResponsibleId));
+			docResponsible.setAD_WF_Responsible_Name(userDAO.retrieveUserFullName(userResponsibleId));
 
 		}
 		else if (wfResponsible.isHuman())
 		{
 			final UserId userResponsibleId = wfResponsible.getUserId();
 			docResponsible.setAD_User_Responsible_ID(userResponsibleId.getRepoId());
-			docResponsible.setAD_WF_Responsible_Name(userDAO.retrieveUserFullname(userResponsibleId));
+			docResponsible.setAD_WF_Responsible_Name(userDAO.retrieveUserFullName(userResponsibleId));
 		}
 		else
 		{
