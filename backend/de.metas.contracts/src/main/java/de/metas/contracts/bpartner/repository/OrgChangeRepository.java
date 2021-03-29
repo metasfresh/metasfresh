@@ -34,6 +34,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTerm;
@@ -50,11 +51,14 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
@@ -62,6 +66,7 @@ import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -77,6 +82,7 @@ import org.compiere.model.I_AD_OrgChange_History;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -107,6 +113,7 @@ public class OrgChangeRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -163,6 +170,9 @@ public class OrgChangeRepository
 
 		final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
 
+		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
+		final I_C_UOM termUom = uomDAO.getById(CoalesceUtil.coalesce(UomId.ofRepoIdOrNull(term.getC_UOM_ID()), productBL.getStockUOMId(productId)));
+
 		return FlatrateTerm.builder()
 				.flatrateTermId(flatrateTermId)
 				.orgId(orgId)
@@ -170,7 +180,7 @@ public class OrgChangeRepository
 				.billLocationId(BPartnerLocationId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID()))
 				.shipToBPartnerId(BPartnerId.ofRepoIdOrNull(term.getDropShip_BPartner_ID()))
 				.shipToLocationId(BPartnerLocationId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()))
-				.productId(ProductId.ofRepoId(term.getM_Product_ID()))
+				.productId(productId)
 				.flatrateConditionsId(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID()))
 				.isSimulation(term.isSimulation())
 				.status(FlatrateTermStatus.ofNullableCode(term.getContractStatus()))
@@ -179,7 +189,10 @@ public class OrgChangeRepository
 				.endDate(TimeUtil.asInstant(term.getEndDate()))
 				.masterStartDate(TimeUtil.asInstant(term.getMasterStartDate()))
 				.masterEndDate(TimeUtil.asInstant(term.getMasterEndDate()))
-				.plannedQtyPerUnit(Quantity.of(term.getPlannedQtyPerUnit(), uomDAO.getById(term.getC_UOM_ID())))
+				.plannedQtyPerUnit(Quantity.of(term.getPlannedQtyPerUnit(), termUom))
+				.deliveryRule(DeliveryRule.ofNullableCode(term.getDeliveryRule()))
+				.deliveryViaRule(DeliveryViaRule.ofNullableCode(term.getDeliveryViaRule()))
+
 				.build();
 	}
 
@@ -470,6 +483,9 @@ public class OrgChangeRepository
 		term.setC_UOM_ID(plannedQtyPerUnit == null ? -1 : plannedQtyPerUnit.getUomId().getRepoId());
 
 		term.setDropShip_Location_ID(shipBPartnerLocation.getId().getRepoId());
+
+		term.setDeliveryRule(sourceSubscription.getDeliveryRule() == null ? null :sourceSubscription.getDeliveryRule().getCode());
+		term.setDeliveryViaRule(sourceSubscription.getDeliveryViaRule() == null ? null : sourceSubscription.getDeliveryViaRule().getCode());
 
 		final IEditablePricingContext initialContext = pricingBL
 				.createInitialContext(orgChangeRequest.getOrgToId(),

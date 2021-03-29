@@ -24,6 +24,8 @@ package de.metas.contracts;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -80,5 +82,11 @@ public class FlatrateTerm
 
 	@Nullable
 	Quantity plannedQtyPerUnit;
+
+	@Nullable
+	DeliveryRule deliveryRule;
+
+	@Nullable
+	DeliveryViaRule deliveryViaRule;
 
 }
