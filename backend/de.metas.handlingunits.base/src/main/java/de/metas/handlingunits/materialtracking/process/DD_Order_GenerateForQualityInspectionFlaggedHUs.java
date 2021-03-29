@@ -2,6 +2,7 @@ package de.metas.handlingunits.materialtracking.process;
 
 import java.util.Iterator;
 
+import de.metas.organization.IOrgDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -59,6 +60,7 @@ import de.metas.util.Services;
  */
 public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	// services
 	private final transient IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -105,7 +107,7 @@ public class DD_Order_GenerateForQualityInspectionFlaggedHUs extends JavaProcess
 		final I_M_Locator locatorTo = warehouseBL.getDefaultLocator(warehouseTo);
 
 		// Organization BPartner & Location
-		final I_AD_Org org = warehouseTo.getAD_Org();
+		final I_AD_Org org = orgDAO.getById(OrgId.ofRepoId(warehouseTo.getAD_Org_ID()));
 		final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
 		Check.assumeNotNull(orgBPartner, "Org BPartner shall exist for {}", org);
 

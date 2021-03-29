@@ -123,7 +123,7 @@ public class IdentifierString
 			final String valueString = rawIdentifierString.substring(4).trim();
 			if (valueString.isEmpty())
 			{
-				throw new AdempiereException("Invalid inernal name: `" + rawIdentifierString + "`");
+				throw new AdempiereException("Invalid internal name: `" + rawIdentifierString + "`");
 			}
 			return new IdentifierString(Type.INTERNALNAME, valueString, rawIdentifierString);
 		}

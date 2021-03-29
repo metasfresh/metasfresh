@@ -2,16 +2,23 @@ package de.metas.rest_api.utils;
 
 import de.metas.common.rest_api.v1.JsonAttributeInstance;
 import de.metas.common.rest_api.v1.JsonAttributeSetInstance;
+import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
+import de.metas.rest_api.order.JsonPurchaseCandidateCreateItem;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_M_Attribute;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.context.request.RequestAttributes;
@@ -23,6 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Optional;
 
 /*
  * #%L
@@ -129,5 +137,20 @@ public class RestApiUtils
 			jsonAttributeSetInstance.attributeInstance(instanceBuilder.build());
 		}
 		return jsonAttributeSetInstance.build();
+	}
+
+	@NonNull
+	public Quantity getQuantity(final JsonPurchaseCandidateCreateItem request)
+	{
+		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+		final JsonQuantity jsonQuantity = request.getQty();
+		final String uomCode = jsonQuantity.getUomCode();
+		final Optional<I_C_UOM> uom = uomDAO.getByX12DE355IfExists(X12DE355.ofCode(uomCode));
+		if (!uom.isPresent())
+		{
+			throw MissingResourceException.builder().resourceIdentifier("quantity.uomCode").resourceIdentifier(uomCode).build();
+		}
+		return Quantity.of(jsonQuantity.getQty(), uom.get());
 	}
 }
