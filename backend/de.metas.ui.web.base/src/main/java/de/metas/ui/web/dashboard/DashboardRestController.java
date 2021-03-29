@@ -66,13 +66,12 @@ import io.swagger.annotations.ApiParam;
  */
 
 @RestController
-@RequestMapping(value = DashboardRestController.ENDPOINT)
+@RequestMapping(WebConfig.ENDPOINT_ROOT + "/dashboard")
 @Conditional(ESSystemEnabledCondition.class)
 public class DashboardRestController
 {
-	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/dashboard";
 	private static final Logger logger = LogManager.getLogger(DashboardRestController.class);
-	
+	private final IESSystem esSystem = Services.get(IESSystem.class);
 	private final UserSession userSession;
 	private final UserDashboardRepository userDashboardRepo;
 	private final RestHighLevelClient elasticsearchClient;
@@ -107,14 +106,14 @@ public class DashboardRestController
 			return UserDashboard.EMPTY;
 		}
 
-		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
 		// TODO: assert readable by current user
-		return dashboard;
+		return userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	private boolean isElasticSearchEnabled()
 	{
-		return Services.get(IESSystem.class).isEnabled();
+		return esSystem.isEnabled();
 	}
 
 	private UserDashboard getUserDashboardForWriting()
@@ -124,9 +123,8 @@ public class DashboardRestController
 			return UserDashboard.EMPTY;
 		}
 
-		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
 		// TODO: assert writable by current user
-		return dashboard;
+		return userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
 	}
 
 	private void sendEvents(final UserDashboard dashboard, final JSONDashboardChangedEventsList events)
@@ -236,7 +234,7 @@ public class DashboardRestController
 		return getKPIData(DashboardWidgetType.TargetIndicator, itemId, fromMillis, toMillis, prettyValues);
 	}
 
-	private final KPIDataResult getKPIData(final DashboardWidgetType widgetType, final int itemId, final long fromMillis, final long toMillis, final boolean prettyValues)
+	private KPIDataResult getKPIData(final DashboardWidgetType widgetType, final int itemId, final long fromMillis, final long toMillis, final boolean prettyValues)
 	{
 		userSession.assertLoggedIn();
 
@@ -292,7 +290,7 @@ public class DashboardRestController
 		return changeDashboardItem(DashboardWidgetType.TargetIndicator, itemId, events);
 	}
 
-	private final JSONDashboardItem changeDashboardItem(final DashboardWidgetType widgetType, final int itemId, final List<JSONPatchEvent<DashboardItemPatchPath>> events)
+	private JSONDashboardItem changeDashboardItem(final DashboardWidgetType widgetType, final int itemId, final List<JSONPatchEvent<DashboardItemPatchPath>> events)
 	{
 		userSession.assertLoggedIn();
 

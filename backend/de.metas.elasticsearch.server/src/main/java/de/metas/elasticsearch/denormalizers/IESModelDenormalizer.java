@@ -6,6 +6,8 @@ import java.util.Set;
 
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -34,7 +36,7 @@ public interface IESModelDenormalizer extends IESDenormalizer
 	Map<String, Object> denormalize(Object value);
 
 	@Override
-	void appendMapping(Object builderObj, String fieldName) throws IOException;
+	void appendMapping(Object builderObj, @Nullable String fieldName) throws IOException;
 
 	ESModelIndexerProfile getProfile();
 
@@ -45,10 +47,8 @@ public interface IESModelDenormalizer extends IESDenormalizer
 
 	/**
 	 * Extracts the Elasticsearch document ID from given model.
-	 *
-	 * @param model
-	 * @return
 	 */
+	@Nullable
 	String extractId(Object model);
 
 	Set<String> getFullTextSearchFieldNames();

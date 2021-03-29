@@ -21,6 +21,8 @@ import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -45,7 +47,7 @@ import lombok.NonNull;
 
 /* package */class ESPOModelDenormalizer implements IESModelDenormalizer
 {
-	public static final ESPOModelDenormalizerBuilder builder(
+	public static ESPOModelDenormalizerBuilder builder(
 			final IESDenormalizerFactory factory,
 			final ESModelIndexerProfile profile,
 			final String modelTableName)
@@ -101,7 +103,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public void appendMapping(final Object builderObj, final String fieldName) throws IOException
+	public void appendMapping(final Object builderObj, @Nullable final String fieldName) throws IOException
 	{
 		final XContentBuilder builder = ESDenormalizerHelper.extractXContentBuilder(builderObj);
 		final boolean isTopLevel = fieldName == null;
@@ -150,6 +152,7 @@ import lombok.NonNull;
 	}
 
 	@Override
+	@Nullable
 	public String extractId(final Object model)
 	{
 		if (keyColumnName == null)

@@ -26,7 +26,7 @@ import org.elasticsearch.common.xcontent.XContentParser;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.search.SearchModule;
 import org.elasticsearch.search.aggregations.Aggregation;
-import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
+import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
 import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
@@ -81,7 +81,23 @@ public class KPIDataLoader
 	private boolean formatValues = false;
 
 	private BiFunction<KPIField, TimeRange, String> fieldNameExtractor = (field, timeRange) -> field.getFieldName();
-	private BiFunction<InternalMultiBucketAggregation.InternalBucket, TimeRange, Object> dataSetValueKeyExtractor = (bucket, timeRange) -> bucket.getKey();
+
+	public interface DataSetValueKeyExtractor
+	{
+		Object extractKey(MultiBucketsAggregation.Bucket bucket, TimeRange timeRange);
+	}
+
+	private static class KeyDataSetValueKeyExtractor implements DataSetValueKeyExtractor
+	{
+
+		@Override
+		public Object extractKey(@NonNull final MultiBucketsAggregation.Bucket bucket, @NonNull final TimeRange timeRange)
+		{
+			return bucket.getKey();
+		}
+	}
+
+	private DataSetValueKeyExtractor dataSetValueKeyExtractor = new KeyDataSetValueKeyExtractor();
 
 	private KPIDataLoader(
 			@NonNull final RestHighLevelClient elasticsearchClient,
@@ -280,60 +296,13 @@ public class KPIDataLoader
 
 			for (final Aggregation agg : aggregations)
 			{
-				if (agg instanceof InternalMultiBucketAggregation)
+				if (agg instanceof NumericMetricsAggregation.SingleValue)
 				{
-					final String aggName = agg.getName();
-					final InternalMultiBucketAggregation multiBucketsAggregation = (InternalMultiBucketAggregation)agg;
-					final List<InternalMultiBucketAggregation.InternalBucket> buckets = multiBucketsAggregation.getBuckets();
-					for (final InternalMultiBucketAggregation.InternalBucket bucket : buckets)
-					{
-						final Object key = dataSetValueKeyExtractor.apply(bucket, timeRange);
-
-						for (final KPIField field : kpi.getFields())
-						{
-							final Object value = field.getBucketValueExtractor().extractValue(aggName, bucket);
-							final Object jsonValue = formatValue(field, value);
-							if (jsonValue == null)
-							{
-								continue;
-							}
-
-							final String fieldName = fieldNameExtractor.apply(field, timeRange);
-
-							data.putValue(aggName, key, fieldName, jsonValue);
-						}
-
-						//
-						// Make sure the groupByField's value is present in our dataSet value.
-						// If not exist, we can use the key as it's value.
-						final KPIField groupByField = kpi.getGroupByFieldOrNull();
-						if (groupByField != null)
-						{
-							data.putValueIfAbsent(aggName, key, groupByField.getFieldName(), key);
-						}
-					}
+					loadDataFromSingleValue(data, (NumericMetricsAggregation.SingleValue)agg);
 				}
-				else if (agg instanceof NumericMetricsAggregation.SingleValue)
+				else if (agg instanceof MultiBucketsAggregation)
 				{
-					final NumericMetricsAggregation.SingleValue singleValueAggregation = (NumericMetricsAggregation.SingleValue)agg;
-
-					final String key = "NO_KEY"; // N/A
-
-					for (final KPIField field : kpi.getFields())
-					{
-						final Object value;
-						if ("value".equals(field.getESPathAsString()))
-						{
-							value = singleValueAggregation.value();
-						}
-						else
-						{
-							throw new IllegalStateException("Only ES path ending with 'value' allowed for field: " + field);
-						}
-
-						final Object jsonValue = field.convertValueToJson(value, jsonOptions);
-						data.putValue(agg.getName(), key, field.getFieldName(), jsonValue);
-					}
+					loadDataFromMultiBucketsAggregation(data, timeRange, (MultiBucketsAggregation)agg);
 				}
 				else
 				{
@@ -351,6 +320,64 @@ public class KPIDataLoader
 					+ "\n Response: " + response,
 					e);
 
+		}
+	}
+
+	private void loadDataFromMultiBucketsAggregation(
+			@NonNull final KPIDataResult.Builder data,
+			@NonNull final TimeRange timeRange,
+			@NonNull final MultiBucketsAggregation aggregation)
+	{
+		final String aggName = aggregation.getName();
+		for (final MultiBucketsAggregation.Bucket bucket : aggregation.getBuckets())
+		{
+			final Object key = dataSetValueKeyExtractor.extractKey(bucket, timeRange);
+
+			for (final KPIField field : kpi.getFields())
+			{
+				final Object value = field.getBucketValueExtractor().extractValue(aggName, bucket);
+				final Object jsonValue = formatValue(field, value);
+				if (jsonValue == null)
+				{
+					continue;
+				}
+
+				final String fieldName = fieldNameExtractor.apply(field, timeRange);
+
+				data.putValue(aggName, key, fieldName, jsonValue);
+			}
+
+			//
+			// Make sure the groupByField's value is present in our dataSet value.
+			// If not exist, we can use the key as it's value.
+			final KPIField groupByField = kpi.getGroupByFieldOrNull();
+			if (groupByField != null)
+			{
+				data.putValueIfAbsent(aggName, key, groupByField.getFieldName(), key);
+			}
+		}
+	}
+
+	private void loadDataFromSingleValue(
+			@NonNull final KPIDataResult.Builder data,
+			@NonNull final NumericMetricsAggregation.SingleValue aggregation)
+	{
+		final String key = "NO_KEY"; // N/A
+
+		for (final KPIField field : kpi.getFields())
+		{
+			final Object value;
+			if ("value".equals(field.getESPathAsString()))
+			{
+				value = aggregation.value();
+			}
+			else
+			{
+				throw new IllegalStateException("Only ES path ending with 'value' allowed for field: " + field);
+			}
+
+			final Object jsonValue = field.convertValueToJson(value, jsonOptions);
+			data.putValue(aggregation.getName(), key, field.getFieldName(), jsonValue);
 		}
 	}
 
