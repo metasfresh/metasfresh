@@ -367,4 +367,5 @@ public interface IBPartnerDAO extends ISingletonService
 	List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerLocationIds(Collection<Integer> bpartnerLocationRepoIds);
 
 	BPartnerLocationId retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
+
 }
