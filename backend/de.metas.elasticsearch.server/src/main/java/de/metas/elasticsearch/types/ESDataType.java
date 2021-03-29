@@ -24,33 +24,36 @@ package de.metas.elasticsearch.types;
 
 /**
  * Elasticsearch mapping data type.
- *
+ * <p>
  * See https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-types.html
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public enum ESDataType
 {
 	// String
-	String("string")
+	String("string"),
 
 	// Numeric datatypes
-	, Long("long"), Integer("integer"), Short("short"), Byte("byte"), Double("double"), Float("float")
+	Long("long"),
+	Integer("integer"),
+	Short("short"),
+	Byte("byte"),
+	Double("double"),
+	Float("float"),
 
 	// Date datatype
-	, Date("date")
+	Date("date"),
 
 	// Boolean datatype
-	, Boolean("boolean")
+	Boolean("boolean"),
 
 	// Binary datatype
-	, Binary("binary")
+	Binary("binary"),
 
 	// Object datatype - for single JSON objects
-	, Object("object")
+	Object("object"),
 
-	//
 	;
 
 	private final String esType;
