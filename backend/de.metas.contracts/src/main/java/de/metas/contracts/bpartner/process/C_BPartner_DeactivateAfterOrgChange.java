@@ -22,11 +22,9 @@
 
 package de.metas.contracts.bpartner.process;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -41,8 +39,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.List;
 
 /*
@@ -54,7 +50,6 @@ import java.util.List;
 public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	protected String doIt() throws Exception

@@ -27,15 +27,12 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.Instant;
 
 @Value

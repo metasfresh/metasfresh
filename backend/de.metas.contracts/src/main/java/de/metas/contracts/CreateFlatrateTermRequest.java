@@ -22,7 +22,6 @@
 
 package de.metas.contracts;
 
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductAndCategoryId;

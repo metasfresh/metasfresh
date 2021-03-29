@@ -101,7 +101,5 @@ public class OrgChangeCommand
 		final OrgChangeHistoryId orgChangeHistoryId = orgChangeRepo.createOrgChangeHistory(orgChangeRequest, orgMappingId, destinationBPartnerComposite);
 
 		orgChangeService.createOrgSwitchRequest(orgChangeHistoryId);
-
 	}
-
 }
