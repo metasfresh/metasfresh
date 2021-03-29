@@ -2,7 +2,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.metas.camel.alberta</groupId>
-    <artifactId>alberta-api-client</artifactId>
+    <artifactId>alberta-patient-api</artifactId>
     <packaging>jar</packaging>
     <version>10.0.0</version>
     <url>https://github.com/swagger-api/swagger-codegen</url>
