@@ -39,20 +39,24 @@ import java.util.List;
 @Value
 public class OrgChangeBPartnerComposite
 {
+	@NonNull
 	BPartnerComposite bPartnerComposite;
 
+	@NonNull
 	OrgMappingId bPartnerOrgMappingId;
 
+	@NonNull
 	List<FlatrateTerm> membershipSubscriptions;
 
+	@NonNull
 	List<FlatrateTerm> nonMembershipSubscriptions;
 
 	@Builder(toBuilder = true)
 	private OrgChangeBPartnerComposite(
 			@NonNull final BPartnerComposite bPartnerComposite,
 			@NonNull final OrgMappingId bPartnerOrgMappingId,
-			@Singular final List<FlatrateTerm> membershipSubscriptions,
-			@Singular final List<FlatrateTerm> nonMembershipSubscriptions)
+			@NonNull @Singular final List<FlatrateTerm> membershipSubscriptions,
+			@NonNull @Singular final List<FlatrateTerm> nonMembershipSubscriptions)
 	{
 		this.bPartnerComposite = bPartnerComposite;
 		this.bPartnerOrgMappingId = bPartnerOrgMappingId;

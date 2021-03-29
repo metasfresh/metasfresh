@@ -26,54 +26,62 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
+import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.Instant;
 
-@Data
+@Value
 @Builder
 public class FlatrateTerm
 {
-	private FlatrateTermId flatrateTermId;
+	@NonNull FlatrateTermId flatrateTermId;
 
-	private OrgId orgId;
+	@NonNull OrgId orgId;
 
-	private BPartnerId billPartnerID;
+	@NonNull BPartnerId billPartnerID;
 
+	@NonNull
 	private BPartnerLocationId billLocationId;
 
-	private BPartnerId shiToBPartnerId;
+	@Nullable
+	private BPartnerId shipToBPartnerId;
 
+	@Nullable
 	private BPartnerLocationId shipToLocationId;
 
+	@Nullable
 	private ProductId productId;
 
-	private UserId userId;
+	@Nullable
+	private UserId userInChargeId;
 
 	boolean isSimulation;
 
-	private ConditionsId flartareConditionsId;
+	@NonNull ConditionsId flatrateConditionsId;
 
-	private LocalDate startDate;
+	@Nullable
+	Instant startDate;
 
-	private
-	LocalDate masterStartDate;
+	@Nullable
+	Instant masterStartDate;
 
-	private
-	LocalDate endDate;
+	@Nullable
+	Instant endDate;
+	@Nullable
+	Instant masterEndDate;
 
-	private
-	LocalDate masterEndDate;
-
-	private
+	@Nullable
 	FlatrateTermStatus status;
-	
-	private BigDecimal plannedQtyPerUnit;
 
-	private UomId uomId;
+	@Nullable
+	Quantity plannedQtyPerUnit;
 
 }

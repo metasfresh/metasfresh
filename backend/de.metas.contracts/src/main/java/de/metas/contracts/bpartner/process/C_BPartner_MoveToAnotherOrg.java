@@ -44,9 +44,9 @@ package de.metas.contracts.bpartner.process;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.bpartner.repository.OrgChangeRepository;
 import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
 import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.bpartner.service.OrgChangeService;
@@ -60,12 +60,13 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.time.Instant;
 
 public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcessPrecondition,
 		IProcessParametersCallout,
@@ -83,21 +84,23 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 	private ProductId p_membershipProductId;
 
 	@Param(parameterName = PARAM_DATE_ORG_CHANGE, mandatory = true)
-	private LocalDate p_startDate;
+	private Instant p_startDate;
 
 	@Param(parameterName = PARAM_IS_SHOW_MEMBERSHIP_PARAMETER, mandatory = true)
 	private boolean isShowMembershipParameter;
 
-	final OrgChangeRepository orgChangeRepo = SpringContextHolder.instance.getBean(OrgChangeRepository.class);
 	final OrgChangeService service = SpringContextHolder.instance.getBean(OrgChangeService.class);
+	final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_C_BPartner bpartnerRecord = getProcessInfo().getRecord(I_C_BPartner.class);
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(getProcessInfo().getRecord_ID());
+
+		final I_C_BPartner bpartnerRecord = bpartnerBL.getById(bpartnerId);
 
 		final OrgChangeRequest orgChangeRequest = OrgChangeRequest.builder()
-				.bpartnerId(BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID()))
+				.bpartnerId(bpartnerId)
 				.startDate(p_startDate)
 				.membershipProductId(p_membershipProductId)
 				.orgFromId(OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID()))
@@ -125,25 +128,19 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 	{
 		if (PARAM_AD_ORG_TARGET_ID.equals(parameterName) || PARAM_DATE_ORG_CHANGE.equals(parameterName))
 		{
-			if(p_orgTargetId == null)
+			if (p_orgTargetId == null)
 			{
 				return;
 			}
 			final BPartnerId partnerId = BPartnerId.ofRepoId(getRecord_ID());
 
-			final LocalDate orgChangeDate = CoalesceUtil.coalesce(p_startDate, SystemTime.asLocalDate());
+			final Instant orgChangeDate = CoalesceUtil.coalesce(p_startDate, SystemTime.asInstant());
 
-			final OrgChangeBPartnerComposite orgChangePartnerComposite = orgChangeRepo.getByIdAndOrgChangeDate(partnerId, orgChangeDate);
+			final OrgChangeBPartnerComposite orgChangePartnerComposite = service.getByIdAndOrgChangeDate(partnerId, orgChangeDate);
 
-			if ((orgChangePartnerComposite.hasMembershipSubscriptions())
-					&& service.hasAnyMembershipProduct(p_orgTargetId))
-			{
-				isShowMembershipParameter = true;
-			}
-			else
-			{
-				isShowMembershipParameter = false;
-			}
+			isShowMembershipParameter = orgChangePartnerComposite.hasMembershipSubscriptions()
+					&& service.hasAnyMembershipProduct(p_orgTargetId);
+
 		}
 	}
 

@@ -30,7 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -42,7 +42,8 @@ public class OrgChangeRequest
 
 	@NonNull OrgId orgToId;
 
-	@NonNull LocalDate startDate;
+	@NonNull Instant startDate;
 
-	@Nullable ProductId membershipProductId;
+	@Nullable
+	ProductId membershipProductId;
 }

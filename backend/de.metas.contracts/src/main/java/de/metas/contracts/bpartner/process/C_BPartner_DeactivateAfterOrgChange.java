@@ -22,6 +22,8 @@
 
 package de.metas.contracts.bpartner.process;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -38,6 +40,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -63,17 +66,14 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 
 	private void deactivateBPartnersAndRelatedEntries()
 	{
-		final OrgId orgId = OrgId.ofRepoId(Env.getAD_Org_ID(Env.getCtx()));
+		final Instant now = SystemTime.asInstant();
 
-		final ZoneId loginTimeZone = orgDAO.getTimeZone(orgId);
-
-		final LocalDate today = SystemTime.asLocalDate(loginTimeZone);
-
-		final List<Integer> partnerIdsToDeactivate = queryBL.createQueryBuilder(I_AD_OrgChange_History.class)
-				.addCompareFilter(I_AD_OrgChange_History.COLUMNNAME_Date_OrgChange, CompareQueryFilter.Operator.LESS_OR_EQUAL, today)
+		final List<BPartnerId> partnerIdsToDeactivate = queryBL.createQueryBuilder(I_AD_OrgChange_History.class)
+				.addCompareFilter(I_AD_OrgChange_History.COLUMNNAME_Date_OrgChange, CompareQueryFilter.Operator.LESS_OR_EQUAL, now)
 				.andCollectChildren(I_AD_OrgChange_History.COLUMNNAME_C_BPartner_From_ID, I_C_BPartner.class)
 				.create()
-				.listIds();
+				.listIds(BPartnerId::ofRepoId)
+				.asList();
 
 		partnerIdsToDeactivate.stream()
 				.forEach(
@@ -85,13 +85,13 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 			// nothing to do
 			return;
 		}
-		deactivateBankAccounts(partnerIdsToDeactivate, today);
-		deactivateUsers(partnerIdsToDeactivate, today);
-		deactivateLocations(partnerIdsToDeactivate, today);
-		deactivatePartners(partnerIdsToDeactivate, today);
+		deactivateBankAccounts(partnerIdsToDeactivate, now);
+		deactivateUsers(partnerIdsToDeactivate, now);
+		deactivateLocations(partnerIdsToDeactivate, now);
+		deactivatePartners(partnerIdsToDeactivate, now);
 	}
 
-	private void deactivateBankAccounts(final List<Integer> partnerIds, final LocalDate date)
+	private void deactivateBankAccounts(final List<BPartnerId> partnerIds, final Instant date)
 	{
 		final ICompositeQueryUpdater<I_C_BP_BankAccount> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_BP_BankAccount.class)
 				.addSetColumnValue(I_C_BP_BankAccount.COLUMNNAME_IsActive, false)
@@ -104,7 +104,7 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 				.update(queryUpdater);
 	}
 
-	private void deactivateUsers(final List<Integer> partnerIds, final LocalDate date)
+	private void deactivateUsers(final List<BPartnerId> partnerIds, final Instant date)
 	{
 		final ICompositeQueryUpdater<I_AD_User> queryUpdater = queryBL.createCompositeQueryUpdater(I_AD_User.class)
 				.addSetColumnValue(I_AD_User.COLUMNNAME_IsActive, false)
@@ -117,7 +117,7 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 				.update(queryUpdater);
 	}
 
-	private void deactivateLocations(final List<Integer> partnerIds, final LocalDate date)
+	private void deactivateLocations(final List<BPartnerId> partnerIds, final Instant date)
 	{
 		final ICompositeQueryUpdater<I_C_BPartner_Location> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_BPartner_Location.class)
 				.addSetColumnValue(I_C_BPartner_Location.COLUMNNAME_IsActive, false)
@@ -130,7 +130,7 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 				.update(queryUpdater);
 	}
 
-	private void deactivatePartners(final List<Integer> partnerIds, final LocalDate date)
+	private void deactivatePartners(final List<BPartnerId> partnerIds, final Instant date)
 	{
 		final ICompositeQueryUpdater<I_C_BPartner> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_BPartner.class)
 				.addSetColumnValue(I_C_BPartner.COLUMNNAME_IsActive, false)

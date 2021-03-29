@@ -28,6 +28,7 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 @Value
@@ -39,6 +40,7 @@ public class OrgChangeHistoryId implements RepoIdAware
 		return new OrgChangeHistoryId(repoId);
 	}
 
+	@Nullable
 	public static OrgChangeHistoryId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new OrgChangeHistoryId(repoId) : null;
@@ -63,7 +65,7 @@ public class OrgChangeHistoryId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(final OrgChangeHistoryId o1, final OrgChangeHistoryId o2)
+	public static boolean equals(@Nullable final OrgChangeHistoryId o1, @Nullable final OrgChangeHistoryId o2)
 	{
 		return Objects.equals(o1, o2);
 	}

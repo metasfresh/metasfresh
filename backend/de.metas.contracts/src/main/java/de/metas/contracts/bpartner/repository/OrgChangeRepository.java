@@ -46,8 +46,6 @@ import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
 import de.metas.contracts.bpartner.service.OrgChangeHistoryId;
 import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -62,12 +60,8 @@ import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
-import de.metas.request.RequestTypeId;
-import de.metas.request.api.IRequestBL;
-import de.metas.request.api.IRequestTypeDAO;
-import de.metas.request.api.RequestCandidate;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
@@ -78,25 +72,22 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_OrgChange_History;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product_Category;
-import org.compiere.model.I_R_Request;
-import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -111,7 +102,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class OrgChangeRepository
 {
 	private static final Logger logger = LogManager.getLogger(OrgChangeRepository.class);
-	final ILoggable loggable = Loggables.withLogger(logger, Level.INFO);
+	private final ILoggable loggable = Loggables.withLogger(logger, Level.INFO);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -122,10 +113,10 @@ public class OrgChangeRepository
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
 	private final BPartnerCompositeRepository bPartnerCompositeRepo;
 	private final OrgMappingRepository orgMappingRepo;
-	private ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
 	public OrgChangeRepository(@NonNull final BPartnerCompositeRepository bPartnerCompositeRepo,
 			@NonNull final OrgMappingRepository orgMappingRepo)
@@ -134,7 +125,8 @@ public class OrgChangeRepository
 		this.orgMappingRepo = orgMappingRepo;
 	}
 
-	public OrgChangeBPartnerComposite getByIdAndOrgChangeDate(@NonNull final BPartnerId bpartnerId, @NonNull final LocalDate orgChangeDate)
+	public OrgChangeBPartnerComposite getByIdAndOrgChangeDate(@NonNull final BPartnerId bpartnerId,
+			@NonNull final Instant orgChangeDate)
 	{
 		final OrgMappingId orgMappingId = orgMappingRepo.getCreateOrgMappingId(bpartnerId);
 		final BPartnerComposite bPartnerComposite = bPartnerCompositeRepo.getById(bpartnerId);
@@ -147,7 +139,9 @@ public class OrgChangeRepository
 				.build();
 	}
 
-	private Collection<? extends FlatrateTerm> getNonMembershipSubscriptions(final BPartnerId bpartnerId, final LocalDate orgChangeDate, final OrgId orgId)
+	private Collection<? extends FlatrateTerm> getNonMembershipSubscriptions(@NonNull final BPartnerId bpartnerId,
+			@NonNull final Instant orgChangeDate,
+			@NonNull final OrgId orgId)
 	{
 		final Set<FlatrateTermId> flatrateTermIds = retrieveNonMembershipSubscriptions(bpartnerId, orgChangeDate, orgId);
 		return flatrateTermIds.stream()
@@ -155,7 +149,7 @@ public class OrgChangeRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private List<FlatrateTerm> getMembershipSubscriptions(final BPartnerId bpartnerId, final LocalDate orgChangeDate, final OrgId orgId)
+	private List<FlatrateTerm> getMembershipSubscriptions(final BPartnerId bpartnerId, final Instant orgChangeDate, final OrgId orgId)
 	{
 		final Set<FlatrateTermId> membershipFlatrateTermIds = retrieveMembershipSubscriptions(bpartnerId, orgChangeDate, orgId);
 		return membershipFlatrateTermIds.stream()
@@ -169,26 +163,23 @@ public class OrgChangeRepository
 
 		final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
 
-		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
-
 		return FlatrateTerm.builder()
 				.flatrateTermId(flatrateTermId)
 				.orgId(orgId)
 				.billPartnerID(BPartnerId.ofRepoId(term.getBill_BPartner_ID()))
 				.billLocationId(BPartnerLocationId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID()))
-				.shiToBPartnerId(BPartnerId.ofRepoIdOrNull(term.getDropShip_BPartner_ID()))
+				.shipToBPartnerId(BPartnerId.ofRepoIdOrNull(term.getDropShip_BPartner_ID()))
 				.shipToLocationId(BPartnerLocationId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()))
 				.productId(ProductId.ofRepoId(term.getM_Product_ID()))
-				.flartareConditionsId(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID()))
+				.flatrateConditionsId(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID()))
 				.isSimulation(term.isSimulation())
 				.status(FlatrateTermStatus.ofNullableCode(term.getContractStatus()))
-				.userId(UserId.ofRepoIdOrNull(term.getAD_User_InCharge_ID()))
-				.startDate(TimeUtil.asLocalDate(term.getStartDate(), timeZone))
-				.endDate(TimeUtil.asLocalDate(term.getEndDate(), timeZone))
-				.masterStartDate(TimeUtil.asLocalDate(term.getMasterStartDate(), timeZone))
-				.masterEndDate(TimeUtil.asLocalDate(term.getMasterEndDate(), timeZone))
-				.plannedQtyPerUnit(term.getPlannedQtyPerUnit())
-				.uomId(UomId.ofRepoIdOrNull(term.getC_UOM_ID()))
+				.userInChargeId(UserId.ofRepoIdOrNull(term.getAD_User_InCharge_ID()))
+				.startDate(TimeUtil.asInstant(term.getStartDate()))
+				.endDate(TimeUtil.asInstant(term.getEndDate()))
+				.masterStartDate(TimeUtil.asInstant(term.getMasterStartDate()))
+				.masterEndDate(TimeUtil.asInstant(term.getMasterEndDate()))
+				.plannedQtyPerUnit(Quantity.of(term.getPlannedQtyPerUnit(), uomDAO.getById(term.getC_UOM_ID())))
 				.build();
 	}
 
@@ -262,7 +253,7 @@ public class OrgChangeRepository
 
 	private IQuery<I_C_Flatrate_Term> createMembershipRunningSubscriptionQuery(
 			@NonNull final BPartnerId bPartnerId,
-			@NonNull final LocalDate orgChangeDate,
+			@NonNull final Instant orgChangeDate,
 			@NonNull final OrgId orgId)
 	{
 		final IQuery<I_M_Product> membershipProductQuery = createMembershipProductQuery(orgId);
@@ -330,7 +321,7 @@ public class OrgChangeRepository
 	}
 
 	private Set<FlatrateTermId> retrieveMembershipSubscriptions(@NonNull final BPartnerId bpartnerId,
-			@NonNull final LocalDate orgChangeDate,
+			@NonNull final Instant orgChangeDate,
 			@NonNull final OrgId orgId)
 	{
 		return createMembershipRunningSubscriptionQuery(bpartnerId, orgChangeDate, orgId)
@@ -338,7 +329,7 @@ public class OrgChangeRepository
 	}
 
 	private Set<FlatrateTermId> retrieveNonMembershipSubscriptions(@NonNull final BPartnerId bPartnerId,
-			@NonNull final LocalDate orgChangeDate,
+			@NonNull final Instant orgChangeDate,
 			@NonNull final OrgId orgId)
 	{
 		final IQuery<I_M_Product> membershipProductQuery = createMembershipProductQuery(orgId);
@@ -456,7 +447,7 @@ public class OrgChangeRepository
 			return;
 		}
 
-		final I_AD_User user = retrieveCounterpartUserOrNull(sourceSubscription.getUserId(), destinationBPartnerComposite.getOrgId());
+		final I_AD_User user = retrieveCounterpartUserOrNull(sourceSubscription.getUserInChargeId(), destinationBPartnerComposite.getOrgId());
 
 		final Timestamp startDate = TimeUtil.asTimestamp(orgChangeRequest.getStartDate());
 
@@ -466,15 +457,17 @@ public class OrgChangeRepository
 				.bPartner(partner)
 				.startDate(startDate)
 				.isSimulation(false)
-				.conditions(flatrateDAO.getConditionsById(sourceSubscription.getFlartareConditionsId()))
+				.conditions(flatrateDAO.getConditionsById(sourceSubscription.getFlatrateConditionsId()))
 				.productAndCategoryId(ProductAndCategoryId.of(newProduct.getM_Product_ID(), newProduct.getM_Product_Category_ID()))
 				.userInCharge(user)
 				.build();
 
 		final I_C_Flatrate_Term term = flatrateBL.createTerm(flatrateTermRequest);
 
-		term.setPlannedQtyPerUnit(sourceSubscription.getPlannedQtyPerUnit());
-		term.setC_UOM_ID(newProduct.getC_UOM_ID());
+		final Quantity plannedQtyPerUnit = sourceSubscription.getPlannedQtyPerUnit();
+
+		term.setPlannedQtyPerUnit(plannedQtyPerUnit == null ? BigDecimal.ZERO : plannedQtyPerUnit.toBigDecimal());
+		term.setC_UOM_ID(plannedQtyPerUnit == null ? -1 : plannedQtyPerUnit.getUomId().getRepoId());
 
 		term.setDropShip_Location_ID(shipBPartnerLocation.getId().getRepoId());
 
@@ -482,11 +475,10 @@ public class OrgChangeRepository
 				.createInitialContext(orgChangeRequest.getOrgToId(),
 									  ProductId.ofRepoId(newProduct.getM_Product_ID()),
 									  destinationBPartnerComposite.getBpartner().getId(),
-									  Quantity.of(sourceSubscription.getPlannedQtyPerUnit(),
-												  uomDAO.getById(newProduct.getC_UOM_ID())),
+									  plannedQtyPerUnit,
 									  SOTrx.SALES);
 
-		initialContext.setPriceDate(orgChangeRequest.getStartDate());
+		initialContext.setPriceDate(TimeUtil.asLocalDate(orgChangeRequest.getStartDate()));
 
 		final CountryId countryId = countryDAO.getCountryIdByCountryCode(billBPartnerLocation.getCountryCode());
 
@@ -497,7 +489,10 @@ public class OrgChangeRepository
 		term.setM_PricingSystem_ID(pricingResult.getPricingSystemId() == null ? -1 : pricingResult.getPricingSystemId().getRepoId());
 		term.setC_Currency_ID(pricingResult.getCurrencyRepoId());
 
-		calculateFlatrateTermPrice(term);
+		final IPricingResult flatratePrice = calculateFlatrateTermPrice(term);
+
+		term.setC_TaxCategory_ID(TaxCategoryId.toRepoId(flatratePrice.getTaxCategoryId()));
+		term.setIsTaxIncluded(flatratePrice.isTaxIncluded());
 
 		saveRecord(term);
 

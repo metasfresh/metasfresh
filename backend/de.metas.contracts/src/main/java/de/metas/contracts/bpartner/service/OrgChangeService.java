@@ -61,6 +61,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -100,43 +101,17 @@ public class OrgChangeService
 
 	public void moveToNewOrg(@NonNull final OrgChangeRequest orgChangeRequest)
 	{
-		final OrgChangeBPartnerComposite orgChangeBPartnerComposite = orgChangeRepo.getByIdAndOrgChangeDate(orgChangeRequest.getBpartnerId(), orgChangeRequest.getStartDate());
-
-		final OrgMappingId orgMappingId = orgChangeBPartnerComposite.getBPartnerOrgMappingId();
-
-		final BPartnerId newBPartnerId = orgChangeRepo.getOrCreateCounterpartBPartner(orgChangeRequest, orgMappingId);
-
-		// gets the partner with all the active and inactive locations, users and bank accounts
-		BPartnerComposite destinationBPartnerComposite = bpCompositeRepo.getById(newBPartnerId);
-
-		final List<BPartnerLocation> newLocations = getOrCreateLocations(orgChangeBPartnerComposite, destinationBPartnerComposite);
-
-		final List<BPartnerContact> newContacts = getOrCreateContacts(orgChangeBPartnerComposite, destinationBPartnerComposite);
-		final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(orgChangeBPartnerComposite, destinationBPartnerComposite);
-
-		destinationBPartnerComposite = destinationBPartnerComposite.deepCopy()
-				.toBuilder()
-
-				.locations(newLocations)
-				.contacts(newContacts)
-				.bankAccounts(newBPBankAccounts)
+		final OrgChangeCommand orgChangeCommand = OrgChangeCommand.builder()
+				.orgChangeService(this)
+				.orgChangeRepo(orgChangeRepo)
+				.bPartnerCompositeRepo(bpCompositeRepo)
+				.orgChangeRequest(orgChangeRequest)
 				.build();
 
-		bpCompositeRepo.save(destinationBPartnerComposite);
-
-		saveOrgChangeBPartnerComposite(orgChangeBPartnerComposite);
-
-		createFlatrateTerms(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
-
-		cancelSubscriptionsFor(orgChangeBPartnerComposite, orgChangeRequest);
-
-		final OrgChangeHistoryId orgChangeHistoryId = orgChangeRepo.createOrgChangeHistory(orgChangeRequest, orgMappingId, destinationBPartnerComposite);
-
-		createOrgSwitchRequest(orgChangeHistoryId);
-
+		orgChangeCommand.execute();
 	}
 
-	private void createFlatrateTerms(@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+	public void createFlatrateTerms(@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
 			@NonNull final BPartnerComposite destinationBPartnerComposite,
 			@NonNull final OrgChangeRequest orgChangeRequest)
 	{
@@ -149,7 +124,7 @@ public class OrgChangeService
 										 orgChangeRequest);
 	}
 
-	private void cancelSubscriptionsFor(final OrgChangeBPartnerComposite orgChangeBPartnerComposite, final OrgChangeRequest orgChangeRequest)
+	public void cancelSubscriptionsFor(final OrgChangeBPartnerComposite orgChangeBPartnerComposite, final OrgChangeRequest orgChangeRequest)
 	{
 		final IContractChangeBL.ContractChangeParameters contractChangeParameters = IContractChangeBL.ContractChangeParameters.builder()
 				.changeDate(Objects.requireNonNull(TimeUtil.asTimestamp(orgChangeRequest.getStartDate())))
@@ -190,7 +165,7 @@ public class OrgChangeService
 		orgChangeRepo.createMembershipSubscriptionTerm(orgChangeBPartnerComposite, destinationBPartnerComposite, orgChangeRequest);
 	}
 
-	private List<BPartnerLocation> getOrCreateLocations(
+	public List<BPartnerLocation> getOrCreateLocations(
 			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
@@ -513,7 +488,7 @@ public class OrgChangeService
 		bpCompositeRepo.save(bPartnerComposite);
 	}
 
-	private I_R_Request createOrgSwitchRequest(@NonNull OrgChangeHistoryId orgChangeHistoryId)
+	public I_R_Request createOrgSwitchRequest(@NonNull OrgChangeHistoryId orgChangeHistoryId)
 	{
 		final RequestTypeId requestTypeId = requestTypeDAO.retrieveOrgChangeRequestTypeId();
 		final I_AD_OrgChange_History orgChangeHistoryRecord = orgChangeRepo.getOrgChangeHistoryById(orgChangeHistoryId);
@@ -581,4 +556,9 @@ public class OrgChangeService
 		}
 	}
 
+	public OrgChangeBPartnerComposite getByIdAndOrgChangeDate(final BPartnerId partnerId, final Instant orgChangeDate)
+	{
+
+		return orgChangeRepo.getByIdAndOrgChangeDate(partnerId, orgChangeDate);
+	}
 }
