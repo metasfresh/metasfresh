@@ -24,7 +24,6 @@ package de.metas.uom.impl;
 
 import de.metas.cache.CCache;
 import de.metas.i18n.ITranslatableString;
-import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UOMType;
@@ -38,7 +37,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import java.time.temporal.TemporalUnit;
 import java.util.Collection;
