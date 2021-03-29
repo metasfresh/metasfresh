@@ -2,14 +2,13 @@ package de.metas.elasticsearch.process;
 
 import java.util.Collection;
 
+import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
 import org.compiere.SpringContextHolder;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.ImmutableList;
 
 import de.metas.elasticsearch.config.FTSIndexConfig;
 import de.metas.elasticsearch.config.FTSIndexRepository;
-import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.model.I_ES_FTS_Index;
 import de.metas.util.Check;
 
@@ -40,13 +39,13 @@ public class ES_FTS_Index_Data extends AbstractModelIndexerProcess {
     private final FTSIndexRepository ftsIndexRepo = SpringContextHolder.instance.getBean(FTSIndexRepository.class);
 
     @Override
-    protected Collection<IESModelIndexer> getModelIndexers() {
+    protected Collection<ESModelIndexer> getModelIndexers() {
         Check.assumeEquals(I_ES_FTS_Index.Table_Name, getProcessInfo().getTableNameOrNull());
         final int ftsIndexId = getRecord_ID();
 
         final FTSIndexConfig ftsIndexConfig = ftsIndexRepo.getById(ftsIndexId);
 
-        final IESModelIndexer modelIndexer = modelIndexingService.getModelIndexerById(ftsIndexConfig.getESModelIndexerId());
+        final ESModelIndexer modelIndexer = modelIndexingService.getModelIndexerById(ftsIndexConfig.getESModelIndexerId());
         return ImmutableList.of(modelIndexer);
     }
 }

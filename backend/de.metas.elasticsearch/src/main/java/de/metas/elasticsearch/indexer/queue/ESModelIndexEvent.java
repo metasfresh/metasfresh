@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.elasticsearch.scheduler;
+package de.metas.elasticsearch.indexer.queue;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -30,7 +30,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.List;
 import java.util.Set;
 
 @Value

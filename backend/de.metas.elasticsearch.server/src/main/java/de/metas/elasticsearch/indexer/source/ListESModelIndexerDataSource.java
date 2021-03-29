@@ -1,16 +1,8 @@
-package de.metas.elasticsearch.indexer;
-
-import com.google.common.collect.ImmutableList;
-import lombok.ToString;
-
-import java.util.Collection;
-import java.util.stream.Stream;
-
 /*
  * #%L
  * de.metas.elasticsearch.server
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,6 +19,14 @@ import java.util.stream.Stream;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.elasticsearch.indexer.source;
+
+import com.google.common.collect.ImmutableList;
+import lombok.ToString;
+
+import java.util.Collection;
+import java.util.stream.Stream;
 
 @ToString
 public class ListESModelIndexerDataSource implements ESModelIndexerDataSource

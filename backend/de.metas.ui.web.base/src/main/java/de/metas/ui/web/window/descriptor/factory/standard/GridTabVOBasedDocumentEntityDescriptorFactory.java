@@ -3,8 +3,8 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.IESSystem;
-import de.metas.elasticsearch.indexer.IESModelIndexer;
-import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
+import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
+import de.metas.elasticsearch.indexer.registry.ESModelIndexersRegistry;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -519,7 +519,7 @@ import java.util.Set;
 	    }
         
 		final ESModelIndexersRegistry esModelIndexersRegistry = SpringContextHolder.instance.getBean(ESModelIndexersRegistry.class);
-		final IESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(modelTableName)
+		final ESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(modelTableName)
 				.orElse(null);
 		if (modelIndexer == null)
 		{

@@ -24,11 +24,11 @@ package de.metas.elasticsearch.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
-import de.metas.elasticsearch.IESServer;
+import de.metas.elasticsearch.server.IESServer;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.scheduler.ESModelIndexerQueue;
+import de.metas.elasticsearch.indexer.queue.ESModelIndexerQueue;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -50,7 +50,7 @@ public class ESSystem implements IESSystem
 	private static final Logger logger = LogManager.getLogger(ESSystem.class);
 
 	@VisibleForTesting
-	public static final String ESServer_Classname = "de.metas.elasticsearch.ESServer";
+	public static final String ESServer_Classname = "de.metas.elasticsearch.server.ESServer";
 
 	private static final String SYSTEM_PROPERTY_elastic_enable = "elastic_enable";
 

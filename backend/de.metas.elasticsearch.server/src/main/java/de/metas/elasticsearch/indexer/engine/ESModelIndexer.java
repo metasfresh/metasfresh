@@ -1,4 +1,26 @@
-package de.metas.elasticsearch.indexer.impl;
+/*
+ * #%L
+ * de.metas.elasticsearch.server
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.elasticsearch.indexer.engine;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.MoreObjects;
@@ -8,10 +30,8 @@ import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.config.ESTextAnalyzer;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
-import de.metas.elasticsearch.indexer.ESModelIndexerDataSource;
-import de.metas.elasticsearch.indexer.ESModelToIndex;
-import de.metas.elasticsearch.indexer.IESIndexerResult;
-import de.metas.elasticsearch.indexer.IESModelIndexer;
+import de.metas.elasticsearch.indexer.source.ESModelIndexerDataSource;
+import de.metas.elasticsearch.indexer.source.ESModelToIndex;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -52,30 +72,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-/*
- * #%L
- * de.metas.elasticsearch
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Immutable
-public final class ESModelIndexer implements IESModelIndexer
+public final class ESModelIndexer
 {
 	// services
 	private static final transient Logger logger = LogManager.getLogger(ESModelIndexer.class);
@@ -145,25 +143,21 @@ public final class ESModelIndexer implements IESModelIndexer
 				.toString();
 	}
 
-	@Override
 	public String getIndexName()
 	{
 		return getId().getIndexName();
 	}
 
-	@Override
 	public String getIndexType()
 	{
 		return getId().getIndexType();
 	}
 
-	@Override
 	public ESModelIndexerProfile getProfile()
 	{
 		return getId().getProfile();
 	}
 
-	@Override
 	public void deleteIndex()
 	{
 		final String indexName = getIndexName();
@@ -187,7 +181,6 @@ public final class ESModelIndexer implements IESModelIndexer
 		}
 	}
 
-	@Override
 	public boolean createUpdateIndex()
 	{
 		// Do nothing if index already exists
@@ -449,7 +442,6 @@ public final class ESModelIndexer implements IESModelIndexer
 		return includedModelIndexer.getModelDenormalizer().denormalizeModel(includedModel);
 	}
 
-	@Override
 	public IESIndexerResult addToIndex(@NonNull final ESModelIndexerDataSource dataSource)
 	{
 		createUpdateIndex();
@@ -487,7 +479,6 @@ public final class ESModelIndexer implements IESModelIndexer
 		}
 	}
 
-	@Override
 	public IESIndexerResult removeFromIndexByIds(final Collection<String> ids)
 	{
 		if(!checkIndexExists())
@@ -540,7 +531,6 @@ public final class ESModelIndexer implements IESModelIndexer
 				.id(id));
 	}
 
-	@Override
 	public Set<String> getFullTextSearchFieldNames()
 	{
 		final Stream<String> thisLevelfieldNames = getModelDenormalizer().getFullTextSearchFieldNames()

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.elasticsearch.scheduler;
+package de.metas.elasticsearch.indexer.queue;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.elasticsearch.config.ESModelIndexerId;

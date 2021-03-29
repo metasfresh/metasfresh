@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.elasticsearch
+ * de.metas.elasticsearch.server
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,9 +20,17 @@
  * #L%
  */
 
-package de.metas.elasticsearch.scheduler;
+package de.metas.elasticsearch.indexer.source;
 
-public enum ESModelIndexEventType
+import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
+
+import java.util.stream.Stream;
+
+/**
+ * Provides models to be indexed by {@link ESModelIndexer}
+ */
+@FunctionalInterface
+public interface ESModelIndexerDataSource
 {
-	ADD, REMOVE
+	Stream<ESModelToIndex> streamModelsToIndex();
 }

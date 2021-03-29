@@ -1,7 +1,7 @@
 package de.metas.elasticsearch.denormalizers.impl;
 
 import com.google.common.base.MoreObjects;
-import de.metas.elasticsearch.indexer.ESModelToIndex;
+import de.metas.elasticsearch.indexer.source.ESModelToIndex;
 import de.metas.util.Check;
 import lombok.NonNull;
 

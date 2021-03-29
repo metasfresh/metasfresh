@@ -1,34 +1,8 @@
-package de.metas.elasticsearch.indexer.impl;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
-import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
-import de.metas.elasticsearch.config.ESModelIndexerId;
-import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.ESSystemEnabledCondition;
-import de.metas.elasticsearch.indexer.ESModelIndexerDataSources;
-import de.metas.elasticsearch.indexer.IESIndexerResult;
-import de.metas.elasticsearch.indexer.IESModelIndexer;
-import de.metas.elasticsearch.indexer.SqlESModelIndexerDataSource;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.service.ISysConfigBL;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-
 /*
  * #%L
- * de.metas.elasticsearch
+ * de.metas.elasticsearch.server
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -46,6 +20,32 @@ import java.util.concurrent.ConcurrentHashMap;
  * #L%
  */
 
+package de.metas.elasticsearch.indexer.registry;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
+import de.metas.elasticsearch.config.ESModelIndexerId;
+import de.metas.elasticsearch.config.ESModelIndexerProfile;
+import de.metas.elasticsearch.ESSystemEnabledCondition;
+import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
+import de.metas.elasticsearch.indexer.engine.IESIndexerResult;
+import de.metas.elasticsearch.indexer.source.ESModelIndexerDataSources;
+import de.metas.elasticsearch.indexer.source.SqlESModelIndexerDataSource;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
 @Service
 @Conditional(ESSystemEnabledCondition.class)
 public class ESModelIndexersRegistry
@@ -54,8 +54,8 @@ public class ESModelIndexersRegistry
 
 	private static final String SYSCONFIG_AUTOINDEX_MODELS = "de.metas.elasticsearch.indexer.AutoIndexModels";
 
-	private final ConcurrentHashMap<ESModelIndexerId, IESModelIndexer> indexersById = new ConcurrentHashMap<>();
-	private final ConcurrentHashMap<String, ImmutableList<IESModelIndexer>> indexersByModelTableName = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<ESModelIndexerId, ESModelIndexer> indexersById = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, ImmutableList<ESModelIndexer>> indexersByModelTableName = new ConcurrentHashMap<>();
 	
 	private final RestHighLevelClient elasticsearchClient;
 	private final ObjectMapper jsonObjectMapper;
@@ -80,9 +80,9 @@ public class ESModelIndexersRegistry
 		return jsonObjectMapper;
 	}
 
-	public Collection<IESModelIndexer> getModelIndexersByTableName(@NonNull final String modelTableName)
+	public Collection<ESModelIndexer> getModelIndexersByTableName(@NonNull final String modelTableName)
 	{
-		final ImmutableList<IESModelIndexer> modelIndexers = indexersByModelTableName.get(modelTableName);
+		final ImmutableList<ESModelIndexer> modelIndexers = indexersByModelTableName.get(modelTableName);
 		if (modelIndexers == null)
 		{
 			return ImmutableList.of();
@@ -90,9 +90,9 @@ public class ESModelIndexersRegistry
 		return modelIndexers;
 	}
 
-	public IESModelIndexer getModelIndexerById(@NonNull final ESModelIndexerId modelIndexerId)
+	public ESModelIndexer getModelIndexerById(@NonNull final ESModelIndexerId modelIndexerId)
 	{
-		final IESModelIndexer indexer = indexersById.get(modelIndexerId);
+		final ESModelIndexer indexer = indexersById.get(modelIndexerId);
 		if (indexer == null)
 		{
 			throw new IllegalArgumentException("No indexer found for modelIndexerId=" + modelIndexerId);
@@ -102,7 +102,7 @@ public class ESModelIndexersRegistry
 
 	public void addModelIndexer(@NonNull final ESModelIndexerConfigBuilder config)
 	{
-		final IESModelIndexer indexer = new ESModelIndexerFactory(this, config)
+		final ESModelIndexer indexer = new ESModelIndexerFactory(this, config)
 				.indexSettingsJson(config.getIndexSettingsJson())
 				.indexStringFullTextSearchAnalyzer(config.getIndexStringFullTextSearchAnalyzer())
 				.create();
@@ -110,12 +110,12 @@ public class ESModelIndexersRegistry
 		addModelIndexer(indexer);
 	}
 
-	private void addModelIndexer(@NonNull final IESModelIndexer indexer)
+	private void addModelIndexer(@NonNull final ESModelIndexer indexer)
 	{
 		//
 		// Register the indexer
 		{
-			final IESModelIndexer oldIndexer = indexersById.putIfAbsent(indexer.getId(), indexer);
+			final ESModelIndexer oldIndexer = indexersById.putIfAbsent(indexer.getId(), indexer);
 			if (oldIndexer != null && !oldIndexer.equals(indexer))
 			{
 				logger.warn("Skip registering indexer {} because it was already registered: {}", indexer, oldIndexer);
@@ -138,7 +138,7 @@ public class ESModelIndexersRegistry
 		}
 	}
 
-	private void createIndexAndAddAllModels(@NonNull final IESModelIndexer indexer)
+	private void createIndexAndAddAllModels(@NonNull final ESModelIndexer indexer)
 	{
 		final boolean indexJustCreated = indexer.createUpdateIndex();
 		logger.info("Created/Updated index mapping for {}", indexer);
@@ -162,9 +162,9 @@ public class ESModelIndexersRegistry
 		return sysConfigBL.getBooleanValue(SYSCONFIG_AUTOINDEX_MODELS + "." + indexName, true);
 	}
 
-	private static ImmutableList<IESModelIndexer> merge(
-			@Nullable final ImmutableList<IESModelIndexer> existingModelIndexers,
-			@NonNull final IESModelIndexer modelIndexerToAdd)
+	private static ImmutableList<ESModelIndexer> merge(
+			@Nullable final ImmutableList<ESModelIndexer> existingModelIndexers,
+			@NonNull final ESModelIndexer modelIndexerToAdd)
 	{
 		if (existingModelIndexers == null || existingModelIndexers.isEmpty())
 		{
@@ -172,11 +172,11 @@ public class ESModelIndexersRegistry
 		}
 		else
 		{
-			return ImmutableList.<IESModelIndexer> builder().addAll(existingModelIndexers).add(modelIndexerToAdd).build();
+			return ImmutableList.<ESModelIndexer> builder().addAll(existingModelIndexers).add(modelIndexerToAdd).build();
 		}
 	}
 
-	public Optional<IESModelIndexer> getFullTextSearchModelIndexer(final String modelTableName)
+	public Optional<ESModelIndexer> getFullTextSearchModelIndexer(final String modelTableName)
 	{
 		return getModelIndexersByTableName(modelTableName)
 				.stream()

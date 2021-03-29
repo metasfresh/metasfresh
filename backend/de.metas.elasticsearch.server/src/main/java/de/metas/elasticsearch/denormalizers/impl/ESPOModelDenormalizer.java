@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
-import de.metas.elasticsearch.indexer.ESModelToIndex;
+import de.metas.elasticsearch.indexer.source.ESModelToIndex;
 import de.metas.elasticsearch.types.ESDataType;
 import de.metas.util.Check;
 import lombok.Getter;

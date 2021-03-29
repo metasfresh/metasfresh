@@ -1,15 +1,8 @@
-package de.metas.elasticsearch;
-
-import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
-import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
-import lombok.NonNull;
-import org.compiere.SpringContextHolder;
-
 /*
  * #%L
  * de.metas.elasticsearch.server
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -18,14 +11,22 @@ import org.compiere.SpringContextHolder;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.elasticsearch.server;
+
+import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
+import de.metas.elasticsearch.indexer.registry.ESModelIndexersRegistry;
+import de.metas.elasticsearch.server.IESServer;
+import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 
 public class ESServer implements IESServer
 {

@@ -1,28 +1,8 @@
-package de.metas.elasticsearch.indexer.impl;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.elasticsearch.config.ESIncludedModelsConfig;
-import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
-import de.metas.elasticsearch.config.ESModelIndexerId;
-import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.config.ESTextAnalyzer;
-import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
-import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
-import de.metas.elasticsearch.indexer.IESModelIndexer;
-import de.metas.elasticsearch.indexer.impl.ESModelIndexer.ESModelIndexerBuilder;
-import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NonNull;
-
 /*
  * #%L
- * de.metas.elasticsearch
+ * de.metas.elasticsearch.server
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -40,6 +20,26 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.elasticsearch.indexer.registry;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.elasticsearch.config.ESIncludedModelsConfig;
+import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
+import de.metas.elasticsearch.config.ESModelIndexerId;
+import de.metas.elasticsearch.config.ESModelIndexerProfile;
+import de.metas.elasticsearch.config.ESTextAnalyzer;
+import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
+import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
+import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
+import de.metas.elasticsearch.indexer.engine.ESModelIndexer.ESModelIndexerBuilder;
+import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NonNull;
+
 final class ESModelIndexerFactory
 {
 	// services
@@ -52,7 +52,7 @@ final class ESModelIndexerFactory
 
 	private final String modelTableName;
 
-	private ImmutableList<ESIncludedModelsConfig> includedModelsConfigs;
+	private final ImmutableList<ESIncludedModelsConfig> includedModelsConfigs;
 
 	private final ImmutableList<IESModelIndexerTrigger> triggers;
 
@@ -71,7 +71,7 @@ final class ESModelIndexerFactory
 		triggers = ImmutableList.copyOf(config.getTriggers());
 	}
 
-	public IESModelIndexer create()
+	public ESModelIndexer create()
 	{
 		final ImmutableList<ESModelIndexer> includedModelIndexers = includedModelsConfigs.stream()
 				.map(this::createIncludedModelIndexer)

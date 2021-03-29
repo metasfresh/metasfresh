@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.elasticsearch.indexer;
+package de.metas.elasticsearch.indexer.source;
 
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;

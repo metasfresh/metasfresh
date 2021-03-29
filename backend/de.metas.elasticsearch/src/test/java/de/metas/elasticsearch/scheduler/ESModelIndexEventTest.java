@@ -28,6 +28,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
+import de.metas.elasticsearch.indexer.queue.ESModelIndexEvent;
+import de.metas.elasticsearch.indexer.queue.ESModelIndexEventType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

@@ -1,7 +1,7 @@
 package de.metas.elasticsearch.denormalizers;
 
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.indexer.ESModelToIndex;
+import de.metas.elasticsearch.indexer.source.ESModelToIndex;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
 import javax.annotation.Nullable;

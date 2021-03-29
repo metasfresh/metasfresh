@@ -1,8 +1,7 @@
 package de.metas.elasticsearch.denormalizers.impl;
 
-import de.metas.elasticsearch.indexer.ESModelToIndex;
+import de.metas.elasticsearch.indexer.source.ESModelToIndex;
 import lombok.ToString;
-import org.compiere.model.PO;
 
 /*
  * #%L

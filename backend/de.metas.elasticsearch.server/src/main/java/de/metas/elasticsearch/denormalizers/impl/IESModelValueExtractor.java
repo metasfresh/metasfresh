@@ -22,7 +22,7 @@ package de.metas.elasticsearch.denormalizers.impl;
  * #L%
  */
 
-import de.metas.elasticsearch.indexer.ESModelToIndex;
+import de.metas.elasticsearch.indexer.source.ESModelToIndex;
 
 import javax.annotation.Nullable;
 

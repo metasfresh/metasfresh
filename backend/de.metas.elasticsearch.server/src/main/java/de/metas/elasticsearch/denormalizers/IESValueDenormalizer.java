@@ -1,11 +1,9 @@
 package de.metas.elasticsearch.denormalizers;
 
-import de.metas.elasticsearch.indexer.ESModelToIndex;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.Map;
 
 /*
  * #%L

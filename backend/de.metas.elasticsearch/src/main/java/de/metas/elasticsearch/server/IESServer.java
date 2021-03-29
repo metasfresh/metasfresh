@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.elasticsearch;
+package de.metas.elasticsearch.server;
 
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 

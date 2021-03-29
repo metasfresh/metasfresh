@@ -1,16 +1,8 @@
-package de.metas.elasticsearch.indexer.impl;
-
-import com.google.common.base.MoreObjects;
-import de.metas.elasticsearch.indexer.IESIndexerResult;
-import org.elasticsearch.ElasticsearchException;
-import org.elasticsearch.action.bulk.BulkItemResponse;
-import org.elasticsearch.action.bulk.BulkResponse;
-
 /*
  * #%L
- * de.metas.elasticsearch
+ * de.metas.elasticsearch.server
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -19,14 +11,21 @@ import org.elasticsearch.action.bulk.BulkResponse;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.elasticsearch.indexer.engine;
+
+import com.google.common.base.MoreObjects;
+import org.elasticsearch.ElasticsearchException;
+import org.elasticsearch.action.bulk.BulkItemResponse;
+import org.elasticsearch.action.bulk.BulkResponse;
 
 final class ESIndexerResult implements IESIndexerResult
 {

@@ -28,7 +28,7 @@ app_1       | 2019-10-10T13:31:47.393592807Z    at java.lang.Thread.run(Thread.j
 app_1       | 2019-10-10T13:31:47.393604137Z Caused by: org.elasticsearch.ElasticsearchException: failure in bulk execution:
 app_1       | 2019-10-10T13:31:47.393616832Z [0]: index [orders], type [C_OrderLine], id [1000083], message [MapperParsingException[failed to parse]; nested: NullPointerException;]
 app_1       | 2019-10-10T13:31:47.393628879Z [1]: index [orders], type [C_OrderLine], id [1000084], message [MapperParsingException[failed to parse]; nested: NullPointerException;]
-app_1       | 2019-10-10T13:31:47.393641374Z    at de.metas.elasticsearch.indexer.impl.ESIndexerResult.throwExceptionIfAnyFailure(ESIndexerResult.java:134)
+app_1       | 2019-10-10T13:31:47.393641374Z    at de.metas.elasticsearch.indexer.engine.ESIndexerResult.throwExceptionIfAnyFailure(ESIndexerResult.java:134)
 app_1       | 2019-10-10T13:31:47.393649228Z    at de.metas.elasticsearch.scheduler.async.AsyncAddToIndexProcessor.processWorkPackage(AsyncAddToIndexProcessor.java:98)
 app_1       | 2019-10-10T13:31:47.393656834Z    ... 14 common frames omitted
 */

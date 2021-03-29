@@ -20,17 +20,17 @@
  * #L%
  */
 
-package de.metas.elasticsearch.scheduler;
+package de.metas.elasticsearch.indexer.queue;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerId;
-import de.metas.elasticsearch.indexer.ESModelIndexerDataSources;
-import de.metas.elasticsearch.indexer.ESModelToIndex;
-import de.metas.elasticsearch.indexer.IESIndexerResult;
-import de.metas.elasticsearch.indexer.IESModelIndexer;
-import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
+import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
+import de.metas.elasticsearch.indexer.source.ESModelIndexerDataSources;
+import de.metas.elasticsearch.indexer.source.ESModelToIndex;
+import de.metas.elasticsearch.indexer.engine.IESIndexerResult;
+import de.metas.elasticsearch.indexer.registry.ESModelIndexersRegistry;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.util.Loggables;
@@ -125,7 +125,7 @@ public class ESModelIndexerQueueProcessor implements Consumer<ESModelIndexEvent>
 
 		if (!modelIdsToRemove.isEmpty())
 		{
-			final IESModelIndexer modelIndexer = esModelIndexersRegistry.getModelIndexerById(modelIndexerId);
+			final ESModelIndexer modelIndexer = esModelIndexersRegistry.getModelIndexerById(modelIndexerId);
 			final IESIndexerResult result = modelIndexer.removeFromIndexByIds(modelIdsToRemove);
 			Loggables.addLog(result.getSummary());
 			result.throwExceptionIfAnyFailure();
@@ -133,7 +133,7 @@ public class ESModelIndexerQueueProcessor implements Consumer<ESModelIndexEvent>
 
 		if (!modelsToAdd.isEmpty())
 		{
-			final IESModelIndexer modelIndexer = esModelIndexersRegistry.getModelIndexerById(modelIndexerId);
+			final ESModelIndexer modelIndexer = esModelIndexersRegistry.getModelIndexerById(modelIndexerId);
 			final IESIndexerResult result = modelIndexer.addToIndex(ESModelIndexerDataSources.ofCollection(modelsToAdd));
 			Loggables.addLog(result.getSummary());
 			result.throwExceptionIfAnyFailure();
@@ -147,7 +147,7 @@ public class ESModelIndexerQueueProcessor implements Consumer<ESModelIndexEvent>
 			throw new AdempiereException("No source models found");
 		}
 
-		final IESModelIndexer modelIndexer = esModelIndexersRegistry.getModelIndexerById(modelIndexerId);
+		final ESModelIndexer modelIndexer = esModelIndexersRegistry.getModelIndexerById(modelIndexerId);
 
 		final IESIndexerResult result = modelIndexer.removeFromIndexByIds(idsToRemove.stream()
 				.map(String::valueOf)

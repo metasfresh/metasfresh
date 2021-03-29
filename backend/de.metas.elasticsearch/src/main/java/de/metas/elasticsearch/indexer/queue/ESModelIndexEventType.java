@@ -1,13 +1,8 @@
-package de.metas.elasticsearch.indexer;
-
-import java.util.Iterator;
-import java.util.stream.Stream;
-
 /*
  * #%L
- * de.metas.elasticsearch.server
+ * de.metas.elasticsearch
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,11 +20,9 @@ import java.util.stream.Stream;
  * #L%
  */
 
-/**
- * Provides models to be indexed by {@link IESModelIndexer}
- */
-@FunctionalInterface
-public interface ESModelIndexerDataSource
+package de.metas.elasticsearch.indexer.queue;
+
+public enum ESModelIndexEventType
 {
-	Stream<ESModelToIndex> streamModelsToIndex();
+	ADD, REMOVE
 }

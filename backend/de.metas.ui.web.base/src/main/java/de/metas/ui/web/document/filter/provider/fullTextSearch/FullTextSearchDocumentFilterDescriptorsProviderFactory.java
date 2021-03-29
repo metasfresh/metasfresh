@@ -1,8 +1,8 @@
 package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
 import de.metas.elasticsearch.ESSystemEnabledCondition;
-import de.metas.elasticsearch.indexer.IESModelIndexer;
-import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
+import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
+import de.metas.elasticsearch.indexer.registry.ESModelIndexersRegistry;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -78,7 +78,7 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
 
-		final IESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(tableName)
+		final ESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(tableName)
 				.orElse(null);
 		if (modelIndexer == null)
 		{
@@ -104,7 +104,7 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 		return ImmutableDocumentFilterDescriptorsProvider.of(filterDescriptor);
 	}
 
-	private FullTextSearchFilterContext createFullTextSearchFilterContext(final IESModelIndexer modelIndexer)
+	private FullTextSearchFilterContext createFullTextSearchFilterContext(final ESModelIndexer modelIndexer)
 	{
 		return FullTextSearchFilterContext.builder()
 				.elasticsearchClient(elasticsearchClient)

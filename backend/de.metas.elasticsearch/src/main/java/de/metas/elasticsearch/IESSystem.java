@@ -2,7 +2,7 @@ package de.metas.elasticsearch;
 
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.scheduler.ESModelIndexerQueue;
+import de.metas.elasticsearch.indexer.queue.ESModelIndexerQueue;
 import de.metas.util.ISingletonService;
 
 /*
