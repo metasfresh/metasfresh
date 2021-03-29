@@ -5,7 +5,6 @@ import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.config.ESTextAnalyzer;
 import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
-import de.metas.elasticsearch.types.ESDataType;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;

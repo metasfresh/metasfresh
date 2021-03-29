@@ -2,7 +2,6 @@ package de.metas.elasticsearch.denormalizers.impl;
 
 import de.metas.elasticsearch.config.ESTextAnalyzer;
 import de.metas.elasticsearch.denormalizers.IESValueDenormalizer;
-import de.metas.elasticsearch.types.ESDataType;
 import lombok.NonNull;
 import lombok.ToString;
 import org.elasticsearch.common.xcontent.XContentBuilder;

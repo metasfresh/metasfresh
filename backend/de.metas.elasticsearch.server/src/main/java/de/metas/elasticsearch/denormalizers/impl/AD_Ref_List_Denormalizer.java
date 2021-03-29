@@ -2,7 +2,6 @@ package de.metas.elasticsearch.denormalizers.impl;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.elasticsearch.denormalizers.IESValueDenormalizer;
-import de.metas.elasticsearch.types.ESDataType;
 import lombok.ToString;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 

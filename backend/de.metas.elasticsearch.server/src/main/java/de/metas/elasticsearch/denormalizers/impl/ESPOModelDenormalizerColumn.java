@@ -4,7 +4,6 @@ import de.metas.elasticsearch.config.ESTextAnalyzer;
 import de.metas.elasticsearch.denormalizers.IESValueDenormalizer;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
 import de.metas.elasticsearch.indexer.source.ESModelToIndex;
-import de.metas.elasticsearch.types.ESDataType;
 import lombok.NonNull;
 import lombok.ToString;
 import org.elasticsearch.common.xcontent.XContentBuilder;

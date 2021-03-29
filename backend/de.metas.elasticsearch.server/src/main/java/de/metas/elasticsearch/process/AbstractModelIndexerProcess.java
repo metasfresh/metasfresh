@@ -1,21 +1,23 @@
 package de.metas.elasticsearch.process;
 
-import java.util.Collection;
-import java.util.List;
-
+import com.google.common.base.Stopwatch;
 import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
+import de.metas.elasticsearch.indexer.engine.IESIndexerResult;
 import de.metas.elasticsearch.indexer.registry.ESModelIndexersRegistry;
-import de.metas.process.*;
+import de.metas.elasticsearch.indexer.source.ESModelIndexerDataSources;
+import de.metas.elasticsearch.indexer.source.SqlESModelIndexerDataSource;
+import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
-import com.google.common.base.Stopwatch;
-
-import de.metas.elasticsearch.indexer.source.ESModelIndexerDataSources;
-import de.metas.elasticsearch.indexer.engine.IESIndexerResult;
-import de.metas.elasticsearch.indexer.source.SqlESModelIndexerDataSource;
-import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -39,7 +41,7 @@ import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
  * #L%
  */
 
-public abstract class AbstractModelIndexerProcess extends JavaProcess implements IProcessPrecondition
+abstract class AbstractModelIndexerProcess extends JavaProcess implements IProcessPrecondition
 {
 	// services
     /** This is null if elastic search is switched off */
