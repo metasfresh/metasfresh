@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.function.BiFunction;
 
@@ -216,10 +217,10 @@ public class KPIDataLoader
 		//
 		// Create query evaluation context
 		final Evaluatee evalCtx = Evaluatees.mapBuilder()
-				.put("MainFromMillis", data.getRange().getFromMillis())
-				.put("MainToMillis", data.getRange().getToMillis())
-				.put("FromMillis", timeRange.getFromMillis())
-				.put("ToMillis", timeRange.getToMillis())
+				.put("MainFromMillis", toESQueryString(data.getRange().getFrom()))
+				.put("MainToMillis", toESQueryString(data.getRange().getTo()))
+				.put("FromMillis", toESQueryString(timeRange.getFrom()))
+				.put("ToMillis", toESQueryString(timeRange.getTo()))
 				.build()
 				// Fallback to user context
 				.andComposeWith(Evaluatees.ofCtx(Env.getCtx()));
@@ -293,6 +294,11 @@ public class KPIDataLoader
 					e);
 
 		}
+	}
+
+	private static String toESQueryString(@NonNull final Instant instant)
+	{
+		return "\"" + instant.toString() + "\"";
 	}
 
 	private void loadDataFromMultiBucketsAggregation(

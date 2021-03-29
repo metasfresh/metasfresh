@@ -1,26 +1,7 @@
 package de.metas.ui.web.dashboard;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-
-import de.metas.elasticsearch.ESSystemEnabledCondition;
-import lombok.NonNull;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.elasticsearch.ESSystemEnabledCondition;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
@@ -42,6 +23,25 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
 import de.metas.util.Services;
 import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 
 /*
  * #%L
@@ -220,7 +220,12 @@ public class DashboardRestController
 			, @RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues //
 	)
 	{
-		return getKPIData(DashboardWidgetType.KPI, itemId, fromMillis, toMillis, prettyValues);
+		return getKPIData(
+				DashboardWidgetType.KPI,
+				itemId,
+				fromMillis > 0 ? Instant.ofEpochMilli(fromMillis) : null,
+				toMillis > 0 ? Instant.ofEpochMilli(toMillis) : null,
+				prettyValues);
 	}
 
 	@GetMapping("/targetIndicators/{itemId}/data")
@@ -231,10 +236,20 @@ public class DashboardRestController
 			, @RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues //
 	)
 	{
-		return getKPIData(DashboardWidgetType.TargetIndicator, itemId, fromMillis, toMillis, prettyValues);
+		return getKPIData(
+				DashboardWidgetType.TargetIndicator,
+				itemId,
+				fromMillis > 0 ? Instant.ofEpochMilli(fromMillis) : null,
+				toMillis > 0 ? Instant.ofEpochMilli(toMillis) : null,
+				prettyValues);
 	}
 
-	private KPIDataResult getKPIData(final DashboardWidgetType widgetType, final int itemId, final long fromMillis, final long toMillis, final boolean prettyValues)
+	private KPIDataResult getKPIData(
+			final DashboardWidgetType widgetType,
+			final int itemId,
+			@Nullable final Instant from,
+			@Nullable final Instant to,
+			final boolean prettyValues)
 	{
 		userSession.assertLoggedIn();
 
@@ -242,7 +257,7 @@ public class DashboardRestController
 				.getItemById(widgetType, itemId);
 
 		final KPI kpi = dashboardItem.getKPI();
-		final TimeRange timeRange = dashboardItem.getTimeRangeDefaults().createTimeRange(fromMillis, toMillis);
+		final TimeRange timeRange = dashboardItem.getTimeRangeDefaults().createTimeRange(from, to);
 
 		final JSONOptions jsonOptions = JSONOptions.of(userSession);
 		return KPIDataLoader.newInstance(elasticsearchClient, kpi, jsonOptions)
