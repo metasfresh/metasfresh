@@ -1,7 +1,6 @@
 package de.metas.elasticsearch;
 
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
-import de.metas.elasticsearch.impl.IESServer;
 import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;

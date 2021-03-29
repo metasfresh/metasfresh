@@ -20,10 +20,10 @@
  * #L%
  */
 
-package de.metas.elasticsearch.impl;
+package de.metas.elasticsearch;
 
-import de.metas.elasticsearch.IESSystem;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
@@ -31,7 +31,9 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 public class ESSystemEnabledCondition implements Condition
 {
 	@Override
-	public boolean matches(final ConditionContext context, final AnnotatedTypeMetadata metadata)
+	public boolean matches(
+			final @NonNull ConditionContext context,
+			final @NonNull AnnotatedTypeMetadata metadata)
 	{
 		final IESSystem esSystem = Services.get(IESSystem.class);
 		return esSystem.isEnabled();

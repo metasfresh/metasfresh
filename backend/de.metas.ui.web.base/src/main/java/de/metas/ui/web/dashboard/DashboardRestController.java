@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-import de.metas.elasticsearch.impl.ESSystemEnabledCondition;
+import de.metas.elasticsearch.ESSystemEnabledCondition;
 import lombok.NonNull;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;

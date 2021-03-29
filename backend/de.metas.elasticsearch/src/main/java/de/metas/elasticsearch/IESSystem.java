@@ -2,7 +2,7 @@ package de.metas.elasticsearch;
 
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.scheduler.IESModelIndexingScheduler;
+import de.metas.elasticsearch.scheduler.ESModelIndexerQueue;
 import de.metas.util.ISingletonService;
 
 /*
@@ -29,9 +29,8 @@ import de.metas.util.ISingletonService;
 
 /**
  * This is the main gateway to de.metas.elasticsearch module.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public interface IESSystem extends ISingletonService
 {
@@ -41,6 +40,5 @@ public interface IESSystem extends ISingletonService
 
 	ESModelIndexerConfigBuilder newModelIndexerConfig(ESModelIndexerProfile profile, String indexName, String modelTableName);
 
-	IESModelIndexingScheduler scheduler();
-
+	ESModelIndexerQueue indexingQueue();
 }

@@ -1,24 +1,11 @@
 package de.metas.elasticsearch.indexer.impl;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.Nullable;
-
-import de.metas.elasticsearch.impl.ESSystemEnabledCondition;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
+import de.metas.elasticsearch.ESSystemEnabledCondition;
 import de.metas.elasticsearch.indexer.ESModelIndexerDataSources;
 import de.metas.elasticsearch.indexer.IESIndexerResult;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
@@ -26,9 +13,16 @@ import de.metas.elasticsearch.indexer.SqlESModelIndexerDataSource;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.adempiere.service.ISysConfigBL;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 /*
  * #%L

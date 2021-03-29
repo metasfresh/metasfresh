@@ -1,6 +1,6 @@
 package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
-import de.metas.elasticsearch.impl.ESSystemEnabledCondition;
+import de.metas.elasticsearch.ESSystemEnabledCondition;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
 import de.metas.i18n.AdMessageKey;
@@ -20,7 +20,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 

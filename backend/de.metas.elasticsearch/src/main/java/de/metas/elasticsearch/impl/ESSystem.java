@@ -2,7 +2,7 @@
  * #%L
  * de.metas.elasticsearch
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,10 +24,11 @@ package de.metas.elasticsearch.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
+import de.metas.elasticsearch.IESServer;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.scheduler.IESModelIndexingScheduler;
+import de.metas.elasticsearch.scheduler.ESModelIndexerQueue;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -37,8 +38,10 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -129,6 +132,7 @@ public class ESSystem implements IESSystem
 		return serverSupplier.get();
 	}
 
+	@Nullable
 	private IESServer findESServer()
 	{
 		try
@@ -154,8 +158,9 @@ public class ESSystem implements IESSystem
 	}
 
 	@Override
-	public IESModelIndexingScheduler scheduler()
+	public ESModelIndexerQueue indexingQueue()
 	{
-		return Services.get(IESModelIndexingScheduler.class);
+		return SpringContextHolder.instance.getBean(ESModelIndexerQueue.class);
 	}
+
 }

@@ -452,6 +452,8 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Override
 	public IESIndexerResult addToIndex(@NonNull final ESModelIndexerDataSource dataSource)
 	{
+		createUpdateIndex();
+
 		final BulkRequest bulkRequest = new BulkRequest();
 
 		try
@@ -488,6 +490,11 @@ public final class ESModelIndexer implements IESModelIndexer
 	@Override
 	public IESIndexerResult removeFromIndexByIds(final Collection<String> ids)
 	{
+		if(!checkIndexExists())
+		{
+			return IESIndexerResult.NULL;
+		}
+
 		final BulkRequest bulkRequest = new BulkRequest();
 
 		try

@@ -1,12 +1,10 @@
 package de.metas.elasticsearch.indexer.impl;
 
+import com.google.common.base.MoreObjects;
+import de.metas.elasticsearch.indexer.IESIndexerResult;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkResponse;
-
-import com.google.common.base.MoreObjects;
-
-import de.metas.elasticsearch.indexer.IESIndexerResult;
 
 /*
  * #%L
@@ -30,7 +28,7 @@ import de.metas.elasticsearch.indexer.IESIndexerResult;
  * #L%
  */
 
-/*package */final class ESIndexerResult implements IESIndexerResult
+final class ESIndexerResult implements IESIndexerResult
 {
 	public static IESIndexerResult of(final BulkResponse response)
 	{

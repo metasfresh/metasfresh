@@ -3,7 +3,6 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.IESSystem;
-import de.metas.elasticsearch.impl.ESSystem;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
 import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
 import de.metas.i18n.IModelTranslationMap;

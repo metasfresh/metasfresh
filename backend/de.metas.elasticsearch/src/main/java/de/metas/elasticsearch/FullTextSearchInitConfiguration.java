@@ -57,7 +57,6 @@ public class FullTextSearchInitConfiguration extends AbstractModuleInterceptor
 
 	private void setupModelIndexers()
 	{
-		final IESSystem esSystem = Services.get(IESSystem.class);
 		if (!esSystem.isEnabled())
 		{
 			logger.info("Skip setup because elasticsearch System is not enabled");

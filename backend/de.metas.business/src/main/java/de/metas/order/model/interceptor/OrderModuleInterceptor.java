@@ -24,6 +24,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 {
 	private final OrderGroupCompensationChangesHandler groupChangesHandler = SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class);
 	private final OrderLineDetailRepository orderLineDetailRepository = SpringContextHolder.instance.getBean(OrderLineDetailRepository.class);
+	private final IESSystem esSystem = Services.get(IESSystem.class);
 
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
@@ -39,7 +40,6 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 
 		//
 		// Elasticsearch indexing
-		final IESSystem esSystem = Services.get(IESSystem.class);
 		if (esSystem.isEnabled())
 		{
 			esSystem.newModelIndexerConfig(ESModelIndexerProfile.KPI, "orders", I_C_OrderLine.class)

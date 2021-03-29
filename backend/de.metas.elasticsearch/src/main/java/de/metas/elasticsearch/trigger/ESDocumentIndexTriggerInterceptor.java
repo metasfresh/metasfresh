@@ -1,7 +1,15 @@
 package de.metas.elasticsearch.trigger;
 
-import java.util.List;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.elasticsearch.IESSystem;
+import de.metas.elasticsearch.config.ESModelIndexerId;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
@@ -15,16 +23,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Client;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.elasticsearch.IESSystem;
-import de.metas.elasticsearch.config.ESModelIndexerId;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
 
 /*
  * #%L
@@ -51,15 +50,15 @@ import lombok.NonNull;
 /**
  * Model interceptor which triggers indexing when the given document type changes
  *
- * @author metas-dev <dev@metasfresh.com>
- *
  * @param <DocumentType> type of document that will trigger indexing
+ * @author metas-dev <dev@metasfresh.com>
  */
 public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends AbstractModelInterceptor implements IESModelIndexerTrigger
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(ESDocumentIndexTriggerInterceptor.class);
-	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IESSystem esSystem = Services.get(IESSystem.class);
 
 	private final String triggeringTableName;
 	private final String triggeringKeyColumnName;
@@ -72,7 +71,7 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 	private boolean triggerInstalled = false;
 
 	/**
-	 * @param documentClass class of document which will trigger indexing
+	 * @param documentClass  class of document which will trigger indexing
 	 * @param modelTableName table name of models that we will index
 	 */
 	public ESDocumentIndexTriggerInterceptor(
@@ -173,31 +172,30 @@ public final class ESDocumentIndexTriggerInterceptor<DocumentType> extends Abstr
 		}
 	}
 
-	private List<Integer> retrieveModelIds(final Object triggeringModel)
+	private ImmutableSet<Integer> retrieveModelIds(final Object triggeringModel)
 	{
 		final int documentId = InterfaceWrapperHelper.getId(triggeringModel);
-		return queryBL
+		final List<Integer> modelIds = queryBL
 				.createQueryBuilder(modelTableName, triggeringModel)
 				.addEqualsFilter(modelParentColumnName, documentId)
 				.create()
 				.listIds();
+		return ImmutableSet.copyOf(modelIds);
 	}
 
 	private void addToIndexes(final Object triggeringModelObj)
 	{
-		final List<Integer> modelIdsToIndex = retrieveModelIds(triggeringModelObj);
-		Services.get(IESSystem.class)
-				.scheduler()
+		final ImmutableSet<Integer> modelIdsToIndex = retrieveModelIds(triggeringModelObj);
+		esSystem.indexingQueue()
 				.addToIndex(modelIndexerId, modelTableName, modelIdsToIndex);
-		}
+	}
 
 	private void removeFromIndexes(final Object triggeringModelObj)
 	{
-		final List<Integer> modelIdsToRemove = retrieveModelIds(triggeringModelObj);
-		Services.get(IESSystem.class)
-				.scheduler()
+		final ImmutableSet<Integer> modelIdsToRemove = retrieveModelIds(triggeringModelObj);
+		esSystem.indexingQueue()
 				.removeToIndex(modelIndexerId, modelTableName, modelIdsToRemove);
-		}
+	}
 
 	@Override
 	public IQueryFilter<Object> getMatchingModelsFilter()
