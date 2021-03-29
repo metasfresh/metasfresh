@@ -278,7 +278,7 @@
                 <artifactId>jp.osdn.ocrb</artifactId>
                 <version>0.2.1</version>
             </dependency>
-
+            
             <dependency>
                 <groupId>net.logstash.logback</groupId>
                 <artifactId>logstash-logback-encoder</artifactId>
