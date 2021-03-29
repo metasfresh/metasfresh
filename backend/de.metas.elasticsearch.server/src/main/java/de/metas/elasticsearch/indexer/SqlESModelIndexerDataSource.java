@@ -101,7 +101,7 @@ public class SqlESModelIndexerDataSource implements ESModelIndexerDataSource
 
 		final IQuery<Object> query = queryBuilder.create();
 
-		if (!Check.isEmpty(sqlOrderByClause, true))
+		if (!Check.isBlank(sqlOrderByClause))
 		{
 			query.setOrderBy(queryBL.createSqlQueryOrderBy(sqlOrderByClause));
 		}
