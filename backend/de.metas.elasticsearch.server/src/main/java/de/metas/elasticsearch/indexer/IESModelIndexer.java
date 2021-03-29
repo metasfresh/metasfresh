@@ -55,8 +55,6 @@ public interface IESModelIndexer
 
 	/**
 	 * Add given models to ES index.
-	 *
-	 * @param dataSource
 	 */
 	IESIndexerResult addToIndex(ESModelIndexerDataSource dataSource);
 
