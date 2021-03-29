@@ -20,22 +20,18 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common;
+package de.metas.camel.externalsystems.common.v1;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
+import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsert;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-/**
- * @deprecated will be removed *very* soon. It's identical to v1.BPUpsertCamelRequest.
- */
 @Value
 @Builder
 @JsonDeserialize(builder = BPUpsertCamelRequest.BPUpsertCamelRequestBuilder.class)
-@Deprecated
 public class BPUpsertCamelRequest
 {
 	@NonNull

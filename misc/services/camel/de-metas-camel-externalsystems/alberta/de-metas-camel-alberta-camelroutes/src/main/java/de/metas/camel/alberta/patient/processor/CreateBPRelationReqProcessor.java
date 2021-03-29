@@ -23,9 +23,9 @@
 package de.metas.camel.alberta.patient.processor;
 
 import de.metas.camel.externalsystems.common.BPRelationsCamelRequest;
-import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsert;
-import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsertItem;
-import de.metas.common.bpartner.v1.response.JsonResponseUpsertItem;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
+import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.bprelation.JsonBPRelationRole;
 import de.metas.common.bprelation.request.JsonRequestBPRelationTarget;
 import de.metas.common.bprelation.request.JsonRequestBPRelationsUpsert;
@@ -67,7 +67,7 @@ public class CreateBPRelationReqProcessor implements Processor
 				|| bPartnerUpsertResult.getResponseItems().isEmpty())
 		{
 			throw new RuntimeException("Empty JsonResponseBPartnerCompositeUpsert.ResponseItems! sourceBPartnerIdentifier:"
-											   + bPartnerRoleInfoProvider.getSourceBPartnerIdentifier());
+					+ bPartnerRoleInfoProvider.getSourceBPartnerIdentifier());
 		}
 
 		exchange.getIn().setBody(buildBPRelationsUpsertRequest(orgCode, bPartnerRoleInfoProvider, bPartnerUpsertResult.getResponseItems()));
@@ -193,8 +193,8 @@ public class CreateBPRelationReqProcessor implements Processor
 
 		return bpartnerUpsertResponseItem.getResponseLocationItems()
 				.stream()
-				.filter(upsertItem -> upsertItem.getMetasfreshId() != null)
 				.map(JsonResponseUpsertItem::getMetasfreshId)
+				.filter(Objects::nonNull)
 				.findFirst()
 				.orElseThrow(() -> new RuntimeException("No location JsonResponseUpsertItem found!"));
 	}

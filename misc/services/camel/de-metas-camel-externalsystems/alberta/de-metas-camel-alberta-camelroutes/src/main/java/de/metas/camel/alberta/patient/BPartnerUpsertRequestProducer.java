@@ -22,24 +22,25 @@
 
 package de.metas.camel.alberta.patient;
 
-import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
-import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsert;
-import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsertItem;
-import de.metas.common.bpartner.v1.request.JsonRequestComposite;
-import de.metas.common.bpartner.v1.request.JsonRequestContact;
-import de.metas.common.bpartner.v1.request.JsonRequestContactUpsert;
-import de.metas.common.bpartner.v1.request.JsonRequestContactUpsertItem;
-import de.metas.common.bpartner.v1.request.JsonRequestLocation;
-import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsert;
-import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsertItem;
+import com.google.common.collect.ImmutableMap;
+import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
+import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
+import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
+import de.metas.common.bpartner.v2.request.JsonRequestComposite;
+import de.metas.common.bpartner.v2.request.JsonRequestContact;
+import de.metas.common.bpartner.v2.request.JsonRequestContactUpsert;
+import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
+import de.metas.common.bpartner.v2.request.JsonRequestLocation;
+import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
+import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.common.bprelation.JsonBPRelationRole;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.externalsystem.JsonExternalSystemName;
-import de.metas.common.rest_api.v1.JsonExternalId;
+
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v1.SyncAdvise;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.client.model.CareGiver;
 import io.swagger.client.model.Doctor;
 import io.swagger.client.model.Hospital;
@@ -64,7 +65,9 @@ import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ALBERTA_S
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.BILLING_ADDR_PREFIX;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.COUNTRY_CODE_DE;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ESR_TYPE_BPARTNER;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ESR_TYPE_BPARTNER_LOCATION;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.EXTERNAL_ID_PREFIX;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.MAIN_ADDR_PREFIX;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.SHIPPING_ADDR_PREFIX;
 
 public class BPartnerUpsertRequestProducer
@@ -74,7 +77,7 @@ public class BPartnerUpsertRequestProducer
 	@NonNull
 	private final Patient patient;
 	@NonNull
-	private final Map<String, JsonMetasfreshId> externalId2MetasfreshId;
+	private final ImmutableMap<String, JsonMetasfreshId> externalId2MetasfreshId;
 
 	@Nullable
 	private final Hospital hospital;
@@ -99,7 +102,7 @@ public class BPartnerUpsertRequestProducer
 	public BPartnerUpsertRequestProducer(
 			@NonNull final String orgCode,
 			@NonNull final Patient patient,
-			@NonNull final Map<String, JsonMetasfreshId> externalId2MetasfreshId,
+			@NonNull final ImmutableMap<String, JsonMetasfreshId> externalId2MetasfreshId,
 			@Nullable final Hospital hospital,
 			@Nullable final NursingService nursingService,
 			@Nullable final NursingHome nursingHome,
@@ -161,7 +164,6 @@ public class BPartnerUpsertRequestProducer
 		final String patientId = patient.getId().toString();
 
 		final JsonRequestBPartner bPartner = new JsonRequestBPartner();
-		bPartner.setExternalId(JsonExternalId.of(patientId));
 		bPartner.setName(patient.getFirstName() + " " + patient.getLastName());
 		bPartner.setPhone(patient.getPhone());
 		bPartner.setCustomer(true);
@@ -179,13 +181,7 @@ public class BPartnerUpsertRequestProducer
 		// contact.setBirthDay(patient.getBirthday()); TODO
 		// patient.getGender(); TODO needed?
 
-		final JsonRequestContactUpsert upsertContactRequest = JsonRequestContactUpsert.builder()
-				.requestItem(JsonRequestContactUpsertItem
-									 .builder()
-									 .contactIdentifier(EXTERNAL_ID_PREFIX + patientId)
-									 .contact(contact)
-									 .build())
-				.build();
+		final JsonRequestContactUpsert upsertContactRequest = toJsonRequestContactUpsert(patientId, contact);
 
 		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(patientId);
 		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
@@ -236,7 +232,6 @@ public class BPartnerUpsertRequestProducer
 		final String patientId = patient.getId().toString();
 
 		final JsonRequestLocation location = new JsonRequestLocation();
-		location.setExternalId(JsonExternalId.of(BILLING_ADDR_PREFIX + patientId));
 		location.setAddress1(patientBillingAddress.getAddress());
 		location.setPostal(patientBillingAddress.getPostalCode());
 		location.setCity(patientBillingAddress.getCity());
@@ -246,7 +241,8 @@ public class BPartnerUpsertRequestProducer
 		location.setBillTo(true);
 
 		return JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(EXTERNAL_ID_PREFIX + BILLING_ADDR_PREFIX + patientId)
+				.locationIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + BILLING_ADDR_PREFIX + patientId)
+				.locationExternalRef(createLocationESR(BILLING_ADDR_PREFIX, patientId))
 				.location(location)
 				.build();
 	}
@@ -257,7 +253,6 @@ public class BPartnerUpsertRequestProducer
 		final String patientId = patient.getId().toString();
 
 		final JsonRequestLocation location = new JsonRequestLocation();
-		location.setExternalId(JsonExternalId.of(SHIPPING_ADDR_PREFIX + patientId));
 		location.setAddress1(patientDeliveryAddress.getAddress());
 		location.setPostal(patientDeliveryAddress.getPostalCode());
 		location.setCity(patientDeliveryAddress.getCity());
@@ -267,7 +262,8 @@ public class BPartnerUpsertRequestProducer
 		location.setShipToDefault(true);
 
 		return JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(EXTERNAL_ID_PREFIX + SHIPPING_ADDR_PREFIX + patientId)
+				.locationIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + SHIPPING_ADDR_PREFIX + patientId)
+				.locationExternalRef(createLocationESR(SHIPPING_ADDR_PREFIX, patientId))
 				.location(location)
 				.build();
 	}
@@ -281,7 +277,6 @@ public class BPartnerUpsertRequestProducer
 		final boolean hasExtraShipToAddress = patient.getDeliveryAddress() != null;
 
 		final JsonRequestLocation location = new JsonRequestLocation();
-		location.setExternalId(JsonExternalId.of(patientId));
 		location.setAddress1(patient.getAddress());
 		location.setAddress2(patient.getAdditionalAddress());
 		location.setAddress3(patient.getAdditionalAddress2());
@@ -296,8 +291,10 @@ public class BPartnerUpsertRequestProducer
 		requestProducerResultBuilder.patientMainAddressIdentifier(EXTERNAL_ID_PREFIX + patientId);
 
 		return JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(EXTERNAL_ID_PREFIX + patientId)
-				.location(location).build();
+				.locationIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + MAIN_ADDR_PREFIX + patientId)
+				.locationExternalRef(createLocationESR(MAIN_ADDR_PREFIX, patientId))
+				.location(location)
+				.build();
 	}
 
 	@NonNull
@@ -323,11 +320,10 @@ public class BPartnerUpsertRequestProducer
 		location.setAddress1(careGiver.getAddress());
 		location.setCity(careGiver.getCity());
 		location.setCountryCode(COUNTRY_CODE_DE);
-		location.setExternalId(JsonExternalId.of(careGiverId));
 		location.setPostal(careGiver.getPostalCode());
 
 		final JsonRequestLocationUpsert locationUpsertRequest =
-				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + careGiverId, location);
+				toJsonRequestLocationUpsert(careGiverId, location);
 
 		final JsonRequestContact contact = new JsonRequestContact();
 		contact.setFirstName(careGiver.getFirstName());
@@ -339,12 +335,7 @@ public class BPartnerUpsertRequestProducer
 		contact.setDefaultContact(true);
 		// contact.setTitle(careGiver.getTitle()); TODO: to be seen
 
-		final JsonRequestContactUpsert contactUpsertReq = JsonRequestContactUpsert.builder()
-				.requestItem(JsonRequestContactUpsertItem.builder()
-									 .contactIdentifier(EXTERNAL_ID_PREFIX + careGiverId)
-									 .contact(contact)
-									 .build())
-				.build();
+		final JsonRequestContactUpsert contactUpsertReq = toJsonRequestContactUpsert(careGiverId, contact);
 
 		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(careGiverId)
@@ -353,12 +344,12 @@ public class BPartnerUpsertRequestProducer
 		return JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerIdentifier(bpartnerIdentifier)
 				.bpartnerComposite(JsonRequestComposite.builder()
-										   .orgCode(orgCode)
-										   .bpartner(bPartner)
-										   .locations(locationUpsertRequest)
-										   .contacts(contactUpsertReq)
-										   .bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
-										   .build())
+						.orgCode(orgCode)
+						.bpartner(bPartner)
+						.locations(locationUpsertRequest)
+						.contacts(contactUpsertReq)
+						.bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
+						.build())
 				.build();
 	}
 
@@ -377,7 +368,6 @@ public class BPartnerUpsertRequestProducer
 		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.Hospital);
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
-		jsonRequestBPartner.setExternalId(JsonExternalId.of(hospital.getId()));
 		jsonRequestBPartner.setCompanyName(hospital.getCompanyName());
 		jsonRequestBPartner.setName(hospital.getName());
 		jsonRequestBPartner.setName2(hospital.getCompany());
@@ -387,7 +377,6 @@ public class BPartnerUpsertRequestProducer
 		// jsonRequestBPartner.setEmail(hospital.getEmail()); //todo: to be seen
 
 		final JsonRequestLocation requestLocation = new JsonRequestLocation();
-		requestLocation.setExternalId(JsonExternalId.of(hospital.getId()));
 		requestLocation.setCountryCode(COUNTRY_CODE_DE);
 		requestLocation.setCity(hospital.getCity());
 		requestLocation.setPostal(hospital.getPostalCode());
@@ -398,7 +387,7 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setShipToDefault(true);
 
 		final JsonRequestLocationUpsert upsertLocationsRequest =
-				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + hospital.getId(), requestLocation);
+				toJsonRequestLocationUpsert(hospital.getId(), requestLocation);
 
 		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(hospital.getId())
@@ -412,9 +401,9 @@ public class BPartnerUpsertRequestProducer
 				.build();
 
 		return Optional.of(JsonRequestBPartnerUpsertItem.builder()
-								   .bpartnerIdentifier(bpartnerIdentifier)
-								   .bpartnerComposite(compositeUpsertItem)
-								   .build());
+				.bpartnerIdentifier(bpartnerIdentifier)
+				.bpartnerComposite(compositeUpsertItem)
+				.build());
 	}
 
 	private Optional<JsonRequestBPartnerUpsertItem> mapNursingService()
@@ -432,14 +421,12 @@ public class BPartnerUpsertRequestProducer
 		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.NursingService);
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
-		jsonRequestBPartner.setExternalId(JsonExternalId.of(nursingService.getId()));
 		jsonRequestBPartner.setName(nursingService.getName());
 		jsonRequestBPartner.setPhone(nursingService.getPhone());
 		jsonRequestBPartner.setCustomer(true);
 		// jsonRequestBPartner.setEmail(nursingService.getEmail()); //todo: to be seen
 
 		final JsonRequestLocation requestLocation = new JsonRequestLocation();
-		requestLocation.setExternalId(JsonExternalId.of(nursingService.getId()));
 		requestLocation.setAddress1(nursingService.getAddress());
 		requestLocation.setCity(nursingService.getCity());
 		requestLocation.setPostal(nursingService.getPostalCode());
@@ -450,7 +437,7 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setShipToDefault(true);
 
 		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
-				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + nursingService.getId(), requestLocation);
+				toJsonRequestLocationUpsert(nursingService.getId(), requestLocation);
 
 		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(nursingService.getId())
@@ -464,10 +451,10 @@ public class BPartnerUpsertRequestProducer
 				.build();
 
 		return Optional.of(JsonRequestBPartnerUpsertItem
-								   .builder()
-								   .bpartnerIdentifier(bpartnerIdentifier)
-								   .bpartnerComposite(jsonRequestComposite)
-								   .build());
+				.builder()
+				.bpartnerIdentifier(bpartnerIdentifier)
+				.bpartnerComposite(jsonRequestComposite)
+				.build());
 	}
 
 	private Optional<JsonRequestBPartnerUpsertItem> mapNursingHome()
@@ -485,14 +472,12 @@ public class BPartnerUpsertRequestProducer
 		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.NursingHome);
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
-		jsonRequestBPartner.setExternalId(JsonExternalId.of(nursingHome.getId()));
 		jsonRequestBPartner.setName(nursingHome.getName());
 		jsonRequestBPartner.setPhone(nursingHome.getPhone());
 		jsonRequestBPartner.setCustomer(true);
 		// jsonRequestBPartner.setEmail(nursingHome.getEmail()); //todo
 
 		final JsonRequestLocation requestLocation = new JsonRequestLocation();
-		requestLocation.setExternalId(JsonExternalId.of(nursingHome.getId()));
 		requestLocation.setAddress1(nursingHome.getAddress());
 		requestLocation.setCity(nursingHome.getCity());
 		requestLocation.setPostal(nursingHome.getPostalCode());
@@ -503,7 +488,7 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setShipToDefault(true);
 
 		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
-				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + nursingHome.getId(), requestLocation);
+				toJsonRequestLocationUpsert(nursingHome.getId(), requestLocation);
 
 		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(nursingHome.getId())
@@ -517,10 +502,10 @@ public class BPartnerUpsertRequestProducer
 				.build();
 
 		return Optional.of(JsonRequestBPartnerUpsertItem
-								   .builder()
-								   .bpartnerIdentifier(bpartnerIdentifier)
-								   .bpartnerComposite(jsonRequestComposite)
-								   .build());
+				.builder()
+				.bpartnerIdentifier(bpartnerIdentifier)
+				.bpartnerComposite(jsonRequestComposite)
+				.build());
 	}
 
 	private Optional<JsonRequestBPartnerUpsertItem> mapDoctor()
@@ -538,13 +523,12 @@ public class BPartnerUpsertRequestProducer
 		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.PhysicianDoctor);
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
-		jsonRequestBPartner.setExternalId(JsonExternalId.of(doctor.getId()));
 		jsonRequestBPartner.setName(doctor.getFirstName() + " " + doctor.getLastName());
 		jsonRequestBPartner.setPhone(doctor.getPhone());
 		jsonRequestBPartner.setCustomer(true);
 
 		final JsonRequestContact requestContact = new JsonRequestContact();
-		requestContact.setExternalId(JsonExternalId.of(doctor.getId()));
+		//requestContact.setExternalId(JsonExternalId.of(doctor.getId())); // TODO
 		requestContact.setFirstName(doctor.getFirstName());
 		requestContact.setLastName(doctor.getLastName());
 		requestContact.setPhone(doctor.getPhone());
@@ -552,7 +536,6 @@ public class BPartnerUpsertRequestProducer
 		// requestContact.setGender(doctor.getGender());  //TODO
 
 		final JsonRequestLocation requestLocation = new JsonRequestLocation();
-		requestLocation.setExternalId(JsonExternalId.of(doctor.getId()));
 		requestLocation.setAddress1(doctor.getAddress());
 		requestLocation.setCity(doctor.getCity());
 		requestLocation.setPostal(doctor.getPostalCode());
@@ -563,7 +546,9 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setShipToDefault(true);
 
 		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
-				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + doctor.getId(), requestLocation);
+				toJsonRequestLocationUpsert(doctor.getId(), requestLocation);
+
+		final JsonRequestContactUpsert jsonRequestContactUpsert = toJsonRequestContactUpsert(doctor.getId(), requestContact);
 
 		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(doctor.getId())
@@ -572,15 +557,16 @@ public class BPartnerUpsertRequestProducer
 		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
 				.bpartner(jsonRequestBPartner)
 				.locations(jsonRequestLocationUpsert)
+				.contacts(jsonRequestContactUpsert)
 				.orgCode(orgCode)
 				.bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
 				.build();
 
 		return Optional.of(JsonRequestBPartnerUpsertItem
-								   .builder()
-								   .bpartnerIdentifier(bpartnerIdentifier)
-								   .bpartnerComposite(jsonRequestComposite)
-								   .build());
+				.builder()
+				.bpartnerIdentifier(bpartnerIdentifier)
+				.bpartnerComposite(jsonRequestComposite)
+				.build());
 	}
 
 	private Optional<JsonRequestBPartnerUpsertItem> mapPayer()
@@ -598,13 +584,11 @@ public class BPartnerUpsertRequestProducer
 		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.Payer);
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
-		jsonRequestBPartner.setExternalId(JsonExternalId.of(payer.getId()));
 		jsonRequestBPartner.setName(payer.getName());
 		jsonRequestBPartner.setCode(payer.getIkNumber());
 		jsonRequestBPartner.setCustomer(true);
 
 		final JsonRequestLocation requestLocation = new JsonRequestLocation();
-		requestLocation.setExternalId(JsonExternalId.of(payer.getId()));
 		requestLocation.setCountryCode(COUNTRY_CODE_DE);
 		requestLocation.setBillTo(true);
 		requestLocation.setBillToDefault(true);
@@ -612,7 +596,7 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setShipToDefault(true);
 
 		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
-				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + payer.getId(), requestLocation);
+				toJsonRequestLocationUpsert(payer.getId(), requestLocation);
 
 		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(payer.getId())
@@ -626,10 +610,10 @@ public class BPartnerUpsertRequestProducer
 				.build();
 
 		return Optional.of(JsonRequestBPartnerUpsertItem
-								   .builder()
-								   .bpartnerIdentifier(bpartnerIdentifier)
-								   .bpartnerComposite(jsonRequestComposite)
-								   .build());
+				.builder()
+				.bpartnerIdentifier(bpartnerIdentifier)
+				.bpartnerComposite(jsonRequestComposite)
+				.build());
 	}
 
 	private Optional<JsonRequestBPartnerUpsertItem> mapPharmacy()
@@ -647,7 +631,6 @@ public class BPartnerUpsertRequestProducer
 		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.Pharmacy);
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
-		jsonRequestBPartner.setExternalId(JsonExternalId.of(pharmacy.getId()));
 		jsonRequestBPartner.setName(pharmacy.getName());
 		jsonRequestBPartner.setPhone(pharmacy.getPhone());
 		jsonRequestBPartner.setCustomer(true);
@@ -655,9 +638,7 @@ public class BPartnerUpsertRequestProducer
 		// todo pharmacy.getEmail() ?
 		// todo pharmacy.getFax() ?
 
-
 		final JsonRequestLocation requestLocation = new JsonRequestLocation();
-		requestLocation.setExternalId(JsonExternalId.of(pharmacy.getId()));
 		requestLocation.setCountryCode(COUNTRY_CODE_DE);
 		requestLocation.setCity(pharmacy.getCity());
 		requestLocation.setPostal(pharmacy.getPostalCode());
@@ -668,7 +649,7 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setShipToDefault(true);
 
 		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
-				toJsonRequestLocationUpsert(EXTERNAL_ID_PREFIX + pharmacy.getId(), requestLocation);
+				toJsonRequestLocationUpsert(pharmacy.getId(), requestLocation);
 
 		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
 				? createInsertExternalReferenceReq(pharmacy.getId())
@@ -682,24 +663,55 @@ public class BPartnerUpsertRequestProducer
 				.build();
 
 		return Optional.of(JsonRequestBPartnerUpsertItem
-								   .builder()
-								   .bpartnerIdentifier(bpartnerIdentifier)
-								   .bpartnerComposite(jsonRequestComposite)
-								   .build());
+				.builder()
+				.bpartnerIdentifier(bpartnerIdentifier)
+				.bpartnerComposite(jsonRequestComposite)
+				.build());
 	}
 
 	@NonNull
 	private JsonRequestLocationUpsert toJsonRequestLocationUpsert(
-			@NonNull final String locationIdentifier,
+			@NonNull final String identifier,
 			@NonNull final JsonRequestLocation locationRequest)
 	{
 		final JsonRequestLocationUpsertItem jsonRequestLocationUpsertItem = JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(locationIdentifier)
+				.locationIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + identifier)
 				.location(locationRequest)
+				.locationExternalRef(createLocationESR("", identifier))
 				.build();
 
 		return JsonRequestLocationUpsert.builder()
 				.requestItem(jsonRequestLocationUpsertItem)
+				.build();
+	}
+
+	@NonNull
+	private JsonRequestContactUpsert toJsonRequestContactUpsert(
+			@NonNull final String identifier,
+			@NonNull final JsonRequestContact contactRequest)
+	{
+		final JsonRequestContactUpsertItem jsonRequestLocationUpsertItem = JsonRequestContactUpsertItem.builder()
+				.contactIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + identifier)
+				.contact(contactRequest)
+				//.contactExternalRef(createLocationESR("", identifier)) TODO
+				.build();
+
+		return JsonRequestContactUpsert.builder()
+				.requestItem(jsonRequestLocationUpsertItem)
+				.build();
+	}
+
+	@NonNull
+	private JsonSingleExternalReferenceCreateReq createLocationESR(@NonNull final String addrPrefix, @NonNull final String patientId)
+	{
+		final JsonExternalReferenceLookupItem jsonExternalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
+				.type(ESR_TYPE_BPARTNER_LOCATION)
+				.id(addrPrefix + patientId)
+				.build();
+
+		return JsonSingleExternalReferenceCreateReq.builder()
+				.systemName(JsonExternalSystemName.of(ALBERTA_SYSTEM_NAME))
+				.externalReferenceItem(JsonExternalReferenceItem.of(jsonExternalReferenceLookupItem))
 				.build();
 	}
 

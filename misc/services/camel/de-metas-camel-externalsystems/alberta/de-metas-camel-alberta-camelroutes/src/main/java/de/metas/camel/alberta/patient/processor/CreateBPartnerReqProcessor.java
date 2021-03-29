@@ -22,9 +22,10 @@
 
 package de.metas.camel.alberta.patient.processor;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.camel.alberta.patient.AlbertaConnectionDetails;
 import de.metas.camel.alberta.patient.BPartnerUpsertRequestProducer;
-import de.metas.camel.externalsystems.common.BPUpsertCamelRequest;
+import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -52,6 +53,7 @@ import org.apache.camel.Processor;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -66,7 +68,7 @@ public class CreateBPartnerReqProcessor implements Processor
 	public void process(final Exchange exchange) throws Exception
 	{
 		final JsonExternalReferenceLookupResponse esrLookupResponse = exchange.getIn().getBody(JsonExternalReferenceLookupResponse.class);
-		final Map<String, JsonMetasfreshId> externalId2MetasfreshId = buildExternalId2MetasfreshIdMap(esrLookupResponse);
+		final ImmutableMap<String, JsonMetasfreshId> externalId2MetasfreshId = buildExternalId2MetasfreshIdMap(esrLookupResponse);
 
 		final AlbertaConnectionDetails connectionDetails = exchange.getProperty(ROUTE_PROPERTY_ALBERTA_CONN_DETAILS, AlbertaConnectionDetails.class);
 		if (connectionDetails == null)
@@ -114,18 +116,24 @@ public class CreateBPartnerReqProcessor implements Processor
 		exchange.setProperty(ROUTE_PROPERTY_BP_IDENTIFIER_TO_ROLE, bPartnerRoleInfoProvider);
 	}
 
-	private Map<String, JsonMetasfreshId> buildExternalId2MetasfreshIdMap(@NonNull final JsonExternalReferenceLookupResponse esrLookupResponse)
+	private ImmutableMap<String, JsonMetasfreshId> buildExternalId2MetasfreshIdMap(@NonNull final JsonExternalReferenceLookupResponse esrLookupResponse)
 	{
-		if (esrLookupResponse.getItems() == null || esrLookupResponse.getItems().isEmpty())
+		final List<JsonExternalReferenceItem> items = esrLookupResponse.getItems();
+		if (items == null || items.isEmpty())
 		{
-			return new HashMap<>();
+			return ImmutableMap.of();
 		}
 
-		return esrLookupResponse.getItems()
-				.stream()
-				.filter(item -> item.getMetasfreshId() != null)
-				.collect(Collectors.toMap(item -> item.getLookupItem().getId(),
-						JsonExternalReferenceItem::getMetasfreshId));
+		final ImmutableMap.Builder<String, JsonMetasfreshId> result = ImmutableMap.builder();
+		for (final JsonExternalReferenceItem item : items)
+		{
+			if (item.getMetasfreshId() == null)
+			{
+				continue;
+			}
+			result.put(item.getLookupItem().getId(), item.getMetasfreshId());
+		}
+		return result.build();
 	}
 
 	@Nullable
@@ -137,9 +145,9 @@ public class CreateBPartnerReqProcessor implements Processor
 		}
 		final var apiClient = new ApiClient().setBasePath(albertaConnectionDetails.getBasePath());
 		final DoctorApi doctorApi = new DoctorApi(apiClient);
-		
+
 		final Doctor doctor = doctorApi.getDoctor(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), doctorId);
-	
+
 		if (doctor == null)
 		{
 			throw new RuntimeException("No info returned for doctorId: " + doctorId);

@@ -29,9 +29,11 @@ public interface GetPatientsRouteConstants
 {
 	String ALBERTA_SYSTEM_NAME = "ALBERTA";
 	String ESR_TYPE_BPARTNER = "BPartner";
+	String ESR_TYPE_BPARTNER_LOCATION = "BPartnerLocation";
 	String COUNTRY_CODE_DE = "DE";
 
 	String EXTERNAL_ID_PREFIX = "ext-";
+	String MAIN_ADDR_PREFIX = "mainAddress_";
 	String BILLING_ADDR_PREFIX = "billingAddress_";
 	String SHIPPING_ADDR_PREFIX = "shippingAddress_";
 
