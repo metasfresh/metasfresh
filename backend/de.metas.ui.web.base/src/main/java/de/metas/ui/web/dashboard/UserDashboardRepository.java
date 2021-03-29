@@ -461,7 +461,6 @@ public class UserDashboardRepository
 		caption, interval, when, position
 	}
 
-	@Nullable
 	public UserDashboardItemChangeResult changeUserDashboardItem(final UserDashboard dashboard, final UserDashboardItemChangeRequest request)
 	{
 		final int dashboardId = dashboard.getId();
