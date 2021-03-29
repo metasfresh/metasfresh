@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.rest_api.v2.SwaggerDocConstants;
@@ -41,6 +42,8 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
 /**
  * Specifies a single order line candidate for be created by the system
@@ -118,7 +121,7 @@ public class JsonOLCandCreateRequest
 
 	int flatrateConditionsId;
 
-	@ApiModelProperty(value = "This translates to `C_OLCand.M_Product_ID`.")
+	@ApiModelProperty(value = PRODUCT_IDENTIFIER_DOC)
 	String productIdentifier;
 
 	@JsonInclude(Include.NON_NULL)
@@ -219,6 +222,9 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	String paymentTerm;
 
+	@JsonInclude(Include.NON_NULL)
+	JsonAlbertaOrderInfo albertaOrderInfo;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -253,7 +259,8 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("paymentRule") final @Nullable JSONPaymentRule paymentRule,
 			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
 			@JsonProperty("shipper") final @Nullable String shipper,
-			@JsonProperty("paymentTerm") final @Nullable String paymentTerm)
+			@JsonProperty("paymentTerm") final @Nullable String paymentTerm,
+			@JsonProperty("albertaOrderInfo") final @Nullable JsonAlbertaOrderInfo albertaOrderInfo)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -289,6 +296,7 @@ public class JsonOLCandCreateRequest
 		this.shipper = shipper;
 
 		this.paymentTerm = paymentTerm;
+		this.albertaOrderInfo = albertaOrderInfo;
 	}
 
 	/**

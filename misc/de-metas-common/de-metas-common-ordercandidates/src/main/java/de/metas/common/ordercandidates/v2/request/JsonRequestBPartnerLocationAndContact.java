@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
@@ -51,12 +52,24 @@ public class JsonRequestBPartnerLocationAndContact
 	@JsonCreator
 	@Builder
 	public JsonRequestBPartnerLocationAndContact(
-			@JsonProperty("bPartnerIdentifier") final String bPartnerIdentifier,
-			@JsonProperty("bPartnerLocationIdentifier") final String bPartnerLocationIdentifier,
+			@JsonProperty("bpartnerIdentifier") final String bPartnerIdentifier,
+			@JsonProperty("bpartnerLocationIdentifier") final String bPartnerLocationIdentifier,
 			@JsonProperty("contactIdentifier") final String contactIdentifier)
 	{
 		this.bPartnerIdentifier = bPartnerIdentifier;
 		this.bPartnerLocationIdentifier = bPartnerLocationIdentifier;
 		this.contactIdentifier = contactIdentifier;
+	}
+
+	@NonNull
+	public String getBPartnerIdentifier()
+	{
+		return bPartnerIdentifier;
+	}
+
+	@NonNull
+	public String getBPartnerLocationIdentifier()
+	{
+		return bPartnerLocationIdentifier;
 	}
 }

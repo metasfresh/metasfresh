@@ -95,8 +95,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 @RestController
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order/candidates",
-		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/sales/order/candidates",
-		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/orders/sales/candidates" })
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/sales/order/candidates"})
 @Profile(Profiles.PROFILE_App)
 public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 {

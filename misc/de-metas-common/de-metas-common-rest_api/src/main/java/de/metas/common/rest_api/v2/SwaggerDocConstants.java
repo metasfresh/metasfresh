@@ -59,4 +59,8 @@ public class SwaggerDocConstants
 			+ "* or something like `val-<AD_InputDataSource.Value>`\n"
 			+ "* or something like `ext-<AD_InputDataSource.ExternalId>`\n";
 
+	public static final String PRODUCT_IDENTIFIER_DOC = "Identifier of the product in question. Can be\n"
+			+ "* a plain `<M_Product_ID>`\n"
+			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference> where <ExternalReference> translates to an identifier of the product within the given <ExternalSystem>";
+
 }
