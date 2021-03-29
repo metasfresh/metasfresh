@@ -47,7 +47,7 @@ public class InvoiceTest
 	{
 		AdempiereTestHelper.get().init();
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Invoice(new DocumentSalesRepDescriptorFactory(), new DocumentSalesRepDescriptorService()));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Invoice(new BPartnerBL(new UserRepository()), new DocumentSalesRepDescriptorFactory(), new DocumentSalesRepDescriptorService()));
 	}
 
 	@Test

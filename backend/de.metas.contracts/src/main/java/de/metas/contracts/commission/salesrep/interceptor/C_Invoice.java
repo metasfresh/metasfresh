@@ -49,14 +49,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Interceptor(I_C_Invoice.class)
 public class C_Invoice
 {
-	private DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory;
-	private DocumentSalesRepDescriptorService documentSalesRepDescriptorService;
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	private final DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory;
+	private final DocumentSalesRepDescriptorService documentSalesRepDescriptorService;
+	private final IBPartnerBL bpartnerBL;
 
 	public C_Invoice(
+			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory,
 			@NonNull final DocumentSalesRepDescriptorService documentSalesRepDescriptorService)
 	{
+		this.bpartnerBL = bpartnerBL;
 		this.documentSalesRepDescriptorService = documentSalesRepDescriptorService;
 		this.documentSalesRepDescriptorFactory = documentSalesRepDescriptorFactory;
 

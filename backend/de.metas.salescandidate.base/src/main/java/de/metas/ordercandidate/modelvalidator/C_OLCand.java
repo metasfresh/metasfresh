@@ -53,10 +53,13 @@ public class C_OLCand
 {
 	private final OLCandValidatorService olCandValidatorService;
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+	private final IBPartnerBL bPartnerBL;
 
-	public C_OLCand(@NonNull final OLCandValidatorService olCandValidatorService)
+	public C_OLCand(
+			@NonNull final IBPartnerBL bPartnerBL,
+			@NonNull final OLCandValidatorService olCandValidatorService)
 	{
+		this.bPartnerBL = bPartnerBL;
 		this.olCandValidatorService = olCandValidatorService;
 	}
 
@@ -320,7 +323,7 @@ public class C_OLCand
 		updateOrdersQuery.create().update(poReferenceUpdater);
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE}, ifColumnsChanged = { I_C_OLCand.COLUMNNAME_C_BPartner_SalesRep_ID, I_C_OLCand.COLUMNNAME_C_BPartner_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OLCand.COLUMNNAME_C_BPartner_SalesRep_ID, I_C_OLCand.COLUMNNAME_C_BPartner_ID })
 	public void validateSalesRep(final I_C_OLCand cand)
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(CoalesceUtil.firstGreaterThanZero(cand.getBill_BPartner_ID(), cand.getC_BPartner_ID()));

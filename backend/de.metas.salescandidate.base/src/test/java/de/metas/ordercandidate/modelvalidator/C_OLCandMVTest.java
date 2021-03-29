@@ -63,7 +63,8 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 	@Override
 	protected void initModelValidators()
 	{
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		Services.registerService(IBPartnerBL.class, bpartnerBL);
 		final OLCandRegistry olCandRegistry = new OLCandRegistry(
 				Optional.empty(),
 				Optional.empty(),
@@ -71,7 +72,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
 
 		// Initialize C_OLCand MV Only!
-		final C_OLCand orderCandidateMV = new C_OLCand(olCandValidatorService);
+		final C_OLCand orderCandidateMV = new C_OLCand(bpartnerBL, olCandValidatorService);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(orderCandidateMV, null);
 	}
 
