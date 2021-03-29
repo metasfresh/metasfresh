@@ -73,7 +73,7 @@ public class C_BPartner_MoveToAnotherOrg extends JavaProcess implements IProcess
 		IProcessDefaultParametersProvider
 {
 	public static final String PARAM_AD_ORG_TARGET_ID = "AD_Org_Target_ID";
-	public static final String PARAM_M_PRODUCT_ID = "M_Product_ID";
+	public static final String PARAM_M_PRODUCT_ID = "M_Product_Membership_ID";
 	public static final String PARAM_DATE_ORG_CHANGE = "Date_OrgChange";
 	public static final String PARAM_IS_SHOW_MEMBERSHIP_PARAMETER = "IsShowMembershipParameter";
 
