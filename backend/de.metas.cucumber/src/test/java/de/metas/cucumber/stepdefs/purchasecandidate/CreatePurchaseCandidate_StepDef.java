@@ -29,6 +29,7 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonPrice;
 import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.common.rest_api.v2.JsonRequestAttributeInstance;
 import de.metas.common.rest_api.v2.JsonRequestAttributeSetInstance;
