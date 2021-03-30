@@ -2,6 +2,8 @@ package de.metas.i18n.impl;
 
 import de.metas.i18n.IModelTranslation;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,7 +30,7 @@ public final class NullModelTranslation implements IModelTranslation
 {
 	public static final transient NullModelTranslation instance = new NullModelTranslation();
 
-	public static boolean isNull(final IModelTranslation trl)
+	public static boolean isNull(@Nullable final IModelTranslation trl)
 	{
 		return trl == null || trl == instance;
 	}
@@ -39,12 +41,13 @@ public final class NullModelTranslation implements IModelTranslation
 	}
 	
 	@Override
-	public boolean isTranslated(String columnName)
+	public boolean isTranslated(final String columnName)
 	{
 		return false;
 	}
 
 	@Override
+	@Nullable
 	public String getTranslation(final String columnName)
 	{
 		return null;

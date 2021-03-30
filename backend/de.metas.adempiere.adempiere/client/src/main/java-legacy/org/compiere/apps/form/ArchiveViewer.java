@@ -389,7 +389,7 @@ public class ArchiveViewer extends Archive
 		//
 		positionInfo.setText(m_index + 1 + " of " + m_archives.length);
 		I_AD_Archive ar = m_archives[m_index];
-		createdByField.setText(Services.get(IUserDAO.class).retrieveUserFullname(ar.getCreatedBy()));
+		createdByField.setText(Services.get(IUserDAO.class).retrieveUserFullName(ar.getCreatedBy()));
 		createdField.setValue(ar.getCreated());
 		nameField.setText(ar.getName());
 		descriptionField.setText(ar.getDescription());

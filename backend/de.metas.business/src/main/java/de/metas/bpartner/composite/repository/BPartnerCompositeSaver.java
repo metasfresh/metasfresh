@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -345,6 +346,8 @@ final class BPartnerCompositeSaver
 			bPartnerBL.setAddress(bpartnerLocationRecord);
 
 			assertCanCreateOrUpdate(bpartnerLocationRecord);
+
+			bpartnerLocationRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerLocation.getOrgMappingId()));
 			saveRecord(bpartnerLocationRecord);
 
 			final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID());
@@ -423,6 +426,8 @@ final class BPartnerCompositeSaver
 
 			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
 
+			bpartnerContactRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerContact.getOrgMappingId()));
+
 			assertCanCreateOrUpdate(bpartnerContactRecord);
 			saveRecord(bpartnerContactRecord);
 
@@ -467,6 +472,10 @@ final class BPartnerCompositeSaver
 			record.setIBAN(bankAccount.getIban());
 			record.setC_Currency_ID(bankAccount.getCurrencyId().getRepoId());
 			record.setIsActive(bankAccount.isActive());
+
+			record.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bankAccount.getOrgMappingId()));
+
+
 
 			assertCanCreateOrUpdate(record);
 			saveRecord(record);

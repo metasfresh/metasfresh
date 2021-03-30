@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.mforecast.impl.ForecastLineId;
+import de.metas.util.lang.ExternalId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -42,6 +43,12 @@ import lombok.Value;
 class PurchaseCandidateImmutableFields
 {
 	@Nullable
+	ExternalId externalHeaderId;
+
+	@Nullable
+	ExternalId externalLineId;
+
+	@Nullable
 	OrderAndLineId salesOrderAndLineIdOrNull;
 
 	@NonNull
@@ -69,4 +76,6 @@ class PurchaseCandidateImmutableFields
 	@Nullable ForecastLineId forecastLineId;
 
 	@Nullable Dimension dimension;
+
+	@Nullable PurchaseCandidateSource source;
 }

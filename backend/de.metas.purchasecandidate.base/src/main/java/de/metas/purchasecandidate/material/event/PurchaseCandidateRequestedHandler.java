@@ -22,6 +22,7 @@ import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.quantity.Quantity;
@@ -138,7 +139,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				// .purchaseItem(purchaseItem) purchase items are only returned by the vendor gateway
 				.qtyToPurchase(Quantity.of(materialDescriptor.getQuantity(), uomRecord))
 				.salesOrderAndLineIdOrNull(orderandLineIdOrNull)
-
+				.source(PurchaseCandidateSource.MaterialDisposition)
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.forecastLineId(ForecastLineId.ofRepoIdOrNull(event.getForecastId(), event.getForecastLineId()))
 				.build();
