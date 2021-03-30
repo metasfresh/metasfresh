@@ -24,7 +24,7 @@ package de.metas.camel.externalsystems.common;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
+import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsert;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
