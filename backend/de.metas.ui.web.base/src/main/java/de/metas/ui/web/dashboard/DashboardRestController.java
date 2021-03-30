@@ -23,7 +23,6 @@ import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
 import de.metas.util.Services;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -71,18 +70,15 @@ public class DashboardRestController
 	private final IESSystem esSystem = Services.get(IESSystem.class);
 	private final UserSession userSession;
 	private final UserDashboardRepository userDashboardRepo;
-	private final RestHighLevelClient elasticsearchClient;
 	private final WebsocketSender websocketSender;
 
 	public DashboardRestController(
 			@NonNull final UserSession userSession,
 			@NonNull final UserDashboardRepository userDashboardRepo,
-			@NonNull final RestHighLevelClient elasticsearchClient,
 			@NonNull final WebsocketSender websocketSender)
 	{
 		this.userSession = userSession;
 		this.userDashboardRepo = userDashboardRepo;
-		this.elasticsearchClient = elasticsearchClient;
 		this.websocketSender = websocketSender;
 	}
 
@@ -261,7 +257,7 @@ public class DashboardRestController
 		final TimeRange timeRange = dashboardItem.getTimeRangeDefaults().createTimeRange(from, to);
 
 		final JSONOptions jsonOptions = JSONOptions.of(userSession);
-		return KPIDataLoader.newInstance(elasticsearchClient, kpi, jsonOptions)
+		return KPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi, jsonOptions)
 				.setTimeRange(timeRange)
 				.setFormatValues(prettyValues)
 				.retrieveData()

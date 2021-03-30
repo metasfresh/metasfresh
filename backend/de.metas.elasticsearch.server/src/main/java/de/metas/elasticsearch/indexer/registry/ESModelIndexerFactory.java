@@ -22,8 +22,8 @@
 
 package de.metas.elasticsearch.indexer.registry;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.elasticsearch.config.ESIncludedModelsConfig;
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerId;
@@ -37,38 +37,41 @@ import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.elasticsearch.client.RestHighLevelClient;
 
 final class ESModelIndexerFactory
 {
 	// services
 	private final IESDenormalizerFactory esDenormalizerFactory = Services.get(IESDenormalizerFactory.class);
-
-	private final ESModelIndexersRegistry esModelIndexingService;
+	private final RestHighLevelClient elasticsearchClient;
+	private final ObjectMapper jsonObjectMapper;
 
 	@Getter(AccessLevel.PACKAGE)
 	private final ESModelIndexerId id;
-
 	private final String modelTableName;
-
 	private final ImmutableList<ESIncludedModelsConfig> includedModelsConfigs;
-
 	private final ImmutableList<IESModelIndexerTrigger> triggers;
+	private final String indexSettingsJson;
+	private final ESTextAnalyzer indexStringFullTextSearchAnalyzer;
 
-	private String indexSettingsJson;
-	private ESTextAnalyzer indexStringFullTextSearchAnalyzer;
-
-	ESModelIndexerFactory(
-			@NonNull final ESModelIndexersRegistry esModelIndexingService,
+	@Builder
+	private ESModelIndexerFactory(
+			@NonNull final RestHighLevelClient elasticsearchClient,
+			@NonNull final ObjectMapper jsonObjectMapper,
 			@NonNull final ESModelIndexerConfigBuilder config)
 	{
-		this.esModelIndexingService = esModelIndexingService;
+		this.elasticsearchClient = elasticsearchClient;
+		this.jsonObjectMapper = jsonObjectMapper;
 
-		id = config.getId();
-		modelTableName = config.getModelTableName();
-		includedModelsConfigs = ImmutableList.copyOf(config.getIncludedModelsConfigs());
-		triggers = ImmutableList.copyOf(config.getTriggers());
+		this.id = config.getId();
+		this.modelTableName = config.getModelTableName();
+		this.includedModelsConfigs = ImmutableList.copyOf(config.getIncludedModelsConfigs());
+		this.triggers = ImmutableList.copyOf(config.getTriggers());
+		this.indexSettingsJson = config.getIndexSettingsJson();
+		this.indexStringFullTextSearchAnalyzer = config.getIndexStringFullTextSearchAnalyzer();
 	}
 
 	public ESModelIndexer create()
@@ -100,8 +103,8 @@ final class ESModelIndexerFactory
 	private ESModelIndexerBuilder newModelIndexerBuilder(final String modelTableName)
 	{
 		return ESModelIndexer.builder()
-				.elasticsearchClient(esModelIndexingService.getElasticsearchClient())
-				.jsonObjectMapper(esModelIndexingService.getJsonObjectMapper())
+				.elasticsearchClient(elasticsearchClient)
+				.jsonObjectMapper(jsonObjectMapper)
 				.modelTableName(modelTableName)
 				.modelDenormalizer(createModelDenormalizer(modelTableName));
 	}
@@ -118,17 +121,5 @@ final class ESModelIndexerFactory
 		final IESModelDenormalizer modelDenormalizer = esDenormalizerFactory.getModelDenormalizer(profile, modelTableName);
 		Check.assumeNotNull(modelDenormalizer, "model denormalizer shall exist for {}", modelTableName);
 		return modelDenormalizer;
-	}
-
-	public ESModelIndexerFactory indexSettingsJson(final String indexSettingsJson)
-	{
-		this.indexSettingsJson = indexSettingsJson;
-		return this;
-	}
-
-	public ESModelIndexerFactory indexStringFullTextSearchAnalyzer(final ESTextAnalyzer indexStringFullTextSearchAnalyzer)
-	{
-		this.indexStringFullTextSearchAnalyzer = indexStringFullTextSearchAnalyzer;
-		return this;
 	}
 }

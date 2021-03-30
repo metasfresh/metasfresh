@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.Profiles;
+import de.metas.elasticsearch.IESSystem;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -16,6 +17,7 @@ import de.metas.ui.web.dashboard.KPIId;
 import de.metas.ui.web.dashboard.KPIRepository;
 import de.metas.ui.web.dashboard.TimeRange;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.util.Services;
 import org.compiere.SpringContextHolder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Profile;
@@ -57,9 +59,9 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 		return ProcessPreconditionsResolution.accept();
 	}
 
+	private final IESSystem esSystem = Services.get(IESSystem.class);
 	private final KPIRepository kpisRepo = SpringContextHolder.instance.getBean(KPIRepository.class);
 	private final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
-	private final RestHighLevelClient elasticsearchClient = SpringContextHolder.instance.getBean(RestHighLevelClient.class);
 
 	@Param(parameterName = "DateFrom")
 	private Date p_DateFrom;
@@ -80,7 +82,7 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 		final KPI kpi = kpisRepo.getKPI(kpiId);
 		final TimeRange timeRange = kpi.getTimeRangeDefaults().createTimeRange(p_DateFrom, p_DateTo);
 
-		final KPIDataResult kpiData = KPIDataLoader.newInstance(elasticsearchClient, kpi, JSONOptions.newInstance())
+		final KPIDataResult kpiData = KPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi, JSONOptions.newInstance())
 				.setTimeRange(timeRange)
 				.setFormatValues(true)
 				.assertESIndexExists()

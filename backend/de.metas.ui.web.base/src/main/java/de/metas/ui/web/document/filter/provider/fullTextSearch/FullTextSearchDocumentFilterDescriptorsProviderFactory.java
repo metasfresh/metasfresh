@@ -19,7 +19,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -52,17 +51,15 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 {
 	// services
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IESSystem esSystem = Services.get(IESSystem.class);
 	private final ESModelIndexersRegistry esModelIndexersRegistry;
-	private final RestHighLevelClient elasticsearchClient;
 
 	private static final AdMessageKey MSG_FULL_TEXT_SEARCH_CAPTION = AdMessageKey.of("Search");
 
 	public FullTextSearchDocumentFilterDescriptorsProviderFactory(
-			@NonNull final ESModelIndexersRegistry esModelIndexersRegistry,
-			@NonNull final RestHighLevelClient elasticsearchClient)
+			@NonNull final ESModelIndexersRegistry esModelIndexersRegistry)
 	{
 		this.esModelIndexersRegistry = esModelIndexersRegistry;
-		this.elasticsearchClient = elasticsearchClient;
 	}
 
 	@Override
@@ -105,7 +102,7 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 	private FullTextSearchFilterContext createFullTextSearchFilterContext(final ESModelIndexer modelIndexer)
 	{
 		return FullTextSearchFilterContext.builder()
-				.elasticsearchClient(elasticsearchClient)
+				.elasticsearchClient(esSystem.elasticsearchClient())
 				.modelTableName(modelIndexer.getModelTableName())
 				.esIndexName(modelIndexer.getIndexName())
 				.esSearchFieldNames(modelIndexer.getFullTextSearchFieldNames())

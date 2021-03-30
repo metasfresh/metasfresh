@@ -36,7 +36,6 @@ import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -50,7 +49,7 @@ public class ESModelIndexersRegistry
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(ESModelIndexersRegistry.class);
-	private final RestHighLevelClient elasticsearchClient;
+	private final IESSystem esSystem = Services.get(IESSystem.class);
 	private final ObjectMapper jsonObjectMapper;
 
 	private static final String SYSCONFIG_AUTOINDEX_MODELS = "de.metas.elasticsearch.indexer.AutoIndexModels";
@@ -58,24 +57,9 @@ public class ESModelIndexersRegistry
 	private final ConcurrentHashMap<ESModelIndexerId, ESModelIndexer> indexersById = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<String, ImmutableList<ESModelIndexer>> indexersByModelTableName = new ConcurrentHashMap<>();
 
-	public ESModelIndexersRegistry(
-			@NonNull final RestHighLevelClient elasticsearchClient,
-			@NonNull final  ObjectMapper jsonObjectMapper)
+	public ESModelIndexersRegistry(@NonNull final ObjectMapper jsonObjectMapper)
 	{
-		this.elasticsearchClient = elasticsearchClient; 
 		this.jsonObjectMapper = jsonObjectMapper;
-		
-		logger.info("Elastic search client: {}", elasticsearchClient);
-	}
-
-	/* package */RestHighLevelClient getElasticsearchClient()
-	{
-		return elasticsearchClient;
-	}
-
-	/* package */ObjectMapper getJsonObjectMapper()
-	{
-		return jsonObjectMapper;
 	}
 
 	public Collection<ESModelIndexer> getModelIndexersByTableName(@NonNull final String modelTableName)
@@ -100,10 +84,13 @@ public class ESModelIndexersRegistry
 
 	public void addModelIndexer(@NonNull final ESModelIndexerConfigBuilder config)
 	{
-		final ESModelIndexer indexer = new ESModelIndexerFactory(this, config)
-				.indexSettingsJson(config.getIndexSettingsJson())
-				.indexStringFullTextSearchAnalyzer(config.getIndexStringFullTextSearchAnalyzer())
-				.create();
+		final ESModelIndexerFactory indexerFactory = ESModelIndexerFactory.builder()
+				.elasticsearchClient(esSystem.elasticsearchClient())
+				.jsonObjectMapper(jsonObjectMapper)
+				.config(config)
+				.build();
+
+		final ESModelIndexer indexer = indexerFactory.create();
 
 		addModelIndexer(indexer);
 	}
@@ -170,7 +157,7 @@ public class ESModelIndexersRegistry
 		}
 		else
 		{
-			return ImmutableList.<ESModelIndexer> builder().addAll(existingModelIndexers).add(modelIndexerToAdd).build();
+			return ImmutableList.<ESModelIndexer>builder().addAll(existingModelIndexers).add(modelIndexerToAdd).build();
 		}
 	}
 

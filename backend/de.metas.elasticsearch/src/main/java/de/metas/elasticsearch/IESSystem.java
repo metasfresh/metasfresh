@@ -5,6 +5,7 @@ import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.indexer.queue.ESModelIndexerQueue;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.util.ISingletonService;
+import org.elasticsearch.client.RestHighLevelClient;
 
 /*
  * #%L
@@ -44,4 +45,6 @@ public interface IESSystem extends ISingletonService
 	ESModelIndexerConfigBuilder newModelIndexerConfig(ESModelIndexerProfile profile, String indexName, String modelTableName);
 
 	ESModelIndexerQueue indexingQueue();
+
+	RestHighLevelClient elasticsearchClient();
 }

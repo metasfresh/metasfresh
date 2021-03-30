@@ -40,6 +40,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -49,18 +50,24 @@ import java.util.function.Supplier;
 public class ESSystem implements IESSystem
 {
 	private static final Logger logger = LogManager.getLogger(ESSystem.class);
-	public static final BooleanWithReason DISABLED_BEFORE_JUNIT_MODE = BooleanWithReason.falseBecause("JUnit test mode");
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	// IMPORTANT: fetch it only when needed and when this feature is enabled!!!
+	// else it might start the elasticsearch client when the elasticsearch server does not even exists,
+	// which will flood the console with errors
+	private RestHighLevelClient elasticsearchClient = null;
 
 	@VisibleForTesting
 	public static final String ESServer_Classname = "de.metas.elasticsearch.server.ESServer";
 
 	private static final String SYSTEM_PROPERTY_elastic_enable = "elastic_enable";
-	public static final BooleanWithReason DISABLED_BECAUSE_SYSTEM_PROPERTY_elastic_enable = BooleanWithReason.falseBecause("Disabled by system property `" + SYSTEM_PROPERTY_elastic_enable + "`");
 
 	public static final String SYSCONFIG_PostKpiEvents = "de.metas.elasticsearch.PostKpiEvents";
-	public static final BooleanWithReason DISABLED_BECAUSE_SYSCONFIG = BooleanWithReason.falseBecause("Disabled by sysconfig `" + SYSCONFIG_PostKpiEvents + "`");
 	private static final boolean SYSCONFIG_PostKpiEvents_Default = true;
+
+	public static final BooleanWithReason DISABLED_BEFORE_JUNIT_MODE = BooleanWithReason.falseBecause("JUnit test mode");
+	public static final BooleanWithReason DISABLED_BECAUSE_SYSTEM_PROPERTY_elastic_enable = BooleanWithReason.falseBecause("Disabled by system property `" + SYSTEM_PROPERTY_elastic_enable + "`");
+	public static final BooleanWithReason DISABLED_BECAUSE_SYSCONFIG = BooleanWithReason.falseBecause("Disabled by sysconfig `" + SYSCONFIG_PostKpiEvents + "`");
 
 	@Override
 	public BooleanWithReason getEnabled()
@@ -175,4 +182,17 @@ public class ESSystem implements IESSystem
 		return SpringContextHolder.instance.getBean(ESModelIndexerQueue.class);
 	}
 
+	@Override
+	public RestHighLevelClient elasticsearchClient()
+	{
+		assertEnabled();
+
+		RestHighLevelClient elasticsearchClient = this.elasticsearchClient;
+		if (elasticsearchClient == null)
+		{
+			elasticsearchClient = this.elasticsearchClient = SpringContextHolder.instance.getBean(RestHighLevelClient.class);
+		}
+
+		return elasticsearchClient;
+	}
 }
