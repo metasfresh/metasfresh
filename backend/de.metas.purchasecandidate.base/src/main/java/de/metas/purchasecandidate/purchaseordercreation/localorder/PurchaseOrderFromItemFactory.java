@@ -115,7 +115,10 @@ import java.util.Set;
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
 
 		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
-		orderLineBuilder.manualDiscount(purchaseOrderItem.getDiscount().toBigDecimal());
+		if (purchaseOrderItem.getDiscount() != null)
+		{
+			orderLineBuilder.manualDiscount(purchaseOrderItem.getDiscount().toBigDecimal());
+		}
 		orderLineBuilder.manualPrice(purchaseOrderItem.getPrice());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
