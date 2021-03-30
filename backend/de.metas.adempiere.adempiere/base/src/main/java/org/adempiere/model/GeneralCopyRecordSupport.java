@@ -236,7 +236,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		final String timestampStr = formatter.format(timestamp);
 		final UserId loggedUserId = Env.getLoggedUserIdIfExists(ctx).orElse(null);
 		final String username = loggedUserId != null
-				? Services.get(IUserDAO.class).retrieveUserFullname(loggedUserId)
+				? Services.get(IUserDAO.class).retrieveUserFullName(loggedUserId)
 				: "-";
 
 		final String language = Env.getADLanguageOrBaseLanguage();

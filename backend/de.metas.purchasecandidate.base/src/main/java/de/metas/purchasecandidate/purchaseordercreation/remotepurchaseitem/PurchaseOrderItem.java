@@ -87,7 +87,7 @@ public class PurchaseOrderItem implements PurchaseItem
 	private OrderAndLineId purchaseOrderAndLineId;
 
 	@Getter
-	private Dimension dimension;
+	private final Dimension dimension;
 
 	@Builder(toBuilder = true)
 	private PurchaseOrderItem(
@@ -98,7 +98,7 @@ public class PurchaseOrderItem implements PurchaseItem
 			@NonNull final String remotePurchaseOrderId,
 			@Nullable final ITableRecordReference transactionReference,
 			final OrderAndLineId purchaseOrderAndLineId,
-			@Nullable Dimension dimension)
+			@Nullable final Dimension dimension)
 	{
 		this.purchaseItemId = purchaseItemId;
 

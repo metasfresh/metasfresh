@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.OrgMappingId;
 import org.adempiere.ad.table.RecordChangeLog;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -110,6 +111,8 @@ public class BPartnerLocation
 
 	private final RecordChangeLog changeLog;
 
+	private OrgMappingId orgMappingId;
+
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
 	 */
@@ -146,7 +149,8 @@ public class BPartnerLocation
 			@Nullable final String countryCode,
 			@Nullable final BPartnerLocation original,
 			@Nullable final BPartnerLocationType locationType,
-			@Nullable final RecordChangeLog changeLog)
+			@Nullable final RecordChangeLog changeLog,
+			@Nullable final OrgMappingId orgMappingId)
 	{
 		this.id = id;
 		this.gln = gln;
@@ -173,6 +177,8 @@ public class BPartnerLocation
 		this.changeLog = changeLog;
 
 		this.original = original;
+
+		this.orgMappingId = orgMappingId;
 	}
 
 	public BPartnerLocation deepCopy()

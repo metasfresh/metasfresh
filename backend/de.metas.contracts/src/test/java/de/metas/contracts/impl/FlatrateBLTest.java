@@ -186,9 +186,9 @@ public class FlatrateBLTest extends ContractsTestBase
 		currentTerm.setStartDate(day(2013, 1, 1));
 		currentTerm.setEndDate(day(2014, 7, 27));
 		currentTerm.setC_Flatrate_Conditions(flatrateConditions);
-		currentTerm.setM_PricingSystem(pricingSystem);
+		currentTerm.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
 		currentTerm.setBill_BPartner_ID(bpartner.getC_BPartner_ID());
-		currentTerm.setBill_Location(bpLocation);
+		currentTerm.setBill_Location_ID(bpLocation.getC_BPartner_Location_ID());
 		save(currentTerm);
 
 		final I_M_PriceList priceList = newInstance(I_M_PriceList.class);
@@ -487,7 +487,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		// first term: first conditions, March 15 - April 14
 		term = newInstance(I_C_Flatrate_Term.class);
-		term.setBill_BPartner(partner);
+		term.setBill_BPartner_ID(partner.getC_BPartner_ID());
 		term.setStartDate(day(2017, 3, 15));
 		term.setEndDate(day(2017, 4, 14));
 		term.setC_Flatrate_Conditions(conditions1);
@@ -497,7 +497,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		// second term: second conditions, March 14 - April 13 => Overlapping: March 15, April 14
 		overlappingTerm = newInstance(I_C_Flatrate_Term.class);
-		overlappingTerm.setBill_BPartner(partner);
+		overlappingTerm.setBill_BPartner_ID(partner.getC_BPartner_ID());
 		overlappingTerm.setStartDate(day(2017, 3, 14));
 		overlappingTerm.setEndDate(day(2017, 4, 13));
 		overlappingTerm.setC_Flatrate_Conditions(conditions2);

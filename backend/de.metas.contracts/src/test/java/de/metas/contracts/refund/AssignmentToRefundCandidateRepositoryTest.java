@@ -135,7 +135,7 @@ public class AssignmentToRefundCandidateRepositoryTest
 
 		final I_C_Flatrate_Term refundContractRecord = newInstance(I_C_Flatrate_Term.class);
 		refundContractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
-		refundContractRecord.setBill_BPartner(bPartnerRecord);
+		refundContractRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		refundContractRecord.setC_Flatrate_Conditions(conditionsRecord);
 		refundContractRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		refundContractRecord.setC_Currency_ID(currencyId.getRepoId());

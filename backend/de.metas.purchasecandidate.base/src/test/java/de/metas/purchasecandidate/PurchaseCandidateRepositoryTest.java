@@ -104,6 +104,8 @@ public class PurchaseCandidateRepositoryTest
 		purchaseCandidateRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		purchaseCandidateRecord.setQtyToPurchase(TEN);
 		purchaseCandidateRecord.setPurchaseDatePromised(SystemTime.asTimestamp());
+		purchaseCandidateRecord.setExternalHeaderId("H1");
+		purchaseCandidateRecord.setExternalLineId("H1");
 		saveRecord(purchaseCandidateRecord);
 	}
 
