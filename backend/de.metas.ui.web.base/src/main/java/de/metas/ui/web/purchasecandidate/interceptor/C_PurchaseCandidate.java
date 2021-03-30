@@ -2,6 +2,7 @@ package de.metas.ui.web.purchasecandidate.interceptor;
 
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
+import de.metas.money.CurrencyId;
 import de.metas.purchasecandidate.PurchaseCandidateReminder;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
@@ -68,11 +69,15 @@ public class C_PurchaseCandidate
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_PurchaseCandidate.COLUMNNAME_PriceEntered, I_C_PurchaseCandidate.COLUMNNAME_Discount, I_C_PurchaseCandidate.COLUMNNAME_IsManualPrice, I_C_PurchaseCandidate.COLUMNNAME_IsManualDiscount })
 	public void setPriceEffective(final I_C_PurchaseCandidate candidate)
 	{
-		final @NonNull CurrencyPrecision precision = currencyRepository.getById(candidate.getC_Currency_ID()).getPrecision();
-		final boolean manualDiscount = candidate.isManualDiscount();
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(candidate.getC_Currency_ID());
+		if (currencyId == null)
+		{
+			return;
+		}
+		final @NonNull CurrencyPrecision precision = currencyRepository.getById(currencyId).getPrecision();
 		final BigDecimal priceEffective = candidate.isManualPrice() ? candidate.getPriceEntered() : candidate.getPriceInternal();
 		candidate.setPriceEffective(priceEffective);
-		candidate.setDiscountEff(manualDiscount ? candidate.getDiscount() : candidate.getDiscountInternal());
+		candidate.setDiscountEff(candidate.isManualDiscount() ? candidate.getDiscount() : candidate.getDiscountInternal());
 
 		final @NonNull Percent discount = Percent.of(candidate.getDiscountEff());
 		candidate.setPurchasePriceActual(discount.subtractFromBase(priceEffective, precision.toInt()));
