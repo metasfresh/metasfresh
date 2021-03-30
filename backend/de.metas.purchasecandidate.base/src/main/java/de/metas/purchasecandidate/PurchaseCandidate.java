@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
 import de.metas.error.AdIssueId;
 import de.metas.mforecast.impl.ForecastLineId;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -106,9 +107,12 @@ public class PurchaseCandidate
 	private final ArrayList<PurchaseErrorItem> purchaseErrorItems;
 
 	private final BigDecimal price;
-	private final BigDecimal actualPrice;
+	private final BigDecimal priceInternal;
+	private final BigDecimal priceActual;
+	private final BigDecimal priceEnteredEff;
 	private final Percent discount;
 	private final Percent discountInternal;
+	private final Percent discountEff;
 	private final boolean isManualDiscount;
 	private final boolean isManualPrice;
 	private final boolean isTaxIncluded;
@@ -147,16 +151,23 @@ public class PurchaseCandidate
 			@Nullable final Dimension dimension,
 			@Nullable final PurchaseCandidateSource source,
 			@Nullable final BigDecimal price,
-			@Nullable final BigDecimal actualPrice,
+			@NonNull final BigDecimal priceInternal,
+			@Nullable final BigDecimal priceActual,
+			@Nullable final BigDecimal priceEnteredEff,
 			@Nullable final Percent discount,
-			final Percent discountInternal,
+			@NonNull final Percent discountInternal,
+			@Nullable final Percent discountEff,
 			final boolean isManualDiscount,
 			final boolean isManualPrice,
 			final boolean isTaxIncluded,
-			@Nullable final TaxCategoryId taxCategoryId)
+			@Nullable final TaxCategoryId taxCategoryId,
+			@Nullable final CurrencyId currencyId)
 	{
 		this.id = id;
+		this.priceInternal = priceInternal;
+		this.priceEnteredEff = priceEnteredEff;
 		this.discountInternal = discountInternal;
+		this.discountEff = discountEff;
 		this.isTaxIncluded = isTaxIncluded;
 		this.taxCategoryId = taxCategoryId;
 		immutableFields = PurchaseCandidateImmutableFields.builder()
@@ -174,6 +185,7 @@ public class PurchaseCandidate
 				.externalHeaderId(externalHeaderId)
 				.externalLineId(externalLineId)
 				.source(source)
+				.currencyId(currencyId)
 				.build();
 
 		state = PurchaseCandidateState.builder()
@@ -193,7 +205,7 @@ public class PurchaseCandidate
 
 		this.profitInfoOrNull = profitInfoOrNull;
 		this.price = price;
-		this.actualPrice = actualPrice;
+		this.priceActual = priceActual;
 		this.discount = discount;
 		this.isManualDiscount = isManualDiscount;
 		this.isManualPrice = isManualPrice;
@@ -232,13 +244,16 @@ public class PurchaseCandidate
 				.collect(toCollection(ArrayList::new));
 		purchaseErrorItems = new ArrayList<>(from.purchaseErrorItems);
 		price = from.price;
-		actualPrice = from.actualPrice;
+		priceActual = from.priceActual;
 		discount = from.discount;
 		isManualDiscount = from.isManualDiscount;
 		isManualPrice = from.isManualPrice;
 		isTaxIncluded = from.isTaxIncluded;
 		taxCategoryId = from.taxCategoryId;
+		priceInternal = from.priceInternal;
 		discountInternal = from.discountInternal;
+		priceEnteredEff = from.priceEnteredEff;
+		discountEff = from.discountEff;
 	}
 
 	public PurchaseCandidate copy()
@@ -297,6 +312,12 @@ public class PurchaseCandidate
 	public BPartnerId getVendorId()
 	{
 		return getImmutableFields().getVendorId();
+	}
+
+	@Nullable
+	public CurrencyId getCurrencyId()
+	{
+		return getImmutableFields().getCurrencyId();
 	}
 
 	public boolean isAggregatePOs()

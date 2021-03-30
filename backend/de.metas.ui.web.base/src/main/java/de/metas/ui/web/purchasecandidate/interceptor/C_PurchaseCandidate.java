@@ -1,15 +1,19 @@
 package de.metas.ui.web.purchasecandidate.interceptor;
 
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
+import de.metas.purchasecandidate.PurchaseCandidateReminder;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.purchasecandidate.reminder.PurchaseCandidateReminderScheduler;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.purchasecandidate.PurchaseCandidateReminder;
-import de.metas.purchasecandidate.PurchaseCandidateRepository;
-import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
-import de.metas.purchasecandidate.reminder.PurchaseCandidateReminderScheduler;
-import lombok.NonNull;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -38,10 +42,13 @@ import lombok.NonNull;
 public class C_PurchaseCandidate
 {
 	private final PurchaseCandidateReminderScheduler scheduler;
+	private final CurrencyRepository currencyRepository;
 
-	public C_PurchaseCandidate(@NonNull final PurchaseCandidateReminderScheduler scheduler)
+	public C_PurchaseCandidate(@NonNull final PurchaseCandidateReminderScheduler scheduler,
+			@NonNull final CurrencyRepository currencyRepository)
 	{
 		this.scheduler = scheduler;
+		this.currencyRepository = currencyRepository;
 	}
 
 	@ModelChange( //
@@ -57,4 +64,18 @@ public class C_PurchaseCandidate
 		}
 		scheduler.scheduleNotification(reminder);
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_PurchaseCandidate.COLUMNNAME_PriceEntered, I_C_PurchaseCandidate.COLUMNNAME_Discount, I_C_PurchaseCandidate.COLUMNNAME_IsManualPrice, I_C_PurchaseCandidate.COLUMNNAME_IsManualDiscount })
+	public void setPriceEffective(final I_C_PurchaseCandidate candidate)
+	{
+		final @NonNull CurrencyPrecision precision = currencyRepository.getById(candidate.getC_Currency_ID()).getPrecision();
+		final boolean manualDiscount = candidate.isManualDiscount();
+		final BigDecimal priceEffective = candidate.isManualPrice() ? candidate.getPriceEntered() : candidate.getPriceInternal();
+		candidate.setPriceEffective(priceEffective);
+		candidate.setDiscountEff(manualDiscount ? candidate.getDiscount() : candidate.getDiscountInternal());
+
+		final @NonNull Percent discount = Percent.of(candidate.getDiscountEff());
+		candidate.setPurchasePriceActual(discount.subtractFromBase(priceEffective, precision.toInt()));
+	}
+
 }
