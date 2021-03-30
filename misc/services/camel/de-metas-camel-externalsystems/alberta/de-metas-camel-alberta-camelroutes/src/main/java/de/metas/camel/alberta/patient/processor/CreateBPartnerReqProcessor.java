@@ -30,7 +30,6 @@ import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
-import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.DoctorApi;
 import io.swagger.client.api.HospitalApi;
@@ -52,12 +51,15 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_CONN_DETAILS;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_DOCTOR_API;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_HOSPITAL_API;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_NURSINGHOME_API;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_NURSINGSERVICE_API;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PAYER_API;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PHARMACY_API;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_BP_IDENTIFIER_TO_ROLE;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_CURRENT_PATIENT;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_ORG_CODE;
@@ -88,19 +90,38 @@ public class CreateBPartnerReqProcessor implements Processor
 			throw new RuntimeException("Missing camel route property: " + ROUTE_PROPERTY_ORG_CODE);
 		}
 
+		final DoctorApi doctorApi = exchange.getProperty(ROUTE_PROPERTY_DOCTOR_API, DoctorApi.class);
+		final Doctor doctorOrNull = getDoctorOrNull(doctorApi, connectionDetails, patient.getPrimaryDoctorId());
+
+		final NursingHomeApi nursingHomeApi = exchange.getProperty(ROUTE_PROPERTY_NURSINGHOME_API, NursingHomeApi.class);
+		final NursingHome nursingHomeOrNull = getNursingHomeOrNull(nursingHomeApi, connectionDetails, patient.getNursingHomeId());
+
+		final NursingServiceApi nursingServiceApi = exchange.getProperty(ROUTE_PROPERTY_NURSINGSERVICE_API, NursingServiceApi.class);
+		final NursingService nursingServiceOrNull = getNursingServiceOrNull(nursingServiceApi, connectionDetails, patient.getNursingServiceId());
+
+		final HospitalApi hospitalApi = exchange.getProperty(ROUTE_PROPERTY_HOSPITAL_API, HospitalApi.class);
+		final Hospital hospital = getHospital(hospitalApi, connectionDetails, patient.getHospital());
+
+		final PayerApi payerApi = exchange.getProperty(ROUTE_PROPERTY_ALBERTA_PAYER_API, PayerApi.class);
+		final Payer payerOrNull = getPayerOrNull(payerApi, connectionDetails, patient.getPayer());
+
+		final PharmacyApi pharmacyApi = exchange.getProperty(ROUTE_PROPERTY_ALBERTA_PHARMACY_API, PharmacyApi.class);
+		final Pharmacy pharmacyOrNull = getPharmacyOrNull(pharmacyApi, connectionDetails, patient.getPharmacyId());
+		
 		final BPartnerUpsertRequestProducer bPartnerUpsertRequestProducer = BPartnerUpsertRequestProducer.builder()
 				.patient(patient)
 				.externalId2MetasfreshId(externalId2MetasfreshId)
 				.orgCode(orgCode)
-				.doctor(getDoctorOrNull(connectionDetails, patient.getPrimaryDoctorId()))
-				.nursingHome(getNursingHomeOrNull(connectionDetails, patient.getNursingHomeId()))
-				.nursingService(getNursingServiceOrNull(connectionDetails, patient.getNursingServiceId()))
-				.hospital(getHospital(connectionDetails, patient.getHospital()))
-				.payer(getPayerOrNull(connectionDetails, patient.getPayer()))
-				.pharmacy(getPharmacyOrNull(connectionDetails, patient.getPharmacyId()))
+				.doctor(doctorOrNull)
+				.nursingHome(nursingHomeOrNull)
+				.nursingService(nursingServiceOrNull)
+				.hospital(hospital)
+				.payer(payerOrNull)
+				.pharmacy(pharmacyOrNull)
 				.build();
 
 		final BPartnerUpsertRequestProducer.BPartnerRequestProducerResult result = bPartnerUpsertRequestProducer.run();
+		
 		final BPartnerRoleInfoProvider bPartnerRoleInfoProvider = BPartnerRoleInfoProvider.builder()
 				.sourceBPartnerIdentifier(result.getPatientBPartnerIdentifier())
 				.bpIdentifier2Role(result.getBPartnerIdentifier2RelationRole())
@@ -137,14 +158,15 @@ public class CreateBPartnerReqProcessor implements Processor
 	}
 
 	@Nullable
-	private Doctor getDoctorOrNull(@NonNull final AlbertaConnectionDetails albertaConnectionDetails, @Nullable final String doctorId) throws ApiException
+	private Doctor getDoctorOrNull(
+			@NonNull final DoctorApi doctorApi,
+			@NonNull final AlbertaConnectionDetails albertaConnectionDetails,
+			@Nullable final String doctorId) throws ApiException
 	{
 		if (EmptyUtil.isBlank(doctorId))
 		{
 			return null;
 		}
-		final var apiClient = new ApiClient().setBasePath(albertaConnectionDetails.getBasePath());
-		final DoctorApi doctorApi = new DoctorApi(apiClient);
 
 		final Doctor doctor = doctorApi.getDoctor(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), doctorId);
 
@@ -152,19 +174,19 @@ public class CreateBPartnerReqProcessor implements Processor
 		{
 			throw new RuntimeException("No info returned for doctorId: " + doctorId);
 		}
-
 		return doctor;
 	}
 
 	@Nullable
-	private NursingHome getNursingHomeOrNull(@NonNull final AlbertaConnectionDetails albertaConnectionDetails, @Nullable final String nursingHomeId) throws ApiException
+	private NursingHome getNursingHomeOrNull(
+			@NonNull final NursingHomeApi nursingHomeApi,
+			@NonNull final AlbertaConnectionDetails albertaConnectionDetails, 
+			@Nullable final String nursingHomeId) throws ApiException
 	{
 		if (EmptyUtil.isBlank(nursingHomeId))
 		{
 			return null;
 		}
-		final var apiClient = new ApiClient().setBasePath(albertaConnectionDetails.getBasePath());
-		final NursingHomeApi nursingHomeApi = new NursingHomeApi(apiClient);
 
 		final NursingHome nursingHome = nursingHomeApi.geNursingHome(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), nursingHomeId);
 
@@ -172,19 +194,19 @@ public class CreateBPartnerReqProcessor implements Processor
 		{
 			throw new RuntimeException("No info returned for nursingHomeId: " + nursingHomeId);
 		}
-
 		return nursingHome;
 	}
 
 	@Nullable
-	private NursingService getNursingServiceOrNull(@NonNull final AlbertaConnectionDetails albertaConnectionDetails, @Nullable final String nursingServiceId) throws ApiException
+	private NursingService getNursingServiceOrNull(
+			@NonNull final NursingServiceApi nursingServiceApi,
+			@NonNull final AlbertaConnectionDetails albertaConnectionDetails, 
+			@Nullable final String nursingServiceId) throws ApiException
 	{
 		if (EmptyUtil.isBlank(nursingServiceId))
 		{
 			return null;
 		}
-		final var apiClient = new ApiClient().setBasePath(albertaConnectionDetails.getBasePath());
-		final NursingServiceApi nursingServiceApi = new NursingServiceApi(apiClient);
 
 		final NursingService nursingService = nursingServiceApi.getNursingService(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), nursingServiceId);
 
@@ -192,20 +214,19 @@ public class CreateBPartnerReqProcessor implements Processor
 		{
 			throw new RuntimeException("No info returned for nursingServiceId: " + nursingServiceId);
 		}
-
 		return nursingService;
 	}
 
 	@Nullable
-	private Hospital getHospital(@NonNull final AlbertaConnectionDetails albertaConnectionDetails, @Nullable final PatientHospital patientHospital) throws ApiException
+	private Hospital getHospital(
+			@NonNull final HospitalApi hospitalApi,
+			@NonNull final AlbertaConnectionDetails albertaConnectionDetails, 
+			@Nullable final PatientHospital patientHospital) throws ApiException
 	{
 		if (patientHospital == null || EmptyUtil.isBlank(patientHospital.getHospitalId()))
 		{
 			return null;
 		}
-
-		final var apiClient = new ApiClient().setBasePath(albertaConnectionDetails.getBasePath());
-		final HospitalApi hospitalApi = new HospitalApi(apiClient);
 
 		final Hospital hospital = hospitalApi.getHospital(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), patientHospital.getHospitalId());
 
@@ -213,19 +234,19 @@ public class CreateBPartnerReqProcessor implements Processor
 		{
 			throw new RuntimeException("No info returned for hospitalId: " + patientHospital.getHospitalId());
 		}
-
 		return hospital;
 	}
 
 	@Nullable
-	private Payer getPayerOrNull(@NonNull final AlbertaConnectionDetails albertaConnectionDetails, @Nullable final PatientPayer patientPayer) throws ApiException
+	private Payer getPayerOrNull(
+			@NonNull final PayerApi payerApi,
+			@NonNull final AlbertaConnectionDetails albertaConnectionDetails, 
+			@Nullable final PatientPayer patientPayer) throws ApiException
 	{
 		if (patientPayer == null || EmptyUtil.isBlank(patientPayer.getPayerId()))
 		{
 			return null;
 		}
-		final var apiClient = new ApiClient().setBasePath(albertaConnectionDetails.getBasePath());
-		final PayerApi payerApi = new PayerApi(apiClient);
 
 		final Payer payer = payerApi.getPayer(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), patientPayer.getPayerId());
 
@@ -233,12 +254,12 @@ public class CreateBPartnerReqProcessor implements Processor
 		{
 			throw new RuntimeException("No info returned for payer: " + patientPayer.getPayerId());
 		}
-
 		return payer;
 	}
 
 	@Nullable
 	private Pharmacy getPharmacyOrNull(
+			@NonNull final PharmacyApi pharmacyApi,
 			@NonNull final AlbertaConnectionDetails albertaConnectionDetails,
 			@Nullable final String pharmacyId) throws ApiException
 	{
@@ -246,17 +267,13 @@ public class CreateBPartnerReqProcessor implements Processor
 		{
 			return null;
 		}
-		final var apiClient = new ApiClient().setBasePath(albertaConnectionDetails.getBasePath());
-		final PharmacyApi pharmacyApi = new PharmacyApi(apiClient);
-
+		
 		final Pharmacy pharmacy = pharmacyApi.getPharmacy(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), pharmacyId);
 
 		if (pharmacy == null)
 		{
 			throw new RuntimeException("No info returned for pharmacy: " + pharmacyId);
 		}
-
 		return pharmacy;
 	}
-
 }

@@ -25,7 +25,7 @@ package de.metas.camel.alberta.patient;
 import de.metas.camel.alberta.patient.processor.CreateBPRelationReqProcessor;
 import de.metas.camel.alberta.patient.processor.CreateBPartnerReqProcessor;
 import de.metas.camel.alberta.patient.processor.CreateESRQueryProcessor;
-import de.metas.camel.alberta.patient.processor.PreparePatientsApiProcessor;
+import de.metas.camel.alberta.patient.processor.PrepareApiClientsProcessor;
 import de.metas.camel.alberta.patient.processor.RetrievePatientsProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
@@ -42,12 +42,12 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 public class GetAlbertaPatientsRoute extends RouteBuilder
 {
 	public static final String GET_PATIENTS_ROUTE_ID = "Alberta-getPatients";
-	public static final String PREPARE_PATIENTS_API_PROCESSOR_ID = "PreparePatientsApiProcessorId";
-	public static final String RETRIEVE_PATIENTS_PROCESSOR_ID = "GetPatientsFromAlbertaProcessorId";
-	public static final String PROCESS_PATIENT_ROUTE_ID = "Alberta-processPatient";
-	public static final String CREATE_ESR_QUERY_REQ_PROCESSOR_ID = "CreateBPartnerESRQueryProcessorId";
-	public static final String CREATE_UPSERT_BPARTNER_REQUEST_PROCESSOR_ID = "CreateBPartnerUpsertReqProcessorId";
-	public static final String CREATE_UPSERT_BPARTNER_RELATION_REQUEST_PROCESSOR_ID = "CreateBPartnerRelationReqProcessorId";
+	public static final String PREPARE_PATIENTS_API_PROCESSOR_ID = "AlbertaPatients-PreparePatientsApiProcessorId";
+	public static final String RETRIEVE_PATIENTS_PROCESSOR_ID = "AlbertaPatients-GetPatientsFromAlbertaProcessorId";
+	public static final String PROCESS_PATIENT_ROUTE_ID = "AlbertaPatients-processPatient";
+	public static final String CREATE_ESR_QUERY_REQ_PROCESSOR_ID = "AlbertaPatients-CreateBPartnerESRQueryProcessorId";
+	public static final String CREATE_UPSERT_BPARTNER_REQUEST_PROCESSOR_ID = "AlbertaPatients-CreateBPartnerUpsertReqProcessorId";
+	public static final String CREATE_UPSERT_BPARTNER_RELATION_REQUEST_PROCESSOR_ID = "Alberta-CreateBPartnerRelationReqProcessorId";
 
 	@Override
 	public void configure()
@@ -64,7 +64,7 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 		from(StaticEndpointBuilders.direct(GET_PATIENTS_ROUTE_ID))
 				.routeId(GET_PATIENTS_ROUTE_ID)
 				.streamCaching()
-				.process(new PreparePatientsApiProcessor()).id(PREPARE_PATIENTS_API_PROCESSOR_ID)
+				.process(new PrepareApiClientsProcessor()).id(PREPARE_PATIENTS_API_PROCESSOR_ID)
 				.process(new RetrievePatientsProcessor()).id(RETRIEVE_PATIENTS_PROCESSOR_ID)
 				.split(body())
 					.to(StaticEndpointBuilders.direct(PROCESS_PATIENT_ROUTE_ID))

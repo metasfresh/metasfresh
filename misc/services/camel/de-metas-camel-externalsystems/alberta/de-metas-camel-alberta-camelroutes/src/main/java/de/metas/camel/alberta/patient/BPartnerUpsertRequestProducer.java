@@ -198,7 +198,7 @@ public class BPartnerUpsertRequestProducer
 
 		final String bPartnerIdentifier = actualMFBPartnerId != null
 				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + patientId;
+				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + patientId;
 
 		return JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerIdentifier(bPartnerIdentifier)
@@ -288,7 +288,7 @@ public class BPartnerUpsertRequestProducer
 		location.setShipToDefault(!hasExtraShipToAddress);
 		location.setShipTo(!hasExtraShipToAddress);
 
-		requestProducerResultBuilder.patientMainAddressIdentifier(EXTERNAL_ID_PREFIX + patientId);
+		requestProducerResultBuilder.patientMainAddressIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + patientId);
 
 		return JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + MAIN_ADDR_PREFIX + patientId)
@@ -307,7 +307,7 @@ public class BPartnerUpsertRequestProducer
 		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(careGiverId);
 		final String bpartnerIdentifier = actualMFBPartnerId != null
 				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + careGiverId;
+				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + careGiverId;
 
 		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.Caregiver);
 
@@ -363,7 +363,7 @@ public class BPartnerUpsertRequestProducer
 		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(hospital.getId());
 		final String bpartnerIdentifier = actualMFBPartnerId != null
 				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + hospital.getId();
+				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + hospital.getId();
 
 		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.Hospital);
 
@@ -416,7 +416,7 @@ public class BPartnerUpsertRequestProducer
 		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(nursingService.getId());
 		final String bpartnerIdentifier = actualMFBPartnerId != null
 				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + nursingService.getId();
+				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + nursingService.getId();
 
 		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.NursingService);
 
@@ -467,7 +467,7 @@ public class BPartnerUpsertRequestProducer
 		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(nursingHome.getId());
 		final String bpartnerIdentifier = actualMFBPartnerId != null
 				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + nursingHome.getId();
+				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + nursingHome.getId();
 
 		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.NursingHome);
 
@@ -518,7 +518,7 @@ public class BPartnerUpsertRequestProducer
 		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(doctor.getId());
 		final String bpartnerIdentifier = actualMFBPartnerId != null
 				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + doctor.getId();
+				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + doctor.getId();
 
 		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.PhysicianDoctor);
 
@@ -579,7 +579,7 @@ public class BPartnerUpsertRequestProducer
 		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(payer.getId());
 		final String bpartnerIdentifier = actualMFBPartnerId != null
 				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + payer.getId();
+				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + payer.getId();
 
 		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.Payer);
 
@@ -626,7 +626,7 @@ public class BPartnerUpsertRequestProducer
 		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(pharmacy.getId());
 		final String bpartnerIdentifier = actualMFBPartnerId != null
 				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + pharmacy.getId();
+				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + pharmacy.getId();
 
 		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.Pharmacy);
 

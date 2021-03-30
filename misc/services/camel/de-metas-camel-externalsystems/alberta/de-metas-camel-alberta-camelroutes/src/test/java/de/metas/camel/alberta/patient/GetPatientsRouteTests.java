@@ -31,8 +31,19 @@ import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import io.swagger.client.ApiException;
 import io.swagger.client.JSON;
+import io.swagger.client.api.DoctorApi;
+import io.swagger.client.api.HospitalApi;
+import io.swagger.client.api.NursingHomeApi;
+import io.swagger.client.api.NursingServiceApi;
 import io.swagger.client.api.PatientApi;
+import io.swagger.client.api.PayerApi;
+import io.swagger.client.api.PharmacyApi;
 import io.swagger.client.model.ArrayOfPatients;
+import io.swagger.client.model.Doctor;
+import io.swagger.client.model.Hospital;
+import io.swagger.client.model.NursingService;
+import io.swagger.client.model.Payer;
+import io.swagger.client.model.Pharmacy;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -57,9 +68,14 @@ import static de.metas.camel.alberta.patient.GetAlbertaPatientsRoute.CREATE_UPSE
 import static de.metas.camel.alberta.patient.GetAlbertaPatientsRoute.GET_PATIENTS_ROUTE_ID;
 import static de.metas.camel.alberta.patient.GetAlbertaPatientsRoute.PREPARE_PATIENTS_API_PROCESSOR_ID;
 import static de.metas.camel.alberta.patient.GetAlbertaPatientsRoute.PROCESS_PATIENT_ROUTE_ID;
-import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.PatientStatus.CREATED;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.PatientStatus.UPDATED;
-import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PATIENT_API;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_DOCTOR_API;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_HOSPITAL_API;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_NURSINGHOME_API;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_NURSINGSERVICE_API;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_PATIENT_API;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PAYER_API;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PHARMACY_API;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -74,6 +90,12 @@ public class GetPatientsRouteTests extends CamelTestSupport
 	private static final String JSON_MF_GET_PATIENTS_REQUEST = "/de/metas/camel/alberta/patient/10_ExternalSystemRequest.json";
 	private static final String JSON_ALBERTA_GET_CREATED_PATIENTS_RESPONSE = "/de/metas/camel/alberta/patient/20_GetCreatedPatientsAlbertaResponse.json";
 	private static final String JSON_ALBERTA_GET_UPDATED_PATIENTS_RESPONSE = "/de/metas/camel/alberta/patient/30_GetUpdatedPatientsAlbertaResponse.json";
+	private static final String JSON_ALBERTA_GET_DOCTOR_RESPONSE = "/de/metas/camel/alberta/patient/31_GetDoctorAlberta_5ab23eb59d69c74b68d0eded_Response.json";
+	private static final String JSON_ALBERTA_GET_NURINGSERVICE_RESPONSE = "/de/metas/camel/alberta/patient/32_GetNursingServiceAlberta_5ab2383d9d69c74b68cf19dc_Response.json";
+	private static final String JSON_ALBERTA_GET_HOSPIPAL_RESPONSE = "/de/metas/camel/alberta/patient/33_GetHospitalAlberta_5ab233bc9d69c74b68cec23a_Response.json";
+	private static final String JSON_ALBERTA_GET_PAYER_RESPONSE = "/de/metas/camel/alberta/patient/34_GetPayerAlberta_5ada01a2c3918e1bdcb5460e_Response.json";
+	private static final String JSON_ALBERTA_GET_PHARMACY_RESPONSE = "/de/metas/camel/alberta/patient/35_GetPharmacyAlberta_5ab2390e9d69c74b68cf4f2d_Response.json";
+	
 	private static final String JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST = "/de/metas/camel/alberta/patient/40_GetExternalReferencesMetasfreshRequest.json";
 	private static final String JSON_EXTERNAL_REFERENCE_LOOKUP_RESPONSE = "/de/metas/camel/alberta/patient/50_GetExternalReferencesMetasfreshResponse.json";
 	private static final String JSON_UPSERT_BPARTNER_REQUEST = "/de/metas/camel/alberta/patient/60_UpsertBPartnerMetasfreshRequest.json";
@@ -193,41 +215,26 @@ public class GetPatientsRouteTests extends CamelTestSupport
 		@Override
 		public void process(@NonNull final Exchange exchange) throws ApiException
 		{
-			// mock addArticle & updateArticle response
-			//final ObjectMapper mapper = new ObjectMapper();
-			//final InputStream jsonGetPatientsResponse = GetPatientsRouteTests.class.getResourceAsStream(JSON_ALBERTA_GET_CREATED_PATIENTS_RESPONSE);
-
-			// final JSON json = new JSON();
-			// final String createdPatientsStr = loadAsString(JSON_ALBERTA_GET_CREATED_PATIENTS_RESPONSE);
-			// final ArrayOfPatients createdPatients = json.deserialize(createdPatientsStr, ArrayOfPatients.class);
-
-			// mock shopware client
-			final PatientApi albertaPatientApi = prepareAlbertaPatientAPIClient();
-
-			//set up the exchange
-			exchange.setProperty(ROUTE_PROPERTY_ALBERTA_PATIENT_API, albertaPatientApi);
-
-			// final AlbertaConnectionDetails albertaConnectionDetails = AlbertaConnectionDetails.builder()
-			// 		.apiKey(apiKey)
-			// 		.basePath(basePath)
-			// 		.tenant(tenant)
-			// 		.build();
-			//
-			// exchange.setProperty(ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
-			// exchange.setProperty(ROUTE_PROPERTY_ALBERTA_CONN_DETAILS, albertaConnectionDetails);
-			// exchange.getIn().setBody(patientsToImport);
+			final JSON json = new JSON();
+			exchange.setProperty(ROUTE_PROPERTY_PATIENT_API, preparePatientApiClient(json));
+			exchange.setProperty(ROUTE_PROPERTY_DOCTOR_API, prepareDoctorApiClient(json));
+			exchange.setProperty(ROUTE_PROPERTY_NURSINGHOME_API, prepareNursingHomeApiClient(json));
+			exchange.setProperty(ROUTE_PROPERTY_NURSINGSERVICE_API, prepareNursingServiceApiClient(json));
+			exchange.setProperty(ROUTE_PROPERTY_HOSPITAL_API, prepareHospitalApiClient(json));
+			exchange.setProperty(ROUTE_PROPERTY_ALBERTA_PAYER_API, preparePayerApiClient(json));
+			exchange.setProperty(ROUTE_PROPERTY_ALBERTA_PHARMACY_API, preparePharmacyApiClient(json));
 		}
 
 		@NonNull
-		private PatientApi prepareAlbertaPatientAPIClient() throws ApiException
+		private static PatientApi preparePatientApiClient(@NonNull final JSON json) throws ApiException
 		{
 			final PatientApi albertaPatientApi = Mockito.mock(PatientApi.class);
-			final JSON json = new JSON();
 
 			//1. mock retrieval of created payments
 			final String createdPatientsStr = loadAsString(JSON_ALBERTA_GET_CREATED_PATIENTS_RESPONSE);
 			final ArrayOfPatients createdPatients = json.deserialize(createdPatientsStr, ArrayOfPatients.class);
-			Mockito.when(albertaPatientApi.getCreatedPatients(any(String.class), any(String.class), eq(CREATED.getValue()), any(String.class)))
+			//Mockito.when(albertaPatientApi.getCreatedPatients(any(String.class), any(String.class), eq(CREATED.getValue()), any(String.class)))
+			Mockito.when(albertaPatientApi.getCreatedPatients(any(String.class), any(String.class), any(String.class), any(String.class)))
 					.thenReturn(createdPatients);
 
 			//2. mock retrieval of updated payments
@@ -239,7 +246,85 @@ public class GetPatientsRouteTests extends CamelTestSupport
 			return albertaPatientApi;
 		}
 	}
+	
+	@NonNull
+	private static DoctorApi prepareDoctorApiClient(@NonNull final JSON json) throws ApiException
+	{
+		final DoctorApi albertaDoctorApi = Mockito.mock(DoctorApi.class);
+		final String jsonString = loadAsString(JSON_ALBERTA_GET_DOCTOR_RESPONSE);
+		final Doctor doctor = json.deserialize(jsonString, Doctor.class);
+		
+		Mockito.when(albertaDoctorApi.getDoctor(any(String.class), any(String.class), any(String.class)))
+				.thenReturn(doctor);
 
+		return albertaDoctorApi;
+	}
+
+	@NonNull
+	private static NursingHomeApi prepareNursingHomeApiClient(@NonNull final JSON json) throws ApiException
+	{
+		final NursingHomeApi nursingHomeApi = Mockito.mock(NursingHomeApi.class);
+		// final String jsonString = loadAsString(JSON_ALBERTA_GET_NURSINGHOME_RESPONSE);
+		// final NursingHome nursingHome = json.deserialize(jsonString, NursingHome.class);
+
+		Mockito.when(nursingHomeApi.geNursingHome(any(String.class), any(String.class), any(String.class)))
+				.thenReturn(null);
+
+		return nursingHomeApi;
+	}
+
+	@NonNull
+	private static NursingServiceApi prepareNursingServiceApiClient(@NonNull final JSON json) throws ApiException
+	{
+		final NursingServiceApi nursingServiceApi = Mockito.mock(NursingServiceApi.class);
+		final String jsonString = loadAsString(JSON_ALBERTA_GET_NURINGSERVICE_RESPONSE);
+		final NursingService nursingService = json.deserialize(jsonString, NursingService.class);
+
+		Mockito.when(nursingServiceApi.getNursingService(any(String.class), any(String.class), any(String.class)))
+				.thenReturn(nursingService);
+
+		return nursingServiceApi;
+	}
+
+	@NonNull
+	private static HospitalApi prepareHospitalApiClient(@NonNull final JSON json) throws ApiException
+	{
+		final HospitalApi hospitalApi = Mockito.mock(HospitalApi.class);
+		final String jsonString = loadAsString(JSON_ALBERTA_GET_HOSPIPAL_RESPONSE);
+		final Hospital hospital = json.deserialize(jsonString, Hospital.class);
+
+		Mockito.when(hospitalApi.getHospital(any(String.class), any(String.class), any(String.class)))
+				.thenReturn(hospital);
+
+		return hospitalApi;
+	}
+
+	@NonNull
+	private static PayerApi preparePayerApiClient(@NonNull final JSON json) throws ApiException
+	{
+		final PayerApi payerApi = Mockito.mock(PayerApi.class);
+		final String jsonString = loadAsString(JSON_ALBERTA_GET_PAYER_RESPONSE);
+		final Payer payer = json.deserialize(jsonString, Payer.class);
+
+		Mockito.when(payerApi.getPayer(any(String.class), any(String.class), any(String.class)))
+				.thenReturn(payer);
+
+		return payerApi;
+	}
+
+	@NonNull
+	private static PharmacyApi preparePharmacyApiClient(@NonNull final JSON json) throws ApiException
+	{
+		final PharmacyApi pharmacyApi = Mockito.mock(PharmacyApi.class);
+		final String jsonString = loadAsString(JSON_ALBERTA_GET_PHARMACY_RESPONSE);
+		final Pharmacy pharmacy = json.deserialize(jsonString, Pharmacy.class);
+
+		Mockito.when(pharmacyApi.getPharmacy(any(String.class), any(String.class), any(String.class)))
+				.thenReturn(pharmacy);
+
+		return pharmacyApi;
+	}
+	
 	private static String loadAsString(@NonNull final String name)
 	{
 		final InputStream createdPatientsIS = GetPatientsRouteTests.class.getResourceAsStream(name);

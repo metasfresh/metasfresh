@@ -27,8 +27,14 @@ import lombok.Getter;
 
 public interface GetPatientsRouteConstants
 {
-	String ROUTE_PROPERTY_ALBERTA_PATIENT_API = "AlbertaPatientApi";
-	
+	String ROUTE_PROPERTY_PATIENT_API = "AlbertaPatientApi";
+	String ROUTE_PROPERTY_DOCTOR_API = "AlbertaDoctorApi";
+	String ROUTE_PROPERTY_NURSINGHOME_API = "AlbertaNursingHomeApi";
+	String ROUTE_PROPERTY_NURSINGSERVICE_API = "AlbertaNursingServiceApi";
+	String ROUTE_PROPERTY_HOSPITAL_API = "AlbertaHospitalApi";
+	String ROUTE_PROPERTY_ALBERTA_PAYER_API = "AlbertaPayerApi";
+	String ROUTE_PROPERTY_ALBERTA_PHARMACY_API = "AlbertaPharmacyApi";
+
 	String ALBERTA_SYSTEM_NAME = "ALBERTA";
 	String ESR_TYPE_BPARTNER = "BPartner";
 	String ESR_TYPE_BPARTNER_LOCATION = "BPartnerLocation";
@@ -51,7 +57,8 @@ public interface GetPatientsRouteConstants
 	//Alberta constants
 	@AllArgsConstructor
 	@Getter
-	enum PatientStatus {
+	enum PatientStatus
+	{
 		CREATED("created"),
 		UPDATED("updated");
 

@@ -8,6 +8,6 @@
     "Tenant": "Tenant",
     "ChildConfigValue": "ChildConfigValue",
     "BasePath": "https://basePath",
-    "since": "2021-01-01T02:17:20Z"
+    "UpdatedAfter": "2021-01-01T02:17:20Z"
   }
 }
