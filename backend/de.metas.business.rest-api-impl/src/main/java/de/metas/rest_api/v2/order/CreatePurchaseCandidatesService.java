@@ -31,11 +31,13 @@ import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonExternalId;
-import de.metas.common.rest_api.v1.JsonQuantity;
-import de.metas.common.rest_api.v2.JsonRequestAttributeSetInstance;
 import de.metas.common.rest_api.v2.JsonRequestAttributeInstance;
+import de.metas.common.rest_api.v2.JsonRequestAttributeSetInstance;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
+import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
@@ -58,7 +60,6 @@ import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.RestApiUtils;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -74,14 +75,12 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
-import java.util.Optional;
 
 @Service
 public class CreatePurchaseCandidatesService
@@ -96,14 +95,18 @@ public class CreatePurchaseCandidatesService
 	private final PurchaseCandidateRepository purchaseCandidateRepo;
 	private final BPartnerQueryService bPartnerQueryService;
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
+	private final CurrencyRepository currencyRepository;
 
 	public CreatePurchaseCandidatesService(
-			final PurchaseCandidateRepository purchaseCandidateRepo, @NonNull final BPartnerQueryService bPartnerQueryService,
-			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository)
+			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
+			@NonNull final BPartnerQueryService bPartnerQueryService,
+			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
+			@NonNull final CurrencyRepository currencyRepository)
 	{
 		this.purchaseCandidateRepo = purchaseCandidateRepo;
 		this.bPartnerQueryService = bPartnerQueryService;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
+		this.currencyRepository = currencyRepository;
 	}
 
 	public JsonPurchaseCandidate createCandidate(@RequestBody final JsonPurchaseCandidateCreateItem request)
@@ -126,12 +129,12 @@ public class CreatePurchaseCandidatesService
 		final Quantity quantity = RestApiUtils.getQuantity(request);
 		final BPartnerId vendorId = getBPartnerId(orgId, request.getVendor());
 		final ZonedDateTime datePromised = getOrDefaultDatePromised(request.getPurchaseDatePromised(), orgId);
-		final BigDecimal discount = getDiscount(request);
 		if (request.isManualDiscount() && request.getDiscount() == null)
 		{
 			throw new MissingPropertyException("discount", request);
 		}
-		if (request.isManualPrice() && request.getPrice() == null)
+		final boolean manualPrice = request.isManualPrice();
+		if (manualPrice && request.getPrice() == null)
 		{
 			throw new MissingPropertyException("price", request);
 		}
@@ -148,7 +151,16 @@ public class CreatePurchaseCandidatesService
 
 		final AttributeSetInstanceId attributeSetInstanceId = getAttributeSetInstanceId(request.getAttributeSetInstance());
 
-		final BigDecimal actualPrice = request.isManualPrice() ? request.getPrice().getValue() : priceAndDiscount.getPriceStd();
+		final BigDecimal enteredPrice = manualPrice ? request.getPrice().getValue() : priceAndDiscount.getPriceStd();
+		final Percent discountPercent = request.isManualDiscount() ? Percent.of(request.getDiscount()) : priceAndDiscount.getDiscount();
+
+		final BigDecimal priceActual = discountPercent.subtractFromBase(enteredPrice, priceAndDiscount.getPrecision().toInt());
+		CurrencyId currencyId = priceAndDiscount.getCurrencyId();
+		if (manualPrice && request.getPrice().getCurrencyCode() != null)
+		{
+
+			currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(request.getPrice().getCurrencyCode()));
+		}
 
 		return PurchaseCandidate.builder()
 				.orgId(orgId)
@@ -162,14 +174,18 @@ public class CreatePurchaseCandidatesService
 				.vendorProductNo(productDAO.retrieveProductValueByProductId(productId))
 				.qtyToPurchase(quantity)
 				.groupReference(DemandGroupReference.EMPTY)
-				.price(priceAndDiscount.getPriceStd())
-				.discount(request.isManualDiscount() ? Percent.of(request.getDiscount()) : priceAndDiscount.getDiscount())
+				.price(enteredPrice)
+				.priceInternal(priceAndDiscount.getPriceStd())
+				.discount(discountPercent)
 				.discountInternal(priceAndDiscount.getDiscount())
-				.actualPrice(actualPrice)
+				.priceActual(priceActual)
 				.isTaxIncluded(priceAndDiscount.isTaxIncluded())
+				.isManualDiscount(request.isManualDiscount())
+				.isManualPrice(manualPrice)
 				.taxCategoryId(priceAndDiscount.getTaxCategoryId())
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.source(PurchaseCandidateSource.Api)
+				.currencyId(currencyId)
 				.build();
 	}
 
@@ -187,15 +203,6 @@ public class CreatePurchaseCandidatesService
 					CoalesceUtil.coalesce(attributeValue.getValueStr(), attributeValue.getValueDate(), attributeValue.getValueNumber()));
 		}
 		return AttributeSetInstanceId.ofRepoId(attributeSetInstanceBL.createASIFromAttributeSet(attributeSetBuilder.build()).getM_AttributeSetInstance_ID());
-	}
-
-	private BigDecimal getDiscount(final JsonPurchaseCandidateCreateItem request)
-	{
-		if (request.isManualDiscount() && request.getDiscount() == null)
-		{
-			throw new MissingPropertyException("discount", request);
-		}
-		return request.isManualDiscount() ? request.getDiscount() : BigDecimal.ZERO;
 	}
 
 	private IPricingResult getPriceAndDiscount(final PurchaseOrderPricingInfo pricingInfo)
@@ -323,6 +330,5 @@ public class CreatePurchaseCandidatesService
 
 		return result;
 	}
-
 
 }

@@ -1,34 +1,41 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.purchasecandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
-/** Generated Model for C_PurchaseCandidate
- *  @author metasfresh (generated) 
+/**
+ * Generated Model for C_PurchaseCandidate
+ *
+ * @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_PurchaseCandidate, org.compiere.model.I_Persistent 
+public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_PurchaseCandidate, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 805584284L;
+	private static final long serialVersionUID = 2111712098L;
 
-    /** Standard Constructor */
-    public X_C_PurchaseCandidate (final Properties ctx, final int C_PurchaseCandidate_ID, @Nullable final String trxName)
-    {
-      super (ctx, C_PurchaseCandidate_ID, trxName);
-    }
+	/**
+	 * Standard Constructor
+	 */
+	public X_C_PurchaseCandidate(final Properties ctx, final int C_PurchaseCandidate_ID, @Nullable final String trxName)
+	{
+		super(ctx, C_PurchaseCandidate_ID, trxName);
+	}
 
-    /** Load Constructor */
-    public X_C_PurchaseCandidate (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	/**
+	 * Load Constructor
+	 */
+	public X_C_PurchaseCandidate(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
+		super(ctx, rs, trxName);
+	}
 
-
-	/** Load Meta Data */
+	/**
+	 * Load Meta Data
+	 */
 	@Override
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
@@ -247,7 +254,7 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setDiscountInternal (final @Nullable BigDecimal DiscountInternal)
 	{
-		set_Value (COLUMNNAME_DiscountInternal, DiscountInternal);
+		set_ValueNoCheck(COLUMNNAME_DiscountInternal, DiscountInternal);
 	}
 
 	@Override
@@ -459,27 +466,41 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public int getM_WarehousePO_ID() 
+	public int getM_WarehousePO_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_WarehousePO_ID);
 	}
 
 	@Override
-	public void setPriceDifference (final @Nullable BigDecimal PriceDifference)
-	{
-		throw new IllegalArgumentException ("PriceDifference is virtual column");	}
-
-	@Override
-	public BigDecimal getPriceDifference() 
+	public BigDecimal getPriceDifference()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceDifference);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setPriceEntered (final @Nullable BigDecimal PriceEntered)
+	public void setPriceDifference(final @Nullable BigDecimal PriceDifference)
 	{
-		set_Value (COLUMNNAME_PriceEntered, PriceEntered);
+		throw new IllegalArgumentException("PriceDifference is virtual column");
+	}
+
+	@Override
+	public BigDecimal getPriceEffective()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceEffective);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPriceEffective(final @Nullable BigDecimal PriceEffective)
+	{
+		set_Value(COLUMNNAME_PriceEffective, PriceEffective);
+	}
+
+	@Override
+	public void setPriceEntered(final @Nullable BigDecimal PriceEntered)
+	{
+		set_Value(COLUMNNAME_PriceEntered, PriceEntered);
 	}
 
 	@Override
@@ -490,22 +511,9 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setPriceEntered_Override (final @Nullable BigDecimal PriceEntered_Override)
-	{
-		set_Value (COLUMNNAME_PriceEntered_Override, PriceEntered_Override);
-	}
-
-	@Override
-	public BigDecimal getPriceEntered_Override() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceEntered_Override);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setPriceInternal (final @Nullable BigDecimal PriceInternal)
 	{
-		set_Value (COLUMNNAME_PriceInternal, PriceInternal);
+		set_ValueNoCheck(COLUMNNAME_PriceInternal, PriceInternal);
 	}
 
 	@Override
