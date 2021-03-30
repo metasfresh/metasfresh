@@ -6,6 +6,7 @@ import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
@@ -96,6 +97,8 @@ public interface IProductDAO extends ISingletonService
 
 	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull String categoryValue);
 
+	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
+
 	@Value
 	class ProductQuery
 	{
@@ -137,10 +140,10 @@ public interface IProductDAO extends ISingletonService
 	Stream<I_M_Product> streamAllProducts();
 
 	/**
-	 * @return product category or null
+	 * @return product category or null if the productId is null
 	 */
 	@Nullable
-	ProductCategoryId retrieveProductCategoryByProductId(ProductId productId);
+	ProductCategoryId retrieveProductCategoryByProductId(@Nullable ProductId productId);
 
 	@Nullable
 	ProductAndCategoryId retrieveProductAndCategoryIdByProductId(ProductId productId);
@@ -173,4 +176,5 @@ public interface IProductDAO extends ISingletonService
 
 	int getProductGuaranteeDaysMinFallbackProductCategory(@NonNull final ProductId productId);
 
+	int getGuaranteeMonthsInDays(ProductId productId);
 }

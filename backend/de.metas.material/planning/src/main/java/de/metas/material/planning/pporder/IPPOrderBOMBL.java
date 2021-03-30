@@ -25,17 +25,18 @@ package de.metas.material.planning.pporder;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.material.event.pporder.PPOrderLine;
 import de.metas.material.planning.exception.MrpException;
-import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.api.QtyCalculationsBOM;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 

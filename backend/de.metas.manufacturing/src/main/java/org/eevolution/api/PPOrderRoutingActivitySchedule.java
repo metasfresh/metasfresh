@@ -2,7 +2,6 @@ package org.eevolution.api;
 
 import java.time.LocalDateTime;
 
-import de.metas.material.planning.pporder.PPOrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

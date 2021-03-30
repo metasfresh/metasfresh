@@ -140,11 +140,11 @@ import java.util.Properties;
  *         <li>BF [ 2910368 ] Error in context when IsActive field is found in different
  *         https://sourceforge.net/tracker/?func=detail&aid=2910368&group_id=176962&atid=879332
  * @author Carlos Ruiz, qss FR [1877902]
- * @see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1877902&group_id=176962 to FR [1877902]
+ * See http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1877902&group_id=176962 to FR [1877902]
  * @author Cristina Ghita, www.arhipac.ro FR [2870645] Set null value for an ID
- * @see https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2870645&group_id=176962
+ * See https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2870645&group_id=176962
  * @author Paul Bowden, phib BF 2900767 Zoom to child tab - inefficient queries
- * @see https://sourceforge.net/tracker/?func=detail&aid=2900767&group_id=176962&atid=879332
+ * See https://sourceforge.net/tracker/?func=detail&aid=2900767&group_id=176962&atid=879332
  */
 public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICalloutRecord
 {
@@ -2222,7 +2222,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 
 	public int getTemplateTabId()
 	{
-		return m_vo.getTemplateTabId();
+		return AdTabId.toRepoId(m_vo.getTemplateTabId());
 	}
 
 	/**
@@ -3497,7 +3497,7 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 	 * Feature Request [1707462]
 	 * Enable runtime change of VFormat
 	 *
-	 * @param Identifier field indent
+	 * @param identifier field indent
 	 * @param strNewFormat new mask
 	 * @author fer_luck
 	 */
@@ -4003,7 +4003,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		return query;
 	}
 
-	/** Copy mode when {@link GridTab#dataNew(boolean)} is invoked */
 	public enum DataNewCopyMode
 	{
 		NoCopy, Copy, CopyWithDetails;
@@ -4019,9 +4018,6 @@ public class GridTab implements DataStatusListener, Evaluatee, Serializable, ICa
 		}
 	}
 
-	/**
-	 * Field set by {@link #dataNew(boolean, boolean)} while we are in copy record mode
-	 */
 	private DataNewCopyMode _dataNewCopyMode = null;
 	/** Tables suggested by user for copy with details */
 	private List<CopyRecordSupportTableInfo> m_suggestedCopyWithDetailsList = null;

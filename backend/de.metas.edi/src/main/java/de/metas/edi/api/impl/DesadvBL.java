@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.edi.api.EDIDesadvLinePackId;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
@@ -132,6 +133,12 @@ public class DesadvBL implements IDesadvBL
 	public DesadvBL(@NonNull final HURepository huRepository)
 	{
 		this.huRepository = huRepository;
+	}
+
+	@Override
+	public List<I_EDI_DesadvLine> retrieveLinesByIds(final Collection<Integer> desadvLineIds)
+	{
+		return desadvDAO.retrieveLinesByIds(desadvLineIds);
 	}
 
 	@Override
@@ -541,7 +548,7 @@ public class DesadvBL implements IDesadvBL
 	private String computeSSCC18(@NonNull final OrgId orgId)
 	{
 		final SSCC18 sscc18 = sscc18CodeService.generate(orgId);
-		return sscc18CodeService.toString(sscc18, false);
+		return sscc18.asString();
 	}
 
 	private StockQtyAndUOMQty addPackRecordToLineUsingHU(
@@ -651,7 +658,7 @@ public class DesadvBL implements IDesadvBL
 
 	private void extractAndSetPackagingGTINs(
 			@NonNull final HU rootHU,
-			@NonNull BPartnerId bPartnerId,
+			@NonNull final BPartnerId bPartnerId,
 			@NonNull final I_EDI_DesadvLine_Pack packRecord)
 	{
 		final String packagingGTIN = rootHU.getPackagingGTINs().get(bPartnerId);
@@ -674,7 +681,7 @@ public class DesadvBL implements IDesadvBL
 	private String computeSSCC18ForHUId(@NonNull final OrgId orgId, @NonNull final HuId huId)
 	{
 		final SSCC18 sscc18 = sscc18CodeService.generate(orgId, huId.getRepoId());
-		return sscc18CodeService.toString(sscc18, false);
+		return sscc18.asString();
 	}
 
 	private I_EDI_DesadvLine_Pack createNewPackRecord(@NonNull final I_EDI_DesadvLine desadvLineRecord)
@@ -956,7 +963,7 @@ public class DesadvBL implements IDesadvBL
 	@Override
 	public ReportResultData printSSCC18_Labels(
 			@NonNull final Properties ctx,
-			@NonNull final Collection<Integer> desadvLinePack_IDs_ToPrint)
+			@NonNull final Collection<EDIDesadvLinePackId> desadvLinePack_IDs_ToPrint)
 	{
 		Check.assumeNotEmpty(desadvLinePack_IDs_ToPrint, "desadvLineSSCC_IDs_ToPrint not empty");
 

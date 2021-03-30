@@ -44,4 +44,11 @@ public class UtilTest
 	{
 		assertThat(Util.trimAndTruncate("   12345678", 7)).isEqualTo("1234567");
 	}
+
+	@Test
+	public void removePrecedingZeros()
+	{
+		final String input = "000000000000000040";
+		assertThat(Util.removePrecedingZeros(input)).isEqualTo("40");
+	}
 }

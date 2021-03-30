@@ -68,6 +68,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -187,6 +188,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		setHUStatusToPicked(topLevelHU);
 		setHUPartnerAndLocationFromSched(topLevelHU, sched);
 		handlingUnitsRepo.saveHU(topLevelHU);
+		huContext.flush();
 
 		return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(schedQtyPickedHU, huContext);
 	}
@@ -334,8 +336,10 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	/**
 	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU#createShipmentHeader(I_M_ShipmentSchedule)}
 	 */
+	@Nullable
+	@SuppressWarnings("JavadocReference")
 	@Override
-	public I_M_InOut getOpenShipmentOrNull(final ShipmentScheduleWithHU candidate, final LocalDate movementDate)
+	public I_M_InOut getOpenShipmentOrNull(final @NonNull ShipmentScheduleWithHU candidate, final @NonNull LocalDate movementDate)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
 
@@ -467,8 +471,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		}
 
 		// if is not set in shipment schedule, return the one form order line or null
-		final HUPIItemProductId orderLinePIPOrNull = extractOrderLinePackingMaterialIdOrNull(shipmentSchedule);
-		return orderLinePIPOrNull;
+		return extractOrderLinePackingMaterialIdOrNull(shipmentSchedule);
 	}
 
 	private HUPIItemProductId extractOrderLinePackingMaterialIdOrNull(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)

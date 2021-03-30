@@ -31,6 +31,7 @@ public interface I_C_Flatrate_Term extends de.metas.contracts.model.I_C_Flatrate
 	int getPMM_Product_ID();
 	I_PMM_Product getPMM_Product();
 	void setPMM_Product(I_PMM_Product PMM_Product);
+	void setPMM_Product_ID(int PMM_Product_ID);
 	//@formatter:on
 	
 	//@formatter:off

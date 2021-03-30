@@ -217,7 +217,7 @@ class Header extends PureComponent {
 
   /**
    * @method handleDashboardLink
-   * @summary ToDo: Describe the method
+   * @summary Reset breadcrumbs after clicking the logo
    */
   handleDashboardLink = () => {
     const { dispatch } = this.props;
@@ -608,9 +608,12 @@ class Header extends PureComponent {
       <div>
         {prompt.open && (
           <Prompt
-            title="Delete"
-            text="Are you sure?"
-            buttons={{ submit: 'Delete', cancel: 'Cancel' }}
+            title={counterpart.translate('window.Delete.caption')}
+            text={counterpart.translate('window.delete.message')}
+            buttons={{
+              submit: counterpart.translate('window.delete.confirm'),
+              cancel: counterpart.translate('window.delete.cancel'),
+            }}
             onCancelClick={this.handlePromptCancelClick}
             onSubmitClick={this.handlePromptSubmitClick}
           />

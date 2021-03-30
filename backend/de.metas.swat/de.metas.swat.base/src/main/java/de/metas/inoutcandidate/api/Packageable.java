@@ -42,7 +42,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.freighcost.FreightCostRule;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.OrderId;

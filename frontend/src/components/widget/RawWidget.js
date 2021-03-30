@@ -51,7 +51,11 @@ export class RawWidget extends PureComponent {
     const { rawWidget } = this;
 
     if (rawWidget.current && autoFocus) {
-      rawWidget.current.focus();
+      try {
+        rawWidget.current.focus();
+      } catch (e) {
+        console.error(`Custom widget doesn't have 'focus' function defined`);
+      }
     }
 
     if (textSelected) {
@@ -254,6 +258,7 @@ export class RawWidget extends PureComponent {
    */
   handleChange = (e) => {
     const { handleChange, filterWidget, fields } = this.props;
+
     const widgetField = getWidgetField({ filterWidget, fields });
 
     if (handleChange) {
@@ -412,9 +417,11 @@ export class RawWidget extends PureComponent {
     }
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
-    const widgetField = filterWidget
-      ? fields[0].parameterName
-      : fields[0].field;
+    let widgetField = filterWidget ? fields[0].parameterName : fields[0].field;
+    if (!widgetField && this.props.widgetType === 'Switch') {
+      widgetField = fields[0].fields[0].field;
+    }
+
     const readonly = widgetData[0].readonly;
 
     if (fullScreen || readonly || (modalVisible && !isModal)) {

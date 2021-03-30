@@ -23,6 +23,7 @@
 package de.metas.edi.esb.invoicexport.compudata;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 public class Cctop901991V implements Serializable
 {
@@ -35,16 +36,16 @@ public class Cctop901991V implements Serializable
 	 * metasfresh-mapped fields
 	 */
 	private String cInvoiceID;
-	private String rate;
-	private String taxAmt;
-	private String taxBaseAmt;
-	private String totalAmt;
+	private BigDecimal rate;
+	private BigDecimal taxAmt;
+	private BigDecimal taxBaseAmt;
+	private BigDecimal totalAmt;
 	private String ESRNumber;
 
 	/*
 	 * Deduced fields
 	 */
-	private String taxAmtSumTaxBaseAmt;
+	private BigDecimal taxAmtSumTaxBaseAmt;
 
 	public String getcInvoiceID()
 	{
@@ -56,52 +57,52 @@ public class Cctop901991V implements Serializable
 		this.cInvoiceID = cInvoiceID;
 	}
 
-	public String getRate()
+	public BigDecimal getRate()
 	{
 		return rate;
 	}
 
-	public void setRate(final String rate)
+	public void setRate(final BigDecimal rate)
 	{
 		this.rate = rate;
 	}
 
-	public String getTaxAmt()
+	public BigDecimal getTaxAmt()
 	{
 		return taxAmt;
 	}
 
-	public void setTaxAmt(final String taxAmt)
+	public void setTaxAmt(final BigDecimal taxAmt)
 	{
 		this.taxAmt = taxAmt;
 	}
 
-	public String getTaxBaseAmt()
+	public BigDecimal getTaxBaseAmt()
 	{
 		return taxBaseAmt;
 	}
 
-	public void setTaxBaseAmt(final String taxBaseAmt)
+	public void setTaxBaseAmt(final BigDecimal taxBaseAmt)
 	{
 		this.taxBaseAmt = taxBaseAmt;
 	}
 
-	public String getTotalAmt()
+	public BigDecimal getTotalAmt()
 	{
 		return totalAmt;
 	}
 
-	public void setTotalAmt(final String totalAmt)
+	public void setTotalAmt(final BigDecimal totalAmt)
 	{
 		this.totalAmt = totalAmt;
 	}
 
-	public String getTaxAmtSumTaxBaseAmt()
+	public BigDecimal getTaxAmtSumTaxBaseAmt()
 	{
 		return taxAmtSumTaxBaseAmt;
 	}
 
-	public void setTaxAmtSumTaxBaseAmt(final String taxAmtSumTaxBaseAmt)
+	public void setTaxAmtSumTaxBaseAmt(final BigDecimal taxAmtSumTaxBaseAmt)
 	{
 		this.taxAmtSumTaxBaseAmt = taxAmtSumTaxBaseAmt;
 	}

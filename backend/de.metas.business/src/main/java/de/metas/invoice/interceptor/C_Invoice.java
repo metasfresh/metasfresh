@@ -289,9 +289,7 @@ public class C_Invoice // 03771
 		final I_C_Order order = invoice.getC_Order();
 		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
 		{
-			final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-			final PaymentId paymentId = PaymentId.ofRepoId(order.getC_Payment_ID());
-			final I_C_Payment payment = paymentBL.getById(paymentId);
+			final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(order.getC_Payment_ID()));
 			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			paymentDAO.save(payment);
 
@@ -305,9 +303,7 @@ public class C_Invoice // 03771
 		final I_C_Order order = invoice.getC_Order();
 		if (paymentBL.canAllocateOrderPaymentToInvoice(order))
 		{
-			final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-			final PaymentId paymentId = PaymentId.ofRepoId(order.getC_Payment_ID());
-			final I_C_Payment payment = paymentBL.getById(paymentId);
+			final I_C_Payment payment = paymentBL.getById(PaymentId.ofRepoId(order.getC_Payment_ID()));
 			allocationBL.autoAllocateSpecificPayment(invoice, payment, true);
 			testAndMarkAsPaid(invoice);
 		}

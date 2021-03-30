@@ -86,6 +86,7 @@ public interface IOrgDAO extends ISingletonService
 		return retrieveOrgValue(OrgId.ofRepoIdOrNull(adOrgId));
 	}
 
+	@NonNull
 	default String retrieveOrgValue(@Nullable final OrgId adOrgId)
 	{
 		if (adOrgId == null)

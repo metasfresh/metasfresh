@@ -1,9 +1,20 @@
 package org.eevolution.api.impl;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.material.planning.WorkingTime;
+import de.metas.material.planning.pporder.IPPRoutingRepository;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPRouting;
+import de.metas.material.planning.pporder.PPRoutingActivity;
+import de.metas.material.planning.pporder.PPRoutingActivityId;
+import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import de.metas.workflow.WFDurationUnit;
+import lombok.Builder;
+import lombok.NonNull;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRouting.PPOrderRoutingBuilder;
 import org.eevolution.api.PPOrderRoutingActivity;
@@ -11,21 +22,8 @@ import org.eevolution.api.PPOrderRoutingActivityCode;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
 import org.eevolution.exceptions.RoutingExpiredException;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSetMultimap;
-
-import de.metas.material.planning.WorkingTime;
-import de.metas.material.planning.pporder.IPPRoutingRepository;
-import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.material.planning.pporder.PPRouting;
-import de.metas.material.planning.pporder.PPRoutingActivity;
-import de.metas.material.planning.pporder.PPRoutingActivityId;
-import de.metas.material.planning.pporder.PPRoutingId;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 /*
  * #%L
@@ -147,7 +145,7 @@ final class CreateOrderRoutingCommand
 
 	public PPOrderRoutingActivity createPPOrderRoutingActivity(final PPRoutingActivity activity)
 	{
-		final TemporalUnit durationUnit = activity.getDurationUnit();
+		final WFDurationUnit durationUnit = activity.getDurationUnit();
 		final Duration durationPerOneUnit = activity.getDurationPerOneUnit();
 		final int unitsPerCycle = activity.getUnitsPerCycle();
 		final Duration durationRequired = WorkingTime.builder()

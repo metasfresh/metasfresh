@@ -258,7 +258,7 @@ public final class ProcessClassParamInfo
 
 			@SuppressWarnings("unchecked")
 			final Class<? extends ReferenceListAwareEnum> referenceListAwareClass = (Class<? extends ReferenceListAwareEnum>)fieldType;
-			value = ReferenceListAwareEnums.ofCode(valueStr, referenceListAwareClass);
+			value = ReferenceListAwareEnums.ofNullableCode(valueStr, referenceListAwareClass);
 		}
 		//
 		else if (fieldType.isAssignableFrom(String.class))

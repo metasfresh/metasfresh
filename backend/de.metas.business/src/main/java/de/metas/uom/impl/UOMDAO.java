@@ -151,6 +151,13 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
+	public I_C_UOM getByTemporalUnit(@NonNull final TemporalUnit temporalUnit)
+	{
+		final UomId uomId = getUomIdByTemporalUnit(temporalUnit);
+		return getById(uomId);
+	}
+
+	@Override
 	public UomId getUomIdByTemporalUnit(@NonNull final TemporalUnit temporalUnit)
 	{
 		final X12DE355 x12de355 = X12DE355.ofTemporalUnit(temporalUnit);
@@ -158,7 +165,7 @@ public class UOMDAO implements IUOMDAO
 		{
 			return getUomIdByX12DE355(x12de355);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex)
 					.setParameter("temporalUnit", temporalUnit)

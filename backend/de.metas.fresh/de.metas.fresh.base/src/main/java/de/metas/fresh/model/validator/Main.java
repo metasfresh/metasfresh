@@ -24,6 +24,7 @@ package de.metas.fresh.model.validator;
 
 import java.text.DateFormat;
 
+import de.metas.fresh.product.ProductPOCopyRecordSupport;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListenerService;
@@ -53,12 +54,11 @@ import org.adempiere.mm.attributes.listeners.inAusLand.OrderLineInAusLandModelAt
 import org.adempiere.model.CopyRecordFactory;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
-import de.metas.fresh.picking.form.SwingPickingTerminalPanel;
 import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextProvider;
 import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;
-import de.metas.picking.terminal.form.swing.PickingTerminal;
 import de.metas.util.Services;
+import org.compiere.model.I_M_Product;
 
 public class Main extends AbstractModuleInterceptor
 {
@@ -106,8 +106,6 @@ public class Main extends AbstractModuleInterceptor
 
 		modelAttributeSetInstanceListenerService.registerListener(new AgeModelAttributeSetInstanceListener());
 
-		PickingTerminal.setPickingTerminalPanelClass(SwingPickingTerminalPanel.class);
-
 		//
 		// Setup Time Format (see 06148)
 		Language.setDefaultTimeStyle(DateFormat.SHORT);
@@ -119,6 +117,11 @@ public class Main extends AbstractModuleInterceptor
 		// task 09833
 		// Register the Printing Info ctx provider for C_Order_MFGWarehouse_Report
 		Services.get(INotificationBL.class).addCtxProvider(C_Order_MFGWarehouse_Report_RecordTextProvider.instance);
+		
+		//
+		// register ProductPOCopyRecordSupport, which needs to know about many different tables
+		CopyRecordFactory.enableForTableName(I_M_Product.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_M_Product.Table_Name, ProductPOCopyRecordSupport.class);
 	}
 
 	@Override

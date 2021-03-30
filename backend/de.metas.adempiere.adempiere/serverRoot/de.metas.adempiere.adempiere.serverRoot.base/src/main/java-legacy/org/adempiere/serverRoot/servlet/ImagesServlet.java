@@ -5,6 +5,7 @@ import java.awt.Image;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -21,7 +22,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.adempiere.serverRoot.util.WebEnv;
 import org.adempiere.serverRoot.util.WebUtil;
 import org.adempiere.service.IClientDAO;
-import org.apache.activemq.util.ByteArrayInputStream;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
@@ -40,11 +40,6 @@ import de.metas.util.Services;
 
 /**
  * Servlet used to server images directly from our database
- *
- * Currently supported images are:
- * <ul>
- * <li> {@link WebEnv#LOGO} - servers the AD_ClientInfo logo (fallback to product logo)
- * </ul>
  *
  * Currently supported query parameters
  * <ul>

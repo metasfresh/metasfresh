@@ -35,17 +35,17 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;
 import de.metas.util.Check;
 
+import javax.annotation.Nullable;
+
 final class CompositeSecurityRule implements ISecurityRule
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
-	private final CopyOnWriteArrayList<ISecurityRule> rulesAll = new CopyOnWriteArrayList<ISecurityRule>();
-	private final CopyOnWriteArrayList<ISecurityRule> rulesActive = new CopyOnWriteArrayList<ISecurityRule>();
+	private final CopyOnWriteArrayList<ISecurityRule> rulesAll = new CopyOnWriteArrayList<>();
+	private final CopyOnWriteArrayList<ISecurityRule> rulesActive = new CopyOnWriteArrayList<>();
 
 	/**
 	 * Add a new child rule and initialize it automatically.
-	 *
-	 * @param rule
 	 * @return true if rule was added
 	 */
 	public boolean addRule(final ISecurityRule rule)
@@ -88,7 +88,7 @@ final class CompositeSecurityRule implements ISecurityRule
 	}
 
 	@Override
-	public void filterOrgs(final IUserRolePermissions rolePermissions, final String tableName, final Access access, final Set<OrgId> orgIds)
+	public void filterOrgs(final IUserRolePermissions rolePermissions, @Nullable final String tableName, final Access access, final Set<OrgId> orgIds)
 	{
 		for (final ISecurityRule rule : rulesActive)
 		{

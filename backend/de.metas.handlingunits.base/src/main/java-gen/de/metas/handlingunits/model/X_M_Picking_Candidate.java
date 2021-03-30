@@ -1,52 +1,39 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Picking_Candidate
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_Picking_Candidate, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1299076063L;
+	private static final long serialVersionUID = -1275027448L;
 
     /** Standard Constructor */
-    public X_M_Picking_Candidate (Properties ctx, int M_Picking_Candidate_ID, String trxName)
+    public X_M_Picking_Candidate (final Properties ctx, final int M_Picking_Candidate_ID, @Nullable final String trxName)
     {
       super (ctx, M_Picking_Candidate_ID, trxName);
-      /** if (M_Picking_Candidate_ID == 0)
-        {
-			setApprovalStatus (null); // ?
-			setC_UOM_ID (0);
-			setM_Picking_Candidate_ID (0);
-			setM_ShipmentSchedule_ID (0);
-			setPickStatus (null); // ?
-			setQtyPicked (BigDecimal.ZERO); // 0
-			setStatus (null); // IP
-        } */
     }
 
     /** Load Constructor */
-    public X_M_Picking_Candidate (Properties ctx, ResultSet rs, String trxName)
+    public X_M_Picking_Candidate (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	/** 
 	 * ApprovalStatus AD_Reference_ID=540920
@@ -59,46 +46,31 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	public static final String APPROVALSTATUS_Approved = "A";
 	/** Rejected = R */
 	public static final String APPROVALSTATUS_Rejected = "R";
-	/** Set Status.
-		@param ApprovalStatus Status	  */
 	@Override
-	public void setApprovalStatus (java.lang.String ApprovalStatus)
+	public void setApprovalStatus (final java.lang.String ApprovalStatus)
 	{
-
 		set_Value (COLUMNNAME_ApprovalStatus, ApprovalStatus);
 	}
 
-	/** Get Status.
-		@return Status	  */
 	@Override
-	public java.lang.String getApprovalStatus () 
+	public java.lang.String getApprovalStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ApprovalStatus);
+		return get_ValueAsString(COLUMNNAME_ApprovalStatus);
 	}
 
-	/** Set Maßeinheit.
-		@param C_UOM_ID 
-		Maßeinheit
-	  */
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
-	/** Get Maßeinheit.
-		@return Maßeinheit
-	  */
 	@Override
-	public int getC_UOM_ID () 
+	public int getC_UOM_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	@Override
@@ -108,97 +80,69 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU)
+	public void setM_HU(final de.metas.handlingunits.model.I_M_HU M_HU)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Unit.
-		@param M_HU_ID Handling Unit	  */
 	@Override
-	public void setM_HU_ID (int M_HU_ID)
+	public void setM_HU_ID (final int M_HU_ID)
 	{
 		if (M_HU_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+			set_Value (COLUMNNAME_M_HU_ID, M_HU_ID);
 	}
 
-	/** Get Handling Unit.
-		@return Handling Unit	  */
 	@Override
-	public int getM_HU_ID () 
+	public int getM_HU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_ID);
 	}
 
-	/** Set Picking candidate.
-		@param M_Picking_Candidate_ID Picking candidate	  */
 	@Override
-	public void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID)
+	public void setM_Picking_Candidate_ID (final int M_Picking_Candidate_ID)
 	{
 		if (M_Picking_Candidate_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Picking_Candidate_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Picking_Candidate_ID, Integer.valueOf(M_Picking_Candidate_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Picking_Candidate_ID, M_Picking_Candidate_ID);
 	}
 
-	/** Get Picking candidate.
-		@return Picking candidate	  */
 	@Override
-	public int getM_Picking_Candidate_ID () 
+	public int getM_Picking_Candidate_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Picking_Candidate_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Picking_Candidate_ID);
 	}
 
-	/** Set Picking Slot.
-		@param M_PickingSlot_ID Picking Slot	  */
 	@Override
-	public void setM_PickingSlot_ID (int M_PickingSlot_ID)
+	public void setM_PickingSlot_ID (final int M_PickingSlot_ID)
 	{
 		if (M_PickingSlot_ID < 1) 
 			set_Value (COLUMNNAME_M_PickingSlot_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_PickingSlot_ID, Integer.valueOf(M_PickingSlot_ID));
+			set_Value (COLUMNNAME_M_PickingSlot_ID, M_PickingSlot_ID);
 	}
 
-	/** Get Picking Slot.
-		@return Picking Slot	  */
 	@Override
-	public int getM_PickingSlot_ID () 
+	public int getM_PickingSlot_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_PickingSlot_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_PickingSlot_ID);
 	}
 
-	/** Set Lieferdisposition.
-		@param M_ShipmentSchedule_ID Lieferdisposition	  */
 	@Override
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
+	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
 	{
 		if (M_ShipmentSchedule_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
 	}
 
-	/** Get Lieferdisposition.
-		@return Lieferdisposition	  */
 	@Override
-	public int getM_ShipmentSchedule_ID () 
+	public int getM_ShipmentSchedule_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 
 	@Override
@@ -208,31 +152,24 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setPackTo_HU_PI(de.metas.handlingunits.model.I_M_HU_PI PackTo_HU_PI)
+	public void setPackTo_HU_PI(final de.metas.handlingunits.model.I_M_HU_PI PackTo_HU_PI)
 	{
 		set_ValueFromPO(COLUMNNAME_PackTo_HU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, PackTo_HU_PI);
 	}
 
-	/** Set Pack To.
-		@param PackTo_HU_PI_ID Pack To	  */
 	@Override
-	public void setPackTo_HU_PI_ID (int PackTo_HU_PI_ID)
+	public void setPackTo_HU_PI_ID (final int PackTo_HU_PI_ID)
 	{
 		if (PackTo_HU_PI_ID < 1) 
 			set_Value (COLUMNNAME_PackTo_HU_PI_ID, null);
 		else 
-			set_Value (COLUMNNAME_PackTo_HU_PI_ID, Integer.valueOf(PackTo_HU_PI_ID));
+			set_Value (COLUMNNAME_PackTo_HU_PI_ID, PackTo_HU_PI_ID);
 	}
 
-	/** Get Pack To.
-		@return Pack To	  */
 	@Override
-	public int getPackTo_HU_PI_ID () 
+	public int getPackTo_HU_PI_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PackTo_HU_PI_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PackTo_HU_PI_ID);
 	}
 
 	@Override
@@ -242,31 +179,24 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setPickFrom_HU(de.metas.handlingunits.model.I_M_HU PickFrom_HU)
+	public void setPickFrom_HU(final de.metas.handlingunits.model.I_M_HU PickFrom_HU)
 	{
 		set_ValueFromPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class, PickFrom_HU);
 	}
 
-	/** Set Pick From HU.
-		@param PickFrom_HU_ID Pick From HU	  */
 	@Override
-	public void setPickFrom_HU_ID (int PickFrom_HU_ID)
+	public void setPickFrom_HU_ID (final int PickFrom_HU_ID)
 	{
 		if (PickFrom_HU_ID < 1) 
 			set_Value (COLUMNNAME_PickFrom_HU_ID, null);
 		else 
-			set_Value (COLUMNNAME_PickFrom_HU_ID, Integer.valueOf(PickFrom_HU_ID));
+			set_Value (COLUMNNAME_PickFrom_HU_ID, PickFrom_HU_ID);
 	}
 
-	/** Get Pick From HU.
-		@return Pick From HU	  */
 	@Override
-	public int getPickFrom_HU_ID () 
+	public int getPickFrom_HU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PickFrom_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PickFrom_HU_ID);
 	}
 
 	@Override
@@ -276,31 +206,24 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setPickFrom_Order(org.eevolution.model.I_PP_Order PickFrom_Order)
+	public void setPickFrom_Order(final org.eevolution.model.I_PP_Order PickFrom_Order)
 	{
 		set_ValueFromPO(COLUMNNAME_PickFrom_Order_ID, org.eevolution.model.I_PP_Order.class, PickFrom_Order);
 	}
 
-	/** Set Pick From Order.
-		@param PickFrom_Order_ID Pick From Order	  */
 	@Override
-	public void setPickFrom_Order_ID (int PickFrom_Order_ID)
+	public void setPickFrom_Order_ID (final int PickFrom_Order_ID)
 	{
 		if (PickFrom_Order_ID < 1) 
 			set_Value (COLUMNNAME_PickFrom_Order_ID, null);
 		else 
-			set_Value (COLUMNNAME_PickFrom_Order_ID, Integer.valueOf(PickFrom_Order_ID));
+			set_Value (COLUMNNAME_PickFrom_Order_ID, PickFrom_Order_ID);
 	}
 
-	/** Get Pick From Order.
-		@return Pick From Order	  */
 	@Override
-	public int getPickFrom_Order_ID () 
+	public int getPickFrom_Order_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PickFrom_Order_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PickFrom_Order_ID);
 	}
 
 	/** 
@@ -316,59 +239,42 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	public static final String PICKSTATUS_WillNotBePicked = "N";
 	/** Packed = A */
 	public static final String PICKSTATUS_Packed = "A";
-	/** Set Komm. Status.
-		@param PickStatus Komm. Status	  */
 	@Override
-	public void setPickStatus (java.lang.String PickStatus)
+	public void setPickStatus (final java.lang.String PickStatus)
 	{
-
 		set_Value (COLUMNNAME_PickStatus, PickStatus);
 	}
 
-	/** Get Komm. Status.
-		@return Komm. Status	  */
 	@Override
-	public java.lang.String getPickStatus () 
+	public java.lang.String getPickStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PickStatus);
+		return get_ValueAsString(COLUMNNAME_PickStatus);
 	}
 
-	/** Set Menge (Lagereinheit).
-		@param QtyPicked Menge (Lagereinheit)	  */
 	@Override
-	public void setQtyPicked (java.math.BigDecimal QtyPicked)
+	public void setQtyPicked (final BigDecimal QtyPicked)
 	{
 		set_Value (COLUMNNAME_QtyPicked, QtyPicked);
 	}
 
-	/** Get Menge (Lagereinheit).
-		@return Menge (Lagereinheit)	  */
 	@Override
-	public java.math.BigDecimal getQtyPicked () 
+	public BigDecimal getQtyPicked() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyPicked);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPicked);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Qty Review.
-		@param QtyReview Qty Review	  */
 	@Override
-	public void setQtyReview (java.math.BigDecimal QtyReview)
+	public void setQtyReview (final @Nullable BigDecimal QtyReview)
 	{
 		set_Value (COLUMNNAME_QtyReview, QtyReview);
 	}
 
-	/** Get Qty Review.
-		@return Qty Review	  */
 	@Override
-	public java.math.BigDecimal getQtyReview () 
+	public BigDecimal getQtyReview() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReview);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReview);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	/** 
@@ -384,20 +290,15 @@ public class X_M_Picking_Candidate extends org.compiere.model.PO implements I_M_
 	public static final String STATUS_Processed = "PR";
 	/** Voided = VO */
 	public static final String STATUS_Voided = "VO";
-	/** Set Status.
-		@param Status Status	  */
 	@Override
-	public void setStatus (java.lang.String Status)
+	public void setStatus (final java.lang.String Status)
 	{
-
 		set_Value (COLUMNNAME_Status, Status);
 	}
 
-	/** Get Status.
-		@return Status	  */
 	@Override
-	public java.lang.String getStatus () 
+	public java.lang.String getStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Status);
+		return get_ValueAsString(COLUMNNAME_Status);
 	}
 }

@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import de.metas.organization.OrgId;
+import de.metas.product.ProductCategoryId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
@@ -234,8 +235,10 @@ public class MProduct extends X_M_Product
 	 */
 	public boolean isCreateAsset()
 	{
-		MProductCategory pc = MProductCategory.get(getCtx(), getM_Product_Category_ID());
-		return pc.getA_Asset_Group_ID() != 0;
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(getM_Product_Category_ID());
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final I_M_Product_Category pc = productDAO.getProductCategoryById(productCategoryId);
+		return pc.getA_Asset_Group_ID() > 0;
 	}	// isCreated
 
 	/**
@@ -245,8 +248,10 @@ public class MProduct extends X_M_Product
 	 */
 	public boolean isOneAssetPerUOM()
 	{
-		MProductCategory pc = MProductCategory.get(getCtx(), getM_Product_Category_ID());
-		if (pc.getA_Asset_Group_ID() == 0)
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(getM_Product_Category_ID());
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final I_M_Product_Category pc = productDAO.getProductCategoryById(productCategoryId);
+		if (pc.getA_Asset_Group_ID() <= 0)
 		{
 			return false;
 		}
@@ -315,9 +320,16 @@ public class MProduct extends X_M_Product
 		// New - Acct, Tree, Old Costing
 		if (newRecord)
 		{
-			insert_Accounting(I_M_Product_Acct.Table_Name,
-					I_M_Product_Category_Acct.Table_Name,
-					"p.M_Product_Category_ID=" + getM_Product_Category_ID());
+			if (this.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
+			{
+				insert_Accounting(I_M_Product_Acct.Table_Name,
+								  I_M_Product_Category_Acct.Table_Name,
+								  "p.M_Product_Category_ID=" + getM_Product_Category_ID());
+			}
+			else
+			{
+				log.info("This M_Product is created via CopyRecordSupport; -> don't insert the default _acct records");
+			}
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
 		}
 		

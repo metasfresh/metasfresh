@@ -1,96 +1,53 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Column
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1996606322L;
+	private static final long serialVersionUID = 1295204142L;
 
     /** Standard Constructor */
-    public X_AD_Column (Properties ctx, int AD_Column_ID, String trxName)
+    public X_AD_Column (final Properties ctx, final int AD_Column_ID, @Nullable final String trxName)
     {
       super (ctx, AD_Column_ID, trxName);
-      /** if (AD_Column_ID == 0)
-        {
-			setAD_Column_ID (0);
-			setAD_Element_ID (0);
-			setAD_Reference_ID (0);
-			setAD_Table_ID (0);
-			setColumnName (null);
-			setDDL_NoForeignKey (false); // N
-			setEntityType (null); // U
-			setIsAlwaysUpdateable (false); // N
-			setIsAutoApplyValidationRule (false); // N
-			setIsAutocomplete (false); // N
-			setIsCalculated (false); // N
-			setIsEncrypted (null); // N
-			setIsFacetFilter (false); // N
-			setIsForceIncludeInGeneratedModel (false); // N
-			setIsIdentifier (false);
-			setIsKey (false);
-			setIsLazyLoading (false); // N
-			setIsMandatory (false);
-			setIsParent (false);
-			setIsRangeFilter (false); // N
-			setIsSelectionColumn (false);
-			setIsShowFilterIncrementButtons (false); // N
-			setIsStaleable (false); // N
-			setIsTranslated (false);
-			setIsUpdateable (true); // Y
-			setIsUseDocSequence (false); // N
-			setVersion (BigDecimal.ZERO);
-        } */
     }
 
     /** Load Constructor */
-    public X_AD_Column (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_Column (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Spalte.
-		@param AD_Column_ID 
-		Column in the table
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setAD_Column_ID (int AD_Column_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_Column_ID (final int AD_Column_ID)
 	{
 		if (AD_Column_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Column_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Column_ID, Integer.valueOf(AD_Column_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Column_ID, AD_Column_ID);
 	}
 
-	/** Get Spalte.
-		@return Column in the table
-	  */
 	@Override
-	public int getAD_Column_ID () 
+	public int getAD_Column_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Column_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Column_ID);
 	}
 
 	@Override
@@ -100,34 +57,24 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element)
+	public void setAD_Element(final org.compiere.model.I_AD_Element AD_Element)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class, AD_Element);
 	}
 
-	/** Set System-Element.
-		@param AD_Element_ID 
-		System Element enables the central maintenance of column description and help.
-	  */
 	@Override
-	public void setAD_Element_ID (int AD_Element_ID)
+	public void setAD_Element_ID (final int AD_Element_ID)
 	{
 		if (AD_Element_ID < 1) 
 			set_Value (COLUMNNAME_AD_Element_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Element_ID, Integer.valueOf(AD_Element_ID));
+			set_Value (COLUMNNAME_AD_Element_ID, AD_Element_ID);
 	}
 
-	/** Get System-Element.
-		@return System Element enables the central maintenance of column description and help.
-	  */
 	@Override
-	public int getAD_Element_ID () 
+	public int getAD_Element_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Element_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Element_ID);
 	}
 
 	@Override
@@ -137,34 +84,24 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process)
+	public void setAD_Process(final org.compiere.model.I_AD_Process AD_Process)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Process_ID, org.compiere.model.I_AD_Process.class, AD_Process);
 	}
 
-	/** Set Prozess.
-		@param AD_Process_ID 
-		Process or Report
-	  */
 	@Override
-	public void setAD_Process_ID (int AD_Process_ID)
+	public void setAD_Process_ID (final int AD_Process_ID)
 	{
 		if (AD_Process_ID < 1) 
 			set_Value (COLUMNNAME_AD_Process_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Process_ID, Integer.valueOf(AD_Process_ID));
+			set_Value (COLUMNNAME_AD_Process_ID, AD_Process_ID);
 	}
 
-	/** Get Prozess.
-		@return Process or Report
-	  */
 	@Override
-	public int getAD_Process_ID () 
+	public int getAD_Process_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Process_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Process_ID);
 	}
 
 	@Override
@@ -174,34 +111,24 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setAD_Reference(org.compiere.model.I_AD_Reference AD_Reference)
+	public void setAD_Reference(final org.compiere.model.I_AD_Reference AD_Reference)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Reference_ID, org.compiere.model.I_AD_Reference.class, AD_Reference);
 	}
 
-	/** Set Referenz.
-		@param AD_Reference_ID 
-		System Reference and Validation
-	  */
 	@Override
-	public void setAD_Reference_ID (int AD_Reference_ID)
+	public void setAD_Reference_ID (final int AD_Reference_ID)
 	{
 		if (AD_Reference_ID < 1) 
 			set_Value (COLUMNNAME_AD_Reference_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Reference_ID, Integer.valueOf(AD_Reference_ID));
+			set_Value (COLUMNNAME_AD_Reference_ID, AD_Reference_ID);
 	}
 
-	/** Get Referenz.
-		@return System Reference and Validation
-	  */
 	@Override
-	public int getAD_Reference_ID () 
+	public int getAD_Reference_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Reference_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Reference_ID);
 	}
 
 	@Override
@@ -211,59 +138,39 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setAD_Reference_Value(org.compiere.model.I_AD_Reference AD_Reference_Value)
+	public void setAD_Reference_Value(final org.compiere.model.I_AD_Reference AD_Reference_Value)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Reference_Value_ID, org.compiere.model.I_AD_Reference.class, AD_Reference_Value);
 	}
 
-	/** Set Referenzschlüssel.
-		@param AD_Reference_Value_ID 
-		Required to specify, if data type is Table or List
-	  */
 	@Override
-	public void setAD_Reference_Value_ID (int AD_Reference_Value_ID)
+	public void setAD_Reference_Value_ID (final int AD_Reference_Value_ID)
 	{
 		if (AD_Reference_Value_ID < 1) 
 			set_Value (COLUMNNAME_AD_Reference_Value_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Reference_Value_ID, Integer.valueOf(AD_Reference_Value_ID));
+			set_Value (COLUMNNAME_AD_Reference_Value_ID, AD_Reference_Value_ID);
 	}
 
-	/** Get Referenzschlüssel.
-		@return Required to specify, if data type is Table or List
-	  */
 	@Override
-	public int getAD_Reference_Value_ID () 
+	public int getAD_Reference_Value_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Reference_Value_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Reference_Value_ID);
 	}
 
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
-	  */
 	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
+	public void setAD_Table_ID (final int AD_Table_ID)
 	{
 		if (AD_Table_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
-	/** Get DB-Tabelle.
-		@return Database Table information
-	  */
 	@Override
-	public int getAD_Table_ID () 
+	public int getAD_Table_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
 
 	@Override
@@ -273,133 +180,84 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setAD_Val_Rule(org.compiere.model.I_AD_Val_Rule AD_Val_Rule)
+	public void setAD_Val_Rule(final org.compiere.model.I_AD_Val_Rule AD_Val_Rule)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Val_Rule_ID, org.compiere.model.I_AD_Val_Rule.class, AD_Val_Rule);
 	}
 
-	/** Set Dynamische Validierung.
-		@param AD_Val_Rule_ID 
-		Dynamic Validation Rule
-	  */
 	@Override
-	public void setAD_Val_Rule_ID (int AD_Val_Rule_ID)
+	public void setAD_Val_Rule_ID (final int AD_Val_Rule_ID)
 	{
 		if (AD_Val_Rule_ID < 1) 
 			set_Value (COLUMNNAME_AD_Val_Rule_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Val_Rule_ID, Integer.valueOf(AD_Val_Rule_ID));
+			set_Value (COLUMNNAME_AD_Val_Rule_ID, AD_Val_Rule_ID);
 	}
 
-	/** Get Dynamische Validierung.
-		@return Dynamic Validation Rule
-	  */
 	@Override
-	public int getAD_Val_Rule_ID () 
+	public int getAD_Val_Rule_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Val_Rule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Val_Rule_ID);
 	}
 
-	/** Set Spaltenname.
-		@param ColumnName 
-		Name of the column in the database
-	  */
 	@Override
-	public void setColumnName (java.lang.String ColumnName)
+	public void setColumnName (final java.lang.String ColumnName)
 	{
 		set_Value (COLUMNNAME_ColumnName, ColumnName);
 	}
 
-	/** Get Spaltenname.
-		@return Name of the column in the database
-	  */
 	@Override
-	public java.lang.String getColumnName () 
+	public java.lang.String getColumnName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ColumnName);
+		return get_ValueAsString(COLUMNNAME_ColumnName);
 	}
 
-	/** Set Column SQL.
-		@param ColumnSQL 
-		Virtual Column (r/o)
-	  */
 	@Override
-	public void setColumnSQL (java.lang.String ColumnSQL)
+	public void setColumnSQL (final java.lang.String ColumnSQL)
 	{
 		set_Value (COLUMNNAME_ColumnSQL, ColumnSQL);
 	}
 
-	/** Get Column SQL.
-		@return Virtual Column (r/o)
-	  */
 	@Override
-	public java.lang.String getColumnSQL () 
+	public java.lang.String getColumnSQL() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ColumnSQL);
+		return get_ValueAsString(COLUMNNAME_ColumnSQL);
 	}
 
-	/** Set No Foreign Key.
-		@param DDL_NoForeignKey 
-		Don't create database foreign key (if applicable) for this column 
-	  */
 	@Override
-	public void setDDL_NoForeignKey (boolean DDL_NoForeignKey)
+	public void setDDL_NoForeignKey (final boolean DDL_NoForeignKey)
 	{
-		set_Value (COLUMNNAME_DDL_NoForeignKey, Boolean.valueOf(DDL_NoForeignKey));
+		set_Value (COLUMNNAME_DDL_NoForeignKey, DDL_NoForeignKey);
 	}
 
-	/** Get No Foreign Key.
-		@return Don't create database foreign key (if applicable) for this column 
-	  */
 	@Override
-	public boolean isDDL_NoForeignKey () 
+	public boolean isDDL_NoForeignKey() 
 	{
-		Object oo = get_Value(COLUMNNAME_DDL_NoForeignKey);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_DDL_NoForeignKey);
 	}
 
-	/** Set Standardwert-Logik.
-		@param DefaultValue 
-		Default value hierarchy, separated by ;
-	  */
 	@Override
-	public void setDefaultValue (java.lang.String DefaultValue)
+	public void setDefaultValue (final java.lang.String DefaultValue)
 	{
 		set_Value (COLUMNNAME_DefaultValue, DefaultValue);
 	}
 
-	/** Get Standardwert-Logik.
-		@return Default value hierarchy, separated by ;
-	  */
 	@Override
-	public java.lang.String getDefaultValue () 
+	public java.lang.String getDefaultValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DefaultValue);
+		return get_ValueAsString(COLUMNNAME_DefaultValue);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -407,268 +265,171 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	 * Reference name: _EntityTypeNew
 	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entitäts-Art.
-		@param EntityType 
-		Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public void setEntityType (java.lang.String EntityType)
+	public void setEntityType (final java.lang.String EntityType)
 	{
-
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get Entitäts-Art.
-		@return Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public java.lang.String getEntityType () 
+	public java.lang.String getEntityType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
+		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
 
-	/** Set Facet Filter Sequence No.
-		@param FacetFilterSeqNo Facet Filter Sequence No	  */
 	@Override
-	public void setFacetFilterSeqNo (int FacetFilterSeqNo)
+	public void setFacetFilterSeqNo (final int FacetFilterSeqNo)
 	{
-		set_Value (COLUMNNAME_FacetFilterSeqNo, Integer.valueOf(FacetFilterSeqNo));
+		set_Value (COLUMNNAME_FacetFilterSeqNo, FacetFilterSeqNo);
 	}
 
-	/** Get Facet Filter Sequence No.
-		@return Facet Filter Sequence No	  */
 	@Override
-	public int getFacetFilterSeqNo () 
+	public int getFacetFilterSeqNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_FacetFilterSeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_FacetFilterSeqNo);
 	}
 
-	/** Set Länge.
-		@param FieldLength 
-		Length of the column in the database
-	  */
 	@Override
-	public void setFieldLength (int FieldLength)
+	public void setFieldLength (final int FieldLength)
 	{
-		set_Value (COLUMNNAME_FieldLength, Integer.valueOf(FieldLength));
+		set_Value (COLUMNNAME_FieldLength, FieldLength);
 	}
 
-	/** Get Länge.
-		@return Length of the column in the database
-	  */
 	@Override
-	public int getFieldLength () 
+	public int getFieldLength() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_FieldLength);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_FieldLength);
 	}
 
-	/** Set Filter Default Value.
-		@param FilterDefaultValue Filter Default Value	  */
 	@Override
-	public void setFilterDefaultValue (java.lang.String FilterDefaultValue)
+	public void setFilterDefaultValue (final java.lang.String FilterDefaultValue)
 	{
 		set_Value (COLUMNNAME_FilterDefaultValue, FilterDefaultValue);
 	}
 
-	/** Get Filter Default Value.
-		@return Filter Default Value	  */
 	@Override
-	public java.lang.String getFilterDefaultValue () 
+	public java.lang.String getFilterDefaultValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_FilterDefaultValue);
+		return get_ValueAsString(COLUMNNAME_FilterDefaultValue);
 	}
 
-	/** Set Format Pattern.
-		@param FormatPattern 
-		The pattern used to format a number or date.
-	  */
+	/** 
+	 * FilterOperator AD_Reference_ID=541241
+	 * Reference name: FilterOperator
+	 */
+	public static final int FILTEROPERATOR_AD_Reference_ID=541241;
+	/** EqualsOrLike = E */
+	public static final String FILTEROPERATOR_EqualsOrLike = "E";
+	/** Between = B */
+	public static final String FILTEROPERATOR_Between = "B";
+	/** NotNull = N */
+	public static final String FILTEROPERATOR_NotNull = "N";
 	@Override
-	public void setFormatPattern (java.lang.String FormatPattern)
+	public void setFilterOperator (final java.lang.String FilterOperator)
+	{
+		set_Value (COLUMNNAME_FilterOperator, FilterOperator);
+	}
+
+	@Override
+	public java.lang.String getFilterOperator() 
+	{
+		return get_ValueAsString(COLUMNNAME_FilterOperator);
+	}
+
+	@Override
+	public void setFormatPattern (final java.lang.String FormatPattern)
 	{
 		set_Value (COLUMNNAME_FormatPattern, FormatPattern);
 	}
 
-	/** Get Format Pattern.
-		@return The pattern used to format a number or date.
-	  */
 	@Override
-	public java.lang.String getFormatPattern () 
+	public java.lang.String getFormatPattern() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_FormatPattern);
+		return get_ValueAsString(COLUMNNAME_FormatPattern);
 	}
 
-	/** Set Kommentar/Hilfe.
-		@param Help 
-		Comment or Hint
-	  */
 	@Override
-	public void setHelp (java.lang.String Help)
+	public void setHelp (final java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Kommentar/Hilfe.
-		@return Comment or Hint
-	  */
 	@Override
-	public java.lang.String getHelp () 
+	public java.lang.String getHelp() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Help);
+		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
-	/** Set Info Factory Class.
-		@param InfoFactoryClass 
-		Fully qualified class name that implements the InfoFactory interface
-	  */
 	@Override
-	public void setInfoFactoryClass (java.lang.String InfoFactoryClass)
+	public void setInfoFactoryClass (final java.lang.String InfoFactoryClass)
 	{
 		set_Value (COLUMNNAME_InfoFactoryClass, InfoFactoryClass);
 	}
 
-	/** Get Info Factory Class.
-		@return Fully qualified class name that implements the InfoFactory interface
-	  */
 	@Override
-	public java.lang.String getInfoFactoryClass () 
+	public java.lang.String getInfoFactoryClass() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InfoFactoryClass);
+		return get_ValueAsString(COLUMNNAME_InfoFactoryClass);
 	}
 
-	/** Set Allow Logging.
-		@param IsAllowLogging 
-		Determine if a column must be recorded into the change log
-	  */
 	@Override
-	public void setIsAllowLogging (boolean IsAllowLogging)
+	public void setIsAllowLogging (final boolean IsAllowLogging)
 	{
-		set_Value (COLUMNNAME_IsAllowLogging, Boolean.valueOf(IsAllowLogging));
+		set_Value (COLUMNNAME_IsAllowLogging, IsAllowLogging);
 	}
 
-	/** Get Allow Logging.
-		@return Determine if a column must be recorded into the change log
-	  */
 	@Override
-	public boolean isAllowLogging () 
+	public boolean isAllowLogging() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsAllowLogging);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowLogging);
 	}
 
-	/** Set Always Updateable.
-		@param IsAlwaysUpdateable 
-		The column is always updateable, even if the record is not active or processed
-	  */
 	@Override
-	public void setIsAlwaysUpdateable (boolean IsAlwaysUpdateable)
+	public void setIsAlwaysUpdateable (final boolean IsAlwaysUpdateable)
 	{
-		set_Value (COLUMNNAME_IsAlwaysUpdateable, Boolean.valueOf(IsAlwaysUpdateable));
+		set_Value (COLUMNNAME_IsAlwaysUpdateable, IsAlwaysUpdateable);
 	}
 
-	/** Get Always Updateable.
-		@return The column is always updateable, even if the record is not active or processed
-	  */
 	@Override
-	public boolean isAlwaysUpdateable () 
+	public boolean isAlwaysUpdateable() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsAlwaysUpdateable);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsAlwaysUpdateable);
 	}
 
-	/** Set Validierungsregel automatisch anwenden.
-		@param IsAutoApplyValidationRule 
-		If a validation rule (AD_Val_Rule_ID) is set and a new record is created where the column is empty, then apply the validation rule and insert the first result into the new record.
-	  */
 	@Override
-	public void setIsAutoApplyValidationRule (boolean IsAutoApplyValidationRule)
+	public void setIsAutoApplyValidationRule (final boolean IsAutoApplyValidationRule)
 	{
-		set_Value (COLUMNNAME_IsAutoApplyValidationRule, Boolean.valueOf(IsAutoApplyValidationRule));
+		set_Value (COLUMNNAME_IsAutoApplyValidationRule, IsAutoApplyValidationRule);
 	}
 
-	/** Get Validierungsregel automatisch anwenden.
-		@return If a validation rule (AD_Val_Rule_ID) is set and a new record is created where the column is empty, then apply the validation rule and insert the first result into the new record.
-	  */
 	@Override
-	public boolean isAutoApplyValidationRule () 
+	public boolean isAutoApplyValidationRule() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsAutoApplyValidationRule);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoApplyValidationRule);
 	}
 
-	/** Set Autocomplete.
-		@param IsAutocomplete 
-		Automatic completion for textfields
-	  */
 	@Override
-	public void setIsAutocomplete (boolean IsAutocomplete)
+	public void setIsAutocomplete (final boolean IsAutocomplete)
 	{
-		set_Value (COLUMNNAME_IsAutocomplete, Boolean.valueOf(IsAutocomplete));
+		set_Value (COLUMNNAME_IsAutocomplete, IsAutocomplete);
 	}
 
-	/** Get Autocomplete.
-		@return Automatic completion for textfields
-	  */
 	@Override
-	public boolean isAutocomplete () 
+	public boolean isAutocomplete() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsAutocomplete);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsAutocomplete);
 	}
 
-	/** Set Berechnet.
-		@param IsCalculated 
-		The value is calculated by the system
-	  */
 	@Override
-	public void setIsCalculated (boolean IsCalculated)
+	public void setIsCalculated (final boolean IsCalculated)
 	{
-		set_Value (COLUMNNAME_IsCalculated, Boolean.valueOf(IsCalculated));
+		set_Value (COLUMNNAME_IsCalculated, IsCalculated);
 	}
 
-	/** Get Berechnet.
-		@return The value is calculated by the system
-	  */
 	@Override
-	public boolean isCalculated () 
+	public boolean isCalculated() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsCalculated);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsCalculated);
 	}
 
 	/** 
@@ -680,481 +441,244 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public static final String ISENCRYPTED_Encrypted = "Y";
 	/** Nicht verschlüsselt = N */
 	public static final String ISENCRYPTED_NichtVerschluesselt = "N";
-	/** Set Encrypted.
-		@param IsEncrypted 
-		Display or Storage is encrypted
-	  */
 	@Override
-	public void setIsEncrypted (java.lang.String IsEncrypted)
+	public void setIsEncrypted (final java.lang.String IsEncrypted)
 	{
-
 		set_Value (COLUMNNAME_IsEncrypted, IsEncrypted);
 	}
 
-	/** Get Encrypted.
-		@return Display or Storage is encrypted
-	  */
 	@Override
-	public java.lang.String getIsEncrypted () 
+	public java.lang.String getIsEncrypted() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_IsEncrypted);
+		return get_ValueAsString(COLUMNNAME_IsEncrypted);
 	}
 
-	/** Set Facet Filter.
-		@param IsFacetFilter Facet Filter	  */
 	@Override
-	public void setIsFacetFilter (boolean IsFacetFilter)
+	public void setIsFacetFilter (final boolean IsFacetFilter)
 	{
-		set_Value (COLUMNNAME_IsFacetFilter, Boolean.valueOf(IsFacetFilter));
+		set_Value (COLUMNNAME_IsFacetFilter, IsFacetFilter);
 	}
 
-	/** Get Facet Filter.
-		@return Facet Filter	  */
 	@Override
-	public boolean isFacetFilter () 
+	public boolean isFacetFilter() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsFacetFilter);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsFacetFilter);
 	}
 
-	/** Set Force include in generated model.
-		@param IsForceIncludeInGeneratedModel 
-		Force including this column in java generated interface and class
-	  */
 	@Override
-	public void setIsForceIncludeInGeneratedModel (boolean IsForceIncludeInGeneratedModel)
+	public void setIsForceIncludeInGeneratedModel (final boolean IsForceIncludeInGeneratedModel)
 	{
-		set_Value (COLUMNNAME_IsForceIncludeInGeneratedModel, Boolean.valueOf(IsForceIncludeInGeneratedModel));
+		set_Value (COLUMNNAME_IsForceIncludeInGeneratedModel, IsForceIncludeInGeneratedModel);
 	}
 
-	/** Get Force include in generated model.
-		@return Force including this column in java generated interface and class
-	  */
 	@Override
-	public boolean isForceIncludeInGeneratedModel () 
+	public boolean isForceIncludeInGeneratedModel() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsForceIncludeInGeneratedModel);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsForceIncludeInGeneratedModel);
 	}
 
-	/** Set GenericZoom Quellspalte.
-		@param IsGenericZoomOrigin 
-		Legt fest, ob zu der betreffenden Spalte Referenzen (d.h. externe Datensätze, die die Spalte referenzieren) angezeigt werden sollen
-	  */
 	@Override
-	public void setIsGenericZoomOrigin (boolean IsGenericZoomOrigin)
+	public void setIsGenericZoomOrigin (final boolean IsGenericZoomOrigin)
 	{
-		set_Value (COLUMNNAME_IsGenericZoomOrigin, Boolean.valueOf(IsGenericZoomOrigin));
+		set_Value (COLUMNNAME_IsGenericZoomOrigin, IsGenericZoomOrigin);
 	}
 
-	/** Get GenericZoom Quellspalte.
-		@return Legt fest, ob zu der betreffenden Spalte Referenzen (d.h. externe Datensätze, die die Spalte referenzieren) angezeigt werden sollen
-	  */
 	@Override
-	public boolean isGenericZoomOrigin () 
+	public boolean isGenericZoomOrigin() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsGenericZoomOrigin);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsGenericZoomOrigin);
 	}
 
-	/** Set Identifier.
-		@param IsIdentifier 
-		This column is part of the record identifier
-	  */
 	@Override
-	public void setIsIdentifier (boolean IsIdentifier)
+	public void setIsIdentifier (final boolean IsIdentifier)
 	{
-		set_Value (COLUMNNAME_IsIdentifier, Boolean.valueOf(IsIdentifier));
+		set_Value (COLUMNNAME_IsIdentifier, IsIdentifier);
 	}
 
-	/** Get Identifier.
-		@return This column is part of the record identifier
-	  */
 	@Override
-	public boolean isIdentifier () 
+	public boolean isIdentifier() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsIdentifier);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsIdentifier);
 	}
 
-	/** Set Schlüssel-Spalte.
-		@param IsKey 
-		This column is the key in this table
-	  */
 	@Override
-	public void setIsKey (boolean IsKey)
+	public void setIsKey (final boolean IsKey)
 	{
-		set_Value (COLUMNNAME_IsKey, Boolean.valueOf(IsKey));
+		set_Value (COLUMNNAME_IsKey, IsKey);
 	}
 
-	/** Get Schlüssel-Spalte.
-		@return This column is the key in this table
-	  */
 	@Override
-	public boolean isKey () 
+	public boolean isKey() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsKey);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsKey);
 	}
 
-	/** Set Lazy loading.
-		@param IsLazyLoading Lazy loading	  */
 	@Override
-	public void setIsLazyLoading (boolean IsLazyLoading)
+	public void setIsLazyLoading (final boolean IsLazyLoading)
 	{
-		set_Value (COLUMNNAME_IsLazyLoading, Boolean.valueOf(IsLazyLoading));
+		set_Value (COLUMNNAME_IsLazyLoading, IsLazyLoading);
 	}
 
-	/** Get Lazy loading.
-		@return Lazy loading	  */
 	@Override
-	public boolean isLazyLoading () 
+	public boolean isLazyLoading() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsLazyLoading);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsLazyLoading);
 	}
 
-	/** Set Pflichtangabe.
-		@param IsMandatory 
-		Data entry is required in this column
-	  */
 	@Override
-	public void setIsMandatory (boolean IsMandatory)
+	public void setIsMandatory (final boolean IsMandatory)
 	{
-		set_Value (COLUMNNAME_IsMandatory, Boolean.valueOf(IsMandatory));
+		set_Value (COLUMNNAME_IsMandatory, IsMandatory);
 	}
 
-	/** Get Pflichtangabe.
-		@return Data entry is required in this column
-	  */
 	@Override
-	public boolean isMandatory () 
+	public boolean isMandatory() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsMandatory);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsMandatory);
 	}
 
-	/** Set Parent link column.
-		@param IsParent 
-		This column is a link to the parent table (e.g. header from lines) - incl. Association key columns
-	  */
 	@Override
-	public void setIsParent (boolean IsParent)
+	public void setIsParent (final boolean IsParent)
 	{
-		set_Value (COLUMNNAME_IsParent, Boolean.valueOf(IsParent));
+		set_Value (COLUMNNAME_IsParent, IsParent);
 	}
 
-	/** Get Parent link column.
-		@return This column is a link to the parent table (e.g. header from lines) - incl. Association key columns
-	  */
 	@Override
-	public boolean isParent () 
+	public boolean isParent() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsParent);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsParent);
 	}
 
-	/** Set Range filter.
-		@param IsRangeFilter 
-		Check if the filter by this column shall render a range component
-	  */
 	@Override
-	public void setIsRangeFilter (boolean IsRangeFilter)
+	public void setIsSelectionColumn (final boolean IsSelectionColumn)
 	{
-		set_Value (COLUMNNAME_IsRangeFilter, Boolean.valueOf(IsRangeFilter));
+		set_Value (COLUMNNAME_IsSelectionColumn, IsSelectionColumn);
 	}
 
-	/** Get Range filter.
-		@return Check if the filter by this column shall render a range component
-	  */
 	@Override
-	public boolean isRangeFilter () 
+	public boolean isSelectionColumn() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsRangeFilter);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsSelectionColumn);
 	}
 
-	/** Set Selection Column.
-		@param IsSelectionColumn 
-		Is this column used for finding rows in windows
-	  */
 	@Override
-	public void setIsSelectionColumn (boolean IsSelectionColumn)
+	public void setIsShowFilterIncrementButtons (final boolean IsShowFilterIncrementButtons)
 	{
-		set_Value (COLUMNNAME_IsSelectionColumn, Boolean.valueOf(IsSelectionColumn));
+		set_Value (COLUMNNAME_IsShowFilterIncrementButtons, IsShowFilterIncrementButtons);
 	}
 
-	/** Get Selection Column.
-		@return Is this column used for finding rows in windows
-	  */
 	@Override
-	public boolean isSelectionColumn () 
+	public boolean isShowFilterIncrementButtons() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSelectionColumn);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsShowFilterIncrementButtons);
 	}
 
-	/** Set Filter +/- buttons.
-		@param IsShowFilterIncrementButtons 
-		Show filter increment/decrement buttons
-	  */
 	@Override
-	public void setIsShowFilterIncrementButtons (boolean IsShowFilterIncrementButtons)
+	public void setIsShowFilterInline (final boolean IsShowFilterInline)
 	{
-		set_Value (COLUMNNAME_IsShowFilterIncrementButtons, Boolean.valueOf(IsShowFilterIncrementButtons));
+		set_Value (COLUMNNAME_IsShowFilterInline, IsShowFilterInline);
 	}
 
-	/** Get Filter +/- buttons.
-		@return Show filter increment/decrement buttons
-	  */
 	@Override
-	public boolean isShowFilterIncrementButtons () 
+	public boolean isShowFilterInline() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsShowFilterIncrementButtons);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsShowFilterInline);
 	}
 
-	/** Set Staleable.
-		@param IsStaleable 
-		If checked then this column is staleable and record needs to be loaded after save.
-	  */
 	@Override
-	public void setIsStaleable (boolean IsStaleable)
+	public void setIsStaleable (final boolean IsStaleable)
 	{
-		set_Value (COLUMNNAME_IsStaleable, Boolean.valueOf(IsStaleable));
+		set_Value (COLUMNNAME_IsStaleable, IsStaleable);
 	}
 
-	/** Get Staleable.
-		@return If checked then this column is staleable and record needs to be loaded after save.
-	  */
 	@Override
-	public boolean isStaleable () 
+	public boolean isStaleable() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsStaleable);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsStaleable);
 	}
 
-	/** Set Synchronize Database.
-		@param IsSyncDatabase 
-		Change database table definition when changing dictionary definition
-	  */
 	@Override
-	public void setIsSyncDatabase (java.lang.String IsSyncDatabase)
+	public void setIsSyncDatabase (final java.lang.String IsSyncDatabase)
 	{
 		set_Value (COLUMNNAME_IsSyncDatabase, IsSyncDatabase);
 	}
 
-	/** Get Synchronize Database.
-		@return Change database table definition when changing dictionary definition
-	  */
 	@Override
-	public java.lang.String getIsSyncDatabase () 
+	public java.lang.String getIsSyncDatabase() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_IsSyncDatabase);
+		return get_ValueAsString(COLUMNNAME_IsSyncDatabase);
 	}
 
-	/** Set Übersetzt.
-		@param IsTranslated 
-		This column is translated
-	  */
 	@Override
-	public void setIsTranslated (boolean IsTranslated)
+	public void setIsTranslated (final boolean IsTranslated)
 	{
-		set_Value (COLUMNNAME_IsTranslated, Boolean.valueOf(IsTranslated));
+		set_Value (COLUMNNAME_IsTranslated, IsTranslated);
 	}
 
-	/** Get Übersetzt.
-		@return This column is translated
-	  */
 	@Override
-	public boolean isTranslated () 
+	public boolean isTranslated() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsTranslated);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsTranslated);
 	}
 
-	/** Set Updateable.
-		@param IsUpdateable 
-		Determines, if the field can be updated
-	  */
 	@Override
-	public void setIsUpdateable (boolean IsUpdateable)
+	public void setIsUpdateable (final boolean IsUpdateable)
 	{
-		set_Value (COLUMNNAME_IsUpdateable, Boolean.valueOf(IsUpdateable));
+		set_Value (COLUMNNAME_IsUpdateable, IsUpdateable);
 	}
 
-	/** Get Updateable.
-		@return Determines, if the field can be updated
-	  */
 	@Override
-	public boolean isUpdateable () 
+	public boolean isUpdateable() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsUpdateable);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsUpdateable);
 	}
 
-	/** Set Autogenerate document sequence.
-		@param IsUseDocSequence 
-		In case the field is empty, use standard document sequence to set the value
-	  */
 	@Override
-	public void setIsUseDocSequence (boolean IsUseDocSequence)
+	public void setIsUseDocSequence (final boolean IsUseDocSequence)
 	{
-		set_Value (COLUMNNAME_IsUseDocSequence, Boolean.valueOf(IsUseDocSequence));
+		set_Value (COLUMNNAME_IsUseDocSequence, IsUseDocSequence);
 	}
 
-	/** Get Autogenerate document sequence.
-		@return In case the field is empty, use standard document sequence to set the value
-	  */
 	@Override
-	public boolean isUseDocSequence () 
+	public boolean isUseDocSequence() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsUseDocSequence);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsUseDocSequence);
 	}
 
-	/** Set Mandatory Logic.
-		@param MandatoryLogic Mandatory Logic	  */
 	@Override
-	public void setMandatoryLogic (java.lang.String MandatoryLogic)
+	public void setMandatoryLogic (final java.lang.String MandatoryLogic)
 	{
 		set_Value (COLUMNNAME_MandatoryLogic, MandatoryLogic);
 	}
 
-	/** Get Mandatory Logic.
-		@return Mandatory Logic	  */
 	@Override
-	public java.lang.String getMandatoryLogic () 
+	public java.lang.String getMandatoryLogic() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_MandatoryLogic);
+		return get_ValueAsString(COLUMNNAME_MandatoryLogic);
 	}
 
-	/** Set Maximum Facets.
-		@param MaxFacetsToFetch 
-		Maximum number of facets to fetch
-	  */
 	@Override
-	public void setMaxFacetsToFetch (int MaxFacetsToFetch)
+	public void setMaxFacetsToFetch (final int MaxFacetsToFetch)
 	{
-		set_Value (COLUMNNAME_MaxFacetsToFetch, Integer.valueOf(MaxFacetsToFetch));
+		set_Value (COLUMNNAME_MaxFacetsToFetch, MaxFacetsToFetch);
 	}
 
-	/** Get Maximum Facets.
-		@return Maximum number of facets to fetch
-	  */
 	@Override
-	public int getMaxFacetsToFetch () 
+	public int getMaxFacetsToFetch() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_MaxFacetsToFetch);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_MaxFacetsToFetch);
 	}
 
-	/** Set Name.
-		@param Name Name	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Name	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	/** 
@@ -1168,178 +692,112 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public static final String PERSONALDATACATEGORY_Personal = "P";
 	/** SensitivePersonal = SP */
 	public static final String PERSONALDATACATEGORY_SensitivePersonal = "SP";
-	/** Set Datenschutz-Kategorie.
-		@param PersonalDataCategory Datenschutz-Kategorie	  */
 	@Override
-	public void setPersonalDataCategory (java.lang.String PersonalDataCategory)
+	public void setPersonalDataCategory (final java.lang.String PersonalDataCategory)
 	{
-
 		set_Value (COLUMNNAME_PersonalDataCategory, PersonalDataCategory);
 	}
 
-	/** Get Datenschutz-Kategorie.
-		@return Datenschutz-Kategorie	  */
 	@Override
-	public java.lang.String getPersonalDataCategory () 
+	public java.lang.String getPersonalDataCategory() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PersonalDataCategory);
+		return get_ValueAsString(COLUMNNAME_PersonalDataCategory);
 	}
 
-	/** Set Read Only Logic.
-		@param ReadOnlyLogic 
-		Logic to determine if field is read only (applies only when field is read-write)
-	  */
 	@Override
-	public void setReadOnlyLogic (java.lang.String ReadOnlyLogic)
+	public void setReadOnlyLogic (final java.lang.String ReadOnlyLogic)
 	{
 		set_Value (COLUMNNAME_ReadOnlyLogic, ReadOnlyLogic);
 	}
 
-	/** Get Read Only Logic.
-		@return Logic to determine if field is read only (applies only when field is read-write)
-	  */
 	@Override
-	public java.lang.String getReadOnlyLogic () 
+	public java.lang.String getReadOnlyLogic() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ReadOnlyLogic);
+		return get_ValueAsString(COLUMNNAME_ReadOnlyLogic);
 	}
 
-	/** Set Selection column ordering.
-		@param SelectionColumnSeqNo Selection column ordering	  */
 	@Override
-	public void setSelectionColumnSeqNo (int SelectionColumnSeqNo)
+	public void setSelectionColumnSeqNo (final int SelectionColumnSeqNo)
 	{
-		set_Value (COLUMNNAME_SelectionColumnSeqNo, Integer.valueOf(SelectionColumnSeqNo));
+		set_Value (COLUMNNAME_SelectionColumnSeqNo, SelectionColumnSeqNo);
 	}
 
-	/** Get Selection column ordering.
-		@return Selection column ordering	  */
 	@Override
-	public int getSelectionColumnSeqNo () 
+	public int getSelectionColumnSeqNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SelectionColumnSeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SelectionColumnSeqNo);
 	}
 
-	/** Set Reihenfolge.
-		@param SeqNo 
-		Method of ordering records; lowest number comes first
-	  */
 	@Override
-	public void setSeqNo (int SeqNo)
+	public void setSeqNo (final int SeqNo)
 	{
-		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
-	/** Get Reihenfolge.
-		@return Method of ordering records; lowest number comes first
-	  */
 	@Override
-	public int getSeqNo () 
+	public int getSeqNo() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
-	/** Set Technical note.
-		@param TechnicalNote 
-		A note that is not indended for the user documentation, but for developers, customizers etc
-	  */
 	@Override
-	public void setTechnicalNote (java.lang.String TechnicalNote)
+	public void setTechnicalNote (final java.lang.String TechnicalNote)
 	{
 		set_Value (COLUMNNAME_TechnicalNote, TechnicalNote);
 	}
 
-	/** Get Technical note.
-		@return A note that is not indended for the user documentation, but for developers, customizers etc
-	  */
 	@Override
-	public java.lang.String getTechnicalNote () 
+	public java.lang.String getTechnicalNote() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TechnicalNote);
+		return get_ValueAsString(COLUMNNAME_TechnicalNote);
 	}
 
-	/** Set Max. Wert.
-		@param ValueMax 
-		Maximum Value for a field
-	  */
 	@Override
-	public void setValueMax (java.lang.String ValueMax)
+	public void setValueMax (final java.lang.String ValueMax)
 	{
 		set_Value (COLUMNNAME_ValueMax, ValueMax);
 	}
 
-	/** Get Max. Wert.
-		@return Maximum Value for a field
-	  */
 	@Override
-	public java.lang.String getValueMax () 
+	public java.lang.String getValueMax() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ValueMax);
+		return get_ValueAsString(COLUMNNAME_ValueMax);
 	}
 
-	/** Set Min. Wert.
-		@param ValueMin 
-		Minimum Value for a field
-	  */
 	@Override
-	public void setValueMin (java.lang.String ValueMin)
+	public void setValueMin (final java.lang.String ValueMin)
 	{
 		set_Value (COLUMNNAME_ValueMin, ValueMin);
 	}
 
-	/** Get Min. Wert.
-		@return Minimum Value for a field
-	  */
 	@Override
-	public java.lang.String getValueMin () 
+	public java.lang.String getValueMin() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ValueMin);
+		return get_ValueAsString(COLUMNNAME_ValueMin);
 	}
 
-	/** Set Version.
-		@param Version 
-		Version of the table definition
-	  */
 	@Override
-	public void setVersion (java.math.BigDecimal Version)
+	public void setVersion (final BigDecimal Version)
 	{
 		set_Value (COLUMNNAME_Version, Version);
 	}
 
-	/** Get Version.
-		@return Version of the table definition
-	  */
 	@Override
-	public java.math.BigDecimal getVersion () 
+	public BigDecimal getVersion() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Version);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Version);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Value Format.
-		@param VFormat 
-		Format of the value; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
-	  */
 	@Override
-	public void setVFormat (java.lang.String VFormat)
+	public void setVFormat (final java.lang.String VFormat)
 	{
 		set_Value (COLUMNNAME_VFormat, VFormat);
 	}
 
-	/** Get Value Format.
-		@return Format of the value; Can contain fixed format elements, Variables: "_lLoOaAcCa09"
-	  */
 	@Override
-	public java.lang.String getVFormat () 
+	public java.lang.String getVFormat() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_VFormat);
+		return get_ValueAsString(COLUMNNAME_VFormat);
 	}
 }

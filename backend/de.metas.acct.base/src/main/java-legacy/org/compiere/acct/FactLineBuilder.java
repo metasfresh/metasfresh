@@ -23,6 +23,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.acct.base
@@ -57,9 +59,9 @@ public final class FactLineBuilder
 	private MAccount account = null;
 
 	private CurrencyId currencyId;
-	private CurrencyConversionContext currencyConversionCtx;
-	private BigDecimal amtSourceDr;
-	private BigDecimal amtSourceCr;
+	@Nullable private CurrencyConversionContext currencyConversionCtx;
+	@Nullable private BigDecimal amtSourceDr;
+	@Nullable private BigDecimal amtSourceCr;
 
 	private BigDecimal qty = null;
 	private UomId uomId;
@@ -68,8 +70,8 @@ public final class FactLineBuilder
 
 	// Other dimensions
 	private OrgId orgId;
-	private BPartnerId bpartnerId;
-	private TaxId C_Tax_ID;
+	@Nullable private BPartnerId bpartnerId;
+	@Nullable private TaxId C_Tax_ID;
 	private Integer locatorId;
 	private ActivityId activityId;
 
@@ -83,6 +85,7 @@ public final class FactLineBuilder
 	 *
 	 * @return created {@link FactLine}
 	 */
+	@Nullable
 	public FactLine buildAndAdd()
 	{
 		final FactLine fl = build();
@@ -95,6 +98,7 @@ public final class FactLineBuilder
 		return fl;
 	}
 
+	@Nullable
 	private FactLine build()
 	{
 		markAsBuilt();
@@ -257,7 +261,7 @@ public final class FactLineBuilder
 		return fact.m_doc;
 	}
 
-	public FactLineBuilder setDocLine(DocLine<?> docLine)
+	public FactLineBuilder setDocLine(final DocLine<?> docLine)
 	{
 		assertNotBuild();
 		this.docLine = docLine;
@@ -290,7 +294,7 @@ public final class FactLineBuilder
 		return fact.getPostingType();
 	}
 
-	public FactLineBuilder setQty(BigDecimal qty)
+	public FactLineBuilder setQty(final BigDecimal qty)
 	{
 		assertNotBuild();
 		this.qty = qty;
@@ -315,14 +319,14 @@ public final class FactLineBuilder
 		return uomId;
 	}
 
-	public FactLineBuilder setAmtSource(final CurrencyId currencyId, final BigDecimal amtSourceDr, final BigDecimal amtSourceCr)
+	public FactLineBuilder setAmtSource(final CurrencyId currencyId, @Nullable final BigDecimal amtSourceDr, @Nullable final BigDecimal amtSourceCr)
 	{
 		setCurrencyId(currencyId);
 		setAmtSource(amtSourceDr, amtSourceCr);
 		return this;
 	}
 
-	public FactLineBuilder setAmtSource(final BigDecimal amtSourceDr, final BigDecimal amtSourceCr)
+	public FactLineBuilder setAmtSource(@Nullable final BigDecimal amtSourceDr, @Nullable final BigDecimal amtSourceCr)
 	{
 		assertNotBuild();
 		this.amtSourceDr = amtSourceDr;
@@ -352,47 +356,33 @@ public final class FactLineBuilder
 		return currencyId;
 	}
 
-	public FactLineBuilder setCurrencyConversionCtx(CurrencyConversionContext currencyConversionCtx)
+	public FactLineBuilder setCurrencyConversionCtx(@Nullable final CurrencyConversionContext currencyConversionCtx)
 	{
 		assertNotBuild();
 		this.currencyConversionCtx = currencyConversionCtx;
 		return this;
 	}
 
+	@Nullable
 	private CurrencyConversionContext getCurrencyConversionCtx()
 	{
 		return currencyConversionCtx;
 	}
 
+	@Nullable
 	private BigDecimal getAmtSourceDr()
 	{
 		return amtSourceDr;
 	}
 
+	@Nullable
 	private BigDecimal getAmtSourceCr()
 	{
 		return amtSourceCr;
 	}
 
-	public FactLineBuilder setAccountDrOrCrAndAmount(final MAccount accountDr, final MAccount accountCr, final BigDecimal amt)
-	{
-		if (amt.signum() < 0)
-		{
-			setAccount(accountCr);
-			setAmtSource(null, amt.abs());
-		}
-		else
-		{
-			setAccount(accountDr);
-			setAmtSource(amt, null);
-		}
-		return this;
-	}   // createLine
-
 	/**
 	 * Sets the AmtSourceDr (if amtSource is positive) or AmtSourceCr (if amtSource is negative).
-	 *
-	 * @param amtSource
 	 */
 	public FactLineBuilder setAmtSourceDrOrCr(final BigDecimal amtSource)
 	{
@@ -429,13 +419,13 @@ public final class FactLineBuilder
 	}
 
 	@Deprecated
-	public FactLineBuilder setC_BPartner_ID(Integer bpartnerRepoId)
+	public FactLineBuilder setC_BPartner_ID(final Integer bpartnerRepoId)
 	{
 		final BPartnerId bpartnerId = bpartnerRepoId != null ? BPartnerId.ofRepoIdOrNull(bpartnerRepoId) : null;
 		return bpartnerId(bpartnerId);
 	}
 
-	public FactLineBuilder bpartnerId(final BPartnerId bpartnerId)
+	public FactLineBuilder bpartnerId(@Nullable final BPartnerId bpartnerId)
 	{
 		assertNotBuild();
 		this.bpartnerId = bpartnerId;
@@ -454,23 +444,20 @@ public final class FactLineBuilder
 		}
 	}
 
-	public FactLineBuilder setC_BPartner_ID_IfValid(final int bpartnerRepoId)
-	{
-		return bpartnerIdIfNotNull(BPartnerId.ofRepoIdOrNull(bpartnerRepoId));
-	}
-
+	@Nullable
 	private BPartnerId getBpartnerId()
 	{
 		return bpartnerId;
 	}
 
-	public FactLineBuilder setC_Tax_ID(Integer taxId)
+	public FactLineBuilder setC_Tax_ID(final Integer taxId)
 	{
 		assertNotBuild();
 		this.C_Tax_ID = taxId != null ? TaxId.ofRepoIdOrNull(taxId) : null;
 		return this;
 	}
 
+	@Nullable
 	private TaxId getC_Tax_ID()
 	{
 		return C_Tax_ID;

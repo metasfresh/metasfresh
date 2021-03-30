@@ -31,7 +31,7 @@ export function fetchQuickActions({
   viewProfileId = null,
 }) {
   return (dispatch, getState) => {
-    let actionPromises = null;
+    let actionPromises = [null];
     const state = getState();
     const includedView = state.viewHandler.includedView.windowId
       ? state.viewHandler.includedView
@@ -56,22 +56,24 @@ export function fetchQuickActions({
         );
 
         actionPromises = [].concat(requests);
-      }
-    } else {
-      const tableId = getTableId({ windowId, viewId });
-      const table = getTable(state, tableId);
 
-      actionPromises = [
-        dispatch(
-          requestQuickActions({
-            windowId,
-            viewId,
-            selectedIds: table.selected,
-            viewProfileId,
-          })
-        ),
-      ];
+        return Promise.all(actionPromises);
+      }
     }
+
+    const tableId = getTableId({ windowId, viewId });
+    const table = getTable(state, tableId);
+
+    actionPromises = [
+      dispatch(
+        requestQuickActions({
+          windowId,
+          viewId,
+          selectedIds: table.selected,
+          viewProfileId,
+        })
+      ),
+    ];
 
     return Promise.all(actionPromises);
   };

@@ -22,7 +22,6 @@ package org.adempiere.inout.service.impl;
  * #L%
  */
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.common.util.time.SystemTime;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.impl.InOutBL;
@@ -33,6 +32,7 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
@@ -156,9 +156,9 @@ public class InOutBLTest
 		return docType;
 	}
 
-	private I_AD_User createUser(final String name)
+	private org.compiere.model.I_AD_User createUser(final String name)
 	{
-		final I_AD_User user = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User user = newInstance(I_AD_User.class);
 		user.setName(name);
 		save(user);
 		return user;

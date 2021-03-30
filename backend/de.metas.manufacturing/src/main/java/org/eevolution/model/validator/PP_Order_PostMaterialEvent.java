@@ -4,6 +4,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.event.pporder.PPOrder;
+import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
@@ -83,20 +84,19 @@ public class PP_Order_PostMaterialEvent
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_COMPLETE,
 			// Note: close is currently handled in MPPOrder.closeIt()
-			ModelValidator.TIMING_AFTER_REACTIVATE,
-			ModelValidator.TIMING_AFTER_UNCLOSE,
-			ModelValidator.TIMING_AFTER_VOID
+			// for the other timings, we shall first figure out what we actually want
+			//ModelValidator.TIMING_AFTER_REACTIVATE,
+			//ModelValidator.TIMING_AFTER_UNCLOSE,
+			//ModelValidator.TIMING_AFTER_VOID
 	})
 	public void postMaterialEvent_ppOrderDocStatusChange(
 			@NonNull final I_PP_Order ppOrderRecord,
 			@NonNull final DocTimingType type)
 	{
-		// Let's not send PPOrderChangedEvents for now, because the interesting stuff is already send when the M_Transactions happen.
-		// It might later turn out that it makes sense to send just the info that a PP_Order was "Closed" though.
-		// final PPOrderChangedEvent changeEvent = PPOrderChangedEventFactory
-		// 		.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord)
-		// 		.inspectPPOrderAfterChange();
-		//
-		// materialEventService.postEventAfterNextCommit(changeEvent);
+		final PPOrderChangedEvent changeEvent = PPOrderChangedEventFactory
+				.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord)
+				.inspectPPOrderAfterChange();
+
+		materialEventService.postEventAfterNextCommit(changeEvent);
 	}
 }

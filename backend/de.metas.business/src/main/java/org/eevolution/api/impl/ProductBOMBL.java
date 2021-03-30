@@ -22,21 +22,9 @@ package org.eevolution.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.Date;
-import java.util.List;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.IProductBOMBL;
-import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.IProductLowLevelUpdater;
-import org.eevolution.api.ProductBOMQtys;
-import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.model.I_PP_Product_BOMLine;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -50,9 +38,37 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.BOMType;
+import org.eevolution.api.IProductBOMBL;
+import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.IProductLowLevelUpdater;
+import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMQtys;
+import org.eevolution.api.QtyCalculationsBOM;
+import org.eevolution.api.QtyCalculationsBOMLine;
+import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMLine;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
 public class ProductBOMBL implements IProductBOMBL
 {
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
+
 	@Override
 	public boolean isValidFromTo(final I_PP_Product_BOM productBOM, final Date date)
 	{
@@ -63,11 +79,7 @@ public class ProductBOMBL implements IProductBOMBL
 		}
 
 		final Date validTo = productBOM.getValidTo();
-		if (validTo != null && date.after(validTo))
-		{
-			return false;
-		}
-		return true;
+		return validTo == null || !date.after(validTo);
 	}
 
 	@Override
@@ -80,22 +92,15 @@ public class ProductBOMBL implements IProductBOMBL
 		}
 
 		final Date validTo = bomLine.getValidTo();
-		if (validTo != null && date.after(validTo))
-		{
-			return false;
-		}
-		return true;
+		return validTo == null || !date.after(validTo);
 	}
 
 	@Override
 	public void updateIsBOMFlag(@NonNull final ProductId productId)
 	{
-		final IProductDAO productsRepo = Services.get(IProductDAO.class);
-		final IProductBOMDAO bomsRepo = Services.get(IProductBOMDAO.class);
+		final boolean hasBOMs = bomDAO.hasBOMs(productId);
 
-		final boolean hasBOMs = bomsRepo.hasBOMs(productId);
-
-		productsRepo.updateProduct(UpdateProductRequest.builder()
+		productDAO.updateProduct(UpdateProductRequest.builder()
 				.productId(productId)
 				.isBOM(hasBOMs)
 				.build());
@@ -123,15 +128,13 @@ public class ProductBOMBL implements IProductBOMBL
 		}
 
 		boolean isComponentOrPacking = false;
-		final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
 		final List<I_PP_Product_BOMLine> bomLines = bomDAO.retrieveLines(bomLine.getPP_Product_BOM());
-		for (I_PP_Product_BOMLine bl : bomLines)
+		for (final I_PP_Product_BOMLine bl : bomLines)
 		{
 			final BOMComponentType componentType = BOMComponentType.ofCode(bl.getComponentType());
 			if (componentType.isComponentOrPacking() && bomLine.getVariantGroup().equals(bl.getVariantGroup()))
 			{
 				isComponentOrPacking = true;
-				continue;
 			}
 		}
 
@@ -140,9 +143,9 @@ public class ProductBOMBL implements IProductBOMBL
 
 	@Override
 	public BigDecimal computeQtyRequired(
-			@NonNull I_PP_Product_BOMLine bomLine,
-			@NonNull ProductId finishedGoodProductId,
-			@NonNull BigDecimal finishedGoodQty)
+			@NonNull final I_PP_Product_BOMLine bomLine,
+			@NonNull final ProductId finishedGoodProductId,
+			@NonNull final BigDecimal finishedGoodQty)
 	{
 		final BigDecimal multiplier = computeQtyMultiplier(bomLine, finishedGoodProductId);
 
@@ -160,8 +163,7 @@ public class ProductBOMBL implements IProductBOMBL
 		//
 		// Adjust the qtyRequired by adding the scrap percentage to it.
 		final Percent qtyScrap = Percent.of(bomLine.getScrap());
-		final BigDecimal qtyRequiredPlusScrap = ProductBOMQtys.computeQtyWithScrap(qtyRequired, qtyScrap);
-		return qtyRequiredPlusScrap;
+		return ProductBOMQtys.computeQtyWithScrap(qtyRequired, qtyScrap);
 	}
 
 	@Override
@@ -176,12 +178,10 @@ public class ProductBOMBL implements IProductBOMBL
 
 		// We also need to multiply by BOM UOM to BOM Line UOM multiplier
 		// see http://dewiki908/mediawiki/index.php/06973_Fix_percentual_BOM_line_quantities_calculation_%28108941319640%29
-		final IProductBL productBL = Services.get(IProductBL.class);
 		final UomId endUOMId = productBL.getStockUOMId(finishedGoodProductId);
 
 		final UomId bomLineUOMId = UomId.ofRepoId(bomLine.getC_UOM_ID());
 
-		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(finishedGoodProductId);
 		final BigDecimal bomToLineUOMMultiplier = uomConversionBL.convertQty(uomConversionCtx, BigDecimal.ONE, endUOMId, bomLineUOMId);
 
@@ -221,9 +221,7 @@ public class ProductBOMBL implements IProductBOMBL
 	 */
 	private Quantity getQty(@NonNull final I_PP_Product_BOMLine bomLine, final boolean includeScrapQty)
 	{
-		final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
-
-		final I_C_UOM uom = uomsRepo.getById(bomLine.getC_UOM_ID());
+		final I_C_UOM uom = uomDAO.getById(bomLine.getC_UOM_ID());
 		int precision = uom.getStdPrecision();
 		BigDecimal qty;
 		if (bomLine.isQtyPercentage())
@@ -255,5 +253,79 @@ public class ProductBOMBL implements IProductBOMBL
 	{
 		return ProductBOMDescriptionBuilder.newInstance()
 				.build(productId);
+	}
+
+	@Override
+	public List<QtyCalculationsBOM> getQtyCalculationBOMs(
+			final @NonNull Set<ProductId> finishGoodIds,
+			final @NonNull BOMType bomType)
+	{
+		if (finishGoodIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final HashMap<ProductBOMId, I_PP_Product_BOM> boms = new HashMap<>();
+
+		final List<I_M_Product> finishGoods = productDAO.getByIds(finishGoodIds);
+		for (final I_M_Product finishGood : finishGoods)
+		{
+			final I_PP_Product_BOM bom = bomDAO.getDefaultBOM(finishGood, bomType).orElse(null);
+			if (bom == null)
+			{
+				continue;
+			}
+
+			final ProductBOMId bomId = ProductBOMId.ofRepoId(bom.getPP_Product_BOM_ID());
+			boms.put(bomId, bom);
+		}
+
+		if (boms.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableListMultimap<ProductBOMId, I_PP_Product_BOMLine> bomLines = Multimaps.index(
+				bomDAO.retrieveLinesByBOMIds(boms.keySet()),
+				bomLine -> ProductBOMId.ofRepoId(bomLine.getPP_Product_BOM_ID()));
+
+		final ArrayList<QtyCalculationsBOM> qtyCalculationsBOMs = new ArrayList<>(boms.size());
+		for (final ProductBOMId bomId : boms.keySet())
+		{
+			final QtyCalculationsBOM qtyCalculationsBOM = toQtyCalculationsBOM(boms.get(bomId), bomLines.get(bomId));
+			qtyCalculationsBOMs.add(qtyCalculationsBOM);
+		}
+
+		return ImmutableList.copyOf(qtyCalculationsBOMs);
+	}
+
+	private QtyCalculationsBOM toQtyCalculationsBOM(final I_PP_Product_BOM bom, final List<I_PP_Product_BOMLine> bomLines)
+	{
+		return QtyCalculationsBOM.builder()
+				.lines(bomLines.stream()
+						.map(bomLine -> toQtyCalculationsBOMLine(bomLine, bom))
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	@Override
+	public QtyCalculationsBOMLine toQtyCalculationsBOMLine(
+			@NonNull final I_PP_Product_BOMLine productBOMLine,
+			@NonNull final I_PP_Product_BOM bom)
+	{
+		return QtyCalculationsBOMLine.builder()
+				.bomProductId(ProductId.ofRepoId(bom.getM_Product_ID()))
+				.bomProductUOM(uomDAO.getById(bom.getC_UOM_ID()))
+				.componentType(BOMComponentType.ofCode(productBOMLine.getComponentType()))
+				//
+				.productId(ProductId.ofRepoId(productBOMLine.getM_Product_ID()))
+				.qtyPercentage(productBOMLine.isQtyPercentage())
+				.qtyForOneFinishedGood(productBOMLine.getQtyBOM())
+				.percentOfFinishedGood(Percent.of(productBOMLine.getQtyBatch()))
+				.scrap(Percent.of(productBOMLine.getScrap()))
+				//
+				.uom(uomDAO.getById(productBOMLine.getC_UOM_ID()))
+				//
+				.build();
 	}
 }

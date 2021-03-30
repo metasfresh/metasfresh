@@ -1,9 +1,39 @@
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web;
 
-import java.util.ArrayList;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.CommandLineParser;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.MetasfreshBeanNameGenerator;
+import de.metas.Profiles;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
+import de.metas.ui.web.config.ConfigConstants;
+import de.metas.ui.web.session.WebRestApiContextProvider;
+import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
+import de.metas.util.Check;
+import de.metas.util.ConnectionUtil;
+import de.metas.util.Services;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -31,38 +61,8 @@ import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import de.metas.JsonObjectMapperHolder;
-import de.metas.MetasfreshBeanNameGenerator;
-import de.metas.Profiles;
-import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
-import de.metas.ui.web.session.WebRestApiContextProvider;
-import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
 @EnableAsync
@@ -70,8 +70,6 @@ import de.metas.util.Services;
 public class WebRestApiApplication
 {
 	private static final String SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE = "de.metas.ui.web.spring.profiles.active";
-
-	public static final String BEANNAME_WebuiTaskScheduler = "webuiTaskScheduler";
 
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
@@ -92,9 +90,14 @@ public class WebRestApiApplication
 		// Make sure slf4j is used (by default, in v2.4.4 log4j is used, see https://github.com/metasfresh/metasfresh-webui-api/issues/757)
 		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
 
-		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
+		final CommandLineParser.CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
+
+		final ConnectionUtil.ConfigureConnectionsResult configureConnectionsResult = ConnectionUtil.configureConnectionsIfArgsProvided(commandLineOptions);
+
+		try (final IAutoCloseable ignored = ModelValidationEngine.postponeInit())
 		{
 			Ini.setRunMode(RunMode.WEBUI);
+			Ini.setIfMissingMetasfreshProperties(configureConnectionsResult.isCconnectionConfigured() ? Ini.IfMissingMetasfreshProperties.IGNORE : Ini.IfMissingMetasfreshProperties.SHOW_DIALOG);
 			Adempiere.instance.startup(RunMode.WEBUI);
 
 			final ArrayList<String> activeProfiles = retrieveActiveProfilesFromSysConfig();
@@ -116,14 +119,12 @@ public class WebRestApiApplication
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
 	{
-		final ArrayList<String> activeProfiles = Services
+		return Services
 				.get(ISysConfigBL.class)
 				.getValuesForPrefix(SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE, 0, 0)
-				.entrySet()
+				.values()
 				.stream()
-				.map(Entry::getValue)
 				.collect(Collectors.toCollection(ArrayList::new));
-		return activeProfiles;
 	}
 
 	@Bean
@@ -144,8 +145,7 @@ public class WebRestApiApplication
 
 		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
 
-		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
-		return adempiere;
+		return Env.getSingleAdempiereInstance(applicationContext);
 	}
 
 	@Bean
@@ -164,7 +164,7 @@ public class WebRestApiApplication
 		};
 	}
 
-	@Bean(BEANNAME_WebuiTaskScheduler)
+	@Bean(ConfigConstants.BEANNAME_WebuiTaskScheduler)
 	public TaskScheduler webuiTaskScheduler()
 	{
 		final ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();

@@ -7,10 +7,10 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.archive.api.IBPartnerBL;
 import de.metas.document.archive.api.IDocOutboundDAO;
@@ -33,7 +33,7 @@ class C_BPartner
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bpartner);
 
-		final I_AD_User defaultContact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(bpartner, I_AD_User.class);
+		final org.compiere.model.I_AD_User defaultContact = Services.get(IBPartnerDAO.class).retrieveDefaultContactOrNull(bpartner, I_AD_User.class);
 		final de.metas.document.archive.model.I_AD_User user = InterfaceWrapperHelper.create(defaultContact, de.metas.document.archive.model.I_AD_User.class);
 		final boolean isInvoiceEmailEnabled = Services.get(IBPartnerBL.class).isInvoiceEmailEnabled(bpartner, user);
 

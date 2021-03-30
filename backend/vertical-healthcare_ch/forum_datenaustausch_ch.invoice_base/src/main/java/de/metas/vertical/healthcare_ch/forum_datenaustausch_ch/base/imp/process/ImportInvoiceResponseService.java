@@ -158,8 +158,8 @@ class ImportInvoiceResponseService
 		return queryBL
 				.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_AD_User.COLUMN_C_BPartner_ID, bpartnerIds)
-				.addEqualsFilter(I_AD_User.COLUMN_IsSubjectMatterContact, true)
+				.addInArrayFilter(I_AD_User.COLUMNNAME_C_BPartner_ID, bpartnerIds)
+				.addEqualsFilter(I_AD_User.COLUMNNAME_IsSubjectMatterContact, true)
 				.orderBy(I_AD_User.COLUMN_AD_User_ID)
 				.create()
 				.listIds().stream().map(UserId::ofRepoId)

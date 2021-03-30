@@ -27,6 +27,8 @@ import java.util.Set;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 
+import javax.annotation.Nullable;
+
 /**
  * Security Rule: it's called by {@link IUserRolePermissions} to fine tune some permissions before giving an answer to caller.
  * 
@@ -47,10 +49,7 @@ public interface ISecurityRule
 	/**
 	 * Filters <code>orgIds</code> list leaving there only those orgs on which <code>role</code> in given <code>ctx</code> has readonly or readwrite access (depends on <code>readWrite</code>) flag.
 	 * 
-	 * @param rolePermissions
 	 * @param tableName TableName on which the org filter shall be applied or null if the request is not specific to any table name
-	 * @param access
-	 * @param orgIds
 	 */
-	void filterOrgs(IUserRolePermissions rolePermissions, String tableName, Access access, Set<OrgId> orgIds);
+	void filterOrgs(IUserRolePermissions rolePermissions, @Nullable String tableName, Access access, Set<OrgId> orgIds);
 }

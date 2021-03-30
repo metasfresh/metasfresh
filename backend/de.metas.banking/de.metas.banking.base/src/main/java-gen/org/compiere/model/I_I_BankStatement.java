@@ -7,6 +7,7 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for I_BankStatement
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_I_BankStatement 
 {
 
@@ -560,6 +561,27 @@ public interface I_I_BankStatement
 
 	ModelColumn<I_I_BankStatement, Object> COLUMN_DebitOrCreditIndicator = new ModelColumn<>(I_I_BankStatement.class, "DebitOrCreditIndicator", null);
 	String COLUMNNAME_DebitOrCreditIndicator = "DebitOrCreditIndicator";
+
+	/**
+	 * Set Debitor No./Kreditor No..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDebitorOrCreditorId (int DebitorOrCreditorId);
+
+	/**
+	 * Get Debitor No./Kreditor No..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getDebitorOrCreditorId();
+
+	ModelColumn<I_I_BankStatement, Object> COLUMN_DebitorOrCreditorId = new ModelColumn<>(I_I_BankStatement.class, "DebitorOrCreditorId", null);
+	String COLUMNNAME_DebitorOrCreditorId = "DebitorOrCreditorId";
 
 	/**
 	 * Set Debit Statement Amount.
@@ -1500,8 +1522,7 @@ public interface I_I_BankStatement
 	String COLUMNNAME_StatementDate = "StatementDate";
 
 	/**
-	 * Set Valuta Datum.
-	 * Valuta Datum
+	 * Set Effective date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1510,8 +1531,7 @@ public interface I_I_BankStatement
 	void setStatementLineDate (@Nullable java.sql.Timestamp StatementLineDate);
 
 	/**
-	 * Get Valuta Datum.
-	 * Valuta Datum
+	 * Get Effective date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1617,8 +1637,7 @@ public interface I_I_BankStatement
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Effective date.
-	 * Date when money is available
+	 * Set Valuta Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1627,8 +1646,7 @@ public interface I_I_BankStatement
 	void setValutaDate (@Nullable java.sql.Timestamp ValutaDate);
 
 	/**
-	 * Get Effective date.
-	 * Date when money is available
+	 * Get Valuta Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false

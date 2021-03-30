@@ -3,6 +3,7 @@ package de.metas.procurement.base.impl;
 import java.util.Date;
 import java.util.List;
 
+import de.metas.product.ProductId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -18,6 +19,8 @@ import de.metas.procurement.base.IPMMProductDAO;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -44,7 +47,7 @@ import lombok.NonNull;
 public class PMMProductDAO implements IPMMProductDAO
 {
 	@Override
-	public IQueryBuilder<I_PMM_Product> retrievePMMProductsValidOnDateQuery(final Date date)
+	public IQueryBuilder<I_PMM_Product> retrievePMMProductsValidOnDateQuery(@Nullable final Date date)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_PMM_Product> queryBuilder = queryBL.createQueryBuilder(I_PMM_Product.class, Env.getCtx(), ITrx.TRXNAME_None)
@@ -104,7 +107,11 @@ public class PMMProductDAO implements IPMMProductDAO
 	}
 
 	@Override
-	public List<I_PMM_Product> retrieveForDateAndProduct(final Date date, final int productId, final int partnerId, final int huPIPId)
+	public List<I_PMM_Product> retrieveForDateAndProduct(
+			@NonNull final Date date,
+			@NonNull final ProductId productId,
+			@Nullable final BPartnerId partnerId,
+			final int huPIPId)
 	{
 		return retrievePMMProductsValidOnDateQuery(date)
 				.addInArrayOrAllFilter(I_PMM_Product.COLUMNNAME_C_BPartner_ID, partnerId, null) // for the given partner or Not bound to a particular partner (i.e. C_BPartner_ID is null)

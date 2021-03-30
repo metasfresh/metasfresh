@@ -64,16 +64,16 @@ public class DemandCandiateHandler implements CandidateHandler
 	private final SupplyCandidateHandler supplyCandidateHandler;
 
 	public DemandCandiateHandler(
-			@NonNull final CandidateRepositoryRetrieval candidateRepository,
-			@NonNull final CandidateRepositoryWriteService candidateRepositoryCommands,
-			@NonNull final PostMaterialEventService materialEventService,
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
+			@NonNull final CandidateRepositoryWriteService candidateRepositoryWriteService,
+			@NonNull final PostMaterialEventService postMaterialEventService,
 			@NonNull final AvailableToPromiseRepository availableToPromiseRepository,
 			@NonNull final StockCandidateService stockCandidateService,
 			@NonNull final SupplyCandidateHandler supplyCandidateHandler)
 	{
-		this.candidateRepository = candidateRepository;
-		this.candidateRepositoryWriteService = candidateRepositoryCommands;
-		this.materialEventService = materialEventService;
+		this.candidateRepository = candidateRepositoryRetrieval;
+		this.candidateRepositoryWriteService = candidateRepositoryWriteService;
+		this.materialEventService = postMaterialEventService;
 		this.availableToPromiseRepository = availableToPromiseRepository;
 		this.stockCandidateService = stockCandidateService;
 		this.supplyCandidateHandler = supplyCandidateHandler;

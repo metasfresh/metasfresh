@@ -102,7 +102,7 @@ public class AvailableForSalesUtil
 	public boolean isOrderEligibleForFeature(@NonNull final I_C_Order orderRecord)
 	{
 		final IOrderBL orderBL = Services.get(IOrderBL.class);
-		if (orderBL.isQuotation(orderRecord))
+		if (orderBL.isSalesProposalOrQuotation(orderRecord))
 		{
 			return false;
 		}

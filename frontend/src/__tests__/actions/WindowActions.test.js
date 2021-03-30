@@ -93,7 +93,15 @@ describe('WindowActions thunks', () => {
       ];
 
       return store
-        .dispatch(createWindow(windowType, docId, undefined, undefined, false))
+        .dispatch(
+          createWindow({
+            windowId: windowType,
+            docId,
+            tabId: undefined,
+            rowId: undefined,
+            isModal: false,
+          })
+        )
         .then(() => {
           expect(store.getActions()).toEqual(
             expect.arrayContaining(expectedActions)
@@ -156,7 +164,15 @@ describe('WindowActions thunks', () => {
       ];
 
       return store
-        .dispatch(createWindow(windowType, docId, undefined, undefined, false))
+        .dispatch(
+          createWindow({
+            windowId: windowType,
+            docId,
+            tabId: undefined,
+            rowId: undefined,
+            isModal: false,
+          })
+        )
         .then(() => {
           expect(store.getActions()).toEqual(expectedActions);
         });
@@ -216,7 +232,15 @@ describe('WindowActions thunks', () => {
       ];
 
       return store
-        .dispatch(createWindow(windowType, docId, undefined, undefined, false))
+        .dispatch(
+          createWindow({
+            windowId: windowType,
+            docId,
+            tabId: undefined,
+            rowId: undefined,
+            isModal: false,
+          })
+        )
         .then(() => {
           expect(store.getActions()).toEqual(
             expect.arrayContaining(expectedActions)

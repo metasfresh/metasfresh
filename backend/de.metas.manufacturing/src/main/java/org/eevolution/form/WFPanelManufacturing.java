@@ -35,6 +35,7 @@ package org.eevolution.form;
  * #L%
  */
 
+import de.metas.material.planning.pporder.PPRoutingType;
 import org.compiere.apps.wf.WFPanel;
 import org.compiere.model.X_AD_Workflow;
 import org.compiere.util.DB;
@@ -47,8 +48,8 @@ public class WFPanelManufacturing extends WFPanel {
 	private static final long serialVersionUID = 1L;
 	
 	private static final String WF_WhereClause = X_AD_Workflow.COLUMNNAME_WorkflowType+" IN ("
-														+    DB.TO_STRING(X_AD_Workflow.WORKFLOWTYPE_Manufacturing)
-														+","+DB.TO_STRING(X_AD_Workflow.WORKFLOWTYPE_Quality)
+														+    DB.TO_STRING(PPRoutingType.Manufacturing.getCode())
+														+","+DB.TO_STRING(PPRoutingType.Quality.getCode())
 														+")";
 	
 	private static final int WF_Window_ID = 53005; // TODO: HARDCODED (Manufacturing Workflows)

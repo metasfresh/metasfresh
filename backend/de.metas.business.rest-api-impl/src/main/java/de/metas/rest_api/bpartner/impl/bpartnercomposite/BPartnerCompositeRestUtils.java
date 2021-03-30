@@ -1,26 +1,18 @@
 package de.metas.rest_api.bpartner.impl.bpartnercomposite;
 
-import java.util.function.Predicate;
-
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgQuery;
-import de.metas.rest_api.exception.MissingResourceException;
-import de.metas.util.Services;
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.rest_api.common.MetasfreshId;
+import de.metas.order.InvoiceRule;
+import de.metas.common.rest_api.JsonInvoiceRule;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.compiere.util.Env;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-
-import static de.metas.util.Check.isNotBlank;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -99,21 +91,25 @@ public class BPartnerCompositeRestUtils
 		}
 	}
 
-	public static OrgId retrieveOrgIdOrDefault(@Nullable final String orgCode)
+	@Nullable
+	public static InvoiceRule getInvoiceRule(@Nullable final JsonInvoiceRule jsonInvoiceRule)
 	{
-		final OrgId orgId;
-		if (isNotBlank(orgCode))
+		if (jsonInvoiceRule == null)
 		{
-			orgId = Services.get(IOrgDAO.class)
-					.retrieveOrgIdBy(OrgQuery.ofValue(orgCode))
-					.orElseThrow(() -> MissingResourceException.builder()
-							.resourceName("organisation")
-							.resourceIdentifier(orgCode).build());
+			return null;
 		}
-		else
+		switch (jsonInvoiceRule)
 		{
-			orgId = Env.getOrgId();
+			case AfterDelivery:
+				return InvoiceRule.AfterDelivery;
+			case CustomerScheduleAfterDelivery:
+				return InvoiceRule.CustomerScheduleAfterDelivery;
+			case Immediate:
+				return InvoiceRule.Immediate;
+			case OrderCompletelyDelivered:
+				return InvoiceRule.OrderCompletelyDelivered;
+			default:
+				throw new AdempiereException("Unsupported JsonInvliceRule " + jsonInvoiceRule);
 		}
-		return orgId;
 	}
 }

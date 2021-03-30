@@ -1,6 +1,7 @@
 package de.metas.product;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -8,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -43,17 +46,23 @@ public class ResourceId implements RepoIdAware
 		return new ResourceId(repoId);
 	}
 
+	@Nullable
 	public static ResourceId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new ResourceId(repoId) : null;
 	}
 
-	public static int toRepoId(final ResourceId ResourceId)
+	public static Optional<ResourceId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
+	public static int toRepoId(@Nullable final ResourceId ResourceId)
 	{
 		return ResourceId != null ? ResourceId.getRepoId() : -1;
 	}
 
-	public static boolean equals(final ResourceId o1, final ResourceId o2)
+	public static boolean equals(@Nullable final ResourceId o1, @Nullable final ResourceId o2)
 	{
 		return Objects.equals(o1, o2);
 	}

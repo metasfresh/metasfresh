@@ -23,7 +23,7 @@
 package de.metas.handlingunits.pporder.api;
 
 import de.metas.handlingunits.model.I_PP_Order_Qty;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.eevolution.api.PPCostCollectorId;

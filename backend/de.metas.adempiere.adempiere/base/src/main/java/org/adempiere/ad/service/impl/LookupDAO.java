@@ -22,7 +22,6 @@
 
 package org.adempiere.ad.service.impl;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
@@ -33,12 +32,12 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.INamePairPredicate;
@@ -130,224 +129,6 @@ public class LookupDAO implements ILookupDAO
 		public String getTableName()
 		{
 			return TableName;
-		}
-	}
-
-	@Value
-	@VisibleForTesting
-	public static final class TableRefInfo implements ITableRefInfo
-	{
-
-		public static TableRefInfoBuilder builder()
-		{
-			return new TableRefInfoBuilder();
-		}
-
-		private final String identifier; // used only for debugging
-		private final String tableName;
-		private final String keyColumn;
-		private final String displayColumn;
-		private final boolean valueDisplayed;
-		private final boolean translated;
-		private final String whereClause;
-		private final String orderByClause;
-		private final AdWindowId zoomSO_Window_ID;
-		private final AdWindowId zoomPO_Window_ID;
-		private final String displayColumnSQL;
-		private final AdWindowId zoomAD_Window_ID_Override;
-		private final boolean autoComplete;
-		private final boolean showInactiveValues;
-		@NonNull
-		TooltipType tooltipType;
-
-		@Override
-		public TooltipType getTooltipType()
-		{
-			return tooltipType;
-		}
-
-		private TableRefInfo(@NonNull final TableRefInfoBuilder builder)
-		{
-			identifier = builder.identifier;
-			tableName = Check.assumeNotEmpty(builder.tableName, "tableName not empty");
-			keyColumn = Check.assumeNotEmpty(builder.keyColumn, "keyColumn not empty");
-
-			if (!Check.isEmpty(builder.displayColumn, true))
-			{
-				displayColumn = builder.displayColumn;
-			}
-			else
-			{
-				displayColumn = null;
-			}
-
-			if (!Check.isEmpty(builder.displayColumnSQL, true))
-			{
-				displayColumnSQL = builder.displayColumnSQL;
-			}
-			else
-			{
-				displayColumnSQL = null;
-			}
-
-			valueDisplayed = builder.valueDisplayed;
-			translated = builder.translated;
-
-			if (!Check.isEmpty(builder.whereClause, true))
-			{
-				whereClause = builder.whereClause;
-			}
-			else
-			{
-				whereClause = null;
-			}
-
-			if (!Check.isEmpty(builder.orderByClause, true))
-			{
-				orderByClause = builder.orderByClause;
-			}
-			else
-			{
-				orderByClause = null;
-			}
-
-			zoomSO_Window_ID = builder.zoomSO_Window_ID;
-			zoomPO_Window_ID = builder.zoomPO_Window_ID;
-			zoomAD_Window_ID_Override = builder.zoomAD_Window_ID_Override;
-
-			autoComplete = builder.autoComplete;
-
-			showInactiveValues = builder.showInactiveValues;
-			tooltipType = builder.tooltipType;
-		}
-
-		@Override
-		public boolean isNumericKey()
-		{
-
-			final boolean isNumeric = keyColumn.endsWith("_ID");
-			return isNumeric;
-
-		}
-
-	}
-
-	@VisibleForTesting
-	public static final class TableRefInfoBuilder
-	{
-		public TooltipType tooltipType;
-		private String identifier; // used only for debugging
-		private String tableName;
-		private String keyColumn;
-		private String displayColumn = null;
-		private String displayColumnSQL = null;
-		private boolean valueDisplayed = false;
-		private boolean translated = false;
-		private String whereClause = null;
-		private String orderByClause = null;
-		private AdWindowId zoomSO_Window_ID;
-		private AdWindowId zoomPO_Window_ID;
-		private AdWindowId zoomAD_Window_ID_Override;
-		private boolean autoComplete = true;
-		private boolean showInactiveValues = false;
-
-		private TableRefInfoBuilder()
-		{
-		}
-
-		public TableRefInfo build()
-		{
-			return new TableRefInfo(this);
-		}
-
-		public TableRefInfoBuilder setIdentifier(final String identifier)
-		{
-			this.identifier = identifier;
-			return this;
-		}
-
-		public TableRefInfoBuilder setTableName(final String tableName)
-		{
-			this.tableName = tableName;
-			return this;
-		}
-
-		public TableRefInfoBuilder setKeyColumn(final String keyColumn)
-		{
-			this.keyColumn = keyColumn;
-			return this;
-		}
-
-		public TableRefInfoBuilder setDisplayColumn(final String displayColumn)
-		{
-			this.displayColumn = displayColumn;
-			return this;
-		}
-
-		public TableRefInfoBuilder setValueDisplayed(final boolean valueDisplayed)
-		{
-			this.valueDisplayed = valueDisplayed;
-			return this;
-		}
-
-		public TableRefInfoBuilder setTranslated(final boolean translated)
-		{
-			this.translated = translated;
-			return this;
-		}
-
-		public TableRefInfoBuilder setWhereClause(final String whereClause)
-		{
-			this.whereClause = whereClause;
-			return this;
-		}
-
-		public TableRefInfoBuilder setOrderByClause(final String orderByClause)
-		{
-			this.orderByClause = orderByClause;
-			return this;
-		}
-
-		public TableRefInfoBuilder setZoomSO_Window_ID(final AdWindowId zoomPO_Window_ID)
-		{
-			this.zoomSO_Window_ID = zoomPO_Window_ID;
-			return this;
-		}
-
-		public TableRefInfoBuilder setZoomPO_Window_ID(final AdWindowId zoomPO_Window_ID)
-		{
-			this.zoomPO_Window_ID = zoomPO_Window_ID;
-			return this;
-		}
-
-		public TableRefInfoBuilder setZoomAD_Window_ID_Override(final AdWindowId zoomAD_Window_ID_Override)
-		{
-			this.zoomAD_Window_ID_Override = zoomAD_Window_ID_Override;
-			return this;
-		}
-
-		public TableRefInfoBuilder setDisplayColumnSQL(final String displayColumnSQL)
-		{
-			this.displayColumnSQL = displayColumnSQL;
-			return this;
-		}
-
-		public TableRefInfoBuilder setAutoComplete(final boolean autoComplete)
-		{
-			this.autoComplete = autoComplete;
-			return this;
-		}
-
-		public TableRefInfoBuilder setShowInactiveValues(final boolean showInactiveValues)
-		{
-			this.showInactiveValues = showInactiveValues;
-			return this;
-		}
-
-		public TableRefInfoBuilder setTooltipType(@NonNull final TooltipType tooltipType)
-		{
-			this.tooltipType = tooltipType;
-			return this;
 		}
 	}
 
@@ -454,9 +235,9 @@ public class LookupDAO implements ILookupDAO
 	}
 
 	@Override
-	public ITableRefInfo retrieveTableRefInfo(final int AD_Reference_ID)
+	public TableRefInfo retrieveTableRefInfo(final int AD_Reference_ID)
 	{
-		final ITableRefInfo tableRefInfo = retrieveTableRefInfoOrNull(AD_Reference_ID);
+		final TableRefInfo tableRefInfo = retrieveTableRefInfoOrNull(AD_Reference_ID);
 		if (tableRefInfo == null)
 		{
 			logger.error("Cannot retrieve tableRefInfo for AD_Reference_ID={}. Returning null.", AD_Reference_ID);
@@ -478,7 +259,7 @@ public class LookupDAO implements ILookupDAO
 
 	@Cached(cacheName = I_AD_Ref_Table.Table_Name + "#by#" + I_AD_Ref_Table.COLUMNNAME_AD_Reference_ID)
 	@Override
-	public ITableRefInfo retrieveTableRefInfoOrNull(final int AD_Reference_ID)
+	public TableRefInfo retrieveTableRefInfoOrNull(final int AD_Reference_ID)
 	{
 		// NOTE: this method is called when we are loading POInfoColumn,
 		// so it's very important to not use POs here but just plain SQL!
@@ -518,7 +299,7 @@ public class LookupDAO implements ILookupDAO
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 
-			ITableRefInfo tableRefInfo = null;
+			TableRefInfo tableRefInfo = null;
 			if (rs.next())
 			{
 				final String TableName = rs.getString(1);
@@ -539,21 +320,21 @@ public class LookupDAO implements ILookupDAO
 				final TooltipType tooltipType = TooltipType.ofCode(rs.getString("TooltipType"));
 
 				tableRefInfo = TableRefInfo.builder()
-						.setIdentifier("AD_Reference[ID=" + AD_Reference_ID + ",Name=" + referenceName + "]")
-						.setTableName(TableName)
-						.setKeyColumn(KeyColumn)
-						.setDisplayColumn(DisplayColumn)
-						.setValueDisplayed(isValueDisplayed)
-						.setDisplayColumnSQL(displayColumnSQL)
-						.setTranslated(IsTranslated)
-						.setWhereClause(WhereClause)
-						.setOrderByClause(OrderByClause)
-						.setZoomSO_Window_ID(zoomSO_Window_ID)
-						.setZoomPO_Window_ID(zoomPO_Window_ID)
-						.setZoomAD_Window_ID_Override(zoomAD_Window_ID_Override)
-						.setAutoComplete(autoComplete)
-						.setShowInactiveValues(showInactiveValues)
-						.setTooltipType(tooltipType)
+						.identifier("AD_Reference[ID=" + AD_Reference_ID + ",Name=" + referenceName + "]")
+						.tableName(TableName)
+						.keyColumn(KeyColumn)
+						.displayColumn(DisplayColumn)
+						.valueDisplayed(isValueDisplayed)
+						.displayColumnSQL(displayColumnSQL)
+						.translated(IsTranslated)
+						.whereClause(WhereClause)
+						.orderByClause(OrderByClause)
+						.zoomSO_Window_ID(zoomSO_Window_ID)
+						.zoomPO_Window_ID(zoomPO_Window_ID)
+						.zoomAD_Window_ID_Override(zoomAD_Window_ID_Override)
+						.autoComplete(autoComplete)
+						.showInactiveValues(showInactiveValues)
+						.tooltipType(tooltipType)
 						.build();
 			}
 
@@ -577,7 +358,7 @@ public class LookupDAO implements ILookupDAO
 
 	@Override
 	@Cached
-	public ITableRefInfo retrieveTableDirectRefInfo(final String columnName)
+	public TableRefInfo retrieveTableDirectRefInfo(final String columnName)
 	{
 		Check.assumeNotEmpty(columnName, "ColumnName not empty");
 
@@ -613,29 +394,29 @@ public class LookupDAO implements ILookupDAO
 		final TooltipType tooltipType = Services.get(IADTableDAO.class).getTooltipTypeByTableName(tableName);
 
 		return TableRefInfo.builder()
-				.setIdentifier("Direct[FromColumn" + columnName + ",To=" + tableName + "." + columnName + "]")
-				.setTableName(tableName)
-				.setKeyColumn(keyColumn)
-				.setAutoComplete(autoComplete)
-				.setTooltipType(tooltipType)
+				.identifier("Direct[FromColumn" + columnName + ",To=" + tableName + "." + columnName + "]")
+				.tableName(tableName)
+				.keyColumn(keyColumn)
+				.autoComplete(autoComplete)
+				.tooltipType(tooltipType)
 				.build();
 	}
 
 	@Override
-	public ITableRefInfo retrieveAccountTableRefInfo()
+	public TableRefInfo retrieveAccountTableRefInfo()
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 		return TableRefInfo.builder()
-				.setIdentifier("Account - C_ValidCombination_ID")
-				.setTableName(I_C_ValidCombination.Table_Name)
-				.setKeyColumn(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID)
-				.setAutoComplete(true)
-				.setTooltipType(adTableDAO.getTooltipTypeByTableName(I_C_ValidCombination.Table_Name))
+				.identifier("Account - C_ValidCombination_ID")
+				.tableName(I_C_ValidCombination.Table_Name)
+				.keyColumn(I_C_ValidCombination.COLUMNNAME_C_ValidCombination_ID)
+				.autoComplete(true)
+				.tooltipType(adTableDAO.getTooltipTypeByTableName(I_C_ValidCombination.Table_Name))
 				.build();
 	}
 
 	@Override
-	public ILookupDisplayInfo retrieveLookupDisplayInfo(@NonNull final ITableRefInfo tableRefInfo)
+	public ILookupDisplayInfo retrieveLookupDisplayInfo(@NonNull final TableRefInfo tableRefInfo)
 	{
 		final List<ILookupDisplayColumn> lookupDisplayColumns = new ArrayList<>();
 		boolean isTranslated = false;
