@@ -1,18 +1,18 @@
 package de.metas.ui.web.dashboard.json;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.slf4j.Logger;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.dashboard.UserDashboardItem;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
-import de.metas.util.GuavaCollectors;
 import lombok.Value;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -40,20 +40,24 @@ import lombok.Value;
 @Value
 public class JSONDashboard
 {
-	public static final JSONDashboard of(final Collection<UserDashboardItem> items, final String websocketEndpoint, final JSONDocumentLayoutOptions jsonOpts)
+	public static JSONDashboard of(
+			final Collection<UserDashboardItem> items,
+			@Nullable final String websocketEndpoint,
+			final JSONDocumentLayoutOptions jsonOpts)
 	{
 		return new JSONDashboard(items, websocketEndpoint, jsonOpts);
 	}
 
 	private static final Logger logger = LogManager.getLogger(JSONDashboard.class);
 
-	private final List<JSONDashboardItem> items;
-	private final String websocketEndpoint;
+	List<JSONDashboardItem> items;
+	@Nullable String websocketEndpoint;
 
-	private JSONDashboard(final Collection<UserDashboardItem> items, final String websocketEndpoint, final JSONDocumentLayoutOptions jsonOpts)
+	private JSONDashboard(
+			final Collection<UserDashboardItem> items,
+			@Nullable final String websocketEndpoint,
+			final JSONDocumentLayoutOptions jsonOpts)
 	{
-		super();
-
 		this.items = items.stream()
 				.map(item -> {
 					try
@@ -66,8 +70,8 @@ public class JSONDashboard
 						return null;
 					}
 				})
-				.filter(item -> item != null)
-				.collect(GuavaCollectors.toImmutableList());
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
 		
 		this.websocketEndpoint = websocketEndpoint;
 	}

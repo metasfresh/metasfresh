@@ -32,14 +32,13 @@ import lombok.Value;
 
 @Value
 @Builder
-public final class UserDashboardItemChangeResult
+public class UserDashboardItemChangeResult
 {
-	private final int dashboardId;
-	private final DashboardWidgetType dashboardWidgetType;
-	private final int itemId;
+	int dashboardId;
+	DashboardWidgetType dashboardWidgetType;
+	int itemId;
 
-	@Nullable
-	private ImmutableList<Integer> dashboardOrderedItemIds;
+	@Nullable ImmutableList<Integer> dashboardOrderedItemIds;
 
 	public boolean isPositionChanged()
 	{

@@ -1,21 +1,23 @@
 package de.metas.elasticsearch.process;
 
-import java.util.Collection;
-import java.util.List;
-
-import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
-import de.metas.process.*;
+import com.google.common.base.Stopwatch;
+import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
+import de.metas.elasticsearch.indexer.engine.IESIndexerResult;
+import de.metas.elasticsearch.indexer.registry.ESModelIndexersRegistry;
+import de.metas.elasticsearch.indexer.source.ESModelIndexerDataSources;
+import de.metas.elasticsearch.indexer.source.SqlESModelIndexerDataSource;
+import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
-import com.google.common.base.Stopwatch;
-
-import de.metas.elasticsearch.indexer.ESModelIndexerDataSources;
-import de.metas.elasticsearch.indexer.IESIndexerResult;
-import de.metas.elasticsearch.indexer.IESModelIndexer;
-import de.metas.elasticsearch.indexer.SqlESModelIndexerDataSource;
-import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -39,7 +41,7 @@ import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
  * #L%
  */
 
-public abstract class AbstractModelIndexerProcess extends JavaProcess implements IProcessPrecondition
+abstract class AbstractModelIndexerProcess extends JavaProcess implements IProcessPrecondition
 {
 	// services
     /** This is null if elastic search is switched off */
@@ -62,8 +64,9 @@ public abstract class AbstractModelIndexerProcess extends JavaProcess implements
 	private int countAll = 0;
 	private int countErrors = 0;
 
-	protected abstract Collection<IESModelIndexer> getModelIndexers();
+	protected abstract Collection<ESModelIndexer> getModelIndexers();
 
+	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
         if (modelIndexingService == null)
@@ -76,7 +79,7 @@ public abstract class AbstractModelIndexerProcess extends JavaProcess implements
 	@Override
 	protected final String doIt()
 	{
-		final Collection<IESModelIndexer> modelIndexers = getModelIndexers();
+		final Collection<ESModelIndexer> modelIndexers = getModelIndexers();
 		if (modelIndexers.isEmpty())
 		{
 			throw new AdempiereException("No model indexers were defined");
@@ -84,14 +87,12 @@ public abstract class AbstractModelIndexerProcess extends JavaProcess implements
 
 		final Stopwatch duration = Stopwatch.createStarted();
 
-		modelIndexers
-				.stream()
-				.forEach(modelIndexer -> indexModelsFor(modelIndexer));
+		modelIndexers.forEach(this::indexModelsFor);
 
 		return "Indexed " + countAll + " documents, " + countErrors + " errors, took " + duration;
 	}
 
-	private void indexModelsFor(final IESModelIndexer modelIndexer)
+	private void indexModelsFor(final ESModelIndexer modelIndexer)
 	{
 		if (p_DeleteIndex)
 		{

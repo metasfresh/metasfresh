@@ -1,22 +1,9 @@
 package de.metas.order.impl;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.X_C_OrderLine;
-import org.compiere.util.TimeUtil;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ITranslatableString;
@@ -60,10 +47,21 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.X_C_OrderLine;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 
 /*
  * #%L
@@ -504,15 +502,14 @@ final class OrderLinePriceCalculator
 
 	private boolean isAllowChangingDiscount(@NonNull final SOTrx soTrx)
 	{
-		if (soTrx.isPurchase())
-		{
-			return true;
-		}
-
 		final I_C_OrderLine orderLine = request.getOrderLine();
 		if (orderLine.isManualDiscount())
 		{
 			return false;
+		}
+		if (soTrx.isPurchase())
+		{
+			return true;
 		}
 
 		if (request.isUpdatePriceEnteredAndDiscountOnlyIfNotAlreadySet() && orderLine.getDiscount().signum() != 0) // task 06727

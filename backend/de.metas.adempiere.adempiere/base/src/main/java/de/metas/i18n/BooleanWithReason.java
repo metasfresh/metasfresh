@@ -1,13 +1,12 @@
 package de.metas.i18n;
 
-import javax.annotation.Nullable;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.experimental.FieldDefaults;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -71,7 +70,7 @@ public final class BooleanWithReason
 
 	private static ITranslatableString toTrl(@Nullable final String reasonStr)
 	{
-		if (Check.isEmpty(reasonStr, true))
+		if (reasonStr == null || Check.isBlank(reasonStr))
 		{
 			return TranslatableStrings.empty();
 		}
@@ -128,4 +127,10 @@ public final class BooleanWithReason
 	{
 		return reason;
 	}
+
+	public String getReasonAsString()
+	{
+		return reason.getDefaultValue();
+	}
+
 }

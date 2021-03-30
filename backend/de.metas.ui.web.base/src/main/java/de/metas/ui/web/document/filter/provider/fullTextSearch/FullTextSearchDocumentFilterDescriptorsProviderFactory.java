@@ -1,8 +1,8 @@
 package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
-import de.metas.elasticsearch.impl.ESSystemEnabledCondition;
-import de.metas.elasticsearch.indexer.IESModelIndexer;
-import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
+import de.metas.elasticsearch.IESSystem;
+import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
+import de.metas.elasticsearch.indexer.registry.ESModelIndexersRegistry;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -19,9 +19,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -50,22 +47,19 @@ import java.util.Collection;
  */
 
 @Component
-@Conditional(ESSystemEnabledCondition.class)
 public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
 	// services
-	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IESSystem esSystem = Services.get(IESSystem.class);
 	private final ESModelIndexersRegistry esModelIndexersRegistry;
-	private final RestHighLevelClient elasticsearchClient;
 
 	private static final AdMessageKey MSG_FULL_TEXT_SEARCH_CAPTION = AdMessageKey.of("Search");
 
 	public FullTextSearchDocumentFilterDescriptorsProviderFactory(
-			@NonNull final ESModelIndexersRegistry esModelIndexersRegistry,
-			@NonNull final RestHighLevelClient elasticsearchClient)
+			@NonNull final ESModelIndexersRegistry esModelIndexersRegistry)
 	{
 		this.esModelIndexersRegistry = esModelIndexersRegistry;
-		this.elasticsearchClient = elasticsearchClient;
 	}
 
 	@Override
@@ -79,7 +73,7 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 			return NullDocumentFilterDescriptorsProvider.instance;
 		}
 
-		final IESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(tableName)
+		final ESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(tableName)
 				.orElse(null);
 		if (modelIndexer == null)
 		{
@@ -105,10 +99,10 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 		return ImmutableDocumentFilterDescriptorsProvider.of(filterDescriptor);
 	}
 
-	private FullTextSearchFilterContext createFullTextSearchFilterContext(final IESModelIndexer modelIndexer)
+	private FullTextSearchFilterContext createFullTextSearchFilterContext(final ESModelIndexer modelIndexer)
 	{
 		return FullTextSearchFilterContext.builder()
-				.elasticsearchClient(elasticsearchClient)
+				.elasticsearchClient(esSystem.elasticsearchClient())
 				.modelTableName(modelIndexer.getModelTableName())
 				.esIndexName(modelIndexer.getIndexName())
 				.esSearchFieldNames(modelIndexer.getFullTextSearchFieldNames())
