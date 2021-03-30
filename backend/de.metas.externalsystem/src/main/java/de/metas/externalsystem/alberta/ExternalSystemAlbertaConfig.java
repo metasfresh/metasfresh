@@ -36,7 +36,7 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 	@NonNull
 	ExternalSystemParentConfigId parentId;
 	@NonNull
-	String name;
+	String value;
 	@NonNull
 	String apiKey;
 	@NonNull
@@ -47,14 +47,14 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 	@Builder
 	public ExternalSystemAlbertaConfig(final @NonNull ExternalSystemAlbertaConfigId id,
 			final @NonNull ExternalSystemParentConfigId parentId,
-			final @NonNull String name,
+			final @NonNull String value,
 			final @NonNull String apiKey,
 			final @NonNull String baseUrl,
 			final @NonNull String tenant)
 	{
 		this.id = id;
 		this.parentId = parentId;
-		this.name = name;
+		this.value = value;
 		this.apiKey = apiKey;
 		this.baseUrl = baseUrl;
 		this.tenant = tenant;
