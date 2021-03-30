@@ -3,13 +3,11 @@
   "jsonRequestBPartnerUpsert": {
     "requestItems": [
       {
-        "bpartnerIdentifier": "ext-customerId",
+        "bpartnerIdentifier": "ext-Shopware6-customerId",
         "bpartnerComposite": {
           "orgCode": "orgCode",
           "bpartner": {
-            "externalId": "customerId",
-            "externalIdSet": true,
-            "code": "customerNumber",
+            "code": "ext-Shopware6-customerNumber",
             "codeSet": true,
             "active": null,
             "activeSet": false,
@@ -51,10 +49,51 @@
           "locations": {
             "requestItems": [
               {
-                "locationIdentifier": "102",
+                "locationIdentifier": "ext-Shopware6-shippingAddressId_custom",
                 "location": {
-                  "externalId": null,
-                  "externalIdSet": false,
+                  "active": null,
+                  "activeSet": false,
+                  "name": null,
+                  "nameSet": false,
+                  "bpartnerName": null,
+                  "bpartnerNameSet": false,
+                  "address1": "Bismarckstraße 121",
+                  "address1Set": true,
+                  "address2": null,
+                  "address2Set": true,
+                  "address3": null,
+                  "address3Set": true,
+                  "address4": null,
+                  "address4Set": false,
+                  "poBox": null,
+                  "poBoxSet": false,
+                  "postal": "66121",
+                  "postalSet": true,
+                  "city": "Saarbrücken",
+                  "citySet": true,
+                  "district": null,
+                  "districtSet": false,
+                  "region": null,
+                  "regionSet": false,
+                  "countryCode": "DE",
+                  "countryCodeSet": true,
+                  "gln": null,
+                  "glnSet": false,
+                  "shipTo": true,
+                  "shipToSet": true,
+                  "shipToDefault": null,
+                  "shipToDefaultSet": false,
+                  "billTo": true,
+                  "billToSet": true,
+                  "billToDefault": null,
+                  "billToDefaultSet": false,
+                  "syncAdvise": null,
+                  "syncAdviseSet": false
+                }
+              },
+              {
+                "locationIdentifier": "ext-Shopware6-customerId-shipTo",
+                "location": {
                   "active": null,
                   "activeSet": false,
                   "name": null,
@@ -93,8 +132,7 @@
                   "billToDefaultSet": false,
                   "syncAdvise": null,
                   "syncAdviseSet": false
-                },
-                "locationExternalRef": null
+                }
               }
             ],
             "syncAdvise": null
@@ -102,10 +140,8 @@
           "contacts": {
             "requestItems": [
               {
-                "contactIdentifier": "ext-customerId",
+                "contactIdentifier": "ext-Shopware6-customerId",
                 "contact": {
-                  "externalId": "customerId",
-                  "externalIdSet": true,
                   "metasfreshBPartnerId": null,
                   "metasfreshBPartnerIdSet": false,
                   "code": null,
@@ -156,15 +192,7 @@
               "ifExists": "UPDATE_MERGE"
             }
           },
-          "bpartnerReferenceCreateRequest": {
-            "systemName": "Shopware6",
-            "externalReferenceItem": {
-              "lookupItem": {
-                "id": "customerId",
-                "type": "BPartner"
-              }
-            }
-          }
+          "bpartnerReferenceCreateRequest": null
         }
       }
     ],

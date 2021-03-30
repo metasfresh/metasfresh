@@ -20,11 +20,21 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6;
+package de.metas.camel.externalsystems.shopware6.api.model.order;
 
-public interface ShopwareTestConstants
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class JsonOrderAndCustomId
 {
-	String MOCK_ORG_CODE = "orgCode";
-	String MOCK_BPARTNER_LOCATION_ID_JSON_PATH = "/customFields/originalAddressId";
-	String MOCK_BPARTNER_ID_JSON_PATH = "/customFields/originalAddressId";
+	@NonNull
+	JsonOrder jsonOrder;
+
+	@Nullable
+	String customId;
 }

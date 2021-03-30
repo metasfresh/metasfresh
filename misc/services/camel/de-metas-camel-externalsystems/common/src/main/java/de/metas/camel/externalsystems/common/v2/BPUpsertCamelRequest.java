@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,11 +20,25 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6;
+package de.metas.camel.externalsystems.common.v2;
 
-public interface ShopwareTestConstants
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+@JsonDeserialize(builder = BPUpsertCamelRequest.BPUpsertCamelRequestBuilder.class)
+public class BPUpsertCamelRequest
 {
-	String MOCK_ORG_CODE = "orgCode";
-	String MOCK_BPARTNER_LOCATION_ID_JSON_PATH = "/customFields/originalAddressId";
-	String MOCK_BPARTNER_ID_JSON_PATH = "/customFields/originalAddressId";
+	@NonNull
+	@JsonProperty("orgCode")
+	String orgCode;
+
+	@NonNull
+	@JsonProperty("jsonRequestBPartnerUpsert")
+	JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert;
 }
