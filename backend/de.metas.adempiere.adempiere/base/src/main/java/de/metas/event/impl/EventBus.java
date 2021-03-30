@@ -326,20 +326,23 @@ final class EventBus implements IEventBus
 	{
 		try (final EventLogEntryCollector collector = EventLogEntryCollector.createThreadLocalForEvent(event))
 		{
-			eventListener.onEvent(this, event);
-		}
-		catch (final RuntimeException ex)
-		{
-			if (!Adempiere.isUnitTestMode())
+			try
 			{
-				final EventLogUserService eventLogUserService = SpringContextHolder.instance.getBean(EventLogUserService.class);
-				eventLogUserService
-						.newErrorLogEntry(eventListener.getClass(), ex)
-						.createAndStore();
+				eventListener.onEvent(this, event);
 			}
-			else
+			catch (final RuntimeException ex)
 			{
-				logger.warn("Got exception while invoking eventListener={} with event={}", eventListener, event, ex);
+				if (!Adempiere.isUnitTestMode())
+				{
+					final EventLogUserService eventLogUserService = SpringContextHolder.instance.getBean(EventLogUserService.class);
+					eventLogUserService
+							.newErrorLogEntry(eventListener.getClass(), ex)
+							.createAndStore();
+				}
+				else
+				{
+					logger.warn("Got exception while invoking eventListener={} with event={}", eventListener, event, ex);
+				}
 			}
 		}
 	}

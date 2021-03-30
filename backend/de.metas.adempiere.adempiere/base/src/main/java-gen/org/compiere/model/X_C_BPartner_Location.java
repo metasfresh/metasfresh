@@ -1,26 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Location
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
-public class X_C_BPartner_Location extends PO implements I_C_BPartner_Location, I_Persistent
+@SuppressWarnings("unused")
+public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -622768612L;
+	private static final long serialVersionUID = -860447504L;
 
     /** Standard Constructor */
-    public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, final String trxName)
+    public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
     {
       super (ctx, C_BPartner_Location_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_BPartner_Location (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_C_BPartner_Location (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -28,31 +29,58 @@ public class X_C_BPartner_Location extends PO implements I_C_BPartner_Location, 
 
 	/** Load Meta Data */
 	@Override
-	protected POInfo initPO(final Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		return POInfo.getPOInfo(Table_Name);
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setAddress (final String Address)
+	public void setAddress (final @Nullable java.lang.String Address)
 	{
 		set_Value (COLUMNNAME_Address, Address);
 	}
 
 	@Override
-	public String getAddress()
+	public java.lang.String getAddress() 
 	{
 		return get_ValueAsString(COLUMNNAME_Address);
 	}
 
 	@Override
-	public void setBPartnerName (final String BPartnerName)
+	public org.compiere.model.I_AD_Org_Mapping getAD_Org_Mapping()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Org_Mapping_ID, org.compiere.model.I_AD_Org_Mapping.class);
+	}
+
+	@Override
+	public void setAD_Org_Mapping(final org.compiere.model.I_AD_Org_Mapping AD_Org_Mapping)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Org_Mapping_ID, org.compiere.model.I_AD_Org_Mapping.class, AD_Org_Mapping);
+	}
+
+	@Override
+	public void setAD_Org_Mapping_ID (final int AD_Org_Mapping_ID)
+	{
+		if (AD_Org_Mapping_ID < 1) 
+			set_Value (COLUMNNAME_AD_Org_Mapping_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Org_Mapping_ID, AD_Org_Mapping_ID);
+	}
+
+	@Override
+	public int getAD_Org_Mapping_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Org_Mapping_ID);
+	}
+
+	@Override
+	public void setBPartnerName (final @Nullable java.lang.String BPartnerName)
 	{
 		set_Value (COLUMNNAME_BPartnerName, BPartnerName);
 	}
 
 	@Override
-	public String getBPartnerName()
+	public java.lang.String getBPartnerName() 
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerName);
 	}
@@ -88,15 +116,15 @@ public class X_C_BPartner_Location extends PO implements I_C_BPartner_Location, 
 	}
 
 	@Override
-	public I_C_Location getC_Location()
+	public org.compiere.model.I_C_Location getC_Location()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Location_ID, I_C_Location.class);
+		return get_ValueAsPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class);
 	}
 
 	@Override
-	public void setC_Location(final I_C_Location C_Location)
+	public void setC_Location(final org.compiere.model.I_C_Location C_Location)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Location_ID, I_C_Location.class, C_Location);
+		set_ValueFromPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class, C_Location);
 	}
 
 	@Override
@@ -115,15 +143,15 @@ public class X_C_BPartner_Location extends PO implements I_C_BPartner_Location, 
 	}
 
 	@Override
-	public I_C_SalesRegion getC_SalesRegion()
+	public org.compiere.model.I_C_SalesRegion getC_SalesRegion()
 	{
-		return get_ValueAsPO(COLUMNNAME_C_SalesRegion_ID, I_C_SalesRegion.class);
+		return get_ValueAsPO(COLUMNNAME_C_SalesRegion_ID, org.compiere.model.I_C_SalesRegion.class);
 	}
 
 	@Override
-	public void setC_SalesRegion(final I_C_SalesRegion C_SalesRegion)
+	public void setC_SalesRegion(final org.compiere.model.I_C_SalesRegion C_SalesRegion)
 	{
-		set_ValueFromPO(COLUMNNAME_C_SalesRegion_ID, I_C_SalesRegion.class, C_SalesRegion);
+		set_ValueFromPO(COLUMNNAME_C_SalesRegion_ID, org.compiere.model.I_C_SalesRegion.class, C_SalesRegion);
 	}
 
 	@Override
@@ -142,73 +170,73 @@ public class X_C_BPartner_Location extends PO implements I_C_BPartner_Location, 
 	}
 
 	@Override
-	public void setEMail (final String EMail)
+	public void setEMail (final @Nullable java.lang.String EMail)
 	{
 		set_Value (COLUMNNAME_EMail, EMail);
 	}
 
 	@Override
-	public String getEMail()
+	public java.lang.String getEMail() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
 	}
 
 	@Override
-	public void setEMail2 (final String EMail2)
+	public void setEMail2 (final @Nullable java.lang.String EMail2)
 	{
 		set_Value (COLUMNNAME_EMail2, EMail2);
 	}
 
 	@Override
-	public String getEMail2()
+	public java.lang.String getEMail2() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail2);
 	}
 
 	@Override
-	public void setExternalId (final String ExternalId)
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
 	}
 
 	@Override
-	public String getExternalId()
+	public java.lang.String getExternalId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
 
 	@Override
-	public void setFax (final String Fax)
+	public void setFax (final @Nullable java.lang.String Fax)
 	{
 		set_Value (COLUMNNAME_Fax, Fax);
 	}
 
 	@Override
-	public String getFax()
+	public java.lang.String getFax() 
 	{
 		return get_ValueAsString(COLUMNNAME_Fax);
 	}
 
 	@Override
-	public void setFax2 (final String Fax2)
+	public void setFax2 (final @Nullable java.lang.String Fax2)
 	{
 		set_Value (COLUMNNAME_Fax2, Fax2);
 	}
 
 	@Override
-	public String getFax2()
+	public java.lang.String getFax2() 
 	{
 		return get_ValueAsString(COLUMNNAME_Fax2);
 	}
 
 	@Override
-	public void setGLN (final String GLN)
+	public void setGLN (final @Nullable java.lang.String GLN)
 	{
 		set_Value (COLUMNNAME_GLN, GLN);
 	}
 
 	@Override
-	public String getGLN()
+	public java.lang.String getGLN() 
 	{
 		return get_ValueAsString(COLUMNNAME_GLN);
 	}
@@ -262,13 +290,13 @@ public class X_C_BPartner_Location extends PO implements I_C_BPartner_Location, 
 	}
 
 	@Override
-	public void setISDN (final String ISDN)
+	public void setISDN (final @Nullable java.lang.String ISDN)
 	{
 		set_Value (COLUMNNAME_ISDN, ISDN);
 	}
 
 	@Override
-	public String getISDN()
+	public java.lang.String getISDN() 
 	{
 		return get_ValueAsString(COLUMNNAME_ISDN);
 	}
@@ -358,49 +386,49 @@ public class X_C_BPartner_Location extends PO implements I_C_BPartner_Location, 
 	}
 
 	@Override
-	public void setName (final String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
 	@Override
-	public String getName()
+	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	@Override
-	public void setPhone (final String Phone)
+	public void setPhone (final @Nullable java.lang.String Phone)
 	{
 		set_Value (COLUMNNAME_Phone, Phone);
 	}
 
 	@Override
-	public String getPhone()
+	public java.lang.String getPhone() 
 	{
 		return get_ValueAsString(COLUMNNAME_Phone);
 	}
 
 	@Override
-	public void setPhone2 (final String Phone2)
+	public void setPhone2 (final @Nullable java.lang.String Phone2)
 	{
 		set_Value (COLUMNNAME_Phone2, Phone2);
 	}
 
 	@Override
-	public String getPhone2()
+	public java.lang.String getPhone2() 
 	{
 		return get_ValueAsString(COLUMNNAME_Phone2);
 	}
 
 	@Override
-	public void setSetup_Place_No (final String Setup_Place_No)
+	public void setSetup_Place_No (final @Nullable java.lang.String Setup_Place_No)
 	{
 		set_Value (COLUMNNAME_Setup_Place_No, Setup_Place_No);
 	}
 
 	@Override
-	public String getSetup_Place_No()
+	public java.lang.String getSetup_Place_No() 
 	{
 		return get_ValueAsString(COLUMNNAME_Setup_Place_No);
 	}

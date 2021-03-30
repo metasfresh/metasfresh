@@ -610,7 +610,9 @@ public class SyncObjectsFactory
 			return ImmutableList.of();
 		}
 
-		final String bpartner_uuid = SyncUUIDs.toUUIDString(contract.getDropShip_BPartner());
+		final I_C_BPartner dropShipPartnerRecord = bpartnerDAO.getById(contract.getBill_BPartner_ID());
+
+		final String bpartner_uuid = SyncUUIDs.toUUIDString(dropShipPartnerRecord);
 		final String contractLine_uuid = SyncUUIDs.toUUIDString(contract);
 		final String product_uuid = SyncUUIDs.toUUIDString(contract.getPMM_Product());
 

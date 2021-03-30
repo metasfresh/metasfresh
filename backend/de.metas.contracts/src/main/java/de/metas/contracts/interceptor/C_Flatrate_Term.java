@@ -22,6 +22,7 @@
 
 package de.metas.contracts.interceptor;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.IContractsDAO;
@@ -65,6 +66,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.ModelValidator;
@@ -90,6 +92,8 @@ public class C_Flatrate_Term
 	private static final String MSG_TERM_ERROR_YEAR_WITHOUT_PERIODS_2P = "Term_Error_Range_Without_Periods";
 	private static final String MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P = "Term_Error_PeriodEndDate_Before_TermEndDate";
 	private static final String MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P = "Term_Error_PeriodStartDate_After_TermStartDate";
+
+	private final IBPartnerDAO bparnterDAO = Services.get(IBPartnerDAO.class);
 
 	private final ContractOrderService contractOrderService;
 
@@ -525,7 +529,9 @@ public class C_Flatrate_Term
 		final boolean hasOverlappingTerms = flatrateBL.hasOverlappingTerms(term);
 		if (hasOverlappingTerms)
 		{
-			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), term.getBill_BPartner().getValue())
+			final I_C_BPartner billBPartnerRecord = bparnterDAO.getById(term.getBill_BPartner_ID());
+
+			throw new AdempiereException(FlatrateBL.MSG_HasOverlapping_Term, term.getC_Flatrate_Term_ID(), billBPartnerRecord.getValue())
 					.markAsUserValidationError();
 		}
 	}
