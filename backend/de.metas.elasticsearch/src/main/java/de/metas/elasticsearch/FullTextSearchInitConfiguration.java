@@ -6,6 +6,7 @@ import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.config.FTSIndexConfig;
 import de.metas.elasticsearch.config.FTSIndexIncludeConfig;
 import de.metas.elasticsearch.config.FTSIndexRepository;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -57,9 +58,10 @@ public class FullTextSearchInitConfiguration extends AbstractModuleInterceptor
 
 	private void setupModelIndexers()
 	{
-		if (!esSystem.isEnabled())
+		final BooleanWithReason enabled = esSystem.getEnabled();
+		if (enabled.isFalse())
 		{
-			logger.info("Skip setup because elasticsearch System is not enabled");
+			logger.info("Skip setup because elasticsearch System is not enabled (reason: {})", enabled.getReason());
 			return;
 		}
 

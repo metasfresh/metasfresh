@@ -3,6 +3,7 @@ package de.metas.elasticsearch;
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.indexer.queue.ESModelIndexerQueue;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.util.ISingletonService;
 
 /*
@@ -34,7 +35,9 @@ import de.metas.util.ISingletonService;
  */
 public interface IESSystem extends ISingletonService
 {
-	boolean isEnabled();
+	BooleanWithReason getEnabled();
+
+	void assertEnabled();
 
 	ESModelIndexerConfigBuilder newModelIndexerConfig(ESModelIndexerProfile profile, String indexName, Class<?> modelClass);
 

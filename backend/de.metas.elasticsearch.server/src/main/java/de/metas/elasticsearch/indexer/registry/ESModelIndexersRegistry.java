@@ -24,10 +24,10 @@ package de.metas.elasticsearch.indexer.registry;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.ESSystemEnabledCondition;
 import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
 import de.metas.elasticsearch.indexer.engine.IESIndexerResult;
 import de.metas.elasticsearch.indexer.source.ESModelIndexerDataSources;
@@ -38,7 +38,6 @@ import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -47,18 +46,17 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-@Conditional(ESSystemEnabledCondition.class)
 public class ESModelIndexersRegistry
 {
+	// services
 	private static final Logger logger = LogManager.getLogger(ESModelIndexersRegistry.class);
+	private final RestHighLevelClient elasticsearchClient;
+	private final ObjectMapper jsonObjectMapper;
 
 	private static final String SYSCONFIG_AUTOINDEX_MODELS = "de.metas.elasticsearch.indexer.AutoIndexModels";
 
 	private final ConcurrentHashMap<ESModelIndexerId, ESModelIndexer> indexersById = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<String, ImmutableList<ESModelIndexer>> indexersByModelTableName = new ConcurrentHashMap<>();
-	
-	private final RestHighLevelClient elasticsearchClient;
-	private final ObjectMapper jsonObjectMapper;
 
 	public ESModelIndexersRegistry(
 			@NonNull final RestHighLevelClient elasticsearchClient,

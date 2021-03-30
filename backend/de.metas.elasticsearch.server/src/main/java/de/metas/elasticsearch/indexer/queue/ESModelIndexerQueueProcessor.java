@@ -77,10 +77,7 @@ public class ESModelIndexerQueueProcessor implements Consumer<ESModelIndexEvent>
 	@Override
 	public void accept(@NonNull final ESModelIndexEvent event)
 	{
-		if (!esSystem.isEnabled())
-		{
-			throw new AdempiereException("Skip processing because Elasticsearch feature is disabled.");
-		}
+		esSystem.assertEnabled();
 
 		switch (event.getType())
 		{

@@ -1,7 +1,6 @@
 package de.metas.ui.web.dashboard;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.elasticsearch.ESSystemEnabledCondition;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
@@ -26,7 +25,6 @@ import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -67,7 +65,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping(WebConfig.ENDPOINT_ROOT + "/dashboard")
-@Conditional(ESSystemEnabledCondition.class)
 public class DashboardRestController
 {
 	private static final Logger logger = LogManager.getLogger(DashboardRestController.class);
@@ -105,15 +102,17 @@ public class DashboardRestController
 		{
 			return UserDashboard.EMPTY;
 		}
-
-		// TODO: assert readable by current user
-		return userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
+		else
+		{
+			// TODO: assert readable by current user
+			return userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
+		}
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	private boolean isElasticSearchEnabled()
 	{
-		return esSystem.isEnabled();
+		return esSystem.getEnabled().isTrue();
 	}
 
 	private UserDashboard getUserDashboardForWriting()
@@ -122,9 +121,11 @@ public class DashboardRestController
 		{
 			return UserDashboard.EMPTY;
 		}
-
-		// TODO: assert writable by current user
-		return userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
+		else
+		{
+			// TODO: assert writable by current user
+			return userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
+		}
 	}
 
 	private void sendEvents(final UserDashboard dashboard, final JSONDashboardChangedEventsList events)
@@ -214,7 +215,7 @@ public class DashboardRestController
 
 	@GetMapping("/kpis/{itemId}/data")
 	public KPIDataResult getKPIData( //
-			@PathVariable final int itemId //
+									 @PathVariable final int itemId //
 			, @RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
 			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
 			, @RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues //
@@ -230,7 +231,7 @@ public class DashboardRestController
 
 	@GetMapping("/targetIndicators/{itemId}/data")
 	public KPIDataResult getTargetIndicatorData( //
-			@PathVariable final int itemId //
+												 @PathVariable final int itemId //
 			, @RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
 			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
 			, @RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues //

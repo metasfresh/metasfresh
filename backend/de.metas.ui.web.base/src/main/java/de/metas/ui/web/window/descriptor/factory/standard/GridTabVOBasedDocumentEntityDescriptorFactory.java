@@ -513,7 +513,7 @@ import java.util.Set;
 			return databaseLookupDescriptorProvider;
 		}
 
-		if(!esSystem.isEnabled())
+		if(esSystem.getEnabled().isFalse())
         {
             return databaseLookupDescriptorProvider;
 	    }

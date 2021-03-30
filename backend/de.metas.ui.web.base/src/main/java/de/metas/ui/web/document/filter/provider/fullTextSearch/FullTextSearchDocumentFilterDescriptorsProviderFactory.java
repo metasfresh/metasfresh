@@ -1,6 +1,6 @@
 package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
-import de.metas.elasticsearch.ESSystemEnabledCondition;
+import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
 import de.metas.elasticsearch.indexer.registry.ESModelIndexersRegistry;
 import de.metas.i18n.AdMessageKey;
@@ -20,7 +20,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -49,11 +48,10 @@ import java.util.Collection;
  */
 
 @Component
-@Conditional(ESSystemEnabledCondition.class)
 public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
 	// services
-	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ESModelIndexersRegistry esModelIndexersRegistry;
 	private final RestHighLevelClient elasticsearchClient;
 
