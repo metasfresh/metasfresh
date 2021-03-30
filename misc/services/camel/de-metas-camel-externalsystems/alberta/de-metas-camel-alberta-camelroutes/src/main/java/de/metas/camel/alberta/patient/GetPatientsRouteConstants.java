@@ -27,6 +27,8 @@ import lombok.Getter;
 
 public interface GetPatientsRouteConstants
 {
+	String ROUTE_PROPERTY_ALBERTA_PATIENT_API = "AlbertaPatientApi";
+	
 	String ALBERTA_SYSTEM_NAME = "ALBERTA";
 	String ESR_TYPE_BPARTNER = "BPartner";
 	String ESR_TYPE_BPARTNER_LOCATION = "BPartnerLocation";

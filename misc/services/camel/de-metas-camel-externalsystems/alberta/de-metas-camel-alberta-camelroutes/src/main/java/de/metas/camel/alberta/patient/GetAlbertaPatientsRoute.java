@@ -25,6 +25,7 @@ package de.metas.camel.alberta.patient;
 import de.metas.camel.alberta.patient.processor.CreateBPRelationReqProcessor;
 import de.metas.camel.alberta.patient.processor.CreateBPartnerReqProcessor;
 import de.metas.camel.alberta.patient.processor.CreateESRQueryProcessor;
+import de.metas.camel.alberta.patient.processor.PreparePatientsApiProcessor;
 import de.metas.camel.alberta.patient.processor.RetrievePatientsProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
@@ -38,10 +39,15 @@ import static de.metas.camel.alberta.CamelRouteUtil.setupJacksonDataFormatFor;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 
 @Component
-public class GetAlbertaPatientsRouteBuilder extends RouteBuilder
+public class GetAlbertaPatientsRoute extends RouteBuilder
 {
 	public static final String GET_PATIENTS_ROUTE_ID = "Alberta-getPatients";
+	public static final String PREPARE_PATIENTS_API_PROCESSOR_ID = "PreparePatientsApiProcessorId";
+	public static final String RETRIEVE_PATIENTS_PROCESSOR_ID = "GetPatientsFromAlbertaProcessorId";
 	public static final String PROCESS_PATIENT_ROUTE_ID = "Alberta-processPatient";
+	public static final String CREATE_ESR_QUERY_REQ_PROCESSOR_ID = "CreateBPartnerESRQueryProcessorId";
+	public static final String CREATE_UPSERT_BPARTNER_REQUEST_PROCESSOR_ID = "CreateBPartnerUpsertReqProcessorId";
+	public static final String CREATE_UPSERT_BPARTNER_RELATION_REQUEST_PROCESSOR_ID = "CreateBPartnerRelationReqProcessorId";
 
 	@Override
 	public void configure()
@@ -51,30 +57,34 @@ public class GetAlbertaPatientsRouteBuilder extends RouteBuilder
 				.to(StaticEndpointBuilders.direct(MF_ERROR_ROUTE_ID));
 
 		//@formatter:off
+		
+		//
+		// 1st get the patient data from Alberta
 		// this EP's name is matching the JsonExternalSystemRequest's ExternalSystem and Command
 		from(StaticEndpointBuilders.direct(GET_PATIENTS_ROUTE_ID))
 				.routeId(GET_PATIENTS_ROUTE_ID)
 				.streamCaching()
-				.process(new RetrievePatientsProcessor())
+				.process(new PreparePatientsApiProcessor()).id(PREPARE_PATIENTS_API_PROCESSOR_ID)
+				.process(new RetrievePatientsProcessor()).id(RETRIEVE_PATIENTS_PROCESSOR_ID)
 				.split(body())
 					.to(StaticEndpointBuilders.direct(PROCESS_PATIENT_ROUTE_ID))
 				.end();
 
 		from(StaticEndpointBuilders.direct(PROCESS_PATIENT_ROUTE_ID))
 				.routeId(PROCESS_PATIENT_ROUTE_ID)
-				.process(new CreateESRQueryProcessor())
+				.process(new CreateESRQueryProcessor()).id(CREATE_ESR_QUERY_REQ_PROCESSOR_ID)
 
 				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to query ESR records: ${body}")
 				.to("{{" + ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI + "}}")
 
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonExternalReferenceLookupResponse.class))
-				.process(new CreateBPartnerReqProcessor())
+				.process(new CreateBPartnerReqProcessor()).id(CREATE_UPSERT_BPARTNER_REQUEST_PROCESSOR_ID)
 
 				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPartners: ${body}")
 				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_CAMEL_URI + "}}")
 
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
-				.process(new CreateBPRelationReqProcessor())
+				.process(new CreateBPRelationReqProcessor()).id(CREATE_UPSERT_BPARTNER_RELATION_REQUEST_PROCESSOR_ID)
 
 				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPRelations: ${body}")
 				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPRELATION_CAMEL_URI + "}}");

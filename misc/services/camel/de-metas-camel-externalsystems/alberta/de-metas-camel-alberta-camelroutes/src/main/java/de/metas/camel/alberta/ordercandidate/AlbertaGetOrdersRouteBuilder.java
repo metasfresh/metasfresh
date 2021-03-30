@@ -35,7 +35,7 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class AlbertaGetOrdersRouteBuilder extends RouteBuilder
 {
-	public static final String GET_ORDERS_ROUTE_ID = "Alberta-getOrders";
+	public static final String GET_ORDERS_ROUTE_ID = "Alberta-getSalesOrders";
 	public static final String PROCESS_ORDER_ROUTE_ID = "Alberta-processOrder";
 
 	@Override

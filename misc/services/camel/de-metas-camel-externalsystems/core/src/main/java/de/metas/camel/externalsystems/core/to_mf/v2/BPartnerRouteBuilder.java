@@ -36,7 +36,7 @@ import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 
-@Component
+@Component("de.metas.camel.externalsystems.core.to_mf.v2.BPartnerRouteBuilder")
 public class BPartnerRouteBuilder extends RouteBuilder
 {
 	@VisibleForTesting

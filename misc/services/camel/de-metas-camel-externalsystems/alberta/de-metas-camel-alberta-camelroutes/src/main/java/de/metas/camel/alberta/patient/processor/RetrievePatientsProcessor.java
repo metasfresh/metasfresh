@@ -43,6 +43,7 @@ import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.HEADER_OR
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.PatientStatus.CREATED;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.PatientStatus.UPDATED;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_CONN_DETAILS;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PATIENT_API;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 
@@ -59,14 +60,13 @@ public class RetrievePatientsProcessor implements Processor
 			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
 		}
 
+		final PatientApi patientApi = exchange.getProperty(ROUTE_PROPERTY_ALBERTA_PATIENT_API, PatientApi.class);
+
+		final var basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 		final var apiKey = request.getParameters().get(ExternalSystemConstants.PARAM_API_KEY);
 		final var tenant = request.getParameters().get(ExternalSystemConstants.PARAM_TENANT);
-		final var basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 		final var updatedAfter = request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER);
-
-		final var apiClient = new ApiClient().setBasePath(basePath);
-
-		final var patientApi = new PatientApi(apiClient);
+		
 		final var createdPatients = patientApi.getCreatedPatients(apiKey, tenant, CREATED.getValue(), updatedAfter);
 
 		final List<Patient> patientsToImport = createdPatients == null || createdPatients.isEmpty()

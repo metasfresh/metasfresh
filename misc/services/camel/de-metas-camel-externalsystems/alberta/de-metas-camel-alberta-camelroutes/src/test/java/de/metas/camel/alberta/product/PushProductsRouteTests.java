@@ -34,7 +34,7 @@ import io.swagger.client.model.ArticleMapping;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
@@ -63,7 +63,7 @@ public class PushProductsRouteTests extends CamelTestSupport
 	private static final String MOCK_REPORT_ARTICLE_ID_IN_METASFRESH = "mock:reportArticleIdInMF";
 
 	private static final String JSON_ARTICLE_MAPPINGS = "/de/metas/camel/alberta/product/ArticleMappings.json";
-	private static final String JSON_MF_GET_PRODUCTS = "/de/metas/camel/alberta/product/JsonGetProductsResponse.json";
+	private static final String JSON_MF_GET_PRODUCTS = "/de/metas/camel/alberta/product/GetProductsMetasfreshResponse.json";
 
 	private static final String JSON_ALBERTA_ARTICLE = "/de/metas/camel/alberta/product/UpsertArticleRequest.json";
 	private static final String JSON_INVOKE_PUSH_PRODUCTS_REQUEST = "/de/metas/camel/alberta/product/JsonExternalSystemRequest.json";
@@ -75,7 +75,7 @@ public class PushProductsRouteTests extends CamelTestSupport
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()
 	{
-		final var properties = new Properties();
+		final Properties properties = new Properties();
 		try
 		{
 			properties.load(PushProductsRouteTests.class.getClassLoader().getResourceAsStream("application.properties"));
@@ -145,7 +145,7 @@ public class PushProductsRouteTests extends CamelTestSupport
 			final MockSuccessfullyCalledEndpoint successfullySentExternalReferenceRequest,
 			final MockSuccessfullyCalledEndpoint successfullyCalledLogMessageEndpoint) throws Exception
 	{
-		AdviceWithRouteBuilder.adviceWith(context, PUSH_PRODUCTS,
+		AdviceWith.adviceWith(context, PUSH_PRODUCTS,
 										  advice -> {
 											  advice.weaveById(RETRIEVE_PRODUCTS_PROCESSOR_ID)
 													  .after()
@@ -153,10 +153,10 @@ public class PushProductsRouteTests extends CamelTestSupport
 
 											  advice.interceptSendToEndpoint("direct:" + MF_GET_PRODUCTS_ROUTE_ID)
 													  .skipSendToOriginalEndpoint()
-													  .process(new MockRetrieveProductsProcessor());
+													  .process(new MockGetProductsFromMetasfreshProcessor());
 										  });
 
-		AdviceWithRouteBuilder.adviceWith(context, PROCESS_PRODUCT_ROUTE_ID,
+		AdviceWith.adviceWith(context, PROCESS_PRODUCT_ROUTE_ID,
 										  advice -> {
 											  advice.weaveById(PREPARE_ARTICLE_PROCESSOR_ID)
 													  .after()
@@ -187,7 +187,7 @@ public class PushProductsRouteTests extends CamelTestSupport
 		}
 	}
 
-	private static class MockRetrieveProductsProcessor implements Processor
+	private static class MockGetProductsFromMetasfreshProcessor implements Processor
 	{
 		@Override
 		public void process(final Exchange exchange) throws IOException

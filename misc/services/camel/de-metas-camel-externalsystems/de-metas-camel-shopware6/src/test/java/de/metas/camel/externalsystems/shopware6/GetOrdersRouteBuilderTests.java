@@ -34,6 +34,7 @@ import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -112,7 +113,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 
 		//validate esr query request
 		final InputStream esrQueryRequestIS = this.getClass().getResourceAsStream(JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST);
-
+		
 		final MockEndpoint esrQueryValidationMockEndpoint = getMockEndpoint(MOCK_ESR_QUERY_REQUEST);
 		esrQueryValidationMockEndpoint.expectedBodiesReceived(objectMapper.readValue(esrQueryRequestIS, JsonExternalReferenceLookupRequest.class));
 
@@ -131,26 +132,25 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 
 	private void prepareRouteForTesting(final MockSuccessfullyCreatedBPartnerProcessor successfullyCreatedBPartnerProcessor) throws Exception
 	{
-		AdviceWithRouteBuilder.adviceWith(context, GET_ORDERS_ROUTE_ID,
+		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
 										  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
 												  .replace()
 												  .process(new MockGetOrdersProcessor()));
 
-		AdviceWithRouteBuilder.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
+		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 										  advice -> {
+											  // validate the external reference query and send a response
 											  advice.weaveById(CREATE_ESR_QUERY_REQ_PROCESSOR_ID)
 													  .after()
 													  .to(MOCK_ESR_QUERY_REQUEST);
-											  //check how the esr query looks like
-
 											  advice.interceptSendToEndpoint("{{" + MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI + "}}")
 													  .skipSendToOriginalEndpoint()
 													  .process(new MockExternalReferenceResponse());
 
+											  // validate the upsert request and send a response
 											  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
 													  .after()
 													  .to(MOCK_SHOPWARE_TO_MF_RESULT);
-
 											  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_CAMEL_URI + "}}")
 													  .skipSendToOriginalEndpoint()
 													  .process(successfullyCreatedBPartnerProcessor);
@@ -212,7 +212,6 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 
 	private static class MockExternalReferenceResponse implements Processor
 	{
-
 		@Override
 		public void process(final Exchange exchange)
 		{
