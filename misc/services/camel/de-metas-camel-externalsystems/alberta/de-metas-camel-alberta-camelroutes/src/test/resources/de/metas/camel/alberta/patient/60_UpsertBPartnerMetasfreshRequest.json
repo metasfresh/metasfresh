@@ -5,6 +5,7 @@
       "bpartnerComposite": {
         "orgCode": "001",
         "bpartner": {
+          "code": "ext-ALBERTA-fcf48850-c52c-4263-92b2-e889bfffeaf0",
           "name": "Max Tester",
           "customer": true,
           "phone": null
@@ -24,15 +25,6 @@
                 "shipToDefault": true,
                 "billTo": true,
                 "billToDefault": true
-              },
-              "locationExternalRef": {
-                "systemName": "ALBERTA",
-                "externalReferenceItem": {
-                  "lookupItem": {
-                    "id": "mainAddress_fcf48850-c52c-4263-92b2-e889bfffeaf0",
-                    "type": "BPartnerLocation"
-                  }
-                }
               }
             }
           ],
@@ -57,15 +49,6 @@
             "ifNotExists": "CREATE",
             "ifExists": "UPDATE_MERGE"
           }
-        },
-        "bpartnerReferenceCreateRequest": {
-          "systemName": "ALBERTA",
-          "externalReferenceItem": {
-            "lookupItem": {
-              "id": "fcf48850-c52c-4263-92b2-e889bfffeaf0",
-              "type": "BPartner"
-            }
-          }
         }
       }
     },
@@ -74,6 +57,7 @@
       "bpartnerComposite": {
         "orgCode": "001",
         "bpartner": {
+          "code": "ext-ALBERTA-5ab233bc9d69c74b68cec23a",
           "name": "Test-Hospital-Name",
           "name2": "Test-Hospital-company",
           "name3": null,
@@ -95,27 +79,9 @@
                 "shipToDefault": true,
                 "billTo": true,
                 "billToDefault": true
-              },
-              "locationExternalRef": {
-                "systemName": "ALBERTA",
-                "externalReferenceItem": {
-                  "lookupItem": {
-                    "id": "5ab233bc9d69c74b68cec23a",
-                    "type": "BPartnerLocation"
-                  }
-                }
               }
             }
           ]
-        },
-        "bpartnerReferenceCreateRequest": {
-          "systemName": "ALBERTA",
-          "externalReferenceItem": {
-            "lookupItem": {
-              "id": "5ab233bc9d69c74b68cec23a",
-              "type": "BPartner"
-            }
-          }
         }
       }
     },
@@ -124,6 +90,7 @@
       "bpartnerComposite": {
         "orgCode": "001",
         "bpartner": {
+          "code": "ext-ALBERTA-5ab2383d9d69c74b68cf19dc",
           "name": "Test-Nursing-Service",
           "customer": true,
           "phone": "01234-5677"
@@ -141,27 +108,9 @@
                 "shipToDefault": true,
                 "billTo": true,
                 "billToDefault": true
-              },
-              "locationExternalRef": {
-                "systemName": "ALBERTA",
-                "externalReferenceItem": {
-                  "lookupItem": {
-                    "id": "5ab2383d9d69c74b68cf19dc",
-                    "type": "BPartnerLocation"
-                  }
-                }
               }
             }
           ]
-        },
-        "bpartnerReferenceCreateRequest": {
-          "systemName": "ALBERTA",
-          "externalReferenceItem": {
-            "lookupItem": {
-              "id": "5ab2383d9d69c74b68cf19dc",
-              "type": "BPartner"
-            }
-          }
         }
       }
     },
@@ -170,6 +119,7 @@
       "bpartnerComposite": {
         "orgCode": "001",
         "bpartner": {
+          "code": "ext-ALBERTA-5ab23eb59d69c74b68d0eded",
           "name": "Heinz-Wilhelm Test-Doctor",
           "customer": true,
           "phone": "01234-5677"
@@ -187,15 +137,6 @@
                 "shipToDefault": true,
                 "billTo": true,
                 "billToDefault": true
-              },
-              "locationExternalRef": {
-                "systemName": "ALBERTA",
-                "externalReferenceItem": {
-                  "lookupItem": {
-                    "id": "5ab23eb59d69c74b68d0eded",
-                    "type": "BPartnerLocation"
-                  }
-                }
               }
             }
           ],
@@ -217,15 +158,6 @@
             "ifNotExists": "CREATE",
             "ifExists": "UPDATE_MERGE"
           }
-        },
-        "bpartnerReferenceCreateRequest": {
-          "systemName": "ALBERTA",
-          "externalReferenceItem": {
-            "lookupItem": {
-              "id": "5ab23eb59d69c74b68d0eded",
-              "type": "BPartner"
-            }
-          }
         }
       }
     },
@@ -234,7 +166,7 @@
       "bpartnerComposite": {
         "orgCode": "001",
         "bpartner": {
-          "code": null,
+          "code": "ext-ALBERTA-5ada01a2c3918e1bdcb5460e",
           "name": "Test-Krankenkasse",
           "customer": true
         },
@@ -248,28 +180,10 @@
                 "shipToDefault": true,
                 "billTo": true,
                 "billToDefault": true
-              },
-              "locationExternalRef": {
-                "systemName": "ALBERTA",
-                "externalReferenceItem": {
-                  "lookupItem": {
-                    "id": "5ada01a2c3918e1bdcb5460e",
-                    "type": "BPartnerLocation"
-                  }
-                }
               }
             }
           ],
           "syncAdvise": null
-        },
-        "bpartnerReferenceCreateRequest": {
-          "systemName": "ALBERTA",
-          "externalReferenceItem": {
-            "lookupItem": {
-              "id": "5ada01a2c3918e1bdcb5460e",
-              "type": "BPartner"
-            }
-          }
         }
       }
     },
@@ -278,6 +192,7 @@
       "bpartnerComposite": {
         "orgCode": "001",
         "bpartner": {
+          "code": "ext-ALBERTA-5ab2390e9d69c74b68cf4f2d",
           "name": "Neue Test-Apotheke",
           "customer": true,
           "phone": "01234-5678"
@@ -295,28 +210,10 @@
                 "shipToDefault": true,
                 "billTo": true,
                 "billToDefault": true
-              },
-              "locationExternalRef": {
-                "systemName": "ALBERTA",
-                "externalReferenceItem": {
-                  "lookupItem": {
-                    "id": "5ab2390e9d69c74b68cf4f2d",
-                    "type": "BPartnerLocation"
-                  }
-                }
               }
             }
           ],
           "syncAdvise": null
-        },
-        "bpartnerReferenceCreateRequest": {
-          "systemName": "ALBERTA",
-          "externalReferenceItem": {
-            "lookupItem": {
-              "id": "5ab2390e9d69c74b68cf4f2d",
-              "type": "BPartner"
-            }
-          }
         }
       }
     }

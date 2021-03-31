@@ -29,6 +29,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+/**
+ * @deprecated please switch to v2.
+ */
+@Deprecated
 @Value
 @Builder
 @JsonDeserialize(builder = BPUpsertCamelRequest.BPUpsertCamelRequestBuilder.class)

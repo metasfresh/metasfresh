@@ -34,11 +34,6 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.common.bprelation.JsonBPRelationRole;
-import de.metas.common.externalreference.JsonExternalReferenceItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
-import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
-import de.metas.common.externalsystem.JsonExternalSystemName;
-
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.client.model.CareGiver;
@@ -64,8 +59,6 @@ import java.util.UUID;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ALBERTA_SYSTEM_NAME;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.BILLING_ADDR_PREFIX;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.COUNTRY_CODE_DE;
-import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ESR_TYPE_BPARTNER;
-import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ESR_TYPE_BPARTNER_LOCATION;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.EXTERNAL_ID_PREFIX;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.MAIN_ADDR_PREFIX;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.SHIPPING_ADDR_PREFIX;
@@ -184,21 +177,24 @@ public class BPartnerUpsertRequestProducer
 		final JsonRequestContactUpsert upsertContactRequest = toJsonRequestContactUpsert(patientId, contact);
 
 		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(patientId);
-		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
-				? createInsertExternalReferenceReq(patientId)
-				: null;
-
+		final String bPartnerIdentifier;
+		if (actualMFBPartnerId == null)
+		{
+			final String externalIdentifier = EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + patientId;
+			bPartner.setCode(externalIdentifier);
+			bPartnerIdentifier = externalIdentifier;
+		}
+		else
+		{
+			bPartnerIdentifier = String.valueOf(actualMFBPartnerId.getValue());
+		}
+		
 		final JsonRequestComposite upsertCompositeBPRequest = JsonRequestComposite.builder()
 				.orgCode(orgCode)
 				.bpartner(bPartner)
 				.locations(mapBPartnerLocations())
 				.contacts(upsertContactRequest)
-				.bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
 				.build();
-
-		final String bPartnerIdentifier = actualMFBPartnerId != null
-				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + patientId;
 
 		return JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerIdentifier(bPartnerIdentifier)
@@ -242,7 +238,6 @@ public class BPartnerUpsertRequestProducer
 
 		return JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + BILLING_ADDR_PREFIX + patientId)
-				.locationExternalRef(createLocationESR(BILLING_ADDR_PREFIX, patientId))
 				.location(location)
 				.build();
 	}
@@ -263,7 +258,6 @@ public class BPartnerUpsertRequestProducer
 
 		return JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + SHIPPING_ADDR_PREFIX + patientId)
-				.locationExternalRef(createLocationESR(SHIPPING_ADDR_PREFIX, patientId))
 				.location(location)
 				.build();
 	}
@@ -288,11 +282,11 @@ public class BPartnerUpsertRequestProducer
 		location.setShipToDefault(!hasExtraShipToAddress);
 		location.setShipTo(!hasExtraShipToAddress);
 
-		requestProducerResultBuilder.patientMainAddressIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + MAIN_ADDR_PREFIX + patientId);
+		final String identifier = EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + MAIN_ADDR_PREFIX + patientId;
+		requestProducerResultBuilder.patientMainAddressIdentifier(identifier);
 
 		return JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + MAIN_ADDR_PREFIX + patientId)
-				.locationExternalRef(createLocationESR(MAIN_ADDR_PREFIX, patientId))
+				.locationIdentifier(identifier)
 				.location(location)
 				.build();
 	}
@@ -303,13 +297,6 @@ public class BPartnerUpsertRequestProducer
 		final String careGiverId = Optional.ofNullable(careGiver.getId())
 				.map(UUID::toString)
 				.orElseThrow(() -> new RuntimeException("Missing careGiver._id!"));
-
-		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(careGiverId);
-		final String bpartnerIdentifier = actualMFBPartnerId != null
-				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + careGiverId;
-
-		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.Caregiver);
 
 		final var bPartner = new JsonRequestBPartner();
 		bPartner.setName(careGiver.getFirstName() + " " + careGiver.getLastName());
@@ -335,20 +322,30 @@ public class BPartnerUpsertRequestProducer
 		contact.setDefaultContact(true);
 		// contact.setTitle(careGiver.getTitle()); TODO: to be seen
 
+		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(careGiverId);
+		final String bPartnerIdentifier;
+		if (actualMFBPartnerId == null)
+		{
+			final String externalIdentifier = EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + careGiverId;
+			bPartner.setCode(externalIdentifier);
+			bPartnerIdentifier = externalIdentifier;
+		}
+		else
+		{
+			bPartnerIdentifier = String.valueOf(actualMFBPartnerId.getValue());
+		}
+
+		bPartnerIdentifier2RelationRole.put(bPartnerIdentifier, JsonBPRelationRole.Caregiver);
+		
 		final JsonRequestContactUpsert contactUpsertReq = toJsonRequestContactUpsert(careGiverId, contact);
-
-		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
-				? createInsertExternalReferenceReq(careGiverId)
-				: null;
-
+		
 		return JsonRequestBPartnerUpsertItem.builder()
-				.bpartnerIdentifier(bpartnerIdentifier)
+				.bpartnerIdentifier(bPartnerIdentifier)
 				.bpartnerComposite(JsonRequestComposite.builder()
 						.orgCode(orgCode)
 						.bpartner(bPartner)
 						.locations(locationUpsertRequest)
 						.contacts(contactUpsertReq)
-						.bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
 						.build())
 				.build();
 	}
@@ -359,13 +356,6 @@ public class BPartnerUpsertRequestProducer
 		{
 			return Optional.empty();
 		}
-
-		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(hospital.getId());
-		final String bpartnerIdentifier = actualMFBPartnerId != null
-				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + hospital.getId();
-
-		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.Hospital);
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setCompanyName(hospital.getCompanyName());
@@ -386,22 +376,31 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setShipTo(true);
 		requestLocation.setShipToDefault(true);
 
+		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(hospital.getId());
+		final String bPartnerIdentifier;
+		if (actualMFBPartnerId == null)
+		{
+			final String externalIdentifier = EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + hospital.getId();
+			jsonRequestBPartner.setCode(externalIdentifier);
+			bPartnerIdentifier = externalIdentifier;
+		}
+		else
+		{
+			bPartnerIdentifier = String.valueOf(actualMFBPartnerId.getValue());
+		}
+		bPartnerIdentifier2RelationRole.put(bPartnerIdentifier, JsonBPRelationRole.Hospital);
+		
 		final JsonRequestLocationUpsert upsertLocationsRequest =
 				toJsonRequestLocationUpsert(hospital.getId(), requestLocation);
-
-		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
-				? createInsertExternalReferenceReq(hospital.getId())
-				: null;
 
 		final JsonRequestComposite compositeUpsertItem = JsonRequestComposite.builder()
 				.orgCode(orgCode)
 				.bpartner(jsonRequestBPartner)
 				.locations(upsertLocationsRequest)
-				.bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
 				.build();
 
 		return Optional.of(JsonRequestBPartnerUpsertItem.builder()
-				.bpartnerIdentifier(bpartnerIdentifier)
+				.bpartnerIdentifier(bPartnerIdentifier)
 				.bpartnerComposite(compositeUpsertItem)
 				.build());
 	}
@@ -412,14 +411,7 @@ public class BPartnerUpsertRequestProducer
 		{
 			return Optional.empty();
 		}
-
-		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(nursingService.getId());
-		final String bpartnerIdentifier = actualMFBPartnerId != null
-				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + nursingService.getId();
-
-		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.NursingService);
-
+	
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setName(nursingService.getName());
 		jsonRequestBPartner.setPhone(nursingService.getPhone());
@@ -436,23 +428,32 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setShipTo(true);
 		requestLocation.setShipToDefault(true);
 
+		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(nursingService.getId());
+		final String bPartnerIdentifier;
+		if (actualMFBPartnerId == null)
+		{
+			final String externalIdentifier = EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + nursingService.getId();
+			jsonRequestBPartner.setCode(externalIdentifier);
+			bPartnerIdentifier = externalIdentifier;
+		}
+		else
+		{
+			bPartnerIdentifier = String.valueOf(actualMFBPartnerId.getValue());
+		}
+		bPartnerIdentifier2RelationRole.put(bPartnerIdentifier, JsonBPRelationRole.NursingService);
+		
 		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
 				toJsonRequestLocationUpsert(nursingService.getId(), requestLocation);
-
-		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
-				? createInsertExternalReferenceReq(nursingService.getId())
-				: null;
 
 		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
 				.bpartner(jsonRequestBPartner)
 				.locations(jsonRequestLocationUpsert)
 				.orgCode(orgCode)
-				.bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
 				.build();
 
 		return Optional.of(JsonRequestBPartnerUpsertItem
 				.builder()
-				.bpartnerIdentifier(bpartnerIdentifier)
+				.bpartnerIdentifier(bPartnerIdentifier)
 				.bpartnerComposite(jsonRequestComposite)
 				.build());
 	}
@@ -463,13 +464,6 @@ public class BPartnerUpsertRequestProducer
 		{
 			return Optional.empty();
 		}
-
-		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(nursingHome.getId());
-		final String bpartnerIdentifier = actualMFBPartnerId != null
-				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + nursingHome.getId();
-
-		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.NursingHome);
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setName(nursingHome.getName());
@@ -490,20 +484,29 @@ public class BPartnerUpsertRequestProducer
 		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
 				toJsonRequestLocationUpsert(nursingHome.getId(), requestLocation);
 
-		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
-				? createInsertExternalReferenceReq(nursingHome.getId())
-				: null;
-
+		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(nursingHome.getId());
+		final String bPartnerIdentifier;
+		if (actualMFBPartnerId == null)
+		{
+			final String externalIdentifier = EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + nursingHome.getId();
+			jsonRequestBPartner.setCode(externalIdentifier);
+			bPartnerIdentifier = externalIdentifier;
+		}
+		else
+		{
+			bPartnerIdentifier = String.valueOf(actualMFBPartnerId.getValue());
+		}
+		bPartnerIdentifier2RelationRole.put(bPartnerIdentifier, JsonBPRelationRole.NursingHome);
+		
 		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
 				.bpartner(jsonRequestBPartner)
 				.locations(jsonRequestLocationUpsert)
 				.orgCode(orgCode)
-				.bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
 				.build();
 
 		return Optional.of(JsonRequestBPartnerUpsertItem
 				.builder()
-				.bpartnerIdentifier(bpartnerIdentifier)
+				.bpartnerIdentifier(bPartnerIdentifier)
 				.bpartnerComposite(jsonRequestComposite)
 				.build());
 	}
@@ -514,13 +517,6 @@ public class BPartnerUpsertRequestProducer
 		{
 			return Optional.empty();
 		}
-
-		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(doctor.getId());
-		final String bpartnerIdentifier = actualMFBPartnerId != null
-				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + doctor.getId();
-
-		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.PhysicianDoctor);
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setName(doctor.getFirstName() + " " + doctor.getLastName());
@@ -550,21 +546,30 @@ public class BPartnerUpsertRequestProducer
 
 		final JsonRequestContactUpsert jsonRequestContactUpsert = toJsonRequestContactUpsert(doctor.getId(), requestContact);
 
-		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
-				? createInsertExternalReferenceReq(doctor.getId())
-				: null;
+		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(doctor.getId());
+		final String bPartnerIdentifier;
+		if (actualMFBPartnerId == null)
+		{
+			final String externalIdentifier = EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + doctor.getId();
+			jsonRequestBPartner.setCode(externalIdentifier);
+			bPartnerIdentifier = externalIdentifier;
+		}
+		else
+		{
+			bPartnerIdentifier = String.valueOf(actualMFBPartnerId.getValue());
+		}
+		bPartnerIdentifier2RelationRole.put(bPartnerIdentifier, JsonBPRelationRole.PhysicianDoctor);
 
 		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
 				.bpartner(jsonRequestBPartner)
 				.locations(jsonRequestLocationUpsert)
 				.contacts(jsonRequestContactUpsert)
 				.orgCode(orgCode)
-				.bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
 				.build();
 
 		return Optional.of(JsonRequestBPartnerUpsertItem
 				.builder()
-				.bpartnerIdentifier(bpartnerIdentifier)
+				.bpartnerIdentifier(bPartnerIdentifier)
 				.bpartnerComposite(jsonRequestComposite)
 				.build());
 	}
@@ -575,13 +580,6 @@ public class BPartnerUpsertRequestProducer
 		{
 			return Optional.empty();
 		}
-
-		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(payer.getId());
-		final String bpartnerIdentifier = actualMFBPartnerId != null
-				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + payer.getId();
-
-		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.Payer);
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setName(payer.getName());
@@ -594,24 +592,33 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setBillToDefault(true);
 		requestLocation.setShipTo(true);
 		requestLocation.setShipToDefault(true);
-
+		
 		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
 				toJsonRequestLocationUpsert(payer.getId(), requestLocation);
 
-		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
-				? createInsertExternalReferenceReq(payer.getId())
-				: null;
+		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(payer.getId());
+		final String bPartnerIdentifier;
+		if (actualMFBPartnerId == null)
+		{
+			final String externalIdentifier = EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + payer.getId();
+			jsonRequestBPartner.setCode(externalIdentifier);
+			bPartnerIdentifier = externalIdentifier;
+		}
+		else
+		{
+			bPartnerIdentifier = String.valueOf(actualMFBPartnerId.getValue());
+		}
+		bPartnerIdentifier2RelationRole.put(bPartnerIdentifier, JsonBPRelationRole.Payer);
 
 		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
 				.bpartner(jsonRequestBPartner)
 				.locations(jsonRequestLocationUpsert)
 				.orgCode(orgCode)
-				.bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
 				.build();
 
 		return Optional.of(JsonRequestBPartnerUpsertItem
 				.builder()
-				.bpartnerIdentifier(bpartnerIdentifier)
+				.bpartnerIdentifier(bPartnerIdentifier)
 				.bpartnerComposite(jsonRequestComposite)
 				.build());
 	}
@@ -622,13 +629,6 @@ public class BPartnerUpsertRequestProducer
 		{
 			return Optional.empty();
 		}
-
-		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(pharmacy.getId());
-		final String bpartnerIdentifier = actualMFBPartnerId != null
-				? String.valueOf(actualMFBPartnerId.getValue())
-				: EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + pharmacy.getId();
-
-		bPartnerIdentifier2RelationRole.put(bpartnerIdentifier, JsonBPRelationRole.Pharmacy);
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setName(pharmacy.getName());
@@ -651,20 +651,29 @@ public class BPartnerUpsertRequestProducer
 		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
 				toJsonRequestLocationUpsert(pharmacy.getId(), requestLocation);
 
-		final JsonSingleExternalReferenceCreateReq referenceCreateRequestOrNull = actualMFBPartnerId == null
-				? createInsertExternalReferenceReq(pharmacy.getId())
-				: null;
+		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(pharmacy.getId());
+		final String bPartnerIdentifier;
+		if (actualMFBPartnerId == null)
+		{
+			final String externalIdentifier = EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + pharmacy.getId();
+			jsonRequestBPartner.setCode(externalIdentifier);
+			bPartnerIdentifier = externalIdentifier;
+		}
+		else
+		{
+			bPartnerIdentifier = String.valueOf(actualMFBPartnerId.getValue());
+		}
+		bPartnerIdentifier2RelationRole.put(bPartnerIdentifier, JsonBPRelationRole.Pharmacy);
 
 		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
 				.bpartner(jsonRequestBPartner)
 				.locations(jsonRequestLocationUpsert)
 				.orgCode(orgCode)
-				.bPartnerReferenceCreateRequest(referenceCreateRequestOrNull)
 				.build();
 
 		return Optional.of(JsonRequestBPartnerUpsertItem
 				.builder()
-				.bpartnerIdentifier(bpartnerIdentifier)
+				.bpartnerIdentifier(bPartnerIdentifier)
 				.bpartnerComposite(jsonRequestComposite)
 				.build());
 	}
@@ -677,7 +686,6 @@ public class BPartnerUpsertRequestProducer
 		final JsonRequestLocationUpsertItem jsonRequestLocationUpsertItem = JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + identifier)
 				.location(locationRequest)
-				.locationExternalRef(createLocationESR("", identifier))
 				.build();
 
 		return JsonRequestLocationUpsert.builder()
@@ -698,34 +706,6 @@ public class BPartnerUpsertRequestProducer
 
 		return JsonRequestContactUpsert.builder()
 				.requestItem(jsonRequestLocationUpsertItem)
-				.build();
-	}
-
-	@NonNull
-	private JsonSingleExternalReferenceCreateReq createLocationESR(@NonNull final String addrPrefix, @NonNull final String patientId)
-	{
-		final JsonExternalReferenceLookupItem jsonExternalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-				.type(ESR_TYPE_BPARTNER_LOCATION)
-				.id(addrPrefix + patientId)
-				.build();
-
-		return JsonSingleExternalReferenceCreateReq.builder()
-				.systemName(JsonExternalSystemName.of(ALBERTA_SYSTEM_NAME))
-				.externalReferenceItem(JsonExternalReferenceItem.of(jsonExternalReferenceLookupItem))
-				.build();
-	}
-
-	@NonNull
-	private JsonSingleExternalReferenceCreateReq createInsertExternalReferenceReq(@NonNull final String externalId)
-	{
-		final JsonExternalReferenceLookupItem jsonExternalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-				.type(ESR_TYPE_BPARTNER)
-				.id(externalId)
-				.build();
-
-		return JsonSingleExternalReferenceCreateReq.builder()
-				.systemName(JsonExternalSystemName.of(ALBERTA_SYSTEM_NAME))
-				.externalReferenceItem(JsonExternalReferenceItem.of(jsonExternalReferenceLookupItem))
 				.build();
 	}
 
