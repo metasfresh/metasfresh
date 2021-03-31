@@ -747,6 +747,8 @@ public class JsonPersisterService
 			return BooleanWithReason.falseBecause("JsonRequestBPartner exists and effectiveSyncAdvise.ifExists=" + ifExistsAdvise);
 		}
 
+		bpartner.setIdentifiedByExternalReference(true);
+
 		// active
 		if (jsonBPartner.getActive() != null)
 		{

@@ -3,6 +3,7 @@ package de.metas.elasticsearch.trigger;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -56,6 +57,7 @@ public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor imple
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(ESDocumentIndexTriggerInterceptor.class);
+	private final IESSystem esSystem = Services.get(IESSystem.class);
 
 	private final String modelTableName;
 	private final ImmutableListMultimap<String, ESIncludedModelsConfig> includedModelsConfigsByChildTableName;
@@ -178,25 +180,23 @@ public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor imple
 		return NumberUtils.asInt(parentIdObj, -1);
 	}
 
-	private final void addToIndex(final Object model)
+	private void addToIndex(final Object model)
 	{
 		final int modelId = InterfaceWrapperHelper.getId(model);
 		addToIndex(modelId);
 	}
 
-	private final void addToIndex(final int modelId)
+	private void addToIndex(final int modelId)
 	{
-		Services.get(IESSystem.class)
-				.scheduler()
-				.addToIndex(modelIndexerId, modelTableName, ImmutableList.of(modelId));
+		esSystem.indexingQueue()
+				.addToIndex(modelIndexerId, modelTableName, ImmutableSet.of(modelId));
 	}
 
-	private final void removeFromIndexes(final Object model)
+	private void removeFromIndexes(final Object model)
 	{
 		final int modelId = InterfaceWrapperHelper.getId(model);
-		Services.get(IESSystem.class)
-				.scheduler()
-				.removeToIndex(modelIndexerId, modelTableName, ImmutableList.of(modelId));
+		esSystem.indexingQueue()
+				.removeToIndex(modelIndexerId, modelTableName, ImmutableSet.of(modelId));
 	}
 
 	@Override
@@ -204,5 +204,4 @@ public class ESOnChangeTriggerInterceptor extends AbstractModelInterceptor imple
 	{
 		return null;
 	}
-
 }

@@ -3,166 +3,59 @@
   "jsonRequestBPartnerUpsert": {
     "requestItems": [
       {
-        "bpartnerIdentifier": "ext-customerId",
+        "bpartnerIdentifier": "ext-Shopware6-customerId",
         "bpartnerComposite": {
           "orgCode": "orgCode",
           "bpartner": {
-            "externalId": "customerId",
-            "externalIdSet": true,
-            "code": "customerNumber",
-            "codeSet": true,
-            "active": null,
-            "activeSet": false,
+            "code": "ext-Shopware6-customerNumber",
             "name": "firstName lastName",
-            "nameSet": true,
-            "name2": null,
-            "name2Set": false,
-            "name3": null,
-            "name3Set": false,
             "companyName": "company",
-            "companyNameSet": true,
-            "vendor": null,
-            "vendorSet": false,
-            "customer": true,
-            "customerSet": true,
-            "parentId": null,
-            "parentIdSet": false,
-            "phone": null,
-            "phoneSet": false,
-            "language": null,
-            "languageSet": false,
-            "invoiceRule": null,
-            "invoiceRuleSet": false,
-            "url": null,
-            "urlSet": false,
-            "url2": null,
-            "url2Set": false,
-            "url3": null,
-            "url3Set": false,
-            "group": null,
-            "groupSet": false,
-            "globalId": null,
-            "globalIdset": false,
-            "vatId": null,
-            "vatIdSet": false,
-            "syncAdvise": null,
-            "syncAdviseSet": false
+            "customer": true
           },
           "locations": {
             "requestItems": [
               {
-                "locationIdentifier": "102",
+                "locationIdentifier": "ext-Shopware6-shippingAddressId_custom",
                 "location": {
-                  "externalId": null,
-                  "externalIdSet": false,
-                  "active": null,
-                  "activeSet": false,
-                  "name": null,
-                  "nameSet": false,
-                  "bpartnerName": null,
-                  "bpartnerNameSet": false,
-                  "address1": "ShippingAddressStreet",
-                  "address1Set": true,
+                  "address1": "Teststrasse 121",
                   "address2": null,
-                  "address2Set": true,
                   "address3": null,
-                  "address3Set": true,
-                  "address4": null,
-                  "address4Set": false,
-                  "poBox": null,
-                  "poBoxSet": false,
-                  "postal": "0000123",
-                  "postalSet": true,
-                  "city": "Test City",
-                  "citySet": true,
-                  "district": null,
-                  "districtSet": false,
-                  "region": null,
-                  "regionSet": false,
+                  "postal": "99999",
+                  "city": "Teststadt",
                   "countryCode": "DE",
-                  "countryCodeSet": true,
-                  "gln": null,
-                  "glnSet": false,
                   "shipTo": true,
-                  "shipToSet": true,
-                  "shipToDefault": null,
-                  "shipToDefaultSet": false,
-                  "billTo": false,
-                  "billToSet": true,
-                  "billToDefault": null,
-                  "billToDefaultSet": false,
-                  "syncAdvise": null,
-                  "syncAdviseSet": false
-                },
-                "locationExternalRef": null
+                  "billTo": true
+                }
+              },
+              {
+                "locationIdentifier": "ext-Shopware6-customerId-shipTo",
+                "location": {
+                  "address1": "ShippingAddressStreet",
+                  "address2": null,
+                  "address3": null,
+                  "postal": "0000123",
+                  "city": "Test City",
+                  "countryCode": "DE",
+                  "shipTo": true,
+                  "billTo": false
+                }
               }
-            ],
-            "syncAdvise": null
+            ]
           },
           "contacts": {
             "requestItems": [
               {
-                "contactIdentifier": "ext-customerId",
+                "contactIdentifier": "ext-Shopware6-customerId",
                 "contact": {
-                  "externalId": "customerId",
-                  "externalIdSet": true,
-                  "metasfreshBPartnerId": null,
-                  "metasfreshBPartnerIdSet": false,
-                  "code": null,
-                  "codeSet": false,
-                  "active": null,
-                  "activeSet": false,
-                  "name": null,
-                  "nameSet": false,
                   "firstName": "firstName",
-                  "firstNameSet": true,
                   "lastName": "lastName",
-                  "lastNameSet": true,
-                  "email": "test@email.com",
-                  "emailSet": true,
-                  "phone": null,
-                  "phoneSet": false,
-                  "fax": null,
-                  "faxSet": false,
-                  "mobilePhone": null,
-                  "mobilePhoneSet": false,
-                  "defaultContact": null,
-                  "defaultContactSet": false,
-                  "shipToDefault": null,
-                  "shipToDefaultSet": false,
-                  "billToDefault": null,
-                  "billToDefaultSet": false,
-                  "newsletter": null,
-                  "newsletterSet": false,
-                  "description": null,
-                  "descriptionSet": false,
-                  "sales": null,
-                  "salesSet": false,
-                  "salesDefault": null,
-                  "salesDefaultSet": false,
-                  "purchase": null,
-                  "purchaseSet": false,
-                  "purchaseDefault": null,
-                  "purchaseDefaultSet": false,
-                  "subjectMatter": null,
-                  "subjectMatterSet": false,
-                  "syncAdvise": null,
-                  "syncAdviseSet": false
+                  "email": "test@email.com"
                 }
               }
             ],
             "syncAdvise": {
               "ifNotExists": "CREATE",
               "ifExists": "UPDATE_MERGE"
-            }
-          },
-          "bpartnerReferenceCreateRequest": {
-            "systemName": "Shopware6",
-            "externalReferenceItem": {
-              "lookupItem": {
-                "id": "customerId",
-                "type": "BPartner"
-              }
             }
           }
         }

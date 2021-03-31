@@ -1,12 +1,15 @@
 package de.metas.ui.web.dashboard;
 
-import java.time.Duration;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
+import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.Instant;
 
 /*
  * #%L
@@ -36,53 +39,49 @@ public class KPITimeRangeDefaults
 {
 	public static final KPITimeRangeDefaults DEFAULT = builder().build();
 
-	private final Duration defaultTimeRange;
-	private final Duration defaultTimeRangeEndOffset;
+	Duration defaultTimeRange;
+	Duration defaultTimeRangeEndOffset;
 
-	public TimeRange createTimeRange(long fromMillis, long toMillis)
+	public TimeRange createTimeRange(
+			@Nullable final Instant from,
+			@Nullable final Instant to)
 	{
-		if (toMillis <= 0)
-		{
-			toMillis = calculateToMillis();
-		}
-
-		if (fromMillis <= 0)
-		{
-			fromMillis = calculateFromMillis(toMillis);
-		}
-
-		return TimeRange.main(fromMillis, toMillis);
-	}
-	
-	public TimeRange createTimeRange(final java.util.Date dateFrom, final java.util.Date dateTo)
-	{
-		final long fromMillis = dateFrom == null ? -1 : dateFrom.getTime();
-		final long toMillis = dateTo == null ? -1 : dateTo.getTime();
-		return createTimeRange(fromMillis, toMillis);
+		final Instant toEffective = to != null ? to : calculateTo();
+		final Instant fromEffective = from != null ? from : calculateFrom(toEffective);
+		return TimeRange.main(fromEffective, toEffective);
 	}
 
-	private long calculateToMillis()
+	public TimeRange createTimeRange(
+			@Nullable final java.util.Date dateFrom,
+			@Nullable final java.util.Date dateTo)
 	{
-		long toMillis = SystemTime.millis();
+		final Instant from = dateFrom == null ? null : dateFrom.toInstant();
+		final Instant to = dateTo == null ? null : dateTo.toInstant();
+		return createTimeRange(from, to);
+	}
+
+	private Instant calculateTo()
+	{
+		Instant to = SystemTime.asInstant();
 		final Duration defaultTimeRangeEndOffset = getDefaultTimeRangeEndOffset();
 		if (defaultTimeRangeEndOffset != null)
 		{
-			toMillis += defaultTimeRangeEndOffset.toMillis();
+			to = to.plus(defaultTimeRangeEndOffset);
 		}
 
-		return toMillis;
+		return to;
 	}
 
-	private long calculateFromMillis(final long toMillis)
+	private Instant calculateFrom(@NonNull final Instant to)
 	{
 		final Duration defaultTimeRange = getDefaultTimeRange();
 		if (defaultTimeRange == null || defaultTimeRange.isZero())
 		{
-			return 0;
+			return Instant.MIN;
 		}
 		else
 		{
-			return toMillis - defaultTimeRange.abs().toMillis();
+			return to.minus(defaultTimeRange.abs());
 		}
 	}
 
@@ -106,9 +105,10 @@ public class KPITimeRangeDefaults
 			return defaultTimeRangeEndOffset(parseDurationOrNull(defaultTimeRangeEndOffsetStr));
 		}
 
-		private static final Duration parseDurationOrNull(final String durationStr)
+		@Nullable
+		private static Duration parseDurationOrNull(@Nullable final String durationStr)
 		{
-			return Check.isEmpty(durationStr, true) ? null : Duration.parse(durationStr);
+			return durationStr == null || Check.isBlank(durationStr) ? null : Duration.parse(durationStr);
 		}
 	}
 

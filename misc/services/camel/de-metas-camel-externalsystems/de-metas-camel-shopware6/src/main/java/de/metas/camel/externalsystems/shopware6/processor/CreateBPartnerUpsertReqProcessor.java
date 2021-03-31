@@ -22,23 +22,18 @@
 
 package de.metas.camel.externalsystems.shopware6.processor;
 
-import de.metas.camel.externalsystems.common.BPUpsertCamelRequest;
+import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDeliveries;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDelivery;
-import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsert;
-import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
+import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_CURRENT_ORDER;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_ORDER_DELIVERIES;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_ORG_CODE;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_LOCATION_ID;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_SHOPWARE_CLIENT;
 import static de.metas.camel.externalsystems.shopware6.processor.ProcessorHelper.getPropertyOrThrowError;
 
@@ -47,28 +42,24 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 	@Override
 	public void process(final Exchange exchange)
 	{
-		final JsonExternalReferenceLookupResponse esrResponse = exchange.getIn().getBody(JsonExternalReferenceLookupResponse.class);
+		final JsonOrderAndCustomId orderAndCustomId = exchange.getIn().getBody(JsonOrderAndCustomId.class);
 
 		final String orgCode = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_ORG_CODE, String.class);
 
-		final JsonOrder order = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_CURRENT_ORDER, JsonOrder.class);
+		final String bPartnerLocationIdJSONPath = exchange.getProperty(ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_LOCATION_ID, String.class);
 
 		final ShopwareClient shopwareClient = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SHOPWARE_CLIENT, ShopwareClient.class);
 
-		final JsonOrderDeliveries orderDeliveries = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_ORDER_DELIVERIES, JsonOrderDeliveries.class);
-
-		final List<JsonOrderAddress> shippingAddressList = orderDeliveries.getData().stream()
-				.map(JsonOrderDelivery::getShippingOrderAddress)
-				.collect(Collectors.toList());
+		final List<JsonOrderAddressAndCustomId> shippingAddressList = shopwareClient.getDeliveryAddresses(orderAndCustomId.getJsonOrder().getId(), bPartnerLocationIdJSONPath);
 
 		final BPartnerUpsertRequestProducer bPartnerUpsertRequestProducer = BPartnerUpsertRequestProducer.builder()
 				.shopwareClient(shopwareClient)
-				.externalReferenceLookupResponse(esrResponse)
-				.billingAddressId(order.getBillingAddressId())
-				.billingAddressVersion(order.getBillingAddressVersionId())
-				.orderCustomer(order.getOrderCustomer())
+				.billingAddressId(orderAndCustomId.getJsonOrder().getBillingAddressId())
+				.orderCustomer(orderAndCustomId.getJsonOrder().getOrderCustomer())
 				.shippingAddressList(shippingAddressList)
 				.orgCode(orgCode)
+				.bPartnerCustomIdentifier(orderAndCustomId.getCustomId())
+				.bPartnerLocationIdentifierCustomPath(bPartnerLocationIdJSONPath)
 				.build();
 
 		final JsonRequestBPartnerUpsert upsertBPartner = bPartnerUpsertRequestProducer.run();

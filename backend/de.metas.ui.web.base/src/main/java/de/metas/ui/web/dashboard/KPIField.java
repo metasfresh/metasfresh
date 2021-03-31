@@ -1,24 +1,9 @@
 package de.metas.ui.web.dashboard;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
-import org.slf4j.Logger;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -28,6 +13,24 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.InternalAggregation;
+import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
+import org.elasticsearch.search.aggregations.InvalidAggregationPathException;
+import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
+import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.List;
 
 /*
  * #%L
@@ -54,7 +57,7 @@ import org.adempiere.exceptions.AdempiereException;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class KPIField
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -62,7 +65,7 @@ public class KPIField
 	@FunctionalInterface
 	public interface BucketValueExtractor
 	{
-		Object extractValue(String containingAggName, InternalMultiBucketAggregation.InternalBucket bucket);
+		Object extractValue(String containingAggName, MultiBucketsAggregation.Bucket bucket);
 	}
 
 	private static final Logger logger = LogManager.getLogger(KPIField.class);
@@ -122,11 +125,60 @@ public class KPIField
 				return (containingAggName, bucket) -> bucket.getKeyAsString();
 			}
 		}
-		
-		return (containingAggName, bucket) -> bucket.getProperty(containingAggName, path);
+
+		return (containingAggName, bucket) -> {
+			if (bucket instanceof InternalMultiBucketAggregation.InternalBucket)
+			{
+				final InternalMultiBucketAggregation.InternalBucket internalBucket = (InternalMultiBucketAggregation.InternalBucket)bucket;
+				return internalBucket.getProperty(containingAggName, path);
+			}
+			else
+			{
+				return getProperty(bucket, containingAggName, path);
+			}
+		};
 	}
 
-	public final Object convertValueToJson(final Object value, @NonNull final JSONOptions jsonOpts)
+	private static Object getProperty(
+			@NonNull final MultiBucketsAggregation.Bucket bucket,
+			@NonNull final String containingAggName,
+			@NonNull final List<String> path)
+	{
+		Check.assumeNotEmpty(path, "path shall not be empty");
+
+		final Aggregations aggregations = bucket.getAggregations();
+		final String aggName = path.get(0);
+		final Aggregation aggregation = aggregations.get(aggName);
+		if (aggregation == null)
+		{
+			throw new InvalidAggregationPathException("Cannot find an aggregation named [" + aggName + "] in [" + containingAggName + "]");
+		}
+		else if (aggregation instanceof InternalAggregation)
+		{
+			final InternalAggregation internalAggregation = (InternalAggregation)aggregation;
+			return internalAggregation.getProperty(path.subList(1, path.size()));
+		}
+		else if (aggregation instanceof NumericMetricsAggregation.SingleValue)
+		{
+			final NumericMetricsAggregation.SingleValue singleValue = (NumericMetricsAggregation.SingleValue)aggregation;
+			final List<String> subPath = path.subList(1, path.size());
+			if (subPath.size() == 1 && "value".equals(subPath.get(0)))
+			{
+				return singleValue.value();
+			}
+			else
+			{
+				throw new AdempiereException("Cannot extract " + path + " from " + singleValue);
+			}
+		}
+		else
+		{
+			throw new AdempiereException("Unknown aggregation type " + aggregation.getClass() + " for " + aggregation);
+		}
+	}
+
+	@Nullable
+	public final Object convertValueToJson(@Nullable final Object value, @NonNull final JSONOptions jsonOpts)
 	{
 		if (value == null)
 		{
@@ -156,17 +208,17 @@ public class KPIField
 					}
 					else if (value instanceof Double)
 					{
-						final BigDecimal bd = BigDecimal.valueOf(((Double)value).doubleValue());
-						return roundToPrecision(bd);
-					}
-					else if (value instanceof Number)
-					{
-						final BigDecimal bd = BigDecimal.valueOf(((Number)value).intValue());
+						final BigDecimal bd = BigDecimal.valueOf((Double)value);
 						return roundToPrecision(bd);
 					}
 					else if (value instanceof Integer)
 					{
 						return value;
+					}
+					else if (value instanceof Number)
+					{
+						final BigDecimal bd = BigDecimal.valueOf(((Number)value).intValue());
+						return roundToPrecision(bd);
 					}
 					else
 					{
@@ -183,14 +235,14 @@ public class KPIField
 				}
 			}
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed converting {} for field {}", value, this, ex);
 			return value.toString();
 		}
 	}
 
-	private final BigDecimal roundToPrecision(final BigDecimal bd)
+	private BigDecimal roundToPrecision(final BigDecimal bd)
 	{
 		if (numberPrecision == null)
 		{
@@ -202,7 +254,8 @@ public class KPIField
 		}
 	}
 
-	public final Object convertValueToJsonUserFriendly(final Object value, @NonNull final JSONOptions jsonOpts)
+	@Nullable
+	public final Object convertValueToJsonUserFriendly(@Nullable final Object value, @NonNull final JSONOptions jsonOpts)
 	{
 		if (value == null)
 		{
@@ -274,7 +327,7 @@ public class KPIField
 				return convertValueToJson(value, jsonOpts);
 			}
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed converting {} for field {}", value, this, ex);
 			return value.toString();
@@ -333,11 +386,6 @@ public class KPIField
 		return unit;
 	}
 
-	public List<String> getESPath()
-	{
-		return esPath;
-	}
-
 	public String getESPathAsString()
 	{
 		return esPathStr;
@@ -362,7 +410,7 @@ public class KPIField
 		private ITranslatableString description = TranslatableStrings.empty();
 		private String unit;
 		private KPIFieldValueType valueType;
-		private Integer numberPrecision;
+		@Nullable private Integer numberPrecision;
 
 		private String color;
 
@@ -426,7 +474,7 @@ public class KPIField
 			return this;
 		}
 
-		public Builder setNumberPrecision(final Integer numberPrecision)
+		public Builder setNumberPrecision(@Nullable final Integer numberPrecision)
 		{
 			this.numberPrecision = numberPrecision;
 			return this;

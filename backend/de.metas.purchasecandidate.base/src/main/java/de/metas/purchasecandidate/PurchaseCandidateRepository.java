@@ -250,8 +250,7 @@ public class PurchaseCandidateRepository
 			existingRecordsById = ImmutableMap.of();
 		}
 
-		final ILockAutoCloseable lock = doLock && !existingPurchaseCandidateIds.isEmpty() ? lockByIds(existingPurchaseCandidateIds) : null;
-		try
+		try (ILockAutoCloseable lock = doLock && !existingPurchaseCandidateIds.isEmpty() ? lockByIds(existingPurchaseCandidateIds) : null)
 		{
 			for (final PurchaseCandidate purchaseCandidate : purchaseCandidatesToSave)
 			{
@@ -261,13 +260,6 @@ public class PurchaseCandidateRepository
 
 				purchaseItemRepository.saveAll(purchaseCandidate.getPurchaseOrderItems());
 				purchaseItemRepository.saveAll(purchaseCandidate.getPurchaseErrorItems());
-			}
-		}
-		finally
-		{
-			if (lock != null)
-			{
-				lock.close();
 			}
 		}
 	}
@@ -373,8 +365,9 @@ public class PurchaseCandidateRepository
 		{
 			record.setSource(purchaseCandidate.getSource().getCode());
 		}
-		record.setPriceInternal(purchaseCandidate.getPrice());
-		record.setPriceEntered(purchaseCandidate.getActualPrice());
+		record.setPriceInternal(purchaseCandidate.getPriceInternal());
+		record.setPriceEntered(purchaseCandidate.getPrice());
+		record.setPriceEffective(purchaseCandidate.getPriceEnteredEff());
 		if (purchaseCandidate.getDiscount() != null)
 		{
 			record.setDiscount(purchaseCandidate.getDiscount().toBigDecimal());
@@ -383,12 +376,25 @@ public class PurchaseCandidateRepository
 		{
 			record.setDiscountInternal(purchaseCandidate.getDiscountInternal().toBigDecimal());
 		}
+		if (purchaseCandidate.getDiscountEff() != null)
+		{
+			record.setDiscountEff(purchaseCandidate.getDiscountEff().toBigDecimal());
+		}
+		record.setPurchasePriceActual(purchaseCandidate.getPriceActual());
 		record.setIsManualPrice(purchaseCandidate.isManualPrice());
 		record.setIsManualDiscount(purchaseCandidate.isManualDiscount());
 		record.setIsTaxIncluded(purchaseCandidate.isTaxIncluded());
 		if (purchaseCandidate.getTaxCategoryId() != null)
 		{
 			record.setC_TaxCategory_ID(purchaseCandidate.getTaxCategoryId().getRepoId());
+		}
+		if (purchaseCandidate.getAttributeSetInstanceId() != null)
+		{
+			record.setM_AttributeSetInstance_ID(purchaseCandidate.getAttributeSetInstanceId().getRepoId());
+		}
+		if (purchaseCandidate.getCurrencyId() != null)
+		{
+			record.setC_Currency_ID(purchaseCandidate.getCurrencyId().getRepoId());
 		}
 		saveRecord(record);
 		purchaseCandidate.markSaved(PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));
@@ -492,14 +498,18 @@ public class PurchaseCandidateRepository
 				.aggregatePOs(record.isAggregatePO())
 				//
 				.dimension(recordDimension)
-				.price(record.getPriceInternal())
-				.actualPrice(record.getPriceEntered())
+				.price(record.getPriceEntered())
+				.priceInternal(record.getPriceInternal())
+				.priceEnteredEff(record.getPriceEffective())
 				.discount(Percent.ofNullable(record.getDiscount()))
 				.discountInternal(Percent.ofNullable(record.getDiscountInternal()))
+				.discountEff(Percent.ofNullable(record.getDiscountEff()))
+				.priceActual(record.getPurchasePriceActual())
 				.isManualDiscount(record.isManualDiscount())
 				.isManualPrice(record.isManualPrice())
 				.isTaxIncluded(record.isTaxIncluded())
 				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(record.getC_TaxCategory_ID()))
+				.currencyId(CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID()))
 				//
 				.build();
 
