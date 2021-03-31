@@ -54,5 +54,8 @@
     "react-router-redux": "^4.0.8",
     "sockjs-client": "^1.3.0",
     "stompjs": "^2.3.3"
+  },
+  "peerDependencies": {
+    "cypress": "^4.5.0"
   }
 }
