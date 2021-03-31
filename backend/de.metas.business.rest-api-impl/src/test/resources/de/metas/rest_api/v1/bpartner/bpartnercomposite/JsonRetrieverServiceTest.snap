@@ -65,7 +65,8 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
           "nanos" : 544000000
         },
         "entries" : [ ]
-      }
+      },
+      "identifiedByExternalReference" : false
     },
     "contacts" : [
       {
