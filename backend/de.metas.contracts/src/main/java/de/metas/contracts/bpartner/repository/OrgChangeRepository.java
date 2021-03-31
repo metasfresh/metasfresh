@@ -454,7 +454,7 @@ public class OrgChangeRepository
 
 		term.setDropShip_Location_ID(shipBPartnerLocation.getId().getRepoId());
 
-		term.setDeliveryRule(sourceSubscription.getDeliveryRule() == null ? null :sourceSubscription.getDeliveryRule().getCode());
+		term.setDeliveryRule(sourceSubscription.getDeliveryRule() == null ? null : sourceSubscription.getDeliveryRule().getCode());
 		term.setDeliveryViaRule(sourceSubscription.getDeliveryViaRule() == null ? null : sourceSubscription.getDeliveryViaRule().getCode());
 
 		final IEditablePricingContext initialContext = pricingBL
@@ -471,6 +471,8 @@ public class OrgChangeRepository
 		initialContext.setCountryId(countryId);
 
 		final IPricingResult pricingResult = pricingBL.calculatePrice(initialContext);
+
+		term.setPriceActual(pricingResult.getPriceStd());
 
 		term.setM_PricingSystem_ID(pricingResult.getPricingSystemId() == null ? -1 : pricingResult.getPricingSystemId().getRepoId());
 		term.setC_Currency_ID(pricingResult.getCurrencyRepoId());

@@ -131,7 +131,7 @@ public class OrgChangeService
 				.isCloseInvoiceCandidate(true)
 				.terminationReason(X_C_Flatrate_Term.TERMINATIONREASON_OrgChange)
 				.isCreditOpenInvoices(false)
-				.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
+				.action(IContractChangeBL.ChangeTerm_ACTION_Cancel)
 				.build();
 
 		orgChangeBPartnerComposite.getMembershipSubscriptions()
