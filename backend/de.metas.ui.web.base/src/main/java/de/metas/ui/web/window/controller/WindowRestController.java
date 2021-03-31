@@ -25,6 +25,7 @@ package de.metas.ui.web.window.controller;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
@@ -112,6 +113,7 @@ public class WindowRestController
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final UserSession userSession;
 	private final DocumentCollection documentCollection;
 	private final DocumentChangeLogService documentChangeLogService;
@@ -120,6 +122,7 @@ public class WindowRestController
 	private final ProcessRestController processRestController;
 	private final DocumentWebsocketPublisher websocketPublisher;
 	private final CommentsService commentsService;
+	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
 	public WindowRestController(
 			@NonNull final UserSession userSession,
@@ -129,7 +132,8 @@ public class WindowRestController
 			@NonNull final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider,
 			@NonNull final ProcessRestController processRestController,
 			@NonNull final DocumentWebsocketPublisher websocketPublisher,
-			@NonNull final CommentsService commentsService)
+			@NonNull final CommentsService commentsService,
+			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
 		this.userSession = userSession;
 		this.documentCollection = documentCollection;
@@ -139,6 +143,7 @@ public class WindowRestController
 		this.processRestController = processRestController;
 		this.websocketPublisher = websocketPublisher;
 		this.commentsService = commentsService;
+		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
 	}
 
 	private JSONOptionsBuilder newJSONOptions()
@@ -740,7 +745,7 @@ public class WindowRestController
 				.build();
 	}
 
-	private static DocumentZoomIntoInfo getDocumentFieldZoomInto(
+	private DocumentZoomIntoInfo getDocumentFieldZoomInto(
 			@NonNull final Document document,
 			@NonNull final String fieldName)
 	{
@@ -773,7 +778,7 @@ public class WindowRestController
 						.setParameter("zoomIntoTableIdFieldName", zoomIntoTableIdFieldName);
 			}
 
-			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
+			final String tableName = adTableDAO.retrieveTableName(adTableId);
 			return DocumentZoomIntoInfo.of(tableName, recordId);
 		}
 		// Key Field
@@ -788,7 +793,8 @@ public class WindowRestController
 		// Regular lookup value
 		else
 		{
-			return field.getZoomIntoInfo();
+			return field.getZoomIntoInfo()
+					.overrideWindowIdIfPossible(customizedWindowInfoMapRepository.get());
 		}
 	}
 
