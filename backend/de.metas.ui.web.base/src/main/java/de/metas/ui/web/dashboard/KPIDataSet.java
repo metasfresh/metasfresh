@@ -11,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -72,7 +74,7 @@ public final class KPIDataSet
 		return name;
 	}
 
-	private final KPIDataSetValue dataSetValue(final Object dataSetValueKey)
+	private KPIDataSetValue dataSetValue(final Object dataSetValueKey)
 	{
 		return _valuesByKey.computeIfAbsent(dataSetValueKey, k -> {
 			final KPIDataSetValue value = new KPIDataSetValue(dataSetValueKey);
@@ -82,7 +84,7 @@ public final class KPIDataSet
 		});
 	}
 
-	public void putValue(final Object dataSetValueKey, final String fieldName, final Object jsonValue)
+	public void putValue(final Object dataSetValueKey, final String fieldName, @Nullable final Object jsonValue)
 	{
 		dataSetValue(dataSetValueKey).put(fieldName, jsonValue);
 	}

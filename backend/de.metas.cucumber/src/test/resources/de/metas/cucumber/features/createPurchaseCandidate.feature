@@ -16,20 +16,18 @@ Feature: create or update Purchase Candidate
     And the user adds attribute set instances
       | attributeName | attributeCode | valueStr | valueNumber | valueDate |
       |               |               |          |             |           |
-    Given the user adds a purchase candidate enqueue request
+    And the user adds a purchase candidate enqueue request
       | ExternalHeaderId | ExternalLineId |
       | H1               | L1             |
 
+  Scenario:  The purchase candidate request is set in context, enqueued and validated
     And the purchase candidate request is set in context
     When the metasfresh REST-API endpoint path 'api/v2-pre/order/purchase/createCandidates' receives a 'POST' request with the payload from context and responds with '200' status code
-
     Then verify if data is persisted correctly for purchase candidate
 
-  Scenario: enqueue purchase candidate for order creation
     Given the purchase candidate enqueue-status request is set in context
     Then the metasfresh REST-API endpoint path 'api/v2-pre/order/purchase/enqueueForOrdering' receives a 'POST' request with the payload from context and responds with '202' status code
 
-  Scenario: verify purchase candidate status after enqueuing
     Given the purchase candidate enqueue-status request is set in context
     When the metasfresh REST-API endpoint path 'api/v2-pre/order/purchase/status' receives a 'PUT' request with the payload from context and responds with '200' status code
     Then verify purchase candidate status

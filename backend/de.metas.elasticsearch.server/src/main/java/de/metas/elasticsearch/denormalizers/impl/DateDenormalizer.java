@@ -1,19 +1,18 @@
 package de.metas.elasticsearch.denormalizers.impl;
 
-import java.io.IOException;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
-
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DisplayType;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-
-import de.metas.elasticsearch.denormalizers.IESDenormalizer;
-import de.metas.elasticsearch.types.ESIndexType;
+import de.metas.elasticsearch.denormalizers.IESValueDenormalizer;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+import org.elasticsearch.common.xcontent.XContentBuilder;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.Temporal;
 
 /*
  * #%L
@@ -38,46 +37,42 @@ import lombok.ToString;
  */
 
 @ToString
-final class DateDenormalizer implements IESDenormalizer
+final class DateDenormalizer implements IESValueDenormalizer
 {
-	public static DateDenormalizer of(final int dateDisplayType, final ESIndexType indexType)
+	public static DateDenormalizer of(final int dateDisplayType)
 	{
-		return new DateDenormalizer(dateDisplayType, indexType);
+		return new DateDenormalizer(dateDisplayType);
 	}
 
 	private static final DateTimeFormatter FORMATTER_StrictDate = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-	private final ESIndexType indexType;
 	private final int dateDisplayType;
 
-	private DateDenormalizer(final int dateDisplayType, @NonNull final ESIndexType indexType)
+	private DateDenormalizer(final int dateDisplayType)
 	{
+		Check.assume(DisplayType.isDate(dateDisplayType), "dateDisplayType shall be a date type but it was {}", dateDisplayType);
 		this.dateDisplayType = dateDisplayType;
-		this.indexType = indexType;
 	}
 
 	@Override
-	public void appendMapping(final Object builderObj, final String fieldName) throws IOException
+	public void appendMapping(final XContentBuilder builder, final String fieldName) throws IOException
 	{
-		final XContentBuilder builder = ESDenormalizerHelper.extractXContentBuilder(builderObj);
 		//@formatter:off
 		builder.startObject(fieldName)
 				.field("type", "date")
-				.field("index", indexType.getEsTypeAsString())
 				.field("format", "strict_date_optional_time||epoch_millis")
 			.endObject();
 		//@formatter:on
 	}
 
 	@Override
-	public Object denormalize(final Object value)
+	public Object denormalizeValue(@Nullable final Object value)
 	{
 		if (value == null)
 		{
 			return null;
 		}
-
-		if (dateDisplayType == DisplayType.Date)
+		else if (dateDisplayType == DisplayType.Date)
 		{
 			return FORMATTER_StrictDate.format(toTemporal(value));
 		}
@@ -85,27 +80,21 @@ final class DateDenormalizer implements IESDenormalizer
 		{
 			return DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(toTemporal(value));
 		}
-		return value;
+		else
+		{
+			return value;
+		}
 	}
 
-	private Temporal toTemporal(final Object value)
+	private static Temporal toTemporal(@NonNull final Object value)
 	{
-		if (value == null)
-		{
-			return null;
-		}
-		else if (value instanceof java.util.Date)
-		{
-			final java.util.Date date = (java.util.Date)value;
-			return ZonedDateTime.ofInstant(date.toInstant(), SystemTime.zoneId());
-		}
-		else if (value instanceof Temporal)
+		if (value instanceof Temporal)
 		{
 			return (Temporal)value;
 		}
 		else
 		{
-			throw new AdempiereException("Unsupported date value '" + value + "' (" + value.getClass() + "))");
+			return TimeUtil.asZonedDateTime(value, SystemTime.zoneId());
 		}
 	}
 }

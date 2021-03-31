@@ -231,7 +231,8 @@ public final class BPartnerComposite
 	{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
 
-		final boolean hasLookupKey = bpartner.getId() != null
+		final boolean hasLookupKey = bpartner.isIdentifiedByExternalReference()
+				|| bpartner.getId() != null
 				|| !isEmpty(bpartner.getValue(), true)
 				|| bpartner.getExternalId() != null
 				|| !extractLocationGlns().isEmpty();

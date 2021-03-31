@@ -3,7 +3,6 @@ package de.metas.ui.web.dashboard.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.ui.web.dashboard.DashboardWidgetType;
 import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.KPIChartType;
@@ -21,12 +20,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -38,18 +37,18 @@ import lombok.Value;
 @Value
 public class JsonKPI
 {
-	public static final JsonKPI of(final KPI kpi, final JSONOptions jsonOpts)
+	int kpiId;
+	String caption;
+	KPIChartType chartType;
+	ImmutableSet<DashboardWidgetType> widgetTypes;
+
+	public static JsonKPI of(final KPI kpi, final JSONOptions jsonOpts)
 	{
 		return JsonKPI.builder()
-				.kpiId(kpi.getId())
+				.kpiId(kpi.getId().getRepoId())
 				.caption(kpi.getCaption(jsonOpts.getAdLanguage()))
 				.chartType(kpi.getChartType())
 				.widgetTypes(ImmutableSet.copyOf(kpi.getSupportedWidgetTypes()))
 				.build();
 	}
-
-	private final int kpiId;
-	private final String caption;
-	private final KPIChartType chartType;
-	private final ImmutableSet<DashboardWidgetType> widgetTypes;
 }

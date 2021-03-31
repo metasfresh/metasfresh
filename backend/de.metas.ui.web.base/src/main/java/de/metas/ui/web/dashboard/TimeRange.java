@@ -1,13 +1,15 @@
 package de.metas.ui.web.dashboard;
 
-import java.time.Duration;
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.time.Duration;
+import java.time.Instant;
 
 /*
  * #%L
@@ -32,8 +34,14 @@ import com.google.common.base.MoreObjects;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class TimeRange
+@Value
+public class TimeRange
 {
+	public static TimeRange main(@NonNull final Instant fromMillis, @NonNull final Instant toMillis)
+	{
+		return main(fromMillis.toEpochMilli(), toMillis.toEpochMilli());
+	}
+
 	public static TimeRange main(final long fromMillis, final long toMillis)
 	{
 		final boolean mainTimeRange = true;
@@ -50,21 +58,13 @@ public final class TimeRange
 		return new TimeRange(mainTimeRange, fromMillis, toMillis, offsetMillis);
 	}
 
-	@JsonProperty("fromMillis")
-	private final long fromMillis;
-
-	@JsonProperty("toMillis")
-	private final long toMillis;
-
-	//
-	@JsonIgnore
-	private final boolean mainTimeRange;
-	@JsonIgnore
-	private final long offsetMillis;
+	@JsonProperty("fromMillis") long fromMillis;
+	@JsonProperty("toMillis") long toMillis;
+	@JsonIgnore boolean mainTimeRange;
+	@JsonIgnore long offsetMillis;
 
 	private TimeRange(final boolean mainTimeRange, final long fromMillis, final long toMillis, final long offsetMillis)
 	{
-		super();
 		this.mainTimeRange = mainTimeRange;
 		this.fromMillis = fromMillis;
 		this.toMillis = toMillis;
@@ -75,36 +75,23 @@ public final class TimeRange
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("from", Instant.ofEpochMilli(fromMillis))
-				.add("to", Instant.ofEpochMilli(toMillis))
+				.add("from", getFrom())
+				.add("to", getTo())
 				.add("main", mainTimeRange)
 				.add("offset", Duration.ofMillis(offsetMillis))
 				.toString();
 	}
 
-	public boolean isMainTimeRange()
+	@JsonIgnore
+	public Instant getFrom()
 	{
-		return mainTimeRange;
+		return Instant.ofEpochMilli(getFromMillis());
 	}
 
-	public long getFromMillis()
+	@JsonIgnore
+	public Instant getTo()
 	{
-		return fromMillis;
-	}
-
-	public long getToMillis()
-	{
-		return toMillis;
-	}
-
-	public long getOffsetMillis()
-	{
-		return offsetMillis;
-	}
-
-	public long offsetDate(final long millis)
-	{
-		return millis + offsetMillis;
+		return Instant.ofEpochMilli(getToMillis());
 	}
 
 	public long subtractOffset(final long millis)

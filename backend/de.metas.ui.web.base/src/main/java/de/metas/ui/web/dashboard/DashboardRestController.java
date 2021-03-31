@@ -1,26 +1,6 @@
 package de.metas.ui.web.dashboard;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-
-import de.metas.elasticsearch.impl.ESSystemEnabledCondition;
-import lombok.NonNull;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Conditional;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.elasticsearch.IESSystem;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
@@ -42,6 +22,23 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
 import de.metas.util.Services;
 import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
 
 /*
  * #%L
@@ -66,27 +63,22 @@ import io.swagger.annotations.ApiParam;
  */
 
 @RestController
-@RequestMapping(value = DashboardRestController.ENDPOINT)
-@Conditional(ESSystemEnabledCondition.class)
+@RequestMapping(WebConfig.ENDPOINT_ROOT + "/dashboard")
 public class DashboardRestController
 {
-	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/dashboard";
 	private static final Logger logger = LogManager.getLogger(DashboardRestController.class);
-	
+	private final IESSystem esSystem = Services.get(IESSystem.class);
 	private final UserSession userSession;
 	private final UserDashboardRepository userDashboardRepo;
-	private final RestHighLevelClient elasticsearchClient;
 	private final WebsocketSender websocketSender;
 
 	public DashboardRestController(
 			@NonNull final UserSession userSession,
 			@NonNull final UserDashboardRepository userDashboardRepo,
-			@NonNull final RestHighLevelClient elasticsearchClient,
 			@NonNull final WebsocketSender websocketSender)
 	{
 		this.userSession = userSession;
 		this.userDashboardRepo = userDashboardRepo;
-		this.elasticsearchClient = elasticsearchClient;
 		this.websocketSender = websocketSender;
 	}
 
@@ -106,15 +98,17 @@ public class DashboardRestController
 		{
 			return UserDashboard.EMPTY;
 		}
-
-		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
-		// TODO: assert readable by current user
-		return dashboard;
+		else
+		{
+			// TODO: assert readable by current user
+			return userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
+		}
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	private boolean isElasticSearchEnabled()
 	{
-		return Services.get(IESSystem.class).isEnabled();
+		return esSystem.getEnabled().isTrue();
 	}
 
 	private UserDashboard getUserDashboardForWriting()
@@ -123,10 +117,11 @@ public class DashboardRestController
 		{
 			return UserDashboard.EMPTY;
 		}
-
-		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
-		// TODO: assert writable by current user
-		return dashboard;
+		else
+		{
+			// TODO: assert writable by current user
+			return userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
+		}
 	}
 
 	private void sendEvents(final UserDashboard dashboard, final JSONDashboardChangedEventsList events)
@@ -216,27 +211,42 @@ public class DashboardRestController
 
 	@GetMapping("/kpis/{itemId}/data")
 	public KPIDataResult getKPIData( //
-			@PathVariable final int itemId //
+									 @PathVariable final int itemId //
 			, @RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
 			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
 			, @RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues //
 	)
 	{
-		return getKPIData(DashboardWidgetType.KPI, itemId, fromMillis, toMillis, prettyValues);
+		return getKPIData(
+				DashboardWidgetType.KPI,
+				itemId,
+				fromMillis > 0 ? Instant.ofEpochMilli(fromMillis) : null,
+				toMillis > 0 ? Instant.ofEpochMilli(toMillis) : null,
+				prettyValues);
 	}
 
 	@GetMapping("/targetIndicators/{itemId}/data")
 	public KPIDataResult getTargetIndicatorData( //
-			@PathVariable final int itemId //
+												 @PathVariable final int itemId //
 			, @RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
 			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
 			, @RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues //
 	)
 	{
-		return getKPIData(DashboardWidgetType.TargetIndicator, itemId, fromMillis, toMillis, prettyValues);
+		return getKPIData(
+				DashboardWidgetType.TargetIndicator,
+				itemId,
+				fromMillis > 0 ? Instant.ofEpochMilli(fromMillis) : null,
+				toMillis > 0 ? Instant.ofEpochMilli(toMillis) : null,
+				prettyValues);
 	}
 
-	private final KPIDataResult getKPIData(final DashboardWidgetType widgetType, final int itemId, final long fromMillis, final long toMillis, final boolean prettyValues)
+	private KPIDataResult getKPIData(
+			final DashboardWidgetType widgetType,
+			final int itemId,
+			@Nullable final Instant from,
+			@Nullable final Instant to,
+			final boolean prettyValues)
 	{
 		userSession.assertLoggedIn();
 
@@ -244,10 +254,10 @@ public class DashboardRestController
 				.getItemById(widgetType, itemId);
 
 		final KPI kpi = dashboardItem.getKPI();
-		final TimeRange timeRange = dashboardItem.getTimeRangeDefaults().createTimeRange(fromMillis, toMillis);
+		final TimeRange timeRange = dashboardItem.getTimeRangeDefaults().createTimeRange(from, to);
 
 		final JSONOptions jsonOptions = JSONOptions.of(userSession);
-		return KPIDataLoader.newInstance(elasticsearchClient, kpi, jsonOptions)
+		return KPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi, jsonOptions)
 				.setTimeRange(timeRange)
 				.setFormatValues(prettyValues)
 				.retrieveData()
@@ -292,7 +302,7 @@ public class DashboardRestController
 		return changeDashboardItem(DashboardWidgetType.TargetIndicator, itemId, events);
 	}
 
-	private final JSONDashboardItem changeDashboardItem(final DashboardWidgetType widgetType, final int itemId, final List<JSONPatchEvent<DashboardItemPatchPath>> events)
+	private JSONDashboardItem changeDashboardItem(final DashboardWidgetType widgetType, final int itemId, final List<JSONPatchEvent<DashboardItemPatchPath>> events)
 	{
 		userSession.assertLoggedIn();
 

@@ -1,5 +1,6 @@
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Config_Shopware6
@@ -226,6 +227,52 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set JSONPathConstant BPartnerID.
+	 * Constant business partner JSONPath
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setJSONPathConstantBPartnerID (@Nullable java.lang.String JSONPathConstantBPartnerID);
+
+	/**
+	 * Get JSONPathConstant BPartnerID.
+	 * Constant business partner JSONPath
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getJSONPathConstantBPartnerID();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathConstantBPartnerID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathConstantBPartnerID", null);
+	String COLUMNNAME_JSONPathConstantBPartnerID = "JSONPathConstantBPartnerID";
+
+	/**
+	 * Set JSONPathConstant BPartnerLocationID.
+	 * Constant business partner location JSONPath
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setJSONPathConstantBPartnerLocationID (@Nullable java.lang.String JSONPathConstantBPartnerLocationID);
+
+	/**
+	 * Get JSONPathConstant BPartnerLocationID.
+	 * Constant business partner location JSONPath
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getJSONPathConstantBPartnerLocationID();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathConstantBPartnerLocationID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathConstantBPartnerLocationID", null);
+	String COLUMNNAME_JSONPathConstantBPartnerLocationID = "JSONPathConstantBPartnerLocationID";
 
 	/**
 	 * Get Updated.

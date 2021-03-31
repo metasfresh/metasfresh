@@ -66,6 +66,8 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(ExternalSystemConstants.PARAM_CLIENT_SECRET, shopware6Config.getClientSecret());
 		parameters.put(ExternalSystemConstants.PARAM_CLIENT_ID, shopware6Config.getClientId());
 		parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, extractEffectiveSinceTimestamp().toInstant().toString());
+		parameters.put(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID, shopware6Config.getBPartnerIdJSONPath());
+		parameters.put(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID, shopware6Config.getBPartnerLocationIdJSONPath());
 
 		return parameters;
 	}
