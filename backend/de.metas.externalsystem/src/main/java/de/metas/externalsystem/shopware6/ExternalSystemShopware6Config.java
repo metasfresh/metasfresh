@@ -28,6 +28,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 {
@@ -41,19 +43,27 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	String clientId;
 	@NonNull
 	String clientSecret;
+	@Nullable
+	String bPartnerIdJSONPath;
+	@Nullable
+	String bPartnerLocationIdJSONPath;
 
 	@Builder
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
 			final @NonNull ExternalSystemParentConfigId parentId,
 			final @NonNull String baseUrl,
 			final @NonNull String clientId,
-			final @NonNull String clientSecret)
+			final @NonNull String clientSecret,
+			final @Nullable String bPartnerIdJSONPath,
+			final @Nullable String bPartnerLocationIdJSONPath)
 	{
 		this.id = id;
 		this.parentId = parentId;
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
 		this.baseUrl = baseUrl;
+		this.bPartnerIdJSONPath = bPartnerIdJSONPath;
+		this.bPartnerLocationIdJSONPath = bPartnerLocationIdJSONPath;
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)

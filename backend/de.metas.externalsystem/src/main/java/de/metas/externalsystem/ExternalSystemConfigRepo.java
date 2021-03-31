@@ -192,6 +192,8 @@ public class ExternalSystemConfigRepo
 				.baseUrl(config.getBaseURL())
 				.clientSecret(config.getClient_Secret())
 				.clientId(config.getClient_Id())
+				.bPartnerIdJSONPath(config.getJSONPathConstantBPartnerID())
+				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
 				.build();
 	}
 
