@@ -42,8 +42,8 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
-    "cypress-plugin-snapshots": "^1.2.6",
-    "cypress-skip-and-only-ui": "^1.0.12",
+    "cypress-plugin-snapshots": "^1.4.4",
+    "cypress-skip-and-only-ui": "^1.2.11",
     "immutable": "^4.0.0-rc.12",
     "js-base64": "2.5.2",
     "luxon": "^1.11.4",
