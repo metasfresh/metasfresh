@@ -24,6 +24,7 @@ package de.metas.contracts.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
@@ -77,8 +78,11 @@ public class OrgChangeCommand
 		// gets the partner with all the active and inactive locations, users and bank accounts
 		BPartnerComposite destinationBPartnerComposite = bPartnerCompositeRepo.getById(newBPartnerId);
 
-		final List<BPartnerLocation> newLocations = orgChangeService.getOrCreateLocations(orgChangeBPartnerComposite, destinationBPartnerComposite);
+		final BPartner destinationPartner = destinationBPartnerComposite.getBpartner();
 
+		destinationPartner.setActive(true);
+
+		final List<BPartnerLocation> newLocations = orgChangeService.getOrCreateLocations(orgChangeBPartnerComposite, destinationBPartnerComposite);
 		final List<BPartnerContact> newContacts = orgChangeService.getOrCreateContacts(orgChangeBPartnerComposite, destinationBPartnerComposite);
 		final List<BPartnerBankAccount> newBPBankAccounts = orgChangeService.getOrCreateBPBankAccounts(orgChangeBPartnerComposite, destinationBPartnerComposite);
 
