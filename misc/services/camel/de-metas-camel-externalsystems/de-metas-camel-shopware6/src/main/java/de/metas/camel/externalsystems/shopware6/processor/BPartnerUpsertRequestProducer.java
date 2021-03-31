@@ -212,7 +212,6 @@ public class BPartnerUpsertRequestProducer
 		{
 			if (isBillingAddress)
 			{
-				System.out.println(orderAddressWithCustomId);
 				bpLocationIdentifier.append(BILL_TO_SUFFIX);
 			}
 			else

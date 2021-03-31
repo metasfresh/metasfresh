@@ -4,8 +4,5 @@
   "countryId": "e48353977fa643c0a8d0d7bc81e49c46",
   "street": "Teststrasse 121",
   "zipcode": "99999",
-  "city": "Teststadt",
-  "phoneNumber": null,
-  "additionalAddressLine1": null,
-  "additionalAddressLine2": null
+  "city": "Teststadt"
 }

@@ -30,8 +30,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
 @JsonDeserialize(builder = JsonOrderCustomer.JsonOrderCustomerBuilder.class)

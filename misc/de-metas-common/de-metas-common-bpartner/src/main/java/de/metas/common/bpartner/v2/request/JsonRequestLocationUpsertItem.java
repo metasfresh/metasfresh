@@ -39,7 +39,7 @@ public class JsonRequestLocationUpsertItem
 {
 	@ApiModelProperty(allowEmptyValue = false, position = 10, //
 			value = LOCATION_IDENTIFIER_DOC
-					+ "If a new location is created and the request's location has no different identifier, then this identifier is stored within the newly created lcoation.") //
+					+ "If a new location is created and the request's location has no different identifier, then this identifier is stored within the newly created location.") //
 	@NonNull
 	String locationIdentifier;
 

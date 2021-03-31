@@ -120,7 +120,11 @@ public class BPartner
 	 */
 	private final String shipmentAllocationBestBeforePolicy;
 
-	private Boolean isIdentifiedByExternalReference;
+	/**
+	 * If true, it means that the BPartner is valid without having a code, metasfresh or gln.
+	 * It's identifier is an external reference that is included in the BPartnerComposite instance which holds this BPartner.
+	 */
+	private boolean identifiedByExternalReference;
 
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
@@ -150,7 +154,7 @@ public class BPartner
 			@Nullable final String vatId,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final String shipmentAllocationBestBeforePolicy,
-			@Nullable final Boolean isIdentifiedByExternalReference,
+			@Nullable final Boolean identifiedByExternalReference,
 			@Nullable final OrgMappingId orgMappingId)
 	{
 		this.id = id;
@@ -178,7 +182,7 @@ public class BPartner
 		this.changeLog = changeLog;
 		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
 		this.orgMappingId = orgMappingId;
-		this.isIdentifiedByExternalReference = coalesce(isIdentifiedByExternalReference, false);
+		this.identifiedByExternalReference = coalesce(identifiedByExternalReference, false);
 	}
 
 	/**
