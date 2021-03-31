@@ -44,6 +44,7 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_DATE_GTE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_ORG_CODE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_LOCATION_ID;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_SHOPWARE_CLIENT;
 
 public class GetOrdersProcessor implements Processor
 {
@@ -77,6 +78,7 @@ public class GetOrdersProcessor implements Processor
 		exchange.getIn().setBody(ordersToProcess);
 		exchange.setProperty(ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
 		exchange.setProperty(ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_LOCATION_ID, bPartnerLocationIdJSONPath);
+		exchange.setProperty(ROUTE_PROPERTY_SHOPWARE_CLIENT, shopwareClient);
 
 	}
 

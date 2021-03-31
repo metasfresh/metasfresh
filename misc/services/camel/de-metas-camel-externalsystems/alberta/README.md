@@ -233,3 +233,72 @@ BPLocation.shipTo | true |
 | pcn | M_Product_AlbertaPackagingUnit.PCN | YES | :exclamation: did not create the column yet - needs to be clarified |
 | defaultPackagingUnit | M_Product_AlbertaPackagingUnit.IsDefaultPackagingUnit | YES | allow just one to be the default; :exclamation: this is not in the webui, so i didn't create it yet
 | archived | M_Product_AlbertaPackagingUnit.IsArchived | NO | :exclamation: this is not in the webui, so i didn't create it yet
+
+
+
+## Orders (Alberta) => Sales Order Candiates (metasfresh)
+
+
+### Order
+
+| Alberta | metasfresh | mandatory in mf | note |
+| --- | --- | --- | --- |
+| _id | C_OLCand.ExternalHeaderId | Y | |
+| salesId | C_OLCand.POReference | | |
+| patientId | C_OLCand.C_BPartner_ID | Y | ..via external reference lookup |
+| rootId | C_OLCand_AlbertaOrder.RootId | |
+| creationDate | C_OLCand_AlbertaOrder.CreationDate | |
+| deliveryDate | C_OLCand.DatePromised | |
+| startDate | C_OLCand_AlbertaOrder.StartDate | |
+| endDate | C_OLCand_AlbertaOrder.EndDate | |
+| dayOfDelivery | C_OLCand_AlbertaOrder.DayOfDelivery | |
+| nextDelivery | C_OLCand_AlbertaOrder.NextDelivery | |
+| deliveryAddress | C_OLCand.C_BPartnerLocation_ID |  Y | note that we already have `de.metas.camel.alberta.BPartnerUpsertRequestProducer#getShippingAddress` | 
+| doctorId | C_OLCand_AlbertaOrder.C_Doctor_BPartner_ID | ..via external reference lookup |
+| pharmacyId | C_OLCand_AlbertaOrder.C_Pharmacy_BPartner_ID | ..via external reference lookup |
+| therapyId |  C_OLCand_AlbertaTherapy | |
+| therapyTypeIds | C_OLCand_AlbertaTherapyType | eine andere enum als therapy, mit mehr Werten |
+| isInitialCare | C_OLCand_AlbertaOrder.IsInitialCare | |
+| orderedArticleLines | | |
+| createdBy | | Alberta-User => checken..|
+| status | | |
+| isSeriesOrder | C_OLCand_AlbertaOrder.IsSeriesOrder | |
+| annotation | C_OLCand_AlbertaOrder.Annotation | Notiz für den Innendienst |
+| archived | C_OLCand_AlbertaOrder.IsArchived | |
+| updated | C_OLCand_AlbertaOrder.Updated | |
+
+### OrderedArticleLines
+
+| Alberta | metasfresh | mandatory in mf | note |
+| --- | --- | --- | --- |
+| _id | C_OLCand.ExternalLineId | Y | |
+| salesLineId | C_OLCand_AlbertaOrder.SalesLineId | | |
+| articleId | C_OLCand.M_Product_ID | Y | ..via external reference lookup |
+| articleCustomerNumber |  | (ignore) | this is basically the M_Product.Value that we had send to Alberta..but who knows, maybe it was meanwhile edited in metasfresh | 
+| quantity | C_OLCand.QtyEntered | Y | |
+| unit | C_OLCand_AlbertaOrder.Unit | | Ref-List with values Stk and Ktn |
+| duration | | |
+| isRentalEquipment | C_OLCand_AlbertaOrder.IsRentalEquipment | |
+| isPrivateSale | C_OLCand_AlbertaOrder.IsPrivateSale | |
+| updated | C_OLCand_AlbertaOrder.Updated | |
+
+### Duration
+
+| Alberta | metasfresh | mandatory in mf | note |
+| --- | --- | --- | --- |
+| description | C_OLCand_AlbertaOrder.DurationDescription | | |
+| amount | C_OLCand_AlbertaOrder.DurationAmount | | |
+| timePeriod | C_OLCand_AlbertaOrder.DurationAmount | | Ref-List with `0=Unbekannt`, `1=Minute`, `2=Stunde`, `3=Tag`, `4=Woche`, `5=Monat`, `6=Quartal`, `7=Halbjahr`, `8=Jahr` |
+
+### Additional C_OLCand-Columns
+
+| Alberta | metasfresh | mandatory in mf | note |
+| --- | --- | --- | --- |
+|     | C_OLCand.IsManualPrice | Y | const `N` |
+|     | C_OLCand.IsManualDiscount | Y | const `N` |
+|     | C_OLCand.IsImportedWitIssues | Y | const `Y`? we will have small REST-EP to clear them, after all were created |
+|     | C_OLCand.DeliveryViaRule | Y | const 'D' |
+|     | C_OLCand.DelvieryRule | Y | const 'A' |
+|     | C_OLCand.DateCandidate | Y | :question: |
+|     | C_OLCand.AD_InputDataSource_ID | Y | new hardcoded "Alberta" datasource |
+|     | C_OLCand.AD_DataDestination_ID | Y | check the code..it *should* be automatically set to the one with internalname=DEST.de.metas.ordercandidate
