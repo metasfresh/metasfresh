@@ -367,7 +367,7 @@ public class PurchaseCandidateRepository
 		}
 		record.setPriceInternal(purchaseCandidate.getPriceInternal());
 		record.setPriceEntered(purchaseCandidate.getPrice());
-		record.setPriceEffective(purchaseCandidate.getPrice());
+		record.setPriceEffective(purchaseCandidate.getPriceEnteredEff());
 		if (purchaseCandidate.getDiscount() != null)
 		{
 			record.setDiscount(purchaseCandidate.getDiscount().toBigDecimal());
@@ -376,7 +376,10 @@ public class PurchaseCandidateRepository
 		{
 			record.setDiscountInternal(purchaseCandidate.getDiscountInternal().toBigDecimal());
 		}
-		record.setDiscountEff(purchaseCandidate.isManualDiscount() ? record.getDiscount() : record.getDiscountInternal());
+		if (purchaseCandidate.getDiscountEff() != null)
+		{
+			record.setDiscountEff(purchaseCandidate.getDiscountEff().toBigDecimal());
+		}
 		record.setPurchasePriceActual(purchaseCandidate.getPriceActual());
 		record.setIsManualPrice(purchaseCandidate.isManualPrice());
 		record.setIsManualDiscount(purchaseCandidate.isManualDiscount());
@@ -497,8 +500,10 @@ public class PurchaseCandidateRepository
 				.dimension(recordDimension)
 				.price(record.getPriceEntered())
 				.priceInternal(record.getPriceInternal())
+				.priceEnteredEff(record.getPriceEffective())
 				.discount(Percent.ofNullable(record.getDiscount()))
 				.discountInternal(Percent.ofNullable(record.getDiscountInternal()))
+				.discountEff(Percent.ofNullable(record.getDiscountEff()))
 				.priceActual(record.getPurchasePriceActual())
 				.isManualDiscount(record.isManualDiscount())
 				.isManualPrice(record.isManualPrice())
