@@ -22,6 +22,15 @@
 
 package de.metas.edi.esb.excelimport;
 
+import com.google.common.io.Closeables;
+import lombok.NonNull;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,16 +43,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-
-import com.google.common.io.Closeables;
-
-import lombok.NonNull;
 
 /**
  * Immutable XLS to {@link Map}s list converter.
@@ -230,6 +229,7 @@ public class ExcelToMapListConverter
 	 *
 	 * @return header name to value map
 	 */
+	@Nullable
 	private Map<String, Object> readRow_TableRow(final Row row, final Map<Integer, String> columnIndex2headerName)
 	{
 		final Map<String, Object> rowAsMap = new LinkedHashMap<String, Object>(columnIndex2headerName.size());
@@ -242,7 +242,7 @@ public class ExcelToMapListConverter
 				continue;
 			}
 
-			final Cell cell = row.getCell(columnIndex, Row.RETURN_BLANK_AS_NULL);
+			final Cell cell = row.getCell(columnIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
 			final Object value = getCellValue(cell);
 
 			rowAsMap.put(headerName, value);
@@ -386,11 +386,12 @@ public class ExcelToMapListConverter
 		return headerName.startsWith(noNameHeaderPrefix);
 	}
 
-	private static final boolean isEmptyValue(final Object value)
+	private static boolean isEmptyValue(final Object value)
 	{
 		return value == null || value.toString().trim().isEmpty();
 	}
 
+	@Nullable
 	private Object getCellValue(final Cell cell)
 	{
 		if (cell == null)
@@ -399,12 +400,12 @@ public class ExcelToMapListConverter
 		}
 
 		final Object value;
-		switch (cell.getCellType())
+		switch (cell.getCellTypeEnum())
 		{
-			case Cell.CELL_TYPE_BLANK:
+			case BLANK:
 				value = null;
 				break;
-			case Cell.CELL_TYPE_NUMERIC:
+			case NUMERIC:
 				if (HSSFDateUtil.isCellDateFormatted(cell))
 				{
 					value = cell.getDateCellValue();
@@ -414,18 +415,18 @@ public class ExcelToMapListConverter
 					value = BigDecimal.valueOf(cell.getNumericCellValue());
 				}
 				break;
-			case Cell.CELL_TYPE_STRING:
+			case STRING:
 				value = cell.getStringCellValue();
 				break;
-			case Cell.CELL_TYPE_FORMULA:
+			case FORMULA:
 				final String valueStr = cell.getCellFormula();
 				value = valueStr;
 				break;
-			case Cell.CELL_TYPE_BOOLEAN:
+			case BOOLEAN:
 				final boolean valueBoolean = cell.getBooleanCellValue();
 				value = valueBoolean;
 				break;
-			case Cell.CELL_TYPE_ERROR:
+			case ERROR:
 				// TODO: handle the error?!
 				value = null;
 				break;

@@ -31,6 +31,8 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.apache.poi.common.usermodel.HyperlinkType;
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -255,7 +257,7 @@ public abstract class AbstractExcelExporter
 		if (fontHeader == null)
 		{
 			fontHeader = createFont();
-			fontHeader.setBoldweight(Font.BOLDWEIGHT_BOLD);
+			fontHeader.setBold(true);
 		}
 		return fontHeader;
 	}
@@ -274,7 +276,7 @@ public abstract class AbstractExcelExporter
 		if (fontFunctionRow == null)
 		{
 			fontFunctionRow = createFont();
-			fontFunctionRow.setBoldweight(Font.BOLDWEIGHT_BOLD);
+			fontFunctionRow.setBold(true);
 			fontFunctionRow.setItalic(true);
 		}
 		return fontFunctionRow;
@@ -366,10 +368,10 @@ public abstract class AbstractExcelExporter
 
 		//
 		// Border
-		style.setBorderLeft((short)1);
-		style.setBorderTop((short)1);
-		style.setBorderRight((short)1);
-		style.setBorderBottom((short)1);
+		style.setBorderLeft(BorderStyle.valueOf((short)1));
+		style.setBorderTop(BorderStyle.valueOf((short)1));
+		style.setBorderRight(BorderStyle.valueOf((short)1));
+		style.setBorderBottom(BorderStyle.valueOf((short)1));
 
 		//
 		// Data Format
@@ -402,10 +404,10 @@ public abstract class AbstractExcelExporter
 
 		final CellStyle style = getWorkbook().createCellStyle();
 		style.setFont(font);
-		style.setBorderLeft((short)2);
-		style.setBorderTop((short)2);
-		style.setBorderRight((short)2);
-		style.setBorderBottom((short)2);
+		style.setBorderLeft(BorderStyle.valueOf((short)2));
+		style.setBorderTop(BorderStyle.valueOf((short)2));
+		style.setBorderRight(BorderStyle.valueOf((short)2));
+		style.setBorderBottom(BorderStyle.valueOf((short)2));
 		style.setDataFormat((short)BuiltinFormats.getBuiltinFormat("text"));
 		style.setWrapText(true);
 
@@ -680,6 +682,7 @@ public abstract class AbstractExcelExporter
 		}
 	}
 
+	@Nullable
 	private Hyperlink createHyperlinkIfURL(@Nullable final String str)
 	{
 		if (str == null || str.isEmpty())
@@ -694,7 +697,7 @@ public abstract class AbstractExcelExporter
 			try
 			{
 				new URI(urlStr);
-				final Hyperlink hyperlink = getWorkbook().getCreationHelper().createHyperlink(org.apache.poi.common.usermodel.Hyperlink.LINK_URL);
+				final Hyperlink hyperlink = getWorkbook().getCreationHelper().createHyperlink(HyperlinkType.URL);
 				hyperlink.setAddress(urlStr);
 				return hyperlink;
 			}
@@ -738,7 +741,7 @@ public abstract class AbstractExcelExporter
 	}
 
 	@Value
-	private static final class CellStyleKey
+	private static class CellStyleKey
 	{
 		public static CellStyleKey header(final int column)
 		{
@@ -752,10 +755,10 @@ public abstract class AbstractExcelExporter
 			return new CellStyleKey("cell", column, displayType, functionRow);
 		}
 
-		private final String type;
-		private final int column;
-		private final int displayType;
-		private final boolean functionRow;
+		String type;
+		int column;
+		int displayType;
+		boolean functionRow;
 
 		private CellStyleKey(
 				final String type,
