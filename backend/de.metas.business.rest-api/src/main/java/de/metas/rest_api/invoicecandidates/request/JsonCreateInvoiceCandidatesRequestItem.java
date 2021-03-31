@@ -1,30 +1,28 @@
 package de.metas.rest_api.invoicecandidates.request;
 
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
-import static de.metas.common.rest_api.v1.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import de.metas.rest_api.common.JsonDocTypeInfo;
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.v1.JsonExternalId;
 import de.metas.common.rest_api.v1.JsonInvoiceRule;
-import de.metas.rest_api.common.JsonPrice;
-import de.metas.rest_api.common.JsonSOTrx;
+import de.metas.common.rest_api.v1.JsonPrice;
+import de.metas.common.rest_api.v1.JsonSOTrx;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
 /*
  * #%L

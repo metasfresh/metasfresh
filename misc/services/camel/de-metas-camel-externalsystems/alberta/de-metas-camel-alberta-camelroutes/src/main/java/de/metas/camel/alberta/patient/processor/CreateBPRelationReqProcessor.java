@@ -23,9 +23,9 @@
 package de.metas.camel.alberta.patient.processor;
 
 import de.metas.camel.externalsystems.common.BPRelationsCamelRequest;
-import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsert;
-import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsertItem;
-import de.metas.common.bpartner.v1.response.JsonResponseUpsertItem;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
+import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.bprelation.JsonBPRelationRole;
 import de.metas.common.bprelation.request.JsonRequestBPRelationTarget;
 import de.metas.common.bprelation.request.JsonRequestBPRelationsUpsert;
@@ -33,6 +33,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.RuntimeCamelException;
 
 import java.util.List;
 import java.util.Objects;
@@ -67,7 +68,7 @@ public class CreateBPRelationReqProcessor implements Processor
 				|| bPartnerUpsertResult.getResponseItems().isEmpty())
 		{
 			throw new RuntimeException("Empty JsonResponseBPartnerCompositeUpsert.ResponseItems! sourceBPartnerIdentifier:"
-											   + bPartnerRoleInfoProvider.getSourceBPartnerIdentifier());
+					+ bPartnerRoleInfoProvider.getSourceBPartnerIdentifier());
 		}
 
 		exchange.getIn().setBody(buildBPRelationsUpsertRequest(orgCode, bPartnerRoleInfoProvider, bPartnerUpsertResult.getResponseItems()));
@@ -120,7 +121,7 @@ public class CreateBPRelationReqProcessor implements Processor
 					|| responseItem.getResponseBPartnerItem().getIdentifier() == null
 					|| responseItem.getResponseBPartnerItem().getMetasfreshId() == null)
 			{
-				throw new RuntimeException("Missing mandatory data from responseItem: " + responseItem);
+				throw new RuntimeCamelException("Missing mandatory data from responseItem: " + responseItem);
 			}
 
 			final String targetBPartnerIdentifier = responseItem.getResponseBPartnerItem().getIdentifier();
@@ -133,7 +134,7 @@ public class CreateBPRelationReqProcessor implements Processor
 			final JsonMetasfreshId targetBPMFId = responseItem.getResponseBPartnerItem().getMetasfreshId();
 
 			final JsonBPRelationRole relationRole = bPartnerRoleInfoProvider.getRoleByBPIdentifier(targetBPartnerIdentifier)
-					.orElseThrow(() -> new RuntimeException("No JsonBPRelationRole found for  bpartnerIdentifier: " + targetBPartnerIdentifier));
+					.orElseThrow(() -> new RuntimeCamelException("No JsonBPRelationRole found for  bpartnerIdentifier: " + targetBPartnerIdentifier));
 
 			final JsonMetasfreshId targetLocationId = getFirstLocationMFId(responseItem);
 
@@ -148,7 +149,7 @@ public class CreateBPRelationReqProcessor implements Processor
 		}
 		catch (final RuntimeException e)
 		{
-			throw new RuntimeException("*** ERROR thrown while processing JsonResponseBPartnerCompositeUpsertItem: " + responseItem, e);
+			throw new RuntimeCamelException("*** ERROR thrown while processing JsonResponseBPartnerCompositeUpsertItem: " + responseItem, e);
 		}
 	}
 
@@ -161,7 +162,7 @@ public class CreateBPRelationReqProcessor implements Processor
 				.stream()
 				.filter(upsertItem -> upsertItem.getResponseBPartnerItem() != null && sourceBPIdentifier.equals(upsertItem.getResponseBPartnerItem().getIdentifier()))
 				.findFirst()
-				.orElseThrow(() -> new RuntimeException("No JsonResponseBPartnerCompositeUpsertItem found for sourceBPIdentifier:" + sourceBPIdentifier));
+				.orElseThrow(() -> new RuntimeCamelException("No JsonResponseBPartnerCompositeUpsertItem found for sourceBPIdentifier:" + sourceBPIdentifier));
 	}
 
 	@NonNull
@@ -171,7 +172,7 @@ public class CreateBPRelationReqProcessor implements Processor
 	{
 		if (bpartnerUpsertResponseItem.getResponseLocationItems() == null || bpartnerUpsertResponseItem.getResponseLocationItems().isEmpty())
 		{
-			throw new RuntimeException("Empty JsonResponseBPartnerCompositeUpsertItem.getResponseLocationItems! Location identifier: " + locationIdentifier);
+			throw new RuntimeCamelException("Empty JsonResponseBPartnerCompositeUpsertItem.getResponseLocationItems! Location identifier: " + locationIdentifier);
 		}
 
 		return bpartnerUpsertResponseItem.getResponseLocationItems()
@@ -180,7 +181,7 @@ public class CreateBPRelationReqProcessor implements Processor
 				.map(JsonResponseUpsertItem::getMetasfreshId)
 				.filter(Objects::nonNull)
 				.findFirst()
-				.orElseThrow(() -> new RuntimeException("No JsonMetasfreshId found for locationIdentifier: " + locationIdentifier));
+				.orElseThrow(() -> new RuntimeCamelException("No JsonMetasfreshId found for locationIdentifier: " + locationIdentifier));
 	}
 
 	@NonNull
@@ -188,15 +189,15 @@ public class CreateBPRelationReqProcessor implements Processor
 	{
 		if (bpartnerUpsertResponseItem.getResponseLocationItems() == null || bpartnerUpsertResponseItem.getResponseLocationItems().isEmpty())
 		{
-			throw new RuntimeException("Empty JsonResponseBPartnerCompositeUpsertItem.getResponseLocationItems!");
+			throw new RuntimeCamelException("The given JsonResponseBPartnerCompositeUpsertItem has no responseLocationItems!; bpartnerUpsertResponseItem=" + bpartnerUpsertResponseItem);
 		}
 
 		return bpartnerUpsertResponseItem.getResponseLocationItems()
 				.stream()
-				.filter(upsertItem -> upsertItem.getMetasfreshId() != null)
 				.map(JsonResponseUpsertItem::getMetasfreshId)
+				.filter(Objects::nonNull)
 				.findFirst()
-				.orElseThrow(() -> new RuntimeException("No location JsonResponseUpsertItem found!"));
+				.orElseThrow(() -> new RuntimeCamelException("No location JsonResponseUpsertItem found!"));
 	}
 
 	@NonNull
@@ -204,7 +205,7 @@ public class CreateBPRelationReqProcessor implements Processor
 	{
 		if (bpUpsertItem.getResponseBPartnerItem() == null || bpUpsertItem.getResponseBPartnerItem().getMetasfreshId() == null)
 		{
-			throw new RuntimeException("ResponseBPartnerItem.JsonMetasfreshId is missing for bpUpsertItem: " + bpUpsertItem);
+			throw new RuntimeCamelException("ResponseBPartnerItem.JsonMetasfreshId is missing for bpUpsertItem: " + bpUpsertItem);
 		}
 
 		return bpUpsertItem.getResponseBPartnerItem().getMetasfreshId();

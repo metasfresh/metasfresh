@@ -36,7 +36,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
- * Send from metasfresh to indicate that metasfresh wants an external system to do something
+ * Send from metasfresh to camel to indicate that metasfresh wants an external system to do something.
  */
 @Value
 public class JsonExternalSystemRequest

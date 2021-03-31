@@ -1,14 +1,28 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.util.List;
-
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonSOTrx;
+import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
+import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
+import de.metas.pricing.service.impl.PricingTestHelper;
+import de.metas.pricing.service.impl.ProductPriceBuilder;
+import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
+import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
+import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
+import de.metas.rest_api.utils.BPartnerQueryService;
+import de.metas.rest_api.utils.CurrencyService;
+import de.metas.rest_api.utils.DocTypeService;
+import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.user.UserRepository;
+import de.metas.util.JSONObjectMapper;
+import de.metas.util.Services;
+import de.metas.util.web.exception.InvalidEntityException;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -30,29 +44,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
-import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
-import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.impl.ManualCandidateHandler;
-import de.metas.pricing.service.impl.PricingTestHelper;
-import de.metas.pricing.service.impl.ProductPriceBuilder;
-import de.metas.common.rest_api.v1.JsonExternalId;
-import de.metas.rest_api.common.JsonSOTrx;
-import de.metas.rest_api.utils.MetasfreshId;
-import de.metas.util.web.exception.InvalidEntityException;
-import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
-import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
-import de.metas.rest_api.utils.BPartnerQueryService;
-import de.metas.rest_api.utils.CurrencyService;
-import de.metas.rest_api.utils.DocTypeService;
-import de.metas.user.UserRepository;
-import de.metas.util.JSONObjectMapper;
-import de.metas.util.Services;
+import java.util.List;
+
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -218,5 +215,4 @@ class JsonInsertInvoiceCandidateServiceTest
 				.isInstanceOf(InvalidEntityException.class);
 
 	}
-
 }

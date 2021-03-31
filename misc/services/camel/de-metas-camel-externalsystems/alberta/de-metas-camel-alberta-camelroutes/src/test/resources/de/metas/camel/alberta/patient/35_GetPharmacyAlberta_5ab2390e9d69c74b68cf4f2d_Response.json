@@ -1,0 +1,12 @@
+{
+  "_id": "5ab2390e9d69c74b68cf4f2d",
+  "name": "Neue Test-Apotheke",
+  "address": "Treststr, 8",
+  "postalCode": "99999",
+  "city": "Testcity",
+  "phone": "01234-5677",
+  "phone": "01234-5678",
+  "email": "testapotheke@example.com",
+  "homepage": null,
+  "timestamp": "2018-07-11T09:52:55.235Z"
+}

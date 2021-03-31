@@ -1,0 +1,95 @@
+{
+  "responseItems": [
+    {
+      "responseBPartnerItem": {
+        "identifier": "ext-ALBERTA-fcf48850-c52c-4263-92b2-e889bfffeaf0",
+        "metasfreshId": 910,
+        "syncOutcome": "CREATED"
+      },
+      "responseLocationItems": [
+        {
+          "identifier": "ext-ALBERTA-mainAddress_fcf48850-c52c-4263-92b2-e889bfffeaf0",
+          "metasfreshId": 2910,
+          "syncOutcome": "CREATED"
+        }
+      ]
+    },
+    {
+      "responseBPartnerItem": {
+        "identifier": "ext-ALBERTA-5ab23eb59d69c74b68d0eded",
+        "metasfreshId": 1000,
+        "syncOutcome": "CREATED"
+      },
+      "responseLocationItems": [
+        {
+          "identifier": "ext-ALBERTA-5ab23eb59d69c74b68d0eded",
+          "metasfreshId": 2000,
+          "syncOutcome": "CREATED"
+        }
+      ],
+      "responseContactItems": [
+        {
+          "identifier": "ext-ALBERTA-5ab23eb59d69c74b68d0eded",
+          "metasfreshId": 3000,
+          "syncOutcome": "CREATED"
+        }
+      ]
+    },
+    {
+      "responseBPartnerItem": {
+        "identifier": "ext-ALBERTA-5ab2383d9d69c74b68cf19dc",
+        "metasfreshId": 1040,
+        "syncOutcome": "CREATED"
+      },
+      "responseLocationItems": [
+        {
+          "identifier": "ext-ALBERTA-5ab2383d9d69c74b68cf19dc",
+          "metasfreshId": 2040,
+          "syncOutcome": "CREATED"
+        }
+      ]
+    },
+    {
+      "responseBPartnerItem": {
+        "identifier": "ext-ALBERTA-5ab233bc9d69c74b68cec23a",
+        "metasfreshId": 1050,
+        "syncOutcome": "CREATED"
+      },
+      "responseLocationItems": [
+        {
+          "identifier": "ext-ALBERTA-5ab233bc9d69c74b68cec23a",
+          "metasfreshId": 2050,
+          "syncOutcome": "CREATED"
+        }
+      ]
+    },
+    {
+      "responseBPartnerItem": {
+        "identifier": "ext-ALBERTA-5ada01a2c3918e1bdcb5460e",
+        "metasfreshId": 1060,
+        "syncOutcome": "CREATED"
+      },
+      "responseLocationItems": [
+        {
+          "identifier": "ext-ALBERTA-5ada01a2c3918e1bdcb5460e",
+          "metasfreshId": 2060,
+          "syncOutcome": "CREATED"
+        }
+      ]
+    },
+    {
+      "responseBPartnerItem": {
+        "identifier": "ext-ALBERTA-5ab2390e9d69c74b68cf4f2d",
+        "metasfreshId": 1070,
+        "syncOutcome": "CREATED"
+      },
+      "responseLocationItems": [
+        {
+          "identifier": "ext-ALBERTA-5ab2390e9d69c74b68cf4f2d",
+          "metasfreshId": 2070,
+          "syncOutcome": "CREATED"
+        }
+      ]
+    }
+  ]
+}

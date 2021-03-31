@@ -1,0 +1,45 @@
+[
+  {
+    "_id": "fcf48850-c52c-4263-92b2-e889bfffeaf0",
+    "gender": 1,
+    "fieldNurseId": "6741f5aa-f646-4f65-9eb0-5213fc0ad96f",
+    "lastName": "Tester",
+    "firstName": "Max",
+    "careGivers": [],
+    "archived": false,
+    "customerId": "",
+    "birthday": "1950-01-15",
+    "accountingStatus": true,
+    "payer": {
+      "payerType": 1,
+      "copaymentFromDate": null,
+      "copaymentToDate": null,
+      "numberOfInsured": null,
+      "otherPayer": null,
+      "payerId": "5ada01a2c3918e1bdcb5460e",
+      "hasNoEGKImage": true,
+      "hasNoCopaymentImage": true,
+      "copaymentRequestedAt": null,
+      "copaymentRequestedBy": ""
+    },
+    "hospital": {
+      "hospitalId": "5ab233bc9d69c74b68cec23a"
+    },
+    "regionId": "4e94f03c-5c77-4d08-aa59-437b2e76781a",
+    "address": "Teststraße 1",
+    "postalCodeId": "5ab2489d9d69c74b68d201fd",
+    "city": "Teststadt",
+    "postalCode": "99999",
+    "primaryDoctorId": "5ab23eb59d69c74b68d0eded",
+    "nursingServiceId": "5ab2383d9d69c74b68cf19dc",
+    "changeInSupplier": false,
+    "ivTherapy": true,
+    "pharmacyId": "5ab2390e9d69c74b68cf4f2d",
+    "ignoreChangeForResmed": false,
+    "timestamp": "2021-02-08T07:48:14.215Z",
+    "createdAt": "2021-02-08T07:48:14.213Z",
+    "updatedAt": "2021-02-08T07:48:14.213Z",
+    "createdBy": "6741f5aa-f646-4f65-9eb0-5213fc0ad96f",
+    "updatedBy": "6741f5aa-f646-4f65-9eb0-5213fc0ad96f"
+  }
+]

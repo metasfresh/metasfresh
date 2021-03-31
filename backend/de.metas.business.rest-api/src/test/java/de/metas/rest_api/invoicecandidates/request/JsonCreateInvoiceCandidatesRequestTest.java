@@ -1,18 +1,17 @@
 package de.metas.rest_api.invoicecandidates.request;
 
-import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
+import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonInvoiceRule;
+import de.metas.common.rest_api.v1.JsonPrice;
+import de.metas.common.rest_api.v1.JsonSOTrx;
+import de.metas.util.JSONObjectMapper;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
-import org.junit.jupiter.api.Test;
-
-import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.common.rest_api.v1.JsonExternalId;
-import de.metas.common.rest_api.v1.JsonInvoiceRule;
-import de.metas.rest_api.common.JsonPrice;
-import de.metas.rest_api.common.JsonSOTrx;
-import de.metas.util.JSONObjectMapper;
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L

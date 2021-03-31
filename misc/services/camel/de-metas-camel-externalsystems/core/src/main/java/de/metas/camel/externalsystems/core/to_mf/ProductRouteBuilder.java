@@ -39,6 +39,10 @@ import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_S
 import static de.metas.common.product.v2.response.ProductsQueryParams.SINCE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
+/**
+ * This route invokes the metasfresh REST-API to retrieve product master data.
+ * It expects to have a {@link GetProductsCamelRequest} as exchange body.
+ */
 @Component
 public class ProductRouteBuilder extends RouteBuilder
 {

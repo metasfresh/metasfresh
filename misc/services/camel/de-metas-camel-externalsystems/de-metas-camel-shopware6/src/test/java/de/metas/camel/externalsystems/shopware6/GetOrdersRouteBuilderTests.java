@@ -24,8 +24,8 @@ package de.metas.camel.externalsystems.shopware6;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
@@ -36,7 +36,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrders;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
@@ -61,7 +61,7 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BPARTNER_ID_JSON_PATH;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BPARTNER_LOCATION_ID_JSON_PATH;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_ORG_CODE;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
 public class GetOrdersRouteBuilderTests extends CamelTestSupport
@@ -129,17 +129,17 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 
 	private void prepareRouteForTesting(final MockSuccessfullyCreatedBPartnerProcessor successfullyCreatedBPartnerProcessor) throws Exception
 	{
-		AdviceWithRouteBuilder.adviceWith(context, GET_ORDERS_ROUTE_ID,
+		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
 										  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
 												  .replace()
 												  .process(new MockGetOrdersProcessor()));
 
-		AdviceWithRouteBuilder.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
+		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 										  advice -> {
+											  // validate the upsert request and send a response
 											  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
 													  .after()
 													  .to(MOCK_SHOPWARE_TO_MF_RESULT);
-
 											  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
 													  .skipSendToOriginalEndpoint()
 													  .process(successfullyCreatedBPartnerProcessor);

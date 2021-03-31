@@ -1,27 +1,11 @@
 package de.metas.ordercandidate.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.List;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -34,6 +18,20 @@ import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -82,6 +80,20 @@ public class OLCandRepository
 				.map(olCandFactory::toOLCand)
 				.collect(ImmutableList.toImmutableList()));
 	}
+
+	public OLCand create(@NonNull final OLCandCreateRequest request)
+	{
+		Check.assumeNotNull(request, "request is not null");
+
+		final OLCandFactory olCandFactory = new OLCandFactory();
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		return trxManager.callInThreadInheritedTrx(() -> {
+			final I_C_OLCand olCandRecord = createAndSaveOLCandRecord(request);
+			return olCandFactory.toOLCand(olCandRecord);
+		});
+	}
+
 
 	private I_C_OLCand createAndSaveOLCandRecord(@NonNull final OLCandCreateRequest request)
 	{
