@@ -5,6 +5,7 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { debounce } from 'lodash';
+import classnames from 'classnames';
 
 import {
   breadcrumbRequest,
@@ -625,7 +626,11 @@ class MenuOverlay extends Component {
       : node;
 
     return (
-      <div className="menu-overlay menu-overlay-primary">
+      <div
+        className={classnames('menu-overlay menu-overlay-primary', {
+          'menu-overlay-big': nodeId == 0,
+        })}
+      >
         <div className="menu-overlay-body breadcrumbs-shadow">
           {nodeId == 0 ? (
             //ROOT

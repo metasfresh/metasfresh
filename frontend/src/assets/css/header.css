@@ -468,6 +468,11 @@
     position: relative;
 }
 
+/* adaptive width with the viewport depending on the initiator */
+.menu-overlay-big {
+    width: 80vw;
+}
+
 .menu-overlay-caption {
     display: flex;
     flex-direction: column;
