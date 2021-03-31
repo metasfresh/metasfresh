@@ -46,8 +46,6 @@ import java.util.Optional;
 
 final class BPartnerEndpointAdapter
 {
-	private static final Logger logger = LogManager.getLogger(BPartnerEndpointAdapter.class);
-
 	private final BpartnerRestController bpartnerRestController;
 
 	public BPartnerEndpointAdapter(@NonNull final BpartnerRestController bpartnerRestController)

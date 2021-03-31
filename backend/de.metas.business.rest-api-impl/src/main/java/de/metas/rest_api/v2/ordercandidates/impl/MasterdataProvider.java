@@ -77,8 +77,6 @@ import java.util.Optional;
 
 final class MasterdataProvider
 {
-	private static final Logger logger = LogManager.getLogger(MasterdataProvider.class);
-
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
@@ -193,6 +191,7 @@ final class MasterdataProvider
 		return productMasterDataProvider.getProductInfo(productIdentifier, orgId);
 	}
 
+	@Nullable
 	public InputDataSourceId getDataSourceId(@Nullable final String dataSourceIdentifier, @NonNull final OrgId orgId)
 	{
 		if (Check.isEmpty(dataSourceIdentifier, true))

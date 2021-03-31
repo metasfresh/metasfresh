@@ -61,9 +61,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "value" : 4
           }
         },
-        "baseLanguage" : true,
         "leftToRight" : true,
-        "decimalPoint" : false
+        "decimalPoint" : false,
+        "baseLanguage" : true
       },
       "url" : "bPartner.url",
       "groupId" : 15,
@@ -92,7 +92,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "nanos" : 560000000
         },
         "entries" : [ ]
-      }
+      },
+      "identifiedByExternalReference" : false
     },
     "contacts" : [
       {
@@ -373,8 +374,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           },
           "lastChangedByUserId" : 30,
           "lastChangedTimestamp" : {
-            "seconds" : 1561133,
-            "nanos" : 544000000
+            "seconds" : 1561134,
+            "nanos" : 560000000
           },
           "entries" : [ ]
         },
@@ -417,7 +418,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "nanos" : 560000000
         },
         "entries" : [ ]
-      }
+      },
+      "identifiedByExternalReference" : false
     },
     "contacts" : [
       {
@@ -647,8 +649,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           },
           "lastChangedByUserId" : 30,
           "lastChangedTimestamp" : {
-            "seconds" : 1561133,
-            "nanos" : 544000000
+            "seconds" : 1561134,
+            "nanos" : 560000000
           },
           "entries" : [ ]
         },
@@ -691,7 +693,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "nanos" : 560000000
         },
         "entries" : [ ]
-      }
+      },
+      "identifiedByExternalReference" : false
     },
     "contacts" : [
       {
@@ -919,8 +922,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           },
           "lastChangedByUserId" : 30,
           "lastChangedTimestamp" : {
-            "seconds" : 1561133,
-            "nanos" : 544000000
+            "seconds" : 1561134,
+            "nanos" : 560000000
           },
           "entries" : [ ]
         },
@@ -963,7 +966,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "nanos" : 560000000
         },
         "entries" : [ ]
-      }
+      },
+      "identifiedByExternalReference" : false
     },
     "contacts" : [
       {
@@ -1125,8 +1129,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           },
           "lastChangedByUserId" : 30,
           "lastChangedTimestamp" : {
-            "seconds" : 1561133,
-            "nanos" : 544000000
+            "seconds" : 1561134,
+            "nanos" : 560000000
           },
           "entries" : [ ]
         },
@@ -1169,7 +1173,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "nanos" : 560000000
         },
         "entries" : [ ]
-      }
+      },
+      "identifiedByExternalReference" : false
     },
     "contacts" : [
       {

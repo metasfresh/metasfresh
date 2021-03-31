@@ -1052,7 +1052,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	{
 		// given
 		BusinessTestHelper.createBPGroup("DefaultGroup", true);
-		testMasterdata.createDataSource("SOURCE.de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_B2C");
+		testMasterdata.createDataSource("SOURCE.de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_B2C");
 		testMasterdata.createDataSource("DEST.de.metas.ordercandidate");
 		testMasterdata.createPricingSystem("vk3");
 		testMasterdata.createShipper("Standard");
@@ -1084,7 +1084,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	{
 		// given
 		BusinessTestHelper.createBPGroup("DefaultGroup", true);
-		testMasterdata.createDataSource("SOURCE.de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_B2C");
+		testMasterdata.createDataSource("SOURCE.de.metas.rest_api.ordercandidates.impl.OrderCandidatesRestControllerImpl_B2C");
 		testMasterdata.createDataSource("DEST.de.metas.ordercandidate");
 		testMasterdata.createPricingSystem("vk3");
 		testMasterdata.createShipper("Standard");
