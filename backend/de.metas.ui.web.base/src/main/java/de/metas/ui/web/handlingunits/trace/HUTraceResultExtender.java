@@ -6,6 +6,7 @@ import de.metas.process.PInstanceId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
+import de.metas.ui.web.document.filter.sql.SqlFilter;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
@@ -61,23 +62,23 @@ final class HUTraceResultExtender implements SqlDocumentFilterConverter
 	}
 
 	@Override
-	public String getSql(
-			@NonNull final SqlParamsCollector sqlParamsOut,
+	public SqlFilter getSql(
 			@NonNull final DocumentFilter filter,
 			@NonNull final SqlOptions sqlOpts,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		if (!filter.hasParameters())
 		{
-			return converter.getSql(sqlParamsOut, filter, sqlOpts, context); // do whatever the system usually does
+			return converter.getSql(filter, sqlOpts, context); // do whatever the system usually does
 		}
 		else
 		{
 			final HUTraceEventQuery huTraceQuery = HuTraceQueryCreator.createTraceQueryFromDocumentFilter(filter);
 			final PInstanceId selectionId = huTraceRepository.queryToSelection(huTraceQuery);
 
+			final SqlParamsCollector sqlParamsOut = SqlParamsCollector.newInstance();
 			final String sqlPlaceHolder = sqlParamsOut.placeholder(selectionId);
-			return String.format(WHERE_IN_T_SELECTION, sqlPlaceHolder);
+			return SqlFilter.of(String.format(WHERE_IN_T_SELECTION, sqlPlaceHolder), sqlParamsOut);
 		}
 	}
 }

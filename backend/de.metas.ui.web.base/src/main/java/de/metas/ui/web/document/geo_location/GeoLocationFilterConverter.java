@@ -1,17 +1,6 @@
 package de.metas.ui.web.document.geo_location;
 
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-import org.slf4j.Logger;
-
 import com.jgoodies.common.base.Objects;
-
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.geocoding.GeoCoordinatesRequest;
@@ -21,11 +10,21 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
+import de.metas.ui.web.document.filter.sql.SqlFilter;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentDescriptor.LocationColumnNameType;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+import org.slf4j.Logger;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -78,8 +77,7 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 	}
 
 	@Override
-	public String getSql(
-			@NonNull final SqlParamsCollector sqlParamsOut,
+	public SqlFilter getSql(
 			@NonNull final DocumentFilter filter,
 			@NonNull final SqlOptions sqlOpts,
 			final SqlDocumentFilterConverterContext context_NOTUSED)
@@ -89,7 +87,7 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 		{
 			// shall not happen
 			logger.warn("Cannot convert filter to SQL because parameter {} is not set: {}", PARAM_LocationAreaSearchDescriptor, filter);
-			return null;
+			return SqlFilter.ACCEPT_ALL;
 		}
 
 		final GeographicalCoordinates addressCoordinates = getAddressCoordinates(filter).orElse(null);
@@ -99,13 +97,15 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 			throw new AdempiereException(MSG_NoCoordinatesFoundForTheGivenLocation).markAsUserValidationError();
 		}
 
+		final SqlParamsCollector sqlParamsOut = SqlParamsCollector.newInstance();
+
 		final String visitorAddressQuery = constructVisitorAddressQuery(filter);
 
 		final int distanceInKm = extractDistanceInKm(filter);
 
 		if (LocationColumnNameType.LocationId.equals(descriptor.getType()))
 		{
-			return "EXISTS ("
+			final String sql = "EXISTS ("
 					+ " SELECT 1"
 					+ " FROM " + I_C_Location.Table_Name + " l"
 					+ " WHERE "
@@ -113,10 +113,11 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 					// no visitorAddressQuery here
 					+ " AND " + sqlGeographicalDistance(sqlParamsOut, "l", addressCoordinates, distanceInKm)
 					+ ")";
+			return SqlFilter.of(sql, sqlParamsOut);
 		}
 		else if (LocationColumnNameType.BPartnerLocationId.equals(descriptor.getType()))
 		{
-			return "EXISTS ("
+			final String sql = "EXISTS ("
 					+ " SELECT 1"
 					+ " FROM " + I_C_BPartner_Location.Table_Name + " bpl"
 					+ " INNER JOIN " + I_C_Location.Table_Name + " l ON l." + I_C_Location.COLUMNNAME_C_Location_ID + "=bpl." + I_C_BPartner_Location.COLUMNNAME_C_Location_ID
@@ -125,10 +126,11 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 					+ visitorAddressQuery
 					+ " AND " + sqlGeographicalDistance(sqlParamsOut, "l", addressCoordinates, distanceInKm)
 					+ ")";
+			return SqlFilter.of(sql, sqlParamsOut);
 		}
 		else if (LocationColumnNameType.BPartnerId.equals(descriptor.getType()))
 		{
-			return "EXISTS ("
+			final String sql = "EXISTS ("
 					+ " SELECT 1"
 					+ " FROM " + I_C_BPartner.Table_Name + " bp"
 					+ " INNER JOIN " + I_C_BPartner_Location.Table_Name + " bpl ON bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "=bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
@@ -139,6 +141,7 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 					+ visitorAddressQuery
 					+ " AND " + sqlGeographicalDistance(sqlParamsOut, "l", addressCoordinates, distanceInKm)
 					+ ")";
+			return SqlFilter.of(sql, sqlParamsOut);
 		}
 		else
 		{
@@ -179,8 +182,8 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 				+ "," + sqlParamsOut.placeholder(addressCoordinates.getLongitude())
 				//
 				+ ") <= " + sqlParamsOut.placeholder(distanceInKm)
-		//
-		;
+				//
+				;
 	}
 
 	private Optional<GeographicalCoordinates> getAddressCoordinates(final DocumentFilter filter)

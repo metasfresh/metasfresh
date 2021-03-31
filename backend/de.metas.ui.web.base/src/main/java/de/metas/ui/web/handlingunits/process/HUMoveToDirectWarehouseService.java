@@ -246,10 +246,12 @@ public class HUMoveToDirectWarehouseService
 		//
 		// Remove this HU from the view
 		// Don't invalidate. We will do it at the end of all processing.
-		if (huView != null)
-		{
-			huView.removeHUIds(ImmutableSet.of(huId));
-		}
+		//
+		// NOTE/Later edit: we decided to not remove it anymore
+		// because in some views it might make sense to keep it there.
+		// The right way would be to check if after moving it, the HU is still elgible for view's filters.
+		//
+		// if (huView != null) { huView.removeHUIds(ImmutableSet.of(huId)); }
 	}
 
 	/**

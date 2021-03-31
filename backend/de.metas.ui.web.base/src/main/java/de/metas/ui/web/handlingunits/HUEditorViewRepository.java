@@ -1,12 +1,8 @@
 package de.metas.ui.web.handlingunits;
 
-import java.util.List;
-import java.util.Set;
-
 import de.metas.handlingunits.HuId;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
@@ -15,6 +11,11 @@ import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.collections.PagedIterator.Page;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -61,14 +62,15 @@ public interface HUEditorViewRepository
 	/**
 	 * Retrieves the {@link HUEditorRow} hierarchy for given M_HU_ID, even if that M_HU_ID is not in scope.
 	 *
-	 * @param huId
 	 * @return {@link HUEditorRow} or null if the huId negative or zero.
 	 */
+	@Nullable
 	HUEditorRow retrieveForHUId(HuId huId);
 
-	Set<HuId> retrieveHUIdsEffective(HUIdsFilterData huIdsFilter,
-			DocumentFilterList filters,
-			SqlDocumentFilterConverterContext context);
+	Set<HuId> retrieveHUIdsEffective(
+			@NonNull HUIdsFilterData huIdsFilterData,
+			@NonNull DocumentFilterList allOtherFilters,
+			@NonNull SqlDocumentFilterConverterContext context);
 
 	Page<HuId> retrieveHUIdsPage(ViewEvaluationCtx viewEvalCtx, ViewRowIdsOrderedSelection selection, int firstRow, int maxRows);
 
@@ -82,6 +84,8 @@ public interface HUEditorViewRepository
 
 	SqlViewRowIdsConverter getRowIdsConverter();
 
-	/** Caches the given {@code huIds} in one go. Advised to use this prior to repeated invocations of {@link #retrieveForHUId(HuId)}. */
+	/**
+	 * Caches the given {@code huIds} in one go. Advised to use this prior to repeated invocations of {@link #retrieveForHUId(HuId)}.
+	 */
 	void warmUp(Set<HuId> huIds);
 }

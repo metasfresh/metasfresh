@@ -169,8 +169,9 @@ public class Trace
 					|| classname.startsWith(org.adempiere.ad.persistence.TableModelLoader.class.getPackage().getName())
 					//
 					|| classname.startsWith(JavaAssistInterceptor.class.getPackage().getName())
-					|| classname.indexOf("_$$_jvstdca_") >= 0 // javassist proxy
+					|| classname.contains("_$$_jvstdca_") // javassist proxy
 					|| methodName.startsWith("access$")
+					|| classname.contains("$$FastClassBySpringCGLIB$$")
 			//
 			)
 			{

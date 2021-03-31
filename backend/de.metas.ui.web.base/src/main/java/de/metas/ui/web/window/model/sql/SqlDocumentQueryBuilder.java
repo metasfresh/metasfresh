@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
@@ -493,12 +494,15 @@ public class SqlDocumentQueryBuilder
 		{
 
 			final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.EMPTY;
-			final String sqlFilters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(entityBinding)
-					.getSql(sqlParams, getDocumentFilters(), SqlOptions.usingTableAlias(entityBinding.getTableAlias()), context);
-			if (!Check.isEmpty(sqlFilters, true))
+			final SqlAndParams sqlFilters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(entityBinding)
+					.getSql(getDocumentFilters(), SqlOptions.usingTableAlias(entityBinding.getTableAlias()), context)
+					.toSqlAndParams()
+					.orElse(null);
+			if (sqlFilters != null && !sqlFilters.isEmpty())
 			{
 				sqlWhereClauseBuilder.appendIfNotEmpty("\n AND ");
-				sqlWhereClauseBuilder.append(" /* filters */ (\n").append(sqlFilters).append(")\n");
+				sqlWhereClauseBuilder.append(" /* filters */ (\n").append(sqlFilters.getSql()).append(")\n");
+				sqlParams.collectAll(sqlFilters.getSqlParams());
 			}
 		}
 

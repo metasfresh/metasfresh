@@ -1,43 +1,9 @@
 package de.metas.ui.web.handlingunits;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -59,7 +25,6 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.ui.web.view.SqlViewRowIdsOrderedSelectionFactory;
@@ -86,6 +51,37 @@ import de.metas.util.StringUtils;
 import de.metas.util.collections.PagedIterator.Page;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -121,6 +117,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final WindowId windowId;
 
@@ -214,7 +211,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setOnlyActiveHUs(false) // retrieve ALL HUs, see https://github.com/metasfresh/metasfresh-webui-api/issues/563
 				.createQueryBuilder();
 
-		if (huIds != null && !huIds.isEmpty())
+		if (!huIds.isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_M_HU.COLUMN_M_HU_ID, huIds);
 		}
@@ -226,7 +223,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 	private HUEditorRow createHUEditorRow(
 			@NonNull final I_M_HU hu,
-			final HuId topLevelHUId)
+			@Nullable final HuId topLevelHUId)
 	{
 		// final Stopwatch stopwatch = Stopwatch.createStarted();
 
@@ -345,7 +342,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return huEditorRowBuilt;
 	}
 
-	private static final String extractPackingInfo(final I_M_HU hu, final HUEditorRowType huUnitType)
+	private static String extractPackingInfo(final I_M_HU hu, final HUEditorRowType huUnitType)
 	{
 		if (!huUnitType.isPureHU())
 		{
@@ -369,6 +366,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		}
 	}
 
+	@Nullable
 	private IHUProductStorage getSingleProductStorage(final I_M_HU hu)
 	{
 		final IHUStorage huStorage = handlingUnitsBL.getStorageFactory()
@@ -380,8 +378,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			return null;
 		}
 
-		final IHUProductStorage productStorage = huStorage.getProductStorage(productId);
-		return productStorage;
+		return huStorage.getProductStorage(productId);
 	}
 
 	private HUEditorRow createHUEditorRow(
@@ -390,8 +387,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@NonNull final IHUProductStorage huStorage,
 			final boolean processed)
 	{
-		// final Stopwatch stopwatch = Stopwatch.createStarted();
-
 		final I_M_HU hu = huStorage.getM_HU();
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final ProductId productId = huStorage.getProductId();
@@ -399,7 +394,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		final Optional<OrderLineId> reservedForOrderLineId = huReservationService.getOrderLineIdByReservedVhuId(huId);
 
-		final HUEditorRow huEditorRow = HUEditorRow.builder(windowId)
+		return HUEditorRow.builder(windowId)
 				.setRowId(HUEditorRowId.ofHUStorage(huId, topLevelHUId, productId))
 				.setType(HUEditorRowType.HUStorage)
 				.setTopLevel(false)
@@ -418,11 +413,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setQtyCU(huStorage.getQty().toBigDecimal())
 				//
 				.build();
-
-		// System.out.println("createHUEditorRow: created " + huEditorRow + " (storage) in " + stopwatch);
-		return huEditorRow;
 	}
 
+	@Nullable
 	public JSONLookupValue createProductLookupValue(@Nullable final ProductId productId)
 	{
 		if (productId == null)
@@ -434,6 +427,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return JSONLookupValue.of(productId.getRepoId(), displayName);
 	}
 
+	@Nullable
 	private static JSONLookupValue createUOMLookupValue(@Nullable final I_C_UOM uom)
 	{
 		if (uom == null)
@@ -444,6 +438,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		return JSONLookupValue.of(uom.getC_UOM_ID(), uom.getUOMSymbol());
 	}
 
+	@Nullable
 	private String createLocatorCaption(@Nullable final LocatorId locatorId)
 	{
 		if (locatorId == null)
@@ -516,67 +511,35 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public Set<HuId> retrieveHUIdsEffective(
-			@NonNull final HUIdsFilterData huIdsFilter,
-			@NonNull final DocumentFilterList filters,
-			@NonNull final SqlDocumentFilterConverterContext context)
+	public ImmutableSet<HuId> retrieveHUIdsEffective(
+			final @NonNull HUIdsFilterData huIdsFilterData,
+			final @NonNull DocumentFilterList allOtherFilters,
+			final @NonNull SqlDocumentFilterConverterContext context)
 	{
-		final ImmutableSet<HuId> onlyHUIds = extractHUIds(huIdsFilter);
+		final ImmutableSet<HuId> onlyHUIds = huIdsFilterData.getFixedHUIds().orElse(null);
 
-		if (filters.isEmpty() && !huIdsFilter.hasInitialHUQuery() && onlyHUIds != null)
+		// shortcut: In case
+		// 1. we don't have an initial HU query
+		// 2. but just some HU Ids specified,
+		// 3. and no other filters
+		// => don't bother the DB but return the list of IDs that we already have
+		if (huIdsFilterData.hasNoInitialHUQuery()
+				&& onlyHUIds != null
+				&& allOtherFilters.isEmpty())
 		{
-			// shortcut: don't bother the DB but return the list of IDs that we already have
 			return onlyHUIds;
 		}
 
-		// Create HU query
-		IHUQueryBuilder huQuery = huIdsFilter.getInitialHUQueryOrNull();
-		if (huQuery == null)
-		{
-			huQuery = handlingUnitsDAO.createHUQueryBuilder();
-		}
-		huQuery.setContext(PlainContextAware.newOutOfTrx());
+		final SqlDocumentFilterConverter sqlFilterConverter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding);
 
-		// Only HUs
-		if (onlyHUIds != null)
-		{
-			huQuery.addOnlyHUIds(HuId.toRepoIds(onlyHUIds));
-		}
-
-		// Exclude HUs
-		huQuery.addHUIdsToExclude(HuId.toRepoIds(huIdsFilter.getShallNotHUIds()));
-
-		//
-		// Convert the "filters" to SQL
-		if (!filters.isEmpty())
-		{
-			final SqlDocumentFilterConverter sqlFilterConverter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding);
-			huQuery.addFilter(sqlFilterConverter.createQueryFilter(filters,
-					SqlOptions.usingTableAlias(sqlViewBinding.getTableAlias()),
-					context));
-		}
-
-		final List<Integer> huRepoIds = huQuery.createQuery().listIds();
-		return HuId.ofRepoIds(huRepoIds);
-	}
-
-	private static ImmutableSet<HuId> extractHUIds(@NonNull final HUIdsFilterData huIdsFilter)
-	{
-		final Set<HuId> initialHUIds = huIdsFilter.getInitialHUIds();
-		final Set<HuId> huIdsToInclude = huIdsFilter.getMustHUIds();
-		final Set<HuId> huIdsToExclude = huIdsFilter.getShallNotHUIds();
-
-		if (initialHUIds == null && huIdsToInclude.isEmpty() && huIdsToExclude.isEmpty())
-		{
-			return null; // no restrictions
-		}
-
-		final Set<HuId> initialHUIdsOrEmpty = initialHUIds != null ? initialHUIds : ImmutableSet.of();
-
-		return Stream.concat(initialHUIdsOrEmpty.stream(), huIdsToInclude.stream())
-				.filter(huId -> !huIdsToExclude.contains(huId))
-				.distinct()
-				.collect(ImmutableSet.toImmutableSet());
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.filter(
+						sqlFilterConverter.createQueryFilter(
+								allOtherFilters.mergeWith(HUIdsFilterHelper.createFilter(huIdsFilterData)),
+								SqlOptions.usingTableAlias(sqlViewBinding.getTableAlias()),
+								context))
+				.create()
+				.listIds(HuId::ofRepoId);
 	}
 
 	@Override

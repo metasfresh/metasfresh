@@ -33,7 +33,7 @@ import lombok.Value;
  */
 
 @Value
-public final class ViewRowIdsOrderedSelection
+public class ViewRowIdsOrderedSelection
 {
 	ViewId viewId;
 	long size;
@@ -44,10 +44,10 @@ public final class ViewRowIdsOrderedSelection
 
 	@Builder(toBuilder = true)
 	private ViewRowIdsOrderedSelection(
-			@NonNull ViewId viewId,
-			long size,
-			@Nullable DocumentQueryOrderByList orderBys,
-			int queryLimit)
+			@NonNull final ViewId viewId,
+			final long size,
+			@Nullable final DocumentQueryOrderByList orderBys,
+			final int queryLimit)
 	{
 		this.viewId = viewId;
 		this.size = size;
@@ -59,7 +59,7 @@ public final class ViewRowIdsOrderedSelection
 				&& size >= queryLimit;
 	}
 
-	public static boolean equals(final ViewRowIdsOrderedSelection s1, final ViewRowIdsOrderedSelection s2)
+	public static boolean equals(@Nullable final ViewRowIdsOrderedSelection s1, @Nullable final ViewRowIdsOrderedSelection s2)
 	{
 		return Objects.equals(s1, s2);
 	}

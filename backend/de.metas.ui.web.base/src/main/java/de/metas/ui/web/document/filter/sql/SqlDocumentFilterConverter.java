@@ -1,16 +1,15 @@
 package de.metas.ui.web.document.filter.sql;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
-import org.compiere.util.DB;
-
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.ArrayList;
 
 /*
  * #%L
@@ -36,15 +35,16 @@ import lombok.NonNull;
 
 /**
  * Converts a {@link DocumentFilter} to SQL.
- * 
+ * <p>
  * To create and manipulate {@link SqlDocumentFilterConverter}s please use {@link SqlDocumentFilterConverters}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface SqlDocumentFilterConverter
 {
-	/** @return true if the filter identified by <code>filterId</code> can be converted to SQL by this converter */
+	/**
+	 * @return true if the filter identified by <code>filterId</code> can be converted to SQL by this converter
+	 */
 	boolean canConvert(final String filterId);
 
 	/**
@@ -53,41 +53,33 @@ public interface SqlDocumentFilterConverter
 	 *
 	 * @return SQL
 	 */
-	@Nullable
-	String getSql(SqlParamsCollector sqlParamsOut,
+	SqlFilter getSql(
 			DocumentFilter filter,
 			final SqlOptions sqlOpts,
 			final SqlDocumentFilterConverterContext context);
 
-	/* final */ default String getSql(
-			@NonNull final SqlParamsCollector sqlParamsOut,
+	/* final */
+	default SqlFilter getSql(
 			@NonNull final DocumentFilterList filters,
 			@NonNull final SqlOptions sqlOpts,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		if (filters.isEmpty())
 		{
-			return "";
+			return SqlFilter.ACCEPT_ALL;
 		}
 
-		final StringBuilder sqlWhereClauseBuilder = new StringBuilder();
-
+		final ArrayList<SqlFilter> sqlFilters = new ArrayList<>();
 		for (final DocumentFilter filter : filters.toList())
 		{
-			final String sqlFilter = getSql(sqlParamsOut, filter, sqlOpts, context);
-			if (Check.isEmpty(sqlFilter, true))
+			final SqlFilter sqlFilter = getSql(filter, sqlOpts, context);
+			if (sqlFilter != null)
 			{
-				continue;
+				sqlFilters.add(sqlFilter);
 			}
-
-			if (sqlWhereClauseBuilder.length() > 0)
-			{
-				sqlWhereClauseBuilder.append("\n AND ");
-			}
-			sqlWhereClauseBuilder.append(DB.TO_COMMENT(filter.getFilterId())).append("(").append(sqlFilter).append(")");
 		}
 
-		return sqlWhereClauseBuilder.toString();
+		return SqlFilter.merge(sqlFilters);
 	}
 
 	default <T> IQueryFilter<T> createQueryFilter(
@@ -95,8 +87,10 @@ public interface SqlDocumentFilterConverter
 			@NonNull final SqlOptions sqlOpts,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
-		final SqlParamsCollector sqlFilterParams = SqlParamsCollector.newInstance();
-		final String sqlFilter = getSql(sqlFilterParams, filters, sqlOpts, context);
-		return TypedSqlQueryFilter.of(sqlFilter, sqlFilterParams.toList());
+		final SqlAndParams sqlAndParams = getSql(filters, sqlOpts, context)
+				.toSqlAndParams()
+				.orElseThrow(() -> new AdempiereException("Empty filters are not allowed: " + filters));
+
+		return TypedSqlQueryFilter.of(sqlAndParams.getSql(), sqlAndParams.getSqlParams());
 	}
 }
