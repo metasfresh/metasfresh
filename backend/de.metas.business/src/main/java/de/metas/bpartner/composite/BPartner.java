@@ -122,7 +122,7 @@ public class BPartner
 
 	/**
 	 * If true, it means that the BPartner is valid without having a code, metasfresh or gln.
-	 * It's identifier is an external reference that is included in the BPartnerComposite instance which holds this BPartner.
+	 * It's identifier is an external reference that is provided outside of this bpartner's composite.
 	 */
 	private boolean identifiedByExternalReference;
 
