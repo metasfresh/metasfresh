@@ -1,3 +1,10 @@
+DROP FUNCTION IF EXISTS getopeninvoices(numeric, numeric, character varying, numeric, timestamp WITHOUT TIME ZONE, numeric, numeric)
+;
+
+DROP VIEW IF EXISTS t_getopeninvoices
+;
+
+
 DROP FUNCTION IF EXISTS getopeninvoices(
     numeric, -- 1 - c_bpartner_id
     numeric, -- 2 - c_currency_id
