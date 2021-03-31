@@ -36,6 +36,7 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.common.bprelation.JsonBPRelationRole;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.util.EmptyUtil;
 import io.swagger.client.model.CareGiver;
 import io.swagger.client.model.Doctor;
 import io.swagger.client.model.Hospital;
@@ -583,7 +584,10 @@ public class BPartnerUpsertRequestProducer
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setName(payer.getName());
-		jsonRequestBPartner.setCode(payer.getIkNumber());
+		if(EmptyUtil.isNotBlank(payer.getIkNumber()))
+		{
+			jsonRequestBPartner.setCode(payer.getIkNumber());
+		}
 		jsonRequestBPartner.setCustomer(true);
 
 		final JsonRequestLocation requestLocation = new JsonRequestLocation();
