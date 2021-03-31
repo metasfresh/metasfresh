@@ -23,6 +23,8 @@
 package de.metas.camel.externalsystems.common.v2;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import lombok.Builder;
@@ -41,4 +43,16 @@ public class BPUpsertCamelRequest
 	@NonNull
 	@JsonProperty("jsonRequestBPartnerUpsert")
 	JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert;
+
+	public String toString()
+	{
+		try
+		{
+			return new ObjectMapper().writeValueAsString(this);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException("toString() failed for BPUpsertCamelRequest", e);
+		}
+	}
 }

@@ -24,7 +24,10 @@ package de.metas.camel.alberta.patient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import de.metas.camel.externalsystems.common.BPRelationsCamelRequest;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bprelation.request.JsonRequestBPRelationsUpsert;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
@@ -95,7 +98,7 @@ public class GetPatientsRouteTests extends CamelTestSupport
 	private static final String JSON_ALBERTA_GET_HOSPIPAL_RESPONSE = "/de/metas/camel/alberta/patient/33_GetHospitalAlberta_5ab233bc9d69c74b68cec23a_Response.json";
 	private static final String JSON_ALBERTA_GET_PAYER_RESPONSE = "/de/metas/camel/alberta/patient/34_GetPayerAlberta_5ada01a2c3918e1bdcb5460e_Response.json";
 	private static final String JSON_ALBERTA_GET_PHARMACY_RESPONSE = "/de/metas/camel/alberta/patient/35_GetPharmacyAlberta_5ab2390e9d69c74b68cf4f2d_Response.json";
-	
+
 	private static final String JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST = "/de/metas/camel/alberta/patient/40_GetExternalReferencesMetasfreshRequest.json";
 	private static final String JSON_EXTERNAL_REFERENCE_LOOKUP_RESPONSE = "/de/metas/camel/alberta/patient/50_GetExternalReferencesMetasfreshResponse.json";
 	private static final String JSON_UPSERT_BPARTNER_REQUEST = "/de/metas/camel/alberta/patient/60_UpsertBPartnerMetasfreshRequest.json";
@@ -130,6 +133,10 @@ public class GetPatientsRouteTests extends CamelTestSupport
 		return true;
 	}
 
+	/**
+	 * GETs one patient from the mocked Alberta-API and PUT BPartners and BPartner-Relations to the mocked metasfresh-API.
+	 * Note that according to {@link #JSON_EXTERNAL_REFERENCE_LOOKUP_RESPONSE}, none of the BPartners exist in metasfresh, so they are all created.
+	 */
 	@Test
 	void happyFlow() throws Exception
 	{
@@ -144,6 +151,9 @@ public class GetPatientsRouteTests extends CamelTestSupport
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 
+		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_MF_GET_PATIENTS_REQUEST);
+		final JsonExternalSystemRequest invokeExternalSystemRequest = objectMapper.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
+
 		//validate the external system query request that is done towards metasfresh
 		final MockEndpoint esrQueryValidationMockEndpoint = getMockEndpoint(MOCK_ESR_QUERY_REQUEST);
 		final InputStream esrQueryRequestExpected = this.getClass().getResourceAsStream(JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST);
@@ -152,17 +162,23 @@ public class GetPatientsRouteTests extends CamelTestSupport
 		//validate the upsert-bpartner-request that is done towards metasfresh
 		final MockEndpoint bpartnerUpsertMockEndpoint = getMockEndpoint(MOCK_UPSERT_BPARTNER_REQUEST);
 		final InputStream bparnerUpsertRequestExpected = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
-		bpartnerUpsertMockEndpoint.expectedBodiesReceived(objectMapper.readValue(bparnerUpsertRequestExpected, JsonRequestBPartnerUpsert.class));
+		final JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert = objectMapper.readValue(bparnerUpsertRequestExpected, JsonRequestBPartnerUpsert.class);
+		final BPUpsertCamelRequest bpUpsertCamelRequest = BPUpsertCamelRequest.builder()
+				.jsonRequestBPartnerUpsert(jsonRequestBPartnerUpsert)
+				.orgCode(invokeExternalSystemRequest.getOrgCode()).build();
+		bpartnerUpsertMockEndpoint.expectedBodiesReceived(bpUpsertCamelRequest);
 
 		//validate the upsert-bpartner-relation-request that is done towards metasfresh
 		final MockEndpoint bpartnerRelationUpsertMockEndpoint = getMockEndpoint(MOCK_UPSERT_BPARTNER_RELATION_REQUEST);
 		final InputStream bparnerRelationUpsertRequestExpected = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_RELATIONS_REQUEST);
-		bpartnerRelationUpsertMockEndpoint.expectedBodiesReceived(objectMapper.readValue(bparnerRelationUpsertRequestExpected, JsonRequestBPRelationsUpsert.class));
+		final JsonRequestBPRelationsUpsert jsonRequestBPRelationsUpsert = objectMapper.readValue(bparnerRelationUpsertRequestExpected, JsonRequestBPRelationsUpsert.class);
+		final BPRelationsCamelRequest bpRelationsCamelRequest = BPRelationsCamelRequest.builder()
+				.jsonRequestBPRelationsUpsert(jsonRequestBPRelationsUpsert)
+				.bpartnerIdentifier("910") // this is the ID that camel got from 70_UpsertBPartnerMetasfreshResponse.json
+				.build();
+		bpartnerRelationUpsertMockEndpoint.expectedBodiesReceived(bpRelationsCamelRequest);
 
 		//fire the route
-		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_MF_GET_PATIENTS_REQUEST);
-		final JsonExternalSystemRequest invokeExternalSystemRequest = objectMapper.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
-
 		template.sendBody("direct:" + GET_PATIENTS_ROUTE_ID, invokeExternalSystemRequest);
 
 		assertMockEndpointsSatisfied();
@@ -246,14 +262,14 @@ public class GetPatientsRouteTests extends CamelTestSupport
 			return albertaPatientApi;
 		}
 	}
-	
+
 	@NonNull
 	private static DoctorApi prepareDoctorApiClient(@NonNull final JSON json) throws ApiException
 	{
 		final DoctorApi albertaDoctorApi = Mockito.mock(DoctorApi.class);
 		final String jsonString = loadAsString(JSON_ALBERTA_GET_DOCTOR_RESPONSE);
 		final Doctor doctor = json.deserialize(jsonString, Doctor.class);
-		
+
 		Mockito.when(albertaDoctorApi.getDoctor(any(String.class), any(String.class), any(String.class)))
 				.thenReturn(doctor);
 
@@ -324,7 +340,7 @@ public class GetPatientsRouteTests extends CamelTestSupport
 
 		return pharmacyApi;
 	}
-	
+
 	private static String loadAsString(@NonNull final String name)
 	{
 		final InputStream createdPatientsIS = GetPatientsRouteTests.class.getResourceAsStream(name);

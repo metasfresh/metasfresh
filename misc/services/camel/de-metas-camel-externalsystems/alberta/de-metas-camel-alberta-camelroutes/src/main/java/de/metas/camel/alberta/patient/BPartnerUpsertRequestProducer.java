@@ -288,7 +288,7 @@ public class BPartnerUpsertRequestProducer
 		location.setShipToDefault(!hasExtraShipToAddress);
 		location.setShipTo(!hasExtraShipToAddress);
 
-		requestProducerResultBuilder.patientMainAddressIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + patientId);
+		requestProducerResultBuilder.patientMainAddressIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + MAIN_ADDR_PREFIX + patientId);
 
 		return JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier(EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + MAIN_ADDR_PREFIX + patientId)

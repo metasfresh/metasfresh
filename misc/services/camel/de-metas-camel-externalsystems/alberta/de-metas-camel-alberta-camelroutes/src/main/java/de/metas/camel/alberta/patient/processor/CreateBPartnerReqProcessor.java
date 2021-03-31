@@ -64,6 +64,9 @@ import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PRO
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_CURRENT_PATIENT;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_ORG_CODE;
 
+/**
+ * Takes a {@link JsonExternalReferenceLookupResponse} and the current {@link Patient} and transformes them into a {@link BPUpsertCamelRequest}.
+ */
 public class CreateBPartnerReqProcessor implements Processor
 {
 	@Override
@@ -107,7 +110,7 @@ public class CreateBPartnerReqProcessor implements Processor
 
 		final PharmacyApi pharmacyApi = exchange.getProperty(ROUTE_PROPERTY_ALBERTA_PHARMACY_API, PharmacyApi.class);
 		final Pharmacy pharmacyOrNull = getPharmacyOrNull(pharmacyApi, connectionDetails, patient.getPharmacyId());
-		
+
 		final BPartnerUpsertRequestProducer bPartnerUpsertRequestProducer = BPartnerUpsertRequestProducer.builder()
 				.patient(patient)
 				.externalId2MetasfreshId(externalId2MetasfreshId)
@@ -121,7 +124,7 @@ public class CreateBPartnerReqProcessor implements Processor
 				.build();
 
 		final BPartnerUpsertRequestProducer.BPartnerRequestProducerResult result = bPartnerUpsertRequestProducer.run();
-		
+
 		final BPartnerRoleInfoProvider bPartnerRoleInfoProvider = BPartnerRoleInfoProvider.builder()
 				.sourceBPartnerIdentifier(result.getPatientBPartnerIdentifier())
 				.bpIdentifier2Role(result.getBPartnerIdentifier2RelationRole())
@@ -180,7 +183,7 @@ public class CreateBPartnerReqProcessor implements Processor
 	@Nullable
 	private NursingHome getNursingHomeOrNull(
 			@NonNull final NursingHomeApi nursingHomeApi,
-			@NonNull final AlbertaConnectionDetails albertaConnectionDetails, 
+			@NonNull final AlbertaConnectionDetails albertaConnectionDetails,
 			@Nullable final String nursingHomeId) throws ApiException
 	{
 		if (EmptyUtil.isBlank(nursingHomeId))
@@ -200,7 +203,7 @@ public class CreateBPartnerReqProcessor implements Processor
 	@Nullable
 	private NursingService getNursingServiceOrNull(
 			@NonNull final NursingServiceApi nursingServiceApi,
-			@NonNull final AlbertaConnectionDetails albertaConnectionDetails, 
+			@NonNull final AlbertaConnectionDetails albertaConnectionDetails,
 			@Nullable final String nursingServiceId) throws ApiException
 	{
 		if (EmptyUtil.isBlank(nursingServiceId))
@@ -220,7 +223,7 @@ public class CreateBPartnerReqProcessor implements Processor
 	@Nullable
 	private Hospital getHospital(
 			@NonNull final HospitalApi hospitalApi,
-			@NonNull final AlbertaConnectionDetails albertaConnectionDetails, 
+			@NonNull final AlbertaConnectionDetails albertaConnectionDetails,
 			@Nullable final PatientHospital patientHospital) throws ApiException
 	{
 		if (patientHospital == null || EmptyUtil.isBlank(patientHospital.getHospitalId()))
@@ -240,7 +243,7 @@ public class CreateBPartnerReqProcessor implements Processor
 	@Nullable
 	private Payer getPayerOrNull(
 			@NonNull final PayerApi payerApi,
-			@NonNull final AlbertaConnectionDetails albertaConnectionDetails, 
+			@NonNull final AlbertaConnectionDetails albertaConnectionDetails,
 			@Nullable final PatientPayer patientPayer) throws ApiException
 	{
 		if (patientPayer == null || EmptyUtil.isBlank(patientPayer.getPayerId()))
@@ -267,7 +270,7 @@ public class CreateBPartnerReqProcessor implements Processor
 		{
 			return null;
 		}
-		
+
 		final Pharmacy pharmacy = pharmacyApi.getPharmacy(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), pharmacyId);
 
 		if (pharmacy == null)
