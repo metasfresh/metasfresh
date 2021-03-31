@@ -20,7 +20,7 @@
     "@cypress/webpack-preprocessor": "^4.0.3",
     "babel-eslint": "10.0.1",
     "babel-loader": "8.0.5",
-    "cypress": "^6.4.0",
+    "cypress": "^6.8.0",
     "eslint": "5.9.0",
     "eslint-config-prettier": "4.0.0",
     "eslint-plugin-chai-friendly": "^0.4.1",
@@ -41,9 +41,9 @@
     "mochaComment2": "mocha 6.0.0 and 6.0.1 don't work; thx to https://github.com/cypress-io/cypress/issues/3537"
   },
   "dependencies": {
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "cypress-plugin-snapshots": "^1.2.6",
-    "cypress-skip-and-only-ui": "^1.0.12",
+    "cypress-skip-and-only-ui": "^1.2.11",
     "immutable": "^4.0.0-rc.12",
     "js-base64": "2.5.2",
     "luxon": "^1.11.4",
