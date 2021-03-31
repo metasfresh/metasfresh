@@ -62,7 +62,10 @@ import java.nio.charset.StandardCharsets;
  * #L%
  */
 
-@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API + "/import")
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/import",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/import",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/import" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class DataImportRestController

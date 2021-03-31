@@ -100,7 +100,14 @@ export default class Table extends PureComponent {
   };
 
   handleClick = (e, item) => {
-    const { keyProperty, selected, onSelect, onDeselect } = this.props;
+    const {
+      keyProperty,
+      selected,
+      onSelect,
+      onDeselect,
+      featureType,
+    } = this.props;
+    const disableMultiSel = featureType === 'SEARCH' ? true : false;
     const id = item[keyProperty];
 
     if (e && e.button === 0) {
@@ -113,12 +120,14 @@ export default class Table extends PureComponent {
         if (isSelected) {
           onDeselect(id);
         } else {
+          // selection with [CTRL + click] happens here
           let newSelectionItems =
             selected && !selected.includes(id) ? [...selected, id] : [id];
-          onSelect(newSelectionItems);
+          disableMultiSel ? onSelect(id) : onSelect(newSelectionItems);
         }
       } else if (selectRange) {
-        if (isAnySelected) {
+        // selection using [SHIFT + click] to select a range happens here
+        if (isAnySelected && !disableMultiSel) {
           const newSelection = this.getProductRange(id);
           onSelect(newSelection);
         } else {

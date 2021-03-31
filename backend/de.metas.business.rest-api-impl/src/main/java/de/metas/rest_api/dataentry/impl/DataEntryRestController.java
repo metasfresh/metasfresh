@@ -47,12 +47,13 @@ import lombok.NonNull;
  */
 
 @RestController
-@RequestMapping(DataEntryRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/dataentry",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/dataentry",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/dataentry" })
 @Profile(Profiles.PROFILE_App)
 public class DataEntryRestController
 {
-	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/dataentry";
-
 	private static final transient Logger log = LogManager.getLogger(DataEntryRestController.class);
 
 	private final DataEntryLayoutRepository layoutRepo;

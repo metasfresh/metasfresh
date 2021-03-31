@@ -1,10 +1,15 @@
 package de.metas.ui.web.handlingunits.process;
 
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.quarantine.HULotNumberQuarantineService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
+import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
@@ -32,7 +37,7 @@ import java.util.stream.Stream;
  * #L%
  */
 
-public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_HU_MoveToAnotherWarehouse_Helper
+public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_HU_MoveToAnotherWarehouse_Template
 {
 	public static final AdMessageKey MSG_WEBUI_HUs_IN_Quarantine = AdMessageKey.of("WEBUI_HUs_IN_Quarantine");
 
@@ -51,6 +56,13 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_H
 		return super.checkPreconditionsApplicable();
 	}
 
+	@ProcessParamLookupValuesProvider(parameterName = I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, numericKey = true, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.lookup)
+	@Override
+	public LookupValuesList getAvailableWarehouses(final LookupDataSourceContext evalCtx)
+	{
+		return super.getAvailableWarehouses(evalCtx);
+	}
+
 	@Override
 	public void assertHUsEligible()
 	{
@@ -58,7 +70,6 @@ public class WEBUI_M_HU_MoveToAnotherWarehouse_ExclQuarantined extends WEBUI_M_H
 		{
 			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_WEBUI_HUs_IN_Quarantine));
 		}
-
 	}
 
 	private boolean isQuarantineHUs(final Stream<I_M_HU> streamSelectedHUs)

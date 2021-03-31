@@ -537,6 +537,7 @@ public class DocumentCollection
 		{
 			zoomInto_adWindowId = RecordWindowFinder.newInstance(zoomIntoInfo.getTableName(), zoomIntoInfo.getRecordId())
 					.checkRecordPresentInWindow()
+					.checkParentRecord()
 					.findAdWindowId()
 					.orElse(null);
 		}

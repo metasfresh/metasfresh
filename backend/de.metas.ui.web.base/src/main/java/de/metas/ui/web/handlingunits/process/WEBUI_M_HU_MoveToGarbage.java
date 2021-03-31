@@ -51,7 +51,7 @@ import de.metas.util.Services;
  * Create Internal Use Inventory and destroy given HUs.
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task initial task https://github.com/metasfresh/metasfresh-webui-api/issues/396
+ * Task initial task https://github.com/metasfresh/metasfresh-webui-api/issues/396
  */
 public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements IProcessPrecondition
 {
@@ -73,7 +73,7 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 		}
 
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		if (!streamSelectedHUs(Select.ONLY_TOPLEVEL).anyMatch(huStatusBL::isPhysicalHU))
+		if (streamSelectedHUs(Select.ONLY_TOPLEVEL).noneMatch(huStatusBL::isPhysicalHU))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only 'physical' HUs can be disposed");
 		}
@@ -113,7 +113,7 @@ public class WEBUI_M_HU_MoveToGarbage extends HUEditorProcessTemplate implements
 		// Invalidate the view
 		if (huIdsDestroyed != null && !huIdsDestroyed.isEmpty())
 		{
-			getView().removeHUIdsAndInvalidate(huIdsDestroyed);
+			getView().invalidateAll();
 		}
 	}
 }

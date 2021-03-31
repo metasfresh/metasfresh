@@ -38,13 +38,14 @@ import lombok.NonNull;
  * #L%
  */
 
-@RequestMapping(ProductCategoriesRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/productCategories",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/productCategories",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/productCategories" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ProductCategoriesRestController
 {
-	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/productCategories";
-
 	private static final Logger logger = LogManager.getLogger(ProductCategoriesRestController.class);
 	private final ProductsServicesFacade productsServicesFacade;
 
