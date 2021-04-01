@@ -90,6 +90,7 @@
         <Postal>SN_postal</Postal>
         <Value>SN_Value</Value>
         <VATaxID>SN_VATaxID_1</VATaxID>
+        <Setup_Place_No>SN_Setup_Place_No</Setup_Place_No>
     </EDI_cctop_119_v>
     <EDI_cctop_119_v>
         <Address1>SU_address1</Address1>
