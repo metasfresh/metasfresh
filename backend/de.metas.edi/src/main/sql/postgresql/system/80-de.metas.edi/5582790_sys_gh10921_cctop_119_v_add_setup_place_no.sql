@@ -1,7 +1,27 @@
+
+-- 2021-04-01T08:48:12.494Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Reference_ID,FieldLength,Version,IsKey,IsParent,IsTranslated,IsIdentifier,SeqNo,AD_Client_ID,IsActive,Created,CreatedBy,IsUpdateable,DDL_NoForeignKey,IsSelectionColumn,IsSyncDatabase,IsAlwaysUpdateable,IsAutocomplete,IsAllowLogging,IsEncrypted,Updated,UpdatedBy,IsAdvancedText,IsLazyLoading,AD_Table_ID,IsCalculated,AD_Column_ID,IsDimension,IsMandatory,IsStaleable,IsUseDocSequence,IsShowFilterIncrementButtons,IsDLMPartitionBoundary,IsGenericZoomKeyColumn,SelectionColumnSeqNo,EntityType,IsForceIncludeInGeneratedModel,IsGenericZoomOrigin,ColumnName,IsAutoApplyValidationRule,Description,IsFacetFilter,MaxFacetsToFetch,FacetFilterSeqNo,AD_Element_ID,IsShowFilterInline,Name,AD_Org_ID) VALUES (10,255,0,'N','N','N','N',0,0,'Y',TO_TIMESTAMP('2021-04-01 10:48:12','YYYY-MM-DD HH24:MI:SS'),100,'N','N','N','N','N','N','Y','N',TO_TIMESTAMP('2021-04-01 10:48:12','YYYY-MM-DD HH24:MI:SS'),100,'N','N',540466,'N',573327,'N','N','N','N','N','N','N',0,'de.metas.esb.edi','N','N','Setup_Place_No','N','','N',0,0,578643,'N','Setup Place No.',0)
+;
+
+-- 2021-04-01T08:48:12.497Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=573327 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-04-01T08:48:12.499Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_Column_Translation_From_AD_Element(578643)
+;
+
+-- 2021-04-01T08:48:49.868
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO EXP_FormatLine (AD_Client_ID,AD_Column_ID,AD_Org_ID,Created,CreatedBy,EntityType,EXP_Format_ID,EXP_FormatLine_ID,IsActive,IsMandatory,IsPartUniqueIndex,Name,Position,Type,Updated,UpdatedBy,Value) VALUES (0,573327,0,TO_TIMESTAMP('2021-04-01 10:48:49','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.esb.edi',540224,550322,'Y','N','N','Setup_Place_No',200,'E',TO_TIMESTAMP('2021-04-01 10:48:49','YYYY-MM-DD HH24:MI:SS'),100,'Setup_Place_No')
+;
+
 -- View: EDI_Cctop_119_v
 
--- DROP VIEW IF EXISTS EDI_Cctop_119_v;
-
+DROP VIEW IF EXISTS EDI_Cctop_119_v;
 CREATE OR REPLACE VIEW EDI_Cctop_119_v AS
 SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
        lookup.C_Invoice_ID,
@@ -167,4 +187,3 @@ ORDER BY (
                                 ELSE 'Error EANCOM_Type'::TEXT
           END)
 ;
-
