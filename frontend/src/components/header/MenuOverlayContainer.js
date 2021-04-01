@@ -35,6 +35,7 @@ class MenuOverlayContainer extends Component {
       transparentBookmarks,
       onKeyDown,
       indexOrder,
+      menuType,
     } = this.props;
 
     let menuOverlayClasses = 'menu-overlay-node-container js-menu-container ';
@@ -146,7 +147,7 @@ MenuOverlayContainer.propTypes = {
   back: PropTypes.any,
   openModal: PropTypes.func,
   showBookmarks: PropTypes.bool,
-  onUpdateData: PropTypes.bool,
+  onUpdateData: PropTypes.func,
   transparentBookmarks: PropTypes.bool,
   onKeyDown: PropTypes.func,
   indexOrder: PropTypes.number,
