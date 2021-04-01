@@ -47,7 +47,7 @@ class MenuOverlayContainer extends Component {
           'mt-0': indexOrder === 1,
           'menu-overlay-node-spaced': deep,
           'menu-overlay-expanded-link-spaced js-menu-main-container': !deep,
-          'menu-overlay-col-2': menuType === 'sitemap', // we apply this only for the sitemap
+          'menu-overlay-sitemap-col-2': menuType === 'sitemap', // we apply this only for the sitemap
         })}
       >
         {type === 'group' && (

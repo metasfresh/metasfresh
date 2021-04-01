@@ -469,8 +469,16 @@
 }
 
 /* Two columns box for the sitemap menu group */
-.menu-overlay-col-2 {
+.menu-overlay-sitemap-col-2 {
   column-count: 2;
+  border: 1px solid #cccccc;
+  box-sizing: border-box;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.menu-overlay-header-main-sitemap {
+
 }
 
 .menu-overlay-caption {

@@ -767,8 +767,15 @@ body{
 }
 
 .column-wrapper {
-    column-count: 2;
+    /* column-count: 2; */
     column-fill: auto;
+}
+
+.sitemap-column {
+    column-count: 1;
+    width: 45vw;
+    float: left;
+    margin-right: 0.5em;
 }
 
 .font-weight-semibold {

@@ -299,7 +299,13 @@ class NavigationTree extends Component {
 
   renderTree = () => {
     const { queriedResults, query } = this.state;
-    let indexOrder = 0;
+
+    let sitemapLeftColItems = queriedResults.filter(
+      (colItem, i) => i % 2 === 0
+    );
+    let sitemapRightColItems = queriedResults.filter(
+      (colItem, i) => i % 2 === 1
+    );
 
     return (
       <div className="sitemap">
@@ -332,7 +338,47 @@ class NavigationTree extends Component {
 
         {/* sitemap items are listed using this */}
         <div className="column-wrapper">
-          {queriedResults &&
+          <div className="sitemap-column">
+            {sitemapLeftColItems &&
+              sitemapLeftColItems.map((subitem, subindex) => {
+                return (
+                  <MenuOverlayContainer
+                    key={subindex}
+                    printChildren={true}
+                    showBookmarks={true}
+                    openModal={this.openModal}
+                    onUpdateData={this.updateData}
+                    onKeyDown={this.handleKeyDown}
+                    handleClickOnFolder={this.handleDeeper}
+                    handleRedirect={this.handleRedirect}
+                    handleNewRedirect={this.handleNewRedirect}
+                    menuType="sitemap"
+                    {...subitem}
+                  />
+                );
+              })}
+          </div>
+          <div className="sitemap-column">
+            {sitemapRightColItems &&
+              sitemapRightColItems.map((subitem, subindex) => {
+                return (
+                  <MenuOverlayContainer
+                    key={subindex}
+                    printChildren={true}
+                    showBookmarks={true}
+                    openModal={this.openModal}
+                    onUpdateData={this.updateData}
+                    onKeyDown={this.handleKeyDown}
+                    handleClickOnFolder={this.handleDeeper}
+                    handleRedirect={this.handleRedirect}
+                    handleNewRedirect={this.handleNewRedirect}
+                    menuType="sitemap"
+                    {...subitem}
+                  />
+                );
+              })}
+          </div>
+          {/* {queriedResults &&
             queriedResults.map((subitem, subindex) => {
               indexOrder = indexOrder + 1;
               return (
@@ -351,7 +397,7 @@ class NavigationTree extends Component {
                   {...subitem}
                 />
               );
-            })}
+            })} */}
 
           {queriedResults.length === 0 && query !== '' && (
             <span>There are no results</span>
