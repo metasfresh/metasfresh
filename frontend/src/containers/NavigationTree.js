@@ -347,6 +347,7 @@ class NavigationTree extends Component {
                   handleClickOnFolder={this.handleDeeper}
                   handleRedirect={this.handleRedirect}
                   handleNewRedirect={this.handleNewRedirect}
+                  menuType="sitemap"
                   {...subitem}
                 />
               );
