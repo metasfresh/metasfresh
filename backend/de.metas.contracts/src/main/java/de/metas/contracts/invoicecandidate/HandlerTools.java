@@ -55,7 +55,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 public class HandlerTools
 {
-	private static final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	public static void invalidateCandidatesForTerm(final Object model)
 	{
@@ -75,6 +74,8 @@ public class HandlerTools
 
 	public static I_C_Invoice_Candidate createIcAndSetCommonFields(@NonNull final I_C_Flatrate_Term term)
 	{
+		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+
 		final I_C_Invoice_Candidate ic = newInstance(I_C_Invoice_Candidate.class);
 
 		ic.setAD_Org_ID(term.getAD_Org_ID());
