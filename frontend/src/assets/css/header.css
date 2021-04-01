@@ -468,9 +468,9 @@
     position: relative;
 }
 
-/* adaptive width with the viewport depending on the initiator */
-.menu-overlay-big {
-    width: 80vw;
+/* Two columns box for the sitemap menu group */
+.menu-overlay-col-2 {
+  column-count: 2;
 }
 
 .menu-overlay-caption {
