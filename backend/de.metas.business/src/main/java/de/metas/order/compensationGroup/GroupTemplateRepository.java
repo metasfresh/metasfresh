@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import de.metas.product.acct.api.ActivityId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -80,6 +81,7 @@ public class GroupTemplateRepository
 		return GroupTemplate.builder()
 				.id(GroupTemplateId.ofRepoId(schemaPO.getC_CompensationGroup_Schema_ID()))
 				.name(schemaPO.getName())
+				.activityId(ActivityId.ofRepoIdOrNull(schemaPO.getC_Activity_ID()))
 				.lines(lines)
 				.build();
 	}

@@ -209,7 +209,8 @@ public class FlatrateTermTestHelper
 		final OrderGroupCompensationChangesHandler groupChangesHandler = new OrderGroupCompensationChangesHandler(
 				new OrderGroupRepository(
 						new GroupCompensationLineCreateRequestFactory(),
-						Optional.empty() // advisors
+						Optional.empty(), // advisors
+						new GroupTemplateRepository(Optional.empty())
 				),
 				new GroupTemplateRepository(Optional.empty()));
 

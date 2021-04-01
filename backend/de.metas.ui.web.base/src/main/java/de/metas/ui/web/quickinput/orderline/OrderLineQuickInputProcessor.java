@@ -9,6 +9,11 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateId;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
+import de.metas.product.acct.api.ActivityId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -93,6 +98,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private final IProductBOMBL bomsService = Services.get(IProductBOMBL.class);
 
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
+	private final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
 	private final Collection<IOrderLineInputValidator> validators = SpringContextHolder.instance.getBeansOfType(IOrderLineInputValidator.class);
 
 	@Override
@@ -205,18 +211,18 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 			if (compensationGroupId == null)
 			{
 				compensationGroupId = orderGroupsRepo.createNewGroupId(GroupCreateRequest.builder()
-						.orderId(initialCandidate.getOrderId())
-						.name(productBL.getProductName(bomProductId))
-						.build());
+																			   .orderId(initialCandidate.getOrderId())
+																			   .name(productBL.getProductName(bomProductId))
+																			   .build());
 			}
 
 			result.add(initialCandidate.toBuilder()
-					.productId(bomLineProductId)
-					.attributes(attributes)
-					.qty(bomLineQty)
-					.compensationGroupId(compensationGroupId)
-					.explodedFromBOMLineId(bomLineId)
-					.build());
+							   .productId(bomLineProductId)
+							   .attributes(attributes)
+							   .qty(bomLineQty)
+							   .compensationGroupId(compensationGroupId)
+							   .explodedFromBOMLineId(bomLineId)
+							   .build());
 		}
 
 		return result;
@@ -235,9 +241,25 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 			to.setShipmentAllocation_BestBefore_Policy(candidate.getBestBeforePolicy().getCode());
 		}
 
-		if (candidate.getCompensationGroupId() != null)
+		final GroupId compensationGroupId = candidate.getCompensationGroupId();
+
+		if (compensationGroupId != null)
 		{
-			to.setC_Order_CompensationGroup_ID(candidate.getCompensationGroupId().getOrderCompensationGroupId());
+			final Group group = orderGroupsRepo.retrieveGroupIfExists(compensationGroupId);
+
+			final GroupTemplateId groupTemplateId = group.getGroupTemplateId();
+
+			if (groupTemplateId != null)
+			{
+
+				final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
+
+				final ActivityId activityId = groupTemplate.getActivityId();
+
+				to.setC_Activity_ID(activityId == null ? -1 : activityId.getRepoId());
+			}
+
+			to.setC_Order_CompensationGroup_ID(compensationGroupId.getOrderCompensationGroupId());
 		}
 
 		if (candidate.getExplodedFromBOMLineId() != null)

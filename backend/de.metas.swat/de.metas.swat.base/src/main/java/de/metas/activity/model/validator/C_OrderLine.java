@@ -24,6 +24,12 @@ package de.metas.activity.model.validator;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.GroupId;
+import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateId;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.SpringContextHolder;
@@ -40,10 +46,27 @@ import de.metas.util.Services;
 public class C_OrderLine
 {
 	final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
+	final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID,
+			I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID})
 	public void onProductChanged(final I_C_OrderLine orderLine)
 	{
+		final GroupId groupId = OrderGroupRepository.extractGroupId(orderLine);
+		final Group group = orderGroupRepo.retrieveGroup(groupId);
+
+		final GroupTemplateId groupTemplateId = group.getGroupTemplateId();
+
+		if(groupTemplateId != null)
+		{
+			final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
+			final ActivityId activityId = groupTemplate.getActivityId();
+
+			orderLine.setC_Activity_ID(activityId == null ? -1 : activityId.getRepoId());
+		}
+
 		if (orderLine.getC_Activity_ID() > 0)
 		{
 			return; // was already set, so don't try to auto-fill it
