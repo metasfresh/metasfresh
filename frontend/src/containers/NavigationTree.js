@@ -330,6 +330,7 @@ class NavigationTree extends Component {
           {/* {rootResults.caption} */}
         </p>
 
+        {/* sitemap items are listed using this */}
         <div className="column-wrapper">
           {queriedResults &&
             queriedResults.map((subitem, subindex) => {
