@@ -56,3 +56,20 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=642297
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,642297,0,541041,541467,582904,'F',TO_TIMESTAMP('2021-03-31 17:04:54','YYYY-MM-DD HH24:MI:SS'),100,'Kostenstelle','Erfassung der zugehörigen Kostenstelle','Y','N','N','Y','N','N','N',0,'Kostenstelle',20,0,0,TO_TIMESTAMP('2021-03-31 17:04:54','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+-- 2021-04-02T14:11:38.063Z
+-- #298 changing anz. stellen
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2021-04-02 17:11:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=582904
+;
+
+-- 2021-04-02T14:11:38.529Z
+-- #298 changing anz. stellen
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2021-04-02 17:11:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=550999
+;
+
+-- 2021-04-02T14:11:38.773Z
+-- #298 changing anz. stellen
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2021-04-02 17:11:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=551000
+;
+
+
