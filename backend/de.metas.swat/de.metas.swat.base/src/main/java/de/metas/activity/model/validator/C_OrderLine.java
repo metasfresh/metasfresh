@@ -54,20 +54,12 @@ public class C_OrderLine
 					I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID })
 	public void onProductChanged(final I_C_OrderLine orderLine)
 	{
-		if (orderLine.getC_Order_CompensationGroup_ID() > 0)
+		final ActivityId groupActivityId = getGroupActivityId(orderLine);
+
+		if(groupActivityId != null)
 		{
-			final GroupId groupId = OrderGroupRepository.extractGroupId(orderLine);
-			final Group group = orderGroupRepo.retrieveGroup(groupId);
-
-			final GroupTemplateId groupTemplateId = group.getGroupTemplateId();
-
-			if (groupTemplateId != null)
-			{
-				final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
-				final ActivityId activityId = groupTemplate.getActivityId();
-
-				orderLine.setC_Activity_ID(activityId == null ? -1 : activityId.getRepoId());
-			}
+			orderLine.setC_Activity_ID(groupActivityId.getRepoId());
+			return;
 		}
 
 		if (orderLine.getC_Activity_ID() > 0)
@@ -102,5 +94,34 @@ public class C_OrderLine
 		}
 
 		dimensionService.updateRecord(orderLine, orderLineDimension.withActivityId(productActivityId));
+	}
+
+	private ActivityId getGroupActivityId(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.getC_Order_CompensationGroup_ID() <= 0)
+		{
+			return null;
+		}
+
+		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(orderLine);
+
+		if (groupId == null)
+		{
+			return null;
+		}
+
+		final Group group = orderGroupRepo.retrieveGroup(groupId);
+
+		final GroupTemplateId groupTemplateId = group.getGroupTemplateId();
+
+		if (groupTemplateId == null)
+		{
+			return null;
+		}
+
+		final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
+
+		return groupTemplate.getActivityId();
+
 	}
 }
