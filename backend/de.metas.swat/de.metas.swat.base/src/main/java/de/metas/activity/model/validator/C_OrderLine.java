@@ -51,20 +51,23 @@ public class C_OrderLine
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID,
-			I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID})
+					I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID })
 	public void onProductChanged(final I_C_OrderLine orderLine)
 	{
-		final GroupId groupId = OrderGroupRepository.extractGroupId(orderLine);
-		final Group group = orderGroupRepo.retrieveGroup(groupId);
-
-		final GroupTemplateId groupTemplateId = group.getGroupTemplateId();
-
-		if(groupTemplateId != null)
+		if (orderLine.getC_Order_CompensationGroup_ID() > 0)
 		{
-			final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
-			final ActivityId activityId = groupTemplate.getActivityId();
+			final GroupId groupId = OrderGroupRepository.extractGroupId(orderLine);
+			final Group group = orderGroupRepo.retrieveGroup(groupId);
 
-			orderLine.setC_Activity_ID(activityId == null ? -1 : activityId.getRepoId());
+			final GroupTemplateId groupTemplateId = group.getGroupTemplateId();
+
+			if (groupTemplateId != null)
+			{
+				final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
+				final ActivityId activityId = groupTemplate.getActivityId();
+
+				orderLine.setC_Activity_ID(activityId == null ? -1 : activityId.getRepoId());
+			}
 		}
 
 		if (orderLine.getC_Activity_ID() > 0)
