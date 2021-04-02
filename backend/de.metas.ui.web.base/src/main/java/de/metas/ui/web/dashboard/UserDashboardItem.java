@@ -9,6 +9,7 @@ import lombok.ToString;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 
 /*
  * #%L
@@ -32,8 +33,8 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@Immutable
-public final class UserDashboardItem
+@Value
+public class UserDashboardItem
 {
 	@NonNull UserDashboardItemId id;
 	@NonNull ITranslatableString caption;

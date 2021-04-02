@@ -8,14 +8,6 @@ import lombok.Value;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -38,16 +30,17 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class KPIDataSet
+@Value
+public class KPIDataSet
 {
-	@JsonProperty("name")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final String name;
-
 	String name;
 	String unit;
 	ImmutableList<KPIDataSetValuesMap> values;
+
+	public static KPIDataSetBuilder builder(@NonNull final String name)
+	{
+		return new KPIDataSetBuilder().name(name);
+	}
 
 	private KPIDataSet(final KPIDataSetBuilder builder)
 	{
