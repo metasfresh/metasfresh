@@ -110,7 +110,12 @@ public class C_OrderLine
 			return null;
 		}
 
-		final Group group = orderGroupRepo.retrieveGroup(groupId);
+		final Group group = orderGroupRepo.retrieveGroupIfExists(groupId);
+
+		if(group == null)
+		{
+			return null;
+		}
 
 		final GroupTemplateId groupTemplateId = group.getGroupTemplateId();
 
