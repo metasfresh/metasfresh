@@ -530,3 +530,13 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 ;
 
 
+
+-- 2021-04-02T14:08:26.068Z
+-- URL zum Konzept
+INSERT INTO AD_Process (AD_Client_ID,IsActive,Created,CreatedBy,Updated,IsReport,AD_Org_ID,IsDirectPrint,AccessLevel,ShowHelp,IsBetaFunctionality,Classname,CopyFromProcess,UpdatedBy,JasperReport,AD_Process_ID,AllowProcessReRun,IsUseBPartnerLanguage,IsApplySecuritySettings,RefreshAllAfterExecution,IsOneInstanceOnly,LockWaitTimeout,EntityType,Type,IsTranslateExcelHeaders,Description,IsNotifyUserAfterExecution,PostgrestResponseFormat,Value,Name) VALUES (0,'Y',TO_TIMESTAMP('2021-04-02 16:08:26','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-04-02 16:08:26','YYYY-MM-DD HH24:MI:SS'),'Y',0,'Y','3','N','Y','de.metas.report.jasper.client.process.JasperReportStarter','N',100,'@PREFIX@de/metas/docs/manufacturingorder/label_watermark.jasper',584816,'N','Y','N','N','N',0,'U','JasperReportsSQL','Y','Manufacturing order label 3 segments(jasper)','N','json','Watermark label','Manufacturing order label watermark')
+;
+
+-- 2021-04-02T14:08:26.069Z
+-- URL zum Konzept
+INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Help,Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Process_ID, t.Help,t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_ID=584816 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
+;
