@@ -332,9 +332,9 @@ class NavigationTree extends Component {
           </div>
         </div>
 
-        <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced">
-          {/* {rootResults.caption} */}
-        </p>
+        {/* <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced"> */}
+        {/* {rootResults.caption} */}
+        {/* </p> */}
 
         {/* sitemap items are listed using this */}
         <div className="column-wrapper">
@@ -353,6 +353,7 @@ class NavigationTree extends Component {
                     handleRedirect={this.handleRedirect}
                     handleNewRedirect={this.handleNewRedirect}
                     menuType="sitemap"
+                    levelType="navigationTree"
                     {...subitem}
                   />
                 );
