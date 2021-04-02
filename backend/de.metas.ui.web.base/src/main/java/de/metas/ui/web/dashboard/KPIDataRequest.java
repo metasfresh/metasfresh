@@ -22,6 +22,17 @@
 
 package de.metas.ui.web.dashboard;
 
-public class KPIDataSetValue
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.time.Duration;
+
+@Value
+@Builder
+public class KPIDataRequest
 {
+	@NonNull KPIId kpiId;
+	@NonNull TimeRange timeRange;
+	@NonNull @Builder.Default Duration maxStaleAccepted = Duration.ofSeconds(1);
 }

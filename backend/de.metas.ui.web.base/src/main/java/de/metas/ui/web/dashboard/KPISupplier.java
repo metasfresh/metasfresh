@@ -22,6 +22,30 @@
 
 package de.metas.ui.web.dashboard;
 
-public class KPIDataSetValue
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+
+import java.util.function.Supplier;
+
+@ToString
+public class KPISupplier implements Supplier<KPI>
 {
+	@Getter
+	private final KPIId kpiId;
+	private final KPIRepository kpiRepository;
+
+	KPISupplier(
+			@NonNull final KPIId kpiId,
+			@NonNull final KPIRepository kpiRepository)
+	{
+		this.kpiId = kpiId;
+		this.kpiRepository = kpiRepository;
+	}
+
+	@Override
+	public KPI get()
+	{
+		return kpiRepository.getKPI(kpiId);
+	}
 }

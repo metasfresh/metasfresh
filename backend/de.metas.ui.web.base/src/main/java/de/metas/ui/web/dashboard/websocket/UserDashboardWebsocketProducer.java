@@ -20,8 +20,26 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.dashboard.websocket;
 
-public class KPIDataSetValue
+import de.metas.ui.web.dashboard.UserDashboardId;
+import de.metas.ui.web.websocket.WebSocketProducer;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import lombok.NonNull;
+
+class UserDashboardWebsocketProducer implements WebSocketProducer
 {
+	private final UserDashboardId userDashboardId;
+
+	public UserDashboardWebsocketProducer(@NonNull final UserDashboardId userDashboardId)
+	{
+		this.userDashboardId = userDashboardId;
+	}
+
+	@Override
+	public Object produceEvent(final JSONOptions jsonOpts)
+	{
+		// TODO
+		return null;
+	}
 }

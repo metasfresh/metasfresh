@@ -13,15 +13,30 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.dashboard.websocket.json;
 
-public class KPIDataSetValue
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+
+@AllArgsConstructor
+@EqualsAndHashCode
+public abstract class JSONDashboardChangedEvent
 {
+	public enum ChangeType
+	{
+		dashboardChanged,
+		itemChanged,
+	}
+
+	@NonNull
+	private final ChangeType changeType;
+	private final int dashboardId;
 }

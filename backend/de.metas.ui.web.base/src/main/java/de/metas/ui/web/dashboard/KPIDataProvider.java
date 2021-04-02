@@ -22,6 +22,30 @@
 
 package de.metas.ui.web.dashboard;
 
-public class KPIDataSetValue
+import de.metas.elasticsearch.IESSystem;
+import lombok.Builder;
+import lombok.NonNull;
+
+public class KPIDataProvider
 {
+	private final IESSystem esSystem;
+	private final KPIRepository kpiRepository;
+
+	@Builder
+	private KPIDataProvider(
+			@NonNull final IESSystem esSystem,
+			@NonNull final KPIRepository kpiRepository)
+	{
+		this.esSystem = esSystem;
+		this.kpiRepository = kpiRepository;
+	}
+
+	public KPIDataResult getKPIData(@NonNull final KPIDataRequest request)
+	{
+		final KPI kpi = kpiRepository.getKPI(request.getKpiId());
+
+		return KPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi)
+				.setTimeRange(request.getTimeRange())
+				.retrieveData();
+	}
 }

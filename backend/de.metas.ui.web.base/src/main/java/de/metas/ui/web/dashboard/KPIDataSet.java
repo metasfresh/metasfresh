@@ -1,8 +1,11 @@
 package de.metas.ui.web.dashboard;
 
-import java.util.ArrayList;
+import com.google.common.collect.ImmutableList;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -42,56 +45,64 @@ public final class KPIDataSet
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String name;
 
-	@JsonProperty("unit")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private final String unit;
+	String name;
+	String unit;
+	ImmutableList<KPIDataSetValuesMap> values;
 
-	@JsonProperty("values")
-	private final List<KPIDataSetValue> values = new ArrayList<>();
-
-	private final transient Map<Object, KPIDataSetValue> _valuesByKey = new LinkedHashMap<>();
-
-	KPIDataSet(final String name)
+	private KPIDataSet(final KPIDataSetBuilder builder)
 	{
-		super();
-		this.name = name;
-		unit = null;
-	}
-	
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("name", name)
-				.add("unit", unit)
-				.add("values", values)
-				.toString();
+		this.name = builder.name;
+		this.unit = builder.unit;
+		this.values = builder.valuesByKey
+				.values()
+				.stream()
+				.map(KPIDataSetValuesMap.KPIDataSetValuesMapBuilder::build)
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	public String getName()
+	//
+	//
+	//
+	//
+	//
+	public static class KPIDataSetBuilder
 	{
-		return name;
+		private String name;
+		@Getter
+		private String unit;
+		private final Map<KPIDataSetValuesAggregationKey, KPIDataSetValuesMap.KPIDataSetValuesMapBuilder> valuesByKey = new LinkedHashMap<>();
+
+		public KPIDataSet build()
+		{
+			return new KPIDataSet(this);
+		}
+
+		public KPIDataSetBuilder name(final String name)
+		{
+			this.name = name;
+			return this;
+		}
+
+		public KPIDataSetBuilder unit(final String unit)
+		{
+			this.unit = unit;
+			return this;
+		}
+
+		private KPIDataSetValuesMap.KPIDataSetValuesMapBuilder dataSetValue(final KPIDataSetValuesAggregationKey dataSetValueKey)
+		{
+			return valuesByKey.computeIfAbsent(dataSetValueKey, KPIDataSetValuesMap::builder);
+		}
+
+		public void putValue(@NonNull final KPIDataSetValuesAggregationKey dataSetValueKey, @NonNull final String fieldName, @NonNull final KPIDataValue value)
+		{
+			dataSetValue(dataSetValueKey).put(fieldName, value);
+		}
+
+		public void putValueIfAbsent(@NonNull final KPIDataSetValuesAggregationKey dataSetValueKey, @NonNull final String fieldName, @NonNull final KPIDataValue value)
+		{
+			dataSetValue(dataSetValueKey).putIfAbsent(fieldName, value);
+		}
+
 	}
-
-	private KPIDataSetValue dataSetValue(final Object dataSetValueKey)
-	{
-		return _valuesByKey.computeIfAbsent(dataSetValueKey, k -> {
-			final KPIDataSetValue value = new KPIDataSetValue(dataSetValueKey);
-
-			values.add(value);
-			return value;
-		});
-	}
-
-	public void putValue(final Object dataSetValueKey, final String fieldName, @Nullable final Object jsonValue)
-	{
-		dataSetValue(dataSetValueKey).put(fieldName, jsonValue);
-	}
-
-	public void putValueIfAbsent(final Object dataSetValueKey, final String fieldName, final Object jsonValue)
-	{
-		dataSetValue(dataSetValueKey).putIfAbsent(fieldName, jsonValue);
-	}
-
 }

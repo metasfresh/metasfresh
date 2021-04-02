@@ -20,8 +20,19 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.dashboard.json;
 
-public class KPIDataSetValue
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.time.ZoneId;
+
+@Value
+@Builder
+public class KPIJsonOptions
 {
+	String adLanguage;
+	boolean prettyValues;
+	@NonNull ZoneId zoneId;
 }

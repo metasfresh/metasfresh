@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.dashboard.UserDashboardItem;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+import lombok.Builder;
 import lombok.Value;
 import org.slf4j.Logger;
 
@@ -40,39 +41,44 @@ import java.util.Objects;
 @Value
 public class JSONDashboard
 {
-	public static JSONDashboard of(
-			final Collection<UserDashboardItem> items,
-			@Nullable final String websocketEndpoint,
-			final JSONDocumentLayoutOptions jsonOpts)
-	{
-		return new JSONDashboard(items, websocketEndpoint, jsonOpts);
-	}
-
+	public static final JSONDashboard EMPTY = new JSONDashboard();
+	
 	private static final Logger logger = LogManager.getLogger(JSONDashboard.class);
 
 	List<JSONDashboardItem> items;
 	@Nullable String websocketEndpoint;
 
+	@Builder
 	private JSONDashboard(
 			final Collection<UserDashboardItem> items,
 			@Nullable final String websocketEndpoint,
 			final JSONDocumentLayoutOptions jsonOpts)
 	{
 		this.items = items.stream()
-				.map(item -> {
-					try
-					{
-						return JSONDashboardItem.of(item, jsonOpts);
-					}
-					catch (final Exception ex)
-					{
-						logger.warn("Failed converting {} to JSON. Skipped", item, ex);
-						return null;
-					}
-				})
+				.map(item -> toJSONDashboardItemOrNull(item, jsonOpts))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
-		
+
 		this.websocketEndpoint = websocketEndpoint;
+	}
+
+	@Nullable
+	private static JSONDashboardItem toJSONDashboardItemOrNull(final UserDashboardItem item, final JSONDocumentLayoutOptions jsonOpts)
+	{
+		try
+		{
+			return JSONDashboardItem.of(item, jsonOpts);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed converting {} to JSON. Skipped", item, ex);
+			return null;
+		}
+	}
+
+	private JSONDashboard()
+	{
+		this.items = ImmutableList.of();
+		this.websocketEndpoint = null;
 	}
 }
