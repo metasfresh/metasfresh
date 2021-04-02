@@ -22,7 +22,6 @@ INSERT INTO EXP_FormatLine (AD_Client_ID,AD_Column_ID,AD_Org_ID,Created,CreatedB
 ;
 
 -- View: EDI_Cctop_119_v
-
 DROP VIEW IF EXISTS EDI_Cctop_119_v;
 CREATE OR REPLACE VIEW EDI_Cctop_119_v AS
 SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
@@ -38,6 +37,7 @@ SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
        p.Value,
        p.VATaxID,
        lookup.Vendor_ReferenceNo AS ReferenceNo,
+       lookup.Setup_Place_No,
        CASE lookup.Type_V
            WHEN 'ship'::TEXT THEN 'DP'::TEXT
            WHEN 'bill'::TEXT THEN 'IV'::TEXT
@@ -61,13 +61,13 @@ SELECT lookup.C_Invoice_ID       AS EDI_Cctop_119_v_ID,
 FROM (
          SELECT union_lookup.*
          FROM (
-                  SELECT DISTINCT 1::INTEGER   AS SeqNo
-                                , 'cust'::TEXT AS Type_V
-                                , pl_cust.C_BPartner_Location_ID
-                                , i.C_Invoice_ID
-                                , 0::INTEGER   AS M_InOut_ID
-                                , NULL::TEXT   AS Vendor_ReferenceNo
-                                , pl_cust.Setup_Place_No
+                  SELECT DISTINCT 1::INTEGER   AS SeqNo,
+                                  'cust'::TEXT AS Type_V,
+                                  pl_cust.C_BPartner_Location_ID,
+                                  i.C_Invoice_ID,
+                                  0::INTEGER   AS M_InOut_ID,
+                                  NULL::TEXT   AS Vendor_ReferenceNo,
+                                  pl_cust.Setup_Place_No
                   FROM C_Invoice i
                            LEFT JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID
                            LEFT JOIN C_OrderLine ol ON ol.C_OrderLine_ID = il.C_OrderLine_ID
@@ -82,13 +82,13 @@ FROM (
                        --
                   UNION
                   --
-                  SELECT 2::INTEGER         AS SeqNo
-                       , 'vend'::TEXT       AS Type_V
-                       , pl_vend.C_BPartner_Location_ID
-                       , i.C_Invoice_ID
-                       , 0::INTEGER         AS M_InOut_ID
-                       , p_cust.ReferenceNo AS Vendor_ReferenceNo
-                       , pl_vend.Setup_Place_No
+                  SELECT 2::INTEGER         AS SeqNo,
+                         'vend'::TEXT       AS Type_V,
+                         pl_vend.C_BPartner_Location_ID,
+                         i.C_Invoice_ID,
+                         0::INTEGER         AS M_InOut_ID,
+                         p_cust.ReferenceNo AS Vendor_ReferenceNo,
+                         pl_vend.Setup_Place_No
                   FROM C_Invoice i
                            JOIN C_BPartner p_cust ON p_cust.C_BPartner_ID = i.C_BPartner_ID
                            JOIN C_BPartner p_vend ON p_vend.AD_OrgBP_ID = i.AD_Org_ID
@@ -96,13 +96,13 @@ FROM (
                        --
                   UNION
                   --
-                  SELECT DISTINCT 3::INTEGER   AS SeqNo
-                                , 'ship'::TEXT AS Type_V
-                                , pl_ship.c_bpartner_location_id
-                                , i.C_Invoice_ID
-                                , 0::INTEGER   AS M_InOut_ID
-                                , NULL::TEXT   AS Vendor_ReferenceNo
-                                , pl_ship.Setup_Place_No
+                  SELECT DISTINCT 3::INTEGER   AS SeqNo,
+                                  'ship'::TEXT AS Type_V,
+                                  pl_ship.c_bpartner_location_id,
+                                  i.C_Invoice_ID,
+                                  0::INTEGER   AS M_InOut_ID,
+                                  NULL::TEXT   AS Vendor_ReferenceNo,
+                                  pl_ship.Setup_Place_No
                   FROM C_Invoice i
                            INNER JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID
                            LEFT JOIN C_OrderLine ol ON ol.C_OrderLine_ID = il.C_OrderLine_ID
@@ -129,25 +129,25 @@ FROM (
                        --
                   UNION
                   --
-                  SELECT 4::INTEGER   AS SeqNo
-                       , 'bill'::TEXT AS Type_V
-                       , pl_bill.C_BPartner_Location_ID
-                       , i.C_Invoice_ID
-                       , 0::INTEGER   AS M_InOut_ID
-                       , NULL::TEXT   AS Vendor_ReferenceNo
-                       , pl_bill.Setup_Place_No
+                  SELECT 4::INTEGER   AS SeqNo,
+                         'bill'::TEXT AS Type_V,
+                         pl_bill.C_BPartner_Location_ID,
+                         i.C_Invoice_ID,
+                         0::INTEGER   AS M_InOut_ID,
+                         NULL::TEXT   AS Vendor_ReferenceNo,
+                         pl_bill.Setup_Place_No
                   FROM C_Invoice i
                            LEFT JOIN C_BPartner_Location pl_bill ON pl_bill.C_BPartner_Location_ID = i.C_BPartner_Location_ID
                        --
                   UNION
                   --
-                  SELECT DISTINCT 5::INTEGER   AS SeqNo
-                                , 'snum'::TEXT AS Type_V
-                                , pl_snum.C_BPartner_Location_ID
-                                , i.C_Invoice_ID
-                                , s.M_InOut_ID
-                                , NULL::TEXT   AS Vendor_ReferenceNo
-                                , pl_snum.Setup_Place_No
+                  SELECT DISTINCT 5::INTEGER   AS SeqNo,
+                                  'snum'::TEXT AS Type_V,
+                                  pl_snum.C_BPartner_Location_ID,
+                                  i.C_Invoice_ID,
+                                  s.M_InOut_ID,
+                                  NULL::TEXT   AS Vendor_ReferenceNo,
+                                  pl_snum.Setup_Place_No
                   FROM C_Invoice i
                            INNER JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID
                            LEFT JOIN C_OrderLine ol ON ol.C_OrderLine_ID = il.C_OrderLine_ID
@@ -187,5 +187,4 @@ ORDER BY (
               WHEN 'vend'::TEXT THEN 'SU'::TEXT
               WHEN 'snum'::TEXT THEN 'SN'::TEXT
                                 ELSE 'Error EANCOM_Type'::TEXT
-          END)
-;
+          END);
