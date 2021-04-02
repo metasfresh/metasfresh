@@ -12,6 +12,8 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.report.PrintFormatId;
 import de.metas.report.jasper.JasperClassLoader;
 import de.metas.report.jasper.JasperCompileClassLoader;
 import de.metas.report.util.DevelopmentWorkspaceJasperDirectoriesFinder;
@@ -46,6 +48,7 @@ public abstract class AbstractReportEngine implements IReportEngine
 	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 
 	private static final String SYSCONFIG_ReportsDirs = "reportsDirs";
+	private static final String PARAM_AD_PRINTFORMAT_ID = "AD_PrintFormat_ID";
 
 	protected ClassLoader createReportClassLoader(final ReportContext reportContext)
 	{
@@ -66,10 +69,24 @@ public abstract class AbstractReportEngine implements IReportEngine
 			parentClassLoader = contextClassLoader;
 		}
 
+		
 		final OrgId adOrgId = reportContext.getOrgId();
 		final JasperClassLoader jasperLoader = new JasperClassLoader(adOrgId, parentClassLoader);
+		setPrintFormatIdIfExists(reportContext, jasperLoader);
 		logger.debug("Created jasper loader: {}", jasperLoader);
 		return jasperLoader;
+	}
+
+	private void setPrintFormatIdIfExists(final ReportContext reportContext, final JasperClassLoader jasperLoader)
+	{
+		for (final ProcessInfoParameter param : reportContext.getProcessInfoParameters())
+		{
+			final String parameterName = param.getParameterName();
+			if (PARAM_AD_PRINTFORMAT_ID.equals(parameterName))
+			{
+				jasperLoader.setPrintFormatId(PrintFormatId.ofRepoId(param.getParameterAsInt()));		
+			}
+		}
 	}
 
 	private List<File> getDevelopmentWorkspaceReportsDirs()

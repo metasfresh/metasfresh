@@ -23,8 +23,6 @@ package de.metas.report.jasper;
  */
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -36,13 +34,8 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MImage;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.io.BaseEncoding;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
@@ -55,35 +48,21 @@ import lombok.NonNull;
  * @author tsa
  *
  */
-final class OrgLogoLocalFileLoader
+final class OrgLogoLocalFileLoader extends ImageFileLoader
 {
 	public static OrgLogoLocalFileLoader newInstance()
 	{
 		return new OrgLogoLocalFileLoader();
 	}
 
-	private static final transient Logger logger = LogManager.getLogger(OrgLogoLocalFileLoader.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
-
-	private static final String emptyPNGBase64Encoded = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="; // thanks to http://png-pixel.com/
-	private transient File emptyPNGFile; // lazy
 
 	private OrgLogoLocalFileLoader()
 	{
 	}
 
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("emptyPNGFile", emptyPNGFile)
-				.toString();
-	}
-
-	// @Override
 	public Optional<File> loadLogoForOrg(@NonNull final OrgId adOrgId)
 	{
 		final File logoFile = createAndGetLocalLogoFile(adOrgId);
@@ -97,24 +76,25 @@ final class OrgLogoLocalFileLoader
 			return Optional.of(getEmptyPNGFile());
 		}
 	}
+	
 
-	private File createAndGetLocalLogoFile(@NonNull final OrgId adOrgId)
+	protected File createAndGetLocalLogoFile(@NonNull final OrgId adOrgId)
 	{
 		//
-		// Retrieve the logo image
-		final I_AD_Image logo = retrieveLogoImage(adOrgId);
+		// Retrieve the image
+		final I_AD_Image logo = retrieveImage(adOrgId);
 		if (logo == null || logo.getAD_Image_ID() <= 0)
 		{
 			return null;
 		}
 
 		//
-		// Save the logo in a temporary file, to be locally available
+		// Save the image in a temporary file, to be locally available
 		File logoFile = createTempLogoFile(logo);
 		return logoFile;
 	}
 
-	private I_AD_Image retrieveLogoImage(@NonNull final OrgId adOrgId)
+	private I_AD_Image retrieveImage(@NonNull final OrgId adOrgId)
 	{
 		if (adOrgId.isAny())
 		{
@@ -167,58 +147,4 @@ final class OrgLogoLocalFileLoader
 		return clientLogo;
 	}
 
-	private static File createTempLogoFile(final I_AD_Image logo)
-	{
-		if (logo == null)
-		{
-			return null;
-		}
-
-		final byte[] logoData = logo.getBinaryData();
-		if (logoData == null || logoData.length <= 0)
-		{
-			return null;
-		}
-
-		return createTempPNGFile("logo", logoData);
-	}
-
-	private static File createTempPNGFile(
-			@NonNull final String filenamePrefix,
-			@NonNull byte[] content)
-	{
-		try
-		{
-			final File tempFile = File.createTempFile(filenamePrefix, ".png");
-			try (final FileOutputStream out = new FileOutputStream(tempFile))
-			{
-				out.write(content);
-				out.close();
-			}
-
-			return tempFile;
-		}
-		catch (IOException e)
-		{
-			logger.warn("Failed creating the logo temporary file", e);
-			return null;
-		}
-	}
-
-	private File getEmptyPNGFile()
-	{
-		File file = this.emptyPNGFile;
-		if (file != null && !file.exists())
-		{
-			file = null;
-		}
-
-		if (file == null)
-		{
-			file = this.emptyPNGFile = createTempPNGFile(
-					"empty",
-					BaseEncoding.base64().decode(emptyPNGBase64Encoded));
-		}
-		return file;
-	}
 }

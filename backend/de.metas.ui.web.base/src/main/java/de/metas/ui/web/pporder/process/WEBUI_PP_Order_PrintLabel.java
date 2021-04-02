@@ -28,6 +28,7 @@ import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 
 import com.google.common.base.Joiner;
@@ -44,23 +45,25 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.report.PrintFormat;
+import de.metas.report.PrintFormatId;
+import de.metas.report.PrintFormatRepository;
 import de.metas.report.client.ReportsClient;
 import de.metas.report.server.OutputType;
 import de.metas.report.server.ReportResult;
 import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
 
 public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implements IProcessPrecondition
 {
-	private static final String PARAM_PrintLabel = "PrintLabel";
+	private static final String PARAM_AD_PrintFormat_ID = "AD_PrintFormat_ID";
 
-	@Param(parameterName = PARAM_PrintLabel)
-	private String reportTypeCode;
+	@Param(parameterName = PARAM_AD_PrintFormat_ID)
+	private int printFormatId;
 
 	private enum ReportType
 	{
@@ -68,6 +71,8 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 		MultipleSegments("M", AdProcessId.ofRepoId(584768));
 
 		private final String code;
+		
+		
 		@Getter
 		private final AdProcessId processId;
 
@@ -95,6 +100,7 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 	}
 
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	final private PrintFormatRepository pfRepo = SpringContextHolder.instance.getBean(PrintFormatRepository.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -166,13 +172,14 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
 				.setCtx(getCtx())
-				.setAD_Process_ID(getReportType().getProcessId())
+				.setAD_Process_ID(getPrintFormat().getReportProcessId())
 				.setAD_PInstance(adPInstanceDAO.getById(pinstanceId))
 				.setReportLanguage(getProcessInfo().getReportLanguage())
 				.setJRDesiredOutputType(OutputType.PDF)
 				.build();
-
+		
 		final ReportsClient reportsClient = ReportsClient.get();
+		
 		return reportsClient.report(jasperProcessInfo);
 	}
 
@@ -180,9 +187,10 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 	{
 
 		return PInstanceRequest.builder()
-				.processId(getReportType().getProcessId())
+				.processId(getPrintFormat().getReportProcessId())
 				.processParams(ImmutableList.of(
-						ProcessInfoParameter.of("AD_PInstance_ID", getPinstanceId())))
+						ProcessInfoParameter.of("AD_PInstance_ID", getPinstanceId()),
+						ProcessInfoParameter.of("AD_PrintFormat_ID", printFormatId)))
 				.build();
 	}
 
@@ -193,9 +201,10 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 
 		return Joiner.on("_").skipNulls().join(instance, title) + ".pdf";
 	}
-
-	private ReportType getReportType()
+	
+	private PrintFormat getPrintFormat()
 	{
-		return ReportType.ofCode(reportTypeCode);
+		return pfRepo.getById(PrintFormatId.ofRepoId(printFormatId));
 	}
+	
 }

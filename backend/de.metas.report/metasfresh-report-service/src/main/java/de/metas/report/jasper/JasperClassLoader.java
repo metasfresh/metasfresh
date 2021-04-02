@@ -31,6 +31,8 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileObject;
@@ -45,6 +47,7 @@ import com.google.common.base.MoreObjects;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.report.PrintFormatId;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import de.metas.util.Services;
@@ -61,11 +64,14 @@ public final class JasperClassLoader extends ClassLoader
 	public static final String PLACEHOLDER = "@PREFIX@";
 
 	private final OrgId adOrgId;
+	@Nullable
+	private PrintFormatId printFormatId; 
 	private String reportsPathPrefix;
 	private boolean alwaysPrependPrefix = false;
 
 	// Hooks
 	private final OrgLogoClassLoaderHook logoHook;
+	private final AttachmentImageFileClassLoaderHook imgAttachmentHook;
 
 	public JasperClassLoader(@NonNull final OrgId adOrgId, @NonNull final ClassLoader parent)
 	{
@@ -74,6 +80,7 @@ public final class JasperClassLoader extends ClassLoader
 		this.adOrgId = adOrgId;
 		this.reportsPathPrefix = retrieveReportPrefix(adOrgId);
 		this.logoHook = OrgLogoClassLoaderHook.newInstance();
+		this.imgAttachmentHook = AttachmentImageFileClassLoaderHook.newInstance();
 	}
 
 	private static String retrieveReportPrefix(@NonNull final OrgId adOrgId)
@@ -84,6 +91,13 @@ public final class JasperClassLoader extends ClassLoader
 		return reportPrefix;
 	}
 
+	
+	public void setPrintFormatId(@NonNull final PrintFormatId printFormatId)
+	{
+		this.printFormatId = printFormatId;
+	}
+
+	
 	@Override
 	public String toString()
 	{
@@ -138,6 +152,14 @@ public final class JasperClassLoader extends ClassLoader
 			return url;
 		}
 
+		
+		final URL watermarkURL = imgAttachmentHook.getResourceURLOrNull(printFormatId, name);
+		if (watermarkURL != null)
+		{
+			return watermarkURL;
+		}
+		
+		
 		final URL resource = super.getResource(name);
 		if (isJarInJarURL(resource))
 		{
