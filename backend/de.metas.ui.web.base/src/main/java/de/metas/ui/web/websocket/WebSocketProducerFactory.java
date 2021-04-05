@@ -38,9 +38,6 @@ public interface WebSocketProducerFactory
 
 	/**
 	 * Creates {@link WebSocketProducer} for given topic name
-	 * 
-	 * @param topicName
-	 * @return
 	 */
 	WebSocketProducer createProducer(final WebsocketTopicName topicName);
 }
