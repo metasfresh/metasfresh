@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { getRequest } from '../../actions/GenericActions';
+import { getAvailableKPIsToAdd } from '../../actions/DashboardActions';
 import Indicator from '../charts/Indicator';
 import ChartWidget from './ChartWidget';
 import DndWidget from './DndWidget';
@@ -16,7 +16,7 @@ class Sidenav extends Component {
   }
 
   componentDidMount = () => {
-    getRequest('dashboard', 'kpis', 'available').then((res) => {
+    getAvailableKPIsToAdd().then((res) => {
       this.setState({
         indicators: res.data.filter(
           (chart) => chart.widgetTypes[0] === 'TargetIndicator'

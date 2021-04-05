@@ -143,7 +143,7 @@ export class ChartWidget extends Component {
 
 ChartWidget.propTypes = {
   text: PropTypes.string,
-  framework: PropTypes.any,
+  framework: PropTypes.bool,
   data: PropTypes.object,
   noData: PropTypes.any,
   maximizeWidget: PropTypes.func,

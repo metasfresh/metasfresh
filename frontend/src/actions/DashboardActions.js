@@ -45,3 +45,7 @@ export function getTargetIndicatorsData(id) {
 export function setUserDashboardWidgets(payload) {
   return axios.patch(`${config.API_URL}/dashboard/kpis`, payload);
 }
+
+export function getAvailableKPIsToAdd() {
+  return axios.get(`${config.API_URL}/dashboard/kpis/available`);
+}
