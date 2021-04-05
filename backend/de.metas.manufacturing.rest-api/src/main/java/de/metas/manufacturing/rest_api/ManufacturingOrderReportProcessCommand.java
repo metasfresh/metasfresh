@@ -401,8 +401,7 @@ class ManufacturingOrderReportProcessCommand
 	private ProductId getFinishedGoodProductId(final PPOrderId orderId)
 	{
 		final I_PP_Order order = getOrderById(orderId);
-		final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
-		return productId;
+		return ProductId.ofRepoId(order.getM_Product_ID());
 	}
 
 	private LocatorId getReceiveToLocatorByOrderId(final PPOrderId orderId)
