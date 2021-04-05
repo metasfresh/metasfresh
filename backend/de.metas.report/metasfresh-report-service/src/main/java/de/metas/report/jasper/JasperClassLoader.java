@@ -147,10 +147,10 @@ public final class JasperClassLoader extends ClassLoader
 		}
 
 		
-		final URL watermarkURL = imgAttachmentHook.getResourceURLOrNull(printFormatId, name);
-		if (watermarkURL != null)
+		final URL imageURL = imgAttachmentHook.getResourceURLOrNull(printFormatId, name);
+		if (imageURL != null)
 		{
-			return watermarkURL;
+			return imageURL;
 		}
 		
 		
