@@ -26,6 +26,19 @@ class Sidenav extends Component {
     });
   };
 
+  render() {
+    const { indicators, cards } = this.state;
+
+    return (
+      <div className="board-sidenav overlay-shadow">
+        <div className="board-sidenav-header">Add Target Indicator widget</div>
+        <div>{this.renderChartList(indicators)}</div>
+        <div className="board-sidenav-header">Add KPI widget</div>
+        <div>{this.renderChartList(cards)}</div>
+      </div>
+    );
+  }
+
   renderChartList = (charts) => {
     if (!charts) return;
 
@@ -45,44 +58,41 @@ class Sidenav extends Component {
         entity={item.widgetTypes[0] === 'KPI' ? 'cards' : 'indicators'}
         transparent={false}
       >
-        {item.widgetTypes[0] === 'KPI' ? (
-          <ChartWidget
-            id={item.kpiId}
-            index={index}
-            chartType={item.chartType}
-            caption={item.caption}
-            fields={item.fields}
-            groupBy={item.groupByField}
-            kpi={true}
-            isMaximized={false}
-            text={item.caption}
-            data={item.sampleData}
-            framework={true}
-          />
-        ) : (
-          <Indicator
-            fullWidth={true}
-            value={item.chartType}
-            caption={item.caption}
-            framework={true}
-          />
-        )}
+        {item.widgetTypes[0] === 'KPI'
+          ? this.renderKPI(item, index)
+          : this.renderTargetIndicator(item)}
       </DndWidget>
     );
   };
 
-  render() {
-    const { indicators, cards } = this.state;
-
+  renderKPI = (item, index) => {
     return (
-      <div className="board-sidenav overlay-shadow">
-        <div className="board-sidenav-header">Add Target Indicator widget</div>
-        <div>{this.renderChartList(indicators)}</div>
-        <div className="board-sidenav-header">Add KPI widget</div>
-        <div>{this.renderChartList(cards)}</div>
-      </div>
+      <ChartWidget
+        id={item.kpiId}
+        index={index}
+        chartType={item.chartType}
+        caption={item.caption}
+        fields={item.fields}
+        groupBy={item.groupByField}
+        kpi={true}
+        isMaximized={false}
+        text={item.caption}
+        data={item.sampleData}
+        framework={true}
+      />
     );
-  }
+  };
+
+  renderTargetIndicator = (item) => {
+    return (
+      <Indicator
+        fullWidth={true}
+        value={item.chartType}
+        caption={item.caption}
+        framework={true}
+      />
+    );
+  };
 }
 
 Sidenav.propTypes = {
