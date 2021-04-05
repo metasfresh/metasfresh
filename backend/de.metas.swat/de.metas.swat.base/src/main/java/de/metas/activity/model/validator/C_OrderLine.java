@@ -22,25 +22,22 @@ package de.metas.activity.model.validator;
  * #L%
  */
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupId;
-import de.metas.order.compensationGroup.GroupTemplate;
-import de.metas.order.compensationGroup.GroupTemplateId;
-import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.ModelValidator;
-
-import de.metas.acct.api.IProductAcctDAO;
-import de.metas.interfaces.I_C_OrderLine;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.ModelValidator;
 
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine
@@ -53,6 +50,14 @@ public class C_OrderLine
 					I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID })
 	public void updateActivity(final I_C_OrderLine orderLine)
 	{
+
+		if (InterfaceWrapperHelper.isCopy(orderLine))
+		{
+			// let the activity be copied from the source.
+
+			return;
+		}
+
 		final ActivityId groupActivityId = getGroupActivityId(orderLine);
 
 		orderLine.setC_Activity_ID(ActivityId.toRepoId(groupActivityId));
