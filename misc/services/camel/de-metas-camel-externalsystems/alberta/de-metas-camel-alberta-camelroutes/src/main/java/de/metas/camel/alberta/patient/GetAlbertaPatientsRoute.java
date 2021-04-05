@@ -81,7 +81,7 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 				.process(new CreateBPartnerReqProcessor()).id(CREATE_UPSERT_BPARTNER_REQUEST_PROCESSOR_ID)
 
 				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPartners: ${body}")
-				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_CAMEL_URI + "}}")
+				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
 
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
 				.process(new CreateBPRelationReqProcessor()).id(CREATE_UPSERT_BPARTNER_RELATION_REQUEST_PROCESSOR_ID)

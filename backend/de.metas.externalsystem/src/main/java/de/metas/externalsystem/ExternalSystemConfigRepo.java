@@ -159,7 +159,6 @@ public class ExternalSystemConfigRepo
 				.baseUrl(config.getBaseURL())
 				.value(config.getExternalSystemValue())
 				.tenant(config.getTenant())
-				.value(config.getExternalSystemValue())
 				.pharmacyPriceListId(PriceListId.ofRepoIdOrNull(config.getPharmacy_PriceList_ID()))
 				.build();
 	}
