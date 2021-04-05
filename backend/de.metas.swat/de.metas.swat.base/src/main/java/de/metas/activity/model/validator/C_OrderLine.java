@@ -24,6 +24,12 @@ package de.metas.activity.model.validator;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.GroupId;
+import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateId;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.SpringContextHolder;
@@ -40,10 +46,17 @@ import de.metas.util.Services;
 public class C_OrderLine
 {
 	final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
-	public void onProductChanged(final I_C_OrderLine orderLine)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID,
+					I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID })
+	public void updateActivity(final I_C_OrderLine orderLine)
 	{
+		final ActivityId groupActivityId = getGroupActivityId(orderLine);
+
+		orderLine.setC_Activity_ID(ActivityId.toRepoId(groupActivityId));
+
 		if (orderLine.getC_Activity_ID() > 0)
 		{
 			return; // was already set, so don't try to auto-fill it
@@ -76,5 +89,29 @@ public class C_OrderLine
 		}
 
 		dimensionService.updateRecord(orderLine, orderLineDimension.withActivityId(productActivityId));
+	}
+
+	private ActivityId getGroupActivityId(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.getC_Order_CompensationGroup_ID() <= 0)
+		{
+			return null;
+		}
+
+		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(orderLine);
+
+		if (groupId == null)
+		{
+			return null;
+		}
+
+		final Group group = orderGroupRepo.retrieveGroupIfExists(groupId);
+
+		if (group == null)
+		{
+			return null;
+		}
+
+		return group.getActivityId();
 	}
 }

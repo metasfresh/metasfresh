@@ -5,11 +5,14 @@ import java.util.List;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.product.ProductCategoryId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -46,6 +49,7 @@ public class GroupTemplate
 {
 	GroupTemplateId id;
 	String name;
+	ActivityId activityId;
 	ProductCategoryId productCategoryId;
 	List<GroupTemplateLine> lines;
 
@@ -53,6 +57,7 @@ public class GroupTemplate
 	private GroupTemplate(
 			final GroupTemplateId id,
 			@NonNull final String name,
+			@Nullable ActivityId activityId,
 			final ProductCategoryId productCategoryId,
 			@Singular List<GroupTemplateLine> lines)
 	{
@@ -60,6 +65,7 @@ public class GroupTemplate
 
 		this.id = id;
 		this.name = name;
+		this.activityId = activityId;
 		this.productCategoryId = productCategoryId;
 		this.lines = ImmutableList.copyOf(lines);
 	}

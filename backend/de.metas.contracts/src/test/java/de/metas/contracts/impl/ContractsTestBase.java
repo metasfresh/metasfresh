@@ -25,13 +25,21 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import de.metas.common.util.time.TimeSource;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InvoiceLineDimensionFactory;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -75,6 +83,13 @@ public class ContractsTestBase
 		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, 1);
 		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 1);
 		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 1);
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
+		dimensionFactories.add(new OrderLineDimensionFactory());
+
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		init();
 	}
