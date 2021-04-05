@@ -85,7 +85,7 @@ final class AttachmentImageFileClassLoaderHook
 	}
 
 	public URL getResourceURLOrNull(
-			@NonNull final PrintFormatId printFormatId,
+			@Nullable final PrintFormatId printFormatId,
 			@Nullable final String resourceName)
 	{
 		// Skip if it's not about our hooked image attachment resources
@@ -94,6 +94,11 @@ final class AttachmentImageFileClassLoaderHook
 			return null;
 		}
 
+		if (printFormatId == null)
+		{
+			return null;
+		}
+		
 		//
 		// Get the local image file
 		final File imageFile = geImageFile(printFormatId);

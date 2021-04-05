@@ -92,7 +92,7 @@ public final class JasperClassLoader extends ClassLoader
 	}
 
 	
-	public void setPrintFormatId(@NonNull final PrintFormatId printFormatId)
+	public void setPrintFormatId(@Nullable final PrintFormatId printFormatId)
 	{
 		this.printFormatId = printFormatId;
 	}
