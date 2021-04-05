@@ -71,22 +71,23 @@ public abstract class AbstractReportEngine implements IReportEngine
 
 		
 		final OrgId adOrgId = reportContext.getOrgId();
-		final JasperClassLoader jasperLoader = new JasperClassLoader(adOrgId, parentClassLoader);
-		setPrintFormatIdIfExists(reportContext, jasperLoader);
+		final JasperClassLoader jasperLoader = new JasperClassLoader(adOrgId, parentClassLoader, getPrintFormatIdOrNull(reportContext));
 		logger.debug("Created jasper loader: {}", jasperLoader);
 		return jasperLoader;
 	}
 
-	private void setPrintFormatIdIfExists(final ReportContext reportContext, final JasperClassLoader jasperLoader)
+	private PrintFormatId getPrintFormatIdOrNull(final ReportContext reportContext)
 	{
 		for (final ProcessInfoParameter param : reportContext.getProcessInfoParameters())
 		{
 			final String parameterName = param.getParameterName();
 			if (PARAM_AD_PRINTFORMAT_ID.equals(parameterName))
 			{
-				jasperLoader.setPrintFormatId(PrintFormatId.ofRepoId(param.getParameterAsInt()));		
+				return PrintFormatId.ofRepoIdOrNull(param.getParameterAsInt());		
 			}
 		}
+		
+		return null;
 	}
 
 	private List<File> getDevelopmentWorkspaceReportsDirs()

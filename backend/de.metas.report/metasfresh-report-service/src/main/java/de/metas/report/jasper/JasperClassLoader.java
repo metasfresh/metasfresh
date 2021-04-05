@@ -73,7 +73,7 @@ public final class JasperClassLoader extends ClassLoader
 	private final OrgLogoClassLoaderHook logoHook;
 	private final AttachmentImageFileClassLoaderHook imgAttachmentHook;
 
-	public JasperClassLoader(@NonNull final OrgId adOrgId, @NonNull final ClassLoader parent)
+	public JasperClassLoader(@NonNull final OrgId adOrgId, @NonNull final ClassLoader parent, @Nullable PrintFormatId printFormatId)
 	{
 		super(parent);
 
@@ -81,6 +81,7 @@ public final class JasperClassLoader extends ClassLoader
 		this.reportsPathPrefix = retrieveReportPrefix(adOrgId);
 		this.logoHook = OrgLogoClassLoaderHook.newInstance();
 		this.imgAttachmentHook = AttachmentImageFileClassLoaderHook.newInstance();
+		this.printFormatId = printFormatId;
 	}
 
 	private static String retrieveReportPrefix(@NonNull final OrgId adOrgId)
@@ -91,13 +92,6 @@ public final class JasperClassLoader extends ClassLoader
 		return reportPrefix;
 	}
 
-	
-	public void setPrintFormatId(@Nullable final PrintFormatId printFormatId)
-	{
-		this.printFormatId = printFormatId;
-	}
-
-	
 	@Override
 	public String toString()
 	{
