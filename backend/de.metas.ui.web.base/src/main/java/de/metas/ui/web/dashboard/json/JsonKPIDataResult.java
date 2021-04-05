@@ -24,17 +24,16 @@ package de.metas.ui.web.dashboard.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.dashboard.KPIDataResult;
 import de.metas.ui.web.dashboard.TimeRange;
-import de.metas.ui.web.dashboard.UserDashboardItemId;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.dashboard.UserDashboardItemDataResponse;
+import de.metas.ui.web.exceptions.WebuiError;
+import de.metas.ui.web.exceptions.json.JsonWebuiError;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
@@ -42,30 +41,43 @@ import java.util.List;
 @Builder
 public class JsonKPIDataResult
 {
-	@JsonProperty("took") String took;
-
-	@JsonProperty("itemId")
 	@JsonInclude(JsonInclude.Include.NON_NULL) Integer itemId;
-
-	@JsonProperty("range")
 	@JsonInclude(JsonInclude.Include.NON_NULL) TimeRange range;
 
-	@JsonProperty("datasets") List<JsonKPIDataSet> datasets;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	List<JsonKPIDataSet> datasets;
+
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	String took;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	JsonWebuiError error;
 
 	public static JsonKPIDataResult of(
-			@NonNull final KPIDataResult result,
-			@Nullable final UserDashboardItemId itemId,
+			@NonNull final UserDashboardItemDataResponse itemData,
 			@NonNull final KPIJsonOptions jsonOpts)
 	{
-		return JsonKPIDataResult.builder()
-				.took(result.getTook())
-				.itemId(itemId != null ? itemId.getRepoId() : null)
-				.range(result.getRange())
-				.datasets(result.getDatasets()
-						.stream()
-						.map(dataSet -> JsonKPIDataSet.of(dataSet, jsonOpts))
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+		if (itemData.getKpiData() != null)
+		{
+			final KPIDataResult kpiData = itemData.getKpiData();
+			return builder()
+					.itemId(itemData.getItemId().getRepoId())
+					.range(kpiData.getRange())
+					.datasets(kpiData.getDatasets()
+							.stream()
+							.map(dataSet -> JsonKPIDataSet.of(dataSet, jsonOpts))
+							.collect(ImmutableList.toImmutableList()))
+					.took(kpiData.getTook())
+					.build();
+		}
+		else
+		{
+			final WebuiError error = itemData.getError();
+			assert error != null;
+			return builder()
+					.itemId(itemData.getItemId().getRepoId())
+					.error(JsonWebuiError.of(error, jsonOpts))
+					.build();
+		}
 	}
-
 }

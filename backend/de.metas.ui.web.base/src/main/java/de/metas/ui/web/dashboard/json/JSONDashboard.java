@@ -2,18 +2,15 @@ package de.metas.ui.web.dashboard.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableList;
-import de.metas.logging.LogManager;
-import de.metas.ui.web.dashboard.UserDashboardItem;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
-import org.slf4j.Logger;
+import lombok.With;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 
 /*
  * #%L
@@ -42,43 +39,28 @@ import java.util.Objects;
 public class JSONDashboard
 {
 	public static final JSONDashboard EMPTY = new JSONDashboard();
-	
-	private static final Logger logger = LogManager.getLogger(JSONDashboard.class);
 
 	List<JSONDashboardItem> items;
 	@Nullable String websocketEndpoint;
 
+	@With
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) String noDashboardReason;
+
 	@Builder
 	private JSONDashboard(
-			final Collection<UserDashboardItem> items,
+			@NonNull final List<JSONDashboardItem> items,
 			@Nullable final String websocketEndpoint,
-			final JSONDocumentLayoutOptions jsonOpts)
+			@Nullable final String noDashboardReason)
 	{
-		this.items = items.stream()
-				.map(item -> toJSONDashboardItemOrNull(item, jsonOpts))
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
-
+		this.items = ImmutableList.copyOf(items);
 		this.websocketEndpoint = websocketEndpoint;
-	}
-
-	@Nullable
-	private static JSONDashboardItem toJSONDashboardItemOrNull(final UserDashboardItem item, final JSONDocumentLayoutOptions jsonOpts)
-	{
-		try
-		{
-			return JSONDashboardItem.of(item, jsonOpts);
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Failed converting {} to JSON. Skipped", item, ex);
-			return null;
-		}
+		this.noDashboardReason = noDashboardReason;
 	}
 
 	private JSONDashboard()
 	{
 		this.items = ImmutableList.of();
 		this.websocketEndpoint = null;
+		this.noDashboardReason = null;
 	}
 }

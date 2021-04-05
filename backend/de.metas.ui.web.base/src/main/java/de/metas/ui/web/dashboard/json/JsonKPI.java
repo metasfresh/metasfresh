@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.dashboard.DashboardWidgetType;
 import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.KPIChartType;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.Builder;
 import lombok.Value;
 
@@ -42,7 +41,7 @@ public class JsonKPI
 	KPIChartType chartType;
 	ImmutableSet<DashboardWidgetType> widgetTypes;
 
-	public static JsonKPI of(final KPI kpi, final JSONOptions jsonOpts)
+	public static JsonKPI of(final KPI kpi, final KPIJsonOptions jsonOpts)
 	{
 		return JsonKPI.builder()
 				.kpiId(kpi.getId().getRepoId())

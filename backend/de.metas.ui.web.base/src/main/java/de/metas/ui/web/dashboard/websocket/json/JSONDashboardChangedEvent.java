@@ -34,6 +34,7 @@ public abstract class JSONDashboardChangedEvent
 	{
 		dashboardChanged,
 		itemChanged,
+		itemDataChanged,
 	}
 
 	@NonNull

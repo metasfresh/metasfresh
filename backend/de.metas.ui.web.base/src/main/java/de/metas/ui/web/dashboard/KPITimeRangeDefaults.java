@@ -17,8 +17,8 @@ public class KPITimeRangeDefaults
 {
 	public static final KPITimeRangeDefaults DEFAULT = builder().build();
 
-	Duration defaultTimeRange;
-	Duration defaultTimeRangeEndOffset;
+	@Nullable Duration defaultTimeRange;
+	@Nullable Duration defaultTimeRangeEndOffset;
 
 	public TimeRange createTimeRange(
 			@Nullable final Instant from,
@@ -41,7 +41,6 @@ public class KPITimeRangeDefaults
 	private Instant calculateTo()
 	{
 		Instant to = SystemTime.asInstant();
-		final Duration defaultTimeRangeEndOffset = getDefaultTimeRangeEndOffset();
 		if (defaultTimeRangeEndOffset != null)
 		{
 			to = to.plus(defaultTimeRangeEndOffset);
@@ -52,7 +51,6 @@ public class KPITimeRangeDefaults
 
 	private Instant calculateFrom(@NonNull final Instant to)
 	{
-		final Duration defaultTimeRange = getDefaultTimeRange();
 		if (defaultTimeRange == null || defaultTimeRange.isZero())
 		{
 			return Instant.ofEpochMilli(0);

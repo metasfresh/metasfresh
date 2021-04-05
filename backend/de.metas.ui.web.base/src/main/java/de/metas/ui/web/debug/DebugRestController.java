@@ -43,7 +43,6 @@ import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.dashboard.KPIDataLoader;
 import de.metas.ui.web.debug.JSONCacheResetResult.JSONCacheResetResultBuilder;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.menu.MenuTreeRepository;
@@ -362,9 +361,10 @@ public class DebugRestController
 				org.adempiere.ad.modelvalidator.IModelValidationEngine.class.getPackage().getName() // for annotated interceptors etc
 		),
 		dashboard(
+				"de.metas.ui.web.dashboard",
+				de.metas.ui.web.dashboard.KPIDataProvider.class.getName(),
 				de.metas.ui.web.dashboard.KPIDataLoader.class.getName()
-		)
-		;
+		);
 
 		private final Set<String> loggerNames;
 

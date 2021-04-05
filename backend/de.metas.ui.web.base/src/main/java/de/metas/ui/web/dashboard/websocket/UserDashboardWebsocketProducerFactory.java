@@ -22,8 +22,8 @@
 
 package de.metas.ui.web.dashboard.websocket;
 
+import de.metas.ui.web.dashboard.UserDashboardDataService;
 import de.metas.ui.web.dashboard.UserDashboardId;
-import de.metas.ui.web.websocket.WebSocketProducer;
 import de.metas.ui.web.websocket.WebSocketProducerFactory;
 import de.metas.ui.web.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
@@ -36,6 +36,14 @@ import javax.annotation.Nullable;
 @Component
 public class UserDashboardWebsocketProducerFactory implements WebSocketProducerFactory
 {
+	private final UserDashboardDataService dashboardDataService;
+
+	public UserDashboardWebsocketProducerFactory(
+			@NonNull final UserDashboardDataService dashboardDataService)
+	{
+		this.dashboardDataService = dashboardDataService;
+	}
+
 	public static WebsocketTopicName createWebsocketTopicName(@NonNull final UserDashboardId dashboardId)
 	{
 		return WebsocketTopicName.ofString(WebsocketTopicNames.TOPIC_Dashboard + "/" + dashboardId.getRepoId());
@@ -48,7 +56,7 @@ public class UserDashboardWebsocketProducerFactory implements WebSocketProducerF
 
 		if (topicNameString.startsWith(WebsocketTopicNames.TOPIC_Dashboard))
 		{
-			final String idAsString = topicNameString.substring(WebsocketTopicNames.TOPIC_Dashboard.length()).trim();
+			final String idAsString = topicNameString.substring(WebsocketTopicNames.TOPIC_Dashboard.length() + 1).trim();
 			if (idAsString.isEmpty())
 			{
 				return null;
@@ -69,7 +77,7 @@ public class UserDashboardWebsocketProducerFactory implements WebSocketProducerF
 	}
 
 	@Override
-	public WebSocketProducer createProducer(final WebsocketTopicName topicName)
+	public UserDashboardWebsocketProducer createProducer(final WebsocketTopicName topicName)
 	{
 		final UserDashboardId userDashboardId = extractUserDashboardId(topicName);
 		if (userDashboardId == null)
@@ -77,6 +85,9 @@ public class UserDashboardWebsocketProducerFactory implements WebSocketProducerF
 			throw new AdempiereException("Invalid websocket topic name: " + topicName);
 		}
 
-		return new UserDashboardWebsocketProducer(userDashboardId);
+		return UserDashboardWebsocketProducer.builder()
+				.dashboardDataService(dashboardDataService)
+				.userDashboardId(userDashboardId)
+				.build();
 	}
 }

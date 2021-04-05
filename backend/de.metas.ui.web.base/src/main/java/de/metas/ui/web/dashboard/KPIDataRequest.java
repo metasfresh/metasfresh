@@ -26,13 +26,18 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
+import java.time.Instant;
 
 @Value
 @Builder
 public class KPIDataRequest
 {
 	@NonNull KPIId kpiId;
-	@NonNull TimeRange timeRange;
-	@NonNull @Builder.Default Duration maxStaleAccepted = Duration.ofSeconds(1);
+
+	@NonNull KPITimeRangeDefaults timeRangeDefaults;
+	@Nullable Instant from;
+	@Nullable Instant to;
+	@NonNull Duration maxStaleAccepted;
 }

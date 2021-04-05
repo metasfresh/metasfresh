@@ -3,11 +3,13 @@ package de.metas.ui.web.dashboard.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.UserDashboardItem;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+import de.metas.ui.web.dashboard.UserDashboardItemDataResponse;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -31,43 +33,46 @@ import lombok.Value;
  * #L%
  */
 
-@SuppressWarnings("serial")
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 public class JSONDashboardItem
 {
-	public static JSONDashboardItem of(final UserDashboardItem dashboardItem, final JSONDocumentLayoutOptions options)
+	public static JSONDashboardItem of(
+			@NonNull final UserDashboardItem item,
+			@Nullable final UserDashboardItemDataResponse itemData,
+			@NonNull final KPIJsonOptions jsonOpts)
 	{
-		return new JSONDashboardItem(dashboardItem, options);
+		return new JSONDashboardItem(item, itemData, jsonOpts);
 	}
 
-	@JsonProperty("id") int id;
-	@JsonProperty("caption") String caption;
-	@JsonProperty("seqNo") int seqNo;
-
-	@JsonProperty("url")
+	int id;
+	String caption;
+	int seqNo;
 	@JsonInclude(JsonInclude.Include.NON_EMPTY) String url;
-
-	@JsonProperty("kpi")
 	@JsonInclude(JsonInclude.Include.NON_NULL) JsonKPILayout kpi;
+	@JsonInclude(JsonInclude.Include.NON_NULL) JsonKPIDataResult data;
 
-	private JSONDashboardItem(final UserDashboardItem dashboardItem, final JSONDocumentLayoutOptions options)
+	private JSONDashboardItem(
+			@NonNull final UserDashboardItem item,
+			@Nullable final UserDashboardItemDataResponse itemData,
+			@NonNull final KPIJsonOptions jsonOpts)
 	{
-		id = dashboardItem.getId().getRepoId();
-		url = dashboardItem.getUrl();
-		seqNo = dashboardItem.getSeqNo();
+		this.id = item.getId().getRepoId();
+		this.caption = extractCaption(item, item.getKPI(), jsonOpts);
+		this.seqNo = item.getSeqNo();
+		this.url = item.getUrl();
+		this.kpi = JsonKPILayout.of(item.getKPI(), jsonOpts);
+		this.data = itemData != null ? JsonKPIDataResult.of(itemData, jsonOpts) : null;
+	}
 
-		final KPI kpi = dashboardItem.getKPI();
-		this.kpi = JsonKPILayout.of(kpi, options.getJsonOpts());
+	private static String extractCaption(final @NonNull UserDashboardItem item, @NonNull final KPI kpi, final @NonNull KPIJsonOptions jsonOpts)
+	{
+		String caption = item.getCaption(jsonOpts.getAdLanguage());
+		if (jsonOpts.isDebugShowColumnNamesForCaption())
+		{
+			caption = caption + " (" + item.getId() + ", kpiId=" + kpi.getId() + ")";
+		}
 
-		final String caption = dashboardItem.getCaption(options.getAdLanguage());
-		if (options.isDebugShowColumnNamesForCaption())
-		{
-			this.caption = caption + " (" + id + ", kpiId=" + kpi.getId() + ")";
-		}
-		else
-		{
-			this.caption = caption;
-		}
+		return caption;
 	}
 }

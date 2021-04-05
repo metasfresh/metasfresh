@@ -25,6 +25,7 @@ package de.metas.ui.web.dashboard.json;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 import java.time.ZoneId;
 
@@ -33,6 +34,10 @@ import java.time.ZoneId;
 public class KPIJsonOptions
 {
 	String adLanguage;
-	boolean prettyValues;
 	@NonNull ZoneId zoneId;
+
+	@With
+	boolean prettyValues;
+
+	boolean debugShowColumnNamesForCaption;
 }
