@@ -247,17 +247,9 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		{
 			final Group group = orderGroupsRepo.retrieveGroupIfExists(compensationGroupId);
 
-			final GroupTemplateId groupTemplateId = group.getGroupTemplateId();
+			final ActivityId groupActivityId = group.getActivityId();
 
-			if (groupTemplateId != null)
-			{
-
-				final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
-
-				final ActivityId activityId = groupTemplate.getActivityId();
-
-				to.setC_Activity_ID(activityId == null ? -1 : activityId.getRepoId());
-			}
+			to.setC_Activity_ID(ActivityId.toRepoId(groupActivityId));
 
 			to.setC_Order_CompensationGroup_ID(compensationGroupId.getOrderCompensationGroupId());
 		}

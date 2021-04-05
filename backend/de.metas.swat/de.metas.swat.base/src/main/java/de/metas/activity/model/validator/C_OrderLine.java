@@ -47,20 +47,15 @@ public class C_OrderLine
 {
 	final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 	final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
-	final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID,
 					I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID })
-	public void onProductChanged(final I_C_OrderLine orderLine)
+	public void updateActivity(final I_C_OrderLine orderLine)
 	{
 		final ActivityId groupActivityId = getGroupActivityId(orderLine);
 
-		if(groupActivityId != null)
-		{
-			orderLine.setC_Activity_ID(groupActivityId.getRepoId());
-			return;
-		}
+		orderLine.setC_Activity_ID(ActivityId.toRepoId(groupActivityId));
 
 		if (orderLine.getC_Activity_ID() > 0)
 		{
@@ -112,21 +107,11 @@ public class C_OrderLine
 
 		final Group group = orderGroupRepo.retrieveGroupIfExists(groupId);
 
-		if(group == null)
+		if (group == null)
 		{
 			return null;
 		}
 
-		final GroupTemplateId groupTemplateId = group.getGroupTemplateId();
-
-		if (groupTemplateId == null)
-		{
-			return null;
-		}
-
-		final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
-
-		return groupTemplate.getActivityId();
-
+		return group.getActivityId();
 	}
 }

@@ -94,7 +94,6 @@ public class OrderGroupRepository implements GroupRepository
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
-	private final GroupTemplateRepository groupTemplateRepo;
 
 	private final ImmutableList<OrderGroupRepositoryAdvisor> advisors;
 
@@ -105,12 +104,10 @@ public class OrderGroupRepository implements GroupRepository
 
 	public OrderGroupRepository(
 			final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
-			final Optional<List<OrderGroupRepositoryAdvisor>> advisors,
-			final GroupTemplateRepository groupTemplateRepo)
+			final Optional<List<OrderGroupRepositoryAdvisor>> advisors)
 	{
 		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
 		this.advisors = ImmutableList.copyOf(advisors.orElse(ImmutableList.of()));
-		this.groupTemplateRepo = groupTemplateRepo;
 	}
 
 	public static GroupId extractGroupId(final I_C_OrderLine orderLine)
@@ -254,6 +251,7 @@ public class OrderGroupRepository implements GroupRepository
 		final GroupBuilder groupBuilder = Group.builder()
 				.groupId(groupId)
 				.groupTemplateId(GroupTemplateId.ofRepoIdOrNull(orderCompensationGroupPO.getC_CompensationGroup_Schema_ID()))
+				.activityId(ActivityId.ofRepoIdOrNull(orderCompensationGroupPO.getC_Activity_ID()))
 				.pricePrecision(orderBL.getPricePrecision(order))
 				.amountPrecision(orderBL.getAmountPrecision(order))
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
@@ -307,24 +305,11 @@ public class OrderGroupRepository implements GroupRepository
 
 		final Group group = retrieveGroup(groupId);
 
-		final GroupTemplateId groupTemplateId = group.getGroupTemplateId();
-
-		final ActivityId activityId;
-
-		if (groupTemplateId != null)
-		{
-			final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
-
-			activityId = groupTemplate.getActivityId();
-		}
-		else
-		{
-			activityId = null;
-		}
+		final ActivityId groupActivityId = group.getActivityId();
 
 		return OrderLinesStorage.builder()
 				.groupId(groupId)
-				.activityId(activityId)
+				.activityId(groupActivityId)
 				.orderLines(orderLines)
 				.performDatabaseChanges(true)
 				.build();
@@ -488,6 +473,7 @@ public class OrderGroupRepository implements GroupRepository
 		final GroupId groupId = createNewGroupId(GroupCreateRequest.builder()
 														 .orderId(orderId)
 														 .name(newGroupTemplate.getName())
+														 .activityId(newGroupTemplate.getActivityId())
 														 .productCategoryId(newGroupTemplate.getProductCategoryId())
 														 .groupTemplateId(newGroupTemplate.getId())
 														 .build());
@@ -543,6 +529,9 @@ public class OrderGroupRepository implements GroupRepository
 		final I_C_Order_CompensationGroup groupPO = newInstance(I_C_Order_CompensationGroup.class);
 		groupPO.setC_Order_ID(request.getOrderId().getRepoId());
 		groupPO.setName(request.getName());
+
+		groupPO.setC_Activity_ID(ActivityId.toRepoId(request.getActivityId()));
+
 		if (request.getProductCategoryId() != null)
 		{
 			groupPO.setM_Product_Category_ID(request.getProductCategoryId().getRepoId());
@@ -574,25 +563,17 @@ public class OrderGroupRepository implements GroupRepository
 		}
 	}
 
-	private void setActivityToLines(
+	private static void setActivityToLines(
 			@NonNull final List<I_C_OrderLine> orderLines,
 			@Nullable final ActivityId activityId)
 	{
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
-			if (activityId != null)
-			{
-				orderLine.setC_Activity_ID(activityId.getRepoId());
-			}
-			else
-			{
-				orderLine.setC_Activity_ID(-1);
-			}
+			orderLine.setC_Activity_ID(ActivityId.toRepoId(activityId));
 
 			saveRecord(orderLine);
 		}
 	}
-
 
 	public void destroyGroup(final Group group)
 	{
@@ -709,7 +690,7 @@ public class OrderGroupRepository implements GroupRepository
 
 		private void setActivityToOrderLine(final I_C_OrderLine compensationLinePO)
 		{
-			compensationLinePO.setC_Activity_ID(activityId == null ? -1 : activityId.getRepoId());
+			compensationLinePO.setC_Activity_ID(ActivityId.toRepoId(activityId));
 		}
 
 		public I_C_OrderLine getOrderLineByIdIfPresent(final int orderLineId)
