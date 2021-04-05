@@ -4,29 +4,32 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.compiere.model.I_AD_Image;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.io.BaseEncoding;
 
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 
-public class ImageFileLoader
+final public class ImageFileLoader
 {
 	protected static final transient Logger logger = LogManager.getLogger(AttachmentImageFileLoader.class);
 
 	private static final String emptyPNGBase64Encoded = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="; // thanks to http://png-pixel.com/
 	private transient File emptyPNGFile; // lazy
 
-	@Override
-	public String toString()
+	
+	public static ImageFileLoader newInstance()
 	{
-		return MoreObjects.toStringHelper(this).omitNullValues().add("emptyPNGFile", emptyPNGFile).toString();
+		return new ImageFileLoader();
 	}
 
-	protected File getEmptyPNGFile()
+	private ImageFileLoader()
+	{
+	}
+
+	
+	public File getEmptyPNGFile()
 	{
 		File file = this.emptyPNGFile;
 		if (file != null && !file.exists())
@@ -41,7 +44,7 @@ public class ImageFileLoader
 		return file;
 	}
 
-	protected static File createTempPNGFile(@NonNull final String filenamePrefix, @NonNull byte[] content)
+	public File createTempPNGFile(@NonNull final String filenamePrefix, @NonNull byte[] content)
 	{
 		try
 		{
@@ -59,21 +62,5 @@ public class ImageFileLoader
 			logger.warn("Failed creating the logo temporary file", e);
 			return null;
 		}
-	}
-
-	protected static File createTempLogoFile(final I_AD_Image logo)
-	{
-		if (logo == null)
-		{
-			return null;
-		}
-
-		final byte[] logoData = logo.getBinaryData();
-		if (logoData == null || logoData.length <= 0)
-		{
-			return null;
-		}
-
-		return createTempPNGFile("logo", logoData);
 	}
 }

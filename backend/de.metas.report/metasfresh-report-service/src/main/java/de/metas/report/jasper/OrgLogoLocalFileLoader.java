@@ -34,8 +34,12 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MImage;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
@@ -48,13 +52,16 @@ import lombok.NonNull;
  * @author tsa
  *
  */
-final class OrgLogoLocalFileLoader extends ImageFileLoader
+final class OrgLogoLocalFileLoader
 {
+	final static ImageFileLoader imgFileLoader = ImageFileLoader.newInstance();
+	
 	public static OrgLogoLocalFileLoader newInstance()
 	{
 		return new OrgLogoLocalFileLoader();
 	}
 
+	private static final transient Logger logger = LogManager.getLogger(OrgLogoLocalFileLoader.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
@@ -63,6 +70,16 @@ final class OrgLogoLocalFileLoader extends ImageFileLoader
 	{
 	}
 
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("emptyPNGFile", imgFileLoader.getEmptyPNGFile())
+				.toString();
+	}
+
+	// @Override
 	public Optional<File> loadLogoForOrg(@NonNull final OrgId adOrgId)
 	{
 		final File logoFile = createAndGetLocalLogoFile(adOrgId);
@@ -73,28 +90,27 @@ final class OrgLogoLocalFileLoader extends ImageFileLoader
 		else
 		{
 			logger.warn("Cannot find logo for {}, please add a logo file to the organization. Returning empty PNG file", this);
-			return Optional.of(getEmptyPNGFile());
+			return Optional.of(imgFileLoader.getEmptyPNGFile());
 		}
 	}
-	
 
-	protected File createAndGetLocalLogoFile(@NonNull final OrgId adOrgId)
+	private File createAndGetLocalLogoFile(@NonNull final OrgId adOrgId)
 	{
 		//
-		// Retrieve the image
-		final I_AD_Image logo = retrieveImage(adOrgId);
+		// Retrieve the logo image
+		final I_AD_Image logo = retrieveLogoImage(adOrgId);
 		if (logo == null || logo.getAD_Image_ID() <= 0)
 		{
 			return null;
 		}
 
 		//
-		// Save the image in a temporary file, to be locally available
+		// Save the logo in a temporary file, to be locally available
 		File logoFile = createTempLogoFile(logo);
 		return logoFile;
 	}
 
-	private I_AD_Image retrieveImage(@NonNull final OrgId adOrgId)
+	private I_AD_Image retrieveLogoImage(@NonNull final OrgId adOrgId)
 	{
 		if (adOrgId.isAny())
 		{
@@ -147,4 +163,19 @@ final class OrgLogoLocalFileLoader extends ImageFileLoader
 		return clientLogo;
 	}
 
+	private static File createTempLogoFile(final I_AD_Image logo)
+	{
+		if (logo == null)
+		{
+			return null;
+		}
+
+		final byte[] logoData = logo.getBinaryData();
+		if (logoData == null || logoData.length <= 0)
+		{
+			return null;
+		}
+
+		return imgFileLoader.createTempPNGFile("logo", logoData);
+	}
 }

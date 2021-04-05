@@ -30,11 +30,15 @@ import java.util.Optional;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PrintFormat;
+import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
 
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.logging.LogManager;
 import de.metas.report.PrintFormatId;
 import lombok.NonNull;
 
@@ -44,9 +48,12 @@ import lombok.NonNull;
  * @author cg
  *
  */
-final class AttachmentImageFileLoader extends ImageFileLoader
+final class AttachmentImageFileLoader 
 {
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	
+	private static final transient Logger logger = LogManager.getLogger(AttachmentImageFileLoader.class);
+	final static ImageFileLoader imgFileLoader = ImageFileLoader.newInstance();
 
 	public static AttachmentImageFileLoader newInstance()
 	{
@@ -57,6 +64,16 @@ final class AttachmentImageFileLoader extends ImageFileLoader
 	{
 	}
 
+	
+	@Override
+	public String toString()
+	{
+		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
+				.add("emptyPNGFile", imgFileLoader.getEmptyPNGFile())
+				.toString();
+	}
+	
 	public Optional<File> loadImageForPrintFormat(@NonNull final PrintFormatId printFormatId)
 	{
 		final File imageFile = retrieveImageFile(printFormatId);
@@ -67,7 +84,7 @@ final class AttachmentImageFileLoader extends ImageFileLoader
 		else
 		{
 			logger.warn("Cannot find image for {}, please add a file to the Print format. Returning empty PNG file", this);
-			return Optional.of(getEmptyPNGFile());
+			return Optional.of(imgFileLoader.getEmptyPNGFile());
 		}
 	}
 
