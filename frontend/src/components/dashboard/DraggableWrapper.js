@@ -7,14 +7,13 @@ import HTML5Backend from 'react-dnd-html5-backend';
 import { connect } from 'react-redux';
 import { List } from 'immutable';
 
-import { patchRequest } from '../../api';
 import { connectWS, disconnectWS } from '../../utils/websockets';
 import {
   changeKPIItem,
   changeTargetIndicatorsItem,
   getKPIsDashboard,
   getTargetIndicatorsDashboard,
-} from '../../actions/AppActions';
+} from '../../actions/DashboardActions';
 import {
   addDashboardWidget,
   removeDashboardWidget,
@@ -166,15 +165,14 @@ export class DraggableWrapper extends Component {
   };
 
   onDrop = (entity, id) => {
-    const tmpItemIndex = this.state[entity].findIndex((i) => i.id === id);
-    patchRequest({
-      entity: 'dashboard',
-      property: 'position',
-      value: tmpItemIndex,
-      subentity: this.getType(entity),
-      // TODO: This looks like it should rather be viewId: id
-      isAdvanced: id,
-    });
+    const position = this.state[entity].findIndex((i) => i.id === id);
+    console.log('entity=%o, id=%o, position=%o', entity, id, position);
+
+    if (entity === 'cards') {
+      changeKPIItem(id, 'position', position);
+    } else {
+      changeTargetIndicatorsItem(id, 'position', position);
+    }
   };
 
   moveCard = (entity, dragIndex, hoverIndex, item) => {

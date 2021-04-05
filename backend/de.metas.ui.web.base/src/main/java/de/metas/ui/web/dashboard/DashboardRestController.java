@@ -229,7 +229,7 @@ public class DashboardRestController
 		final UserDashboardItemDataResponse data = dashboardDataService.getData(dashboard.getId())
 				.getItemData(UserDashboardItemDataRequest.builder()
 						.itemId(item.getId())
-						.widgetType(DashboardWidgetType.TargetIndicator)
+						.widgetType(widgetType)
 						.build());
 		return JSONDashboardItem.of(item, data, newKPIJsonOptions());
 	}
@@ -357,7 +357,7 @@ public class DashboardRestController
 			final UserDashboardItemDataResponse data = dashboardDataService.getData(dashboard.getId())
 					.getItemData(UserDashboardItemDataRequest.builder()
 							.itemId(item.getId())
-							.widgetType(DashboardWidgetType.KPI)
+							.widgetType(widgetType)
 							.build());
 			return JSONDashboardItem.of(item, data, newKPIJsonOptions());
 		}

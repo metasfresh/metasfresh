@@ -47,11 +47,11 @@ class Sidenav extends Component {
             kpi={true}
             text={item.caption}
             framework={true}
-            idMaximized={false}
+            isMaximized={false}
           />
         ) : (
           <Indicator
-            fullWidth={1}
+            fullWidth={true}
             value={item.chartType}
             caption={item.caption}
             framework={true}
