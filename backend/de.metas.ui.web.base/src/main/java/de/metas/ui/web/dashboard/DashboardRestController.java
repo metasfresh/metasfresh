@@ -193,11 +193,26 @@ public class DashboardRestController
 
 		final KPIJsonOptions jsonOpts = newKPIJsonOptions();
 		return kpis.stream()
-				.map(kpi -> JsonKPI.of(kpi, jsonOpts))
+				.map(kpi -> toJsonKPI(kpi, jsonOpts))
 				.sorted(Comparator.comparing(JsonKPI::getCaption))
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : Integer.MAX_VALUE)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private JsonKPI toJsonKPI(@NonNull final KPI kpi, @NonNull final KPIJsonOptions jsonOpts)
+	{
+		KPIDataResult data = null;
+		try
+		{
+			data = dashboardDataService.getKPIData(kpi.getId());
+		}
+		catch(final Exception ex)
+		{
+			logger.warn("Failed fetching sample data for {}", kpi, ex);
+		}
+
+		return JsonKPI.of(kpi, data, jsonOpts);
 	}
 
 	@PostMapping("/kpis/new")

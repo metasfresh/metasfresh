@@ -29,14 +29,14 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Optional;
 
 @Service
 public class UserDashboardDataService
 {
-	private final IESSystem esSystem = Services.get(IESSystem.class);
-	private final KPIRepository kpiRepository;
 	private final UserDashboardRepository userDashboardRepository;
+	private final KPIDataProvider kpiDataProvider;
 
 	private final CCache<UserDashboardId, UserDashboardDataProvider> providers = CCache.<UserDashboardId, UserDashboardDataProvider>builder()
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
@@ -46,8 +46,13 @@ public class UserDashboardDataService
 			@NonNull final KPIRepository kpiRepository,
 			@NonNull final UserDashboardRepository userDashboardRepository)
 	{
-		this.kpiRepository = kpiRepository;
 		this.userDashboardRepository = userDashboardRepository;
+
+		final IESSystem esSystem = Services.get(IESSystem.class);
+		this.kpiDataProvider = KPIDataProvider.builder()
+				.esSystem(esSystem)
+				.kpiRepository(kpiRepository)
+				.build();
 	}
 
 	public Optional<UserDashboardDataProvider> getData(@NonNull final UserDashboardKey userDashboardKey)
@@ -65,12 +70,18 @@ public class UserDashboardDataService
 	{
 		return UserDashboardDataProvider.builder()
 				.userDashboardRepository(userDashboardRepository)
-				.kpiDataProvider(KPIDataProvider.builder()
-						.esSystem(esSystem)
-						.kpiRepository(kpiRepository)
-						.build())
+				.kpiDataProvider(kpiDataProvider)
 				.dashboardId(dashboardId)
 				.build();
+	}
+
+	public KPIDataResult getKPIData(@NonNull final KPIId kpiId)
+	{
+		return kpiDataProvider.getKPIData(KPIDataRequest.builder()
+				.kpiId(kpiId)
+				.timeRangeDefaults(KPITimeRangeDefaults.DEFAULT)
+				.maxStaleAccepted(Duration.ofDays(100))
+				.build());
 	}
 
 }

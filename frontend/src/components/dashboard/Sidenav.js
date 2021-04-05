@@ -27,11 +27,17 @@ class Sidenav extends Component {
   };
 
   renderChartList = (charts) => {
-    const { moveCard } = this.props;
     if (!charts) return;
-    return charts.map((item, i) => (
+
+    return charts.map((item, i) => this.renderChartItem(item, i));
+  };
+
+  renderChartItem = (item, index) => {
+    const { moveCard } = this.props;
+
+    return (
       <DndWidget
-        key={i}
+        key={index}
         id={item.kpiId}
         index={item.kpiId}
         moveCard={moveCard}
@@ -42,12 +48,16 @@ class Sidenav extends Component {
         {item.widgetTypes[0] === 'KPI' ? (
           <ChartWidget
             id={item.kpiId}
-            index={i}
+            index={index}
             chartType={item.chartType}
+            caption={item.caption}
+            fields={item.fields}
+            groupBy={item.groupByField}
             kpi={true}
-            text={item.caption}
-            framework={true}
             isMaximized={false}
+            text={item.caption}
+            data={item.sampleData}
+            framework={true}
           />
         ) : (
           <Indicator
@@ -58,7 +68,7 @@ class Sidenav extends Component {
           />
         )}
       </DndWidget>
-    ));
+    );
   };
 
   render() {

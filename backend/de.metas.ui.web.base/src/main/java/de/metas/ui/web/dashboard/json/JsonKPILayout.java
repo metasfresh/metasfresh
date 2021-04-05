@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.KPIField;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /*
@@ -62,18 +63,23 @@ public class JsonKPILayout
 
 	public JsonKPILayout(final KPI kpi, final KPIJsonOptions jsonOpts)
 	{
-		final String adLanguage = jsonOpts.getAdLanguage();
-
 		// id = kpi.getId();
-		// caption = kpi.getCaption(adLanguage);
-		description = Strings.emptyToNull(kpi.getDescription(adLanguage));
+		// caption = kpi.getCaption(jsonOpts.getAdLanguage());
+		description = Strings.emptyToNull(kpi.getDescription(jsonOpts.getAdLanguage()));
 		chartType = kpi.getChartType().toJson();
+		groupByField = extractGroupByField(kpi, jsonOpts);
+		fields = extractFields(kpi, jsonOpts);
+	}
 
-		//
-		// Group by field
+	@Nullable
+	static JsonKPIFieldLayout extractGroupByField(final KPI kpi, final KPIJsonOptions jsonOpts)
+	{
 		final KPIField groupByField = kpi.getGroupByFieldOrNull();
-		this.groupByField = groupByField == null ? null : JsonKPIFieldLayout.field(groupByField, jsonOpts);
+		return groupByField != null ? JsonKPIFieldLayout.field(groupByField, jsonOpts) : null;
+	}
 
+	static ImmutableList<JsonKPIFieldLayout> extractFields(final KPI kpi, final KPIJsonOptions jsonOpts)
+	{
 		final ImmutableList.Builder<JsonKPIFieldLayout> jsonFields = ImmutableList.builder();
 		final boolean hasCompareOffset = kpi.hasCompareOffset();
 		for (final KPIField kpiField : kpi.getFields())
@@ -91,6 +97,7 @@ public class JsonKPILayout
 				jsonFields.add(JsonKPIFieldLayout.offsetField(kpiField, jsonOpts));
 			}
 		}
-		fields = jsonFields.build();
+		return jsonFields.build();
 	}
+
 }

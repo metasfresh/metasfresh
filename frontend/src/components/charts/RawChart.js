@@ -195,13 +195,13 @@ RawChart.propTypes = {
   id: PropTypes.number,
   chartType: PropTypes.string,
   data: PropTypes.object,
-  noData: PropTypes.any,
+  noData: PropTypes.bool,
   caption: PropTypes.string,
-  fields: PropTypes.any,
+  fields: PropTypes.arrayOf(PropTypes.object),
   groupBy: PropTypes.object,
   height: PropTypes.number,
   handleChartOptions: PropTypes.func,
-  editmode: PropTypes.any,
+  editmode: PropTypes.bool,
   chartTitle: PropTypes.string,
 };
 

@@ -33,6 +33,7 @@ import de.metas.ui.web.exceptions.json.JsonWebuiError;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 import java.util.List;
 
@@ -41,17 +42,13 @@ import java.util.List;
 @Builder
 public class JsonKPIDataResult
 {
+	@With
 	@JsonInclude(JsonInclude.Include.NON_NULL) Integer itemId;
+
 	@JsonInclude(JsonInclude.Include.NON_NULL) TimeRange range;
-
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	List<JsonKPIDataSet> datasets;
-
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	String took;
-
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	JsonWebuiError error;
+	@JsonInclude(JsonInclude.Include.NON_NULL) List<JsonKPIDataSet> datasets;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) String took;
+	@JsonInclude(JsonInclude.Include.NON_NULL) JsonWebuiError error;
 
 	public static JsonKPIDataResult of(
 			@NonNull final UserDashboardItemDataResponse itemData,
@@ -60,15 +57,8 @@ public class JsonKPIDataResult
 		if (itemData.getKpiData() != null)
 		{
 			final KPIDataResult kpiData = itemData.getKpiData();
-			return builder()
-					.itemId(itemData.getItemId().getRepoId())
-					.range(kpiData.getRange())
-					.datasets(kpiData.getDatasets()
-							.stream()
-							.map(dataSet -> JsonKPIDataSet.of(dataSet, jsonOpts))
-							.collect(ImmutableList.toImmutableList()))
-					.took(kpiData.getTook())
-					.build();
+			return of(kpiData, jsonOpts)
+					.withItemId(itemData.getItemId().getRepoId());
 		}
 		else
 		{
@@ -79,5 +69,20 @@ public class JsonKPIDataResult
 					.error(JsonWebuiError.of(error, jsonOpts))
 					.build();
 		}
+	}
+
+	public static JsonKPIDataResult of(
+			@NonNull final KPIDataResult kpiData,
+			@NonNull final KPIJsonOptions jsonOpts)
+	{
+		return builder()
+				.range(kpiData.getRange())
+				.datasets(kpiData.getDatasets()
+						.stream()
+						.map(dataSet -> JsonKPIDataSet.of(dataSet, jsonOpts))
+						.collect(ImmutableList.toImmutableList()))
+				.took(kpiData.getTook())
+				.build();
+
 	}
 }
