@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.ordercandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_OLCand
  *  @author metasfresh (generated) 
@@ -857,23 +857,35 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setIsExplicitProductPriceAttribute (final boolean IsExplicitProductPriceAttribute)
 	{
-		set_Value (COLUMNNAME_IsExplicitProductPriceAttribute, IsExplicitProductPriceAttribute);
+		set_Value(COLUMNNAME_IsExplicitProductPriceAttribute, IsExplicitProductPriceAttribute);
 	}
 
 	@Override
-	public boolean isExplicitProductPriceAttribute() 
+	public boolean isExplicitProductPriceAttribute()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsExplicitProductPriceAttribute);
 	}
 
 	@Override
-	public void setIsManualDiscount (final boolean IsManualDiscount)
+	public void setIsGroupCompensationLine(final boolean IsGroupCompensationLine)
 	{
-		set_Value (COLUMNNAME_IsManualDiscount, IsManualDiscount);
+		set_Value(COLUMNNAME_IsGroupCompensationLine, IsGroupCompensationLine);
 	}
 
 	@Override
-	public boolean isManualDiscount() 
+	public boolean isGroupCompensationLine()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsGroupCompensationLine);
+	}
+
+	@Override
+	public void setIsManualDiscount(final boolean IsManualDiscount)
+	{
+		set_Value(COLUMNNAME_IsManualDiscount, IsManualDiscount);
+	}
+
+	@Override
+	public boolean isManualDiscount()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManualDiscount);
 	}

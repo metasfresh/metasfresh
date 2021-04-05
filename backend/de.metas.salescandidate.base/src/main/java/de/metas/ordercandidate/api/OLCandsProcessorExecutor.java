@@ -1,30 +1,14 @@
 package de.metas.ordercandidate.api;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.ArrayKeyBuilder;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
-
-import ch.qos.logback.classic.Level;
+import de.metas.common.util.time.SystemTime;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
@@ -36,6 +20,23 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.ArrayKeyBuilder;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -76,6 +77,7 @@ public class OLCandsProcessorExecutor
 	private final OLCandOrderDefaults orderDefaults;
 	private final InputDataSourceId processorDataDestinationId;
 	private final LocalDate defaultDateDoc = SystemTime.asLocalDate();
+	private final IOLCandBL olcandBL = Services.get(IOLCandBL.class);
 
 	private final OLCandSource candidatesSource;
 
@@ -134,7 +136,7 @@ public class OLCandsProcessorExecutor
 			toProcess.put(olCandId, groupingKey);
 			grouping.put(groupingKey, candidate);
 		}
-
+		validateCompensationGroupKey(grouping);
 		// 'processedIds' contains the candidates that have already been processed
 		final Set<Integer> processedIds = new HashSet<>();
 
@@ -145,7 +147,7 @@ public class OLCandsProcessorExecutor
 		for (final OLCand candidate : candidates)
 		{
 			final int olCandId = candidate.getId();
-			if (processedIds.contains(olCandId) || candidate.isProcessed())
+			if (processedIds.contains(olCandId) || candidate.isProcessed() || candidate.isError())
 			{
 				// 'candidate' has already been processed
 				continue;
@@ -310,7 +312,7 @@ public class OLCandsProcessorExecutor
 		}
 	}
 
-	private final boolean isEligibleOrLog(final OLCand cand)
+	private boolean isEligibleOrLog(final OLCand cand)
 	{
 		if (cand.isProcessed())
 		{
@@ -341,4 +343,43 @@ public class OLCandsProcessorExecutor
 
 		return true;
 	}
+
+	private void validateCompensationGroupKey(final ListMultimap<ArrayKey, OLCand> grouping)
+	{
+		final List<ArrayKey> invalidGroupingKeys = grouping.keySet()
+				.stream()
+				.filter(key -> !isValidGroupCompensation(grouping.get(key)))
+				.collect(Collectors.toList());
+		grouping.keySet()
+				.stream()
+				.filter(invalidGroupingKeys::contains)
+				.map(grouping::get)
+				.flatMap(Collection::stream)
+				.forEach(this::invalidateCandidate);
+	}
+
+	private void invalidateCandidate(final OLCand olCand)
+	{
+		olcandBL.markAsError(userInChargeId, olCand, new AdempiereException("Multiple candidates in this group have the same "));
+	}
+
+	private boolean isValidGroupCompensation(final List<OLCand> olCands)
+	{
+		final ListMultimap<String, OLCand> candsPerKey = ArrayListMultimap.create();
+		for (final OLCand cand : olCands)
+		{
+			final String compensationGroupKey = cand.getOrderLineGroup().getGroupKey();
+			if (compensationGroupKey != null)
+			{
+				candsPerKey.put(compensationGroupKey, cand);
+			}
+		}
+		return candsPerKey.isEmpty() || candsPerKey.values()
+				.stream()
+				.map(OLCand::getOrderLineGroup)
+				.map(OrderLineGroup::isGroupMainItem)
+				.filter(Boolean::valueOf)
+				.count() <= 1;
+	}
+
 }

@@ -1,21 +1,23 @@
 package de.metas.ordercandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for C_OLCand
- *  @author metasfresh (generated) 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+/**
+ * Generated Interface for C_OLCand
+ *
+ * @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_C_OLCand 
+public interface I_C_OLCand
 {
 
 	String Table_Name = "C_OLCand";
 
-//	/** AD_Table_ID=540244 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
-
+	//	/** AD_Table_ID=540244 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 	/**
 	 * Get Client.
@@ -593,25 +595,8 @@ public interface I_C_OLCand
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/**
-	 * Set Steuerkategorie.
-	 * Steuerkategorie
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_TaxCategory_ID (int C_TaxCategory_ID);
-
-	/**
-	 * Get Steuerkategorie.
-	 * Steuerkategorie
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_TaxCategory_ID();
+	ModelColumn<I_C_OLCand, Object> COLUMN_IsGroupCompensationLine = new ModelColumn<>(I_C_OLCand.class, "IsGroupCompensationLine", null);
+	String COLUMNNAME_IsGroupCompensationLine = "IsGroupCompensationLine";
 
 	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
 
@@ -884,24 +869,24 @@ public interface I_C_OLCand
 	String COLUMNNAME_DescriptionHeader = "DescriptionHeader";
 
 	/**
-	 * Set Rabatt %.
-	 * Abschlag in Prozent
+	 * Get Tax Category.
+	 * Tax Category
 	 *
-	 * <br>Type: Number
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDiscount (@Nullable BigDecimal Discount);
+	int getC_TaxCategory_ID();
 
 	/**
-	 * Get Rabatt %.
-	 * Abschlag in Prozent
+	 * Set Tax Category.
+	 * Tax Category
 	 *
-	 * <br>Type: Number
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getDiscount();
+	void setC_TaxCategory_ID (int C_TaxCategory_ID);
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_Discount = new ModelColumn<>(I_C_OLCand.class, "Discount", null);
 	String COLUMNNAME_Discount = "Discount";
@@ -1354,18 +1339,54 @@ public interface I_C_OLCand
 	String COLUMNNAME_IsExplicitProductPriceAttribute = "IsExplicitProductPriceAttribute";
 
 	/**
-	 * Set Manueller Rabatt.
-	 * Ein Rabatt, der von Hand eingetragen wurde, wird vom Provisionssystem nicht überschrieben
+	 * Get Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDiscount();
+
+	/**
+	 * Set Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDiscount(@Nullable BigDecimal Discount);
+
+	/**
+	 * Set Group Discount Line.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsManualDiscount (boolean IsManualDiscount);
+	void setIsGroupCompensationLine(boolean IsGroupCompensationLine);
 
 	/**
-	 * Get Manueller Rabatt.
-	 * Ein Rabatt, der von Hand eingetragen wurde, wird vom Provisionssystem nicht überschrieben
+	 * Get Group Discount Line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isGroupCompensationLine();
+
+	/**
+	 * Set Discount Manual.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualDiscount(boolean IsManualDiscount);
+
+	/**
+	 * Get Discount Manual.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1377,7 +1398,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_IsManualDiscount = "IsManualDiscount";
 
 	/**
-	 * Set Manueller Preis.
+	 * Set Manual Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1386,7 +1407,7 @@ public interface I_C_OLCand
 	void setIsManualPrice (boolean IsManualPrice);
 
 	/**
-	 * Get Manueller Preis.
+	 * Get Manual Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1850,18 +1871,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_PriceActual = "PriceActual";
 
 	/**
-	 * Set Preisdifferenz (imp. - int.).
-	 *
-	 * <br>Type: CostPrice
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setPriceDifference (@Nullable BigDecimal PriceDifference);
-
-	/**
-	 * Get Preisdifferenz (imp. - int.).
+	 * Get Price diff..
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -1871,22 +1881,22 @@ public interface I_C_OLCand
 	@Deprecated
 	BigDecimal getPriceDifference();
 
+	/**
+	 * Set Price diff..
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setPriceDifference (@Nullable BigDecimal PriceDifference);
+
 	ModelColumn<I_C_OLCand, Object> COLUMN_PriceDifference = new ModelColumn<>(I_C_OLCand.class, "PriceDifference", null);
 	String COLUMNNAME_PriceDifference = "PriceDifference";
 
 	/**
-	 * Set Preis.
-	 * Eingegebener Preis - der Preis basierend auf der gewählten Mengeneinheit
-	 *
-	 * <br>Type: CostPrice
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPriceEntered (@Nullable BigDecimal PriceEntered);
-
-	/**
-	 * Get Preis.
-	 * Eingegebener Preis - der Preis basierend auf der gewählten Mengeneinheit
+	 * Get Price imp..
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -1894,28 +1904,35 @@ public interface I_C_OLCand
 	 */
 	BigDecimal getPriceEntered();
 
-	ModelColumn<I_C_OLCand, Object> COLUMN_PriceEntered = new ModelColumn<>(I_C_OLCand.class, "PriceEntered", null);
-	String COLUMNNAME_PriceEntered = "PriceEntered";
-
 	/**
-	 * Set Preis int..
-	 * Interner Preis laut Stammdaten
+	 * Set Price imp..
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPriceInternal (@Nullable BigDecimal PriceInternal);
+	void setPriceEntered (@Nullable BigDecimal PriceEntered);
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_PriceEntered = new ModelColumn<>(I_C_OLCand.class, "PriceEntered", null);
+	String COLUMNNAME_PriceEntered = "PriceEntered";
 
 	/**
-	 * Get Preis int..
-	 * Interner Preis laut Stammdaten
+	 * Get Price.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getPriceInternal();
+
+	/**
+	 * Set Price.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceInternal (@Nullable BigDecimal PriceInternal);
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_PriceInternal = new ModelColumn<>(I_C_OLCand.class, "PriceInternal", null);
 	String COLUMNNAME_PriceInternal = "PriceInternal";

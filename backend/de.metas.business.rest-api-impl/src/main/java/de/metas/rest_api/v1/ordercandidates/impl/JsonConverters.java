@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateRequest;
+import de.metas.common.ordercandidates.v1.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v1.response.JsonOLCand;
 import de.metas.common.ordercandidates.v1.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v1.response.JsonResponseBPartnerLocationAndContact;
@@ -14,6 +15,7 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
@@ -130,6 +132,8 @@ public class JsonConverters
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
 
 		final PaymentTermId paymentTermId = masterdataProvider.getPaymentTermId(request, orgId);
+		final JsonOrderLineGroup jsonOrderLineGroup = request.getOrderLineGroup();
+		final OrderLineGroup orderLineGroup = jsonOrderLineGroup == null ? null : OrderLineGroup.ofOrNull(jsonOrderLineGroup.getGroupKey(), jsonOrderLineGroup.isGroupMainItem());
 
 		final UomId uomId;
 		if (!Check.isBlank(request.getUomCode()))
@@ -189,8 +193,8 @@ public class JsonConverters
 				.salesRepId(salesRepId)
 
 				.paymentTermId(paymentTermId)
+				.orderLineGroup(orderLineGroup);
 		//
-		;
 	}
 
 	private InputDataSourceId retrieveDataDestId(
@@ -235,8 +239,9 @@ public class JsonConverters
 		return dataSourceId;
 	}
 
-	private final JsonResponseBPartnerLocationAndContact toJson(
-			@Nullable String orgCode,
+	@Nullable
+	private JsonResponseBPartnerLocationAndContact toJson(
+			@Nullable final String orgCode,
 			@Nullable final BPartnerInfo bpartnerInfo,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
@@ -272,6 +277,11 @@ public class JsonConverters
 		final OrgId orgId = OrgId.ofRepoId(olCand.getAD_Org_ID());
 		final ZoneId orgTimeZone = masterdataProvider.getOrgTimeZone(orgId);
 		final String orgCode = orgDAO.retrieveOrgValue(orgId);
+		final OrderLineGroup orderLineGroup = olCand.getOrderLineGroup();
+		final JsonOrderLineGroup jsonOrderLineGroup = orderLineGroup == null ? null : JsonOrderLineGroup.builder()
+				.groupKey(orderLineGroup.getGroupKey())
+				.isGroupMainItem(orderLineGroup.isGroupMainItem())
+				.build();
 
 		return JsonOLCand.builder()
 				.id(olCand.getId())
@@ -302,6 +312,7 @@ public class JsonConverters
 				.discount(olCand.getDiscount())
 				//
 				.warehouseDestId(WarehouseId.toRepoId(olCand.getWarehouseDestId()))
+				.orderLineGroup(jsonOrderLineGroup)
 				//
 				.build();
 	}

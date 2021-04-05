@@ -9,6 +9,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -228,11 +229,17 @@ public class OLCandRepository
 		{
 			olCandPO.setPaymentRule(paymentRule.getCode());
 		}
-		
-		final PaymentTermId paymentTermId= request.getPaymentTermId();
-		if(paymentTermId != null)
+
+		final PaymentTermId paymentTermId = request.getPaymentTermId();
+		if (paymentTermId != null)
 		{
 			olCandPO.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+		}
+		final OrderLineGroup orderLineGroup = request.getOrderLineGroup();
+		if (orderLineGroup != null)
+		{
+			olCandPO.setCompensationGroupKey(orderLineGroup.getGroupKey());
+			olCandPO.setIsGroupCompensationLine(orderLineGroup.isGroupMainItem());
 		}
 
 		saveRecord(olCandPO);

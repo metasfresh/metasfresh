@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.ordercandidates.v1.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v1.request.JsonOrganization;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -88,6 +89,8 @@ public class JsonOLCand
 
 	private int warehouseDestId;
 
+	JsonOrderLineGroup orderLineGroup;
+
 	@JsonCreator
 	@Builder
 	private JsonOLCand(
@@ -112,7 +115,8 @@ public class JsonOLCand
 			@JsonProperty("pricingSystemId") final int pricingSystemId,
 			@JsonProperty("price") final BigDecimal price,
 			@JsonProperty("discount") final BigDecimal discount,
-			@JsonProperty("warehouseDestId") final int warehouseDestId)
+			@JsonProperty("warehouseDestId") final int warehouseDestId,
+			@JsonProperty("orderLineGroup") final JsonOrderLineGroup orderLineGroup)
 	{
 		this.id = id;
 		this.externalLineId = externalLineId;
@@ -136,6 +140,7 @@ public class JsonOLCand
 		this.price = price;
 		this.discount = discount;
 		this.warehouseDestId = warehouseDestId;
+		this.orderLineGroup = orderLineGroup;
 	}
 
 }
