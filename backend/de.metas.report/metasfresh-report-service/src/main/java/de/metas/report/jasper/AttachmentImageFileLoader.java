@@ -90,17 +90,8 @@ final class AttachmentImageFileLoader
 
 	private File retrieveImageFile(@NonNull final PrintFormatId printFormatId)
 	{
-
-		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(getAttachmentEntryIdByPrintFormatId(printFormatId));
-		try
-		{
-			return data.getFile();
-		}
-		catch (IOException e)
-		{
-			logger.warn("Failed retrieving the image file", e);
-			return null;
-		}
+		final byte[] data = attachmentEntryService.retrieveData(getAttachmentEntryIdByPrintFormatId(printFormatId));
+		return imgFileLoader.createTempPNGFile("logo", data);
 	}
 	
 	
