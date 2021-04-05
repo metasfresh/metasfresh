@@ -297,6 +297,32 @@ class NavigationTree extends Component {
     );
   };
 
+  /**
+   * @method renderMenuOverlayContainer
+   * @summary - renders the menu items for the right and left columns within the sitemap
+   * @param {object} subitem
+   * @param {number} subindex
+   * @returns MenuOverlayContainer
+   */
+  renderMenuOverlayContainer = (subitem, subindex) => {
+    return (
+      <MenuOverlayContainer
+        key={subindex}
+        printChildren={true}
+        showBookmarks={true}
+        openModal={this.openModal}
+        onUpdateData={this.updateData}
+        onKeyDown={this.handleKeyDown}
+        handleClickOnFolder={this.handleDeeper}
+        handleRedirect={this.handleRedirect}
+        handleNewRedirect={this.handleNewRedirect}
+        menuType="sitemap"
+        levelType="navigationTree"
+        {...subitem}
+      />
+    );
+  };
+
   renderTree = () => {
     const { queriedResults, query } = this.state;
 
@@ -332,73 +358,20 @@ class NavigationTree extends Component {
           </div>
         </div>
 
-        {/* <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced"> */}
-        {/* {rootResults.caption} */}
-        {/* </p> */}
-
         {/* sitemap items are listed using this */}
         <div className="column-wrapper">
           <div className="sitemap-column">
             {sitemapLeftColItems &&
-              sitemapLeftColItems.map((subitem, subindex) => {
-                return (
-                  <MenuOverlayContainer
-                    key={subindex}
-                    printChildren={true}
-                    showBookmarks={true}
-                    openModal={this.openModal}
-                    onUpdateData={this.updateData}
-                    onKeyDown={this.handleKeyDown}
-                    handleClickOnFolder={this.handleDeeper}
-                    handleRedirect={this.handleRedirect}
-                    handleNewRedirect={this.handleNewRedirect}
-                    menuType="sitemap"
-                    levelType="navigationTree"
-                    {...subitem}
-                  />
-                );
-              })}
+              sitemapLeftColItems.map((subitem, subindex) =>
+                this.renderMenuOverlayContainer(subitem, subindex)
+              )}
           </div>
           <div className="sitemap-column">
             {sitemapRightColItems &&
-              sitemapRightColItems.map((subitem, subindex) => {
-                return (
-                  <MenuOverlayContainer
-                    key={subindex}
-                    printChildren={true}
-                    showBookmarks={true}
-                    openModal={this.openModal}
-                    onUpdateData={this.updateData}
-                    onKeyDown={this.handleKeyDown}
-                    handleClickOnFolder={this.handleDeeper}
-                    handleRedirect={this.handleRedirect}
-                    handleNewRedirect={this.handleNewRedirect}
-                    menuType="sitemap"
-                    {...subitem}
-                  />
-                );
-              })}
+              sitemapRightColItems.map((subitem, subindex) =>
+                this.renderMenuOverlayContainer(subitem, subindex)
+              )}
           </div>
-          {/* {queriedResults &&
-            queriedResults.map((subitem, subindex) => {
-              indexOrder = indexOrder + 1;
-              return (
-                <MenuOverlayContainer
-                  key={subindex}
-                  printChildren={true}
-                  showBookmarks={true}
-                  indexOrder={indexOrder}
-                  openModal={this.openModal}
-                  onUpdateData={this.updateData}
-                  onKeyDown={this.handleKeyDown}
-                  handleClickOnFolder={this.handleDeeper}
-                  handleRedirect={this.handleRedirect}
-                  handleNewRedirect={this.handleNewRedirect}
-                  menuType="sitemap"
-                  {...subitem}
-                />
-              );
-            })} */}
 
           {queriedResults.length === 0 && query !== '' && (
             <span>There are no results</span>
