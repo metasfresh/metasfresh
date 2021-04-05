@@ -65,7 +65,7 @@ public final class JasperClassLoader extends ClassLoader
 
 	private final OrgId adOrgId;
 	@Nullable
-	private PrintFormatId printFormatId; 
+	private final PrintFormatId printFormatId; 
 	private String reportsPathPrefix;
 	private boolean alwaysPrependPrefix = false;
 
