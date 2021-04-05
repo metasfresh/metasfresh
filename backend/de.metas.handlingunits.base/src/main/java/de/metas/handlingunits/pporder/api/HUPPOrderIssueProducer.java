@@ -52,6 +52,9 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
+
 /**
  * Issues given HUs to configured Order BOM Lines.
  *
@@ -250,8 +253,6 @@ public class HUPPOrderIssueProducer
 
 	/**
 	 * Convenient way of calling {@link #targetOrderBOMLines(List)} with one bom line.
-	 *
-	 * @param targetOrderBOMLine
 	 */
 	public HUPPOrderIssueProducer targetOrderBOMLine(@NonNull final I_PP_Order_BOMLine targetOrderBOMLine)
 	{
@@ -264,13 +265,13 @@ public class HUPPOrderIssueProducer
 		return targetOrderBOMLine(targetOrderBOMLine);
 	}
 
-	public HUPPOrderIssueProducer fixedQtyToIssue(@NonNull final Quantity fixedQtyToIssue)
+	public HUPPOrderIssueProducer fixedQtyToIssue(@Nullable final Quantity fixedQtyToIssue)
 	{
 		this.fixedQtyToIssue = fixedQtyToIssue;
 		return this;
 	}
 
-	public HUPPOrderIssueProducer considerIssueMethodForQtyToIssueCalculation(boolean considerIssueMethodForQtyToIssueCalculation)
+	public HUPPOrderIssueProducer considerIssueMethodForQtyToIssueCalculation(final boolean considerIssueMethodForQtyToIssueCalculation)
 	{
 		this.considerIssueMethodForQtyToIssueCalculation = considerIssueMethodForQtyToIssueCalculation;
 		return this;
