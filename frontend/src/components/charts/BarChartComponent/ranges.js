@@ -17,23 +17,32 @@ export const getX1Range = (width, fields) => {
 };
 
 export const getYRange = (height, data, fields) => {
-  const keys = fields.map((field) => field.fieldName);
+  const fieldNames = fields.map((field) => field.fieldName);
+
+  let min = d3.min([...data, 0], (d) => {
+    return d3.min(fieldNames, (key) => d[key]);
+  });
+
+  // make sure the zero is also present else the bars will look crappy
+  // because the bars are always drawn starting from zero.
+  if (min > 0) {
+    min = 0;
+  }
+
+  let max = d3.max(data, (d) => {
+    return d3.max(fieldNames, (key) => d[key]);
+  });
+
+  // make sure the zero is also present else the bars will look crappy
+  // because the bars are always drawn starting from zero.
+  if (max < 0) {
+    max = 0;
+  }
 
   return d3
     .scaleLinear()
     .range([height, 0])
-    .domain([
-      d3.min(data, (d) => {
-        return d3.min(keys, (key) => {
-          return d[key];
-        });
-      }),
-      d3.max(data, (d) => {
-        return d3.max(keys, (key) => {
-          return d[key];
-        });
-      }),
-    ])
+    .domain([min, max])
     .nice();
 };
 
