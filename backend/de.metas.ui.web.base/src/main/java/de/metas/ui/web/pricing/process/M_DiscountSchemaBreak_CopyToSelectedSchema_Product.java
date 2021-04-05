@@ -127,7 +127,7 @@ public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends JavaProc
 				.productId(ProductId.ofRepoId(p_ProductId))
 				.allowCopyToSameSchema(allowCopyToSameSchema)
 				.direction(Direction.TargetSource)
-				.MakeTargetAsSource(p_MakeTargetAsSource)
+				.makeTargetAsSource(p_MakeTargetAsSource)
 				.build();
 
 		pricingConditionsRepo.copyDiscountSchemaBreaksWithProductId(request);
