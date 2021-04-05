@@ -540,3 +540,91 @@ INSERT INTO AD_Process (AD_Client_ID,IsActive,Created,CreatedBy,Updated,IsReport
 -- URL zum Konzept
 INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Help,Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Process_ID, t.Help,t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_ID=584816 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
 ;
+
+
+
+
+
+
+
+
+
+
+
+-- 2021-04-05T09:45:37.236Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Produktdruckformat', PrintName='Produktdruckformat',Updated=TO_TIMESTAMP('2021-04-05 11:45:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579000 AND AD_Language='de_CH'
+;
+
+-- 2021-04-05T09:45:37.247Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579000,'de_CH') 
+;
+
+-- 2021-04-05T09:45:45.586Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Produktdruckformat', PrintName='Produktdruckformat',Updated=TO_TIMESTAMP('2021-04-05 11:45:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579000 AND AD_Language='de_DE'
+;
+
+-- 2021-04-05T09:45:45.587Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579000,'de_DE') 
+;
+
+-- 2021-04-05T09:45:45.592Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579000,'de_DE') 
+;
+
+-- 2021-04-05T09:45:45.593Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='M_Product_PrintFormat_ID', Name='Produktdruckformat', Description=NULL, Help=NULL WHERE AD_Element_ID=579000
+;
+
+-- 2021-04-05T09:45:45.594Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='M_Product_PrintFormat_ID', Name='Produktdruckformat', Description=NULL, Help=NULL, AD_Element_ID=579000 WHERE UPPER(ColumnName)='M_PRODUCT_PRINTFORMAT_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-04-05T09:45:45.595Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='M_Product_PrintFormat_ID', Name='Produktdruckformat', Description=NULL, Help=NULL WHERE AD_Element_ID=579000 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-04-05T09:45:45.595Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Produktdruckformat', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579000) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579000)
+;
+
+-- 2021-04-05T09:45:45.607Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem pi SET PrintName='Produktdruckformat', Name='Produktdruckformat' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579000)
+;
+
+-- 2021-04-05T09:45:45.607Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Produktdruckformat', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579000
+;
+
+-- 2021-04-05T09:45:45.609Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Produktdruckformat', Description=NULL, Help=NULL WHERE AD_Element_ID = 579000
+;
+
+-- 2021-04-05T09:45:45.609Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Produktdruckformat', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579000
+;
+
+-- 2021-04-05T09:45:52.873Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-04-05 11:45:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579000 AND AD_Language='en_US'
+;
+
+-- 2021-04-05T09:45:52.877Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579000,'en_US') 
+;
+
+
+

@@ -32,4 +32,3 @@ UPDATE AD_Val_Rule SET Code='EXIST (SELECT 1 FROM M_Product_PrintFormat pf where
 -- URL zum Konzept
 UPDATE AD_Val_Rule SET Code='EXISTS (SELECT 1 FROM M_Product_PrintFormat pf where pf.M_Product_ID=@M_Product_ID@ AND AD_PrintFormat.AD_PrintFormat_ID = pf.AD_PrintFormat_ID)',Updated=TO_TIMESTAMP('2021-04-05 09:13:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540537
 ;
-
