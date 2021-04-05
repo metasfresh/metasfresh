@@ -151,7 +151,7 @@ ChartWidget.propTypes = {
   chartType: PropTypes.string,
   caption: PropTypes.string,
   fields: PropTypes.any,
-  groupBy: PropTypes.string,
+  groupBy: PropTypes.object,
   pollInterval: PropTypes.any,
   editmode: PropTypes.bool,
   handleChartOptions: PropTypes.func,
