@@ -2,13 +2,18 @@ package de.metas.ui.web.dashboard.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.dashboard.DashboardWidgetType;
 import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.KPIChartType;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.ui.web.dashboard.KPIDataResult;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -42,13 +47,25 @@ public class JsonKPI
 	KPIChartType chartType;
 	ImmutableSet<DashboardWidgetType> widgetTypes;
 
-	public static JsonKPI of(final KPI kpi, final JSONOptions jsonOpts)
+	// layout
+	@JsonInclude(JsonInclude.Include.NON_NULL) JsonKPIFieldLayout groupByField;
+	List<JsonKPIFieldLayout> fields;
+
+	@Nullable JsonKPIDataResult sampleData;
+
+	public static JsonKPI of(
+			@NonNull final KPI kpi,
+			@Nullable final KPIDataResult sampleData,
+			@NonNull final KPIJsonOptions jsonOpts)
 	{
 		return JsonKPI.builder()
 				.kpiId(kpi.getId().getRepoId())
 				.caption(kpi.getCaption(jsonOpts.getAdLanguage()))
 				.chartType(kpi.getChartType())
 				.widgetTypes(ImmutableSet.copyOf(kpi.getSupportedWidgetTypes()))
+				.groupByField(JsonKPILayout.extractGroupByField(kpi, jsonOpts))
+				.fields(JsonKPILayout.extractFields(kpi, jsonOpts))
+				.sampleData(sampleData != null ? JsonKPIDataResult.of(sampleData, jsonOpts) : null)
 				.build();
 	}
 }

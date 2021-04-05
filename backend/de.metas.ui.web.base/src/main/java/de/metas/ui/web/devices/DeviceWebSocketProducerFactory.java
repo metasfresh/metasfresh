@@ -1,7 +1,6 @@
 package de.metas.ui.web.devices;
 
-import org.springframework.stereotype.Component;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.device.adempiere.AttributeDeviceAccessor;
 import de.metas.device.adempiere.IDevicesHubFactory;
 import de.metas.ui.web.websocket.WebSocketProducer;
@@ -14,6 +13,11 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -48,13 +52,14 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 {
 	private static final String TOPICNAME_Prefix = WebsocketTopicNames.TOPIC_Devices + "/";
 
-	public static final String buildDeviceTopicName(final String deviceId)
+	public static String buildDeviceTopicName(final String deviceId)
 	{
 		Check.assumeNotEmpty(deviceId, "deviceId is not empty");
 		return TOPICNAME_Prefix + deviceId;
 	}
 
-	public static final String extractDeviceIdFromTopicName(@NonNull final WebsocketTopicName topicName)
+	@Nullable
+	public static String extractDeviceIdFromTopicName(@NonNull final WebsocketTopicName topicName)
 	{
 		final String topicNameString = topicName.getAsString();
 
@@ -78,6 +83,10 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 	public WebSocketProducer createProducer(final WebsocketTopicName topicName)
 	{
 		final String deviceId = extractDeviceIdFromTopicName(topicName);
+		if(deviceId == null)
+		{
+			throw new AdempiereException("Cannot extract deviceId from topic name `"+topicName+"`");
+		}
 		return new DeviceWebSocketProducer(deviceId);
 	}
 
@@ -93,7 +102,7 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 		}
 
 		@Override
-		public Object produceEvent(@NonNull final JSONOptions jsonOpts)
+		public List<JSONDeviceValueChangedEvent> produceEvents(@NonNull final JSONOptions jsonOpts)
 		{
 			final AttributeDeviceAccessor deviceAccessor = Services.get(IDevicesHubFactory.class)
 					.getDefaultAttributesDevicesHub()
@@ -106,7 +115,7 @@ public class DeviceWebSocketProducerFactory implements WebSocketProducerFactory
 			final Object valueObj = deviceAccessor.acquireValue();
 			final Object valueJson = Values.valueToJsonObject(valueObj, jsonOpts);
 
-			return JSONDeviceValueChangedEvent.of(deviceId, valueJson);
+			return ImmutableList.of(JSONDeviceValueChangedEvent.of(deviceId, valueJson));
 		}
 	}
 }

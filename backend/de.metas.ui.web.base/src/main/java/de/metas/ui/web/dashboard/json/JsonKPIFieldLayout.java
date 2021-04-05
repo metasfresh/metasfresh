@@ -4,9 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.ui.web.dashboard.KPIField;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 /*
  * #%L
@@ -33,13 +31,13 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JsonKPIFieldLayout
 {
-	public static final JsonKPIFieldLayout field(final KPIField kpiField, final JSONOptions jsonOpts)
+	public static JsonKPIFieldLayout field(final KPIField kpiField, final KPIJsonOptions jsonOpts)
 	{
 		final boolean isOffsetField = false;
 		return new JsonKPIFieldLayout(kpiField, isOffsetField, jsonOpts);
 	}
 
-	public static final JsonKPIFieldLayout offsetField(final KPIField kpiField, final JSONOptions jsonOpts)
+	public static JsonKPIFieldLayout offsetField(final KPIField kpiField, final KPIJsonOptions jsonOpts)
 	{
 		final boolean isOffsetField = true;
 		return new JsonKPIFieldLayout(kpiField, isOffsetField, jsonOpts);
@@ -69,7 +67,7 @@ public class JsonKPIFieldLayout
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String color;
 
-	public JsonKPIFieldLayout(final KPIField kpiField, final boolean isOffsetField, final JSONOptions jsonOpts)
+	public JsonKPIFieldLayout(final KPIField kpiField, final boolean isOffsetField, final KPIJsonOptions jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 

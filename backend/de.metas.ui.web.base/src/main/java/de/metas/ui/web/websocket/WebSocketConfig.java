@@ -1,10 +1,9 @@
 package de.metas.ui.web.websocket;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import de.metas.logging.LogManager;
 import de.metas.ui.web.WebuiURLs;
+import de.metas.ui.web.session.UserSession;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +18,7 @@ import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.messaging.support.ChannelInterceptorAdapter;
+import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -32,9 +31,9 @@ import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
-import de.metas.logging.LogManager;
-import de.metas.ui.web.session.UserSession;
-import lombok.NonNull;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * #%L
@@ -119,7 +118,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 	@Override
 	public void configureClientInboundChannel(final ChannelRegistration registration)
 	{
-		registration.setInterceptors(new WebsocketChannelInterceptor());
+		registration.interceptors(new WebsocketChannelInterceptor());
 
 		// NOTE: atm we don't care if the inbound messages arrived in the right order
 		// When and If we would care we would restrict the taskExecutor()'s corePoolSize to ONE.
@@ -133,12 +132,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 		return true;
 	}
 
-	private static class WebsocketChannelInterceptor extends ChannelInterceptorAdapter
+	private static class WebsocketChannelInterceptor implements ChannelInterceptor
 	{
 		private static final Logger logger = LogManager.getLogger(WebsocketChannelInterceptor.class);
 
 		@Override
-		public void afterSendCompletion(final Message<?> message, final MessageChannel channel, final boolean sent, final Exception ex)
+		public void afterSendCompletion(final @NonNull Message<?> message, final @NonNull MessageChannel channel, final boolean sent, final Exception ex)
 		{
 			if (!sent)
 			{
@@ -147,7 +146,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 		}
 
 		@Override
-		public void afterReceiveCompletion(final Message<?> message, final MessageChannel channel, final Exception ex)
+		public void afterReceiveCompletion(final Message<?> message, final @NonNull MessageChannel channel, final Exception ex)
 		{
 			if (ex != null)
 			{
@@ -162,7 +161,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 		private static final Logger logger = LogManager.getLogger(WebsocketHandshakeInterceptor.class);
 
 		@Override
-		public boolean beforeHandshake(@NonNull final ServerHttpRequest request, final ServerHttpResponse response, final WebSocketHandler wsHandler, final Map<String, Object> attributes) throws Exception
+		public boolean beforeHandshake(@NonNull final ServerHttpRequest request, final @NonNull ServerHttpResponse response, final @NonNull WebSocketHandler wsHandler, final @NonNull Map<String, Object> attributes)
 		{
 			final UserSession userSession = UserSession.getCurrentOrNull();
 			if (userSession == null)
@@ -183,7 +182,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 		}
 
 		@Override
-		public void afterHandshake(final ServerHttpRequest request, final ServerHttpResponse response, final WebSocketHandler wsHandler, final Exception exception)
+		public void afterHandshake(final @NonNull ServerHttpRequest request, final @NonNull ServerHttpResponse response, final @NonNull WebSocketHandler wsHandler, final Exception exception)
 		{
 			// nothing
 		}
@@ -223,7 +222,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 		}
 
 		@Override
-		public void onApplicationEvent(final SessionSubscribeEvent event)
+		public void onApplicationEvent(final @NonNull SessionSubscribeEvent event)
 		{
 			final WebsocketSubscriptionId subscriptionId = extractUniqueSubscriptionId(event);
 			final WebsocketTopicName topicName = extractTopicName(event);
@@ -250,7 +249,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 		}
 
 		@Override
-		public void onApplicationEvent(final SessionUnsubscribeEvent event)
+		public void onApplicationEvent(final @NonNull SessionUnsubscribeEvent event)
 		{
 			final WebsocketSubscriptionId subscriptionId = extractUniqueSubscriptionId(event);
 
