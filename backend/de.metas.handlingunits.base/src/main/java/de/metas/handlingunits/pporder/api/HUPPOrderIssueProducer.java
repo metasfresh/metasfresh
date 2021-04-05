@@ -250,8 +250,6 @@ public class HUPPOrderIssueProducer
 
 	/**
 	 * Convenient way of calling {@link #targetOrderBOMLines(List)} with one bom line.
-	 *
-	 * @param targetOrderBOMLine
 	 */
 	public HUPPOrderIssueProducer targetOrderBOMLine(@NonNull final I_PP_Order_BOMLine targetOrderBOMLine)
 	{
