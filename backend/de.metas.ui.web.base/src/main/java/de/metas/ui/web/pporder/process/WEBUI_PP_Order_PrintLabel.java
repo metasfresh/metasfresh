@@ -27,7 +27,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 
@@ -35,7 +34,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.handlingunits.HuId;
-import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.PInstanceId;
@@ -55,8 +53,6 @@ import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
-import lombok.Getter;
-import lombok.NonNull;
 
 public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implements IProcessPrecondition
 {
@@ -64,40 +60,6 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 
 	@Param(parameterName = PARAM_AD_PrintFormat_ID)
 	private int printFormatId;
-
-	private enum ReportType
-	{
-		Simple("S", AdProcessId.ofRepoId(584773)), //
-		MultipleSegments("M", AdProcessId.ofRepoId(584768));
-
-		private final String code;
-		
-		
-		@Getter
-		private final AdProcessId processId;
-
-		ReportType(@NonNull final String code, @NonNull final AdProcessId processId)
-		{
-			this.code = code;
-			this.processId = processId;
-		}
-
-		public static ReportType ofCode(@NonNull final String code)
-		{
-			if (Simple.code.equals(code))
-			{
-				return Simple;
-			}
-			else if (MultipleSegments.code.equals(code))
-			{
-				return MultipleSegments;
-			}
-			else
-			{
-				throw new AdempiereException("Unknown code: " + code);
-			}
-		}
-	}
 
 	final private IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	final private PrintFormatRepository pfRepo = SpringContextHolder.instance.getBean(PrintFormatRepository.class);
