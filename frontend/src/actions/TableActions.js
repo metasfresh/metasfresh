@@ -5,9 +5,14 @@ import * as types from '../constants/ActionTypes';
 
 import { fetchQuickActions } from '../actions/Actions';
 import { showIncludedView } from '../actions/ViewActions';
+import {
+  fetchViewAttributes,
+  fetchViewAttributesLayout,
+  deleteViewAttributes,
+} from '../actions/IndependentWidgetsActions';
 
 import { getView } from '../reducers/viewHandler';
-import { getTable } from '../reducers/tables';
+import { getTable, getSupportAttribute } from '../reducers/tables';
 
 /**
  * @method createTable
@@ -191,6 +196,49 @@ export function createTableData(rawData) {
 // THUNK ACTION CREATORS
 
 /*
+ * @method updateGridTable
+ * @summary Populate grid table with data and initial settings
+ *
+ * @param {string} tableId - table id
+ * @param {object} tableData - response data for the table
+ */
+export function fetchAttributes(tableId, tableData) {
+  return (dispatch, getState) => {
+    const state = getState();
+
+    // this check is only for unit tests purposes
+    if (state.tables) {
+      tableData = state.tables[tableId] ? state.tables[tableId] : tableData;
+
+      const {
+        rows,
+        supportAttribute,
+        keyProperty,
+        windowId,
+        viewId,
+        selected,
+      } = tableData;
+
+      let rowId =
+        selected && selected.length
+          ? state.tables[tableId].selected[0]
+          : rows[0][keyProperty];
+
+      if (supportAttribute && rowId) {
+        const rowSupportAttribute = getSupportAttribute([rowId], rows);
+
+        if (rowSupportAttribute) {
+          dispatch(fetchViewAttributesLayout({ windowId, viewId, rowId }));
+          dispatch(fetchViewAttributes({ windowId, viewId: viewId, rowId }));
+        }
+      } else {
+        dispatch(deleteViewAttributes());
+      }
+    }
+  };
+}
+
+/*
  * @method createGridTable
  * @summary Create a new table entry for grids using data from the window
  * layout (so not populated with data yet)
@@ -201,8 +249,8 @@ export function createGridTable(tableId, tableResponse) {
     const windowId = isModal
       ? tableResponse.modalId
       : tableResponse.windowType || tableResponse.windowId;
-    const tableLayout = getView(getState(), windowId, isModal).layout;
-
+    const view = getView(getState(), windowId, isModal);
+    const tableLayout = view.layout;
     const tableData = createTableData({
       ...tableResponse,
       ...tableLayout,
@@ -229,18 +277,19 @@ export function updateGridTable(tableId, tableResponse) {
       const windowId = isModal
         ? tableResponse.modalId
         : tableResponse.windowType || tableResponse.windowId;
-
-      const tableLayout = getView(getState(), windowId, isModal).layout;
+      const view = getView(getState(), windowId, isModal);
+      const tableLayout = view.layout;
+      let tableData;
 
       if (tableExists) {
         const { indentSupported } = tableExists;
-        const tableData = createTableData({
+        const { collapsible, expandedDepth } = tableExists;
+        tableData = createTableData({
           ...tableResponse,
           ...tableLayout,
           headerElements: tableResponse.columnsByFieldName,
           keyProperty: 'id',
         });
-        const { collapsible, expandedDepth } = tableExists;
         const { keyProperty } = tableData;
 
         // Parse `rows` to add `indent` property
@@ -261,10 +310,8 @@ export function updateGridTable(tableId, tableResponse) {
             })
           );
         }
-
-        return Promise.resolve(true);
       } else {
-        const tableData = createTableData({
+        tableData = createTableData({
           ...tableResponse,
           ...tableLayout,
           headerElements: tableResponse.columnsByFieldName,
@@ -294,9 +341,10 @@ export function updateGridTable(tableId, tableResponse) {
             })
           );
         }
-
-        return Promise.resolve(true);
       }
+      dispatch(fetchAttributes(tableId, tableData));
+
+      return Promise.resolve(true);
     }
 
     return Promise.resolve(false);
@@ -600,7 +648,7 @@ export function updateTableSelection({
           selection,
           isModal,
         })
-      );
+      ).then(dispatch(fetchAttributes(id)));
     }
 
     return Promise.resolve(selection);
@@ -639,7 +687,7 @@ export function deselectTableRows({
           selection,
           isModal,
         })
-      );
+      ).then(dispatch(fetchAttributes(id)));
     }
 
     return Promise.resolve(selection);

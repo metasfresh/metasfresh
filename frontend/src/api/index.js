@@ -29,7 +29,7 @@ import {
   advSearchRequest,
   getViewAttributesRequest,
   getViewAttributesLayoutRequest,
-  patchViewAttributes,
+  patchViewAttributesRequest,
   getViewAttributeDropdown,
   getViewAttributeTypeahead,
 } from './view';
@@ -93,7 +93,7 @@ export {
   advSearchRequest,
   getViewAttributesRequest,
   getViewAttributesLayoutRequest,
-  patchViewAttributes,
+  patchViewAttributesRequest,
   getViewAttributeDropdown,
   getViewAttributeTypeahead,
 };

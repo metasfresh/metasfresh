@@ -1,48 +1,33 @@
 import { produce, original } from 'immer';
-import { createSelector } from 'reselect';
-import { get } from 'lodash';
 
-// import {
-//   DELETE_QUICK_ACTIONS,
-//   FETCH_QUICK_ACTIONS,
-//   FETCH_QUICK_ACTIONS_FAILURE,
-//   FETCH_QUICK_ACTIONS_SUCCESS,
-// } from '../constants/ActionTypes';
+import {
+  FETCH_ATTRIBUTES_DATA,
+  FETCH_ATTRIBUTES_LAYOUT,
+  DELETE_ATTRIBUTES,
+  PATCH_ATTRIBUTES,
+  SET_ATTRIBUTES_DATA,
+} from '../constants/ActionTypes';
+import { parseToDisplay } from '../utils/documentListHelper';
 
 export const initialState = {
   attributes: {
-    fields: [],
+    dataId: null,
+    fields: {},
     elements: [],
   },
 };
-// export const initialSingleActionsState = {
-//   actions: [],
-//   pending: false,
-//   error: false,
-//   toDelete: false,
-// };
-
-// export const getQuickActionsId = ({ windowId, viewId }) =>
-//   `${windowId}${viewId ? `-${viewId}` : ''}`;
-
-// const getQuickActionsData = (state, key) =>
-//   get(state, ['actionsHandler', key], initialSingleActionsState);
-
-// export const getQuickActions = createSelector(
-//   [getQuickActionsData],
-//   (actions) => actions
-// );
 
 const reducer = produce((draftState, action) => {
   switch (action.type) {
-    case 'FETCH_DLW_DATA': {
-      const { fieldsByName } = action.payload;
+    case FETCH_ATTRIBUTES_DATA: {
+      const { fieldsByName, id } = action.payload;
 
       draftState.attributes.fields = fieldsByName;
+      draftState.attributes.dataId = id;
 
       return;
     }
-    case 'FETCH_DLW_LAYOUT': {
+    case FETCH_ATTRIBUTES_LAYOUT: {
       const { elements } = action.payload;
 
       draftState.attributes.elements = elements;
@@ -50,30 +35,47 @@ const reducer = produce((draftState, action) => {
       return;
     }
 
-    case 'DELETE_DLW': {
+    case DELETE_ATTRIBUTES: {
       draftState.attributes = {
-        fields: [],
+        fields: {},
         elements: [],
+        dataId: null,
       };
 
       return;
     }
 
-  //   case FETCH_QUICK_ACTIONS_SUCCESS: {
-  //     const { id, actions } = action.payload;
-  //     const current = original(draftState[id]);
+    case PATCH_ATTRIBUTES: {
+      const { data } = action.payload;
+      const preparedData = parseToDisplay(data);
 
-  //     if (current.toDelete) {
-  //       delete draftState[id];
-  //     } else {
-  //       draftState[id] = {
-  //         ...initialSingleActionsState,
-  //         actions,
-  //       };
-  //     }
+      if (preparedData) {
+        const current = original(draftState.attributes);
+        const newFields = {};
 
-  //     return;
-  //   }
+        Object.keys(preparedData).map((key) => {
+          newFields[key] = {
+            ...current.fields[key],
+            ...preparedData[key],
+          };
+        });
+
+        draftState.attributes.fields = {
+          ...current.fields,
+          ...newFields,
+        };
+      }
+
+      return;
+    }
+
+    case SET_ATTRIBUTES_DATA: {
+      const { field, value } = action.payload;
+
+      draftState.attributes.fields[field].value = value;
+
+      return;
+    }
   }
 }, initialState);
 
