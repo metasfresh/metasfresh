@@ -1,17 +1,16 @@
 package de.metas.ui.web.dashboard.json;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.KPIField;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -38,7 +37,7 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class JsonKPILayout
 {
-	public static final JsonKPILayout of(final KPI kpi, final JSONOptions jsonOpts)
+	public static JsonKPILayout of(final KPI kpi, final KPIJsonOptions jsonOpts)
 	{
 		return new JsonKPILayout(kpi, jsonOpts);
 	}
@@ -55,9 +54,6 @@ public class JsonKPILayout
 	@JsonProperty("chartType")
 	private final String chartType;
 
-	@JsonProperty("pollIntervalSec")
-	private final int pollIntervalSec;
-
 	@JsonProperty("groupByField")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final JsonKPIFieldLayout groupByField;
@@ -65,22 +61,25 @@ public class JsonKPILayout
 	@JsonProperty("fields")
 	private final List<JsonKPIFieldLayout> fields;
 
-	public JsonKPILayout(final KPI kpi, final JSONOptions jsonOpts)
+	public JsonKPILayout(final KPI kpi, final KPIJsonOptions jsonOpts)
 	{
-		final String adLanguage = jsonOpts.getAdLanguage();
-
 		// id = kpi.getId();
-		// caption = kpi.getCaption(adLanguage);
-		description = Strings.emptyToNull(kpi.getDescription(adLanguage));
+		// caption = kpi.getCaption(jsonOpts.getAdLanguage());
+		description = Strings.emptyToNull(kpi.getDescription(jsonOpts.getAdLanguage()));
 		chartType = kpi.getChartType().toJson();
+		groupByField = extractGroupByField(kpi, jsonOpts);
+		fields = extractFields(kpi, jsonOpts);
+	}
 
-		pollIntervalSec = kpi.getPollIntervalSec();
-
-		//
-		// Group by field
+	@Nullable
+	static JsonKPIFieldLayout extractGroupByField(final KPI kpi, final KPIJsonOptions jsonOpts)
+	{
 		final KPIField groupByField = kpi.getGroupByFieldOrNull();
-		this.groupByField = groupByField == null ? null : JsonKPIFieldLayout.field(groupByField, jsonOpts);
+		return groupByField != null ? JsonKPIFieldLayout.field(groupByField, jsonOpts) : null;
+	}
 
+	static ImmutableList<JsonKPIFieldLayout> extractFields(final KPI kpi, final KPIJsonOptions jsonOpts)
+	{
 		final ImmutableList.Builder<JsonKPIFieldLayout> jsonFields = ImmutableList.builder();
 		final boolean hasCompareOffset = kpi.hasCompareOffset();
 		for (final KPIField kpiField : kpi.getFields())
@@ -98,6 +97,7 @@ public class JsonKPILayout
 				jsonFields.add(JsonKPIFieldLayout.offsetField(kpiField, jsonOpts));
 			}
 		}
-		fields = jsonFields.build();
+		return jsonFields.build();
 	}
+
 }

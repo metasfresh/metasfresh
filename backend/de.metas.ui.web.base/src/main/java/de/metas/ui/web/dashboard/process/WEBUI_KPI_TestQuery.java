@@ -16,10 +16,8 @@ import de.metas.ui.web.dashboard.KPIDataResult;
 import de.metas.ui.web.dashboard.KPIId;
 import de.metas.ui.web.dashboard.KPIRepository;
 import de.metas.ui.web.dashboard.TimeRange;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Services;
 import org.compiere.SpringContextHolder;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.context.annotation.Profile;
 
 import java.util.Date;
@@ -82,9 +80,8 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 		final KPI kpi = kpisRepo.getKPI(kpiId);
 		final TimeRange timeRange = kpi.getTimeRangeDefaults().createTimeRange(p_DateFrom, p_DateTo);
 
-		final KPIDataResult kpiData = KPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi, JSONOptions.newInstance())
+		final KPIDataResult kpiData = KPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi)
 				.setTimeRange(timeRange)
-				.setFormatValues(true)
 				.assertESIndexExists()
 				.retrieveData();
 
