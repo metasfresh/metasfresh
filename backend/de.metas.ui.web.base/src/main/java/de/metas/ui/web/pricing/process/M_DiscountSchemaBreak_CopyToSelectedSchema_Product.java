@@ -102,11 +102,10 @@ public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends JavaProc
 		});
 
 		// run copy for each product separate
-		products.forEach(product -> {
-
+		for (final ProductId product : products)
+		{
 			copyDiscountSchemaBreaks(pricingConditions, product);
-
-		});
+		};
 
 		return MSG_OK;
 	}
