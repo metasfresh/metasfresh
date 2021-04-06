@@ -18,7 +18,7 @@ WORKDIR /e2e
 # I think this is needed so the npm intall will get all needed dependencies
 COPY package.json .
 
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 COPY .babelrc .
 
