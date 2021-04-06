@@ -3,7 +3,7 @@
   "jsonRequestBPartnerUpsert": {
     "requestItems": [
       {
-        "bpartnerIdentifier": "ext-Shopware6-customerId",
+        "bpartnerIdentifier": "ext-Shopware6-customerId_custom",
         "bpartnerComposite": {
           "orgCode": "orgCode",
           "bpartner": {
@@ -15,7 +15,7 @@
           "locations": {
             "requestItems": [
               {
-                "locationIdentifier": "ext-Shopware6-customerId-billTo",
+                "locationIdentifier": "ext-Shopware6-billingAddressId_custom",
                 "location": {
                   "address1": "Teststrasse 121",
                   "address2": null,
@@ -28,7 +28,7 @@
                 }
               },
               {
-                "locationIdentifier": "ext-Shopware6-customerId-shipTo",
+                "locationIdentifier": "ext-Shopware6-shippingAddressId_custom",
                 "location": {
                   "address1": "ShippingAddressStreet",
                   "address2": null,
