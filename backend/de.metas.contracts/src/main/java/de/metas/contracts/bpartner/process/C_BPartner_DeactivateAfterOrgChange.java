@@ -65,7 +65,7 @@ public class C_BPartner_DeactivateAfterOrgChange extends JavaProcess
 
 		final List<BPartnerId> partnerIdsToDeactivate = queryBL.createQueryBuilder(I_AD_OrgChange_History.class)
 				.addCompareFilter(I_AD_OrgChange_History.COLUMNNAME_Date_OrgChange, CompareQueryFilter.Operator.LESS_OR_EQUAL, now)
-				.andCollectChildren(I_AD_OrgChange_History.COLUMNNAME_C_BPartner_From_ID, I_C_BPartner.class)
+				.andCollect(I_AD_OrgChange_History.COLUMNNAME_C_BPartner_From_ID, I_C_BPartner.class)
 				.create()
 				.listIds(BPartnerId::ofRepoId)
 				.asList();

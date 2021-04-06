@@ -1,41 +1,43 @@
-package de.metas.ui.web.dashboard.json;
-
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-@AllArgsConstructor
-@EqualsAndHashCode
-public abstract class JSONDashboardChangedEvent
-{
-	public static enum ChangeType
-	{
-		dashboardChanged, itemChanged,
-	}
+package de.metas.ui.web.dashboard;
 
-	@NonNull
-	private final ChangeType changeType;
-	private final int dashboardId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.Instant;
+
+@Value
+@Builder
+public class UserDashboardItemDataRequest
+{
+	@NonNull DashboardWidgetType widgetType;
+	@NonNull UserDashboardItemId itemId;
+	boolean prettyValues;
+	@Nullable Instant from;
+	@Nullable Instant to;
+	@NonNull @Builder.Default Duration maxStaleAccepted = Duration.ofSeconds(1);
 }

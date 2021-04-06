@@ -1,29 +1,8 @@
 package de.metas.manufacturing.rest_api;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import com.google.common.annotations.VisibleForTesting;
-import de.metas.handlingunits.reservation.HUReservationDocRef;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Trace;
-import org.eevolution.api.PPCostCollectorId;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -36,9 +15,9 @@ import de.metas.common.manufacturing.JsonResponseIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseIssueToManufacturingOrderDetail;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonResponseReceiveFromManufacturingOrder;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonError;
 import de.metas.common.rest_api.v1.JsonErrorItem;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
@@ -53,6 +32,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import de.metas.logging.LogManager;
@@ -60,7 +40,6 @@ import de.metas.manufacturing.order.exportaudit.APITransactionId;
 import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAudit;
 import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditItem;
 import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditItem.ManufacturingOrderReportAuditItemBuilder;
-import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -72,6 +51,25 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Trace;
+import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderId;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -251,8 +249,9 @@ class ManufacturingOrderReportProcessCommand
 					.setParameter("issue", issue);
 		}
 
-		final I_C_UOM stockingUOM = productBL.getStockUOM(productId);
-		final Quantity qtyToIssue = Quantity.of(issue.getQtyToIssueInStockUOM(), stockingUOM);
+		final Quantity fixedQtyToIssue = issue.getQtyToIssueInStockUOM() != null
+				? Quantity.of(issue.getQtyToIssueInStockUOM(), productBL.getStockUOM(productId))
+				: null;
 
 		if (issue.getHandlingUnits().isEmpty())
 		{
@@ -260,21 +259,28 @@ class ManufacturingOrderReportProcessCommand
 					.appendParametersToMessage()
 					.setParameter("issue", issue);
 		}
+		final List<I_M_HU> possibleHUsToIssue = resolveHUs(productId, issue.getHandlingUnits());
 
-		final List<I_M_HU> possibleSourceHUs = resolveHUs(productId, issue.getHandlingUnits());
-
-		// e.g. if we have one 1000PCE-HU, but we need to issue just 10PCE, then we need to split those 10PCE from the big HU
-		final List<I_M_HU> husToIssue = HUTransformService.newInstance()
-				.husToNewCUs(HUTransformService.HUsToNewCUsRequest.builder()
-						.sourceHUs(possibleSourceHUs)
-						.productId(productId)
-						.qtyCU(qtyToIssue)
-						.onlyFromUnreservedHUs(true)
-						.build());
+		final List<I_M_HU> husToIssue;
+		if (fixedQtyToIssue != null)
+		{
+			// e.g. if we have one 1000PCE-HU, but we need to issue just 10PCE, then we need to split those 10PCE from the big HU
+			husToIssue = HUTransformService.newInstance()
+					.husToNewCUs(HUTransformService.HUsToNewCUsRequest.builder()
+							.sourceHUs(possibleHUsToIssue)
+							.productId(productId)
+							.qtyCU(fixedQtyToIssue)
+							.onlyFromUnreservedHUs(true)
+							.build());
+		}
+		else
+		{
+			husToIssue = possibleHUsToIssue;
+		}
 
 		final List<I_PP_Order_Qty> processedIssueCandidates = huPPOrderBL.createIssueProducer(orderId)
-				.fixedQtyToIssue(qtyToIssue)
-				.processCandidates(ProcessIssueCandidatesPolicy.ALWAYS)
+				.fixedQtyToIssue(fixedQtyToIssue)
+				.processCandidates(issue.isProcess() ? ProcessIssueCandidatesPolicy.ALWAYS : ProcessIssueCandidatesPolicy.NEVER)
 				.createIssues(husToIssue);
 
 		return JsonResponseIssueToManufacturingOrder.builder()
@@ -401,8 +407,7 @@ class ManufacturingOrderReportProcessCommand
 	private ProductId getFinishedGoodProductId(final PPOrderId orderId)
 	{
 		final I_PP_Order order = getOrderById(orderId);
-		final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
-		return productId;
+		return ProductId.ofRepoId(order.getM_Product_ID());
 	}
 
 	private LocatorId getReceiveToLocatorByOrderId(final PPOrderId orderId)
@@ -483,7 +488,7 @@ class ManufacturingOrderReportProcessCommand
 				.setHUStatus(X_M_HU.HUSTATUS_Active)
 				.addOnlyWithProductId(productId);
 
-		if(!Check.isBlank(request.getHuValue()))
+		if (!Check.isBlank(request.getHuValue()))
 		{
 			queryBuilder.addOnlyHUValue(request.getHuValue());
 		}
@@ -495,7 +500,7 @@ class ManufacturingOrderReportProcessCommand
 		{
 			queryBuilder.addOnlyWithAttribute(AttributeConstants.ATTR_BestBeforeDate, request.getBestBeforeDate());
 		}
-		if(!Check.isBlank(request.getSerialNo()))
+		if (!Check.isBlank(request.getSerialNo()))
 		{
 			queryBuilder.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, request.getSerialNo());
 		}

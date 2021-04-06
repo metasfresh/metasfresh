@@ -1,16 +1,8 @@
-package de.metas.ui.web.dashboard.json;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
-import lombok.EqualsAndHashCode;
-import lombok.Value;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,22 +20,32 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.ui.web.dashboard.websocket.json;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import de.metas.ui.web.dashboard.UserDashboardId;
+import de.metas.ui.web.dashboard.UserDashboardItemId;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Value;
+
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 @EqualsAndHashCode(callSuper = true)
 public class JSONDashboardItemChangedEvent extends JSONDashboardChangedEvent
 {
-	public static final JSONDashboardItemChangedEvent of(final int dashboardId, final int itemId)
+	public static JSONDashboardItemChangedEvent of(@NonNull final UserDashboardId dashboardId, @NonNull final UserDashboardItemId itemId)
 	{
 		return new JSONDashboardItemChangedEvent(dashboardId, itemId);
 	}
 
-	private final int itemId;
+	int itemId;
 
-	private JSONDashboardItemChangedEvent(final int dashboardId, final int itemId)
+	private JSONDashboardItemChangedEvent(@NonNull final UserDashboardId dashboardId, @NonNull final UserDashboardItemId itemId)
 	{
-		super(ChangeType.itemChanged, dashboardId);
-		this.itemId = itemId;
+		super(ChangeType.itemChanged, dashboardId.getRepoId());
+		this.itemId = itemId.getRepoId();
 	}
 
 }
