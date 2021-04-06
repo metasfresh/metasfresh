@@ -5,7 +5,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.jexl2.JexlEngine;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlEngine;
 import org.compiere.util.TimeUtil;
 import org.jxls.expression.ExpressionEvaluator;
 import org.jxls.expression.JexlExpressionEvaluator;
@@ -51,29 +52,21 @@ public class JexlCustomFunctions
 {
 	private static final Logger logger = LogManager.getLogger(JexlCustomFunctions.class);
 
-	public static final void registerIfNeeded(final ExpressionEvaluator expressionEvaluator)
+	public static void register(final ExpressionEvaluator expressionEvaluator)
 	{
 		if (expressionEvaluator instanceof JexlExpressionEvaluator)
 		{
 			final JexlExpressionEvaluator jexlExpressionEvaluator = (JexlExpressionEvaluator)expressionEvaluator;
-			final JexlEngine jexlEngine = jexlExpressionEvaluator.getJexlEngine();
 
-			final Map<String, Object> existingFunctions = jexlEngine.getFunctions();
-			if (existingFunctions != null && existingFunctions.get(NAMESPACE) instanceof JexlCustomFunctions)
-			{
-				// already registered
-				return;
-			}
-
-			final Map<String, Object> functions = new HashMap<>();
-			if (existingFunctions != null && !existingFunctions.isEmpty())
-			{
-				functions.putAll(existingFunctions);
-			}
+			final Map<String, Object> functionsMap = new HashMap<>();
 
 			final JexlCustomFunctions functionsInstance = new JexlCustomFunctions();
-			functions.put(NAMESPACE, functionsInstance);
-			jexlEngine.setFunctions(functions);
+			functionsMap.put(NAMESPACE, functionsInstance);
+
+			final JexlEngine newJexlEngine = new JexlBuilder()
+					.strict(false)
+					.namespaces(functionsMap).create();
+			jexlExpressionEvaluator.setJexlEngine(newJexlEngine);
 
 			logger.debug("Registered {} to namespace {}", functionsInstance, NAMESPACE);
 		}
@@ -87,7 +80,7 @@ public class JexlCustomFunctions
 
 	/**
 	 *
-	 * @param month month (1-Jan, 2-Feb ... 12-Dec)
+	 * @param monthOneBased month (1-Jan, 2-Feb ... 12-Dec)
 	 * @param dateStart date or null; null will be ignored
 	 * @param dateEnd date or null; null will be ignored
 	 * @return true if given <code>month</code> is between given dates
@@ -124,7 +117,7 @@ public class JexlCustomFunctions
 		return true;
 	}
 	/**
-	 * @param month month (1-Jan, 2-Feb ... 12-Dec)
+	 * @param monthOneBased month (1-Jan, 2-Feb ... 12-Dec)
 	 * @param year year (2000, ... 2016)
 	 * @param dateStart date or null; null will be ignored
 	 * @param dateEnd date or null; null will be ignored

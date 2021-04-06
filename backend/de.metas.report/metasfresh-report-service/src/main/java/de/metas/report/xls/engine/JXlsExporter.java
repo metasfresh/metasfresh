@@ -97,11 +97,7 @@ public class JXlsExporter
 				final ByteArrayOutputStream os = new ByteArrayOutputStream();
 				final Transformer transformer = createTransformer(is, os);
 
-				JexlExpressionEvaluator evaluator = (JexlExpressionEvaluator)transformer.getTransformationConfig().getExpressionEvaluator();
-
-				//setting the evaluator to silent & lenient doesn't show warnings anymore for 0 or null values.
-				evaluator.getJexlEngine().setSilent(true);
-				evaluator.getJexlEngine().setLenient(true);
+				final JexlExpressionEvaluator evaluator = (JexlExpressionEvaluator)transformer.getTransformationConfig().getExpressionEvaluator();
 
 				processTemplate(transformer, context);
 
@@ -144,14 +140,14 @@ public class JXlsExporter
 		transformer.write();
 	}
 
-	private final Transformer createTransformer(final InputStream is, final ByteArrayOutputStream os) throws InvalidFormatException, IOException
+	private Transformer createTransformer(final InputStream is, final ByteArrayOutputStream os) throws InvalidFormatException, IOException
 	{
 		final PoiTransformer transformer = PoiTransformer.createTransformer(is, os);
 		transformer.setLastCommentedColumn(250);
-
+		
 		// make sure our custom jexl functions are registered
 		final TransformationConfig config = transformer.getTransformationConfig();
-		JexlCustomFunctions.registerIfNeeded(config.getExpressionEvaluator());
+		JexlCustomFunctions.register(config.getExpressionEvaluator());
 
 		return transformer;
 	}
