@@ -28,7 +28,7 @@ import org.threeten.bp.OffsetDateTime;
  * CareGiver
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T10:30:25.848Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-03-05T06:49:14.310Z[GMT]")
 public class CareGiver {
   @SerializedName("_id")
   private UUID _id = null;
@@ -393,7 +393,7 @@ public class CareGiver {
 
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -456,7 +456,7 @@ public class CareGiver {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }

@@ -30,6 +30,9 @@ import de.metas.common.rest_api.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -57,6 +60,7 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 
 public abstract class InvokeExternalSystemProcess extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
@@ -132,13 +136,19 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		}
 
 		final long selectedRecordsCount = getSelectedRecordCount(context);
-		if (selectedRecordsCount == 0)
-		{
-			return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getTabName()));
-		}
 		if (selectedRecordsCount > 1)
 		{
 			return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ERR_MULTIPLE_EXTERNAL_SELECTION, getTabName()));
+		}
+		else if (selectedRecordsCount == 0)
+		{
+			final Optional<IExternalSystemChildConfig> childConfig =
+					externalSystemConfigDAO.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()), getExternalSystemType());
+
+			if (!childConfig.isPresent())
+			{
+				return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getTabName()));
+			}
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -172,6 +182,8 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	protected abstract Map<String, String> extractExternalSystemParameters(ExternalSystemParentConfig externalSystemParentConfig);
 	
 	protected abstract String getTabName();
+
+	protected abstract ExternalSystemType getExternalSystemType();
 
 	protected abstract long getSelectedRecordCount(final IProcessPreconditionsContext context);
 
