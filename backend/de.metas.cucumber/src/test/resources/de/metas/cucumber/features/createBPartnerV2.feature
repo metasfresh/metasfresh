@@ -22,4 +22,8 @@ Feature: create or update BPartner v2
 
     And the request is set in context for v2 bpartnerId 'ext-ALBERTA-001' and syncAdvise 'CREATE_OR_MERGE'
     When the metasfresh REST-API endpoint path 'api/v2-pre/bpartner/001' receives a 'PUT' request with the payload from context and responds with '201' status code
-    Then verify if data is persisted correctly for v2 bpartnerId 'ext-ALBERTA-001'
+    Then verify that bPartner was created for externalIdentifier 'ext-ALBERTA-001'
+    And verify that location with locationIdentifier 'gln-l11' was created for bpartnerIdentifier 'ext-ALBERTA-001'
+    And verify that location with locationIdentifier 'gln-l22' was created for bpartnerIdentifier 'ext-ALBERTA-001'
+    And verify that contact with contactIdentifier 'ext-ALBERTA-c11' was created for bpartnerIdentifier 'ext-ALBERTA-001'
+    And verify that contact with contactIdentifier 'ext-ALBERTA-c22' was created for bpartnerIdentifier 'ext-ALBERTA-001'
