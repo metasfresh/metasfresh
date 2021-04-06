@@ -42,8 +42,6 @@ public interface IHUStorageDAO
 	 * Called by API to notify that a new HU was just created.
 	 *
 	 * NOTE: don't call it directly
-	 *
-	 * @param item
 	 */
 	void initHUStorages(I_M_HU hu);
 
@@ -51,8 +49,6 @@ public interface IHUStorageDAO
 	 * Called by API to notify that a new HU Item was just created.
 	 *
 	 * NOTE: don't call it directly
-	 *
-	 * @param item
 	 */
 	void initHUItemStorages(I_M_HU_Item item);
 
@@ -77,7 +73,6 @@ public interface IHUStorageDAO
 	 * <br>
 	 * <b>Returns</b> <code>C_UOM</code> accepted among all the HU storages' UOMTypes<br>
 	 *
-	 * @param hu
 	 * @return <code>C_UOM</code> or null
 	 */
 	I_C_UOM getC_UOMOrNull(I_M_HU hu);
@@ -89,7 +84,6 @@ public interface IHUStorageDAO
 	 * <br>
 	 * <b>Returns</b> <code>C_UOM.UOMType</code> accepted among all the HU storages' UOMs<br>
 	 *
-	 * @param hu
 	 * @return <code>C_UOM.UOMType</code> or null
 	 */
 	UOMType getC_UOMTypeOrNull(I_M_HU hu);

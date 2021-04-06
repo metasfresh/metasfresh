@@ -24,6 +24,7 @@ package de.metas.externalsystem.process;
 
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
@@ -56,9 +57,10 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 		}
 		else
 		{
-			// note: we can blindly get the first I_ExternalSystem_Config_Alberta, because the checkPreconditionsApplicable impl made sure there is exactly one.
-			id = getSelectedIncludedRecordIds(I_ExternalSystem_Config_Alberta.class).stream().findFirst().get();
+			id = externalSystemConfigDAO.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()), getExternalSystemType())
+					.get().getId().getRepoId();
 		}
+
 		return ExternalSystemAlbertaConfigId.ofRepoId(id);
 	}
 
@@ -80,5 +82,11 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 	protected String getTabName()
 	{
 		return ExternalSystemType.Alberta.getName();
+	}
+
+	@NonNull
+	protected ExternalSystemType getExternalSystemType()
+	{
+		return ExternalSystemType.Alberta;
 	}
 }

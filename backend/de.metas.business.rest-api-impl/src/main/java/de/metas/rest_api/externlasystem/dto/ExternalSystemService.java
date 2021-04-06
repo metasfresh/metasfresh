@@ -96,6 +96,8 @@ public class ExternalSystemService
 		processInfoBuilder.addParameter(PARAM_EXTERNAL_REQUEST, invokeExternalSystemProcessRequest.getRequest());
 		processInfoBuilder.addParameter(PARAM_CHILD_CONFIG_ID, configIdAsString);
 
+		processInfoBuilder.setRecord(externalSystemParentConfig.getTableRecordReference());
+
 		final ProcessExecutionResult processExecutionResult = processInfoBuilder
 				.buildAndPrepareExecution()
 				.executeSync()

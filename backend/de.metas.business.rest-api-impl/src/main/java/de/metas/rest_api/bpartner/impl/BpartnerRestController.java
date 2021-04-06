@@ -19,6 +19,7 @@ import de.metas.common.bpartner.response.JsonResponseUpsert;
 import de.metas.common.rest_api.SyncAdvise;
 import de.metas.common.rest_api.SyncAdvise.IfExists;
 import de.metas.common.rest_api.SyncAdvise.IfNotExists;
+import de.metas.rest_api.utils.ApiEndpoint;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -72,13 +73,16 @@ import static de.metas.common.rest_api.SwaggerDocConstants.SINCE_DOC;
  * #L%
  */
 
-@RequestMapping(BpartnerRestController.ENDPOINT)
+
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/bpartner",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/bpartner",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bpartner" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 // the spelling "Bpartner" is to avoid swagger from spelling it "b-partner-rest.."
 public class BpartnerRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartner";
 	public static final String ORG_CODE_PARAMETER_DOC = "`AD_Org.Value` of the BPartner identified by the bpartnerIdentifier";
 
 	private final BPartnerEndpointService bpartnerEndpointService;

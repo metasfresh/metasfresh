@@ -36,7 +36,7 @@ import org.threeten.bp.OffsetDateTime;
  * Patient
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-02-11T10:30:25.848Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-03-05T06:49:14.310Z[GMT]")
 public class Patient {
   @SerializedName("_id")
   private UUID _id = null;
@@ -109,6 +109,9 @@ public class Patient {
 
   @SerializedName("ivTherapy")
   private Boolean ivTherapy = null;
+
+  @SerializedName("pharmacyId")
+  private String pharmacyId = null;
 
   @SerializedName("comment")
   private String comment = null;
@@ -591,6 +594,24 @@ public class Patient {
     this.ivTherapy = ivTherapy;
   }
 
+  public Patient pharmacyId(String pharmacyId) {
+    this.pharmacyId = pharmacyId;
+    return this;
+  }
+
+   /**
+   * Id der Apotheke (Voraussetzung, Alberta-Id ist bereits durch initialen Abgleich in WaWi vorhanden)
+   * @return pharmacyId
+  **/
+  @Schema(example = "6b945eb5-2f7c-49bb-bd14-d3a11fe385a5", description = "Id der Apotheke (Voraussetzung, Alberta-Id ist bereits durch initialen Abgleich in WaWi vorhanden)")
+  public String getPharmacyId() {
+    return pharmacyId;
+  }
+
+  public void setPharmacyId(String pharmacyId) {
+    this.pharmacyId = pharmacyId;
+  }
+
   public Patient comment(String comment) {
     this.comment = comment;
     return this;
@@ -871,7 +892,7 @@ public class Patient {
 
 
   @Override
-  public boolean equals(java.lang.Object o) {
+  public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
@@ -903,6 +924,7 @@ public class Patient {
         Objects.equals(this.payer, patient.payer) &&
         Objects.equals(this.changeInSupplier, patient.changeInSupplier) &&
         Objects.equals(this.ivTherapy, patient.ivTherapy) &&
+        Objects.equals(this.pharmacyId, patient.pharmacyId) &&
         Objects.equals(this.comment, patient.comment) &&
         Objects.equals(this.billingAddress, patient.billingAddress) &&
         Objects.equals(this.deliveryAddress, patient.deliveryAddress) &&
@@ -922,7 +944,7 @@ public class Patient {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_id, customerId, customerContactId, gender, title, firstName, lastName, birthday, address, additionalAddress, additionalAddress2, postalCode, city, phone, fax, mobilePhone, email, primaryDoctorId, nursingHomeId, nursingServiceId, hospital, payer, changeInSupplier, ivTherapy, comment, billingAddress, deliveryAddress, regionId, fieldNurseId, deactivationReason, deactivationDate, deactivationComment, careGivers, archived, createdAt, createdBy, updatedAt, updatedBy, timestamp);
+    return Objects.hash(_id, customerId, customerContactId, gender, title, firstName, lastName, birthday, address, additionalAddress, additionalAddress2, postalCode, city, phone, fax, mobilePhone, email, primaryDoctorId, nursingHomeId, nursingServiceId, hospital, payer, changeInSupplier, ivTherapy, pharmacyId, comment, billingAddress, deliveryAddress, regionId, fieldNurseId, deactivationReason, deactivationDate, deactivationComment, careGivers, archived, createdAt, createdBy, updatedAt, updatedBy, timestamp);
   }
 
 
@@ -955,6 +977,7 @@ public class Patient {
     sb.append("    payer: ").append(toIndentedString(payer)).append("\n");
     sb.append("    changeInSupplier: ").append(toIndentedString(changeInSupplier)).append("\n");
     sb.append("    ivTherapy: ").append(toIndentedString(ivTherapy)).append("\n");
+    sb.append("    pharmacyId: ").append(toIndentedString(pharmacyId)).append("\n");
     sb.append("    comment: ").append(toIndentedString(comment)).append("\n");
     sb.append("    billingAddress: ").append(toIndentedString(billingAddress)).append("\n");
     sb.append("    deliveryAddress: ").append(toIndentedString(deliveryAddress)).append("\n");
@@ -978,7 +1001,7 @@ public class Patient {
    * Convert the given object to string with each line indented by 4 spaces
    * (except the first line).
    */
-  private String toIndentedString(java.lang.Object o) {
+  private String toIndentedString(Object o) {
     if (o == null) {
       return "null";
     }
