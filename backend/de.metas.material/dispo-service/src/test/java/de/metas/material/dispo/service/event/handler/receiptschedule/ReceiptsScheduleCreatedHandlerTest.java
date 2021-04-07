@@ -5,11 +5,16 @@ import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +36,7 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import lombok.NonNull;
+import org.mockito.Mockito;
 
 /*
  * #%L
@@ -59,14 +65,20 @@ public class ReceiptsScheduleCreatedHandlerTest
 	static final int RECEIPT_SCHEDULE_ID = 70;
 
 	private ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler;
+	private DimensionService dimensionService;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService);
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryWriteService);
 		final Collection<CandidateHandler> candidateChangeHandlers = ImmutableList.of(new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService));
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateChangeHandlers);

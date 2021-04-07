@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.Dimension;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -75,6 +76,8 @@ public class PurchaseCandidateToOrderWorkflowTest
 	private I_C_UOM EACH;
 	private Quantity ONE;
 
+	private Dimension dimension;
+
 	@BeforeEach
 	public void init()
 	{
@@ -91,6 +94,15 @@ public class PurchaseCandidateToOrderWorkflowTest
 				.purchaseCandidateRepo(purchaseCandidateRepo)
 				.vendorGatewayInvokerFactory(vendorGatewayInvokerFactory)
 				.purchaseOrderFromItemsAggregator(purchaseOrderFromItemsAggregator)
+				.build();
+
+		dimension = createDimension();
+	}
+
+	private Dimension createDimension()
+	{
+		return Dimension.builder()
+				.userElementString1("test1")
 				.build();
 	}
 
@@ -238,6 +250,7 @@ public class PurchaseCandidateToOrderWorkflowTest
 				.profitInfoOrNull(PurchaseCandidateTestTool.createPurchaseProfitInfo())
 				.qtyToPurchase(ONE)
 				.purchaseDatePromised(SystemTime.asZonedDateTime().truncatedTo(ChronoUnit.DAYS))
+				.dimension(dimension)
 				.processed(false)
 				.locked(false);
 	}

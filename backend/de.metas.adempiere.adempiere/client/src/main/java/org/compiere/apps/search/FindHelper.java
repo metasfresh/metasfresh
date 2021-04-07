@@ -112,7 +112,7 @@ public final class FindHelper
 	 * <p>
 	 * In other words, the user receives exactly what he asks for
 	 */
-	public static String buildStringRestriction(final String columnSQL, final Object value, final boolean isIdentifier, final List<Object> params)
+	public static String buildStringRestriction(final String columnSQL, @Nullable final Object value, final boolean isIdentifier, final List<Object> params)
 	{
 		return buildStringRestriction(null, columnSQL, value, isIdentifier, params);
 	}
@@ -120,7 +120,7 @@ public final class FindHelper
 	/**
 	 * apply function to parameter cg: task: 02381
 	 */
-	public static String buildStringRestriction(@Nullable final String criteriaFunction, final String columnSQL, final Object value, final boolean isIdentifier, final List<Object> params)
+	public static String buildStringRestriction(@Nullable final String criteriaFunction, final String columnSQL, @Nullable final Object value, final boolean isIdentifier, final List<Object> params)
 	{
 		final String valueStr = prepareSearchString(value, isIdentifier);
 		String whereClause;

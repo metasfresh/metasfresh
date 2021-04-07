@@ -46,8 +46,6 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_Invoice;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -98,6 +96,11 @@ public class InvoiceRow implements IViewRow
 	@Getter
 	private final CurrencyCode currencyCode;
 
+	public static final String FIELD_IsPreparedForAllocation = "isPreparedForAllocation";
+	@ViewColumn(seqNo = 9990, widgetType = DocumentFieldWidgetType.YesNo, widgetSize = WidgetSize.Small, fieldName = FIELD_IsPreparedForAllocation)
+	@Getter
+	private final boolean isPreparedForAllocation;
+
 	//
 	//
 	//
@@ -116,6 +119,7 @@ public class InvoiceRow implements IViewRow
 
 	@Builder(toBuilder = true)
 	private InvoiceRow(
+			final boolean isPreparedForAllocation,
 			@NonNull final InvoiceId invoiceId,
 			@NonNull final ClientAndOrgId clientAndOrgId,
 			@NonNull final ITranslatableString docTypeName,
@@ -129,8 +133,9 @@ public class InvoiceRow implements IViewRow
 			@Nullable final Amount bankFeeAmt,
 			@Nullable final Amount serviceFeeAmt,
 			@Nullable final CurrencyConversionTypeId currencyConversionTypeId
-			)
+	)
 	{
+		this.isPreparedForAllocation = isPreparedForAllocation;
 		this.docTypeName = docTypeName;
 		this.documentNo = documentNo;
 		this.dateInvoiced = dateInvoiced;
@@ -142,7 +147,6 @@ public class InvoiceRow implements IViewRow
 		this.discountAmt = discountAmt;
 		this.serviceFeeAmt = serviceFeeAmt;
 		this.bankFeeAmt = bankFeeAmt;
-		//noinspection ConstantConditions
 		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(grandTotal, openAmt, discountAmt, this.serviceFeeAmt, this.bankFeeAmt);
 		this.currencyCodeString = currencyCode.toThreeLetterCode();
 
@@ -179,12 +183,6 @@ public class InvoiceRow implements IViewRow
 	static InvoiceId convertDocumentIdToInvoiceId(@NonNull final DocumentId rowId)
 	{
 		return rowId.toId(InvoiceId::ofRepoId);
-	}
-
-	public static DocumentId convertRecordRefToDocumentId(@NonNull final TableRecordReference recordRef)
-	{
-		final InvoiceId invoiceId = recordRef.getIdAssumingTableName(I_C_Invoice.Table_Name, InvoiceId::ofRepoId);
-		return convertInvoiceIdToDocumentId(invoiceId);
 	}
 
 	@Override
@@ -240,4 +238,16 @@ public class InvoiceRow implements IViewRow
 	{
 		return bpartner.getIdAs(BPartnerId::ofRepoId);
 	}
+
+	public InvoiceRow withPreparedForAllocationSet() { return withPreparedForAllocation(true); }
+
+	public InvoiceRow withPreparedForAllocationUnset() { return withPreparedForAllocation(false); }
+
+	public InvoiceRow withPreparedForAllocation(final boolean isPreparedForAllocation)
+	{
+		return this.isPreparedForAllocation != isPreparedForAllocation
+				? toBuilder().isPreparedForAllocation(isPreparedForAllocation).build()
+				: this;
+	}
+
 }

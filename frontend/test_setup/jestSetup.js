@@ -41,7 +41,7 @@ window.HTMLDivElement.prototype.getBoundingClientRect = function() {
     right: 0,
     bottom: 0,
   };
-}
+};
 
 // uncomment for debugging
 // process.on('unhandledRejection', (reason) => {

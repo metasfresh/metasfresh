@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>de.metas.parent</artifactId>
+        <groupId>de.metas</groupId>
+        <version>10.0.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.metas.externalsystem</groupId>
+    <artifactId>de.metas.externalsystem</artifactId>
+
+    <properties>
+        <migration-sql-basedir/>
+        <metasfresh.version>10.0.0</metasfresh.version>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.common.externalsystem</groupId>
+            <artifactId>de-metas-common-externalsystem</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util.web</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Create tests JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

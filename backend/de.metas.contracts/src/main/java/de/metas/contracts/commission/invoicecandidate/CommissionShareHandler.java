@@ -33,6 +33,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -237,14 +238,14 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 
 		// tax
 		final boolean taxExempt = taxDAO.retrieveIsTaxExemptSmallBusiness(bPartnerId, icRecord.getDeliveryDate());
-		final int taxId;
+		final TaxId taxId;
 		if (taxExempt)
 		{
-			taxId = taxDAO.retrieveExemptTax(orgId).getRepoId();
+			taxId = taxDAO.retrieveExemptTax(orgId);
 		}
 		else
 		{
-			taxId = taxBL.getTax(
+			taxId = taxBL.getTaxNotNull(
 					Env.getCtx(),
 					icRecord, // model
 					pricingResult.getTaxCategoryId(),
@@ -255,7 +256,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 					commissionToLocationId.getRepoId(),
 					false /* isSOTrx */);
 		}
-		icRecord.setC_Tax_ID(taxId);
+		icRecord.setC_Tax_ID(taxId.getRepoId());
 		icRecord.setIsSimulation(commissionShareRecord.isSimulation());
 
 		return icRecord;

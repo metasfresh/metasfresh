@@ -176,11 +176,11 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		int cpsCounter = 2; // see wiki
 
 		final List<JP060P100> joinP060P100Lines = new ArrayList<JP060P100>();
-		for (final EDIExpDesadvLineType xmlDesadvLine : xmlDesadv.getEDIExpDesadvLine())
+		for (final EDIExpDesadvLineType xmlLine : xmlDesadv.getEDIExpDesadvLine())
 		{
-			for (final EDIExpDesadvLinePackType pack : xmlDesadvLine.getEDIExpDesadvLinePack())
+			for (final EDIExpDesadvLinePackType xmlLinePack : xmlLine.getEDIExpDesadvLinePack())
 			{
-				final LineAndPack lineAndPack = new LineAndPack(xmlDesadvLine, pack);
+				final LineAndPack lineAndPack = new LineAndPack(xmlLine, xmlLinePack);
 				joinP060P100Lines.add(createJoinP060P100Lines(xmlDesadv, lineAndPack, decimalFormat, cpsCounter));
 				cpsCounter++;
 			}
@@ -216,6 +216,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 	{
 		final P060 p060 = new P060();
 
+		p060.setLevelID("1");
 		p060.setCPScounter(formatNumber(BigInteger.valueOf(cpsCounter), decimalFormat));
 		p060.setInnerOuterCode(voidString);
 		p060.setMessageNo(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
@@ -229,6 +230,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 			final String compudataPackagingCode = switch (packagingCode)
 					{
 						case ISO1 -> "201";
+						case EURO -> "201";
 						case ISO2 -> "200";
 						case ONEW -> "08";
 						default -> null;
@@ -293,7 +295,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setDetailPrice(voidString);
 		p100.setUnitCode(voidString);
 		// p100.setDiffDeliveryDate(EDIDesadvBean.voidDate);
-		p100.setEanTU(voidString);
+		p100.setEanTU(xmlDesadvLine.getEANTU());
 		p100.setMessageNo(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
 		// 05768
 		if (xmlDesadv.getPOReference() != null && !xmlDesadv.getPOReference().isEmpty())
@@ -313,7 +315,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setStoreNumber(voidString);
 		p100.setSupplierArtNo(voidString);
 
-		p100.setEanArtNo(xmlDesadvLine.getUPC());
+		p100.setEanArtNo(xmlDesadvLine.getEANCU());
 		p100.setBuyerArtNo(xmlDesadvLine.getProductNo());
 		p100.setArtDescription(xmlDesadvLine.getProductDescription() == null ? voidString : xmlDesadvLine.getProductDescription());
 		p100.setGrainItemNummer(pack.getGTINTUPackingMaterial());
@@ -353,7 +355,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p102.setDetailPrice(voidString);
 		p102.setUnitCode(voidString);
 		// p102.setDiffDeliveryDate(EDIDesadvBean.voidDate);
-		p102.setEanTU(voidString);
+		p102.setEanTU(xmlDesadvLine.getEANTU());
 		p102.setMessageNo(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
 		// 05768
 		if (xmlDesadv.getPOReference() != null && !xmlDesadv.getPOReference().isEmpty())
@@ -372,7 +374,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p102.setStoreNumber(voidString);
 		p102.setSupplierArtNo(voidString);
 
-		p102.setEanArtNo(xmlDesadvLine.getUPC());
+		p102.setEanArtNo(xmlDesadvLine.getEANCU());
 		p102.setBuyerArtNo(xmlDesadvLine.getProductNo());
 		p102.setArtDescription(xmlDesadvLine.getProductDescription() == null ? voidString : xmlDesadvLine.getProductDescription());
 

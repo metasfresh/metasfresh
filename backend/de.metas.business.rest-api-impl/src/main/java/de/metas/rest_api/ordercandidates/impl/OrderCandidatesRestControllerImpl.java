@@ -11,6 +11,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
@@ -56,7 +57,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.attachment.JsonAttachmentType;
 import de.metas.rest_api.bpartner.impl.BpartnerRestController;
-import de.metas.rest_api.exception.MissingResourceException;
+import de.metas.util.web.exception.MissingResourceException;
 import de.metas.rest_api.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.rest_api.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.rest_api.ordercandidates.request.JsonOLCandCreateBulkRequest;
@@ -65,8 +66,8 @@ import de.metas.rest_api.ordercandidates.response.JsonAttachment;
 import de.metas.rest_api.ordercandidates.response.JsonOLCandCreateBulkResponse;
 import de.metas.rest_api.utils.ApiAPMHelper;
 import de.metas.rest_api.utils.JsonErrors;
-import de.metas.security.PermissionServiceFactories;
-import de.metas.security.PermissionServiceFactory;
+import de.metas.security.permissions2.PermissionServiceFactories;
+import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.common.util.CoalesceUtil;
@@ -95,10 +96,15 @@ import lombok.NonNull;
  * #L%
  */
 @RestController
-@RequestMapping(OrderCandidatesRestEndpoint.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order/candidates",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/sales/order/candidates",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/orders/sales/candidates" })
 @Profile(Profiles.PROFILE_App)
 public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEndpoint
 {
+	private final String PATH_BULK = "/bulk";
+	
 	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
 
 	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestControllerImpl.class);
@@ -160,7 +166,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 			// invoke creatOrderLineCandidates with the unchanged bulkRequest, because the request's bpartner and product instances are
 			// (at least currently) part of the respective caching keys.
 			final JsonOLCandCreateBulkResponse //
-			response = trxManager.callInNewTrx(() -> creatOrderLineCandidatesBulk(bulkRequest, masterdataProvider));
+					response = trxManager.callInNewTrx(() -> creatOrderLineCandidatesBulk(bulkRequest, masterdataProvider));
 
 			//
 			return new ResponseEntity<>(response, HttpStatus.CREATED);
@@ -191,7 +197,7 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 				() -> bulkRequest.getRequests()
 						.stream()
 						.forEach(request -> createOrUpdateMasterdata(request, masterdataProvider)),
-						ApiAPMHelper.createMetadataFor("CreateOrUpdateMasterDataBulk"));
+				ApiAPMHelper.createMetadataFor("CreateOrUpdateMasterDataBulk"));
 	}
 
 	private void createOrUpdateMasterdata(

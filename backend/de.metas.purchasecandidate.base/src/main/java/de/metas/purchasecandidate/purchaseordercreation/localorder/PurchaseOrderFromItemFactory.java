@@ -4,6 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
@@ -57,7 +59,6 @@ import java.util.Set;
  * Creates one purchase order from given candidates.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */ final class PurchaseOrderFromItemFactory
 {
@@ -74,6 +75,8 @@ import java.util.Set;
 			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised");
 
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
 	private final OrderFactory orderFactory;
 
 	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLine = new IdentityHashMap<>();
@@ -82,7 +85,8 @@ import java.util.Set;
 	@Builder
 	private PurchaseOrderFromItemFactory(
 			@NonNull final PurchaseOrderAggregationKey orderAggregationKey,
-			@NonNull final OrderUserNotifications userNotifications)
+			@NonNull final OrderUserNotifications userNotifications,
+			@Nullable final DocTypeId docType)
 	{
 		final BPartnerId vendorId = orderAggregationKey.getVendorId();
 
@@ -91,6 +95,10 @@ import java.util.Set;
 				.warehouseId(orderAggregationKey.getWarehouseId())
 				.shipBPartner(vendorId)
 				.datePromised(orderAggregationKey.getDatePromised());
+		if (docType != null)
+		{
+			orderFactory.docType(docType);
+		}
 
 		this.userNotifications = userNotifications;
 	}
@@ -101,11 +109,12 @@ import java.util.Set;
 				.orderLineByProductAndUom(
 						purchaseOrderItem.getProductId(),
 						UomId.ofRepoId(purchaseOrderItem.getUomId()))
-				.orElseGet(() -> orderFactory
-						.newOrderLine()
-						.productId(purchaseOrderItem.getProductId()));
+				.orElseGet(orderFactory::newOrderLine)
+						.productId(purchaseOrderItem.getProductId());
 
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
+
+		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}
@@ -140,7 +149,16 @@ import java.util.Set;
 			@NonNull final PurchaseOrderItem purchaseOrderItem,
 			@NonNull final OrderLineBuilder orderLineBuilder)
 	{
-		purchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderAndLineId());
+		purchaseOrderItem.setPurchaseOrderLineId(orderLineBuilder.getCreatedOrderAndLineId());
+		final DocTypeId docTypeTargetId = orderFactory.getDocTypeTargetId();
+		if (docTypeTargetId != null && docTypeBL.isRequisition(docTypeTargetId))
+		{
+			purchaseOrderItem.markReqCreatedIfNeeded();
+		}
+		else
+		{
+			purchaseOrderItem.markPurchasedIfNeeded();
+		}
 	}
 
 	@Nullable

@@ -1,5 +1,6 @@
 package de.metas.ui.web.payment_allocation.process;
 
+import de.metas.process.Param;
 import org.compiere.util.DisplayType;
 
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy;
@@ -10,6 +11,8 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.payment_allocation.process.PaymentsViewAllocateCommand.PaymentsViewAllocateCommandBuilder;
 import lombok.NonNull;
+
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -35,10 +38,14 @@ import lombok.NonNull;
 
 public class PaymentsView_AllocateAndWriteOff extends PaymentsView_Allocate_Template implements IProcessPrecondition
 {
+	@Param(parameterName = "DateTrx", mandatory = true)
+	private LocalDate dateTrx;
+
 	@Override
 	protected void customizePaymentsViewAllocateCommandBuilder(@NonNull final PaymentsViewAllocateCommandBuilder builder)
 	{
-		builder.payableRemainingOpenAmtPolicy(PayableRemainingOpenAmtPolicy.WRITE_OFF);
+		builder.payableRemainingOpenAmtPolicy(PayableRemainingOpenAmtPolicy.WRITE_OFF)
+				.defaultDateTrx(dateTrx);
 	}
 
 	@Override

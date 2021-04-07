@@ -1,8 +1,8 @@
 package de.metas.rest_api.bpartner.impl;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.NEXT_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.SINCE_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.NEXT_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.SINCE_DOC;
 
 import java.util.Optional;
 
@@ -22,16 +22,16 @@ import org.springframework.web.bind.annotation.RestController;
 import de.metas.Profiles;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
-import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestContactUpsertItem;
-import de.metas.rest_api.bpartner.response.JsonResponseContact;
-import de.metas.rest_api.bpartner.response.JsonResponseContactList;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsertItem;
-import de.metas.rest_api.common.SyncAdvise;
-import de.metas.rest_api.common.SyncAdvise.IfExists;
-import de.metas.rest_api.common.SyncAdvise.IfNotExists;
+import de.metas.common.bpartner.request.JsonRequestContactUpsert;
+import de.metas.common.bpartner.request.JsonRequestContactUpsertItem;
+import de.metas.common.bpartner.response.JsonResponseContact;
+import de.metas.common.bpartner.response.JsonResponseContactList;
+import de.metas.common.bpartner.response.JsonResponseUpsert;
+import de.metas.common.bpartner.response.JsonResponseUpsert.JsonResponseUpsertBuilder;
+import de.metas.common.bpartner.response.JsonResponseUpsertItem;
+import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.SyncAdvise.IfExists;
+import de.metas.common.rest_api.SyncAdvise.IfNotExists;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
@@ -62,7 +62,10 @@ import lombok.NonNull;
  * #L%
  */
 
-@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API + "/contact")
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/contact",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/contact",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/contact" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ContactRestController

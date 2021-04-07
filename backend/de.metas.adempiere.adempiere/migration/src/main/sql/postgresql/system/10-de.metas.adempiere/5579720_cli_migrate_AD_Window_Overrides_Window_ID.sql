@@ -1,3 +1,4 @@
+/*
 DROP TABLE IF EXISTS tmp_ad_windows_old_and_new
 ;
 
@@ -26,3 +27,4 @@ WHERE w.ad_window_id = t.ad_window_id
   AND w.overrides_window_id IS NULL
 ;
 
+*/

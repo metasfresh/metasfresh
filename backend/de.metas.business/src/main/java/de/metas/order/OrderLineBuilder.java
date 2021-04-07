@@ -1,5 +1,7 @@
 package de.metas.order;
 
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -60,6 +62,7 @@ public class OrderLineBuilder
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final OrderLineDetailRepository orderLineDetailRepository = SpringContextHolder.instance.getBean(OrderLineDetailRepository.class);
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	private final OrderFactory parent;
 	private boolean built = false;
@@ -74,6 +77,8 @@ public class OrderLineBuilder
 	private final ArrayList<OrderLineDetailCreateRequest> detailCreateRequests = new ArrayList<>();
 
 	private I_C_OrderLine createdOrderLine;
+
+	private Dimension dimension;
 
 	/* package */ OrderLineBuilder(@NonNull final OrderFactory parent)
 	{
@@ -109,6 +114,11 @@ public class OrderLineBuilder
 		{
 			orderLine.setIsManualDiscount(true);
 			orderLine.setDiscount(manualDiscount);
+		}
+
+		if(dimension != null)
+		{
+			dimensionService.updateRecord(orderLine, dimension);
 		}
 
 		orderLineBL.updatePrices(orderLine);
@@ -208,6 +218,15 @@ public class OrderLineBuilder
 		return this;
 	}
 
+	public OrderLineBuilder setDimension(final Dimension dimension)
+	{
+		assertNotBuilt();
+
+		this.dimension = dimension;
+
+		return this;
+	}
+
 	public boolean isProductAndUomMatching(@Nullable final ProductId productId, @Nullable final UomId uomId)
 	{
 		return Objects.equals(getProductId(), productId)
@@ -227,4 +246,5 @@ public class OrderLineBuilder
 		detailCreateRequests.add(detail);
 		return this;
 	}
+
 }

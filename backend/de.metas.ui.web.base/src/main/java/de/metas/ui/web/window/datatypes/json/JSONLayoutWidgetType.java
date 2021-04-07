@@ -100,4 +100,11 @@ public enum JSONLayoutWidgetType
 			.put(DocumentFieldWidgetType.InlineTab, JSONLayoutWidgetType.InlineTab)
 			.build();
 
+	@Nullable
+	public Integer getStandardNumberPrecision()
+	{
+		final ImmutableBiMap<JSONLayoutWidgetType, DocumentFieldWidgetType> json2widgetType = widgetType2json.inverse();
+		final DocumentFieldWidgetType json = json2widgetType.get(this);
+		return json != null ? json.getStandardNumberPrecision() : null;
+	}
 }

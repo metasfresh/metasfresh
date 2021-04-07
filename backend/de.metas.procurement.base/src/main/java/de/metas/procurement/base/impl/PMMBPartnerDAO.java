@@ -1,15 +1,12 @@
 package de.metas.procurement.base.impl;
 
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
-
 import de.metas.procurement.base.IPMMBPartnerDAO;
 import de.metas.procurement.base.model.I_AD_User;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_BPartner;
+
+import java.util.List;
 
 /*
  * #%L
@@ -43,7 +40,7 @@ public class PMMBPartnerDAO implements IPMMBPartnerDAO
 		return queryBL.createQueryBuilder(I_AD_User.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User.COLUMNNAME_IsMFProcurementUser, true)
-				.andCollect(I_AD_User.COLUMN_C_BPartner_ID)
+				.andCollect(I_AD_User.COLUMNNAME_C_BPartner_ID, I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.list();

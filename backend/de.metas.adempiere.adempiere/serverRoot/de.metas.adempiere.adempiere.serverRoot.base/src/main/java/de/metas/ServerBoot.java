@@ -151,12 +151,11 @@ public class ServerBoot implements InitializingBean
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
 	{
-		return Services
-				.get(ISysConfigBL.class)
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+		return new ArrayList<>(sysConfigBL
 				.getValuesForPrefix(SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE, 0, 0)
-				.values()
-				.stream()
-				.collect(Collectors.toCollection(ArrayList::new));
+				.values());
 	}
 
 	@Configuration

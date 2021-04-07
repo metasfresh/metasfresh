@@ -136,6 +136,7 @@ class DataEntryRestControllerTest
 		tabRecord1.setName("tabRecord1_name");
 		tabRecord1.setDescription("tabRecord1_description");
 		tabRecord1.setTabName("tabRecord1_tabName");
+		tabRecord1.setAvailableInAPI(true);
 		saveRecord(tabRecord1);
 
 		createSubtab1Records(tabRecord1);
@@ -162,6 +163,7 @@ class DataEntryRestControllerTest
 		sectionRecord1_1_2.setName("sectionRecord1_1_2_name");
 		sectionRecord1_1_2.setSectionName("sectionRecord1_1_2_sectionName");
 		sectionRecord1_1_2.setDescription("sectionRecord1_1_2_description - seqNo10");
+		sectionRecord1_1_2.setAvailableInAPI(true);
 		saveRecord(sectionRecord1_1_2);
 
 		final I_DataEntry_Line lineRecord1_1_2_1 = newInstance(I_DataEntry_Line.class);
@@ -211,6 +213,7 @@ class DataEntryRestControllerTest
 		sectionRecord1_2_1.setName("sectionRecord1_2_1_name");
 		sectionRecord1_2_1.setSectionName("sectionRecord1_2_1_sectionName");
 		sectionRecord1_2_1.setDescription("sectionRecord1_2_1_description - seqNo20");
+		sectionRecord1_2_1.setAvailableInAPI(true);
 		saveRecord(sectionRecord1_2_1);
 
 		final I_DataEntry_Line lineRecord1_2_1_1 = newInstance(I_DataEntry_Line.class);

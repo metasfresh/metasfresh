@@ -9,6 +9,7 @@ Map build(
         final MvnConf mvnConf,
         final Map scmVars,
         final boolean forceBuild = false,
+        final boolean forceSkip = false,
         final String multithreadParam = "-T 2C") {
     final dockerImages = [:]
     String publishedDBInitDockerImageName
@@ -19,6 +20,13 @@ Map build(
                 currentBuild.description = """${currentBuild.description}<p/>
 				<h2>Backend</h2>
 			"""
+                if (forceSkip) {
+                    currentBuild.description = """${currentBuild.description}<p/>
+            Forced to skip.
+            """
+                    echo "forced to skip backend";
+                    return;
+                }
 
                 def anyFileChanged
                 try {
@@ -48,7 +56,7 @@ Map build(
                 // set the artifact version of everything below ${mvnConf.pomFile}
                 // processAllModules=true: also update those modules that have a parent version range!
                 sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${env.MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
-                // Set the metasfresh.version property from [1,10.0.0] to our current build version
+                // Set the metasfresh.version property from to our current build version
                 // From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
                 sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
 

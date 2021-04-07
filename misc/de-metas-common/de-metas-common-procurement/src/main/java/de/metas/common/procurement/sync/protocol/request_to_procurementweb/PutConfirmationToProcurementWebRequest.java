@@ -22,20 +22,23 @@
 
 package de.metas.common.procurement.sync.protocol.request_to_procurementweb;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
 import de.metas.common.procurement.sync.protocol.dto.SyncConfirmation;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Value
+@EqualsAndHashCode(callSuper = false)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class PutConfirmationToProcurementWebRequest extends RequestToProcurementWeb
 {
 	public static PutConfirmationToProcurementWebRequest of(@NonNull final List<SyncConfirmation> syncConfirmations)
@@ -47,26 +50,9 @@ public class PutConfirmationToProcurementWebRequest extends RequestToProcurement
 
 	@Builder
 	@JsonCreator
-	private PutConfirmationToProcurementWebRequest(@JsonProperty("syncConfirmations") @Singular final List<SyncConfirmation> syncConfirmations)
+	private PutConfirmationToProcurementWebRequest(
+			@JsonProperty("syncConfirmations") @Singular final List<SyncConfirmation> syncConfirmations)
 	{
-		this.syncConfirmations = new ArrayList<>(syncConfirmations);
-	}
-
-	@JsonIgnore
-	public boolean isEmpty()
-	{
-		return syncConfirmations.isEmpty();
-	}
-
-	@JsonIgnore
-	public void add(SyncConfirmation syncConfirmation)
-	{
-		syncConfirmations.add(syncConfirmation);
-	}
-
-	@JsonIgnore
-	public void clear()
-	{
-		syncConfirmations.clear();
+		this.syncConfirmations = ImmutableList.copyOf(syncConfirmations);
 	}
 }

@@ -31,7 +31,6 @@ import javax.persistence.MappedSuperclass;
  */
 
 @MappedSuperclass
-@SuppressWarnings("serial")
 public abstract class AbstractTranslationEntity<T extends AbstractEntity> extends AbstractEntity
 {
 	public static final String COLUMNNAME_Record = "record";
@@ -56,17 +55,17 @@ public abstract class AbstractTranslationEntity<T extends AbstractEntity> extend
 		return record;
 	}
 
-	public void setRecord(T record)
+	public void setRecord(final T record)
 	{
 		this.record = record;
 	}
 
-	public final String getLanguage()
+	public String getLanguage()
 	{
 		return language;
 	}
 
-	public final void setLanguage(final String language)
+	public void setLanguage(final String language)
 	{
 		this.language = language;
 	}

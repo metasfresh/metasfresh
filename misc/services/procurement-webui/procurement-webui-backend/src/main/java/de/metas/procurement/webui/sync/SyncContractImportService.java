@@ -9,8 +9,7 @@ import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.repository.ContractLineRepository;
 import de.metas.procurement.webui.repository.ContractRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,12 +29,12 @@ import java.util.Objects;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -44,28 +43,26 @@ import java.util.Objects;
 
 @Service
 @Transactional
-public class SyncContractImportService extends AbstractSyncImportService
+class SyncContractImportService extends AbstractSyncImportService
 {
-	@Autowired
-	@Lazy
-	private ContractRepository contractsRepo;
-	@Autowired
-	@Lazy
-	private ContractLineRepository contractLinesRepo;
-	@Autowired
-	@Lazy
-	private SyncProductImportService productsImportService;
+	private final ContractRepository contractsRepo;
+	private final ContractLineRepository contractLinesRepo;
+	private final SyncProductImportService productsImportService;
+	// @Autowired private MFEventBus applicationEventBus;
 
-	// @Autowired
-	// private MFEventBus applicationEventBus;
+	public SyncContractImportService(
+			@NonNull final ContractRepository contractsRepo,
+			@NonNull final ContractLineRepository contractLinesRepo,
+			@NonNull final SyncProductImportService productsImportService)
+	{
+		this.contractsRepo = contractsRepo;
+		this.contractLinesRepo = contractLinesRepo;
+		this.productsImportService = productsImportService;
+	}
 
-	public Contract importContract(final BPartner bpartner, final SyncContract syncContract, Contract contract)
+	public void importContract(final BPartner bpartner, final SyncContract syncContract, Contract contract)
 	{
 		contract = importContractNoCascade(bpartner, syncContract, contract);
-		if (contract == null)
-		{
-			return null;
-		}
 
 		//
 		// Contract Line
@@ -78,7 +75,7 @@ public class SyncContractImportService extends AbstractSyncImportService
 			{
 				continue;
 			}
-			
+
 			contractLinesToSave.add(contractLine);
 		}
 		//
@@ -90,12 +87,11 @@ public class SyncContractImportService extends AbstractSyncImportService
 		//
 		// Save created/updated lines
 		contractLinesRepo.saveAll(contractLinesToSave);
-		
+
 		// applicationEventBus.post(ContractChangedEvent.of(contract.getBpartner().getUuid(), contract.getId()));
-		
-		return contract;
+
 	}
-	
+
 	private Contract importContractNoCascade(final BPartner bpartner, final SyncContract syncContract, Contract contract)
 	{
 		final String uuid = syncContract.getUuid();
@@ -116,10 +112,10 @@ public class SyncContractImportService extends AbstractSyncImportService
 		contract.setRfq_uuid(syncContract.getRfq_uuid());
 		contractsRepo.save(contract);
 		logger.debug("Imported: {} -> {}", syncContract, contract);
-		
+
 		return contract;
 	}
-	
+
 	@Nullable
 	private ContractLine importContractLineNoSave(final Contract contract, final SyncContractLine syncContractLine, final Map<String, ContractLine> contractLines)
 	{
@@ -136,7 +132,8 @@ public class SyncContractImportService extends AbstractSyncImportService
 		// Product
 		final SyncProduct syncProductNoDelete = assertNotDeleteRequest_WarnAndFix(syncContractLine.getProduct(), "importing contract lines");
 		Product product = contractLine == null ? null : contractLine.getProduct();
-		product = productsImportService.importProduct(syncProductNoDelete, product);
+		product = productsImportService.importProduct(syncProductNoDelete, product)
+				.orElseThrow(() -> new RuntimeException("Deleted product cannot be used in " + syncContractLine));
 
 		//
 		// Contract Line

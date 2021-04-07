@@ -23,6 +23,7 @@
 package de.metas.rest_api.payment;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.common.rest_api.payment.JsonInboundPaymentInfo;
 import de.metas.currency.CurrencyCode;
 import de.metas.money.CurrencyId;
 import de.metas.order.impl.OrderLineDetailRepository;
@@ -59,14 +60,14 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 class PaymentRestEndpointTest
 {
 	public static final CurrencyCode CURRENCY_CODE_EUR = CurrencyCode.EUR;
-	public static final BigDecimal PAYMENT_AMOUNT = BigDecimal.valueOf(123.456);
 	public static final String TARGET_IBAN = "012345678901234";
 	public static final String AD_Org_Value = "orgCode";
+	public static final String EXTERNAL_ID = "1234";
 
 	private final CurrencyService currencyService = new CurrencyService();
 	private final BpartnerPriceListServicesFacade bpartnerPriceListServicesFacade = new BpartnerPriceListServicesFacade();
 	private final JsonPaymentService jsonPaymentService = new JsonPaymentService(currencyService, bpartnerPriceListServicesFacade);
-	private final PaymentRestEndpoint paymentRestEndpoint = new PaymentRestEndpointImpl(jsonPaymentService);
+	private final PaymentRestEndpointImpl paymentRestEndpoint = new PaymentRestEndpointImpl(jsonPaymentService);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 
 	@BeforeEach
@@ -85,26 +86,26 @@ class PaymentRestEndpointTest
 
 		// create test data
 		final I_C_Order salesOrder = createSalesOrder(orgId, externalOrderId);
-		createBPartner(partnerIdentifier);
+		createBPartner(partnerIdentifier, orgId);
 
 		// create JsonPaymentInfo
 		final JsonInboundPaymentInfo jsonInboundPaymentInfo = JsonInboundPaymentInfo.builder()
 				.orgCode(AD_Org_Value)
-				.externalOrderId(externalOrderId.getValue())
+				.orderIdentifier(IdentifierString.PREFIX_EXTERNAL_ID + externalOrderId.getValue())
 				.bpartnerIdentifier(partnerIdentifier.toJson())
 				.currencyCode(CURRENCY_CODE_EUR.toThreeLetterCode())
-				.amount(PAYMENT_AMOUNT)
+				.externalPaymentId(EXTERNAL_ID)
 				.targetIBAN(TARGET_IBAN)
 				.build();
 
 		assertEquals(JsonInboundPaymentInfo.builder()
-				.orgCode(AD_Org_Value)
-				.externalOrderId("Order")
-				.bpartnerIdentifier("ext-bPartner")
-				.currencyCode(CURRENCY_CODE_EUR.toThreeLetterCode())
-				.amount(PAYMENT_AMOUNT)
-				.targetIBAN(TARGET_IBAN)
-				.build(),
+						.orgCode(AD_Org_Value)
+						.orderIdentifier("ext-Order")
+						.bpartnerIdentifier("ext-bPartner")
+						.currencyCode(CURRENCY_CODE_EUR.toThreeLetterCode())
+						.targetIBAN(TARGET_IBAN)
+						.externalPaymentId(EXTERNAL_ID)
+						.build(),
 				jsonInboundPaymentInfo);
 
 		// process JsonPaymentInfo
@@ -145,11 +146,11 @@ class PaymentRestEndpointTest
 		return order;
 	}
 
-	private void createBPartner(@NonNull final IdentifierString bpartnerIdentifier)
+	private void createBPartner(@NonNull final IdentifierString bpartnerIdentifier, final OrgId orgId)
 	{
 		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
 		bPartner.setExternalId(bpartnerIdentifier.asExternalId().getValue());
-
+		bPartner.setAD_Org_ID(orgId.getRepoId());
 		saveRecord(bPartner);
 	}
 

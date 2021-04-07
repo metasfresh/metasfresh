@@ -52,8 +52,7 @@ import org.springframework.amqp.core.MessageProperties;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -181,16 +180,16 @@ public class ProcurementWebToMetasfresh_StepDef
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, "BPartner." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final SyncBPartner syncBPartner = syncBPartnerStepDefData.get(bpartnerIdentifier);
 
-			final DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+			final DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-			final String dateFrom = DataTableUtil.extractStringForColumnName(tableRow, "DateFrom");
-			final String dateTo = DataTableUtil.extractStringForColumnName(tableRow, "DateTo");
+			final String dateFromStr = DataTableUtil.extractStringForColumnName(tableRow, "DateFrom");
+			final String dateToStr = DataTableUtil.extractStringForColumnName(tableRow, "DateTo");
 
 			final Optional<SyncContract> syncContract = syncBPartner.getContracts().stream()
-					.filter(c -> dateFrom.equals(df.format(c.getDateFrom())))
-					.filter(c -> dateTo.equals(df.format(c.getDateTo())))
+					.filter(c -> dateFromStr.equals(c == null ? "" : df.format(c.getDateFrom())))
+					.filter(c -> dateToStr.equals(c == null ? "" : df.format(c.getDateTo())))
 					.findAny();
-			assertThat(syncContract).as("Missing SyncContract with DateFrom=%s and DateTo=%s", dateFrom, dateTo).isPresent();
+			assertThat(syncContract).as("Missing SyncContract with DateFrom=%s and DateTo=%s", dateFromStr, dateToStr).isPresent();
 
 			final boolean deleted = DataTableUtil.extractBooleanForColumnName(tableRow, "Deleted");
 			assertThat(syncContract.get().isDeleted()).isEqualTo(deleted);

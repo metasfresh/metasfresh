@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionService;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -149,11 +150,13 @@ public class PurchaseRowsLoaderTest
 
 		currencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
+		final DimensionService dimensionService = Mockito.mock(DimensionService.class);
 		// wire together a SalesOrder2PurchaseViewFactory
 		final PurchaseCandidateRepository purchaseCandidateRepository = new PurchaseCandidateRepository(
 				new PurchaseItemRepository(),
 				new ReferenceGenerator(),
-				new BPPurchaseScheduleService(new BPPurchaseScheduleRepository()));
+				new BPPurchaseScheduleService(new BPPurchaseScheduleRepository()),
+				dimensionService);
 
 		final DoNothingPurchaseProfitInfoServiceImpl purchaseProfitInfoService = new DoNothingPurchaseProfitInfoServiceImpl();
 

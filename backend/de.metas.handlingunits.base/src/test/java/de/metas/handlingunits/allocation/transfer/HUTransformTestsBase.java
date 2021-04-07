@@ -71,7 +71,7 @@ public class HUTransformTestsBase
 	private LUTUProducerDestinationTestSupport data;
 
 	private IHandlingUnitsDAO handlingUnitsDAO;
-	private IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private IHUStatusBL huStatusBL;
 
 	public HUTransformTestsBase()
 	{
@@ -276,9 +276,6 @@ public class HUTransformTestsBase
 	 * Delegates to {@link IHandlingUnitsDAO#retrieveParent(I_M_HU)} of the local {@code handlingUnitsDAO} member.<br>
 	 * Our {@link IHandlingUnitsDAO} has some stuff with caching etc going on, so when working with HUs created by this class,<br>
 	 * I recommend to use this delegating methods rather than obtaining your own instance of {@link IHandlingUnitsDAO}.
-	 *
-	 * @param hu
-	 * @return
 	 */
 	public I_M_HU retrieveParent(@lombok.NonNull final I_M_HU hu)
 	{
@@ -289,9 +286,6 @@ public class HUTransformTestsBase
 	 * Delegates to {@link IHandlingUnitsDAO#retrieveIncludedHUs(I_M_HU)} of the local {@code handlingUnitsDAO} member.<br>
 	 * Our {@link IHandlingUnitsDAO} has some stuff with caching etc going on, so when working with HUs created by this class,<br>
 	 * I recommend to use this delegating methods rather than obtaining your own instance of {@link IHandlingUnitsDAO}.
-	 *
-	 * @param parentHU
-	 * @return
 	 */
 	public List<I_M_HU> retrieveIncludedHUs(@lombok.NonNull final I_M_HU parentHU)
 	{

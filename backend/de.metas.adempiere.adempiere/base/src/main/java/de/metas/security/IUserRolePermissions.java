@@ -205,9 +205,9 @@ public interface IUserRolePermissions
 
 	boolean isOrgAccess(OrgId OrgId, Access access);
 
-	String getClientWhere(String tableName, String tableAlias, Access access);
+	String getClientWhere(@Nullable String tableName, @Nullable String tableAlias, Access access);
 
-	String getOrgWhere(String tableName, Access access);
+	String getOrgWhere(@Nullable String tableName, Access access);
 
 	String getAD_Org_IDs_AsString();
 

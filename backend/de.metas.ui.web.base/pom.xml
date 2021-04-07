@@ -215,7 +215,7 @@
 		<dependency>
 			<groupId>de.pentabyte</groupId>
 			<artifactId>springfox-enum-plugin</artifactId>
-			<version>1.1.1</version>
+			<version>${springfox-enum-plugin.version}</version>
 		</dependency>
 
 		<dependency>

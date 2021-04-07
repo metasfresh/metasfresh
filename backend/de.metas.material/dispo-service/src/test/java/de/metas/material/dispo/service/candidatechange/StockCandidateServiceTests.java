@@ -1,6 +1,9 @@
 package de.metas.material.dispo.service.candidatechange;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.Candidate.CandidateBuilder;
@@ -15,15 +18,18 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
@@ -78,17 +84,23 @@ public class StockCandidateServiceTests
 	private CandidateRepositoryWriteService candidateRepositoryWriteService;
 
 	private int parentIdSequence;
+	private DimensionService dimensionService;
 
 	@BeforeEach
 	void init()
 	{
 		AdempiereTestHelper.get().init();
 
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
 		parentIdSequence = 1;
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService);
 
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService();
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
 		stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryWriteService);

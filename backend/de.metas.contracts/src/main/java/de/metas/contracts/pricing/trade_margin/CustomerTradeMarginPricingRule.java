@@ -60,6 +60,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+/**
+ * Allows a sales rep offer a lower price to a customer and in turn receive a lower commission.
+ */
 public class CustomerTradeMarginPricingRule implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(CustomerTradeMarginPricingRule.class);

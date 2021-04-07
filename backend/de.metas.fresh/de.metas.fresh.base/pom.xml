@@ -21,11 +21,17 @@
 		<!-- empty property because the sql migration dir already contains a list 
 			of base directories -->
 		<migration-sql-basedir/>
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+		<metasfresh.version>10.0.0</metasfresh.version>
 	</properties>
 
 	<dependencies>
 
+		<dependency>
+			<groupId>de.metas.vertical.healthcare.alberta</groupId>
+			<artifactId>de.metas.vertical.healthcare.alberta</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>de.metas.async</groupId>
 			<artifactId>de.metas.async</artifactId>
@@ -109,6 +115,18 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.externalreference</groupId>
+			<artifactId>de.metas.externalreference</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.externalsystem</groupId>
+			<artifactId>de.metas.externalsystem</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>de.metas.contracts</groupId>
 			<artifactId>de.metas.contracts</artifactId>

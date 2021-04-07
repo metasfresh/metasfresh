@@ -89,7 +89,7 @@ public class RedistributeQtyHUAttributeTransferStrategy implements IHUAttributeT
 	@Override
 	public boolean isTransferable(final IHUAttributeTransferRequest request, final I_M_Attribute attribute)
 	{
-		// This strategy does not apply on VHU-to-VHU attributes transfer because it involves calculations
+		// This strategy does only apply on VHU-to-VHU attributes transfer because it involves calculations
 		if (!request.isVHUTransfer())
 		{
 			return false;
@@ -104,12 +104,9 @@ public class RedistributeQtyHUAttributeTransferStrategy implements IHUAttributeT
 	}
 
 	/**
-	 * @param request
-	 * @param attribute
-	 * @param mc
 	 * @return a value between 0 and 1, resulted by the division of the requestQty (qty) and storageQty (source) for given attribute
 	 */
-	private final BigDecimal getTransferRatio(final IHUAttributeTransferRequest request, final I_M_Attribute attribute)
+	private BigDecimal getTransferRatio(final IHUAttributeTransferRequest request, final I_M_Attribute attribute)
 	{
 		//
 		// The qty which is to be subtracted divided by the full qty is our division ratio

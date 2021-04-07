@@ -310,7 +310,7 @@ public class InterfaceWrapperHelper
 	 * Note: if you want to load a record from <code>(AD_Table_ID, Reference_ID)</code>,<br>
 	 * then it's probably better to use e.g. {@link org.adempiere.util.lang.impl.TableRecordReference#of(int, int)}.
 	 */
-	public static <T> T create(final Properties ctx, final int id, final Class<T> cl, @Nullable final String trxName)
+	public static <T> T create(final Properties ctx, final int id, @NonNull final Class<T> cl, @Nullable final String trxName)
 	{
 		if (getInMemoryDatabaseForModel(cl) != null)
 		{
@@ -364,7 +364,7 @@ public class InterfaceWrapperHelper
 		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_None);
 	}
 
-	public static <T> T load(final RepoIdAware id, final Class<T> modelClass)
+	public static <T> T load(@NonNull final RepoIdAware id, @NonNull final Class<T> modelClass)
 	{
 		return load(id.getRepoId(), modelClass);
 	}
@@ -373,10 +373,9 @@ public class InterfaceWrapperHelper
 	 * Loads given model, using thread inherited transaction.
 	 *
 	 * @param id model's ID
-	 * @param modelClass
 	 * @return loaded model
 	 */
-	public static <T> T load(final int id, final Class<T> modelClass)
+	public static <T> T load(final int id, @NonNull final Class<T> modelClass)
 	{
 		return create(Env.getCtx(), id, modelClass, ITrx.TRXNAME_ThreadInherited);
 	}
@@ -878,6 +877,7 @@ public class InterfaceWrapperHelper
 	 * @return tableName associated with given interface
 	 * @throws AdempiereException if "Table_Name" static variable is not defined or is not accessible
 	 */
+	@NonNull
 	public static String getTableName(final Class<?> modelClass) throws AdempiereException
 	{
 		final String modelClassTableName = getTableNameOrNull(modelClass);
