@@ -200,15 +200,17 @@ export function createTableData(rawData) {
  * @summary Populate grid table with data and initial settings
  *
  * @param {string} tableId - table id
- * @param {object} tableData - response data for the table
+ * @param {object} tableResponse - response data for the table
  */
-export function fetchAttributes(tableId, tableData) {
+export function fetchAttributes(tableId, tableResponse) {
   return (dispatch, getState) => {
     const state = getState();
 
     // this check is only for unit tests purposes
     if (state.tables) {
-      tableData = state.tables[tableId] ? state.tables[tableId] : tableData;
+      const tableData = state.tables[tableId]
+        ? state.tables[tableId]
+        : tableResponse;
 
       const {
         rows,
@@ -222,7 +224,9 @@ export function fetchAttributes(tableId, tableData) {
       let rowId =
         selected && selected.length
           ? state.tables[tableId].selected[0]
-          : rows[0][keyProperty];
+          : tableResponse &&
+            tableResponse.rows &&
+            tableResponse.rows[0][keyProperty];
 
       if (supportAttribute && rowId) {
         const rowSupportAttribute = getSupportAttribute([rowId], rows);
@@ -342,6 +346,7 @@ export function updateGridTable(tableId, tableResponse) {
           );
         }
       }
+
       dispatch(fetchAttributes(tableId, tableData));
 
       return Promise.resolve(true);
