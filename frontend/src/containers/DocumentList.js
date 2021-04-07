@@ -4,10 +4,11 @@ import { push } from 'react-router-redux';
 import { Set as iSet } from 'immutable';
 import currentDevice from 'current-device';
 import { get, debounce } from 'lodash';
-import deepUnfreeze from 'deep-unfreeze';
+
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
 import { locationSearchRequest, getViewRowsByIds } from '../api';
 import { connectWS, disconnectWS } from '../utils/websockets';
+import { deepUnfreeze } from '../utils';
 
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
@@ -72,8 +73,6 @@ class DocumentListContainer extends Component {
     };
 
     this.fetchLayoutAndData();
-    this.renderedSuccessfuly = false;
-
     this.debouncedRefresh = debounce(
       () => {
         this.browseView(true);
@@ -106,6 +105,7 @@ class DocumentListContainer extends Component {
   UNSAFE_componentWillReceiveProps(nextProps) {
     const {
       viewId: nextViewId,
+      queryViewId: nextQueryViewId,
       isIncluded: nextIsIncluded,
       refDocumentId: nextRefDocumentId,
       referenceId: nextReferenceId,
@@ -125,7 +125,8 @@ class DocumentListContainer extends Component {
       deleteTable,
       isModal,
       filters,
-      viewData: { pending },
+      queryViewId,
+      viewData: { pending, layoutPending },
       deleteQuickActions,
     } = this.props;
     const staticFilterCleared = filters ? filters.staticFilterCleared : false;
@@ -147,9 +148,7 @@ class DocumentListContainer extends Component {
      */
 
     if (
-      (nextProps.viewId !== nextProps.queryViewId && // for the case when you applied a filter and come back via browser back button
-        nextProps.queryViewId &&
-        !this.renderedSuccessfuly) ||
+      (queryViewId && !isIncluded && nextViewId !== nextQueryViewId) || // for the case when you applied a filter and come back via browser back button
       staticFilterCleared ||
       nextWindowId !== windowId ||
       (nextWindowId === windowId &&
@@ -158,10 +157,12 @@ class DocumentListContainer extends Component {
       nextRefDocumentId !== refDocumentId ||
       nextReferenceId !== referenceId
     ) {
-      this.renderedSuccessfuly = true;
       // if view is already loading or reloading (after filtering) don't fetch
       // the data and layout again
-      if (!(pending || (nextViewData && nextViewData.pending))) {
+      if (
+        !(pending || (nextViewData && nextViewData.pending)) &&
+        !(layoutPending || (nextViewData && nextViewData.layoutPending))
+      ) {
         deleteTable(getTableId({ windowId, viewId }));
         deleteQuickActions(windowId, viewId);
 
@@ -246,6 +247,7 @@ class DocumentListContainer extends Component {
                 viewId,
                 selectedIds: table.selected,
                 viewProfileId,
+                isModal,
               });
             }
 
@@ -636,10 +638,13 @@ class DocumentListContainer extends Component {
 
   /**
    * @method resetInitialFilters
-   * @summary ToDo: Describe the method.
+   * @summary resets the initial filters
+   * @param {string} filterId
+   * @param {string} parameterName
    */
   resetInitialFilters = (filterId, parameterName) => {
     let { initialValuesNulled } = this.state;
+
     let filterParams = initialValuesNulled.get(filterId);
 
     if (!filterParams && parameterName) {
@@ -649,9 +654,9 @@ class DocumentListContainer extends Component {
     }
 
     if (!parameterName) {
-      initialValuesNulled = initialValuesNulled.delete(filterId);
+      initialValuesNulled.delete(filterId);
     } else {
-      initialValuesNulled = initialValuesNulled.set(filterId, filterParams);
+      initialValuesNulled.set(filterId, filterParams);
     }
 
     this.setState({

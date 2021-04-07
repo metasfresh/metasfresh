@@ -32,6 +32,9 @@ import lombok.Value;
  * #L%
  */
 
+/**
+ * Represents the response from a remote (MSV3-)system where metasfresh placed a purchase order.
+ */
 @Value
 public class RemotePurchaseOrderCreatedItem
 {

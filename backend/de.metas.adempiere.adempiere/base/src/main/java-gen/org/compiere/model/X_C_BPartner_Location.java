@@ -1,138 +1,118 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Location
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1727449885L;
+	private static final long serialVersionUID = -860447504L;
 
     /** Standard Constructor */
-    public X_C_BPartner_Location (Properties ctx, int C_BPartner_Location_ID, String trxName)
+    public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
     {
       super (ctx, C_BPartner_Location_ID, trxName);
-      /** if (C_BPartner_Location_ID == 0)
-        {
-			setC_BPartner_ID (0);
-			setC_BPartner_Location_ID (0);
-			setC_Location_ID (0);
-			setIsBillTo (true); // Y
-			setIsHandOverLocation (true); // Y
-			setIsPayFrom (true); // Y
-			setIsRemitTo (false); // N
-			setIsShipTo (true); // Y
-			setName (null); // .
-			setVisitorsAddress (false); // N
-        } */
     }
 
     /** Load Constructor */
-    public X_C_BPartner_Location (Properties ctx, ResultSet rs, String trxName)
+    public X_C_BPartner_Location (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Adresse.
-		@param Address 
-		Anschrift
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setAddress (java.lang.String Address)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAddress (final @Nullable java.lang.String Address)
 	{
 		set_Value (COLUMNNAME_Address, Address);
 	}
 
-	/** Get Adresse.
-		@return Anschrift
-	  */
 	@Override
-	public java.lang.String getAddress () 
+	public java.lang.String getAddress() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Address);
+		return get_ValueAsString(COLUMNNAME_Address);
 	}
 
-	/** Set BPartner name.
-		@param BPartnerName BPartner name	  */
 	@Override
-	public void setBPartnerName (java.lang.String BPartnerName)
+	public org.compiere.model.I_AD_Org_Mapping getAD_Org_Mapping()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Org_Mapping_ID, org.compiere.model.I_AD_Org_Mapping.class);
+	}
+
+	@Override
+	public void setAD_Org_Mapping(final org.compiere.model.I_AD_Org_Mapping AD_Org_Mapping)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Org_Mapping_ID, org.compiere.model.I_AD_Org_Mapping.class, AD_Org_Mapping);
+	}
+
+	@Override
+	public void setAD_Org_Mapping_ID (final int AD_Org_Mapping_ID)
+	{
+		if (AD_Org_Mapping_ID < 1) 
+			set_Value (COLUMNNAME_AD_Org_Mapping_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Org_Mapping_ID, AD_Org_Mapping_ID);
+	}
+
+	@Override
+	public int getAD_Org_Mapping_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Org_Mapping_ID);
+	}
+
+	@Override
+	public void setBPartnerName (final @Nullable java.lang.String BPartnerName)
 	{
 		set_Value (COLUMNNAME_BPartnerName, BPartnerName);
 	}
 
-	/** Get BPartner name.
-		@return BPartner name	  */
 	@Override
-	public java.lang.String getBPartnerName () 
+	public java.lang.String getBPartnerName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BPartnerName);
+		return get_ValueAsString(COLUMNNAME_BPartnerName);
 	}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Geschäftspartner.
-		@return Identifies a Business Partner
-	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
-	/** Set Standort.
-		@param C_BPartner_Location_ID 
-		Identifies the (ship to) address for this Business Partner
-	  */
 	@Override
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
-	/** Get Standort.
-		@return Identifies the (ship to) address for this Business Partner
-	  */
 	@Override
-	public int getC_BPartner_Location_ID () 
+	public int getC_BPartner_Location_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
 
 	@Override
@@ -142,34 +122,24 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setC_Location(org.compiere.model.I_C_Location C_Location)
+	public void setC_Location(final org.compiere.model.I_C_Location C_Location)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class, C_Location);
 	}
 
-	/** Set Anschrift.
-		@param C_Location_ID 
-		Location or Address
-	  */
 	@Override
-	public void setC_Location_ID (int C_Location_ID)
+	public void setC_Location_ID (final int C_Location_ID)
 	{
 		if (C_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Location_ID, Integer.valueOf(C_Location_ID));
+			set_Value (COLUMNNAME_C_Location_ID, C_Location_ID);
 	}
 
-	/** Get Anschrift.
-		@return Location or Address
-	  */
 	@Override
-	public int getC_Location_ID () 
+	public int getC_Location_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Location_ID);
 	}
 
 	@Override
@@ -179,508 +149,299 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setC_SalesRegion(org.compiere.model.I_C_SalesRegion C_SalesRegion)
+	public void setC_SalesRegion(final org.compiere.model.I_C_SalesRegion C_SalesRegion)
 	{
 		set_ValueFromPO(COLUMNNAME_C_SalesRegion_ID, org.compiere.model.I_C_SalesRegion.class, C_SalesRegion);
 	}
 
-	/** Set Vertriebsgebiet.
-		@param C_SalesRegion_ID 
-		Sales coverage region
-	  */
 	@Override
-	public void setC_SalesRegion_ID (int C_SalesRegion_ID)
+	public void setC_SalesRegion_ID (final int C_SalesRegion_ID)
 	{
 		if (C_SalesRegion_ID < 1) 
 			set_Value (COLUMNNAME_C_SalesRegion_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_SalesRegion_ID, Integer.valueOf(C_SalesRegion_ID));
+			set_Value (COLUMNNAME_C_SalesRegion_ID, C_SalesRegion_ID);
 	}
 
-	/** Get Vertriebsgebiet.
-		@return Sales coverage region
-	  */
 	@Override
-	public int getC_SalesRegion_ID () 
+	public int getC_SalesRegion_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_SalesRegion_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_SalesRegion_ID);
 	}
 
-	/** Set eMail.
-		@param EMail 
-		EMail-Adresse
-	  */
 	@Override
-	public void setEMail (java.lang.String EMail)
+	public void setEMail (final @Nullable java.lang.String EMail)
 	{
 		set_Value (COLUMNNAME_EMail, EMail);
 	}
 
-	/** Get eMail.
-		@return EMail-Adresse
-	  */
 	@Override
-	public java.lang.String getEMail () 
+	public java.lang.String getEMail() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EMail);
+		return get_ValueAsString(COLUMNNAME_EMail);
 	}
 
-	/** Set Alternative eMail.
-		@param EMail2 
-		EMail-Adresse
-	  */
 	@Override
-	public void setEMail2 (java.lang.String EMail2)
+	public void setEMail2 (final @Nullable java.lang.String EMail2)
 	{
 		set_Value (COLUMNNAME_EMail2, EMail2);
 	}
 
-	/** Get Alternative eMail.
-		@return EMail-Adresse
-	  */
 	@Override
-	public java.lang.String getEMail2 () 
+	public java.lang.String getEMail2() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EMail2);
+		return get_ValueAsString(COLUMNNAME_EMail2);
 	}
 
-	/** Set External ID.
-		@param ExternalId External ID	  */
 	@Override
-	public void setExternalId (java.lang.String ExternalId)
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
 	}
 
-	/** Get External ID.
-		@return External ID	  */
 	@Override
-	public java.lang.String getExternalId () 
+	public java.lang.String getExternalId() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
+		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
 
-	/** Set Fax.
-		@param Fax 
-		Facsimile number
-	  */
 	@Override
-	public void setFax (java.lang.String Fax)
+	public void setFax (final @Nullable java.lang.String Fax)
 	{
 		set_Value (COLUMNNAME_Fax, Fax);
 	}
 
-	/** Get Fax.
-		@return Facsimile number
-	  */
 	@Override
-	public java.lang.String getFax () 
+	public java.lang.String getFax() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Fax);
+		return get_ValueAsString(COLUMNNAME_Fax);
 	}
 
-	/** Set Alternative Fax.
-		@param Fax2 
-		Faxnummer
-	  */
 	@Override
-	public void setFax2 (java.lang.String Fax2)
+	public void setFax2 (final @Nullable java.lang.String Fax2)
 	{
 		set_Value (COLUMNNAME_Fax2, Fax2);
 	}
 
-	/** Get Alternative Fax.
-		@return Faxnummer
-	  */
 	@Override
-	public java.lang.String getFax2 () 
+	public java.lang.String getFax2() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Fax2);
+		return get_ValueAsString(COLUMNNAME_Fax2);
 	}
 
-	/** Set GLN.
-		@param GLN GLN	  */
 	@Override
-	public void setGLN (java.lang.String GLN)
+	public void setGLN (final @Nullable java.lang.String GLN)
 	{
 		set_Value (COLUMNNAME_GLN, GLN);
 	}
 
-	/** Get GLN.
-		@return GLN	  */
 	@Override
-	public java.lang.String getGLN () 
+	public java.lang.String getGLN() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_GLN);
+		return get_ValueAsString(COLUMNNAME_GLN);
 	}
 
-	/** Set Vorbelegung Rechnung.
-		@param IsBillTo 
-		Rechnungs-Adresse für diesen Geschäftspartner
-	  */
 	@Override
-	public void setIsBillTo (boolean IsBillTo)
+	public void setIsBillTo (final boolean IsBillTo)
 	{
-		set_Value (COLUMNNAME_IsBillTo, Boolean.valueOf(IsBillTo));
+		set_Value (COLUMNNAME_IsBillTo, IsBillTo);
 	}
 
-	/** Get Vorbelegung Rechnung.
-		@return Rechnungs-Adresse für diesen Geschäftspartner
-	  */
 	@Override
-	public boolean isBillTo () 
+	public boolean isBillTo() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsBillTo);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsBillTo);
 	}
 
-	/** Set Rechnung Standard Adresse.
-		@param IsBillToDefault Rechnung Standard Adresse	  */
 	@Override
-	public void setIsBillToDefault (boolean IsBillToDefault)
+	public void setIsBillToDefault (final boolean IsBillToDefault)
 	{
-		set_Value (COLUMNNAME_IsBillToDefault, Boolean.valueOf(IsBillToDefault));
+		set_Value (COLUMNNAME_IsBillToDefault, IsBillToDefault);
 	}
 
-	/** Get Rechnung Standard Adresse.
-		@return Rechnung Standard Adresse	  */
 	@Override
-	public boolean isBillToDefault () 
+	public boolean isBillToDefault() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsBillToDefault);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsBillToDefault);
 	}
 
-	/** Set Provisionsadresse.
-		@param IsCommissionTo 
-		Provisionsabrechnungen werden hierhin geschickt
-	  */
 	@Override
-	public void setIsCommissionTo (boolean IsCommissionTo)
+	public void setIsCommissionTo (final boolean IsCommissionTo)
 	{
-		set_Value (COLUMNNAME_IsCommissionTo, Boolean.valueOf(IsCommissionTo));
+		set_Value (COLUMNNAME_IsCommissionTo, IsCommissionTo);
 	}
 
-	/** Get Provisionsadresse.
-		@return Provisionsabrechnungen werden hierhin geschickt
-	  */
 	@Override
-	public boolean isCommissionTo () 
+	public boolean isCommissionTo() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsCommissionTo);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsCommissionTo);
 	}
 
-	/** Set Provision Standard Adresse.
-		@param IsCommissionToDefault Provision Standard Adresse	  */
 	@Override
-	public void setIsCommissionToDefault (boolean IsCommissionToDefault)
+	public void setIsCommissionToDefault (final boolean IsCommissionToDefault)
 	{
-		set_Value (COLUMNNAME_IsCommissionToDefault, Boolean.valueOf(IsCommissionToDefault));
+		set_Value (COLUMNNAME_IsCommissionToDefault, IsCommissionToDefault);
 	}
 
-	/** Get Provision Standard Adresse.
-		@return Provision Standard Adresse	  */
 	@Override
-	public boolean isCommissionToDefault () 
+	public boolean isCommissionToDefault() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsCommissionToDefault);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsCommissionToDefault);
 	}
 
-	/** Set ISDN.
-		@param ISDN 
-		ISDN or modem line
-	  */
 	@Override
-	public void setISDN (java.lang.String ISDN)
+	public void setISDN (final @Nullable java.lang.String ISDN)
 	{
 		set_Value (COLUMNNAME_ISDN, ISDN);
 	}
 
-	/** Get ISDN.
-		@return ISDN or modem line
-	  */
 	@Override
-	public java.lang.String getISDN () 
+	public java.lang.String getISDN() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ISDN);
+		return get_ValueAsString(COLUMNNAME_ISDN);
 	}
 
-	/** Set Abladeort.
-		@param IsHandOverLocation Abladeort	  */
 	@Override
-	public void setIsHandOverLocation (boolean IsHandOverLocation)
+	public void setIsHandOverLocation (final boolean IsHandOverLocation)
 	{
-		set_Value (COLUMNNAME_IsHandOverLocation, Boolean.valueOf(IsHandOverLocation));
+		set_Value (COLUMNNAME_IsHandOverLocation, IsHandOverLocation);
 	}
 
-	/** Get Abladeort.
-		@return Abladeort	  */
 	@Override
-	public boolean isHandOverLocation () 
+	public boolean isHandOverLocation() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsHandOverLocation);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsHandOverLocation);
 	}
 
-	/** Set Zahlungs-Adresse.
-		@param IsPayFrom 
-		Business Partner pays from that address and we'll send dunning letters there
-	  */
 	@Override
-	public void setIsPayFrom (boolean IsPayFrom)
+	public void setIsPayFrom (final boolean IsPayFrom)
 	{
-		set_Value (COLUMNNAME_IsPayFrom, Boolean.valueOf(IsPayFrom));
+		set_Value (COLUMNNAME_IsPayFrom, IsPayFrom);
 	}
 
-	/** Get Zahlungs-Adresse.
-		@return Business Partner pays from that address and we'll send dunning letters there
-	  */
 	@Override
-	public boolean isPayFrom () 
+	public boolean isPayFrom() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsPayFrom);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsPayFrom);
 	}
 
-	/** Set Erstattungs-Adresse.
-		@param IsRemitTo 
-		Business Partner payment address
-	  */
 	@Override
-	public void setIsRemitTo (boolean IsRemitTo)
+	public void setIsRemitTo (final boolean IsRemitTo)
 	{
-		set_Value (COLUMNNAME_IsRemitTo, Boolean.valueOf(IsRemitTo));
+		set_Value (COLUMNNAME_IsRemitTo, IsRemitTo);
 	}
 
-	/** Get Erstattungs-Adresse.
-		@return Business Partner payment address
-	  */
 	@Override
-	public boolean isRemitTo () 
+	public boolean isRemitTo() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsRemitTo);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsRemitTo);
 	}
 
-	/** Set Lieferstandard.
-		@param IsShipTo 
-		Liefer-Adresse für den Geschäftspartner
-	  */
 	@Override
-	public void setIsShipTo (boolean IsShipTo)
+	public void setIsShipTo (final boolean IsShipTo)
 	{
-		set_Value (COLUMNNAME_IsShipTo, Boolean.valueOf(IsShipTo));
+		set_Value (COLUMNNAME_IsShipTo, IsShipTo);
 	}
 
-	/** Get Lieferstandard.
-		@return Liefer-Adresse für den Geschäftspartner
-	  */
 	@Override
-	public boolean isShipTo () 
+	public boolean isShipTo() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsShipTo);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsShipTo);
 	}
 
-	/** Set Liefer Standard Adresse.
-		@param IsShipToDefault Liefer Standard Adresse	  */
 	@Override
-	public void setIsShipToDefault (boolean IsShipToDefault)
+	public void setIsShipToDefault (final boolean IsShipToDefault)
 	{
-		set_Value (COLUMNNAME_IsShipToDefault, Boolean.valueOf(IsShipToDefault));
+		set_Value (COLUMNNAME_IsShipToDefault, IsShipToDefault);
 	}
 
-	/** Get Liefer Standard Adresse.
-		@return Liefer Standard Adresse	  */
 	@Override
-	public boolean isShipToDefault () 
+	public boolean isShipToDefault() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsShipToDefault);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsShipToDefault);
 	}
 
-	/** Set Abo Adresse.
-		@param IsSubscriptionTo 
-		An diese Adresse werden Abos geschickt
-	  */
 	@Override
-	public void setIsSubscriptionTo (boolean IsSubscriptionTo)
+	public void setIsSubscriptionTo (final boolean IsSubscriptionTo)
 	{
-		set_Value (COLUMNNAME_IsSubscriptionTo, Boolean.valueOf(IsSubscriptionTo));
+		set_Value (COLUMNNAME_IsSubscriptionTo, IsSubscriptionTo);
 	}
 
-	/** Get Abo Adresse.
-		@return An diese Adresse werden Abos geschickt
-	  */
 	@Override
-	public boolean isSubscriptionTo () 
+	public boolean isSubscriptionTo() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSubscriptionTo);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsSubscriptionTo);
 	}
 
-	/** Set Abo Standard Adresse.
-		@param IsSubscriptionToDefault Abo Standard Adresse	  */
 	@Override
-	public void setIsSubscriptionToDefault (boolean IsSubscriptionToDefault)
+	public void setIsSubscriptionToDefault (final boolean IsSubscriptionToDefault)
 	{
-		set_Value (COLUMNNAME_IsSubscriptionToDefault, Boolean.valueOf(IsSubscriptionToDefault));
+		set_Value (COLUMNNAME_IsSubscriptionToDefault, IsSubscriptionToDefault);
 	}
 
-	/** Get Abo Standard Adresse.
-		@return Abo Standard Adresse	  */
 	@Override
-	public boolean isSubscriptionToDefault () 
+	public boolean isSubscriptionToDefault() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSubscriptionToDefault);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsSubscriptionToDefault);
 	}
 
-	/** Set Name.
-		@param Name Name	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Name	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** Set Telefon.
-		@param Phone 
-		Beschreibt eine Telefon Nummer
-	  */
 	@Override
-	public void setPhone (java.lang.String Phone)
+	public void setPhone (final @Nullable java.lang.String Phone)
 	{
 		set_Value (COLUMNNAME_Phone, Phone);
 	}
 
-	/** Get Telefon.
-		@return Beschreibt eine Telefon Nummer
-	  */
 	@Override
-	public java.lang.String getPhone () 
+	public java.lang.String getPhone() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Phone);
+		return get_ValueAsString(COLUMNNAME_Phone);
 	}
 
-	/** Set Telefon (alternativ).
-		@param Phone2 
-		Alternative Telefonnummer
-	  */
 	@Override
-	public void setPhone2 (java.lang.String Phone2)
+	public void setPhone2 (final @Nullable java.lang.String Phone2)
 	{
 		set_Value (COLUMNNAME_Phone2, Phone2);
 	}
 
-	/** Get Telefon (alternativ).
-		@return Alternative Telefonnummer
-	  */
 	@Override
-	public java.lang.String getPhone2 () 
+	public java.lang.String getPhone2() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Phone2);
+		return get_ValueAsString(COLUMNNAME_Phone2);
 	}
 
-	/** Set Besuchsadresse.
-		@param VisitorsAddress Besuchsadresse	  */
 	@Override
-	public void setVisitorsAddress (boolean VisitorsAddress)
+	public void setSetup_Place_No (final @Nullable java.lang.String Setup_Place_No)
 	{
-		set_Value (COLUMNNAME_VisitorsAddress, Boolean.valueOf(VisitorsAddress));
+		set_Value (COLUMNNAME_Setup_Place_No, Setup_Place_No);
 	}
 
-	/** Get Besuchsadresse.
-		@return Besuchsadresse	  */
 	@Override
-	public boolean isVisitorsAddress () 
+	public java.lang.String getSetup_Place_No() 
 	{
-		Object oo = get_Value(COLUMNNAME_VisitorsAddress);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsString(COLUMNNAME_Setup_Place_No);
+	}
+
+	@Override
+	public void setVisitorsAddress (final boolean VisitorsAddress)
+	{
+		set_Value (COLUMNNAME_VisitorsAddress, VisitorsAddress);
+	}
+
+	@Override
+	public boolean isVisitorsAddress() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_VisitorsAddress);
 	}
 }

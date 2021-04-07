@@ -22,12 +22,12 @@
 
 package de.metas.handlingunits;
 
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.impl.CopyHUsResponse;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -42,11 +42,16 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
@@ -86,6 +91,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	IHUStorageFactory getStorageFactory();
 
+	IMutableHUContext createMutableHUContext();
+
 	/**
 	 * @return mutable HU context for <code>contextProvider</code>
 	 */
@@ -100,6 +107,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	IMutableHUContext createMutableHUContextForProcessing(IContextAware contextProvider);
 
+	IMutableHUContext createMutableHUContextForProcessing();
+
 	/**
 	 * Creates a mutable context with the given <code>ctx</code> (may not be <code>null</code>) and <code>trxName=ITrx.TRXNAME_None</code>.
 	 */
@@ -113,11 +122,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_C_UOM getHandlingUOM(I_M_Product product);
 
 	I_C_UOM getC_UOM(I_M_Transaction mtrx);
-
-	/**
-	 * Method iterated the given version and checks if one of them has {@link I_M_HU_PI_Version#isCurrent()} set to <code>true</code>.
-	 */
-	boolean isListContainsCurrentVersion(List<I_M_HU_PI_Version> versions);
 
 	/**
 	 * @return true if HU was destroyed
@@ -137,7 +141,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * <p>
 	 * If u want more options, please use {@link #buildDisplayName(I_M_HU)}.
 	 *
-	 * @param hu
 	 * @return display name (user friendly) of given HU
 	 */
 	String getDisplayName(I_M_HU hu);
@@ -222,7 +225,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	/**
 	 * Gets top level parent of given HU (i.e. the top of hierarchy) or given HU if that HU does not have a parent
 	 *
-	 * @param hu
 	 * @return top level parent; never return null
 	 */
 	I_M_HU getTopLevelParent(I_M_HU hu);
@@ -237,9 +239,19 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 */
 	List<I_M_HU> getTopLevelHUs(TopLevelHusQuery query);
 
-	@lombok.Builder
-	@lombok.Value
-	final static class TopLevelHusQuery
+	CopyHUsResponse copyAsPlannedHUs(@NonNull Collection<HuId> huIdsToCopy);
+
+	I_M_HU copyAsPlannedHU(@NonNull HuId huId);
+
+	AttributeSetInstanceId createASIFromHUAttributes(@NonNull ProductId productId, @NonNull HuId huId);
+
+	AttributeSetInstanceId createASIFromHUAttributes(@NonNull ProductId productId, @NonNull I_M_HU hu);
+
+	ImmutableAttributeSet getImmutableAttributeSet(@NonNull I_M_HU hu);
+
+	@Builder
+	@Value
+	class TopLevelHusQuery
 	{
 		/**
 		 * May be empty, but not {@code null}
@@ -258,7 +270,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 		 * If the filter returns {@code false} for a given HU, then neither that HU or its parents will be added to the result.
 		 */
 		@Default
-		Predicate<I_M_HU> filter = Predicates.alwaysTrue();
+		Predicate<I_M_HU> filter = hu -> true;
 	}
 
 	/**
@@ -280,13 +292,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return true if loading unit (LU)
 	 */
 	boolean isLoadingUnit(I_M_HU hu);
-
-	/**
-	 * Asserts given HU is a Loading Unit(LU).
-	 *
-	 * @throws HUException in case given LU is not a loading unit
-	 */
-	void assertLoadingUnit(I_M_HU hu);
 
 	/**
 	 * Determines if the handling unit is strictly a transport unit (a.k.a. trade unit, type {@link X_M_HU_PI_Version#HU_UNITTYPE_TransportUnit} ).
@@ -360,30 +365,26 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@Nullable
 	String getHU_UnitType(I_M_HU hu);
 
+	boolean isVirtual(@Nullable I_M_HU_PI_Item piItem);
+
 	/**
-	 * @param piItem
 	 * @return true if given <code>piItem</code> is null or is NoPI
 	 */
 	boolean isNoPI(I_M_HU_PI_Item piItem);
 
 	/**
-	 * @param huPI
 	 * @return true if given HU PI is not null and is Virtual PI
 	 */
 	boolean isVirtual(I_M_HU_PI huPI);
 
 	/**
 	 * Marks the hu as destroyed, but doesn't handle the storages
-	 *
-	 * @param huContext
-	 * @param hu
 	 */
 	void markDestroyed(IHUContext huContext, I_M_HU hu);
 
 	/**
 	 * Marks all HUs as destroyed, but doesn't handle the storages.
 	 *
-	 * @param huContext
 	 * @param hus HUs to mark as destroyed
 	 */
 	void markDestroyed(IHUContext huContext, Collection<I_M_HU> hus);
@@ -413,9 +414,6 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@NonNull
 	I_M_HU_PI getIncludedPI(@NonNull I_M_HU_PI_Item piItem);
 
-	@Nullable
-	HuPackingInstructionsVersionId getEffectivePIVersionId(I_M_HU hu);
-
 	/**
 	 * If the given {@code hu} is a aggregate HU, return the PI version of the HUs that are <i>represented</i> within the aggregate HU.<br>
 	 * Otherwise, return the given {@code hu}'s own/direct PI version.
@@ -429,11 +427,13 @@ public interface IHandlingUnitsBL extends ISingletonService
 	@Nullable
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
 
+	@Nullable
 	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
 	{
 		return BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());
 	}
 
+	@Nullable
 	static I_C_BPartner extractBPartnerOrNull(final I_M_HU hu)
 	{
 		final BPartnerId bpartnerId = extractBPartnerIdOrNull(hu);
@@ -442,11 +442,12 @@ public interface IHandlingUnitsBL extends ISingletonService
 				: null;
 	}
 
+	@Nullable
 	static I_C_BPartner_Location extractBPartnerLocationOrNull(final I_M_HU hu)
 	{
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(hu.getC_BPartner_ID(), hu.getC_BPartner_Location_ID());
 		return bpartnerLocationId != null
-				? Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpartnerLocationId)
+				? Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(bpartnerLocationId)
 				: null;
 	}
 
@@ -460,6 +461,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 		return locatorId;
 	}
 
+	@Nullable
 	static LocatorId extractLocatorIdOrNull(final I_M_HU hu)
 	{
 		final int locatorRepoId = hu.getM_Locator_ID();
@@ -468,7 +470,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	static I_M_Locator extractLocator(final I_M_HU hu)
 	{
-		I_M_Locator locator = extractLocatorOrNull(hu);
+		final I_M_Locator locator = extractLocatorOrNull(hu);
 		if (locator == null)
 		{
 			throw new HUException("Warehouse Locator shall be set for: " + hu);
@@ -476,6 +478,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 		return locator;
 	}
 
+	@Nullable
 	static I_M_Locator extractLocatorOrNull(final I_M_HU hu)
 	{
 		final int locatorRepoId = hu.getM_Locator_ID();
@@ -505,6 +508,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 		return warehouse;
 	}
 
+	@Nullable
 	static WarehouseId extractWarehouseIdOrNull(final I_M_HU hu)
 	{
 		final int locatorRepoId = hu.getM_Locator_ID();
@@ -516,6 +520,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 		return Services.get(IWarehouseDAO.class).getWarehouseIdByLocatorRepoId(locatorRepoId);
 	}
 
+	@Nullable
 	static I_M_Warehouse extractWarehouseOrNull(final I_M_HU hu)
 	{
 		final WarehouseId warehouseId = extractWarehouseIdOrNull(hu);
@@ -524,6 +529,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 				: null;
 	}
 
+	@Nullable
 	static I_M_HU_PI_Item_Product extractPIItemProductOrNull(final I_M_HU hu)
 	{
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(hu.getM_HU_PI_Item_Product_ID());

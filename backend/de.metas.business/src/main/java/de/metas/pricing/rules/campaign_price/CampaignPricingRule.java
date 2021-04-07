@@ -1,5 +1,7 @@
 package de.metas.pricing.rules.campaign_price;
 
+import de.metas.util.ILoggable;
+import de.metas.util.lang.Percent;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
@@ -16,6 +18,8 @@ import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -49,43 +53,44 @@ public class CampaignPricingRule implements IPricingRule
 	@Override
 	public boolean applies(@NonNull final IPricingContext pricingCtx, @NonNull final IPricingResult result)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
 		if (result.isCalculated())
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying because already calculated");
-			return false;
+			loggable.addLog("Already calculated, but we might have a better price!");
 		}
 
 		final BPartnerId bpartnerId = pricingCtx.getBPartnerId();
 
 		if (bpartnerId == null)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying because there is no BPartner specified in context");
+			loggable.addLog("Not applying because there is no BPartner specified in context");
 			return false;
 		}
 
 		if (!bpartnersRepo.isCampaignPriceAllowed(bpartnerId))
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying because the partner is not allowed to receive campaign prices");
+			loggable.addLog("Not applying because the partner is not allowed to receive campaign prices");
 			return false;
 		}
 
 		if (pricingCtx.getProductId() == null)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying because there is no Product specified in context");
+			loggable.addLog("Not applying because there is no Product specified in context");
 			return false;
 		}
 		if (pricingCtx.getCountryId() == null)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying because there is no Country specified in context");
+			loggable.addLog("Not applying because there is no Country specified in context");
 			return false;
 		}
 		if (pricingCtx.getCurrencyId() == null)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Not applying because there is no Currency specified in context");
+			loggable.addLog("Not applying because there is no Currency specified in context");
 			return false;
 		}
 
-		Loggables.withLogger(logger, Level.DEBUG).addLog("applying");
+		loggable.addLog("applying");
 		return true;
 	}
 
@@ -101,13 +106,14 @@ public class CampaignPricingRule implements IPricingRule
 		final CampaignPrice campaignPrice = campaignPriceService.getCampaignPrice(campaignPriceQuery).orElse(null);
 		if (campaignPrice == null)
 		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Did not find a campaingn price; -> return");
 			return;
 		}
 
-		updateResult(result, campaignPrice);
+		updateResultIfCampaignPriceIsLower(result, campaignPrice);
 	}
 
-	private CampaignPriceQuery createCampaignPriceQuery(final IPricingContext pricingCtx)
+	private CampaignPriceQuery createCampaignPriceQuery(@NonNull final IPricingContext pricingCtx)
 	{
 		return CampaignPriceQuery.builder()
 				.bpartnerId(pricingCtx.getBPartnerId())
@@ -120,11 +126,40 @@ public class CampaignPricingRule implements IPricingRule
 				.build();
 	}
 
-	private static void updateResult(final IPricingResult result, final CampaignPrice campaignPrice)
+	private static void updateResultIfCampaignPriceIsLower(@NonNull final IPricingResult result, @NonNull final CampaignPrice campaignPrice)
 	{
+		final BigDecimal campaignPriceBD = campaignPrice.getPriceStd().toBigDecimal();
+
+		final boolean campainPriceIsLower;
+		if (!result.isCalculated())
+		{
+			campainPriceIsLower = true;
+		}
+		else
+		{
+			final int precision = CurrencyPrecision.toInt(result.getPrecision(), result.getPriceStd().scale());
+
+			final BigDecimal effectiveResultPrice = result.getDiscount()
+					.subtractFromBase(result.getPriceStd(), precision);
+			campainPriceIsLower = campaignPriceBD.compareTo(effectiveResultPrice) < 0;
+		}
+
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+		if (!campainPriceIsLower)
+		{
+			loggable.addLog("CampaingnPrice={} is higher than the stdPrice={} and discount={} from the previous pricing rules; -> discard campaingnPrice",
+					campaignPriceBD, result.getPriceStd(), result.getDiscount());
+			return;
+		}
+
+		loggable.addLog("CampaingnPrice={} is lower than the stdPrice={} and discount={} from the previous pricing rules; -> update result to campaign price",
+				campaignPriceBD, result.getPriceStd(), result.getDiscount());
+
+		result.setPriceStd(campaignPriceBD);
 		result.setCalculated(true);
+		result.setDisallowDiscount(false); // avoid an exception if a preceding rule advised against changing the discount anymore
+		result.setDiscount(Percent.ZERO);
 		result.setDisallowDiscount(true); // this is the end price, don't apply any other discounts
-		result.setPriceStd(campaignPrice.getPriceStd().toBigDecimal());
 		result.setCurrencyId(campaignPrice.getPriceStd().getCurrencyId());
 		result.setPriceUomId(campaignPrice.getPriceUomId());
 		result.setTaxCategoryId(campaignPrice.getTaxCategoryId());

@@ -8,8 +8,8 @@ import org.adempiere.warehouse.LocatorId;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PickingCandidateId;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;

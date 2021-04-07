@@ -1075,8 +1075,8 @@ public abstract class PO
 						|| sysConfigBL.getBooleanValue(sysConfigName, true, getAD_Client_ID(), getAD_Org_ID());
 
 				return new AdempiereException("Column not updateable: " + ColumnName + " - NewValue=" + valueToUse + " - OldValue=" + oldValue + "; "
-						+ "Note to developer: to bypass this checking you can"
-						+ "1. Set AD_SysConfig '" + sysConfigName + "' = 'N' to disable this exception (will still be logged with Level=SERVERE)"
+						+ "Note to developer: to bypass this checking you can:\n"
+						+ "1. Set AD_SysConfig '" + sysConfigName + "' = 'N' to disable this exception (will still be logged with Level=SERVERE)\n"
 						+ "2. Set dynamic attribute " + InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled + " = true (no errors will be logged in this case)")
 								.throwOrLogSevere(throwException, log);
 			}
@@ -1349,7 +1349,7 @@ public abstract class PO
 	 * @param columnName column
 	 * @param value value
 	 */
-	public final void set_CustomColumn(final String columnName, final Object value)
+	public final void set_CustomColumn(final String columnName, @Nullable final Object value)
 	{
 		set_CustomColumnReturningBoolean(columnName, value);
 	}	// set_CustomColumn
@@ -2670,7 +2670,8 @@ public abstract class PO
 		boolean logIfKeyOnly = false;
 		if (isInsertChangeLogEvent)
 		{
-			final String insertChangeLogType = Services.get(ISysConfigBL.class).getValue("SYSTEM_INSERT_CHANGELOG", "Y", adClientId);
+			// note that i never needed this value to be Y, so i'm now setting the default to N
+			final String insertChangeLogType = Services.get(ISysConfigBL.class).getValue("SYSTEM_INSERT_CHANGELOG", "N", adClientId);
 			if ("Y".equals(insertChangeLogType))
 			{
 				// log everything allowed
@@ -4365,7 +4366,7 @@ public abstract class PO
 	public final boolean insert_Accounting(
 			final String acctTable,
 			final String acctBaseTable,
-			final String whereClause)
+			@Nullable final String whereClause)
 	{
 		final POAccountingInfo acctInfo = POAccountingInfoRepository.instance.getPOAccountingInfo(acctTable).orElse(null);
 		if(acctInfo == null)
@@ -5011,7 +5012,7 @@ public abstract class PO
 	 * @param name
 	 * @param value
 	 */
-	public final Object setDynAttribute(final String name, final Object value)
+	public final Object setDynAttribute(final String name, @Nullable final Object value)
 	{
 		if (m_dynAttrs == null)
 		{

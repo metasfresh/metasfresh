@@ -1,20 +1,20 @@
 package de.metas.rest_api.ordercandidates.request;
 
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+import static de.metas.util.Check.isEmpty;
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartner;
-import de.metas.rest_api.bpartner.request.JsonRequestContact;
-import de.metas.rest_api.bpartner.request.JsonRequestLocation;
-import de.metas.rest_api.common.SyncAdvise;
+import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
+import de.metas.common.bpartner.v1.request.JsonRequestContact;
+import de.metas.common.bpartner.v1.request.JsonRequestLocation;
+import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.util.Check;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
-
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
-import static de.metas.util.Check.isEmpty;
 
 /*
  * #%L

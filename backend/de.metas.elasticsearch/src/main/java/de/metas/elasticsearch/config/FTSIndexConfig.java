@@ -53,7 +53,7 @@ public class FTSIndexConfig
 		return getTemplate().getSettingsJson();
 	}
 
-	public String getIndexStringFullTextSearchAnalyzer()
+	public ESTextAnalyzer getIndexStringFullTextSearchAnalyzer()
 	{
 		return getTemplate().getIndexStringFullTextSearchAnalyzer();
 	}

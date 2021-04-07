@@ -1,133 +1,83 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for PP_Cost_Collector
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_Cost_Collector, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 438132355L;
+	private static final long serialVersionUID = -1396466864L;
 
     /** Standard Constructor */
-    public X_PP_Cost_Collector (Properties ctx, int PP_Cost_Collector_ID, String trxName)
+    public X_PP_Cost_Collector (final Properties ctx, final int PP_Cost_Collector_ID, @Nullable final String trxName)
     {
       super (ctx, PP_Cost_Collector_ID, trxName);
-      /** if (PP_Cost_Collector_ID == 0)
-        {
-			setC_DocType_ID (0); // 0
-			setC_DocTypeTarget_ID (0);
-			setCostCollectorType (null);
-			setDateAcct (new Timestamp( System.currentTimeMillis() )); // @#Date@
-			setM_Locator_ID (0);
-			setM_Product_ID (0);
-			setM_Warehouse_ID (0);
-			setMovementDate (new Timestamp( System.currentTimeMillis() )); // @#Date@
-			setMovementQty (BigDecimal.ZERO); // 0
-			setPosted (false); // N
-			setPP_Cost_Collector_ID (0);
-			setPP_Order_ID (0);
-			setProcessed (false);
-			setS_Resource_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_PP_Cost_Collector (Properties ctx, ResultSet rs, String trxName)
+    public X_PP_Cost_Collector (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Buchende Organisation.
-		@param AD_OrgTrx_ID 
-		Performing or initiating organization
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_OrgTrx_ID (final int AD_OrgTrx_ID)
 	{
 		if (AD_OrgTrx_ID < 1) 
 			set_Value (COLUMNNAME_AD_OrgTrx_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
+			set_Value (COLUMNNAME_AD_OrgTrx_ID, AD_OrgTrx_ID);
 	}
 
-	/** Get Buchende Organisation.
-		@return Performing or initiating organization
-	  */
 	@Override
-	public int getAD_OrgTrx_ID () 
+	public int getAD_OrgTrx_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_OrgTrx_ID);
 	}
 
-	/** Set Ansprechpartner.
-		@param AD_User_ID 
-		User within the system - Internal or Business Partner Contact
-	  */
 	@Override
-	public void setAD_User_ID (int AD_User_ID)
+	public void setAD_User_ID (final int AD_User_ID)
 	{
 		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
 	}
 
-	/** Get Ansprechpartner.
-		@return User within the system - Internal or Business Partner Contact
-	  */
 	@Override
-	public int getAD_User_ID () 
+	public int getAD_User_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
-	/** Set Kostenstelle.
-		@param C_Activity_ID 
-		Kostenstelle
-	  */
 	@Override
-	public void setC_Activity_ID (int C_Activity_ID)
+	public void setC_Activity_ID (final int C_Activity_ID)
 	{
 		if (C_Activity_ID < 1) 
 			set_Value (COLUMNNAME_C_Activity_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
+			set_Value (COLUMNNAME_C_Activity_ID, C_Activity_ID);
 	}
 
-	/** Get Kostenstelle.
-		@return Kostenstelle
-	  */
 	@Override
-	public int getC_Activity_ID () 
+	public int getC_Activity_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
 	}
 
 	@Override
@@ -137,134 +87,84 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign)
+	public void setC_Campaign(final org.compiere.model.I_C_Campaign C_Campaign)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
 	}
 
-	/** Set Werbemassnahme.
-		@param C_Campaign_ID 
-		Marketing Campaign
-	  */
 	@Override
-	public void setC_Campaign_ID (int C_Campaign_ID)
+	public void setC_Campaign_ID (final int C_Campaign_ID)
 	{
 		if (C_Campaign_ID < 1) 
 			set_Value (COLUMNNAME_C_Campaign_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Campaign_ID, Integer.valueOf(C_Campaign_ID));
+			set_Value (COLUMNNAME_C_Campaign_ID, C_Campaign_ID);
 	}
 
-	/** Get Werbemassnahme.
-		@return Marketing Campaign
-	  */
 	@Override
-	public int getC_Campaign_ID () 
+	public int getC_Campaign_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Campaign_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Campaign_ID);
 	}
 
-	/** Set Belegart.
-		@param C_DocType_ID 
-		Document type or rules
-	  */
 	@Override
-	public void setC_DocType_ID (int C_DocType_ID)
+	public void setC_DocType_ID (final int C_DocType_ID)
 	{
 		if (C_DocType_ID < 0) 
 			set_Value (COLUMNNAME_C_DocType_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+			set_Value (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
-	/** Get Belegart.
-		@return Document type or rules
-	  */
 	@Override
-	public int getC_DocType_ID () 
+	public int getC_DocType_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
 
-	/** Set Zielbelegart.
-		@param C_DocTypeTarget_ID 
-		Target document type for conversing documents
-	  */
 	@Override
-	public void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID)
+	public void setC_DocTypeTarget_ID (final int C_DocTypeTarget_ID)
 	{
 		if (C_DocTypeTarget_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_DocTypeTarget_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_DocTypeTarget_ID, Integer.valueOf(C_DocTypeTarget_ID));
+			set_ValueNoCheck (COLUMNNAME_C_DocTypeTarget_ID, C_DocTypeTarget_ID);
 	}
 
-	/** Get Zielbelegart.
-		@return Target document type for conversing documents
-	  */
 	@Override
-	public int getC_DocTypeTarget_ID () 
+	public int getC_DocTypeTarget_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeTarget_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_DocTypeTarget_ID);
 	}
 
-	/** Set Projekt.
-		@param C_Project_ID 
-		Financial Project
-	  */
 	@Override
-	public void setC_Project_ID (int C_Project_ID)
+	public void setC_Project_ID (final int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
 			set_Value (COLUMNNAME_C_Project_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
+			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
 	}
 
-	/** Get Projekt.
-		@return Financial Project
-	  */
 	@Override
-	public int getC_Project_ID () 
+	public int getC_Project_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Project_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
 
-	/** Set Maßeinheit.
-		@param C_UOM_ID 
-		Unit of Measure
-	  */
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
-	/** Get Maßeinheit.
-		@return Unit of Measure
-	  */
 	@Override
-	public int getC_UOM_ID () 
+	public int getC_UOM_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	/** 
@@ -286,59 +186,40 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	public static final String COSTCOLLECTORTYPE_MixVariance = "150";
 	/** Activity Control = 160 */
 	public static final String COSTCOLLECTORTYPE_ActivityControl = "160";
-	/** Set Cost Collector Type.
-		@param CostCollectorType 
-		Transaction Type for Manufacturing Management
-	  */
 	@Override
-	public void setCostCollectorType (java.lang.String CostCollectorType)
+	public void setCostCollectorType (final java.lang.String CostCollectorType)
 	{
-
 		set_Value (COLUMNNAME_CostCollectorType, CostCollectorType);
 	}
 
-	/** Get Cost Collector Type.
-		@return Transaction Type for Manufacturing Management
-	  */
 	@Override
-	public java.lang.String getCostCollectorType () 
+	public java.lang.String getCostCollectorType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CostCollectorType);
+		return get_ValueAsString(COLUMNNAME_CostCollectorType);
 	}
 
-	/** Set Buchungsdatum.
-		@param DateAcct 
-		Accounting Date
-	  */
 	@Override
-	public void setDateAcct (java.sql.Timestamp DateAcct)
+	public void setDateAcct (final java.sql.Timestamp DateAcct)
 	{
 		set_Value (COLUMNNAME_DateAcct, DateAcct);
 	}
 
-	/** Get Buchungsdatum.
-		@return Accounting Date
-	  */
 	@Override
-	public java.sql.Timestamp getDateAcct () 
+	public java.sql.Timestamp getDateAcct() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateAcct);
+		return get_ValueAsTimestamp(COLUMNNAME_DateAcct);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -376,24 +257,16 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	public static final String DOCACTION_WaitComplete = "WC";
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
-	/** Set Belegverarbeitung.
-		@param DocAction 
-		The targeted status of the document
-	  */
 	@Override
-	public void setDocAction (java.lang.String DocAction)
+	public void setDocAction (final @Nullable java.lang.String DocAction)
 	{
-
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
-	/** Get Belegverarbeitung.
-		@return The targeted status of the document
-	  */
 	@Override
-	public java.lang.String getDocAction () 
+	public java.lang.String getDocAction() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
+		return get_ValueAsString(COLUMNNAME_DocAction);
 	}
 
 	/** 
@@ -425,108 +298,94 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Belegstatus.
-		@param DocStatus 
-		The current status of the document
-	  */
 	@Override
-	public void setDocStatus (java.lang.String DocStatus)
+	public void setDocStatus (final @Nullable java.lang.String DocStatus)
 	{
-
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Belegstatus.
-		@return The current status of the document
-	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Nr..
-		@param DocumentNo 
-		Document sequence number of the document
-	  */
 	@Override
-	public void setDocumentNo (java.lang.String DocumentNo)
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
 	{
 		set_Value (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Nr..
-		@return Document sequence number of the document
-	  */
 	@Override
-	public java.lang.String getDocumentNo () 
+	public java.lang.String getDocumentNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
+		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
 
-	/** Set Duration Real.
-		@param DurationReal Duration Real	  */
 	@Override
-	public void setDurationReal (java.math.BigDecimal DurationReal)
+	public void setDurationReal (final @Nullable BigDecimal DurationReal)
 	{
 		set_Value (COLUMNNAME_DurationReal, DurationReal);
 	}
 
-	/** Get Duration Real.
-		@return Duration Real	  */
 	@Override
-	public java.math.BigDecimal getDurationReal () 
+	public BigDecimal getDurationReal() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_DurationReal);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_DurationReal);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Is BatchTime.
-		@param IsBatchTime Is BatchTime	  */
+	/** 
+	 * DurationUnit AD_Reference_ID=299
+	 * Reference name: WF_DurationUnit
+	 */
+	public static final int DURATIONUNIT_AD_Reference_ID=299;
+	/** Year = Y */
+	public static final String DURATIONUNIT_Year = "Y";
+	/** Month = M */
+	public static final String DURATIONUNIT_Month = "M";
+	/** Day = D */
+	public static final String DURATIONUNIT_Day = "D";
+	/** Hour = h */
+	public static final String DURATIONUNIT_Hour = "h";
+	/** Minute = m */
+	public static final String DURATIONUNIT_Minute = "m";
+	/** Second = s */
+	public static final String DURATIONUNIT_Second = "s";
 	@Override
-	public void setIsBatchTime (boolean IsBatchTime)
+	public void setDurationUnit (final @Nullable java.lang.String DurationUnit)
 	{
-		set_Value (COLUMNNAME_IsBatchTime, Boolean.valueOf(IsBatchTime));
+		set_Value (COLUMNNAME_DurationUnit, DurationUnit);
 	}
 
-	/** Get Is BatchTime.
-		@return Is BatchTime	  */
 	@Override
-	public boolean isBatchTime () 
+	public java.lang.String getDurationUnit() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsBatchTime);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsString(COLUMNNAME_DurationUnit);
 	}
 
-	/** Set Is Subcontracting.
-		@param IsSubcontracting Is Subcontracting	  */
 	@Override
-	public void setIsSubcontracting (boolean IsSubcontracting)
+	public void setIsBatchTime (final boolean IsBatchTime)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsSubcontracting, Boolean.valueOf(IsSubcontracting));
+		set_Value (COLUMNNAME_IsBatchTime, IsBatchTime);
 	}
 
-	/** Get Is Subcontracting.
-		@return Is Subcontracting	  */
 	@Override
-	public boolean isSubcontracting () 
+	public boolean isBatchTime() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSubcontracting);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsBatchTime);
+	}
+
+	@Override
+	public void setIsSubcontracting (final boolean IsSubcontracting)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsSubcontracting, IsSubcontracting);
+	}
+
+	@Override
+	public boolean isSubcontracting() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSubcontracting);
 	}
 
 	@Override
@@ -536,220 +395,151 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Merkmale.
-		@param M_AttributeSetInstance_ID 
-		Merkmals Ausprägungen zum Produkt
-	  */
 	@Override
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
 	}
 
-	/** Get Merkmale.
-		@return Merkmals Ausprägungen zum Produkt
-	  */
 	@Override
-	public int getM_AttributeSetInstance_ID () 
+	public int getM_AttributeSetInstance_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
 	}
 
-	/** Set Lagerort.
-		@param M_Locator_ID 
-		Warehouse Locator
-	  */
 	@Override
-	public void setM_Locator_ID (int M_Locator_ID)
+	public void setM_Locator_ID (final int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
 			set_Value (COLUMNNAME_M_Locator_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
+			set_Value (COLUMNNAME_M_Locator_ID, M_Locator_ID);
 	}
 
-	/** Get Lagerort.
-		@return Warehouse Locator
-	  */
 	@Override
-	public int getM_Locator_ID () 
+	public int getM_Locator_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Locator_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Locator_ID);
 	}
 
-	/** Set Picking candidate.
-		@param M_Picking_Candidate_ID Picking candidate	  */
 	@Override
-	public void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID)
+	public void setM_Picking_Candidate_ID (final int M_Picking_Candidate_ID)
 	{
 		if (M_Picking_Candidate_ID < 1) 
 			set_Value (COLUMNNAME_M_Picking_Candidate_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Picking_Candidate_ID, Integer.valueOf(M_Picking_Candidate_ID));
+			set_Value (COLUMNNAME_M_Picking_Candidate_ID, M_Picking_Candidate_ID);
 	}
 
-	/** Get Picking candidate.
-		@return Picking candidate	  */
 	@Override
-	public int getM_Picking_Candidate_ID () 
+	public int getM_Picking_Candidate_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Picking_Candidate_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Picking_Candidate_ID);
 	}
 
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
-	/** Set Lager.
-		@param M_Warehouse_ID 
-		Storage Warehouse and Service Point
-	  */
 	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 
 			set_Value (COLUMNNAME_M_Warehouse_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
 	}
 
-	/** Get Lager.
-		@return Storage Warehouse and Service Point
-	  */
 	@Override
-	public int getM_Warehouse_ID () 
+	public int getM_Warehouse_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
-	/** Set Bewegungsdatum.
-		@param MovementDate 
-		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
 	@Override
-	public void setMovementDate (java.sql.Timestamp MovementDate)
+	public void setMovementDate (final java.sql.Timestamp MovementDate)
 	{
 		set_Value (COLUMNNAME_MovementDate, MovementDate);
 	}
 
-	/** Get Bewegungsdatum.
-		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
 	@Override
-	public java.sql.Timestamp getMovementDate () 
+	public java.sql.Timestamp getMovementDate() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
+		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
 	}
 
-	/** Set Bewegungs-Menge.
-		@param MovementQty 
-		Quantity of a product moved.
-	  */
 	@Override
-	public void setMovementQty (java.math.BigDecimal MovementQty)
+	public void setMovementQty (final BigDecimal MovementQty)
 	{
 		set_Value (COLUMNNAME_MovementQty, MovementQty);
 	}
 
-	/** Get Bewegungs-Menge.
-		@return Quantity of a product moved.
-	  */
 	@Override
-	public java.math.BigDecimal getMovementQty () 
+	public BigDecimal getMovementQty() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MovementQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MovementQty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Verbucht.
-		@param Posted 
-		Posting status
-	  */
 	@Override
-	public void setPosted (boolean Posted)
+	public void setPosted (final boolean Posted)
 	{
-		set_Value (COLUMNNAME_Posted, Boolean.valueOf(Posted));
+		set_Value (COLUMNNAME_Posted, Posted);
 	}
 
-	/** Get Verbucht.
-		@return Posting status
-	  */
 	@Override
-	public boolean isPosted () 
+	public boolean isPosted() 
 	{
-		Object oo = get_Value(COLUMNNAME_Posted);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Posted);
 	}
 
-	/** Set Manufacturing Cost Collector.
-		@param PP_Cost_Collector_ID Manufacturing Cost Collector	  */
 	@Override
-	public void setPP_Cost_Collector_ID (int PP_Cost_Collector_ID)
+	public void setPostingError_Issue_ID (final int PostingError_Issue_ID)
+	{
+		if (PostingError_Issue_ID < 1) 
+			set_Value (COLUMNNAME_PostingError_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_PostingError_Issue_ID, PostingError_Issue_ID);
+	}
+
+	@Override
+	public int getPostingError_Issue_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PostingError_Issue_ID);
+	}
+
+	@Override
+	public void setPP_Cost_Collector_ID (final int PP_Cost_Collector_ID)
 	{
 		if (PP_Cost_Collector_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_PP_Cost_Collector_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Cost_Collector_ID, Integer.valueOf(PP_Cost_Collector_ID));
+			set_ValueNoCheck (COLUMNNAME_PP_Cost_Collector_ID, PP_Cost_Collector_ID);
 	}
 
-	/** Get Manufacturing Cost Collector.
-		@return Manufacturing Cost Collector	  */
 	@Override
-	public int getPP_Cost_Collector_ID () 
+	public int getPP_Cost_Collector_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Cost_Collector_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Cost_Collector_ID);
 	}
 
 	@Override
@@ -759,31 +549,24 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public void setPP_Cost_Collector_Parent(org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector_Parent)
+	public void setPP_Cost_Collector_Parent(final org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector_Parent)
 	{
 		set_ValueFromPO(COLUMNNAME_PP_Cost_Collector_Parent_ID, org.eevolution.model.I_PP_Cost_Collector.class, PP_Cost_Collector_Parent);
 	}
 
-	/** Set Manufacturing Cost Collector Parent.
-		@param PP_Cost_Collector_Parent_ID Manufacturing Cost Collector Parent	  */
 	@Override
-	public void setPP_Cost_Collector_Parent_ID (int PP_Cost_Collector_Parent_ID)
+	public void setPP_Cost_Collector_Parent_ID (final int PP_Cost_Collector_Parent_ID)
 	{
 		if (PP_Cost_Collector_Parent_ID < 1) 
 			set_Value (COLUMNNAME_PP_Cost_Collector_Parent_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Cost_Collector_Parent_ID, Integer.valueOf(PP_Cost_Collector_Parent_ID));
+			set_Value (COLUMNNAME_PP_Cost_Collector_Parent_ID, PP_Cost_Collector_Parent_ID);
 	}
 
-	/** Get Manufacturing Cost Collector Parent.
-		@return Manufacturing Cost Collector Parent	  */
 	@Override
-	public int getPP_Cost_Collector_Parent_ID () 
+	public int getPP_Cost_Collector_Parent_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Cost_Collector_Parent_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Cost_Collector_Parent_ID);
 	}
 
 	@Override
@@ -793,31 +576,24 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public void setPP_Order_BOMLine(org.eevolution.model.I_PP_Order_BOMLine PP_Order_BOMLine)
+	public void setPP_Order_BOMLine(final org.eevolution.model.I_PP_Order_BOMLine PP_Order_BOMLine)
 	{
 		set_ValueFromPO(COLUMNNAME_PP_Order_BOMLine_ID, org.eevolution.model.I_PP_Order_BOMLine.class, PP_Order_BOMLine);
 	}
 
-	/** Set Manufacturing Order BOM Line.
-		@param PP_Order_BOMLine_ID Manufacturing Order BOM Line	  */
 	@Override
-	public void setPP_Order_BOMLine_ID (int PP_Order_BOMLine_ID)
+	public void setPP_Order_BOMLine_ID (final int PP_Order_BOMLine_ID)
 	{
 		if (PP_Order_BOMLine_ID < 1) 
 			set_Value (COLUMNNAME_PP_Order_BOMLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Order_BOMLine_ID, Integer.valueOf(PP_Order_BOMLine_ID));
+			set_Value (COLUMNNAME_PP_Order_BOMLine_ID, PP_Order_BOMLine_ID);
 	}
 
-	/** Get Manufacturing Order BOM Line.
-		@return Manufacturing Order BOM Line	  */
 	@Override
-	public int getPP_Order_BOMLine_ID () 
+	public int getPP_Order_BOMLine_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_BOMLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Order_BOMLine_ID);
 	}
 
 	@Override
@@ -827,31 +603,24 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order)
+	public void setPP_Order(final org.eevolution.model.I_PP_Order PP_Order)
 	{
 		set_ValueFromPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class, PP_Order);
 	}
 
-	/** Set Produktionsauftrag.
-		@param PP_Order_ID Produktionsauftrag	  */
 	@Override
-	public void setPP_Order_ID (int PP_Order_ID)
+	public void setPP_Order_ID (final int PP_Order_ID)
 	{
 		if (PP_Order_ID < 1) 
 			set_Value (COLUMNNAME_PP_Order_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Order_ID, Integer.valueOf(PP_Order_ID));
+			set_Value (COLUMNNAME_PP_Order_ID, PP_Order_ID);
 	}
 
-	/** Get Produktionsauftrag.
-		@return Produktionsauftrag	  */
 	@Override
-	public int getPP_Order_ID () 
+	public int getPP_Order_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Order_ID);
 	}
 
 	@Override
@@ -861,102 +630,61 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public void setPP_Order_Node(org.eevolution.model.I_PP_Order_Node PP_Order_Node)
+	public void setPP_Order_Node(final org.eevolution.model.I_PP_Order_Node PP_Order_Node)
 	{
 		set_ValueFromPO(COLUMNNAME_PP_Order_Node_ID, org.eevolution.model.I_PP_Order_Node.class, PP_Order_Node);
 	}
 
-	/** Set Manufacturing Order Activity.
-		@param PP_Order_Node_ID 
-		Workflow Node (activity), step or process
-	  */
 	@Override
-	public void setPP_Order_Node_ID (int PP_Order_Node_ID)
+	public void setPP_Order_Node_ID (final int PP_Order_Node_ID)
 	{
 		if (PP_Order_Node_ID < 1) 
 			set_Value (COLUMNNAME_PP_Order_Node_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Order_Node_ID, Integer.valueOf(PP_Order_Node_ID));
+			set_Value (COLUMNNAME_PP_Order_Node_ID, PP_Order_Node_ID);
 	}
 
-	/** Get Manufacturing Order Activity.
-		@return Workflow Node (activity), step or process
-	  */
 	@Override
-	public int getPP_Order_Node_ID () 
+	public int getPP_Order_Node_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_Node_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Order_Node_ID);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
-	/** Set Verarbeiten.
-		@param Processing Verarbeiten	  */
 	@Override
-	public void setProcessing (boolean Processing)
+	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value (COLUMNNAME_Processing, Processing);
 	}
 
-	/** Get Verarbeiten.
-		@return Verarbeiten	  */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
-	/** Set Qty Reject.
-		@param QtyReject Qty Reject	  */
 	@Override
-	public void setQtyReject (java.math.BigDecimal QtyReject)
+	public void setQtyReject (final @Nullable BigDecimal QtyReject)
 	{
 		set_Value (COLUMNNAME_QtyReject, QtyReject);
 	}
 
-	/** Get Qty Reject.
-		@return Qty Reject	  */
 	@Override
-	public java.math.BigDecimal getQtyReject () 
+	public BigDecimal getQtyReject() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyReject);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReject);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -966,34 +694,24 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public void setReversal(org.eevolution.model.I_PP_Cost_Collector Reversal)
+	public void setReversal(final org.eevolution.model.I_PP_Cost_Collector Reversal)
 	{
 		set_ValueFromPO(COLUMNNAME_Reversal_ID, org.eevolution.model.I_PP_Cost_Collector.class, Reversal);
 	}
 
-	/** Set Storno-Gegenbeleg.
-		@param Reversal_ID 
-		ID of document reversal
-	  */
 	@Override
-	public void setReversal_ID (int Reversal_ID)
+	public void setReversal_ID (final int Reversal_ID)
 	{
 		if (Reversal_ID < 1) 
 			set_Value (COLUMNNAME_Reversal_ID, null);
 		else 
-			set_Value (COLUMNNAME_Reversal_ID, Integer.valueOf(Reversal_ID));
+			set_Value (COLUMNNAME_Reversal_ID, Reversal_ID);
 	}
 
-	/** Get Storno-Gegenbeleg.
-		@return ID of document reversal
-	  */
 	@Override
-	public int getReversal_ID () 
+	public int getReversal_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Reversal_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Reversal_ID);
 	}
 
 	@Override
@@ -1003,124 +721,79 @@ public class X_PP_Cost_Collector extends org.compiere.model.PO implements I_PP_C
 	}
 
 	@Override
-	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource)
+	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
 	{
 		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
 	}
 
-	/** Set Ressource.
-		@param S_Resource_ID 
-		Resource
-	  */
 	@Override
-	public void setS_Resource_ID (int S_Resource_ID)
+	public void setS_Resource_ID (final int S_Resource_ID)
 	{
 		if (S_Resource_ID < 1) 
 			set_Value (COLUMNNAME_S_Resource_ID, null);
 		else 
-			set_Value (COLUMNNAME_S_Resource_ID, Integer.valueOf(S_Resource_ID));
+			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
 	}
 
-	/** Get Ressource.
-		@return Resource
-	  */
 	@Override
-	public int getS_Resource_ID () 
+	public int getS_Resource_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_S_Resource_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
 	}
 
-	/** Set Verworfene Menge.
-		@param ScrappedQty 
-		The Quantity scrapped due to QA issues
-	  */
 	@Override
-	public void setScrappedQty (java.math.BigDecimal ScrappedQty)
+	public void setScrappedQty (final @Nullable BigDecimal ScrappedQty)
 	{
 		set_Value (COLUMNNAME_ScrappedQty, ScrappedQty);
 	}
 
-	/** Get Verworfene Menge.
-		@return The Quantity scrapped due to QA issues
-	  */
 	@Override
-	public java.math.BigDecimal getScrappedQty () 
+	public BigDecimal getScrappedQty() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ScrappedQty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ScrappedQty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Setup Time Real.
-		@param SetupTimeReal Setup Time Real	  */
 	@Override
-	public void setSetupTimeReal (java.math.BigDecimal SetupTimeReal)
+	public void setSetupTimeReal (final @Nullable BigDecimal SetupTimeReal)
 	{
 		set_Value (COLUMNNAME_SetupTimeReal, SetupTimeReal);
 	}
 
-	/** Get Setup Time Real.
-		@return Setup Time Real	  */
 	@Override
-	public java.math.BigDecimal getSetupTimeReal () 
+	public BigDecimal getSetupTimeReal() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_SetupTimeReal);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_SetupTimeReal);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Nutzer 1.
-		@param User1_ID 
-		User defined list element #1
-	  */
 	@Override
-	public void setUser1_ID (int User1_ID)
+	public void setUser1_ID (final int User1_ID)
 	{
 		if (User1_ID < 1) 
 			set_Value (COLUMNNAME_User1_ID, null);
 		else 
-			set_Value (COLUMNNAME_User1_ID, Integer.valueOf(User1_ID));
+			set_Value (COLUMNNAME_User1_ID, User1_ID);
 	}
 
-	/** Get Nutzer 1.
-		@return User defined list element #1
-	  */
 	@Override
-	public int getUser1_ID () 
+	public int getUser1_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_User1_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_User1_ID);
 	}
 
-	/** Set Nutzer 2.
-		@param User2_ID 
-		User defined list element #2
-	  */
 	@Override
-	public void setUser2_ID (int User2_ID)
+	public void setUser2_ID (final int User2_ID)
 	{
 		if (User2_ID < 1) 
 			set_Value (COLUMNNAME_User2_ID, null);
 		else 
-			set_Value (COLUMNNAME_User2_ID, Integer.valueOf(User2_ID));
+			set_Value (COLUMNNAME_User2_ID, User2_ID);
 	}
 
-	/** Get Nutzer 2.
-		@return User defined list element #2
-	  */
 	@Override
-	public int getUser2_ID () 
+	public int getUser2_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_User2_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_User2_ID);
 	}
 }

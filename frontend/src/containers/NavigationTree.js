@@ -83,7 +83,7 @@ class NavigationTree extends Component {
       openModal({
         title: caption,
         windowId: windowType,
-        moadlType: type,
+        modalType: type,
         isAdvanced,
       })
     );
@@ -298,7 +298,8 @@ class NavigationTree extends Component {
   };
 
   renderTree = () => {
-    const { rootResults, queriedResults, query } = this.state;
+    const { queriedResults, query } = this.state;
+    let indexOrder = 0;
 
     return (
       <div className="sitemap">
@@ -326,25 +327,29 @@ class NavigationTree extends Component {
         </div>
 
         <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced">
-          {rootResults.caption}
+          {/* {rootResults.caption} */}
         </p>
 
         <div className="column-wrapper">
           {queriedResults &&
-            queriedResults.map((subitem, subindex) => (
-              <MenuOverlayContainer
-                key={subindex}
-                printChildren={true}
-                showBookmarks={true}
-                openModal={this.openModal}
-                onUpdateData={this.updateData}
-                onKeyDown={this.handleKeyDown}
-                handleClickOnFolder={this.handleDeeper}
-                handleRedirect={this.handleRedirect}
-                handleNewRedirect={this.handleNewRedirect}
-                {...subitem}
-              />
-            ))}
+            queriedResults.map((subitem, subindex) => {
+              indexOrder = indexOrder + 1;
+              return (
+                <MenuOverlayContainer
+                  key={subindex}
+                  printChildren={true}
+                  showBookmarks={true}
+                  indexOrder={indexOrder}
+                  openModal={this.openModal}
+                  onUpdateData={this.updateData}
+                  onKeyDown={this.handleKeyDown}
+                  handleClickOnFolder={this.handleDeeper}
+                  handleRedirect={this.handleRedirect}
+                  handleNewRedirect={this.handleNewRedirect}
+                  {...subitem}
+                />
+              );
+            })}
 
           {queriedResults.length === 0 && query !== '' && (
             <span>There are no results</span>

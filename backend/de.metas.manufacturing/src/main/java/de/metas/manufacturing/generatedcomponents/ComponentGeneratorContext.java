@@ -24,6 +24,7 @@ package de.metas.manufacturing.generatedcomponents;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -42,6 +43,7 @@ public class ComponentGeneratorContext
 	@NonNull ImmutableAttributeSet existingAttributes;
 	@NonNull ComponentGeneratorParams parameters;
 	@NonNull ClientId clientId;
+	boolean overrideExistingValues;
 
 	@NonNull
 	public DocSequenceId getSequenceId()
@@ -61,7 +63,12 @@ public class ComponentGeneratorContext
 		final ImmutableList.Builder<AttributeCode> attributesLeftToGenerate = ImmutableList.builder();
 		for (final AttributeCode attr : supportedAttributes)
 		{
-			if (existingAttributes.hasAttribute(attr) && existingAttributes.getValueAsString(attr) == null)
+			if (!existingAttributes.hasAttribute(attr))
+			{
+				continue;
+			}
+
+			if (isOverrideExistingValues() || Check.isEmpty(existingAttributes.getValueAsString(attr)))
 			{
 				attributesLeftToGenerate.add(attr);
 			}

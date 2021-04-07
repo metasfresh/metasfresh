@@ -26,10 +26,12 @@ import {
   deleteViewRequest,
   patchRequest,
   quickActionsRequest,
+  advSearchRequest,
 } from './view';
 import {
   loginRequest,
   localLoginRequest,
+  loginWithToken,
   loginCompletionRequest,
   logoutRequest,
   resetPasswordRequest,
@@ -74,6 +76,7 @@ export {
   locationSearchRequest,
   loginCompletionRequest,
   loginRequest,
+  loginWithToken,
   logoutRequest,
   patchRequest,
   quickActionsRequest,
@@ -82,4 +85,5 @@ export {
   resetPasswordRequest,
   startProcess,
   topActionsRequest,
+  advSearchRequest,
 };

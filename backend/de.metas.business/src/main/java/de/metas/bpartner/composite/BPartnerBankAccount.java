@@ -4,6 +4,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.OrgMappingId;
 import org.adempiere.ad.table.RecordChangeLog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -68,13 +69,16 @@ public class BPartnerBankAccount
 
 	private final RecordChangeLog changeLog;
 
+	private OrgMappingId orgMappingId;
+
 	@Builder(toBuilder = true)
 	private BPartnerBankAccount(
 			@Nullable final BPartnerBankAccountId id,
 			@NonNull final String iban,
 			@NonNull final CurrencyId currencyId,
 			@Nullable final Boolean active,
-			@Nullable final RecordChangeLog changeLog)
+			@Nullable final RecordChangeLog changeLog,
+			@Nullable final OrgMappingId orgMappingId)
 	{
 		setId(id);
 		this.iban = iban;
@@ -82,6 +86,8 @@ public class BPartnerBankAccount
 		this.active = coalesce(active, true);
 
 		this.changeLog = changeLog;
+
+		this.orgMappingId = orgMappingId;
 	}
 
 	public final void setId(@Nullable final BPartnerBankAccountId id)

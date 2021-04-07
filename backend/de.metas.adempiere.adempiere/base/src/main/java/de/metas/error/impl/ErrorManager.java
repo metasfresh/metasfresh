@@ -14,6 +14,7 @@ import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 
 import de.metas.common.util.EmptyUtil;
+import de.metas.error.InsertRemoteIssueRequest;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -65,6 +66,34 @@ public class ErrorManager implements IErrorManager
 		return createIssue(IssueCreateRequest.builder()
 				.throwable(t)
 				.build());
+	}
+
+
+	@Override
+	@NonNull
+	public AdIssueId insertRemoteIssue(@NonNull final InsertRemoteIssueRequest request)
+	{
+		return trxManager.callInNewTrx(() -> insertRemoteIssueInTrx(request));
+	}
+
+	@NonNull
+	private AdIssueId insertRemoteIssueInTrx(@NonNull final InsertRemoteIssueRequest request)
+	{
+		final I_AD_Issue issue = newInstance(I_AD_Issue.class);
+
+		final IssueCategory issueCategory = IssueCategory.ofNullableCodeOrOther(request.getIssueCategory());
+		issue.setIssueCategory(issueCategory.getCode());
+
+		issue.setIssueSummary(request.getIssueSummary());
+
+		issue.setSourceClassName(request.getSourceClassName());
+		issue.setSourceMethodName(request.getSourceMethodName());
+		issue.setStackTrace(request.getStacktrace());
+		issue.setAD_PInstance_ID(request.getPInstance_ID().getRepoId());
+		issue.setAD_Org_ID(request.getOrgId().getRepoId() );
+
+		saveRecord(issue);
+		return AdIssueId.ofRepoId(issue.getAD_Issue_ID());
 	}
 
 	@Override

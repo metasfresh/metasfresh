@@ -9,10 +9,11 @@ import javax.annotation.Nullable;
 /** Generated Model for C_Order
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 799358872L;
+	private static final long serialVersionUID = 1021364214L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -65,7 +66,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setAmountRefunded (final BigDecimal AmountRefunded)
+	public void setAmountRefunded (final @Nullable BigDecimal AmountRefunded)
 	{
 		set_Value (COLUMNNAME_AmountRefunded, AmountRefunded);
 	}
@@ -78,7 +79,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setAmountTendered (final BigDecimal AmountTendered)
+	public void setAmountTendered (final @Nullable BigDecimal AmountTendered)
 	{
 		set_Value (COLUMNNAME_AmountTendered, AmountTendered);
 	}
@@ -106,7 +107,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setBill_BPartner_Memo (final java.lang.String Bill_BPartner_Memo)
+	public void setBill_BPartner_Memo (final @Nullable java.lang.String Bill_BPartner_Memo)
 	{
 		throw new IllegalArgumentException ("Bill_BPartner_Memo is virtual column");	}
 
@@ -147,7 +148,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setBillToAddress (final java.lang.String BillToAddress)
+	public void setBillToAddress (final @Nullable java.lang.String BillToAddress)
 	{
 		set_Value (COLUMNNAME_BillToAddress, BillToAddress);
 	}
@@ -159,7 +160,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setBPartnerAddress (final java.lang.String BPartnerAddress)
+	public void setBPartnerAddress (final @Nullable java.lang.String BPartnerAddress)
 	{
 		set_Value (COLUMNNAME_BPartnerAddress, BPartnerAddress);
 	}
@@ -231,7 +232,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setC_BPartner_Memo (final java.lang.String C_BPartner_Memo)
+	public void setC_BPartner_Memo (final @Nullable java.lang.String C_BPartner_Memo)
 	{
 		throw new IllegalArgumentException ("C_BPartner_Memo is virtual column");	}
 
@@ -473,7 +474,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setChargeAmt (final BigDecimal ChargeAmt)
+	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
 	{
 		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
 	}
@@ -486,7 +487,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setCompleteOrderDiscount (final BigDecimal CompleteOrderDiscount)
+	public void setCompleteOrderDiscount (final @Nullable BigDecimal CompleteOrderDiscount)
 	{
 		set_Value (COLUMNNAME_CompleteOrderDiscount, CompleteOrderDiscount);
 	}
@@ -499,7 +500,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setCopyFrom (final java.lang.String CopyFrom)
+	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
 	{
 		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
 	}
@@ -511,7 +512,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setCreateCopy (final java.lang.String CreateCopy)
+	public void setCreateCopy (final @Nullable java.lang.String CreateCopy)
 	{
 		set_Value (COLUMNNAME_CreateCopy, CreateCopy);
 	}
@@ -523,7 +524,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setCreateNewFromProposal (final java.lang.String CreateNewFromProposal)
+	public void setCreateNewFromProposal (final @Nullable java.lang.String CreateNewFromProposal)
 	{
 		set_Value (COLUMNNAME_CreateNewFromProposal, CreateNewFromProposal);
 	}
@@ -559,7 +560,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setDatePrinted (final java.sql.Timestamp DatePrinted)
+	public void setDatePrinted (final @Nullable java.sql.Timestamp DatePrinted)
 	{
 		set_Value (COLUMNNAME_DatePrinted, DatePrinted);
 	}
@@ -583,7 +584,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setDeliveryInfo (final java.lang.String DeliveryInfo)
+	public void setDeliveryInfo (final @Nullable java.lang.String DeliveryInfo)
 	{
 		set_Value (COLUMNNAME_DeliveryInfo, DeliveryInfo);
 	}
@@ -636,6 +637,11 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_Shipper = "S";
+	/** Normalpost = NP */
+	public static final String DELIVERYVIARULE_Normalpost = "NP";
+	/** Luftpost = LU */
+	public static final String DELIVERYVIARULE_Luftpost = "LU";
+
 	@Override
 	public void setDeliveryViaRule (final java.lang.String DeliveryViaRule)
 	{
@@ -649,7 +655,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -661,7 +667,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setDescriptionBottom (final java.lang.String DescriptionBottom)
+	public void setDescriptionBottom (final @Nullable java.lang.String DescriptionBottom)
 	{
 		set_Value (COLUMNNAME_DescriptionBottom, DescriptionBottom);
 	}
@@ -788,7 +794,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setDropShip_BPartner_Memo (final java.lang.String DropShip_BPartner_Memo)
+	public void setDropShip_BPartner_Memo (final @Nullable java.lang.String DropShip_BPartner_Memo)
 	{
 		throw new IllegalArgumentException ("DropShip_BPartner_Memo is virtual column");	}
 
@@ -829,7 +835,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setExternalId (final java.lang.String ExternalId)
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
 	}
@@ -894,7 +900,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setHandOver_BPartner_Memo (final java.lang.String HandOver_BPartner_Memo)
+	public void setHandOver_BPartner_Memo (final @Nullable java.lang.String HandOver_BPartner_Memo)
 	{
 		throw new IllegalArgumentException ("HandOver_BPartner_Memo is virtual column");	}
 
@@ -920,7 +926,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setHandOverAddress (final java.lang.String HandOverAddress)
+	public void setHandOverAddress (final @Nullable java.lang.String HandOverAddress)
 	{
 		set_Value (COLUMNNAME_HandOverAddress, HandOverAddress);
 	}
@@ -963,7 +969,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	/** DDP_Verzollt = DDP */
 	public static final String INCOTERM_DDP_Verzollt = "DDP";
 	@Override
-	public void setIncoterm (final java.lang.String Incoterm)
+	public void setIncoterm (final @Nullable java.lang.String Incoterm)
 	{
 		set_Value (COLUMNNAME_Incoterm, Incoterm);
 	}
@@ -975,7 +981,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setIncotermLocation (final java.lang.String IncotermLocation)
+	public void setIncotermLocation (final @Nullable java.lang.String IncotermLocation)
 	{
 		set_Value (COLUMNNAME_IncotermLocation, IncotermLocation);
 	}
@@ -999,6 +1005,8 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String INVOICERULE_CustomerScheduleAfterDelivery = "S";
 	/** Immediate = I */
 	public static final String INVOICERULE_Immediate = "I";
+	/** OrderCompletelyDelivered = C */
+	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
 	@Override
 	public void setInvoiceRule (final java.lang.String InvoiceRule)
 	{
@@ -1348,7 +1356,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setOrderline_includedTab (final java.lang.String Orderline_includedTab)
+	public void setOrderline_includedTab (final @Nullable java.lang.String Orderline_includedTab)
 	{
 		set_ValueNoCheck (COLUMNNAME_Orderline_includedTab, Orderline_includedTab);
 	}
@@ -1360,7 +1368,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setOrderType (final java.lang.String OrderType)
+	public void setOrderType (final @Nullable java.lang.String OrderType)
 	{
 		set_Value (COLUMNNAME_OrderType, OrderType);
 	}
@@ -1435,7 +1443,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setPOReference (final java.lang.String POReference)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		set_Value (COLUMNNAME_POReference, POReference);
 	}
@@ -1474,7 +1482,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setPreparationDate (final java.sql.Timestamp PreparationDate)
+	public void setPreparationDate (final @Nullable java.sql.Timestamp PreparationDate)
 	{
 		set_Value (COLUMNNAME_PreparationDate, PreparationDate);
 	}
@@ -1560,7 +1568,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setPromotionCode (final java.lang.String PromotionCode)
+	public void setPromotionCode (final @Nullable java.lang.String PromotionCode)
 	{
 		set_Value (COLUMNNAME_PromotionCode, PromotionCode);
 	}
@@ -1572,7 +1580,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setQty_FastInput (final BigDecimal Qty_FastInput)
+	public void setQty_FastInput (final @Nullable BigDecimal Qty_FastInput)
 	{
 		set_Value (COLUMNNAME_Qty_FastInput, Qty_FastInput);
 	}
@@ -1602,7 +1610,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	/** Seminar = S */
 	public static final String RECEIVEDVIA_Seminar = "S";
 	@Override
-	public void setReceivedVia (final java.lang.String ReceivedVia)
+	public void setReceivedVia (final @Nullable java.lang.String ReceivedVia)
 	{
 		set_Value (COLUMNNAME_ReceivedVia, ReceivedVia);
 	}
@@ -1614,7 +1622,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setRef_DateOrder (final java.sql.Timestamp Ref_DateOrder)
+	public void setRef_DateOrder (final @Nullable java.sql.Timestamp Ref_DateOrder)
 	{
 		throw new IllegalArgumentException ("Ref_DateOrder is virtual column");	}
 
@@ -1679,7 +1687,19 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setSalesPartnerCode (final java.lang.String SalesPartnerCode)
+	public void setreturnDate (final @Nullable java.sql.Timestamp returnDate)
+	{
+		set_Value (COLUMNNAME_returnDate, returnDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getreturnDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_returnDate);
+	}
+
+	@Override
+	public void setSalesPartnerCode (final @Nullable java.lang.String SalesPartnerCode)
 	{
 		set_Value (COLUMNNAME_SalesPartnerCode, SalesPartnerCode);
 	}
@@ -1800,7 +1820,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setVolume (final BigDecimal Volume)
+	public void setVolume (final @Nullable BigDecimal Volume)
 	{
 		set_Value (COLUMNNAME_Volume, Volume);
 	}
@@ -1813,7 +1833,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public void setWeight (final BigDecimal Weight)
+	public void setWeight (final @Nullable BigDecimal Weight)
 	{
 		set_Value (COLUMNNAME_Weight, Weight);
 	}

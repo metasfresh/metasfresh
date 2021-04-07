@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.util.TimeUtil;
@@ -24,9 +25,9 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidateMultiQueryBuilder;
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.MetasfreshId;
-import de.metas.rest_api.exception.InvalidEntityException;
+import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.util.web.exception.InvalidEntityException;
 import de.metas.rest_api.invoice.impl.InvoiceService;
 import de.metas.rest_api.invoicecandidates.request.JsonCheckInvoiceCandidatesStatusRequest;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponse;
@@ -147,7 +148,7 @@ public class CheckInvoiceCandidatesStatusService
 				.error(workPackageRecord.getErrorMsg())
 				.enqueued(TimeUtil.asInstant(workPackageRecord.getCreated()))
 				.readyForProcessing(workPackageRecord.isReadyForProcessing())
-				.metasfreshId(MetasfreshId.of(workPackageRecord.getC_Queue_WorkPackage_ID()))
+				.metasfreshId(JsonMetasfreshId.of(workPackageRecord.getC_Queue_WorkPackage_ID()))
 				.build();
 	}
 

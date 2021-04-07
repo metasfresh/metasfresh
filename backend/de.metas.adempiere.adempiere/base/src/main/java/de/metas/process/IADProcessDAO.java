@@ -27,7 +27,7 @@ public interface IADProcessDAO extends ISingletonService
 		return getById(AdProcessId.ofRepoId(processId));
 	}
 
-	List<RelatedProcessDescriptor> retrieveRelatedProcessDescriptors(int adTableId, AdWindowId adWindowId, AdTabId adTabId);
+	List<RelatedProcessDescriptor> retrieveRelatedProcessDescriptors(int adTableId, @Nullable AdWindowId adWindowId, @Nullable AdTabId adTabId);
 
 	/**
 	 * Retrieves the {@link I_AD_Process} which references the given <code>AD_Form_ID</code>. If there is no such process, the method returns <code>null</code>. If there are multiple such records,

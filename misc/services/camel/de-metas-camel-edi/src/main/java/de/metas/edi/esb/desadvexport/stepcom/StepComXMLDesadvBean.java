@@ -308,7 +308,7 @@ public class StepComXMLDesadvBean
 						packIn.getPPACK1().add(ppack1);
 
 						final String sscc18 = validateString(
-								Util.removePrecedingZeros(lineAndPack.getPack().getIPASSCC18()),
+								lineAndPack.getPack().getIPASSCC18(),
 								"@FillMandatory@ SSCC in @EDI_DesadvLine_ID@ " + lineAndPack.getLine().getLine());
 						ppack1.setIDENTIFICATIONCODE(Util.lpadZero(sscc18, 18)/* if ssccRequired and we got here, then this is not null */);
 						ppack1.setIDENTIFICATIONQUAL(PackIdentificationQual.SSCC.toString());

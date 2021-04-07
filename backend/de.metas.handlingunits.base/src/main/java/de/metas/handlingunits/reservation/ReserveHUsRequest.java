@@ -1,9 +1,8 @@
 package de.metas.handlingunits.reservation;
 
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
-import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -11,6 +10,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -37,36 +38,40 @@ import lombok.Value;
 @Value
 public class ReserveHUsRequest
 {
-	/** always mandatory */
 	@NonNull
 	Quantity qtyToReserve;
 
-	/** always mandatory */
 	@NonNull
-	OrderLineId salesOrderLineId;
+	HUReservationDocRef documentRef;
 
-	/** mandatory, if the given HUs contain different products. */
+	@NonNull
 	ProductId productId;
+
+	@Nullable
+	BPartnerId customerId;
 
 	/**
 	 * The HUs from which the respective {@link #qtyToReserve} shall be reserved. can be higher-level-HUs;
 	 * The actual reservation is done on VHU level.
 	 */
+	@NonNull
 	ImmutableSet<HuId> huIds;
 
 	@Builder
 	private ReserveHUsRequest(
 			@NonNull final Quantity qtyToReserve,
-			@NonNull final OrderLineId salesOrderLineId,
+			@NonNull final HUReservationDocRef documentRef,
 			@NonNull final ProductId productId,
-			@Singular final ImmutableSet<HuId> huIds)
+			@Nullable final BPartnerId customerId,
+			@Singular @NonNull final ImmutableSet<HuId> huIds)
 	{
-		this.qtyToReserve = qtyToReserve;
-		this.salesOrderLineId = salesOrderLineId;
-		this.productId = productId;
-		this.huIds = huIds;
-
 		Check.assumeNotEmpty(huIds, "huIds needs to be not empty; this={}", this);
 		Check.assume(qtyToReserve.signum() > 0, "Paramater qtyCU={} needs to be >0; this={}", qtyToReserve, this);
+
+		this.qtyToReserve = qtyToReserve;
+		this.documentRef = documentRef;
+		this.productId = productId;
+		this.customerId = customerId;
+		this.huIds = huIds;
 	}
 }

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { CSSTransition } from 'react-transition-group';
 import classnames from 'classnames';
 
 /**
@@ -29,19 +29,11 @@ export default class SelectionDropdown extends Component {
     this.handleMouseDown = this.handleMouseDown.bind(this);
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
   }
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
@@ -301,23 +293,17 @@ export default class SelectionDropdown extends Component {
   renderEmpty = () => this.renderHeader(this.props.empty);
 
   loading = this.renderHeader(
-    <ReactCSSTransitionGroup
-      transitionName="rotate"
-      transitionEnterTimeout={1000}
-      transitionLeaveTimeout={1000}
-    >
-      <div className="rotate icon-rotate">
-        <i className="meta-icon-settings" />
+    <CSSTransition className="rotate" timeout={{ enter: 1000, exit: 1000 }}>
+      <div>
+        <div className="rotate icon-rotate">
+          <i className="meta-icon-settings" />
+        </div>
       </div>
-    </ReactCSSTransitionGroup>
+    </CSSTransition>
   );
 
   setRef = (ref) => (this.wrapper = ref);
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
   render() {
     const { options, width, height, loading, forceEmpty } = this.props;
     const empty = this.size(options) === 0;

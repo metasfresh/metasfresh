@@ -8,7 +8,7 @@
       </pattern>
     </extension>
     <option name="SPRING_BOOT_MAIN_CLASS" value="de.metas.ServerBoot" />
-    <option name="VM_PARAMETERS" value="-DPropertyFile=$ProjectFileDir$\metasfresh-vpn.properties -DTraceFile=true -Dapp-server-run-headless=false -Dasync_disable=true -Dcom.sun.net.ssl.enableECC=false -Dde.metas.server.embedded=true -DdevelopmentWorkspaceDir=$ProjectFileDir$ -Delastic_enable=false -Djava.util.Arrays.useLegacyMergeSort=true -Dorg.compiere.db.DB_PostgreSQL.UseNativeConverter=true -Drun-headless=false -Xms256M -Xmx736M" />
+    <option name="VM_PARAMETERS" value="-DPropertyFile=C:\work-metas\metasfresh-vpn.properties -DTraceFile=true -Dapp-server-run-headless=false -Dasync_disable=true -Dcom.sun.net.ssl.enableECC=false -Dde.metas.server.embedded=true -DdevelopmentWorkspaceDir=C:\work-metas\ -Delastic_enable=false -Djava.util.Arrays.useLegacyMergeSort=true -Dorg.compiere.db.DB_PostgreSQL.UseNativeConverter=true -Drun-headless=false -Xms256M -Xmx736M" />
     <option name="PROGRAM_PARAMETERS" value="--debug" />
     <option name="WORKING_DIRECTORY" value="file://$MODULE_WORKING_DIR$" />
     <option name="ALTERNATIVE_JRE_PATH" />

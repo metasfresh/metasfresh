@@ -38,7 +38,9 @@ public enum DeliveryViaRule implements ReferenceListAwareEnum
 {
 	Pickup(X_C_Order.DELIVERYVIARULE_Pickup), //
 	Delivery(X_C_Order.DELIVERYVIARULE_Delivery), //
-	Shipper(X_C_Order.DELIVERYVIARULE_Shipper) //
+	Shipper(X_C_Order.DELIVERYVIARULE_Shipper),
+	NormalPost(X_C_Order.DELIVERYVIARULE_Normalpost),
+	LuftPost(X_C_Order.DELIVERYVIARULE_Luftpost)//
 	;
 
 	@Getter

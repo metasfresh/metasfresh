@@ -22,6 +22,7 @@ package de.metas.hostkey.spi;
  * #L%
  */
 
+import javax.annotation.Nullable;
 
 /**
  * HostKey Storage
@@ -31,9 +32,8 @@ package de.metas.hostkey.spi;
  */
 public interface IHostKeyStorage
 {
-
 	void setHostKey(String hostkey);
 
+	@Nullable
 	String getHostKey();
-
 }

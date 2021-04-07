@@ -8,8 +8,8 @@ import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 
 import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.JsonInvoiceRule;
+import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import de.metas.rest_api.common.JsonPrice;
 import de.metas.rest_api.common.JsonSOTrx;
 import de.metas.util.JSONObjectMapper;

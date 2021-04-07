@@ -140,7 +140,7 @@ public class FIFOAllocationStrategyTest
 	private IAllocationRequestBuilder prepareAllocationRequest(final String qtyStr, final I_C_UOM uom)
 	{
 		final IHUContext huContext = huTestHelper.createMutableHUContext();
-		return AllocationUtils.createAllocationRequestBuilder()
+		return AllocationUtils.builder()
 				.setHUContext(huContext)
 				.setProduct(productId)
 				.setQuantity(Quantity.of(qtyStr, uom))

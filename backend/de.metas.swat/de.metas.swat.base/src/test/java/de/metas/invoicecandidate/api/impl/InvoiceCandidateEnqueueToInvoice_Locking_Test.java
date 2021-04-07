@@ -24,6 +24,7 @@ package de.metas.invoicecandidate.api.impl;
 
 import java.util.List;
 
+import de.metas.costing.impl.ChargeRepository;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -50,6 +51,7 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 	public void registerService()
 	{
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
+		SpringContextHolder.registerJUnitBean(new ChargeRepository());
 		
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
 		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);

@@ -25,6 +25,8 @@ package de.metas.contracts.interceptor;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -39,7 +41,7 @@ import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
+import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -49,6 +51,8 @@ public class C_Invoice_Candidate
 {
 	private static final AdMessageKey MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_0P = AdMessageKey.of("DataEntry_Error_AlreadyCompleted");
 	private static final AdMessageKey MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_TEXT_2P = AdMessageKey.of("DataEntry_Error_AlreadyCompleted_Text");
+
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void closeDirectly(final I_C_Invoice_Candidate invoiceCand)
@@ -139,6 +143,8 @@ public class C_Invoice_Candidate
 	public void cleanup(final I_C_Invoice_Candidate invoiceCand)
 	{
 		final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+
+
 		// cleanup
 		for (final I_C_Invoice_Clearing_Alloc ica : flatrateDAO.retrieveAllClearingAllocs(invoiceCand))
 		{
@@ -147,11 +153,11 @@ public class C_Invoice_Candidate
 				final I_C_Flatrate_DataEntry dataEntry = ica.getC_Flatrate_DataEntry();
 				if (X_C_Flatrate_DataEntry.DOCSTATUS_Completed.equals(dataEntry.getDocStatus()))
 				{
-					throw new InconsistentUpdateExeption(
+					throw new InconsistentUpdateException(
 							MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_0P,
 							MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_TEXT_2P,
 							new Object[] { invoiceCand.getC_Invoice_Candidate_ID(), dataEntry.getC_Period().getName() },
-							dataEntry.getC_Flatrate_Term().getAD_User_InCharge());
+							userDAO.getById(UserId.ofRepoId(dataEntry.getC_Flatrate_Term().getAD_User_InCharge_ID())));
 				}
 			}
 			InterfaceWrapperHelper.delete(ica);
@@ -197,11 +203,11 @@ public class C_Invoice_Candidate
 				{
 					if (X_C_Flatrate_DataEntry.DOCSTATUS_Completed.equals(dataEntry.getDocStatus()))
 					{
-						throw new InconsistentUpdateExeption(
+						throw new InconsistentUpdateException(
 								MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_0P,
 								MSG_DATA_ENTRY_ERROR_ALREADY_COMPLETED_TEXT_2P,
 								new Object[] { invoiceCand.getC_Invoice_Candidate_ID(), dataEntry.getC_Period().getName() },
-								dataEntry.getC_Flatrate_Term().getAD_User_InCharge());
+								userDAO.getById(UserId.ofRepoId(dataEntry.getC_Flatrate_Term().getAD_User_InCharge_ID())));
 					}
 					updateActualQty(dataEntry, invoiceCand, I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice, isToClearChanged);
 					updateActualQty(dataEntry, invoiceCand, I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced, isToClearChanged);

@@ -22,7 +22,6 @@ package de.metas.handlingunits.attributes.impl;
  * #L%
  */
 
-
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
@@ -39,7 +38,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 
 /**
  * Abstract class used for setting up data for weight propagation tests
- *
+ * <p>
  * Note: Weight attributes are created in the helper on NoPI level.
  *
  * @author al
@@ -53,7 +52,7 @@ public abstract class AbstractWeightAttributeTest extends AbstractHUTestWithSamp
 		_acceptableWeightErrorMargin = acceptableWeightErrorMargin;
 	}
 
-	private final BigDecimal getAcceptableWeightErrorMarginOrDefault()
+	private BigDecimal getAcceptableWeightErrorMarginOrDefault()
 	{
 		if (_acceptableWeightErrorMargin == null)
 		{
@@ -64,23 +63,11 @@ public abstract class AbstractWeightAttributeTest extends AbstractHUTestWithSamp
 
 	/**
 	 * Sets Tare Adjust weight
-	 *
-	 * @param handlingUnit
-	 * @param weightTareAdjust
 	 */
 	protected final void setWeightTareAdjust(final I_M_HU handlingUnit, final BigDecimal weightTareAdjust)
 	{
-//		Services.get(ITrxManager.class).run(new TrxRunnable()
-//		{
-//			@Override
-//			public void run(String localTrxName) throws Exception
-//			{
-				final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(handlingUnit);
-				attributeStorage.setValue(attr_WeightTareAdjust, weightTareAdjust);
-//				attributeStorage.saveChangesIfNeeded();
-//			}
-//		});
-
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(handlingUnit);
+		attributeStorage.setValue(attr_WeightTareAdjust, weightTareAdjust);
 	}
 
 	@OverridingMethodsMustInvokeSuper
@@ -137,9 +124,6 @@ public abstract class AbstractWeightAttributeTest extends AbstractHUTestWithSamp
 
 	/**
 	 * Assert that weights of the {@link IAttributeStorage} meet the requirements of the given {@link HUWeightsExpectation}
-	 *
-	 * @param attributeStorage
-	 * @param expectation
 	 */
 	protected final void assertSingleHandlingUnitWeights(final IAttributeStorage attributeStorage,
 			final HUWeightsExpectation<?> expectation)
@@ -154,8 +138,7 @@ public abstract class AbstractWeightAttributeTest extends AbstractHUTestWithSamp
 	/**
 	 * Assert weights on all Trading Units
 	 *
-	 * @param tradingUnits
-	 * @param weightExpectation if index of weight expectation does not exist within the tradingUnits, use {@link #standardWeightExpectation}
+	 * @param defaultWeightExpectation if index of weight expectation does not exist within the tradingUnits, use {@link #standardWeightExpectation}
 	 */
 	protected final void assertTradingUnitsWeightExpectations(
 			final List<I_M_HU> tradingUnits,

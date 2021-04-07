@@ -127,7 +127,7 @@ public class GetPriceListCommand
 	{
 		countryId = servicesFacade.getCountryIdByCountryCode(countryCode);
 
-		bpartnerId = servicesFacade.getBPartnerId(bpartnerIdentifier).orElse(null);
+		bpartnerId = servicesFacade.getBPartnerId(bpartnerIdentifier, null).orElse(null);
 		if (bpartnerId == null)
 		{
 			throw new AdempiereException("No BPartner found for " + bpartnerIdentifier);

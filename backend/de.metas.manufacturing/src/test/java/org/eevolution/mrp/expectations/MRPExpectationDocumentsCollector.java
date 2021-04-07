@@ -22,35 +22,33 @@ package org.eevolution.mrp.expectations;
  * #L%
  */
 
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.eevolution.model.I_PP_MRP;
+import org.eevolution.mrp.api.IMRPBL;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.eevolution.model.I_PP_MRP;
-import org.eevolution.mrp.api.IMRPBL;
-import org.eevolution.mrp.api.IMRPDAO;
-import org.eevolution.mrp.api.impl.PlainMRPDAO;
-
-import de.metas.document.engine.IDocument;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 public class MRPExpectationDocumentsCollector
 {
-	private final transient PlainMRPDAO mrpDAO = (PlainMRPDAO)Services.get(IMRPDAO.class);
 	private final Map<Class<?>, List<?>> modelClass2documents = new HashMap<>();
-	private final Map<String, Set<Class<? extends Object>>> tableName2modelClasses = new HashMap<>();
+	private final Map<String, Set<Class<?>>> tableName2modelClasses = new HashMap<>();
 
 	public MRPExpectationDocumentsCollector()
 	{
 		super();
 	}
 
-	public <T> void collect(final Class<T> modelClass, List<T> documents)
+	public <T> void collect(final Class<T> modelClass, final List<T> documents)
 	{
 		Check.assumeNotNull(modelClass, "modelClass not null");
 
@@ -60,12 +58,7 @@ public class MRPExpectationDocumentsCollector
 		// Update tableId2modelClasses
 		{
 			final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
-			Set<Class<?>> modelClasses = tableName2modelClasses.get(tableName);
-			if (modelClasses == null)
-			{
-				modelClasses = new HashSet<>();
-				tableName2modelClasses.put(tableName, modelClasses);
-			}
+			final Set<Class<?>> modelClasses = tableName2modelClasses.computeIfAbsent(tableName, k -> new HashSet<>());
 
 			modelClasses.add(modelClass);
 		}
@@ -87,7 +80,7 @@ public class MRPExpectationDocumentsCollector
 			return;
 		}
 		
-		final IDocument document = mrpDAO.retrieveDocumentOrNull(mrp);
+		final IDocument document = retrieveDocumentOrNull(mrp);
 		if(document == null)
 		{
 			return;
@@ -108,7 +101,45 @@ public class MRPExpectationDocumentsCollector
 		}
 	}
 
-	private final <T> void add(IDocument document, final Class<T> modelClass, final String documentTableName, final int documentId)
+	@Nullable
+	private IDocument retrieveDocumentOrNull(final I_PP_MRP mrp)
+	{
+		final Object documentObj;
+		if (mrp.getC_Order_ID() > 0)
+		{
+			documentObj = mrp.getC_Order();
+		}
+		else if (mrp.getDD_Order_ID() > 0)
+		{
+			documentObj = mrp.getDD_Order();
+		}
+		else if (mrp.getM_Forecast_ID() > 0)
+		{
+			// Forecast is not a document
+			documentObj = null;
+		}
+		else if (mrp.getM_Requisition_ID() > 0)
+		{
+			documentObj = mrp.getM_Requisition();
+		}
+		else if (mrp.getPP_Order_ID() > 0)
+		{
+			documentObj = mrp.getPP_Order();
+		}
+		else
+		{
+			return null;
+		}
+
+		if (documentObj == null)
+		{
+			return null;
+		}
+
+		return Services.get(IDocumentBL.class).getDocument(documentObj);
+	}
+
+	private <T> void add(final IDocument document, final Class<T> modelClass, final String documentTableName, final int documentId)
 	{
 		@SuppressWarnings("unchecked")
 		final List<T> documents = (List<T>)modelClass2documents.get(modelClass);
@@ -127,7 +158,7 @@ public class MRPExpectationDocumentsCollector
 		documents.add(documentCasted);
 	}
 
-	private final boolean exists(final List<?> documents, final String documentTableName, final int documentId)
+	private boolean exists(final List<?> documents, final String documentTableName, final int documentId)
 	{
 		// Avoid duplicates
 		for (final Object existingDocument : documents)
@@ -138,7 +169,7 @@ public class MRPExpectationDocumentsCollector
 			}
 
 			final String existingDocumentTableName = InterfaceWrapperHelper.getModelTableName(existingDocument);
-			if (!Check.equals(documentTableName, existingDocumentTableName))
+			if (!Objects.equals(documentTableName, existingDocumentTableName))
 			{
 				continue;
 			}

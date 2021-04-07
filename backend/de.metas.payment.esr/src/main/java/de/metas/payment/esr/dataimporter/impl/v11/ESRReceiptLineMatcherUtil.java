@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 
 import org.compiere.util.Env;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.util.Loggables;
@@ -37,9 +38,9 @@ import lombok.experimental.UtilityClass;
 public class ESRReceiptLineMatcherUtil
 {
 
-	public final static String ERR_WRONG_CTRL_AMT = "ESR_Wrong_Ctrl_Amt";
-	public final static String ERR_WRONG_CTRL_QTY = "ESR_Wrong_Ctrl_Qty";
-	public final static String ERR_WRONG_TRX_TYPE = "ESR_Wrong_Trx_Type";
+	public final static  AdMessageKey ERR_WRONG_CTRL_AMT =  AdMessageKey.of("ESR_Wrong_Ctrl_Amt");
+	public final static  AdMessageKey ERR_WRONG_CTRL_QTY =  AdMessageKey.of("ESR_Wrong_Ctrl_Qty");
+	public final static  AdMessageKey ERR_WRONG_TRX_TYPE =  AdMessageKey.of("ESR_Wrong_Trx_Type");
 
 	public boolean isReceiptLine(@NonNull final String v11LineStr)
 	{

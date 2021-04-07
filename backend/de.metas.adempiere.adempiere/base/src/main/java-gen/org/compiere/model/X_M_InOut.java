@@ -1,211 +1,125 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_InOut
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1170629917L;
+	private static final long serialVersionUID = -1364790290L;
 
     /** Standard Constructor */
-    public X_M_InOut (Properties ctx, int M_InOut_ID, String trxName)
+    public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
     {
       super (ctx, M_InOut_ID, trxName);
-      /** if (M_InOut_ID == 0)
-        {
-			setC_BPartner_ID (0);
-			setC_BPartner_Location_ID (0);
-			setC_DocType_ID (0);
-			setDateAcct (new Timestamp( System.currentTimeMillis() )); // @#Date@
-			setDeliveryRule (null); // A
-			setDeliveryViaRule (null); // P
-			setDocAction (null); // CO
-			setDocStatus (null); // DR
-			setDocumentNo (null);
-			setFreightCostRule (null); // I
-			setIsApproved (false);
-			setIsExportedToCustomsInvoice (false); // N
-			setIsInDispute (false);
-			setIsInOutApprovedForInvoicing (false); // N
-			setIsInTransit (false);
-			setIsPrinted (false);
-			setIsSOTrx (false); // @IsSOTrx@
-			setIsUseBPartnerAddress (false); // N
-			setM_InOut_ID (0);
-			setM_Warehouse_ID (0);
-			setMovementDate (new Timestamp( System.currentTimeMillis() )); // @#Date@
-			setMovementType (null);
-			setPosted (false); // N
-			setPriorityRule (null); // 5
-			setProcessed (false);
-			setSendEMail (false);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_InOut (Properties ctx, ResultSet rs, String trxName)
+    public X_M_InOut (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Buchende Organisation.
-		@param AD_OrgTrx_ID 
-		Performing or initiating organization
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_OrgTrx_ID (final int AD_OrgTrx_ID)
 	{
 		if (AD_OrgTrx_ID < 1) 
 			set_Value (COLUMNNAME_AD_OrgTrx_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_OrgTrx_ID, Integer.valueOf(AD_OrgTrx_ID));
+			set_Value (COLUMNNAME_AD_OrgTrx_ID, AD_OrgTrx_ID);
 	}
 
-	/** Get Buchende Organisation.
-		@return Performing or initiating organization
-	  */
 	@Override
-	public int getAD_OrgTrx_ID () 
+	public int getAD_OrgTrx_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_OrgTrx_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_OrgTrx_ID);
 	}
 
-	/** Set Ansprechpartner.
-		@param AD_User_ID 
-		User within the system - Internal or Business Partner Contact
-	  */
 	@Override
-	public void setAD_User_ID (int AD_User_ID)
+	public void setAD_User_ID (final int AD_User_ID)
 	{
 		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
 	}
 
-	/** Get Ansprechpartner.
-		@return User within the system - Internal or Business Partner Contact
-	  */
 	@Override
-	public int getAD_User_ID () 
+	public int getAD_User_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
-	/** Set Anschrift-Text.
-		@param BPartnerAddress Anschrift-Text	  */
 	@Override
-	public void setBPartnerAddress (java.lang.String BPartnerAddress)
+	public void setBPartnerAddress (final java.lang.String BPartnerAddress)
 	{
 		set_Value (COLUMNNAME_BPartnerAddress, BPartnerAddress);
 	}
 
-	/** Get Anschrift-Text.
-		@return Anschrift-Text	  */
 	@Override
-	public java.lang.String getBPartnerAddress () 
+	public java.lang.String getBPartnerAddress() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BPartnerAddress);
+		return get_ValueAsString(COLUMNNAME_BPartnerAddress);
 	}
 
-	/** Set Kostenstelle.
-		@param C_Activity_ID 
-		Kostenstelle
-	  */
 	@Override
-	public void setC_Activity_ID (int C_Activity_ID)
+	public void setC_Activity_ID (final int C_Activity_ID)
 	{
 		if (C_Activity_ID < 1) 
 			set_Value (COLUMNNAME_C_Activity_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Activity_ID, Integer.valueOf(C_Activity_ID));
+			set_Value (COLUMNNAME_C_Activity_ID, C_Activity_ID);
 	}
 
-	/** Get Kostenstelle.
-		@return Kostenstelle
-	  */
 	@Override
-	public int getC_Activity_ID () 
+	public int getC_Activity_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Activity_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
 	}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Geschäftspartner.
-		@return Identifies a Business Partner
-	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
-	/** Set Standort.
-		@param C_BPartner_Location_ID 
-		Identifies the (ship to) address for this Business Partner
-	  */
 	@Override
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
-	/** Get Standort.
-		@return Identifies the (ship to) address for this Business Partner
-	  */
 	@Override
-	public int getC_BPartner_Location_ID () 
+	public int getC_BPartner_Location_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
 
 	@Override
@@ -215,84 +129,54 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setC_Campaign(org.compiere.model.I_C_Campaign C_Campaign)
+	public void setC_Campaign(final org.compiere.model.I_C_Campaign C_Campaign)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
 	}
 
-	/** Set Werbemassnahme.
-		@param C_Campaign_ID 
-		Marketing Campaign
-	  */
 	@Override
-	public void setC_Campaign_ID (int C_Campaign_ID)
+	public void setC_Campaign_ID (final int C_Campaign_ID)
 	{
 		if (C_Campaign_ID < 1) 
 			set_Value (COLUMNNAME_C_Campaign_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Campaign_ID, Integer.valueOf(C_Campaign_ID));
+			set_Value (COLUMNNAME_C_Campaign_ID, C_Campaign_ID);
 	}
 
-	/** Get Werbemassnahme.
-		@return Marketing Campaign
-	  */
 	@Override
-	public int getC_Campaign_ID () 
+	public int getC_Campaign_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Campaign_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Campaign_ID);
 	}
 
-	/** Set Kosten.
-		@param C_Charge_ID 
-		Additional document charges
-	  */
 	@Override
-	public void setC_Charge_ID (int C_Charge_ID)
+	public void setC_Charge_ID (final int C_Charge_ID)
 	{
 		if (C_Charge_ID < 1) 
 			set_Value (COLUMNNAME_C_Charge_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Charge_ID, Integer.valueOf(C_Charge_ID));
+			set_Value (COLUMNNAME_C_Charge_ID, C_Charge_ID);
 	}
 
-	/** Get Kosten.
-		@return Additional document charges
-	  */
 	@Override
-	public int getC_Charge_ID () 
+	public int getC_Charge_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Charge_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Charge_ID);
 	}
 
-	/** Set Belegart.
-		@param C_DocType_ID 
-		Document type or rules
-	  */
 	@Override
-	public void setC_DocType_ID (int C_DocType_ID)
+	public void setC_DocType_ID (final int C_DocType_ID)
 	{
 		if (C_DocType_ID < 0) 
 			set_Value (COLUMNNAME_C_DocType_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+			set_Value (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
-	/** Get Belegart.
-		@return Document type or rules
-	  */
 	@Override
-	public int getC_DocType_ID () 
+	public int getC_DocType_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
 
 	@Override
@@ -302,34 +186,24 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice)
+	public void setC_Invoice(final org.compiere.model.I_C_Invoice C_Invoice)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
 	}
 
-	/** Set Rechnung.
-		@param C_Invoice_ID 
-		Invoice Identifier
-	  */
 	@Override
-	public void setC_Invoice_ID (int C_Invoice_ID)
+	public void setC_Invoice_ID (final int C_Invoice_ID)
 	{
 		if (C_Invoice_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, C_Invoice_ID);
 	}
 
-	/** Get Rechnung.
-		@return Invoice Identifier
-	  */
 	@Override
-	public int getC_Invoice_ID () 
+	public int getC_Invoice_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Invoice_ID);
 	}
 
 	@Override
@@ -339,201 +213,124 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setC_Order(org.compiere.model.I_C_Order C_Order)
+	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
 	}
 
-	/** Set Auftrag.
-		@param C_Order_ID 
-		Order
-	  */
 	@Override
-	public void setC_Order_ID (int C_Order_ID)
+	public void setC_Order_ID (final int C_Order_ID)
 	{
 		if (C_Order_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Order_ID, C_Order_ID);
 	}
 
-	/** Get Auftrag.
-		@return Order
-	  */
 	@Override
-	public int getC_Order_ID () 
+	public int getC_Order_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
 
-	/** Set Projekt.
-		@param C_Project_ID 
-		Financial Project
-	  */
 	@Override
-	public void setC_Project_ID (int C_Project_ID)
+	public void setC_Project_ID (final int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
 			set_Value (COLUMNNAME_C_Project_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
+			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
 	}
 
-	/** Get Projekt.
-		@return Financial Project
-	  */
 	@Override
-	public int getC_Project_ID () 
+	public int getC_Project_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Project_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
 
-	/** Set Gebühr.
-		@param ChargeAmt Gebühr	  */
 	@Override
-	public void setChargeAmt (java.math.BigDecimal ChargeAmt)
+	public void setChargeAmt (final BigDecimal ChargeAmt)
 	{
 		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
 	}
 
-	/** Get Gebühr.
-		@return Gebühr	  */
 	@Override
-	public java.math.BigDecimal getChargeAmt () 
+	public BigDecimal getChargeAmt() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ChargeAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Create Confirm.
-		@param CreateConfirm Create Confirm	  */
 	@Override
-	public void setCreateConfirm (java.lang.String CreateConfirm)
+	public void setCreateConfirm (final java.lang.String CreateConfirm)
 	{
 		set_Value (COLUMNNAME_CreateConfirm, CreateConfirm);
 	}
 
-	/** Get Create Confirm.
-		@return Create Confirm	  */
 	@Override
-	public java.lang.String getCreateConfirm () 
+	public java.lang.String getCreateConfirm() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CreateConfirm);
+		return get_ValueAsString(COLUMNNAME_CreateConfirm);
 	}
 
-	/** Set Position(en) kopieren von.
-		@param CreateFrom 
-		Process which will generate a new document lines based on an existing document
-	  */
 	@Override
-	public void setCreateFrom (java.lang.String CreateFrom)
+	public void setCreateFrom (final java.lang.String CreateFrom)
 	{
 		set_Value (COLUMNNAME_CreateFrom, CreateFrom);
 	}
 
-	/** Get Position(en) kopieren von.
-		@return Process which will generate a new document lines based on an existing document
-	  */
 	@Override
-	public java.lang.String getCreateFrom () 
+	public java.lang.String getCreateFrom() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CreateFrom);
+		return get_ValueAsString(COLUMNNAME_CreateFrom);
 	}
 
 	@Override
-	public void setExternalId (java.lang.String ExternalId)
-	{
-		set_Value (COLUMNNAME_ExternalId, ExternalId);
-	}
-
-	@Override
-	public java.lang.String getExternalId()
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
-	}
-
-	/** Set Buchungsdatum.
-		@param DateAcct 
-		Accounting Date
-	  */
-	@Override
-	public void setDateAcct (java.sql.Timestamp DateAcct)
+	public void setDateAcct (final java.sql.Timestamp DateAcct)
 	{
 		set_Value (COLUMNNAME_DateAcct, DateAcct);
 	}
 
-	/** Get Buchungsdatum.
-		@return Accounting Date
-	  */
 	@Override
-	public java.sql.Timestamp getDateAcct () 
+	public java.sql.Timestamp getDateAcct() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateAcct);
+		return get_ValueAsTimestamp(COLUMNNAME_DateAcct);
 	}
 
-	/** Set Auftragsdatum.
-		@param DateOrdered 
-		Date of Order
-	  */
 	@Override
-	public void setDateOrdered (java.sql.Timestamp DateOrdered)
+	public void setDateOrdered (final java.sql.Timestamp DateOrdered)
 	{
 		set_ValueNoCheck (COLUMNNAME_DateOrdered, DateOrdered);
 	}
 
-	/** Get Auftragsdatum.
-		@return Date of Order
-	  */
 	@Override
-	public java.sql.Timestamp getDateOrdered () 
+	public java.sql.Timestamp getDateOrdered() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateOrdered);
+		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
 	}
 
-	/** Set Date printed.
-		@param DatePrinted 
-		Date the document was printed.
-	  */
 	@Override
-	public void setDatePrinted (java.sql.Timestamp DatePrinted)
+	public void setDatePrinted (final java.sql.Timestamp DatePrinted)
 	{
 		set_Value (COLUMNNAME_DatePrinted, DatePrinted);
 	}
 
-	/** Get Date printed.
-		@return Date the document was printed.
-	  */
 	@Override
-	public java.sql.Timestamp getDatePrinted () 
+	public java.sql.Timestamp getDatePrinted() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DatePrinted);
+		return get_ValueAsTimestamp(COLUMNNAME_DatePrinted);
 	}
 
-	/** Set Eingangsdatum.
-		@param DateReceived 
-		Date a product was received
-	  */
 	@Override
-	public void setDateReceived (java.sql.Timestamp DateReceived)
+	public void setDateReceived (final java.sql.Timestamp DateReceived)
 	{
 		set_Value (COLUMNNAME_DateReceived, DateReceived);
 	}
 
-	/** Get Eingangsdatum.
-		@return Date a product was received
-	  */
 	@Override
-	public java.sql.Timestamp getDateReceived () 
+	public java.sql.Timestamp getDateReceived() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateReceived);
+		return get_ValueAsTimestamp(COLUMNNAME_DateReceived);
 	}
 
 	/** 
@@ -555,24 +352,16 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public static final String DELIVERYRULE_Manual = "M";
 	/** MitNaechsterAbolieferung = S */
 	public static final String DELIVERYRULE_MitNaechsterAbolieferung = "S";
-	/** Set Lieferart.
-		@param DeliveryRule 
-		Defines the timing of Delivery
-	  */
 	@Override
-	public void setDeliveryRule (java.lang.String DeliveryRule)
+	public void setDeliveryRule (final java.lang.String DeliveryRule)
 	{
-
 		set_Value (COLUMNNAME_DeliveryRule, DeliveryRule);
 	}
 
-	/** Get Lieferart.
-		@return Defines the timing of Delivery
-	  */
 	@Override
-	public java.lang.String getDeliveryRule () 
+	public java.lang.String getDeliveryRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DeliveryRule);
+		return get_ValueAsString(COLUMNNAME_DeliveryRule);
 	}
 
 	/** 
@@ -586,56 +375,40 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public static final String DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_Shipper = "S";
-	/** Set Lieferung.
-		@param DeliveryViaRule 
-		Wie der Auftrag geliefert wird
-	  */
 	@Override
-	public void setDeliveryViaRule (java.lang.String DeliveryViaRule)
+	public void setDeliveryViaRule (final java.lang.String DeliveryViaRule)
 	{
-
 		set_Value (COLUMNNAME_DeliveryViaRule, DeliveryViaRule);
 	}
 
-	/** Get Lieferung.
-		@return Wie der Auftrag geliefert wird
-	  */
 	@Override
-	public java.lang.String getDeliveryViaRule () 
+	public java.lang.String getDeliveryViaRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DeliveryViaRule);
+		return get_ValueAsString(COLUMNNAME_DeliveryViaRule);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set DescriptionBottom.
-		@param DescriptionBottom DescriptionBottom	  */
 	@Override
-	public void setDescriptionBottom (java.lang.String DescriptionBottom)
+	public void setDescriptionBottom (final java.lang.String DescriptionBottom)
 	{
 		set_Value (COLUMNNAME_DescriptionBottom, DescriptionBottom);
 	}
 
-	/** Get DescriptionBottom.
-		@return DescriptionBottom	  */
 	@Override
-	public java.lang.String getDescriptionBottom () 
+	public java.lang.String getDescriptionBottom() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DescriptionBottom);
+		return get_ValueAsString(COLUMNNAME_DescriptionBottom);
 	}
 
 	/** 
@@ -673,24 +446,16 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public static final String DOCACTION_WaitComplete = "WC";
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
-	/** Set Belegverarbeitung.
-		@param DocAction 
-		The targeted status of the document
-	  */
 	@Override
-	public void setDocAction (java.lang.String DocAction)
+	public void setDocAction (final java.lang.String DocAction)
 	{
-
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
-	/** Get Belegverarbeitung.
-		@return The targeted status of the document
-	  */
 	@Override
-	public java.lang.String getDocAction () 
+	public java.lang.String getDocAction() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
+		return get_ValueAsString(COLUMNNAME_DocAction);
 	}
 
 	/** 
@@ -722,158 +487,121 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Belegstatus.
-		@param DocStatus 
-		The current status of the document
-	  */
 	@Override
-	public void setDocStatus (java.lang.String DocStatus)
+	public void setDocStatus (final java.lang.String DocStatus)
 	{
-
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Belegstatus.
-		@return The current status of the document
-	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Nr..
-		@param DocumentNo 
-		Document sequence number of the document
-	  */
 	@Override
-	public void setDocumentNo (java.lang.String DocumentNo)
+	public void setDocumentNo (final java.lang.String DocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Nr..
-		@return Document sequence number of the document
-	  */
 	@Override
-	public java.lang.String getDocumentNo () 
+	public java.lang.String getDocumentNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
+		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
 
-	/** Set Document Type Note.
-		@param DocumentTypeNote 
-		Optional note of a document type
-	  */
 	@Override
-	public void setDocumentTypeNote (java.lang.String DocumentTypeNote)
+	public void setDocumentTypeNote (final java.lang.String DocumentTypeNote)
 	{
 		throw new IllegalArgumentException ("DocumentTypeNote is virtual column");	}
 
-	/** Get Document Type Note.
-		@return Optional note of a document type
-	  */
 	@Override
-	public java.lang.String getDocumentTypeNote () 
+	public java.lang.String getDocumentTypeNote() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocumentTypeNote);
+		return get_ValueAsString(COLUMNNAME_DocumentTypeNote);
 	}
 
-	/** Set Lieferempfänger.
-		@param DropShip_BPartner_ID 
-		Business Partner to ship to
-	  */
 	@Override
-	public void setDropShip_BPartner_ID (int DropShip_BPartner_ID)
+	public void setDropShip_BPartner_ID (final int DropShip_BPartner_ID)
 	{
 		if (DropShip_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_DropShip_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_DropShip_BPartner_ID, Integer.valueOf(DropShip_BPartner_ID));
+			set_Value (COLUMNNAME_DropShip_BPartner_ID, DropShip_BPartner_ID);
 	}
 
-	/** Get Lieferempfänger.
-		@return Business Partner to ship to
-	  */
 	@Override
-	public int getDropShip_BPartner_ID () 
+	public int getDropShip_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_DropShip_BPartner_ID);
 	}
 
-	/** Set Lieferadresse.
-		@param DropShip_Location_ID 
-		Business Partner Location for shipping to
-	  */
 	@Override
-	public void setDropShip_Location_ID (int DropShip_Location_ID)
+	public void setDropShip_Location_ID (final int DropShip_Location_ID)
 	{
 		if (DropShip_Location_ID < 1) 
 			set_Value (COLUMNNAME_DropShip_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_DropShip_Location_ID, Integer.valueOf(DropShip_Location_ID));
+			set_Value (COLUMNNAME_DropShip_Location_ID, DropShip_Location_ID);
 	}
 
-	/** Get Lieferadresse.
-		@return Business Partner Location for shipping to
-	  */
 	@Override
-	public int getDropShip_Location_ID () 
+	public int getDropShip_Location_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_DropShip_Location_ID);
 	}
 
-	/** Set Lieferkontakt.
-		@param DropShip_User_ID 
-		Business Partner Contact for drop shipment
-	  */
 	@Override
-	public void setDropShip_User_ID (int DropShip_User_ID)
+	public void setDropShip_User_ID (final int DropShip_User_ID)
 	{
 		if (DropShip_User_ID < 1) 
 			set_Value (COLUMNNAME_DropShip_User_ID, null);
 		else 
-			set_Value (COLUMNNAME_DropShip_User_ID, Integer.valueOf(DropShip_User_ID));
+			set_Value (COLUMNNAME_DropShip_User_ID, DropShip_User_ID);
 	}
 
-	/** Get Lieferkontakt.
-		@return Business Partner Contact for drop shipment
-	  */
 	@Override
-	public int getDropShip_User_ID () 
+	public int getDropShip_User_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_DropShip_User_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_DropShip_User_ID);
 	}
 
-	/** Set Frachtbetrag.
-		@param FreightAmt 
-		Freight Amount 
-	  */
 	@Override
-	public void setFreightAmt (java.math.BigDecimal FreightAmt)
+	public void setExternalId (final java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
+	public void setExternalResourceURL (final java.lang.String ExternalResourceURL)
+	{
+		set_Value (COLUMNNAME_ExternalResourceURL, ExternalResourceURL);
+	}
+
+	@Override
+	public java.lang.String getExternalResourceURL() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalResourceURL);
+	}
+
+	@Override
+	public void setFreightAmt (final BigDecimal FreightAmt)
 	{
 		set_Value (COLUMNNAME_FreightAmt, FreightAmt);
 	}
 
-	/** Get Frachtbetrag.
-		@return Freight Amount 
-	  */
 	@Override
-	public java.math.BigDecimal getFreightAmt () 
+	public BigDecimal getFreightAmt() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_FreightAmt);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_FreightAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	/** 
@@ -891,43 +619,28 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public static final String FREIGHTCOSTRULE_Line = "L";
 	/** Versandkostenpauschale = P */
 	public static final String FREIGHTCOSTRULE_Versandkostenpauschale = "P";
-	/** Set Frachtkostenberechnung.
-		@param FreightCostRule 
-		Method for charging Freight
-	  */
 	@Override
-	public void setFreightCostRule (java.lang.String FreightCostRule)
+	public void setFreightCostRule (final java.lang.String FreightCostRule)
 	{
-
 		set_Value (COLUMNNAME_FreightCostRule, FreightCostRule);
 	}
 
-	/** Get Frachtkostenberechnung.
-		@return Method for charging Freight
-	  */
 	@Override
-	public java.lang.String getFreightCostRule () 
+	public java.lang.String getFreightCostRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_FreightCostRule);
+		return get_ValueAsString(COLUMNNAME_FreightCostRule);
 	}
 
-	/** Set Generate To.
-		@param GenerateTo 
-		Generate To
-	  */
 	@Override
-	public void setGenerateTo (java.lang.String GenerateTo)
+	public void setGenerateTo (final java.lang.String GenerateTo)
 	{
 		set_Value (COLUMNNAME_GenerateTo, GenerateTo);
 	}
 
-	/** Get Generate To.
-		@return Generate To
-	  */
 	@Override
-	public java.lang.String getGenerateTo () 
+	public java.lang.String getGenerateTo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_GenerateTo);
+		return get_ValueAsString(COLUMNNAME_GenerateTo);
 	}
 
 	/** 
@@ -961,306 +674,175 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public static final String INCOTERM_DDU_FreiUnverzollt = "DDU";
 	/** DDP_Verzollt = DDP */
 	public static final String INCOTERM_DDP_Verzollt = "DDP";
-	/** Set Incoterm.
-		@param Incoterm 
-		Internationale Handelsklauseln (engl. International Commercial Terms)
-	  */
 	@Override
-	public void setIncoterm (java.lang.String Incoterm)
+	public void setIncoterm (final java.lang.String Incoterm)
 	{
-
 		set_Value (COLUMNNAME_Incoterm, Incoterm);
 	}
 
-	/** Get Incoterm.
-		@return Internationale Handelsklauseln (engl. International Commercial Terms)
-	  */
 	@Override
-	public java.lang.String getIncoterm () 
+	public java.lang.String getIncoterm() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Incoterm);
+		return get_ValueAsString(COLUMNNAME_Incoterm);
 	}
 
-	/** Set IncotermLocation.
-		@param IncotermLocation 
-		Anzugebender Ort für Handelsklausel
-	  */
 	@Override
-	public void setIncotermLocation (java.lang.String IncotermLocation)
+	public void setIncotermLocation (final java.lang.String IncotermLocation)
 	{
 		set_Value (COLUMNNAME_IncotermLocation, IncotermLocation);
 	}
 
-	/** Get IncotermLocation.
-		@return Anzugebender Ort für Handelsklausel
-	  */
 	@Override
-	public java.lang.String getIncotermLocation () 
+	public java.lang.String getIncotermLocation() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_IncotermLocation);
+		return get_ValueAsString(COLUMNNAME_IncotermLocation);
 	}
 
-	/** Set InOutLine_includedTab.
-		@param InOutLine_includedTab InOutLine_includedTab	  */
 	@Override
-	public void setInOutLine_includedTab (java.lang.String InOutLine_includedTab)
+	public void setInOutLine_includedTab (final java.lang.String InOutLine_includedTab)
 	{
 		set_Value (COLUMNNAME_InOutLine_includedTab, InOutLine_includedTab);
 	}
 
-	/** Get InOutLine_includedTab.
-		@return InOutLine_includedTab	  */
 	@Override
-	public java.lang.String getInOutLine_includedTab () 
+	public java.lang.String getInOutLine_includedTab() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InOutLine_includedTab);
+		return get_ValueAsString(COLUMNNAME_InOutLine_includedTab);
 	}
 
-	/** Set Freigegeben.
-		@param IsApproved 
-		Indicates if this document requires approval
-	  */
 	@Override
-	public void setIsApproved (boolean IsApproved)
+	public void setIsApproved (final boolean IsApproved)
 	{
-		set_Value (COLUMNNAME_IsApproved, Boolean.valueOf(IsApproved));
+		set_Value (COLUMNNAME_IsApproved, IsApproved);
 	}
 
-	/** Get Freigegeben.
-		@return Indicates if this document requires approval
-	  */
 	@Override
-	public boolean isApproved () 
+	public boolean isApproved() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsApproved);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsApproved);
 	}
 
-	/** Set Streckengeschäft.
-		@param IsDropShip 
-		Drop Shipments are sent from the Vendor directly to the Customer
-	  */
 	@Override
-	public void setIsDropShip (boolean IsDropShip)
+	public void setIsDropShip (final boolean IsDropShip)
 	{
-		set_Value (COLUMNNAME_IsDropShip, Boolean.valueOf(IsDropShip));
+		set_Value (COLUMNNAME_IsDropShip, IsDropShip);
 	}
 
-	/** Get Streckengeschäft.
-		@return Drop Shipments are sent from the Vendor directly to the Customer
-	  */
 	@Override
-	public boolean isDropShip () 
+	public boolean isDropShip() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsDropShip);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsDropShip);
 	}
 
-	/** Set Zollrechnung erstellt.
-		@param IsExportedToCustomsInvoice Zollrechnung erstellt	  */
 	@Override
-	public void setIsExportedToCustomsInvoice (boolean IsExportedToCustomsInvoice)
+	public void setIsExportedToCustomsInvoice (final boolean IsExportedToCustomsInvoice)
 	{
-		set_Value (COLUMNNAME_IsExportedToCustomsInvoice, Boolean.valueOf(IsExportedToCustomsInvoice));
+		set_Value (COLUMNNAME_IsExportedToCustomsInvoice, IsExportedToCustomsInvoice);
 	}
 
-	/** Get Zollrechnung erstellt.
-		@return Zollrechnung erstellt	  */
 	@Override
-	public boolean isExportedToCustomsInvoice () 
+	public boolean isExportedToCustomsInvoice() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsExportedToCustomsInvoice);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsExportedToCustomsInvoice);
 	}
 
-	/** Set Strittig.
-		@param IsInDispute Strittig	  */
 	@Override
-	public void setIsInDispute (boolean IsInDispute)
+	public void setIsFillUpSpareParts (final boolean IsFillUpSpareParts)
 	{
-		set_Value (COLUMNNAME_IsInDispute, Boolean.valueOf(IsInDispute));
+		set_Value (COLUMNNAME_IsFillUpSpareParts, IsFillUpSpareParts);
 	}
 
-	/** Get Strittig.
-		@return Strittig	  */
 	@Override
-	public boolean isInDispute () 
+	public boolean isFillUpSpareParts() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsInDispute);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsFillUpSpareParts);
 	}
 
-	/** Set Lieferung/ Wareneingang freigeben.
-		@param IsInOutApprovedForInvoicing Lieferung/ Wareneingang freigeben	  */
 	@Override
-	public void setIsInOutApprovedForInvoicing (boolean IsInOutApprovedForInvoicing)
+	public void setIsInDispute (final boolean IsInDispute)
 	{
-		set_Value (COLUMNNAME_IsInOutApprovedForInvoicing, Boolean.valueOf(IsInOutApprovedForInvoicing));
+		set_Value (COLUMNNAME_IsInDispute, IsInDispute);
 	}
 
-	/** Get Lieferung/ Wareneingang freigeben.
-		@return Lieferung/ Wareneingang freigeben	  */
 	@Override
-	public boolean isInOutApprovedForInvoicing () 
+	public boolean isInDispute() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsInOutApprovedForInvoicing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsInDispute);
 	}
 
-	/** Set In Transit.
-		@param IsInTransit 
-		Movement is in transit
-	  */
 	@Override
-	public void setIsInTransit (boolean IsInTransit)
+	public void setIsInOutApprovedForInvoicing (final boolean IsInOutApprovedForInvoicing)
 	{
-		set_Value (COLUMNNAME_IsInTransit, Boolean.valueOf(IsInTransit));
+		set_Value (COLUMNNAME_IsInOutApprovedForInvoicing, IsInOutApprovedForInvoicing);
 	}
 
-	/** Get In Transit.
-		@return Movement is in transit
-	  */
 	@Override
-	public boolean isInTransit () 
+	public boolean isInOutApprovedForInvoicing() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsInTransit);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsInOutApprovedForInvoicing);
 	}
 
-	/** Set andrucken.
-		@param IsPrinted 
-		Indicates if this document / line is printed
-	  */
 	@Override
-	public void setIsPrinted (boolean IsPrinted)
+	public void setIsInTransit (final boolean IsInTransit)
 	{
-		set_Value (COLUMNNAME_IsPrinted, Boolean.valueOf(IsPrinted));
+		set_Value (COLUMNNAME_IsInTransit, IsInTransit);
 	}
 
-	/** Get andrucken.
-		@return Indicates if this document / line is printed
-	  */
 	@Override
-	public boolean isPrinted () 
+	public boolean isInTransit() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsPrinted);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsInTransit);
 	}
 
-	/** Set Verkaufs-Transaktion.
-		@param IsSOTrx 
-		This is a Sales Transaction
-	  */
 	@Override
-	public void setIsSOTrx (boolean IsSOTrx)
+	public void setIsPrinted (final boolean IsPrinted)
 	{
-		set_Value (COLUMNNAME_IsSOTrx, Boolean.valueOf(IsSOTrx));
+		set_Value (COLUMNNAME_IsPrinted, IsPrinted);
 	}
 
-	/** Get Verkaufs-Transaktion.
-		@return This is a Sales Transaction
-	  */
 	@Override
-	public boolean isSOTrx () 
+	public boolean isPrinted() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSOTrx);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsPrinted);
 	}
 
-	/** Set Benutze abw. Adresse.
-		@param IsUseBPartnerAddress Benutze abw. Adresse	  */
 	@Override
-	public void setIsUseBPartnerAddress (boolean IsUseBPartnerAddress)
+	public void setIsSOTrx (final boolean IsSOTrx)
 	{
-		set_Value (COLUMNNAME_IsUseBPartnerAddress, Boolean.valueOf(IsUseBPartnerAddress));
+		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
 	}
 
-	/** Get Benutze abw. Adresse.
-		@return Benutze abw. Adresse	  */
 	@Override
-	public boolean isUseBPartnerAddress () 
+	public boolean isSOTrx() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsUseBPartnerAddress);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
 	}
 
-	/** Set Lieferung/Wareneingang.
-		@param M_InOut_ID 
-		Material Shipment Document
-	  */
 	@Override
-	public void setM_InOut_ID (int M_InOut_ID)
+	public void setIsUseBPartnerAddress (final boolean IsUseBPartnerAddress)
+	{
+		set_Value (COLUMNNAME_IsUseBPartnerAddress, IsUseBPartnerAddress);
+	}
+
+	@Override
+	public boolean isUseBPartnerAddress() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUseBPartnerAddress);
+	}
+
+	@Override
+	public void setM_InOut_ID (final int M_InOut_ID)
 	{
 		if (M_InOut_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_InOut_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_InOut_ID, Integer.valueOf(M_InOut_ID));
+			set_ValueNoCheck (COLUMNNAME_M_InOut_ID, M_InOut_ID);
 	}
 
-	/** Get Lieferung/Wareneingang.
-		@return Material Shipment Document
-	  */
 	@Override
-	public int getM_InOut_ID () 
+	public int getM_InOut_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
 	}
 
 	@Override
@@ -1270,34 +852,24 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setM_RMA(org.compiere.model.I_M_RMA M_RMA)
+	public void setM_RMA(final org.compiere.model.I_M_RMA M_RMA)
 	{
 		set_ValueFromPO(COLUMNNAME_M_RMA_ID, org.compiere.model.I_M_RMA.class, M_RMA);
 	}
 
-	/** Set Warenrücksendung - Freigabe (RMA).
-		@param M_RMA_ID 
-		Return Material Authorization
-	  */
 	@Override
-	public void setM_RMA_ID (int M_RMA_ID)
+	public void setM_RMA_ID (final int M_RMA_ID)
 	{
 		if (M_RMA_ID < 1) 
 			set_Value (COLUMNNAME_M_RMA_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_RMA_ID, Integer.valueOf(M_RMA_ID));
+			set_Value (COLUMNNAME_M_RMA_ID, M_RMA_ID);
 	}
 
-	/** Get Warenrücksendung - Freigabe (RMA).
-		@return Return Material Authorization
-	  */
 	@Override
-	public int getM_RMA_ID () 
+	public int getM_RMA_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_RMA_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_RMA_ID);
 	}
 
 	@Override
@@ -1307,100 +879,66 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper)
+	public void setM_Shipper(final org.compiere.model.I_M_Shipper M_Shipper)
 	{
 		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
 	}
 
-	/** Set Lieferweg.
-		@param M_Shipper_ID 
-		Method or manner of product delivery
-	  */
 	@Override
-	public void setM_Shipper_ID (int M_Shipper_ID)
+	public void setM_Shipper_ID (final int M_Shipper_ID)
 	{
 		if (M_Shipper_ID < 1) 
 			set_Value (COLUMNNAME_M_Shipper_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+			set_Value (COLUMNNAME_M_Shipper_ID, M_Shipper_ID);
 	}
 
-	/** Get Lieferweg.
-		@return Method or manner of product delivery
-	  */
 	@Override
-	public int getM_Shipper_ID () 
+	public int getM_Shipper_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Shipper_ID);
 	}
 
-	/** Set Tour.
-		@param M_Tour_ID Tour	  */
 	@Override
-	public void setM_Tour_ID (int M_Tour_ID)
+	public void setM_Tour_ID (final int M_Tour_ID)
 	{
 		if (M_Tour_ID < 1) 
 			set_Value (COLUMNNAME_M_Tour_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Tour_ID, Integer.valueOf(M_Tour_ID));
+			set_Value (COLUMNNAME_M_Tour_ID, M_Tour_ID);
 	}
 
-	/** Get Tour.
-		@return Tour	  */
 	@Override
-	public int getM_Tour_ID () 
+	public int getM_Tour_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Tour_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Tour_ID);
 	}
 
-	/** Set Lager.
-		@param M_Warehouse_ID 
-		Storage Warehouse and Service Point
-	  */
 	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
 	}
 
-	/** Get Lager.
-		@return Storage Warehouse and Service Point
-	  */
 	@Override
-	public int getM_Warehouse_ID () 
+	public int getM_Warehouse_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
-	/** Set Bewegungsdatum.
-		@param MovementDate 
-		Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
 	@Override
-	public void setMovementDate (java.sql.Timestamp MovementDate)
+	public void setMovementDate (final java.sql.Timestamp MovementDate)
 	{
 		set_Value (COLUMNNAME_MovementDate, MovementDate);
 	}
 
-	/** Get Bewegungsdatum.
-		@return Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	  */
 	@Override
-	public java.sql.Timestamp getMovementDate () 
+	public java.sql.Timestamp getMovementDate() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_MovementDate);
+		return get_ValueAsTimestamp(COLUMNNAME_MovementDate);
 	}
 
 	/** 
@@ -1432,88 +970,67 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public static final String MOVEMENTTYPE_WorkOrderPlus = "W+";
 	/** WorkOrderMinus = W- */
 	public static final String MOVEMENTTYPE_WorkOrderMinus = "W-";
-	/** Set Bewegungs-Art.
-		@param MovementType 
-		Method of moving the inventory
-	  */
 	@Override
-	public void setMovementType (java.lang.String MovementType)
+	public void setMovementType (final java.lang.String MovementType)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_MovementType, MovementType);
 	}
 
-	/** Get Bewegungs-Art.
-		@return Method of moving the inventory
-	  */
 	@Override
-	public java.lang.String getMovementType () 
+	public java.lang.String getMovementType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_MovementType);
+		return get_ValueAsString(COLUMNNAME_MovementType);
 	}
 
-	/** Set Kommissionierdatum.
-		@param PickDate 
-		Datum/Zeit der Kommissionierung für die Lieferung
-	  */
 	@Override
-	public void setPickDate (java.sql.Timestamp PickDate)
+	public void setPickDate (final java.sql.Timestamp PickDate)
 	{
 		set_Value (COLUMNNAME_PickDate, PickDate);
 	}
 
-	/** Get Kommissionierdatum.
-		@return Datum/Zeit der Kommissionierung für die Lieferung
-	  */
 	@Override
-	public java.sql.Timestamp getPickDate () 
+	public java.sql.Timestamp getPickDate() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_PickDate);
+		return get_ValueAsTimestamp(COLUMNNAME_PickDate);
 	}
 
-	/** Set Referenz.
-		@param POReference 
-		Referenz-Nummer des Kunden
-	  */
 	@Override
-	public void setPOReference (java.lang.String POReference)
+	public void setPOReference (final java.lang.String POReference)
 	{
 		set_Value (COLUMNNAME_POReference, POReference);
 	}
 
-	/** Get Referenz.
-		@return Referenz-Nummer des Kunden
-	  */
 	@Override
-	public java.lang.String getPOReference () 
+	public java.lang.String getPOReference() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_POReference);
+		return get_ValueAsString(COLUMNNAME_POReference);
 	}
 
-	/** Set Buchungsstatus.
-		@param Posted 
-		Buchungsstatus
-	  */
 	@Override
-	public void setPosted (boolean Posted)
+	public void setPosted (final boolean Posted)
 	{
-		set_Value (COLUMNNAME_Posted, Boolean.valueOf(Posted));
+		set_Value (COLUMNNAME_Posted, Posted);
 	}
 
-	/** Get Buchungsstatus.
-		@return Buchungsstatus
-	  */
 	@Override
-	public boolean isPosted () 
+	public boolean isPosted() 
 	{
-		Object oo = get_Value(COLUMNNAME_Posted);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Posted);
+	}
+
+	@Override
+	public void setPostingError_Issue_ID (final int PostingError_Issue_ID)
+	{
+		if (PostingError_Issue_ID < 1) 
+			set_Value (COLUMNNAME_PostingError_Issue_ID, null);
+		else 
+			set_Value (COLUMNNAME_PostingError_Issue_ID, PostingError_Issue_ID);
+	}
+
+	@Override
+	public int getPostingError_Issue_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PostingError_Issue_ID);
 	}
 
 	/** 
@@ -1531,95 +1048,55 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public static final String PRIORITYRULE_Urgent = "1";
 	/** Minor = 9 */
 	public static final String PRIORITYRULE_Minor = "9";
-	/** Set Priorität.
-		@param PriorityRule 
-		Priority of a document
-	  */
 	@Override
-	public void setPriorityRule (java.lang.String PriorityRule)
+	public void setPriorityRule (final java.lang.String PriorityRule)
 	{
-
 		set_Value (COLUMNNAME_PriorityRule, PriorityRule);
 	}
 
-	/** Get Priorität.
-		@return Priority of a document
-	  */
 	@Override
-	public java.lang.String getPriorityRule () 
+	public java.lang.String getPriorityRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PriorityRule);
+		return get_ValueAsString(COLUMNNAME_PriorityRule);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
-	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
-	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
-	/** Set Verarbeiten.
-		@param Processing Verarbeiten	  */
 	@Override
-	public void setProcessing (boolean Processing)
+	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value (COLUMNNAME_Processing, Processing);
 	}
 
-	/** Get Verarbeiten.
-		@return Verarbeiten	  */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
-	/** Set Referenced Shipment.
-		@param Ref_InOut_ID Referenced Shipment	  */
 	@Override
-	public void setRef_InOut_ID (int Ref_InOut_ID)
+	public void setRef_InOut_ID (final int Ref_InOut_ID)
 	{
 		if (Ref_InOut_ID < 1) 
 			set_Value (COLUMNNAME_Ref_InOut_ID, null);
 		else 
-			set_Value (COLUMNNAME_Ref_InOut_ID, Integer.valueOf(Ref_InOut_ID));
+			set_Value (COLUMNNAME_Ref_InOut_ID, Ref_InOut_ID);
 	}
 
-	/** Get Referenced Shipment.
-		@return Referenced Shipment	  */
 	@Override
-	public int getRef_InOut_ID () 
+	public int getRef_InOut_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Ref_InOut_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Ref_InOut_ID);
 	}
 
 	@Override
@@ -1629,82 +1106,51 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setReversal(org.compiere.model.I_M_InOut Reversal)
+	public void setReversal(final org.compiere.model.I_M_InOut Reversal)
 	{
 		set_ValueFromPO(COLUMNNAME_Reversal_ID, org.compiere.model.I_M_InOut.class, Reversal);
 	}
 
-	/** Set Storno-Gegenbeleg.
-		@param Reversal_ID 
-		ID of document reversal
-	  */
 	@Override
-	public void setReversal_ID (int Reversal_ID)
+	public void setReversal_ID (final int Reversal_ID)
 	{
 		if (Reversal_ID < 1) 
 			set_Value (COLUMNNAME_Reversal_ID, null);
 		else 
-			set_Value (COLUMNNAME_Reversal_ID, Integer.valueOf(Reversal_ID));
+			set_Value (COLUMNNAME_Reversal_ID, Reversal_ID);
 	}
 
-	/** Get Storno-Gegenbeleg.
-		@return ID of document reversal
-	  */
 	@Override
-	public int getReversal_ID () 
+	public int getReversal_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Reversal_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Reversal_ID);
 	}
 
-	/** Set Kundenbetreuer.
-		@param SalesRep_ID Kundenbetreuer	  */
 	@Override
-	public void setSalesRep_ID (int SalesRep_ID)
+	public void setSalesRep_ID (final int SalesRep_ID)
 	{
 		if (SalesRep_ID < 1) 
 			set_Value (COLUMNNAME_SalesRep_ID, null);
 		else 
-			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
+			set_Value (COLUMNNAME_SalesRep_ID, SalesRep_ID);
 	}
 
-	/** Get Kundenbetreuer.
-		@return Kundenbetreuer	  */
 	@Override
-	public int getSalesRep_ID () 
+	public int getSalesRep_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRep_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_SalesRep_ID);
 	}
 
-	/** Set E-Mail senden.
-		@param SendEMail 
-		Enable sending Document EMail
-	  */
 	@Override
-	public void setSendEMail (boolean SendEMail)
+	public void setSendEMail (final boolean SendEMail)
 	{
-		set_Value (COLUMNNAME_SendEMail, Boolean.valueOf(SendEMail));
+		set_Value (COLUMNNAME_SendEMail, SendEMail);
 	}
 
-	/** Get E-Mail senden.
-		@return Enable sending Document EMail
-	  */
 	@Override
-	public boolean isSendEMail () 
+	public boolean isSendEMail() 
 	{
-		Object oo = get_Value(COLUMNNAME_SendEMail);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_SendEMail);
 	}
 
 	@Override
@@ -1714,34 +1160,24 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setUser1(org.compiere.model.I_C_ElementValue User1)
+	public void setUser1(final org.compiere.model.I_C_ElementValue User1)
 	{
 		set_ValueFromPO(COLUMNNAME_User1_ID, org.compiere.model.I_C_ElementValue.class, User1);
 	}
 
-	/** Set Nutzer 1.
-		@param User1_ID 
-		User defined list element #1
-	  */
 	@Override
-	public void setUser1_ID (int User1_ID)
+	public void setUser1_ID (final int User1_ID)
 	{
 		if (User1_ID < 1) 
 			set_Value (COLUMNNAME_User1_ID, null);
 		else 
-			set_Value (COLUMNNAME_User1_ID, Integer.valueOf(User1_ID));
+			set_Value (COLUMNNAME_User1_ID, User1_ID);
 	}
 
-	/** Get Nutzer 1.
-		@return User defined list element #1
-	  */
 	@Override
-	public int getUser1_ID () 
+	public int getUser1_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_User1_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_User1_ID);
 	}
 
 	@Override
@@ -1751,89 +1187,49 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	}
 
 	@Override
-	public void setUser2(org.compiere.model.I_C_ElementValue User2)
+	public void setUser2(final org.compiere.model.I_C_ElementValue User2)
 	{
 		set_ValueFromPO(COLUMNNAME_User2_ID, org.compiere.model.I_C_ElementValue.class, User2);
 	}
 
-	/** Set Nutzer 2.
-		@param User2_ID 
-		User defined list element #2
-	  */
 	@Override
-	public void setUser2_ID (int User2_ID)
+	public void setUser2_ID (final int User2_ID)
 	{
 		if (User2_ID < 1) 
 			set_Value (COLUMNNAME_User2_ID, null);
 		else 
-			set_Value (COLUMNNAME_User2_ID, Integer.valueOf(User2_ID));
+			set_Value (COLUMNNAME_User2_ID, User2_ID);
 	}
 
-	/** Get Nutzer 2.
-		@return User defined list element #2
-	  */
 	@Override
-	public int getUser2_ID () 
+	public int getUser2_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_User2_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_User2_ID);
 	}
 
-	/** Set Volumen.
-		@param Volume 
-		Volume of a product
-	  */
 	@Override
-	public void setVolume (java.math.BigDecimal Volume)
+	public void setVolume (final BigDecimal Volume)
 	{
 		set_Value (COLUMNNAME_Volume, Volume);
 	}
 
-	/** Get Volumen.
-		@return Volume of a product
-	  */
 	@Override
-	public java.math.BigDecimal getVolume () 
+	public BigDecimal getVolume() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Volume);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Volume);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Gewicht.
-		@param Weight 
-		Weight of a product
-	  */
 	@Override
-	public void setWeight (java.math.BigDecimal Weight)
+	public void setWeight (final BigDecimal Weight)
 	{
 		set_Value (COLUMNNAME_Weight, Weight);
 	}
 
-	/** Get Gewicht.
-		@return Weight of a product
-	  */
 	@Override
-	public java.math.BigDecimal getWeight () 
+	public BigDecimal getWeight() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Weight);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
-	}
-
-	@Override
-	public void setExternalResourceURL (java.lang.String ExternalResourceURL)
-	{
-		set_Value (COLUMNNAME_ExternalResourceURL, ExternalResourceURL);
-	}
-
-	@Override
-	public java.lang.String getExternalResourceURL()
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalResourceURL);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

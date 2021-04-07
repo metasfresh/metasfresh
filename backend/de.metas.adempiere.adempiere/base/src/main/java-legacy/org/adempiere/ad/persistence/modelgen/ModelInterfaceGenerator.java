@@ -186,6 +186,7 @@ public class ModelInterfaceGenerator
 				.append(" *  @author metasfresh (generated) \n")
 				.append(" */\n")
 				//.append("@SuppressWarnings(\"javadoc\")\n")  // commented out because it gives warnings in intelliJ
+				.append("@SuppressWarnings(\"unused\")\n")
 				.append("public interface ").append(className).append(" {").append("\n")
 
 				.append("\tString Table_Name = \"").append(tableName).append("\";\n");

@@ -22,23 +22,46 @@
 
 package de.metas.payment.api.impl;
 
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.allocation.api.IAllocationBL;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineRefId;
+import de.metas.banking.api.BankAccountService;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.FixedConversionRate;
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentCurrencyContext;
+import de.metas.payment.PaymentId;
+import de.metas.payment.TenderType;
+import de.metas.payment.api.DefaultPaymentBuilder;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.api.PaymentQuery;
+import de.metas.payment.api.PaymentReconcileReference;
+import de.metas.payment.api.PaymentReconcileRequest;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ExternalId;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -56,44 +79,22 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import de.metas.allocation.api.IAllocationBL;
-import de.metas.banking.BankAccountId;
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
-import de.metas.banking.BankStatementLineRefId;
-import de.metas.banking.api.BankAccountService;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyBL;
-import de.metas.currency.ICurrencyDAO;
-import de.metas.document.DocTypeId;
-import de.metas.document.IDocTypeBL;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.DocStatus;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderId;
-import de.metas.organization.OrgId;
-import de.metas.payment.PaymentId;
-import de.metas.payment.TenderType;
-import de.metas.payment.api.DefaultPaymentBuilder;
-import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.api.IPaymentDAO;
-import de.metas.payment.api.PaymentQuery;
-import de.metas.payment.api.PaymentReconcileReference;
-import de.metas.payment.api.PaymentReconcileRequest;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.ExternalId;
-import lombok.NonNull;
+import static java.math.BigDecimal.ZERO;
 
 public class PaymentBL implements IPaymentBL
 {
@@ -105,6 +106,7 @@ public class PaymentBL implements IPaymentBL
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -200,7 +202,7 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public void updateAmounts(final I_C_Payment payment, final String colName, boolean creditMemoAdjusted)
+	public void updateAmounts(final I_C_Payment payment, final String colName, final boolean creditMemoAdjusted)
 	{
 		final int C_Invoice_ID = payment.getC_Invoice_ID();
 		final int C_Order_ID = payment.getC_Order_ID();
@@ -258,7 +260,7 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public void onIsOverUnderPaymentChange(final I_C_Payment payment, boolean creditMemoAdjusted)
+	public void onIsOverUnderPaymentChange(final I_C_Payment payment, final boolean creditMemoAdjusted)
 	{
 		payment.setOverUnderAmt(ZERO);
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
@@ -355,7 +357,7 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public void onPayAmtChange(final I_C_Payment payment, boolean creditMemoAdjusted)
+	public void onPayAmtChange(final I_C_Payment payment, final boolean creditMemoAdjusted)
 	{
 		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(payment.getDocStatus());
 		if (docStatus.isDrafted())
@@ -557,8 +559,8 @@ public class PaymentBL implements IPaymentBL
 		{
 			total = total.negate();
 		}
-		boolean test = total.compareTo(alloc) == 0;
-		boolean change = test != payment.isAllocated();
+		final boolean test = total.compareTo(alloc) == 0;
+		final boolean change = test != payment.isAllocated();
 		if (change)
 		{
 			payment.setIsAllocated(test);
@@ -589,7 +591,7 @@ public class PaymentBL implements IPaymentBL
 		{
 
 			@Override
-			public void run(String localTrxName) throws Exception
+			public void run(final String localTrxName) throws Exception
 			{
 				final I_C_AllocationHdr allocHdr = allocationBL.newBuilder()
 						.orgId(payment.getAD_Org_ID())
@@ -701,14 +703,15 @@ public class PaymentBL implements IPaymentBL
 	@Override
 	public void markReconciledAndSave(
 			@NonNull final I_C_Payment payment,
-			@NonNull PaymentReconcileReference reconcileRef)
+			@NonNull final PaymentReconcileReference reconcileRef)
 	{
 		if (payment.isReconciled())
 		{
 			final PaymentReconcileReference currentReconcileRef = extractPaymentReconcileReference(payment);
-			throw new AdempiereException("Payment was already reconciled")
-					.setParameter("reconcileRef", reconcileRef)
-					.setParameter("currentReconcileRef", currentReconcileRef)
+			throw new AdempiereException("Payment with DocumentNo=" + payment.getDocumentNo() + " is already reconciled. Maybe there is a duplicated bankstatement line?")
+					.setParameter("C_Payment", payment)
+					.setParameter("currentlyExistingReconcileRef", currentReconcileRef)
+					.setParameter("newReconcileRef", reconcileRef)
 					.appendParametersToMessage();
 		}
 
@@ -795,5 +798,31 @@ public class PaymentBL implements IPaymentBL
 		{
 			return TenderType.Check;
 		}
+	}
+
+	@Override
+	public Optional<PaymentId> getByExtIdOrgId(@NonNull final ExternalId externalId, @NonNull final OrgId orgId)
+	{
+		final Optional<I_C_Payment> payment = paymentDAO.getByExternalId(externalId, orgId);
+		return Optional.ofNullable(payment.isPresent() ? PaymentId.ofRepoId(payment.get().getC_Payment_ID()) : null);
+	}
+
+	@Override
+	public CurrencyConversionContext extractCurrencyConversionContext(@NonNull final I_C_Payment payment)
+	{
+		final PaymentCurrencyContext paymentCurrencyContext = PaymentCurrencyContext.ofPaymentRecord(payment);
+		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
+				TimeUtil.asLocalDate(payment.getDateAcct()),
+				paymentCurrencyContext.getCurrencyConversionTypeId(),
+				ClientId.ofRepoId(payment.getAD_Client_ID()),
+				OrgId.ofRepoId(payment.getAD_Org_ID()));
+
+		final FixedConversionRate fixedConversionRate = paymentCurrencyContext.toFixedConversionRateOrNull();
+		if (fixedConversionRate != null)
+		{
+			conversionCtx = conversionCtx.withFixedConversionRate(fixedConversionRate);
+		}
+
+		return conversionCtx;
 	}
 }

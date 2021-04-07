@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { isEmpty } from 'lodash';
 
 import {
   openModal,
@@ -18,10 +19,13 @@ import {
   getMasterDocStatus,
   getProcessWidgetData,
   getProcessWidgetFields,
+  getInlineTabLayout,
+  getInlineTabWidgetFields,
 } from '../reducers/windowHandler';
 
 import MasterWidget from '../components/widget/MasterWidget';
 import RawWidget from '../components/widget/RawWidget';
+import InlineTabWrapper from '../components/widget/InlineTabWrapper';
 
 /**
  * @file Class based component.
@@ -35,7 +39,11 @@ import RawWidget from '../components/widget/RawWidget';
  */
 class WidgetWrapper extends PureComponent {
   render() {
-    const { renderMaster } = this.props;
+    const { renderMaster, widgetType } = this.props;
+
+    if (widgetType === 'InlineTab') {
+      return <InlineTabWrapper {...this.props} />;
+    }
 
     if (renderMaster) {
       return <MasterWidget {...this.props} />;
@@ -58,6 +66,7 @@ const mapStateToProps = (state, props) => {
     fields,
     isModal,
   } = props;
+
   const data = getData(state, isModal);
 
   let widgetData = null;
@@ -70,9 +79,28 @@ const mapStateToProps = (state, props) => {
       break;
     case 'modal':
     case 'element':
-      widgetData = getElementWidgetData(state, isModal, layoutId);
-      fieldsCopy = getElementWidgetFields(state, isModal, layoutId);
-
+      /** forming the fieldsCopy and widgetData for the disconnected case - ex: when is `inlineTab`, other future types can be added as well */
+      if (props.disconnected) {
+        if (!isEmpty(state.windowHandler.inlineTab)) {
+          const { rowId, tabId, windowId } = props;
+          const inlineTabId = `${windowId}_${tabId}_${rowId}`;
+          fieldsCopy = [
+            getInlineTabLayout({
+              state,
+              inlineTabId: `${windowId}_${tabId}_${rowId}`,
+              layoutId,
+            }),
+          ];
+          fieldsCopy[0] = fieldsCopy[0].fields[0];
+          widgetData = [
+            getInlineTabWidgetFields({ state, inlineTabId })[props.fieldName],
+          ];
+        }
+      } else {
+        /** normal set of the widgetData and fieldsCopy - these are fetched using cache selectors from the pre-defined structure */
+        widgetData = getElementWidgetData(state, isModal, layoutId);
+        fieldsCopy = getElementWidgetFields(state, isModal, layoutId);
+      }
       break;
     case 'process':
       widgetData = getProcessWidgetData(state, true, layoutId);
@@ -94,6 +122,7 @@ const mapStateToProps = (state, props) => {
 
       break;
     }
+
     default:
       widgetData = [{}];
 
@@ -135,6 +164,8 @@ WidgetWrapper.propTypes = {
   openModal: PropTypes.func.isRequired,
   patch: PropTypes.func.isRequired,
   updatePropertyValue: PropTypes.func.isRequired,
+  widgetType: PropTypes.string,
+  disconnected: PropTypes.string,
 };
 
 export default connect(

@@ -1,52 +1,8 @@
-package de.metas.ui.web;
-
-import java.util.ArrayList;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.apache.coyote.http11.AbstractHttp11Protocol;
-import org.compiere.Adempiere;
-import org.compiere.Adempiere.RunMode;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
-import org.elasticsearch.common.logging.ESLoggerFactory;
-import org.elasticsearch.common.logging.slf4j.Slf4jESLoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
-import org.springframework.context.annotation.Profile;
-import org.springframework.http.MediaType;
-import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import de.metas.JsonObjectMapperHolder;
-import de.metas.MetasfreshBeanNameGenerator;
-import de.metas.Profiles;
-import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
-import de.metas.ui.web.session.WebRestApiContextProvider;
-import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
 /*
  * #%L
  * metasfresh-webui-api
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -64,14 +20,55 @@ import de.metas.util.Services;
  * #L%
  */
 
+package de.metas.ui.web;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.CommandLineParser;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.MetasfreshBeanNameGenerator;
+import de.metas.Profiles;
+import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
+import de.metas.ui.web.config.ConfigConstants;
+import de.metas.ui.web.session.WebRestApiContextProvider;
+import de.metas.ui.web.window.model.DocumentInterfaceWrapperHelper;
+import de.metas.util.Check;
+import de.metas.util.ConnectionUtil;
+import de.metas.util.Services;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.apache.coyote.http11.AbstractHttp11Protocol;
+import org.compiere.Adempiere;
+import org.compiere.Adempiere.RunMode;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.MediaType;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
 @SpringBootApplication(scanBasePackages = { "de.metas", "org.adempiere" })
 @EnableAsync
 @Profile(Profiles.PROFILE_Webui)
 public class WebRestApiApplication
 {
 	private static final String SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE = "de.metas.ui.web.spring.profiles.active";
-
-	public static final String BEANNAME_WebuiTaskScheduler = "webuiTaskScheduler";
 
 	/**
 	 * By default, we run in headless mode. But using this system property, we can also run with headless=false.
@@ -90,11 +87,16 @@ public class WebRestApiApplication
 		}
 
 		// Make sure slf4j is used (by default, in v2.4.4 log4j is used, see https://github.com/metasfresh/metasfresh-webui-api/issues/757)
-		ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
+		//ESLoggerFactory.setDefaultFactory(new Slf4jESLoggerFactory());
 
-		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
+		final CommandLineParser.CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
+
+		final ConnectionUtil.ConfigureConnectionsResult configureConnectionsResult = ConnectionUtil.configureConnectionsIfArgsProvided(commandLineOptions);
+
+		try (final IAutoCloseable ignored = ModelValidationEngine.postponeInit())
 		{
 			Ini.setRunMode(RunMode.WEBUI);
+			Ini.setIfMissingMetasfreshProperties(configureConnectionsResult.isCconnectionConfigured() ? Ini.IfMissingMetasfreshProperties.IGNORE : Ini.IfMissingMetasfreshProperties.SHOW_DIALOG);
 			Adempiere.instance.startup(RunMode.WEBUI);
 
 			final ArrayList<String> activeProfiles = retrieveActiveProfilesFromSysConfig();
@@ -104,7 +106,7 @@ public class WebRestApiApplication
 
 			new SpringApplicationBuilder(WebRestApiApplication.class)
 					.headless(Boolean.parseBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
-					.web(true)
+					.web(WebApplicationType.SERVLET)
 					.profiles(activeProfiles.toArray(new String[0]))
 					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
@@ -116,14 +118,12 @@ public class WebRestApiApplication
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
 	{
-		final ArrayList<String> activeProfiles = Services
+		return Services
 				.get(ISysConfigBL.class)
 				.getValuesForPrefix(SYSCONFIG_PREFIX_WEBUI_SPRING_PROFILES_ACTIVE, 0, 0)
-				.entrySet()
+				.values()
 				.stream()
-				.map(Entry::getValue)
 				.collect(Collectors.toCollection(ArrayList::new));
-		return activeProfiles;
 	}
 
 	@Bean
@@ -144,15 +144,15 @@ public class WebRestApiApplication
 
 		Services.get(IMigrationLogger.class).addTableToIgnoreList(I_T_WEBUI_ViewSelection.Table_Name);
 
-		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
-		return adempiere;
+		return Env.getSingleAdempiereInstance(applicationContext);
 	}
 
 	@Bean
-	public EmbeddedServletContainerCustomizer servletContainerCustomizer()
+	public WebServerFactoryCustomizer servletContainerCustomizer()
 	{
 		return servletContainer -> {
-			final TomcatEmbeddedServletContainerFactory tomcatContainerFactory = (TomcatEmbeddedServletContainerFactory)servletContainer;
+			final TomcatServletWebServerFactory tomcatContainerFactory = (TomcatServletWebServerFactory)servletContainer;
+			
 			tomcatContainerFactory.addConnectorCustomizers(connector -> {
 				final AbstractHttp11Protocol<?> httpProtocol = (AbstractHttp11Protocol<?>)connector.getProtocolHandler();
 				httpProtocol.setCompression("on");
@@ -164,7 +164,7 @@ public class WebRestApiApplication
 		};
 	}
 
-	@Bean(BEANNAME_WebuiTaskScheduler)
+	@Bean(ConfigConstants.BEANNAME_WebuiTaskScheduler)
 	public TaskScheduler webuiTaskScheduler()
 	{
 		final ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();

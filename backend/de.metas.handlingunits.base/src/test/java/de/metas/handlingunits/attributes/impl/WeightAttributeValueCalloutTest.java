@@ -340,12 +340,4 @@ public class WeightAttributeValueCalloutTest extends AbstractHUTest
 		final I_M_HU hu = huAware.getM_HU();
 		return hu.getValue();
 	}
-
-	@Override
-	protected void afterTestFailed()
-	{
-		dumpWeights("Palet", huPalet_Attrs);
-		dumpWeights("IFCO1", huIFCO1_Attrs);
-		dumpWeights("IFCO2", huIFCO2_Attrs);
-	}
 }

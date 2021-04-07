@@ -1,21 +1,21 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory.ConfigRequestForNewInstance;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -64,12 +64,17 @@ public class CommissionInstanceRequestFactory
 	 */
 	public Optional<CreateCommissionSharesRequest> createRequestFor(@NonNull final CommissionTriggerDocument commissionTriggerDocument)
 	{
+		final BPartnerId customerBPartnerId = commissionTriggerDocument.getCustomerBPartnerId();
 		final BPartnerId salesRepBPartnerId = commissionTriggerDocument.getSalesRepBPartnerId();
-		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(salesRepBPartnerId);
+
+		// note: we include the end-customer in the hierarchy because they might be a salesrep 
+		// and their contract might indicate that metasfresh shall create a 0% commission share for them
+		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(customerBPartnerId);
 
 		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.orgId(commissionTriggerDocument.getOrgId())
 				.commissionHierarchy(hierarchy)
-				.customerBPartnerId(commissionTriggerDocument.getCustomerBPartnerId())
+				.customerBPartnerId(customerBPartnerId)
 				.salesRepBPartnerId(salesRepBPartnerId)
 				.commissionDate(commissionTriggerDocument.getCommissionDate())
 				.salesProductId(commissionTriggerDocument.getProductId())
@@ -81,10 +86,9 @@ public class CommissionInstanceRequestFactory
 			return Optional.empty();
 		}
 
-		final CommissionTrigger trigger = commissionTriggerFactory.createForDocument(commissionTriggerDocument, false /* candidateDeleted */);
+		final CommissionTrigger commissionTrigger = commissionTriggerFactory.createForDocument(commissionTriggerDocument, false /* candidateDeleted */);
 
-		return Optional.of(createRequest(hierarchy, configs, trigger));
-
+		return Optional.of(createRequest(hierarchy, configs, commissionTrigger));
 	}
 
 	private CreateCommissionSharesRequest createRequest(
@@ -92,11 +96,11 @@ public class CommissionInstanceRequestFactory
 			@NonNull final ImmutableList<CommissionConfig> configs,
 			@NonNull final CommissionTrigger trigger)
 	{
-		final CreateCommissionSharesRequest request = CreateCommissionSharesRequest.builder()
+		return CreateCommissionSharesRequest.builder()
 				.configs(configs)
 				.hierarchy(hierarchy)
 				.trigger(trigger)
+				.startingHierarchyLevel(HierarchyLevel.ZERO)
 				.build();
-		return request;
 	}
 }

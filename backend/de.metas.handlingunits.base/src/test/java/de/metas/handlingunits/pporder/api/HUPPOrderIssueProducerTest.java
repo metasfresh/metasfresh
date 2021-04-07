@@ -23,8 +23,6 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCan
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -48,14 +46,18 @@ import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderDocBaseType;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.mrp.api.impl.MRPTestDataSimple;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -196,9 +198,9 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		// Create Manufacturing order and validate Order BOM Line
 		final I_PP_Order ppOrder = createPP_OrderAndValidateBomLine("100", productBOM);
 		final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
-		Assert.assertNotNull("Order BOM Line for Folie shall exist", ppOrderBOMLine_Folie);
-		Assert.assertEquals("Invalid PP_Order UOM", uomMillimeter, ppOrderBOMLine_Folie.getC_UOM());
-		Assert.assertThat("Invalid PP_Order QtyRequired",
+		Assertions.assertNotNull(ppOrderBOMLine_Folie, "Order BOM Line for Folie shall exist");
+		Assertions.assertEquals(uomMillimeter, ppOrderBOMLine_Folie.getC_UOM(), "Invalid PP_Order UOM");
+		MatcherAssert.assertThat("Invalid PP_Order QtyRequired",
 				ppOrderBOMLine_Folie.getQtyRequiered(),
 				// Expected: 100(QtyOrdered) x 260(QtyBOM) +10% scrap [millimeters]
 				Matchers.comparesEqualTo(new BigDecimal("28600")));
@@ -242,9 +244,9 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	public void test_IssueOnlyForReceived_SmallNumbers()
 	{
 		// Assume we are dealing with right precisions
-		Assert.assertEquals("Invalid uom precision: " + uomMillimeter, 2, uomMillimeter.getStdPrecision());
-		Assert.assertEquals("Invalid uom precision: " + uomRolle, 10, uomRolle.getStdPrecision());
-		Assert.assertEquals("Invalid uom precision: " + uomStuck, 0, uomStuck.getStdPrecision());
+		Assertions.assertEquals(2, uomMillimeter.getStdPrecision(), "Invalid uom precision: " + uomMillimeter);
+		Assertions.assertEquals(10, uomRolle.getStdPrecision(), "Invalid uom precision: " + uomRolle);
+		Assertions.assertEquals(0, uomStuck.getStdPrecision(), "Invalid uom precision: " + uomStuck);
 
 		//
 		// Create BOM Line definition
@@ -268,9 +270,9 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		{
 			ppOrder = createPP_OrderAndValidateBomLine("100", productBOM);
 			final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
-			Assert.assertNotNull("Order BOM Line for Folie shall exist", ppOrderBOMLine_Folie);
-			Assert.assertEquals("Invalid PP_Order UOM", uomMillimeter, ppOrderBOMLine_Folie.getC_UOM());
-			Assert.assertThat("Invalid PP_Order QtyRequired",
+			Assertions.assertNotNull(ppOrderBOMLine_Folie, "Order BOM Line for Folie shall exist");
+			Assertions.assertEquals(uomMillimeter, ppOrderBOMLine_Folie.getC_UOM(), "Invalid PP_Order UOM");
+			MatcherAssert.assertThat("Invalid PP_Order QtyRequired",
 					ppOrderBOMLine_Folie.getQtyRequiered(),
 					Matchers.comparesEqualTo(new BigDecimal("28600")) // = 100(QtyOrdered) x 260(QtyBOM) +10% scrap [millimeters]
 			);
@@ -287,7 +289,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		// Create an VHU with 1Rolle and issue it to manufacturing order
 		// => we assume nothing will be issued because quantity of finished goods received is ZERO
 		{
-			Assert.assertThat("Invalid PP_Order.QtyDelivered", ppOrder.getQtyDelivered(), Matchers.comparesEqualTo(new BigDecimal("0")));
+			MatcherAssert.assertThat("Invalid PP_Order.QtyDelivered", ppOrder.getQtyDelivered(), Matchers.comparesEqualTo(new BigDecimal("0")));
 			final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("1"); // untouched
 			final BigDecimal expectedIssuedQtyOnBOMLine = new BigDecimal("0"); // nothing was issued
 			create_OneRoleHU_Issue_And_Test(ppOrder, expectedHUQtyAfterIssue, expectedIssuedQtyOnBOMLine);
@@ -301,7 +303,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		//
 		// Create an VHU with 1Rolle, issue it to manufacturing order and test
 		{
-			Assert.assertThat("Invalid PP_Order.QtyDelivered", ppOrder.getQtyDelivered(), Matchers.comparesEqualTo(new BigDecimal("100")));
+			MatcherAssert.assertThat("Invalid PP_Order.QtyDelivered", ppOrder.getQtyDelivered(), Matchers.comparesEqualTo(new BigDecimal("100")));
 			// 8600mm (28600-20000) still needs to be issued.
 			// 8600mm to role: 8600/1500000 = 0.0057333333333333 => rounded to 2 digits, HALF UP = 0.01role
 			// => 0.99=1.00role - 0.01(28600-20000 mm to rolle)
@@ -333,7 +335,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 					uomRolle // UOM
 			);
 
-			Assert.assertEquals("Invalid HUs count", 1, newHUs.size());
+			Assertions.assertEquals(1, newHUs.size(), "Invalid HUs count");
 
 			final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 			huStatusBL.setHUStatusActive(newHUs);
@@ -386,7 +388,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		refresh(hu);
 		if (expectedHUQtyAfterIssue.signum() == 0)
 		{
-			Assert.assertEquals(X_M_HU.HUSTATUS_Destroyed, hu.getHUStatus());
+			Assertions.assertEquals(X_M_HU.HUSTATUS_Destroyed, hu.getHUStatus());
 		}
 
 		// NOTE: at this moment when i write this test, the cost collector is not actually processed in JUnit testing mode, so Order BOM Line is not updated.
@@ -398,11 +400,11 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		{
 			assertThat(costCollectors).withFailMessage("Invalid cost collectors count").hasSize(1);
 			final I_PP_Cost_Collector costCollector = costCollectors.get(0);
-			Assert.assertEquals("Invalid Cost Collector Type", CostCollectorType.ComponentIssue.getCode(), costCollector.getCostCollectorType());
-			Assert.assertEquals("Invalid Cost Collector MovementDate", TimeUtil.asTimestamp(movementDate), costCollector.getMovementDate());
-			Assert.assertEquals("Invalid Cost Collector PP_Order", ppOrder, costCollector.getPP_Order());
-			Assert.assertEquals("Invalid Cost Collector PP_Order_BOMLine", ppOrderBOMLineId_Folie.getRepoId(), costCollector.getPP_Order_BOMLine_ID());
-			Assert.assertEquals("Invalid Cost Collector UOM", uomMillimeter.getC_UOM_ID(), costCollector.getC_UOM_ID());
+			Assertions.assertEquals(CostCollectorType.ComponentIssue.getCode(), costCollector.getCostCollectorType(), "Invalid Cost Collector Type");
+			Assertions.assertEquals(TimeUtil.asTimestamp(movementDate), costCollector.getMovementDate(), "Invalid Cost Collector MovementDate");
+			Assertions.assertEquals(ppOrder, costCollector.getPP_Order(), "Invalid Cost Collector PP_Order");
+			Assertions.assertEquals(ppOrderBOMLineId_Folie.getRepoId(), costCollector.getPP_Order_BOMLine_ID(), "Invalid Cost Collector PP_Order_BOMLine");
+			Assertions.assertEquals(uomMillimeter.getC_UOM_ID(), costCollector.getC_UOM_ID(), "Invalid Cost Collector UOM");
 			assertThat(costCollector.getMovementQty()).withFailMessage("Invalid Cost Collector Qty").isEqualByComparingTo(expectedIssuedQtyOnBOMLine);
 		}
 		else
@@ -465,9 +467,9 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 				{
 					ppOrder = createPP_OrderAndValidateBomLine(qtyOrderedStr, productBOM);
 					final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
-					Assert.assertNotNull("Order BOM Line for Folie shall exist", ppOrderBOMLine_Folie);
-					Assert.assertEquals("Invalid PP_Order UOM", uomMillimeter, ppOrderBOMLine_Folie.getC_UOM());
-					Assert.assertThat("Invalid PP_Order QtyRequired",
+					Assertions.assertNotNull(ppOrderBOMLine_Folie, "Order BOM Line for Folie shall exist");
+					Assertions.assertEquals(uomMillimeter, ppOrderBOMLine_Folie.getC_UOM(), "Invalid PP_Order UOM");
+					MatcherAssert.assertThat("Invalid PP_Order QtyRequired",
 							ppOrderBOMLine_Folie.getQtyRequiered(),
 							Matchers.comparesEqualTo(ppOrderBOMLine_Folie_QtyRequired_Expected));
 					ppOrderBOMLineId_Folie = PPOrderBOMLineId.ofRepoId(ppOrderBOMLine_Folie.getPP_Order_BOMLine_ID());
@@ -485,8 +487,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 				//
 				// Create an VHU with 1Rolle, issue it to manufacturing order and test
 				final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0");// shall be empty because if IssueMethod is not IssueOnlyForReceived then the whole HU will be issued
-				final BigDecimal expectedIssuedQtyOnBOMLine = rate_Rolle_to_Millimeter; // full HU qty shall be issued, i.e. 1role
-				create_OneRoleHU_Issue_And_Test(ppOrder, expectedHUQtyAfterIssue, expectedIssuedQtyOnBOMLine);
+				create_OneRoleHU_Issue_And_Test(ppOrder, expectedHUQtyAfterIssue, rate_Rolle_to_Millimeter); // full HU qty shall be issued, i.e. 1role
 			}
 		}
 	}
@@ -494,7 +495,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 	private I_PP_Order createPP_OrderAndValidateBomLine(final String qtyOrderedStr, final I_PP_Product_BOM productBOM)
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
-		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_ManufacturingOrder);
+		docType.setDocBaseType(PPOrderDocBaseType.MANUFACTURING_ORDER.getCode());
 		saveRecord(docType);
 
 		final I_PP_Order ppOrder = InterfaceWrapperHelper.create(Env.getCtx(), I_PP_Order.class, ITrx.TRXNAME_None);
@@ -502,7 +503,7 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		ppOrder.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
 		ppOrder.setM_Product_ID(productBOM.getM_Product_ID());
 		ppOrder.setPP_Product_BOM_ID(productBOM.getPP_Product_BOM_ID());
-		ppOrder.setAD_Workflow(masterData.workflow_Standard);
+		ppOrder.setAD_Workflow_ID(masterData.workflow_Standard.getAD_Workflow_ID());
 		ppOrder.setM_Warehouse_ID(masterData.warehouse_plant01.getM_Warehouse_ID());
 		ppOrder.setS_Resource(masterData.plant01);
 		ppOrder.setQtyOrdered(new BigDecimal(qtyOrderedStr));
@@ -540,17 +541,16 @@ public class HUPPOrderIssueProducerTest extends AbstractHUTest
 		// Create Manufacturing order and validate Order BOM Line
 		final I_PP_Order ppOrder = createPP_OrderAndValidateBomLine(qtyOrderedStr, productBOM);
 		final I_PP_Order_BOMLine ppOrderBOMLine_Folie = ppOrderBOMDAO.retrieveOrderBOMLine(ppOrder, pFolie);
-		Assert.assertNotNull("Order BOM Line for Folie shall exist", ppOrderBOMLine_Folie);
-		Assert.assertEquals("Invalid PP_Order UOM", uomMillimeter, ppOrderBOMLine_Folie.getC_UOM());
-		Assert.assertThat("Invalid PP_Order QtyRequired",
+		Assertions.assertNotNull(ppOrderBOMLine_Folie, "Order BOM Line for Folie shall exist");
+		Assertions.assertEquals(uomMillimeter, ppOrderBOMLine_Folie.getC_UOM(), "Invalid PP_Order UOM");
+		MatcherAssert.assertThat("Invalid PP_Order QtyRequired",
 				ppOrderBOMLine_Folie.getQtyRequiered(),
 				Matchers.comparesEqualTo(ppOrderBOMLine_Folie_QtyRequired_Expected));
 
 		//
 		// Create an VHU with 1Rolle, issue it to manufacturing order and test
 		final BigDecimal expectedHUQtyAfterIssue = new BigDecimal("0");// shall be empty because if IssueMethod is not IssueOnlyForReceived then the whole HU will be issued
-		final BigDecimal expectedIssuedQtyOnBOMLine = rate_Rolle_to_Millimeter; // full HU qty shall be issued, i.e. 1role
-		create_OneRoleHU_Issue_And_Test(ppOrder, expectedHUQtyAfterIssue, expectedIssuedQtyOnBOMLine);
+		create_OneRoleHU_Issue_And_Test(ppOrder, expectedHUQtyAfterIssue, rate_Rolle_to_Millimeter); // full HU qty shall be issued, i.e. 1role
 
 		// TODO: reverse it and test
 		// POJOLookupMap.get().dumpStatus("After", I_M_HU_Trx_Line.Table_Name, I_M_HU_Storage.Table_Name, I_M_HU.Table_Name);

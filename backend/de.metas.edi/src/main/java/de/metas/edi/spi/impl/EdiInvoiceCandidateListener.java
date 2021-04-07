@@ -25,6 +25,7 @@ package de.metas.edi.spi.impl;
 
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -54,7 +55,7 @@ public class EdiInvoiceCandidateListener implements IInvoiceCandidateListener
 
 	}
 
-	private boolean calculateEdiEnabled(final List<I_C_Invoice_Candidate> fromCandidates)
+	private boolean calculateEdiEnabled(@NonNull final List<I_C_Invoice_Candidate> fromCandidates)
 	{
 		if (fromCandidates.isEmpty())
 		{
@@ -71,8 +72,6 @@ public class EdiInvoiceCandidateListener implements IInvoiceCandidateListener
 				throw new AdempiereException("IsEdiEnabled not consistent in candidates: " + fromCandidates);
 			}
 		}
-
 		return isEdiEnabled;
 	}
-
 }

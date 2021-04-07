@@ -41,9 +41,7 @@ public interface IScriptsApplierListener
 
 	/**
 	 * Method called when a script execution failed.
-	 *
-	 * @param script
-	 * @param e exception
+     *
 	 * @return script failed resolution
 	 * @throws RuntimeException in case the given exception shall fail the entire run. An alternative would be to return {@link ScriptFailedResolution#Ignore}.
 	 */

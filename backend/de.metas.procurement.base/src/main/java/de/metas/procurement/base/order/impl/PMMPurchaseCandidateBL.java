@@ -67,7 +67,7 @@ public class PMMPurchaseCandidateBL implements IPMMPurchaseCandidateBL
 		}
 		else
 		{
-			candidate.setQtyOrdered(candidate.getQtyToOrder_TU());
+			candidate.setQtyToOrder(candidate.getQtyToOrder_TU());
 		}
 	}
 

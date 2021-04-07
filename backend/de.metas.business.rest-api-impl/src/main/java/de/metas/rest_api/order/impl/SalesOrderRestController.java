@@ -3,6 +3,7 @@ package de.metas.rest_api.order.impl;
 import java.io.IOException;
 import java.util.List;
 
+import de.metas.document.DocTypeId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -71,12 +72,13 @@ import lombok.NonNull;
  */
 
 @RestController
-@RequestMapping(SalesOrderRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/sales/order",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/orders/sales" })
 @Profile(Profiles.PROFILE_App)
 public class SalesOrderRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/sales/order";
-
 	private final AttachmentEntryService attachmentEntryService;
 
 	public SalesOrderRestController(@NonNull final AttachmentEntryService attachmentEntryService)
@@ -105,7 +107,7 @@ public class SalesOrderRestController
 					.adClientId(Env.getAD_Client_ID())
 					.name(request.getDocTypeName())
 					.build();
-			final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
+			final DocTypeId docTypeId = docTypeDAO.getDocTypeId(query);
 			salesOrderFactory.docType(docTypeId);
 		}
 
@@ -151,7 +153,7 @@ public class SalesOrderRestController
 				.manualPrice(salesOrderLine.getPrice());
 	}
 
-	private JsonSalesOrder toSalesOrder(I_C_Order salesOrderRecord)
+	private JsonSalesOrder toSalesOrder(final I_C_Order salesOrderRecord)
 	{
 		return JsonSalesOrder.builder()
 				.salesOrderId(String.valueOf(salesOrderRecord.getC_Order_ID()))

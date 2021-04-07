@@ -1,124 +1,79 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_HU
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 2029265661L;
+	private static final long serialVersionUID = 294382396L;
 
     /** Standard Constructor */
-    public X_M_HU (Properties ctx, int M_HU_ID, String trxName)
+    public X_M_HU (final Properties ctx, final int M_HU_ID, @Nullable final String trxName)
     {
       super (ctx, M_HU_ID, trxName);
-      /** if (M_HU_ID == 0)
-        {
-			setHUStatus (null); // 'P'
-			setIsReserved (false); // N
-			setM_HU_ID (0);
-			setM_HU_PI_Version_ID (0);
-			setValue (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_HU (Properties ctx, ResultSet rs, String trxName)
+    public X_M_HU (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
 	@Override
-	public int getC_BPartner_ID () 
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
-	/** Set Standort.
-		@param C_BPartner_Location_ID 
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
 	@Override
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
-	/** Get Standort.
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
 	@Override
-	public int getC_BPartner_Location_ID () 
+	public int getC_BPartner_Location_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
 
-	/** Set eigene Gebinde.
-		@param HUPlanningReceiptOwnerPM 
-		If true, then the packing material's owner is "us" (the guys who ordered it). If false, then the packing material's owner is the PO's partner.
-	  */
 	@Override
-	public void setHUPlanningReceiptOwnerPM (boolean HUPlanningReceiptOwnerPM)
+	public void setHUPlanningReceiptOwnerPM (final boolean HUPlanningReceiptOwnerPM)
 	{
-		set_Value (COLUMNNAME_HUPlanningReceiptOwnerPM, Boolean.valueOf(HUPlanningReceiptOwnerPM));
+		set_Value (COLUMNNAME_HUPlanningReceiptOwnerPM, HUPlanningReceiptOwnerPM);
 	}
 
-	/** Get eigene Gebinde.
-		@return If true, then the packing material's owner is "us" (the guys who ordered it). If false, then the packing material's owner is the PO's partner.
-	  */
 	@Override
-	public boolean isHUPlanningReceiptOwnerPM () 
+	public boolean isHUPlanningReceiptOwnerPM() 
 	{
-		Object oo = get_Value(COLUMNNAME_HUPlanningReceiptOwnerPM);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_HUPlanningReceiptOwnerPM);
 	}
 
 	/** 
@@ -138,131 +93,76 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public static final String HUSTATUS_Shipped = "E";
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
-	/** Set Gebinde Status.
-		@param HUStatus Gebinde Status	  */
 	@Override
-	public void setHUStatus (java.lang.String HUStatus)
+	public void setHUStatus (final java.lang.String HUStatus)
 	{
-
 		set_Value (COLUMNNAME_HUStatus, HUStatus);
 	}
 
-	/** Get Gebinde Status.
-		@return Gebinde Status	  */
 	@Override
-	public java.lang.String getHUStatus () 
+	public java.lang.String getHUStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_HUStatus);
+		return get_ValueAsString(COLUMNNAME_HUStatus);
 	}
 
-	/** Set in HU enthalten.
-		@param IsChildHU 
-		Sagt aus, ob die gegenbene HU in einer anderen HU enthalten ist (z.B. IFCO auf einer Palette)
-	  */
 	@Override
-	public void setIsChildHU (boolean IsChildHU)
+	public void setIsChildHU (final boolean IsChildHU)
 	{
 		throw new IllegalArgumentException ("IsChildHU is virtual column");	}
 
-	/** Get in HU enthalten.
-		@return Sagt aus, ob die gegenbene HU in einer anderen HU enthalten ist (z.B. IFCO auf einer Palette)
-	  */
 	@Override
-	public boolean isChildHU () 
+	public boolean isChildHU() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsChildHU);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsChildHU);
 	}
 
-	/** Set Reserviert.
-		@param IsReserved Reserviert	  */
 	@Override
-	public void setIsReserved (boolean IsReserved)
+	public void setIsReserved (final boolean IsReserved)
 	{
-		set_Value (COLUMNNAME_IsReserved, Boolean.valueOf(IsReserved));
+		set_Value (COLUMNNAME_IsReserved, IsReserved);
 	}
 
-	/** Get Reserviert.
-		@return Reserviert	  */
 	@Override
-	public boolean isReserved () 
+	public boolean isReserved() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsReserved);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsReserved);
 	}
 
-	/** Set Gesperrt.
-		@param Locked Gesperrt	  */
 	@Override
-	public void setLocked (boolean Locked)
+	public void setLocked (final boolean Locked)
 	{
 		throw new IllegalArgumentException ("Locked is virtual column");	}
 
-	/** Get Gesperrt.
-		@return Gesperrt	  */
 	@Override
-	public boolean isLocked () 
+	public boolean isLocked() 
 	{
-		Object oo = get_Value(COLUMNNAME_Locked);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Locked);
 	}
 
-	/** Set Los-Nr..
-		@param Lot 
-		Los-Nummer (alphanumerisch)
-	  */
 	@Override
-	public void setLot (java.lang.String Lot)
+	public void setLot (final @Nullable java.lang.String Lot)
 	{
 		throw new IllegalArgumentException ("Lot is virtual column");	}
 
-	/** Get Los-Nr..
-		@return Los-Nummer (alphanumerisch)
-	  */
 	@Override
-	public java.lang.String getLot () 
+	public java.lang.String getLot() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Lot);
+		return get_ValueAsString(COLUMNNAME_Lot);
 	}
 
-	/** Set Handling Unit.
-		@param M_HU_ID Handling Unit	  */
 	@Override
-	public void setM_HU_ID (int M_HU_ID)
+	public void setM_HU_ID (final int M_HU_ID)
 	{
 		if (M_HU_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_ID, M_HU_ID);
 	}
 
-	/** Get Handling Unit.
-		@return Handling Unit	  */
 	@Override
-	public int getM_HU_ID () 
+	public int getM_HU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_ID);
 	}
 
 	@Override
@@ -272,31 +172,24 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
-	public void setM_HU_Item_Parent(de.metas.handlingunits.model.I_M_HU_Item M_HU_Item_Parent)
+	public void setM_HU_Item_Parent(final de.metas.handlingunits.model.I_M_HU_Item M_HU_Item_Parent)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_Item_Parent_ID, de.metas.handlingunits.model.I_M_HU_Item.class, M_HU_Item_Parent);
 	}
 
-	/** Set Handling Units Item Parent ID.
-		@param M_HU_Item_Parent_ID Handling Units Item Parent ID	  */
 	@Override
-	public void setM_HU_Item_Parent_ID (int M_HU_Item_Parent_ID)
+	public void setM_HU_Item_Parent_ID (final int M_HU_Item_Parent_ID)
 	{
 		if (M_HU_Item_Parent_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_Item_Parent_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_Item_Parent_ID, Integer.valueOf(M_HU_Item_Parent_ID));
+			set_Value (COLUMNNAME_M_HU_Item_Parent_ID, M_HU_Item_Parent_ID);
 	}
 
-	/** Get Handling Units Item Parent ID.
-		@return Handling Units Item Parent ID	  */
 	@Override
-	public int getM_HU_Item_Parent_ID () 
+	public int getM_HU_Item_Parent_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Item_Parent_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_Item_Parent_ID);
 	}
 
 	@Override
@@ -306,53 +199,39 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
-	public void setM_HU_LUTU_Configuration(de.metas.handlingunits.model.I_M_HU_LUTU_Configuration M_HU_LUTU_Configuration)
+	public void setM_HU_LUTU_Configuration(final de.metas.handlingunits.model.I_M_HU_LUTU_Configuration M_HU_LUTU_Configuration)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_LUTU_Configuration_ID, de.metas.handlingunits.model.I_M_HU_LUTU_Configuration.class, M_HU_LUTU_Configuration);
 	}
 
-	/** Set Gebindekonfiguration.
-		@param M_HU_LUTU_Configuration_ID Gebindekonfiguration	  */
 	@Override
-	public void setM_HU_LUTU_Configuration_ID (int M_HU_LUTU_Configuration_ID)
+	public void setM_HU_LUTU_Configuration_ID (final int M_HU_LUTU_Configuration_ID)
 	{
 		if (M_HU_LUTU_Configuration_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_LUTU_Configuration_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_LUTU_Configuration_ID, Integer.valueOf(M_HU_LUTU_Configuration_ID));
+			set_Value (COLUMNNAME_M_HU_LUTU_Configuration_ID, M_HU_LUTU_Configuration_ID);
 	}
 
-	/** Get Gebindekonfiguration.
-		@return Gebindekonfiguration	  */
 	@Override
-	public int getM_HU_LUTU_Configuration_ID () 
+	public int getM_HU_LUTU_Configuration_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_LUTU_Configuration_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_LUTU_Configuration_ID);
 	}
 
-	/** Set Packvorschrift.
-		@param M_HU_PI_Item_Product_ID Packvorschrift	  */
 	@Override
-	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID)
+	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
 	{
 		if (M_HU_PI_Item_Product_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, Integer.valueOf(M_HU_PI_Item_Product_ID));
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
 	}
 
-	/** Get Packvorschrift.
-		@return Packvorschrift	  */
 	@Override
-	public int getM_HU_PI_Item_Product_ID () 
+	public int getM_HU_PI_Item_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Item_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
 	}
 
 	@Override
@@ -362,116 +241,94 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
-	public void setM_HU_PI_Version(de.metas.handlingunits.model.I_M_HU_PI_Version M_HU_PI_Version)
+	public void setM_HU_PI_Version(final de.metas.handlingunits.model.I_M_HU_PI_Version M_HU_PI_Version)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_PI_Version_ID, de.metas.handlingunits.model.I_M_HU_PI_Version.class, M_HU_PI_Version);
 	}
 
-	/** Set Packvorschrift Version.
-		@param M_HU_PI_Version_ID Packvorschrift Version	  */
 	@Override
-	public void setM_HU_PI_Version_ID (int M_HU_PI_Version_ID)
+	public void setM_HU_PI_Version_ID (final int M_HU_PI_Version_ID)
 	{
 		if (M_HU_PI_Version_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_PI_Version_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_PI_Version_ID, Integer.valueOf(M_HU_PI_Version_ID));
+			set_Value (COLUMNNAME_M_HU_PI_Version_ID, M_HU_PI_Version_ID);
 	}
 
-	/** Get Packvorschrift Version.
-		@return Packvorschrift Version	  */
 	@Override
-	public int getM_HU_PI_Version_ID () 
+	public int getM_HU_PI_Version_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Version_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Version_ID);
 	}
 
-	/** Set Lagerort.
-		@param M_Locator_ID 
-		Lagerort im Lager
-	  */
 	@Override
-	public void setM_Locator_ID (int M_Locator_ID)
+	public void setM_Locator_ID (final int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
 			set_Value (COLUMNNAME_M_Locator_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
+			set_Value (COLUMNNAME_M_Locator_ID, M_Locator_ID);
 	}
 
-	/** Get Lagerort.
-		@return Lagerort im Lager
-	  */
 	@Override
-	public int getM_Locator_ID () 
+	public int getM_Locator_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Locator_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Locator_ID);
 	}
 
-	/** Set Produkt Kategorie.
-		@param M_Product_Category_ID 
-		Kategorie eines Produktes
-	  */
 	@Override
-	public void setM_Product_Category_ID (int M_Product_Category_ID)
+	public void setM_Product_Category_ID (final int M_Product_Category_ID)
 	{
 		throw new IllegalArgumentException ("M_Product_Category_ID is virtual column");	}
 
-	/** Get Produkt Kategorie.
-		@return Kategorie eines Produktes
-	  */
 	@Override
-	public int getM_Product_Category_ID () 
+	public int getM_Product_Category_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Category_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_Category_ID);
 	}
 
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		throw new IllegalArgumentException ("M_Product_ID is virtual column");	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
-	/** Set Suchschlüssel.
-		@param Value 
-		Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
-	  */
 	@Override
-	public void setValue (java.lang.String Value)
+	public void setSerialNo (final @Nullable java.lang.String SerialNo)
+	{
+		throw new IllegalArgumentException ("SerialNo is virtual column");	}
+
+	@Override
+	public java.lang.String getSerialNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_SerialNo);
+	}
+
+	@Override
+	public void setServiceContract (final @Nullable java.lang.String ServiceContract)
+	{
+		throw new IllegalArgumentException ("ServiceContract is virtual column");	}
+
+	@Override
+	public java.lang.String getServiceContract() 
+	{
+		return get_ValueAsString(COLUMNNAME_ServiceContract);
+	}
+
+	@Override
+	public void setValue (final java.lang.String Value)
 	{
 		set_ValueNoCheck (COLUMNNAME_Value, Value);
 	}
 
-	/** Get Suchschlüssel.
-		@return Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
-	  */
 	@Override
-	public java.lang.String getValue () 
+	public java.lang.String getValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
+		return get_ValueAsString(COLUMNNAME_Value);
 	}
 }

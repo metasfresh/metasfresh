@@ -1,5 +1,27 @@
 package de.metas.manufacturing.rest_api;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.handlingunits.reservation.HUReservationDocRef;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Trace;
+import org.eevolution.api.PPCostCollectorId;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -14,10 +36,10 @@ import de.metas.common.manufacturing.JsonResponseIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseIssueToManufacturingOrderDetail;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonResponseReceiveFromManufacturingOrder;
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonErrorItem;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.JsonQuantity;
+import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.handlingunits.HuId;
@@ -38,7 +60,7 @@ import de.metas.manufacturing.order.exportaudit.APITransactionId;
 import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAudit;
 import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditItem;
 import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditItem.ManufacturingOrderReportAuditItemBuilder;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -50,24 +72,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Trace;
-import org.eevolution.api.PPCostCollectorId;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -380,7 +384,7 @@ class ManufacturingOrderReportProcessCommand
 		{
 			huReservationService.makeReservation(ReserveHUsRequest.builder()
 					.qtyToReserve(qtyToReceive)
-					.salesOrderLineId(salesOrderLineId)
+					.documentRef(HUReservationDocRef.ofSalesOrderLineId(salesOrderLineId))
 					.productId(productId)
 					.huId(HuId.ofRepoId(vhu.getM_HU_ID()))
 					.build());
@@ -470,7 +474,8 @@ class ManufacturingOrderReportProcessCommand
 	}
 
 	@NonNull
-	private HuId resolveHUId(
+	@VisibleForTesting
+	HuId resolveHUId(
 			@NonNull final ProductId productId,
 			@NonNull final JsonRequestHULookup request)
 	{
@@ -478,6 +483,10 @@ class ManufacturingOrderReportProcessCommand
 				.setHUStatus(X_M_HU.HUSTATUS_Active)
 				.addOnlyWithProductId(productId);
 
+		if(!Check.isBlank(request.getHuValue()))
+		{
+			queryBuilder.addOnlyHUValue(request.getHuValue());
+		}
 		if (!Check.isBlank(request.getLotNumber()))
 		{
 			queryBuilder.addOnlyWithAttribute(AttributeConstants.ATTR_LotNumber, request.getLotNumber());
@@ -485,6 +494,10 @@ class ManufacturingOrderReportProcessCommand
 		if (request.getBestBeforeDate() != null)
 		{
 			queryBuilder.addOnlyWithAttribute(AttributeConstants.ATTR_BestBeforeDate, request.getBestBeforeDate());
+		}
+		if(!Check.isBlank(request.getSerialNo()))
+		{
+			queryBuilder.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, request.getSerialNo());
 		}
 
 		final HuId huId = queryBuilder.createQueryBuilder()

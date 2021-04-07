@@ -67,7 +67,7 @@ import java.util.List;
 				+ "]";
 	}
 
-	private final IAttributeStorageFactory getDelegate()
+	private IAttributeStorageFactory getDelegate()
 	{
 		if (factory == null)
 		{
@@ -117,7 +117,7 @@ import java.util.List;
 	}
 
 	@Override
-	public void removeAttributeStorageListener(IAttributeStorageListener listener)
+	public void removeAttributeStorageListener(final IAttributeStorageListener listener)
 	{
 		if (listener == null)
 		{
@@ -205,16 +205,6 @@ import java.util.List;
 		if (huAttributesDAO != null)
 		{
 			huAttributesDAO.flush();
-		}
-	}
-
-	@Override
-	public void flushAndClearCache()
-	{
-		final IHUAttributesDAO huAttributesDAO = this.huAttributesDAO;
-		if (huAttributesDAO != null)
-		{
-			huAttributesDAO.flushAndClearCache();
 		}
 	}
 }

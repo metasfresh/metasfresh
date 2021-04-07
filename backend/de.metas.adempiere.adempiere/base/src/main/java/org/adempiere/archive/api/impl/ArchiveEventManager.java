@@ -69,6 +69,18 @@ public class ArchiveEventManager implements IArchiveEventManager
 	}
 
 	@Override
+	public void firePdfUpdate(
+			@NonNull final I_AD_Archive archive,
+			@Nullable final UserId userId, 
+			String action)
+	{
+		for (final IArchiveEventListener listener : listeners)
+		{
+			listener.onPdfUpdate(archive, userId, action);
+		}
+	}
+
+	@Override
 	public void fireEmailSent(
 			final I_AD_Archive archive,
 			final UserEMailConfig user,

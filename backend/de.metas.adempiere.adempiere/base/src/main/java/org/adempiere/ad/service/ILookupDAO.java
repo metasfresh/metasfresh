@@ -22,7 +22,7 @@
 
 package org.adempiere.ad.service;
 
-import de.metas.adempiere.service.impl.TooltipType;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.util.ISingletonService;
 import de.metas.util.collections.BlindIterator;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -34,6 +34,7 @@ import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /**
@@ -54,56 +55,6 @@ public interface ILookupDAO extends ISingletonService
 		String getColumnName();
 
 		String getTableName();
-	}
-
-	/**
-	 * Immutable Table Reference definition
-	 */
-	interface ITableRefInfo
-	{
-		TooltipType getTooltipType();
-
-		/**
-		 * Tell the log reader what to fix when a problem regarding a sloppy table reference is logged.
-		 */
-		String getIdentifier();
-
-		String getTableName();
-
-		String getKeyColumn();
-
-		/**
-		 * @return actual ColumnName to be displayed or null
-		 */
-		String getDisplayColumn();
-
-		/**
-		 * @return actual ColumnName SQL to be displayed or null
-		 */
-		String getDisplayColumnSQL();
-
-		String getOrderByClause();
-
-		String getWhereClause();
-
-		boolean isTranslated();
-
-		boolean isValueDisplayed();
-
-		AdWindowId getZoomSO_Window_ID();
-
-		AdWindowId getZoomAD_Window_ID_Override();
-
-		AdWindowId getZoomPO_Window_ID();
-
-		boolean isAutoComplete();
-
-		boolean isShowInactiveValues();
-
-		/**
-		 * Check if the keyColumn ends with "_ID"
-		 */
-		boolean isNumericKey();
 	}
 
 	interface ILookupDisplayInfo
@@ -153,23 +104,26 @@ public interface ILookupDAO extends ISingletonService
 
 	IColumnInfo retrieveColumnInfo(int adColumnId);
 
+	ExplainedOptional<TableRefInfo> getTableRefInfo(int referenceRepoId);
+
 	/**
-	 * Same as {@link #retrieveTableRefInfoOrNull(int)} but in case the {@link ITableRefInfo} was not found, an warning is logged
+	 * In case the {@link TableRefInfo} was not found, an warning is logged.
 	 *
 	 * @return table reference info or <code>null</code> if not found
 	 */
-	ITableRefInfo retrieveTableRefInfo(int AD_Reference_Value_ID);
+	@Nullable
+	TableRefInfo retrieveTableRefInfo(int AD_Reference_Value_ID);
 
 	/**
 	 * @return true if given reference is a table reference
 	 */
 	boolean isTableReference(int AD_Reference_Value_ID);
 
-	ITableRefInfo retrieveTableDirectRefInfo(String columnName);
+	TableRefInfo retrieveTableDirectRefInfo(String columnName);
 
-	ITableRefInfo retrieveAccountTableRefInfo();
+	TableRefInfo retrieveAccountTableRefInfo();
 
-	ILookupDisplayInfo retrieveLookupDisplayInfo(ITableRefInfo tableRefInfo);
+	ILookupDisplayInfo retrieveLookupDisplayInfo(TableRefInfo tableRefInfo);
 
 	boolean isReferenceOrderByValue(int adReferenceId);
 
@@ -194,9 +148,4 @@ public interface ILookupDAO extends ISingletonService
 	 * Creates a validation key to be used when checking if data is valid in a given context
 	 */
 	Object createValidationKey(IValidationContext validationCtx, MLookupInfo lookupInfo);
-
-	/**
-	 * Retrieve TableRefInfo or null
-	 */
-	ITableRefInfo retrieveTableRefInfoOrNull(int AD_Reference_ID);
 }

@@ -22,20 +22,27 @@
 
 package de.metas.handlingunits.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
+import de.metas.handlingunits.IHUPIItemProductQuery;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.handlingunits.model.I_M_ProductPrice;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -54,26 +61,17 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
-import de.metas.bpartner.BPartnerId;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.IHUPIItemProductQuery;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Item;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_HU_PI_Version;
-import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.handlingunits.model.I_M_ProductPrice;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class HUPIItemProductDAO implements IHUPIItemProductDAO
 {
@@ -106,8 +104,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		final I_M_HU_PI_Item_Product piip = getById(HUPIItemProductId.VIRTUAL_HU);
 
 		return Check.assumeNotNull(piip,
-				"There is always a M_HU_PI_Item_Product record for HU_PI_Item_Product_ID={}",
-				HUPIItemProductId.VIRTUAL_HU);
+								   "There is always a M_HU_PI_Item_Product record for HU_PI_Item_Product_ID={}",
+								   HUPIItemProductId.VIRTUAL_HU);
 	}
 
 	@Override
@@ -324,8 +322,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 			// We accept NoPI or VirtualPI configurations because those needs to be filtered out by other options (e.g. setAllowVirtualPI())
 			infiniteCapacityFilter.addInArrayOrAllFilter(I_M_HU_PI_Item_Product.COLUMN_M_HU_PI_Item_Product_ID,
-					HUPIItemProductId.TEMPLATE_HU,
-					HUPIItemProductId.VIRTUAL_HU);
+														 HUPIItemProductId.TEMPLATE_HU,
+														 HUPIItemProductId.VIRTUAL_HU);
 
 			filters.addFilter(infiniteCapacityFilter);
 		}
@@ -487,6 +485,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				// Get specific Product first
 				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_IsAllowAnyProduct, Direction.Descending, Nulls.Last) // Y first, N second
 				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_IsDefaultForProduct, Direction.Descending, Nulls.Last)
 				// Get latest valid record first
 				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last);
 
@@ -626,7 +625,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		if (bpartnerId != null)
 		{
 			final I_M_HU_PI_Item_Product originalHUPIItemProduct = retrieveMaterialItemProduct(cuProductId, bpartnerId, currentDate, huUnitType,
-					false); // allowInfiniteCapacity = false
+																							   false); // allowInfiniteCapacity = false
 			if (originalHUPIItemProduct != null)     // kindda redundant check
 			{
 				removeDuplicatePIResultsWithoutPartner(originalHUPIItemProduct, availableHUPIItemProducts);
@@ -694,5 +693,15 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		final I_M_HU_PI_Item_Product huPIItemProduct = retrieveFirst(Env.getCtx(), query, ITrx.TRXNAME_None);
 		return Optional.ofNullable(huPIItemProduct);
+	}
+
+	@Override
+	public Optional<HUPIItemProductId> retrieveDefaultIdForProduct(
+			@NonNull final ProductId productId,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final ZonedDateTime date)
+	{
+		return retrieveDefaultForProduct(productId, bpartnerId, date)
+				.map(huPiItemProduct -> HUPIItemProductId.ofRepoIdOrNull(huPiItemProduct.getM_HU_PI_Item_Product_ID()));
 	}
 }

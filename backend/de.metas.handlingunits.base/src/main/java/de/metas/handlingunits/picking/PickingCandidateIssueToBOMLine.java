@@ -1,7 +1,7 @@
 package de.metas.handlingunits.picking;
 
 import de.metas.handlingunits.HuId;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderBOMLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;

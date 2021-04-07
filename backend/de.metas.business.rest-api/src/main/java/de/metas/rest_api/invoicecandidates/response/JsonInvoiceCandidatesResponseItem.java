@@ -1,7 +1,7 @@
 package de.metas.rest_api.invoicecandidates.response;
 
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.MetasfreshId;
+import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.rest_api.utils.MetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;

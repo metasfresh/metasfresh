@@ -30,8 +30,6 @@ import java.util.Set;
 
 import org.eevolution.model.I_PP_Cost_Collector;
 
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.ISingletonService;
 
 public interface IPPCostCollectorDAO extends ISingletonService

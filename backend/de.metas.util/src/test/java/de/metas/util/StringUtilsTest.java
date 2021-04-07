@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableList;
 import org.adempiere.util.lang.IPair;
 
 /*
@@ -188,5 +189,35 @@ public class StringUtilsTest
 			final String s = "test";
 			assertThat(StringUtils.trimBlankToNull(s)).isSameAs(s);
 		}
+	}
+	
+	@Test
+	public void test_cleanWhitespace()
+	{
+		assertThat(StringUtils.cleanWhitespace("")).isEqualTo("");
+		assertThat(StringUtils.cleanWhitespace(" ")).isEqualTo("");
+		assertThat(StringUtils.cleanWhitespace(" \t\n ")).isEqualTo("");
+		assertThat(StringUtils.cleanWhitespace(" \taaaa\n ")).isEqualTo("aaaa");
+		assertThat(StringUtils.cleanWhitespace("CH34 8914 4463 3729 49 43 8")).isEqualTo("CH3489144463372949438");
+
+		{
+			final String s = "test";
+			assertThat(StringUtils.cleanWhitespace(s)).isSameAs(s);
+		}
+	}
+
+	@Test
+	public void tokenizeStringToIntegers()
+	{
+		final ImmutableList<Integer> result = StringUtils.tokenizeStringToIntegers(
+				"2195601\n"
+						+ "   \n"
+						+ "2195602, \n"
+						+ "2195603, \n"
+						+ "2195604 ,\n"
+						+ "2199111,2175651\n"
+						+ "2195605,\t 2195606abc2195607");
+
+		assertThat(result).containsExactly(2195601, 2195602, 2195603, 2195604, 2199111, 2175651, 2195605, 2195606, 2195607);
 	}
 }

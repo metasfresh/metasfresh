@@ -8,9 +8,9 @@ de.metas.rest_api.product.ProductCategoriesRestControllerTest.getProductCategori
     "defaultCategory" : true,
     "createdUpdatedInfo" : {
       "createdBy" : 100,
-      "created" : "2019-09-05T03:20:14.000000500+02:00[Europe/Berlin]",
+      "created" : "2019-09-05T03:20:14.0000005+02:00",
       "updatedBy" : 100,
-      "updated" : "2019-09-05T03:21:22.000000501+02:00[Europe/Berlin]"
+      "updated" : "2019-09-05T03:21:22.000000501+02:00"
     }
   }, {
     "id" : 100002,
@@ -21,9 +21,9 @@ de.metas.rest_api.product.ProductCategoriesRestControllerTest.getProductCategori
     "defaultCategory" : false,
     "createdUpdatedInfo" : {
       "createdBy" : 100,
-      "created" : "2019-09-05T03:20:14.000000500+02:00[Europe/Berlin]",
+      "created" : "2019-09-05T03:20:14.0000005+02:00",
       "updatedBy" : 100,
-      "updated" : "2019-09-05T03:21:22.000000501+02:00[Europe/Berlin]"
+      "updated" : "2019-09-05T03:21:22.000000501+02:00"
     }
   } ]
 } ]

@@ -25,6 +25,7 @@ package org.adempiere.ad.table.api;
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
@@ -33,6 +34,7 @@ import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_SQLColumn_SourceTableColumn;
 import org.compiere.model.I_AD_Table;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -47,7 +49,11 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	I_AD_Column retrieveColumn(String tableName, String columnName);
 
+	I_AD_Column retrieveColumnById(@NonNull AdColumnId columnId);
+
 	I_AD_Column retrieveColumn(AdTableId tableId, String columnName);
+
+	AdColumnId retrieveColumnId(AdTableId tableId, String columnName);
 
 	/**
 	 * @return the element with the given <code>columnName</code> or <code>null</code>. Note that {@link I_AD_Element#COLUMNNAME_ColumnName} is unique.
@@ -76,6 +82,7 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	String retrieveTableName(AdTableId adTableId);
 
+	@Nullable
 	default String retrieveTableName(final int adTableId)
 	{
 		// guard against 0 AD_Table_ID
@@ -91,6 +98,8 @@ public interface IADTableDAO extends ISingletonService
 	 * @return AD_Table_ID or -1
 	 */
 	int retrieveTableId(String tableName);
+
+	AdTableId retrieveAdTableId(String tableName);
 
 	List<I_AD_Table> retrieveAllTables(Properties ctx, String trxName);
 
@@ -111,11 +120,13 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	boolean isExistingTable(String tableName);
 
+	@Deprecated
 	Optional<AdWindowId> retrieveWindowId(String tableName);
 
 	/**
 	 * @return default window name, in context language.
 	 */
+	@Deprecated
 	String retrieveWindowName(Properties ctx, String tableName);
 
 	/**
@@ -129,7 +140,6 @@ public interface IADTableDAO extends ISingletonService
 	 * @param tableName  case insensitive
 	 * @param columnName case insensitive
 	 * @param trxname    may be <code>null</code>. If you call this method with null, then the query builder will be created with {@link org.adempiere.ad.trx.api.ITrx#TRXNAME_None}.
-	 * @return
 	 */
 	IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(String tableName, String columnName, String trxname);
 

@@ -84,13 +84,16 @@ class MasterWidget extends PureComponent {
       windowId,
       patch,
       rowId,
+      dataId: docId,
       tabId,
       relativeDocId,
       isAdvanced = false,
       viewId,
       updatePropertyValue,
+      disconnected,
       updateRow,
     } = this.props;
+
     value = formatValueByWidgetType({ widgetType, value });
 
     let entity = viewId ? 'documentView' : this.props.entity;
@@ -102,6 +105,20 @@ class MasterWidget extends PureComponent {
       viewId,
     });
 
+    const updateOptions = {
+      windowId,
+      docId,
+      property,
+      value,
+      tabId,
+      rowId: currRowId,
+      isModal,
+      entity,
+      tableId,
+      disconnected,
+      action: 'patch',
+    };
+
     // TODO: Leaving this for now in case this is used in some edge cases
     // but seems like a duplication of what we have in `handleChange`.
     // *HOTFIX update*: This is used by attributes. I think we should try to rewrite the
@@ -110,15 +127,7 @@ class MasterWidget extends PureComponent {
     widgetType !== 'Button' &&
       !dataId &&
       (widgetType === 'ProductAttributes' || widgetType === 'Quantity') &&
-      updatePropertyValue({
-        property,
-        value,
-        tabId,
-        rowId: currRowId,
-        isModal,
-        entity,
-        tableId,
-      });
+      updatePropertyValue(updateOptions);
 
     ret = patch(
       entity,
@@ -137,6 +146,10 @@ class MasterWidget extends PureComponent {
     // flash the row to indicate a change
     updateRow && updateRow();
     this.setState({ edited: false });
+
+    /** we are using this `disconnected` flag to know when the Master widget should update the property value differently */
+    disconnected === 'inlineTab' &&
+      updatePropertyValue({ ...updateOptions, ret });
 
     return ret;
   };
@@ -162,6 +175,7 @@ class MasterWidget extends PureComponent {
       dataId,
       windowId,
       widgetData,
+      disconnected,
     } = this.props;
 
     // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
@@ -188,6 +202,8 @@ class MasterWidget extends PureComponent {
       });
 
       updatePropertyValue({
+        windowId,
+        docId: dataId,
         property,
         value: val,
         tabId,
@@ -195,6 +211,8 @@ class MasterWidget extends PureComponent {
         isModal,
         entity,
         tableId,
+        disconnected,
+        action: 'change',
       });
     });
   };
@@ -316,6 +334,7 @@ MasterWidget.propTypes = {
   entity: PropTypes.string,
   precision: PropTypes.bool,
   clearValue: PropTypes.bool,
+  disconnected: PropTypes.string,
   updateRow: PropTypes.func,
 };
 

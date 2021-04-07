@@ -22,15 +22,45 @@
 
 package de.metas.product.impl;
 
-import static de.metas.util.Check.isEmpty;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.cache.CCache;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.organization.OrgId;
+import de.metas.product.CreateProductRequest;
+import de.metas.product.IProductDAO;
+import de.metas.product.IProductMappingAware;
+import de.metas.product.ProductAndCategoryAndManufacturerId;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
+import de.metas.product.ProductPlanningSchemaSelector;
+import de.metas.product.ResourceId;
+import de.metas.product.UpdateProductRequest;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.X_M_Product;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,45 +72,22 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.annotation.Nullable;
-
-import de.metas.product.ProductPlanningSchemaSelector;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.model.IQuery;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-import org.compiere.util.Env;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-
-import de.metas.cache.CCache;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.organization.OrgId;
-import de.metas.product.CreateProductRequest;
-import de.metas.product.IProductDAO;
-import de.metas.product.IProductMappingAware;
-import de.metas.product.ProductAndCategoryAndManufacturerId;
-import de.metas.product.ProductAndCategoryId;
-import de.metas.product.ProductCategoryId;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
-import de.metas.product.UpdateProductRequest;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static de.metas.util.Check.isEmpty;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ProductDAO implements IProductDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	final static int ONE_YEAR_DAYS = 365;
+	final static int TWO_YEAR_DAYS = 730;
+	final static int THREE_YEAR_DAYS = 1095;
 
 	private final CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId>builder()
 			.tableName(I_M_Product_Category.Table_Name)
@@ -205,10 +212,18 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public Stream<I_M_Product> streamAllProducts()
+	public Stream<I_M_Product> streamAllProducts(@Nullable final Instant since)
 	{
-		return queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
+		final IQueryBuilder<I_M_Product> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (since != null)
+		{
+			final Timestamp updatedAfter = TimeUtil.asTimestamp(since);
+			queryBuilder.addCompareFilter(I_M_Product.COLUMNNAME_Updated, CompareQueryFilter.Operator.GREATER_OR_EQUAL, updatedAfter);
+		}
+
+		return queryBuilder
 				.orderBy(I_M_Product.COLUMNNAME_M_Product_ID)
 				.create()
 				.iterateAndStream();
@@ -219,7 +234,6 @@ public class ProductDAO implements IProductDAO
 	{
 		return defaultProductCategoryCache.getOrLoad(0, this::retrieveDefaultProductCategoryId);
 	}
-
 
 	/**
 	 * @return All the active products with the given product planning schema selector
@@ -316,7 +330,7 @@ public class ProductDAO implements IProductDAO
 		}
 
 		final I_M_Product product = getById(productId);
-		return product != null && product.isActive() ? ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()) : null;
+		return product != null ? ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()) : null;
 	}
 
 	@Nullable
@@ -509,11 +523,47 @@ public class ProductDAO implements IProductDAO
 		{
 			return productRecord.getGuaranteeDaysMin();
 		}
+		else if (Check.isNotBlank(productRecord.getGuaranteeMonths()))
+		{
+			return getGuaranteeMonthsInDays(productId);
+		}
 		else
 		{
 			final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
 			final I_M_Product_Category productCategoryRecord = getProductCategoryById(productCategoryId);
 			return productCategoryRecord.getGuaranteeDaysMin();
 		}
+	}
+
+	@Override
+	public int getGuaranteeMonthsInDays(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		if(product != null && Check.isNotBlank(product.getGuaranteeMonths()))
+		{
+			switch (product.getGuaranteeMonths()) {
+				case X_M_Product.GUARANTEEMONTHS_12: return ONE_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_24: return TWO_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_36: return THREE_YEAR_DAYS;
+				default: return 0;
+			}
+		}
+		return 0;
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByBarcode(@NonNull final String barcode, @NonNull final ClientId clientId)
+	{
+		final ProductId productId = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
+								.setJoinOr()
+								.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
+								.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+				.create()
+				.firstIdOnly(ProductId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(productId);
 	}
 }

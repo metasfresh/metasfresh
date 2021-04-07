@@ -1,5 +1,6 @@
 package de.metas.report.jasper.client;
 
+import java.time.Duration;
 import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -69,8 +70,8 @@ public class RemoteServletInvoker implements IReportServer
 			mgtRootUrl = reportsRootUrl.substring(0, idx) + ReportConstants.JRSERVERSERVLET_MGTSERVLET_SUFFIX;
 		}
 
-		final int connectTimeout = sysConfigs.getIntValue(SYSCONFIG_ConnectTimeout, SYSCONFIG_ConnectTimeout_DEFAULT);
-		final int readTimeout = sysConfigs.getIntValue(SYSCONFIG_ReadTimeout, SYSCONFIG_ReadTimeout_DEFAULT);
+		final Duration connectTimeout = Duration.ofMillis(sysConfigs.getIntValue(SYSCONFIG_ConnectTimeout, SYSCONFIG_ConnectTimeout_DEFAULT));
+		final Duration readTimeout = Duration.ofMillis(sysConfigs.getIntValue(SYSCONFIG_ReadTimeout, SYSCONFIG_ReadTimeout_DEFAULT));
 		restTemplate = new RestTemplateBuilder()
 				.setConnectTimeout(connectTimeout)
 				.setReadTimeout(readTimeout)

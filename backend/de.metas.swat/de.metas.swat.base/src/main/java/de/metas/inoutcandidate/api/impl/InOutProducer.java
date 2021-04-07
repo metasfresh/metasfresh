@@ -5,6 +5,8 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
@@ -35,6 +37,7 @@ import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_C_DocType;
@@ -92,6 +95,8 @@ public class InOutProducer implements IInOutProducer
 
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	private static final String DYNATTR_HeaderAggregationKey = InOutProducer.class.getName() + "#HeaderAggregationKey";
 
@@ -575,6 +580,9 @@ public class InOutProducer implements IInOutProducer
 		//
 		// Order Line Link
 		line.setC_OrderLine_ID(rs.getC_OrderLine_ID());
+
+		final Dimension receiptScheduleDimension = dimensionService.getFromRecord(rs);
+		dimensionService.updateRecord(line, receiptScheduleDimension);
 	}
 
 	/**

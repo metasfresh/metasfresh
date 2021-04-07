@@ -32,7 +32,7 @@ import lombok.NonNull;
  */
 
 /**
- * This class loads the local settings properties file and return a {@link Settings} instance.
+ * This class loads the local settings properties file and return a {@link DBConnectionSettingProperties} instance.
  *
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -48,32 +48,32 @@ class SettingsLoader
 	@NonNull
 	private final PropertiesFileLoader propertiesFileLoader;
 
-	public Settings loadSettings(@NonNull final Config config)
+	public DBConnectionSettingProperties loadSettings(@NonNull final RolloutMigrationConfig config)
 	{
 		try
 		{
-			final Settings settings;
-			if (config.getSettingsFile() != null)
+			final DBConnectionSettingProperties settings;
+			if (config.getDataBaseSettingsFile() != null)
 			{
-				final File settigsFileAsSpecified = new File(config.getSettingsFile());
+				final File settigsFileAsSpecified = new File(config.getDataBaseSettingsFile());
 				if (settigsFileAsSpecified.exists())
 				{
 					logger.info("Settings file {} found", settigsFileAsSpecified);
-					settings = new Settings(setSettingsFile(null, config.getSettingsFile()));
+					settings = new DBConnectionSettingProperties(setSettingsFile(null, config.getDataBaseSettingsFile()));
 				}
 				else
 				{
 					final File settingsDir = directoryChecker.checkDirectory("roloutDir", config.getRolloutDirName());
 					logger.info("Settings file {} not found; trying with rollout dir={}", settigsFileAsSpecified, settingsDir);
 
-					settings = new Settings(setSettingsFile(settingsDir, config.getSettingsFile()));
+					settings = new DBConnectionSettingProperties(setSettingsFile(settingsDir, config.getDataBaseSettingsFile()));
 				}
 			}
 			else
 			{
 				logger.info("No settings file specified; looking for");
 				final File settingsDir = directoryChecker.checkDirectory("user.home", System.getProperty("user.home"));
-				settings = new Settings(setSettingsFile(settingsDir, Config.DEFAULT_SETTINGS_FILENAME));
+				settings = new DBConnectionSettingProperties(setSettingsFile(settingsDir, RolloutMigrationConfig.DEFAULT_SETTINGS_FILENAME));
 			}
 			return settings;
 		}

@@ -34,12 +34,12 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -106,7 +106,7 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 			return null;
 		}
 
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(orgBPLocationId);
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(orgBPLocationId);
 		if (bpLocation != null) // 03378 : Temporary. Will be removed when OrgBP_Location is mandatory.
 		{
 			return bpLocation.getC_Location();
@@ -124,7 +124,7 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 	@Override
 	public Optional<UserId> retrieveUserInChargeOrNull(@NonNull final OrgId orgId)
 	{
-		final I_AD_User user = retrieveUserInChargeOrNull(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
+		final org.compiere.model.I_AD_User user = retrieveUserInChargeOrNull(Env.getCtx(), orgId.getRepoId(), ITrx.TRXNAME_None);
 		if (user != null)
 		{
 			return Optional.of(UserId.ofRepoId(user.getAD_User_ID()));
@@ -134,10 +134,10 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 
 	@Override
 	@Deprecated
-	public I_AD_User retrieveUserInChargeOrNull(final Properties ctx, final int orgId, final String trxName)
+	public org.compiere.model.I_AD_User retrieveUserInChargeOrNull(final Properties ctx, final int orgId, final String trxName)
 	{
 		final IBPartnerDAO bPartnerPA = Services.get(IBPartnerDAO.class);
-		I_AD_User defaultContact;
+		org.compiere.model.I_AD_User defaultContact;
 		try
 		{
 			final I_C_BPartner orgBPartner = bPartnerPA.retrieveOrgBPartner(ctx, orgId, I_C_BPartner.class, trxName);

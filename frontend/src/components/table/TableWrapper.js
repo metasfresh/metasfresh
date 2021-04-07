@@ -243,7 +243,9 @@ class TableWrapper extends PureComponent {
         return;
       }
 
-      onDeselectAll();
+      if (this.props.selected.length) {
+        onDeselectAll();
+      }
 
       // if view is an included view, we should deselect parent's selection as the included
       // view is only visible when an item is selected. At the same time we'll hide the
@@ -442,9 +444,12 @@ class TableWrapper extends PureComponent {
         ) : null}
         {promptOpen && (
           <Prompt
-            title="Delete"
-            text="Are you sure?"
-            buttons={{ submit: 'Delete', cancel: 'Cancel' }}
+            title={counterpart.translate('window.Delete.caption')}
+            text={counterpart.translate('window.delete.message')}
+            buttons={{
+              submit: counterpart.translate('window.delete.confirm'),
+              cancel: counterpart.translate('window.delete.cancel'),
+            }}
             onCancelClick={this.handlePromptCancelClick}
             selected={selected}
             onSubmitClick={this.handlePromptSubmitClick}

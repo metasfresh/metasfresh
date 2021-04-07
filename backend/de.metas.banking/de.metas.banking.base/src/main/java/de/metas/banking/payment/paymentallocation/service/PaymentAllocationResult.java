@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.allocation.api.PaymentAllocationId;
@@ -39,12 +40,9 @@ import lombok.Value;
 @Builder
 public class PaymentAllocationResult
 {
-	@NonNull
-	private ImmutableList<AllocationLineCandidate> candidates;
-	@NonNull
-	private OptionalDeferredException<PaymentAllocationException> fullyAllocatedCheck;
-	@NonNull
-	private final ImmutableSet<PaymentAllocationId> paymentAllocationIds;
+	@NonNull ImmutableList<AllocationLineCandidate> candidates;
+	@NonNull OptionalDeferredException<PaymentAllocationException> fullyAllocatedCheck;
+	@NonNull ImmutableMap<PaymentAllocationId,AllocationLineCandidate> paymentAllocationIds;
 
 	public boolean isOK()
 	{

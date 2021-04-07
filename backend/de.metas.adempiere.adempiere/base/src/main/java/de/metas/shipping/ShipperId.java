@@ -12,6 +12,8 @@ import de.metas.util.lang.RepoIdAware;
 
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -46,6 +48,7 @@ public class ShipperId implements RepoIdAware
 		return new ShipperId(repoId);
 	}
 
+	@Nullable
 	public static ShipperId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new ShipperId(repoId) : null;
@@ -56,19 +59,14 @@ public class ShipperId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final ShipperId shipperId)
+	public static int toRepoId(@Nullable final ShipperId shipperId)
 	{
-		return toRepoIdOr(shipperId, -1);
-	}
-
-	public static int toRepoIdOr(final ShipperId shipperId, final int defaultValue)
-	{
-		return shipperId != null ? shipperId.getRepoId() : defaultValue;
+		return shipperId != null ? shipperId.getRepoId() : -1;
 	}
 
 	private ShipperId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_Shipper_ID");
 	}
 
 	@JsonValue

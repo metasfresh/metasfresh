@@ -9,10 +9,11 @@ import javax.annotation.Nullable;
 /** Generated Model for M_HU_PI_Item_Product
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M_HU_PI_Item_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1589174833L;
+	private static final long serialVersionUID = -531668251L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Item_Product (final Properties ctx, final int M_HU_PI_Item_Product_ID, @Nullable final String trxName)
@@ -65,7 +66,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -77,7 +78,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setEAN_TU (final java.lang.String EAN_TU)
+	public void setEAN_TU (final @Nullable java.lang.String EAN_TU)
 	{
 		set_Value (COLUMNNAME_EAN_TU, EAN_TU);
 	}
@@ -89,7 +90,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setGTIN (final java.lang.String GTIN)
+	public void setGTIN (final @Nullable java.lang.String GTIN)
 	{
 		set_Value (COLUMNNAME_GTIN, GTIN);
 	}
@@ -101,7 +102,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setGTIN_LU_PackingMaterial_Fallback (final java.lang.String GTIN_LU_PackingMaterial_Fallback)
+	public void setGTIN_LU_PackingMaterial_Fallback (final @Nullable java.lang.String GTIN_LU_PackingMaterial_Fallback)
 	{
 		set_Value (COLUMNNAME_GTIN_LU_PackingMaterial_Fallback, GTIN_LU_PackingMaterial_Fallback);
 	}
@@ -233,7 +234,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setName (final @Nullable java.lang.String Name)
 	{
 		set_ValueNoCheck (COLUMNNAME_Name, Name);
 	}
@@ -258,7 +259,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setUPC (final java.lang.String UPC)
+	public void setUPC (final @Nullable java.lang.String UPC)
 	{
 		set_Value (COLUMNNAME_UPC, UPC);
 	}
@@ -282,7 +283,7 @@ public class X_M_HU_PI_Item_Product extends org.compiere.model.PO implements I_M
 	}
 
 	@Override
-	public void setValidTo (final java.sql.Timestamp ValidTo)
+	public void setValidTo (final @Nullable java.sql.Timestamp ValidTo)
 	{
 		set_Value (COLUMNNAME_ValidTo, ValidTo);
 	}

@@ -33,7 +33,6 @@ import org.adempiere.ui.api.IGridTabSummaryInfo;
 import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.currency.Currency;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IMsgBL;

@@ -26,6 +26,8 @@ package de.metas.document.impl;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -43,13 +45,12 @@ import de.metas.document.model.IDocumentLocation;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 
-/**
- *
- * @author tsa
- * @task http://dewiki908/mediawiki/index.php/03120:_Error_in_DocumentLocation_callout_%282012080910000142%29
- */
 public class DocumentLocationBL implements IDocumentLocationBL
 {
+
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 	@Override
 	public void setBPartnerAddress(final IDocumentLocation location)
 	{
@@ -69,9 +70,9 @@ public class DocumentLocationBL implements IDocumentLocationBL
 			return;
 		}
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(location.getC_BPartner_ID(), location.getC_BPartner_Location_ID());
-		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationById(bpartnerLocationId);
+		final I_C_BPartner_Location bpartnerLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 
-		final de.metas.adempiere.model.I_AD_User user;
+		final I_AD_User user;
 		if (location.getAD_User_ID() > 0)
 		{
 			final IUserDAO usersRepo = Services.get(IUserDAO.class);
@@ -102,11 +103,11 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		}
 		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.create(billLocation.getBill_Location(), I_C_BPartner_Location.class);
 
-		final de.metas.adempiere.model.I_AD_User user;
+		final I_AD_User user;
 		if (billLocation.getBill_User_ID() > 0)
 		{
 			final I_AD_User userPO = billLocation.getBill_User();
-			user = InterfaceWrapperHelper.create(userPO, de.metas.adempiere.model.I_AD_User.class);
+			user = InterfaceWrapperHelper.create(userPO, I_AD_User.class);
 		}
 		else
 		{
@@ -129,7 +130,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 				return;
 			}
 
-			final I_M_Warehouse warehouse = docDeliveryLocation.getM_Warehouse();
+			final I_M_Warehouse warehouse = warehouseDAO.getById(WarehouseId.ofRepoId(warehouseId));
 			final String address = makeWarehouseAddress(warehouse);
 			docDeliveryLocation.setDeliveryToAddress(address);
 			return;
@@ -147,11 +148,11 @@ public class DocumentLocationBL implements IDocumentLocationBL
 		}
 		final I_C_BPartner_Location bpartnerLocation = InterfaceWrapperHelper.create(docDeliveryLocation.getDropShip_Location(), I_C_BPartner_Location.class);
 
-		final de.metas.adempiere.model.I_AD_User user;
+		final I_AD_User user;
 		if (docDeliveryLocation.getDropShip_User_ID() > 0)
 		{
 			final I_AD_User userPO = docDeliveryLocation.getDropShip_User();
-			user = InterfaceWrapperHelper.create(userPO, de.metas.adempiere.model.I_AD_User.class);
+			user = InterfaceWrapperHelper.create(userPO, I_AD_User.class);
 		}
 		else
 		{
@@ -164,9 +165,8 @@ public class DocumentLocationBL implements IDocumentLocationBL
 	}
 
 	/**
-	 * Builds the warehouse address by using {@link I_M_Warehouse#getC_BPartner_Location()}
+	 * Builds the warehouse address by using {@link I_M_Warehouse#getC_BPartner_Location_ID()}
 	 *
-	 * @param warehouse
 	 * @return address string
 	 */
 	private String makeWarehouseAddress(final I_M_Warehouse warehouse)
@@ -176,11 +176,11 @@ public class DocumentLocationBL implements IDocumentLocationBL
 			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@ (@M_Warehouse_ID@:" + warehouse.getName() + ")");
 		}
 
-		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.create(warehouse.getC_BPartner_Location(), I_C_BPartner_Location.class);
-		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpLocation.getC_BPartner_ID());
+		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.create(bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(),warehouse.getC_BPartner_Location_ID())), I_C_BPartner_Location.class);
+		final I_C_BPartner bpartner = bpartnerDAO.getById(bpLocation.getC_BPartner_ID());
 
 		// There is no contact available for warehouse
-		final de.metas.adempiere.model.I_AD_User bpContact = null;
+		final I_AD_User bpContact = null;
 
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 		final String address = bPartnerBL.mkFullAddress(bpartner, bpLocation, bpContact, ITrx.TRXNAME_None);
@@ -204,13 +204,13 @@ public class DocumentLocationBL implements IDocumentLocationBL
 
 		
 		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoIdOrNull(docHandOverLocation.getHandOver_Partner_ID(), docHandOverLocation.getHandOver_Location_ID());
-		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationById(bpLocationId);
+		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(bpLocationId);
 
-		final de.metas.adempiere.model.I_AD_User user;
+		final I_AD_User user;
 		if (docHandOverLocation.getHandOver_User_ID() > 0)
 		{
 			final BPartnerContactId contactId = BPartnerContactId.ofRepoId(docHandOverLocation.getHandOver_Partner_ID(), docHandOverLocation.getHandOver_User_ID());
-			user = bpartnerDAO.getContactById(contactId, de.metas.adempiere.model.I_AD_User.class);
+			user = bpartnerDAO.getContactById(contactId, I_AD_User.class);
 		}
 		else
 		{

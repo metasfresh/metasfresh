@@ -11,7 +11,7 @@ import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.material.planning.WorkingTime;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 

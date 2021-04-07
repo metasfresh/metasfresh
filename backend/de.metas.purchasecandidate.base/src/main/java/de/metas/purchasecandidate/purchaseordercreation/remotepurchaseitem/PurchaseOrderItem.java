@@ -1,15 +1,8 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-
-import com.google.common.base.Objects;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.dimension.Dimension;
+import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -19,11 +12,19 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Objects;
 
 /*
  * #%L
@@ -52,7 +53,6 @@ import lombok.ToString;
  * for which the system now needs to create a {@code C_Order} etc.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @ToString(exclude = "purchaseCandidate") // exclude purchaseCandidate to avoid stacktrace, since purchaseCandidate can hold a reference to this
 public class PurchaseOrderItem implements PurchaseItem
@@ -88,6 +88,9 @@ public class PurchaseOrderItem implements PurchaseItem
 	@Getter
 	private OrderAndLineId purchaseOrderAndLineId;
 
+	@Getter
+	private final Dimension dimension;
+
 	@Builder(toBuilder = true)
 	private PurchaseOrderItem(
 			final PurchaseItemId purchaseItemId,
@@ -96,7 +99,8 @@ public class PurchaseOrderItem implements PurchaseItem
 			@NonNull final ZonedDateTime datePromised,
 			@NonNull final String remotePurchaseOrderId,
 			@Nullable final ITableRecordReference transactionReference,
-			final OrderAndLineId purchaseOrderAndLineId)
+			final OrderAndLineId purchaseOrderAndLineId,
+			@Nullable final Dimension dimension)
 	{
 		this.purchaseItemId = purchaseItemId;
 
@@ -108,11 +112,13 @@ public class PurchaseOrderItem implements PurchaseItem
 
 		this.purchaseOrderAndLineId = purchaseOrderAndLineId;
 
-		final boolean remotePurchaseExists = !Objects.equal(remotePurchaseOrderId, NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
+		final boolean remotePurchaseExists = !Objects.equals(remotePurchaseOrderId, NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
 		Check.errorIf(remotePurchaseExists && transactionReference == null,
 				"If there is a remote purchase order, then the given transactionReference may not be null; remotePurchaseOrderId={}",
 				remotePurchaseOrderId);
 		this.transactionReference = transactionReference;
+
+		this.dimension = dimension;
 	}
 
 	private PurchaseOrderItem(final PurchaseOrderItem from, final PurchaseCandidate newPurchaseCandidate)
@@ -128,6 +134,8 @@ public class PurchaseOrderItem implements PurchaseItem
 		this.purchaseOrderAndLineId = from.purchaseOrderAndLineId;
 
 		this.transactionReference = from.transactionReference;
+
+		this.dimension = from.dimension;
 	}
 
 	public PurchaseOrderItem copy(final PurchaseCandidate newPurchaseCandidate)
@@ -184,6 +192,11 @@ public class PurchaseOrderItem implements PurchaseItem
 		return salesOrderAndLineId != null ? salesOrderAndLineId.getOrderId() : null;
 	}
 
+	public ForecastLineId getForecastLineId()
+	{
+		return getPurchaseCandidate().getForecastLineId();
+	}
+
 	private Quantity getQtyToPurchase()
 	{
 		return getPurchaseCandidate().getQtyToPurchase();
@@ -199,13 +212,34 @@ public class PurchaseOrderItem implements PurchaseItem
 		return getPurchasedQty().compareTo(getQtyToPurchase()) >= 0;
 	}
 
-	public void setPurchaseOrderLineIdAndMarkProcessed(@NonNull final OrderAndLineId purchaseOrderAndLineId)
+	public void setPurchaseOrderLineId(@NonNull final OrderAndLineId purchaseOrderAndLineId)
 	{
 		this.purchaseOrderAndLineId = purchaseOrderAndLineId;
+	}
 
+	public void markPurchasedIfNeeded()
+	{
 		if (purchaseMatchesOrExceedsRequiredQty())
 		{
 			purchaseCandidate.markProcessed();
 		}
+	}
+
+	public void markReqCreatedIfNeeded()
+	{
+		if (purchaseMatchesOrExceedsRequiredQty())
+		{
+			purchaseCandidate.setReqCreated(true);
+		}
+	}
+
+	public BigDecimal getPrice()
+	{
+		return purchaseCandidate.getPriceEnteredEff();
+	}
+
+	public Percent getDiscount()
+	{
+		return purchaseCandidate.getDiscountEff();
 	}
 }

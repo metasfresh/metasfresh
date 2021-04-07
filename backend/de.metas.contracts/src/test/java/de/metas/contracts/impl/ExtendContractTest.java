@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.pricing.PricingSystemId;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -158,8 +159,8 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 		for (int i = 0; i < 5; i++)
 		{
 			final I_C_Flatrate_Conditions condition = newInstance(I_C_Flatrate_Conditions.class);
-			condition.setM_PricingSystem(productAndPricingSystem.getPricingSystem());
-			condition.setInvoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort);
+			condition.setM_PricingSystem_ID(productAndPricingSystem.getPricingSystem().getM_PricingSystem_ID());
+			condition.setInvoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Immediate);
 			condition.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription);
 			condition.setOnFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice);
 			condition.setName("Abo " + i);
@@ -245,12 +246,12 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	{
 		final I_C_Flatrate_Term nextflatrateTerm = currentflatrateTerm.getC_FlatrateTerm_Next();
 
-		assertThat(currentflatrateTerm.getBill_BPartner()).isEqualTo(nextflatrateTerm.getBill_BPartner());
-		assertThat(currentflatrateTerm.getBill_Location()).isEqualTo(nextflatrateTerm.getBill_Location());
-		assertThat(currentflatrateTerm.getBill_User()).isEqualTo(nextflatrateTerm.getBill_User());
+		assertThat(currentflatrateTerm.getBill_BPartner_ID()).isEqualTo(nextflatrateTerm.getBill_BPartner_ID());
+		assertThat(currentflatrateTerm.getBill_Location_ID()).isEqualTo(nextflatrateTerm.getBill_Location_ID());
+		assertThat(currentflatrateTerm.getBill_User_ID()).isEqualTo(nextflatrateTerm.getBill_User_ID());
 
-		assertThat(currentflatrateTerm.getDropShip_BPartner()).isEqualTo(nextflatrateTerm.getDropShip_BPartner());
-		assertThat(currentflatrateTerm.getDropShip_Location()).isEqualTo(nextflatrateTerm.getDropShip_Location());
-		assertThat(currentflatrateTerm.getDropShip_User()).isEqualTo(nextflatrateTerm.getDropShip_User());
+		assertThat(currentflatrateTerm.getDropShip_BPartner_ID()).isEqualTo(nextflatrateTerm.getDropShip_BPartner_ID());
+		assertThat(currentflatrateTerm.getDropShip_Location_ID()).isEqualTo(nextflatrateTerm.getDropShip_Location_ID());
+		assertThat(currentflatrateTerm.getDropShip_User_ID()).isEqualTo(nextflatrateTerm.getDropShip_User_ID());
 	}
 }

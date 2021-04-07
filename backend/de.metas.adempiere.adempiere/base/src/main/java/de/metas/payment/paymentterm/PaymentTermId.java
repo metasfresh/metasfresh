@@ -10,6 +10,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -41,6 +43,7 @@ public class PaymentTermId implements RepoIdAware
 		return new PaymentTermId(repoId);
 	}
 
+	@Nullable
 	public static PaymentTermId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
@@ -65,12 +68,12 @@ public class PaymentTermId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(final PaymentTermId id)
+	public static int toRepoId(@Nullable final PaymentTermId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
 
-	public static boolean equals(final PaymentTermId id1, final PaymentTermId id2)
+	public static boolean equals(@Nullable final PaymentTermId id1, @Nullable final PaymentTermId id2)
 	{
 		return Objects.equals(id1, id2);
 	}
