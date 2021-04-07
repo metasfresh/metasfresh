@@ -5,6 +5,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
@@ -18,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.greeting.GreetingRepository;
@@ -475,7 +475,7 @@ public class AddressBuilderTest
 				.AD_Language("de_DE")
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Herr");
-		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
+		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
 				"LOCAL:  \nHerr\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
@@ -495,7 +495,7 @@ public class AddressBuilderTest
 				.AD_Language("de_DE")
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Herr");
-		final I_AD_User user = prepareUser("UserFN", "", "", greeting);
+		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "", "", greeting);
 
 		assertEquals(
 				"LOCAL: \nName1\nName2\naddr2\naddr1\n121212 City1\nGermany",
@@ -515,7 +515,7 @@ public class AddressBuilderTest
 				.AD_Language("de_DE")
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Herr");
-		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
+		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
 				"LOCAL:    \nz.L. Herr\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
@@ -539,7 +539,7 @@ public class AddressBuilderTest
 				.AD_Language("de_DE")
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("");
-		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
+		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
 				"LOCAL:    \nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
@@ -564,7 +564,7 @@ public class AddressBuilderTest
 				.AD_Language("de_DE")
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
-		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
+		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
 				"LOCAL:    \nGR Frau\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
@@ -589,7 +589,7 @@ public class AddressBuilderTest
 				.AD_Language("de_DE")
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
-		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
+		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
 				"LOCAL:  (test)   \nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
@@ -614,7 +614,7 @@ public class AddressBuilderTest
 				.AD_Language("de_DE")
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
-		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
+		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
 				"LOCAL: \nName1\nName2\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
@@ -638,7 +638,7 @@ public class AddressBuilderTest
 				.isCompany(true)
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
-		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
+		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
 				"LOCAL: \nCompanyAG\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
@@ -662,7 +662,7 @@ public class AddressBuilderTest
 				.isCompany(false)
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
-		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
+		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
 				"LOCAL:     \nFrau\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
@@ -686,7 +686,7 @@ public class AddressBuilderTest
 				.isCompany(false)
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
-		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
+		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
 				"LOCAL:  \nz.L. Frau\naddr2\naddr1\n121212 City1\nGermany",
@@ -710,7 +710,7 @@ public class AddressBuilderTest
 				.isCompany(false)
 				.build();
 		final I_C_Greeting greeting = prepareGreeting("Frau");
-		final I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
+		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
 				"LOCAL:  \nFrau\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
@@ -814,9 +814,9 @@ public class AddressBuilderTest
 		return greeting;
 	}
 
-	private I_AD_User prepareUser(final String firstName, final String lastName, final String title, final I_C_Greeting greeting)
+	private org.compiere.model.I_AD_User prepareUser(final String firstName, final String lastName, final String title, final I_C_Greeting greeting)
 	{
-		final I_AD_User user = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_User.class, ITrx.TRXNAME_None);
+		final org.compiere.model.I_AD_User user = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_User.class, ITrx.TRXNAME_None);
 		user.setFirstname(firstName);
 		user.setLastname(lastName);
 		user.setTitle(title);

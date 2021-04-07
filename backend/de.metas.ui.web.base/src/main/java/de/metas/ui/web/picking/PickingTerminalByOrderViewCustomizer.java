@@ -1,5 +1,6 @@
 package de.metas.ui.web.picking;
 
+import de.metas.ui.web.picking.packageable.filters.ProductBarcodeFilterConverter;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Component;
 
@@ -77,6 +78,7 @@ public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 	{
 		sqlViewBindingBuilder
 				.groupingBinding(createSqlViewGroupingBinding())
+				.filterConverter(ProductBarcodeFilterConverter.instance)
 				.clearDefaultOrderBys()
 				.defaultOrderBy(DocumentQueryOrderBy.byFieldName(FIELDNAME_OrderOrBPLocation, true))
 				.orderByAliasFieldNames(FIELDNAME_OrderOrBPLocation,
@@ -85,7 +87,7 @@ public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 						I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
 	}
 
-	private static final SqlViewGroupingBinding createSqlViewGroupingBinding()
+	private static SqlViewGroupingBinding createSqlViewGroupingBinding()
 	{
 		return SqlViewGroupingBinding.builder()
 				.groupBy(I_M_Packageable_V.COLUMNNAME_C_OrderSO_ID)
@@ -140,8 +142,7 @@ public class PickingTerminalByOrderViewCustomizer implements SqlViewCustomizer
 		// Detail/included row
 		else
 		{
-			final LookupValue bpLocationLV = rowBuilder.getFieldValueAsLookupValue(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
-			return bpLocationLV;
+			return rowBuilder.getFieldValueAsLookupValue(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
 		}
 	}
 

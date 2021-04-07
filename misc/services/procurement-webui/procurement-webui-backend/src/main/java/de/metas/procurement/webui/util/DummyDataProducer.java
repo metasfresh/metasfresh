@@ -1,6 +1,5 @@
 package de.metas.procurement.webui.util;
 
-import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner.SyncBPartnerBuilder;
 import de.metas.common.procurement.sync.protocol.dto.SyncContract;
@@ -20,12 +19,15 @@ import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.repository.BPartnerRepository;
 import de.metas.procurement.webui.repository.ContractRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
+import de.metas.procurement.webui.sync.ReceiverFromMetasfreshHandler;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -55,21 +57,18 @@ import java.util.UUID;
 public class DummyDataProducer
 {
 	private final BPartnerRepository bpartnersRepo;
-
 	private final ContractRepository contractsRepo;
-
 	private final IProductSuppliesService productSuppliesService;
+	private final ReceiverFromMetasfreshHandler receiverFromMetasfreshHandler;
 
-	private final IAgentSync agentSync;
+	private final LocalDate contractDateFrom = LocalDate.of(2015, 4, 1);
+	private final LocalDate contractDateTo = LocalDate.of(2016, 3, 31);
 
-	private final Date contractDateFrom = DateUtils.toDayDate(2015, 04, 01);
-	private final Date contractDateTo = DateUtils.toDayDate(2016, 03, 31);
-
-	private List<String> languages = Arrays.asList(
+	private final List<String> languages = Arrays.asList(
 			"en_US"
 			, "de_DE"
 			, "de_CH"
-			);
+	);
 
 	private final List<String> productNames = Arrays.asList(
 			"Batavia"
@@ -85,27 +84,27 @@ public class DummyDataProducer
 			, "Knollensellerie"
 			, "Karotten ungewaschen"
 			//
-			);
+	);
 
 	private PutBPartnersRequest _syncBPartnersRequest;
 	private PutProductsRequest _syncProductsRequest;
 
 	public DummyDataProducer(
-			final BPartnerRepository bpartnersRepo,
-			final ContractRepository contractsRepo,
-			final IProductSuppliesService productSuppliesService,
-			final IAgentSync agentSync)
+			@NonNull final BPartnerRepository bpartnersRepo,
+			@NonNull final ContractRepository contractsRepo,
+			@NonNull final IProductSuppliesService productSuppliesService,
+			@NonNull final ReceiverFromMetasfreshHandler receiverFromMetasfreshHandler)
 	{
 		this.bpartnersRepo = bpartnersRepo;
 		this.contractsRepo = contractsRepo;
 		this.productSuppliesService = productSuppliesService;
-		this.agentSync = agentSync;
+		this.receiverFromMetasfreshHandler = receiverFromMetasfreshHandler;
 	}
 
 	public void createDummyData()
 	{
 		final PutBPartnersRequest request = getSyncBPartnersRequest();
-		agentSync.syncBPartners(request);
+		receiverFromMetasfreshHandler.handlePutBPartnersRequest(request);
 
 		createDummyProductSupplies();
 	}
@@ -131,17 +130,17 @@ public class DummyDataProducer
 					.uuid(syncBPartnerUUID)
 					.name("test-bp01")
 					.users(Arrays.asList(
-					createSyncUser("test", "q", null)
-					, createSyncUser("teo.sarca@gmail.com", "q", null)
-					, createSyncUser("test_en", "q", "en_US")
-					, createSyncUser("test_de", "q", "de_DE")
+							createSyncUser("test", "q", null)
+							, createSyncUser("teo.sarca@gmail.com", "q", null)
+							, createSyncUser("test_en", "q", "en_US")
+							, createSyncUser("test_de", "q", "de_DE")
 					));
 
 			//
 			// Contract
 			{
 				syncBPartner.syncContracts(true);
-				
+
 				final SyncContractBuilder syncContract = SyncContract.builder()
 						.uuid(randomUUID())
 						.dateFrom(contractDateFrom)
@@ -151,32 +150,32 @@ public class DummyDataProducer
 				for (final SyncProduct syncProduct : syncProductsRequest.getProducts().subList(0, 6))
 				{
 					final SyncContractLine syncContractLine = SyncContractLine.builder()
-					.uuid(randomUUID())
-					.product(syncProduct).build();
+							.uuid(randomUUID())
+							.product(syncProduct).build();
 
 					syncContract.contractLine(syncContractLine);
 				}
 
 				syncBPartner.contract(syncContract.build());
 			}
-			
+
 			//
 			// RfQ
 			final List<SyncProduct> syncProducts = getSyncProductsRequest().getProducts();
 			for (int rfqNo = 0; rfqNo < 4 && rfqNo < syncProducts.size(); rfqNo++)
 			{
-				final Date dateStart = DateUtils.addMonths(DateUtils.truncToMonth(new Date()), 2);
-				final Date dateEnd = DateUtils.addDays(dateStart, 14);
-				final Date dateClose = DateUtils.addDays(dateStart, -10);
-				
+				final LocalDate dateStart = LocalDate.now().withDayOfMonth(1).plusMonths(2);
+				final LocalDate dateEnd = dateStart.plusDays(14);
+				final LocalDate dateClose = dateStart.plusDays(-10);
+
 				final SyncRfQ.SyncRfQBuilder syncRfQ = SyncRfQ.builder()
 						.uuid(randomUUID())
-				
+
 						.dateStart(dateStart)
 						.dateEnd(dateEnd)
-				
+
 						.bpartner_uuid(syncBPartnerUUID)
-				
+
 						.dateClose(dateClose);
 
 				final SyncProduct syncProduct = syncProducts.get(rfqNo);
@@ -218,7 +217,7 @@ public class DummyDataProducer
 		return request.build();
 	}
 
-	public SyncUser createSyncUser(final String email, final String password, final String language)
+	public SyncUser createSyncUser(final String email, final String password, @Nullable final String language)
 	{
 		return SyncUser.builder()
 				.uuid(randomUUID())
@@ -244,13 +243,13 @@ public class DummyDataProducer
 		return product.build();
 	}
 
-	private static final String randomUUID()
+	private static String randomUUID()
 	{
 		return UUID.randomUUID().toString();
 	}
 
 	@Transactional
-	 void createDummyProductSupplies()
+	void createDummyProductSupplies()
 	{
 		for (final BPartner bpartner : bpartnersRepo.findAll())
 		{
@@ -265,14 +264,22 @@ public class DummyDataProducer
 				final ContractLine contractLine = contractLines.get(0);
 				final Product product = contractLine.getProduct();
 
-				productSuppliesService.reportSupply(bpartner, product, contractLine
-						, DateUtils.getToday()
-						, new BigDecimal("10") // today
-						);
-				productSuppliesService.reportSupply(bpartner, product, contractLine
-						, DateUtils.addDays(DateUtils.getToday(), 1) // tomorrow
-						, new BigDecimal("3")
-						);
+				productSuppliesService.reportSupply(IProductSuppliesService.ReportDailySupplyRequest.builder()
+						.bpartner(bpartner)
+						.contractLine(contractLine)
+						.productId(product.getId())
+						.date(LocalDate.now()) // today
+						.qty(new BigDecimal("10"))
+						.qtyConfirmedByUser(true)
+						.build());
+				productSuppliesService.reportSupply(IProductSuppliesService.ReportDailySupplyRequest.builder()
+						.bpartner(bpartner)
+						.contractLine(contractLine)
+						.productId(product.getId())
+						.date(LocalDate.now().plusDays(1)) // tomorrow
+						.qty(new BigDecimal("3"))
+						.qtyConfirmedByUser(true)
+						.build());
 			}
 		}
 	}

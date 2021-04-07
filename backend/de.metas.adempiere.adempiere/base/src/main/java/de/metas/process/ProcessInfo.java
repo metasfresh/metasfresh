@@ -303,19 +303,14 @@ public final class ProcessInfo implements Serializable
 		return className.orElse(null);
 	}
 
-	/**
-	 * Creates a new instance of {@link #getClassName()}.
-	 * If the classname is empty, null will be returned.
-	 *
-	 * @return new instance or null
-	 */
+	@NonNull
 	@Nullable
-	public JavaProcess newProcessClassInstanceOrNull()
+	public JavaProcess newProcessClassInstance()
 	{
 		final String classname = getClassName();
 		if (Check.isEmpty(classname, true))
 		{
-			return null;
+			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo",this);
 		}
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -332,9 +327,28 @@ public final class ProcessInfo implements Serializable
 
 			return processClassInstance;
 		}
-		catch (final Throwable e)
+		catch (final Exception e)
 		{
-			logger.warn("Failed instantiating class '{}'. Skipped.", classname, e);
+			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().setParameter("processInfo",this);
+		}
+	}
+
+	/**
+	 * Creates a new instance of {@link #getClassName()}.
+	 * If the classname is empty, null will be returned.
+	 *
+	 * @return new instance or null
+	 */
+	@Nullable
+	public JavaProcess newProcessClassInstanceOrNull()
+	{
+		try
+		{
+			return newProcessClassInstance();
+		}
+		catch (final AdempiereException e)
+		{
+			logger.warn("Failed instantiating class '{}'. Skipped.", this.getClassName(), e);
 			return null;
 		}
 	}
@@ -587,7 +601,7 @@ public final class ProcessInfo implements Serializable
 
 	/**
 	 * @return the whereClause <b>but without org restrictions</b>
-	 * @deprecated please use on of getQueryFilter methods instead
+	 * @deprecated please use one of getQueryFilter methods instead
 	 */
 	@Deprecated
 	public String getWhereClause()
@@ -600,9 +614,11 @@ public final class ProcessInfo implements Serializable
 	 *
 	 * @return a query filter for the current {@code whereClause}, or an "all inclusive" {@link ConstantQueryFilter} if the {@code whereClause} is empty.<br>
 	 * gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
-	 * @task 03685
+	 *
+	 * task 03685
 	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
 	 */
+	@Nullable
 	public <T> IQueryFilter<T> getQueryFilterOrElseTrue()
 	{
 		// default: use a "neutral" filter that does not exclude anything

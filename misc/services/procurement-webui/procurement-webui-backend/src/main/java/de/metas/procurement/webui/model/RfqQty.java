@@ -1,16 +1,19 @@
 package de.metas.procurement.webui.model;
 
-import java.math.BigDecimal;
-import java.util.Date;
+import com.google.common.base.MoreObjects;
+import de.metas.procurement.webui.util.DateUtils;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-
-import com.google.common.base.MoreObjects;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 
 
@@ -37,59 +40,66 @@ import lombok.NonNull;
  */
 
 @Entity
-@Table(name = RfqQty.TABLE_NAME //
-, uniqueConstraints = @UniqueConstraint(name = "rfq_qty_uq", columnNames = { "rfq_id", "datePromised" })   //
+@Table(name = RfqQty.TABLE_NAME,
+		uniqueConstraints = @UniqueConstraint(name = "rfq_qty_uq", columnNames = { "rfq_id", "datePromised" })
 )
-@SuppressWarnings("serial")
 public class RfqQty extends AbstractSyncConfirmAwareEntity
 {
 	/* package */static final String TABLE_NAME = "rfq_qty";
 
-	@ManyToOne(fetch = FetchType.EAGER)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@NonNull
+	@Setter
 	private Rfq rfq;
 
 	@NonNull
-	private Date datePromised;
+	private java.sql.Date datePromised;
 
 	@NonNull
-	private BigDecimal qtyPromised;
+	@Getter
+	private BigDecimal qtyPromised = BigDecimal.ZERO;
+
+	@NonNull
+	@Getter
+	private BigDecimal qtyPromisedUserEntered = BigDecimal.ZERO;
+
+	protected RfqQty() {}
+
+	@Builder
+	private RfqQty(
+			@NonNull final Rfq rfq,
+			@NonNull final LocalDate datePromised)
+	{
+		this.rfq = rfq;
+		this.datePromised = DateUtils.toSqlDate(datePromised);
+	}
 
 	@Override
 	protected void toString(final MoreObjects.ToStringHelper toStringHelper)
 	{
 		toStringHelper
 				.add("datePromised", datePromised)
+				.add("qtyPromisedUserEntered", qtyPromisedUserEntered)
 				.add("qtyPromised", qtyPromised);
 	}
 
-	public Rfq getRfq()
+	public LocalDate getDatePromised()
 	{
-		return rfq;
+		return DateUtils.toLocalDate(datePromised);
 	}
 
-	public void setRfq(final Rfq rfq)
+	public void setQtyPromisedUserEntered(@NonNull final BigDecimal qtyPromisedUserEntered)
 	{
-		this.rfq = rfq;
+		this.qtyPromisedUserEntered = qtyPromisedUserEntered;
 	}
 
-	public Date getDatePromised()
+	public boolean isConfirmedByUser()
 	{
-		return datePromised;
+		return getQtyPromised().compareTo(getQtyPromisedUserEntered()) == 0;
 	}
 
-	public void setDatePromised(final Date datePromised)
+	public void confirmByUser()
 	{
-		this.datePromised = datePromised;
-	}
-
-	public BigDecimal getQtyPromised()
-	{
-		return qtyPromised;
-	}
-
-	public void setQtyPromised(final BigDecimal qtyPromised)
-	{
-		this.qtyPromised = qtyPromised;
+		this.qtyPromised = getQtyPromisedUserEntered();
 	}
 }

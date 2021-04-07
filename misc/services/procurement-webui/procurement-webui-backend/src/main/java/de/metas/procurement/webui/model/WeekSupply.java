@@ -1,17 +1,20 @@
 package de.metas.procurement.webui.model;
 
-import java.util.Date;
+import com.google.common.base.MoreObjects;
+import de.metas.procurement.webui.util.DateUtils;
+import de.metas.procurement.webui.util.YearWeekUtil;
+import lombok.Builder;
+import lombok.NonNull;
+import org.hibernate.annotations.SelectBeforeUpdate;
+import org.springframework.context.annotation.Lazy;
+import org.threeten.extra.YearWeek;
 
+import javax.annotation.Nullable;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
-
-import com.google.common.base.MoreObjects;
-import lombok.NonNull;
-
-import org.hibernate.annotations.SelectBeforeUpdate;
-import org.springframework.context.annotation.Lazy;
+import java.time.LocalDate;
 
 
 
@@ -39,9 +42,8 @@ import org.springframework.context.annotation.Lazy;
 
 @Entity
 @Table(name = "week_supply" //
-, uniqueConstraints = @UniqueConstraint(name = "week_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })     //
+		, uniqueConstraints = @UniqueConstraint(name = "week_supply_uq", columnNames = { "bpartner_id", "product_id", "day" })     //
 )
-@SuppressWarnings("serial")
 @SelectBeforeUpdate
 public class WeekSupply extends AbstractSyncConfirmAwareEntity
 {
@@ -55,13 +57,24 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 	private Product product;
 
 	@NonNull
-	private Date day;
+	private java.sql.Date day;
 
+	@Nullable
 	private String trend;
 
-	public WeekSupply()
+	protected WeekSupply()
 	{
-		super();
+	}
+
+	@Builder
+	private WeekSupply(
+			@NonNull final BPartner bpartner,
+			@NonNull final Product product,
+			@NonNull final LocalDate day)
+	{
+		this.bpartner = bpartner;
+		this.product = product;
+		this.day = DateUtils.toSqlDate(day);
 	}
 
 	@Override
@@ -74,43 +87,50 @@ public class WeekSupply extends AbstractSyncConfirmAwareEntity
 				.add("trend", trend);
 	}
 
-	public BPartner getBpartner()
+	public Long getProductId()
 	{
-		return bpartner;
+		return product.getId();
 	}
 
-	public void setBpartner(BPartner bpartner)
+	public String getProductIdAsString()
 	{
-		this.bpartner = bpartner;
+		return product.getIdAsString();
 	}
 
-	public Product getProduct()
+	public String getProductUUID()
 	{
-		return product;
+		return product.getUuid();
 	}
 
-	public void setProduct(Product product)
+	public String getBpartnerUUID()
 	{
-		this.product = product;
+		return bpartner.getUuid();
 	}
 
-	public Date getDay()
+	public LocalDate getDay()
 	{
-		return day;
+		return day.toLocalDate();
 	}
 
-	public void setDay(Date day)
+	public YearWeek getWeek()
 	{
-		this.day = day;
+		return YearWeekUtil.ofLocalDate(day.toLocalDate());
 	}
 
-	public String getTrend()
+	@Nullable
+	public Trend getTrend()
+	{
+		return Trend.ofNullableCode(trend);
+	}
+
+	@Nullable
+	public String getTrendAsString()
 	{
 		return trend;
 	}
 
-	public void setTrend(String trend)
+	public void setTrend(@Nullable final Trend trend)
 	{
-		this.trend = trend;
+		this.trend = trend != null ? trend.getCode() : null;
 	}
 }

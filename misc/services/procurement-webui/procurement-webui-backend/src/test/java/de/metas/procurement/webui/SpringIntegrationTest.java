@@ -1,8 +1,6 @@
 package de.metas.procurement.webui;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.procurement.sync.IAgentSync;
-import de.metas.common.procurement.sync.IServerSync;
 import de.metas.common.procurement.sync.protocol.dto.IConfirmableDTO;
 import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
 import de.metas.common.procurement.sync.protocol.dto.SyncProductSupply;
@@ -10,7 +8,6 @@ import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutProductsRequest;
 import de.metas.procurement.webui.model.AbstractSyncConfirmAwareEntity;
 import de.metas.procurement.webui.model.BPartner;
-import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.Trend;
@@ -21,24 +18,22 @@ import de.metas.procurement.webui.repository.ProductSupplyRepository;
 import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.repository.UserRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
-import de.metas.procurement.webui.sync.IServerSyncService;
-import de.metas.procurement.webui.util.DateRange;
+import de.metas.procurement.webui.sync.ISenderToMetasfreshService;
+import de.metas.procurement.webui.sync.ReceiverFromMetasfreshHandler;
 import de.metas.procurement.webui.util.DateUtils;
+import de.metas.procurement.webui.util.YearWeekUtil;
 import org.assertj.core.api.Assertions;
-import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.threeten.extra.YearWeek;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -71,33 +66,16 @@ import java.util.concurrent.TimeUnit;
 // @IntegrationTest("server.port:0")
 public class SpringIntegrationTest
 {
-	@Configuration
-	@Import(Application.class)
-	public static class TestConfig
-	{
-		@Bean
-		public IServerSync serverSync()
-		{
-			return new MockedTestServerSync();
-		}
-
-	}
-
 	@Autowired
-	private IServerSyncService serverSyncService;
-
+	private ISenderToMetasfreshService serverSyncService;
 	@Autowired
 	private UserRepository userRepository;
-
 	@Autowired
 	private IProductSuppliesService productSuppliesService;
 	@Autowired
-
 	private ProductSupplyRepository productSupplyRepository;
-
 	@Autowired
 	private ProductRepository productsRepo;
-
 	@Autowired
 	private SyncConfirmRepository syncConfirmRepository;
 
@@ -106,16 +84,16 @@ public class SpringIntegrationTest
 	private int serverPort;
 
 	@Autowired
-	private IServerSync serverSync;
+	private MockedTestServerSync serverSync;
 
 	@Autowired
-	private IAgentSync agentSync;
+	private ReceiverFromMetasfreshHandler receiverFromMetasfreshHandler;
 
 	private final Random random = new Random();
 
 	private MockedTestServerSync getMockedTestServerSync()
 	{
-		return (MockedTestServerSync)serverSync;
+		return serverSync;
 	}
 
 	@Test
@@ -123,7 +101,7 @@ public class SpringIntegrationTest
 	{
 		serverSyncService.awaitInitialSyncComplete(20, TimeUnit.SECONDS);
 
-		final Date day = DateUtils.truncToDay(new Date());
+		final LocalDate day = LocalDate.now();
 
 		final List<User> users = userRepository.findAll();
 		Assert.assertFalse("Users shall not be empty", users.isEmpty());
@@ -168,9 +146,9 @@ public class SpringIntegrationTest
 						.build();
 				request.product(syncProduct);
 			}
-			agentSync.syncProducts(request.build());
+			receiverFromMetasfreshHandler.handlePutProductsRequest(request.build());
 
-			Assert.assertEquals(ImmutableList.<Product> of(), productSuppliesService.getAllProducts());
+			Assert.assertEquals(ImmutableList.<Product>of(), productSuppliesService.getAllProducts());
 		}
 
 		//
@@ -184,15 +162,21 @@ public class SpringIntegrationTest
 		}
 	}
 
-	private void reportProductSupplyAndTest(final BPartner bpartner, final Product product, final Date day, final BigDecimal qty) throws Exception
+	private void reportProductSupplyAndTest(final BPartner bpartner, final Product product, final LocalDate day, final BigDecimal qty) throws Exception
 	{
 		// Report the product supply
-		final ContractLine contractLine = null;
-		productSuppliesService.reportSupply(bpartner, product, contractLine, day, qty);
+		productSuppliesService.reportSupply(IProductSuppliesService.ReportDailySupplyRequest.builder()
+				.bpartner(bpartner)
+				.contractLine(null)
+				.productId(product.getId())
+				.date(day)
+				.qty(qty)
+				.qtyConfirmedByUser(true)
+				.build());
 
 		// Make sure it's saved in database
-		final ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, day);
-		Assert.assertThat("Invalid Qty", productSupply.getQty(), Matchers.comparesEqualTo(qty));
+		final ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toSqlDate(day));
+		Assertions.assertThat(productSupply.getQty()).isEqualByComparingTo(qty);
 
 		// Make sure it was reported
 		final SyncProductSupply syncProductSupply = getMockedTestServerSync().getAndRemoveReportedProductSupply(productSupply.getUuid());
@@ -204,19 +188,19 @@ public class SpringIntegrationTest
 		final String expectedContractLineUUID = expected.getContractLine() == null ? null : expected.getContractLine().getUuid();
 
 		Assert.assertEquals(expected.getUuid(), actual.getUuid());
-		Assert.assertEquals(expected.getBpartner().getUuid(), actual.getBpartner_uuid());
-		Assert.assertEquals(expected.getProduct().getUuid(), actual.getProduct_uuid());
+		Assert.assertEquals(expected.getBpartnerUUID(), actual.getBpartner_uuid());
+		Assert.assertEquals(expected.getProductUUID(), actual.getProduct_uuid());
 		Assert.assertEquals(expectedContractLineUUID, actual.getContractLine_uuid());
-		Assert.assertEquals(expected.getDay().getTime(), actual.getDay().getTime());
-		Assert.assertThat(actual.getQty(), Matchers.comparesEqualTo(expected.getQty()));
+		Assert.assertEquals(expected.getDay(), actual.getDay());
+		Assertions.assertThat(actual.getQty()).isEqualByComparingTo(expected.getQty());
 
 		assertConfirmOK(expected, actual);
 	}
 
-	private void reportNextWeekTrend(final BPartner bpartner, final Product product, final Date day, final Trend trend) throws Exception
+	private void reportNextWeekTrend(final BPartner bpartner, final Product product, final LocalDate day, final Trend trend) throws Exception
 	{
 		// Report the trend
-		final DateRange week = DateRange.createWeek(day);
+		final YearWeek week = YearWeekUtil.ofLocalDate(day);
 		final WeekSupply weeklySupply = productSuppliesService.setNextWeekTrend(bpartner, product, week, trend);
 
 		// Make sure it's saved in database
@@ -231,10 +215,10 @@ public class SpringIntegrationTest
 	private void assertEquals(final WeekSupply expected, final SyncWeeklySupply actual)
 	{
 		Assert.assertEquals(expected.getUuid(), actual.getUuid());
-		Assert.assertEquals(expected.getBpartner().getUuid(), actual.getBpartner_uuid());
-		Assert.assertEquals(expected.getProduct().getUuid(), actual.getProduct_uuid());
-		Assert.assertEquals(expected.getDay().getTime(), actual.getWeekDay().getTime());
-		Assert.assertEquals(expected.getTrend(), actual.getTrend());
+		Assert.assertEquals(expected.getBpartnerUUID(), actual.getBpartner_uuid());
+		Assert.assertEquals(expected.getProductUUID(), actual.getProduct_uuid());
+		Assert.assertEquals(expected.getDay(), actual.getWeekDay());
+		Assert.assertEquals(expected.getTrend(), Trend.ofNullableCode(actual.getTrend()));
 
 		assertConfirmOK(expected, actual);
 	}

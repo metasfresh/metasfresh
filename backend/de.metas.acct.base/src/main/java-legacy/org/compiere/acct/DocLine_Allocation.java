@@ -535,20 +535,16 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	{
 		if (paymentCurrencyConversionCtx == null)
 		{
-			final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
-
 			final I_C_Payment payment = getC_Payment();
 			final I_C_CashLine cashLine = getC_CashLine();
 			if (payment != null)
 			{
-				paymentCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
-						TimeUtil.asLocalDate(payment.getDateAcct()),
-						CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID()),
-						ClientId.ofRepoId(payment.getAD_Client_ID()),
-						OrgId.ofRepoId(payment.getAD_Org_ID()));
+				final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+				paymentCurrencyConversionCtx = paymentBL.extractCurrencyConversionContext(payment);
 			}
 			else if (cashLine != null)
 			{
+				final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 				final I_C_Cash cashJournal = cashLine.getC_Cash();
 				paymentCurrencyConversionCtx = currencyConversionBL.createCurrencyConversionContext(
 						TimeUtil.asLocalDate(cashJournal.getDateAcct()),
@@ -561,6 +557,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 				throw new IllegalStateException("Allocation line does not have a payment or a cash line set: " + this);
 			}
 		}
+
 		return paymentCurrencyConversionCtx;
 	}
 

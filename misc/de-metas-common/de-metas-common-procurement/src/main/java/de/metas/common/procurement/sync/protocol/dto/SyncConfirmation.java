@@ -77,10 +77,4 @@ public class SyncConfirmation
 	{
 		return SyncConfirmation.builder().confirmId(syncConfirmationId).build();
 	}
-
-	@Override
-	public String toString()
-	{
-		return "SyncConfirmation [server_event_id=" + serverEventId + ", dateReceived=" + dateConfirmed + ", confirmId=" + confirmId + "]";
-	}
 }

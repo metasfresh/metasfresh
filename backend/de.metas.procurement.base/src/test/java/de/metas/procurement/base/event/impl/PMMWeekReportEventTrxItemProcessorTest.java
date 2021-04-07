@@ -19,13 +19,13 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -86,7 +86,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 		final I_M_Product product = createM_Product("P1");
 		final I_PMM_Product pmmProduct = createPMM_Product(product, createASI(), bpartner);
 		//
-		final Date dateWeek = date(2016, 3, 28);
+		final LocalDate dateWeek = LocalDate.of(2016, 3, 28);
 
 		for (final String pmmTrend : ALL_TRENDS)
 		{
@@ -111,7 +111,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 		final List<I_C_BPartner> bpartners = createBPartners(count);
 		final List<I_M_Product> products = createM_Products(count);
 		final List<I_M_AttributeSetInstance> asis = createASIs(count);
-		final List<Date> weekDates = createWeekDates(date(2016, 3, 28), count);
+		final List<LocalDate> weekDates = createWeekDates(date(2016, 3, 28), count);
 
 		PMM_Week_Expectations expectations = PMM_Week_Expectations.newExpectations();
 		for (final I_C_BPartner bpartner : bpartners)
@@ -120,7 +120,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 			{
 				for (final I_M_AttributeSetInstance asi : asis)
 				{
-					for (final Date weekDate : weekDates)
+					for (final LocalDate weekDate : weekDates)
 					{
 						PMM_Week_Expectations currentExpectations = null;
 						for (final String pmmTrend : ALL_TRENDS)
@@ -158,7 +158,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 		final I_C_BPartner bpartner = createBPartner("BP1");
 		final I_M_Product product = createM_Product("P1");
 		final I_PMM_Product pmmProduct = createPMM_Product(product, createASI(), bpartner);
-		final Date weekDate = date(2016, 3, 28);
+		final LocalDate weekDate = date(2016, 3, 28);
 
 		final SyncWeeklySupply syncWeeklySupply1 = createWeeklySupply(pmmProduct, bpartner, weekDate).toBuilder()
 				.trend(X_PMM_WeekReport_Event.PMM_TREND_Up)
@@ -218,7 +218,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 		assertAllEventsProcessed();
 	}
 
-	private SyncWeeklySupply createWeeklySupply(final I_PMM_Product pmmProduct, final I_C_BPartner bpartner, final Date weekDay)
+	private SyncWeeklySupply createWeeklySupply(final I_PMM_Product pmmProduct, final I_C_BPartner bpartner, final LocalDate weekDay)
 	{
 		return SyncWeeklySupply.builder()
 				.bpartner_uuid(SyncUUIDs.toUUIDString(bpartner))
@@ -315,17 +315,17 @@ public class PMMWeekReportEventTrxItemProcessorTest
 		return asis;
 	}
 
-	private Date date(final int year, final int month, final int day)
+	private LocalDate date(final int year, final int month, final int day)
 	{
-		return TimeUtil.getDay(year, month, day);
+		return LocalDate.of(year, month, day);
 	}
 
-	private List<Date> createWeekDates(final Date firstWeekDate, final int count)
+	private List<LocalDate> createWeekDates(final LocalDate firstWeekDate, final int count)
 	{
-		final List<Date> weekDates = new ArrayList<>();
+		final List<LocalDate> weekDates = new ArrayList<>();
 		for (int i = 0; i < count; i++)
 		{
-			final Date weekDate = TimeUtil.addDays(firstWeekDate, i * 7);
+			final LocalDate weekDate = firstWeekDate.plusDays(i * 7);
 			weekDates.add(weekDate);
 		}
 		return weekDates;

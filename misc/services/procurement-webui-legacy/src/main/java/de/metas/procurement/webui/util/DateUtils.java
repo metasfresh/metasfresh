@@ -1,14 +1,17 @@
 package de.metas.procurement.webui.util;
 
+import com.google.gwt.thirdparty.guava.common.base.Preconditions;
+import com.vaadin.ui.UI;
+
+import javax.annotation.Nullable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-
-import com.google.gwt.thirdparty.guava.common.base.Preconditions;
-import com.vaadin.ui.UI;
 
 /*
  * #%L
@@ -48,6 +51,38 @@ public final class DateUtils
 		cal.set(Calendar.SECOND, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		return cal.getTime();
+	}
+
+	public static Date truncToDay(final LocalDate date)
+	{
+		if (date == null)
+		{
+			return null;
+		}
+
+		return Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
+	}
+
+	@SuppressWarnings("deprecation")
+	@Nullable
+	public static LocalDate toLocalDate(@Nullable final java.util.Date date)
+	{
+		return date != null
+				? LocalDate.of(date.getYear() + 1900, date.getMonth() + 1, date.getDate())
+				: null;
+	}
+
+	@Nullable
+	public static java.sql.Date toSqlDate(@Nullable final java.util.Date date)
+	{
+		return date != null
+				? java.sql.Date.valueOf(toLocalDate(date))
+				: null;
+	}
+
+	public static java.util.Date toDate(final LocalDate date)
+	{
+		return java.util.Date.from(date.atStartOfDay(ZoneId.systemDefault()).toInstant());
 	}
 
 	public static Date truncToWeek(final Date date)
@@ -161,7 +196,7 @@ public final class DateUtils
 
 	/**
 	 * Parse given day string
-	 * 
+	 *
 	 * @param dayStr day string (yyyy-MM-dd)
 	 * @return parsed day or null if the string is <code>null</code> or empty.
 	 */

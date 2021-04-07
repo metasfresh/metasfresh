@@ -318,6 +318,8 @@ class Lookup extends Component {
       scannerElement,
       forceFullWidth,
       forceHeight,
+      advSearchCaption,
+      advSearchWindowId,
     } = this.props;
 
     const {
@@ -468,6 +470,8 @@ class Lookup extends Component {
                     newRecordCaption,
                     newRecordWindowId,
                     localClearing,
+                    advSearchCaption,
+                    advSearchWindowId,
                   }}
                 />
               );
@@ -588,6 +592,8 @@ Lookup.propTypes = {
   scanning: PropTypes.any,
   codeSelected: PropTypes.any,
   scannerElement: PropTypes.any,
+  advSearchCaption: PropTypes.string,
+  advSearchWindowId: PropTypes.string,
 };
 
 export default connect()(BarcodeScanner(onClickOutside(Lookup)));

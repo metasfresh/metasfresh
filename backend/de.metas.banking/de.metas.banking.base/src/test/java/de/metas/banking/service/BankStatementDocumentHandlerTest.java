@@ -1,22 +1,5 @@
 package de.metas.banking.service;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.time.LocalDate;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.util.Trace;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
@@ -30,6 +13,7 @@ import de.metas.banking.service.impl.BankStatementBL;
 import de.metas.banking.service.impl.C_BankStatementLine_MockedInterceptor;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -40,6 +24,21 @@ import de.metas.money.MoneyService;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.Builder;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.util.Trace;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -70,6 +69,7 @@ public class BankStatementDocumentHandlerTest
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private BankRepository bankRepo;
 
+	@SuppressWarnings("FieldCanBeLocal")
 	private final String metasfreshIban = "123456";
 	private final LocalDate statementDate = SystemTime.asLocalDate();
 	private final LocalDate valutaDate = de.metas.common.util.time.SystemTime.asLocalDate();
@@ -83,9 +83,12 @@ public class BankStatementDocumentHandlerTest
 		AdempiereTestHelper.get().init();
 
 		final BankAccountService bankAccountService = BankAccountService.newInstanceForUnitTesting();
-		final BankStatementBL bankStatementBL = new BankStatementBL(bankAccountService)
+		final BankStatementBL bankStatementBL = new BankStatementBL(
+				bankAccountService,
+				new MoneyService(new CurrencyRepository()))
 		{
-			public void unpost(I_C_BankStatement bankStatement)
+			@Override
+			public void unpost(final I_C_BankStatement bankStatement)
 			{
 				System.out.println("In JUnit test BankStatementBL.unpost() does nothing"
 						+ "\n\t bank statement: " + bankStatement
@@ -124,7 +127,7 @@ public class BankStatementDocumentHandlerTest
 
 	private BPartnerId createCustomer()
 	{
-		I_C_BPartner customer = BusinessTestHelper.createBPartner("le customer");
+		final I_C_BPartner customer = BusinessTestHelper.createBPartner("le customer");
 		return BPartnerId.ofRepoId(customer.getC_BPartner_ID());
 	}
 

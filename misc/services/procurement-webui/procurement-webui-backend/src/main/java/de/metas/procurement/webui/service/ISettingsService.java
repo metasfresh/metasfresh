@@ -22,15 +22,12 @@ package de.metas.procurement.webui.service;
  * #L%
  */
 
+import javax.annotation.Nullable;
+
 public interface ISettingsService
 {
-	//@formatter:off
+	@Nullable
 	String getInfoMessage();
-	void setInfoMessage(String infoMessage);
-	//@formatter:on
 
-	//@formatter:off
-	String getValue(String name);
-	void setValue(String name, String value);
-	//@formatter:on
+	void setInfoMessage(@Nullable String infoMessage);
 }

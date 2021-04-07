@@ -1,9 +1,15 @@
 package de.metas.procurement.webui.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import lombok.Getter;
+import lombok.NonNull;
 
-import java.math.BigDecimal;
-import java.util.Map;
+import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.NoSuchElementException;
 
 
 
@@ -20,12 +26,12 @@ import java.util.Map;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,67 +40,50 @@ import java.util.Map;
 
 public enum Trend
 {
-	UP("U", "trend-up")
-	, DOWN("D", "trend-down")
-	, EVEN("E", "trend-even")
-	, ZERO("Z", "trend-zero")
-	//
-	;
+	UP("U", "trend-up"),
+	DOWN("D", "trend-down"),
+	EVEN("E", "trend-even"),
+	ZERO("Z", "trend-zero");
 
+	private static final ImmutableMap<String, Trend> valuesByCode = Maps.uniqueIndex(Arrays.asList(values()), Trend::getCode);
+	private static final ImmutableMap<String, Trend> valuesByJson = Maps.uniqueIndex(Arrays.asList(values()), Trend::toJson);
+
+	@Getter
 	private final String code;
-	private final String cssStyleName;
+	private final String json;
 
-	Trend(final String code, final String cssStyleName)
+	Trend(@NonNull final String code, @NonNull final String json)
 	{
 		this.code = code;
-		this.cssStyleName = cssStyleName;
-	}
-	
-	public String getCode()
-	{
-		return code;
+		this.json = json;
 	}
 
-	public String getCssStyleName()
+	@Nullable
+	public static Trend ofNullableCode(@Nullable final String code)
 	{
-		return cssStyleName;
+		return code != null ? valuesByCode.get(code) : null;
 	}
-	
-	public static Trend forQtyAndTarget(final BigDecimal qty, final BigDecimal targetQty)
-	{
-		final int cmp = qty.compareTo(targetQty);
-		if (cmp > 0)
-		{
-			return UP;
-		}
-		else if (cmp == 0)
-		{
-			return EVEN;
-		}
-		else
-		{
-			return DOWN;
-		}
-	}
-	
 
-	private static final Map<String, Trend> code2value;
-	static
+	@Nullable
+	public static Trend ofNullableJson(@Nullable final String json)
 	{
-		final ImmutableMap.Builder<String, Trend> code2valueBuilder = ImmutableMap.builder();
-		for (final Trend trend : values())
-		{
-			code2valueBuilder.put(trend.getCode(), trend);
-		}
-		code2value = code2valueBuilder.build();
+		return json != null ? ofJson(json) : null;
 	}
-	
-	public static Trend ofCodeOrNull(final String code)
+
+	@JsonCreator
+	public static Trend ofJson(@NonNull final String json)
 	{
-		if (code == null)
+		final Trend value = valuesByJson.get(json);
+		if (value == null)
 		{
-			return null;
+			throw new NoSuchElementException("No Trend found for json `" + json + "`. Available values are: " + valuesByJson.keySet());
 		}
-		return code2value.get(code);
+		return value;
+	}
+
+	@JsonValue
+	public String toJson()
+	{
+		return json;
 	}
 }

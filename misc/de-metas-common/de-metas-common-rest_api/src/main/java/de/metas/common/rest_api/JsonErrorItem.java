@@ -22,10 +22,6 @@
 
 package de.metas.common.rest_api;
 
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -42,7 +38,10 @@ import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
-@ApiModel(description = "Error informations")
+import javax.annotation.Nullable;
+import java.util.Map;
+
+@ApiModel(description = "Error information")
 @Value
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @JsonDeserialize(builder = JsonErrorItem.JsonErrorItemBuilder.class)
@@ -61,6 +60,18 @@ public class JsonErrorItem
 	@JsonInclude(Include.NON_EMPTY)
 	JsonMetasfreshId adIssueId;
 
+	@Nullable
+	String orgCode;
+
+	@Nullable
+	String sourceClassName;
+
+	@Nullable
+	String sourceMethodName;
+
+	@Nullable
+	String issueCategory;
+
 	/**
 	 * Local exception.
 	 * It won't be serialized. It's just used for local troubleshooting.
@@ -76,6 +87,10 @@ public class JsonErrorItem
 			@JsonProperty("stackTrace") @Nullable final String stackTrace,
 			@JsonProperty("parameters") @Nullable @Singular final Map<String, String> parameters,
 			@JsonProperty("adIssueId") @Nullable final JsonMetasfreshId adIssueId,
+			@JsonProperty("orgCode") @Nullable final String orgCode,
+			@JsonProperty("sourceClassName") @Nullable final String sourceClassName,
+			@JsonProperty("sourceMethodName") @Nullable final String sourceMethodName,
+			@JsonProperty("issueCategory") @Nullable final String issueCategory,
 			@Nullable final Throwable throwable)
 	{
 		this.message = message;
@@ -83,6 +98,10 @@ public class JsonErrorItem
 		this.stackTrace = stackTrace;
 		this.parameters = CoalesceUtil.coalesce(parameters, ImmutableMap.of());
 		this.adIssueId = adIssueId;
+		this.sourceClassName = sourceClassName;
+		this.sourceMethodName = sourceMethodName;
+		this.issueCategory = issueCategory;
+		this.orgCode = orgCode;
 		this.throwable = throwable;
 	}
 

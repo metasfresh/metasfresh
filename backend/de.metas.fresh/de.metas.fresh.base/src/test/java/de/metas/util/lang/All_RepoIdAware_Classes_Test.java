@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import org.junit.jupiter.api.Assumptions;
@@ -56,6 +57,8 @@ public class All_RepoIdAware_Classes_Test
 			.skip(de.metas.bpartner.BPartnerLocationId.class)
 			.skip(de.metas.bpartner.BPartnerContactId.class)
 			.skip(de.metas.bpartner.BPartnerBankAccountId.class)
+			//
+			.skip(de.metas.externalsystem.IExternalSystemChildConfigId.class)
 			//
 			.skip(de.metas.invoice.InvoiceLineId.class)
 			//

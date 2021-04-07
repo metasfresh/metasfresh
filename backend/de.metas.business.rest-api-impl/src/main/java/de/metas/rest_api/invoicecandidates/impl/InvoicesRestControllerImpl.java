@@ -16,6 +16,7 @@ import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesR
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
@@ -58,10 +59,14 @@ import java.util.Optional;
  * Used for managing invoices and invoice candidates(create, query)
  */
 @RestController
-@RequestMapping(value = IInvoicesRestEndpoint.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/invoices",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/invoices",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/invoices" })
 @Profile(Profiles.PROFILE_App)
 class InvoicesRestControllerImpl implements IInvoicesRestEndpoint
 {
+	
 	private final CheckInvoiceCandidatesStatusService checkInvoiceCandidatesStatusService;
 	private final CreateInvoiceCandidatesService createInvoiceCandidatesService;
 	private final EnqueueForInvoicingService enqueueForInvoicingService;

@@ -464,14 +464,14 @@ public class BPartnerBL implements IBPartnerBL
 			//
 			// BPartner contact
 			final I_AD_User bpContact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
-			bpContact.setC_BPartner(bpartner);
+			bpContact.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 			bpContact.setC_Greeting(template.getC_Greeting());
 			bpContact.setFirstname(template.getFirstname());
 			bpContact.setLastname(template.getLastname());
 			bpContact.setPhone(template.getPhone());
 			bpContact.setEMail(template.getEMail());
 			bpContact.setIsNewsletter(template.isNewsletter());
-			bpContact.setC_BPartner_Location(bpLocation);
+			bpContact.setC_BPartner_Location_ID(bpLocation.getC_BPartner_Location_ID());
 			if (template.isCustomer())
 			{
 				bpContact.setIsSalesContact(true);
@@ -597,6 +597,18 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
+	public void setBPartnerSalesRepIdOutOfTrx(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerId salesRepBPartnerId)
+	{
+		final I_C_BPartner bPartnerRecord = bpartnersRepo.getByIdOutOfTrx(bPartnerId);
+
+		final int salesRepBPartnerIdInt = salesRepBPartnerId != null ? salesRepBPartnerId.getRepoId() : -1;
+
+		bPartnerRecord.setC_BPartner_SalesRep_ID(salesRepBPartnerIdInt);
+
+		bpartnersRepo.saveOutOfTrx(bPartnerRecord);
+	}
+
+	@Override
 	public UserId setSalesRepId(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final UserId salesRepId)
@@ -671,5 +683,11 @@ public class BPartnerBL implements IBPartnerBL
 	public BPartnerPrintFormatMap getPrintFormats(final @NonNull BPartnerId bpartnerId)
 	{
 		return bpartnersRepo.getPrintFormats(bpartnerId);
+	}
+
+	@Override
+	public boolean isSalesRep(@NonNull final BPartnerId bpartnerId)
+	{
+		return getById(bpartnerId).isSalesRep();
 	}
 }

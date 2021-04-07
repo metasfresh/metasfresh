@@ -1,19 +1,5 @@
 package de.metas.procurement.webui.service.impl;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-
-import javax.transaction.Transactional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Service;
-
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
@@ -28,10 +14,23 @@ import de.metas.procurement.webui.repository.ProductSupplyRepository;
 import de.metas.procurement.webui.repository.UserProductRepository;
 import de.metas.procurement.webui.repository.WeekSupplyRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
-import de.metas.procurement.webui.sync.IServerSyncService;
-import de.metas.procurement.webui.sync.ISyncAfterCommitCollector;
-import de.metas.procurement.webui.util.DateRange;
+import de.metas.procurement.webui.sync.ISenderToMetasfreshService;
 import de.metas.procurement.webui.util.DateUtils;
+import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Service;
+import org.threeten.extra.YearWeek;
+
+import javax.annotation.Nullable;
+import javax.transaction.Transactional;
+import java.math.BigDecimal;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -56,35 +55,42 @@ import de.metas.procurement.webui.util.DateUtils;
  */
 
 /**
- * Creates/Updates both {@link ProductSupply} and {@link WeekSupply} records, and also makes sure they are synchronized with the remote endpoint, see {@link SyncAfterCommit}.
+ * Creates/Updates both {@link ProductSupply} and {@link WeekSupply} records, and also makes sure they are synchronized with the remote endpoint, see SyncAfterCommit.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 public class ProductSuppliesService implements IProductSuppliesService
 {
-	private final transient Logger logger = LoggerFactory.getLogger(getClass());
+	private static final Logger logger = LoggerFactory.getLogger(ProductSuppliesService.class);
+	private final UserProductRepository userProductRepository;
+	private final ProductSupplyRepository productSupplyRepository;
+	private final WeekSupplyRepository weekSupplyRepository;
+	private final ProductRepository productRepository;
+	private final BPartnerRepository bpartnersRepository;
+	private final ISenderToMetasfreshService senderToMetasfreshService;
 
+	public ProductSuppliesService(
+			@NonNull final UserProductRepository userProductRepository,
+			@NonNull final ProductSupplyRepository productSupplyRepository,
+			@NonNull final WeekSupplyRepository weekSupplyRepository,
+			@NonNull final ProductRepository productRepository,
+			@NonNull final BPartnerRepository bpartnersRepository,
+			@Lazy @NonNull final ISenderToMetasfreshService senderToMetasfreshService)
+	{
+		this.userProductRepository = userProductRepository;
+		this.productSupplyRepository = productSupplyRepository;
+		this.weekSupplyRepository = weekSupplyRepository;
+		this.productRepository = productRepository;
+		this.bpartnersRepository = bpartnersRepository;
+		this.senderToMetasfreshService = senderToMetasfreshService;
+	}
 
-	@Autowired
-	private UserProductRepository userProductRepository;
-
-	@Autowired
-	private ProductSupplyRepository productSupplyRepository;
-
-	@Autowired
-	private WeekSupplyRepository weekSupplyRepository;
-
-	@Autowired
-	private ProductRepository productRepository;
-
-	@Autowired
-	@Lazy
-	private BPartnerRepository bpartnersRepository;
-
-	@Autowired
-	private IServerSyncService syncService;
+	@Override
+	public ProductSupply getProductSupplyById(final long product_supply_id)
+	{
+		return productSupplyRepository.getOne(product_supply_id);
+	}
 
 	@Override
 	public List<Product> getUserFavoriteProducts(final User user)
@@ -122,87 +128,72 @@ public class ProductSuppliesService implements IProductSuppliesService
 
 	@Override
 	@Transactional
-	public boolean removeUserFavoriteProduct(final User user, final Product product)
+	public void removeUserFavoriteProduct(final User user, final Product product)
 	{
 		final UserProduct existingUserProduct = userProductRepository.findByUserAndProduct(user, product);
 		if (existingUserProduct == null)
 		{
-			return false;
+			return;
 		}
 
 		userProductRepository.delete(existingUserProduct);
-		return true;
 	}
 
 	@Override
 	@Transactional
-	public void reportSupply(final BPartner bpartner, final Product product, final ContractLine contractLine, final Date day, final BigDecimal qty)
+	public void reportSupply(@NonNull final ReportDailySupplyRequest request)
 	{
-		ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, day);
+		final BPartner bpartner = request.getBpartner();
+		final ContractLine contractLine = request.getContractLine();
+		final Product product = productRepository.getOne(request.getProductId());
+		final LocalDate date = request.getDate();
+		final BigDecimal qty = request.getQty();
+
+		ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(
+				product,
+				bpartner,
+				DateUtils.toSqlDate(date));
 		if (productSupply == null)
 		{
-			productSupply = ProductSupply.build(bpartner, product, contractLine, day);
+			productSupply = ProductSupply.builder()
+					.bpartner(bpartner)
+					.contractLine(contractLine)
+					.product(product)
+					.day(date)
+					.build();
 		}
 
-		productSupply.setQty(qty);
-		productSupplyRepository.save(productSupply);
+		productSupply.setQtyUserEntered(qty);
+		if (request.isQtyConfirmedByUser())
+		{
+			productSupply.setQty(qty);
+		}
 
-		syncAfterCommit().add(productSupply);
+		saveAndPush(productSupply);
 	}
 
 	@Override
-	public List<ProductSupply> getProductSupplies(final BPartner bpartner, final Date date)
+	public List<ProductSupply> getProductSupplies(final BPartner bpartner, final LocalDate date)
 	{
-		final Date day = DateUtils.truncToDay(date);
-		return productSupplyRepository.findByBpartnerAndDay(bpartner, day);
+		return productSupplyRepository.findByBpartnerAndDay(bpartner, DateUtils.toSqlDate(date));
 	}
 
 	@Override
-	public List<ProductSupply> getProductSupplies(final long bpartner_id, final long product_id, Date dayFrom, Date dayTo)
+	public List<ProductSupply> getProductSupplies(
+			final long bpartner_id,
+			final long product_id,
+			@NonNull final LocalDate dayFrom,
+			@NonNull final LocalDate dayTo)
 	{
-		final BPartner bpartner;
-		if (bpartner_id > 0)
-		{
-			// bpartner = bpartnersRepository.findOne(bpartner_id);
-			bpartner = null;
-			if (bpartner == null)
-			{
-				throw new RuntimeException("No BPartner found for ID=" + bpartner_id);
-			}
-		}
-		else
-		{
-			bpartner = null;
-		}
-
-		final Product product;
-		if (product_id > 0)
-		{
-			// product = productRepository.findOne(product_id);
-			product = null;
-			if (product == null)
-			{
-				throw new RuntimeException("No Product found for ID=" + product_id);
-			}
-		}
-		else
-		{
-			product = null;
-		}
-
-		dayFrom = DateUtils.truncToDay(dayFrom);
-		if (dayFrom == null)
-		{
-			throw new RuntimeException("No DayFrom specified");
-		}
-		dayTo = DateUtils.truncToDay(dayTo);
-		if (dayTo == null)
-		{
-			throw new RuntimeException("No DayTo specified");
-		}
-
+		final BPartner bpartner = bpartner_id > 0 ? bpartnersRepository.getOne(bpartner_id) : null;
+		final Product product = product_id > 0 ? productRepository.getOne(product_id) : null;
 		logger.debug("Querying product supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
-		List<ProductSupply> productSupplies = productSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
+
+		final List<ProductSupply> productSupplies = productSupplyRepository.findBySelector(
+				bpartner,
+				product,
+				DateUtils.toSqlDate(dayFrom),
+				DateUtils.toSqlDate(dayTo));
 		logger.debug("Got {} product supplies", productSupplies.size());
 
 		return productSupplies;
@@ -223,94 +214,170 @@ public class ProductSuppliesService implements IProductSuppliesService
 	}
 
 	@Override
-	public Trend getNextWeekTrend(final BPartner bpartner, final Product product, final DateRange week)
+	public Trend getNextWeekTrend(final BPartner bpartner, final Product product, final YearWeek week)
 	{
-		final Date weekDay = week.getNextWeek().getDateFrom();
-		final WeekSupply weekSupply = weekSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, weekDay);
-		if (weekSupply == null)
-		{
-			return null;
-		}
+		final LocalDate weekDay = week.plusWeeks(1).atDay(DayOfWeek.MONDAY);
+		final WeekSupply weekSupply = weekSupplyRepository.findByProductAndBpartnerAndDay(
+				product,
+				bpartner,
+				DateUtils.toSqlDate(weekDay));
 
-		return Trend.ofCodeOrNull(weekSupply.getTrend());
+		return weekSupply != null ? weekSupply.getTrend() : null;
 	}
 
 	@Override
 	@Transactional
-	public WeekSupply setNextWeekTrend(final BPartner bpartner, final Product product, final DateRange week, final Trend trend)
+	public WeekSupply setNextWeekTrend(final BPartner bpartner, final Product product, final YearWeek week, final Trend trend)
 	{
-		final Date weekDay = week.getNextWeek().getDateFrom();
-		final String trendCode = trend == null ? null : trend.getCode();
+		final LocalDate weekDay = week.plusWeeks(1).atDay(DayOfWeek.MONDAY);
 
-		WeekSupply weeklySupply = weekSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, weekDay);
+		WeekSupply weeklySupply = weekSupplyRepository.findByProductAndBpartnerAndDay(
+				product,
+				bpartner,
+				DateUtils.toSqlDate(weekDay));
 		if (weeklySupply == null)
 		{
-			weeklySupply = new WeekSupply();
-			weeklySupply.setBpartner(bpartner);
-			weeklySupply.setProduct(product);
-			weeklySupply.setDay(weekDay);
+			weeklySupply = WeekSupply.builder()
+					.bpartner(bpartner)
+					.product(product)
+					.day(weekDay)
+					.build();
 		}
 
-		weeklySupply.setTrend(trendCode);
-		weekSupplyRepository.save(weeklySupply);
+		weeklySupply.setTrend(trend);
 
-		syncAfterCommit().add(weeklySupply);
+		saveAndPush(weeklySupply);
 
 		return weeklySupply;
 	}
 
 	@Override
-	public List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo)
+	public List<WeekSupply> getWeeklySupplies(
+			final long bpartner_id,
+			final long product_id,
+			@NonNull final LocalDate dayFrom,
+			@NonNull final LocalDate dayTo)
 	{
-		final BPartner bpartner = null;
-		// if (bpartner_id > 0)
-		// {
-		// 	 bpartner = bpartnersRepository.findOne(bpartner_id);
-		// 	if (bpartner == null)
-		// 	{
-		// 		throw new RuntimeException("No BPartner found for ID=" + bpartner_id);
-		// 	}
-		// }
-		// else
-		// {
-		// 	bpartner = null;
-		// }
-
-		final Product product = null;
-		// if (product_id > 0)
-		// {
-		// 	product = productRepository.findOne(product_id);
-		// 	if (product == null)
-		// 	{
-		// 		throw new RuntimeException("No Product found for ID=" + product_id);
-		// 	}
-		// }
-		// else
-		// {
-		// 	product = null;
-		// }
-
-		dayFrom = DateUtils.truncToDay(dayFrom);
-		if (dayFrom == null)
-		{
-			throw new RuntimeException("No DayFrom specified");
-		}
-		dayTo = DateUtils.truncToDay(dayTo);
-		if (dayTo == null)
-		{
-			throw new RuntimeException("No DayTo specified");
-		}
-
+		final BPartner bpartner = bpartner_id > 0 ? bpartnersRepository.getOne(bpartner_id) : null;
+		final Product product = product_id > 0 ? productRepository.getOne(product_id) : null;
 		logger.debug("Querying weekly supplies for: bpartner={}, product={}, day={}->{}", bpartner, product, dayFrom, dayTo);
-		final List<WeekSupply> weeklySupplies = weekSupplyRepository.findBySelector(bpartner, product, dayFrom, dayTo);
+
+		final List<WeekSupply> weeklySupplies = weekSupplyRepository.findBySelector(
+				bpartner,
+				product,
+				DateUtils.toSqlDate(dayFrom),
+				DateUtils.toSqlDate(dayTo));
 		logger.debug("Got {} weekly supplies", weeklySupplies.size());
 
 		return weeklySupplies;
 	}
 
-	private ISyncAfterCommitCollector syncAfterCommit()
+	@Override
+	public List<WeekSupply> getWeeklySupplies(
+			@NonNull final BPartner bpartner,
+			@Nullable final Product product,
+			@NonNull final YearWeek week)
 	{
-		return syncService.syncAfterCommit();
+		final LocalDate weekDay = week.atDay(DayOfWeek.MONDAY);
+
+		return weekSupplyRepository.findBySelector(
+				bpartner,
+				product,
+				DateUtils.toSqlDate(weekDay),
+				DateUtils.toSqlDate(weekDay));
 	}
 
+	private void saveAndPush(@NonNull final ProductSupply productSupply)
+	{
+		productSupplyRepository.save(productSupply);
+		senderToMetasfreshService.syncAfterCommit().add(productSupply);
+	}
+
+	private void saveAndPush(@NonNull final WeekSupply weeklySupply)
+	{
+		weekSupplyRepository.save(weeklySupply);
+		senderToMetasfreshService.syncAfterCommit().add(weeklySupply);
+	}
+
+	@Override
+	public Product getProductById(final long productId)
+	{
+		return productRepository.getOne(productId);
+	}
+
+	@Override
+	public void importPlanningSupply(@NonNull final ImportPlanningSupplyRequest request)
+	{
+		final BPartner bpartner = request.getBpartner();
+		final ContractLine contractLine = request.getContractLine();
+		final Product product = productRepository.findByUuid(request.getProduct_uuid());
+		final LocalDate day = request.getDate();
+		final BigDecimal qty = request.getQty();
+
+		ProductSupply productSupply = productSupplyRepository.findByProductAndBpartnerAndDay(product, bpartner, DateUtils.toSqlDate(day));
+		final boolean isNew;
+		if (productSupply == null)
+		{
+			isNew = true;
+			productSupply = ProductSupply.builder()
+					.bpartner(bpartner)
+					.contractLine(contractLine)
+					.product(product)
+					.day(day)
+					.build();
+		}
+		else
+		{
+			isNew = false;
+		}
+
+		//
+		// Contract line
+		if (!isNew)
+		{
+			final ContractLine contractLineOld = productSupply.getContractLine();
+			if (!Objects.equals(contractLine, contractLineOld))
+			{
+				logger.warn("Changing contract line {}->{} for {} because of planning supply: {}", contractLineOld, contractLine, productSupply, request);
+			}
+			productSupply.setContractLine(contractLine);
+		}
+
+		//
+		// Quantity
+		if (!isNew)
+		{
+			final BigDecimal qtyOld = productSupply.getQty();
+			if (qty.compareTo(qtyOld) != 0)
+			{
+				logger.warn("Changing quantity {}->{} for {} because of planning supply: {}", qtyOld, qty, productSupply, request);
+			}
+		}
+
+		productSupply.setQtyUserEntered(qty);
+		productSupply.setQty(qty);
+
+		//
+		// Save the product supply
+		saveAndPush(productSupply);
+	}
+
+	@Override
+	@Transactional
+	public void confirmUserEntries(@NonNull final User user)
+	{
+		final BPartner bpartner = user.getBpartner();
+		final List<ProductSupply> productSupplies = productSupplyRepository.findUnconfirmed(bpartner);
+		for (final ProductSupply productSupply : productSupplies)
+		{
+			productSupply.setQty(productSupply.getQtyUserEntered());
+			saveAndPush(productSupply);
+		}
+	}
+
+	@Override
+	public long getCountUnconfirmed(@NonNull final User user)
+	{
+		return productSupplyRepository.countUnconfirmed(user.getBpartner());
+	}
 }

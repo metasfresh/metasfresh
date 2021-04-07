@@ -3,22 +3,23 @@ package de.metas.rest_api.bpartner.impl;
 import de.metas.Profiles;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.bpartner.impl.bpartnercomposite.jsonpersister.JsonPersisterService;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestBPartnerUpsertItem;
-import de.metas.rest_api.bpartner.request.JsonRequestBankAccountsUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestContactUpsert;
-import de.metas.rest_api.bpartner.request.JsonRequestLocationUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsert;
-import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsert.JsonResponseBPartnerCompositeUpsertBuilder;
-import de.metas.rest_api.bpartner.response.JsonResponseBPartnerCompositeUpsertItem;
-import de.metas.rest_api.bpartner.response.JsonResponseComposite;
-import de.metas.rest_api.bpartner.response.JsonResponseCompositeList;
-import de.metas.rest_api.bpartner.response.JsonResponseContact;
-import de.metas.rest_api.bpartner.response.JsonResponseLocation;
-import de.metas.rest_api.bpartner.response.JsonResponseUpsert;
-import de.metas.rest_api.common.SyncAdvise;
-import de.metas.rest_api.common.SyncAdvise.IfExists;
-import de.metas.rest_api.common.SyncAdvise.IfNotExists;
+import de.metas.common.bpartner.request.JsonRequestBPartnerUpsert;
+import de.metas.common.bpartner.request.JsonRequestBPartnerUpsertItem;
+import de.metas.common.bpartner.request.JsonRequestBankAccountsUpsert;
+import de.metas.common.bpartner.request.JsonRequestContactUpsert;
+import de.metas.common.bpartner.request.JsonRequestLocationUpsert;
+import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsert;
+import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsert.JsonResponseBPartnerCompositeUpsertBuilder;
+import de.metas.common.bpartner.response.JsonResponseBPartnerCompositeUpsertItem;
+import de.metas.common.bpartner.response.JsonResponseComposite;
+import de.metas.common.bpartner.response.JsonResponseCompositeList;
+import de.metas.common.bpartner.response.JsonResponseContact;
+import de.metas.common.bpartner.response.JsonResponseLocation;
+import de.metas.common.bpartner.response.JsonResponseUpsert;
+import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.SyncAdvise.IfExists;
+import de.metas.common.rest_api.SyncAdvise.IfNotExists;
+import de.metas.rest_api.utils.ApiEndpoint;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -44,11 +45,11 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.NEXT_DOC;
-import static de.metas.rest_api.bpartner.SwaggerDocConstants.SINCE_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.CONTACT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.NEXT_DOC;
+import static de.metas.common.rest_api.SwaggerDocConstants.SINCE_DOC;
 
 /*
  * #%L
@@ -72,13 +73,16 @@ import static de.metas.rest_api.bpartner.SwaggerDocConstants.SINCE_DOC;
  * #L%
  */
 
-@RequestMapping(BpartnerRestController.ENDPOINT)
+
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/bpartner",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/bpartner",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bpartner" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 // the spelling "Bpartner" is to avoid swagger from spelling it "b-partner-rest.."
 public class BpartnerRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartner";
 	public static final String ORG_CODE_PARAMETER_DOC = "`AD_Org.Value` of the BPartner identified by the bpartnerIdentifier";
 
 	private final BPartnerEndpointService bpartnerEndpointService;

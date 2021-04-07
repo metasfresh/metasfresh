@@ -16,7 +16,6 @@ export const initialTableState = {
   rows: [],
   collapsedRows: [],
   collapsedParentRows: [],
-  collapsedArrayMap: [],
   // row columns
   columns: [],
   activeSort: false,
@@ -297,7 +296,6 @@ const reducer = produce((draftState, action) => {
         selected: [],
         collapsedRows: [],
         collapsedParentRows: [],
-        collapsedArrayMap: [],
         size: 0,
       };
 
@@ -305,17 +303,11 @@ const reducer = produce((draftState, action) => {
     }
 
     case types.COLLAPSE_TABLE_ROWS: {
-      const {
-        id,
-        collapsedArrayMap,
-        collapsedParentRows,
-        collapsedRows,
-      } = action.payload;
+      const { id, collapsedParentRows, collapsedRows } = action.payload;
       const table = draftState[id];
 
       draftState[id] = {
         ...table,
-        collapsedArrayMap: collapsedArrayMap,
         collapsedParentRows: collapsedParentRows,
         collapsedRows: collapsedRows,
       };

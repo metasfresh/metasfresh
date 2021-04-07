@@ -5,8 +5,7 @@ import de.metas.common.procurement.sync.protocol.dto.SyncContract;
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.Contract;
 import de.metas.procurement.webui.repository.ContractRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,12 +24,12 @@ import java.util.Map.Entry;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -39,15 +38,18 @@ import java.util.Map.Entry;
 
 @Service
 @Transactional
-public class SyncContractListImportService extends AbstractSyncImportService
+class SyncContractListImportService extends AbstractSyncImportService
 {
-	@Autowired
-	@Lazy
-	private ContractRepository contractsRepo;
+	private final ContractRepository contractsRepo;
+	private final SyncContractImportService contractsImportService;
 
-	@Autowired
-	@Lazy
-	private SyncContractImportService contractsImportService;
+	public SyncContractListImportService(
+			@NonNull final ContractRepository contractsRepo,
+			@NonNull final SyncContractImportService contractsImportService)
+	{
+		this.contractsRepo = contractsRepo;
+		this.contractsImportService = contractsImportService;
+	}
 
 	public void importContracts(final BPartner bpartner, final List<SyncContract> syncContracts)
 	{

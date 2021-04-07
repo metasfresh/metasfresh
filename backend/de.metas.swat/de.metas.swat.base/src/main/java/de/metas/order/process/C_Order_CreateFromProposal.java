@@ -24,25 +24,18 @@ package de.metas.order.process;
 
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
-import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.CreateSalesOrderFromProposalCommand;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
 import de.metas.process.Param;
-import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 
 import java.sql.Timestamp;
 
-public final class C_Order_CreateFromProposal extends JavaProcess implements IProcessPrecondition
+public final class C_Order_CreateFromProposal extends C_Order_CreationProcess
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
@@ -52,31 +45,13 @@ public final class C_Order_CreateFromProposal extends JavaProcess implements IPr
 	@Param(parameterName = "DateOrdered")
 	private Timestamp newOrderDateOrdered;
 
-	@Param(parameterName = "DocumentNo")
+	@Param(parameterName = "POReference")
 	private String poReference;
 
 	@Param(parameterName = "CompleteIt")
 	private boolean completeIt;
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
-	{
-
-		if (context.isNoSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
-		}
-
-		if (context.isMoreThanOneSelected())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
-
-		final OrderId orderId = OrderId.ofRepoId(context.getSingleSelectedRecordId());
-		final I_C_Order order = orderBL.getById(orderId);
-		return checkPreconditionsApplicable(order);
-	}
-
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull I_C_Order order)
 	{
 		final DocStatus quotationDocStatus = DocStatus.ofNullableCodeOrUnknown(order.getDocStatus());
@@ -108,24 +83,5 @@ public final class C_Order_CreateFromProposal extends JavaProcess implements IPr
 		openOrder(newSalesOrder);
 
 		return newSalesOrder.getDocumentNo();
-	}
-
-	private void openOrder(@NonNull final I_C_Order order)
-	{
-		final AdWindowId orderWindowId = RecordWindowFinder
-				.findAdWindowId(TableRecordReference.of(order))
-				.orElse(null);
-
-		if (orderWindowId == null)
-		{
-			log.warn("Skip opening {} because no window found for it", order);
-			return;
-		}
-
-		getResult().setRecordToOpen(
-				TableRecordReference.of(order),
-				orderWindowId.getRepoId(),
-				ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument,
-				ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB);
 	}
 }

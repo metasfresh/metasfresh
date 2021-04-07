@@ -24,6 +24,7 @@ package de.metas.edi.esb.desadvexport.ecosio;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
@@ -31,6 +32,10 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Unmarshaller;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Properties;
@@ -62,7 +67,7 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 			properties.setProperty(Constants.EP_AMQP_TO_MF, "mock:ep.rabbitmq.to.mf");
 			return properties;
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -100,5 +105,32 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 						+ "    <EDI_Desadv_ID>1001</EDI_Desadv_ID>\n"
 						+ "    <EDI_ExportStatus>S</EDI_ExportStatus>\n"
 						+ "</EDI_Desadv_Feedback>");
+	}
+
+	@Test
+	void nonEmpty_desadv() throws Exception
+	{
+		// given
+		final var inputStr = EcosioDesadvRouteTest.class.getResourceAsStream("/de/metas/edi/esb/desadvexport/ecosio/DESADV_1023358_1611220554035.xml");
+		assertThat(inputStr).isNotNull();
+
+		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+		final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+		final JAXBElement<EDIExpDesadvType> inputXml = (JAXBElement) unmarshaller.unmarshal(inputStr);
+
+		// when
+		template.sendBodyAndHeader(
+				EcosioDesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER /*endpoint-URI*/,
+				inputXml.getValue() /*actual inputStr*/,
+
+				EDIXmlFeedbackHelper.HEADER_OriginalXMLBody, inputXml.getValue() // this header is otherwise set by the preceeding generic route
+		);
+
+		// then
+		fileOutputEndpoint.expectedMessageCount(1);
+		fileOutputEndpoint.assertIsSatisfied(1000);
+		final var desadvOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
+		assertThat(desadvOutput)
+				.isXmlEqualToContentOf(new File("./src/test/resources/de/metas/edi/esb/desadvexport/ecosio/DESADV_1023358_1611220554035_expected_output.xml"));
 	}
 }

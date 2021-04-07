@@ -1,18 +1,17 @@
 package de.metas.procurement.webui.model;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Optional;
-import com.google.common.base.Preconditions;
+import lombok.NonNull;
 
-import java.util.Comparator;
-import java.util.Locale;
-import java.util.Map;
-
+import javax.annotation.Nullable;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.MapKey;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import java.util.Comparator;
+import java.util.Locale;
+import java.util.Map;
 
 
 
@@ -42,43 +41,21 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "product")
-@SuppressWarnings("serial")
 public class Product extends AbstractEntity
 {
-	public static final Product build(final String name, final String packingInfo)
+	public static Product build(final String name, final String packingInfo)
 	{
 		return new Product(name, packingInfo);
 	}
 
-	public static final String PROPERTYNAME_Id = "id";
-	public static final Comparator<Product> COMPARATOR_Id = new Comparator<Product>()
-	{
-		@Override
-		public int compare(final Product o1, final Product o2)
-		{
-			final Long id1 = Optional.fromNullable(o1.getId()).or(Long.valueOf(0));
-			final Long id2 = Optional.fromNullable(o2.getId()).or(Long.valueOf(0));
-			return id1.compareTo(id2);
-		}
+	public static final Comparator<Product> COMPARATOR_Id = (o1, o2) -> {
+		final Long id1 = o1.getId() != null ? o1.getId() : 0;
+		final Long id2 = o2.getId() != null ? o2.getId() : 0;
+		return id1.compareTo(id2);
 	};
 
-	public static final String PROPERTYNAME_Name = "name";
-
-	public static final Comparator<Product> comparatorByName(final Locale locale)
-	{
-		return new Comparator<Product>()
-		{
-			@Override
-			public int compare(final Product o1, final Product o2)
-			{
-				final String name1 = o1 == null ? "" : o1.getName(locale);
-				final String name2 = o2 == null ? "" : o2.getName(locale);
-				return name1.compareTo(name2);
-			}
-		};
-	}
-
 	private String name;
+	@Nullable
 	private String packingInfo;
 	private boolean shared;
 
@@ -88,13 +65,11 @@ public class Product extends AbstractEntity
 
 	public Product()
 	{
-		super();
 	}
 
-	public Product(final String name, final String packingInfo)
+	public Product(@NonNull final String name, @Nullable final String packingInfo)
 	{
-		super();
-		this.name = Preconditions.checkNotNull(name);
+		this.name = name;
 		this.packingInfo = packingInfo;
 	}
 
@@ -123,18 +98,18 @@ public class Product extends AbstractEntity
 		return name;
 	}
 
-	public void setPackingInfo(final String packingInfo)
+	public void setPackingInfo(@Nullable final String packingInfo)
 	{
 		this.packingInfo = packingInfo;
 	}
 
+	@Nullable
 	public String getPackingInfo(final Locale locale)
 	{
-		// TODO: implement
 		return packingInfo;
 	}
 
-	public void setShared(boolean shared)
+	public void setShared(final boolean shared)
 	{
 		this.shared = shared;
 	}

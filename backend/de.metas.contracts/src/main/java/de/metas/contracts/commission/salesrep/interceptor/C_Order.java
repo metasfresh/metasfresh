@@ -123,7 +123,7 @@ public class C_Order
 		final BPartnerId effectiveBillPartnerId = extractEffectiveBillPartnerId(orderRecord);
 		if (effectiveBillPartnerId == null)
 		{
-			return; // no customer whose mater data we we could update
+			return; // no customer whose master data we we could update
 		}
 
 		final BPartnerId salesBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_SalesRep_ID());

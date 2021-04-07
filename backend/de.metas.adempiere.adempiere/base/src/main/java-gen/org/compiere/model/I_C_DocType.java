@@ -101,6 +101,28 @@ public interface I_C_DocType
 	String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
 
 	/**
+	 * Set Difference Document.
+	 * Document type for generating in dispute Shipments
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocTypeDifference_ID (int C_DocTypeDifference_ID);
+
+	/**
+	 * Get Difference Document.
+	 * Document type for generating in dispute Shipments
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocTypeDifference_ID();
+
+	String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
+
+	/**
 	 * Set Document Type.
 	 * Document type or rules
 	 *
@@ -122,28 +144,6 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, Object> COLUMN_C_DocType_ID = new ModelColumn<>(I_C_DocType.class, "C_DocType_ID", null);
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
-
-	/**
-	 * Set Difference Document.
-	 * Document type for generating in dispute Shipments
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_DocTypeDifference_ID (int C_DocTypeDifference_ID);
-
-	/**
-	 * Get Difference Document.
-	 * Document type for generating in dispute Shipments
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_DocTypeDifference_ID();
-
-	String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
 
 	/**
 	 * Set Rechnungs-Belegart.

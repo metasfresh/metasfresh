@@ -23,7 +23,6 @@
 package de.metas.procurement.webui.sync.rabbitmq;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.rabbitmq.client.AMQP;
 import de.metas.common.procurement.sync.Constants;
 import de.metas.common.procurement.sync.protocol.RequestToMetasfresh;
 import de.metas.procurement.webui.sync.exception.SendSyncException;
@@ -60,7 +59,7 @@ public class SenderToMetasfresh
 		}
 		catch (final JsonProcessingException e)
 		{
-			throw new SendSyncException(requestToMetasfresh, e);
+			throw new SendSyncException(requestToMetasfresh,e);
 		}
 
 		final MessageProperties messageProperties = new MessageProperties();

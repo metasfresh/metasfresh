@@ -1,41 +1,55 @@
 # thx @metas-jb for the hint about using v2
 version: '2.4'
 services:
-  # rabbitmq server
-  metasfresh_rabbitmq:
-    # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#image and https://hub.docker.com/_/rabbitmq
-    image: rabbitmq:3.8.9-management
-    #container_name: 'metasfresh_rabbitmq' - not having it right now, because it's not supported by test containers
-    environment:
-      # default virtual host
-      RABBITMQ_DEFAULT_VHOST: /
-    # expose some rabbitmq ports
+  procurement_webui_nginx:
+    image: tekn0ir/nginx-stream
+    #container_name: procurement_webui_stream_proxy
+    restart: unless-stopped
+    tty: true
     ports:
-    #  - 5683:5671 I didn't manage to get federation via TLS to work
-      - 5673:5672
-      - 15673:15672
-    # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#volumes
+      - "25674:25672"
     volumes:
-      - ./configs/metasfresh_rabbitmq:/etc/rabbitmq/:ro
+      - ./procurement_webui/procurement_webui_nginx/certs/nginx-selfsigned.crt:/etc/nginx/ssl/cert.pem:ro
+      - ./procurement_webui/procurement_webui_nginx/certs/nginx-selfsigned.key:/etc/nginx/ssl/key.pem:ro
+      - ./procurement_webui/procurement_webui_nginx/default.conf:/opt/nginx/stream.conf.d/default.conf:ro
     networks:
-      - backend
-
+      - testsetup_backend
   procurement_webui_rabbitmq:
     # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#image and https://hub.docker.com/_/rabbitmq
     image: rabbitmq:3.8.9-management
     #container_name: 'procurement_webui_rabbitmq' - not having it right now, because it's not supported by test containers
-    environment:
-      # default virtual host
-      RABBITMQ_DEFAULT_VHOST: /
-    # expose some rabbitmq ports
     ports:
-    #  - 5684:5671  I didn't manage to get federation via TLS to work
       - 5674:5672
       - 15674:15672
     # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#volumes
     volumes:
-      - ./configs/procurement_webui_rabbitmq:/etc/rabbitmq/:ro
+      - ./procurement_webui/procurement_webui_rabbitmq/configs:/etc/rabbitmq/:ro
     networks:
-      - backend
+      - testsetup_backend
+  metasfresh_nginx:
+    image: tekn0ir/nginx-stream
+    # container_name: metasfresh_stream_proxy
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "25673:25672"
+    volumes:
+      - ./metasfresh/metasfresh_nginx/certs/nginx-selfsigned.crt:/etc/nginx/ssl/cert.pem:ro
+      - ./metasfresh/metasfresh_nginx/certs/nginx-selfsigned.key:/etc/nginx/ssl/key.pem:ro
+      - ./metasfresh/metasfresh_nginx/default.conf:/opt/nginx/stream.conf.d/default.conf:ro
+    networks:
+      - testsetup_backend
+  metasfresh_rabbitmq:
+    # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#image and https://hub.docker.com/_/rabbitmq
+    image: rabbitmq:3.8.9-management
+    #container_name: 'metasfresh_rabbitmq' - not having it right now, because it's not supported by test containers
+    ports:
+      - 5673:5672
+      - 15673:15672
+    # thx https://docs.docker.com/compose/compose-file/compose-file-v2/#volumes
+    volumes:
+      - ./metasfresh/metasfresh_rabbitmq/configs:/etc/rabbitmq/:ro
+    networks:
+      - testsetup_backend
 networks:
-  backend:
+  testsetup_backend:

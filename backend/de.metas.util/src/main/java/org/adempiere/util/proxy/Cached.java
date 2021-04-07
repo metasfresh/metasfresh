@@ -46,11 +46,7 @@ import de.metas.util.Services;
  * </ul>
  *
  * TODO: move to the rough area of where the interceptor impl is.
- *
- * @see CacheIgnore
- * @author metas-dev <dev@metasfresh.com>
  */
-// @InterceptorBinding
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.METHOD, ElementType.TYPE })
@@ -61,22 +57,16 @@ public @interface Cached
 
 	/**
 	 * Optional array of properties (of Object which contains annotated method!) whose values are also used when creating the hash key
-	 *
-	 * @return
 	 */
 	String[]keyProperties() default {};
 
 	/**
 	 * If true, the actual instance, whose method is cached, is not included in the caching key
-	 *
-	 * @return
 	 */
 	boolean ignoreInstance() default false;
 
 	/**
 	 * Cache name. This attribute is used to invalidate staled caches. Please include the table name(s) of the object(s) that is (are) cached.
-	 *
-	 * @return
 	 */
 	String cacheName() default "";
 

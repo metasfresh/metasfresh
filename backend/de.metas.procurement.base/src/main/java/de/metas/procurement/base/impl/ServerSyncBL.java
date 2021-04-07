@@ -44,6 +44,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -86,7 +88,7 @@ public class ServerSyncBL implements IServerSyncBL
 	@Override
 	public List<SyncBPartner> getAllBPartners()
 	{
-		List<SyncBPartner> syncBPartners = SyncObjectsFactory.newFactory().createAllSyncBPartners();
+		final List<SyncBPartner> syncBPartners = SyncObjectsFactory.newFactory().createAllSyncBPartners();
 		logger.debug("Returning: {}", syncBPartners);
 		return syncBPartners;
 	}
@@ -94,7 +96,7 @@ public class ServerSyncBL implements IServerSyncBL
 	@Override
 	public List<SyncProduct> getAllProducts()
 	{
-		List<SyncProduct> syncProducts = SyncObjectsFactory.newFactory().createAllSyncProducts();
+		final List<SyncProduct> syncProducts = SyncObjectsFactory.newFactory().createAllSyncProducts();
 		logger.debug("Returning: {}", syncProducts);
 		return syncProducts;
 	}
@@ -213,7 +215,7 @@ public class ServerSyncBL implements IServerSyncBL
 			{
 				InterfaceWrapperHelper.save(qtyReportEvent);
 
-				logger.debug("Imported {} to {}:\n{}", syncProductSupply, qtyReportEvent);
+				logger.debug("Imported {} to {}", syncProductSupply, qtyReportEvent);
 			}
 
 			//
@@ -355,8 +357,8 @@ public class ServerSyncBL implements IServerSyncBL
 		}
 
 		// WeekDate
-		final Timestamp weekDate = TimeUtil.trunc(syncWeeklySupply.getWeekDay(), TimeUtil.TRUNC_WEEK);
-		event.setWeekDate(weekDate);
+		final LocalDate weekDate = syncWeeklySupply.getWeekDay().with(DayOfWeek.MONDAY);
+		event.setWeekDate(TimeUtil.asTimestamp(weekDate));
 
 		// Trend
 		final String trend = syncWeeklySupply.getTrend();
@@ -367,7 +369,7 @@ public class ServerSyncBL implements IServerSyncBL
 		event.setIsActive(true);
 		InterfaceWrapperHelper.save(event);
 
-		logger.debug("Imported {} to {}:\n{}", syncWeeklySupply, event);
+		logger.debug("Imported {} to {}", syncWeeklySupply, event);
 
 		// Notify agent that we got the message
 		final String serverEventId = String.valueOf(event.getPMM_WeekReport_Event_ID());
@@ -399,12 +401,12 @@ public class ServerSyncBL implements IServerSyncBL
 		Env.setContext(tempCtx, Env.CTXNAME_AD_Client_ID, pmmProduct.getAD_Client_ID());
 		Env.setContext(tempCtx, Env.CTXNAME_AD_Org_ID, pmmProduct.getAD_Org_ID());
 
-		try (final IAutoCloseable contextRestorer = Env.switchContext(tempCtx))
+		try (final IAutoCloseable ignored = Env.switchContext(tempCtx))
 		{
 			Services.get(ITrxManager.class).runInNewTrx(new TrxRunnableAdapter()
 			{
 				@Override
-				public void run(final String localTrxName) throws Exception
+				public void run(final String localTrxName)
 				{
 					final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(tempCtx);
 					processor.processEvent(context, pmmProduct);
@@ -475,7 +477,7 @@ public class ServerSyncBL implements IServerSyncBL
 		event.setIsActive(true);
 		InterfaceWrapperHelper.save(event);
 
-		logger.debug("Imported {} to {}:\n{}", syncPriceChangeEvent, event);
+		logger.debug("Imported {} to {}", syncPriceChangeEvent, event);
 
 		// Notify agent that we got the message
 		final String serverEventId = String.valueOf(event.getPMM_RfQResponse_ChangeEvent_ID());
@@ -511,8 +513,8 @@ public class ServerSyncBL implements IServerSyncBL
 		
 		//
 		// Date
-		final Timestamp datePromised = syncQtyChangeEvent.getDay() == null ? null : TimeUtil.trunc(syncQtyChangeEvent.getDay(), TimeUtil.TRUNC_DAY);
-		event.setDatePromised(datePromised);
+		final LocalDate datePromised = syncQtyChangeEvent.getDay();
+		event.setDatePromised(TimeUtil.asTimestamp(datePromised));
 
 		// Product
 		event.setPMM_Product(pmmProduct);
@@ -522,7 +524,7 @@ public class ServerSyncBL implements IServerSyncBL
 		event.setIsActive(true);
 		InterfaceWrapperHelper.save(event);
 
-		logger.debug("Imported {} to {}:\n{}", syncQtyChangeEvent, event);
+		logger.debug("Imported {} to {}", syncQtyChangeEvent, event);
 
 		// Notify agent that we got the message
 		final String serverEventId = String.valueOf(event.getPMM_RfQResponse_ChangeEvent_ID());

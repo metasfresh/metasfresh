@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Value
 public class SyncWeeklySupply implements IConfirmableDTO
@@ -38,7 +38,7 @@ public class SyncWeeklySupply implements IConfirmableDTO
 
 	String bpartner_uuid;
 	String product_uuid;
-	Date weekDay;
+	LocalDate weekDay;
 	String trend;
 	int version;
 
@@ -50,7 +50,7 @@ public class SyncWeeklySupply implements IConfirmableDTO
 			@JsonProperty("syncConfirmationId") final long syncConfirmationId,
 			@JsonProperty("bpartner_uuid") final String bpartner_uuid,
 			@JsonProperty("product_uuid") final String product_uuid,
-			@JsonProperty("weekDay") final Date weekDay,
+			@JsonProperty("weekDay") final LocalDate weekDay,
 			@JsonProperty("trend") final String trend,
 			@JsonProperty("version") final int version)
 	{

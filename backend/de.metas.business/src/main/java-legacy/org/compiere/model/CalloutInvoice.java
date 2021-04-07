@@ -396,7 +396,7 @@ public class CalloutInvoice extends CalloutEngine
 		// No Product defined
 		if (invoiceLine.getM_Product_ID() > 0)
 		{
-			invoiceLine.setC_Charge(null);
+			invoiceLine.setC_Charge_ID(-1);
 			return "ChargeExclusively";
 		}
 

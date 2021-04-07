@@ -234,7 +234,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	public boolean isRunning()
 	{
 		final Boolean running = this.running.get();
-		return running != null && running == true;
+		return running != null && running;
 	}
 
 	/**
@@ -264,7 +264,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		// * update HeaderAggregationKey
 		for (final OlAndSched olAndSched : olsAndScheds)
 		{
-			try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
+			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
@@ -406,10 +406,10 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			}
 
 			shipmentScheduleBL.updateExportStatus(schedRecord);
-			shipmentScheduleBL.updateCanBeExportedAfter(schedRecord);
-
 			schedRecord.setPOReference(olAndSched.getSalesOrderPORef());
 
+			// do not invoke this method, it's invoked by a model interceptor when M_ShipmentSchedule.ExportStatus is changed *for whatevever reason*.
+			// shipmentScheduleBL.updateCanBeExportedAfter(schedRecord);
 			shipmentSchedulePA.save(schedRecord);
 		}
 	}
@@ -418,7 +418,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final Properties ctx,
 			@NonNull final List<OlAndSched> lines)
 	{
-		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleUpdateRunNo(1))
+		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleUpdateRunNo(1))
 		{
 			final ShipmentSchedulesDuringUpdate firstRun = new ShipmentSchedulesDuringUpdate();
 			return generate(ctx, lines, firstRun);
@@ -430,7 +430,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			@NonNull final List<OlAndSched> lines,
 			@NonNull final ShipmentSchedulesDuringUpdate firstRun)
 	{
-		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleUpdateRunNo(2))
+		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleUpdateRunNo(2))
 		{
 			return generate(ctx, lines, firstRun);
 		}
@@ -450,7 +450,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		// Iterate and try to allocate the QtyOnHand
 		for (final OlAndSched olAndSched : lines)
 		{
-			try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
+			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
@@ -503,14 +503,12 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 					// product not stocked => don't concern ourselves with the storage; just deliver what was ordered
 					logger.debug("ProductId={} is not stocked; will use qtyToDeliver={} as-is", productId.getRepoId(), qtyToDeliver);
 					createLine(
-							ctx,
 							olAndSched,
 							qtyToDeliver,
 							ShipmentScheduleAvailableStock.of(),
 							true/* force */,
 							CompleteStatus.OK,
 							candidates);
-					continue;
 				}
 				else
 				{
@@ -529,7 +527,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 					if (deliveryRule.isForce())
 					{
 						createLine(
-								ctx,
 								olAndSched,
 								qtyToDeliver,
 								storages,
@@ -553,7 +550,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 							// because we want the quantity to be allocated.
 							// If the created line will make it into a real shipment will be decided later.
 							createLine(
-									ctx,
 									olAndSched,
 									qtyToDeliverEffective,
 									storages,
@@ -599,7 +595,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	 * @param qty the quantity all created inOutLines' qtyEntered will sum up to
 	 */
 	private void createLine(
-			@NonNull final Properties ctx,
 			@NonNull final OlAndSched olAndSched,
 			@NonNull final BigDecimal qty,
 			@NonNull final ShipmentScheduleAvailableStock storages,
@@ -623,7 +618,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				deliveryLineCandidate.setQtyToDeliver(qty);
 			}
 			candidates.addLine(deliveryLineCandidate);
-			return;
 		}
 		else
 		{
@@ -651,7 +645,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 						&& qtyAvailable.signum() >= 0)         // positive storage
 				{
 					if (!force // Adjust to OnHand Qty
-							|| force && storageIndex + 1 != storages.size())         // if force not on last location
+							|| storageIndex + 1 != storages.size())         // if force not on last location
 					{
 						qtyToDeliver = qtyAvailable;
 					}
@@ -712,7 +706,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final ShipmentScheduleReferencedLine scheduleSourceDoc = shipmentScheduleReferencedLineFactory.createFor(sched);
 		final String bpartnerAddress = sched.getBPartnerAddress_Override();
 
-		DeliveryGroupCandidate candidate = null;
+		DeliveryGroupCandidate candidate;
 
 		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
 		if (isAllowConsolidateShipment(bpartnerId))
@@ -801,7 +795,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	 * Try to get the given <code>ol</code>'s <code>qtyReservedInPriceUOM</code> and update the given <code>sched</code>'s <code>LineNetAmt</code>.
 	 *
 	 * @throws AdempiereException in developer mode, if there the <code>qtyReservedInPriceUOM</code> can't be obtained.
-	 * @task https://github.com/metasfresh/metasfresh/issues/298
+	 * task https://github.com/metasfresh/metasfresh/issues/298
 	 */
 	private BigDecimal computeLineNetAmt(final OlAndSched olAndSched)
 	{
@@ -839,8 +833,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	/**
 	 * 07400 also update the M_Warehouse_ID; an order might have been reactivated and the warehouse might have been changed.
-	 *
-	 * @param sched
 	 */
 	private void updateWarehouseId(@NonNull final I_M_ShipmentSchedule sched)
 	{
@@ -885,7 +877,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private Stream<IShipmentScheduleSegment> extractPickingBOMsStorageSegments(final OlAndSched olAndSched)
 	{
-		try (final MDCCloseable mdcClosable = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
+		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 		{
 			final PickingBOMsReversedIndex pickingBOMsReversedIndex = pickingBOMService.getPickingBOMsReversedIndex();
 

@@ -8,10 +8,11 @@ import javax.annotation.Nullable;
 /** Generated Model for AD_UI_Element
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_Element, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 754699779L;
+	private static final long serialVersionUID = -424520330L;
 
     /** Standard Constructor */
     public X_AD_UI_Element (final Properties ctx, final int AD_UI_Element_ID, @Nullable final String trxName)
@@ -176,7 +177,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -188,7 +189,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	@Override
-	public void setHelp (final java.lang.String Help)
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
@@ -353,7 +354,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	@Override
-	public void setMediaTypes (final java.lang.String MediaTypes)
+	public void setMediaTypes (final @Nullable java.lang.String MediaTypes)
 	{
 		set_Value (COLUMNNAME_MediaTypes, MediaTypes);
 	}
@@ -425,7 +426,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	}
 
 	@Override
-	public void setUIStyle (final java.lang.String UIStyle)
+	public void setUIStyle (final @Nullable java.lang.String UIStyle)
 	{
 		set_Value (COLUMNNAME_UIStyle, UIStyle);
 	}
@@ -434,6 +435,29 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	public java.lang.String getUIStyle() 
 	{
 		return get_ValueAsString(COLUMNNAME_UIStyle);
+	}
+
+	/** 
+	 * ViewEditMode AD_Reference_ID=541263
+	 * Reference name: ViewEditMode
+	 */
+	public static final int VIEWEDITMODE_AD_Reference_ID=541263;
+	/** Never = N */
+	public static final String VIEWEDITMODE_Never = "N";
+	/** OnDemand = D */
+	public static final String VIEWEDITMODE_OnDemand = "D";
+	/** Always = Y */
+	public static final String VIEWEDITMODE_Always = "Y";
+	@Override
+	public void setViewEditMode (final @Nullable java.lang.String ViewEditMode)
+	{
+		set_Value (COLUMNNAME_ViewEditMode, ViewEditMode);
+	}
+
+	@Override
+	public java.lang.String getViewEditMode() 
+	{
+		return get_ValueAsString(COLUMNNAME_ViewEditMode);
 	}
 
 	/** 
@@ -452,7 +476,7 @@ public class X_AD_UI_Element extends org.compiere.model.PO implements I_AD_UI_El
 	/** XXL = XXL */
 	public static final String WIDGETSIZE_XXL = "XXL";
 	@Override
-	public void setWidgetSize (final java.lang.String WidgetSize)
+	public void setWidgetSize (final @Nullable java.lang.String WidgetSize)
 	{
 		set_Value (COLUMNNAME_WidgetSize, WidgetSize);
 	}

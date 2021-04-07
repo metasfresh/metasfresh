@@ -41,7 +41,7 @@ import lombok.ToString;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class StockEstimateCreatedEvent extends AbstractStockEstimateEvent
 {
-	public static final String TYPE = "StockCountCreatedEvent";
+	public static final String TYPE = "StockEstimateCreatedEvent";
 
 	@JsonCreator
 	@Builder

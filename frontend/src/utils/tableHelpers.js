@@ -40,7 +40,6 @@ export const containerPropTypes = {
   selected: PropTypes.array.isRequired,
   collapsedParentRows: PropTypes.array.isRequired,
   collapsedRows: PropTypes.array.isRequired,
-  collapsedArrayMap: PropTypes.array.isRequired,
   allowShortcut: PropTypes.bool,
   allowOutsideClick: PropTypes.bool,
   modalVisible: PropTypes.bool,

@@ -1,9 +1,5 @@
 package de.metas.procurement.webui.service;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-
 import de.metas.procurement.webui.model.BPartner;
 import de.metas.procurement.webui.model.ContractLine;
 import de.metas.procurement.webui.model.Product;
@@ -11,7 +7,15 @@ import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.Trend;
 import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.model.WeekSupply;
-import de.metas.procurement.webui.util.DateRange;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.threeten.extra.YearWeek;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
 /*
  * #%L
@@ -35,27 +39,69 @@ import de.metas.procurement.webui.util.DateRange;
  * #L%
  */
 
-public interface IProductSuppliesService
+public interface IProductSuppliesService extends UserConfirmationHandler
 {
-	void reportSupply(final BPartner bpartner, final Product product, final ContractLine contractLine, final Date day, final BigDecimal qty);
+	@Override
+	void confirmUserEntries(User user);
 
-	List<ProductSupply> getProductSupplies(final BPartner bpartner, final Date date);
+	@Override
+	long getCountUnconfirmed(User user);
 
-	List<ProductSupply> getProductSupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo);
+	@Value
+	@Builder
+	class ReportDailySupplyRequest
+	{
+		@NonNull BPartner bpartner;
+		ContractLine contractLine;
+
+		long productId;
+		@NonNull LocalDate date;
+		@NonNull BigDecimal qty;
+
+		@Builder.Default
+		boolean qtyConfirmedByUser = false;
+	}
+
+	void reportSupply(ReportDailySupplyRequest request);
+
+	List<ProductSupply> getProductSupplies(final BPartner bpartner, final LocalDate date);
+
+	List<ProductSupply> getProductSupplies(long bpartner_id, long product_id, LocalDate dayFrom, LocalDate dayTo);
+
+	ProductSupply getProductSupplyById(long product_supply_id);
 
 	List<Product> getUserFavoriteProducts(final User user);
 
 	void addUserFavoriteProduct(final User user, final Product product);
 
-	boolean removeUserFavoriteProduct(final User user, final Product product);
+	void removeUserFavoriteProduct(final User user, final Product product);
 
 	List<Product> getAllProducts();
 
 	List<Product> getAllSharedProducts();
 
-	Trend getNextWeekTrend(BPartner bpartner, Product product, DateRange week);
+	@Nullable
+	Trend getNextWeekTrend(BPartner bpartner, Product product, YearWeek week);
 
-	WeekSupply setNextWeekTrend(BPartner bpartner, Product product, DateRange week, Trend trend);
+	WeekSupply setNextWeekTrend(BPartner bpartner, Product product, YearWeek week, Trend trend);
 
-	List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, Date dayFrom, Date dayTo);
+	List<WeekSupply> getWeeklySupplies(long bpartner_id, long product_id, LocalDate dayFrom, LocalDate dayTo);
+
+	List<WeekSupply> getWeeklySupplies(BPartner bpartner, @Nullable Product product, YearWeek week);
+
+	Product getProductById(long productId);
+
+	@Value
+	@Builder
+	class ImportPlanningSupplyRequest
+	{
+		@NonNull BPartner bpartner;
+		ContractLine contractLine;
+
+		@NonNull String product_uuid;
+		@NonNull LocalDate date;
+		@NonNull BigDecimal qty;
+	}
+
+	void importPlanningSupply(ImportPlanningSupplyRequest request);
 }
