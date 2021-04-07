@@ -47,6 +47,8 @@ public class DataTableUtil
 	 */
 	private static int recordIdentifierFallback = 0;
 
+	private static final String NULL_STRING = "null";
+
 	public String extractRecordIdentifier(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String fallbackPrefix)
@@ -83,6 +85,12 @@ public class DataTableUtil
 			throw new AdempiereException("Missing column for columnName=" + columnName).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+
+		if (NULL_STRING.equals(dataTableRow.get(columnName)))
+		{
+			return null;
+		}
+
 		return dataTableRow.get(columnName);
 	}
 

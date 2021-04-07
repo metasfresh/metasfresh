@@ -42,6 +42,7 @@ import de.metas.cucumber.stepdefs.RESTUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
+import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -135,8 +136,8 @@ public class CreateBPartnerV2_StepDef
 	@Then("verify that bPartner was created for externalIdentifier")
 	public void verify_bPartner_was_created_for_externalIdentifier_v2(@NonNull final DataTable dataTable) throws IOException
 	{
-		final List<Map<String, String>> locationsTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : locationsTableList)
+		final List<Map<String, String>> bpartnerTableList = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : bpartnerTableList)
 		{
 			final String externalIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "externalIdentifier");
 			final String code = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Code");
@@ -162,7 +163,7 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedBPartner.getPhone()).isEqualTo(phone);
 			assertThat(persistedBPartner.getGroup()).isEqualTo(group);
 
-			if (!parentId.equals("null"))
+			if (Check.isNotBlank(parentId))
 			{
 				assertThat(persistedBPartner.getParentId().getValue()).isEqualTo(Integer.parseInt(parentId));
 			}
