@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.ordercandidates.v1.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
@@ -225,6 +226,9 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	JsonAlbertaOrderInfo albertaOrderInfo;
 
+	@JsonInclude(Include.NON_NULL)
+	JsonOrderLineGroup orderLineGroup;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -260,7 +264,8 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
 			@JsonProperty("shipper") final @Nullable String shipper,
 			@JsonProperty("paymentTerm") final @Nullable String paymentTerm,
-			@JsonProperty("albertaOrderInfo") final @Nullable JsonAlbertaOrderInfo albertaOrderInfo)
+			@JsonProperty("albertaOrderInfo") final @Nullable JsonAlbertaOrderInfo albertaOrderInfo,
+			@JsonProperty("orderLineGroup") final @Nullable JsonOrderLineGroup orderLineGroup)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -297,6 +302,7 @@ public class JsonOLCandCreateRequest
 
 		this.paymentTerm = paymentTerm;
 		this.albertaOrderInfo = albertaOrderInfo;
+		this.orderLineGroup = orderLineGroup;
 	}
 
 	/**

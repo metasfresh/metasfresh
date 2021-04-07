@@ -223,6 +223,9 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	String paymentTerm;
 
+	@JsonInclude(Include.NON_NULL)
+	JsonOrderLineGroup orderLineGroup;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -257,7 +260,8 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("paymentRule") final @Nullable JSONPaymentRule paymentRule,
 			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
 			@JsonProperty("shipper") final @Nullable String shipper,
-			@JsonProperty("paymentTerm") final @Nullable String paymentTerm)
+			@JsonProperty("paymentTerm") final @Nullable String paymentTerm,
+			@JsonProperty("orderLineGroup") final @Nullable JsonOrderLineGroup orderLineGroup)
 	{
 		this.org = org;
 		this.externalLineId = externalLineId;
@@ -293,6 +297,7 @@ public class JsonOLCandCreateRequest
 		this.shipper = shipper;
 
 		this.paymentTerm = paymentTerm;
+		this.orderLineGroup = orderLineGroup;
 	}
 
 	/**
