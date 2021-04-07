@@ -41,7 +41,7 @@ public class OrderLineGroup
 	private OrderLineGroup(@NonNull final String groupKey,
 			final boolean isGroupMainItem,
 			final boolean isGroupingError,
-			final String groupingErrorMessage)
+			@Nullable final String groupingErrorMessage)
 	{
 		this.groupKey = groupKey;
 		this.isGroupMainItem = isGroupMainItem;
@@ -59,7 +59,7 @@ public class OrderLineGroup
 	public static OrderLineGroup of(@NonNull final String groupKey,
 			final boolean isGroupMainItem,
 			final boolean isGroupingError,
-			final String groupingErrorMessage)
+			@Nullable final String groupingErrorMessage)
 	{
 		return new OrderLineGroup(groupKey, isGroupMainItem, isGroupingError, groupingErrorMessage);
 	}
@@ -68,6 +68,15 @@ public class OrderLineGroup
 	public static OrderLineGroup ofOrNull(@Nullable final String groupKey, final boolean isGroupMainItem)
 	{
 		return Check.isEmpty(groupKey) ? null : of(groupKey, isGroupMainItem);
+	}
+
+	@Nullable
+	public static OrderLineGroup ofOrNull(@Nullable final String groupKey,
+			final boolean isGroupMainItem,
+			final boolean isGroupingError,
+			@Nullable final String groupingErrorMessage)
+	{
+		return Check.isEmpty(groupKey) ? null : of(groupKey, isGroupMainItem, isGroupingError, groupingErrorMessage);
 	}
 
 }
