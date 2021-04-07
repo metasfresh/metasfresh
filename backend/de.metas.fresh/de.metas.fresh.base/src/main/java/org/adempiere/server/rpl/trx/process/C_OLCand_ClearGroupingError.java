@@ -49,7 +49,8 @@ public class C_OLCand_ClearGroupingError extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final ICompositeQueryUpdater<I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(I_C_OLCand.class)
-				.addSetColumnValue(I_C_OLCand.COLUMNNAME_IsGroupingError, false);
+				.addSetColumnValue(I_C_OLCand.COLUMNNAME_IsGroupingError, false)
+				.addSetColumnValue(I_C_OLCand.COLUMNNAME_GroupingErrorMessage, null);
 
 		return "@Updated@ #" + createOLCandQueryBuilder().create().update(updater);
 	}
