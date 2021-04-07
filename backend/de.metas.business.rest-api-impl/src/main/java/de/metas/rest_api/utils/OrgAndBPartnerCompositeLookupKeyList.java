@@ -41,6 +41,9 @@ public class OrgAndBPartnerCompositeLookupKeyList
 		return new OrgAndBPartnerCompositeLookupKeyList(orgId, compositeLookupKeys);
 	}
 
+	/**
+	 * @param orgId look for the given org or *
+	 */
 	public static OrgAndBPartnerCompositeLookupKeyList ofIdentifierString(
 			@NonNull final OrgId orgId, @NonNull final IdentifierString identifierString)
 	{
