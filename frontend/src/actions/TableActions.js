@@ -313,12 +313,7 @@ export function updateGridTableData(tableId, rows) {
 
     if (state.tables) {
       const table = state.tables[tableId];
-      const {
-        indentSupported,
-        
-        keyProperty,
-        collapsible,
-      } = table;
+      const { indentSupported, keyProperty, collapsible } = table;
       if (rows.length && indentSupported) {
         rows = flattenRows(rows);
         // table rows are already flattened so we will end up with duplicates from
@@ -334,7 +329,7 @@ export function updateGridTableData(tableId, rows) {
             tableId,
             rows,
             collapsible,
-            expandedDepth,
+            // expandedDepth,
             keyProperty,
           })
         );
