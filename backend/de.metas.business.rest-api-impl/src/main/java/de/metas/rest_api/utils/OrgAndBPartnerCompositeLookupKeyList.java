@@ -102,9 +102,15 @@ public class OrgAndBPartnerCompositeLookupKeyList
 		return new OrgAndBPartnerCompositeLookupKeyList(orgId, result.build());
 	}
 
+	/**
+	 * @param other list to add to the union. Its orgId has to be equal to this instance's orgId or has to be {@link OrgId#ANY}.  
+	 * 
+	 * @return a list taht contains both this instances's lookup keys and the given {@code other}'s lookup keys.
+	 */
 	public OrgAndBPartnerCompositeLookupKeyList union(@NonNull final OrgAndBPartnerCompositeLookupKeyList other)
 	{
-		if (!Objects.equals(other.getOrgId(), orgId))
+		final OrgId otherOrgId = other.getOrgId();
+		if (!Objects.equals(otherOrgId, this.orgId) && !otherOrgId.isAny())
 		{
 			throw new AdempiereException("union - other BPartnerCompositeLookupKeysWithOrg needs to have the same orgId")
 					.appendParametersToMessage()
@@ -113,7 +119,7 @@ public class OrgAndBPartnerCompositeLookupKeyList
 		}
 
 		return new OrgAndBPartnerCompositeLookupKeyList(
-				orgId, ImmutableSet.<BPartnerCompositeLookupKey>builder().addAll(compositeLookupKeys).addAll(other.getCompositeLookupKeys()).build()
+				this.orgId, ImmutableSet.<BPartnerCompositeLookupKey>builder().addAll(compositeLookupKeys).addAll(other.getCompositeLookupKeys()).build()
 		);
 	}
 
