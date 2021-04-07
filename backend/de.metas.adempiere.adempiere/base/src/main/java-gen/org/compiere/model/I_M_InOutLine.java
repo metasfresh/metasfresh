@@ -428,6 +428,27 @@ public interface I_M_InOutLine
 	String COLUMNNAME_IsInvoiced = "IsInvoiced";
 
 	/**
+	 * Set Warranty Case.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWarrantyCase (boolean IsWarrantyCase);
+
+	/**
+	 * Get Warranty Case.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWarrantyCase();
+
+	ModelColumn<I_M_InOutLine, Object> COLUMN_IsWarrantyCase = new ModelColumn<>(I_M_InOutLine.class, "IsWarrantyCase", null);
+	String COLUMNNAME_IsWarrantyCase = "IsWarrantyCase";
+
+	/**
 	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
