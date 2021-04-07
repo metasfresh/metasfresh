@@ -23,6 +23,7 @@
 package de.metas.order;
 
 import de.metas.util.Check;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -33,17 +34,34 @@ public class OrderLineGroup
 {
 	String groupKey;
 	boolean isGroupMainItem;
+	boolean isGroupingError;
+	String groupingErrorMessage;
 
-	private OrderLineGroup(@NonNull final String groupKey, final boolean isGroupMainItem)
+	@Builder
+	private OrderLineGroup(@NonNull final String groupKey,
+			final boolean isGroupMainItem,
+			final boolean isGroupingError,
+			final String groupingErrorMessage)
 	{
 		this.groupKey = groupKey;
 		this.isGroupMainItem = isGroupMainItem;
+		this.isGroupingError = isGroupingError;
+		this.groupingErrorMessage = groupingErrorMessage;
 	}
 
 	@NonNull
 	public static OrderLineGroup of(@NonNull final String groupKey, final boolean isGroupMainItem)
 	{
-		return new OrderLineGroup(groupKey, isGroupMainItem);
+		return of(groupKey, isGroupMainItem, false, null);
+	}
+
+	@NonNull
+	public static OrderLineGroup of(@NonNull final String groupKey,
+			final boolean isGroupMainItem,
+			final boolean isGroupingError,
+			final String groupingErrorMessage)
+	{
+		return new OrderLineGroup(groupKey, isGroupMainItem, isGroupingError, groupingErrorMessage);
 	}
 
 	@Nullable

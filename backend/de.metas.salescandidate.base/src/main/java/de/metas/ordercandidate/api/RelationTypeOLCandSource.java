@@ -128,7 +128,12 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.shipperId(shipperId)
 				.orderDocTypeId(orderDocTypeId)
 				.salesRepId(salesRepId)
-				.orderLineGroup(OrderLineGroup.ofOrNull(olCandRecord.getCompensationGroupKey(), olCandRecord.isGroupCompensationLine()))
+				.orderLineGroup(OrderLineGroup.builder()
+						.groupKey(olCandRecord.getCompensationGroupKey())
+						.isGroupMainItem(olCandRecord.isGroupCompensationLine())
+						.isGroupingError(olCandRecord.isGroupingError())
+						.groupingErrorMessage(olCandRecord.getGroupingErrorMessage())
+						.build())
 				.build();
 	}
 }

@@ -295,6 +295,13 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.isError();
 	}
 
+	public void setGroupingError(final String errorMsg)
+	{
+		olCandRecord.setProcessed(false);
+		olCandRecord.setIsGroupingError(true);
+		olCandRecord.setGroupingErrorMessage(errorMsg);
+	}
+
 	public void setError(final String errorMsg, final int adNoteId)
 	{
 		olCandRecord.setIsError(true);

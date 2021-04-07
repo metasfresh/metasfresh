@@ -452,12 +452,14 @@ public class OLCandBL implements IOLCandBL
 		return CollectionUtils.singleElement(attachmentEntryService.createAttachmentLinks(ImmutableList.of(attachmentEntry), remainingOLCandRefs));
 	}
 
+	@Override
 	public void markAsProcessed(final OLCand olCand)
 	{
 		olCand.setProcessed(true);
 		saveCandidate(olCand);
 	}
 
+	@Override
 	public void markAsError(final UserId userInChargeId, final OLCand olCand, final Exception ex)
 	{
 		Loggables.addLog("Caught exception while processing {}; message={}; exception={}", olCand, ex.getLocalizedMessage(), ex);
@@ -474,7 +476,7 @@ public class OLCandBL implements IOLCandBL
 		save(cand.unbox());
 	}
 
-	public I_AD_Note createOLCandErrorNote(final UserId userInChargeId, final OLCand olCand, final Exception ex)
+	private I_AD_Note createOLCandErrorNote(final UserId userInChargeId, final OLCand olCand, final Exception ex)
 	{
 		final I_AD_User user = userDAO.getById(userInChargeId);
 

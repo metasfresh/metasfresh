@@ -8,7 +8,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.logging.LogManager;
-import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.OrderCandidate_Constants;
 import de.metas.ordercandidate.api.OLCandAggregationColumn.Granularity;
 import de.metas.ordercandidate.spi.IOLCandGroupingProvider;
@@ -29,14 +28,12 @@ import org.slf4j.Logger;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -117,7 +114,10 @@ public class OLCandsProcessorExecutor
 				.sorted(aggregationInfo.getOrderingComparator())
 				.collect(ImmutableList.toImmutableList());
 		loggable.addLog("Processing {} order line candidates", candidates.size());
-
+		if (candidates.isEmpty())
+		{
+			return;
+		}
 		//
 		// Compute a grouping key for each candidate and group them according to their key
 		final Map<Integer, ArrayKey> toProcess = new HashMap<>();
@@ -136,7 +136,6 @@ public class OLCandsProcessorExecutor
 			toProcess.put(olCandId, groupingKey);
 			grouping.put(groupingKey, candidate);
 		}
-		validateCompensationGroupKey(grouping);
 		// 'processedIds' contains the candidates that have already been processed
 		final Set<Integer> processedIds = new HashSet<>();
 
@@ -147,7 +146,7 @@ public class OLCandsProcessorExecutor
 		for (final OLCand candidate : candidates)
 		{
 			final int olCandId = candidate.getId();
-			if (processedIds.contains(olCandId) || candidate.isProcessed() || candidate.isError())
+			if (processedIds.contains(olCandId) || candidate.isProcessed())
 			{
 				// 'candidate' has already been processed
 				continue;
@@ -326,6 +325,12 @@ public class OLCandsProcessorExecutor
 			return false;
 		}
 
+		if (cand.getOrderLineGroup() != null && cand.getOrderLineGroup().isGroupingError())
+		{
+			logger.debug("Skipping C_OLCand with grouping errors: {}", cand);
+			return false;
+		}
+
 		final InputDataSourceId candDataDestinationId = InputDataSourceId.ofRepoIdOrNull(cand.getAD_DataDestination_ID());
 		if (!Objects.equals(candDataDestinationId, processorDataDestinationId))
 		{
@@ -342,44 +347,6 @@ public class OLCandsProcessorExecutor
 		}
 
 		return true;
-	}
-
-	private void validateCompensationGroupKey(final ListMultimap<ArrayKey, OLCand> grouping)
-	{
-		final List<ArrayKey> invalidGroupingKeys = grouping.keySet()
-				.stream()
-				.filter(key -> !isValidGroupCompensation(grouping.get(key)))
-				.collect(Collectors.toList());
-		grouping.keySet()
-				.stream()
-				.filter(invalidGroupingKeys::contains)
-				.map(grouping::get)
-				.flatMap(Collection::stream)
-				.forEach(this::invalidateCandidate);
-	}
-
-	private void invalidateCandidate(final OLCand olCand)
-	{
-		olcandBL.markAsError(userInChargeId, olCand, new AdempiereException("Multiple candidates in this group have the same "));
-	}
-
-	private boolean isValidGroupCompensation(final List<OLCand> olCands)
-	{
-		final ListMultimap<String, OLCand> candsPerKey = ArrayListMultimap.create();
-		for (final OLCand cand : olCands)
-		{
-			final String compensationGroupKey = cand.getOrderLineGroup().getGroupKey();
-			if (compensationGroupKey != null)
-			{
-				candsPerKey.put(compensationGroupKey, cand);
-			}
-		}
-		return candsPerKey.isEmpty() || candsPerKey.values()
-				.stream()
-				.map(OLCand::getOrderLineGroup)
-				.map(OrderLineGroup::isGroupMainItem)
-				.filter(Boolean::valueOf)
-				.count() <= 1;
 	}
 
 }

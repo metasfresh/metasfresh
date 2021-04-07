@@ -6,24 +6,26 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for C_OLCand
- *  @author metasfresh (generated) 
+/**
+ * Generated Model for C_OLCand
+ *
+ * @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
+public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 771732330L;
+	private static final long serialVersionUID = 1452323778L;
 
-    /** Standard Constructor */
-    public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
-    {
-      super (ctx, C_OLCand_ID, trxName);
-    }
+	/** Standard Constructor */
+	public X_C_OLCand(final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
+	{
+		super(ctx, C_OLCand_ID, trxName);
+	}
 
-    /** Load Constructor */
-    public X_C_OLCand (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
+	/** Load Constructor */
+	public X_C_OLCand(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
       super (ctx, rs, trxName);
     }
 
@@ -715,22 +717,35 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setExternalLineId (final @Nullable java.lang.String ExternalLineId)
 	{
-		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
+		set_Value(COLUMNNAME_ExternalLineId, ExternalLineId);
 	}
 
 	@Override
-	public java.lang.String getExternalLineId() 
+	public java.lang.String getExternalLineId()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalLineId);
 	}
 
 	@Override
-	public void setHandOver_Location_Effective_ID (final int HandOver_Location_Effective_ID)
+	public java.lang.String getGroupingErrorMessage()
 	{
-		throw new IllegalArgumentException ("HandOver_Location_Effective_ID is virtual column");	}
+		return get_ValueAsString(COLUMNNAME_GroupingErrorMessage);
+	}
 
 	@Override
-	public int getHandOver_Location_Effective_ID() 
+	public void setGroupingErrorMessage(final @Nullable java.lang.String GroupingErrorMessage)
+	{
+		set_Value(COLUMNNAME_GroupingErrorMessage, GroupingErrorMessage);
+	}
+
+	@Override
+	public void setHandOver_Location_Effective_ID(final int HandOver_Location_Effective_ID)
+	{
+		throw new IllegalArgumentException("HandOver_Location_Effective_ID is virtual column");
+	}
+
+	@Override
+	public int getHandOver_Location_Effective_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_HandOver_Location_Effective_ID);
 	}
@@ -876,6 +891,18 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public boolean isGroupCompensationLine()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsGroupCompensationLine);
+	}
+
+	@Override
+	public void setIsGroupingError(final boolean IsGroupingError)
+	{
+		set_Value(COLUMNNAME_IsGroupingError, IsGroupingError);
+	}
+
+	@Override
+	public boolean isGroupingError()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsGroupingError);
 	}
 
 	@Override

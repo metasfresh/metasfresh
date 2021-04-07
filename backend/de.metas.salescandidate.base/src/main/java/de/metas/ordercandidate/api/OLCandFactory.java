@@ -43,6 +43,7 @@ final class OLCandFactory
 
 	public OLCand toOLCand(@NonNull final I_C_OLCand record)
 	{
+
 		return OLCand.builder()
 				.olCandEffectiveValuesBL(olCandEffectiveValuesBL)
 				.olCandRecord(record)
@@ -54,7 +55,12 @@ final class OLCandFactory
 				.paymentTermId(PaymentTermId.ofRepoIdOrNull(record.getC_PaymentTerm_ID()))
 				.salesRepId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_SalesRep_ID()))
 				.orderDocTypeId(DocTypeId.ofRepoIdOrNull(record.getC_DocTypeOrder_ID()))
-				.orderLineGroup(OrderLineGroup.ofOrNull(record.getCompensationGroupKey(), record.isGroupCompensationLine()))
+				.orderLineGroup(OrderLineGroup.builder()
+						.groupKey(record.getCompensationGroupKey())
+						.isGroupMainItem(record.isGroupCompensationLine())
+						.isGroupingError(record.isGroupingError())
+						.groupingErrorMessage(record.getGroupingErrorMessage())
+						.build())
 				.build();
 	}
 }

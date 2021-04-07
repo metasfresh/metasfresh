@@ -595,8 +595,8 @@ public interface I_C_OLCand
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	ModelColumn<I_C_OLCand, Object> COLUMN_IsGroupCompensationLine = new ModelColumn<>(I_C_OLCand.class, "IsGroupCompensationLine", null);
-	String COLUMNNAME_IsGroupCompensationLine = "IsGroupCompensationLine";
+	ModelColumn<I_C_OLCand, Object> COLUMN_GroupingErrorMessage = new ModelColumn<>(I_C_OLCand.class, "GroupingErrorMessage", null);
+	String COLUMNNAME_GroupingErrorMessage = "GroupingErrorMessage";
 
 	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
 
@@ -863,30 +863,13 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDescriptionHeader();
+	@Nullable
+	java.lang.String getDescriptionHeader();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_DescriptionHeader = new ModelColumn<>(I_C_OLCand.class, "DescriptionHeader", null);
 	String COLUMNNAME_DescriptionHeader = "DescriptionHeader";
-
-	/**
-	 * Get Tax Category.
-	 * Tax Category
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_TaxCategory_ID();
-
-	/**
-	 * Set Tax Category.
-	 * Tax Category
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_TaxCategory_ID (int C_TaxCategory_ID);
+	ModelColumn<I_C_OLCand, Object> COLUMN_IsGroupCompensationLine = new ModelColumn<>(I_C_OLCand.class, "IsGroupCompensationLine", null);
+	String COLUMNNAME_IsGroupCompensationLine = "IsGroupCompensationLine";
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_Discount = new ModelColumn<>(I_C_OLCand.class, "Discount", null);
 	String COLUMNNAME_Discount = "Discount";
@@ -1095,10 +1078,33 @@ public interface I_C_OLCand
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getExternalLineId();
+	@Nullable
+	java.lang.String getExternalLineId();
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_C_OLCand.class, "ExternalLineId", null);
 	String COLUMNNAME_ExternalLineId = "ExternalLineId";
+	ModelColumn<I_C_OLCand, Object> COLUMN_IsGroupingError = new ModelColumn<>(I_C_OLCand.class, "IsGroupingError", null);
+	String COLUMNNAME_IsGroupingError = "IsGroupingError";
+
+	/**
+	 * Get Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_TaxCategory_ID();
+
+	/**
+	 * Set Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_TaxCategory_ID(int C_TaxCategory_ID);
 
 	/**
 	 * Set Übergabeadresse eff..
@@ -1349,6 +1355,15 @@ public interface I_C_OLCand
 	BigDecimal getDiscount();
 
 	/**
+	 * Get Group Discount Line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isGroupCompensationLine();
+
+	/**
 	 * Set Discount %.
 	 * Discount in percent
 	 *
@@ -1357,6 +1372,25 @@ public interface I_C_OLCand
 	 * <br>Virtual Column: false
 	 */
 	void setDiscount(@Nullable BigDecimal Discount);
+
+	/**
+	 * Get Gruppierungsfehlermeldung.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	java.lang.String getGroupingErrorMessage();
+
+	/**
+	 * Set Gruppierungsfehlermeldung.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGroupingErrorMessage(@Nullable java.lang.String GroupingErrorMessage);
 
 	/**
 	 * Set Group Discount Line.
@@ -1368,13 +1402,22 @@ public interface I_C_OLCand
 	void setIsGroupCompensationLine(boolean IsGroupCompensationLine);
 
 	/**
-	 * Get Group Discount Line.
+	 * Set Gruppierungsfehler.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isGroupCompensationLine();
+	void setIsGroupingError(boolean IsGroupingError);
+
+	/**
+	 * Get Gruppierungsfehler.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isGroupingError();
 
 	/**
 	 * Set Discount Manual.
@@ -1383,7 +1426,7 @@ public interface I_C_OLCand
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsManualDiscount(boolean IsManualDiscount);
+	void setIsManualDiscount (boolean IsManualDiscount);
 
 	/**
 	 * Get Discount Manual.

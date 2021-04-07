@@ -60,6 +60,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
@@ -82,16 +83,17 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -139,6 +141,7 @@ class OLCandOrderFactory
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
+	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_OLCAND_GROUPING_ERROR = AdMessageKey.of("OLCandProcessor.OLCandGroupingError");
 
 	//
 	// Parameters
@@ -151,6 +154,7 @@ class OLCandOrderFactory
 
 	//
 	private I_C_Order order;
+	private final Collection<I_C_Order_Line_Alloc> allocations = new HashSet<>();
 	private I_C_OrderLine currentOrderLine = null;
 	private final Map<Integer, I_C_OrderLine> orderLines = new LinkedHashMap<>();
 	private final List<OLCand> candidates = new ArrayList<>();
@@ -187,7 +191,7 @@ class OLCandOrderFactory
 		// use values from orderDefaults when the order candidate doesn't have such values
 		order.setC_DocTypeTarget_ID(DocTypeId.toRepoId(orderDefaults.getDocTypeTargetId()));
 
-		order.setM_Warehouse_ID(WarehouseId.toRepoId(CoalesceUtil.coalesce(candidateOfGroup.getWarehouseId(), orderDefaults.getWarehouseId())) );
+		order.setM_Warehouse_ID(WarehouseId.toRepoId(CoalesceUtil.coalesce(candidateOfGroup.getWarehouseId(), orderDefaults.getWarehouseId())));
 
 		// use the values from 'olCand'
 		order.setAD_Org_ID(candidateOfGroup.getAD_Org_ID());
@@ -199,7 +203,7 @@ class OLCandOrderFactory
 
 		// if the olc has no value set, we are not falling back here!
 		final BPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
-		if(billBPartner != null)
+		if (billBPartner != null)
 		{
 			order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
 			order.setBill_Location_ID(BPartnerLocationId.toRepoId(billBPartner.getBpartnerLocationId()));
@@ -299,7 +303,16 @@ class OLCandOrderFactory
 		{
 			try
 			{
-				createCompensationGroups();
+				validateAndCreateCompensationGroups();
+			}
+			catch (final AdempiereException ex)
+			{
+				logger.warn("Caught exception while validating compensation groups for OLCands: {}", ex);
+				onCompensationGroupFailure(ex);
+				return;
+			}
+			try
+			{
 				documentBL.processEx(order, X_C_Order.DOCACTION_Complete, DocStatus.Completed.getCode());
 				save(order);
 
@@ -315,29 +328,45 @@ class OLCandOrderFactory
 				for (final OLCand candidate : candidates)
 				{
 					candidate.setError(errorMsg, note.getAD_Note_ID());
-					InterfaceWrapperHelper.save(candidate);
+					save(candidate.unbox());
 				}
 			}
 		}
 	}
 
-	private void createCompensationGroups()
+	private void onCompensationGroupFailure(final AdempiereException ex)
+	{
+		deleteAll(allocations);
+		deleteAll(orderLines.values());
+		delete(order);
+
+		for (final OLCand candidate : candidates)
+		{
+			candidate.setGroupingError(ex.getLocalizedMessage());
+			save(candidate.unbox());
+		}
+	}
+
+	private void validateAndCreateCompensationGroups()
 	{
 		groupsToOrderLines.keySet()
 				.stream()
 				.map(groupsToOrderLines::get)
 				.forEach(this::createCompensationGroup);
-
 	}
 
 	private void createCompensationGroup(final List<OrderLineId> orderLineIds)
 	{
-		final Optional<I_C_OrderLine> mainOrderLineInGroupOpt = orderLineIds.stream()
+		final Collection<I_C_OrderLine> mainOrderLineInGroupOpt = orderLineIds.stream()
 				.filter(primaryOrderLines::contains)
 				.map(OrderLineId::getRepoId)
 				.map(orderLines::get)
-				.findFirst();
-		final I_C_OrderLine mainOrderLineInGroup = Check.assumePresent(mainOrderLineInGroupOpt, "No order line marked as group compensation line");
+				.collect(Collectors.toList());
+		if (mainOrderLineInGroupOpt.size() != 1)
+		{
+			throw new AdempiereException("@" + MSG_OL_CAND_PROCESSOR_OLCAND_GROUPING_ERROR + "@");
+		}
+		final I_C_OrderLine mainOrderLineInGroup = mainOrderLineInGroupOpt.stream().findFirst().get();
 
 		final ProductId productId = ProductId.ofRepoId(mainOrderLineInGroup.getM_Product_ID());
 		final I_M_Product productForMainLine = productDAO.getById(productId);
@@ -531,12 +560,9 @@ class OLCandOrderFactory
 		newOla.setC_OrderLine_ID(orderLineId);
 		newOla.setQtyOrdered(orderLine.getQtyOrdered());
 		newOla.setC_OLCandProcessor_ID(olCandProcessorId);
+		allocations.add(newOla);
 
 		InterfaceWrapperHelper.save(newOla);
-	}
-	private void saveCandidate(final OLCand cand)
-	{
-		save(cand.unbox());
 	}
 
 	private I_AD_Note createOrderCompleteErrorNote(final String errorMsg)
