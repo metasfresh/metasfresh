@@ -22,6 +22,8 @@
 
 package de.metas.issue.tracking.everhour.api.rest;
 
+
+import java.time.Duration;
 import ch.qos.logback.classic.Level;
 import de.metas.issue.tracking.everhour.api.model.GetRequest;
 import de.metas.logging.LogManager;
@@ -42,7 +44,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
-import java.time.Duration;
 
 import static de.metas.issue.tracking.everhour.api.EverhourConstants.CustomHeaders.API_KEY;
 import static de.metas.issue.tracking.everhour.api.EverhourConstants.CustomHeaders.VERSION;
@@ -161,8 +162,8 @@ public class RestService
 	{
 		return new RestTemplateBuilder()
 				.errorHandler(responseErrorHandler)
-				.setConnectTimeout(sysConfigBL.getIntValue(CONNECTION_TIMEOUT.getName(), CONNECTION_TIMEOUT.getDefaultValue()))
-				.setReadTimeout(sysConfigBL.getIntValue(READ_TIMEOUT.getName(),READ_TIMEOUT.getDefaultValue() ))
+				.setConnectTimeout(Duration.ofMillis(sysConfigBL.getIntValue(CONNECTION_TIMEOUT.getName(), CONNECTION_TIMEOUT.getDefaultValue())))
+				.setReadTimeout(Duration.ofMillis(sysConfigBL.getIntValue(READ_TIMEOUT.getName(),READ_TIMEOUT.getDefaultValue())))
 				.build();
 	}
 }

@@ -317,7 +317,7 @@ public class MOrderLine extends X_C_OrderLine
 		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
 
 		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(getC_BPartner_ID(), getC_BPartner_Location_ID());
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(bpLocationId);
 
 		final TaxId taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
 				getCtx(),

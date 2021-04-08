@@ -38,7 +38,9 @@ public enum PostingType
 	Actual(X_Fact_Acct.POSTINGTYPE_Actual), //
 	Budget(X_Fact_Acct.POSTINGTYPE_Budget), //
 	Commitment(X_Fact_Acct.POSTINGTYPE_Commitment), //
-	Reservation(X_Fact_Acct.POSTINGTYPE_Reservation) //
+	Reservation(X_Fact_Acct.POSTINGTYPE_Reservation), //
+	Statistical(X_Fact_Acct.POSTINGTYPE_Statistical), //
+	ActualYearEnd(X_Fact_Acct.POSTINGTYPE_ActualYearEnd) //
 	;
 
 	@Getter

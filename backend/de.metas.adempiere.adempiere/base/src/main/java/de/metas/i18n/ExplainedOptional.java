@@ -1,13 +1,13 @@
 package de.metas.i18n;
 
-import java.util.Objects;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import com.google.common.base.MoreObjects;
-
+ import com.google.common.base.MoreObjects;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+ import javax.annotation.Nullable;
+ import java.util.Objects;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -54,7 +54,7 @@ public final class ExplainedOptional<T>
 	private final T value;
 	private final ITranslatableString explanation;
 
-	private ExplainedOptional(final T value, final ITranslatableString explanation)
+	private ExplainedOptional(@Nullable final T value, final ITranslatableString explanation)
 	{
 		this.value = value;
 		this.explanation = TranslatableStrings.nullToEmpty(explanation);
@@ -119,5 +119,25 @@ public final class ExplainedOptional<T>
 	public boolean isPresent()
 	{
 		return value != null;
+	}
+
+	public <U> ExplainedOptional<U> map(@NonNull final Function<? super T, ? extends U> mapper)
+	{
+		if (!isPresent())
+		{
+			return emptyBecause(explanation);
+		}
+		else
+		{
+			final U newValue = mapper.apply(value);
+			if (newValue == null)
+			{
+				return emptyBecause(explanation);
+			}
+			else
+			{
+				return of(newValue);
+			}
+		}
 	}
 }

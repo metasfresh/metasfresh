@@ -31,10 +31,8 @@ import at.erpel.schemas._1p0.documents.extensions.edifact.REMADVListLineItemExte
 import at.erpel.schemas._1p0.documents.extensions.edifact.TaxType;
 import at.erpel.schemas._1p0.documents.extensions.edifact.VATType;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
-import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdviceLine;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
@@ -63,8 +61,8 @@ public class JsonRemittanceAdviceLineProducer
 {
 	private static final Logger logger = Logger.getLogger(JsonRemittanceAdviceLineProducer.class.getName());
 
-	
-	
+
+
 	@NonNull REMADVListLineItemExtensionType remadvLineItemExtension;
 
 	public static JsonRemittanceAdviceLineProducer of(@NonNull final REMADVListLineItemExtensionType remadvListLineItemExtensionType)

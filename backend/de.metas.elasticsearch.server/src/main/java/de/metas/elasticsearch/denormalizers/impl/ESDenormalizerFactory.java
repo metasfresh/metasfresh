@@ -1,7 +1,14 @@
 package de.metas.elasticsearch.denormalizers.impl;
 
-import java.util.concurrent.ConcurrentHashMap;
-
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.cache.CCache;
+import de.metas.elasticsearch.config.ESModelIndexerProfile;
+import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
+import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -20,14 +27,7 @@ import org.compiere.model.I_C_SalesRegion;
 import org.compiere.model.I_M_Product_Category;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.cache.CCache;
-import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
-import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
-import de.metas.elasticsearch.types.ESIndexType;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
+import java.util.concurrent.ConcurrentHashMap;
 
 /*
  * #%L
@@ -63,13 +63,13 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 		setupKPIStandardDenormalizers();
 	}
 
-	private final void setupKPIStandardDenormalizers()
+	private void setupKPIStandardDenormalizers()
 	{
 		//
 		// Location
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(ESModelIndexerProfile.KPI, I_C_Country.class)
-				.includeColumn(I_C_Country.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_Country.COLUMNNAME_CountryCode).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_Country.COLUMNNAME_Name).type(ESDataType.Keyword)
+				.includeColumn(I_C_Country.COLUMNNAME_CountryCode).type(ESDataType.Keyword)
 				.build());
 		registerModelValueDenormalizer(createLocationDenormalizer(ESModelIndexerProfile.KPI));
 		registerModelValueDenormalizer(createLocationDenormalizer(ESModelIndexerProfile.FULL_TEXT_SEARCH));
@@ -95,7 +95,7 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 				.excludeStandardColumns()
 				.build());
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(ESModelIndexerProfile.KPI, I_C_BP_Group.class)
-				.includeColumn(I_C_BP_Group.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_BP_Group.COLUMNNAME_Name).type(ESDataType.Keyword)
 				.excludeStandardColumns()
 				.build());
 		// NOTE: C_BPartner is defined in "standard dimensions part"
@@ -103,8 +103,8 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 		//
 		// Product related
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(ESModelIndexerProfile.KPI, I_M_Product_Category.class)
-				.includeColumn(I_M_Product_Category.COLUMNNAME_Value).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_M_Product_Category.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_M_Product_Category.COLUMNNAME_Value).type(ESDataType.Keyword)
+				.includeColumn(I_M_Product_Category.COLUMNNAME_Name).type(ESDataType.Keyword)
 				.excludeStandardColumns()
 				.build());
 		// NOTE: M_Product is defined in "standard dimensions part"
@@ -112,7 +112,7 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 		//
 		// C_DocType related
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(ESModelIndexerProfile.KPI, I_C_DocType.class)
-				.includeColumn(I_C_DocType.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_DocType.COLUMNNAME_Name).type(ESDataType.Keyword)
 				.includeColumn(I_C_DocType.COLUMNNAME_DocBaseType)
 				.includeColumn(I_C_DocType.COLUMNNAME_DocSubType)
 				.excludeStandardColumns()
@@ -121,7 +121,7 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 		//
 		// C_Currency related
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(ESModelIndexerProfile.KPI, I_C_Currency.class)
-				.includeColumn(I_C_Currency.COLUMNNAME_ISO_Code).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_Currency.COLUMNNAME_ISO_Code).type(ESDataType.Keyword)
 				.excludeStandardColumns()
 				.build());
 
@@ -129,40 +129,40 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 		// Standard dimensions
 		//
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(ESModelIndexerProfile.KPI, I_AD_Org.class)
-				.includeColumn(I_AD_Org.COLUMNNAME_Value).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_AD_Org.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_AD_Org.COLUMNNAME_Value).type(ESDataType.Keyword)
+				.includeColumn(I_AD_Org.COLUMNNAME_Name).type(ESDataType.Keyword)
 				.excludeStandardColumns()
 				.build());
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(ESModelIndexerProfile.KPI, I_M_Product.class)
-				.includeColumn(org.compiere.model.I_M_Product.COLUMNNAME_Value).index(ESIndexType.NotAnalyzed)
-				.includeColumn(org.compiere.model.I_M_Product.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
+				.includeColumn(org.compiere.model.I_M_Product.COLUMNNAME_Value).type(ESDataType.Keyword)
+				.includeColumn(org.compiere.model.I_M_Product.COLUMNNAME_Name).type(ESDataType.Keyword)
 				.includeColumn(org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID)
 				.excludeStandardColumns()
 				.build());
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(ESModelIndexerProfile.KPI, I_C_BPartner.class)
-				.includeColumn(I_C_BPartner.COLUMNNAME_Value).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_BPartner.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_BPartner.COLUMNNAME_Value).type(ESDataType.Keyword)
+				.includeColumn(I_C_BPartner.COLUMNNAME_Name).type(ESDataType.Keyword)
 				.includeColumn(I_C_BPartner.COLUMNNAME_C_BP_Group_ID)
 				.excludeStandardColumns()
 				.build());
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(ESModelIndexerProfile.KPI, I_C_SalesRegion.class)
-				.includeColumn(I_C_SalesRegion.COLUMNNAME_Value).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_SalesRegion.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_SalesRegion.COLUMNNAME_Value).type(ESDataType.Keyword)
+				.includeColumn(I_C_SalesRegion.COLUMNNAME_Name).type(ESDataType.Keyword)
 				.excludeStandardColumns()
 				.build());
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(ESModelIndexerProfile.KPI, I_C_Project.class)
-				.includeColumn(I_C_Project.COLUMNNAME_Value).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_Project.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_Project.COLUMNNAME_Value).type(ESDataType.Keyword)
+				.includeColumn(I_C_Project.COLUMNNAME_Name).type(ESDataType.Keyword)
 				.excludeStandardColumns()
 				.build());
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(ESModelIndexerProfile.KPI, I_C_Campaign.class)
-				.includeColumn(I_C_Campaign.COLUMNNAME_Value).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_Campaign.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_Campaign.COLUMNNAME_Value).type(ESDataType.Keyword)
+				.includeColumn(I_C_Campaign.COLUMNNAME_Name).type(ESDataType.Keyword)
 				.excludeStandardColumns()
 				.build());
 		registerModelValueDenormalizer(newModelDenormalizerBuilder(ESModelIndexerProfile.KPI, I_C_Activity.class)
-				.includeColumn(I_C_Activity.COLUMNNAME_Value).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_Activity.COLUMNNAME_Name).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_Activity.COLUMNNAME_Value).type(ESDataType.Keyword)
+				.includeColumn(I_C_Activity.COLUMNNAME_Name).type(ESDataType.Keyword)
 				.excludeStandardColumns()
 				.build());
 
@@ -188,18 +188,18 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 				.build());
 	}
 
-	private ESPOModelDenormalizer createLocationDenormalizer(ESModelIndexerProfile profile)
+	private ESPOModelDenormalizer createLocationDenormalizer(final ESModelIndexerProfile profile)
 	{
 		return newModelDenormalizerBuilder(profile, I_C_Location.class)
-				.includeColumn(I_C_Location.COLUMNNAME_Address1).index(ESIndexType.Analyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_Address2).index(ESIndexType.Analyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_Address3).index(ESIndexType.Analyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_Address4).index(ESIndexType.Analyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_Postal).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_Postal_Add).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_CareOf).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_POBox).index(ESIndexType.NotAnalyzed)
-				.includeColumn(I_C_Location.COLUMNNAME_City).index(ESIndexType.NotAnalyzed)
+				.includeColumn(I_C_Location.COLUMNNAME_Address1).type(ESDataType.Text)
+				.includeColumn(I_C_Location.COLUMNNAME_Address2).type(ESDataType.Text)
+				.includeColumn(I_C_Location.COLUMNNAME_Address3).type(ESDataType.Text)
+				.includeColumn(I_C_Location.COLUMNNAME_Address4).type(ESDataType.Text)
+				.includeColumn(I_C_Location.COLUMNNAME_Postal).type(ESDataType.Keyword)
+				.includeColumn(I_C_Location.COLUMNNAME_Postal_Add).type(ESDataType.Keyword)
+				.includeColumn(I_C_Location.COLUMNNAME_CareOf).type(ESDataType.Keyword)
+				.includeColumn(I_C_Location.COLUMNNAME_POBox).type(ESDataType.Keyword)
+				.includeColumn(I_C_Location.COLUMNNAME_City).type(ESDataType.Keyword)
 				.includeColumn(I_C_Location.COLUMNNAME_C_Country_ID)
 				.excludeStandardColumns()
 				.build();
@@ -231,7 +231,7 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 	private void registerModelValueDenormalizer(final IESModelDenormalizer valueModelDenormalizer)
 	{
 		Check.assumeNotNull(valueModelDenormalizer, "Parameter valueModelDenormalizer is not null");
-		ESModelDenormalizerKey key = ESModelDenormalizerKey.of(valueModelDenormalizer.getProfile(), valueModelDenormalizer.getModelTableName());
+		final ESModelDenormalizerKey key = ESModelDenormalizerKey.of(valueModelDenormalizer.getProfile(), valueModelDenormalizer.getModelTableName());
 		valueModelDenormalizers.put(key, valueModelDenormalizer);
 
 		logger.info("Registered value denormalizer {}: {}", key, valueModelDenormalizer);
@@ -248,12 +248,10 @@ public class ESDenormalizerFactory implements IESDenormalizerFactory
 		return ESPOModelDenormalizer.builder(this, profile, tableName);
 	}
 
-	@lombok.Value(staticConstructor = "of")
-	private static final class ESModelDenormalizerKey
+	@Value(staticConstructor = "of")
+	private static class ESModelDenormalizerKey
 	{
-		@lombok.NonNull
-		final ESModelIndexerProfile profile;
-		@lombok.NonNull
-		final String modelTableName;
+		@NonNull ESModelIndexerProfile profile;
+		@NonNull String modelTableName;
 	}
 }

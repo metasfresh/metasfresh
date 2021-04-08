@@ -426,9 +426,10 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public boolean exists(@NonNull final BPartnerLocationId bpartnerLocationId)
+	public boolean existsAndIsActive(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
-		return getBPartnerLocationById(bpartnerLocationId) != null;
+		final I_C_BPartner_Location bPartnerLocationRecord = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		return bPartnerLocationRecord != null && bPartnerLocationRecord.isActive();
 	}
 
 	@Override
@@ -533,11 +534,8 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public CountryId retrieveBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
 	{
-		final I_C_BPartner_Location bpLocation = getBPartnerLocationById(bpLocationId);
-		if (bpLocation == null)
-		{
-			throw new AdempiereException(MSG_ADDRESS_INACTIVE).markAsUserValidationError();
-		}
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpLocationId);
+
 		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
 
 		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
@@ -567,7 +565,9 @@ public class BPartnerDAO implements IBPartnerDAO
 	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+
 		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
+
 	}
 
 	@Override
@@ -824,8 +824,8 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	public I_C_BPartner retrieveBPartnerByValueOrSuffix(final Properties ctx,
-														final String bpValue,
-														final String bpValueSuffixToFallback)
+			final String bpValue,
+			final String bpValueSuffixToFallback)
 	{
 		//
 		// try exact match
@@ -1222,7 +1222,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		bpLocationQueryBuilder.addInSubQueryFilter(I_C_BPartner_Location.COLUMN_C_Location_ID,
-				I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
+												   I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
 	}
 
 	private BPartnerLocationId createLocationIdOrNull(
@@ -1320,10 +1320,10 @@ public class BPartnerDAO implements IBPartnerDAO
 		if (existingBPartnerId == null && query.isFailIfNotExists())
 		{
 			final String msg = StringUtils.formatMessage("Found no existing BPartner;"
-							+ " Searched via the following properties one-after-one (list may be empty): {};"
-							+ " The search was restricted to the following orgIds (empty means no restriction): {}",
-					searchedByInfo.toString(),
-					query.getOnlyOrgIds().stream().map(OrgId::getRepoId).collect(ImmutableList.toImmutableList()).toString());
+																 + " Searched via the following properties one-after-one (list may be empty): {};"
+																 + " The search was restricted to the following orgIds (empty means no restriction): {}",
+														 searchedByInfo.toString(),
+														 query.getOnlyOrgIds().stream().map(OrgId::getRepoId).collect(ImmutableList.toImmutableList()).toString());
 			throw new BPartnerIdNotFoundException(msg);
 		}
 

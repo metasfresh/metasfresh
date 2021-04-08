@@ -24,19 +24,22 @@ package de.metas.camel.externalsystems.common;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
+/**
+ * Request that is send to metasfresh via the camel {@code ProductRouteBuilder} to retrieve product master data.
+ */
 @Value
 @Builder
 @JsonDeserialize(builder = GetProductsCamelRequest.GetProductsCamelRequestBuilder.class)
 public class GetProductsCamelRequest
 {
 	@Nullable
-	@JsonProperty("pInstanceId")
+	@JsonProperty("pinstanceId")
 	JsonMetasfreshId pInstanceId;
 
 	@Nullable

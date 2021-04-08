@@ -30,11 +30,12 @@ import de.metas.common.pricing.v2.productprice.JsonRequestProductPrice;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
 import de.metas.common.pricing.v2.productprice.TaxCategory;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.ExternalReferenceValueAndSystem;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productprice.ProductPriceExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
@@ -58,7 +59,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -141,8 +141,8 @@ public class ProductPriceRestService
 				final ProductPrice productPriceRequest = syncJsonToProductPrice(
 						priceListVersionId,
 						jsonRequestProductPrice,
-						existingProductPriceRecord.get(),
-						effectiveSyncAdvise);
+						existingProductPriceRecord.get()
+				);
 
 				final ProductPrice updatedProductPrice = productPriceRepository.updateProductPrice(productPriceRequest);
 
@@ -189,11 +189,8 @@ public class ProductPriceRestService
 	private ProductPrice syncJsonToProductPrice(
 			@NonNull final PriceListVersionId priceListVersionId,
 			@NonNull final JsonRequestProductPrice jsonRequest,
-			@NonNull final ProductPrice existingRecord,
-			@NonNull final SyncAdvise syncAdvise)
+			@NonNull final ProductPrice existingRecord)
 	{
-		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
-
 		final OrgId orgId = retrieveOrgIdOrDefault(jsonRequest.getOrgCode());
 		final ProductPrice.ProductPriceBuilder productPriceBuilder = ProductPrice.builder()
 				.orgId(orgId)
@@ -208,10 +205,6 @@ public class ProductPriceRestService
 		{
 			productPriceBuilder.priceLimit(jsonRequest.getPriceLimit());
 		}
-		else if (isUpdateRemove)
-		{
-			productPriceBuilder.priceLimit(BigDecimal.ZERO);
-		}
 		else
 		{
 			productPriceBuilder.priceLimit(existingRecord.getPriceLimit());
@@ -221,10 +214,6 @@ public class ProductPriceRestService
 		if (jsonRequest.isPriceListSet())
 		{
 			productPriceBuilder.priceList(jsonRequest.getPriceList());
-		}
-		else if (isUpdateRemove)
-		{
-			productPriceBuilder.priceList(BigDecimal.ZERO);
 		}
 		else
 		{
@@ -371,7 +360,7 @@ public class ProductPriceRestService
 	{
 		Check.assume(externalProductPriceIdentifier.getType().equals(ExternalIdentifier.Type.EXTERNAL_REFERENCE), "ExternalIdentifier must be of type external reference.");
 
-		final ExternalIdentifier.ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalProductPriceIdentifier.asExternalValueAndSystem();
+		final ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalProductPriceIdentifier.asExternalValueAndSystem();
 
 		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
 				.id(externalReferenceValueAndSystem.getValue())

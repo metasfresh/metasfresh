@@ -28,13 +28,13 @@
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
         <spring-boot-admin.version>2.1.5</spring-boot-admin.version>
-        
+
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
-            
+
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
@@ -67,16 +67,16 @@
     </dependencyManagement>
 
     <dependencies>
-        
+
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-externalsystems-common</artifactId>
             <version>10.0.0</version>
         </dependency>
-        
+
         <dependency>
             <groupId>de.metas.camel.alberta</groupId>
-            <artifactId>alberta-api-client</artifactId>
+            <artifactId>alberta-patient-api</artifactId>
             <version>10.0.0</version>
         </dependency>
 
@@ -85,7 +85,13 @@
             <artifactId>alberta-article-api</artifactId>
             <version>10.0.0</version>
         </dependency>
-        
+
+        <dependency>
+            <groupId>de.metas.camel.alberta</groupId>
+            <artifactId>alberta-orders-api</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+
         <dependency>
             <groupId>de.metas.common.externalsystem</groupId>
             <artifactId>de-metas-common-externalsystem</artifactId>
@@ -102,7 +108,7 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -111,7 +117,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        
+
         <!-- Camel -->
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
@@ -123,7 +129,7 @@
             <artifactId>camel-servlet-starter</artifactId>
             <version>${camel.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-spring-javaconfig</artifactId>
@@ -163,7 +169,7 @@
             <version>5.7.0</version>
             <scope>test</scope>
         </dependency>
-        
+
         <!-- thx to https://stackoverflow.com/a/64384746/1012103 -->
         <dependency>
             <groupId>org.junit.platform</groupId>
@@ -171,7 +177,7 @@
             <version>1.7.0</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
@@ -186,6 +192,12 @@
         <dependency>
             <groupId>de.metas.common.product</groupId>
             <artifactId>de-metas-common-product</artifactId>
+            <version>${metasfresh-common.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.ordercandidates</groupId>
+            <artifactId>de-metas-common-ordercandidates</artifactId>
             <version>${metasfresh-common.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -231,7 +243,7 @@
                 <artifactId>camel-maven-plugin</artifactId>
                 <version>${camel.version}</version>
             </plugin>
-       
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

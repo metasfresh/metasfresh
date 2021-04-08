@@ -23,6 +23,7 @@ import de.metas.purchasecandidate.DemandGroupReference;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.PurchaseCandidatesGroup;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.quantity.Quantity;
@@ -208,7 +209,6 @@ class PurchaseRowsSaver
 			lastCandidate.setQtyToPurchase(lastCandidate.getQtyToPurchase().add(qtyToPurchaseRemainingOfGroup));
 			lastCandidate.setPurchaseDatePromised(purchaseDatePromised);
 
-			qtyToPurchaseRemainingOfGroup = qtyToPurchaseRemainingOfGroup.toZero();
 		}
 		//
 		// If there is remaining qty to purchase but no purchase candidate to add to then create a new candidate
@@ -248,11 +248,11 @@ class PurchaseRowsSaver
 					.profitInfoOrNull(profitInfo)
 					.forecastLineId(candidatesGroup.getForecastLineId())
 					.dimension(candidatesGroup.getDimension())
+					.source(PurchaseCandidateSource.SalesOrder)
 					//
 					.build();
 
 			candidatesChanged.add(newCandidate);
-			qtyToPurchaseRemainingOfGroup = qtyToPurchaseRemainingOfGroup.toZero();
 		}
 
 		return candidatesChanged;

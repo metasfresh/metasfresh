@@ -1,0 +1,225 @@
+{
+  "requestItems": [
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-fcf48850-c52c-4263-92b2-e889bfffeaf0",
+      "bpartnerComposite": {
+        "orgCode": "001",
+        "bpartner": {
+          "code": "ext-ALBERTA-fcf48850-c52c-4263-92b2-e889bfffeaf0",
+          "name": "Max Tester",
+          "customer": true,
+          "phone": null
+        },
+        "locations": {
+          "requestItems": [
+            {
+              "locationIdentifier": "ext-ALBERTA-mainAddress_fcf48850-c52c-4263-92b2-e889bfffeaf0",
+              "location": {
+                "address1": "Teststraße 1",
+                "address2": null,
+                "address3": null,
+                "postal": "99999",
+                "city": "Teststadt",
+                "countryCode": "DE",
+                "shipTo": true,
+                "shipToDefault": true,
+                "billTo": true,
+                "billToDefault": true
+              }
+            }
+          ],
+          "syncAdvise": null
+        },
+        "contacts": {
+          "requestItems": [
+            {
+              "contactIdentifier": "ext-ALBERTA-fcf48850-c52c-4263-92b2-e889bfffeaf0",
+              "contact": {
+                "firstName": "Max",
+                "lastName": "Tester",
+                "email": null,
+                "phone": null,
+                "fax": null,
+                "mobilePhone": null,
+                "defaultContact": true
+              }
+            }
+          ],
+          "syncAdvise": {
+            "ifNotExists": "CREATE",
+            "ifExists": "UPDATE_MERGE"
+          }
+        }
+      }
+    },
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-5ab233bc9d69c74b68cec23a",
+      "bpartnerComposite": {
+        "orgCode": "001",
+        "bpartner": {
+          "code": "ext-ALBERTA-5ab233bc9d69c74b68cec23a",
+          "name": "Test-Hospital-Name",
+          "name2": "Test-Hospital-company",
+          "name3": null,
+          "companyName": "Test-Hospital-companyName",
+          "customer": true,
+          "customerSet": true,
+          "phone": "01234-5677"
+        },
+        "locations": {
+          "requestItems": [
+            {
+              "locationIdentifier": "ext-ALBERTA-5ab233bc9d69c74b68cec23a",
+              "location": {
+                "address1": "Tesetstrasse 46",
+                "postal": "99999",
+                "city": "Teststadt",
+                "countryCode": "DE",
+                "shipTo": true,
+                "shipToDefault": true,
+                "billTo": true,
+                "billToDefault": true
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-5ab2383d9d69c74b68cf19dc",
+      "bpartnerComposite": {
+        "orgCode": "001",
+        "bpartner": {
+          "code": "ext-ALBERTA-5ab2383d9d69c74b68cf19dc",
+          "name": "Test-Nursing-Service",
+          "customer": true,
+          "phone": "01234-5677"
+        },
+        "locations": {
+          "requestItems": [
+            {
+              "locationIdentifier": "ext-ALBERTA-5ab2383d9d69c74b68cf19dc",
+              "location": {
+                "address1": "Teststasse 13",
+                "postal": "99999",
+                "city": "Teststadt",
+                "countryCode": "DE",
+                "shipTo": true,
+                "shipToDefault": true,
+                "billTo": true,
+                "billToDefault": true
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-5ab23eb59d69c74b68d0eded",
+      "bpartnerComposite": {
+        "orgCode": "001",
+        "bpartner": {
+          "code": "ext-ALBERTA-5ab23eb59d69c74b68d0eded",
+          "name": "Heinz-Wilhelm Test-Doctor",
+          "customer": true,
+          "phone": "01234-5677"
+        },
+        "locations": {
+          "requestItems": [
+            {
+              "locationIdentifier": "ext-ALBERTA-5ab23eb59d69c74b68d0eded",
+              "location": {
+                "address1": "Testaddress 10",
+                "postal": "99999",
+                "city": "Teststadt",
+                "countryCode": "DE",
+                "shipTo": true,
+                "shipToDefault": true,
+                "billTo": true,
+                "billToDefault": true
+              }
+            }
+          ],
+          "syncAdvise": null
+        },
+        "contacts": {
+          "requestItems": [
+            {
+              "contactIdentifier": "ext-ALBERTA-5ab23eb59d69c74b68d0eded",
+              "contact": {
+                "firstName": "Heinz-Wilhelm",
+                "lastName": "Test-Doctor",
+                "phone": "01234-5677",
+                "fax": "01234-5678"
+              }
+            }
+          ],
+          "syncAdvise": {
+            "ifNotExists": "CREATE",
+            "ifExists": "UPDATE_MERGE"
+          }
+        }
+      }
+    },
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-5ada01a2c3918e1bdcb5460e",
+      "bpartnerComposite": {
+        "orgCode": "001",
+        "bpartner": {
+          "code": "ext-ALBERTA-5ada01a2c3918e1bdcb5460e",
+          "name": "Test-Krankenkasse",
+          "customer": true
+        },
+        "locations": {
+          "requestItems": [
+            {
+              "locationIdentifier": "ext-ALBERTA-5ada01a2c3918e1bdcb5460e",
+              "location": {
+                "countryCode": "DE",
+                "shipTo": true,
+                "shipToDefault": true,
+                "billTo": true,
+                "billToDefault": true
+              }
+            }
+          ],
+          "syncAdvise": null
+        }
+      }
+    },
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-5ab2390e9d69c74b68cf4f2d",
+      "bpartnerComposite": {
+        "orgCode": "001",
+        "bpartner": {
+          "code": "ext-ALBERTA-5ab2390e9d69c74b68cf4f2d",
+          "name": "Neue Test-Apotheke",
+          "customer": true,
+          "phone": "01234-5678"
+        },
+        "locations": {
+          "requestItems": [
+            {
+              "locationIdentifier": "ext-ALBERTA-5ab2390e9d69c74b68cf4f2d",
+              "location": {
+                "address1": "Treststr, 8",
+                "postal": "99999",
+                "city": "Testcity",
+                "countryCode": "DE",
+                "shipTo": true,
+                "shipToDefault": true,
+                "billTo": true,
+                "billToDefault": true
+              }
+            }
+          ],
+          "syncAdvise": null
+        }
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
+}

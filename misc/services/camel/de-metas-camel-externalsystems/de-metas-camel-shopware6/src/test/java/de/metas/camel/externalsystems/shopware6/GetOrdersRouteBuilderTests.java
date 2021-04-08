@@ -24,17 +24,19 @@ package de.metas.camel.externalsystems.shopware6;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.metas.camel.externalsystems.common.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDeliveries;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrders;
-import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.builder.AdviceWithRouteBuilder;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
@@ -43,32 +45,34 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI;
 import static de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
-import static de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder.CREATE_ESR_QUERY_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_ORG_CODE;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_ID;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_LOCATION_ID;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_SHOPWARE_CLIENT;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BPARTNER_ID_JSON_PATH;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BPARTNER_LOCATION_ID_JSON_PATH;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_ORG_CODE;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
 public class GetOrdersRouteBuilderTests extends CamelTestSupport
 {
-	private static final String MOCK_ESR_QUERY_REQUEST = "mock:esrQueryRequest";
 	private static final String MOCK_SHOPWARE_TO_MF_RESULT = "mock:ShopwareToMFResult";
 
 	private static final String JSON_ORDERS_RESOURCE_PATH = "/de/metas/camel/externalsystems/shopware6/JsonOrders.json";
 	private static final String JSON_ORDER_DELIVERIES_PATH = "/de/metas/camel/externalsystems/shopware6/JsonOrderDeliveries.json";
+	private static final String JSON_ORDER_BILLING_ADDRESS_PATH = "/de/metas/camel/externalsystems/shopware6/JsonOrderAddressCustomId.json";
 	private static final String JSON_COUNTRY_INFO_PATH = "/de/metas/camel/externalsystems/shopware6/JsonCountry.json";
 
-	private static final String JSON_EXTERNAL_REFERENCE_LOOKUP_RESPONSE = "/de/metas/camel/externalsystems/shopware6/JsonExternalREfLookupResponse.json";
-	private static final String JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST = "/de/metas/camel/externalsystems/shopware6/JsonExternalREfLookupRequest.json";
 	private static final String JSON_UPSERT_BPARTNER_REQUEST = "/de/metas/camel/externalsystems/shopware6/CamelUpsertBPartnerCompositeRequest.json";
 
 	@Override
@@ -110,12 +114,6 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 
-		//validate esr query request
-		final InputStream esrQueryRequestIS = this.getClass().getResourceAsStream(JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST);
-
-		final MockEndpoint esrQueryValidationMockEndpoint = getMockEndpoint(MOCK_ESR_QUERY_REQUEST);
-		esrQueryValidationMockEndpoint.expectedBodiesReceived(objectMapper.readValue(esrQueryRequestIS, JsonExternalReferenceLookupRequest.class));
-
 		//validate the final outcome
 		final InputStream expectedUpsertBPartnerRequestIS = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
 
@@ -131,27 +129,18 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 
 	private void prepareRouteForTesting(final MockSuccessfullyCreatedBPartnerProcessor successfullyCreatedBPartnerProcessor) throws Exception
 	{
-		AdviceWithRouteBuilder.adviceWith(context, GET_ORDERS_ROUTE_ID,
+		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
 										  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
 												  .replace()
 												  .process(new MockGetOrdersProcessor()));
 
-		AdviceWithRouteBuilder.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
+		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 										  advice -> {
-											  advice.weaveById(CREATE_ESR_QUERY_REQ_PROCESSOR_ID)
-													  .after()
-													  .to(MOCK_ESR_QUERY_REQUEST);
-											  //check how the esr query looks like
-
-											  advice.interceptSendToEndpoint("{{" + MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI + "}}")
-													  .skipSendToOriginalEndpoint()
-													  .process(new MockExternalReferenceResponse());
-
+											  // validate the upsert request and send a response
 											  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
 													  .after()
 													  .to(MOCK_SHOPWARE_TO_MF_RESULT);
-
-											  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_CAMEL_URI + "}}")
+											  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
 													  .skipSendToOriginalEndpoint()
 													  .process(successfullyCreatedBPartnerProcessor);
 										  });
@@ -178,13 +167,21 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 			final InputStream ordersIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDERS_RESOURCE_PATH);
 			final JsonOrders jsonOrders = mapper.readValue(ordersIS, JsonOrders.class);
 
+			final List<JsonOrderAndCustomId> jsonOrderAndCustomIds = jsonOrders
+					.getData()
+					.stream()
+					.map(order -> JsonOrderAndCustomId.builder().jsonOrder(order).build())
+					.collect(Collectors.toList());
+
 			// mock shopware client
 			final ShopwareClient shopwareClient = prepareShopwareClientMock(mapper);
 
 			//set up the exchange
-			exchange.getIn().setBody(jsonOrders.getData());
+			exchange.getIn().setBody(jsonOrderAndCustomIds);
 			exchange.setProperty(ROUTE_PROPERTY_ORG_CODE, MOCK_ORG_CODE);
 			exchange.setProperty(ROUTE_PROPERTY_SHOPWARE_CLIENT, shopwareClient);
+			exchange.setProperty(ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_ID, MOCK_BPARTNER_ID_JSON_PATH);
+			exchange.setProperty(ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_LOCATION_ID, MOCK_BPARTNER_LOCATION_ID_JSON_PATH);
 		}
 
 		@NonNull
@@ -194,12 +191,26 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 
 			//1. mock getDeliveries
 			final InputStream deliveriesIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_DELIVERIES_PATH);
-			final JsonOrderDeliveries jsonOrderDeliveries = mapper.readValue(deliveriesIS, JsonOrderDeliveries.class);
+			final List<JsonOrderAddressAndCustomId> deliveryAddresses = mapper.readValue(deliveriesIS, JsonOrderDeliveries.class)
+					.getData()
+					.stream()
+					.map(jsonOrderDelivery -> JsonOrderAddressAndCustomId.builder().jsonOrderAddress(jsonOrderDelivery.getShippingOrderAddress()).build())
+					.collect(Collectors.toList());
 
-			Mockito.when(shopwareClient.getDeliveries(any(String.class)))
-					.thenReturn(Optional.of(jsonOrderDeliveries));
+			Mockito.when(shopwareClient.getDeliveryAddresses(any(String.class), any(String.class)))
+					.thenReturn(deliveryAddresses);
 
-			//2. mock getCountryDetails
+			//2. mock getOrderAddressDetails
+			final InputStream billingAddressIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_BILLING_ADDRESS_PATH);
+			final JsonOrderAddress billingAddress = mapper.readValue(billingAddressIS, JsonOrderAddress.class);
+
+			Mockito.when(shopwareClient.getOrderAddressDetails(any(String.class), any(String.class)))
+					.thenReturn(Optional.of(JsonOrderAddressAndCustomId.builder()
+													.jsonOrderAddress(billingAddress)
+													.customId(billingAddress.getId() + "_custom")
+													.build()));
+
+			//3. mock getCountryDetails
 			final InputStream countryIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_COUNTRY_INFO_PATH);
 			final JsonCountry jsonCountry = mapper.readValue(countryIS, JsonCountry.class);
 
@@ -207,18 +218,6 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.thenReturn(Optional.of(jsonCountry));
 
 			return shopwareClient;
-		}
-	}
-
-	private static class MockExternalReferenceResponse implements Processor
-	{
-
-		@Override
-		public void process(final Exchange exchange)
-		{
-			final InputStream esrLookupResponse = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_EXTERNAL_REFERENCE_LOOKUP_RESPONSE);
-
-			exchange.getIn().setBody(esrLookupResponse);
 		}
 	}
 }

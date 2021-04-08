@@ -55,11 +55,16 @@ public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends JavaProc
 
 	final String PARAM_M_Product_ID = I_M_Product.COLUMNNAME_M_Product_ID;
 
+	final String PARAM_MakeTargetAsSource = "MakeTargetAsSource";
+	
 	@Param(parameterName = I_M_DiscountSchema.COLUMNNAME_M_DiscountSchema_ID, mandatory = true)
 	private int p_PricingConditionsId;
 
 	@Param(parameterName = PARAM_M_Product_ID, mandatory = true)
 	private int p_ProductId;
+	
+	@Param(parameterName = PARAM_MakeTargetAsSource, mandatory = true)
+	private Boolean p_MakeTargetAsSource;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull IProcessPreconditionsContext context)
@@ -69,32 +74,16 @@ public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends JavaProc
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-		
-		
-
-		final PlainContextAware localCtx =  PlainContextAware.newWithThreadInheritedTrx(getCtx());
-		
-		final Set<ProductId> breaks = context.getSelectedIncludedRecords()
-				.stream()
-				.map(recordRef -> recordRef.getModel(localCtx, I_M_DiscountSchemaBreak_V.class))
-				.map(discBreak -> ProductId.ofRepoId(discBreak.getM_Product_ID()))
-				.collect(ImmutableSet.toImmutableSet());
-
-		if (breaks.size() > 1)
-		{
-			return ProcessPreconditionsResolution.reject();
-		}
 
 		return ProcessPreconditionsResolution.accept();
-	}	
-	
+	}
+
 	@Override
 	protected String doIt()
 	{
-		
-		
+
 		final PlainContextAware localCtx = PlainContextAware.newWithThreadInheritedTrx(getCtx());
-		
+
 		final Set<I_M_DiscountSchemaBreak_V> breaks = getProcessInfo().getSelectedIncludedRecords()
 				.stream()
 				.map(recordRef -> recordRef.getModel(localCtx, I_M_DiscountSchemaBreak_V.class))
@@ -111,13 +100,24 @@ public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends JavaProc
 			pricingConditions.add(PricingConditionsId.ofRepoId(record.getM_DiscountSchema_ID()));
 
 		});
-		
+
+		// run copy for each product separate
+		for (final ProductId product : products)
+		{
+			copyDiscountSchemaBreaks(pricingConditions, product);
+		};
+
+		return MSG_OK;
+	}
+
+	private void copyDiscountSchemaBreaks(final Set<PricingConditionsId> pricingConditions, ProductId product)
+	{
 		final ICompositeQueryFilter<I_M_DiscountSchemaBreak> queryFilter = Services.get(IQueryBL.class)
 				.createCompositeQueryFilter(I_M_DiscountSchemaBreak.class)
 				.setJoinAnd()
 				.addInArrayFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_DiscountSchema_ID, pricingConditions)
-				.addInArrayFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_Product_ID, products);
-		
+				.addInArrayFilter(I_M_DiscountSchemaBreak.COLUMNNAME_M_Product_ID, product);
+
 		final boolean allowCopyToSameSchema = true;
 
 		final CopyDiscountSchemaBreaksRequest request = CopyDiscountSchemaBreaksRequest.builder()
@@ -126,11 +126,10 @@ public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends JavaProc
 				.productId(ProductId.ofRepoId(p_ProductId))
 				.allowCopyToSameSchema(allowCopyToSameSchema)
 				.direction(Direction.TargetSource)
+				.makeTargetAsSource(p_MakeTargetAsSource)
 				.build();
-		
-		pricingConditionsRepo.copyDiscountSchemaBreaksWithProductId(request);
 
-		return MSG_OK;
+		pricingConditionsRepo.copyDiscountSchemaBreaksWithProductId(request);
 	}
 
 }

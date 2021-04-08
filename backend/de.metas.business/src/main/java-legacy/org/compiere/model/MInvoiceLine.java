@@ -676,7 +676,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		final BPartnerLocationId taxBPartnerLocationId = io != null ? BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID())
 				: BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
 
-		final I_C_BPartner_Location toBPLocation = bpartnerDAO.getBPartnerLocationById(taxBPartnerLocationId);
+		final I_C_BPartner_Location toBPLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(taxBPartnerLocationId);
 
 		final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
 

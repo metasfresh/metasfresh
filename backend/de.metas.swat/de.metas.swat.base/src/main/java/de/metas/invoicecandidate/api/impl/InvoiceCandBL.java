@@ -1029,7 +1029,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		else if (icRecord.getM_PricingSystem_ID() > 0)
 		{
 			// take the precision from the bpartner price list
-			final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationById(
+			final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(
 					BPartnerLocationId.ofRepoIdOrNull(
 							icRecord.getBill_BPartner_ID(),
 							firstGreaterThanZero(icRecord.getBill_Location_Override_ID(), icRecord.getBill_Location_ID())));

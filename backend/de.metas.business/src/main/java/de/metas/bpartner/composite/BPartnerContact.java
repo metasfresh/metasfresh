@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.OrgMappingId;
 import org.adempiere.ad.table.RecordChangeLog;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -105,6 +106,8 @@ public class BPartnerContact
 
 	private final RecordChangeLog changeLog;
 
+	private OrgMappingId orgMappingId;
+
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
 	 */
@@ -133,7 +136,8 @@ public class BPartnerContact
 			@Nullable final GreetingId greetingId,
 			@Nullable final String phone,
 			@Nullable final BPartnerContactType contactType,
-			@Nullable final RecordChangeLog changeLog)
+			@Nullable final RecordChangeLog changeLog,
+			@Nullable final OrgMappingId orgMappingId)
 	{
 		setId(id);
 
@@ -155,6 +159,8 @@ public class BPartnerContact
 		this.phone = phone;
 
 		this.changeLog = changeLog;
+
+		this.orgMappingId = orgMappingId;
 	}
 
 	public BPartnerContact deepCopy()

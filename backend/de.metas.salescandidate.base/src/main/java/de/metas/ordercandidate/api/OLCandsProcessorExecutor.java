@@ -1,27 +1,10 @@
 package de.metas.ordercandidate.api;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.ArrayKeyBuilder;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
-
-import ch.qos.logback.classic.Level;
+import de.metas.common.util.time.SystemTime;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.logging.LogManager;
@@ -36,6 +19,21 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.ArrayKeyBuilder;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -76,6 +74,7 @@ public class OLCandsProcessorExecutor
 	private final OLCandOrderDefaults orderDefaults;
 	private final InputDataSourceId processorDataDestinationId;
 	private final LocalDate defaultDateDoc = SystemTime.asLocalDate();
+	private final IOLCandBL olcandBL = Services.get(IOLCandBL.class);
 
 	private final OLCandSource candidatesSource;
 
@@ -115,7 +114,10 @@ public class OLCandsProcessorExecutor
 				.sorted(aggregationInfo.getOrderingComparator())
 				.collect(ImmutableList.toImmutableList());
 		loggable.addLog("Processing {} order line candidates", candidates.size());
-
+		if (candidates.isEmpty())
+		{
+			return;
+		}
 		//
 		// Compute a grouping key for each candidate and group them according to their key
 		final Map<Integer, ArrayKey> toProcess = new HashMap<>();
@@ -134,7 +136,6 @@ public class OLCandsProcessorExecutor
 			toProcess.put(olCandId, groupingKey);
 			grouping.put(groupingKey, candidate);
 		}
-
 		// 'processedIds' contains the candidates that have already been processed
 		final Set<Integer> processedIds = new HashSet<>();
 
@@ -310,7 +311,7 @@ public class OLCandsProcessorExecutor
 		}
 	}
 
-	private final boolean isEligibleOrLog(final OLCand cand)
+	private boolean isEligibleOrLog(final OLCand cand)
 	{
 		if (cand.isProcessed())
 		{
@@ -321,6 +322,12 @@ public class OLCandsProcessorExecutor
 		if (cand.isError())
 		{
 			logger.debug("Skipping C_OLCand with errors: {}", cand);
+			return false;
+		}
+
+		if (cand.getOrderLineGroup() != null && cand.getOrderLineGroup().isGroupingError())
+		{
+			logger.debug("Skipping C_OLCand with grouping errors: {}", cand);
 			return false;
 		}
 
@@ -341,4 +348,5 @@ public class OLCandsProcessorExecutor
 
 		return true;
 	}
+
 }

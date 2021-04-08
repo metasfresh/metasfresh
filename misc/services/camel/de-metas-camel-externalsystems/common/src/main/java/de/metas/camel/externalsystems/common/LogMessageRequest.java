@@ -22,7 +22,7 @@
 
 package de.metas.camel.externalsystems.common;
 
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

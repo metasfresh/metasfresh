@@ -46,7 +46,7 @@ import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PRO
 public class CreateESRQueryProcessor implements Processor
 {
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(@NonNull final Exchange exchange) throws Exception
 	{
 		final Patient patient = exchange.getIn().getBody(Patient.class);
 

@@ -60,7 +60,7 @@ public class PMMContractsDAO implements IPMMContractsDAO
 	public List<I_C_Flatrate_Term> retrieveRunningContractsOnDateForBPartner(final Date date, final int bpartnerId)
 	{
 		return retrieveAllRunningContractsOnDateQuery(date)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DropShip_BPartner_ID, bpartnerId)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID, bpartnerId)
 				.create()
 				.list(I_C_Flatrate_Term.class);
 	}
@@ -98,7 +98,7 @@ public class PMMContractsDAO implements IPMMContractsDAO
 
 		final Date date = SystemTime.asDayTimestamp();
 		return retrieveAllRunningContractsOnDateQuery(date)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DropShip_BPartner_ID, bpartner.getC_BPartner_ID())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID, bpartner.getC_BPartner_ID())
 				.create()
 				.anyMatch();
 	}
@@ -140,7 +140,7 @@ public class PMMContractsDAO implements IPMMContractsDAO
 	public I_C_Flatrate_Term retrieveTermForPartnerAndProduct(final Date date, final int bPartnerID, final int pmmProductId)
 	{
 		return retrieveAllRunningContractsOnDateQuery(date)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DropShip_BPartner_ID, bPartnerID)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID, bPartnerID)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID, pmmProductId)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, date)
 				.orderBy()

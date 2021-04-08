@@ -1,19 +1,8 @@
-package de.metas.ui.web.dashboard;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,41 +20,8 @@ import com.google.common.base.MoreObjects;
  * #L%
  */
 
+package de.metas.ui.web.dashboard;
+
 public class KPIDataSetValue
 {
-	@JsonProperty("_key")
-	private final Object _key;
-	@JsonIgnore
-	private final Map<String, Object> map = new HashMap<>();
-
-	public KPIDataSetValue(final Object key)
-	{
-		_key = key;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.addValue(map)
-				.toString();
-	}
-
-	@JsonAnyGetter
-	private Map<String, Object> getMap()
-	{
-		return map;
-	}
-
-	@JsonAnySetter
-	public void put(final String fieldName, final Object jsonValue)
-	{
-		map.put(fieldName, jsonValue);
-	}
-
-	@JsonIgnore
-	public void putIfAbsent(final String fieldName, final Object jsonValue)
-	{
-		map.putIfAbsent(fieldName, jsonValue);
-	}
 }

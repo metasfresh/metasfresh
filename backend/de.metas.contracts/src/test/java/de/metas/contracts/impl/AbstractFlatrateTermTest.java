@@ -20,6 +20,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.ICountryAreaBL;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
@@ -232,7 +233,7 @@ public abstract class AbstractFlatrateTermTest
 	{
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
 		warehouse.setName("WH");
-		warehouse.setAD_Org(helper.getOrg());
+		warehouse.setAD_Org_ID(helper.getOrg().getAD_Org_ID());
 		save(warehouse);
 	}
 
@@ -347,6 +348,7 @@ public abstract class AbstractFlatrateTermTest
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 		final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
+				.orgId(OrgId.ofRepoId(orderLine.getAD_Org_ID()))
 				.context(helper.getContextProvider())
 				.bPartner(getBpartner())
 				.conditions(conditions)
@@ -360,11 +362,11 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_BPartner_Location bpLocation = getBpLocation();
 		final I_AD_User user = getUser();
 
-		contract.setBill_Location(bpLocation);
-		contract.setBill_User(user);
-		contract.setDropShip_BPartner(getBpartner());
-		contract.setDropShip_Location(bpLocation);
-		contract.setDropShip_User(user);
+		contract.setBill_Location_ID(bpLocation.getC_BPartner_Location_ID());
+		contract.setBill_User_ID(user.getAD_User_ID());
+		contract.setDropShip_BPartner_ID(getBpartner().getC_BPartner_ID());
+		contract.setDropShip_Location_ID(bpLocation.getC_BPartner_Location_ID());
+		contract.setDropShip_User_ID(user.getAD_User_ID());
 		contract.setPriceActual(PRICE_TEN);
 		contract.setPlannedQtyPerUnit(QTY_ONE);
 		contract.setMasterStartDate(startDate);

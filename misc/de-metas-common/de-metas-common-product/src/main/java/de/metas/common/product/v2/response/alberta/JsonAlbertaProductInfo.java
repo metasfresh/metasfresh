@@ -38,6 +38,10 @@ import java.util.List;
 @JsonDeserialize(builder = JsonAlbertaProductInfo.JsonAlbertaProductInfoBuilder.class)
 public class JsonAlbertaProductInfo
 {
+	@JsonProperty("albertaProductId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	String albertaProductId;
+
 	@JsonProperty("additionalDescription")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String additionalDescription;

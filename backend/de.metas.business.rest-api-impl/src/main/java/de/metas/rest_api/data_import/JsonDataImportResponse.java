@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.impexp.DataImportRunId;
 import de.metas.impexp.config.DataImportConfigId;
 import lombok.Builder;

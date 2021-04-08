@@ -571,7 +571,7 @@ public class BPartnerBL implements IBPartnerBL
 			return "?";
 		}
 
-		final I_C_BPartner_Location bpLocation = bpartnersRepo.getBPartnerLocationById(bpartnerLocationId);
+		final I_C_BPartner_Location bpLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		return bpLocation != null ? bpLocation.getAddress() : "<" + bpartnerLocationId.getRepoId() + ">";
 	}
 

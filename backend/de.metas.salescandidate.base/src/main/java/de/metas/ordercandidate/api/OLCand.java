@@ -1,19 +1,6 @@
 package de.metas.ordercandidate.api;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
@@ -21,6 +8,7 @@ import de.metas.freighcost.FreightCostRule;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -35,6 +23,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /*
  * #%L
@@ -121,6 +119,9 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final DocTypeId orderDocTypeId;
 
+	@Getter
+	private final OrderLineGroup orderLineGroup;
+
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
@@ -135,7 +136,8 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final PricingSystemId pricingSystemId,
 			@Nullable final ShipperId shipperId,
 			@Nullable final DocTypeId orderDocTypeId,
-			@Nullable final BPartnerId salesRepId)
+			@Nullable final BPartnerId salesRepId,
+			@Nullable final OrderLineGroup orderLineGroup)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -179,6 +181,7 @@ public final class OLCand implements IProductPriceAware
 		this.salesRepId = salesRepId;
 
 		this.orderDocTypeId = orderDocTypeId;
+		this.orderLineGroup = orderLineGroup;
 	}
 
 	@Override
@@ -290,6 +293,13 @@ public final class OLCand implements IProductPriceAware
 	public boolean isError()
 	{
 		return olCandRecord.isError();
+	}
+
+	public void setGroupingError(final String errorMsg)
+	{
+		olCandRecord.setProcessed(false);
+		olCandRecord.setIsGroupingError(true);
+		olCandRecord.setGroupingErrorMessage(errorMsg);
 	}
 
 	public void setError(final String errorMsg, final int adNoteId)

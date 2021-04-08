@@ -257,6 +257,11 @@ public final class JSONDocumentLayoutElement
 		return fields.isEmpty() && inlineTabId == null;
 	}
 
+	public Set<JSONDocumentLayoutElementField> getFields()
+	{
+		return fields;
+	}
+
 	public boolean hasField(@NonNull final String fieldName)
 	{
 		return fields.stream().anyMatch(field -> fieldName.equals(field.getField()));
