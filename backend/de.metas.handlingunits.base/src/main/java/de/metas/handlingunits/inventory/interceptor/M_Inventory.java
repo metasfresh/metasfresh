@@ -91,8 +91,7 @@ public class M_Inventory
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)
 	public void checkHUTransformationBeforeReverseCorrect(final I_M_Inventory inventory)
 	{
-		final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
-		final Inventory invObj = inventoryRepository.toInventory(inventory);
+		final Inventory invObj = inventoryLineRecordService.toInventory(inventory);
 		invObj.getLines().forEach( line ->
 	    {
 			line.getInventoryLineHUs().forEach(hu -> {

@@ -86,6 +86,8 @@ public class InventoryService
 		return inventoryRepository.getById(inventoryId);
 	}
 
+	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord) { return inventoryRepository.toInventory(inventoryRecord); }
+
 	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(final I_M_Inventory inventoryRecord)
 	{
 		return inventoryRepository.extractDocBaseAndSubTypeOrNull(inventoryRecord);
