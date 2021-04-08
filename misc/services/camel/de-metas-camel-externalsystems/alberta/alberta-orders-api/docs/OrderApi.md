@@ -9,7 +9,7 @@ Method | HTTP request | Description
 
 <a name="addOrder"></a>
 # **addOrder**
-> OrderMapping addOrder(body, apiKey)
+> OrderMapping addOrder(body, albertaApiKey)
 
 Auftrag hinzufügen
 
@@ -24,9 +24,9 @@ Szenario - ein Auftrag wurde im WaWi angelegt und soll in Alberta übertragen we
 
 OrderApi apiInstance = new OrderApi();
 Order body = new Order(); // Order | Die Bestellung
-String apiKey = "apiKey_example"; // String | 
+String albertaApiKey = "albertaApiKey_example"; // String | 
 try {
-    OrderMapping result = apiInstance.addOrder(body, apiKey);
+    OrderMapping result = apiInstance.addOrder(body, albertaApiKey);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling OrderApi#addOrder");
@@ -39,7 +39,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **body** | [**Order**](Order.md)| Die Bestellung |
- **apiKey** | **String**|  |
+ **albertaApiKey** | **String**|  |
 
 ### Return type
 
@@ -56,7 +56,7 @@ No authorization required
 
 <a name="getCreatedOrders"></a>
 # **getCreatedOrders**
-> ArrayOfOrders getCreatedOrders(apiKey, status, updatedAfter)
+> ArrayOfOrders getCreatedOrders(albertaApiKey, status, updatedAfter)
 
 Bestellungen je nach Status abrufen
 
@@ -70,11 +70,11 @@ Szenario - das WaWi fragt in einem bestimmten Intervall bei Alberta nach, ob es 
 
 
 OrderApi apiInstance = new OrderApi();
-String apiKey = "apiKey_example"; // String | 
+String albertaApiKey = "albertaApiKey_example"; // String | 
 String status = "status_example"; // String | created (später ggf. archived) -
 String updatedAfter = "updatedAfter_example"; // String | 2018-02-21T09:30:00.000Z (im UTC-Format)
 try {
-    ArrayOfOrders result = apiInstance.getCreatedOrders(apiKey, status, updatedAfter);
+    ArrayOfOrders result = apiInstance.getCreatedOrders(albertaApiKey, status, updatedAfter);
     System.out.println(result);
 } catch (ApiException e) {
     System.err.println("Exception when calling OrderApi#getCreatedOrders");
@@ -86,7 +86,7 @@ try {
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **apiKey** | **String**|  |
+ **albertaApiKey** | **String**|  |
  **status** | **String**| created (später ggf. archived) - |
  **updatedAfter** | **String**| 2018-02-21T09:30:00.000Z (im UTC-Format) |
 

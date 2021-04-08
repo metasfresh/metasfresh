@@ -14,16 +14,16 @@ package io.swagger.client.model;
 
 import java.util.Objects;
 import java.util.Arrays;
-import io.swagger.client.model.Order;
+import io.swagger.client.model.PrescriptionRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 /**
- * Eine Auflistung von Bestellungen
+ * Eine Auflistung von Rezeptanforderungen
  */
-@Schema(description = "Eine Auflistung von Bestellungen")
+@Schema(description = "Eine Auflistung von Rezeptanforderungen")
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-04-08T07:58:57.853Z[GMT]")
-public class ArrayOfOrders extends ArrayList<Order> {
+public class ArrayOfPrescriptionRequests extends ArrayList<PrescriptionRequest> {
 
   @Override
   public boolean equals(java.lang.Object o) {
@@ -45,7 +45,7 @@ public class ArrayOfOrders extends ArrayList<Order> {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class ArrayOfOrders {\n");
+    sb.append("class ArrayOfPrescriptionRequests {\n");
     sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("}");
     return sb.toString();

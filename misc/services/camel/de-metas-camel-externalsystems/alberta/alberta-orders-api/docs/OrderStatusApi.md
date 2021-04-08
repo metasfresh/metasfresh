@@ -8,7 +8,7 @@ Method | HTTP request | Description
 
 <a name="updateOrderStatus"></a>
 # **updateOrderStatus**
-> updateOrderStatus(body, apiKey, id)
+> updateOrderStatus(body, albertaApiKey, id)
 
 Auftragsstatus (ggf. später auch Rezeptstatus) ändern
 
@@ -23,10 +23,10 @@ Szenario - ein Auftrag wurde im WaWi geändert und diese Änderungen sollen in A
 
 OrderStatusApi apiInstance = new OrderStatusApi();
 OrderStatus body = new OrderStatus(); // OrderStatus | Der Bestellstatus
-String apiKey = "apiKey_example"; // String | 
+String albertaApiKey = "albertaApiKey_example"; // String | 
 String id = "id_example"; // String | die Id des zu ändernden Autrags
 try {
-    apiInstance.updateOrderStatus(body, apiKey, id);
+    apiInstance.updateOrderStatus(body, albertaApiKey, id);
 } catch (ApiException e) {
     System.err.println("Exception when calling OrderStatusApi#updateOrderStatus");
     e.printStackTrace();
@@ -38,7 +38,7 @@ try {
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **body** | [**OrderStatus**](OrderStatus.md)| Der Bestellstatus |
- **apiKey** | **String**|  |
+ **albertaApiKey** | **String**|  |
  **id** | **String**| die Id des zu ändernden Autrags |
 
 ### Return type

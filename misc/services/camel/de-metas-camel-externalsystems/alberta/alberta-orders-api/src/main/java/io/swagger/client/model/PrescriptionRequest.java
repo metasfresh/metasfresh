@@ -19,8 +19,7 @@ import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import io.swagger.client.model.OrderDeliveryAddress;
-import io.swagger.client.model.OrderedArticleLine;
+import io.swagger.client.model.PrescriptedArticleLine;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -29,22 +28,25 @@ import java.util.List;
 import org.threeten.bp.LocalDate;
 import org.threeten.bp.OffsetDateTime;
 /**
- * Order
+ * PrescriptionRequest
  */
 
 @javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-04-08T07:58:57.853Z[GMT]")
-public class Order {
+public class PrescriptionRequest {
   @SerializedName("_id")
   private String _id = null;
-
-  @SerializedName("salesId")
-  private String salesId = null;
 
   @SerializedName("patientId")
   private String patientId = null;
 
-  @SerializedName("rootId")
-  private String rootId = null;
+  @SerializedName("patientBirthday")
+  private LocalDate patientBirthday = null;
+
+  @SerializedName("orderId")
+  private String orderId = null;
+
+  @SerializedName("prescriptionType")
+  private BigDecimal prescriptionType = null;
 
   @SerializedName("creationDate")
   private OffsetDateTime creationDate = null;
@@ -58,14 +60,8 @@ public class Order {
   @SerializedName("endDate")
   private LocalDate endDate = null;
 
-  @SerializedName("dayOfDelivery")
-  private BigDecimal dayOfDelivery = null;
-
-  @SerializedName("nextDelivery")
-  private LocalDate nextDelivery = null;
-
-  @SerializedName("deliveryAddress")
-  private OrderDeliveryAddress deliveryAddress = null;
+  @SerializedName("accountingMonths")
+  private List<BigDecimal> accountingMonths = null;
 
   @SerializedName("doctorId")
   private String doctorId = null;
@@ -79,23 +75,14 @@ public class Order {
   @SerializedName("therapyTypeIds")
   private List<BigDecimal> therapyTypeIds = null;
 
-  @SerializedName("isInitialCare")
-  private Boolean isInitialCare = null;
-
-  @SerializedName("orderedArticleLines")
-  private List<OrderedArticleLine> orderedArticleLines = null;
+  @SerializedName("prescriptedArticleLines")
+  private List<PrescriptedArticleLine> prescriptedArticleLines = null;
 
   @SerializedName("createdBy")
   private String createdBy = null;
 
-  @SerializedName("status")
-  private BigDecimal status = null;
-
-  @SerializedName("isSeriesOrder")
-  private Boolean isSeriesOrder = null;
-
   @SerializedName("annotation")
-  private String annotation = null;
+  private Boolean annotation = null;
 
   @SerializedName("archived")
   private Boolean archived = null;
@@ -106,7 +93,7 @@ public class Order {
   @SerializedName("updated")
   private OffsetDateTime updated = null;
 
-  public Order _id(String _id) {
+  public PrescriptionRequest _id(String _id) {
     this._id = _id;
     return this;
   }
@@ -124,25 +111,7 @@ public class Order {
     this._id = _id;
   }
 
-  public Order salesId(String salesId) {
-    this.salesId = salesId;
-    return this;
-  }
-
-   /**
-   * Id des Auftrag im WaWi
-   * @return salesId
-  **/
-  @Schema(example = "A323232", description = "Id des Auftrag im WaWi")
-  public String getSalesId() {
-    return salesId;
-  }
-
-  public void setSalesId(String salesId) {
-    this.salesId = salesId;
-  }
-
-  public Order patientId(String patientId) {
+  public PrescriptionRequest patientId(String patientId) {
     this.patientId = patientId;
     return this;
   }
@@ -160,25 +129,61 @@ public class Order {
     this.patientId = patientId;
   }
 
-  public Order rootId(String rootId) {
-    this.rootId = rootId;
+  public PrescriptionRequest patientBirthday(LocalDate patientBirthday) {
+    this.patientBirthday = patientBirthday;
     return this;
   }
 
    /**
-   * Id der übergeordeneten Bestellung - falls gesetzt Zusatzbestellung
-   * @return rootId
+   * Id des Patienten in Alberta
+   * @return patientBirthday
   **/
-  @Schema(example = "2548b39d-a542-4f03-adb4-75d9fc4f2266", description = "Id der übergeordeneten Bestellung - falls gesetzt Zusatzbestellung")
-  public String getRootId() {
-    return rootId;
+  @Schema(description = "Id des Patienten in Alberta")
+  public LocalDate getPatientBirthday() {
+    return patientBirthday;
   }
 
-  public void setRootId(String rootId) {
-    this.rootId = rootId;
+  public void setPatientBirthday(LocalDate patientBirthday) {
+    this.patientBirthday = patientBirthday;
   }
 
-  public Order creationDate(OffsetDateTime creationDate) {
+  public PrescriptionRequest orderId(String orderId) {
+    this.orderId = orderId;
+    return this;
+  }
+
+   /**
+   * Id der zugrundliegenden Bestellung in Alberta
+   * @return orderId
+  **/
+  @Schema(example = "e86e86cf-b1d3-45eb-9c29-a921ce9dce74", description = "Id der zugrundliegenden Bestellung in Alberta")
+  public String getOrderId() {
+    return orderId;
+  }
+
+  public void setOrderId(String orderId) {
+    this.orderId = orderId;
+  }
+
+  public PrescriptionRequest prescriptionType(BigDecimal prescriptionType) {
+    this.prescriptionType = prescriptionType;
+    return this;
+  }
+
+   /**
+   * Rezepttyp (0 &#x3D; Arzneimittel 1 &#x3D; Verbandstoffe 2 &#x3D; BtM-Rezept 3 &#x3D; Pflegehilfsmittel 4 &#x3D; Hilfsmittel zum Verbrauch bestimmt 5 &#x3D; Hilfsmittel zum Gebrauch bestimmt)
+   * @return prescriptionType
+  **/
+  @Schema(example = "2", description = "Rezepttyp (0 = Arzneimittel 1 = Verbandstoffe 2 = BtM-Rezept 3 = Pflegehilfsmittel 4 = Hilfsmittel zum Verbrauch bestimmt 5 = Hilfsmittel zum Gebrauch bestimmt)")
+  public BigDecimal getPrescriptionType() {
+    return prescriptionType;
+  }
+
+  public void setPrescriptionType(BigDecimal prescriptionType) {
+    this.prescriptionType = prescriptionType;
+  }
+
+  public PrescriptionRequest creationDate(OffsetDateTime creationDate) {
     this.creationDate = creationDate;
     return this;
   }
@@ -196,7 +201,7 @@ public class Order {
     this.creationDate = creationDate;
   }
 
-  public Order deliveryDate(LocalDate deliveryDate) {
+  public PrescriptionRequest deliveryDate(LocalDate deliveryDate) {
     this.deliveryDate = deliveryDate;
     return this;
   }
@@ -214,7 +219,7 @@ public class Order {
     this.deliveryDate = deliveryDate;
   }
 
-  public Order startDate(LocalDate startDate) {
+  public PrescriptionRequest startDate(LocalDate startDate) {
     this.startDate = startDate;
     return this;
   }
@@ -232,7 +237,7 @@ public class Order {
     this.startDate = startDate;
   }
 
-  public Order endDate(LocalDate endDate) {
+  public PrescriptionRequest endDate(LocalDate endDate) {
     this.endDate = endDate;
     return this;
   }
@@ -250,61 +255,33 @@ public class Order {
     this.endDate = endDate;
   }
 
-  public Order dayOfDelivery(BigDecimal dayOfDelivery) {
-    this.dayOfDelivery = dayOfDelivery;
+  public PrescriptionRequest accountingMonths(List<BigDecimal> accountingMonths) {
+    this.accountingMonths = accountingMonths;
+    return this;
+  }
+
+  public PrescriptionRequest addAccountingMonthsItem(BigDecimal accountingMonthsItem) {
+    if (this.accountingMonths == null) {
+      this.accountingMonths = new ArrayList<BigDecimal>();
+    }
+    this.accountingMonths.add(accountingMonthsItem);
     return this;
   }
 
    /**
-   * Tag des Monats an dem geliefert wird -&gt; nur bei Serienbestellung!
-   * @return dayOfDelivery
+   * Auflistung der Versorgungs-/Abrechnungsmonate 1,2 &#x3D;&gt; Januar, Februar
+   * @return accountingMonths
   **/
-  @Schema(example = "14", description = "Tag des Monats an dem geliefert wird -> nur bei Serienbestellung!")
-  public BigDecimal getDayOfDelivery() {
-    return dayOfDelivery;
+  @Schema(description = "Auflistung der Versorgungs-/Abrechnungsmonate 1,2 => Januar, Februar")
+  public List<BigDecimal> getAccountingMonths() {
+    return accountingMonths;
   }
 
-  public void setDayOfDelivery(BigDecimal dayOfDelivery) {
-    this.dayOfDelivery = dayOfDelivery;
+  public void setAccountingMonths(List<BigDecimal> accountingMonths) {
+    this.accountingMonths = accountingMonths;
   }
 
-  public Order nextDelivery(LocalDate nextDelivery) {
-    this.nextDelivery = nextDelivery;
-    return this;
-  }
-
-   /**
-   * Einmal abweichender nächster Liefertag bei Serienbestellung
-   * @return nextDelivery
-  **/
-  @Schema(example = "Tue Dec 17 00:00:00 GMT 2019", description = "Einmal abweichender nächster Liefertag bei Serienbestellung")
-  public LocalDate getNextDelivery() {
-    return nextDelivery;
-  }
-
-  public void setNextDelivery(LocalDate nextDelivery) {
-    this.nextDelivery = nextDelivery;
-  }
-
-  public Order deliveryAddress(OrderDeliveryAddress deliveryAddress) {
-    this.deliveryAddress = deliveryAddress;
-    return this;
-  }
-
-   /**
-   * Get deliveryAddress
-   * @return deliveryAddress
-  **/
-  @Schema(required = true, description = "")
-  public OrderDeliveryAddress getDeliveryAddress() {
-    return deliveryAddress;
-  }
-
-  public void setDeliveryAddress(OrderDeliveryAddress deliveryAddress) {
-    this.deliveryAddress = deliveryAddress;
-  }
-
-  public Order doctorId(String doctorId) {
+  public PrescriptionRequest doctorId(String doctorId) {
     this.doctorId = doctorId;
     return this;
   }
@@ -322,7 +299,7 @@ public class Order {
     this.doctorId = doctorId;
   }
 
-  public Order pharmacyId(String pharmacyId) {
+  public PrescriptionRequest pharmacyId(String pharmacyId) {
     this.pharmacyId = pharmacyId;
     return this;
   }
@@ -340,7 +317,7 @@ public class Order {
     this.pharmacyId = pharmacyId;
   }
 
-  public Order therapyId(BigDecimal therapyId) {
+  public PrescriptionRequest therapyId(BigDecimal therapyId) {
     this.therapyId = therapyId;
     return this;
   }
@@ -358,12 +335,12 @@ public class Order {
     this.therapyId = therapyId;
   }
 
-  public Order therapyTypeIds(List<BigDecimal> therapyTypeIds) {
+  public PrescriptionRequest therapyTypeIds(List<BigDecimal> therapyTypeIds) {
     this.therapyTypeIds = therapyTypeIds;
     return this;
   }
 
-  public Order addTherapyTypeIdsItem(BigDecimal therapyTypeIdsItem) {
+  public PrescriptionRequest addTherapyTypeIdsItem(BigDecimal therapyTypeIdsItem) {
     if (this.therapyTypeIds == null) {
       this.therapyTypeIds = new ArrayList<BigDecimal>();
     }
@@ -384,51 +361,33 @@ public class Order {
     this.therapyTypeIds = therapyTypeIds;
   }
 
-  public Order isInitialCare(Boolean isInitialCare) {
-    this.isInitialCare = isInitialCare;
+  public PrescriptionRequest prescriptedArticleLines(List<PrescriptedArticleLine> prescriptedArticleLines) {
+    this.prescriptedArticleLines = prescriptedArticleLines;
     return this;
   }
 
-   /**
-   * true &#x3D; Erstversorgung, false &#x3D; Folgeversorgung
-   * @return isInitialCare
-  **/
-  @Schema(example = "true", required = true, description = "true = Erstversorgung, false = Folgeversorgung")
-  public Boolean isIsInitialCare() {
-    return isInitialCare;
-  }
-
-  public void setIsInitialCare(Boolean isInitialCare) {
-    this.isInitialCare = isInitialCare;
-  }
-
-  public Order orderedArticleLines(List<OrderedArticleLine> orderedArticleLines) {
-    this.orderedArticleLines = orderedArticleLines;
-    return this;
-  }
-
-  public Order addOrderedArticleLinesItem(OrderedArticleLine orderedArticleLinesItem) {
-    if (this.orderedArticleLines == null) {
-      this.orderedArticleLines = new ArrayList<OrderedArticleLine>();
+  public PrescriptionRequest addPrescriptedArticleLinesItem(PrescriptedArticleLine prescriptedArticleLinesItem) {
+    if (this.prescriptedArticleLines == null) {
+      this.prescriptedArticleLines = new ArrayList<PrescriptedArticleLine>();
     }
-    this.orderedArticleLines.add(orderedArticleLinesItem);
+    this.prescriptedArticleLines.add(prescriptedArticleLinesItem);
     return this;
   }
 
    /**
-   * Die einzelnen Bestellzeilen mit Artikeln
-   * @return orderedArticleLines
+   * Die einzelnen Zeilen der Rezeptanforderung mit Artikeln
+   * @return prescriptedArticleLines
   **/
-  @Schema(description = "Die einzelnen Bestellzeilen mit Artikeln")
-  public List<OrderedArticleLine> getOrderedArticleLines() {
-    return orderedArticleLines;
+  @Schema(description = "Die einzelnen Zeilen der Rezeptanforderung mit Artikeln")
+  public List<PrescriptedArticleLine> getPrescriptedArticleLines() {
+    return prescriptedArticleLines;
   }
 
-  public void setOrderedArticleLines(List<OrderedArticleLine> orderedArticleLines) {
-    this.orderedArticleLines = orderedArticleLines;
+  public void setPrescriptedArticleLines(List<PrescriptedArticleLine> prescriptedArticleLines) {
+    this.prescriptedArticleLines = prescriptedArticleLines;
   }
 
-  public Order createdBy(String createdBy) {
+  public PrescriptionRequest createdBy(String createdBy) {
     this.createdBy = createdBy;
     return this;
   }
@@ -446,70 +405,34 @@ public class Order {
     this.createdBy = createdBy;
   }
 
-  public Order status(BigDecimal status) {
-    this.status = status;
-    return this;
-  }
-
-   /**
-   * Status der Bestellung (-3 &#x3D; Ausstehend, 0 &#x3D; Angelegt, 1 &#x3D; Übermittelt, 2 &#x3D; Übermittlung fehlgeschlagen, 3 &#x3D; Verarbeitet, 4 &#x3D; Versandt, 5 &#x3D; Ausgeliefert, 6 &#x3D; Gelöscht, 7 &#x3D; Storniert, 8 &#x3D; Gestoppte Serienbestellung)
-   * @return status
-  **/
-  @Schema(example = "1", description = "Status der Bestellung (-3 = Ausstehend, 0 = Angelegt, 1 = Übermittelt, 2 = Übermittlung fehlgeschlagen, 3 = Verarbeitet, 4 = Versandt, 5 = Ausgeliefert, 6 = Gelöscht, 7 = Storniert, 8 = Gestoppte Serienbestellung)")
-  public BigDecimal getStatus() {
-    return status;
-  }
-
-  public void setStatus(BigDecimal status) {
-    this.status = status;
-  }
-
-  public Order isSeriesOrder(Boolean isSeriesOrder) {
-    this.isSeriesOrder = isSeriesOrder;
-    return this;
-  }
-
-   /**
-   * true &#x3D; Serienbestellung (läuft automatisch über WaWi), false &#x3D; normale Einzelbestellung
-   * @return isSeriesOrder
-  **/
-  @Schema(example = "true", description = "true = Serienbestellung (läuft automatisch über WaWi), false = normale Einzelbestellung")
-  public Boolean isIsSeriesOrder() {
-    return isSeriesOrder;
-  }
-
-  public void setIsSeriesOrder(Boolean isSeriesOrder) {
-    this.isSeriesOrder = isSeriesOrder;
-  }
-
-  public Order annotation(String annotation) {
+  public PrescriptionRequest annotation(Boolean annotation) {
     this.annotation = annotation;
     return this;
   }
 
    /**
-   * Hinweise zur Bestellung
+   * Bemerkung
    * @return annotation
   **/
-  @Schema(example = "Das ist ein Hinweis an den Innendienst", description = "Hinweise zur Bestellung")
-  public String getAnnotation() {
+  @Schema(example = "false", description = "Bemerkung")
+  public Boolean isAnnotation() {
     return annotation;
   }
 
-  public void setAnnotation(String annotation) {
+  public void setAnnotation(Boolean annotation) {
     this.annotation = annotation;
   }
 
-  public Order archived(Boolean archived) {
+  public PrescriptionRequest archived(Boolean archived) {
     this.archived = archived;
     return this;
   }
 
    /**
-   * Kennzeichen ob Bestellung archiviert ist oder nicht
+   * Kennzeichen ob Rezeptanforderung archiviert ist oder nicht
    * @return archived
   **/
-  @Schema(example = "false", description = "Kennzeichen ob Bestellung archiviert ist oder nicht")
+  @Schema(example = "false", description = "Kennzeichen ob Rezeptanforderung archiviert ist oder nicht")
   public Boolean isArchived() {
     return archived;
   }
@@ -518,7 +441,7 @@ public class Order {
     this.archived = archived;
   }
 
-  public Order timestamp(OffsetDateTime timestamp) {
+  public PrescriptionRequest timestamp(OffsetDateTime timestamp) {
     this.timestamp = timestamp;
     return this;
   }
@@ -536,7 +459,7 @@ public class Order {
     this.timestamp = timestamp;
   }
 
-  public Order updated(OffsetDateTime updated) {
+  public PrescriptionRequest updated(OffsetDateTime updated) {
     this.updated = updated;
     return this;
   }
@@ -563,64 +486,56 @@ public class Order {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    Order order = (Order) o;
-    return Objects.equals(this._id, order._id) &&
-        Objects.equals(this.salesId, order.salesId) &&
-        Objects.equals(this.patientId, order.patientId) &&
-        Objects.equals(this.rootId, order.rootId) &&
-        Objects.equals(this.creationDate, order.creationDate) &&
-        Objects.equals(this.deliveryDate, order.deliveryDate) &&
-        Objects.equals(this.startDate, order.startDate) &&
-        Objects.equals(this.endDate, order.endDate) &&
-        Objects.equals(this.dayOfDelivery, order.dayOfDelivery) &&
-        Objects.equals(this.nextDelivery, order.nextDelivery) &&
-        Objects.equals(this.deliveryAddress, order.deliveryAddress) &&
-        Objects.equals(this.doctorId, order.doctorId) &&
-        Objects.equals(this.pharmacyId, order.pharmacyId) &&
-        Objects.equals(this.therapyId, order.therapyId) &&
-        Objects.equals(this.therapyTypeIds, order.therapyTypeIds) &&
-        Objects.equals(this.isInitialCare, order.isInitialCare) &&
-        Objects.equals(this.orderedArticleLines, order.orderedArticleLines) &&
-        Objects.equals(this.createdBy, order.createdBy) &&
-        Objects.equals(this.status, order.status) &&
-        Objects.equals(this.isSeriesOrder, order.isSeriesOrder) &&
-        Objects.equals(this.annotation, order.annotation) &&
-        Objects.equals(this.archived, order.archived) &&
-        Objects.equals(this.timestamp, order.timestamp) &&
-        Objects.equals(this.updated, order.updated);
+    PrescriptionRequest prescriptionRequest = (PrescriptionRequest) o;
+    return Objects.equals(this._id, prescriptionRequest._id) &&
+        Objects.equals(this.patientId, prescriptionRequest.patientId) &&
+        Objects.equals(this.patientBirthday, prescriptionRequest.patientBirthday) &&
+        Objects.equals(this.orderId, prescriptionRequest.orderId) &&
+        Objects.equals(this.prescriptionType, prescriptionRequest.prescriptionType) &&
+        Objects.equals(this.creationDate, prescriptionRequest.creationDate) &&
+        Objects.equals(this.deliveryDate, prescriptionRequest.deliveryDate) &&
+        Objects.equals(this.startDate, prescriptionRequest.startDate) &&
+        Objects.equals(this.endDate, prescriptionRequest.endDate) &&
+        Objects.equals(this.accountingMonths, prescriptionRequest.accountingMonths) &&
+        Objects.equals(this.doctorId, prescriptionRequest.doctorId) &&
+        Objects.equals(this.pharmacyId, prescriptionRequest.pharmacyId) &&
+        Objects.equals(this.therapyId, prescriptionRequest.therapyId) &&
+        Objects.equals(this.therapyTypeIds, prescriptionRequest.therapyTypeIds) &&
+        Objects.equals(this.prescriptedArticleLines, prescriptionRequest.prescriptedArticleLines) &&
+        Objects.equals(this.createdBy, prescriptionRequest.createdBy) &&
+        Objects.equals(this.annotation, prescriptionRequest.annotation) &&
+        Objects.equals(this.archived, prescriptionRequest.archived) &&
+        Objects.equals(this.timestamp, prescriptionRequest.timestamp) &&
+        Objects.equals(this.updated, prescriptionRequest.updated);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_id, salesId, patientId, rootId, creationDate, deliveryDate, startDate, endDate, dayOfDelivery, nextDelivery, deliveryAddress, doctorId, pharmacyId, therapyId, therapyTypeIds, isInitialCare, orderedArticleLines, createdBy, status, isSeriesOrder, annotation, archived, timestamp, updated);
+    return Objects.hash(_id, patientId, patientBirthday, orderId, prescriptionType, creationDate, deliveryDate, startDate, endDate, accountingMonths, doctorId, pharmacyId, therapyId, therapyTypeIds, prescriptedArticleLines, createdBy, annotation, archived, timestamp, updated);
   }
 
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class Order {\n");
+    sb.append("class PrescriptionRequest {\n");
     
     sb.append("    _id: ").append(toIndentedString(_id)).append("\n");
-    sb.append("    salesId: ").append(toIndentedString(salesId)).append("\n");
     sb.append("    patientId: ").append(toIndentedString(patientId)).append("\n");
-    sb.append("    rootId: ").append(toIndentedString(rootId)).append("\n");
+    sb.append("    patientBirthday: ").append(toIndentedString(patientBirthday)).append("\n");
+    sb.append("    orderId: ").append(toIndentedString(orderId)).append("\n");
+    sb.append("    prescriptionType: ").append(toIndentedString(prescriptionType)).append("\n");
     sb.append("    creationDate: ").append(toIndentedString(creationDate)).append("\n");
     sb.append("    deliveryDate: ").append(toIndentedString(deliveryDate)).append("\n");
     sb.append("    startDate: ").append(toIndentedString(startDate)).append("\n");
     sb.append("    endDate: ").append(toIndentedString(endDate)).append("\n");
-    sb.append("    dayOfDelivery: ").append(toIndentedString(dayOfDelivery)).append("\n");
-    sb.append("    nextDelivery: ").append(toIndentedString(nextDelivery)).append("\n");
-    sb.append("    deliveryAddress: ").append(toIndentedString(deliveryAddress)).append("\n");
+    sb.append("    accountingMonths: ").append(toIndentedString(accountingMonths)).append("\n");
     sb.append("    doctorId: ").append(toIndentedString(doctorId)).append("\n");
     sb.append("    pharmacyId: ").append(toIndentedString(pharmacyId)).append("\n");
     sb.append("    therapyId: ").append(toIndentedString(therapyId)).append("\n");
     sb.append("    therapyTypeIds: ").append(toIndentedString(therapyTypeIds)).append("\n");
-    sb.append("    isInitialCare: ").append(toIndentedString(isInitialCare)).append("\n");
-    sb.append("    orderedArticleLines: ").append(toIndentedString(orderedArticleLines)).append("\n");
+    sb.append("    prescriptedArticleLines: ").append(toIndentedString(prescriptedArticleLines)).append("\n");
     sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");
-    sb.append("    status: ").append(toIndentedString(status)).append("\n");
-    sb.append("    isSeriesOrder: ").append(toIndentedString(isSeriesOrder)).append("\n");
     sb.append("    annotation: ").append(toIndentedString(annotation)).append("\n");
     sb.append("    archived: ").append(toIndentedString(archived)).append("\n");
     sb.append("    timestamp: ").append(toIndentedString(timestamp)).append("\n");
