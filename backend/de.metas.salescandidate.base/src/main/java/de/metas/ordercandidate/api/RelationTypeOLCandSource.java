@@ -114,6 +114,11 @@ final class RelationTypeOLCandSource implements OLCandSource
 		final DocTypeId orderDocTypeId = olCandBL.getOrderDocTypeId(orderDefaults, olCandRecord);
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
 
+		final OrderLineGroup orderLineGroup = OrderLineGroup.ofOrNull(
+				olCandRecord.getCompensationGroupKey(),
+				olCandRecord.isGroupCompensationLine(),
+				olCandRecord.isGroupingError(),
+				olCandRecord.getGroupingErrorMessage());
 		return OLCand.builder()
 				.olCandEffectiveValuesBL(olCandEffectiveValuesBL)
 				.olCandRecord(olCandRecord)
@@ -128,12 +133,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.shipperId(shipperId)
 				.orderDocTypeId(orderDocTypeId)
 				.salesRepId(salesRepId)
-				.orderLineGroup(OrderLineGroup.builder()
-						.groupKey(olCandRecord.getCompensationGroupKey())
-						.isGroupMainItem(olCandRecord.isGroupCompensationLine())
-						.isGroupingError(olCandRecord.isGroupingError())
-						.groupingErrorMessage(olCandRecord.getGroupingErrorMessage())
-						.build())
+				.orderLineGroup(orderLineGroup)
 				.build();
 	}
 }

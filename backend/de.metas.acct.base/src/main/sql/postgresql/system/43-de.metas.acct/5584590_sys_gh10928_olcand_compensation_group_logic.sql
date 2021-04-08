@@ -290,7 +290,7 @@ SELECT public.db_alter_table('C_OLCand', 'ALTER TABLE public.C_OLCand ADD COLUMN
 -- 2021-04-06T12:48:38.795Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, ColumnDisplayLength, Created, CreatedBy, DisplayLength, EntityType, IncludedTabHeight, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, SeqNo, SeqNoGrid, SortNo, SpanX, SpanY, Updated, UpdatedBy)
-VALUES (0, 573342, 642616, 0, 540282, 0, TO_TIMESTAMP('2021-04-06 15:48:38', 'YYYY-MM-DD HH24:MI:SS'), 100, 0, 'D', 0, 'Y', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'Gruppierungsfehler', 440, 440, 0, 1, 1, TO_TIMESTAMP('2021-04-06 15:48:38', 'YYYY-MM-DD HH24:MI:SS'), 100)
+VALUES (0, 573342, 642616, 0, 540282, 0, TO_TIMESTAMP('2021-04-06 15:48:38', 'YYYY-MM-DD HH24:MI:SS'), 100, 0, 'D', 0, 'Y', 'Y', 'Y', 'N', 'N', 'N', 'Y', 'N', 'Gruppierungsfehler', 440, 440, 0, 1, 1, TO_TIMESTAMP('2021-04-06 15:48:38', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 
 -- 2021-04-06T12:48:38.798Z
