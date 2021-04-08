@@ -1,15 +1,8 @@
-package de.metas.handlingunits.inventory.impl;
-
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,38 +20,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.X_M_Inventory;
-import org.compiere.util.TimeUtil;
+package de.metas.handlingunits.inventory.internaluse;
 
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
@@ -112,13 +76,46 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.X_M_Inventory;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * {@link IAllocationDestination} which is used to generate Internal Use Inventory documents for quantity that is asked to be loaded here.
  * <p>
  * Useful when you want to destroy an HU and you want also to "internal use" it's M_Storage counter-part.
- *
- * @task http://dewiki908/mediawiki/index.php/07050_Eigenverbrauch_metas_in_Existing_Window_Handling_Unit_Pos
+ * <p>
+ * Task http://dewiki908/mediawiki/index.php/07050_Eigenverbrauch_metas_in_Existing_Window_Handling_Unit_Pos
  */
 class InventoryAllocationDestination implements IAllocationDestination
 {
@@ -165,8 +162,8 @@ class InventoryAllocationDestination implements IAllocationDestination
 	public InventoryAllocationDestination(
 			@NonNull final WarehouseId warehouseId,
 			final DocTypeId inventoryDocTypeId,
-			final ActivityId activityId,
-			final String description)
+			@Nullable final ActivityId activityId,
+			@Nullable final String description)
 	{
 		warehouseLocatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId);
 		this.inventoryDocTypeId = inventoryDocTypeId;
@@ -259,7 +256,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 				// Collect HU's packing materials
 				{
 					collectPackingMaterials(request.getHUContext(), inventoryLine.getM_Inventory_ID(), tuHU);
-					if (topLevelHUId != HuId.ofRepoId(hu.getM_HU_ID()))
+					if (!HuId.equals(topLevelHUId, HuId.ofRepoId(hu.getM_HU_ID())))
 					{
 						collectPackingMaterials_LUOnly(request.getHUContext(), inventoryLine.getM_Inventory_ID(), topLevelHU);
 					}
@@ -344,6 +341,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		return candidates;
 	}
 
+	@Nullable
 	private I_M_HU extractHUOrNull(final IAllocationRequest request)
 	{
 		//
@@ -368,13 +366,11 @@ class InventoryAllocationDestination implements IAllocationDestination
 	{
 		final I_M_HU topLevelHu = handlingUnitsDAO.getById(topLevelHUId);
 
-		final ImmutableList<I_M_InOutLine> receiptLines = huInOutDAO.retrieveInOutLinesForHU(topLevelHu)
+		return huInOutDAO.retrieveInOutLinesForHU(topLevelHu)
 				.stream()
 				.filter(inoutLine -> inoutLine.getM_Product_ID() == productId.getRepoId()) // #1604: skip inoutlines for other products
 				.peek(this::assertReceipt) // make sure it's a material receipt (and NOT a shipment)
 				.collect(ImmutableList.toImmutableList());
-
-		return receiptLines;
 	}
 
 	private void assertReceipt(final I_M_InOutLine inoutLine)
@@ -386,6 +382,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 		}
 	}
 
+	@Nullable
 	private I_M_InventoryLine getCreateInventoryLineInDispute(final InventoryLineCandidate candidate)
 	{
 		final I_M_InOutLine receiptLine = candidate.getReceiptLine();
@@ -421,16 +418,9 @@ class InventoryAllocationDestination implements IAllocationDestination
 		}
 	}
 
-	public void createMovementsForInventories()
+	public void createEmptiesMovementForInventories()
 	{
-		final List<I_M_Inventory> inventories = getInventories();
-		inventories.forEach(inventory -> createMovementForInventory(inventory));
-
-	}
-
-	private void createMovementForInventory(final I_M_Inventory inventory)
-	{
-		createEmptiesMovementForInventory(inventory);
+		getInventories().forEach(this::createEmptiesMovementForInventory);
 	}
 
 	/**
@@ -451,7 +441,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	}
 
 	/**
-	 * Move the handling units used in inventory from their current warehouse to the handling units warehouse.
+	 * Move the handling units used in inventory from their current warehouse to the empties warehouse.
 	 */
 	private void createEmptiesMovementForInventory(final I_M_Inventory inventory)
 	{
@@ -610,19 +600,22 @@ class InventoryAllocationDestination implements IAllocationDestination
 		save(inventory);
 	}
 
-	private ISnapshotProducer<I_M_HU> snapshotHUForInventoryLine(
+	private void snapshotHUForInventoryLine(
 			@NonNull final I_M_HU topLevelHU,
 			@NonNull final I_M_InventoryLine inventoryLine)
 	{
 		final ISnapshotProducer<I_M_HU> currentSnapshotProducer = huSnapshotProducerByInventoryId.get(inventoryLine.getM_Inventory_ID());
-		Check.errorIf(currentSnapshotProducer == null, "Missing SnapshotProducer for M_Inventory_ID={}", inventoryLine.getM_Inventory_ID());
+		if (currentSnapshotProducer == null)
+		{
+			throw new AdempiereException("Missing SnapshotProducer for M_Inventory_ID=" + inventoryLine.getM_Inventory_ID());
+		}
 
 		// add each top level HU to be added to the snapshot of the inventory
 		currentSnapshotProducer.addModel(topLevelHU);
 
-		return currentSnapshotProducer;
 	}
 
+	@Nullable
 	private I_M_HU_PI_Item_Product extractPackingOrNull(@NonNull final I_M_HU hu, @NonNull final InventoryLineCandidate inventoryLineCandidate)
 	{
 		//
@@ -708,6 +701,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	/**
 	 * Find get the TU for the given {@code hu}. Might be the HU itself or its parent.
 	 */
+	@Nullable
 	private I_M_HU retrieveTUOrNull(@NonNull final I_M_HU hu)
 	{
 		if (handlingUnitsBL.isTransportUnitOrAggregate(hu))
@@ -775,38 +769,26 @@ class InventoryAllocationDestination implements IAllocationDestination
 	@Builder
 	private static class InventoryLineKey
 	{
-		@NonNull
-		final HuId topLevelHU;
-
-		@NonNull
-		final ProductId productId;
-
+		@NonNull HuId topLevelHU;
+		@NonNull ProductId productId;
 		@Nullable
-		final InOutLineId receiptLineId;
+		InOutLineId receiptLineId;
 	}
 
 	@Value
 	@Builder
 	private static class InventoryLineCandidate
 	{
-		@NonNull
-		final ZonedDateTime movementDate;
-
-		@NonNull
-		final HuId topLevelHUId;
-
-		@NonNull
-		ProductId productId;
-
-		@NonNull
-		Quantity qty;
-
+		@NonNull ZonedDateTime movementDate;
+		@NonNull HuId topLevelHUId;
+		@NonNull ProductId productId;
+		@NonNull Quantity qty;
 		@Nullable
 		I_M_InOutLine receiptLine;
-
 		@Nullable
 		String poReference;
 
+		@Nullable
 		public InOutLineId getInOutLineId()
 		{
 			return receiptLine != null
