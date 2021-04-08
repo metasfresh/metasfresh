@@ -66,7 +66,9 @@ describe('BPartner relations', function() {
   it('Set bpartner relation inactive', function() {
     cy.visitWindow(313, relationID);
     cy.clickOnIsActive();
+    cy.get('.indicator-saved', { timeout: 10000 }).should('exist');
     cy.visitWindow('143', 'NEW');
+
     cy.writeIntoLookupListField('C_BPartner_ID', customer1Name, customer1Name);
     const path = `#lookup_Bill_BPartner_ID`;
     cy.get(path).within(el => {

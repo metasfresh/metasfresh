@@ -340,7 +340,7 @@ SELECT AD_Element_Link_Create_Missing_Field(642616)
 -- 2021-04-06T12:48:55.865Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, ColumnDisplayLength, Created, CreatedBy, DisplayLength, EntityType, IncludedTabHeight, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, SeqNo, SeqNoGrid, SortNo, SpanX, SpanY, Updated, UpdatedBy)
-VALUES (0, 573343, 642617, 0, 540282, 0, TO_TIMESTAMP('2021-04-06 15:48:55', 'YYYY-MM-DD HH24:MI:SS'), 100, 0, 'D', 0, 'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'Gruppierungsfehlermeldung', 450, 450, 0, 1, 1, TO_TIMESTAMP('2021-04-06 15:48:55', 'YYYY-MM-DD HH24:MI:SS'), 100)
+VALUES (0, 573343, 642617, 0, 540282, 0, TO_TIMESTAMP('2021-04-06 15:48:55', 'YYYY-MM-DD HH24:MI:SS'), 100, 0, 'D', 0, 'Y', 'Y', 'N', 'N', 'N', 'N', 'Y', 'N', 'Gruppierungsfehlermeldung', 450, 450, 0, 1, 1, TO_TIMESTAMP('2021-04-06 15:48:55', 'YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 
 -- 2021-04-06T12:48:55.867Z
@@ -1111,13 +1111,6 @@ WHERE AD_Language = 'en_US'
 UPDATE AD_Message
 SET Value='OLCandProcessor.OLCandGroupingError', Updated=TO_TIMESTAMP('2021-04-06 17:56:02', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Message_ID = 545031
-;
-
--- 2021-04-06T15:17:41.046Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column
-SET IsUpdateable='N', Updated=TO_TIMESTAMP('2021-04-06 18:17:41', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE AD_Column_ID = 573343
 ;
 
 -- 2021-04-06T15:18:27.428Z

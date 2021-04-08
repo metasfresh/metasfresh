@@ -243,8 +243,8 @@ BPLocation.shipTo | true |
 
 | Alberta | metasfresh | mandatory in mf | note |
 | --- | --- | --- | --- |
-| _id | C_OLCand.ExternalHeaderId | Y | |
-| salesId | C_OLCand.POReference | | |
+| `_id` | `C_OLCand.ExternalHeaderId`, also used for `C_OLCand.POReference` if salesId is empty | Y | |
+| `salesId` | `C_OLCand.POReference` | Y | |
 | patientId | C_OLCand.C_BPartner_ID | Y | ..via external reference lookup |
 | rootId | C_OLCand_AlbertaOrder.RootId | |
 | creationDate | C_OLCand_AlbertaOrder.CreationDate | |
