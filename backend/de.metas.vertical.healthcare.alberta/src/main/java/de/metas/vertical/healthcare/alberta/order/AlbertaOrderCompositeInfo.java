@@ -50,7 +50,7 @@ public class AlbertaOrderCompositeInfo
 	String rootId;
 
 	@Nullable
-	LocalDate creationDate;
+	Instant creationDate;
 
 	@Nullable
 	LocalDate startDate;

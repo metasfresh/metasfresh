@@ -13,7 +13,7 @@
         "locations": {
           "requestItems": [
             {
-              "locationIdentifier": "ext-ALBERTA-mainAddress_fcf48850-c52c-4263-92b2-e889bfffeaf0",
+              "locationIdentifier": "ext-ALBERTA-fcf48850-c52c-4263-92b2-e889bfffeaf0",
               "location": {
                 "address1": "Teststraße 1",
                 "address2": null,
