@@ -55,7 +55,7 @@ public class C_Invoice_Candidate_RejectFromInvoicing extends C_Invoice_Candidate
 		}
 
 		queryBuilder.addOnlyActiveRecordsFilter() // not processed
-				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_ApprovalForInvoicing, false) // not already approved
+				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_ApprovalForInvoicing, false) // not already rejected
 		;
 
 		// Only selected rows
