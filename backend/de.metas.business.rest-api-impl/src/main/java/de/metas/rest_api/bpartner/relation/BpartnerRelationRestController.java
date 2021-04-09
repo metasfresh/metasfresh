@@ -49,13 +49,15 @@ import javax.annotation.Nullable;
 import static de.metas.common.rest_api.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 import static de.metas.rest_api.bpartner.impl.BpartnerRestController.ORG_CODE_PARAMETER_DOC;
 
-@RequestMapping(BpartnerRelationRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/bpartner/relation",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/bpartner/relation",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bpartner/relation" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 // the spelling "Bpartner" is to avoid swagger from spelling it "b-partner-rest.."
 public class BpartnerRelationRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartner/relation";
 	private final BPRelationsService bpRelationsService;
 
 	public BpartnerRelationRestController(@NonNull final BPRelationsService bpRelationsService)

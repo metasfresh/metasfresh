@@ -59,6 +59,11 @@ public class NotificationBL implements INotificationBL
 	@Override
 	public void sendAfterCommit(@NonNull final List<UserNotificationRequest> requests)
 	{
+		if(requests.isEmpty())
+		{
+			return;
+		}
+
 		newNotificationSender().sendAfterCommit(requests);
 	}
 

@@ -204,7 +204,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		listeners.removeAttributeStorageListener(listener);
 	}
 
-	private final void onAttributeValueChanged(final IAttributeValueContext attributeValueContext, final IAttributeValue attributeValue, final Object valueOld, final Object valueNew)
+	private void onAttributeValueChanged(final IAttributeValueContext attributeValueContext, final IAttributeValue attributeValue, final Object valueOld, final Object valueNew)
 	{
 		assertNotDisposed();
 
@@ -221,10 +221,8 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 	/**
 	 * Set the inner {@link #attributeValuesRO}, build up the indexing maps and add {@link #attributeValueListener}.
-	 *
-	 * @param attributeValues
 	 */
-	private final void setInnerAttributeValues(final List<IAttributeValue> attributeValues)
+	private void setInnerAttributeValues(final List<IAttributeValue> attributeValues)
 	{
 		_indexedAttributeValuesLock.lock();
 		try
@@ -279,7 +277,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		}
 	}
 
-	private final IndexedAttributeValues getIndexedAttributeValuesNoLoad()
+	private IndexedAttributeValues getIndexedAttributeValuesNoLoad()
 	{
 		// NOTE: even though we are not loading them, at least we want to make sure there is no loading in progress,
 		// because that would produce unpredictable results
@@ -703,7 +701,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	 *
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
-	private final void setValue(final IHUAttributePropagationContext propagationContext, final Object value)
+	private void setValue(final IHUAttributePropagationContext propagationContext, final Object value)
 	{
 		Check.assumeNotNull(propagationContext, "propagationContext not null for {}", this);
 

@@ -1,4 +1,26 @@
-package de.metas.handlingunits.inventory.impl;
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.handlingunits.inventory.internaluse;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
@@ -33,6 +55,7 @@ import de.metas.inventory.impl.InventoryBL;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
@@ -45,11 +68,14 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
+import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,31 +84,7 @@ import java.util.List;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * This test doesn'T really work as it tests nothing.
@@ -90,8 +92,8 @@ import static org.junit.Assert.assertThat;
  * Feel free to fix and extend it.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
+@SuppressWarnings("OptionalGetWithoutIsPresent")
 @ExtendWith(AdempiereTestWatcher.class)
 public class HUInternalUseInventoryProducerTests
 {
@@ -102,7 +104,6 @@ public class HUInternalUseInventoryProducerTests
 	private IHandlingUnitsBL handlingUnitsBL;
 	private IHUStatusBL huStatusBL;
 	private IHandlingUnitsDAO handlingUnitsDAO;
-	// private IInventoryDAO inventoryDAO;
 	private InventoryService inventoryService;
 
 	private final BPartnerId bpartnerId = BPartnerId.ofRepoId(12345);
@@ -112,11 +113,11 @@ public class HUInternalUseInventoryProducerTests
 	public void init()
 	{
 		data = new LUTUProducerDestinationTestSupport();
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(999));
 
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huStatusBL = Services.get(IHUStatusBL.class);
-		// inventoryDAO = Services.get(IInventoryDAO.class);
 		inventoryService = new InventoryService(new InventoryRepository(), SourceHUsService.get());
 
 		final I_C_DocType dt = newInstance(I_C_DocType.class);
@@ -141,9 +142,14 @@ public class HUInternalUseInventoryProducerTests
 	{
 		final I_M_HU lu = mkAggregateCUs("50", 10);
 
-		final List<I_M_Inventory> inventories = HUInternalUseInventoryProducer.newInstance()
-				.addHUs(ImmutableList.of(lu))
-				.createInventories();
+		final List<I_M_Inventory> inventories = new HUInternalUseInventoryProducer(
+				HUInternalUseInventoryCreateRequest.builder()
+						.hus(ImmutableList.of(lu))
+						.movementDate(LocalDate.parse("2021-04-08").atStartOfDay(ZoneId.of("Europe/Berlin")))
+						.sendNotifications(false)
+						.build())
+				.execute()
+				.getInventories();
 		assertThat(inventories).hasSize(1);
 
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.get(0).getM_Inventory_ID());
@@ -161,7 +167,7 @@ public class HUInternalUseInventoryProducerTests
 
 		final I_M_HU cu = mkRealStandAloneCUToSplit("15");
 
-		Collection<I_M_HU> husToDestroy = new ArrayList<>();
+		final Collection<I_M_HU> husToDestroy = new ArrayList<>();
 
 		husToDestroy.add(cu);
 		husToDestroy.add(topLevelParentTU);
@@ -170,10 +176,18 @@ public class HUInternalUseInventoryProducerTests
 		final ActivityId activityId = createActivity("Activity1");
 		final ZonedDateTime movementDate = de.metas.common.util.time.SystemTime.asZonedDateTime();
 		final String description = "Test Description";
-		final boolean isCompleteInventory = true;
-		final boolean isCreateMovement = false;
 
-		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(husToDestroy, movementDate, activityId, description, isCompleteInventory, isCreateMovement);
+		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(
+				HUInternalUseInventoryCreateRequest.builder()
+						.hus(husToDestroy)
+						.movementDate(movementDate)
+						.activityId(activityId)
+						.description(description)
+						.completeInventory(true)
+						.moveEmptiesToEmptiesWarehouse(false)
+						.sendNotifications(false)
+						.build())
+				.getInventories();
 		assertThat(inventories.size()).isEqualTo(1);
 
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.get(0).getM_Inventory_ID());
@@ -221,7 +235,7 @@ public class HUInternalUseInventoryProducerTests
 		}
 	}
 
-	private static boolean isMatchingSingleHU(InventoryLine inventoryLine, final I_M_HU hu)
+	private static boolean isMatchingSingleHU(final InventoryLine inventoryLine, final I_M_HU hu)
 	{
 		return inventoryLine.getSingleLineHU().getHuId().getRepoId() == hu.getM_HU_ID();
 	}
@@ -230,21 +244,29 @@ public class HUInternalUseInventoryProducerTests
 	public void moveToGarbage_Receipt_HUs()
 	{
 
-		final I_M_InOutLine inoutLine = createInOutLine(data.helper.pTomato, data.helper.uomKg, BigDecimal.TEN);
+		final I_M_InOutLine inoutLine = createInOutLine(data.helper.pTomato, data.helper.uomKg);
 		final I_M_HU receiptLu = mkAggregateCUs("50", 10);
 
 		createHUAssignment(inoutLine, receiptLu);
 
-		Collection<I_M_HU> husToDestroy = new ArrayList<>();
+		final Collection<I_M_HU> husToDestroy = new ArrayList<>();
 		husToDestroy.add(receiptLu);
 
 		final ActivityId activityId = createActivity("Activity1");
 		final ZonedDateTime movementDate = de.metas.common.util.time.SystemTime.asZonedDateTimeAtStartOfDay();
 		final String description = "Test Description";
-		final boolean isCompleteInventory = true;
-		final boolean isCreateMovement = false;
 
-		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(husToDestroy, movementDate, activityId, description, isCompleteInventory, isCreateMovement);
+		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(
+				HUInternalUseInventoryCreateRequest.builder()
+						.hus(husToDestroy)
+						.movementDate(movementDate)
+						.activityId(activityId)
+						.description(description)
+						.completeInventory(true)
+						.moveEmptiesToEmptiesWarehouse(false)
+						.sendNotifications(false)
+						.build())
+				.getInventories();
 		assertThat(inventories.size()).isEqualTo(1);
 
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.get(0).getM_Inventory_ID());
@@ -264,7 +286,7 @@ public class HUInternalUseInventoryProducerTests
 	@Test
 	public void moveToGarbage_Mixt_HUs()
 	{
-		final I_M_InOutLine inoutLine = createInOutLine(data.helper.pTomato, data.helper.uomKg, BigDecimal.TEN);
+		final I_M_InOutLine inoutLine = createInOutLine(data.helper.pTomato, data.helper.uomKg);
 		final I_M_HU receiptLu = mkAggregateCUs("50", 10);
 
 		createHUAssignment(inoutLine, receiptLu);
@@ -276,7 +298,7 @@ public class HUInternalUseInventoryProducerTests
 
 		final I_M_HU cu = mkRealStandAloneCUToSplit("15");
 
-		Collection<I_M_HU> husToDestroy = new ArrayList<>();
+		final Collection<I_M_HU> husToDestroy = new ArrayList<>();
 		husToDestroy.add(cu);
 		husToDestroy.add(topLevelParentTU);
 		husToDestroy.add(lu);
@@ -285,10 +307,18 @@ public class HUInternalUseInventoryProducerTests
 		final ActivityId activityId = createActivity("Activity1");
 		final ZonedDateTime movementDate = SystemTime.asZonedDateTimeAtStartOfDay();
 		final String description = "Test Description";
-		final boolean isCompleteInventory = true;
-		final boolean isCreateMovement = false;
 
-		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(husToDestroy, movementDate, activityId, description, isCompleteInventory, isCreateMovement);
+		final List<I_M_Inventory> inventories = inventoryService.moveToGarbage(
+				HUInternalUseInventoryCreateRequest.builder()
+						.hus(husToDestroy)
+						.movementDate(movementDate)
+						.activityId(activityId)
+						.description(description)
+						.completeInventory(true)
+						.moveEmptiesToEmptiesWarehouse(false)
+						.sendNotifications(false)
+						.build())
+				.getInventories();
 		assertThat(inventories.size()).isEqualTo(1);
 
 		final InventoryId inventoryId = InventoryId.ofRepoId(inventories.get(0).getM_Inventory_ID());
@@ -348,7 +378,7 @@ public class HUInternalUseInventoryProducerTests
 		}
 	}
 
-	private I_M_HU_Assignment createHUAssignment(final I_M_InOutLine inoutLine, final I_M_HU hu)
+	private void createHUAssignment(final I_M_InOutLine inoutLine, final I_M_HU hu)
 	{
 		final I_M_HU_Assignment assignment = newInstance(I_M_HU_Assignment.class);
 		assignment.setAD_Table_ID(getTableId(I_M_InOutLine.class));
@@ -357,10 +387,9 @@ public class HUInternalUseInventoryProducerTests
 
 		saveRecord(assignment);
 
-		return assignment;
 	}
 
-	private I_M_InOutLine createInOutLine(final I_M_Product product, final I_C_UOM uom, final BigDecimal qty)
+	private I_M_InOutLine createInOutLine(final I_M_Product product, final I_C_UOM uom)
 	{
 		final I_M_InOut inout = newInstance(I_M_InOut.class);
 		inout.setC_BPartner_ID(bpartnerId.getRepoId());
@@ -371,7 +400,7 @@ public class HUInternalUseInventoryProducerTests
 		final I_M_InOutLine inoutLine = newInstance(I_M_InOutLine.class);
 		inoutLine.setM_InOut(inout);
 		inoutLine.setM_Product_ID(product.getM_Product_ID());
-		inoutLine.setQtyEntered(qty);
+		inoutLine.setQtyEntered(BigDecimal.TEN);
 		inoutLine.setC_UOM_ID(uom.getC_UOM_ID());
 		inoutLine.setM_Locator_ID(locator.getM_Locator_ID());
 
@@ -379,6 +408,7 @@ public class HUInternalUseInventoryProducerTests
 		return inoutLine;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private ActivityId createActivity(final String name)
 	{
 		final I_C_Activity activity = newInstance(I_C_Activity.class);
@@ -390,10 +420,6 @@ public class HUInternalUseInventoryProducerTests
 
 	/**
 	 * Creates an LU with one aggregate HU. Both the LU's and aggregate HU's status is "active".
-	 *
-	 * @param totalQtyCUStr
-	 * @param qtyCUsPerTU
-	 * @return
 	 */
 	public I_M_HU mkAggregateCUs(
 			@NonNull final String totalQtyCUStr,
@@ -451,9 +477,6 @@ public class HUInternalUseInventoryProducerTests
 
 	/**
 	 * Makes a stand alone CU with the given quantity and status "active".
-	 *
-	 * @param strCuQty
-	 * @return
 	 */
 	public I_M_HU mkRealStandAloneCUToSplit(final String strCuQty)
 	{
@@ -470,7 +493,7 @@ public class HUInternalUseInventoryProducerTests
 		data.helper.load(loadRequest);
 
 		final List<I_M_HU> createdCUs = producer.getCreatedHUs();
-		assertThat(createdCUs.size(), is(1));
+		assertThat(createdCUs).hasSize(1);
 
 		final I_M_HU cuToSplit = createdCUs.get(0);
 
@@ -490,7 +513,7 @@ public class HUInternalUseInventoryProducerTests
 		final BigDecimal cuQty = new BigDecimal(strCuQty);
 		data.helper.load(lutuProducer, data.helper.pTomatoProductId, cuQty, data.helper.uomKg);
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
-		assertThat(createdTUs.size(), is(1));
+		assertThat(createdTUs).hasSize(1);
 
 		final I_M_HU createdTU = createdTUs.get(0);
 		huStatusBL.setHUStatus(data.helper.getHUContext(), createdTU, X_M_HU.HUSTATUS_Active);
@@ -500,7 +523,7 @@ public class HUInternalUseInventoryProducerTests
 		handlingUnitsDAO.saveHU(createdTU);
 
 		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTU);
-		assertThat(createdCUs.size(), is(1));
+		assertThat(createdCUs).hasSize(1);
 
 		final I_M_HU cuToSplit = createdCUs.get(0);
 		cuToSplit.setM_Locator_ID(locator.getM_Locator_ID());

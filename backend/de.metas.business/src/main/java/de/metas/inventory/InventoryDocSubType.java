@@ -57,4 +57,6 @@ public enum InventoryDocSubType implements ReferenceListAwareEnum
 	{
 		return X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory;
 	}
+
+	public String toDocSubTypeString() { return getCode(); }
 }

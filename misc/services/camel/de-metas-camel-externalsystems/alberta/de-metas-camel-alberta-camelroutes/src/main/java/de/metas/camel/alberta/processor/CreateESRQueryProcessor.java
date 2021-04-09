@@ -25,6 +25,7 @@ package de.metas.camel.alberta.processor;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.JsonExternalSystemName;
+import de.metas.common.util.EmptyUtil;
 import io.swagger.client.model.CareGiver;
 import io.swagger.client.model.Patient;
 import lombok.NonNull;
@@ -68,19 +69,24 @@ public class CreateESRQueryProcessor implements Processor
 				.systemName(JsonExternalSystemName.of(ALBERTA_SYSTEM_NAME))
 				.item(getBPLookupItem(patientId));
 
-		if (patient.getPrimaryDoctorId() != null)
+		if (EmptyUtil.isNotBlank(patient.getPrimaryDoctorId()))
 		{
 			jsonExternalReferenceLookupRequest.item(getBPLookupItem(patient.getPrimaryDoctorId()));
 		}
 
-		if (patient.getNursingHomeId() != null)
+		if (EmptyUtil.isNotBlank(patient.getNursingHomeId()))
 		{
 			jsonExternalReferenceLookupRequest.item(getBPLookupItem(patient.getNursingHomeId()));
 		}
 
-		if (patient.getNursingServiceId() != null)
+		if (EmptyUtil.isNotBlank(patient.getNursingServiceId()))
 		{
 			jsonExternalReferenceLookupRequest.item(getBPLookupItem(patient.getNursingServiceId()));
+		}
+
+		if (EmptyUtil.isNotBlank(patient.getPharmacyId()))
+		{
+			jsonExternalReferenceLookupRequest.item(getBPLookupItem(patient.getPharmacyId()));
 		}
 
 		if (patient.getHospital() != null && patient.getHospital().getHospitalId() != null)

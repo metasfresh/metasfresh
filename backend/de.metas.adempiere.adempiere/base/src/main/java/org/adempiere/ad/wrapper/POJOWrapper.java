@@ -656,7 +656,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	{
 		final String propertyNameLowerCase = methodName.substring(3);
 
-		if (propertyNameLowerCase.equals(idColumnName))
+		if (propertyNameLowerCase.equalsIgnoreCase(idColumnName))
 		{
 			return getId();
 		}
