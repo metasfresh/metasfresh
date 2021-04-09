@@ -80,7 +80,7 @@ class M_HU_Item_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Item, I_M
 	}
 
 	@Override
-	protected void restoreChildrenFromSnapshots(I_M_HU_Item huItem)
+	protected void restoreChildrenFromSnapshots(final I_M_HU_Item huItem)
 	{
 		final M_HU_SnapshotHandler includedHUSnapshotHandler = new M_HU_SnapshotHandler(this);
 		includedHUSnapshotHandler.restoreModelsFromSnapshotsByParent(huItem);
@@ -103,7 +103,7 @@ class M_HU_Item_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Item, I_M
 	}
 
 	@Override
-	protected I_M_HU_Item getModel(I_M_HU_Item_Snapshot modelSnapshot)
+	protected I_M_HU_Item getModel(final I_M_HU_Item_Snapshot modelSnapshot)
 	{
 		return modelSnapshot.getM_HU_Item();
 	}

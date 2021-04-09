@@ -76,7 +76,7 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 		{
 
 			@Override
-			public void run(final String localTrxName) throws Exception
+			public void run(final String localTrxName)
 			{
 				final IContextAware context = PlainContextAware.newWithTrxName(contextInitial.getCtx(), localTrxName);
 				setContext(context);
@@ -92,7 +92,7 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 		});
 	}
 
-	private final void restoreInTrx()
+	private void restoreInTrx()
 	{
 		final Collection<HuId> huIdsToRestore = getHUIdsAndClear();
 		final List<I_M_HU> husToRestore = Services.get(IHandlingUnitsDAO.class).retrieveByIds(huIdsToRestore);
@@ -199,14 +199,14 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 	 *
 	 * @return enqueued models to be restored or snapshot-ed
 	 */
-	private final Set<HuId> getHUIdsAndClear()
+	private Set<HuId> getHUIdsAndClear()
 	{
 		final Set<HuId> modelIds = new HashSet<>(_huIds);
 		_huIds.clear();
 		return modelIds;
 	}
 
-	private final boolean hasModelsToSnapshot()
+	private boolean hasModelsToSnapshot()
 	{
 		return !_huIds.isEmpty();
 	}

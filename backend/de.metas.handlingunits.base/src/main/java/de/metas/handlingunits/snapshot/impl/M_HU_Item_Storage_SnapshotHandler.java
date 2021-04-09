@@ -194,7 +194,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 	}
 	
 	@Override
-	protected I_M_HU_Item_Storage getModel(I_M_HU_Item_Storage_Snapshot modelSnapshot)
+	protected I_M_HU_Item_Storage getModel(final I_M_HU_Item_Storage_Snapshot modelSnapshot)
 	{
 		return modelSnapshot.getM_HU_Item_Storage();
 	}

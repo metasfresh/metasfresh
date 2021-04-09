@@ -28,7 +28,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 
+import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import org.adempiere.ad.dao.IQueryBL;
@@ -42,8 +44,6 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.util.TimeUtil;
-
-import com.google.common.base.Function;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.snapshot.ISnapshotHandler;
@@ -65,12 +65,10 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 	private Object _referencedModel;
 	private String _snapshotId;
 
-	protected final Function<SnapshotModelType, Integer> snapshot2ModelIdFunction = huItemSnapshot -> getModelId(huItemSnapshot);
+	protected final Function<SnapshotModelType, Integer> snapshot2ModelIdFunction = this::getModelId;
 
-	AbstractSnapshotHandler(final AbstractSnapshotHandler<?, ?, ?> parentHandler)
+	AbstractSnapshotHandler(@Nullable final AbstractSnapshotHandler<?, ?, ?> parentHandler)
 	{
-		super();
-
 		// null is also accepted for top level handlers
 		this._parentHandler = parentHandler;
 	}
@@ -137,6 +135,7 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 	/**
 	 * @return referenced model, if one was set earlier.
 	 */
+	@Nullable
 	protected final Object getReferencedModelOrNull()
 	{
 		if (_referencedModel != null)
@@ -147,8 +146,10 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 		{
 			return _parentHandler.getReferencedModelOrNull();
 		}
-
-		return null;
+		else
+		{
+			return null;
+		}
 	}
 
 	@Override
@@ -174,10 +175,6 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 
 	/**
 	 * Create models snapshot records for all models that are identified by parent IDs.
-	 *
-	 * @param context
-	 * @param modelParentIds
-	 * @param snapshotId
 	 */
 	protected void createSnapshotsByParentIds(final Set<Integer> modelParentIds)
 	{
@@ -186,9 +183,6 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 
 	/**
 	 * Restores the model from given snapshot.
-	 *
-	 * @param model
-	 * @param modelSnapshot
 	 */
 	protected final void restoreModelFromSnapshot(final ModelType model, final SnapshotModelType modelSnapshot)
 	{
@@ -243,7 +237,6 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 	/**
 	 * Save the model after it was restored
 	 *
-	 * @param model
 	 * @param modelSnapshot model snapshot that was used to restore the model. It could be null.
 	 */
 	protected void saveRestoredModel(final ModelType model, final SnapshotModelType modelSnapshot)
@@ -257,9 +250,6 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 	 * Restore model's values from snapshot values.
 	 *
 	 * NOTE: when this method is called, both model and modelSnapshot are not null.
-	 *
-	 * @param model
-	 * @param modelSnapshot
 	 */
 	@OverridingMethodsMustInvokeSuper
 	protected void restoreModelValuesFromSnapshot(final ModelType model, final SnapshotModelType modelSnapshot)
@@ -275,15 +265,11 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 	 * Restore model when it snapshot is missing because the model was created after the snapshot was taken.
 	 *
 	 * Suggestion for implementors: maybe in this case you want to delete the model or you want to set it's relevant values to ZERO/<code>null</code>.
-	 *
-	 * @param model
 	 */
 	protected abstract void restoreModelWhenSnapshotIsMissing(final ModelType model);
 
 	/**
-	 * Completelly restore the model from snapshot because the model is missing at all.
-	 *
-	 * @param modelSnapshot
+	 * Completely restore the model from snapshot because the model is missing at all.
 	 */
 	protected void restoreModelAsNew(final SnapshotModelType modelSnapshot)
 	{
@@ -325,28 +311,21 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 	}
 
 	/**
-	 * @param modelSnapshot
 	 * @return Model's ID from given snapshot
 	 */
 	protected abstract int getModelId(final SnapshotModelType modelSnapshot);
 
 	/**
-	 * @param modelSnapshot
 	 * @return model retrieved using {@link #getModelId(Object)}.
 	 */
 	protected abstract ModelType getModel(final SnapshotModelType modelSnapshot);
 
 	/**
-	 *
-	 * @param parentModel
-	 * @param snapshotId
 	 * @return "Model ID" to ModelSnapshot map
 	 */
 	protected abstract Map<Integer, SnapshotModelType> retrieveModelSnapshotsByParent(final ParentModelType parentModel);
 
 	/**
-	 *
-	 * @param model
 	 * @return "Model ID" to Model map
 	 */
 	protected abstract Map<Integer, ModelType> retrieveModelsByParent(final ParentModelType parentModel);

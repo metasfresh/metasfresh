@@ -37,6 +37,8 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Snapshot;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapshot, I_M_HU_Item>
 {
 	public M_HU_SnapshotHandler()
@@ -44,7 +46,7 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 		this(null); // no parent handler, this is a top level handler
 	}
 
-	M_HU_SnapshotHandler(final AbstractSnapshotHandler<I_M_HU_Item, ?, ?> parentHandler)
+	M_HU_SnapshotHandler(@Nullable final AbstractSnapshotHandler<I_M_HU_Item, ?, ?> parentHandler)
 	{
 		super(parentHandler);
 	}
@@ -66,8 +68,8 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 		final M_HU_Item_SnapshotHandler huItemSnapshotHandler = new M_HU_Item_SnapshotHandler(this);
 		huItemSnapshotHandler.restoreModelsFromSnapshotsByParent(hu);
 
-		final M_HU_Storage_SnapshotHandler huStoargeSnapshotHandler = new M_HU_Storage_SnapshotHandler(this);
-		huStoargeSnapshotHandler.restoreModelsFromSnapshotsByParent(hu);
+		final M_HU_Storage_SnapshotHandler huStorageSnapshotHandler = new M_HU_Storage_SnapshotHandler(this);
+		huStorageSnapshotHandler.restoreModelsFromSnapshotsByParent(hu);
 
 		final M_HU_Attribute_SnapshotHandler huAttributesSnapshotHandler = new M_HU_Attribute_SnapshotHandler(this);
 		huAttributesSnapshotHandler.restoreModelsFromSnapshotsByParent(hu);
@@ -112,7 +114,7 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 	}
 
 	@Override
-	protected Map<Integer, I_M_HU> retrieveModelsByParent(I_M_HU_Item huItem)
+	protected Map<Integer, I_M_HU> retrieveModelsByParent(final I_M_HU_Item huItem)
 	{
 		return query(I_M_HU.class)
 				.addEqualsFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, huItem.getM_HU_Item_ID())
@@ -122,10 +124,6 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 
 	/**
 	 * Recursively collect all M_HU_IDs and M_HU_Item_IDs starting from <code>startHUIds</code> to the bottom, including those too.
-	 * 
-	 * @param startHUIds
-	 * @param huIdsCollector
-	 * @param huItemIdsCollector
 	 */
 	protected final void collectHUAndItemIds(final Set<Integer> startHUIds, final Set<Integer> huIdsCollector, final Set<Integer> huItemIdsCollector)
 	{
@@ -143,7 +141,7 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 		}
 	}
 
-	private final Set<Integer> retrieveM_HU_Item_Ids(final Set<Integer> huIds)
+	private Set<Integer> retrieveM_HU_Item_Ids(final Set<Integer> huIds)
 	{
 		if (huIds.isEmpty())
 		{
@@ -157,7 +155,7 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 		return new HashSet<>(huItemIdsList);
 	}
 
-	private final Set<Integer> retrieveIncludedM_HUIds(final Set<Integer> huItemIds)
+	private Set<Integer> retrieveIncludedM_HUIds(final Set<Integer> huItemIds)
 	{
 		if (huItemIds.isEmpty())
 		{

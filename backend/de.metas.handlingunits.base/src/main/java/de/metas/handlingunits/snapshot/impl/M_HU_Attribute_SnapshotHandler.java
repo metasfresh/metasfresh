@@ -60,7 +60,7 @@ public class M_HU_Attribute_SnapshotHandler extends AbstractSnapshotHandler<I_M_
 	}
 
 	@Override
-	protected I_M_HU_Attribute getModel(I_M_HU_Attribute_Snapshot modelSnapshot)
+	protected I_M_HU_Attribute getModel(final I_M_HU_Attribute_Snapshot modelSnapshot)
 	{
 		return modelSnapshot.getM_HU_Attribute();
 	}
