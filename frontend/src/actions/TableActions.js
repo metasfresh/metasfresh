@@ -239,11 +239,10 @@ export function deleteTable(id) {
   return (dispatch) => {
     // remove old attributes data
     dispatch(deleteViewAttributes());
-
-    return {
+    dispatch({
       type: types.DELETE_TABLE,
       payload: { id },
-    };
+    });
   };
 }
 
