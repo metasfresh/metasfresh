@@ -75,6 +75,7 @@ const mapStateToProps = (state, props) => {
       widgetData = getMasterDocStatus(state);
 
       break;
+    case 'attributes-dropdown':
     case 'quick-input':
     case 'selection-attributes':
       widgetData = props.widgetData;
