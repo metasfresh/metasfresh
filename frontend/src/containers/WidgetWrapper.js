@@ -75,6 +75,8 @@ const mapStateToProps = (state, props) => {
       widgetData = getMasterDocStatus(state);
 
       break;
+    case 'filter-item':
+    case 'overlay-field':
     case 'attributes-dropdown':
     case 'quick-input':
     case 'selection-attributes':
