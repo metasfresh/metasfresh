@@ -1,21 +1,8 @@
 package de.metas.handlingunits.inventory;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.function.UnaryOperator;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import de.metas.quantity.QuantityUOMConverter;
-import de.metas.uom.UomId;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -25,6 +12,14 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -65,7 +60,7 @@ public class InventoryLineHU
 
 	//
 	// Quantities
-	private InventoryType inventoryType;
+	InventoryType inventoryType;
 	//
 	Quantity qtyInternalUse;
 	//
