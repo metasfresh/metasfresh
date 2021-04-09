@@ -4,7 +4,6 @@ import cx from 'classnames';
 import { connect } from 'react-redux';
 
 import { completeRequest } from '../../api';
-import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
 import {
   fetchQuickInputData,
   fetchQuickInputLayout,
@@ -13,7 +12,7 @@ import {
   patchQuickInput,
 } from '../../actions/IndependentWidgetsActions';
 
-import RawWidget from '../widget/RawWidget';
+import WidgetWrapper from '../../containers/WidgetWrapper';
 
 class TableQuickInput extends Component {
   // promise with patching for queuing form submission after patch is done
@@ -134,10 +133,6 @@ class TableQuickInput extends Component {
       tabId,
       docType,
       forceHeight,
-      modalVisible,
-      timeZone,
-      allowShortcut,
-      disableShortcut,
       data,
       layout,
       id,
@@ -176,8 +171,9 @@ class TableQuickInput extends Component {
         const lastFormField = idx === layout.length - 1;
 
         return (
-          <RawWidget
+          <WidgetWrapper
             ref={this.setWidgetsRef}
+            dataSource="quick-input"
             fieldFormGroupClass={stylingLayout[idx].formGroup}
             fieldLabelClass={stylingLayout[idx].label}
             fieldInputClass={stylingLayout[idx].field}
@@ -202,12 +198,6 @@ class TableQuickInput extends Component {
             type="secondary"
             autoFocus={idx === 0}
             initialFocus={idx === 0}
-            {...{
-              modalVisible,
-              timeZone,
-              allowShortcut,
-              disableShortcut,
-            }}
           />
         );
       });
@@ -276,13 +266,10 @@ class TableQuickInput extends Component {
   }
 }
 
-const mapStateToProps = (state) => {
-  const { appHandler, windowHandler, widgetHandler } = state;
+const mapStateToProps = ({ widgetHandler }) => {
   const { layout, data, id, inProgress } = widgetHandler.quickInput;
 
   return {
-    modalVisible: windowHandler.modal.visible,
-    timeZone: appHandler.me.timeZone,
     layout,
     data,
     id,
@@ -301,10 +288,6 @@ TableQuickInput.propTypes = {
   data: PropTypes.object,
   id: PropTypes.any,
   inProgress: PropTypes.bool,
-  allowShortcut: PropTypes.func.isRequired,
-  disableShortcut: PropTypes.func.isRequired,
-  modalVisible: PropTypes.bool.isRequired,
-  timeZone: PropTypes.string.isRequired,
   fetchQuickInputData: PropTypes.func.isRequired,
   fetchQuickInputLayout: PropTypes.func.isRequired,
   deleteQuickInput: PropTypes.func.isRequired,
@@ -315,8 +298,6 @@ TableQuickInput.propTypes = {
 export default connect(
   mapStateToProps,
   {
-    allowShortcut,
-    disableShortcut,
     fetchQuickInputData,
     fetchQuickInputLayout,
     deleteQuickInput,
