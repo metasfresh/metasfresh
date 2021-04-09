@@ -97,7 +97,7 @@ public class PaymentAllocationRepository
 		final ArrayList<Object> sqlParams = new ArrayList<>();
 		final String sql = toSql(query, sqlParams);
 		return DB.retrieveRows(sql, sqlParams, PaymentAllocationRepository::retrieveInvoiceToAllocateOrNull);
-	}
+		}
 
 	private static String toSql(
 			@NonNull final InvoiceToAllocateQuery query,
@@ -118,12 +118,12 @@ public class PaymentAllocationRepository
 				+ " date := ?,"
 				+ " onlyInvoicesSelectionId := ?"
 				+ ")");
-		sqlParams.addAll(Arrays.asList(
-				query.getBpartnerId(),
-				convertToCurrencyId,
+			sqlParams.addAll(Arrays.asList(
+					query.getBpartnerId(),
+					convertToCurrencyId,
 				clientId,
-				orgId,
-				query.getEvaluationDate(),
+					orgId,
+					query.getEvaluationDate(),
 				onlyInvoicesSelectionId));
 
 		sql.append("\n WHERE TRUE ");

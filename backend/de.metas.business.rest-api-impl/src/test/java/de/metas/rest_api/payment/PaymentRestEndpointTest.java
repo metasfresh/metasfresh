@@ -23,10 +23,9 @@
 package de.metas.rest_api.payment;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.common.rest_api.v1.payment.JsonInboundPaymentInfo;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.common.rest_api.payment.JsonInboundPaymentInfo;
+import de.metas.common.rest_api.v1.payment.JsonInboundPaymentInfo;
 import de.metas.currency.CurrencyCode;
 import de.metas.money.CurrencyId;
 import de.metas.order.impl.OrderLineDetailRepository;

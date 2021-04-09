@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,22 +20,29 @@
  * #L%
  */
 
-package de.metas.report;
+package de.metas.common.rest_api;
 
-import javax.annotation.Nullable;
-
-import de.metas.process.AdProcessId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
+import java.util.List;
+
 @Value
-@Builder
-public class PrintFormat
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class CreatePInstanceLogRequest//
 {
 	@NonNull
-	PrintFormatId id;
+	List<JsonPInstanceLog> logs;
 
-	@Nullable
-	AdProcessId reportProcessId;
+	@Builder
+	@JsonCreator
+	private CreatePInstanceLogRequest(@JsonProperty("logs") @Singular @NonNull final List<JsonPInstanceLog> logs)
+	{
+		this.logs = logs;
+	}
 }
