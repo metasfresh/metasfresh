@@ -24,7 +24,6 @@ import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.ModelValidator;
 
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerPOCopyRecordSupport;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -33,7 +32,6 @@ import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.location.ILocationBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -135,9 +133,7 @@ public class C_BPartner
 					.add(bpartnerId)
 					.build();
 
-			final String bpNames = bPartnerDAO.getBPartnerNamesByIds(path)
-					.stream()
-					.collect(Collectors.joining(" -> "));
+			final String bpNames = String.join(" -> ", bPartnerDAO.getBPartnerNamesByIds(path));
 			throw new AdempiereException("@" + MSG_CycleDetectedError + "@: " + bpNames)
 					.markAsUserValidationError();
 		}
@@ -200,5 +196,13 @@ public class C_BPartner
 				.create()
 				.delete();
 		logger.info("Deleted {} AD_User records", deleteCount);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, I_C_BPartner.COLUMNNAME_C_BPartner_ID })
+	public void validateSalesRep(final I_C_BPartner partner)
+	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
+		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(partner.getC_BPartner_SalesRep_ID());
+		bPartnerBL.validateSalesRep(bPartnerId, salesRepId);
 	}
 }

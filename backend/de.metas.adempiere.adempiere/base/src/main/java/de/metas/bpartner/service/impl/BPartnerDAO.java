@@ -1722,4 +1722,5 @@ public class BPartnerDAO implements IBPartnerDAO
 				.printFormatId(PrintFormatId.ofRepoId(record.getAD_PrintFormat_ID()))
 				.build();
 	}
+
 }
