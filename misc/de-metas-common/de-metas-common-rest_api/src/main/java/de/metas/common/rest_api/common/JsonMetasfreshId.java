@@ -22,15 +22,13 @@
 
 package de.metas.common.rest_api.common;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class JsonMetasfreshId
@@ -86,6 +84,15 @@ public class JsonMetasfreshId
 		if (externalId == null)
 		{
 			return null;
+		}
+		return externalId.getValue();
+	}
+
+	public static int toValueInt(@Nullable final JsonMetasfreshId externalId)
+	{
+		if (externalId == null)
+		{
+			return -1;
 		}
 		return externalId.getValue();
 	}

@@ -349,18 +349,22 @@ public class DebugRestController
 	{
 		websockets_and_invalidation(
 				de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName(),
-				de.metas.ui.web.window.invalidation.DocumentCacheInvalidationDispatcher.class.getName()), //
-		view(de.metas.ui.web.view.IView.class.getPackage().getName()), //
+				de.metas.ui.web.window.invalidation.DocumentCacheInvalidationDispatcher.class.getName()),
+		view(de.metas.ui.web.view.IView.class.getPackage().getName()),
 		cache(
 				de.metas.cache.CCache.class.getName(),
 				de.metas.cache.CacheMgt.class.getName(),
 				de.metas.cache.model.IModelCacheService.class.getName() // model caching
-		), //
+		),
 		model_interceptors(
-				org.compiere.model.ModelValidationEngine.class.getName(), //
+				org.compiere.model.ModelValidationEngine.class.getName(),
 				org.adempiere.ad.modelvalidator.IModelValidationEngine.class.getPackage().getName() // for annotated interceptors etc
-		) //
-		;
+		),
+		dashboard(
+				"de.metas.ui.web.dashboard",
+				de.metas.ui.web.dashboard.KPIDataProvider.class.getName(),
+				de.metas.ui.web.dashboard.KPIDataLoader.class.getName()
+		);
 
 		private final Set<String> loggerNames;
 

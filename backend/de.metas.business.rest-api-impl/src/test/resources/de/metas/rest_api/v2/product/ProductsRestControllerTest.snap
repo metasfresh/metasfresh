@@ -1,0 +1,45 @@
+de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase=[ {
+  "products" : [ {
+    "id" : 100003,
+    "productNo" : "value1",
+    "name" : "name1",
+    "description" : "description1",
+    "ean" : "ean1",
+    "uom" : "Ea",
+    "manufacturerId" : null,
+    "manufacturerNumber" : null,
+    "bpartners" : [ {
+      "bPartnerId" : 1,
+      "productNo" : "productNo1-vendor1",
+      "productName" : "productName1-vendor1",
+      "productDescription" : "productDescription1-vendor1",
+      "productCategory" : "productCategory1-vendor1",
+      "ean" : "ean1-vendor1",
+      "vendor" : true,
+      "currentVendor" : true,
+      "customer" : false,
+      "leadTimeInDays" : 13
+    }, {
+      "bPartnerId" : 2,
+      "productNo" : "productNo1-customer2",
+      "productName" : "productName1-customer2",
+      "productDescription" : "productDescription1-customer2",
+      "productCategory" : "productCategory1-customer2",
+      "ean" : "ean1-customer2",
+      "vendor" : false,
+      "currentVendor" : false,
+      "customer" : true,
+      "leadTimeInDays" : 32
+    } ]
+  }, {
+    "id" : 100006,
+    "productNo" : "value2",
+    "name" : "name2",
+    "description" : "description2",
+    "ean" : "ean2",
+    "uom" : "Kg",
+    "manufacturerId" : null,
+    "manufacturerNumber" : null,
+    "bpartners" : [ ]
+  } ]
+} ]

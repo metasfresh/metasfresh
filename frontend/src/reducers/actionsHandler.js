@@ -48,6 +48,9 @@ const reducer = produce((draftState, action) => {
     }
     case FETCH_QUICK_ACTIONS_SUCCESS: {
       const { id, actions } = action.payload;
+
+      if (!draftState[id]) return; // safety check for immer
+
       const current = original(draftState[id]);
 
       if (current.toDelete) {

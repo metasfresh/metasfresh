@@ -177,7 +177,7 @@ class BarChartComponent extends Component {
 BarChartComponent.propTypes = {
   chartClass: PropTypes.string,
   data: PropTypes.any,
-  groupBy: PropTypes.string,
+  groupBy: PropTypes.object,
   colors: PropTypes.any,
   fields: PropTypes.array,
   reRender: PropTypes.any,

@@ -1,26 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.ordercandidate.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_OLCandProcessor
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OLCandProcessor, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1082229742L;
+	private static final long serialVersionUID = -993489924L;
 
     /** Standard Constructor */
-    public X_C_OLCandProcessor (final Properties ctx, final int C_OLCandProcessor_ID, final String trxName)
+    public X_C_OLCandProcessor (final Properties ctx, final int C_OLCandProcessor_ID, @Nullable final String trxName)
     {
       super (ctx, C_OLCandProcessor_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_OLCandProcessor (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_C_OLCandProcessor (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -91,7 +92,7 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	}
 
 	@Override
-	public void setC_OLCandAgg_IncludedTab (final java.lang.String C_OLCandAgg_IncludedTab)
+	public void setC_OLCandAgg_IncludedTab (final @Nullable java.lang.String C_OLCandAgg_IncludedTab)
 	{
 		set_ValueNoCheck (COLUMNNAME_C_OLCandAgg_IncludedTab, C_OLCandAgg_IncludedTab);
 	}
@@ -187,7 +188,7 @@ public class X_C_OLCandProcessor extends org.compiere.model.PO implements I_C_OL
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}

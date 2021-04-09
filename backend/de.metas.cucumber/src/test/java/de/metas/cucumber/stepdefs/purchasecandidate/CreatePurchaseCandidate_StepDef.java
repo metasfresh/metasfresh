@@ -27,11 +27,12 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
-import de.metas.common.rest_api.v1.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonPrice;
 import de.metas.common.rest_api.v1.JsonQuantity;
-import de.metas.common.rest_api.v2.JsonRequestAttributeSetInstance;
 import de.metas.common.rest_api.v2.JsonRequestAttributeInstance;
+import de.metas.common.rest_api.v2.JsonRequestAttributeSetInstance;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.APIResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -39,7 +40,6 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
-import de.metas.rest_api.common.JsonPrice;
 import de.metas.rest_api.order.JsonPurchaseCandidate;
 import de.metas.rest_api.order.JsonPurchaseCandidateCreateItem;
 import de.metas.rest_api.order.JsonPurchaseCandidateCreateRequest;
@@ -149,7 +149,7 @@ public class CreatePurchaseCandidate_StepDef
 
 		//response
 		final JsonPurchaseCandidateResponse response = mapper.readValue(responseJson, JsonPurchaseCandidateResponse.class);
-		assertThat(response.getPurchaseCandidates()).hasSizeGreaterThan(1);
+		assertThat(response.getPurchaseCandidates()).hasSizeGreaterThan(0);
 
 		final JsonPurchaseCandidate candidate = response.getPurchaseCandidates().get(0);
 		final JsonMetasfreshId metasfreshId = candidate.getMetasfreshId();

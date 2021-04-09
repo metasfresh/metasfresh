@@ -1,30 +1,26 @@
 package de.metas.ui.web.dashboard.process;
 
-import java.util.Date;
-
-import org.compiere.SpringContextHolder;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
+import de.metas.JsonObjectMapperHolder;
 import de.metas.Profiles;
+import de.metas.elasticsearch.IESSystem;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.base.model.I_WEBUI_KPI;
 import de.metas.ui.web.dashboard.KPI;
 import de.metas.ui.web.dashboard.KPIDataLoader;
 import de.metas.ui.web.dashboard.KPIDataResult;
+import de.metas.ui.web.dashboard.KPIId;
 import de.metas.ui.web.dashboard.KPIRepository;
 import de.metas.ui.web.dashboard.TimeRange;
-import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
+import org.springframework.context.annotation.Profile;
+
+import java.util.Date;
 
 /*
  * #%L
@@ -61,12 +57,9 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	@Autowired
-	private KPIRepository kpisRepo;
-	@Autowired
-	private ObjectMapper jsonObjectMapper;
-	@Autowired
-	private RestHighLevelClient elasticsearchClient;
+	private final IESSystem esSystem = Services.get(IESSystem.class);
+	private final KPIRepository kpisRepo = SpringContextHolder.instance.getBean(KPIRepository.class);
+	private final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	@Param(parameterName = "DateFrom")
 	private Date p_DateFrom;
@@ -81,21 +74,15 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 	@Override
 	protected String doIt() throws JsonProcessingException
 	{
-		final int kpiId = getRecord_ID();
-		if (kpiId <= 0)
-		{
-			throw new EntityNotFoundException("@NotFound@ @" + I_WEBUI_KPI.COLUMNNAME_WEBUI_KPI_ID + "@");
-		}
-
-		kpisRepo.invalidateKPI(kpiId);
+		final KPIId kpiId = KPIId.ofRepoId(getRecord_ID());
+		kpisRepo.invalidateCache();
 
 		final KPI kpi = kpisRepo.getKPI(kpiId);
 		final TimeRange timeRange = kpi.getTimeRangeDefaults().createTimeRange(p_DateFrom, p_DateTo);
 
-		final KPIDataResult kpiData = KPIDataLoader.newInstance(elasticsearchClient, kpi, JSONOptions.newInstance())
+		final KPIDataResult kpiData = KPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi)
 				.setTimeRange(timeRange)
-				.setFormatValues(true)
-				.assertESTypesExists()
+				.assertESIndexExists()
 				.retrieveData();
 
 		final String jsonData = jsonObjectMapper.writeValueAsString(kpiData);

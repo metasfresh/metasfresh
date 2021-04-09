@@ -1,16 +1,21 @@
 package de.metas.ui.web.dashboard;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.Language;
+import de.metas.i18n.po.POTrlInfo;
+import de.metas.i18n.po.POTrlRepository;
+import de.metas.logging.LogManager;
+import de.metas.printing.esb.base.util.Check;
+import de.metas.ui.web.base.model.I_WEBUI_Dashboard;
+import de.metas.ui.web.base.model.I_WEBUI_DashboardItem;
+import de.metas.ui.web.base.model.I_WEBUI_KPI;
+import de.metas.ui.web.dashboard.UserDashboardItemChangeResult.UserDashboardItemChangeResultBuilder;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -28,44 +33,16 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.cache.CCache;
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.Language;
-import de.metas.i18n.po.POTrlInfo;
-import de.metas.i18n.po.POTrlRepository;
-import de.metas.logging.LogManager;
-import de.metas.printing.esb.base.util.Check;
-import de.metas.ui.web.base.model.I_WEBUI_Dashboard;
-import de.metas.ui.web.base.model.I_WEBUI_DashboardItem;
-import de.metas.ui.web.base.model.I_WEBUI_KPI;
-import de.metas.ui.web.dashboard.UserDashboardItemChangeResult.UserDashboardItemChangeResultBuilder;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.Value;
-
-/*
- * #%L
- * de.metas.ui.web.base
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 @Service
 public class UserDashboardRepository
@@ -77,36 +54,35 @@ public class UserDashboardRepository
 	@Autowired
 	private KPIRepository kpisRepo;
 
-	private final CCache<UserDashboardKey, Integer> key2dashboardId = CCache.<UserDashboardKey, Integer> newLRUCache(I_WEBUI_Dashboard.Table_Name + "#key2DashboardId", Integer.MAX_VALUE, 0);
+	private final CCache<UserDashboardKey, Optional<UserDashboardId>> key2dashboardId = CCache.newLRUCache(I_WEBUI_Dashboard.Table_Name + "#key2DashboardId", Integer.MAX_VALUE, 0);
 
-	private final CCache<Integer, UserDashboard> dashboadsCache = CCache.<Integer, UserDashboard> builder()
+	private final CCache<UserDashboardId, UserDashboard> dashboadsCache = CCache.<UserDashboardId, UserDashboard> builder()
 			.cacheName(I_WEBUI_Dashboard.Table_Name + "#UserDashboard")
 			.tableName(I_WEBUI_Dashboard.Table_Name)
 			.additionalTableNameToResetFor(I_WEBUI_DashboardItem.Table_Name)
 			.build();
 
-	private UserDashboard getUserDashboardById(final int dashboardId)
+	public UserDashboard getUserDashboardById(final UserDashboardId dashboardId)
 	{
 		return dashboadsCache.getOrLoad(dashboardId, () -> retrieveUserDashboard(dashboardId));
 	}
 
-	public UserDashboard getUserDashboard(final UserDashboardKey userDashboardKey)
+	public Optional<UserDashboard> getUserDashboard(@NonNull final UserDashboardKey userDashboardKey)
 	{
-		final Integer dashboardId = key2dashboardId.getOrLoad(userDashboardKey, () -> retrieveUserDashboardId(userDashboardKey));
-		if (dashboardId == null || dashboardId <= 0)
-		{
-			return UserDashboard.EMPTY;
-		}
-
-		return getUserDashboardById(dashboardId);
+		return getUserDashboardId(userDashboardKey).map(this::getUserDashboardById);
 	}
 
-	private void invalidateUserDashboard(final int dashboardId)
+	public Optional<UserDashboardId> getUserDashboardId(final @NonNull UserDashboardKey userDashboardKey)
+	{
+		return key2dashboardId.getOrLoad(userDashboardKey, this::retrieveUserDashboardId);
+	}
+
+	private void invalidateUserDashboard(final UserDashboardId dashboardId)
 	{
 		dashboadsCache.remove(dashboardId);
 	}
 
-	private UserDashboard retrieveUserDashboard(final int dashboardId)
+	private UserDashboard retrieveUserDashboard(final UserDashboardId dashboardId)
 	{
 		final I_WEBUI_Dashboard webuiDashboard = queryBL
 				.createQueryBuilder(I_WEBUI_Dashboard.class)
@@ -116,14 +92,14 @@ public class UserDashboardRepository
 				.create()
 				.firstOnlyNotNull(I_WEBUI_Dashboard.class);
 
-		return createUserDashboard(webuiDashboard);
+		return fromRecord(webuiDashboard);
 	}
 
-	private int retrieveUserDashboardId(final UserDashboardKey key)
+	private Optional<UserDashboardId> retrieveUserDashboardId(@NonNull final UserDashboardKey key)
 	{
 		final ClientId adClientId = key.getAdClientId();
 
-		final int dashboardId = queryBL
+		final UserDashboardId dashboardId = queryBL
 				.createQueryBuilder(I_WEBUI_Dashboard.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_WEBUI_Dashboard.COLUMN_AD_Client_ID, ClientId.SYSTEM, adClientId)
@@ -135,18 +111,18 @@ public class UserDashboardRepository
 				.endOrderBy()
 				//
 				.create()
-				.firstId();
+				.firstId(UserDashboardId::ofRepoIdOrNull);
 
-		return dashboardId > 0 ? dashboardId : -1;
+		return Optional.ofNullable(dashboardId);
 	}
 
-	private UserDashboard createUserDashboard(final I_WEBUI_Dashboard webuiDashboard)
+	private UserDashboard fromRecord(final I_WEBUI_Dashboard webuiDashboard)
 	{
-		final int webuiDashboardId = webuiDashboard.getWEBUI_Dashboard_ID();
+		final UserDashboardId webuiDashboardId = UserDashboardId.ofRepoId(webuiDashboard.getWEBUI_Dashboard_ID());
 
-		final UserDashboard.Builder userDashboardBuilder = UserDashboard.builder()
-				.setId(webuiDashboardId)
-				.setAdClientId(webuiDashboard.getAD_Client_ID());
+		final UserDashboard.UserDashboardBuilder userDashboardBuilder = UserDashboard.builder()
+				.id(webuiDashboardId)
+				.adClientId(ClientId.ofRepoId(webuiDashboard.getAD_Client_ID()));
 
 		retrieveWEBUI_DashboardItemsQuery(webuiDashboardId)
 				//
@@ -154,12 +130,12 @@ public class UserDashboardRepository
 				.list(I_WEBUI_DashboardItem.class)
 				.stream()
 				.map(this::createUserDashboardItem)
-				.forEach(userDashboardBuilder::addItem);
+				.forEach(userDashboardBuilder::item);
 
 		return userDashboardBuilder.build();
 	}
 
-	private IQueryBuilder<I_WEBUI_DashboardItem> retrieveWEBUI_DashboardItemsQuery(final int webuiDashboardId)
+	private IQueryBuilder<I_WEBUI_DashboardItem> retrieveWEBUI_DashboardItemsQuery(@NonNull final UserDashboardId webuiDashboardId)
 	{
 		return queryBL
 				.createQueryBuilder(I_WEBUI_DashboardItem.class)
@@ -179,15 +155,20 @@ public class UserDashboardRepository
 	{
 		final IModelTranslationMap trlsMap = InterfaceWrapperHelper.getModelTranslationMap(itemPO);
 
+		final KPIId kpiId = KPIId.ofRepoIdOrNull(itemPO.getWEBUI_KPI_ID());
+		final KPISupplier kpiSupplier = kpiId != null
+				? kpisRepo.getKPISupplier(kpiId)
+				: null;
+
 		return UserDashboardItem.builder()
-				.setId(itemPO.getWEBUI_DashboardItem_ID())
-				.setCaption(trlsMap.getColumnTrl(I_WEBUI_DashboardItem.COLUMNNAME_Name, itemPO.getName()))
-				.setUrl(itemPO.getURL())
-				.setSeqNo(itemPO.getSeqNo())
-				.setWidgetType(DashboardWidgetType.ofCode(itemPO.getWEBUI_DashboardWidgetType()))
-				.setKPI(() -> kpisRepo.getKPIOrNull(itemPO.getWEBUI_KPI_ID()))
+				.id(UserDashboardItemId.ofRepoId(itemPO.getWEBUI_DashboardItem_ID()))
+				.caption(trlsMap.getColumnTrl(I_WEBUI_DashboardItem.COLUMNNAME_Name, itemPO.getName()))
+				.url(itemPO.getURL())
+				.seqNo(itemPO.getSeqNo())
+				.widgetType(DashboardWidgetType.ofCode(itemPO.getWEBUI_DashboardWidgetType()))
+				.kpiSupplier(kpiSupplier)
 				//
-				.setTimeRangeDefaults(KPITimeRangeDefaults.builder()
+				.timeRangeDefaults(KPITimeRangeDefaults.builder()
 						.defaultTimeRangeFromString(itemPO.getES_TimeRange())
 						.defaultTimeRangeEndOffsetFromString(itemPO.getES_TimeRange_End())
 						.build())
@@ -258,21 +239,20 @@ public class UserDashboardRepository
 	/**
 	 * Execute given changeActions in a transaction. If successful, the given dashboad will be invalidated.
 	 */
-	private void executeChangeActionsAndInvalidate(final int dashboardId, final List<Runnable> changeActions)
+	private void executeChangeActionsAndInvalidate(final UserDashboardId dashboardId, final List<Runnable> changeActions)
 	{
-		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, () -> {
-			changeActions.forEach(Runnable::run);
-		});
+		Services.get(ITrxManager.class).run(ITrx.TRXNAME_ThreadInherited, () -> changeActions.forEach(Runnable::run));
 
 		invalidateUserDashboard(dashboardId);
 	}
 
-	private void executeChangeActionAndInvalidate(final int dashboardId, final Runnable changeAction)
+	private void executeChangeActionAndInvalidate(final UserDashboardId dashboardId, final Runnable changeAction)
 	{
 		executeChangeActionsAndInvalidate(dashboardId, ImmutableList.of(changeAction));
 	}
 
-	private <R> R executeChangeActionAndInvalidateAndReturn(final int dashboardId, final Callable<R> changeAction)
+	@Nullable
+	private <R> R executeChangeActionAndInvalidateAndReturn(final UserDashboardId dashboardId, final Callable<R> changeAction)
 	{
 		final Mutable<R> result = new Mutable<>();
 		final Runnable changeActionRunnable = () -> {
@@ -290,19 +270,19 @@ public class UserDashboardRepository
 		return result.getValue();
 	}
 
-	private void changeDashboardItemsOrder(final int dashboardId, final DashboardWidgetType dashboardWidgetType, final List<Integer> requestOrderedItemIds)
+	private void changeDashboardItemsOrder(final UserDashboardId dashboardId, final DashboardWidgetType dashboardWidgetType, final List<UserDashboardItemId> requestOrderedItemIds)
 	{
 		// Retrieve all itemIds ordered
-		final List<Integer> allItemIds = retrieveDashboardItemIdsOrdered(dashboardId, dashboardWidgetType);
+		final ImmutableSet<UserDashboardItemId> allItemIds = retrieveDashboardItemIdsOrdered(dashboardId, dashboardWidgetType);
 
 		//
 		// Start building the orderedIds list by adding all the IDs from the request
-		final List<Integer> orderedIds = requestOrderedItemIds
+		final List<UserDashboardItemId> orderedIds = requestOrderedItemIds
 				.stream()
 				.filter(allItemIds::contains) // skip those IDs which are not present in our "all" ids list
 				.collect(Collectors.toCollection(ArrayList::new)); // mutable list
 
-		// At the end of orderedIds all all those IDs which where not present in provided request (those might exist only in database).
+		// At the end ofValueAndField orderedIds all all those IDs which where not present in provided request (those might exist only in database).
 		allItemIds.forEach(id -> {
 			if (!orderedIds.contains(id))
 			{
@@ -321,7 +301,7 @@ public class UserDashboardRepository
 		updateUserDashboardItemsOrder(dashboardId, orderedIds);
 	}
 
-	private void updateUserDashboardItemsOrder(final int dashboardId, final List<Integer> allItemIdsOrdered)
+	private void updateUserDashboardItemsOrder(final UserDashboardId dashboardId, final List<UserDashboardItemId> allItemIdsOrdered)
 	{
 		final String sql = "UPDATE " + I_WEBUI_DashboardItem.Table_Name
 				+ " SET " + I_WEBUI_DashboardItem.COLUMNNAME_SeqNo + "=?"
@@ -332,7 +312,7 @@ public class UserDashboardRepository
 		{
 			for (int newSeqNo = 0; newSeqNo < allItemIdsOrdered.size(); newSeqNo++)
 			{
-				final int itemId = allItemIdsOrdered.get(newSeqNo);
+				final UserDashboardItemId itemId = allItemIdsOrdered.get(newSeqNo);
 
 				if (pstmt == null)
 				{
@@ -340,7 +320,7 @@ public class UserDashboardRepository
 				}
 
 				final int sqlNewSeqNo = newSeqNo * 10 + 10; // convert 0-based index to "10, 20, 30.." sequence number (starting from 10)
-				DB.setParameters(pstmt, new Object[] { sqlNewSeqNo, dashboardId, itemId });
+				DB.setParameters(pstmt, sqlNewSeqNo, dashboardId, itemId);
 				pstmt.addBatch();
 			}
 
@@ -362,23 +342,24 @@ public class UserDashboardRepository
 	}
 
 	/** @return new itemId */
-	public int addUserDashboardItem(final UserDashboard userDashboard, @NonNull final UserDashboardItemAddRequest request)
+	public UserDashboardItemId addUserDashboardItem(final UserDashboard userDashboard, @NonNull final UserDashboardItemAddRequest request)
 	{
-		final int dashboardId = userDashboard.getId();
+		final UserDashboardId dashboardId = userDashboard.getId();
 		final DashboardWidgetType dashboardWidgetType = request.getWidgetType();
-		final Set<Integer> allItemIds = userDashboard.getItemIds(dashboardWidgetType);
+		final Set<UserDashboardItemId> allItemIds = userDashboard.getItemIds(dashboardWidgetType);
 
 		logger.trace("Adding to dashboard {}: type={}, request={}", dashboardId, dashboardWidgetType, request);
 		logger.trace("Current ordered itemIds: {}", allItemIds);
 
+		//noinspection ConstantConditions
 		return executeChangeActionAndInvalidateAndReturn(dashboardId, () -> {
 			//
 			// Create dashboard item in database (will be added last).
-			final int itemId = createUserDashboardItemAndSave(dashboardId, request);
+			final UserDashboardItemId itemId = createUserDashboardItemAndSave(dashboardId, request);
 
 			//
 			// Calculate item's position
-			final List<Integer> orderedItemIds = new ArrayList<>(allItemIds);
+			final List<UserDashboardItemId> orderedItemIds = new ArrayList<>(allItemIds);
 			if (request.getPosition() >= 0 && request.getPosition() < orderedItemIds.size())
 			{
 				orderedItemIds.add(request.getPosition(), itemId);
@@ -398,7 +379,7 @@ public class UserDashboardRepository
 		});
 	}
 
-	private int createUserDashboardItemAndSave(final int dashboardId, @NonNull final UserDashboardItemAddRequest request)
+	private UserDashboardItemId createUserDashboardItemAndSave(@NonNull final UserDashboardId dashboardId, @NonNull final UserDashboardItemAddRequest request)
 	{
 		//
 		// Get the KPI
@@ -414,7 +395,7 @@ public class UserDashboardRepository
 		final int seqNo = retrieveLastSeqNo(dashboardId, widgetType) + 10;
 		//
 		final I_WEBUI_DashboardItem webuiDashboardItem = InterfaceWrapperHelper.newInstance(I_WEBUI_DashboardItem.class);
-		webuiDashboardItem.setWEBUI_Dashboard_ID(dashboardId);
+		webuiDashboardItem.setWEBUI_Dashboard_ID(dashboardId.getRepoId());
 		webuiDashboardItem.setIsActive(true);
 		webuiDashboardItem.setName(kpi.getName());
 		webuiDashboardItem.setSeqNo(seqNo);
@@ -435,11 +416,10 @@ public class UserDashboardRepository
 			changeUserDashboardItemAndSave(webuiDashboardItem, request.getChangeRequest());
 		}
 
-		final int itemId = webuiDashboardItem.getWEBUI_DashboardItem_ID();
-		return itemId;
+		return UserDashboardItemId.ofRepoId(webuiDashboardItem.getWEBUI_DashboardItem_ID());
 	}
 
-	public void deleteUserDashboardItem(final UserDashboard dashboard, final DashboardWidgetType dashboardWidgetType, final int itemId)
+	public void deleteUserDashboardItem(final UserDashboard dashboard, final DashboardWidgetType dashboardWidgetType, final UserDashboardItemId itemId)
 	{
 		dashboard.assertItemIdExists(dashboardWidgetType, itemId);
 
@@ -449,21 +429,22 @@ public class UserDashboardRepository
 		});
 	}
 
-	public static enum DashboardItemPatchPath
+	public enum DashboardItemPatchPath
 	{
 		caption, interval, when, position
 	}
 
 	public UserDashboardItemChangeResult changeUserDashboardItem(final UserDashboard dashboard, final UserDashboardItemChangeRequest request)
 	{
-		final int dashboardId = dashboard.getId();
+		final UserDashboardId dashboardId = dashboard.getId();
 		final DashboardWidgetType dashboardWidgetType = request.getWidgetType();
-		final int itemId = request.getItemId();
+		final UserDashboardItemId itemId = request.getItemId();
 
 		dashboard.assertItemIdExists(dashboardWidgetType, itemId);
 
 		//
 		// Execute the change request
+		//noinspection ConstantConditions
 		return executeChangeActionAndInvalidateAndReturn(dashboardId, () -> {
 			final UserDashboardItemChangeResultBuilder resultBuilder = UserDashboardItemChangeResult.builder()
 					.dashboardId(dashboardId)
@@ -479,7 +460,7 @@ public class UserDashboardRepository
 			final int position = request.getPosition();
 			if (position >= 0)
 			{
-				final List<Integer> allItemIdsOrdered = new ArrayList<>(retrieveDashboardItemIdsOrdered(dashboardId, dashboardWidgetType));
+				final List<UserDashboardItemId> allItemIdsOrdered = new ArrayList<>(retrieveDashboardItemIdsOrdered(dashboardId, dashboardWidgetType));
 
 				if (position == Integer.MAX_VALUE || position > allItemIdsOrdered.size() - 1)
 				{
@@ -500,7 +481,7 @@ public class UserDashboardRepository
 		});
 	}
 
-	private List<Integer> retrieveDashboardItemIdsOrdered(final int dashboardId, final DashboardWidgetType dashboardWidgetType)
+	private ImmutableSet<UserDashboardItemId> retrieveDashboardItemIdsOrdered(final UserDashboardId dashboardId, final DashboardWidgetType dashboardWidgetType)
 	{
 		return retrieveWEBUI_DashboardItemsQuery(dashboardId)
 				.addEqualsFilter(I_WEBUI_DashboardItem.COLUMN_WEBUI_DashboardWidgetType, dashboardWidgetType.getCode())
@@ -511,10 +492,10 @@ public class UserDashboardRepository
 				.endOrderBy()
 				//
 				.create()
-				.listIds();
+				.listIds(UserDashboardItemId::ofRepoId);
 	}
 
-	private final int retrieveLastSeqNo(final int dashboardId, final DashboardWidgetType dashboardWidgetType)
+	private int retrieveLastSeqNo(final UserDashboardId dashboardId, final DashboardWidgetType dashboardWidgetType)
 	{
 		final Integer maxSeqNo = queryBL.createQueryBuilder(I_WEBUI_DashboardItem.class)
 				.addEqualsFilter(I_WEBUI_DashboardItem.COLUMN_WEBUI_Dashboard_ID, dashboardId)
@@ -534,7 +515,7 @@ public class UserDashboardRepository
 	//
 	//
 	@Value(staticConstructor = "of")
-	public static final class UserDashboardKey
+	public static class UserDashboardKey
 	{
 		@Nullable
 		ClientId adClientId;

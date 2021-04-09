@@ -3,6 +3,7 @@ package de.metas.bpartner.composite;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.OrgMappingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -63,7 +64,9 @@ public class BPartner
 	public static final String COMPANY = "company";
 	public static final String VAT_ID = "vatId";
 
-	/** May be null if the bpartner was not yet saved. */
+	/**
+	 * May be null if the bpartner was not yet saved.
+	 */
 	private BPartnerId id;
 
 	private ExternalId externalId;
@@ -73,13 +76,19 @@ public class BPartner
 	private String name2;
 	private String name3;
 
-	/** non-empty value implies that the bpartner is also a company */
+	/**
+	 * non-empty value implies that the bpartner is also a company
+	 */
 	private String companyName;
 
-	/** This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company. */
+	/**
+	 * This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company.
+	 */
 	private BPartnerId parentId;
 
-	/** This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number. */
+	/**
+	 * This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number.
+	 */
 	private String phone;
 
 	private Language language;
@@ -102,12 +111,24 @@ public class BPartner
 
 	private String vatId;
 
+	private OrgMappingId orgMappingId;
+
 	private final RecordChangeLog changeLog;
 
-	/** Can be {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First} or {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First}. */
+	/**
+	 * Can be {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First} or {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First}.
+	 */
 	private final String shipmentAllocationBestBeforePolicy;
 
-	/** They are all nullable because we can create a completely empty instance which we then fill. */
+	/**
+	 * If true, it means that the BPartner is valid without having a code, metasfresh or gln.
+	 * It's identifier is an external reference that is provided outside of this bpartner's composite.
+	 */
+	private boolean identifiedByExternalReference;
+
+	/**
+	 * They are all nullable because we can create a completely empty instance which we then fill.
+	 */
 	@Builder(toBuilder = true)
 	private BPartner(
 			@Nullable final BPartnerId id,
@@ -132,7 +153,9 @@ public class BPartner
 			@Nullable final Boolean company,
 			@Nullable final String vatId,
 			@Nullable final RecordChangeLog changeLog,
-			@Nullable final String shipmentAllocationBestBeforePolicy)
+			@Nullable final String shipmentAllocationBestBeforePolicy,
+			@Nullable final Boolean identifiedByExternalReference,
+			@Nullable final OrgMappingId orgMappingId)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -158,6 +181,8 @@ public class BPartner
 
 		this.changeLog = changeLog;
 		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
+		this.orgMappingId = orgMappingId;
+		this.identifiedByExternalReference = coalesce(identifiedByExternalReference, false);
 	}
 
 	/**

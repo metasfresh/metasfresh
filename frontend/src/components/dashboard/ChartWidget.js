@@ -36,6 +36,7 @@ export class ChartWidget extends Component {
     const {
       text,
       framework,
+      data,
       noData,
       maximizeWidget,
       index,
@@ -45,7 +46,6 @@ export class ChartWidget extends Component {
       caption,
       fields,
       groupBy,
-      pollInterval,
       editmode,
       handleChartOptions,
     } = this.props;
@@ -123,10 +123,10 @@ export class ChartWidget extends Component {
                 caption,
                 fields,
                 groupBy,
-                pollInterval,
                 height,
                 isMaximized,
                 id,
+                data,
                 noData,
               }}
               responsive={true}
@@ -143,7 +143,8 @@ export class ChartWidget extends Component {
 
 ChartWidget.propTypes = {
   text: PropTypes.string,
-  framework: PropTypes.any,
+  framework: PropTypes.bool,
+  data: PropTypes.object,
   noData: PropTypes.any,
   maximizeWidget: PropTypes.func,
   index: PropTypes.number,
@@ -151,8 +152,7 @@ ChartWidget.propTypes = {
   chartType: PropTypes.string,
   caption: PropTypes.string,
   fields: PropTypes.any,
-  groupBy: PropTypes.string,
-  pollInterval: PropTypes.any,
+  groupBy: PropTypes.object,
   editmode: PropTypes.bool,
   handleChartOptions: PropTypes.func,
   id: PropTypes.number,

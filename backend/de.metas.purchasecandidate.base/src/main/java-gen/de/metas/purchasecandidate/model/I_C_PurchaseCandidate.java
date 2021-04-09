@@ -1,14 +1,17 @@
 package de.metas.purchasecandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for C_PurchaseCandidate
- *  @author metasfresh (generated) 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+/**
+ * Generated Interface for C_PurchaseCandidate
+ *
+ * @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_C_PurchaseCandidate 
+public interface I_C_PurchaseCandidate
 {
 
 	String Table_Name = "C_PurchaseCandidate";
@@ -719,14 +722,30 @@ public interface I_C_PurchaseCandidate
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceDifference = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceDifference", null);
 	String COLUMNNAME_PriceDifference = "PriceDifference";
 
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceEffective = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceEffective", null);
+	String COLUMNNAME_PriceEffective = "PriceEffective";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceEntered = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceEntered", null);
+	String COLUMNNAME_PriceEntered = "PriceEntered";
+
 	/**
-	 * Set Price imp..
+	 * Get Price effective.
+	 * Effective Date of Price
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPriceEntered (@Nullable BigDecimal PriceEntered);
+	BigDecimal getPriceEffective();
+
+	/**
+	 * Set Price effective.
+	 * Effective Date of Price
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceEffective(@Nullable BigDecimal PriceEffective);
 
 	/**
 	 * Get Price imp..
@@ -737,29 +756,14 @@ public interface I_C_PurchaseCandidate
 	 */
 	BigDecimal getPriceEntered();
 
-	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceEntered = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceEntered", null);
-	String COLUMNNAME_PriceEntered = "PriceEntered";
-
 	/**
-	 * Set Price override.
+	 * Set Price imp..
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPriceEntered_Override (@Nullable BigDecimal PriceEntered_Override);
-
-	/**
-	 * Get Price override.
-	 *
-	 * <br>Type: CostPrice
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getPriceEntered_Override();
-
-	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceEntered_Override = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceEntered_Override", null);
-	String COLUMNNAME_PriceEntered_Override = "PriceEntered_Override";
+	void setPriceEntered (@Nullable BigDecimal PriceEntered);
 
 	/**
 	 * Set Price.

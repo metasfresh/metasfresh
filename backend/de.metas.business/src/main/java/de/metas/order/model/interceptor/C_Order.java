@@ -318,7 +318,11 @@ public class C_Order
 			return null;
 		}
 
-		final PaymentRule paymentRule = PaymentRule.ofCode(salesOrder.getPaymentRule());
+		final PaymentRule paymentRule = PaymentRule.ofNullableCode(salesOrder.getPaymentRule());
+		if(paymentRule == null)
+		{
+			return null;
+		}
 
 		final PaymentReservationService paymentReservationService = SpringContextHolder.instance.getBean(PaymentReservationService.class);
 		if (!paymentReservationService.isPaymentReservationRequired(paymentRule))

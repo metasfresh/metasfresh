@@ -52,7 +52,7 @@ public class PushProductsRoute extends RouteBuilder
 	public static final String PUSH_PRODUCTS = "Alberta-pushProducts";
 	public static final String PROCESS_PRODUCT_ROUTE_ID = "Alberta-pushProduct";
 
-	public static final String RETRIEVE_PRODUCTS_PROCESSOR_ID = "RetrieveProductsProcessor";
+	public static final String RETRIEVE_PRODUCTS_PROCESSOR_ID = "GetProductsFromMetasfreshProcessor";
 	public static final String PREPARE_ARTICLE_PROCESSOR_ID = "PrepareArticleProcessor";
 	public static final String PUSH_ARTICLE_PROCESSOR_ID = "PushArticleProcessor";
 

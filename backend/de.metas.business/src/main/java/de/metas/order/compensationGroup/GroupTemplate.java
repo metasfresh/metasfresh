@@ -1,15 +1,13 @@
 package de.metas.order.compensationGroup;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.product.ProductCategoryId;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import java.util.List;
 
 /*
  * #%L
@@ -54,9 +52,8 @@ public class GroupTemplate
 			final GroupTemplateId id,
 			@NonNull final String name,
 			final ProductCategoryId productCategoryId,
-			@Singular List<GroupTemplateLine> lines)
+			final @Singular List<GroupTemplateLine> lines)
 	{
-		Check.assumeNotEmpty(lines, "lines is not empty");
 
 		this.id = id;
 		this.name = name;

@@ -1,135 +1,100 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.payment.paypal.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for PayPal_Config
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_PayPal_Config extends org.compiere.model.PO implements I_PayPal_Config, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1280854652L;
+	private static final long serialVersionUID = -1810738467L;
 
     /** Standard Constructor */
-    public X_PayPal_Config (Properties ctx, int PayPal_Config_ID, String trxName)
+    public X_PayPal_Config (final Properties ctx, final int PayPal_Config_ID, @Nullable final String trxName)
     {
       super (ctx, PayPal_Config_ID, trxName);
-      /** if (PayPal_Config_ID == 0)
-        {
-			setPayPal_ClientId (null);
-			setPayPal_ClientSecret (null);
-			setPayPal_Config_ID (0);
-			setPayPal_PayerApprovalRequest_MailTemplate_ID (0);
-			setPayPal_PaymentApprovedCallbackUrl (null);
-			setPayPal_Sandbox (false); // N
-        } */
     }
 
     /** Load Constructor */
-    public X_PayPal_Config (Properties ctx, ResultSet rs, String trxName)
+    public X_PayPal_Config (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
+	/** Load Meta Data */
 	@Override
-	public void setDescription (java.lang.String Description)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set Base URL.
-		@param PayPal_BaseUrl Base URL	  */
 	@Override
-	public void setPayPal_BaseUrl (java.lang.String PayPal_BaseUrl)
+	public void setPayPal_BaseUrl (final @Nullable java.lang.String PayPal_BaseUrl)
 	{
 		set_Value (COLUMNNAME_PayPal_BaseUrl, PayPal_BaseUrl);
 	}
 
-	/** Get Base URL.
-		@return Base URL	  */
 	@Override
-	public java.lang.String getPayPal_BaseUrl () 
+	public java.lang.String getPayPal_BaseUrl() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PayPal_BaseUrl);
+		return get_ValueAsString(COLUMNNAME_PayPal_BaseUrl);
 	}
 
-	/** Set Client ID.
-		@param PayPal_ClientId Client ID	  */
 	@Override
-	public void setPayPal_ClientId (java.lang.String PayPal_ClientId)
+	public void setPayPal_ClientId (final java.lang.String PayPal_ClientId)
 	{
 		set_Value (COLUMNNAME_PayPal_ClientId, PayPal_ClientId);
 	}
 
-	/** Get Client ID.
-		@return Client ID	  */
 	@Override
-	public java.lang.String getPayPal_ClientId () 
+	public java.lang.String getPayPal_ClientId() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PayPal_ClientId);
+		return get_ValueAsString(COLUMNNAME_PayPal_ClientId);
 	}
 
-	/** Set Client Secret.
-		@param PayPal_ClientSecret Client Secret	  */
 	@Override
-	public void setPayPal_ClientSecret (java.lang.String PayPal_ClientSecret)
+	public void setPayPal_ClientSecret (final java.lang.String PayPal_ClientSecret)
 	{
 		set_Value (COLUMNNAME_PayPal_ClientSecret, PayPal_ClientSecret);
 	}
 
-	/** Get Client Secret.
-		@return Client Secret	  */
 	@Override
-	public java.lang.String getPayPal_ClientSecret () 
+	public java.lang.String getPayPal_ClientSecret() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PayPal_ClientSecret);
+		return get_ValueAsString(COLUMNNAME_PayPal_ClientSecret);
 	}
 
-	/** Set PayPal Config.
-		@param PayPal_Config_ID PayPal Config	  */
 	@Override
-	public void setPayPal_Config_ID (int PayPal_Config_ID)
+	public void setPayPal_Config_ID (final int PayPal_Config_ID)
 	{
 		if (PayPal_Config_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_PayPal_Config_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_PayPal_Config_ID, Integer.valueOf(PayPal_Config_ID));
+			set_ValueNoCheck (COLUMNNAME_PayPal_Config_ID, PayPal_Config_ID);
 	}
 
-	/** Get PayPal Config.
-		@return PayPal Config	  */
 	@Override
-	public int getPayPal_Config_ID () 
+	public int getPayPal_Config_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PayPal_Config_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PayPal_Config_ID);
 	}
 
 	@Override
@@ -139,88 +104,59 @@ public class X_PayPal_Config extends org.compiere.model.PO implements I_PayPal_C
 	}
 
 	@Override
-	public void setPayPal_PayerApprovalRequest_MailTemplate(org.compiere.model.I_R_MailText PayPal_PayerApprovalRequest_MailTemplate)
+	public void setPayPal_PayerApprovalRequest_MailTemplate(final org.compiere.model.I_R_MailText PayPal_PayerApprovalRequest_MailTemplate)
 	{
 		set_ValueFromPO(COLUMNNAME_PayPal_PayerApprovalRequest_MailTemplate_ID, org.compiere.model.I_R_MailText.class, PayPal_PayerApprovalRequest_MailTemplate);
 	}
 
-	/** Set Payer Approval Request Mail Template.
-		@param PayPal_PayerApprovalRequest_MailTemplate_ID Payer Approval Request Mail Template	  */
 	@Override
-	public void setPayPal_PayerApprovalRequest_MailTemplate_ID (int PayPal_PayerApprovalRequest_MailTemplate_ID)
+	public void setPayPal_PayerApprovalRequest_MailTemplate_ID (final int PayPal_PayerApprovalRequest_MailTemplate_ID)
 	{
 		if (PayPal_PayerApprovalRequest_MailTemplate_ID < 1) 
 			set_Value (COLUMNNAME_PayPal_PayerApprovalRequest_MailTemplate_ID, null);
 		else 
-			set_Value (COLUMNNAME_PayPal_PayerApprovalRequest_MailTemplate_ID, Integer.valueOf(PayPal_PayerApprovalRequest_MailTemplate_ID));
+			set_Value (COLUMNNAME_PayPal_PayerApprovalRequest_MailTemplate_ID, PayPal_PayerApprovalRequest_MailTemplate_ID);
 	}
 
-	/** Get Payer Approval Request Mail Template.
-		@return Payer Approval Request Mail Template	  */
 	@Override
-	public int getPayPal_PayerApprovalRequest_MailTemplate_ID () 
+	public int getPayPal_PayerApprovalRequest_MailTemplate_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PayPal_PayerApprovalRequest_MailTemplate_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PayPal_PayerApprovalRequest_MailTemplate_ID);
 	}
 
-	/** Set Payment Approved Callback URL.
-		@param PayPal_PaymentApprovedCallbackUrl 
-		Called by PayPal when the payer approved the payment.
-	  */
 	@Override
-	public void setPayPal_PaymentApprovedCallbackUrl (java.lang.String PayPal_PaymentApprovedCallbackUrl)
+	public void setPayPal_PaymentApprovedCallbackUrl (final @Nullable java.lang.String PayPal_PaymentApprovedCallbackUrl)
 	{
 		set_Value (COLUMNNAME_PayPal_PaymentApprovedCallbackUrl, PayPal_PaymentApprovedCallbackUrl);
 	}
 
-	/** Get Payment Approved Callback URL.
-		@return Called by PayPal when the payer approved the payment.
-	  */
 	@Override
-	public java.lang.String getPayPal_PaymentApprovedCallbackUrl () 
+	public java.lang.String getPayPal_PaymentApprovedCallbackUrl() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PayPal_PaymentApprovedCallbackUrl);
+		return get_ValueAsString(COLUMNNAME_PayPal_PaymentApprovedCallbackUrl);
 	}
 
-	/** Set Sandbox.
-		@param PayPal_Sandbox Sandbox	  */
 	@Override
-	public void setPayPal_Sandbox (boolean PayPal_Sandbox)
+	public void setPayPal_Sandbox (final boolean PayPal_Sandbox)
 	{
-		set_Value (COLUMNNAME_PayPal_Sandbox, Boolean.valueOf(PayPal_Sandbox));
+		set_Value (COLUMNNAME_PayPal_Sandbox, PayPal_Sandbox);
 	}
 
-	/** Get Sandbox.
-		@return Sandbox	  */
 	@Override
-	public boolean isPayPal_Sandbox () 
+	public boolean isPayPal_Sandbox() 
 	{
-		Object oo = get_Value(COLUMNNAME_PayPal_Sandbox);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_PayPal_Sandbox);
 	}
 
-	/** Set Web URL.
-		@param PayPal_WebUrl Web URL	  */
 	@Override
-	public void setPayPal_WebUrl (java.lang.String PayPal_WebUrl)
+	public void setPayPal_WebUrl (final @Nullable java.lang.String PayPal_WebUrl)
 	{
 		set_Value (COLUMNNAME_PayPal_WebUrl, PayPal_WebUrl);
 	}
 
-	/** Get Web URL.
-		@return Web URL	  */
 	@Override
-	public java.lang.String getPayPal_WebUrl () 
+	public java.lang.String getPayPal_WebUrl() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PayPal_WebUrl);
+		return get_ValueAsString(COLUMNNAME_PayPal_WebUrl);
 	}
 }
