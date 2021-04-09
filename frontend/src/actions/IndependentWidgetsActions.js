@@ -129,7 +129,7 @@ export function deleteViewAttributes() {
 
 /**
  * @method deleteQuickInput
- * @summary
+ * @summary Remove quick input's data
  */
 export function deleteQuickInput() {
   return {
@@ -139,7 +139,7 @@ export function deleteQuickInput() {
 
 /**
  * @method setQuickinputPending
- * @summary
+ * @summary Set the `inProgress` flag of QuickInput to true
  */
 export function setQuickinputPending() {
   return {
@@ -149,7 +149,7 @@ export function setQuickinputPending() {
 
 /**
  * @method setQuickinputDone
- * @summary
+ * @summary Set the `inProgress` flag of QuickInput to false
  */
 export function setQuickinputDone() {
   return {
@@ -159,7 +159,9 @@ export function setQuickinputDone() {
 
 /**
  * @method setQuickinputData
- * @summary
+ * @summary Save field changes locally
+ *
+ * @param {object} fieldData - object with field names as keys and their data as values
  */
 export function setQuickinputData(fieldData) {
   return {
@@ -170,11 +172,13 @@ export function setQuickinputData(fieldData) {
 
 /*
  * @method patchQuickInput
- * @summary 
+ * @summary Save QuickInput changes on the server
  *
  * @param {number} windowId
- * @param {string} 
- * @param {string} 
+ * @param {string} docId
+ * @param {string} tabId
+ * @param {string} prop
+ * @param {any} value
  */
 export function patchQuickInput({ windowId, docId, tabId, prop, value }) {
   return (dispatch, getState) => {
@@ -205,11 +209,11 @@ export function patchQuickInput({ windowId, docId, tabId, prop, value }) {
 }
 /*
  * @method fetchQuickInputData
- * @summary Get data for attribute's fields
+ * @summary Get data for QuickInput's fields
  *
  * @param {number} windowId
- * @param {string} viewId
- * @param {string} rowId
+ * @param {string} docId
+ * @param {string} tabId
  */
 export function fetchQuickInputData({ windowId, docId, tabId }) {
   return (dispatch) => {
@@ -233,11 +237,11 @@ export function fetchQuickInputData({ windowId, docId, tabId }) {
 
 /*
  * @method fetchQuickInputLayout
- * @summary Get attributes layout and save it in the store
+ * @summary Get QuickInput's layout and save it in the store
  *
  * @param {number} windowId
- * @param {string} viewId
- * @param {string} rowId
+ * @param {string} docId
+ * @param {string} tabId
  */
 export function fetchQuickInputLayout({ windowId, docId, tabId }) {
   return (dispatch) => {
