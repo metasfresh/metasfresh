@@ -3,13 +3,12 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
 import {
   patchViewAttributes,
   setViewAttributesData,
 } from '../../actions/IndependentWidgetsActions';
 
-import RawWidget from '../widget/RawWidget';
+import WidgetWrapper from '../../containers/WidgetWrapper';
 
 /**
  * @file Class based component.
@@ -79,16 +78,7 @@ class SelectionAttributes extends PureComponent {
   };
 
   render() {
-    const {
-      windowId,
-      viewId,
-      attributes,
-      entity,
-      modalVisible,
-      timeZone,
-      allowShortcut,
-      disableShortcut,
-    } = this.props;
+    const { windowId, viewId, attributes, entity } = this.props;
     const { fields, elements, dataId } = attributes;
 
     return (
@@ -99,18 +89,21 @@ class SelectionAttributes extends PureComponent {
         <div tabIndex={1} className="attributes-selector-body js-attributes">
           {elements &&
             elements.map((item, id) => (
-              <RawWidget
+              <WidgetWrapper
+                key={id}
+                dataSource="selection-attributes"
+                type={item.type}
                 entity={entity}
+                windowId={windowId}
+                dataId={dataId}
+                noLabel={true}
                 attribute={true}
                 widgetType={item.widgetType}
                 fields={item.fields}
-                dataId={dataId}
                 windowType={windowId}
                 viewId={viewId}
                 widgetData={item.fields.map((elem) => fields[elem.field] || -1)}
                 gridAlign={item.gridAlign}
-                key={id}
-                type={item.type}
                 caption={item.caption}
                 handleFocus={this.handleFocus}
                 handleBlur={this.handleBlur}
@@ -119,12 +112,6 @@ class SelectionAttributes extends PureComponent {
                 tabIndex={this.getTabId(
                   item.fields.map((elem) => fields[elem.field] || -1)
                 )}
-                {...{
-                  modalVisible,
-                  timeZone,
-                  allowShortcut,
-                  disableShortcut,
-                }}
               />
             ))}
           {elements && !elements.length && (
@@ -140,13 +127,8 @@ class SelectionAttributes extends PureComponent {
 }
 
 const mapStateToProps = (state) => {
-  const { appHandler, windowHandler, widgetHandler } = state;
-  const { attributes } = widgetHandler;
-
   return {
-    modalVisible: windowHandler.modal.visible,
-    timeZone: appHandler.me.timeZone,
-    attributes,
+    attributes: state.widgetHandler.attributes,
   };
 };
 
@@ -162,17 +144,11 @@ SelectionAttributes.propTypes = {
   entity: PropTypes.string,
   DLWrapperLayout: PropTypes.array,
   supportAttribute: PropTypes.bool,
-  allowShortcut: PropTypes.func.isRequired,
-  disableShortcut: PropTypes.func.isRequired,
-  modalVisible: PropTypes.bool.isRequired,
-  timeZone: PropTypes.string.isRequired,
 };
 
 export default connect(
   mapStateToProps,
   {
-    allowShortcut,
-    disableShortcut,
     patchViewAttributes,
     setViewAttributesData,
   }
