@@ -34,6 +34,7 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.LUTUCUPair;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -92,6 +93,7 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.X_M_Inventory;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -122,6 +124,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	// services
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final transient IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 
 	private final transient IHUPIItemProductDAO huPiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final transient IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
@@ -134,6 +137,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final transient IAttributesBL attributesBL = Services.get(IAttributesBL.class);
+	private final transient IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
 	private final LocatorId warehouseLocatorId;
 	private final DocTypeId inventoryDocTypeId;
@@ -195,8 +199,8 @@ class InventoryAllocationDestination implements IAllocationDestination
 			return result;
 		}
 
-		final I_M_HU topLevelHU = handlingUnitsBL.getTopLevelParent(hu);
-		final HuId topLevelHUId = HuId.ofRepoId(topLevelHU.getM_HU_ID());
+		final LUTUCUPair topLevelHU = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(hu);
+		final HuId topLevelHUId = topLevelHU.getTopLevelHUId();
 
 		final Quantity qtySource = request.getQuantity(); // Qty to add, in request's UOM
 		final Quantity qty = getQtyInStockingUOM(request);
@@ -216,7 +220,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 			final I_M_InventoryLine inventoryLine = getCreateInventoryLine(candidate);
 
 			// #2143 hu snapshots
-			snapshotHUForInventoryLine(topLevelHU, inventoryLine);
+			snapshotHUForInventoryLine(topLevelHU.getTopLevelHU(), inventoryLine);
 
 			//
 			// Update inventory line's internal use Qty
@@ -261,7 +265,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 					collectPackingMaterials(request.getHUContext(), inventoryLine.getM_Inventory_ID(), tuHU);
 					if (!HuId.equals(topLevelHUId, HuId.ofRepoId(hu.getM_HU_ID())))
 					{
-						collectPackingMaterials_LUOnly(request.getHUContext(), inventoryLine.getM_Inventory_ID(), topLevelHU);
+						collectPackingMaterials_LUOnly(request.getHUContext(), inventoryLine.getM_Inventory_ID(), topLevelHU.getTopLevelHU());
 					}
 				}
 			}
@@ -272,7 +276,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 			// Save the inventory line and assign the top level HU to it
 			save(inventoryLine);
 
-			Services.get(IHUAssignmentBL.class).assignHU(inventoryLine, topLevelHU, ITrx.TRXNAME_ThreadInherited);
+			assignHUToInventoryLine(inventoryLine, topLevelHU);
 
 			//
 			// Update the result
@@ -290,6 +294,22 @@ class InventoryAllocationDestination implements IAllocationDestination
 		}
 
 		return result;
+	}
+
+	private void assignHUToInventoryLine(
+			@NonNull final I_M_InventoryLine inventoryLine,
+			@NonNull final LUTUCUPair topLevelHU)
+	{
+		huAssignmentBL.createHUAssignmentBuilder()
+				.initializeAssignment(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.setModel(inventoryLine)
+				.setTopLevelHU(topLevelHU.getTopLevelHU())
+				.setM_LU_HU(topLevelHU.getM_LU_HU())
+				.setM_TU_HU(topLevelHU.getM_TU_HU())
+				.setVHU(topLevelHU.getVHU())
+				.setIsTransferPackingMaterials(false)
+				.setQty(null)
+				.build();
 	}
 
 	private List<InventoryLineCandidate> prepareCandidates(final HuId topLevelHuId, final IAllocationRequest request)
@@ -502,7 +522,6 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 		if (receiptLine == null)
 		{
-			final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 			final IAttributeStorageFactory attributesFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 
 			final I_M_HU hu = handlingUnitsDAO.getById(candidate.getTopLevelHUId());

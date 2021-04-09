@@ -1,10 +1,16 @@
 package de.metas.handlingunits.inventory.interceptor;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionBL;
 import de.metas.handlingunits.inventory.Inventory;
+import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.tabcallout.M_InventoryLineTabCallout;
 import de.metas.handlingunits.model.I_M_Inventory;
@@ -27,6 +33,8 @@ import org.compiere.model.X_M_Inventory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -56,6 +64,8 @@ public class M_Inventory
 	private final InventoryService inventoryLineRecordService;
 	private final IHUTransactionBL huTransactionBL = Services.get(IHUTransactionBL.class);
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 
 	public M_Inventory(@NonNull final InventoryService inventoryRecordHUService)
 	{
@@ -87,15 +97,53 @@ public class M_Inventory
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)
-	public void checkHUTransformationBeforeReverseCorrect(final I_M_Inventory inventory)
+	public void checkHUTransformationBeforeReverseCorrect(final I_M_Inventory inventoryRecord)
 	{
-		final Inventory invObj = inventoryLineRecordService.toInventory(inventory);
-		invObj.getLines().forEach(line -> line.getInventoryLineHUs().forEach(hu -> {
-			if (!huTransactionBL.isLatestHUTrx(hu.getHuId(), TableRecordReference.of(I_M_InventoryLine.Table_Name, line.getId())))
+		final Inventory inventory = inventoryLineRecordService.toInventory(inventoryRecord);
+		checkHUTransformationBeforeReverseCorrect(inventory);
+	}
+
+	private void checkHUTransformationBeforeReverseCorrect(final Inventory inventory)
+	{
+		inventory.getLines().forEach(this::checkHUTransformationBeforeReverseCorrect);
+	}
+
+	private void checkHUTransformationBeforeReverseCorrect(final InventoryLine line)
+	{
+		final TableRecordReference inventoryLineRef = TableRecordReference.of(I_M_InventoryLine.Table_Name, Objects.requireNonNull(line.getId()));
+
+		line.getInventoryLineHUs().forEach(lineHU -> checkHUTransformationBeforeReverseCorrect(lineHU, inventoryLineRef));
+	}
+
+	private void checkHUTransformationBeforeReverseCorrect(
+			final InventoryLineHU lineHU,
+			final TableRecordReference inventoryLineRef)
+	{
+		final HuId huId = lineHU.getHuId();
+		assert huId != null;
+
+		final Set<HuId> huIdsToCheck;
+		if (handlingUnitsBL.isLoadingUnit(handlingUnitsBL.getById(huId)))
+		{
+			// Because the Qty HU transactions are never done on LU level but on TU/VHU level,
+			// in case of LUs, we have to extract the involved TUs from them.
+			//
+			// To find out the TUs we check the HU assignments because it might be that our LU is destroyed
+			// and in that case the M_HU.M_HU_Item_Parent_ID is null.
+			huIdsToCheck = huAssignmentBL.getTUsByLU(inventoryLineRef, huId);
+		}
+		else
+		{
+			huIdsToCheck = ImmutableSet.of(huId);
+		}
+
+		for (final HuId huIdToCheck : huIdsToCheck)
+		{
+			if (!huTransactionBL.isLatestHUTrx(huIdToCheck, inventoryLineRef))
 			{
 				throw new HUException("@InventoryReverseError@");
 			}
-		}));
+		}
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)

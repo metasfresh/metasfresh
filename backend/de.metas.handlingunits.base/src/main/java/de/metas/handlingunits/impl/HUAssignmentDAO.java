@@ -2,6 +2,7 @@ package de.metas.handlingunits.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
@@ -29,6 +30,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
@@ -492,5 +494,33 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		{
 			alreadySeenHuIds.add(id);
 		}
+	}
+
+	@Override
+	public Set<HuId> retrieveTUsByLU(@NonNull final TableRecordReference recordRef, @NonNull final HuId luId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_HU_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, recordRef.getAD_Table_ID())
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordRef.getRecord_ID())
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, luId)
+		.create()
+		.stream()
+		.map(HUAssignmentDAO::extractTUIdOrVHUId)
+		.filter(Objects::nonNull)
+		.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Nullable
+	private static HuId extractTUIdOrVHUId(@NonNull final I_M_HU_Assignment huAssignment)
+	{
+		final HuId tuId = HuId.ofRepoIdOrNull(huAssignment.getM_TU_HU_ID());
+		if(tuId != null)
+		{
+			return tuId;
+		}
+
+		return HuId.ofRepoIdOrNull(huAssignment.getVHU_ID());
 	}
 }

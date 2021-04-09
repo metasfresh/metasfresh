@@ -22,6 +22,7 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -381,5 +382,11 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	public ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull final Set<TableRecordReference> recordRefs)
 	{
 		return huAssignmentDAO.retrieveHUsByRecordRefs(recordRefs);
+	}
+
+	@Override
+	public Set<HuId> getTUsByLU(@NonNull final TableRecordReference recordRef, @NonNull final HuId luId)
+	{
+		return huAssignmentDAO.retrieveTUsByLU(recordRef, luId);
 	}
 }

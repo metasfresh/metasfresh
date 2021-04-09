@@ -65,6 +65,8 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 */
 	List<HuAssignment> retrieveLowLevelHUAssignmentsForModel(Object model);
 
+	Set<HuId> retrieveTUsByLU(@NonNull TableRecordReference recordRef, @NonNull HuId luId);
+
 	/**
 	 * This in an "encapsulated" representation of a {@link I_M_HU_Assignment} data record.
 	 * <p>
