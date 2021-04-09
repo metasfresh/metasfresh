@@ -225,3 +225,48 @@ export function getPrintingOptions({ entity, windowId, docId, tabId, rowId }) {
       '/printingOptions'
   );
 }
+
+/**
+ * @method initQuickActions
+ * @summary Fetch data for table quick input
+ * @param {string} entity - for example 'window'
+ * @param {string} windowId
+ * @param {string} docId
+ * @param {string} tabId
+ * @param {string} subentity
+ */
+export function initQuickActions(entity, windowId, docId, tabId, subentity) {
+  return post(
+    `${config.API_URL}/${entity}/${windowId}/${docId}${
+      tabId ? `/${tabId}` : ''
+    }${subentity ? `/${subentity}` : ''}`
+  );
+}
+
+/**
+ * @method completeRequest
+ * @summary Save changes in attributes/quick input
+ * @param {string} entity - for example 'window'
+ * @param {string} windowId
+ * @param {string} docId
+ * @param {string} tabId
+ * @param {string} subentity
+ * @param {string} subentityId
+ */
+export function completeRequest(
+  entity,
+  docType,
+  docId,
+  tabId,
+  rowId,
+  subentity,
+  subentityId
+) {
+  return post(
+    `${config.API_URL}/${entity}${docType ? `/${docType}` : ''}${
+      docId ? `/${docId}` : ''
+    }${tabId ? `/${tabId}` : ''}${rowId ? `/${rowId}` : ''}${
+      subentity ? `/${subentity}` : ''
+    }${subentityId ? `/${subentityId}` : ''}/complete`
+  );
+}

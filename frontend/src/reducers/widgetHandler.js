@@ -6,6 +6,12 @@ import {
   DELETE_ATTRIBUTES,
   PATCH_ATTRIBUTES,
   SET_ATTRIBUTES_DATA,
+  FETCH_QUICKINPUT_DATA,
+  FETCH_QUICKINPUT_LAYOUT,
+  DELETE_QUICKINPUT,
+  SET_QUICKINPUT_DATA,
+  PATCH_QUICKINPUT_PENDING,
+  PATCH_QUICKINPUT_DONE,
 } from '../constants/ActionTypes';
 import { parseToDisplay } from '../utils/documentListHelper';
 
@@ -14,6 +20,12 @@ export const initialState = {
     dataId: null,
     fields: {},
     elements: [],
+  },
+  quickInput: {
+    layout: null,
+    data: null,
+    id: null,
+    inProgress: false,
   },
 };
 
@@ -25,14 +37,14 @@ const reducer = produce((draftState, action) => {
       draftState.attributes.fields = fieldsByName;
       draftState.attributes.dataId = id;
 
-      return;
+      break;
     }
     case FETCH_ATTRIBUTES_LAYOUT: {
       const { elements } = action.payload;
 
       draftState.attributes.elements = elements;
 
-      return;
+      break;
     }
 
     case DELETE_ATTRIBUTES: {
@@ -42,7 +54,7 @@ const reducer = produce((draftState, action) => {
         dataId: null,
       };
 
-      return;
+      break;
     }
 
     case PATCH_ATTRIBUTES: {
@@ -66,7 +78,7 @@ const reducer = produce((draftState, action) => {
         };
       }
 
-      return;
+      break;
     }
 
     case SET_ATTRIBUTES_DATA: {
@@ -74,8 +86,59 @@ const reducer = produce((draftState, action) => {
 
       draftState.attributes.fields[field].value = value;
 
-      return;
+      break;
     }
+
+    case FETCH_QUICKINPUT_DATA: {
+      const { data, id } = action.payload;
+
+      draftState.quickInput.data = data;
+      draftState.quickInput.id = id;
+
+      break;
+    }
+
+    case FETCH_QUICKINPUT_LAYOUT: {
+      const { layout } = action.payload;
+
+      draftState.quickInput.layout = layout;
+
+      break;
+    }
+
+    case SET_QUICKINPUT_DATA: {
+      const { fieldData } = action.payload;
+      const currentData = original(draftState.quickInput.data);
+
+      Object.keys(fieldData).map((fieldName) => {
+        draftState.quickInput.data[fieldName] = {
+          ...currentData[fieldName],
+          ...fieldData[fieldName],
+        };
+      });
+
+      break;
+    }
+
+    case PATCH_QUICKINPUT_PENDING:
+      draftState.quickInput.inProgress = true;
+
+      break;
+
+    case PATCH_QUICKINPUT_DONE:
+      draftState.quickInput.inProgress = false;
+
+      break;
+
+    case DELETE_QUICKINPUT:
+      draftState.quickInput = {
+        layout: null,
+        data: null,
+        id: null,
+        inProgress: false,
+      };
+
+      break;
   }
 }, initialState);
 

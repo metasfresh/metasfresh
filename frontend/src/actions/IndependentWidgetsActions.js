@@ -2,6 +2,9 @@ import {
   getViewAttributesRequest,
   getViewAttributesLayoutRequest,
   patchViewAttributesRequest,
+  initQuickActions,
+  getLayout,
+  patchRequest,
 } from '../api';
 import {
   FETCH_ATTRIBUTES_DATA,
@@ -9,7 +12,18 @@ import {
   DELETE_ATTRIBUTES,
   PATCH_ATTRIBUTES,
   SET_ATTRIBUTES_DATA,
+  FETCH_QUICKINPUT_DATA,
+  FETCH_QUICKINPUT_LAYOUT,
+  DELETE_QUICKINPUT,
+  SET_QUICKINPUT_DATA,
+  PATCH_QUICKINPUT_PENDING,
+  PATCH_QUICKINPUT_DONE,
 } from '../constants/ActionTypes';
+import { parseToDisplay } from '../utils/documentListHelper';
+
+//
+// SELECTION ATTRIBUTES
+//
 
 /*
  * @method fetchViewAttributes
@@ -106,5 +120,136 @@ export function setViewAttributesData({ field, value }) {
 export function deleteViewAttributes() {
   return {
     type: DELETE_ATTRIBUTES,
+  };
+}
+
+//
+// TABLE QUICK INPUT
+//
+
+/**
+ * @method deleteQuickInput
+ * @summary
+ */
+export function deleteQuickInput() {
+  return {
+    type: DELETE_QUICKINPUT,
+  };
+}
+
+/**
+ * @method setQuickinputPending
+ * @summary
+ */
+export function setQuickinputPending() {
+  return {
+    type: PATCH_QUICKINPUT_PENDING,
+  };
+}
+
+/**
+ * @method setQuickinputDone
+ * @summary
+ */
+export function setQuickinputDone() {
+  return {
+    type: PATCH_QUICKINPUT_DONE,
+  };
+}
+
+/**
+ * @method setQuickinputData
+ * @summary
+ */
+export function setQuickinputData(fieldData) {
+  return {
+    type: SET_QUICKINPUT_DATA,
+    payload: { fieldData },
+  };
+}
+
+/*
+ * @method patchQuickInput
+ * @summary 
+ *
+ * @param {number} windowId
+ * @param {string} 
+ * @param {string} 
+ */
+export function patchQuickInput({ windowId, docId, tabId, prop, value }) {
+  return (dispatch, getState) => {
+    const state = getState();
+    const id = state.widgetHandler.quickInput.id;
+
+    dispatch(setQuickinputPending());
+
+    return patchRequest({
+      entity: 'window',
+      docType: windowId,
+      docId,
+      tabId,
+      property: prop,
+      value,
+      subentity: 'quickInput',
+      subentityId: id,
+    }).then(({ data }) => {
+      const fields = data[0] && data[0].fieldsByName;
+
+      if (fields) {
+        dispatch(setQuickinputData(fields));
+      }
+
+      dispatch(setQuickinputDone());
+    });
+  };
+}
+/*
+ * @method fetchQuickInputData
+ * @summary Get data for attribute's fields
+ *
+ * @param {number} windowId
+ * @param {string} viewId
+ * @param {string} rowId
+ */
+export function fetchQuickInputData({ windowId, docId, tabId }) {
+  return (dispatch) => {
+    return initQuickActions(
+      'window',
+      windowId,
+      docId,
+      tabId,
+      'quickInput'
+    ).then(({ data }) => {
+      dispatch({
+        type: FETCH_QUICKINPUT_DATA,
+        payload: {
+          data: parseToDisplay(data.fieldsByName),
+          id: data.id,
+        },
+      });
+    });
+  };
+}
+
+/*
+ * @method fetchQuickInputLayout
+ * @summary Get attributes layout and save it in the store
+ *
+ * @param {number} windowId
+ * @param {string} viewId
+ * @param {string} rowId
+ */
+export function fetchQuickInputLayout({ windowId, docId, tabId }) {
+  return (dispatch) => {
+    return getLayout('window', windowId, tabId, 'quickInput', docId).then(
+      ({ data }) => {
+        dispatch({
+          type: FETCH_QUICKINPUT_LAYOUT,
+          payload: {
+            layout: data.elements,
+          },
+        });
+      }
+    );
   };
 }

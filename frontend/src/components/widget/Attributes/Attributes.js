@@ -2,8 +2,12 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import classnames from 'classnames';
 
-import { getAttributesInstance, getLayout, patchRequest } from '../../../api';
-import { completeRequest } from '../../../actions/GenericActions';
+import {
+  getAttributesInstance,
+  getLayout,
+  patchRequest,
+  completeRequest,
+} from '../../../api';
 import {
   parseToDisplay,
   formatDateWithZeros,

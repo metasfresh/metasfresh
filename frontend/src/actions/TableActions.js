@@ -38,17 +38,6 @@ function updateTable(id, data) {
 }
 
 /**
- * @method deleteTable
- * @summary Remove the table with specified `id` from the store
- */
-export function deleteTable(id) {
-  return {
-    type: types.DELETE_TABLE,
-    payload: { id },
-  };
-}
-
-/**
  * @method updateTableData
  * @summary Update table rows
  *
@@ -239,6 +228,22 @@ export function fetchAttributes(tableId, tableResponse) {
         dispatch(deleteViewAttributes());
       }
     }
+  };
+}
+
+/**
+ * @method deleteTable
+ * @summary Remove the table with specified `id` from the store
+ */
+export function deleteTable(id) {
+  return (dispatch) => {
+    // remove old attributes data
+    dispatch(deleteViewAttributes());
+
+    return {
+      type: types.DELETE_TABLE,
+      payload: { id },
+    };
   };
 }
 

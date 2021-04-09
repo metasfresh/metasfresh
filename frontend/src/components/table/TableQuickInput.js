@@ -3,11 +3,15 @@ import React, { Component } from 'react';
 import cx from 'classnames';
 import { connect } from 'react-redux';
 
-import { getLayout, patchRequest } from '../../api';
-import { completeRequest, createInstance } from '../../actions/GenericActions';
+import { completeRequest } from '../../api';
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
-
-import { parseToDisplay } from '../../utils/documentListHelper';
+import {
+  fetchQuickInputData,
+  fetchQuickInputLayout,
+  deleteQuickInput,
+  setQuickinputData,
+  patchQuickInput,
+} from '../../actions/IndependentWidgetsActions';
 
 import RawWidget from '../widget/RawWidget';
 
@@ -19,11 +23,7 @@ class TableQuickInput extends Component {
     super(props);
 
     this.state = {
-      layout: null,
-      data: null,
-      id: null,
       editedField: 0,
-      inProgress: false,
     };
   }
 
@@ -32,7 +32,8 @@ class TableQuickInput extends Component {
   }
 
   componentDidUpdate() {
-    const { data, layout, editedField } = this.state;
+    const { data, layout } = this.props;
+    const { editedField } = this.state;
 
     if (data && layout) {
       for (let i = 0; i < layout.length; i++) {
@@ -67,110 +68,68 @@ class TableQuickInput extends Component {
       docType,
       docId,
       tabId,
-      closeBatchEntry,
+      fetchQuickInputData,
+      fetchQuickInputLayout,
     } = this.props;
-    const { layout } = this.state;
 
-    this.setState(
-      {
-        data: null,
-      },
-      () => {
-        createInstance('window', docType, docId, tabId, 'quickInput')
-          .then((instance) => {
-            this.setState({
-              data: parseToDisplay(instance.data.fieldsByName),
-              id: instance.data.id,
-              editedField: 0,
-            });
-          })
-          .catch((err) => {
-            if (err.response.status === 404) {
-              addNotification(
-                'Batch entry error',
-                'Batch entry is not available.',
-                5000,
-                'error'
-              );
-              closeBatchEntry();
-            }
-          });
-
-        !layout &&
-          getLayout('window', docType, tabId, 'quickInput', docId)
-            .then((layout) => {
-              this.setState({
-                layout: layout.data.elements,
-              });
-            })
-            .catch((err) => {
-              // eslint-disable-next-line no-console
-              console.error(err);
-            });
+    fetchQuickInputData({
+      windowId: docType,
+      docId,
+      tabId,
+    }).catch((err) => {
+      if (err.response.status === 404) {
+        addNotification(
+          'Batch entry error',
+          'Batch entry is not available.',
+          5000,
+          'error'
+        );
+        this.closeBatchEntry();
       }
-    );
+    });
+
+    fetchQuickInputLayout({
+      windowId: docType,
+      docId,
+      tabId,
+    }).catch((err) => {
+      // eslint-disable-next-line no-console
+      console.error(err);
+      this.closeBatchEntry();
+    });
   };
 
   handleChange = (field, value) => {
-    this.setState((prevState) => ({
-      data: Object.assign({}, prevState.data, {
-        [field]: Object.assign({}, prevState.data[field], {
-          value,
-        }),
-      }),
-    }));
+    const { setQuickinputData } = this.props;
+    const fieldData = {};
+    fieldData[field] = { value };
+
+    setQuickinputData(fieldData);
   };
 
   handlePatch = (prop, value, callback) => {
-    const { docType, docId, tabId } = this.props;
-    const { id } = this.state;
+    const { docType, docId, tabId, patchQuickInput } = this.props;
 
-    this.setState(
-      {
-        inProgress: true,
-      },
-      () => {
-        this.patchPromise = new Promise((resolve) => {
-          patchRequest({
-            entity: 'window',
-            docType,
-            docId,
-            tabId,
-            property: prop,
-            value,
-            subentity: 'quickInput',
-            subentityId: id,
-          }).then((response) => {
-            const fields = response.data[0] && response.data[0].fieldsByName;
-
-            fields &&
-              Object.keys(fields).map((fieldName) => {
-                this.setState(
-                  (prevState) => ({
-                    data: Object.assign({}, prevState.data, {
-                      [fieldName]: Object.assign(
-                        {},
-                        prevState.data[fieldName],
-                        fields[fieldName]
-                      ),
-                    }),
-                    inProgress: false,
-                  }),
-                  () => {
-                    if (callback) {
-                      callback();
-                    }
-                    resolve();
-                  }
-                );
-              });
-          });
-        });
-      }
-    );
+    this.patchPromise = new Promise((resolve) => {
+      patchQuickInput({ windowId: docType, docId, tabId, prop, value }).then(
+        () => {
+          if (callback) {
+            callback();
+          }
+          resolve();
+        }
+      );
+    });
   };
 
-  renderFields = (layout, data, dataId, attributeType, quickInputId) => {
+  closeBatchEntry() {
+    const { closeBatchEntry, deleteQuickInput } = this.props;
+
+    deleteQuickInput();
+    closeBatchEntry();
+  }
+
+  renderFields = () => {
     const {
       tabId,
       docType,
@@ -179,9 +138,12 @@ class TableQuickInput extends Component {
       timeZone,
       allowShortcut,
       disableShortcut,
+      data,
+      layout,
+      id,
+      inProgress,
+      docId,
     } = this.props;
-    const { inProgress } = this.state;
-
     this.rawWidgets = [];
 
     const layoutFieldsAmt = layout ? layout.length : 2;
@@ -220,14 +182,14 @@ class TableQuickInput extends Component {
             fieldLabelClass={stylingLayout[idx].label}
             fieldInputClass={stylingLayout[idx].field}
             inProgress={inProgress}
-            entity={attributeType}
+            entity={'window'}
             subentity="quickInput"
-            subentityId={quickInputId}
+            subentityId={id}
             tabId={tabId}
             windowType={docType}
             widgetType={item.widgetType}
             fields={item.fields}
-            dataId={dataId}
+            dataId={docId}
             widgetData={widgetData}
             gridAlign={item.gridAlign}
             forceFullWidth={widgetData.length > 1}
@@ -253,8 +215,8 @@ class TableQuickInput extends Component {
   };
 
   onSubmit = (e) => {
-    const { addNotification, docType, docId, tabId } = this.props;
-    const { id, data } = this.state;
+    const { addNotification, docType, docId, tabId, data, id } = this.props;
+
     e.preventDefault();
 
     document.activeElement.blur();
@@ -298,16 +260,13 @@ class TableQuickInput extends Component {
   };
 
   render() {
-    const { docId } = this.props;
-    const { data, layout, id } = this.state;
-
     return (
       <form
         onSubmit={this.onSubmit}
         className="row quick-input-container"
         ref={this.setRef}
       >
-        {this.renderFields(layout, data, docId, 'window', id)}
+        {this.renderFields()}
         <div className="col-sm-12 col-md-3 col-lg-2 hint">
           {`(Press 'Enter' to add)`}
         </div>
@@ -318,11 +277,16 @@ class TableQuickInput extends Component {
 }
 
 const mapStateToProps = (state) => {
-  const { appHandler, windowHandler } = state;
+  const { appHandler, windowHandler, widgetHandler } = state;
+  const { layout, data, id, inProgress } = widgetHandler.quickInput;
 
   return {
     modalVisible: windowHandler.modal.visible,
     timeZone: appHandler.me.timeZone,
+    layout,
+    data,
+    id,
+    inProgress,
   };
 };
 
@@ -333,10 +297,19 @@ TableQuickInput.propTypes = {
   docType: PropTypes.any,
   docId: PropTypes.string,
   tabId: PropTypes.string,
+  layout: PropTypes.array,
+  data: PropTypes.object,
+  id: PropTypes.any,
+  inProgress: PropTypes.bool,
   allowShortcut: PropTypes.func.isRequired,
   disableShortcut: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   timeZone: PropTypes.string.isRequired,
+  fetchQuickInputData: PropTypes.func.isRequired,
+  fetchQuickInputLayout: PropTypes.func.isRequired,
+  deleteQuickInput: PropTypes.func.isRequired,
+  setQuickinputData: PropTypes.func.isRequired,
+  patchQuickInput: PropTypes.func.isRequired,
 };
 
 export default connect(
@@ -344,6 +317,11 @@ export default connect(
   {
     allowShortcut,
     disableShortcut,
+    fetchQuickInputData,
+    fetchQuickInputLayout,
+    deleteQuickInput,
+    setQuickinputData,
+    patchQuickInput,
   }
 )(TableQuickInput);
 
