@@ -292,7 +292,7 @@ public class ShopwareClient
 				}
 				else
 				{
-					throw new RuntimeException("Custom Identifier path provided for BPartner, but no custom identifier found. Order default identifier:" + jsonOrder.getId());
+					throw new RuntimeException("Custom Identifier path provided for BPartner, but no custom identifier found. Order-ID:" + jsonOrder.getId());
 				}
 			}
 

@@ -28,6 +28,7 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
+import de.metas.common.util.CoalesceUtil;
 import io.swagger.client.model.Order;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -75,14 +76,13 @@ public class CreateJsonOLCandCreateRequestProcessor implements Processor
 				.externalHeaderId(order.getId())
 				.bpartner(getBPartnerIdentifiers(order))
 				.dataSource(ALBERTA_DATA_INPUT_SOURCE)
-				.poReference(order.getSalesId())
+				.poReference(CoalesceUtil.firstNotEmptyTrimmed(order.getSalesId(), order.getId()))
 				.dateRequired(asJavaLocalDate(order.getDeliveryDate()));
 
 		final JsonAlbertaOrderInfo.JsonAlbertaOrderInfoBuilder albertaOrderInfoBuilder = JsonAlbertaOrderInfo.builder();
 		albertaOrderInfoBuilder
 				.rootId(order.getRootId())
-
-				.creationDate(asJavaLocalDate(order.getCreationDate()))
+				.creationDate(asInstant(order.getCreationDate()))
 				.startDate(asJavaLocalDate(order.getStartDate()))
 				.endDate(asJavaLocalDate(order.getEndDate()))
 				.nextDelivery(asJavaLocalDate(order.getNextDelivery()))

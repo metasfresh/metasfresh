@@ -46,7 +46,7 @@ public class JsonAlbertaOrderInfo
 
 	@JsonProperty("creationDate")
 	@Nullable
-	LocalDate creationDate;
+	Instant creationDate;
 
 	@JsonProperty("startDate")
 	@Nullable

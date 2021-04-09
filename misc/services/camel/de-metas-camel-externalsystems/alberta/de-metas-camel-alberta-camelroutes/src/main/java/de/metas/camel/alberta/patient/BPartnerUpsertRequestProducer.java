@@ -61,7 +61,6 @@ import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ALBERTA_S
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.BILLING_ADDR_PREFIX;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.COUNTRY_CODE_DE;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.EXTERNAL_ID_PREFIX;
-import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.MAIN_ADDR_PREFIX;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.SHIPPING_ADDR_PREFIX;
 
 public class BPartnerUpsertRequestProducer
@@ -283,7 +282,7 @@ public class BPartnerUpsertRequestProducer
 		location.setShipToDefault(!hasExtraShipToAddress);
 		location.setShipTo(!hasExtraShipToAddress);
 
-		final String identifier = EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + MAIN_ADDR_PREFIX + patientId;
+		final String identifier = EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + patientId;
 		requestProducerResultBuilder.patientMainAddressIdentifier(identifier);
 
 		return JsonRequestLocationUpsertItem.builder()

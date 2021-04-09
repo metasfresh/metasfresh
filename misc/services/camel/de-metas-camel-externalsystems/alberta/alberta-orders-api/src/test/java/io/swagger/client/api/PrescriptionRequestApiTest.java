@@ -13,7 +13,7 @@
 package io.swagger.client.api;
 
 import io.swagger.client.ApiException;
-import io.swagger.client.model.OrderStatus;
+import io.swagger.client.model.ArrayOfPrescriptionRequests;
 import org.junit.Test;
 import org.junit.Ignore;
 
@@ -23,27 +23,27 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * API tests for OrderStatusApi
+ * API tests for PrescriptionRequestApi
  */
 @Ignore
-public class OrderStatusApiTest {
+public class PrescriptionRequestApiTest {
 
-    private final OrderStatusApi api = new OrderStatusApi();
+    private final PrescriptionRequestApi api = new PrescriptionRequestApi();
 
     /**
-     * Auftragsstatus (ggf. später auch Rezeptstatus) ändern
+     * Rezeptanforderungen je nach Status abrufen
      *
-     * Szenario - ein Auftrag wurde im WaWi geändert und diese Änderungen sollen in Alberta übertragen werden ----- Aufruf &#x3D;&gt; orderStatus/[orderId]
+     * Szenario - das WaWi fragt in einem bestimmten Intervall bei Alberta nach, ob es neu angelegte Rezeptanforderungen gibt ----- Aufruf &#x3D;&gt; order/?status&#x3D;[status]&amp;updatedAfter&#x3D;[updatedAfter]
      *
      * @throws ApiException
      *          if the Api call fails
      */
     @Test
-    public void updateOrderStatusTest() throws ApiException {
-        OrderStatus body = null;
+    public void getCreatedPrescriptionRequestsTest() throws ApiException {
         String albertaApiKey = null;
-        String id = null;
-        api.updateOrderStatus(body, albertaApiKey, id);
+        String status = null;
+        String updatedAfter = null;
+        ArrayOfPrescriptionRequests response = api.getCreatedPrescriptionRequests(albertaApiKey, status, updatedAfter);
 
         // TODO: test validations
     }
