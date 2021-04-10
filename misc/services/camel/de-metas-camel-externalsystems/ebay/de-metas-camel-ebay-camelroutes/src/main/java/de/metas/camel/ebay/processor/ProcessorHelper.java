@@ -22,14 +22,15 @@
 
 package de.metas.camel.ebay.processor;
 
-import de.metas.camel.externalsystems.common.LogMessageRequest;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import lombok.NonNull;
-import org.apache.camel.Exchange;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
 
 import javax.annotation.Nullable;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
+import org.apache.camel.Exchange;
+
+import de.metas.camel.externalsystems.common.LogMessageRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import lombok.NonNull;
 
 public class ProcessorHelper
 {

@@ -21,7 +21,7 @@ import org.springframework.test.context.ContextConfiguration;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 
 @CamelSpringTest
 @ContextConfiguration(classes = EbayOrderImportRouteTest.ContextConfig.class)

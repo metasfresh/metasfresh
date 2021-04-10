@@ -1,4 +1,16 @@
-Mappings:
+# Unit Tests
+
+In order to run the unit test you need two things configured:
+
+1. ebay-test-creds.yaml in src/test/resources. Format see: 
+
+2. ebay-user for sandbox (see: application.properties)
+
+
+
+# Api to Metasfesh mappings
+
+
 
 | Nr. | Field-Name | Occurence E | M | Metas OC-Field | Metas Payment Field | Notes |
 | --- | --- | --- | --- | --- | --- | --- |

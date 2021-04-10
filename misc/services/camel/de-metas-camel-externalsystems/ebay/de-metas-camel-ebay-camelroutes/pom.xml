@@ -61,12 +61,27 @@
     </dependencyManagement>
 
     <dependencies>
-        
+    
+    	 <dependency>
+            <groupId>de.metas.common.externalsystem</groupId>
+            <artifactId>de-metas-common-externalsystem</artifactId>
+            <version>${metasfresh-common.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.externalreference</groupId>
+            <artifactId>de-metas-common-externalreference</artifactId>
+            <version>${metasfresh-common.version}</version>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-externalsystems-common</artifactId>
-            <version>10.0.0</version>
+            <version>${metasfresh-common.version}</version>
+            <scope>compile</scope>
         </dependency>
+    
+        
         
         <dependency>
         	<groupId>de.metas.camel.externalsystems</groupId>
@@ -78,13 +93,6 @@
 			<artifactId>ebay-oauth-java-client</artifactId>
 			<version>1.1.0</version>
 		</dependency>
-        
-        
-        <dependency>
-            <groupId>de.metas.common.externalsystem</groupId>
-            <artifactId>de-metas-common-externalsystem</artifactId>
-            <version>${metasfresh-common.version}</version>
-        </dependency>
 
         <dependency>
             <groupId>org.apache.camel</groupId>
@@ -190,6 +198,13 @@
     
      <build>
         <finalName>${project.artifactId}</finalName>
+        
+       <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
 
         <plugins>
             <plugin>

@@ -22,6 +22,7 @@
         <module>common</module>
         <module>de-metas-camel-shopware6</module>
         <module>ebay</module>
+        <module>amazon</module>
     </modules>
 
 </project>

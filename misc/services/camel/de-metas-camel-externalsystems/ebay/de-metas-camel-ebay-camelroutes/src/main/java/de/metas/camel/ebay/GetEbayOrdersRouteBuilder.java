@@ -1,23 +1,16 @@
 package de.metas.camel.ebay;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
-import org.apache.camel.CamelContext;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
-import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
-import de.metas.camel.ebay.processor.CreateMetasModelUpsertReqProcessor;
+import de.metas.camel.ebay.processor.CreateOrderLineCandidateUpsertReqProcessor;
 import de.metas.camel.ebay.processor.GetEbayOrdersProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import lombok.NonNull;
 
 /**
  * Route to fetch ebay orders and put them as order line candidates into metasfresh.
@@ -29,17 +22,9 @@ import lombok.NonNull;
 @Component
 public class GetEbayOrdersRouteBuilder extends RouteBuilder{
 	
-	private static final String EXT_ID_PREFIX = "ebay";
-	
 	public static final String GET_ORDERS_ROUTE_ID = "Ebay-getOrders";
 	public static final String PROCESS_ORDER_ROUTE_ID = "Ebay-processOrder";
-
-	public static final String GET_ORDERS_PROCESSOR_ID = "GetEbayOrdersProcessorId";
-	public static final String CREATE_ESR_QUERY_REQ_PROCESSOR_ID = "CreateBPartnerESRQueryProcessorId";
-	public static final String CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID = "CreateBPartnerUpsertReqProcessorId";
-
 	
-
 	@Override
 	public void configure() {
 		
@@ -51,41 +36,22 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder{
 		
 		
 		//@formatter:off
+		//first, get orders from ebay and split them.
 		from(StaticEndpointBuilders.direct(GET_ORDERS_ROUTE_ID))
 			.routeId(GET_ORDERS_ROUTE_ID)
-			.log("Route invoked")
-			.process(new GetEbayOrdersProcessor()).id(GET_ORDERS_PROCESSOR_ID)
+			.log(LoggingLevel.DEBUG, "Ebay get order route invoked")
+			.process(new GetEbayOrdersProcessor())
 			.split(body())
 			.to(StaticEndpointBuilders.direct(PROCESS_ORDER_ROUTE_ID));
 		
-		
+		//second, hand over individual orders for further processing.
 		from(StaticEndpointBuilders.direct(PROCESS_ORDER_ROUTE_ID))
 			.routeId(PROCESS_ORDER_ROUTE_ID)
-			.log("Route invoked")
-			.process(new CreateMetasModelUpsertReqProcessor()).id(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
-	
-			.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPartners: ${body}")
-			.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_CAMEL_URI + "}}");
-			//@formatter:on
-	}
-	
-	
-	@NonNull
-	private JacksonDataFormat setupJacksonDataFormatFor(
-			@NonNull final CamelContext context,
-			@NonNull final Class<?> unmarshalType)
-	{
-		final ObjectMapper objectMapper = (new ObjectMapper())
-				.findAndRegisterModules()
-				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-				.enable(MapperFeature.USE_ANNOTATIONS);
-
-		final JacksonDataFormat jacksonDataFormat = new JacksonDataFormat();
-		jacksonDataFormat.setCamelContext(context);
-		jacksonDataFormat.setObjectMapper(objectMapper);
-		jacksonDataFormat.setUnmarshalType(unmarshalType);
-		return jacksonDataFormat;
+			.log("Ebay process orders route invoked")
+			.process(new CreateOrderLineCandidateUpsertReqProcessor())
+			.log(LoggingLevel.DEBUG, "Calling metasfresh-api to store order candidates!")
+			.to( direct(ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID) );
+		//@formatter:on
 	}
 	
 }

@@ -2,9 +2,11 @@ package de.metas.camel.ebay;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,7 +38,8 @@ public class EbayApiTest {
 	
 	private static final Environment EXECUTION_ENV = Environment.SANDBOX;
 	
-    private static final List<String> SCOPE_LIST = Arrays.asList("https://api.ebay.com/oauth/api_scope", "https://api.ebay.com/oauth/api_scope/sell.marketing.readonly",
+    private static final List<String> SCOPE_LIST = Arrays.asList("https://api.ebay.com/oauth/api_scope", 
+    		"https://api.ebay.com/oauth/api_scope/sell.marketing.readonly",
     		"https://api.ebay.com/oauth/api_scope/sell.fulfillment");
 	
     
@@ -101,6 +104,15 @@ public class EbayApiTest {
 	
 	
 	private String getAuthorizationResponseUrl() throws InterruptedException {
+		Properties prop = new Properties();
+        try {
+            prop.load(EbayApiTest.class.getClassLoader().getResourceAsStream("application.properties"));
+            
+        } catch (IOException ex) {
+        	System.err.println("Please provide a a properties file with ebay user and pass.");
+        } 
+		
+		
         WebDriver driver = new ChromeDriver();
         OAuth2Api auth2Api = new OAuth2Api();
         String authorizeUrl = auth2Api.generateUserAuthorizationUrl(EXECUTION_ENV, SCOPE_LIST, Optional.of("current-page"));
@@ -111,8 +123,9 @@ public class EbayApiTest {
         WebElement userId = (new WebDriverWait(driver, 10))
                 .until(ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector("input[type='text']"))));
         WebElement password = driver.findElement(By.cssSelector("input[type='password']"));
-
         
+        userId.sendKeys(prop.getProperty("ebay.app.userid"));
+        password.sendKeys(prop.getProperty("ebay.app.userpass"));
         driver.findElement(By.name("sgnBt")).submit();
 
         Thread.sleep(4000);

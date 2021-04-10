@@ -6,7 +6,7 @@ import org.apache.camel.Processor;
 
 import de.metas.camel.externalsystems.ebay.api.model.Order;
 
-public class CreateMetasModelUpsertReqProcessor implements Processor {
+public class CreateOrderLineCandidateUpsertReqProcessor implements Processor {
 
 	@Override
 	public void process(final Exchange exchange)

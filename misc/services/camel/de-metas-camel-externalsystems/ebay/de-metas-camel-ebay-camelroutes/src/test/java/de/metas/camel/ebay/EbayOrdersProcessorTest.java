@@ -22,7 +22,7 @@ import de.metas.camel.ebay.processor.GetEbayOrdersProcessor;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 
 @CamelSpringTest
 @ContextConfiguration(classes = EbayOrderImportRouteTest.ContextConfig.class)
@@ -46,13 +46,11 @@ public class EbayOrdersProcessorTest {
 
         
         Map<String,String> parameters = new HashMap<>();
-        parameters.put(ExternalSystemConstants.PARAM_API_KEY, "key");
-        parameters.put(ExternalSystemConstants.PARAM_TENANT, "tenant");
-        parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, "ua");
-        parameters.put(ExternalSystemConstants.PARAM_BASE_PATH, "bp");
+        parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, "%5B2016-03-21T08:25:43.511Z%5D");
+
         
-        JsonExternalSystemRequest jesr = new JsonExternalSystemRequest("orgCode", JsonExternalSystemName.of("ebay"),
-        		"command", JsonMetasfreshId.of(1), parameters);
+        
+        JsonExternalSystemRequest jesr = new JsonExternalSystemRequest("orgCode", JsonExternalSystemName.of("ebay"), "command", JsonMetasfreshId.of(1), parameters);
 
         template.sendBody(jesr);
         
