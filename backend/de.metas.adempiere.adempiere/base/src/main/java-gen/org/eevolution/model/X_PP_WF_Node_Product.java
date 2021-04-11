@@ -1,261 +1,197 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import org.compiere.model.*;
-import org.compiere.util.Env;
 
-/** Generated Model for PP_WF_Node_Product
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_PP_WF_Node_Product extends PO implements I_PP_WF_Node_Product, I_Persistent 
+/**
+ * Generated Model for PP_WF_Node_Product
+ *
+ * @author metasfresh (generated)
+ */
+@SuppressWarnings("unused")
+public class X_PP_WF_Node_Product extends org.compiere.model.PO implements I_PP_WF_Node_Product, org.compiere.model.I_Persistent
 {
 
 	/**
-	 *
+	 * ConfigurationLevel AD_Reference_ID=53222
+	 * Reference name: AD_SysConfig ConfigurationLevel
 	 */
-	private static final long serialVersionUID = 20090915L;
-
-    /** Standard Constructor */
-    public X_PP_WF_Node_Product (Properties ctx, int PP_WF_Node_Product_ID, String trxName)
-    {
-      super (ctx, PP_WF_Node_Product_ID, trxName);
-      /** if (PP_WF_Node_Product_ID == 0)
-        {
-			setAD_WF_Node_ID (0);
-			setEntityType (null);
-// U
-			setM_Product_ID (0);
-			setPP_WF_Node_Product_ID (0);
-        } */
-    }
-
-    /** Load Constructor */
-    public X_PP_WF_Node_Product (Properties ctx, ResultSet rs, String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
-
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
-
-    /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
-    {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
-      return poi;
-    }
-
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_PP_WF_Node_Product[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	public I_AD_WF_Node getAD_WF_Node() throws RuntimeException
-    {
-		return (I_AD_WF_Node)MTable.get(getCtx(), I_AD_WF_Node.Table_Name)
-			.getPO(getAD_WF_Node_ID(), get_TrxName());	}
-
-	/** Set Node.
-		@param AD_WF_Node_ID 
-		Workflow Node (activity), step or process
-	  */
-	public void setAD_WF_Node_ID (int AD_WF_Node_ID)
-	{
-		if (AD_WF_Node_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_AD_WF_Node_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_AD_WF_Node_ID, Integer.valueOf(AD_WF_Node_ID));
-	}
-
-	/** Get Node.
-		@return Workflow Node (activity), step or process
-	  */
-	public int getAD_WF_Node_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_WF_Node_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** ConfigurationLevel AD_Reference_ID=53222 */
-	public static final int CONFIGURATIONLEVEL_AD_Reference_ID=53222;
-	/** System = S */
+	public static final int CONFIGURATIONLEVEL_AD_Reference_ID = 53222;
+	/**
+	 * Mandant = C
+	 */
+	public static final String CONFIGURATIONLEVEL_Mandant = "C";
+	/**
+	 * Organisation = O
+	 */
+	public static final String CONFIGURATIONLEVEL_Organisation = "O";
+	/**
+	 * EntityType AD_Reference_ID=389
+	 * Reference name: _EntityTypeNew
+	 */
+	public static final int ENTITYTYPE_AD_Reference_ID = 389;
+	/**
+	 * System = S
+	 */
 	public static final String CONFIGURATIONLEVEL_System = "S";
-	/** Client = C */
-	public static final String CONFIGURATIONLEVEL_Client = "C";
-	/** Organization = O */
-	public static final String CONFIGURATIONLEVEL_Organization = "O";
-	/** Set Configuration Level.
-		@param ConfigurationLevel 
-		Configuration Level for this parameter
-	  */
-	public void setConfigurationLevel (String ConfigurationLevel)
-	{
+	private static final long serialVersionUID = -1772302278L;
 
-		set_Value (COLUMNNAME_ConfigurationLevel, ConfigurationLevel);
+	/**
+	 * Standard Constructor
+	 */
+	public X_PP_WF_Node_Product(final Properties ctx, final int PP_WF_Node_Product_ID, @Nullable final String trxName)
+	{
+		super(ctx, PP_WF_Node_Product_ID, trxName);
 	}
 
-	/** Get Configuration Level.
-		@return Configuration Level for this parameter
-	  */
-	public String getConfigurationLevel () 
+	/**
+	 * Load Constructor
+	 */
+	public X_PP_WF_Node_Product(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
 	{
-		return (String)get_Value(COLUMNNAME_ConfigurationLevel);
+		super(ctx, rs, trxName);
 	}
 
-	/** EntityType AD_Reference_ID=389 */
-	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entity Type.
-		@param EntityType 
-		Dictionary Entity Type; Determines ownership and synchronization
-	  */
-	public void setEntityType (String EntityType)
+	/**
+	 * Load Meta Data
+	 */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-
-		set_Value (COLUMNNAME_EntityType, EntityType);
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
-	/** Get Entity Type.
-		@return Dictionary Entity Type; Determines ownership and synchronization
-	  */
-	public String getEntityType () 
+	@Override
+	public int getAD_WF_Node_ID()
 	{
-		return (String)get_Value(COLUMNNAME_EntityType);
+		return get_ValueAsInt(COLUMNNAME_AD_WF_Node_ID);
 	}
 
-	/** Set Is Subcontracting.
-		@param IsSubcontracting Is Subcontracting	  */
-	public void setIsSubcontracting (boolean IsSubcontracting)
+	@Override
+	public void setAD_WF_Node_ID(final int AD_WF_Node_ID)
 	{
-		set_Value (COLUMNNAME_IsSubcontracting, Boolean.valueOf(IsSubcontracting));
+		if (AD_WF_Node_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_AD_WF_Node_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_AD_WF_Node_ID, AD_WF_Node_ID);
 	}
 
-	/** Get Is Subcontracting.
-		@return Is Subcontracting	  */
-	public boolean isSubcontracting () 
+	@Override
+	public java.lang.String getConfigurationLevel()
 	{
-		Object oo = get_Value(COLUMNNAME_IsSubcontracting);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsString(COLUMNNAME_ConfigurationLevel);
 	}
 
-	public I_M_Product getM_Product() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_Product_ID(), get_TrxName());	}
-
-	/** Set Product.
-		@param M_Product_ID 
-		Product, Service, Item
-	  */
-	public void setM_Product_ID (int M_Product_ID)
+	@Override
+	public void setConfigurationLevel(final @Nullable java.lang.String ConfigurationLevel)
 	{
-		if (M_Product_ID < 1) 
-			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+		set_Value(COLUMNNAME_ConfigurationLevel, ConfigurationLevel);
 	}
 
-	/** Get Product.
-		@return Product, Service, Item
-	  */
-	public int getM_Product_ID () 
+	@Override
+	public java.lang.String getEntityType()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
 
-	/** Set Workflow Node Product.
-		@param PP_WF_Node_Product_ID Workflow Node Product	  */
-	public void setPP_WF_Node_Product_ID (int PP_WF_Node_Product_ID)
+	@Override
+	public void setEntityType(final java.lang.String EntityType)
 	{
-		if (PP_WF_Node_Product_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_PP_WF_Node_Product_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_PP_WF_Node_Product_ID, Integer.valueOf(PP_WF_Node_Product_ID));
+		set_Value(COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get Workflow Node Product.
-		@return Workflow Node Product	  */
-	public int getPP_WF_Node_Product_ID () 
+	@Override
+	public void setIsSubcontracting(final boolean IsSubcontracting)
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_WF_Node_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		set_Value(COLUMNNAME_IsSubcontracting, IsSubcontracting);
 	}
 
-	/** Set Quantity.
-		@param Qty 
-		Quantity
-	  */
-	public void setQty (BigDecimal Qty)
+	@Override
+	public boolean isSubcontracting()
 	{
-		set_Value (COLUMNNAME_Qty, Qty);
+		return get_ValueAsBoolean(COLUMNNAME_IsSubcontracting);
 	}
 
-	/** Get Quantity.
-		@return Quantity
-	  */
-	public BigDecimal getQty () 
+	@Override
+	public int getM_Product_ID()
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
-	/** Set Sequence.
-		@param SeqNo 
-		Method of ordering records; lowest number comes first
-	  */
-	public void setSeqNo (int SeqNo)
+	@Override
+	public void setM_Product_ID(final int M_Product_ID)
 	{
-		set_Value (COLUMNNAME_SeqNo, Integer.valueOf(SeqNo));
+		if (M_Product_ID < 1)
+			set_Value(COLUMNNAME_M_Product_ID, null);
+		else
+			set_Value(COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Sequence.
-		@return Method of ordering records; lowest number comes first
-	  */
-	public int getSeqNo () 
+	@Override
+	public int getPP_WF_Node_Product_ID()
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_SeqNo);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_WF_Node_Product_ID);
+	}
+
+	@Override
+	public void setPP_WF_Node_Product_ID(final int PP_WF_Node_Product_ID)
+	{
+		if (PP_WF_Node_Product_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_PP_WF_Node_Product_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_PP_WF_Node_Product_ID, PP_WF_Node_Product_ID);
+	}
+
+	@Override
+	public BigDecimal getQty()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQty(final @Nullable BigDecimal Qty)
+	{
+		set_Value(COLUMNNAME_Qty, Qty);
+	}
+
+	@Override
+	public int getSeqNo()
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
+	}
+
+	@Override
+	public void setSeqNo(final int SeqNo)
+	{
+		set_Value(COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public java.lang.String getSpecification()
+	{
+		return get_ValueAsString(COLUMNNAME_Specification);
+	}
+
+	@Override
+	public void setSpecification(final @Nullable java.lang.String Specification)
+	{
+		set_Value(COLUMNNAME_Specification, Specification);
+	}
+
+	@Override
+	public BigDecimal getYield()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Yield);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setYield(final @Nullable BigDecimal Yield)
+	{
+		set_Value(COLUMNNAME_Yield, Yield);
 	}
 }

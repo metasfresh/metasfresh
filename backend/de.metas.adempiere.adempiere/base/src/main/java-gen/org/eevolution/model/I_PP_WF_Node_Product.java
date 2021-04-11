@@ -1,214 +1,337 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.model.*;
-import org.compiere.util.KeyNamePair;
+import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for PP_WF_Node_Product
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+/**
+ * Generated Interface for PP_WF_Node_Product
+ *
+ * @author metasfresh (generated)
  */
-public interface I_PP_WF_Node_Product 
+@SuppressWarnings("unused")
+public interface I_PP_WF_Node_Product
 {
 
-    /** TableName=PP_WF_Node_Product */
-    public static final String Table_Name = "PP_WF_Node_Product";
+	String Table_Name = "PP_WF_Node_Product";
 
-    /** AD_Table_ID=53016 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=53016 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_WF_Node_ID = "AD_WF_Node_ID";
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_ConfigurationLevel = new ModelColumn<>(I_PP_WF_Node_Product.class, "ConfigurationLevel", null);
+	String COLUMNNAME_ConfigurationLevel = "ConfigurationLevel";
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Created = new ModelColumn<>(I_PP_WF_Node_Product.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_EntityType = new ModelColumn<>(I_PP_WF_Node_Product.class, "EntityType", null);
+	String COLUMNNAME_EntityType = "EntityType";
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_IsActive = new ModelColumn<>(I_PP_WF_Node_Product.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_IsSubcontracting = new ModelColumn<>(I_PP_WF_Node_Product.class, "IsSubcontracting", null);
+	String COLUMNNAME_IsSubcontracting = "IsSubcontracting";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_PP_WF_Node_Product_ID = new ModelColumn<>(I_PP_WF_Node_Product.class, "PP_WF_Node_Product_ID", null);
+	String COLUMNNAME_PP_WF_Node_Product_ID = "PP_WF_Node_Product_ID";
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Qty = new ModelColumn<>(I_PP_WF_Node_Product.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_SeqNo = new ModelColumn<>(I_PP_WF_Node_Product.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Specification = new ModelColumn<>(I_PP_WF_Node_Product.class, "Specification", null);
+	String COLUMNNAME_Specification = "Specification";
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Updated = new ModelColumn<>(I_PP_WF_Node_Product.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	ModelColumn<I_PP_WF_Node_Product, Object> COLUMN_Yield = new ModelColumn<>(I_PP_WF_Node_Product.class, "Yield", null);
+	String COLUMNNAME_Yield = "Yield";
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Client_ID();
 
-    /** AccessLevel = 3 - Client - Org 
-     */
-    BigDecimal accessLevel = BigDecimal.valueOf(3);
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
 
-    /** Load Meta Data */
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID(int AD_Org_ID);
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	/**
+	 * Get Knoten.
+	 * Workflow Node (activity), step or process
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_WF_Node_ID();
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Set Knoten.
+	 * Workflow Node (activity), step or process
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_WF_Node_ID(int AD_WF_Node_ID);
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	/**
+	 * Get Configuration LEVEL.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	java.lang.String getConfigurationLevel();
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set Configuration LEVEL.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setConfigurationLevel(@Nullable java.lang.String ConfigurationLevel);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
 
-    /** Column name AD_WF_Node_ID */
-    public static final String COLUMNNAME_AD_WF_Node_ID = "AD_WF_Node_ID";
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
 
-	/** Set Node.
-	  * Workflow Node (activity), step or process
-	  */
-	public void setAD_WF_Node_ID (int AD_WF_Node_ID);
+	/**
+	 * Get Entitäts-Art.
+	 * Dictionary Entity Type;
+	 * Determines ownership and synchronization
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getEntityType();
 
-	/** Get Node.
-	  * Workflow Node (activity), step or process
-	  */
-	public int getAD_WF_Node_ID();
+	/**
+	 * Set Entitäts-Art.
+	 * Dictionary Entity Type;
+	 * Determines ownership and synchronization
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setEntityType(java.lang.String EntityType);
 
-	public I_AD_WF_Node getAD_WF_Node() throws RuntimeException;
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive(boolean IsActive);
 
-    /** Column name ConfigurationLevel */
-    public static final String COLUMNNAME_ConfigurationLevel = "ConfigurationLevel";
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
 
-	/** Set Configuration Level.
-	  * Configuration Level for this parameter
-	  */
-	public void setConfigurationLevel (String ConfigurationLevel);
+	/**
+	 * Set Is Subcontracting.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsSubcontracting(boolean IsSubcontracting);
 
-	/** Get Configuration Level.
-	  * Configuration Level for this parameter
-	  */
-	public String getConfigurationLevel();
+	/**
+	 * Get Is Subcontracting.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isSubcontracting();
 
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID(int M_Product_ID);
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	/**
+	 * Get Manufacturing Products.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getPP_WF_Node_Product_ID();
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
+	/**
+	 * Set Manufacturing Products.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPP_WF_Node_Product_ID(int PP_WF_Node_Product_ID);
 
-    /** Column name EntityType */
-    public static final String COLUMNNAME_EntityType = "EntityType";
+	/**
+	 * Get Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQty();
 
-	/** Set Entity Type.
-	  * Dictionary Entity Type;
- Determines ownership and synchronization
-	  */
-	public void setEntityType (String EntityType);
+	/**
+	 * Set Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQty(@Nullable BigDecimal Qty);
 
-	/** Get Entity Type.
-	  * Dictionary Entity Type;
- Determines ownership and synchronization
-	  */
-	public String getEntityType();
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+	 * lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
 
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+	 * lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo(int SeqNo);
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Get Specification.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable
+	java.lang.String getSpecification();
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Set Specification.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSpecification(@Nullable java.lang.String Specification);
 
-    /** Column name IsSubcontracting */
-    public static final String COLUMNNAME_IsSubcontracting = "IsSubcontracting";
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
 
-	/** Set Is Subcontracting	  */
-	public void setIsSubcontracting (boolean IsSubcontracting);
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
 
-	/** Get Is Subcontracting	  */
-	public boolean isSubcontracting();
+	/**
+	 * Get Yield %.
+	 * The Yield is the percentage of a lot that is expected to be of acceptable wuality may fall below 100 percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getYield();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/** Set Product.
-	  * Product, Service, Item
-	  */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/** Get Product.
-	  * Product, Service, Item
-	  */
-	public int getM_Product_ID();
-
-	public I_M_Product getM_Product() throws RuntimeException;
-
-    /** Column name PP_WF_Node_Product_ID */
-    public static final String COLUMNNAME_PP_WF_Node_Product_ID = "PP_WF_Node_Product_ID";
-
-	/** Set Workflow Node Product	  */
-	public void setPP_WF_Node_Product_ID (int PP_WF_Node_Product_ID);
-
-	/** Get Workflow Node Product	  */
-	public int getPP_WF_Node_Product_ID();
-
-    /** Column name Qty */
-    public static final String COLUMNNAME_Qty = "Qty";
-
-	/** Set Quantity.
-	  * Quantity
-	  */
-	public void setQty (BigDecimal Qty);
-
-	/** Get Quantity.
-	  * Quantity
-	  */
-	public BigDecimal getQty();
-
-    /** Column name SeqNo */
-    public static final String COLUMNNAME_SeqNo = "SeqNo";
-
-	/** Set Sequence.
-	  * Method of ordering records;
- lowest number comes first
-	  */
-	public void setSeqNo (int SeqNo);
-
-	/** Get Sequence.
-	  * Method of ordering records;
- lowest number comes first
-	  */
-	public int getSeqNo();
-
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
-
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
-
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
+	/**
+	 * Set Yield %.
+	 * The Yield is the percentage of a lot that is expected to be of acceptable wuality may fall below 100 percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setYield(@Nullable BigDecimal Yield);
 }
