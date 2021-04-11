@@ -34,7 +34,7 @@ import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesSt
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponseItem;
 import de.metas.rest_api.invoicecandidates.response.JsonCheckInvoiceCandidatesStatusResponseItem.JsonCheckInvoiceCandidatesStatusResponseItemBuilder;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceStatus;
-import de.metas.rest_api.invoicecandidates.response.JsonWorkPackageStatus;
+import de.metas.common.rest_api.common.JsonWorkPackageStatus;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
