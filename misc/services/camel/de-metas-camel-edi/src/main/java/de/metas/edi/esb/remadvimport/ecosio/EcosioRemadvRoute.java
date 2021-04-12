@@ -24,8 +24,8 @@ package de.metas.edi.esb.remadvimport.ecosio;
 
 import at.erpel.schemas._1p0.messaging.message.ErpelMessageType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceRequest;
-import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceResponse;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRequest;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceResponse;
 import de.metas.edi.esb.commons.Util;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
@@ -63,13 +63,13 @@ public class EcosioRemadvRoute extends RouteBuilder
 		if (!Util.isEmpty(remoteEndpoint))
 		{
 			from(remoteEndpoint)
-					.routeId("ecosio-Remote-XML-Orders-To-Local")
+					.routeId("ecosio-Remote-XML-Remadv-To-Local")
 					.log(LoggingLevel.INFO, "Getting remote file")
 					.to("{{" + INPUT_REMADV_LOCAL + "}}");
 		}
-		
+
 		// @formatter:off
-		from(INPUT_REMADV_LOCAL)
+		from("{{" +INPUT_REMADV_LOCAL + "}}")
 				.routeId(ECOSIO_REMADV_XML_TO_JSON_ROUTE)
 				.streamCaching()
 				.unmarshal(jacksonXMLDataFormat)

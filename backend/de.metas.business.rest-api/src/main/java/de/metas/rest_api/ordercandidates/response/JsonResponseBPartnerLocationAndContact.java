@@ -5,9 +5,9 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import de.metas.common.bpartner.response.JsonResponseBPartner;
-import de.metas.common.bpartner.response.JsonResponseContact;
-import de.metas.common.bpartner.response.JsonResponseLocation;
+import de.metas.common.bpartner.v1.response.JsonResponseBPartner;
+import de.metas.common.bpartner.v1.response.JsonResponseContact;
+import de.metas.common.bpartner.v1.response.JsonResponseLocation;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

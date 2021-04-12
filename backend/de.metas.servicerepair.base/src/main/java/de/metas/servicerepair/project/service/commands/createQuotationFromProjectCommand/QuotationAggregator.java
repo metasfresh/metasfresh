@@ -200,6 +200,7 @@ public class QuotationAggregator
 					.type(ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
 					.productId(costCollector.getProductId())
 					.asiId(costCollector.getAsiId())
+					.warrantyCase(costCollector.getWarrantyCase())
 					.uomId(costCollector.getUomId())
 					.singleCostCollectorId(costCollector.getId())
 					.build();

@@ -4,6 +4,7 @@ import java.util.Date;
 
 import org.compiere.SpringContextHolder;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
@@ -65,7 +66,7 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 	@Autowired
 	private ObjectMapper jsonObjectMapper;
 	@Autowired
-	private Client elasticsearchClient;
+	private RestHighLevelClient elasticsearchClient;
 
 	@Param(parameterName = "DateFrom")
 	private Date p_DateFrom;

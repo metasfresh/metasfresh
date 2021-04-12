@@ -22,15 +22,10 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
                 def ediBuildFile = load('buildfile.groovy')
                 ediBuildFile.build(mvnConf, scmVars, forceBuild)
             }
-
             dir('camel/de-metas-camel-externalsystems') {
                 def ediBuildFile = load('buildfile.groovy')
                 ediBuildFile.build(mvnConf, scmVars, forceBuild)
             }
-        }
-
-        withMaven(jdk: 'java-8', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
-            
             dir('admin') {
                 def procurementWebuiBuildFile = load('buildfile.groovy')
                 procurementWebuiBuildFile.build(mvnConf, scmVars, forceBuild)

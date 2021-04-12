@@ -24,9 +24,12 @@ package de.metas.externalsystem.alberta;
 
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.pricing.PriceListId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
@@ -43,6 +46,8 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 	String baseUrl;
 	@NonNull
 	String tenant;
+	@Nullable
+	PriceListId pharmacyPriceListId;
 
 	@Builder
 	public ExternalSystemAlbertaConfig(final @NonNull ExternalSystemAlbertaConfigId id,
@@ -50,7 +55,8 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 			final @NonNull String value,
 			final @NonNull String apiKey,
 			final @NonNull String baseUrl,
-			final @NonNull String tenant)
+			final @NonNull String tenant, 
+			final @Nullable PriceListId pharmacyPriceListId)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -58,6 +64,7 @@ public class ExternalSystemAlbertaConfig implements IExternalSystemChildConfig
 		this.apiKey = apiKey;
 		this.baseUrl = baseUrl;
 		this.tenant = tenant;
+		this.pharmacyPriceListId = pharmacyPriceListId;
 	}
 
 	public static ExternalSystemAlbertaConfig cast(@NonNull final IExternalSystemChildConfig childCondig)

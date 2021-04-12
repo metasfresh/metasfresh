@@ -27,6 +27,7 @@ import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -93,7 +94,7 @@ public class CommissionConfigFactory
 	public ImmutableList<CommissionConfig> createForNewCommissionInstances(@NonNull final ConfigRequestForNewInstance contractRequest)
 	{
 		final Hierarchy hierarchy = contractRequest.getCommissionHierarchy();
-
+		
 		// Note: we start with the customer which *might* be a sales rep too. 
 		// If that's the case, the contract's C_HierarchyCommissionSettings might indicate that we need a 0% C_CommissionShare for that endcustomer
 		final Beneficiary beneficiary = Beneficiary.of(contractRequest.getCustomerBPartnerId()); 
@@ -108,6 +109,7 @@ public class CommissionConfigFactory
 		// don't look up the terms via product; instead, get all commission-terms for the respective sales reps that are currently active
 		final TermsQuery termsQuery = TermsQuery.builder()
 				.billPartnerIds(allBPartnerIds)
+				.orgId(contractRequest.getOrgId())
 				.dateOrdered(contractRequest.getCommissionDate())
 				.build();
 		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
@@ -322,6 +324,9 @@ public class CommissionConfigFactory
 	@Value
 	public static class ConfigRequestForNewInstance
 	{
+		@NonNull 
+		OrgId orgId;
+		
 		@NonNull
 		BPartnerId salesRepBPartnerId;
 

@@ -1,6 +1,3 @@
-FROM elasticsearch:2.4
-
-COPY sources/configs/elasticsearch.yml /usr/share/elasticsearch/config/
-RUN chown elasticsearch:elasticsearch /usr/share/elasticsearch/config/elasticsearch.yml
-RUN mkdir -p /usr/share/elasticsearch/data/metasfresh && \
-chown elasticsearch:elasticsearch /usr/share/elasticsearch/data/metasfresh
+# Please keep the version in sync with the version used by metasfresh
+# Also see https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html
+FROM docker.elastic.co/elasticsearch/elasticsearch:7.9.3
