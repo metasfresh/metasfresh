@@ -22,7 +22,6 @@
 
 package de.metas.camel.alberta.ordercandidate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.alberta.patient.AlbertaConnectionDetails;
@@ -139,10 +138,6 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 		final MockEndpoint bpartnerUpsertMockEndpoint = getMockEndpoint(MOCK_UPSERT_BPARTNER_REQUEST);
 		final InputStream bparnerUpsertRequestExpected = this.getClass().getResourceAsStream(JSON_BPARTNER_UPSERT_REQUEST);
 		final BPUpsertCamelRequest bpUpsertCamelRequest = objectMapper.readValue(bparnerUpsertRequestExpected, BPUpsertCamelRequest.class);
-		// final BPUpsertCamelRequest bpUpsertCamelRequest = BPUpsertCamelRequest.builder()
-		// 		.jsonRequestBPartnerUpsert(jsonRequestBPartnerUpsert)
-		// 		.orgCode(ORG_CODE)
-		// 		.build(); // todo cp
 
 		bpartnerUpsertMockEndpoint.expectedBodiesReceived(bpUpsertCamelRequest);
 
@@ -218,7 +213,7 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 	private static class MockGetOrdersApiProcessor implements Processor
 	{
 		@Override
-		public void process(@NonNull final Exchange exchange) throws ApiException, JsonProcessingException
+		public void process(@NonNull final Exchange exchange) throws ApiException
 		{
 			final JSON json = new JSON();
 
