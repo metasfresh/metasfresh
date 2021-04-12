@@ -64,7 +64,7 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 
-public class GetOrdersRouteBuilderTests extends CamelTestSupport
+public class GetOrdersRouteBuilderCustomPathTests extends CamelTestSupport
 {
 	private static final String MOCK_SHOPWARE_TO_MF_RESULT = "mock:ShopwareToMFResult";
 
@@ -73,7 +73,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 	private static final String JSON_ORDER_BILLING_ADDRESS_PATH = "/de/metas/camel/externalsystems/shopware6/JsonOrderBillingAddress.json";
 	private static final String JSON_COUNTRY_INFO_PATH = "/de/metas/camel/externalsystems/shopware6/JsonCountry.json";
 
-	private static final String JSON_UPSERT_BPARTNER_REQUEST = "/de/metas/camel/externalsystems/shopware6/CamelUpsertBPartnerCompositeRequest.json";
+	private static final String JSON_UPSERT_BPARTNER_REQUEST = "/de/metas/camel/externalsystems/shopware6/CamelUpsertBPartnerCompositeRequestCustomIds.json";
 
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()
@@ -81,7 +81,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 		final var properties = new Properties();
 		try
 		{
-			properties.load(GetOrdersRouteBuilderTests.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.load(GetOrdersRouteBuilderCustomPathTests.class.getClassLoader().getResourceAsStream("application.properties"));
 			return properties;
 		}
 		catch (final IOException e)
@@ -130,20 +130,20 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 	private void prepareRouteForTesting(final MockSuccessfullyCreatedBPartnerProcessor successfullyCreatedBPartnerProcessor) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
-										  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
-												  .replace()
-												  .process(new MockGetOrdersProcessor()));
+							  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
+									  .replace()
+									  .process(new MockGetOrdersProcessor()));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
-										  advice -> {
-											  // validate the upsert request and send a response
-											  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
-													  .after()
-													  .to(MOCK_SHOPWARE_TO_MF_RESULT);
-											  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
-													  .skipSendToOriginalEndpoint()
-													  .process(successfullyCreatedBPartnerProcessor);
-										  });
+							  advice -> {
+								  // validate the upsert request and send a response
+								  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_SHOPWARE_TO_MF_RESULT);
+								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+										  .skipSendToOriginalEndpoint()
+										  .process(successfullyCreatedBPartnerProcessor);
+							  });
 	}
 
 	private static class MockSuccessfullyCreatedBPartnerProcessor implements Processor
@@ -164,13 +164,13 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 		{
 			// mock getOrders
 			final ObjectMapper mapper = new ObjectMapper();
-			final InputStream ordersIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDERS_RESOURCE_PATH);
+			final InputStream ordersIS = GetOrdersRouteBuilderCustomPathTests.class.getResourceAsStream(JSON_ORDERS_RESOURCE_PATH);
 			final JsonOrders jsonOrders = mapper.readValue(ordersIS, JsonOrders.class);
 
 			final List<JsonOrderAndCustomId> jsonOrderAndCustomIds = jsonOrders
 					.getData()
 					.stream()
-					.map(order -> JsonOrderAndCustomId.builder().jsonOrder(order).build())
+					.map(order -> JsonOrderAndCustomId.builder().customId(order.getOrderCustomer().getCustomerId() + "_custom").jsonOrder(order).build())
 					.collect(Collectors.toList());
 
 			// mock shopware client
@@ -190,27 +190,31 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 			final ShopwareClient shopwareClient = Mockito.mock(ShopwareClient.class);
 
 			//1. mock getDeliveries
-			final InputStream deliveriesIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_DELIVERIES_PATH);
+			final InputStream deliveriesIS = GetOrdersRouteBuilderCustomPathTests.class.getResourceAsStream(JSON_ORDER_DELIVERIES_PATH);
 			final List<JsonOrderAddressAndCustomId> deliveryAddresses = mapper.readValue(deliveriesIS, JsonOrderDeliveries.class)
 					.getData()
 					.stream()
-					.map(jsonOrderDelivery -> JsonOrderAddressAndCustomId.builder().jsonOrderAddress(jsonOrderDelivery.getShippingOrderAddress()).build())
+					.map(jsonOrderDelivery -> JsonOrderAddressAndCustomId.builder()
+							.customId(jsonOrderDelivery.getShippingOrderAddress().getId() + "_custom")
+							.jsonOrderAddress(jsonOrderDelivery.getShippingOrderAddress())
+							.build())
 					.collect(Collectors.toList());
 
 			Mockito.when(shopwareClient.getDeliveryAddresses(any(String.class), any(String.class)))
 					.thenReturn(deliveryAddresses);
 
 			//2. mock getOrderAddressDetails
-			final InputStream billingAddressIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_BILLING_ADDRESS_PATH);
+			final InputStream billingAddressIS = GetOrdersRouteBuilderCustomPathTests.class.getResourceAsStream(JSON_ORDER_BILLING_ADDRESS_PATH);
 			final JsonOrderAddress billingAddress = mapper.readValue(billingAddressIS, JsonOrderAddress.class);
 
 			Mockito.when(shopwareClient.getOrderAddressDetails(any(String.class), any(String.class)))
 					.thenReturn(Optional.of(JsonOrderAddressAndCustomId.builder()
 													.jsonOrderAddress(billingAddress)
+													.customId("billingAddressId_custom")
 													.build()));
 
 			//3. mock getCountryDetails
-			final InputStream countryIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_COUNTRY_INFO_PATH);
+			final InputStream countryIS = GetOrdersRouteBuilderCustomPathTests.class.getResourceAsStream(JSON_COUNTRY_INFO_PATH);
 			final JsonCountry jsonCountry = mapper.readValue(countryIS, JsonCountry.class);
 
 			Mockito.when(shopwareClient.getCountryDetails(any(String.class)))
