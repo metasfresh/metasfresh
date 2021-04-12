@@ -7,11 +7,12 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -35,25 +36,35 @@ import org.compiere.model.ModelValidator;
  * #L%
  */
 
-@Validator(I_M_Warehouse.class)
 @Callout(I_M_Warehouse.class)
+@Interceptor(I_M_Warehouse.class)
+@Component
 public class M_Warehouse
 {
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Init
-	public void init()
+	public void registerCallouts()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
+	@CalloutMethod(columnNames = I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
-	@CalloutMethod(columnNames = I_M_Warehouse.COLUMNNAME_C_BPartner_Location_ID)
 	public void syncLocation(final I_M_Warehouse warehouse)
 	{
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID());
+		final int bPartnerLocationRepoId = warehouse.getC_BPartner_Location_ID();
+
+		if (bPartnerLocationRepoId <= 0)
+		{
+			return;
+		}
+
+		// Load the BPartner Location based on the C_BPartner_Location_ID because the C_BPartner_ID is not yet set (see below).
+		final BPartnerLocationId bpartnerLocationId = bpartnerDAO.getBPartnerLocationIdByRepoId(bPartnerLocationRepoId);
+
 		if (bpartnerLocationId == null)
 		{
 			return;
@@ -65,6 +76,7 @@ public class M_Warehouse
 			return;
 		}
 		warehouse.setC_Location_ID(bpLocation.getC_Location_ID());
+		// The business partner is taken from the C_BPartner_Location!
 		warehouse.setC_BPartner_ID(bpLocation.getC_BPartner_ID());
 	}
 }
