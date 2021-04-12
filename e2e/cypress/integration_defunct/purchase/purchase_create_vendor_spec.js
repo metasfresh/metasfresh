@@ -58,6 +58,9 @@ describe('purchase - vendor spec', function() {
         delete bpartnerJson[0].websocketEndpoint;
         // snapshot the invariant result
         cy.wrap(bpartnerJson).toMatchSnapshot(`purchase_create_vendor_bpartner - apiUrl=${apiUrl}`);
+        // TODO: if this will be brought back to integration note that it requires the `cypress-plugin-snapshots` plugin
+        // TODO: this was disabled/removed due to a broken dependency that it introduced with the npm 7 
+        // TODO: See (peer dependencies) - https://github.blog/2021-02-02-npm-7-is-now-generally-available/
       });
 
       // TODO look into making this work too

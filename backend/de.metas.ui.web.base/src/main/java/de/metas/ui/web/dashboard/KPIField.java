@@ -1,33 +1,27 @@
 package de.metas.ui.web.dashboard;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
-import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
-import org.slf4j.Logger;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
-
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.InternalAggregation;
+import org.elasticsearch.search.aggregations.InternalMultiBucketAggregation;
+import org.elasticsearch.search.aggregations.InvalidAggregationPathException;
+import org.elasticsearch.search.aggregations.bucket.MultiBucketsAggregation;
+import org.elasticsearch.search.aggregations.metrics.NumericMetricsAggregation;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -54,7 +48,7 @@ import org.adempiere.exceptions.AdempiereException;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public class KPIField
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -62,25 +56,30 @@ public class KPIField
 	@FunctionalInterface
 	public interface BucketValueExtractor
 	{
-		Object extractValue(String containingAggName, InternalMultiBucketAggregation.InternalBucket bucket);
+		KPIDataValue extractValue(String containingAggName, MultiBucketsAggregation.Bucket bucket);
 	}
 
-	private static final Logger logger = LogManager.getLogger(KPIField.class);
-
+	@Getter
 	private final String fieldName;
+	@Getter
 	private final boolean groupBy;
 
 	private final ITranslatableString caption;
 	private final ITranslatableString offsetCaption;
 	private final ITranslatableString description;
+	@Getter
 	private final String unit;
+	@Getter
 	private final KPIFieldValueType valueType;
+	@Getter
 	private final Integer numberPrecision;
 
+	@Getter
 	private final String color;
 
 	private final String esPathStr;
 	private final List<String> esPath;
+	@Getter
 	private final BucketValueExtractor bucketValueExtractor;
 
 	private KPIField(final Builder builder)
@@ -105,179 +104,75 @@ public class KPIField
 
 		esPathStr = builder.esPathStr;
 		esPath = builder.esPath;
-		bucketValueExtractor = createBucketValueExtractor(esPath);
+		bucketValueExtractor = createBucketValueExtractor(esPath, valueType);
 	}
 
-	private static BucketValueExtractor createBucketValueExtractor(@NonNull final List<String> path)
+	private static BucketValueExtractor createBucketValueExtractor(@NonNull final List<String> path, @NonNull final KPIFieldValueType valueType)
 	{
 		if (path.size() == 1)
 		{
 			final String fieldName = path.get(0);
 			if ("doc_count".equals(fieldName))
 			{
-				return (containingAggName, bucket) -> bucket.getDocCount();
+				return (containingAggName, bucket) -> KPIDataValue.ofValueAndType(bucket.getDocCount(), valueType);
 			}
 			else if ("key".equals(fieldName))
 			{
-				return (containingAggName, bucket) -> bucket.getKeyAsString();
+				return (containingAggName, bucket) -> KPIDataValue.ofValueAndType(bucket.getKeyAsString(), valueType);
 			}
 		}
-		
-		return (containingAggName, bucket) -> bucket.getProperty(containingAggName, path);
-	}
 
-	public final Object convertValueToJson(final Object value, @NonNull final JSONOptions jsonOpts)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-
-		try
-		{
-			switch (valueType)
+		return (containingAggName, bucket) -> {
+			final Object value;
+			if (bucket instanceof InternalMultiBucketAggregation.InternalBucket)
 			{
-				case Date:
-				{
-					final LocalDate date = DateTimeConverters.fromObjectToLocalDate(value);
-					return DateTimeConverters.toJson(date);
-				}
-				case DateTime:
-				{
-					final ZonedDateTime date = DateTimeConverters.fromObjectToZonedDateTime(value);
-					return DateTimeConverters.toJson(date, jsonOpts.getZoneId());
-				}
-				case Number:
-				{
-					if (value instanceof String)
-					{
-						final BigDecimal bd = new BigDecimal(value.toString());
-						return roundToPrecision(bd);
-					}
-					else if (value instanceof Double)
-					{
-						final BigDecimal bd = BigDecimal.valueOf(((Double)value).doubleValue());
-						return roundToPrecision(bd);
-					}
-					else if (value instanceof Number)
-					{
-						final BigDecimal bd = BigDecimal.valueOf(((Number)value).intValue());
-						return roundToPrecision(bd);
-					}
-					else if (value instanceof Integer)
-					{
-						return value;
-					}
-					else
-					{
-						return value;
-					}
-				}
-				case String:
-				{
-					return value.toString();
-				}
-				default:
-				{
-					throw new IllegalStateException("valueType not supported: " + valueType);
-				}
-			}
-		}
-		catch (Exception ex)
-		{
-			logger.warn("Failed converting {} for field {}", value, this, ex);
-			return value.toString();
-		}
-	}
-
-	private final BigDecimal roundToPrecision(final BigDecimal bd)
-	{
-		if (numberPrecision == null)
-		{
-			return bd;
-		}
-		else
-		{
-			return bd.setScale(numberPrecision, RoundingMode.HALF_UP);
-		}
-	}
-
-	public final Object convertValueToJsonUserFriendly(final Object value, @NonNull final JSONOptions jsonOpts)
-	{
-		if (value == null)
-		{
-			return null;
-		}
-
-		try
-		{
-			if (valueType == KPIFieldValueType.Date)
-			{
-				if (value instanceof String)
-				{
-					final Date date = TimeUtil.asDate(DateTimeConverters.fromObjectToZonedDateTime(value));
-					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
-					return DisplayType.getDateFormat(DisplayType.Date, language)
-							.format(date);
-				}
-				else if (value instanceof Date)
-				{
-					final Date date = (Date)value;
-					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
-					return DisplayType.getDateFormat(DisplayType.Date, language)
-							.format(date);
-				}
-				else if (value instanceof Number)
-				{
-					final long millis = ((Number)value).longValue();
-					final Date date = new Date(millis);
-					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
-					return DisplayType.getDateFormat(DisplayType.Date, language)
-							.format(date);
-				}
-				else
-				{
-					return value.toString();
-				}
-			}
-			else if (valueType == KPIFieldValueType.DateTime)
-			{
-				if (value instanceof String)
-				{
-					final Date date = TimeUtil.asDate(DateTimeConverters.fromObjectToZonedDateTime(value));
-					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
-					return DisplayType.getDateFormat(DisplayType.DateTime, language)
-							.format(date);
-				}
-				else if (value instanceof Date)
-				{
-					final Date date = (Date)value;
-					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
-					return DisplayType.getDateFormat(DisplayType.DateTime, language)
-							.format(date);
-				}
-				else if (value instanceof Number)
-				{
-					final long millis = ((Number)value).longValue();
-					final Date date = new Date(millis);
-					final Language language = Language.getLanguage(jsonOpts.getAdLanguage());
-					return DisplayType.getDateFormat(DisplayType.DateTime, language)
-							.format(date);
-				}
-				else
-				{
-					return value.toString();
-				}
+				final InternalMultiBucketAggregation.InternalBucket internalBucket = (InternalMultiBucketAggregation.InternalBucket)bucket;
+				value = internalBucket.getProperty(containingAggName, path);
 			}
 			else
 			{
-				return convertValueToJson(value, jsonOpts);
+				value = getProperty(bucket, containingAggName, path);
+			}
+
+			return KPIDataValue.ofValueAndType(value, valueType);
+		};
+	}
+
+	private static Object getProperty(
+			@NonNull final MultiBucketsAggregation.Bucket bucket,
+			@NonNull final String containingAggName,
+			@NonNull final List<String> path)
+	{
+		Check.assumeNotEmpty(path, "path shall not be empty");
+
+		final Aggregations aggregations = bucket.getAggregations();
+		final String aggName = path.get(0);
+		final Aggregation aggregation = aggregations.get(aggName);
+		if (aggregation == null)
+		{
+			throw new InvalidAggregationPathException("Cannot find an aggregation named [" + aggName + "] in [" + containingAggName + "]");
+		}
+		else if (aggregation instanceof InternalAggregation)
+		{
+			final InternalAggregation internalAggregation = (InternalAggregation)aggregation;
+			return internalAggregation.getProperty(path.subList(1, path.size()));
+		}
+		else if (aggregation instanceof NumericMetricsAggregation.SingleValue)
+		{
+			final NumericMetricsAggregation.SingleValue singleValue = (NumericMetricsAggregation.SingleValue)aggregation;
+			final List<String> subPath = path.subList(1, path.size());
+			if (subPath.size() == 1 && "value".equals(subPath.get(0)))
+			{
+				return singleValue.value();
+			}
+			else
+			{
+				throw new AdempiereException("Cannot extract " + path + " from " + singleValue);
 			}
 		}
-		catch (Exception ex)
+		else
 		{
-			logger.warn("Failed converting {} for field {}", value, this, ex);
-			return value.toString();
+			throw new AdempiereException("Unknown aggregation type " + aggregation.getClass() + " for " + aggregation);
 		}
 	}
 
@@ -293,19 +188,9 @@ public class KPIField
 				.toString();
 	}
 
-	public String getFieldName()
-	{
-		return fieldName;
-	}
-
 	public String getOffsetFieldName()
 	{
 		return fieldName + "_offset";
-	}
-
-	public boolean isGroupBy()
-	{
-		return groupBy;
 	}
 
 	public String getCaption(final String adLanguage)
@@ -323,34 +208,9 @@ public class KPIField
 		return description.translate(adLanguage);
 	}
 
-	public KPIFieldValueType getValueType()
-	{
-		return valueType;
-	}
-
-	public String getUnit()
-	{
-		return unit;
-	}
-
-	public List<String> getESPath()
-	{
-		return esPath;
-	}
-
 	public String getESPathAsString()
 	{
 		return esPathStr;
-	}
-
-	public String getColor()
-	{
-		return color;
-	}
-
-	public BucketValueExtractor getBucketValueExtractor()
-	{
-		return bucketValueExtractor;
 	}
 
 	public static final class Builder
@@ -362,7 +222,7 @@ public class KPIField
 		private ITranslatableString description = TranslatableStrings.empty();
 		private String unit;
 		private KPIFieldValueType valueType;
-		private Integer numberPrecision;
+		@Nullable private Integer numberPrecision;
 
 		private String color;
 
@@ -426,7 +286,7 @@ public class KPIField
 			return this;
 		}
 
-		public Builder setNumberPrecision(final Integer numberPrecision)
+		public Builder setNumberPrecision(@Nullable final Integer numberPrecision)
 		{
 			this.numberPrecision = numberPrecision;
 			return this;

@@ -1,28 +1,31 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.ordercandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
-/** Generated Model for C_OLCand
- *  @author metasfresh (generated) 
+/**
+ * Generated Model for C_OLCand
+ *
+ * @author metasfresh (generated)
  */
-public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
+@SuppressWarnings("unused")
+public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = -888025760L;
+	private static final long serialVersionUID = 1452323778L;
 
-    /** Standard Constructor */
-    public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
-    {
-      super (ctx, C_OLCand_ID, trxName);
-    }
+	/** Standard Constructor */
+	public X_C_OLCand(final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
+	{
+		super(ctx, C_OLCand_ID, trxName);
+	}
 
-    /** Load Constructor */
-    public X_C_OLCand (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
+	/** Load Constructor */
+	public X_C_OLCand(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
       super (ctx, rs, trxName);
     }
 
@@ -357,6 +360,18 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public void setCompensationGroupKey (final @Nullable java.lang.String CompensationGroupKey)
+	{
+		set_Value (COLUMNNAME_CompensationGroupKey, CompensationGroupKey);
+	}
+
+	@Override
+	public java.lang.String getCompensationGroupKey() 
+	{
+		return get_ValueAsString(COLUMNNAME_CompensationGroupKey);
+	}
+
+	@Override
 	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
 	{
 		if (C_PaymentTerm_ID < 1) 
@@ -429,7 +444,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setDateOrdered (final java.sql.Timestamp DateOrdered)
+	public void setDateOrdered (final @Nullable java.sql.Timestamp DateOrdered)
 	{
 		set_Value (COLUMNNAME_DateOrdered, DateOrdered);
 	}
@@ -441,7 +456,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setDatePromised (final java.sql.Timestamp DatePromised)
+	public void setDatePromised (final @Nullable java.sql.Timestamp DatePromised)
 	{
 		set_Value (COLUMNNAME_DatePromised, DatePromised);
 	}
@@ -453,7 +468,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setDatePromised_Effective (final java.sql.Timestamp DatePromised_Effective)
+	public void setDatePromised_Effective (final @Nullable java.sql.Timestamp DatePromised_Effective)
 	{
 		throw new IllegalArgumentException ("DatePromised_Effective is virtual column");	}
 
@@ -464,7 +479,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setDatePromised_Override (final java.sql.Timestamp DatePromised_Override)
+	public void setDatePromised_Override (final @Nullable java.sql.Timestamp DatePromised_Override)
 	{
 		set_Value (COLUMNNAME_DatePromised_Override, DatePromised_Override);
 	}
@@ -530,7 +545,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -542,7 +557,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setDescriptionBottom (final java.lang.String DescriptionBottom)
+	public void setDescriptionBottom (final @Nullable java.lang.String DescriptionBottom)
 	{
 		set_Value (COLUMNNAME_DescriptionBottom, DescriptionBottom);
 	}
@@ -554,7 +569,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setDescriptionHeader (final java.lang.String DescriptionHeader)
+	public void setDescriptionHeader (final @Nullable java.lang.String DescriptionHeader)
 	{
 		set_Value (COLUMNNAME_DescriptionHeader, DescriptionHeader);
 	}
@@ -566,7 +581,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setDiscount (final BigDecimal Discount)
+	public void setDiscount (final @Nullable BigDecimal Discount)
 	{
 		set_Value (COLUMNNAME_Discount, Discount);
 	}
@@ -676,7 +691,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setErrorMsg (final java.lang.String ErrorMsg)
+	public void setErrorMsg (final @Nullable java.lang.String ErrorMsg)
 	{
 		set_Value (COLUMNNAME_ErrorMsg, ErrorMsg);
 	}
@@ -688,7 +703,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setExternalHeaderId (final java.lang.String ExternalHeaderId)
+	public void setExternalHeaderId (final @Nullable java.lang.String ExternalHeaderId)
 	{
 		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
 	}
@@ -700,24 +715,37 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setExternalLineId (final java.lang.String ExternalLineId)
+	public void setExternalLineId (final @Nullable java.lang.String ExternalLineId)
 	{
-		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
+		set_Value(COLUMNNAME_ExternalLineId, ExternalLineId);
 	}
 
 	@Override
-	public java.lang.String getExternalLineId() 
+	public java.lang.String getExternalLineId()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalLineId);
 	}
 
 	@Override
-	public void setHandOver_Location_Effective_ID (final int HandOver_Location_Effective_ID)
+	public java.lang.String getGroupingErrorMessage()
 	{
-		throw new IllegalArgumentException ("HandOver_Location_Effective_ID is virtual column");	}
+		return get_ValueAsString(COLUMNNAME_GroupingErrorMessage);
+	}
 
 	@Override
-	public int getHandOver_Location_Effective_ID() 
+	public void setGroupingErrorMessage(final @Nullable java.lang.String GroupingErrorMessage)
+	{
+		set_Value(COLUMNNAME_GroupingErrorMessage, GroupingErrorMessage);
+	}
+
+	@Override
+	public void setHandOver_Location_Effective_ID(final int HandOver_Location_Effective_ID)
+	{
+		throw new IllegalArgumentException("HandOver_Location_Effective_ID is virtual column");
+	}
+
+	@Override
+	public int getHandOver_Location_Effective_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_HandOver_Location_Effective_ID);
 	}
@@ -844,23 +872,47 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setIsExplicitProductPriceAttribute (final boolean IsExplicitProductPriceAttribute)
 	{
-		set_Value (COLUMNNAME_IsExplicitProductPriceAttribute, IsExplicitProductPriceAttribute);
+		set_Value(COLUMNNAME_IsExplicitProductPriceAttribute, IsExplicitProductPriceAttribute);
 	}
 
 	@Override
-	public boolean isExplicitProductPriceAttribute() 
+	public boolean isExplicitProductPriceAttribute()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsExplicitProductPriceAttribute);
 	}
 
 	@Override
-	public void setIsManualDiscount (final boolean IsManualDiscount)
+	public void setIsGroupCompensationLine(final boolean IsGroupCompensationLine)
 	{
-		set_Value (COLUMNNAME_IsManualDiscount, IsManualDiscount);
+		set_Value(COLUMNNAME_IsGroupCompensationLine, IsGroupCompensationLine);
 	}
 
 	@Override
-	public boolean isManualDiscount() 
+	public boolean isGroupCompensationLine()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsGroupCompensationLine);
+	}
+
+	@Override
+	public void setIsGroupingError(final boolean IsGroupingError)
+	{
+		set_Value(COLUMNNAME_IsGroupingError, IsGroupingError);
+	}
+
+	@Override
+	public boolean isGroupingError()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsGroupingError);
+	}
+
+	@Override
+	public void setIsManualDiscount(final boolean IsManualDiscount)
+	{
+		set_Value(COLUMNNAME_IsManualDiscount, IsManualDiscount);
+	}
+
+	@Override
+	public boolean isManualDiscount()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManualDiscount);
 	}
@@ -1161,7 +1213,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	/** PayPal = L */
 	public static final String PAYMENTRULE_PayPal = "L";
 	@Override
-	public void setPaymentRule (final java.lang.String PaymentRule)
+	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{
 		set_Value (COLUMNNAME_PaymentRule, PaymentRule);
 	}
@@ -1173,7 +1225,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setPOReference (final java.lang.String POReference)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		set_Value (COLUMNNAME_POReference, POReference);
 	}
@@ -1185,7 +1237,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setPresetDateInvoiced (final java.sql.Timestamp PresetDateInvoiced)
+	public void setPresetDateInvoiced (final @Nullable java.sql.Timestamp PresetDateInvoiced)
 	{
 		set_Value (COLUMNNAME_PresetDateInvoiced, PresetDateInvoiced);
 	}
@@ -1197,7 +1249,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setPresetDateShipped (final java.sql.Timestamp PresetDateShipped)
+	public void setPresetDateShipped (final @Nullable java.sql.Timestamp PresetDateShipped)
 	{
 		set_Value (COLUMNNAME_PresetDateShipped, PresetDateShipped);
 	}
@@ -1209,7 +1261,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setPriceActual (final BigDecimal PriceActual)
+	public void setPriceActual (final @Nullable BigDecimal PriceActual)
 	{
 		set_Value (COLUMNNAME_PriceActual, PriceActual);
 	}
@@ -1222,7 +1274,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setPriceDifference (final BigDecimal PriceDifference)
+	public void setPriceDifference (final @Nullable BigDecimal PriceDifference)
 	{
 		throw new IllegalArgumentException ("PriceDifference is virtual column");	}
 
@@ -1234,7 +1286,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setPriceEntered (final BigDecimal PriceEntered)
+	public void setPriceEntered (final @Nullable BigDecimal PriceEntered)
 	{
 		set_Value (COLUMNNAME_PriceEntered, PriceEntered);
 	}
@@ -1247,7 +1299,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setPriceInternal (final BigDecimal PriceInternal)
+	public void setPriceInternal (final @Nullable BigDecimal PriceInternal)
 	{
 		set_Value (COLUMNNAME_PriceInternal, PriceInternal);
 	}
@@ -1287,7 +1339,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setProductDescription (final java.lang.String ProductDescription)
+	public void setProductDescription (final @Nullable java.lang.String ProductDescription)
 	{
 		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
 	}
@@ -1312,7 +1364,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setQtyItemCapacity (final BigDecimal QtyItemCapacity)
+	public void setQtyItemCapacity (final @Nullable BigDecimal QtyItemCapacity)
 	{
 		set_Value (COLUMNNAME_QtyItemCapacity, QtyItemCapacity);
 	}

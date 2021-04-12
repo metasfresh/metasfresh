@@ -77,7 +77,7 @@ public class ProductsRestControllerTest
 				AdempiereTestHelper.SNAPSHOT_CONFIG,
 				AdempiereTestHelper.createSnapshotJsonFunction());
 
-		LogManager.setLoggerLevel(de.metas.rest_api.v1.product.ProductsRestController.class, Level.ALL);
+		LogManager.setLoggerLevel(de.metas.rest_api.v2.product.ProductsRestController.class, Level.ALL);
 	}
 
 	@AfterAll

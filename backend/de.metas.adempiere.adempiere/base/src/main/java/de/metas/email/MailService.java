@@ -173,6 +173,7 @@ public class MailService
 	 *
 	 * @return email address or null
 	 */
+	@Nullable
 	public InternetAddress getDebugMailToAddressOrNull()
 	{
 		final Properties ctx = Env.getCtx();

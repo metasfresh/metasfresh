@@ -165,7 +165,7 @@ public class CommentsService
 	{
 		final String text = comment.getText();
 		final String created = DateTimeConverters.toJson(comment.getCreated(), zoneId);
-		final String createdBy = userDAO.retrieveUserFullname(comment.getCreatedBy());
+		final String createdBy = userDAO.retrieveUserFullName(comment.getCreatedBy());
 
 		return JSONComment.builder()
 				.text(text)

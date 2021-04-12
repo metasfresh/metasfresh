@@ -172,7 +172,7 @@ describe('Generate the Shipment', function() {
   it('Open the Referenced Shipment Disposition', function() {
     salesOrders.visit(soRecordId);
     cy.openReferencedDocuments('M_ShipmentSchedule');
-
+    cy.get('.spinner', { timeout: 10000 }).should('not.exist');
     cy.expectNumberOfRows(1);
     cy.selectNthRow(0).dblclick();
   });

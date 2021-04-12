@@ -1,11 +1,10 @@
 package de.metas.elasticsearch.process;
 
+import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
+import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
+
 import java.util.Collection;
-
-import org.compiere.model.I_AD_Table;
-
-import de.metas.elasticsearch.indexer.IESModelIndexer;
-import de.metas.process.Process;
 
 /*
  * #%L
@@ -33,16 +32,16 @@ import de.metas.process.Process;
  * SysAdmin process used to completely index a given table using all registered model indexers.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
-@Process
 public class ES_IndexTable extends AbstractModelIndexerProcess
 {
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+
 	@Override
-	protected Collection<IESModelIndexer> getModelIndexers()
+	protected Collection<ESModelIndexer> getModelIndexers()
 	{
-		final I_AD_Table adTable = getRecord(I_AD_Table.class);
-		final String modelTableName = adTable.getTableName();
+		final int adTableId = getRecord_ID();
+		final String modelTableName = adTableDAO.retrieveTableName(adTableId);
 		return modelIndexingService.getModelIndexersByTableName(modelTableName);
 	}
 }

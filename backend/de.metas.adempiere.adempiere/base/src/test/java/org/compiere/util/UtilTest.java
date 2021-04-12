@@ -59,7 +59,7 @@ public class UtilTest
 		assertThat(StringUtils.lpadZero(emptyString, 10, "This Is An Empty String")).isEqualTo(zeroString);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test(expected = RuntimeException.class)
 	public void lpadZero_StringExceedingSizeTest()
 	{
 		final String value = "123456789";
@@ -86,7 +86,7 @@ public class UtilTest
 		assertThat(StringUtils.rpadZero(emptyString, 10, "This Is An Empty String")).isEqualTo(zeroString);
 	}
 
-	@Test(expected = AdempiereException.class)
+	@Test(expected = RuntimeException.class)
 	public void rpadZero_StringExceedingSizeTest()
 	{
 		final String value = "123456789";

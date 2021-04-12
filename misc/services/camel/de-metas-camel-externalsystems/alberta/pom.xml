@@ -20,8 +20,9 @@
 
     <modules>
         <module>de-metas-camel-alberta-camelroutes</module>
-        <module>alberta-api-client</module>
+        <module>alberta-patient-api</module>
         <module>alberta-article-api</module>
+        <module>alberta-orders-api</module>
     </modules>
    
 </project>

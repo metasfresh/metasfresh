@@ -9,6 +9,48 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.164
+## Features
+* metasfresh
+  * [#10704](https://github.com/metasfresh/metasfresh/issues/10704) Debitor/Creditor in Bank Statement import
+  * [#10774](https://github.com/metasfresh/metasfresh/pull/10774) Add CostPrice component
+  * [#10784](https://github.com/metasfresh/metasfresh/issues/10784) Overhaul BPartner-ExternalReference in API-v2
+  * [#10796](https://github.com/metasfresh/metasfresh/issues/10796) Store Alberta Article materdata for `M_Products`
+  * [#10807](https://github.com/metasfresh/metasfresh/pull/10807) Consider HU's warehouse and bpartner when filtering by barcode/sscc18
+  * [#10811](https://github.com/metasfresh/metasfresh/issues/10811) Add Manufacturing Activity products tab
+  * [#10818](https://github.com/metasfresh/metasfresh/issues/10818) Push products to Alberta
+  * [#10822](https://github.com/metasfresh/metasfresh/pull/10822) `EDI_Desadv_GenerateSSCCLabels`: introduce `IsDefault` param
+  * [#10824](https://github.com/metasfresh/metasfresh/pull/10824) `CellValues.toCellValue`: Fix conversions
+  * [#10825](https://github.com/metasfresh/metasfresh/issues/10825) Upsert Products V2 REST API
+  * [#10834](https://github.com/metasfresh/metasfresh/pull/10834) `HUsToReturn_CreateShippedHU`; `M_InOutLine.IsWarrantyCase`
+  * [#10842](https://github.com/metasfresh/metasfresh/issues/10842) Upgrade react-transition-group
+  * [#10847](https://github.com/metasfresh/metasfresh/issues/10847) Upsert Prices REST
+  * [#10850](https://github.com/metasfresh/metasfresh/pull/10850) Creating Sales Orders: Don't set salesrep if equal to buyer
+  * [#10851](https://github.com/metasfresh/metasfresh/issues/10851) Don't show the RootFolder of Role Menu
+  * [#10868](https://github.com/metasfresh/metasfresh/pull/10868) Master spring boot 2
+  * [#10891](https://github.com/metasfresh/metasfresh/issues/10891) Order of fields within the Alberta `inlineTab` element
+
+## Fixes
+* metasfresh
+  * [#9845](https://github.com/metasfresh/metasfresh/issues/9845) Warning during compile time
+  * [#10785](https://github.com/metasfresh/metasfresh/issues/10785) `BPartnerLocation` data should not default to locations from other countries
+  * [#10810](https://github.com/metasfresh/metasfresh/pull/10810) OrderBL: when fetching the Order PricingSystem use the order's BPartner
+  * [#10817](https://github.com/metasfresh/metasfresh/issues/10817) Make sure that there is no npm dep package blocking installation
+  * [#10826](https://github.com/metasfresh/metasfresh/issues/10826) Investigate failing tests for period - end of Feb 2021-March 15, 2021
+  * [#10829](https://github.com/metasfresh/metasfresh/pull/10829) `R_Request`: Grant permissions to creator
+  * [#10832](https://github.com/metasfresh/metasfresh/issues/10832) Possible "Duplicate Key Error" when loading records with data entry tabs
+  * [#10843](https://github.com/metasfresh/metasfresh/issues/10843) ESR Import Error for new QR Invoice
+  * [#10845](https://github.com/metasfresh/metasfresh/pull/10845) WebUI: Fix HU view filtering and invalidation
+  * [#10846](https://github.com/metasfresh/metasfresh/issues/10846) Make `AD_Column` `C_Customer_Retention.CustomerRetention` updatable
+  * [#10848](https://github.com/metasfresh/metasfresh/pull/10848) Return even inactive `C_BPartner_Locations` at many places
+  * [#10854](https://github.com/metasfresh/metasfresh/pull/10854) `PPOrderLinesViewDataLoader`: Consider only Active source HUs
+  * [#10861](https://github.com/metasfresh/metasfresh/issues/10861) Procurement planning - orders cannot be triggered
+  * [#10864](https://github.com/metasfresh/metasfresh/issues/10864) Clear filter after searching an item (not in db) seems it cannot be done
+  * [#10869](https://github.com/metasfresh/metasfresh/pull/10869) Fix `HUsToReturn_CreateShippedHU`
+  * [#10873](https://github.com/metasfresh/metasfresh/issues/10873) Cookie problem
+  * [#10876](https://github.com/metasfresh/metasfresh/issues/10876) Ablaufsteuerung Refresh `MV_Fact_Acct_Sum` does not do what it shall
+  * [#10889](https://github.com/metasfresh/metasfresh/pull/10889) Only consider commission contracts that have the trigger-document's org
+
 # metasfresh 5.163
 ## Features
 * metasfresh

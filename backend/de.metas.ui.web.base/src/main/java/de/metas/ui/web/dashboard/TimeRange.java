@@ -1,114 +1,79 @@
 package de.metas.ui.web.dashboard;
 
-import java.time.Duration;
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import lombok.NonNull;
+import lombok.Value;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+import java.time.Duration;
+import java.time.Instant;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class TimeRange
+@Value
+public class TimeRange
 {
-	public static TimeRange main(final long fromMillis, final long toMillis)
+	public static TimeRange main(@NonNull final Instant from, @NonNull final Instant to)
 	{
-		final boolean mainTimeRange = true;
-		final int offsetMillis = 0;
-		return new TimeRange(mainTimeRange, fromMillis, toMillis, offsetMillis);
+		return new TimeRange(true, from, to, Duration.ZERO);
 	}
 
-	public static TimeRange offset(final TimeRange mainRange, final Duration offset)
+	public static TimeRange offset(@NonNull final TimeRange mainRange, @NonNull final Duration offset)
 	{
 		final boolean mainTimeRange = false;
-		final long offsetMillis = offset.toMillis();
-		final long fromMillis = mainRange.getFromMillis() + offsetMillis;
-		final long toMillis = mainRange.getToMillis() + offsetMillis;
-		return new TimeRange(mainTimeRange, fromMillis, toMillis, offsetMillis);
+		final Instant from = mainRange.getFrom().plus(offset);
+		final Instant to = mainRange.getTo().plus(offset);
+		return new TimeRange(mainTimeRange, from, to, offset);
 	}
 
-	@JsonProperty("fromMillis")
-	private final long fromMillis;
+	@JsonProperty("fromMillis") long fromMillis;
+	@JsonIgnore Instant from;
 
-	@JsonProperty("toMillis")
-	private final long toMillis;
+	@JsonProperty("toMillis") long toMillis;
+	@JsonIgnore Instant to;
 
-	//
-	@JsonIgnore
-	private final boolean mainTimeRange;
-	@JsonIgnore
-	private final long offsetMillis;
+	@JsonIgnore boolean mainTimeRange;
+	@JsonIgnore Duration offset;
 
-	private TimeRange(final boolean mainTimeRange, final long fromMillis, final long toMillis, final long offsetMillis)
+	private TimeRange(
+			final boolean mainTimeRange,
+			@NonNull final Instant from,
+			@NonNull final Instant to,
+			@NonNull final Duration offset)
 	{
-		super();
 		this.mainTimeRange = mainTimeRange;
-		this.fromMillis = fromMillis;
-		this.toMillis = toMillis;
-		this.offsetMillis = offsetMillis;
+		this.from = from;
+		this.fromMillis = toMillis(from);
+		this.to = to;
+		this.toMillis = toMillis(to);
+		this.offset = offset;
+	}
+
+	private static long toMillis(@NonNull final Instant instant)
+	{
+		return instant.isAfter(Instant.ofEpochMilli(0))
+				? instant.toEpochMilli()
+				: 0;
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("from", Instant.ofEpochMilli(fromMillis))
-				.add("to", Instant.ofEpochMilli(toMillis))
+				.add("from", from)
+				.add("to", to)
 				.add("main", mainTimeRange)
-				.add("offset", Duration.ofMillis(offsetMillis))
+				.add("offset", offset)
 				.toString();
 	}
 
-	public boolean isMainTimeRange()
+	public TimeRange offset(@NonNull final Duration offset)
 	{
-		return mainTimeRange;
-	}
-
-	public long getFromMillis()
-	{
-		return fromMillis;
-	}
-
-	public long getToMillis()
-	{
-		return toMillis;
-	}
-
-	public long getOffsetMillis()
-	{
-		return offsetMillis;
-	}
-
-	public long offsetDate(final long millis)
-	{
-		return millis + offsetMillis;
-	}
-
-	public long subtractOffset(final long millis)
-	{
-		return millis - offsetMillis;
+		final boolean mainTimeRange = false;
+		final Instant from = this.from.plus(offset);
+		final Instant to = this.to.plus(offset);
+		return new TimeRange(mainTimeRange, from, to, offset);
 	}
 }

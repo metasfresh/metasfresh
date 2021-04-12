@@ -22,6 +22,7 @@
 
 package org.adempiere.ad.service;
 
+import de.metas.i18n.ExplainedOptional;
 import de.metas.util.ISingletonService;
 import de.metas.util.collections.BlindIterator;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -103,8 +104,10 @@ public interface ILookupDAO extends ISingletonService
 
 	IColumnInfo retrieveColumnInfo(int adColumnId);
 
+	ExplainedOptional<TableRefInfo> getTableRefInfo(int referenceRepoId);
+
 	/**
-	 * Same as {@link #retrieveTableRefInfoOrNull(int)} but in case the {@link TableRefInfo} was not found, an warning is logged
+	 * In case the {@link TableRefInfo} was not found, an warning is logged.
 	 *
 	 * @return table reference info or <code>null</code> if not found
 	 */
@@ -145,9 +148,4 @@ public interface ILookupDAO extends ISingletonService
 	 * Creates a validation key to be used when checking if data is valid in a given context
 	 */
 	Object createValidationKey(IValidationContext validationCtx, MLookupInfo lookupInfo);
-
-	/**
-	 * Retrieve TableRefInfo or null
-	 */
-	TableRefInfo retrieveTableRefInfoOrNull(int AD_Reference_ID);
 }

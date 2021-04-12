@@ -145,15 +145,16 @@ class InlineTabWrapper extends PureComponent {
    * @summanry - function used to get the order from the `elements` array of the `inlineTab`
    *             currently we are getting the first four. In future development this might be refactored for
    *             more specific ordering. This is the reason I did not even put that in a constant.
+   *             TODO: Ideally the BE should send a template to be followed (currently we take the first 4)
    * @param {array} inlineTab
    */
-  getFieldsDisplayOrder = (inlineTab) => {
-    const { elements } = inlineTab;
+  getFieldsDisplayOrder = (elements) => {
     const orderFields = [];
     elements.map((elementItem, index) => {
       if (index < 4) orderFields.push(elementItem.fields[0].field);
       return elementItem;
     });
+
     return orderFields;
   };
 
@@ -172,19 +173,14 @@ class InlineTabWrapper extends PureComponent {
       addNewFormVisible,
       addNewData,
       rowId,
-      inlineTab: { caption, tabId },
+      inlineTab: { caption, tabId, elements },
       dataId,
       showMore,
     } = this.props;
 
     if (!tabData) return false;
 
-    const inlineFieldsDisplayOrder = [
-      'Name',
-      'Address',
-      'Firstname',
-      'Lastname',
-    ]; // this.getFieldsDisplayOrder(inlineTab);
+    const inlineFieldsDisplayOrder = this.getFieldsDisplayOrder(elements);
 
     return (
       <div

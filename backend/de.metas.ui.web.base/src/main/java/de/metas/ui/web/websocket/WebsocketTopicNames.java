@@ -42,30 +42,30 @@ public class WebsocketTopicNames
 	public static final String TOPIC_Dashboard = "/dashboard";
 	public static final String TOPIC_Devices = "/devices";
 
-	public static final WebsocketTopicName buildUserSessionTopicName(@NonNull final UserId adUserId)
+	public static WebsocketTopicName buildUserSessionTopicName(@NonNull final UserId adUserId)
 	{
 		return WebsocketTopicName.ofString(TOPIC_UserSession + "/" + adUserId.getRepoId());
 	}
 
-	public static final WebsocketTopicName buildNotificationsTopicName(@NonNull final UserId adUserId)
+	public static WebsocketTopicName buildNotificationsTopicName(@NonNull final UserId adUserId)
 	{
 		return WebsocketTopicName.ofString(TOPIC_Notifications + "/" + adUserId.getRepoId());
 	}
 
-	public static final WebsocketTopicName buildViewNotificationsTopicName(@NonNull final String viewId)
+	public static WebsocketTopicName buildViewNotificationsTopicName(@NonNull final String viewId)
 	{
 		Check.assumeNotEmpty(viewId, "viewId is not empty");
 		return WebsocketTopicName.ofString(TOPIC_View + "/" + viewId);
 	}
 
-	public static final WebsocketTopicName buildDocumentTopicName(
+	public static WebsocketTopicName buildDocumentTopicName(
 			@NonNull final WindowId windowId,
 			@NonNull final DocumentId documentId)
 	{
 		return WebsocketTopicName.ofString(TOPIC_Document + "/" + windowId.toJson() + "/" + documentId.toJson());
 	}
 
-	public static final WebsocketTopicName buildBoardTopicName(final int boardId)
+	public static WebsocketTopicName buildBoardTopicName(final int boardId)
 	{
 		Preconditions.checkArgument(boardId > 0);
 		return WebsocketTopicName.ofString(TOPIC_Board + "/" + boardId);

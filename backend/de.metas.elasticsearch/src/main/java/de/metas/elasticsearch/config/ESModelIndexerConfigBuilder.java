@@ -59,7 +59,7 @@ public class ESModelIndexerConfigBuilder
 	@Getter
 	private String indexSettingsJson;
 	@Getter
-	private String indexStringFullTextSearchAnalyzer;
+	private ESTextAnalyzer indexStringFullTextSearchAnalyzer;
 
 	public ESModelIndexerConfigBuilder(
 			@NonNull final Consumer<ESModelIndexerConfigBuilder> configInstaller,
@@ -117,13 +117,6 @@ public class ESModelIndexerConfigBuilder
 				.build());
 	}
 
-	public ESModelIndexerConfigBuilder triggerOnChange()
-	{
-		return addTrigger(prepareOnChangeTriggerInterceptor()
-				.triggerOnNewOrChange(true)
-				.build());
-	}
-
 	public ESModelIndexerConfigBuilder triggerOnDelete()
 	{
 		return addTrigger(prepareOnChangeTriggerInterceptor()
@@ -169,7 +162,7 @@ public class ESModelIndexerConfigBuilder
 		return this;
 	}
 
-	public ESModelIndexerConfigBuilder indexStringFullTextSearchAnalyzer(final String indexStringFullTextSearchAnalyzer)
+	public ESModelIndexerConfigBuilder indexStringFullTextSearchAnalyzer(final ESTextAnalyzer indexStringFullTextSearchAnalyzer)
 	{
 		this.indexStringFullTextSearchAnalyzer = indexStringFullTextSearchAnalyzer;
 		return this;

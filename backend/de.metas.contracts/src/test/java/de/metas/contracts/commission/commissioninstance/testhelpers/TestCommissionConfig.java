@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 
 import de.metas.organization.OrgId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.util.Services;
 import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_BPartner;
 
@@ -56,7 +58,7 @@ public class TestCommissionConfig
 {
 	@NonNull
 	OrgId orgId;
-	
+
 	@Default
 	int pointsPrecision = 2;
 
@@ -78,6 +80,8 @@ public class TestCommissionConfig
 
 	public ConfigData createConfigData()
 	{
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
 		final I_C_HierarchyCommissionSettings settingsRecord = newInstance(I_C_HierarchyCommissionSettings.class);
 		settingsRecord.setAD_Org_ID(OrgId.toRepoId(orgId));
 		settingsRecord.setPointsPrecision(pointsPrecision);
@@ -114,7 +118,8 @@ public class TestCommissionConfig
 					BPartnerId.ofRepoId(termRecord.getBill_BPartner_ID()),
 					FlatrateTermId.ofRepoId(termRecord.getC_Flatrate_Term_ID()));
 
-			name2bpartnerRecord.put(contractTestRecord.getSalesRepName(), termRecord.getBill_BPartner());
+			final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(termRecord.getBill_BPartner_ID());
+			name2bpartnerRecord.put(contractTestRecord.getSalesRepName(), billBPartnerRecord);
 			name2bpartnerId.put(contractTestRecord.getSalesRepName(), BPartnerId.ofRepoId(termRecord.getBill_BPartner_ID()));
 		}
 

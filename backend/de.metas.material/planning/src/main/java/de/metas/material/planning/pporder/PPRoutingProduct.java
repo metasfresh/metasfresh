@@ -29,7 +29,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 @Value
 @Builder(toBuilder = true)
@@ -38,8 +37,11 @@ public class PPRoutingProduct
 	@NonNull PPRoutingProductId id;
 	@NonNull PPRoutingActivityId activityId;
 	boolean subcontracting;
-	@Nullable Quantity qty;
+	@Nullable
+	Quantity qty;
 	@NonNull ProductId productId;
+	@Nullable
+	String specification;
 	int seqNo;
 
 }

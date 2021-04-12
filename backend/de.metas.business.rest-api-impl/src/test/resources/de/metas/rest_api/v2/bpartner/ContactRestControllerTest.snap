@@ -1,0 +1,578 @@
+de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_create=[
+  {
+    "active" : true,
+    "changeLog" : {
+      "tableName" : "AD_User",
+      "recordId" : {
+        "keyColumnNames" : [
+          "AD_User_ID"
+        ],
+        "keysByColumnName" : {
+          "AD_User_ID" : 100013
+        }
+      },
+      "createdByUserId" : 30,
+      "createdTimestamp" : {
+        "seconds" : 1561134,
+        "nanos" : 560000000
+      },
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : {
+        "seconds" : 1561134,
+        "nanos" : 560000000
+      },
+      "entries" : [ ]
+    },
+    "contactType" : {
+      "billToDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "defaultContact" : {
+        "value" : false,
+        "present" : true
+      },
+      "purchase" : {
+        "value" : false,
+        "present" : true
+      },
+      "purchaseDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "sales" : {
+        "value" : false,
+        "present" : true
+      },
+      "salesDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "shipToDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "subjectMatter" : {
+        "value" : false,
+        "present" : true
+      }
+    },
+    "externalId" : "externalId-1",
+    "handles" : [ ],
+    "id" : {
+      "bpartnerId" : 20,
+      "userId" : 100013
+    },
+    "name" : "jsonContact.name",
+    "newsletter" : false
+  }
+]
+
+
+de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_update_extContactIdentifier=[
+  {
+    "active" : true,
+    "changeLog" : {
+      "tableName" : "AD_User",
+      "recordId" : {
+        "keyColumnNames" : [
+          "AD_User_ID"
+        ],
+        "keysByColumnName" : {
+          "AD_User_ID" : 30
+        }
+      },
+      "createdByUserId" : 30,
+      "createdTimestamp" : {
+        "seconds" : 1561133,
+        "nanos" : 544000000
+      },
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : {
+        "seconds" : 1561134,
+        "nanos" : 560000000
+      },
+      "entries" : [ ]
+    },
+    "contactType" : {
+      "billToDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "defaultContact" : {
+        "value" : false,
+        "present" : true
+      },
+      "purchase" : {
+        "value" : false,
+        "present" : true
+      },
+      "purchaseDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "sales" : {
+        "value" : false,
+        "present" : true
+      },
+      "salesDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "shipToDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "subjectMatter" : {
+        "value" : false,
+        "present" : true
+      }
+    },
+    "email" : "contactRecord.email",
+    "externalId" : "contactRecord.externalId",
+    "firstName" : "contactRecord.firstName",
+    "handles" : [ ],
+    "id" : {
+      "bpartnerId" : 20,
+      "userId" : 30
+    },
+    "lastName" : "contactRecord.lastName",
+    "name" : "jsonContact.name-UPDATED",
+    "newsletter" : false,
+    "phone" : "contactRecord.phone",
+    "value" : "contactRecord.value"
+  }
+]
+
+
+de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_update_idContactIdentifier=[
+  {
+    "active" : true,
+    "changeLog" : {
+      "tableName" : "AD_User",
+      "recordId" : {
+        "keyColumnNames" : [
+          "AD_User_ID"
+        ],
+        "keysByColumnName" : {
+          "AD_User_ID" : 30
+        }
+      },
+      "createdByUserId" : 30,
+      "createdTimestamp" : {
+        "seconds" : 1561133,
+        "nanos" : 544000000
+      },
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : {
+        "seconds" : 1561134,
+        "nanos" : 560000000
+      },
+      "entries" : [ ]
+    },
+    "contactType" : {
+      "billToDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "defaultContact" : {
+        "value" : false,
+        "present" : true
+      },
+      "purchase" : {
+        "value" : false,
+        "present" : true
+      },
+      "purchaseDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "sales" : {
+        "value" : false,
+        "present" : true
+      },
+      "salesDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "shipToDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "subjectMatter" : {
+        "value" : false,
+        "present" : true
+      }
+    },
+    "email" : "contactRecord.email",
+    "externalId" : "contactRecord.externalId",
+    "firstName" : "contactRecord.firstName",
+    "handles" : [ ],
+    "id" : {
+      "bpartnerId" : 20,
+      "userId" : 30
+    },
+    "lastName" : "contactRecord.lastName",
+    "name" : "jsonContact.name-UPDATED",
+    "newsletter" : false,
+    "phone" : "contactRecord.phone",
+    "value" : "contactRecord.value"
+  }
+]
+
+
+de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_update_valContactIdentifier=[
+  {
+    "active" : true,
+    "changeLog" : {
+      "tableName" : "AD_User",
+      "recordId" : {
+        "keyColumnNames" : [
+          "AD_User_ID"
+        ],
+        "keysByColumnName" : {
+          "AD_User_ID" : 30
+        }
+      },
+      "createdByUserId" : 30,
+      "createdTimestamp" : {
+        "seconds" : 1561133,
+        "nanos" : 544000000
+      },
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : {
+        "seconds" : 1561134,
+        "nanos" : 560000000
+      },
+      "entries" : [ ]
+    },
+    "contactType" : {
+      "billToDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "defaultContact" : {
+        "value" : false,
+        "present" : true
+      },
+      "purchase" : {
+        "value" : false,
+        "present" : true
+      },
+      "purchaseDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "sales" : {
+        "value" : false,
+        "present" : true
+      },
+      "salesDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "shipToDefault" : {
+        "value" : false,
+        "present" : true
+      },
+      "subjectMatter" : {
+        "value" : false,
+        "present" : true
+      }
+    },
+    "email" : "contactRecord.email",
+    "externalId" : "contactRecord.externalId",
+    "firstName" : "contactRecord.firstName",
+    "handles" : [ ],
+    "id" : {
+      "bpartnerId" : 20,
+      "userId" : 30
+    },
+    "lastName" : "contactRecord.lastName",
+    "name" : "jsonContact.name-UPDATED",
+    "newsletter" : false,
+    "phone" : "contactRecord.phone",
+    "value" : "contactRecord.value"
+  }
+]
+
+
+de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContact_ext=[
+  {
+    "metasfreshId" : 30,
+    "externalId" : "contactRecord.externalId",
+    "metasfreshBPartnerId" : 20,
+    "active" : true,
+    "name" : "contactRecord.name",
+    "firstName" : "contactRecord.firstName",
+    "lastName" : "contactRecord.lastName",
+    "email" : "contactRecord.email",
+    "phone" : "contactRecord.phone",
+    "newsletter" : false,
+    "shipToDefault" : false,
+    "billToDefault" : false,
+    "defaultContact" : false,
+    "sales" : false,
+    "salesDefault" : false,
+    "purchase" : false,
+    "purchaseDefault" : false,
+    "subjectMatter" : false,
+    "changeInfo" : {
+      "createdMillis" : 1561133544,
+      "createdBy" : 30,
+      "lastUpdatedMillis" : 1561133544,
+      "lastUpdatedBy" : 30
+    }
+  }
+]
+
+
+de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContact_id=[
+  {
+    "metasfreshId" : 30,
+    "externalId" : "contactRecord.externalId",
+    "metasfreshBPartnerId" : 20,
+    "active" : true,
+    "name" : "contactRecord.name",
+    "firstName" : "contactRecord.firstName",
+    "lastName" : "contactRecord.lastName",
+    "email" : "contactRecord.email",
+    "phone" : "contactRecord.phone",
+    "newsletter" : false,
+    "shipToDefault" : false,
+    "billToDefault" : false,
+    "defaultContact" : false,
+    "sales" : false,
+    "salesDefault" : false,
+    "purchase" : false,
+    "purchaseDefault" : false,
+    "subjectMatter" : false,
+    "changeInfo" : {
+      "createdMillis" : 1561133544,
+      "createdBy" : 30,
+      "lastUpdatedMillis" : 1561133544,
+      "lastUpdatedBy" : 30
+    }
+  }
+]
+
+
+de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContact_id_unspecified_CreatedByUpdatedBy=[
+  {
+    "metasfreshId" : 30,
+    "externalId" : "contactRecord.externalId",
+    "metasfreshBPartnerId" : 20,
+    "active" : true,
+    "name" : "contactRecord.name",
+    "firstName" : "contactRecord.firstName",
+    "lastName" : "contactRecord.lastName",
+    "email" : "contactRecord.email",
+    "phone" : "contactRecord.phone",
+    "newsletter" : false,
+    "shipToDefault" : false,
+    "billToDefault" : false,
+    "defaultContact" : false,
+    "sales" : false,
+    "salesDefault" : false,
+    "purchase" : false,
+    "purchaseDefault" : false,
+    "subjectMatter" : false,
+    "changeInfo" : {
+      "createdMillis" : 1561133544,
+      "lastUpdatedMillis" : 1561133544,
+      "changeLogs" : [
+        {
+          "fieldName" : "name",
+          "updatedMillis" : 1561133544,
+          "oldValue" : "valueOld",
+          "newValue" : "valueNew"
+        }
+      ]
+    }
+  }
+]
+
+
+de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContact_val=[
+  {
+    "metasfreshId" : 30,
+    "externalId" : "contactRecord.externalId",
+    "metasfreshBPartnerId" : 20,
+    "active" : true,
+    "name" : "contactRecord.name",
+    "firstName" : "contactRecord.firstName",
+    "lastName" : "contactRecord.lastName",
+    "email" : "contactRecord.email",
+    "phone" : "contactRecord.phone",
+    "newsletter" : false,
+    "shipToDefault" : false,
+    "billToDefault" : false,
+    "defaultContact" : false,
+    "sales" : false,
+    "salesDefault" : false,
+    "purchase" : false,
+    "purchaseDefault" : false,
+    "subjectMatter" : false,
+    "changeInfo" : {
+      "createdMillis" : 1561133544,
+      "createdBy" : 30,
+      "lastUpdatedMillis" : 1561133544,
+      "lastUpdatedBy" : 30
+    }
+  }
+]
+
+
+de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContactsSince=[
+  {
+    "resultTimestamp" : 1561014385,
+    "totalSize" : 5,
+    "pageSize" : 2,
+    "nextPage" : "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_D",
+    "contacts" : [
+      {
+        "metasfreshId" : 30,
+        "externalId" : "contactRecord.externalId",
+        "metasfreshBPartnerId" : 20,
+        "active" : true,
+        "name" : "contactRecord.name",
+        "firstName" : "contactRecord.firstName",
+        "lastName" : "contactRecord.lastName",
+        "email" : "contactRecord.email",
+        "phone" : "contactRecord.phone",
+        "newsletter" : false,
+        "shipToDefault" : false,
+        "billToDefault" : false,
+        "defaultContact" : false,
+        "sales" : false,
+        "salesDefault" : false,
+        "purchase" : false,
+        "purchaseDefault" : false,
+        "subjectMatter" : false,
+        "changeInfo" : {
+          "createdMillis" : 1561133544,
+          "createdBy" : 30,
+          "lastUpdatedMillis" : 1561133544,
+          "lastUpdatedBy" : 30
+        }
+      },
+      {
+        "metasfreshId" : 31,
+        "externalId" : "contactRecord.externalId_1",
+        "metasfreshBPartnerId" : 21,
+        "active" : true,
+        "name" : "contactRecord.name_1",
+        "firstName" : "contactRecord.firstName_1",
+        "lastName" : "contactRecord.lastName_1",
+        "email" : "contactRecord.email_1",
+        "phone" : "contactRecord.phone_1",
+        "newsletter" : false,
+        "shipToDefault" : false,
+        "billToDefault" : false,
+        "defaultContact" : false,
+        "sales" : false,
+        "salesDefault" : false,
+        "purchase" : false,
+        "purchaseDefault" : false,
+        "subjectMatter" : false,
+        "changeInfo" : {
+          "createdMillis" : 1561133544,
+          "lastUpdatedMillis" : 1561133544,
+          "lastUpdatedBy" : 30
+        }
+      }
+    ]
+  },
+  {
+    "resultTimestamp" : 1561014385,
+    "totalSize" : 5,
+    "pageSize" : 2,
+    "nextPage" : "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_E",
+    "contacts" : [
+      {
+        "metasfreshId" : 32,
+        "externalId" : "contactRecord.externalId_2",
+        "metasfreshBPartnerId" : 22,
+        "active" : true,
+        "name" : "contactRecord.name_2",
+        "firstName" : "contactRecord.firstName_2",
+        "lastName" : "contactRecord.lastName_2",
+        "email" : "contactRecord.email_2",
+        "phone" : "contactRecord.phone_2",
+        "newsletter" : false,
+        "shipToDefault" : false,
+        "billToDefault" : false,
+        "defaultContact" : false,
+        "sales" : false,
+        "salesDefault" : false,
+        "purchase" : false,
+        "purchaseDefault" : false,
+        "subjectMatter" : false,
+        "changeInfo" : {
+          "createdMillis" : 1561133544,
+          "createdBy" : 32,
+          "lastUpdatedMillis" : 1561133544,
+          "lastUpdatedBy" : 30
+        }
+      },
+      {
+        "metasfreshId" : 33,
+        "externalId" : "contactRecord.externalId_3",
+        "metasfreshBPartnerId" : 23,
+        "active" : true,
+        "name" : "contactRecord.name_3",
+        "firstName" : "contactRecord.firstName_3",
+        "lastName" : "contactRecord.lastName_3",
+        "email" : "contactRecord.email_3",
+        "phone" : "contactRecord.phone_3",
+        "newsletter" : false,
+        "shipToDefault" : false,
+        "billToDefault" : false,
+        "defaultContact" : false,
+        "sales" : false,
+        "salesDefault" : false,
+        "purchase" : false,
+        "purchaseDefault" : false,
+        "subjectMatter" : false,
+        "changeInfo" : {
+          "createdMillis" : 1561133544,
+          "lastUpdatedMillis" : 1561133544,
+          "lastUpdatedBy" : 30
+        }
+      }
+    ]
+  },
+  {
+    "resultTimestamp" : 1561014385,
+    "totalSize" : 5,
+    "pageSize" : 1,
+    "contacts" : [
+      {
+        "metasfreshId" : 34,
+        "externalId" : "contactRecord.externalId_4",
+        "metasfreshBPartnerId" : 24,
+        "active" : true,
+        "name" : "contactRecord.name_4",
+        "firstName" : "contactRecord.firstName_4",
+        "lastName" : "contactRecord.lastName_4",
+        "email" : "contactRecord.email_4",
+        "phone" : "contactRecord.phone_4",
+        "newsletter" : false,
+        "shipToDefault" : false,
+        "billToDefault" : false,
+        "defaultContact" : false,
+        "sales" : false,
+        "salesDefault" : false,
+        "purchase" : false,
+        "purchaseDefault" : false,
+        "subjectMatter" : false,
+        "changeInfo" : {
+          "createdMillis" : 1561133544,
+          "createdBy" : 34,
+          "lastUpdatedMillis" : 1561133544,
+          "lastUpdatedBy" : 34
+        }
+      }
+    ]
+  }
+]

@@ -22,7 +22,6 @@
 
 package de.metas.banking.payment.paymentallocation;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
@@ -40,9 +39,11 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import lombok.NonNull;
-import org.compiere.apps.search.FindHelper;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.DB;
@@ -55,7 +56,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -94,126 +94,60 @@ public class PaymentAllocationRepository
 
 	public List<InvoiceToAllocate> retrieveInvoicesToAllocate(@NonNull final InvoiceToAllocateQuery query)
 	{
-		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = buildSelectInvoiceToAllocateSql(query, sqlParams);
-		if (sql == null)
-		{
-			return ImmutableList.of();
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		final String sql = toSql(query, sqlParams);
+		return DB.retrieveRows(sql, sqlParams, PaymentAllocationRepository::retrieveInvoiceToAllocateOrNull);
 		}
 
-		final ZonedDateTime evaluationDate = query.getEvaluationDate();
-
-		return DB.retrieveRows(sql, sqlParams, rs -> retrieveInvoiceToAllocateOrNull(rs, evaluationDate));
-	}
-
-	@Nullable
-	private static String buildSelectInvoiceToAllocateSql(
+	private static String toSql(
 			@NonNull final InvoiceToAllocateQuery query,
 			@NonNull final List<Object> sqlParams)
 	{
 		final CurrencyId convertToCurrencyId = query.getCurrencyId();
-		final boolean multiCurrency = convertToCurrencyId == null;
-
 		final ClientAndOrgId clientAndOrgId = query.getClientAndOrgId();
+		final ClientId clientId = clientAndOrgId != null ? clientAndOrgId.getClientId() : null;
 		final OrgId orgId = clientAndOrgId != null ? clientAndOrgId.getOrgId() : null;
+		final PInstanceId onlyInvoicesSelectionId = createInvoicesSelection(query.getOnlyInvoiceIds());
 
 		final StringBuilder sql = new StringBuilder();
-
-		//
-		// Main query
-		if (query.getBpartnerId() != null)
-		{
-			sql.append("SELECT * FROM GetOpenInvoices(?, ?, ?, ?, ?, ?, ?)");
+		sql.append("SELECT * FROM GetOpenInvoices("
+				+ " c_bpartner_id := ?,"
+				+ " c_currency_id := ?,"
+				+ " ad_client_id := ?, "
+				+ " ad_org_id := ?,"
+				+ " date := ?,"
+				+ " onlyInvoicesSelectionId := ?"
+				+ ")");
 			sqlParams.addAll(Arrays.asList(
 					query.getBpartnerId(),
 					convertToCurrencyId,
-					multiCurrency,
+				clientId,
 					orgId,
 					query.getEvaluationDate(),
-					null, // C_Invoice_ID
-					null // C_Order_ID
-			));
+				onlyInvoicesSelectionId));
 
-			if (!Check.isEmpty(query.getPoReference(), true))
-			{
-				sql.append(" WHERE ");
-				sql.append(FindHelper.buildStringRestriction("POReference", query.getPoReference(), true, sqlParams));
-			}
-		}
-
-		//
-		// Add particular invoices mentioned to be included
-		for (final InvoiceId invoiceId : query.getAdditionalInvoiceIdsToInclude())
-		{
-			if (sql.length() > 0)
-			{
-				sql.append(" UNION ");
-			}
-
-			sql.append("SELECT * FROM GetOpenInvoices(?, ?, ?, ?, ?, ?, ?)");
-			sqlParams.addAll(Arrays.asList(
-					null, // no C_BPartner_ID
-					convertToCurrencyId,
-					multiCurrency,
-					orgId,
-					query.getEvaluationDate(),
-					invoiceId, // C_Invoice_ID
-					null // C_Order_ID
-			));
-		}
-
-		//
-		// Add particular prepay orders mentioned to be included
-		for (final OrderId prepayOrderId : query.getAdditionalPrepayOrderIdsToInclude())
-		{
-			if (sql.length() > 0)
-			{
-				sql.append(" UNION ");
-			}
-
-			sql.append("SELECT * FROM GetOpenInvoices(?, ?, ?, ?, ?, ?, ?)");
-			sqlParams.addAll(Arrays.asList(
-					null, // no C_BPartner_ID
-					convertToCurrencyId,
-					multiCurrency,
-					orgId,
-					query.getEvaluationDate(),
-					null, // C_Invoice_ID
-					prepayOrderId // C_Order_ID
-			));
-		}
-
-		if (sql.length() <= 0)
-		{
-			return null;
-		}
-
-		//
-		// Builder the final outer SQL:
-		sql.insert(0, "SELECT * FROM ( ").append(") i");
-
-		sql.append(" WHERE TRUE");
-
-		if (clientAndOrgId != null)
-		{
-			sql.append(" AND i.AD_Client_ID=?");
-			sqlParams.add(clientAndOrgId.getClientId());
-		}
+		sql.append("\n WHERE TRUE ");
 
 		if (!query.getExcludeInvoiceIds().isEmpty())
 		{
-			sql.append(" AND NOT (").append(DB.buildSqlList("i.C_Invoice_ID", query.getExcludeInvoiceIds(), sqlParams)).append(")");
+			sql.append("\n AND NOT (").append(DB.buildSqlList("C_Invoice_ID", query.getExcludeInvoiceIds(), sqlParams)).append(")");
 		}
 
-		sql.append(" ORDER BY i.InvoiceDate, i.DocNo ");
+		sql.append("\n ORDER BY InvoiceDate, DocNo ");
 
 		return sql.toString();
 	}
 
 	@Nullable
-	private InvoiceToAllocate retrieveInvoiceToAllocateOrNull(
-			@NonNull final ResultSet rs,
-			@NonNull final ZonedDateTime evaluationDate) throws SQLException
+	private static PInstanceId createInvoicesSelection(@NonNull final Set<InvoiceId> invoiceIds)
+	{
+		return !invoiceIds.isEmpty()
+				? DB.createT_Selection(invoiceIds, ITrx.TRXNAME_None)
+				: null;
+	}
+
+	@Nullable
+	private static InvoiceToAllocate retrieveInvoiceToAllocateOrNull(@NonNull final ResultSet rs) throws SQLException
 	{
 		final InvoiceId invoiceId;
 		final OrderId prepayOrderId;
@@ -273,7 +207,7 @@ public class PaymentAllocationRepository
 				.dateInvoiced(TimeUtil.asLocalDate(rs.getTimestamp("invoicedate")))
 				.dateAcct(TimeUtil.asLocalDate(rs.getTimestamp("dateacct"))) // task 09643
 				.documentCurrencyCode(documentCurrencyCode)
-				.evaluationDate(evaluationDate)
+				.evaluationDate(TimeUtil.asZonedDateTime(rs.getTimestamp("evaluation_date")))
 				.grandTotal(grandTotal)
 				.openAmountConverted(openAmtConv)
 				.discountAmountConverted(discountAmountConv)

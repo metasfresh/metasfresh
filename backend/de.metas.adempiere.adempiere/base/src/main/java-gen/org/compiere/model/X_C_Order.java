@@ -637,6 +637,11 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_Shipper = "S";
+	/** Normalpost = NP */
+	public static final String DELIVERYVIARULE_Normalpost = "NP";
+	/** Luftpost = LU */
+	public static final String DELIVERYVIARULE_Luftpost = "LU";
+
 	@Override
 	public void setDeliveryViaRule (final java.lang.String DeliveryViaRule)
 	{

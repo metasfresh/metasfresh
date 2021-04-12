@@ -54,6 +54,7 @@ import de.metas.product.ProductType;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.user.UserRepository;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -164,6 +165,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 		@Test
 		public void alreadyExistingServiceFeeInvoice()
 		{
+			// create the config just to make sure that's not the case for not computing the fee
 			config()
 					.feePercentageOfGrandTotal("2")
 					.customerId(BPartnerId.ofRepoId(2))
@@ -185,6 +187,29 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 			assertThat(result).isEmpty();
 		}
+
+		@Test
+		public void alreadyExistingServiceFeeInvoice_advisedByRequest()
+		{
+			// create the config just to make sure that's not the case for not computing the fee
+			config()
+					.feePercentageOfGrandTotal("2")
+					.customerId(BPartnerId.ofRepoId(2))
+					.validFrom(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
+					.build();
+
+			final Optional<InvoiceProcessingFeeCalculation> result = invoiceProcessingServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
+					.orgId(OrgId.ofRepoId(1))
+					.evaluationDate(LocalDate.parse("2020-04-30").atStartOfDay(ZoneId.of("UTC+5")))
+					.customerId(BPartnerId.ofRepoId(2))
+					.invoiceId(InvoiceId.ofRepoId(3))
+					.invoiceGrandTotal(Amount.of(100, CurrencyCode.EUR))
+					.serviceInvoiceWasAlreadyGenerated(OptionalBoolean.TRUE)
+					.build());
+
+			assertThat(result).isEmpty();
+		}
+
 
 		@Test
 		public void customerIsNotAssignedToInvoiceProcessingServiceCompany()

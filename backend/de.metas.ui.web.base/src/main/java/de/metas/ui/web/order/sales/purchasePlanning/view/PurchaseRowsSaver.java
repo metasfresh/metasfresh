@@ -1,5 +1,23 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
+import de.metas.purchasecandidate.DemandGroupReference;
+import de.metas.purchasecandidate.IPurchaseCandidateBL;
+import de.metas.purchasecandidate.PurchaseCandidate;
+import de.metas.purchasecandidate.PurchaseCandidateId;
+import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
+import de.metas.purchasecandidate.PurchaseCandidatesGroup;
+import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
+import de.metas.quantity.Quantity;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -7,28 +25,11 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import java.util.Objects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderAndLineId;
-import de.metas.purchasecandidate.DemandGroupReference;
-import de.metas.purchasecandidate.PurchaseCandidate;
-import de.metas.purchasecandidate.PurchaseCandidateId;
-import de.metas.purchasecandidate.PurchaseCandidateRepository;
-import de.metas.purchasecandidate.PurchaseCandidatesGroup;
-import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
-import de.metas.quantity.Quantity;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -57,6 +58,7 @@ class PurchaseRowsSaver
 	// services
 	private final PurchaseCandidateRepository purchaseCandidatesRepo;
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IPurchaseCandidateBL purchaseCandidateBL = Services.get(IPurchaseCandidateBL.class);
 
 	@Builder
 	private PurchaseRowsSaver(
@@ -208,7 +210,6 @@ class PurchaseRowsSaver
 			lastCandidate.setQtyToPurchase(lastCandidate.getQtyToPurchase().add(qtyToPurchaseRemainingOfGroup));
 			lastCandidate.setPurchaseDatePromised(purchaseDatePromised);
 
-			qtyToPurchaseRemainingOfGroup = qtyToPurchaseRemainingOfGroup.toZero();
 		}
 		//
 		// If there is remaining qty to purchase but no purchase candidate to add to then create a new candidate
@@ -248,11 +249,12 @@ class PurchaseRowsSaver
 					.profitInfoOrNull(profitInfo)
 					.forecastLineId(candidatesGroup.getForecastLineId())
 					.dimension(candidatesGroup.getDimension())
+					.source(PurchaseCandidateSource.SalesOrder)
 					//
 					.build();
 
+			purchaseCandidateBL.updateCandidatePricingDiscount(newCandidate);
 			candidatesChanged.add(newCandidate);
-			qtyToPurchaseRemainingOfGroup = qtyToPurchaseRemainingOfGroup.toZero();
 		}
 
 		return candidatesChanged;

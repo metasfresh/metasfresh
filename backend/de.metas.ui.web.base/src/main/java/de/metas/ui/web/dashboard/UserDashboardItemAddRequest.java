@@ -34,7 +34,7 @@ public class UserDashboardItemAddRequest
 	public static final UserDashboardItemAddRequest of(final JsonUserDashboardItemAddRequest json, final DashboardWidgetType widgetType, final String adLanguage)
 	{
 		final UserDashboardItemChangeRequest changeRequest = UserDashboardItemChangeRequest.builder()
-				.itemId(0) // new
+				.itemId(null) // new
 				.widgetType(widgetType)
 				.adLanguage(adLanguage)
 				.caption(json.getCaption())
@@ -50,11 +50,10 @@ public class UserDashboardItemAddRequest
 				.build();
 	}
 	
-	private final DashboardWidgetType widgetType;
+	DashboardWidgetType widgetType;
 
-	private final int kpiId;
-	@Default
-	private final int position = -1;
+	int kpiId;
+	@Default int position = -1;
 
-	private final UserDashboardItemChangeRequest changeRequest;
+	UserDashboardItemChangeRequest changeRequest;
 }

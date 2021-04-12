@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { getZoomIntoWindow, deleteRequest } from '../api';
 import { containerPropTypes } from '../utils/tableHelpers';
 import { mapIncluded } from '../utils/documentListHelper';
-
+import { isGermanLanguage } from '../utils/locale';
 import { getTableId, getTable } from '../reducers/tables';
 import {
   updateTableSelection,
@@ -283,10 +283,7 @@ const mapStateToProps = (state, props) => {
     allowShortcut: handleShortcuts,
     allowOutsideClick: state.windowHandler.allowOutsideClick,
     modalVisible,
-    isGerman:
-      state.appHandler.me.language && state.appHandler.me.language.key
-        ? state.appHandler.me.language.key.includes('de')
-        : false,
+    isGerman: isGermanLanguage(state.appHandler.me.language),
   };
 };
 

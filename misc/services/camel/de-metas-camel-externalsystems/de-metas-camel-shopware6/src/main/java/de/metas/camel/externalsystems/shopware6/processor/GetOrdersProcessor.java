@@ -26,8 +26,7 @@ import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
 import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrders;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
@@ -35,7 +34,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -45,6 +43,7 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_UPDATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_DATE_GTE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_ORG_CODE;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_LOCATION_ID;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_SHOPWARE_CLIENT;
 
 public class GetOrdersProcessor implements Processor
@@ -59,7 +58,7 @@ public class GetOrdersProcessor implements Processor
 		{
 			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
 
-			ProcessorHelper.logProcessMessage(exchange, "Shopware6:GetOrders process started!" +  Instant.now(), request.getAdPInstanceId().getValue() );
+			ProcessorHelper.logProcessMessage(exchange, "Shopware6:GetOrders process started!" + Instant.now(), request.getAdPInstanceId().getValue());
 		}
 
 		final String clientId = request.getParameters().get(ExternalSystemConstants.PARAM_CLIENT_ID);
@@ -68,16 +67,19 @@ public class GetOrdersProcessor implements Processor
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 		final String updatedAfter = request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER);
 
+		final String bPartnerIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID);
+		final String bPartnerLocationIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID);
+
 		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath);
 		final QueryRequest getOrdersRequest = buildQueryOrdersRequest(updatedAfter);
 
-		final List<JsonOrder> ordersToProcess = shopwareClient.getOrders(getOrdersRequest)
-				.map(JsonOrders::getData)
-				.orElseGet(ArrayList::new);
+		final List<JsonOrderAndCustomId> ordersToProcess = shopwareClient.getOrders(getOrdersRequest, bPartnerIdJSONPath);
 
 		exchange.getIn().setBody(ordersToProcess);
 		exchange.setProperty(ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
+		exchange.setProperty(ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_LOCATION_ID, bPartnerLocationIdJSONPath);
 		exchange.setProperty(ROUTE_PROPERTY_SHOPWARE_CLIENT, shopwareClient);
+
 	}
 
 	@NonNull

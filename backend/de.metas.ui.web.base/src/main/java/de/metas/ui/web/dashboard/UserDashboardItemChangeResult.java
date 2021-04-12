@@ -1,11 +1,11 @@
 package de.metas.ui.web.dashboard;
 
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
-
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -32,14 +32,16 @@ import lombok.Value;
 
 @Value
 @Builder
-public final class UserDashboardItemChangeResult
+public class UserDashboardItemChangeResult
 {
-	private final int dashboardId;
-	private final DashboardWidgetType dashboardWidgetType;
-	private final int itemId;
+	@NonNull UserDashboardId dashboardId;
+	@NonNull DashboardWidgetType dashboardWidgetType;
+	@NonNull UserDashboardItemId itemId;
 
-	@Nullable
-	private ImmutableList<Integer> dashboardOrderedItemIds;
+	/**
+	 * not null if the order ofValueAndField items changed
+	 */
+	@Nullable ImmutableList<UserDashboardItemId> dashboardOrderedItemIds;
 
 	public boolean isPositionChanged()
 	{

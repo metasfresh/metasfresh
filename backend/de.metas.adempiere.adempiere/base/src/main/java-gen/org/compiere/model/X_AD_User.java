@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1927866888L;
+	private static final long serialVersionUID = -1075502256L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -49,6 +49,33 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getAD_Language() 
 	{
 		return get_ValueAsString(COLUMNNAME_AD_Language);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Org_Mapping getAD_Org_Mapping()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Org_Mapping_ID, org.compiere.model.I_AD_Org_Mapping.class);
+	}
+
+	@Override
+	public void setAD_Org_Mapping(final org.compiere.model.I_AD_Org_Mapping AD_Org_Mapping)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Org_Mapping_ID, org.compiere.model.I_AD_Org_Mapping.class, AD_Org_Mapping);
+	}
+
+	@Override
+	public void setAD_Org_Mapping_ID (final int AD_Org_Mapping_ID)
+	{
+		if (AD_Org_Mapping_ID < 1) 
+			set_Value (COLUMNNAME_AD_Org_Mapping_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Org_Mapping_ID, AD_Org_Mapping_ID);
+	}
+
+	@Override
+	public int getAD_Org_Mapping_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Org_Mapping_ID);
 	}
 
 	@Override
@@ -235,33 +262,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_Title getC_Title()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
-	}
-
-	@Override
-	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
-	}
-
-	@Override
-	public void setC_Title_ID (final int C_Title_ID)
-	{
-		if (C_Title_ID < 1) 
-			set_Value (COLUMNNAME_C_Title_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
-	}
-
-	@Override
-	public int getC_Title_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
-	}
-
-	@Override
 	public void setComments (final @Nullable java.lang.String Comments)
 	{
 		set_Value (COLUMNNAME_Comments, Comments);
@@ -344,6 +344,33 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getContactLimitationReason() 
 	{
 		return get_ValueAsString(COLUMNNAME_ContactLimitationReason);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Title getC_Title()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
+	}
+
+	@Override
+	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
+	}
+
+	@Override
+	public void setC_Title_ID (final int C_Title_ID)
+	{
+		if (C_Title_ID < 1) 
+			set_Value (COLUMNNAME_C_Title_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
+	}
+
+	@Override
+	public int getC_Title_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
 	}
 
 	@Override

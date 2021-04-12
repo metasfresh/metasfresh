@@ -30,6 +30,9 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+/**
+ * Request that is send to metasfresh via the camel {@code ProductRouteBuilder} to retrieve product master data.
+ */
 @Value
 @Builder
 @JsonDeserialize(builder = GetProductsCamelRequest.GetProductsCamelRequestBuilder.class)
