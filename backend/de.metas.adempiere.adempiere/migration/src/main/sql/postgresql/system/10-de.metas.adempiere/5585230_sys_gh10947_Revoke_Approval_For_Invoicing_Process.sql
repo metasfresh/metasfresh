@@ -23,3 +23,38 @@ UPDATE AD_Table_Process SET WEBUI_ViewQuickAction='Y',Updated=TO_TIMESTAMP('2021
 UPDATE AD_Table_Process SET EntityType='de.metas.ui.web',Updated=TO_TIMESTAMP('2021-04-09 19:59:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=540924
 ;
 
+-- 2021-04-12T08:31:12.149Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Classname='de.metas.ui.web.invoicecandidate.process.C_Invoice_Candidate_RevokeApprovalForInvoicing',Updated=TO_TIMESTAMP('2021-04-12 11:31:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584820
+;
+
+-- 2021-04-12T08:31:27.060Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Revoke approval for invoicing',Updated=TO_TIMESTAMP('2021-04-12 11:31:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584820
+;
+
+-- 2021-04-12T08:31:35.191Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Revoke approval for invoicing',Updated=TO_TIMESTAMP('2021-04-12 11:31:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584820
+;
+
+-- 2021-04-12T08:32:04.054Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET Name='Freigabe zur Fakturierung widerrufen',Updated=TO_TIMESTAMP('2021-04-12 11:32:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584820
+;
+
+-- 2021-04-12T08:32:09.214Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Description=NULL, Help=NULL, Name='Freigabe zur Fakturierung widerrufen',Updated=TO_TIMESTAMP('2021-04-12 11:32:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584820
+;
+
+-- 2021-04-12T08:32:09.189Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Freigabe zur Fakturierung widerrufen',Updated=TO_TIMESTAMP('2021-04-12 11:32:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584820
+;
+
+-- 2021-04-12T08:32:47.114Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-04-12 11:32:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584820
+;
+
