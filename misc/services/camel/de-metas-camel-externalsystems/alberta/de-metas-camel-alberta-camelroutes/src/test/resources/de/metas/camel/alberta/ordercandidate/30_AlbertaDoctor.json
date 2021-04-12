@@ -1,0 +1,14 @@
+{
+  "gender": 2,
+  "titleShort": "Dr.",
+  "title": "Dr. med.",
+  "firstName": "first name",
+  "lastName": "last name",
+  "address": "address with street no",
+  "postalCode": "postalCode",
+  "city": "SomeCity",
+  "phone": "1212121212",
+  "fax": "012012012012",
+  "timestamp": "2019-11-18T14:08:27.814Z",
+  "_id": "doctorId"
+}
