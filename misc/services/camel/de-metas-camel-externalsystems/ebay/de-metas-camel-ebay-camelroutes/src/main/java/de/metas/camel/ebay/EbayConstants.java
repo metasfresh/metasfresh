@@ -13,5 +13,7 @@ public interface EbayConstants {
 	String PARAM_API_AUTH_CODE = "authCode";
 	String PARAM_API_MODE = "apiMode";
 	
+	
+	String EXTERNAL_ID_PREFIX = "ext-ebay-";
 
 }

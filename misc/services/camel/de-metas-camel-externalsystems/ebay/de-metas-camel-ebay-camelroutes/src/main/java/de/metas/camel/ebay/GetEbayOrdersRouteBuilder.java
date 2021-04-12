@@ -8,7 +8,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.springframework.stereotype.Component;
 
-import de.metas.camel.ebay.processor.CreateOrderLineCandidateUpsertReqProcessor;
+import de.metas.camel.ebay.processor.CreateOrderLineCandidateUpsertReqForEbayOrderProcessor;
 import de.metas.camel.ebay.processor.GetEbayOrdersProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 
@@ -23,7 +23,8 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 public class GetEbayOrdersRouteBuilder extends RouteBuilder{
 	
 	public static final String GET_ORDERS_ROUTE_ID = "Ebay-getOrders";
-	public static final String PROCESS_ORDER_ROUTE_ID = "Ebay-processOrder";
+	public static final String PROCESS_ORDER_BPARTNER_ROUTE_ID = "Ebay-processOrderBPartner";
+	public static final String PROCESS_ORDER_OCL_ROUTE_ID = "Ebay-processOrderOCL";
 	
 	@Override
 	public void configure() {
@@ -42,15 +43,22 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder{
 			.log(LoggingLevel.DEBUG, "Ebay get order route invoked")
 			.process(new GetEbayOrdersProcessor())
 			.split(body())
-			.to(StaticEndpointBuilders.direct(PROCESS_ORDER_ROUTE_ID));
+			.to(StaticEndpointBuilders.direct(PROCESS_ORDER_BPARTNER_ROUTE_ID));
 		
 		//second, hand over individual orders for further processing.
-		from(StaticEndpointBuilders.direct(PROCESS_ORDER_ROUTE_ID))
-			.routeId(PROCESS_ORDER_ROUTE_ID)
+		from(StaticEndpointBuilders.direct(PROCESS_ORDER_BPARTNER_ROUTE_ID))
+			.routeId(PROCESS_ORDER_BPARTNER_ROUTE_ID)
 			.log("Ebay process orders route invoked")
-			.process(new CreateOrderLineCandidateUpsertReqProcessor())
+			.process(new CreateOrderLineCandidateUpsertReqForEbayOrderProcessor())
+			.log(LoggingLevel.DEBUG, "Calling metasfresh-api to store business partners!")
+			.to( direct(ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI) );
+
+		from(direct(PROCESS_ORDER_OCL_ROUTE_ID))
+			.routeId(PROCESS_ORDER_OCL_ROUTE_ID)
 			.log(LoggingLevel.DEBUG, "Calling metasfresh-api to store order candidates!")
+			.process(new CreateOrderLineCandidateUpsertReqForEbayOrderProcessor())
 			.to( direct(ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID) );
+		
 		//@formatter:on
 	}
 	

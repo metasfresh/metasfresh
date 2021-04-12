@@ -81,7 +81,12 @@
             <scope>compile</scope>
         </dependency>
     
-        
+        <dependency>
+            <groupId>de.metas.common.ordercandidates</groupId>
+            <artifactId>de-metas-common-ordercandidates</artifactId>
+            <version>${metasfresh-common.version}</version>
+            <scope>compile</scope>
+        </dependency>
         
         <dependency>
         	<groupId>de.metas.camel.externalsystems</groupId>
