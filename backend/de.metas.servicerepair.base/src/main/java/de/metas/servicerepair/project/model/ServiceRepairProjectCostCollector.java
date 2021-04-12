@@ -27,6 +27,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.servicerepair.customerreturns.WarrantyCase;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -46,6 +47,7 @@ public class ServiceRepairProjectCostCollector
 
 	@NonNull ProductId productId;
 	@NonNull AttributeSetInstanceId asiId;
+	@NonNull WarrantyCase warrantyCase;
 	@NonNull Quantity qtyReserved;
 	@NonNull Quantity qtyConsumed;
 
@@ -62,6 +64,7 @@ public class ServiceRepairProjectCostCollector
 			@NonNull final ServiceRepairProjectCostCollectorType type,
 			@NonNull final ProductId productId,
 			@NonNull final AttributeSetInstanceId asiId,
+			@NonNull final WarrantyCase warrantyCase,
 			@NonNull final Quantity qtyReserved,
 			@NonNull final Quantity qtyConsumed,
 			@Nullable final HuId vhuId,
@@ -75,6 +78,7 @@ public class ServiceRepairProjectCostCollector
 		this.type = type;
 		this.productId = productId;
 		this.asiId = asiId;
+		this.warrantyCase = warrantyCase;
 		this.qtyReserved = qtyReserved;
 		this.qtyConsumed = qtyConsumed;
 		this.vhuId = vhuId;

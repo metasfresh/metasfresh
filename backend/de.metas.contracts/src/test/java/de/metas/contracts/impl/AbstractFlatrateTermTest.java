@@ -20,6 +20,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.ICountryAreaBL;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
@@ -347,6 +348,7 @@ public abstract class AbstractFlatrateTermTest
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 		final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
+				.orgId(OrgId.ofRepoId(orderLine.getAD_Org_ID()))
 				.context(helper.getContextProvider())
 				.bPartner(getBpartner())
 				.conditions(conditions)

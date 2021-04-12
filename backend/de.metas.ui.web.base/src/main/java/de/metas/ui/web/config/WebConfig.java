@@ -10,10 +10,14 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
+import de.metas.ui.web.WebuiURLs;
+import lombok.NonNull;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.session.web.http.CookieSerializer;
+import org.springframework.session.web.http.DefaultCookieSerializer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /*
  * #%L
@@ -39,7 +43,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 @Configuration
 // @EnableWebMvc // NOTE: if u enable it, the swagger won't work!
-public class WebConfig extends WebMvcConfigurerAdapter
+public class WebConfig implements WebMvcConfigurer
 {
 	public static final String ENDPOINT_ROOT = "/rest/api";
 
@@ -50,8 +54,22 @@ public class WebConfig extends WebMvcConfigurerAdapter
 	public static final String PARAM_TabId = "tabid";
 	public static final String PARAM_RowId = "rowId";
 
+	@Bean
+	public CookieSerializer cookieSerializer()
+	{
+		final DefaultCookieSerializer serializer = new DefaultCookieSerializer();
+		
+		final WebuiURLs webuiURLs = WebuiURLs.newInstance();
+		if(webuiURLs.isCrossSiteUsageAllowed())
+		{
+			serializer.setSameSite("None");
+			serializer.setUseSecureCookie(true);
+		}
+		return serializer;
+	}
+	
 	@Override
-	public void addCorsMappings(final CorsRegistry registry)
+	public void addCorsMappings(@NonNull final CorsRegistry registry)
 	{
 		// FIXME: for now we enable CORS for the whole REST API
 		// registry.addMapping(ENDPOINT_ROOT + "/**");
@@ -68,9 +86,8 @@ public class WebConfig extends WebMvcConfigurerAdapter
 	{
 		return new Filter()
 		{
-
 			@Override
-			public void init(final FilterConfig filterConfig) throws ServletException
+			public void init(final FilterConfig filterConfig)
 			{
 			}
 
@@ -86,7 +103,7 @@ public class WebConfig extends WebMvcConfigurerAdapter
 					if (response instanceof HttpServletResponse)
 					{
 						final HttpServletResponse httpResponse = (HttpServletResponse)response;
-						
+
 						//
 						// If the Cache-Control is not set then set it to no-cache.
 						// In this way we precisely tell to browser that it shall not cache our REST calls.

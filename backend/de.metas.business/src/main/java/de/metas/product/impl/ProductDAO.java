@@ -44,6 +44,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -55,8 +56,11 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -208,10 +212,18 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public Stream<I_M_Product> streamAllProducts()
+	public Stream<I_M_Product> streamAllProducts(@Nullable final Instant since)
 	{
-		return queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
+		final IQueryBuilder<I_M_Product> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter();
+
+		if (since != null)
+		{
+			final Timestamp updatedAfter = TimeUtil.asTimestamp(since);
+			queryBuilder.addCompareFilter(I_M_Product.COLUMNNAME_Updated, CompareQueryFilter.Operator.GREATER_OR_EQUAL, updatedAfter);
+		}
+
+		return queryBuilder
 				.orderBy(I_M_Product.COLUMNNAME_M_Product_ID)
 				.create()
 				.iterateAndStream();

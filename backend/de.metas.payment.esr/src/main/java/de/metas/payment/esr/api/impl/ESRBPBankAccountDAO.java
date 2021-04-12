@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
@@ -135,7 +136,7 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 				.list(I_ESR_PostFinanceUserNumber.class);
 	}
 
-	private static String MSG_NOT_ESR_ACCOUNT_FOR_ORG = "NoESRAccountForOrganiazation";
+	private static  AdMessageKey MSG_NOT_ESR_ACCOUNT_FOR_ORG =  AdMessageKey.of("NoESRAccountForOrganiazation");
 
 	@Override
 	public final List<I_C_BP_BankAccount> fetchOrgEsrAccounts(@NonNull final I_AD_Org org)

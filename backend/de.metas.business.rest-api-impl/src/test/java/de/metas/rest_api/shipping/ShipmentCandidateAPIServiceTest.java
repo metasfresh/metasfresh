@@ -25,7 +25,7 @@ package de.metas.rest_api.shipping;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.business.BusinessTestHelper;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.JsonRequestCandidateResult;
 import de.metas.common.shipping.JsonRequestCandidateResults;
 import de.metas.common.shipping.JsonRequestCandidateResults.JsonRequestCandidateResultsBuilder;

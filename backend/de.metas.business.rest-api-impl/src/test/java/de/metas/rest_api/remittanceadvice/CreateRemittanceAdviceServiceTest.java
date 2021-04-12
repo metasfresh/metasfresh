@@ -24,12 +24,12 @@ package de.metas.rest_api.remittanceadvice;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceRequest;
-import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceResponse;
-import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdvice;
-import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdviceLine;
-import de.metas.common.rest_api.remittanceadvice.RemittanceAdviceType;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRequest;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceResponse;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdvice;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
+import de.metas.common.rest_api.v1.remittanceadvice.RemittanceAdviceType;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -359,7 +359,7 @@ class CreateRemittanceAdviceServiceTest
 		assertThat(c_remittanceAdvice.getDocumentNo()).isEqualTo(CREATED_DOCUMENT_NB);
 		assertThat(c_remittanceAdvice.getExternalDocumentNo()).isEqualTo(DOCUMENT_NB);
 		assertThat(TimeUtil.asInstant(c_remittanceAdvice.getDateDoc())).isEqualTo(Instant.parse(DOCUMENT_DATE));
-		assertThat(c_remittanceAdvice.getSendAt()).isEqualTo(null);
+		assertThat(c_remittanceAdvice.getSendAt()).isNull();
 
 		assertThat(c_remittanceAdvice.getC_DocType_ID()).isEqualTo(docTypeRMADV.getC_DocType_ID());
 		assertThat(c_remittanceAdvice.getC_Payment_Doctype_Target_ID()).isEqualTo(docTypeARR.getC_DocType_ID());

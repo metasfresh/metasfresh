@@ -1,12 +1,12 @@
 package de.metas.product;
 
-import javax.annotation.Nullable;
-
 import de.metas.organization.OrgId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -59,4 +59,23 @@ public class CreateProductRequest
 
 	@Nullable
 	ProductPlanningSchemaSelector planningSchemaSelector;
+
+	@Nullable
+	String ean;
+
+	@Nullable
+	String gtin;
+
+	@Nullable
+	String description;
+
+	@Nullable
+	Boolean discontinued;
+
+	@Nullable
+	Boolean active;
+
+	@Nullable
+	Boolean stocked;
+
 }

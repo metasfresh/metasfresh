@@ -148,7 +148,7 @@
 
     <dependencies>
 
-        <!-- neede to we can compile this with java-version > 11-->
+        <!-- needed so we can compile this with java-version > 11-->
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>

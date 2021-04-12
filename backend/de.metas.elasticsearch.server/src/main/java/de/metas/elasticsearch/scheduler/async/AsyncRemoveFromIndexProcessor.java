@@ -2,6 +2,7 @@ package de.metas.elasticsearch.scheduler.async;
 
 import java.util.Set;
 
+import de.metas.elasticsearch.indexer.impl.ESModelIndexersRegistry;
 import org.adempiere.exceptions.AdempiereException;
 
 import de.metas.async.exceptions.WorkpackageSkipRequestException;
@@ -11,11 +12,11 @@ import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.indexer.IESIndexerResult;
 import de.metas.elasticsearch.indexer.IESModelIndexer;
-import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
 import de.metas.elasticsearch.scheduler.impl.ESModelIndexingScheduler;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -67,7 +68,8 @@ public class AsyncRemoveFromIndexProcessor extends WorkpackageProcessorAdapter
 
 		try
 		{
-			final IESModelIndexersRegistry esModelIndexersRegistry = Services.get(IESModelIndexersRegistry.class);
+			// not null because ESSystem is enabled
+			final ESModelIndexersRegistry esModelIndexersRegistry = SpringContextHolder.instance.getBean(ESModelIndexersRegistry.class);
 			final IESModelIndexer modelIndexer = esModelIndexersRegistry.getModelIndexerById(modelIndexerId);
 
 			final IESIndexerResult result = modelIndexer.removeFromIndexByIds(idsToRemove);

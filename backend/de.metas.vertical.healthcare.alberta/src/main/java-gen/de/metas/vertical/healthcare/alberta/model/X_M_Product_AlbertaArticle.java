@@ -1,19 +1,19 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.vertical.healthcare.alberta.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Product_AlbertaArticle
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_M_Product_AlbertaArticle extends org.compiere.model.PO implements I_M_Product_AlbertaArticle, org.compiere.model.I_Persistent 
+public class X_M_Product_AlbertaArticle extends org.compiere.model.PO implements I_M_Product_AlbertaArticle, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 741639272L;
+	private static final long serialVersionUID = 966062343L;
 
     /** Standard Constructor */
     public X_M_Product_AlbertaArticle (final Properties ctx, final int M_Product_AlbertaArticle_ID, @Nullable final String trxName)
@@ -36,13 +36,13 @@ public class X_M_Product_AlbertaArticle extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setAdditionalDescription (final @Nullable java.lang.String AdditionalDescription)
+	public void setAdditionalDescription (final @Nullable String AdditionalDescription)
 	{
 		set_Value (COLUMNNAME_AdditionalDescription, AdditionalDescription);
 	}
 
 	@Override
-	public java.lang.String getAdditionalDescription() 
+	public String getAdditionalDescription()
 	{
 		return get_ValueAsString(COLUMNNAME_AdditionalDescription);
 	}
@@ -59,13 +59,13 @@ public class X_M_Product_AlbertaArticle extends org.compiere.model.PO implements
 	/** Unknown = 3 */
 	public static final String ARTICLEINVENTORYTYPE_Unknown = "3";
 	@Override
-	public void setArticleInventoryType (final java.lang.String ArticleInventoryType)
+	public void setArticleInventoryType (final String ArticleInventoryType)
 	{
 		set_Value (COLUMNNAME_ArticleInventoryType, ArticleInventoryType);
 	}
 
 	@Override
-	public java.lang.String getArticleInventoryType() 
+	public String getArticleInventoryType()
 	{
 		return get_ValueAsString(COLUMNNAME_ArticleInventoryType);
 	}
@@ -99,13 +99,13 @@ public class X_M_Product_AlbertaArticle extends org.compiere.model.PO implements
 	/** FinallyUnavailable = 4 */
 	public static final String ARTICLESTATUS_FinallyUnavailable = "4";
 	@Override
-	public void setArticleStatus (final java.lang.String ArticleStatus)
+	public void setArticleStatus (final String ArticleStatus)
 	{
 		set_Value (COLUMNNAME_ArticleStatus, ArticleStatus);
 	}
 
 	@Override
-	public java.lang.String getArticleStatus() 
+	public String getArticleStatus()
 	{
 		return get_ValueAsString(COLUMNNAME_ArticleStatus);
 	}
@@ -122,27 +122,15 @@ public class X_M_Product_AlbertaArticle extends org.compiere.model.PO implements
 	/** StandardArticle = 2 */
 	public static final String ASSORTMENTTYPE_StandardArticle = "2";
 	@Override
-	public void setAssortmentType (final java.lang.String AssortmentType)
+	public void setAssortmentType (final String AssortmentType)
 	{
 		set_Value (COLUMNNAME_AssortmentType, AssortmentType);
 	}
 
 	@Override
-	public java.lang.String getAssortmentType() 
+	public String getAssortmentType()
 	{
 		return get_ValueAsString(COLUMNNAME_AssortmentType);
-	}
-
-	@Override
-	public void setMedicalAidPositionNumber (final @Nullable java.lang.String MedicalAidPositionNumber)
-	{
-		set_Value (COLUMNNAME_MedicalAidPositionNumber, MedicalAidPositionNumber);
-	}
-
-	@Override
-	public java.lang.String getMedicalAidPositionNumber() 
-	{
-		return get_ValueAsString(COLUMNNAME_MedicalAidPositionNumber);
 	}
 
 	@Override
@@ -175,6 +163,18 @@ public class X_M_Product_AlbertaArticle extends org.compiere.model.PO implements
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
+	@Override
+	public void setMedicalAidPositionNumber (final @Nullable String MedicalAidPositionNumber)
+	{
+		set_Value (COLUMNNAME_MedicalAidPositionNumber, MedicalAidPositionNumber);
+	}
+
+	@Override
+	public String getMedicalAidPositionNumber()
+	{
+		return get_ValueAsString(COLUMNNAME_MedicalAidPositionNumber);
+	}
+
 	/** 
 	 * PurchaseRating AD_Reference_ID=541279
 	 * Reference name: PurchaseRating
@@ -192,26 +192,28 @@ public class X_M_Product_AlbertaArticle extends org.compiere.model.PO implements
 	public static final String PURCHASERATING_E = "E";
 	/** F = F */
 	public static final String PURCHASERATING_F = "F";
+	/** G = G */
+	public static final String PURCHASERATING_G = "G";
 	@Override
-	public void setPurchaseRating (final @Nullable java.lang.String PurchaseRating)
+	public void setPurchaseRating (final @Nullable String PurchaseRating)
 	{
 		set_Value (COLUMNNAME_PurchaseRating, PurchaseRating);
 	}
 
 	@Override
-	public java.lang.String getPurchaseRating() 
+	public String getPurchaseRating()
 	{
 		return get_ValueAsString(COLUMNNAME_PurchaseRating);
 	}
 
 	@Override
-	public void setSize (final @Nullable java.lang.String Size)
+	public void setSize (final @Nullable String Size)
 	{
 		set_Value (COLUMNNAME_Size, Size);
 	}
 
 	@Override
-	public java.lang.String getSize() 
+	public String getSize()
 	{
 		return get_ValueAsString(COLUMNNAME_Size);
 	}

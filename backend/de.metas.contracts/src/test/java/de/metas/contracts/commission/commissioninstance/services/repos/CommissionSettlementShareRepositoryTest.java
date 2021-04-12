@@ -81,13 +81,17 @@ class CommissionSettlementShareRepositoryTest
 	private long currentTimestamp = START_TIMESTAMP;
 
 	private ProductId commissionProductId;
+	private OrgId orgId;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
+		orgId = AdempiereTestHelper.createOrgWithTimeZone();
+
 		final I_M_Product commissionProductRecord = newInstance(I_M_Product.class);
+		commissionProductRecord.setAD_Org_ID(0); /* set it to org * */
 		saveRecord(commissionProductRecord);
 		commissionProductId = ProductId.ofRepoId(commissionProductRecord.getM_Product_ID());
 
@@ -112,9 +116,12 @@ class CommissionSettlementShareRepositoryTest
 	void getByInvoiceCandidateId()
 	{
 		final I_C_Invoice_Candidate settlementICRecord = newInstance(I_C_Invoice_Candidate.class);
+		settlementICRecord.setAD_Org_ID(OrgId.toRepoId(orgId));
 		saveRecord(settlementICRecord);
+
 		final InvoiceCandidateId settlementInvoiceCandidateId = InvoiceCandidateId.ofRepoId(settlementICRecord.getC_Invoice_Candidate_ID());
 		final ConfigData configData = TestCommissionConfig.builder()
+				.orgId(orgId)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
 				.subtractLowerLevelCommissionFromBase(true)
 				.commissionProductId(commissionProductId)
@@ -125,7 +132,7 @@ class CommissionSettlementShareRepositoryTest
 		final Entry<BPartnerId, FlatrateTermId> bpartnerIdAndFlatrateTermId = CollectionUtils.singleElement(configData.getBpartnerId2FlatrateTermId().entrySet());
 
 		final CreateCommissionInstanceResult commissionInstanceResult = TestCommissionInstance.builder()
-				.orgId(OrgId.ofRepoId(5))
+				.orgId(orgId)
 				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(10))
 				.triggerType(CommissionTriggerType.InvoiceCandidate)
 				.triggerDocumentDate(TimeUtil.parseTimestamp("2020-03-21"))
@@ -179,10 +186,12 @@ class CommissionSettlementShareRepositoryTest
 	void save()
 	{
 		final I_C_Invoice_Candidate settlementICRecord = newInstance(I_C_Invoice_Candidate.class);
+		settlementICRecord.setAD_Org_ID(OrgId.toRepoId(orgId));
 		saveRecord(settlementICRecord);
 		final InvoiceCandidateId settlementInvoiceCandidateId = InvoiceCandidateId.ofRepoId(settlementICRecord.getC_Invoice_Candidate_ID());
 
 		final ConfigData configData = TestCommissionConfig.builder()
+				.orgId(orgId)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
 				.subtractLowerLevelCommissionFromBase(true)
 				.contractTestRecord(TestCommissionContract.builder().salesRepName("C_BPartner_SalesRep_1_ID").build())
@@ -193,7 +202,7 @@ class CommissionSettlementShareRepositoryTest
 		final Entry<BPartnerId, FlatrateTermId> bpartnerIdAndFlatrateTermId = CollectionUtils.singleElement(configData.getBpartnerId2FlatrateTermId().entrySet());
 
 		final CreateCommissionInstanceResult commissionInstanceResult = TestCommissionInstance.builder()
-				.orgId(OrgId.ofRepoId(5))
+				.orgId(orgId)
 				.invoiceCandidateId(InvoiceCandidateId.ofRepoId(10))
 				.triggerType(CommissionTriggerType.InvoiceCandidate)
 				.triggerDocumentDate(TimeUtil.parseTimestamp("2020-03-21"))

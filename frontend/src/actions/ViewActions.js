@@ -332,12 +332,6 @@ export function fetchDocument({
       orderBy,
     })
       .then((response) => {
-        // remove the old filter from the store
-        if (!websocketRefresh) {
-          const entityRelatedId = getEntityRelatedId({ windowId, viewId });
-          dispatch(deleteFilter(entityRelatedId));
-        }
-
         dispatch(fetchDocumentSuccess(windowId, response.data, isModal));
 
         const tableId = getTableId({ windowId, viewId });
@@ -539,6 +533,10 @@ export function filterView(windowId, viewId, filters, isModal = false) {
     return filterViewRequest(windowId, viewId, filters)
       .then((response) => {
         dispatch(filterViewSuccess(windowId, response.data, isModal));
+
+        // remove the old filter from the store
+        const entityRelatedId = getEntityRelatedId({ windowId, viewId });
+        dispatch(deleteFilter(entityRelatedId));
 
         // remove table, so that we won't add filtered rows to the previous data
         const tableId = getTableId({ windowId, viewId });

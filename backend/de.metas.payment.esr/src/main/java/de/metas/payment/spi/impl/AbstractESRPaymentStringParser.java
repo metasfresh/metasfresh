@@ -37,16 +37,17 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
 
 import de.metas.banking.payment.spi.IPaymentStringParser;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.util.Services;
 
 public abstract class AbstractESRPaymentStringParser implements IPaymentStringParser
 {
-	protected static final String ERR_WRONG_PAYMENT_DATE = "ESR_Wrong_Payment_Date";
-	protected static final String ERR_WRONG_ACCOUNT_DATE = "ESR_Wrong_Account_Date";
+	protected static final AdMessageKey ERR_WRONG_PAYMENT_DATE = AdMessageKey.of("ESR_Wrong_Payment_Date");
+	protected static final AdMessageKey ERR_WRONG_ACCOUNT_DATE = AdMessageKey.of("ESR_Wrong_Account_Date");
 
-	private static final String ERR_WRONG_NUMBER_FORMAT_AMOUNT = "ESR_Wrong_Number_Format_Amount";
+	private static final AdMessageKey ERR_WRONG_NUMBER_FORMAT_AMOUNT = AdMessageKey.of("ESR_Wrong_Number_Format_Amount");
 
 	protected final BigDecimal extractAmountFromString(final Properties ctx, final String trxType, final String amountStringWithPosibleSpaces, final List<String> collectedErrors)
 	{
@@ -77,7 +78,7 @@ public abstract class AbstractESRPaymentStringParser implements IPaymentStringPa
 	 * @param collectedErrors
 	 * @return
 	 */
-	protected final Timestamp extractTimestampFromString(final Properties ctx, final String dateStr, final String failMessage, final List<String> collectedErrors)
+	protected final Timestamp extractTimestampFromString(final Properties ctx, final String dateStr, final AdMessageKey failMessage, final List<String> collectedErrors)
 	{
 		final DateFormat df = new SimpleDateFormat("yyMMdd");
 		final Date date;

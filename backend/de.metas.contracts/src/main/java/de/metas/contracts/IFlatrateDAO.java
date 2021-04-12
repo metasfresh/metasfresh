@@ -33,6 +33,7 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.costing.ChargeId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -124,18 +125,21 @@ public interface IFlatrateDAO extends ISingletonService
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_BPartner bPartner, I_C_Flatrate_Conditions flatrateConditions);
 
 	/**
-	 * This method calls {@link #retrieveTerms(Properties, int, Timestamp, int, int, int, String)} using the given invoice candidates values as parameters.
+	 * This method calls {@link #retrieveTerms(Properties, OrgId, int, Timestamp, int, int, int, String)} using the given invoice candidates values as parameters.
 	 */
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Invoice_Candidate ic);
 
-	List<I_C_Flatrate_Term> retrieveTerms(Properties ctx, int bill_BPartner_ID, Timestamp dateOrdered, int m_Product_Category_ID, int m_Product_ID, int c_Charge_ID, String trxName);
+	List<I_C_Flatrate_Term> retrieveTerms(Properties ctx, @NonNull OrgId orgId, int bill_BPartner_ID, Timestamp dateOrdered, int m_Product_Category_ID, int m_Product_ID, int c_Charge_ID, String trxName);
 
 	List<I_C_Flatrate_Term> retrieveTerms(TermsQuery query);
 
 	@Value
 	@Builder
-	public static class TermsQuery
+	class TermsQuery
 	{
+		@NonNull 
+		OrgId orgId;
+		
 		@Singular
 		List<BPartnerId> billPartnerIds;
 
@@ -170,7 +174,7 @@ public interface IFlatrateDAO extends ISingletonService
 
 	/**
 	 * Retrieves the flatrate term matching the given invoice candidate (or {@code code>}) by using {@link I_C_Flatrate_Matching} Records.<br>
-	 * Basically calls {@link #retrieveTerms(Properties, int, Timestamp, int, int, int, String)}, but discards all terms that have <code>IsSimulation=Y</code>.
+	 * Basically calls {@link #retrieveTerms(Properties, OrgId, int, Timestamp, int, int, int, String)}, but discards all terms that have <code>IsSimulation=Y</code>.
 	 *
 	 * @return the term or <code>null</code>
 	 * @throws AdempiereException if there is more than one non-simulation-term

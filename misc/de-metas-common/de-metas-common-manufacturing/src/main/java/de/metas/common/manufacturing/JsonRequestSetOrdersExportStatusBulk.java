@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.v1.JsonError;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
