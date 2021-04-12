@@ -13,12 +13,12 @@ import java.util.Date;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -28,13 +28,19 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.organization.OrgId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalBatch;
@@ -42,9 +48,12 @@ import org.compiere.model.I_GL_JournalBatch;
 import de.metas.acct.gljournal.IGLJournalDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.util.Services;
+import org.compiere.model.X_C_DocType;
 
 public class GLJournalDAO implements IGLJournalDAO
 {
+
+	private IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	@Override
 	public List<I_GL_Journal> retrieveJournalsForBatch(final I_GL_JournalBatch batch)
@@ -92,10 +101,24 @@ public class GLJournalDAO implements IGLJournalDAO
 
 		queryBuilder
 				.addNotInSubQueryFilter(I_GL_Journal.COLUMNNAME_GL_Journal_ID, I_Fact_Acct.COLUMNNAME_Record_ID, factAcctQuery.create()) // has no accounting
-				;
+		;
 
 		return queryBuilder
 				.create()
 				.list();
 	}
+
+	@Override
+	public DocTypeId retrieveDocTypeGLJournal(final int clientId, final int orgId)
+	{
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+				.adClientId(clientId)
+				.adOrgId(orgId)
+				.docBaseType(X_C_DocType.DOCBASETYPE_GLJournal)
+				.build();
+
+		return docTypeDAO
+				.getDocTypeId(docTypeQuery);
+	}
+
 }

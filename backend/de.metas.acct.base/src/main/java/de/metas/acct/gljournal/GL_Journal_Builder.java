@@ -1,25 +1,23 @@
 package de.metas.acct.gljournal;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.acct.process.GLJournalRequest;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocTypeId;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_GL_Category;
 import org.compiere.model.I_GL_Journal;
-import org.compiere.model.I_GL_JournalBatch;
-import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.MGLCategory;
 import org.compiere.model.X_GL_Category;
 import org.compiere.util.TimeUtil;
 
-import de.metas.currency.ICurrencyDAO;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -43,50 +41,41 @@ import de.metas.util.Services;
  * #L%
  */
 
-/**
- * {@link I_GL_Journal} and {@link I_GL_JournalLine} builder.
- * 
- * To create a new builder instance please use {@link #newBuilder(I_GL_JournalBatch)}.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
- */
 public class GL_Journal_Builder
 {
-	public static final GL_Journal_Builder newBuilder(final I_GL_JournalBatch glJournalBatch)
+	public static final GL_Journal_Builder newBuilder(final GLJournalRequest glJournalRequest)
 	{
-		return new GL_Journal_Builder(glJournalBatch);
+		return new GL_Journal_Builder(glJournalRequest);
 	}
 
 	// services
 	private final transient ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final IGLJournalDAO glJournalDAO = Services.get(IGLJournalDAO.class);
 
-	private final I_GL_JournalBatch glJournalBatch;
 	private final I_GL_Journal glJournal;
 
 	private final List<GL_JournalLine_Builder> glJournalLineBuilders = new ArrayList<>();
 
-	private GL_Journal_Builder(final I_GL_JournalBatch glJournalBatch)
+	private GL_Journal_Builder(final GLJournalRequest request)
 	{
 		super();
+		glJournal = InterfaceWrapperHelper.newInstance(I_GL_Journal.class);
 
-		Check.assumeNotNull(glJournalBatch, "glJournalBatch not null");
-		this.glJournalBatch = glJournalBatch;
+		glJournal.setAD_Org_ID(request.getOrgId().getRepoId());
+		glJournal.setDateAcct(TimeUtil.asTimestamp(request.getDateAcct()));
+		glJournal.setDateDoc(TimeUtil.asTimestamp(request.getDateDoc()));
+		glJournal.setPostingType(request.getPostingType());
+		final DocTypeId docTypeId = glJournalDAO.retrieveDocTypeGLJournal(request.getClientId().getRepoId(),
+																		  request.getOrgId().getRepoId());
+		glJournal.setC_DocType_ID(docTypeId.getRepoId());
 
-		glJournal = InterfaceWrapperHelper.newInstance(I_GL_Journal.class, glJournalBatch);
-		glJournal.setGL_JournalBatch(glJournalBatch);
-		glJournal.setAD_Org_ID(glJournalBatch.getAD_Org_ID());
-		glJournal.setGL_JournalBatch(glJournalBatch);
-		glJournal.setDateAcct(glJournalBatch.getDateAcct());
-		glJournal.setDateDoc(glJournalBatch.getDateDoc());
-		glJournal.setPostingType(glJournalBatch.getPostingType());
-		glJournal.setC_DocType_ID(glJournalBatch.getC_DocType_ID());
+		glJournal.setC_Currency_ID(request.getCurrencyId().getRepoId());
 
-		glJournal.setC_Currency_ID(glJournalBatch.getC_Currency_ID());
-		
-		if (glJournalBatch.getGL_Category_ID() > 0)
+		final GLCategoryId glCategoryId = request.getGlCategoryId();
+
+		if (glCategoryId != null)
 		{
-			glJournal.setGL_Category_ID(glJournalBatch.getGL_Category_ID());
+			glJournal.setGL_Category_ID(glCategoryId.getRepoId());
 		}
 		else
 		{
@@ -96,7 +85,6 @@ public class GL_Journal_Builder
 
 	public I_GL_Journal build()
 	{
-		glJournal.setGL_JournalBatch(glJournalBatch);
 		InterfaceWrapperHelper.save(glJournal);
 
 		for (final GL_JournalLine_Builder glJournalLineBuilder : glJournalLineBuilders)
@@ -154,14 +142,14 @@ public class GL_Journal_Builder
 		glJournal.setC_ConversionType_ID(C_ConversionType_ID);
 		return this;
 	}
-	
+
 	public GL_Journal_Builder setC_ConversionType_Default()
 	{
 		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getDefaultConversionTypeId(
 				ClientId.ofRepoId(glJournal.getAD_Client_ID()),
 				OrgId.ofRepoId(glJournal.getAD_Org_ID()),
 				TimeUtil.asLocalDate(glJournal.getDateAcct()));
-		
+
 		return setC_ConversionType_ID(conversionTypeId.getRepoId());
 	}
 
