@@ -5,6 +5,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 import java.io.ByteArrayInputStream;
 
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
@@ -110,11 +112,13 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 			final I_C_Invoice invoiceRecord = tableRecordReference.getModel(I_C_Invoice.class);
 
 			final byte[] attachmentData = attachmentEntryService.retrieveData(attachmentEntry.getId());
-			final String xsdName = coalesceSuppliers(
-					() -> tags.getTagValueOrNull(ForumDatenaustauschChConstants.XSD_NAME),
-					() -> XmlIntrospectionUtil.extractXsdValueOrNull(attachmentData));
-
+			final String xsdName = Check.assumeNotNull(
+					coalesceSuppliers(
+							() -> tags.getTagValueOrNull(ForumDatenaustauschChConstants.XSD_NAME),
+							() -> XmlIntrospectionUtil.extractXsdValueOrNull(attachmentData)),
+					"Failed to extract xsdName from tags={} or attachmentData={}", tags, attachmentData);
 			final CrossVersionRequestConverter requestConverter = crossVersionServiceRegistry.getRequestConverterForXsdName(xsdName);
+
 			final XmlRequest xRequest = requestConverter.toCrossVersionRequest(new ByteArrayInputStream(attachmentData));
 
 			extractBeneficiaryToInvoice(xRequest, invoiceRecord, attachmentEntry);
@@ -140,13 +144,18 @@ public class HealthcareXMLAttachedToInvoiceListener implements AttachmentListene
 			return;
 		}
 
-		final ImmutableList<BPartnerComposite> bpartners = bpartnerCompositeRepository.getByQuery(BPartnerQuery.builder().externalId(externalId).build());
+		final BPartnerQuery bPartnerQuery = BPartnerQuery.builder().externalId(externalId)
+				.onlyOrgId(OrgId.ANY)
+				.onlyOrgId(OrgId.ofRepoId(invoiceRecord.getAD_Org_ID())) // make sure that we don't run into "stale" customers from other orgs that happen to have the same orgId.
+				.build();
+		final ImmutableList<BPartnerComposite> bpartners = bpartnerCompositeRepository.getByQuery(bPartnerQuery);
 		if (bpartners.isEmpty())
 		{
 			logger.debug("externalId={} of the patient-XML data extracted from attachmentEntry with id={} (filename={}) has no matching C_BPartner; -> doing nothing",
 					externalId.getValue(), attachmentEntry.getId(), attachmentEntry.getFilename());
 			return;
 		}
+		
 		final BPartnerComposite bPartner = CollectionUtils.singleElement(bpartners);
 
 		if (invoiceRecord.getBeneficiary_BPartner_ID() > 0)

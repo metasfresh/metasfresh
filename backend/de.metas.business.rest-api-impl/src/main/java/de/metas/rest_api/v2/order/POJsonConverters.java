@@ -24,7 +24,7 @@ package de.metas.rest_api.v2.order;
 
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
-import de.metas.rest_api.order.JsonPurchaseCandidateReference;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateReference;
 import de.metas.rest_api.utils.JsonExternalIds;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;

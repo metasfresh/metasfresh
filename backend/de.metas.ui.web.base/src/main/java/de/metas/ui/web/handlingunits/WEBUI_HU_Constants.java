@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits;
 
 import de.metas.i18n.AdMessageKey;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -25,6 +26,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
  * #L%
  */
 
+@UtilityClass
 public final class WEBUI_HU_Constants
 {
 	public static final String WEBUI_HU_Window_ID_String = "540189"; // FIXME: hardcoded
@@ -42,8 +44,4 @@ public final class WEBUI_HU_Constants
 	public static final AdMessageKey MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU = AdMessageKey.of("WEBUI_Picking_Select_Active_UnSelected_HUs");
 
 	public static final AdMessageKey MSG_WEBUI_ONLY_CU = AdMessageKey.of("WEBUI_Only_CU");
-
-	private WEBUI_HU_Constants()
-	{
-	}
 }
