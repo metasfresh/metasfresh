@@ -32,7 +32,7 @@ import org.compiere.model.IQuery;
 
 import java.util.Set;
 
-public class C_Invoice_Candidate_RejectFromInvoicing extends C_Invoice_Candidate_ProcessHelper
+public class C_Invoice_Candidate_RevokeApprovalForInvoicing extends C_Invoice_Candidate_ProcessHelper
 {
 
 	@Override
