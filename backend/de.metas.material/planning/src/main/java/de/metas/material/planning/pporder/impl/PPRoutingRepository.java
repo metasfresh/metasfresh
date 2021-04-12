@@ -157,6 +157,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.qty(Quantity.of(productRecord.getQty(), productBL.getStockUOM(productRecord.getM_Product_ID())))
 				.subcontracting(productRecord.isSubcontracting())
 				.seqNo(productRecord.getSeqNo())
+				.specification(productRecord.getSpecification())
 				.build();
 	}
 

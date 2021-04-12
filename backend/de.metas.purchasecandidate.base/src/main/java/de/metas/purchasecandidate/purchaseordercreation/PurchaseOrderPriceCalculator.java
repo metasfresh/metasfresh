@@ -23,25 +23,22 @@
 package de.metas.purchasecandidate.purchaseordercreation;
 
 import de.metas.lang.SOTrx;
-import de.metas.money.CurrencyId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 public class PurchaseOrderPriceCalculator
 {
-	private final IPricingBL pricingBL;
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	PurchaseOrderPricingInfo pricingInfo;
 
 	@Builder
-	private PurchaseOrderPriceCalculator(
-			@NonNull final IPricingBL pricingBL,
-			@NonNull final PurchaseOrderPricingInfo pricingInfo)
+	private PurchaseOrderPriceCalculator(@NonNull final PurchaseOrderPricingInfo pricingInfo)
 	{
-		this.pricingBL = pricingBL;
 		this.pricingInfo = pricingInfo;
 	}
 

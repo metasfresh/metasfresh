@@ -219,7 +219,7 @@ public class OLCandRepository
 		}
 
 		final BPartnerId salesRepId = request.getSalesRepId();
-		if (salesRepId != null)
+		if (salesRepId != null && !salesRepId.equals(BPartnerId.ofRepoId(olCandPO.getC_BPartner_ID())))
 		{
 			olCandPO.setC_BPartner_SalesRep_ID(salesRepId.getRepoId());
 		}

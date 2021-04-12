@@ -7,9 +7,10 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.inventory.impl.HUInternalUseInventoryProducer;
+import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
+import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
+import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryProducer;
 import de.metas.handlingunits.inventory.impl.SyncInventoryQtyToHUsCommand;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
@@ -19,7 +20,6 @@ import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -37,9 +37,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -89,7 +86,9 @@ public class InventoryService
 		return inventoryRepository.getById(inventoryId);
 	}
 
-	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(I_M_Inventory inventoryRecord)
+	public Inventory toInventory(@NonNull final I_M_Inventory inventoryRecord) { return inventoryRepository.toInventory(inventoryRecord); }
+
+	public DocBaseAndSubType extractDocBaseAndSubTypeOrNull(final I_M_Inventory inventoryRecord)
 	{
 		return inventoryRepository.extractDocBaseAndSubTypeOrNull(inventoryRecord);
 	}
@@ -110,8 +109,7 @@ public class InventoryService
 
 	public static HUAggregationType computeHUAggregationType(@NonNull final DocBaseAndSubType baseAndSubType)
 	{
-		final InventoryLine inventoryLine = null;
-		return computeHUAggregationType(inventoryLine, baseAndSubType);
+		return computeHUAggregationType(null, baseAndSubType);
 	}
 
 	public void updateHUAggregationTypeIfAllowed(@NonNull final I_M_Inventory inventoryRecord)
@@ -212,23 +210,9 @@ public class InventoryService
 	 * Move products from the warehouse to garbage (waste disposal)
 	 * After this process an internal use inventory is created.
 	 */
-	public List<de.metas.handlingunits.model.I_M_Inventory> moveToGarbage(
-			final Collection<I_M_HU> husToDestroy,
-			final ZonedDateTime movementDate,
-			final ActivityId activityId,
-			final String description,
-			final boolean isCompleteInventory,
-			final boolean isCreateMovement)
+	public HUInternalUseInventoryCreateResponse moveToGarbage(@NonNull final HUInternalUseInventoryCreateRequest request)
 	{
-		return HUInternalUseInventoryProducer.newInstance()
-				.setMovementDate(movementDate)
-				.setDocSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
-				.addHUs(husToDestroy)
-				.setActivityId(activityId)
-				.setDescription(description)
-				.setIsCompleteInventory(isCompleteInventory)
-				.setIsCreateMovement(isCreateMovement)
-				.createInventories();
+		return new HUInternalUseInventoryProducer(request).execute();
 	}
 
 	public void completeDocument(@NonNull final InventoryId inventoryId)
@@ -242,9 +226,9 @@ public class InventoryService
 		return inventoryRepository.createInventoryHeader(request);
 	}
 
-	public Inventory createInventoryLine(@NonNull final InventoryLineCreateRequest request)
+	private void createInventoryLine(@NonNull final InventoryLineCreateRequest request)
 	{
-		return inventoryRepository.createInventoryLine(request);
+		inventoryRepository.createInventoryLine(request);
 	}
 
 	@NonNull

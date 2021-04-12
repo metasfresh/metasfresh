@@ -106,7 +106,7 @@ public class M_DiscountSchemaBreak_CopyToSelectedSchema_Product extends JavaProc
 		{
 			copyDiscountSchemaBreaks(pricingConditions, product);
 		};
-
+		
 		return MSG_OK;
 	}
 

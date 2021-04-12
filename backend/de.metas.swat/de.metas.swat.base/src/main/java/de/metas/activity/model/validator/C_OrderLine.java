@@ -22,28 +22,46 @@ package de.metas.activity.model.validator;
  * #L%
  */
 
+import de.metas.acct.api.IProductAcctDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.ModelValidator;
-
-import de.metas.acct.api.IProductAcctDAO;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.GroupId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.ModelValidator;
 
 @Validator(I_C_OrderLine.class)
 public class C_OrderLine
 {
 	final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	final OrderGroupRepository orderGroupRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
-	public void onProductChanged(final I_C_OrderLine orderLine)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID,
+					I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID })
+	public void updateActivity(final I_C_OrderLine orderLine)
 	{
+
+		if (InterfaceWrapperHelper.isCopy(orderLine))
+		{
+			// let the activity be copied from the source.
+
+			return;
+		}
+
+		final ActivityId groupActivityId = getGroupActivityId(orderLine);
+
+		orderLine.setC_Activity_ID(ActivityId.toRepoId(groupActivityId));
+
 		if (orderLine.getC_Activity_ID() > 0)
 		{
 			return; // was already set, so don't try to auto-fill it
@@ -76,5 +94,29 @@ public class C_OrderLine
 		}
 
 		dimensionService.updateRecord(orderLine, orderLineDimension.withActivityId(productActivityId));
+	}
+
+	private ActivityId getGroupActivityId(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.getC_Order_CompensationGroup_ID() <= 0)
+		{
+			return null;
+		}
+
+		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(orderLine);
+
+		if (groupId == null)
+		{
+			return null;
+		}
+
+		final Group group = orderGroupRepo.retrieveGroupIfExists(groupId);
+
+		if (group == null)
+		{
+			return null;
+		}
+
+		return group.getActivityId();
 	}
 }

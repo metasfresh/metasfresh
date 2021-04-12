@@ -7,7 +7,7 @@ import de.metas.i18n.ILanguageDAO;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
-import de.metas.rest_api.order.JsonPurchaseCandidateCreateItem;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateItem;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;

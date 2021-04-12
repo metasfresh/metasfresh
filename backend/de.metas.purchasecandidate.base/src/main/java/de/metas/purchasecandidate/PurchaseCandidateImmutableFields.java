@@ -3,7 +3,6 @@ package de.metas.purchasecandidate;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
 import de.metas.mforecast.impl.ForecastLineId;
-import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -65,9 +64,6 @@ class PurchaseCandidateImmutableFields
 
 	@NonNull
 	ProductId productId;
-
-	@Nullable
-	CurrencyId currencyId;
 
 	@NonNull
 	AttributeSetInstanceId attributeSetInstanceId;

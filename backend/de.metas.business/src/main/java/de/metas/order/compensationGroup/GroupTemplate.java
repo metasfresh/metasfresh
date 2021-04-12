@@ -2,11 +2,13 @@ package de.metas.order.compensationGroup;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.product.ProductCategoryId;
+import de.metas.product.acct.api.ActivityId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 /*
@@ -44,6 +46,7 @@ public class GroupTemplate
 {
 	GroupTemplateId id;
 	String name;
+	ActivityId activityId;
 	ProductCategoryId productCategoryId;
 	List<GroupTemplateLine> lines;
 
@@ -51,12 +54,14 @@ public class GroupTemplate
 	private GroupTemplate(
 			final GroupTemplateId id,
 			@NonNull final String name,
+			@Nullable ActivityId activityId,
 			final ProductCategoryId productCategoryId,
 			final @Singular List<GroupTemplateLine> lines)
 	{
 
 		this.id = id;
 		this.name = name;
+		this.activityId = activityId;
 		this.productCategoryId = productCategoryId;
 		this.lines = ImmutableList.copyOf(lines);
 	}

@@ -6,6 +6,7 @@ import de.metas.cache.CCache;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -79,6 +80,7 @@ public class GroupTemplateRepository
 		return GroupTemplate.builder()
 				.id(GroupTemplateId.ofRepoId(schemaPO.getC_CompensationGroup_Schema_ID()))
 				.name(schemaPO.getName())
+				.activityId(ActivityId.ofRepoIdOrNull(schemaPO.getC_Activity_ID()))
 				.lines(lines)
 				.build();
 	}

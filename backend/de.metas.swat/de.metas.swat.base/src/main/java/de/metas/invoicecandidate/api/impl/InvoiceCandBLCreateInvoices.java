@@ -371,12 +371,17 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			setC_DocType(invoice, invoiceHeader);
 
-			invoice.setC_BPartner_ID(invoiceHeader.getBillBPartnerId().getRepoId());
+			final BPartnerId bpartnerID = invoiceHeader.getBillBPartnerId();
+			invoice.setC_BPartner_ID(bpartnerID.getRepoId());
 			invoice.setC_BPartner_Location_ID(invoiceHeader.getBill_Location_ID());
 			final BPartnerContactId adUserId = BPartnerContactId.ofRepoIdOrNull(invoiceHeader.getBillBPartnerId(), invoiceHeader.getBill_User_ID());
 			invoice.setAD_User_ID(BPartnerContactId.toRepoId(adUserId));
 			invoice.setC_Currency_ID(invoiceHeader.getCurrencyId().getRepoId()); // 03805
-			invoice.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(invoiceHeader.getSalesPartnerId()));
+			final BPartnerId salesRepId = invoiceHeader.getSalesPartnerId();
+			if (!bpartnerID.equals(salesRepId))
+			{
+				invoice.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(salesRepId));
+			}
 			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 
 			invoice.setIsSOTrx(header.isSOTrx());

@@ -24,10 +24,10 @@ package de.metas.rest_api.v2.order;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.rest_api.order.JsonPurchaseCandidate;
-import de.metas.rest_api.order.JsonPurchaseCandidateCreateRequest;
-import de.metas.rest_api.order.JsonPurchaseCandidateResponse;
-import de.metas.rest_api.order.JsonPurchaseCandidatesRequest;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateRequest;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateResponse;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;

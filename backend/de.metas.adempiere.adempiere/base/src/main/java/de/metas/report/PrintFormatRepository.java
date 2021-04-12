@@ -22,17 +22,18 @@
 
 package de.metas.report;
 
-import de.metas.cache.CCache;
-import de.metas.process.AdProcessId;
-import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_PrintFormat;
 import org.springframework.stereotype.Repository;
 
+import de.metas.cache.CCache;
+import de.metas.process.AdProcessId;
+import lombok.NonNull;
+
 @Repository
 public class PrintFormatRepository
 {
-	private final CCache<PrintFormatId, PrintFormat> cacheById = CCache.<PrintFormatId, PrintFormat>builder()
+	private final CCache<PrintFormatId, PrintFormat> cacheById = CCache.<PrintFormatId, PrintFormat> builder()
 			.tableName(I_AD_PrintFormat.Table_Name)
 			.build();
 
@@ -49,5 +50,4 @@ public class PrintFormatRepository
 				.reportProcessId(AdProcessId.ofRepoIdOrNull(record.getJasperProcess_ID()))
 				.build();
 	}
-
 }

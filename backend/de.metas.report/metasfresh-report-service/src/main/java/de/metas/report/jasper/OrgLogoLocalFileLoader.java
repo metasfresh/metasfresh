@@ -23,8 +23,6 @@ package de.metas.report.jasper;
  */
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -39,7 +37,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.io.BaseEncoding;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.logging.LogManager;
@@ -57,6 +54,8 @@ import lombok.NonNull;
  */
 final class OrgLogoLocalFileLoader
 {
+	final static ImageFileLoader imgFileLoader = ImageFileLoader.newInstance();
+	
 	public static OrgLogoLocalFileLoader newInstance()
 	{
 		return new OrgLogoLocalFileLoader();
@@ -67,9 +66,6 @@ final class OrgLogoLocalFileLoader
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 
-	private static final String emptyPNGBase64Encoded = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="; // thanks to http://png-pixel.com/
-	private transient File emptyPNGFile; // lazy
-
 	private OrgLogoLocalFileLoader()
 	{
 	}
@@ -79,7 +75,7 @@ final class OrgLogoLocalFileLoader
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("emptyPNGFile", emptyPNGFile)
+				.add("emptyPNGFile", imgFileLoader.getEmptyPNGFile())
 				.toString();
 	}
 
@@ -94,7 +90,7 @@ final class OrgLogoLocalFileLoader
 		else
 		{
 			logger.warn("Cannot find logo for {}, please add a logo file to the organization. Returning empty PNG file", this);
-			return Optional.of(getEmptyPNGFile());
+			return Optional.of(imgFileLoader.getEmptyPNGFile());
 		}
 	}
 
@@ -180,45 +176,6 @@ final class OrgLogoLocalFileLoader
 			return null;
 		}
 
-		return createTempPNGFile("logo", logoData);
-	}
-
-	private static File createTempPNGFile(
-			@NonNull final String filenamePrefix,
-			@NonNull byte[] content)
-	{
-		try
-		{
-			final File tempFile = File.createTempFile(filenamePrefix, ".png");
-			try (final FileOutputStream out = new FileOutputStream(tempFile))
-			{
-				out.write(content);
-				out.close();
-			}
-
-			return tempFile;
-		}
-		catch (IOException e)
-		{
-			logger.warn("Failed creating the logo temporary file", e);
-			return null;
-		}
-	}
-
-	private File getEmptyPNGFile()
-	{
-		File file = this.emptyPNGFile;
-		if (file != null && !file.exists())
-		{
-			file = null;
-		}
-
-		if (file == null)
-		{
-			file = this.emptyPNGFile = createTempPNGFile(
-					"empty",
-					BaseEncoding.base64().decode(emptyPNGBase64Encoded));
-		}
-		return file;
+		return imgFileLoader.createTempPNGFile("logo", logoData);
 	}
 }
