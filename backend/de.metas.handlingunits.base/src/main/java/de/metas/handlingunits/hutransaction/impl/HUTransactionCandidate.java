@@ -34,10 +34,13 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	// Dimension
 	@Getter
 	@Setter
+	@Nullable
 	private Object referencedModel;
 
+	@Nullable
 	private final I_M_HU_Item huItem;
 
+	@Nullable
 	private final I_M_HU_Item vhuItem;
 	// Product/Qty/UOM
 
@@ -103,9 +106,9 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 
 	@Builder
 	public HUTransactionCandidate(
-			final Object model,
-			final I_M_HU_Item huItem,
-			final I_M_HU_Item vhuItem,
+			@Nullable final Object model,
+			@Nullable final I_M_HU_Item huItem,
+			@Nullable final I_M_HU_Item vhuItem,
 			@NonNull final ProductId productId,
 			@NonNull final Quantity quantity,
 			@NonNull final ZonedDateTime date,
@@ -198,16 +201,13 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	public String toString()
 	{
 		final StringBuilder sb = new StringBuilder();
-		sb.append(getClass().getSimpleName() + " ["
-				+ "product=" + productId
-				+ ", qty=" + quantity
-				+ ", date=" + date);
+		sb.append(getClass().getSimpleName()).append(" [").append("product=").append(productId).append(", qty=").append(quantity).append(", date=").append(date);
 
 		if (referencedModel != null)
 		{
 			final String modelTableName = InterfaceWrapperHelper.getModelTableName(referencedModel);
 			final int modelRecordId = InterfaceWrapperHelper.getId(referencedModel);
-			sb.append(", model=" + modelTableName + "/" + modelRecordId);
+			sb.append(", model=").append(modelTableName).append("/").append(modelRecordId);
 		}
 
 		if (huItem != null)
@@ -263,6 +263,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	}
 
 	@Override
+	@Nullable
 	public I_M_HU getM_HU()
 	{
 		if (huItem == null)
@@ -273,6 +274,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 	}
 
 	@Override
+	@Nullable
 	public I_M_HU getVHU()
 	{
 		if (vhuItem == null)
@@ -282,6 +284,7 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 		return vhuItem.getM_HU();
 	}
 
+	@Nullable
 	private I_M_HU getEffectiveHU()
 	{
 		final I_M_HU hu = getM_HU();

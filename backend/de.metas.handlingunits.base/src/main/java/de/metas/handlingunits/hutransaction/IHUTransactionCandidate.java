@@ -11,6 +11,8 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
+import javax.annotation.Nullable;
+
 /**
  * Transaction Line Candidate. Use the constructor of {@link HUTransactionCandidate} to get instances.
  *
@@ -40,6 +42,7 @@ public interface IHUTransactionCandidate
 	 *
 	 * @return affected HU; might be null
 	 */
+	@Nullable
 	I_M_HU getM_HU();
 
 	/** @see #getM_HU() */
@@ -61,6 +64,7 @@ public interface IHUTransactionCandidate
 	 *
 	 * @return affected HU Item
 	 */
+	@Nullable
 	I_M_HU_Item getM_HU_Item();
 
 	/**
@@ -70,6 +74,7 @@ public interface IHUTransactionCandidate
 	 *
 	 * @return VHU item or <code>null</code>
 	 */
+	@Nullable
 	I_M_HU_Item getVHU_Item();
 
 	/**
@@ -77,6 +82,7 @@ public interface IHUTransactionCandidate
 	 *
 	 * @return VHU or <code>null</code>
 	 */
+	@Nullable
 	I_M_HU getVHU();
 
 	/**
@@ -112,8 +118,6 @@ public interface IHUTransactionCandidate
 	 * Cross link this transaction with given transaction by cross setting their {@link #getCounterpart()} properties.
 	 *
 	 * NOTE: DON'T call it directly. It will be called by API
-	 *
-	 * @param counterpartTrx
 	 */
 	void pair(IHUTransactionCandidate counterpartTrx);
 
