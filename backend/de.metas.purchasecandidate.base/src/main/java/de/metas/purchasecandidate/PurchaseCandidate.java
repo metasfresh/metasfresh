@@ -106,17 +106,27 @@ public class PurchaseCandidate
 	@Getter(AccessLevel.NONE)
 	private final ArrayList<PurchaseErrorItem> purchaseErrorItems;
 
-	private final BigDecimal price;
-	private final BigDecimal priceInternal;
-	private final BigDecimal priceActual;
-	private final BigDecimal priceEnteredEff;
-	private final Percent discount;
-	private final Percent discountInternal;
-	private final Percent discountEff;
+	@Nullable
+	private BigDecimal price;
+	@Nullable
+	private BigDecimal priceInternal;
+	@Nullable
+	private BigDecimal priceActual;
+	@Nullable
+	private BigDecimal priceEnteredEff;
+	@Nullable
+	private Percent discount;
+	@Nullable
+	private Percent discountInternal;
+	@Nullable
+	private Percent discountEff;
 	private final boolean isManualDiscount;
 	private final boolean isManualPrice;
-	private final boolean isTaxIncluded;
-	private final TaxCategoryId taxCategoryId;
+	private boolean isTaxIncluded;
+	@Nullable
+	private TaxCategoryId taxCategoryId;
+	@Nullable
+	private CurrencyId currencyId;
 
 	@Builder
 	private PurchaseCandidate(
@@ -185,7 +195,6 @@ public class PurchaseCandidate
 				.externalHeaderId(externalHeaderId)
 				.externalLineId(externalLineId)
 				.source(source)
-				.currencyId(currencyId)
 				.build();
 
 		state = PurchaseCandidateState.builder()
@@ -195,6 +204,7 @@ public class PurchaseCandidate
 				.reqCreated(reqCreated)
 				.build();
 
+		this.currencyId = currencyId;
 		this.qtyToPurchase = qtyToPurchase;
 		this.qtyToPurchaseInitial = qtyToPurchase;
 
@@ -254,6 +264,7 @@ public class PurchaseCandidate
 		discountInternal = from.discountInternal;
 		priceEnteredEff = from.priceEnteredEff;
 		discountEff = from.discountEff;
+		currencyId = from.currencyId;
 	}
 
 	public PurchaseCandidate copy()
@@ -314,12 +325,6 @@ public class PurchaseCandidate
 		return getImmutableFields().getVendorId();
 	}
 
-	@Nullable
-	public CurrencyId getCurrencyId()
-	{
-		return getImmutableFields().getCurrencyId();
-	}
-
 	public boolean isAggregatePOs()
 	{
 		return getImmutableFields().isAggregatePOs();
@@ -369,17 +374,20 @@ public class PurchaseCandidate
 		return state.isReqCreated();
 	}
 
-	public @Nullable PurchaseCandidateSource getSource()
+	public @Nullable
+	PurchaseCandidateSource getSource()
 	{
 		return getImmutableFields().getSource();
 	}
 
-	public @Nullable ExternalId getExternalLineId()
+	public @Nullable
+	ExternalId getExternalLineId()
 	{
 		return getImmutableFields().getExternalLineId();
 	}
 
-	public @Nullable ExternalId getExternalHeaderId()
+	public @Nullable
+	ExternalId getExternalHeaderId()
 	{
 		return getImmutableFields().getExternalHeaderId();
 	}
