@@ -127,6 +127,7 @@
     "@fullcalendar/react": "5.4.0",
     "@fullcalendar/timegrid": "5.4.0",
     "@stomp/stompjs": "5.4.3",
+    "@welldone-software/why-did-you-render": "6.1.1",
     "@zxing/library": "0.12.3",
     "axios": "^0.21.1",
     "bootstrap": "4.3.1",
@@ -191,7 +192,6 @@
     "throttle-debounce": "2.1.0",
     "timer-machine": "1.1.0",
     "uuid": "3.3.2",
-    "webpack-git-hash": "1.0.2",
-    "why-did-you-update": "^1.0.8"
+    "webpack-git-hash": "1.0.2"
   }
 }
