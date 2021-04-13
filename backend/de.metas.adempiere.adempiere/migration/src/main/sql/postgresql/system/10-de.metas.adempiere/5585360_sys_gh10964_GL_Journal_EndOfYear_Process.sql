@@ -63,3 +63,28 @@ DELETE FROM AD_Table_Process WHERE AD_Table_Process_ID=540499
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,540639,224,540925,TO_TIMESTAMP('2021-04-12 20:52:42','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2021-04-12 20:52:42','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N')
 ;
 
+
+-- 2021-04-13T13:30:04.186Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET SeqNo=200,Updated=TO_TIMESTAMP('2021-04-13 16:30:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541961
+;
+
+-- 2021-04-13T13:30:07.070Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET SeqNo=20,Updated=TO_TIMESTAMP('2021-04-13 16:30:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=540846
+;
+
+-- 2021-04-13T13:30:10.013Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET SeqNo=10,Updated=TO_TIMESTAMP('2021-04-13 16:30:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541961
+;
+
+
+
+
+
+
+
+
+
+
