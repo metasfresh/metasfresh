@@ -172,28 +172,28 @@ public class PP_Order extends CalloutEngine
 	 * Find Product Planning Data for given manufacturing order. If not planning found, a new one is created and filled with default values.
 	 */
 	@NonNull
-	private I_PP_Product_Planning findPP_Product_Planning(@NonNull final I_PP_Order ppOrder)
+	private I_PP_Product_Planning findPP_Product_Planning(@NonNull final I_PP_Order ppOrderWithProductId)
 	{
 		final ProductPlanningQuery query = ProductPlanningQuery.builder()
-				.orgId(OrgId.ofRepoIdOrAny(ppOrder.getAD_Org_ID()))
-				.warehouseId(WarehouseId.ofRepoIdOrNull(ppOrder.getM_Warehouse_ID()))
-				.plantId(ResourceId.ofRepoIdOrNull(ppOrder.getS_Resource_ID()))
-				.productId(ProductId.ofRepoId(ppOrder.getM_Product_ID()))
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(ppOrder.getM_AttributeSetInstance_ID()))
+				.orgId(OrgId.ofRepoIdOrAny(ppOrderWithProductId.getAD_Org_ID()))
+				.warehouseId(WarehouseId.ofRepoIdOrNull(ppOrderWithProductId.getM_Warehouse_ID()))
+				.plantId(ResourceId.ofRepoIdOrNull(ppOrderWithProductId.getS_Resource_ID()))
+				.productId(ProductId.ofRepoId(ppOrderWithProductId.getM_Product_ID()))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(ppOrderWithProductId.getM_AttributeSetInstance_ID()))
 				.build();
 		I_PP_Product_Planning pp = productPlanningDAO.find(query).orElse(null);
 
 		if (pp == null)
 		{
 			pp = newInstance(I_PP_Product_Planning.class);
-			pp.setAD_Org_ID(ppOrder.getAD_Org_ID());
-			pp.setM_Warehouse_ID(ppOrder.getM_Warehouse_ID());
-			pp.setS_Resource_ID(ppOrder.getS_Resource_ID());
-			pp.setM_Product_ID(ppOrder.getM_Product_ID());
+			pp.setAD_Org_ID(ppOrderWithProductId.getAD_Org_ID());
+			pp.setM_Warehouse_ID(ppOrderWithProductId.getM_Warehouse_ID());
+			pp.setS_Resource_ID(ppOrderWithProductId.getS_Resource_ID());
+			pp.setM_Product_ID(ppOrderWithProductId.getM_Product_ID());
 		}
 		InterfaceWrapperHelper.setSaveDeleteDisabled(pp, true);
 
-		final ProductId productId = ProductId.ofRepoId(pp.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(ppOrderWithProductId.getM_Product_ID()); // pp itself might not have M_Product_ID>0, so we use the PP_Order's one
 		if (pp.getAD_Workflow_ID() <= 0)
 		{
 			final PPRoutingId routingId = routingRepo.getRoutingIdByProductId(productId);
