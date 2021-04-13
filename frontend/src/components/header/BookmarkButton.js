@@ -69,7 +69,7 @@ export default class BookmarkButton extends Component {
    * @summary ToDo: Describe the method.
    */
   render() {
-    const { children, alwaysShowed, transparentBookmarks } = this.props;
+    const { children, alwaysShowed, transparentBookmarks, type } = this.props;
     const { isBookmarkButtonShowed, isBookmark } = this.state;
 
     if (transparentBookmarks) {
@@ -82,6 +82,16 @@ export default class BookmarkButton extends Component {
         onMouseLeave={this.handleButtonLeave}
         className="btn-bookmark"
       >
+        {type === 'newRecord' && <i className="meta-icon-file m-icon-space" />}
+        {type === 'window' && (
+          <i className="meta-icon-vertragsverwaltung m-icon-space" />
+        )}
+        {type === 'group' && <i className="meta-icon-report m-icon-space" />}
+        {type === 'process' && <i className="meta-icon-issue m-icon-space" />}
+        {type === 'report' && (
+          <i className="meta-icon-beschaffung m-icon-space" />
+        )}
+        {type === 'board' && <i className="meta-icon-calendar m-icon-space" />}
         {children}
         {alwaysShowed ||
           ((isBookmarkButtonShowed || isBookmark) && (
