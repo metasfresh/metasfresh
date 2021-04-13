@@ -79,7 +79,7 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess implements IProce
 
 	@Param(parameterName = PARAM_C_AcctSchema_ID, mandatory = true)
 	private AcctSchemaId p_acctSchemaId;
-	private  AcctSchema acctSchema;
+	private AcctSchema acctSchema;
 
 	@Param(parameterName = PARAM_AD_ORG_ID, mandatory = true)
 	private OrgId p_orgId;
