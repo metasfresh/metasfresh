@@ -10,27 +10,28 @@ package de.metas.handlingunits.snapshot.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.model.I_M_HU_Storage_Snapshot;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.util.Check;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Set;
-
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Storage;
-import de.metas.handlingunits.model.I_M_HU_Storage_Snapshot;
-import de.metas.util.Check;
 
 class M_HU_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Storage, I_M_HU_Storage_Snapshot, I_M_HU>
 {
@@ -70,6 +71,29 @@ class M_HU_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Storag
 				.addEqualsFilter(I_M_HU_Storage.COLUMN_M_HU_ID, hu.getM_HU_ID())
 				.create()
 				.mapById(I_M_HU_Storage.class);
+	}
+
+	@Override
+	protected BooleanWithReason computeHasChanges(@NonNull final I_M_HU_Storage model, @NonNull final I_M_HU_Storage_Snapshot modelSnapshot)
+	{
+		if (model.getQty().compareTo(modelSnapshot.getQty()) != 0)
+		{
+			return BooleanWithReason.trueBecause("M_HU_Storage.Qty changed");
+		}
+		else if (model.getC_UOM_ID() != modelSnapshot.getC_UOM_ID())
+		{
+			return BooleanWithReason.trueBecause("M_HU_Storage.C_UOM_ID changed");
+		}
+		else
+		{
+			return BooleanWithReason.FALSE;
+		}
+	}
+
+	@Override
+	protected BooleanWithReason computeChildrenHasChanges(@NonNull final I_M_HU_Storage model)
+	{
+		return BooleanWithReason.FALSE;
 	}
 
 	@Override

@@ -30,6 +30,8 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Snapshot;
+import de.metas.i18n.BooleanWithReason;
+import lombok.NonNull;
 
 class M_HU_Item_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Item, I_M_HU_Item_Snapshot, I_M_HU>
 {
@@ -70,6 +72,25 @@ class M_HU_Item_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Item, I_M
 	}
 
 	@Override
+	protected BooleanWithReason computeHasChanges(@NonNull final I_M_HU_Item model, @NonNull final I_M_HU_Item_Snapshot modelSnapshot)
+	{
+		if(model.getQty().compareTo(modelSnapshot.getQty()) != 0)
+		{
+			return BooleanWithReason.trueBecause("M_HU_Item.Qty changed");
+		}
+		else
+		{
+			return BooleanWithReason.FALSE;
+		}
+	}
+
+	@Override
+	protected BooleanWithReason computeChildrenHasChanges(@NonNull final I_M_HU_Item huItem)
+	{
+		return childHandlers().computeHasChangesByParent(huItem);
+	}
+
+	@Override
 	protected I_M_HU_Item_Snapshot retrieveModelSnapshot(final I_M_HU_Item huItem)
 	{
 		return query(I_M_HU_Item_Snapshot.class)
@@ -79,14 +100,18 @@ class M_HU_Item_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Item, I_M
 				.firstOnlyNotNull(I_M_HU_Item_Snapshot.class);
 	}
 
+	private CompositeSnapshotHandlers<I_M_HU_Item> childHandlers()
+	{
+		return CompositeSnapshotHandlers.<I_M_HU_Item>builder()
+				.handler(new M_HU_SnapshotHandler(this))
+				.handler(new M_HU_Item_Storage_SnapshotHandler(this))
+				.build();
+	}
+
 	@Override
 	protected void restoreChildrenFromSnapshots(final I_M_HU_Item huItem)
 	{
-		final M_HU_SnapshotHandler includedHUSnapshotHandler = new M_HU_SnapshotHandler(this);
-		includedHUSnapshotHandler.restoreModelsFromSnapshotsByParent(huItem);
-
-		final M_HU_Item_Storage_SnapshotHandler huItemStorageSnapshotHandler = new M_HU_Item_Storage_SnapshotHandler(this);
-		huItemStorageSnapshotHandler.restoreModelsFromSnapshotsByParent(huItem);
+		childHandlers().restoreModelsFromSnapshotsByParent(huItem);
 	}
 
 	@Override

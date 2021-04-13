@@ -45,7 +45,6 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
-import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 import de.metas.handlingunits.hutransaction.impl.HUTransactionCandidate;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
@@ -70,6 +69,7 @@ import de.metas.inventory.IInventoryBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -203,16 +203,16 @@ class InventoryAllocationDestination implements IAllocationDestination
 		final HuId topLevelHUId = topLevelHU.getTopLevelHUId();
 
 		final Quantity qtySource = request.getQuantity(); // Qty to add, in request's UOM
-		final Quantity qty = getQtyInStockingUOM(request);
+		final Quantity qtyInStockingUOM = getQtyInStockingUOM(request);
 
 		final List<InventoryLineCandidate> candidates = prepareCandidates(topLevelHUId, request);
 		//
 		// For each receipt line which received this HU
 		for (final InventoryLineCandidate candidate : candidates)
 		{
-			final BigDecimal qtyToMoveTotal = qty.toBigDecimal();
-			final BigDecimal qualityDiscountPerc = huAttributesBL.getQualityDiscountPercent(hu);
-			final BigDecimal qtyToMoveInDispute = qtyToMoveTotal.multiply(qualityDiscountPerc);
+			final BigDecimal qtyToMoveTotal = qtyInStockingUOM.toBigDecimal();
+			final BigDecimal qualityDiscountPercent = huAttributesBL.getQualityDiscountPercent(hu);
+			final BigDecimal qtyToMoveInDispute = qtyToMoveTotal.multiply(qualityDiscountPercent);
 			final BigDecimal qtyToMove = qtyToMoveTotal.subtract(qtyToMoveInDispute);
 
 			//
@@ -225,7 +225,7 @@ class InventoryAllocationDestination implements IAllocationDestination
 			//
 			// Update inventory line's internal use Qty
 			{
-				// FIXME: we are adding the whole "qty" for each inout line.
+				// FIXME: we are adding the whole "qtyInStockingUOM" for each inout line.
 				// That might be a problem in case we have more than one receipt inout line.
 				final BigDecimal qtyInternalUseOld = inventoryLine.getQtyInternalUse();
 				final BigDecimal qtyInternalUseNew = qtyInternalUseOld.add(qtyToMove);
@@ -283,13 +283,15 @@ class InventoryAllocationDestination implements IAllocationDestination
 			{
 				result.subtractAllocatedQty(qtySource.toBigDecimal());
 
-				final IHUTransactionCandidate trx = new HUTransactionCandidate(
-						inventoryLine, // Reference model
-						null, // HU item
-						null, // vHU item
-						request, // request
-						false); // out trx
-				result.addTransaction(trx);
+				result.addTransaction(
+						HUTransactionCandidate.builder()
+								.model(inventoryLine)
+								.huItem(null)
+								.vhuItem(null)
+								.productId(request.getProductId())
+								.quantityFromRequest(request, false)
+								.date(request.getDate())
+								.build());
 			}
 		}
 
@@ -318,17 +320,14 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 		for (final I_M_InOutLine receiptLine : getReceiptLinesOrEmpty(topLevelHuId, request.getProductId()))
 		{
-			final int inoutId = receiptLine.getM_InOut_ID();
-
-			final I_M_InOut inOut = inOutDAO.getById(InOutId.ofRepoId(inoutId));
-
+			final InOutId inoutId = InOutId.ofRepoId(receiptLine.getM_InOut_ID());
+			final I_M_InOut inOut = inOutDAO.getById(inoutId);
 			final String poReference = inOut.getC_Order() == null ? null : inOut.getC_Order().getPOReference();
 
 			final InventoryLineCandidate candidate = InventoryLineCandidate.builder()
 					.movementDate(request.getDate())
 					.productId(request.getProductId())
-					.qty(Quantity.zero(loadOutOfTrx(receiptLine.getC_UOM_ID(), I_C_UOM.class)))
-
+					.qty(Quantitys.createZero(UomId.ofRepoId(receiptLine.getC_UOM_ID())))
 					.topLevelHUId(topLevelHuId)
 					.poReference(poReference)
 					.receiptLine(receiptLine)
@@ -340,7 +339,6 @@ class InventoryAllocationDestination implements IAllocationDestination
 
 		if (candidates.isEmpty())
 		{
-
 			// fallback to
 
 			final I_M_HU hu = handlingUnitsDAO.getById(topLevelHuId);

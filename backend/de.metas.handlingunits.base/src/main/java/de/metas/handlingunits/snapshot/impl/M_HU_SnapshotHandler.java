@@ -10,34 +10,31 @@ package de.metas.handlingunits.snapshot.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_Snapshot;
+import de.metas.i18n.BooleanWithReason;
+import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Item;
-import de.metas.handlingunits.model.I_M_HU_Snapshot;
-import de.metas.util.Services;
-
-import javax.annotation.Nullable;
 
 class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapshot, I_M_HU_Item>
 {
@@ -62,17 +59,19 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 				.execute();
 	}
 
+	private CompositeSnapshotHandlers<I_M_HU> childHandlers()
+	{
+		return CompositeSnapshotHandlers.<I_M_HU>builder()
+				.handler(new M_HU_Item_SnapshotHandler(this))
+				.handler(new M_HU_Storage_SnapshotHandler(this))
+				.handler(new M_HU_Attribute_SnapshotHandler(this))
+				.build();
+	}
+
 	@Override
 	protected void restoreChildrenFromSnapshots(final I_M_HU hu)
 	{
-		final M_HU_Item_SnapshotHandler huItemSnapshotHandler = new M_HU_Item_SnapshotHandler(this);
-		huItemSnapshotHandler.restoreModelsFromSnapshotsByParent(hu);
-
-		final M_HU_Storage_SnapshotHandler huStorageSnapshotHandler = new M_HU_Storage_SnapshotHandler(this);
-		huStorageSnapshotHandler.restoreModelsFromSnapshotsByParent(hu);
-
-		final M_HU_Attribute_SnapshotHandler huAttributesSnapshotHandler = new M_HU_Attribute_SnapshotHandler(this);
-		huAttributesSnapshotHandler.restoreModelsFromSnapshotsByParent(hu);
+		childHandlers().restoreModelsFromSnapshotsByParent(hu);
 	}
 
 	@Override
@@ -122,6 +121,18 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 				.mapById(I_M_HU.class);
 	}
 
+	@Override
+	protected BooleanWithReason computeHasChanges(@NonNull final I_M_HU model, @NonNull final I_M_HU_Snapshot modelSnapshot)
+	{
+		return BooleanWithReason.FALSE;
+	}
+
+	@Override
+	protected BooleanWithReason computeChildrenHasChanges(@NonNull final I_M_HU hu)
+	{
+		return childHandlers().computeHasChangesByParent(hu);
+	}
+
 	/**
 	 * Recursively collect all M_HU_IDs and M_HU_Item_IDs starting from <code>startHUIds</code> to the bottom, including those too.
 	 */
@@ -147,8 +158,7 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 		{
 			return Collections.emptySet();
 		}
-		final List<Integer> huItemIdsList = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_Item.class, getContext())
+		final List<Integer> huItemIdsList = query(I_M_HU_Item.class)
 				.addInArrayOrAllFilter(I_M_HU_Item.COLUMN_M_HU_ID, huIds)
 				.create()
 				.listIds();
@@ -161,12 +171,10 @@ class M_HU_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU, I_M_HU_Snapsh
 		{
 			return Collections.emptySet();
 		}
-		final List<Integer> huIdsList = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU.class, getContext())
+		final List<Integer> huIdsList = query(I_M_HU.class)
 				.addInArrayOrAllFilter(I_M_HU.COLUMN_M_HU_Item_Parent_ID, huItemIds)
 				.create()
 				.listIds();
 		return new HashSet<>(huIdsList);
 	}
-
 }

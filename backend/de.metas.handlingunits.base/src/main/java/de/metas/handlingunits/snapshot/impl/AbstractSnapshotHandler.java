@@ -1,38 +1,12 @@
 package de.metas.handlingunits.snapshot.impl;
 
-import java.time.ZonedDateTime;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
+import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.snapshot.ISnapshotHandler;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -45,20 +19,26 @@ import org.adempiere.util.lang.ObjectUtils;
 import org.adempiere.util.text.annotation.ToStringBuilder;
 import org.compiere.util.TimeUtil;
 
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.snapshot.ISnapshotHandler;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 
+@ToString
 abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModelType>
 		implements ISnapshotHandler<ModelType, SnapshotModelType, ParentModelType>
 {
 	// services
+	@ToString.Exclude
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
+	@ToString.Exclude
 	protected final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	// Parameters
-	@ToStringBuilder(skip = true)
+	@ToString.Exclude
 	private final AbstractSnapshotHandler<?, ?, ?> _parentHandler;
 	private IContextAware _context;
 	private ZonedDateTime _dateTrx;
@@ -74,19 +54,15 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 	}
 
 	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	@Override
 	public ISnapshotHandler<ModelType, SnapshotModelType, ParentModelType> setDateTrx(final Date dateTrx)
 	{
 		this._dateTrx = TimeUtil.asZonedDateTime(dateTrx);
 		return this;
 	}
 
-	/** @return transaction date; never null */
+	/**
+	 * @return transaction date; never null
+	 */
 	protected final ZonedDateTime getDateTrx()
 	{
 		if (_dateTrx != null)
@@ -184,7 +160,7 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 	/**
 	 * Restores the model from given snapshot.
 	 */
-	protected final void restoreModelFromSnapshot(final ModelType model, final SnapshotModelType modelSnapshot)
+	protected final void restoreModelFromSnapshot(@Nullable final ModelType model, @Nullable final SnapshotModelType modelSnapshot)
 	{
 		if (model == null)
 		{
@@ -199,7 +175,7 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 			// => model was deleted so we need to restore it from ashes
 			else
 			{
-				restoreModelAsNew(modelSnapshot);
+				throw new HUException("Restoring model from ashes is not supported for " + modelSnapshot);
 			}
 		}
 		else
@@ -248,11 +224,10 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 
 	/**
 	 * Restore model's values from snapshot values.
-	 *
+	 * <p>
 	 * NOTE: when this method is called, both model and modelSnapshot are not null.
 	 */
-	@OverridingMethodsMustInvokeSuper
-	protected void restoreModelValuesFromSnapshot(final ModelType model, final SnapshotModelType modelSnapshot)
+	private void restoreModelValuesFromSnapshot(final ModelType model, final SnapshotModelType modelSnapshot)
 	{
 		InterfaceWrapperHelper.copy()
 				.setFrom(modelSnapshot)
@@ -263,18 +238,10 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 
 	/**
 	 * Restore model when it snapshot is missing because the model was created after the snapshot was taken.
-	 *
+	 * <p>
 	 * Suggestion for implementors: maybe in this case you want to delete the model or you want to set it's relevant values to ZERO/<code>null</code>.
 	 */
 	protected abstract void restoreModelWhenSnapshotIsMissing(final ModelType model);
-
-	/**
-	 * Completely restore the model from snapshot because the model is missing at all.
-	 */
-	protected void restoreModelAsNew(final SnapshotModelType modelSnapshot)
-	{
-		throw new HUException("Restoring model from ashes is not supported for " + modelSnapshot);
-	}
 
 	protected abstract SnapshotModelType retrieveModelSnapshot(final ModelType model);
 
@@ -333,5 +300,94 @@ abstract class AbstractSnapshotHandler<ModelType, SnapshotModelType, ParentModel
 	protected final <T> IQueryBuilder<T> query(final Class<T> modelClass)
 	{
 		return queryBL.createQueryBuilder(modelClass, getContext());
+	}
+
+	protected final BooleanWithReason checkHasChanges(@Nullable final ModelType model, @Nullable final SnapshotModelType modelSnapshot)
+	{
+		if (model == null)
+		{
+			//
+			// Case: both model and the model snapshot are missing => shall not happen
+			if (modelSnapshot == null)
+			{
+				throw new HUException("Both model and model snapshots are null"); // shall not happen, never!
+			}
+			//
+			// Case: model is missing but we have a snapshot
+			// => model was deleted
+			else
+			{
+				return BooleanWithReason.trueBecause("model was deleted");
+			}
+		}
+		else
+		{
+			//
+			// Case: we have a model but we don't have a snapshot
+			// => model was created after our snapshot
+			if (modelSnapshot == null)
+			{
+				return BooleanWithReason.trueBecause("model was created after our snapshot");
+			}
+			//
+			// Case: we have a model and we also have a snapshot
+			// => we need to restore it
+			else
+			{
+				final BooleanWithReason hasChanges = computeHasChanges(model, modelSnapshot);
+				if (hasChanges.isTrue())
+				{
+					return hasChanges;
+				}
+			}
+		}
+
+		return computeChildrenHasChanges(model);
+	}
+
+	protected abstract BooleanWithReason computeHasChanges(@NonNull ModelType model, @NonNull SnapshotModelType modelSnapshot);
+
+	protected abstract BooleanWithReason computeChildrenHasChanges(@NonNull ModelType model);
+
+	protected final BooleanWithReason computeHasChangesByParent(@NonNull ParentModelType parentModel)
+	{
+		final Map<Integer, SnapshotModelType> modelSnapshots = retrieveModelSnapshotsByParent(parentModel);
+		final Map<Integer, ModelType> models = new HashMap<>(retrieveModelsByParent(parentModel));
+
+		//
+		// Iterate model snapshots and try to restore the models from them
+		for (final SnapshotModelType modelSnapshot : modelSnapshots.values())
+		{
+			final int modelId = getModelId(modelSnapshot);
+			ModelType model = models.remove(modelId);
+
+			//
+			// Handle the case when the model's parent was changed
+			// In this case we retrieve the model directly from snapshot's link.
+			if (model == null)
+			{
+				model = getModel(modelSnapshot);
+			}
+
+			final BooleanWithReason hasChanges = computeHasChanges(model, modelSnapshot);
+			if (hasChanges.isTrue())
+			{
+				return hasChanges;
+			}
+		}
+
+		// Iterate remaining models and delete/inactivate them.
+		// NOTE: those are the models which were created after our snapshot.
+		for (final ModelType model : models.values())
+		{
+			final SnapshotModelType modelSnapshot = null; // no snapshot
+			final BooleanWithReason hasChanges = computeHasChanges(model, modelSnapshot);
+			if (hasChanges.isTrue())
+			{
+				return hasChanges;
+			}
+		}
+
+		return BooleanWithReason.FALSE;
 	}
 }

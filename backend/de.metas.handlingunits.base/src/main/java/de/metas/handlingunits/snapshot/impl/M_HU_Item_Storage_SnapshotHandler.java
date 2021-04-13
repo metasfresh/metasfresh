@@ -28,6 +28,8 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Set;
 
+import de.metas.i18n.BooleanWithReason;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -54,8 +56,11 @@ import de.metas.util.Services;
 class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Item_Storage, I_M_HU_Item_Storage_Snapshot, I_M_HU_Item>
 {
 	// services
-	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	M_HU_Item_Storage_SnapshotHandler(final AbstractSnapshotHandler<?, ?, ?> parentHandler)
 	{
@@ -94,6 +99,25 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 	}
 
 	@Override
+	protected BooleanWithReason computeHasChanges(@NonNull final I_M_HU_Item_Storage model, @NonNull final I_M_HU_Item_Storage_Snapshot modelSnapshot)
+	{
+		if(model.getQty().compareTo(modelSnapshot.getQty()) != 0)
+		{
+			return BooleanWithReason.trueBecause("M_HU_Item_Storage.Qty changed");
+		}
+		else
+		{
+			return BooleanWithReason.FALSE;
+		}
+	}
+
+	@Override
+	protected BooleanWithReason computeChildrenHasChanges(@NonNull final I_M_HU_Item_Storage model)
+	{
+		return BooleanWithReason.FALSE;
+	}
+
+	@Override
 	protected I_M_HU_Item_Storage_Snapshot retrieveModelSnapshot(final I_M_HU_Item_Storage model)
 	{
 		throw new UnsupportedOperationException();
@@ -111,7 +135,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 		//
 		// Log quantity changed transactions
 		final I_M_HU_Item huItem = model.getM_HU_Item();
-		if (Services.get(IHandlingUnitsBL.class).isVirtual(huItem))
+		if (handlingUnitsBL.isVirtual(huItem))
 		{
 			createQtyChangeRestoreTransactions(model);
 		}
@@ -133,7 +157,6 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 		final I_M_HU vhu = vhuItem.getM_HU();
 		final String huStatus = vhu.getHUStatus();
 		
-		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(vhu.getM_Locator_ID());
 		
 
@@ -144,7 +167,7 @@ class M_HU_Item_Storage_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_I
 		//
 		// Extract the data needed to create the HU Transactions
 		final ProductId productId = ProductId.ofRepoId(model.getM_Product_ID());
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(model.getC_UOM_ID());
+		final I_C_UOM uom = uomDAO.getById(model.getC_UOM_ID());
 		final Quantity quantity = new Quantity(qtyDiff, uom);
 		final ZonedDateTime date = getDateTrx();
 		final Object referencedModel = getReferencedModelOrNull();

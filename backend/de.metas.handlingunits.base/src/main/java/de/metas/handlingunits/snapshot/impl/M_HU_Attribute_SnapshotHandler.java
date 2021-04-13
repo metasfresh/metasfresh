@@ -10,27 +10,30 @@ package de.metas.handlingunits.snapshot.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.base.Strings;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Attribute_Snapshot;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.util.Check;
+import lombok.NonNull;
+
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 public class M_HU_Attribute_SnapshotHandler extends AbstractSnapshotHandler<I_M_HU_Attribute, I_M_HU_Attribute_Snapshot, I_M_HU>
 {
@@ -85,6 +88,30 @@ public class M_HU_Attribute_SnapshotHandler extends AbstractSnapshotHandler<I_M_
 	}
 
 	@Override
+	protected BooleanWithReason computeHasChanges(@NonNull final I_M_HU_Attribute model, @NonNull final I_M_HU_Attribute_Snapshot modelSnapshot)
+	{
+		if (!Objects.equals(Strings.emptyToNull(model.getValue()), Strings.emptyToNull(modelSnapshot.getValue())))
+		{
+			return BooleanWithReason.trueBecause("M_HU_Attribute.Value changed");
+		}
+		else if (model.getValueNumber().compareTo(modelSnapshot.getValueNumber()) != 0)
+		{
+			return BooleanWithReason.trueBecause("M_HU_Attribute.ValueNumber changed");
+		}
+		// TODO: impl: Objects.equals(modelBeforeRestore.getValueDate(), modelSnapshot.get) //
+		else
+		{
+			return BooleanWithReason.FALSE;
+		}
+	}
+
+	@Override
+	protected BooleanWithReason computeChildrenHasChanges(@NonNull final I_M_HU_Attribute model)
+	{
+		return BooleanWithReason.FALSE;
+	}
+
+	@Override
 	protected I_M_HU_Attribute_Snapshot retrieveModelSnapshot(final I_M_HU_Attribute model)
 	{
 		throw new UnsupportedOperationException();
@@ -96,5 +123,4 @@ public class M_HU_Attribute_SnapshotHandler extends AbstractSnapshotHandler<I_M_
 		// shall not happen because we never delete an attribute
 		throw new HUException("Cannot restore " + model + " because snapshot is missing");
 	}
-
 }

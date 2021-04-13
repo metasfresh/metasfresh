@@ -22,30 +22,28 @@ package de.metas.handlingunits.snapshot.impl;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.util.TrxRunnableAdapter;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Snapshot;
 import de.metas.handlingunits.snapshot.ISnapshotProducer;
 import de.metas.handlingunits.snapshot.ISnapshotRestorer;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAwares;
-
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.util.TrxRunnableAdapter;
+
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Implementation responsible with recursively doing the {@link I_M_HU} snapshots and restoring from them.
@@ -56,10 +54,11 @@ import lombok.NonNull;
 public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_HU>, ISnapshotProducer<I_M_HU>
 {
 	// services
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final M_HU_SnapshotHandler huSnapshotHandler = new M_HU_SnapshotHandler();
 
-	private final Set<HuId> _huIds = new HashSet<>();
+	private final HashSet<HuId> _huIds = new HashSet<>();
 
 	@Override
 	public void restoreFromSnapshot()
@@ -95,7 +94,7 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 	private void restoreInTrx()
 	{
 		final Collection<HuId> huIdsToRestore = getHUIdsAndClear();
-		final List<I_M_HU> husToRestore = Services.get(IHandlingUnitsDAO.class).retrieveByIds(huIdsToRestore);
+		final List<I_M_HU> husToRestore = handlingUnitsDAO.retrieveByIds(huIdsToRestore);
 
 		for (final I_M_HU hu : husToRestore)
 		{
@@ -109,7 +108,7 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 	{
 		// If there are no HUs to snapshot, then do nothing
 		// NOTE: this is an accepted case in case we are using the producer together with some other incremental BLs
-		// which are snapshoting HUs while they are proceeding.
+		// which are snapshotting HUs while they are proceeding.
 		final Set<Integer> initialHUIds = RepoIdAwares.asRepoIdsSet(getHUIdsAndClear());
 		if (initialHUIds.isEmpty())
 		{
@@ -134,8 +133,8 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 		final M_HU_Attribute_SnapshotHandler huAttributesSnapshotHandler = new M_HU_Attribute_SnapshotHandler(huSnapshotHandler);
 		huAttributesSnapshotHandler.createSnapshotsByParentIds(huIds);
 
-		final M_HU_Storage_SnapshotHandler huStoargeSnapshotHandler = new M_HU_Storage_SnapshotHandler(huSnapshotHandler);
-		huStoargeSnapshotHandler.createSnapshotsByParentIds(huIds);
+		final M_HU_Storage_SnapshotHandler huStorageSnapshotHandler = new M_HU_Storage_SnapshotHandler(huSnapshotHandler);
+		huStorageSnapshotHandler.createSnapshotsByParentIds(huIds);
 
 		final M_HU_Item_SnapshotHandler huItemSnapshotHandler = new M_HU_Item_SnapshotHandler(huSnapshotHandler);
 		huItemSnapshotHandler.createSnapshotsByParentIds(huIds);
@@ -199,9 +198,9 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 	 *
 	 * @return enqueued models to be restored or snapshot-ed
 	 */
-	private Set<HuId> getHUIdsAndClear()
+	private ImmutableSet<HuId> getHUIdsAndClear()
 	{
-		final Set<HuId> modelIds = new HashSet<>(_huIds);
+		final ImmutableSet<HuId> modelIds = ImmutableSet.copyOf(_huIds);
 		_huIds.clear();
 		return modelIds;
 	}
@@ -227,5 +226,23 @@ public class M_HU_Snapshot_ProducerAndRestorer implements ISnapshotRestorer<I_M_
 				.collect(ImmutableSet.toImmutableSet());
 		_huIds.addAll(huIds);
 		return this;
+	}
+
+	public BooleanWithReason hasChanges()
+	{
+		final Collection<HuId> huIds = getHUIdsAndClear();
+		final List<I_M_HU> hus = handlingUnitsDAO.retrieveByIds(huIds);
+
+		for (final I_M_HU hu : hus)
+		{
+			final I_M_HU_Snapshot huSnapshot = huSnapshotHandler.retrieveModelSnapshot(hu);
+			final BooleanWithReason hasChanges = huSnapshotHandler.computeHasChanges(hu, huSnapshot);
+			if(hasChanges.isTrue())
+			{
+				return hasChanges;
+			}
+		}
+
+		return BooleanWithReason.FALSE;
 	}
 }
