@@ -59,6 +59,7 @@ public class GL_Journal_Builder
 		super();
 		glJournal = InterfaceWrapperHelper.newInstance(I_GL_Journal.class);
 
+		glJournal.setC_AcctSchema_ID(request.getAcctSchemaId().getRepoId());
 		glJournal.setAD_Org_ID(request.getOrgId().getRepoId());
 		glJournal.setDateAcct(TimeUtil.asTimestamp(request.getDateAcct()));
 		glJournal.setDateDoc(TimeUtil.asTimestamp(request.getDateDoc()));
@@ -125,5 +126,4 @@ public class GL_Journal_Builder
 		final I_GL_Category glCategory = MGLCategory.getDefault(ctx, categoryType);
 		return GLCategoryId.ofRepoIdOrNull(glCategory.getGL_Category_ID());
 	}
-
 }
