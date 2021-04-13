@@ -23,6 +23,7 @@
 package de.metas.acct.process;
 
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.gljournal.GLCategoryId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -38,7 +39,7 @@ import java.time.Instant;
 @Builder
 public class GLJournalRequest
 {
-	@NonNull AcctSchema acctSchema;
+	@NonNull AcctSchemaId acctSchemaId;
 
 	@NonNull ClientId clientId;
 
@@ -54,4 +55,7 @@ public class GLJournalRequest
 
 	@Nullable
 	GLCategoryId glCategoryId;
+
+	@Nullable
+	String description;
 }

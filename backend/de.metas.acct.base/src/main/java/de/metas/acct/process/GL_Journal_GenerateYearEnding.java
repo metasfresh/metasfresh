@@ -124,17 +124,12 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess implements IProce
 				.dateDoc(p_dateAcct)
 				.postingType(X_GL_JournalBatch.POSTINGTYPE_Statistical)
 				.glCategoryId(p_glCategoryId)
-				.acctSchema(acctSchema)
+				.acctSchemaId(p_acctSchemaId)
 				.currencyId(p_currencyId)
+				.description(getName())
 				.build();
 
-		final GL_Journal_Builder glJournalBuilder = GL_Journal_Builder.newBuilder(request)
-				.setDateAcct(TimeUtil.asTimestamp(p_dateAcct))
-				.setDateDoc(TimeUtil.asTimestamp(p_dateAcct))
-				.setC_AcctSchema_ID(acctSchema.getId().getRepoId())
-				.setC_Currency_ID(acctSchema.getCurrencyId().getRepoId())
-				.setC_ConversionType_Default()
-				.setDescription(getName());
+		final GL_Journal_Builder glJournalBuilder = GL_Journal_Builder.newBuilder(request);
 
 		BigDecimal accountBalanceSum = BigDecimal.ZERO;
 		for (final I_C_ElementValue account : accounts)

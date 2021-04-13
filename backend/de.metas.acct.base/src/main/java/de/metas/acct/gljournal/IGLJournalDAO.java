@@ -54,5 +54,5 @@ public interface IGLJournalDAO extends ISingletonService
 	 */
 	List<I_GL_Journal> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
 
-	DocTypeId retrieveDocTypeGLJournal(int clientId, int orgId);
+
 }
