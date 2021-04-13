@@ -95,6 +95,8 @@ public class CustomerReturnInOutRecordFactory
 			returnLine.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId().getRepoId());
 		}
 
+		returnLine.setIsWarrantyCase(request.isWarrantyCase());
+
 		if (request.getHupiItemProductId() != null && request.getQtyTU() != null)
 		{
 			returnLine.setQtyEnteredTU(request.getQtyTU().toBigDecimal());

@@ -1,48 +1,10 @@
 package de.metas.inventory.impexp;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeListValue;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.mm.attributes.api.AttributeListValueCreateRequest;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_I_Inventory;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_I_Inventory;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;

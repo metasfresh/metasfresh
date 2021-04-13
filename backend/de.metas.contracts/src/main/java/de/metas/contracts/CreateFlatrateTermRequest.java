@@ -23,6 +23,7 @@
 package de.metas.contracts;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductAndCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -41,6 +42,9 @@ public class CreateFlatrateTermRequest
 	@NonNull
 	IContextAware context;
 
+	@NonNull
+	OrgId orgId;
+	
 	/**
 	 * the partner to be used as <code>Bill_BPartner</code> and <code>DropShip_BPartner</code>. Also this partner's sales rep and billto location are used.
 	 */

@@ -23,7 +23,7 @@
 package de.metas.rest_api.payment;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.common.rest_api.payment.JsonInboundPaymentInfo;
+import de.metas.common.rest_api.v1.payment.JsonInboundPaymentInfo;
 import de.metas.currency.CurrencyCode;
 import de.metas.money.CurrencyId;
 import de.metas.order.impl.OrderLineDetailRepository;
@@ -47,8 +47,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;

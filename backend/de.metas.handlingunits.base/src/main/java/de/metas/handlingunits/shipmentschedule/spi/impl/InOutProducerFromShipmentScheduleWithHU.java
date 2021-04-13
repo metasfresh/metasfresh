@@ -74,7 +74,7 @@ import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.apache.log4j.MDC;
+import org.slf4j.MDC;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
@@ -278,7 +278,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			shipment = createShipmentHeader(candidate, shipmentDate);
 		}
 
-		MDC.put(I_M_InOut.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID());
+		MDC.put(I_M_InOut.COLUMNNAME_M_InOut_ID, Integer.toString(shipment.getM_InOut_ID()));
 		return shipment;
 	}
 

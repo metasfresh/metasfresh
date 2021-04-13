@@ -23,7 +23,7 @@
 package de.metas.camel.externalsystems.shopware6.processor;
 
 import de.metas.camel.externalsystems.common.LogMessageRequest;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 

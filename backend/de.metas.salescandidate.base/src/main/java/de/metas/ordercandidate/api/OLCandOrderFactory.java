@@ -21,6 +21,7 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -107,6 +108,7 @@ class OLCandOrderFactory
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -122,7 +124,7 @@ class OLCandOrderFactory
 	private final ILoggable loggable;
 	private final int olCandProcessorId;
 	private final IOLCandListener olCandListeners;
-
+	
 	//
 	private I_C_Order order;
 	private I_C_OrderLine currentOrderLine = null;
@@ -235,7 +237,8 @@ class OLCandOrderFactory
 		}
 
 		final BPartnerId salesRepId = candidateOfGroup.getSalesRepId();
-		if (salesRepId != null)
+		final BPartnerId effectiveBillPartnerId = orderBL.getEffectiveBillPartnerId(order);
+		if (salesRepId != null && !salesRepId.equals(effectiveBillPartnerId))
 		{
 			order.setC_BPartner_SalesRep_ID(salesRepId.getRepoId());
 

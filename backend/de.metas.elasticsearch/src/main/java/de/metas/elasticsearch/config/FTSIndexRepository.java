@@ -142,5 +142,4 @@ public class FTSIndexRepository
 				.linkColumnName(linkColumnName)
 				.build();
 	}
-
 }

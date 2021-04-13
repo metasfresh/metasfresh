@@ -22,6 +22,7 @@
 
 package de.metas.servicerepair.customerreturns;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -48,6 +49,9 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -57,15 +61,24 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.QtyCalculationsBOM;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RepairCustomerReturnsService
@@ -75,15 +88,21 @@ public class RepairCustomerReturnsService
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IHUInOutBL huInoutBL = Services.get(IHUInOutBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
+	private final AlreadyShippedHUsInPreviousSystemRepository alreadyShippedHUsInPreviousSystemRepository;
 
 	private final DocBaseAndSubType DOCBASEANDSUBTYPE_ServiceRepair = DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialReceipt, X_C_DocType.DOCSUBTYPE_SR);
 
 	RepairCustomerReturnsService(
-			@NonNull final ReturnsServiceFacade returnsServiceFacade)
+			@NonNull final ReturnsServiceFacade returnsServiceFacade,
+			@NonNull final AlreadyShippedHUsInPreviousSystemRepository alreadyShippedHUsInPreviousSystemRepository)
 	{
 		this.returnsServiceFacade = returnsServiceFacade;
+		this.alreadyShippedHUsInPreviousSystemRepository = alreadyShippedHUsInPreviousSystemRepository;
 	}
 
 	public boolean isRepairCustomerReturns(@NonNull final I_M_InOut inout)
@@ -151,17 +170,53 @@ public class RepairCustomerReturnsService
 			@NonNull final Quantity qtyReturned)
 	{
 		final I_M_HU clonedPlaningHU = handlingUnitsBL.copyAsPlannedHU(cloneFromHuId);
-		final AttributeSetInstanceId asiId = handlingUnitsBL.createASIFromHUAttributes(productId, clonedPlaningHU);
+
+		final ImmutableAttributeSet attributes = handlingUnitsBL.getImmutableAttributeSet(clonedPlaningHU);
+		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASIWithASFromProductAndInsertAttributeSet(productId, attributes);
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+
+		final LocalDate returnDate = getReturnDate(customerReturnId);
 
 		final I_M_InOutLine customerReturnLine = returnsServiceFacade.createCustomerReturnLine(
 				CreateCustomerReturnLineReq.builder()
 						.headerId(customerReturnId)
 						.productId(productId)
 						.attributeSetInstanceId(asiId)
+						.warrantyCase(isWarrantyCase(productId, attributes, returnDate))
 						.qtyReturned(qtyReturned)
 						.build());
 
 		returnsServiceFacade.assignHandlingUnitToHeaderAndLine(customerReturnLine, clonedPlaningHU);
+	}
+
+	private LocalDate getReturnDate(@NonNull final InOutId customerReturnId)
+	{
+		final I_M_InOut customerReturn = inoutBL.getById(customerReturnId);
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(customerReturn.getAD_Org_ID()));
+		return TimeUtil.asLocalDate(customerReturn.getMovementDate(), timeZone);
+	}
+
+	@VisibleForTesting
+	boolean isWarrantyCase(
+			@NonNull final ProductId productId,
+			@NonNull final ImmutableAttributeSet attributes,
+			@NonNull final LocalDate today)
+	{
+		if (!attributes.hasAttribute(AttributeConstants.WarrantyStartDate))
+		{
+			return false;
+		}
+
+		final LocalDate warrantyStartDate = attributes.getValueAsLocalDate(AttributeConstants.WarrantyStartDate);
+		if (warrantyStartDate == null)
+		{
+			return false;
+		}
+
+		final int guaranteeDays = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(productId);
+		final LocalDate warrantyEndDate = warrantyStartDate.plusDays(guaranteeDays);
+
+		return today.isBefore(warrantyEndDate) || today.equals(warrantyEndDate);
 	}
 
 	public SparePartsReturnCalculation getSparePartsCalculation(final InOutId customerReturnId)
@@ -191,6 +246,7 @@ public class RepairCustomerReturnsService
 				resultBuilder.finishedGood(SparePartsReturnCalculation.FinishedGoodToRepair.builder()
 						.sparePartsBOM(sparePartsBOM)
 						.asiId(AttributeSetInstanceId.ofRepoIdOrNone(customerReturnLine.getM_AttributeSetInstance_ID()))
+						.warrantyCase(WarrantyCase.ofBoolean(customerReturnLine.isWarrantyCase()))
 						.qty(qtyReturned)
 						.customerReturnLineId(customerReturnLineId)
 						.repairVhuId(repairVhuId)
@@ -227,10 +283,15 @@ public class RepairCustomerReturnsService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	private ImmutableSet<InOutLineId> extractInOutLineIds(final List<I_M_InOutLine> customerReturnLines)
+	private static ImmutableSet<InOutLineId> extractInOutLineIds(final List<I_M_InOutLine> customerReturnLines)
 	{
 		return customerReturnLines.stream()
 				.map(customerReturnLine -> InOutLineId.ofRepoId(customerReturnLine.getM_InOutLine_ID()))
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Optional<AlreadyShippedHUsInPreviousSystem> searchAlreadyShippedHUsInPreviousSystemRepositoryBySerialNo(@Nullable final String serialNo)
+	{
+		return alreadyShippedHUsInPreviousSystemRepository.getBySerialNo(serialNo);
 	}
 }

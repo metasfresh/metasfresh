@@ -1,39 +1,25 @@
 package de.metas.tax.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Objects;
-import java.util.Properties;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryAreaBL;
+import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
+import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.TaxNotFoundException;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -56,28 +42,19 @@ import org.compiere.model.X_C_TaxCategory;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.location.CountryId;
-import de.metas.location.ICountryAreaBL;
-import de.metas.location.ICountryDAO;
-import de.metas.location.ILocationDAO;
-import de.metas.location.LocationId;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.tax.api.TaxNotFoundException;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
 import org.slf4j.MDC;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class TaxBL implements de.metas.tax.api.ITaxBL
 {
@@ -587,5 +564,18 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 
 		return taxCategoryId;
+	}
+
+	@NonNull
+	public Optional<TaxCategoryId> getTaxCategoryIdByInternalName(@NonNull final String internalName)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_InternalName, internalName)
+				.create()
+				.firstOnlyOptional(I_C_TaxCategory.class)
+				.map(I_C_TaxCategory::getC_TaxCategory_ID)
+				.map(TaxCategoryId::ofRepoId);
 	}
 }

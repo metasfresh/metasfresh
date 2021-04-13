@@ -11,17 +11,17 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
-import de.metas.rest_api.bpartner.impl.BPartnerEndpointService;
-import de.metas.rest_api.bpartner.impl.BpartnerRestController;
-import de.metas.rest_api.bpartner.impl.JsonRequestConsolidateService;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.JsonServiceFactory;
-import de.metas.common.bpartner.request.JsonRequestBPartner;
-import de.metas.common.bpartner.request.JsonRequestContact;
-import de.metas.common.bpartner.request.JsonRequestLocation;
-import de.metas.common.rest_api.JsonExternalId;
-import de.metas.common.rest_api.SyncAdvise;
-import de.metas.common.rest_api.SyncAdvise.IfExists;
-import de.metas.common.rest_api.SyncAdvise.IfNotExists;
+import de.metas.rest_api.v1.bpartner.BPartnerEndpointService;
+import de.metas.rest_api.v1.bpartner.BpartnerRestController;
+import de.metas.rest_api.v1.bpartner.JsonRequestConsolidateService;
+import de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
+import de.metas.common.bpartner.v1.request.JsonRequestContact;
+import de.metas.common.bpartner.v1.request.JsonRequestLocation;
+import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.v1.SyncAdvise;
+import de.metas.common.rest_api.v1.SyncAdvise.IfExists;
+import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
 import de.metas.rest_api.ordercandidates.request.JsonOrganization;
 import de.metas.rest_api.ordercandidates.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.rest_api.utils.BPartnerQueryService;
@@ -187,7 +187,8 @@ public class MasterdataProviderTest
 		final OrgInfo orgInfo = orgsRepo.getOrgInfoById(orgId);
 		assertThat(orgInfo.getOrgBPartnerLocationId()).isNotNull();
 
-		final I_C_BPartner_Location orgBPLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(orgInfo.getOrgBPartnerLocationId());
+		final I_C_BPartner_Location orgBPLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(orgInfo.getOrgBPartnerLocationId());
+		assertThat(orgBPLocation.isActive()).isTrue(); // guard
 		assertThat(orgBPLocation.getExternalId()).isEqualTo(jsonBPartnerLocation.getExternalId().getValue());
 		assertThat(orgBPLocation.getC_Location().getC_Country_ID()).isEqualTo(countryRecord.getC_Country_ID());
 

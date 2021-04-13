@@ -36,10 +36,10 @@ import de.metas.common.manufacturing.JsonResponseIssueToManufacturingOrder;
 import de.metas.common.manufacturing.JsonResponseIssueToManufacturingOrderDetail;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonResponseReceiveFromManufacturingOrder;
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonErrorItem;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.JsonQuantity;
+import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.handlingunits.HuId;
@@ -53,7 +53,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
-import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import de.metas.logging.LogManager;
@@ -73,24 +72,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.Trace;
-import org.eevolution.api.PPCostCollectorId;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
-
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
 
 /*
  * #%L

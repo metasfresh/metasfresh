@@ -39,21 +39,23 @@ import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalc
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.MoneyService;
+import de.metas.organization.IOrgDAO;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.DefaultPaymentBuilder;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductId;
 import de.metas.remittanceadvice.RemittanceAdvice;
+import de.metas.remittanceadvice.RemittanceAdviceId;
 import de.metas.remittanceadvice.RemittanceAdviceLine;
+import de.metas.remittanceadvice.RemittanceAdviceLineId;
 import de.metas.remittanceadvice.RemittanceAdviceLineServiceFee;
 import de.metas.remittanceadvice.RemittanceAdviceRepository;
 import de.metas.remittanceadvice.RemittanceAdviceService;
-import de.metas.report.jasper.client.RemoteServletInvoker;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -76,6 +78,7 @@ import org.springframework.util.CollectionUtils;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -96,11 +99,12 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-
 		final IQueryFilter<I_C_RemittanceAdvice> processFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 		if (processFilter == null)
 		{
@@ -110,12 +114,15 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 
 		for (final RemittanceAdvice remittanceAdvice : remittanceAdvices)
 		{
-			try{
+			try
+			{
 				trxManager.runInNewTrx(() -> runForRemittanceAdvice(remittanceAdvice));
 			}
 			catch (final Exception e)
 			{
-				logger.error("*** ERROR: failed to create and allocate payments for remittance advice id: {} ", remittanceAdvice.getRemittanceAdviceId());
+				Loggables.withLogger(logger, Level.WARN).addLog("*** ERROR: failed to create and allocate payments for C_RemittanceAdvice_ID={} ", RemittanceAdviceId.toRepoId(remittanceAdvice.getRemittanceAdviceId()));
+				throw AdempiereException.wrapIfNeeded(e)
+						.appendParametersToMessage().setParameter("C_RemittanceAdvice_ID", RemittanceAdviceId.toRepoId(remittanceAdvice.getRemittanceAdviceId()));
 			}
 		}
 
@@ -153,7 +160,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 						.stream()
 						.filter(paymentAllocationResultItem -> AllocationLineCandidate.AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice.equals(paymentAllocationResultItem.getType()))
 						.collect(Collectors.toMap(paymentAllocationResultItem -> paymentAllocationResultItem.getPayableDocumentRef().getRecord_ID(),
-												  paymentAllocationResultItem -> InvoiceId.ofRepoId(paymentAllocationResultItem.getPaymentDocumentRef().getRecord_ID())));
+								paymentAllocationResultItem -> InvoiceId.ofRepoId(paymentAllocationResultItem.getPaymentDocumentRef().getRecord_ID())));
 
 		paymentAllocationResult.getCandidates()
 				.stream()
@@ -267,7 +274,8 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		{
 			throw new AdempiereException("Missing invoice for remittance line!")
 					.appendParametersToMessage()
-					.setParameter("RemittanceAdviceLineId", remittanceAdviceLine.getRemittanceAdviceLineId());
+					.setParameter("C_RemittanceAdvice_Line_ID", RemittanceAdviceLineId.toRepoId(remittanceAdviceLine.getRemittanceAdviceLineId()))
+					.setParameter("remittanceAdviceLine", remittanceAdviceLine);
 		}
 
 		final Amount paymentDiscountAmt = remittanceAdviceLine.getPaymentDiscountAmount() != null
@@ -276,21 +284,30 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 
 		final Amount serviceFeeInREMADVCurrency = remittanceAdviceService.getServiceFeeInREMADVCurrency(remittanceAdviceLine).orElse(null);
 
-		Check.assumeNotNull(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency(), "Amount cannot be null if the invoice is resolved!");
+		if (remittanceAdviceLine.getInvoiceAmtInREMADVCurrency() == null)
+		{
+			throw new AdempiereException("Amount cannot be null if the invoice is resolved!")
+					.appendParametersToMessage()
+					.setParameter("C_RemittanceAdvice_Line_ID", RemittanceAdviceLineId.toRepoId(remittanceAdviceLine.getRemittanceAdviceLineId()))
+					.setParameter("remittanceAdviceLine", remittanceAdviceLine);
+		}
+
+		final ZoneId timeZone = orgDAO.getTimeZone(remittanceAdvice.getOrgId());
 
 		return PaymentAllocationPayableItem.builder()
-					.payAmt(remittanceAdviceLine.getRemittedAmount())
-					.openAmt(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency())
-					.serviceFeeAmt(serviceFeeInREMADVCurrency)
-					.discountAmt(paymentDiscountAmt)
-					.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-					.orgId(remittanceAdvice.getOrgId())
-					.clientId(remittanceAdvice.getClientId())
-					.bPartnerId(remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerId() : remittanceAdvice.getDestinationBPartnerId())
-					.documentNo(invoice.getDocumentNo())
-					.isSOTrx(remittanceAdvice.isSOTrx())
-					.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced()))
-					.build();
+				.payAmt(remittanceAdviceLine.getRemittedAmount())
+				.openAmt(remittanceAdviceLine.getInvoiceAmtInREMADVCurrency())
+				.serviceFeeAmt(serviceFeeInREMADVCurrency)
+				.discountAmt(paymentDiscountAmt)
+				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.invoiceBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
+				.orgId(remittanceAdvice.getOrgId())
+				.clientId(remittanceAdvice.getClientId())
+				.bPartnerId(remittanceAdvice.isSOTrx() ? remittanceAdvice.getSourceBPartnerId() : remittanceAdvice.getDestinationBPartnerId())
+				.documentNo(invoice.getDocumentNo())
+				.isSOTrx(remittanceAdvice.isSOTrx())
+				.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced(), timeZone))
+				.build();
 	}
 
 	@NonNull
@@ -322,7 +339,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		else
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("Skipping Remittance Advice, RemittanceAdviceId={}, DocStatus={}, PaymentId={}",
-															remittanceAdvice.getRemittanceAdviceId(), remittanceAdvice.getDocStatus(), remittanceAdvice.getPaymentId());
+					remittanceAdvice.getRemittanceAdviceId(), remittanceAdvice.getDocStatus(), remittanceAdvice.getPaymentId());
 		}
 	}
 }

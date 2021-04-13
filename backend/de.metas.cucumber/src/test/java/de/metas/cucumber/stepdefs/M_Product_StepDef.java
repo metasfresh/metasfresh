@@ -28,13 +28,17 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductType;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
@@ -73,6 +77,29 @@ public class M_Product_StepDef
 
 			final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "M_Product");
 			productTable.put(recordIdentifier, productRecord);
+		}
+	}
+
+	@And("no product with value {string} exists")
+	public void noProductWithCodeCodeExists(final String value)
+
+	{
+		final Optional<I_M_Product> product = Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
+				.create()
+				.firstOnlyOptional(I_M_Product.class);
+
+		if (product.isPresent())
+		{
+			Services.get(IQueryBL.class).createQueryBuilder(I_C_BPartner_Product.class)
+					.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, product.get().getM_Product_ID())
+					.create()
+					.delete();
+
+			Services.get(IQueryBL.class).createQueryBuilder(I_M_Product.class)
+					.addEqualsFilter(I_M_Product.COLUMNNAME_Value, value)
+					.create()
+					.delete();
 		}
 	}
 }

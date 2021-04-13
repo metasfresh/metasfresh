@@ -22,17 +22,8 @@
 
 package de.metas.elasticsearch.impl;
 
-import java.util.function.Consumer;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
-import org.slf4j.Logger;
-
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
@@ -43,6 +34,13 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.slf4j.Logger;
+
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class ESSystem implements IESSystem
 {
@@ -73,12 +71,11 @@ public class ESSystem implements IESSystem
 		// Check if it was disabled by sysconfig
 		{
 			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-			final boolean enabled = sysConfigBL.getBooleanValue(SYSCONFIG_PostKpiEvents, SYSCONFIG_PostKpiEvents_Default);
-			return enabled;
+			return sysConfigBL.getBooleanValue(SYSCONFIG_PostKpiEvents, SYSCONFIG_PostKpiEvents_Default);
 		}
 	}
 
-	private final void assertEnabled()
+	private void assertEnabled()
 	{
 		Check.assume(isEnabled(), "Elasticsearch system is enabled");
 	}
@@ -125,14 +122,14 @@ public class ESSystem implements IESSystem
 		}
 	}
 
-	private final Supplier<IESServer> serverSupplier = Suppliers.memoize(() -> findESServer());
+	private final Supplier<IESServer> serverSupplier = Suppliers.memoize(this::findESServer);
 
 	private IESServer getESServer()
 	{
 		return serverSupplier.get();
 	}
 
-	private final IESServer findESServer()
+	private IESServer findESServer()
 	{
 		try
 		{

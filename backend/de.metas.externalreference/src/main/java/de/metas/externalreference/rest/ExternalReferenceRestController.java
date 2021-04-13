@@ -23,10 +23,11 @@
 package de.metas.externalreference.rest;
 
 import de.metas.Profiles;
-import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
-import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
+import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
@@ -37,6 +38,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Nullable;
 
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/externalRef",
@@ -82,5 +85,17 @@ private final ExternalReferenceRestControllerService externalReferenceRestContro
 		return ResponseEntity.ok().build();
 	}
 
+	@PutMapping("/upsert/{orgCode}")
+	public ResponseEntity<?> upsert(
+			@ApiParam(required = true, value = "`AD_Org.Value` of the external references we are upserting") //
+			@PathVariable("orgCode") //
+			@Nullable final String orgCode,
+
+			@RequestBody @NonNull final JsonRequestExternalReferenceUpsert request)
+	{
+		externalReferenceRestControllerService.performUpsert(request, orgCode);
+
+		return ResponseEntity.ok().build();
+	}
 
 }

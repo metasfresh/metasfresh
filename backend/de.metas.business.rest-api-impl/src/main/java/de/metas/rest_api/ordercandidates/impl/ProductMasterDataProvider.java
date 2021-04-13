@@ -19,7 +19,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.common.rest_api.SyncAdvise;
+import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.rest_api.ordercandidates.request.JsonProductInfo;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.uom.IUOMDAO;
@@ -32,7 +32,6 @@ import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.experimental.Wither;
 
 /*
  * #%L
