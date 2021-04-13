@@ -64,6 +64,7 @@ public class GL_Journal_Builder
 		glJournal.setDateAcct(TimeUtil.asTimestamp(request.getDateAcct()));
 		glJournal.setDateDoc(TimeUtil.asTimestamp(request.getDateDoc()));
 		glJournal.setPostingType(request.getPostingType());
+		glJournal.setDescription(request.getDescription());
 
 		final DocTypeId docTypeId = glJournalBL.getDocTypeGLJournal(request.getClientId(), request.getOrgId());
 		glJournal.setC_DocType_ID(docTypeId.getRepoId());

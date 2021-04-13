@@ -53,9 +53,9 @@ public class GLJournalRequest
 
 	@NonNull CurrencyId currencyId;
 
+	@NonNull String description;
+
 	@Nullable
 	GLCategoryId glCategoryId;
 
-	@Nullable
-	String description;
 }
