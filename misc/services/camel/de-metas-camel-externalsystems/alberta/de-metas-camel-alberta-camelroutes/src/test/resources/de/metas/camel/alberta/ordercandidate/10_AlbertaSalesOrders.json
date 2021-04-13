@@ -11,11 +11,11 @@
       "gender": 1,
       "title": 4,
       "name": "Whitney Houston",
-      "address": "Am Wasserturm 53",
-      "additionalAddress": "AWO Seniorenzentrum \"Am Wasserturm\"",
+      "address": "address 12",
+      "additionalAddress": "additionalAddress \"test\"",
       "additionalAddress2": "",
-      "postalCode": "23936",
-      "city": "Bernstorf"
+      "postalCode": "99999",
+      "city": "test-city"
     },
     "doctorId": "doctorId",
     "pharmacyId": "pharmacyId",
