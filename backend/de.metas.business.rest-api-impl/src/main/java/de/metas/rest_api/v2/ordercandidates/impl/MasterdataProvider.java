@@ -19,7 +19,6 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.impl.InputDataSourceQuery;
 import de.metas.impex.api.impl.InputDataSourceQuery.InputDataSourceQueryBuilder;
-import de.metas.logging.LogManager;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -45,7 +44,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
@@ -141,8 +139,7 @@ final class MasterdataProvider
 			@NonNull final JsonRequestBPartnerLocationAndContact jsonBPartnerInfo,
 			@Nullable final OrgId orgId)
 	{
-		final String orgCode = orgId != null ? orgDAO.retrieveOrgValue(orgId) : null;
-		return bpartnerEndpointAdapter.getBPartnerInfo(jsonBPartnerInfo, orgCode)
+		return getBPartnerInfo(jsonBPartnerInfo, orgId)
 				.orElseThrow(() -> new AdempiereException("No BPartner was found for the given identifier!")
 						.appendParametersToMessage()
 						.setParameter("JsonBPartnerLocationContact", jsonBPartnerInfo));

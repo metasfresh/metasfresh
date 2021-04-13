@@ -34,7 +34,6 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrders;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -62,7 +61,6 @@ import java.util.logging.Logger;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.CONNECTION_TIMEOUT_SECONDS;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_DATA;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_DELIVERY_ADDRESS;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_ORDER_CUSTOMER;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.READ_TIMEOUT_SECONDS;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
@@ -282,17 +280,17 @@ public class ShopwareClient
 					JsonOrderAndCustomId.builder()
 					.jsonOrder(jsonOrder);
 
-			if (jsonOrder != null && customIdJSONPath != null)
+			if (customIdJSONPath != null)
 			{
 				final String customId = orderJson.at(customIdJSONPath).asText();
 
 				if (!Strings.isBlank(customId))
 				{
-					jsonOrderAndCustomIdBuilder.customId(customId);
+					jsonOrderAndCustomIdBuilder.customBPartnerId(customId);
 				}
 				else
 				{
-					throw new RuntimeException("Custom Identifier path provided for BPartner, but no custom identifier found. Order-ID:" + jsonOrder.getId());
+					return Optional.empty();
 				}
 			}
 
@@ -322,7 +320,7 @@ public class ShopwareClient
 			final JsonOrderAddressAndCustomId.JsonOrderAddressAndCustomIdBuilder jsonOrderAddressWithCustomId = JsonOrderAddressAndCustomId.builder()
 					.jsonOrderAddress(jsonOrderAddress);
 
-			if (jsonOrderAddress != null && customIdJSONPath != null)
+			if (customIdJSONPath != null)
 			{
 				final String customId = orderAddressJson.at(customIdJSONPath).asText();
 

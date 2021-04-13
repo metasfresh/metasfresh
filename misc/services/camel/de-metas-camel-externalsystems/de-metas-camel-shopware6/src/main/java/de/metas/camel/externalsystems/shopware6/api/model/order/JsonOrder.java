@@ -48,10 +48,6 @@ public class JsonOrder
 	String billingAddressId;
 
 	@NonNull
-	@JsonProperty("billingAddressVersionId")
-	String billingAddressVersionId;
-
-	@NonNull
 	@JsonProperty("orderCustomer")
 	JsonOrderCustomer orderCustomer;
 

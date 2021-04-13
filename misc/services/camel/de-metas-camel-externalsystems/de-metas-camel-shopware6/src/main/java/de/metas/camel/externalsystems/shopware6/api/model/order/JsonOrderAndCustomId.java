@@ -36,5 +36,5 @@ public class JsonOrderAndCustomId
 	JsonOrder jsonOrder;
 
 	@Nullable
-	String customId;
+	String customBPartnerId;
 }

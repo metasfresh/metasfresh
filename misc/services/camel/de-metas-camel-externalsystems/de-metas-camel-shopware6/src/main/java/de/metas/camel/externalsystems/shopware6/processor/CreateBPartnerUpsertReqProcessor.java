@@ -27,6 +27,7 @@ import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
+import de.metas.common.util.CoalesceUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
@@ -58,7 +59,7 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 				.orderCustomer(orderAndCustomId.getJsonOrder().getOrderCustomer())
 				.shippingAddressList(shippingAddressList)
 				.orgCode(orgCode)
-				.bPartnerCustomIdentifier(orderAndCustomId.getCustomId())
+				.externalBPartnerId(CoalesceUtil.coalesce(orderAndCustomId.getCustomBPartnerId(), orderAndCustomId.getJsonOrder().getOrderCustomer().getCustomerId()))
 				.bPartnerLocationIdentifierCustomPath(bPartnerLocationIdJSONPath)
 				.build();
 

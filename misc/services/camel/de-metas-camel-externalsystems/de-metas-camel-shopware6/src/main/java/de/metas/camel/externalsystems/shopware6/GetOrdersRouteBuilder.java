@@ -43,7 +43,6 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 	public static final String PROCESS_ORDER_ROUTE_ID = "Shopware6-processOrder";
 
 	public static final String GET_ORDERS_PROCESSOR_ID = "SW6Orders-GetOrdersProcessorId";
-	public static final String CREATE_ESR_QUERY_REQ_PROCESSOR_ID = "SW6Orders-CreateBPartnerESRQueryProcessorId";
 	public static final String CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID = "SW6Orders-CreateBPartnerUpsertReqProcessorId";
 
 	@Override

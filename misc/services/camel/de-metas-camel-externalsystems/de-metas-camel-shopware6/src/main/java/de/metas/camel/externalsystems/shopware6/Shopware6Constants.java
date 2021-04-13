@@ -47,7 +47,7 @@ public interface Shopware6Constants
 	int READ_TIMEOUT_SECONDS = 600;
 
 	//external identifier
-	String EXTERNAL_ID_PREFIX = "ext-" + SHOPWARE6_SYSTEM_NAME + "-";
+	String EXTERNAL_ID_PREFIX = "ext";
 	String BILL_TO_SUFFIX = "-billTo";
 	String SHIP_TO_SUFFIX = "-shipTo";
 

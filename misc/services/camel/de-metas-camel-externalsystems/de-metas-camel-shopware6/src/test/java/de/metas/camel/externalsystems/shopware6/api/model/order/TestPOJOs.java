@@ -60,7 +60,6 @@ public class TestPOJOs
 				.data(ImmutableList.of(
 						JsonOrder.builder()
 								.billingAddressId("billingAddressId")
-								.billingAddressVersionId("billingAddressVersionId")
 								.id("orderId")
 								.versionId("orderVersionId")
 								.orderCustomer(JsonOrderCustomer.builder()
@@ -93,7 +92,6 @@ public class TestPOJOs
 															  .zipcode("zipcode")
 															  .phoneNumber("phoneNumber")
 															  .id("addressId")
-															  .versionId("addressVersionId")
 															  .build())
 								.build()
 				))
