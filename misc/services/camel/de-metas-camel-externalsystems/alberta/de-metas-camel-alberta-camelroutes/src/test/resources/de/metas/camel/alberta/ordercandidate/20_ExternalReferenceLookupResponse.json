@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "lookupItem": {
+        "id": "doctorId",
+        "type": "BPartner"
+      },
+      "metasfreshId": null
+    },
+    {
+      "lookupItem": {
+        "id": "pharmacyId",
+        "type": "BPartner"
+      },
+      "metasfreshId": null
+    }
+  ]
+}
