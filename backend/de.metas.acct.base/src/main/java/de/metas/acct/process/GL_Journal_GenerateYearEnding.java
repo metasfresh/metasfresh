@@ -75,7 +75,6 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess implements IProce
 	private static final String PARAM_AD_ORG_ID = I_GL_Journal.COLUMNNAME_AD_Org_ID;
 	private static final String PARAM_DateAcct = I_GL_Journal.COLUMNNAME_DateAcct;
 	private static final String PARAM_GL_Category_ID = I_GL_Journal.COLUMNNAME_GL_Category_ID;
-	private static final String PARAM_C_Currency_ID = I_GL_Journal.COLUMNNAME_C_Currency_ID;
 
 	@Param(parameterName = PARAM_C_AcctSchema_ID, mandatory = true)
 	private AcctSchemaId p_acctSchemaId;
