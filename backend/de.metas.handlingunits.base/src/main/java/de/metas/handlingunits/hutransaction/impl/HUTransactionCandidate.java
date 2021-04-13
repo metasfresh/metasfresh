@@ -197,6 +197,18 @@ public final class HUTransactionCandidate implements IHUTransactionCandidate
 		}
 	}
 
+	public static class HUTransactionCandidateBuilder
+	{
+		public HUTransactionCandidateBuilder quantityFromRequest(
+				@NonNull final IAllocationRequest request,
+				final boolean outTrx)
+		{
+			// NOTE: we use source quantity/uom because those are in storage's internal UOM
+			// to avoid precision errors while converting again from working UOM to internal storage UOM
+			return quantity(request.getQuantity().switchToSource().negateIf(outTrx));
+		}
+	}
+
 	@Override
 	public String toString()
 	{
