@@ -90,9 +90,6 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess implements IProce
 	@Param(parameterName = PARAM_GL_Category_ID, mandatory = false)
 	private GLCategoryId p_glCategoryId;
 
-	@Param(parameterName = PARAM_C_Currency_ID, mandatory = true)
-	private CurrencyId p_currencyId;
-
 	private static final ModelDynAttributeAccessor<I_C_ElementValue, BigDecimal> DYNATTR_AmtAcctDr = new ModelDynAttributeAccessor<>("AmtAcctDr", BigDecimal.class);
 	private static final ModelDynAttributeAccessor<I_C_ElementValue, BigDecimal> DYNATTR_AmtAcctCr = new ModelDynAttributeAccessor<>("AmtAcctCr", BigDecimal.class);
 
@@ -125,7 +122,7 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess implements IProce
 				.postingType(X_GL_JournalBatch.POSTINGTYPE_Statistical)
 				.glCategoryId(p_glCategoryId)
 				.acctSchemaId(p_acctSchemaId)
-				.currencyId(p_currencyId)
+				.currencyId(acctSchema.getCurrencyId())
 				.description(getName())
 				.build();
 

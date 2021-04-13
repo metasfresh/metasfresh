@@ -82,6 +82,16 @@ UPDATE AD_Process_Para SET SeqNo=10,Updated=TO_TIMESTAMP('2021-04-13 16:30:09','
 
 
 
+-- 2021-04-13T18:38:00.029Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=541964
+;
+
+-- 2021-04-13T18:38:00.066Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=541964
+;
+
 
 
 
