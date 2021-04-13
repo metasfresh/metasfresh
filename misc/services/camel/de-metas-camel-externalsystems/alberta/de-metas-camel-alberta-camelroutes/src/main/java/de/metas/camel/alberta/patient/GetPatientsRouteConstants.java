@@ -56,6 +56,7 @@ public interface GetPatientsRouteConstants
 	 */
 	String ROUTE_PROPERTY_CURRENT_PATIENT = "currentPatient";
 	String ROUTE_PROPERTY_BP_IDENTIFIER_TO_ROLE = "bpIdentifier2Role";
+	String ROUTE_PROPERTY_EXTERNAL_BP_IDENTIFIER_TO_API = "externalBPIdentifier2Api";
 
 	//Alberta constants
 	@AllArgsConstructor

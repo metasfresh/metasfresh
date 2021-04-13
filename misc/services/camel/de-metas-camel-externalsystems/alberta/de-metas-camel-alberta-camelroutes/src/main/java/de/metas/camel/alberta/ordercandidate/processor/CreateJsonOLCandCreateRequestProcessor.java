@@ -40,6 +40,9 @@ import org.threeten.bp.OffsetDateTime;
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static de.metas.camel.alberta.common.CommonAlbertaConstants.ALBERTA_DATA_INPUT_SOURCE;
 import static de.metas.camel.alberta.common.CommonAlbertaConstants.ALBERTA_EXTERNAL_REFERENCE_SYSTEM;
@@ -50,7 +53,7 @@ import static org.threeten.bp.temporal.ChronoField.EPOCH_DAY;
 public class CreateJsonOLCandCreateRequestProcessor implements Processor
 {
 	@Override
-	public void process(final Exchange exchange) throws Exception
+	public void process(final Exchange exchange)
 	{
 		final Order order = exchange.getIn().getBody(Order.class);
 
@@ -95,7 +98,10 @@ public class CreateJsonOLCandCreateRequestProcessor implements Processor
 				.isSeriesOrder(order.isIsSeriesOrder())
 				.isArchived(order.isArchived())
 
-				.annotation(order.getAnnotation());
+				.annotation(order.getAnnotation())
+
+				.therapy(order.getTherapyId() != null ? String.valueOf(order.getTherapyId()) : null)
+				.therapyTypes(extractTherapyTypes(order));
 
 		return processLines(olCandRequestBuilder, albertaOrderInfoBuilder, order);
 	}
@@ -192,5 +198,19 @@ public class CreateJsonOLCandCreateRequestProcessor implements Processor
 		}
 
 		return EXTERNAL_IDENTIFIER_PREFIX + "-" + ALBERTA_EXTERNAL_REFERENCE_SYSTEM + "-" + externalIdentifierValue;
+	}
+
+	@Nullable
+	private List<String> extractTherapyTypes(@NonNull final Order order)
+	{
+		if (order.getTherapyTypeIds() == null)
+		{
+			return null;
+		}
+
+		return order.getTherapyTypeIds().stream()
+				.filter(Objects::nonNull)
+				.map(String::valueOf)
+				.collect(Collectors.toList());
 	}
 }

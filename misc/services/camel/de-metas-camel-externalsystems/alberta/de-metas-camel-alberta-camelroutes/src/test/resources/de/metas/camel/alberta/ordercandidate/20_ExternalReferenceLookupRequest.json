@@ -1,0 +1,13 @@
+{
+  "systemName": "ALBERTA",
+  "items": [
+    {
+      "id": "pharmacyId",
+      "type": "BPartner"
+    },
+    {
+      "id": "doctorId",
+      "type": "BPartner"
+    }
+  ]
+}

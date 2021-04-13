@@ -518,60 +518,13 @@ public class BPartnerUpsertRequestProducer
 			return Optional.empty();
 		}
 
-		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
-		jsonRequestBPartner.setName(doctor.getFirstName() + " " + doctor.getLastName());
-		jsonRequestBPartner.setPhone(doctor.getPhone());
-		jsonRequestBPartner.setCustomer(true);
-
-		final JsonRequestContact requestContact = new JsonRequestContact();
-		//requestContact.setExternalId(JsonExternalId.of(doctor.getId())); // TODO
-		requestContact.setFirstName(doctor.getFirstName());
-		requestContact.setLastName(doctor.getLastName());
-		requestContact.setPhone(doctor.getPhone());
-		requestContact.setFax(doctor.getFax());
-		// requestContact.setGender(doctor.getGender());  //TODO
-
-		final JsonRequestLocation requestLocation = new JsonRequestLocation();
-		requestLocation.setAddress1(doctor.getAddress());
-		requestLocation.setCity(doctor.getCity());
-		requestLocation.setPostal(doctor.getPostalCode());
-		requestLocation.setCountryCode(COUNTRY_CODE_DE);
-		requestLocation.setBillTo(true);
-		requestLocation.setBillToDefault(true);
-		requestLocation.setShipTo(true);
-		requestLocation.setShipToDefault(true);
-
-		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
-				toJsonRequestLocationUpsert(doctor.getId(), requestLocation);
-
-		final JsonRequestContactUpsert jsonRequestContactUpsert = toJsonRequestContactUpsert(doctor.getId(), requestContact);
-
 		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(doctor.getId());
-		final String bPartnerIdentifier;
-		if (actualMFBPartnerId == null)
-		{
-			final String externalIdentifier = EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + doctor.getId();
-			jsonRequestBPartner.setCode(externalIdentifier);
-			bPartnerIdentifier = externalIdentifier;
-		}
-		else
-		{
-			bPartnerIdentifier = String.valueOf(actualMFBPartnerId.getValue());
-		}
-		bPartnerIdentifier2RelationRole.put(bPartnerIdentifier, JsonBPRelationRole.PhysicianDoctor);
+		final JsonRequestBPartnerUpsertItem doctorUpsertRequest =
+				DataMapper.mapDoctorToUpsertRequest(doctor, actualMFBPartnerId, orgCode);
 
-		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
-				.bpartner(jsonRequestBPartner)
-				.locations(jsonRequestLocationUpsert)
-				.contacts(jsonRequestContactUpsert)
-				.orgCode(orgCode)
-				.build();
+		bPartnerIdentifier2RelationRole.put(doctorUpsertRequest.getBpartnerIdentifier(), JsonBPRelationRole.PhysicianDoctor);
 
-		return Optional.of(JsonRequestBPartnerUpsertItem
-				.builder()
-				.bpartnerIdentifier(bPartnerIdentifier)
-				.bpartnerComposite(jsonRequestComposite)
-				.build());
+		return Optional.of(doctorUpsertRequest);
 	}
 
 	private Optional<JsonRequestBPartnerUpsertItem> mapPayer()
@@ -583,7 +536,7 @@ public class BPartnerUpsertRequestProducer
 
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setName(payer.getName());
-		if(EmptyUtil.isNotBlank(payer.getIkNumber()))
+		if (EmptyUtil.isNotBlank(payer.getIkNumber()))
 		{
 			jsonRequestBPartner.setCode(payer.getIkNumber());
 		}
@@ -595,7 +548,7 @@ public class BPartnerUpsertRequestProducer
 		requestLocation.setBillToDefault(true);
 		requestLocation.setShipTo(true);
 		requestLocation.setShipToDefault(true);
-		
+
 		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
 				toJsonRequestLocationUpsert(payer.getId(), requestLocation);
 
@@ -620,10 +573,10 @@ public class BPartnerUpsertRequestProducer
 				.build();
 
 		return Optional.of(JsonRequestBPartnerUpsertItem
-				.builder()
-				.bpartnerIdentifier(bPartnerIdentifier)
-				.bpartnerComposite(jsonRequestComposite)
-				.build());
+								   .builder()
+								   .bpartnerIdentifier(bPartnerIdentifier)
+								   .bpartnerComposite(jsonRequestComposite)
+								   .build());
 	}
 
 	private Optional<JsonRequestBPartnerUpsertItem> mapPharmacy()
@@ -633,52 +586,13 @@ public class BPartnerUpsertRequestProducer
 			return Optional.empty();
 		}
 
-		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
-		jsonRequestBPartner.setName(pharmacy.getName());
-		jsonRequestBPartner.setPhone(pharmacy.getPhone());
-		jsonRequestBPartner.setCustomer(true);
-		// todo pharmacy.getWebsite() ?
-		// todo pharmacy.getEmail() ?
-		// todo pharmacy.getFax() ?
-
-		final JsonRequestLocation requestLocation = new JsonRequestLocation();
-		requestLocation.setCountryCode(COUNTRY_CODE_DE);
-		requestLocation.setCity(pharmacy.getCity());
-		requestLocation.setPostal(pharmacy.getPostalCode());
-		requestLocation.setAddress1(pharmacy.getAddress());
-		requestLocation.setBillTo(true);
-		requestLocation.setBillToDefault(true);
-		requestLocation.setShipTo(true);
-		requestLocation.setShipToDefault(true);
-
-		final JsonRequestLocationUpsert jsonRequestLocationUpsert =
-				toJsonRequestLocationUpsert(pharmacy.getId(), requestLocation);
-
 		final JsonMetasfreshId actualMFBPartnerId = externalId2MetasfreshId.get(pharmacy.getId());
-		final String bPartnerIdentifier;
-		if (actualMFBPartnerId == null)
-		{
-			final String externalIdentifier = EXTERNAL_ID_PREFIX + ALBERTA_SYSTEM_NAME + "-" + pharmacy.getId();
-			jsonRequestBPartner.setCode(externalIdentifier);
-			bPartnerIdentifier = externalIdentifier;
-		}
-		else
-		{
-			bPartnerIdentifier = String.valueOf(actualMFBPartnerId.getValue());
-		}
-		bPartnerIdentifier2RelationRole.put(bPartnerIdentifier, JsonBPRelationRole.Pharmacy);
+		final JsonRequestBPartnerUpsertItem pharmacyUpsertRequest =
+				DataMapper.mapPharmacyToUpsertRequest(pharmacy, actualMFBPartnerId, orgCode);
 
-		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
-				.bpartner(jsonRequestBPartner)
-				.locations(jsonRequestLocationUpsert)
-				.orgCode(orgCode)
-				.build();
+		bPartnerIdentifier2RelationRole.put(pharmacyUpsertRequest.getBpartnerIdentifier(), JsonBPRelationRole.Pharmacy);
 
-		return Optional.of(JsonRequestBPartnerUpsertItem
-				.builder()
-				.bpartnerIdentifier(bPartnerIdentifier)
-				.bpartnerComposite(jsonRequestComposite)
-				.build());
+		return Optional.of(pharmacyUpsertRequest);
 	}
 
 	@NonNull
