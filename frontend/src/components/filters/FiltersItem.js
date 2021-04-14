@@ -370,7 +370,7 @@ class FiltersItem extends PureComponent {
     const targetFilter = parameters.filter(
       (item) => item.field === filterItem.parameterName
     );
-    return targetFilter[0].widgetType;
+    return targetFilter[0] ? targetFilter[0].widgetType : '';
   };
 
   /**
