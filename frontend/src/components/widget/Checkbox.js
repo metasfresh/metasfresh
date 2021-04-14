@@ -15,7 +15,7 @@ const Checkbox = (props) => {
 
   useEffect(() => {
     setCheckedState(initialChecked);
-  }, [props]);
+  }, []);
 
   const {
     widgetData,
