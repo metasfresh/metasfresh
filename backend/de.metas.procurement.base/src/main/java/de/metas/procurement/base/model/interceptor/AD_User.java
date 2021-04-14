@@ -1,10 +1,12 @@
 package de.metas.procurement.base.model.interceptor;
 
+import de.metas.procurement.base.IWebuiPush;
+import de.metas.procurement.base.model.I_AD_User;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
-
-import de.metas.procurement.base.model.I_AD_User;
 
 /*
  * #%L
@@ -31,11 +33,7 @@ import de.metas.procurement.base.model.I_AD_User;
 @Interceptor(I_AD_User.class)
 public class AD_User
 {
-	public static final transient AD_User instance = new AD_User();
-
-	private AD_User()
-	{
-	}
+	private final IWebuiPush webuiPush = Services.get(IWebuiPush.class);
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_AFTER_NEW,
@@ -49,12 +47,13 @@ public class AD_User
 			I_AD_User.COLUMNNAME_IsActive }
 			//
 			, afterCommit = true)
-	public void pushToWebUI(final I_AD_User contact)
+	public void pushToWebUI(final I_AD_User contactRecord)
 	{
-		// FIXME: as it is will push ANY bpartner, even if it is relevant or not from PMM's point of view
-		// good part: will solve the case when u have a pmm bpartner with one 1 user and u just un-ticket the IsMFProcurementUser flag for it
-		// bad part: a lot of not relevant BPartners will be sent to procurement webui
-//		Services.get(IWebuiPush.class).pushBPartnerForContact(contact);
+		if (contactRecord.isIsMFProcurementUser()
+				|| InterfaceWrapperHelper.isValueChanged(contactRecord, I_AD_User.COLUMNNAME_IsMFProcurementUser))
+		{
+			webuiPush.pushBPartnerForContact(contactRecord);
+		}
 	}
 
 }

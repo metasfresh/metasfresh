@@ -10,18 +10,22 @@ import de.metas.common.procurement.sync.protocol.dto.SyncWeeklySupply;
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutUserChangedRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IServerSyncBL;
+import de.metas.procurement.base.model.I_AD_User;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
 import de.metas.procurement.base.model.I_PMM_RfQResponse_ChangeEvent;
 import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
 import de.metas.procurement.base.model.X_PMM_RfQResponse_ChangeEvent;
 import de.metas.procurement.base.rabbitmq.SenderToProcurementWeb;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -78,6 +82,7 @@ public class ServerSyncBL implements IServerSyncBL
 {
 	private static final Logger logger = LogManager.getLogger(ServerSyncBL.class);
 
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final SenderToProcurementWeb senderToProcurementWebUI;
 
 	public ServerSyncBL(@NonNull final SenderToProcurementWeb senderToProcurementWebUI)
@@ -533,4 +538,12 @@ public class ServerSyncBL implements IServerSyncBL
 				.confirm(syncQtyChangeEvent, serverEventId);
 	}
 
+	@Override
+	public void reportUserChanged(@NonNull final PutUserChangedRequest request)
+	{
+		final UserId userId = SyncUUIDs.getUserId(request.getUserUUID());
+		final I_AD_User user = userDAO.getByIdInTrx(userId, I_AD_User.class);
+		user.setProcurementPassword(request.getNewPassword());
+		userDAO.save(user);
+	}
 }

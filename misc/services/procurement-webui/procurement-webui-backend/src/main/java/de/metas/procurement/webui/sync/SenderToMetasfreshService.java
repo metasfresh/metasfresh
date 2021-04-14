@@ -15,17 +15,20 @@ import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProduc
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest.PutRfQChangeRequestBuilder;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutUserChangedRequest;
 import de.metas.procurement.webui.model.AbstractSyncConfirmAwareEntity;
 import de.metas.procurement.webui.model.Product;
 import de.metas.procurement.webui.model.ProductSupply;
 import de.metas.procurement.webui.model.Rfq;
 import de.metas.procurement.webui.model.RfqQty;
 import de.metas.procurement.webui.model.SyncConfirm;
+import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.model.WeekSupply;
 import de.metas.procurement.webui.repository.SyncConfirmRepository;
 import de.metas.procurement.webui.service.IProductSuppliesService;
 import de.metas.procurement.webui.sync.rabbitmq.SenderToMetasfresh;
 import de.metas.procurement.webui.util.EventBusLoggingSubscriberExceptionHandler;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,6 +40,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -69,7 +73,7 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 	private static final Logger logger = LoggerFactory.getLogger(SenderToMetasfreshService.class);
 
 	private final TaskExecutor taskExecutor;
-	private AsyncEventBus eventBus;
+	private AsyncEventBus asyncEventBus;
 
 	private final SenderToMetasfresh senderToMetasfresh;
 	private final IProductSuppliesService productSuppliesService;
@@ -92,8 +96,8 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 	@PostConstruct
 	private void init()
 	{
-		eventBus = new AsyncEventBus(taskExecutor, EventBusLoggingSubscriberExceptionHandler.of(logger));
-		eventBus.register(this);
+		asyncEventBus = new AsyncEventBus(taskExecutor, EventBusLoggingSubscriberExceptionHandler.of(logger));
+		asyncEventBus.register(this);
 
 		final Runnable callback = initialSync::countDown;
 		requestFromMetasfreshAllMasterdataAsync(callback);
@@ -124,7 +128,7 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 	{
 		final SyncAllRequest request = SyncAllRequest.of(callback);
 		logger.debug("Enqueuing: {}", request);
-		eventBus.post(request);
+		asyncEventBus.post(request);
 	}
 
 	@Subscribe
@@ -183,7 +187,7 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 
 		final PutProductSuppliesRequest request = toPutProductSuppliesRequest(productSupplies);
 		logger.debug("Enqueuing: {}", request);
-		eventBus.post(request);
+		asyncEventBus.post(request);
 	}
 
 	@Subscribe
@@ -203,8 +207,8 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 	{
 		return PutProductSuppliesRequest.builder()
 				.productSupplies(productSupplies.stream()
-						.map(SenderToMetasfreshService::toSyncProductSupply)
-						.collect(ImmutableList.toImmutableList()))
+										 .map(SenderToMetasfreshService::toSyncProductSupply)
+										 .collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -233,7 +237,7 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 
 		final PutWeeklySupplyRequest request = toPutWeeklySupplyRequest(weeklySupplies);
 		logger.debug("Enqueuing: {}", request);
-		eventBus.post(request);
+		asyncEventBus.post(request);
 	}
 
 	@Subscribe
@@ -253,8 +257,8 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 	{
 		return PutWeeklySupplyRequest.builder()
 				.weeklySupplies(weekSupplies.stream()
-						.map(SenderToMetasfreshService::toSyncWeeklySupply)
-						.collect(ImmutableList.toImmutableList()))
+										.map(SenderToMetasfreshService::toSyncWeeklySupply)
+										.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -323,7 +327,50 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 		}
 
 		logger.debug("Enqueuing: {}", request);
-		eventBus.post(request);
+		asyncEventBus.post(request);
+	}
+
+	private void pushUsersAsync(@NonNull final List<User> users)
+	{
+		if (users.isEmpty())
+		{
+			return;
+		}
+
+		final LinkedHashMap<String, PutUserChangedRequest> requests = new LinkedHashMap<>();
+		for (final User user : users)
+		{
+			final PutUserChangedRequest request = toPutUserChangedRequest(user);
+			requests.put(request.getUserUUID(), request);
+		}
+
+		for (final PutUserChangedRequest request : requests.values())
+		{
+			logger.debug("Enqueuing: {}", request);
+			asyncEventBus.post(request);
+		}
+	}
+
+	@Subscribe
+	public void process(@NonNull final PutUserChangedRequest request)
+	{
+		try
+		{
+			senderToMetasfresh.send(request);
+		}
+		catch (final Exception e)
+		{
+			// thx http://stackoverflow.com/questions/25367566/severe-could-not-dispatch-event-eventbus-com-google-common-eventbus-subscriber
+			logger.error("Caught exception trying to process {}", request, e);
+		}
+	}
+
+	private static PutUserChangedRequest toPutUserChangedRequest(final User user)
+	{
+		return PutUserChangedRequest.builder()
+				.userUUID(user.getUuid())
+				.newPassword(user.getPassword())
+				.build();
 	}
 
 	@Subscribe
@@ -428,9 +475,10 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 		private final ArrayList<ProductSupply> productSupplies = new ArrayList<>();
 		private final ArrayList<WeekSupply> weeklySupplies = new ArrayList<>();
 		private final ArrayList<Rfq> rfqs = new ArrayList<>();
+		private final ArrayList<User> users = new ArrayList<>();
 
 		@Override
-		public ISyncAfterCommitCollector add(final ProductSupply productSupply)
+		public ISyncAfterCommitCollector add(@NonNull final ProductSupply productSupply)
 		{
 			createAndStoreSyncConfirmRecord(productSupply);
 			productSupplies.add(productSupply);
@@ -440,7 +488,7 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 		}
 
 		@Override
-		public ISyncAfterCommitCollector add(final WeekSupply weeklySupply)
+		public ISyncAfterCommitCollector add(@NonNull final WeekSupply weeklySupply)
 		{
 			createAndStoreSyncConfirmRecord(weeklySupply);
 			weeklySupplies.add(weeklySupply);
@@ -448,10 +496,17 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 		}
 
 		@Override
-		public ISyncAfterCommitCollector add(final Rfq rfq)
+		public ISyncAfterCommitCollector add(@NonNull final Rfq rfq)
 		{
 			createAndStoreSyncConfirmRecord(rfq);
 			rfqs.add(rfq);
+			return this;
+		}
+
+		@Override
+		public ISyncAfterCommitCollector add(@NonNull final User user)
+		{
+			users.add(user);
 			return this;
 		}
 
@@ -503,6 +558,14 @@ public class SenderToMetasfreshService implements ISenderToMetasfreshService
 				final List<Rfq> rfqs = ImmutableList.copyOf(this.rfqs);
 				this.rfqs.clear();
 				pushRfqsAsync(rfqs);
+			}
+
+			//
+			// Sync User changes
+			{
+				final List<User> users = ImmutableList.copyOf(this.users);
+				this.users.clear();
+				pushUsersAsync(users);
 			}
 		}
 	}

@@ -44,7 +44,6 @@ import java.util.List;
  * Module activator
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class Main extends AbstractModuleInterceptor
 {
@@ -71,7 +70,7 @@ public class Main extends AbstractModuleInterceptor
 		//
 		// Master data: bpartner & users
 		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_BPartner.instance);
-		engine.addModelValidator(de.metas.procurement.base.model.interceptor.AD_User.instance);
+		engine.addModelValidator(new de.metas.procurement.base.model.interceptor.AD_User());
 		// Master data: contracts
 		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_Flatrate_Term.instance);
 		engine.addModelValidator(de.metas.procurement.base.model.interceptor.C_Flatrate_DataEntry.instance);
@@ -82,7 +81,7 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(de.metas.procurement.base.model.interceptor.M_HU_PI_Item_Product.instance);
 		// Master data: messages
 		engine.addModelValidator(de.metas.procurement.base.model.interceptor.PMM_Message.instance);
-		
+
 		//
 		// RfQ
 		engine.addModelValidator(new de.metas.procurement.base.rfq.model.interceptor.RfqMainInterceptor());
@@ -97,13 +96,13 @@ public class Main extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerCallouts(IProgramaticCalloutProvider calloutsRegistry)
+	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
 	{
 		//
 		// contract and master data
 		calloutsRegistry.registerAnnotatedCallout(de.metas.procurement.base.model.interceptor.C_Flatrate_DataEntry.instance);
 		calloutsRegistry.registerAnnotatedCallout(de.metas.procurement.base.model.interceptor.PMM_Product.instance);
-		
+
 		//
 		// Purchase candidate
 		calloutsRegistry.registerAnnotatedCallout(de.metas.procurement.base.order.interceptor.PMM_PurchaseCandidate.instance);
@@ -121,9 +120,9 @@ public class Main extends AbstractModuleInterceptor
 		setupFlatrateTerms();
 		setupJaxRs();
 	}
-	
+
 	private void setupJaxRs()
-	{		
+	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 		final String requestQueueName = sysConfigBL.getValue(SYSCONFIG_JMS_QUEUE_REQUEST, getAD_Client_ID());
@@ -132,11 +131,11 @@ public class Main extends AbstractModuleInterceptor
 		if (Check.isEmpty(requestQueueName, true) || Check.isEmpty(responseQueueName, true))
 		{
 			logger.error("At least one one of requestQueueName={} and responseQueueName={} is not set. \n"
-					+ "Therefore this instance won't be able to actively send data to the procurement UI. \n"
-					+ "To fix this, add AD_SysConfig records with AD_Client_ID={} and AD_Org_ID=0 and with the following names:\n"
-					+ "{} \n"
-					+ "{}",
-					new Object[] { requestQueueName, responseQueueName, Math.max(getAD_Client_ID(), 0), SYSCONFIG_JMS_QUEUE_REQUEST, SYSCONFIG_JMS_QUEUE_RESPONSE });
+								 + "Therefore this instance won't be able to actively send data to the procurement UI. \n"
+								 + "To fix this, add AD_SysConfig records with AD_Client_ID={} and AD_Org_ID=0 and with the following names:\n"
+								 + "{} \n"
+								 + "{}",
+						 requestQueueName, responseQueueName, Math.max(getAD_Client_ID(), 0), SYSCONFIG_JMS_QUEUE_REQUEST, SYSCONFIG_JMS_QUEUE_RESPONSE);
 			return;
 		}
 		//
@@ -145,7 +144,7 @@ public class Main extends AbstractModuleInterceptor
 
 		// note: ServerSync will just be a "normal" server, listening no our default queues
 	}
-	
+
 	private void setupFlatrateTerms()
 	{
 		Services.get(IFlatrateTermEventService.class).registerEventListenerForConditionsType(new ProcurementFlatrateHandler(), ProcurementFlatrateHandler.TYPE_CONDITIONS);

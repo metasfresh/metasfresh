@@ -31,6 +31,7 @@ import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutConfir
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutProductSuppliesRequest;
 import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeeklySupplyRequest;
 import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRfQChangeRequest;
+import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutUserChangedRequest;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME,
 		property = "type")
@@ -41,6 +42,7 @@ import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutRf
 		@JsonSubTypes.Type(value = PutProductSuppliesRequest.class, name = "putProductSuppliesRequest"),
 		@JsonSubTypes.Type(value = PutWeeklySupplyRequest.class, name = "putWeeklySupplyRequest"),
 		@JsonSubTypes.Type(value = PutRfQChangeRequest.class, name = "putRfQChangeRequest"),
+		@JsonSubTypes.Type(value = PutUserChangedRequest.class, name = "putUserChangedRequest"),
 		@JsonSubTypes.Type(value = PutConfirmationToMetasfreshRequest.class, name = "putConfirmationToMetasfreshRequest")
 })
 public abstract class RequestToMetasfresh

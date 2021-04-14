@@ -53,8 +53,13 @@ public final class SyncUUIDs
 	{
 		return UUIDs.fromIdAsString(contact.getAD_User_ID());
 	}
-	
-	public static final String toUUIDString(final I_PMM_Product pmmProduct)
+
+ 	public static UserId getUserId(@NonNull final String uuid)
+	{
+		return UserId.ofRepoId(UUIDs.toId(uuid));
+	}
+
+	public static String toUUIDString(final I_PMM_Product pmmProduct)
 	{
 		return UUIDs.fromIdAsString(pmmProduct.getPMM_Product_ID());
 	}
