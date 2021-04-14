@@ -36,6 +36,7 @@ from (
 			, p_Conv_Client_ID := target_plv.AD_Client_ID
 			, p_Conv_Org_ID := target_plv.AD_Org_ID
 			, p_ApplyDiscountSchema := source_pp.IsSeasonFixedPrice='N' and source_pp.IsActive='Y' and source_psp.IsActive='Y'
+		    , p_donotchangezeroprices := ds.donotchangezeroprices = 'Y'
 		) as prices
 		--
 		, target_plv.AD_Client_ID
@@ -53,6 +54,7 @@ from (
 	inner join M_ProductScalePrice source_psp on (source_psp.M_ProductPrice_ID = source_pp.M_ProductPrice_ID)
 	--
 	inner join M_DiscountSchemaLine dsl on (dsl.M_DiscountSchemaLine_ID=target_pp.M_DiscountSchemaLine_ID)
+    inner join M_DiscountSchema ds on dsl.m_discountschema_id = ds.m_discountschema_id
 ) psp
 ;
 
