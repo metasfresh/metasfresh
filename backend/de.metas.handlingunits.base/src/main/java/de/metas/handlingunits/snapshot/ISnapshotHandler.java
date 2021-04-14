@@ -34,22 +34,18 @@ import org.adempiere.util.lang.IContextAware;
  *
  * @param <ModelType> model type which this implementation will be able to restore or to create snapshots
  * @param <SnapshotModelType> model type/table where the snapshot data is stored
- * @param <ParentModelType> parent model type (in snapshots hierachy)
+ * @param <ParentModelType> parent model type (in snapshots hierarchy)
  */
 public interface ISnapshotHandler<ModelType, SnapshotModelType, ParentModelType>
 {
 	/**
 	 * Sets context to be used.
-	 * 
-	 * @param context
 	 */
 	ISnapshotHandler<ModelType, SnapshotModelType, ParentModelType> setContext(IContextAware context);
 
 	/**
 	 * Sets transaction date to be used in case any kind of transactions are created.
 	 * Mainly this is the document date which triggered the snapshot.
-	 * 
-	 * @param dateTrx
 	 */
 	ISnapshotHandler<ModelType, SnapshotModelType, ParentModelType> setDateTrx(Date dateTrx);
 
@@ -59,7 +55,6 @@ public interface ISnapshotHandler<ModelType, SnapshotModelType, ParentModelType>
 	 * Mainly the referenced model is a document or a document line on which the transactions are linking to.
 	 * 
 	 * @param referencedModel may be {@code null}
-	 * @return
 	 */
 	ISnapshotHandler<ModelType, SnapshotModelType, ParentModelType> setReferencedModel(Object referencedModel);
 

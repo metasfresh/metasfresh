@@ -120,4 +120,6 @@ public interface IHUAssignmentBL extends ISingletonService
 	void copyHUAssignments(Object sourceModel, Object targetModel);
 
 	ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull Set<TableRecordReference> recordRefs);
+
+	Set<HuId> getTUsByLU(@NonNull TableRecordReference recordRef, @NonNull HuId luId);
 }

@@ -23,29 +23,26 @@
 package de.metas.handlingunits;
 
 import com.google.common.base.MoreObjects;
-
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.model.I_M_HU;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
 public final class LUTUCUPair
 {
-	public static LUTUCUPair ofLU(@NonNull I_M_HU luHU)
+	public static LUTUCUPair ofLU(@NonNull final I_M_HU luHU)
 	{
-		final I_M_HU tuHU = null;
-		final I_M_HU vhu = null;
-		return new LUTUCUPair(luHU, tuHU, vhu);
+		return new LUTUCUPair(luHU, null, null);
 	}
 
-	public static LUTUCUPair ofTU(@NonNull I_M_HU tuHU, @Nullable final I_M_HU luHU)
+	public static LUTUCUPair ofTU(@NonNull final I_M_HU tuHU, @Nullable final I_M_HU luHU)
 	{
-		final I_M_HU vhu = null;
-		return new LUTUCUPair(luHU, tuHU, vhu);
+		return new LUTUCUPair(luHU, tuHU, null);
 	}
 
-	public static LUTUCUPair ofVHU(@NonNull I_M_HU vhu, @Nullable final I_M_HU tuHU, @Nullable final I_M_HU luHU)
+	public static LUTUCUPair ofVHU(@NonNull final I_M_HU vhu, @Nullable final I_M_HU tuHU, @Nullable final I_M_HU luHU)
 	{
 		return new LUTUCUPair(luHU, tuHU, vhu);
 	}
@@ -54,11 +51,23 @@ public final class LUTUCUPair
 	private final I_M_HU tuHU;
 	private final I_M_HU vhu;
 
-	private LUTUCUPair(final I_M_HU luHU, final I_M_HU tuHU, final I_M_HU vhu)
+	private final I_M_HU topLevelHU;
+
+	private LUTUCUPair(
+			@Nullable final I_M_HU luHU,
+			@Nullable final I_M_HU tuHU,
+			@Nullable final I_M_HU vhu)
 	{
 		this.luHU = luHU;
 		this.tuHU = tuHU;
 		this.vhu = vhu;
+
+		this.topLevelHU = CoalesceUtil.coalesce(luHU, tuHU, vhu);
+		if (topLevelHU == null)
+		{
+			// shall not happen because static factory methods are already preventing this
+			throw new AdempiereException("At least one of the LU, TU or VHU shall be specified");
+		}
 	}
 
 	@Override
@@ -72,16 +81,19 @@ public final class LUTUCUPair
 				.toString();
 	}
 
-	public I_M_HU getM_TU_HU()
-	{
-		return tuHU;
-	}
-
+	@Nullable
 	public I_M_HU getM_LU_HU()
 	{
 		return luHU;
 	}
 
+	@Nullable
+	public I_M_HU getM_TU_HU()
+	{
+		return tuHU;
+	}
+
+	@Nullable
 	public I_M_HU getVHU()
 	{
 		return vhu;
@@ -89,6 +101,11 @@ public final class LUTUCUPair
 
 	public I_M_HU getTopLevelHU()
 	{
-		return CoalesceUtil.coalesce(luHU, tuHU, vhu);
+		return topLevelHU;
+	}
+
+	public HuId getTopLevelHUId()
+	{
+		return HuId.ofRepoId(getTopLevelHU().getM_HU_ID());
 	}
 }

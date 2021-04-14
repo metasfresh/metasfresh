@@ -41,7 +41,7 @@ import org.adempiere.util.lang.IContextAware;
 public interface ISnapshotRestorer<ModelType>
 {
 	/**
-	 * Restore all enqueued models (recursivelly) from given snapshot.
+	 * Restore all enqueued models (recursively) from given snapshot.
 	 * 
 	 * After running this method, the models queue will be cleared so it's safe to add more models and then run again this method.
 	 */
@@ -49,43 +49,31 @@ public interface ISnapshotRestorer<ModelType>
 
 	/**
 	 * Sets the Snapshot ID to be used.
-	 * 
-	 * @param snapshotId
 	 */
 	ISnapshotRestorer<ModelType> setSnapshotId(String snapshotId);
 
 	/**
 	 * Sets context to be used while restoring the models from their snapshots.
-	 * 
-	 * @param context
 	 */
 	ISnapshotRestorer<ModelType> setContext(final IContextAware context);
 
 	/**
 	 * Sets transaction date to be used when creating restore transactions.
-	 * 
-	 * @param dateTrx
 	 */
 	ISnapshotRestorer<ModelType> setDateTrx(Date dateTrx);
 
 	/**
 	 * Sets referenced model to be used when creating restore transactions.
-	 * 
-	 * @param referencedModel
 	 */
 	ISnapshotRestorer<ModelType> setReferencedModel(Object referencedModel);
 
 	/**
 	 * Add model to be restored.
-	 * 
-	 * @param model
 	 */
 	ISnapshotRestorer<ModelType> addModel(ModelType model);
 
 	/**
 	 * Add models to be restored.
-	 * 
-	 * @param models
 	 */
 	ISnapshotRestorer<ModelType> addModels(Collection<? extends ModelType> models);
 

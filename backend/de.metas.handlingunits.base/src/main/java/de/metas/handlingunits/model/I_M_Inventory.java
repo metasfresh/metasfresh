@@ -26,9 +26,9 @@ public interface I_M_Inventory extends de.metas.adempiere.model.I_M_Inventory
 {
 
 	// @formatter:off
-		public void setSnapshot_UUID (java.lang.String Snapshot_UUID);
-		public java.lang.String getSnapshot_UUID();
-		public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_Snapshot_UUID = new org.adempiere.model.ModelColumn<>(I_M_Inventory.class, "Snapshot_UUID", null);
-		public static final String COLUMNNAME_Snapshot_UUID = "Snapshot_UUID";
+		void setSnapshot_UUID (java.lang.String Snapshot_UUID);
+		java.lang.String getSnapshot_UUID();
+		//public static final org.adempiere.model.ModelColumn<I_M_Inventory, Object> COLUMN_Snapshot_UUID = new org.adempiere.model.ModelColumn<>(I_M_Inventory.class, "Snapshot_UUID", null);
+		//public static final String COLUMNNAME_Snapshot_UUID = "Snapshot_UUID";
 	// @formatter:on
 }
