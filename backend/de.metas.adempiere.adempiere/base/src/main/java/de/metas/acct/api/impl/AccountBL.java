@@ -25,6 +25,7 @@ package de.metas.acct.api.impl;
 
 import java.math.BigDecimal;
 
+import de.metas.organization.OrgId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
@@ -331,6 +332,7 @@ public class AccountBL implements IAccountBL
 	{
 		return AccountDimension.builder()
 				.setAD_Client_ID(ev.getAD_Client_ID())
+				.setAD_Org_ID(OrgId.ANY.getRepoId())
 				.setC_ElementValue_ID(ev.getC_ElementValue_ID())
 				.setAcctSchemaId(acctSchemaId)
 				.build();
