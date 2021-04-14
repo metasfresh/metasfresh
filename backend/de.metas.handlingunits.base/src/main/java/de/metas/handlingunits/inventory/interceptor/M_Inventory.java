@@ -3,8 +3,6 @@ package de.metas.handlingunits.inventory.interceptor;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.hutransaction.IHUTransactionBL;
-import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.tabcallout.M_InventoryLineTabCallout;
 import de.metas.handlingunits.model.I_M_Inventory;
@@ -21,7 +19,6 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Inventory;
 import org.springframework.stereotype.Component;
@@ -54,7 +51,7 @@ import java.util.List;
 public class M_Inventory
 {
 	private final InventoryService inventoryLineRecordService;
-	private final IHUTransactionBL huTransactionBL = Services.get(IHUTransactionBL.class);
+	//private final IHUTransactionBL huTransactionBL = Services.get(IHUTransactionBL.class);
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 
 	public M_Inventory(@NonNull final InventoryService inventoryRecordHUService)
@@ -86,17 +83,18 @@ public class M_Inventory
 		inventoryLineRecordService.syncToHUs(inventoryRecord);
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)
-	public void checkHUTransformationBeforeReverseCorrect(final I_M_Inventory inventory)
-	{
-		final Inventory invObj = inventoryLineRecordService.toInventory(inventory);
-		invObj.getLines().forEach(line -> line.getInventoryLineHUs().forEach(hu -> {
-			if (!huTransactionBL.isLatestHUTrx(hu.getHuId(), TableRecordReference.of(I_M_InventoryLine.Table_Name, line.getId())))
-			{
-				throw new HUException("@InventoryReverseError@");
-			}
-		}));
-	}
+	// commented out because it's not working correctly. To be fixed in a different task.
+	// @DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)
+	// public void checkHUTransformationBeforeReverseCorrect(final I_M_Inventory inventory)
+	// {
+	// 	final Inventory invObj = inventoryLineRecordService.toInventory(inventory);
+	// 	invObj.getLines().forEach(line -> line.getInventoryLineHUs().forEach(hu -> {
+	// 		if (!huTransactionBL.isLatestHUTrx(hu.getHuId(), TableRecordReference.of(I_M_InventoryLine.Table_Name, line.getId())))
+	// 		{
+	// 			throw new HUException("@InventoryReverseError@");
+	// 		}
+	// 	}));
+	// }
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)
 	public void reverseDisposal(final I_M_Inventory inventory)
