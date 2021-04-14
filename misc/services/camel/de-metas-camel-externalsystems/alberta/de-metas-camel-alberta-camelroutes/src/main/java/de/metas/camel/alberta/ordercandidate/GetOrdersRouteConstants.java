@@ -29,6 +29,9 @@ public interface GetOrdersRouteConstants
 {
 
 	String ROUTE_PROPERTY_ORG_CODE = "orgCode";
+	String ROUTE_PROPERTY_CURRENT_ORDER = "currentOrder";
+
+	String DELIVERY_ADDRESS_PREFIX = "delivery_";
 
 	@AllArgsConstructor
 	@Getter
