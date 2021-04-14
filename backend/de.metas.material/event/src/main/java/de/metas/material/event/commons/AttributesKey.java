@@ -50,7 +50,7 @@ import lombok.NonNull;
 
 @EqualsAndHashCode(doNotUseGetters = true)
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class AttributesKey
+public final class AttributesKey implements Comparable<AttributesKey>
 {
 	// first, declare the "static" constants that might be used within the "factory-method" constants
 
@@ -255,5 +255,15 @@ public final class AttributesKey
 	public static boolean equals(@Nullable final AttributesKey k1, @Nullable final AttributesKey k2)
 	{
 		return Objects.equals(k1, k2);
+	}
+
+	@Override
+	public int compareTo(@Nullable final AttributesKey o)
+	{
+		if (o == null)
+		{
+			return 1; // we assume that null is less than not-null
+		}
+		return this.getAsString().compareTo(o.getAsString());
 	}
 }
