@@ -131,15 +131,15 @@ public class MaterialCockpitRowFactoryTest
 		dimensionspecGroup_empty = groups.get(0);
 		assertThat(dimensionspecGroup_empty.isEmptyGroup()).isTrue();
 
-		dimensionspecGroup_attr1_value1 = groups.get(2);
-		assertThat(dimensionspecGroup_attr1_value1.getAttributesKey())
+		dimensionspecGroup_attr1_value1 = groups.get(1);
+		assertThat(dimensionspecGroup_attr1_value1.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr1_value1.getId()));
+	
+		dimensionspecGroup_attr2_value1 = groups.get(2);
+		assertThat(dimensionspecGroup_attr2_value1.getAttributesKey())
 				.as("dimensionspecGroup_attr1_value1 shall be \"test1_value1\", but is %s", dimensionspecGroup_attr1_value1.getAttributesKey())
-				.isEqualTo(AttributesKey.ofAttributeValueIds(attr1_value1.getId()));
+				.isEqualTo(AttributesKey.ofAttributeValueIds(attr2_value1.getId()));
 
-		dimensionspecGroup_attr2_value1 = groups.get(3);
-		assertThat(dimensionspecGroup_attr2_value1.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr2_value1.getId()));
-
-		final DimensionSpecGroup dimensionspecGroup_attr2_value2 = groups.get(1);
+		final DimensionSpecGroup dimensionspecGroup_attr2_value2 = groups.get(3);
 		assertThat(dimensionspecGroup_attr2_value2.getAttributesKey()).isEqualTo(AttributesKey.ofAttributeValueIds(attr2_value2.getId()));
 	}
 
