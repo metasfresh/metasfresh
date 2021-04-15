@@ -124,13 +124,13 @@ BEGIN
             v_result.PriceLimit = CASE WHEN v_result.PriceLimit <> 0 THEN v_result.PriceLimit + dsl.Limit_AddAmt ELSE 0 END;
         ELSE
             v_result.PriceList = v_result.PriceList + dsl.List_AddAmt;
-            v_result.PriceStd = v_result.PriceStd;
+            v_result.PriceStd = v_result.PriceStd + dsl.Std_Addamt;
             v_result.PriceLimit = v_result.PriceLimit + dsl.Limit_AddAmt;
         END IF;
 
         -- discount
         v_result.PriceList = v_result.PriceList * (1 - dsl.List_Discount / 100);
-        v_result.PriceStd = v_result.PriceStd * (1 - dsl.Limit_Discount / 100);
+        v_result.PriceStd = v_result.PriceStd * (1 - dsl.Std_Discount / 100);
         v_result.PriceLimit = v_result.PriceLimit * (1 - dsl.Limit_Discount / 100);
 
 
