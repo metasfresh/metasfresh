@@ -10,17 +10,21 @@
     "deliveryAddress": {
       "gender": 1,
       "title": 4,
-      "name": "Whitney Houston",
-      "address": "address 12",
-      "additionalAddress": "additionalAddress \"test\"",
-      "additionalAddress2": "",
+      "name": "address name",
+      "address": "address",
+      "additionalAddress": "additionalAddress",
+      "additionalAddress2": "additionalAddress2",
       "postalCode": "99999",
       "city": "test-city"
     },
     "doctorId": "doctorId",
     "pharmacyId": "pharmacyId",
     "therapyId": 2,
-    "therapyTypeIds": [1,2,3],
+    "therapyTypeIds": [
+      1,
+      2,
+      3
+    ],
     "isInitialCare": true,
     "orderedArticleLines": [
       {
@@ -28,13 +32,24 @@
         "articleId": "productId",
         "articleCustomerNumber": "ignore",
         "quantity": 100,
-        "unit": "Stk"
+        "unit": "Stk",
+        "isRentalEquipment": true,
+        "isPrivateSale": true,
+        "salesLineId": "salesLineId",
+        "duration": {
+          "amount": 10,
+          "timePeriod": 11
+        }
       }
     ],
     "createdBy": "5a6a12698f0d3933b02e5f4c",
     "status": 1,
-    "isSeriesOrder": false,
-    "archived": false,
-    "timestamp": "2021-03-03T15:08:41.239Z"
+    "isSeriesOrder": true,
+    "archived": true,
+    "timestamp": "2021-03-03T15:08:41.239Z",
+    "rootId": "rootId",
+    "dayOfDelivery": 2,
+    "nextDelivery": "2021-04-01",
+    "annotation":"annotation"
   }
 ]

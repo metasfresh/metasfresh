@@ -22,11 +22,13 @@
 
 package de.metas.camel.alberta.ordercandidate;
 
-import de.metas.camel.alberta.ordercandidate.processor.CreateExternalReferenceLookupProcessor;
-import de.metas.camel.alberta.ordercandidate.processor.CreateJsonOLCandCreateRequestProcessor;
 import de.metas.camel.alberta.ordercandidate.processor.CreateMissingBPartnerProcessor;
+import de.metas.camel.alberta.ordercandidate.processor.DeliveryAddressUpsertProcessor;
+import de.metas.camel.alberta.ordercandidate.processor.ExternalReferenceLookupProcessor;
+import de.metas.camel.alberta.ordercandidate.processor.JsonOLCandCreateRequestProcessor;
 import de.metas.camel.alberta.ordercandidate.processor.RetrieveOrdersProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
@@ -48,6 +50,7 @@ public class AlbertaGetOrdersRouteBuilder extends RouteBuilder
 	public static final String GET_ORDERS_PROCESSOR_ID = "GetOrdersProcessorId";
 	public static final String CREATE_EXTERNAL_REF_LOOKUP_PROCESSOR_ID = "CreateExternalRefLookupProcessorId";
 	public static final String CREATE_BPARTNER_REQUEST_PROCESSOR_ID = "CreateBPartnerRequestProcessorId";
+	public static final String CREATE_DELIVERY_ADDRESS_PROCESSOR_ID = "CreateDeliveryAddressProcessorId";
 	public static final String CREATE_OLCAND_REQUEST_PROCESSOR_ID = "CreateOLCandRequestProcessorId";
 
 	@Override
@@ -66,7 +69,8 @@ public class AlbertaGetOrdersRouteBuilder extends RouteBuilder
 					.multicast()
 						.stopOnException()
 						.parallelProcessing(false)
-						.to(direct(IMPORT_MISSING_BP_ROUTE_ID), direct(PROCESS_ORDERS_ROUTE_ID))
+						.to(direct(IMPORT_MISSING_BP_ROUTE_ID),
+							direct(PROCESS_ORDERS_ROUTE_ID))
 					.end();
 
 			from(direct(PROCESS_ORDERS_ROUTE_ID))
@@ -82,14 +86,19 @@ public class AlbertaGetOrdersRouteBuilder extends RouteBuilder
 
 			from(direct(PROCESS_ORDER_ROUTE_ID))
 					.routeId(PROCESS_ORDER_ROUTE_ID)
-					.process(new CreateJsonOLCandCreateRequestProcessor()).id(CREATE_OLCAND_REQUEST_PROCESSOR_ID)
+					.process(new DeliveryAddressUpsertProcessor()).id(CREATE_DELIVERY_ADDRESS_PROCESSOR_ID)
+
+					.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_LOCATION_V2_CAMEL_URI + "}}")
+					.unmarshal(setupJacksonDataFormatFor(getContext(), JsonResponseUpsert.class))
+
+					.process(new JsonOLCandCreateRequestProcessor()).id(CREATE_OLCAND_REQUEST_PROCESSOR_ID)
 
 					.log(LoggingLevel.DEBUG, "Calling metasfresh-api to store order candidates!")
 					.to( direct(ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID) );
 
 			from(direct(IMPORT_MISSING_BP_ROUTE_ID))
 				.routeId(IMPORT_MISSING_BP_ROUTE_ID)
-				.process(new CreateExternalReferenceLookupProcessor()).id(CREATE_EXTERNAL_REF_LOOKUP_PROCESSOR_ID)
+				.process(new ExternalReferenceLookupProcessor()).id(CREATE_EXTERNAL_REF_LOOKUP_PROCESSOR_ID)
 				.choice()
 					.when(body().isNull())
 						.log(LoggingLevel.INFO, "Nothing to do! No external reference lookup request found!")

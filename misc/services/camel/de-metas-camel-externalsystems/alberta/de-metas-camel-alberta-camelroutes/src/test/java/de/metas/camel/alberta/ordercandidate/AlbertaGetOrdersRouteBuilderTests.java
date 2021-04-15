@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.alberta.patient.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.v2.BPLocationCamelRequest;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
@@ -57,6 +58,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static de.metas.camel.alberta.ordercandidate.AlbertaGetOrdersRouteBuilder.CREATE_BPARTNER_REQUEST_PROCESSOR_ID;
+import static de.metas.camel.alberta.ordercandidate.AlbertaGetOrdersRouteBuilder.CREATE_DELIVERY_ADDRESS_PROCESSOR_ID;
 import static de.metas.camel.alberta.ordercandidate.AlbertaGetOrdersRouteBuilder.CREATE_EXTERNAL_REF_LOOKUP_PROCESSOR_ID;
 import static de.metas.camel.alberta.ordercandidate.AlbertaGetOrdersRouteBuilder.CREATE_OLCAND_REQUEST_PROCESSOR_ID;
 import static de.metas.camel.alberta.ordercandidate.AlbertaGetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID;
@@ -80,12 +82,16 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 
 	private static final String JSON_ALBERTA_GET_DOCTOR_RESPONSE = "30_AlbertaDoctor.json";
 	private static final String JSON_ALBERTA_GET_PHARMACY_RESPONSE = "40_AlbertaPharmacy.json";
-
 	private static final String JSON_BPARTNER_UPSERT_REQUEST = "50_BPartnerUpsertRequest.json";
+
+	private static final String JSON_DELIVERY_ADDRESS_UPSERT_REQUEST = "55_DeliveryAddressCreateRequest.json";
+	private static final String JSON_DELIVERY_ADDRESS_UPSERT_RESPONSE = "55_DeliveryAddressCreateResponse.json";
+
 	private static final String JSON_OL_CAND_CREATE_REQUEST = "60_CreateOLCandRequest.json";
 
 	private static final String MOCK_ESR_QUERY_REQUEST = "mock:queryExternalRefRequest";
 	private static final String MOCK_UPSERT_BPARTNER_REQUEST = "mock:upsertBPartnerRequest";
+	private static final String MOCK_UPSERT_BPARTNER_DELIVERY_ADDRESS_REQUEST = "mock:upsertBPartnerDeliveryAddressRequest";
 	private static final String MOCK_CREATE_OLCAND_REQUEST = "mock:upsertOLCandRequest";
 
 	@Override
@@ -121,8 +127,9 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 		final MockExternalReferenceResponse mockExternalReferenceResponse = new MockExternalReferenceResponse();
 		final MockBPartnerUpsertResponse mockBPartnerUpsertResponse = new MockBPartnerUpsertResponse();
 		final MockOLCandUpsertResponse mockOLCandUpsertResponse = new MockOLCandUpsertResponse();
+		final MockBPartnerDeliveryAddressProcessor mockBPartnerDeliveryAddressProcessor = new MockBPartnerDeliveryAddressProcessor();
 
-		prepareRouteForTesting(mockExternalReferenceResponse, mockBPartnerUpsertResponse, mockOLCandUpsertResponse);
+		prepareRouteForTesting(mockExternalReferenceResponse, mockBPartnerUpsertResponse, mockOLCandUpsertResponse, mockBPartnerDeliveryAddressProcessor);
 
 		context.start();
 
@@ -132,6 +139,7 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 		//validate the external system query request that is done towards metasfresh
 		final MockEndpoint esrQueryValidationMockEndpoint = getMockEndpoint(MOCK_ESR_QUERY_REQUEST);
 		final InputStream esrQueryRequestExpected = this.getClass().getResourceAsStream(JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST);
+
 		esrQueryValidationMockEndpoint.expectedBodiesReceived(objectMapper.readValue(esrQueryRequestExpected, JsonExternalReferenceLookupRequest.class));
 
 		//validate the upsert-bpartner-request that is done towards metasfresh
@@ -141,10 +149,18 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 
 		bpartnerUpsertMockEndpoint.expectedBodiesReceived(bpUpsertCamelRequest);
 
+		//validate the upsert-bpartner-location-request that is done towards metasfresh
+		final MockEndpoint deliveryAddressMockEndpoint = getMockEndpoint(MOCK_UPSERT_BPARTNER_DELIVERY_ADDRESS_REQUEST);
+		final InputStream deliveryAddressRequestExpected = this.getClass().getResourceAsStream(JSON_DELIVERY_ADDRESS_UPSERT_REQUEST);
+		final BPLocationCamelRequest bpLocationCamelRequest = objectMapper.readValue(deliveryAddressRequestExpected, BPLocationCamelRequest.class);
+
+		deliveryAddressMockEndpoint.expectedBodiesReceived(bpLocationCamelRequest);
+
 		//validate the upsert ol cand request that is done towards metasfresh
 		final MockEndpoint mockCreateOlCandEndpoint = getMockEndpoint(MOCK_CREATE_OLCAND_REQUEST);
 		final InputStream olCandRequestIS = this.getClass().getResourceAsStream(JSON_OL_CAND_CREATE_REQUEST);
 		final JsonOLCandCreateBulkRequest jsonOLCandCreateBulkRequest = objectMapper.readValue(olCandRequestIS, JsonOLCandCreateBulkRequest.class);
+
 		mockCreateOlCandEndpoint.expectedBodiesReceived(jsonOLCandCreateBulkRequest);
 
 		//fire the route
@@ -153,13 +169,15 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 		assertMockEndpointsSatisfied();
 		assertThat(mockExternalReferenceResponse.called).isEqualTo(1);
 		assertThat(mockBPartnerUpsertResponse.called).isEqualTo(1);
+		assertThat(mockBPartnerDeliveryAddressProcessor.called).isEqualTo(1);
 		assertThat(mockOLCandUpsertResponse.called).isEqualTo(1);
 	}
 
 	private void prepareRouteForTesting(
 			final MockExternalReferenceResponse mockExternalReferenceResponse,
 			final MockBPartnerUpsertResponse mockBPartnerUpsertResponse,
-			final MockOLCandUpsertResponse mockOLCandUpsertResponse) throws Exception
+			final MockOLCandUpsertResponse mockOLCandUpsertResponse,
+			final MockBPartnerDeliveryAddressProcessor mockDeliveryAddressProcessor) throws Exception
 	{
 		// inject our mock processor that returns the orders-JSON from alberta
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
@@ -191,6 +209,14 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 							  advice -> {
 								  // validate the the external reference query request and send a response
+								  advice.weaveById(CREATE_DELIVERY_ADDRESS_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_UPSERT_BPARTNER_DELIVERY_ADDRESS_REQUEST);
+
+								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_LOCATION_V2_CAMEL_URI + "}}")
+										  .skipSendToOriginalEndpoint()
+										  .process(mockDeliveryAddressProcessor);
+
 								  advice.weaveById(CREATE_OLCAND_REQUEST_PROCESSOR_ID)
 										  .after()
 										  .to(MOCK_CREATE_OLCAND_REQUEST);
@@ -305,6 +331,19 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 		public void process(final Exchange exchange)
 		{
 			called++;
+		}
+	}
+
+	private static class MockBPartnerDeliveryAddressProcessor implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+			final InputStream deliveryAddressResponse = AlbertaGetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_DELIVERY_ADDRESS_UPSERT_RESPONSE);
+			exchange.getIn().setBody(deliveryAddressResponse);
 		}
 	}
 }
