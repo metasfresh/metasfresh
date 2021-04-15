@@ -92,7 +92,7 @@ BEGIN
 	p_PriceList = coalesce(currencyConvert(p_PriceList, p_Source_Currency_ID, p_Target_Currency_ID, dsl.ConversionDate, dsl.C_ConversionType_ID, p_Conv_Client_ID, p_Conv_Org_ID), 0);
 	p_PriceStd = coalesce(currencyConvert(p_PriceStd, p_Source_Currency_ID, p_Target_Currency_ID, dsl.ConversionDate, dsl.C_ConversionType_ID, p_Conv_Client_ID, p_Conv_Org_ID), 0);
 	p_PriceLimit = coalesce(currencyConvert(p_PriceLimit, p_Source_Currency_ID, p_Target_Currency_ID, dsl.ConversionDate, dsl.C_ConversionType_ID, p_Conv_Client_ID, p_Conv_Org_ID), 0);
-	
+
 	-- Initialize the result with converted prices, just in case the discount schema line rules will not be applied
 	v_result.PriceList = p_PriceList;
 	v_result.PriceStd = p_PriceStd;
@@ -118,11 +118,15 @@ BEGIN
         v_result.PriceLimit = (CASE dsl.Limit_Base WHEN 'L' THEN p_PriceList WHEN 'S' THEN p_PriceStd ELSE p_PriceLimit END);
 
         -- add amt if needed
-        if (p_DoNotChangeZeroPrices) THEN
+        IF (p_DoNotChangeZeroPrices) THEN
             v_result.PriceList = CASE WHEN v_result.PriceList <> 0 THEN v_result.PriceList + dsl.List_AddAmt ELSE 0 END;
             v_result.PriceStd = CASE WHEN v_result.PriceStd <> 0 THEN v_result.PriceStd + dsl.Std_AddAmt ELSE 0 END;
             v_result.PriceLimit = CASE WHEN v_result.PriceLimit <> 0 THEN v_result.PriceLimit + dsl.Limit_AddAmt ELSE 0 END;
-        end if;
+        ELSE
+            v_result.PriceList = v_result.PriceList + dsl.List_AddAmt;
+            v_result.PriceStd = v_result.PriceStd;
+            v_result.PriceLimit = v_result.PriceLimit + dsl.Limit_AddAmt;
+        END IF;
 
         -- discount
         v_result.PriceList = v_result.PriceList * (1 - dsl.List_Discount / 100);
@@ -142,8 +146,8 @@ BEGIN
 		v_result.PriceStd = (case dsl.Std_Base when 'F' then dsl.Std_Fixed else v_result.PriceStd end);
 		v_result.PriceLimit = (case dsl.Limit_Base when 'F' then dsl.Limit_Fixed else v_result.PriceLimit end);
 	end if;
-	
-	
+
+
 	return v_result;
 END;
 $BODY$
