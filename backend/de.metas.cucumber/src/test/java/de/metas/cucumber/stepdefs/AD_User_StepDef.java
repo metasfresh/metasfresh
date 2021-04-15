@@ -22,17 +22,17 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.procurement.base.IWebuiPush;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.After;
-import io.cucumber.java.Scenario;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
@@ -41,9 +41,9 @@ import java.util.Map;
 
 import static de.metas.procurement.base.model.I_AD_User.COLUMNNAME_IsMFProcurementUser;
 import static de.metas.procurement.base.model.I_AD_User.COLUMNNAME_ProcurementPassword;
+import static org.compiere.model.I_AD_User.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_EMail;
-import static org.compiere.model.I_AD_User.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Name;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Password;
 
@@ -64,39 +64,49 @@ public class AD_User_StepDef
 	@Given("metasfresh contains AD_Users:")
 	public void metasfresh_contains_ad_users(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
+		final IWebuiPush webuiPush = Services.get(IWebuiPush.class);
+
+		try (final IAutoCloseable ignore = webuiPush.disable()) // don't fire a message towards the procurement webui, because we don't want the queue be messed up with and unexpected message
 		{
-			final String name = tableRow.get(COLUMNNAME_Name);
-			final String email = tableRow.get("OPT." + COLUMNNAME_EMail);
-
-			final I_AD_User userRecord = InterfaceWrapperHelper.loadOrNew(userDAO.retrieveUserIdByEMail(email, ClientId.METASFRESH), I_AD_User.class);
-			userRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			userRecord.setName(name);
-			userRecord.setEMail(email);
-			userRecord.setPassword(tableRow.get("OPT." + COLUMNNAME_Password));
-			userRecord.setAD_Language(tableRow.get("OPT." + COLUMNNAME_AD_Language));
-
-			if (tableRow.containsKey("OPT." + COLUMNNAME_IsMFProcurementUser))
+			final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+			for (final Map<String, String> tableRow : tableRows)
 			{
-				final de.metas.procurement.base.model.I_AD_User procurementUserRecord = InterfaceWrapperHelper.create(userRecord, de.metas.procurement.base.model.I_AD_User.class);
-				procurementUserRecord.setIsMFProcurementUser(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsMFProcurementUser), false));
+				createUser(tableRow);
 			}
-			if (tableRow.containsKey("OPT." + COLUMNNAME_ProcurementPassword))
-			{
-				final de.metas.procurement.base.model.I_AD_User procurementUserRecord = InterfaceWrapperHelper.create(userRecord, de.metas.procurement.base.model.I_AD_User.class);
-				procurementUserRecord.setProcurementPassword(tableRow.get("OPT." + COLUMNNAME_ProcurementPassword));
-			}
-
-			final String bPartnerIdentifier = tableRow.get(COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bPartnerIdentifier))
-			{
-				final I_C_BPartner bPartner = bpartnerTable.get(bPartnerIdentifier);
-				userRecord.setC_BPartner_ID(bPartner.getC_BPartner_ID());
-			}
-			InterfaceWrapperHelper.saveRecord(userRecord);
-
-			DataTableUtil.extractRecordIdentifier(tableRow, "AD_User");
 		}
+	}
+
+	private void createUser(final Map<String, String> tableRow)
+	{
+		final String name = tableRow.get(COLUMNNAME_Name);
+		final String email = tableRow.get("OPT." + COLUMNNAME_EMail);
+
+		final I_AD_User userRecord = InterfaceWrapperHelper.loadOrNew(userDAO.retrieveUserIdByEMail(email, ClientId.METASFRESH), I_AD_User.class);
+		userRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		userRecord.setName(name);
+		userRecord.setEMail(email);
+		userRecord.setPassword(tableRow.get("OPT." + COLUMNNAME_Password));
+		userRecord.setAD_Language(tableRow.get("OPT." + COLUMNNAME_AD_Language));
+
+		if (tableRow.containsKey("OPT." + COLUMNNAME_IsMFProcurementUser))
+		{
+			final de.metas.procurement.base.model.I_AD_User procurementUserRecord = InterfaceWrapperHelper.create(userRecord, de.metas.procurement.base.model.I_AD_User.class);
+			procurementUserRecord.setIsMFProcurementUser(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsMFProcurementUser), false));
+		}
+		if (tableRow.containsKey("OPT." + COLUMNNAME_ProcurementPassword))
+		{
+			final de.metas.procurement.base.model.I_AD_User procurementUserRecord = InterfaceWrapperHelper.create(userRecord, de.metas.procurement.base.model.I_AD_User.class);
+			procurementUserRecord.setProcurementPassword(tableRow.get("OPT." + COLUMNNAME_ProcurementPassword));
+		}
+
+		final String bPartnerIdentifier = tableRow.get(COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(bPartnerIdentifier))
+		{
+			final I_C_BPartner bPartner = bpartnerTable.get(bPartnerIdentifier);
+			userRecord.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+		}
+		InterfaceWrapperHelper.saveRecord(userRecord);
+
+		DataTableUtil.extractRecordIdentifier(tableRow, "AD_User");
 	}
 }
