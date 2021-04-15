@@ -33,6 +33,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONTriggerAction;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -54,9 +55,12 @@ public class C_BPartner_Location
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final DocumentCollection documentCollection;
 
-	private static final String SYSCONFIG_AskForOrgChangeOnRegionChange = ""; // TODO
+	private static final String SYSCONFIG_AskForOrgChangeOnRegionChange = "AskForOrgChangeOnRegionChange";
 
-	public C_BPartner_Location(@NonNull final DocumentCollection documentCollection) {this.documentCollection = documentCollection;}
+	public C_BPartner_Location(@NonNull final DocumentCollection documentCollection)
+	{
+		this.documentCollection = documentCollection;
+	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
 	public void afterChange(@NonNull final I_C_BPartner_Location bpLocation)
@@ -74,9 +78,10 @@ public class C_BPartner_Location
 			final I_C_Location oldLocation = oldLocationId != null ? locationDAO.getById(oldLocationId) : null;
 			final String oldRegionName = oldLocation != null ? oldLocation.getRegionName() : null;
 
-			// TODO: decide if we have an org change
-
-			Execution.getCurrent().requestFrontendToTriggerAction(moveToAnotherOrgTriggerAction(bpLocation));
+			if (!Check.isEmpty(oldRegionName) && !Check.isEmpty(newRegionName) && !oldRegionName.equals(newRegionName))
+			{
+				Execution.getCurrent().requestFrontendToTriggerAction(moveToAnotherOrgTriggerAction(bpLocation));
+			}
 		}
 	}
 
