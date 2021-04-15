@@ -54,6 +54,11 @@ public class Execution implements IAutoCloseable
 		return execution;
 	}
 
+	public static boolean isCurrentExecutionAvailable()
+	{
+		return currentExecutionHolder.get() != null;
+	}
+
 	private static Execution startExecution()
 	{
 		final Execution executionOld = currentExecutionHolder.get();
@@ -185,7 +190,6 @@ public class Execution implements IAutoCloseable
 				? execution.getFrontendTriggerActions()
 				: ImmutableList.of();
 	}
-
 
 	public static final class ExecutionBuilder
 	{
