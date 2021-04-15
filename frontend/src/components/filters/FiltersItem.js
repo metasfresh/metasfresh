@@ -408,12 +408,13 @@ class FiltersItem extends PureComponent {
       const activeFilterClone = _.cloneDeep(activeFilter);
       activeFilterClone.parameters.map((afcItem, index) => {
         let filterType = this.checkFilterTypeByName(afcItem);
-        if (filterType === 'Amount') return afcItem;
-        // YesNo filters (checkboxes) can be either null, true or false
-        afcItem.value =
-          !afcItem.value && afcItem.value !== false
-            ? filter.parameters[index].defaultValue
-            : afcItem.value;
+        if (filterType === 'YesNo') {
+          // YesNo filters (checkboxes) can be either null, true or false
+          afcItem.value =
+            !afcItem.value && afcItem.value !== false
+              ? filter.parameters[index].defaultValue
+              : afcItem.value;
+        }
         return afcItem;
       });
 
