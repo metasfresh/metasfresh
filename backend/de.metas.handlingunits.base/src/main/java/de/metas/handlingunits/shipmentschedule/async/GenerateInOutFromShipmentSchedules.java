@@ -20,7 +20,6 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
@@ -39,7 +38,7 @@ import de.metas.util.Services;
  * Note: the enqeueing part is done by {@link de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer ShipmentScheduleEnqueuer}.
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary
+ * task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29#Summary
  */
 public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdapter
 {
@@ -48,7 +47,6 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private static final Logger logger = LogManager.getLogger(GenerateInOutFromShipmentSchedules.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
 
 	@Override
@@ -93,7 +91,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	/**
 	 * Returns an instance of {@link CreateShipmentLatch}.
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
+	 * task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
 	 */
 	@Override
 	public ILatchStragegy getLatchStrategy()
@@ -106,7 +104,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 *
 	 * Note that required and missing handling units can be "picked" on the fly.
 	 */
-	private final List<ShipmentScheduleWithHU> retrieveCandidates()
+	private List<ShipmentScheduleWithHU> retrieveCandidates()
 	{
 		final List<I_M_ShipmentSchedule> shipmentSchedules = retrieveShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
@@ -138,9 +136,8 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_HeaderAggregationKey, Direction.Ascending, Nulls.Last)
 				.addColumn(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
 
-		final List<I_M_ShipmentSchedule> schedules = queryBuilder
+		return queryBuilder
 				.create()
 				.list();
-		return schedules;
 	}
 }

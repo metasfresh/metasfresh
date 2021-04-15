@@ -28,6 +28,9 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.async.event.WorkpackagesProcessedWaiter;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -70,9 +73,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import static de.metas.async.Async_Constants.WORKPACKAGE_LIFECYCLE_TOPIC;
+
 /**
  * Locks all the given shipments schedules into one big lock, then creates and enqueues workpackages, splitting off locks.
- *
+ * <p>
  * TODO there is duplicated code from <code>de.metas.invoicecandidate.api.impl.InvoiceCandidateEnqueuer</code>. Please deduplicate it when there is time. my favorite solution would be to create a
  * "locking item-chump-processor" to do all the magic.
  */
@@ -100,7 +105,7 @@ public class ShipmentScheduleEnqueuer
 
 	/**
 	 * Creates async work packages for shipment schedule found by given filter.
-	 *
+	 * <p>
 	 * This method will group the shipment schedules by header aggregation key and it will enqueue a working package for each header aggregation key.
 	 */
 	public Result createWorkpackages(@NonNull final ShipmentScheduleWorkPackageParameters workPackageParameters)
@@ -133,9 +138,10 @@ public class ShipmentScheduleEnqueuer
 		return result.getValue();
 	}
 
-	private Result createWorkpackages0(final IContextAware localCtx,
-			final ShipmentScheduleWorkPackageParameters workPackageParameters,
-			final ILock mainLock)
+	private Result createWorkpackages0(
+			@NonNull final IContextAware localCtx,
+			@NonNull final ShipmentScheduleWorkPackageParameters workPackageParameters,
+			@NonNull final ILock mainLock)
 	{
 		final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule.class, localCtx.getCtx(), ITrx.TRXNAME_None)
@@ -261,7 +267,9 @@ public class ShipmentScheduleEnqueuer
 		}
 	}
 
-	/** Lock all invoice candidates for selection and return an auto-closable lock. */
+	/**
+	 * Lock all invoice candidates for selection and return an auto-closable lock.
+	 */
 	private ILock acquireLock(@NonNull final PInstanceId adPInstanceId, final IQueryFilter<I_M_ShipmentSchedule> queryFilters)
 	{
 		final LockOwner lockOwner = LockOwner.newOwner("ShipmentScheduleEnqueuer", adPInstanceId.getRepoId());
@@ -293,7 +301,7 @@ public class ShipmentScheduleEnqueuer
 	 */
 	public static class Result
 	{
-		private int eneuedPackagesCount;
+		private int enqueuedPackagesCount;
 		private int skippedPackagesCount;
 
 		private Result()
@@ -302,7 +310,7 @@ public class ShipmentScheduleEnqueuer
 
 		public int getEneuedPackagesCount()
 		{
-			return eneuedPackagesCount;
+			return enqueuedPackagesCount;
 		}
 
 		public int getSkippedPackagesCount()
@@ -312,7 +320,7 @@ public class ShipmentScheduleEnqueuer
 
 		private void incEnqueued()
 		{
-			eneuedPackagesCount++;
+			enqueuedPackagesCount++;
 		}
 
 		private void incSkipped()

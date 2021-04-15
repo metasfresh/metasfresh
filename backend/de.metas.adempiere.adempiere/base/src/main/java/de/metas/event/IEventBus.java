@@ -65,6 +65,9 @@ public interface IEventBus
 	 */
 	void postEvent(Event event);
 
+	/**
+	 * Create an event and serialize the given {@code obj} to be the event's body (payload).
+	 */
 	void postObject(Object obj);
 
 	/**

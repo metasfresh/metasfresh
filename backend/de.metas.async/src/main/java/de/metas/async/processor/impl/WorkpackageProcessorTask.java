@@ -105,13 +105,17 @@ class WorkpackageProcessorTask implements Runnable
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final transient IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 	private final transient IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
-	private final transient IAsyncBatchBL iAsyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IWorkpackageLogsRepository logsRepository;
 
 	private final IQueueProcessor queueProcessor;
-	/** Workpackage processor (that we got as parameter) */
+	/**
+	 * Workpackage processor (that we got as parameter)
+	 */
 	private final IWorkpackageProcessor workPackageProcessorOriginal;
-	/** Workpackage processor which is wrapped with all features that we have */
+	/**
+	 * Workpackage processor which is wrapped with all features that we have
+	 */
 	private final IWorkpackageProcessor2 workPackageProcessorWrapped;
 	private final I_C_Queue_WorkPackage workPackage;
 	private final String trxNamePrefix;
@@ -218,10 +222,10 @@ class WorkpackageProcessorTask implements Runnable
 
 				//
 				// create notification record if needed
-				iAsyncBatchBL.createNotificationRecord(workPackage);
+				asyncBatchBL.createNotificationRecord(workPackage);
 
 				// increase processed counter
-				iAsyncBatchBL.increaseProcessed(workPackage);
+				asyncBatchBL.increaseProcessed(workPackage);
 			}
 			else
 			{
@@ -298,7 +302,7 @@ class WorkpackageProcessorTask implements Runnable
 	 * @param trxName transaction name to be used
 	 * @return result
 	 */
-	private final Result processWorkpackage(final String trxName)
+	private Result processWorkpackage(final String trxName)
 	{
 		// Setup context and everything that needs to be setup before actually starting to process the workpackage
 		beforeWorkpackageProcessing();
@@ -325,8 +329,7 @@ class WorkpackageProcessorTask implements Runnable
 
 		//
 		// Execute the processor
-		final Result result = invokeProcessorAndHandleException(trxName);
-		return result;
+		return invokeProcessorAndHandleException(trxName);
 	}
 
 	private Result invokeProcessorAndHandleException(@Nullable final String trxName)
@@ -432,8 +435,6 @@ class WorkpackageProcessorTask implements Runnable
 
 	/**
 	 * Mark {@link I_C_Queue_WorkPackage} as started to process.
-	 *
-	 * @param workPackage
 	 */
 	private void markStartProcessing(final I_C_Queue_WorkPackage workPackage)
 	{
@@ -443,8 +444,6 @@ class WorkpackageProcessorTask implements Runnable
 
 	/**
 	 * Sets workpackage's LastEndTime and LastDurationMillis.
-	 *
-	 * @param workPackage
 	 */
 	private void setLastEndTime(final I_C_Queue_WorkPackage workPackage)
 	{
@@ -466,8 +465,6 @@ class WorkpackageProcessorTask implements Runnable
 
 	/**
 	 * Unlock and mark {@link I_C_Queue_WorkPackage} as processed
-	 *
-	 * @param workPackage
 	 */
 	private void markProcessed(@NonNull final I_C_Queue_WorkPackage workPackage)
 	{
@@ -486,8 +483,6 @@ class WorkpackageProcessorTask implements Runnable
 
 	/**
 	 * Sets the current workpagage's skipped-at timestamp.
-	 *
-	 * @param workPackage
 	 */
 	private void markSkipped(
 			@NonNull final I_C_Queue_WorkPackage workPackage,
@@ -600,10 +595,9 @@ class WorkpackageProcessorTask implements Runnable
 	/**
 	 * Extracts the {@link IWorkpackageSkipRequest} from given exception
 	 *
-	 * @param ex
 	 * @return {@link IWorkpackageSkipRequest} or null
 	 */
-	private static final IWorkpackageSkipRequest getWorkpackageSkipRequest(final Throwable ex)
+	private static IWorkpackageSkipRequest getWorkpackageSkipRequest(final Throwable ex)
 	{
 		if (ex instanceof IWorkpackageSkipRequest)
 		{

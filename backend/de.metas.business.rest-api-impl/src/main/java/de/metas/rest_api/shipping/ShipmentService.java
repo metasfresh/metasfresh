@@ -35,6 +35,7 @@ import de.metas.common.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
@@ -68,11 +69,13 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Shipper;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -239,7 +242,7 @@ public class ShipmentService
 				.attributes(request.getAttributes())
 				.bPartnerLocationIdOverride(extractBPartnerLocationId(request, cache).orElse(null))
 				.shipperId(request.getShipperId())
-				.doNotInvalidateOnChange(true) // don't invalidate it; we don't want the update processor to interfere with us creating the shipment
+				.doNotInvalidateOnChange(true) // don't invalidate it; we don't need the update processor to deal with it; instead we'll just create the shipment
 				.build();
 	}
 

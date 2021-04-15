@@ -1,7 +1,5 @@
 package de.metas.event.impl;
 
-import java.util.IdentityHashMap;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -23,6 +21,8 @@ import java.util.IdentityHashMap;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+import java.util.IdentityHashMap;
 
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
@@ -54,12 +54,23 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.util.IdentityHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 final class EventBus implements IEventBus
 {
 	private static final transient Logger logger = EventBusConfig.getLogger(EventBus.class);
 
-	/** Log all event bus exceptions */
+	/**
+	 * Log all event bus exceptions
+	 */
 	private static final SubscriberExceptionHandler exceptionHandler = (exception, context) -> {
 		final String errmsg = "Could not dispatch event: " + context.getSubscriber() + " to " + context.getSubscriberMethod()
 				+ "\n Event: " + context.getEvent()
@@ -151,7 +162,7 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
-	public void subscribe(@NonNull Consumer<Event> eventConsumer)
+	public void subscribe(@NonNull final Consumer<Event> eventConsumer)
 	{
 		final IEventListener listener = (eventBus, event) -> eventConsumer.accept(event);
 		subscribe(listener);
@@ -222,7 +233,7 @@ final class EventBus implements IEventBus
 	@Override
 	public void postEvent(@NonNull final Event event)
 	{
-		try (final MDCCloseable mdc = EventMDC.putEvent(event))
+		try (final MDCCloseable ignored = EventMDC.putEvent(event))
 		{
 			// Do nothing if destroyed
 			if (destroyed)
@@ -274,7 +285,7 @@ final class EventBus implements IEventBus
 		@Override
 		public void onEvent(final IEventBus eventBus, final Event event)
 		{
-			try (final MDCCloseable mdc = EventMDC.putEvent(event))
+			try (final MDCCloseable ignored = EventMDC.putEvent(event))
 			{
 				logger.debug("TypedConsumerAsEventListener.onEvent - eventBodyType={}", eventBodyType.getName());
 
@@ -298,7 +309,7 @@ final class EventBus implements IEventBus
 		{
 			stats.incrementEventsDequeued();
 
-			try (final MDCCloseable mdc = EventMDC.putEvent(event))
+			try (final MDCCloseable ignored = EventMDC.putEvent(event))
 			{
 				logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
 				invokeEventListener(this.eventListener, event);
@@ -324,7 +335,7 @@ final class EventBus implements IEventBus
 			@NonNull final IEventListener eventListener,
 			@NonNull final Event event)
 	{
-		try (final EventLogEntryCollector collector = EventLogEntryCollector.createThreadLocalForEvent(event))
+		try (final EventLogEntryCollector ignored = EventLogEntryCollector.createThreadLocalForEvent(event))
 		{
 			try
 			{

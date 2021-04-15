@@ -49,7 +49,7 @@ import de.metas.util.Services;
  * Goal: avoid shipment schedules with equal header aggregation keys from ending up in multiple shipments, just because the WP-processors were working in parallel and didn't know about each other.
  * 
  * @author ts
- * @task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
+ * task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
  */
 public final class CreateShipmentLatch implements ILatchStragegy
 {
