@@ -42,10 +42,8 @@ import java.util.Optional;
 @Component
 public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogMailRecipientProvider
 {
-
 	private final DocOutBoundRecipientRepository recipientRepository;
 	private final IBPartnerBL bpartnerBL;
-
 
 	public OrderDocOutboundLogMailRecipientProvider(
 			@NonNull final DocOutBoundRecipientRepository recipientRepository,
@@ -75,9 +73,10 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 				.ofReferenced(docOutboundLogRecord)
 				.getModel(I_C_Order.class);
 
-		if (orderRecord.getAD_User_ID() > 0)
+		final int orderUserRecordId = orderRecord.getAD_User_ID();
+		if (orderUserRecordId > 0)
 		{
-			final DocOutBoundRecipient orderUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(orderRecord.getAD_User_ID()));
+			final DocOutBoundRecipient orderUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(orderUserRecordId));
 			if (!Check.isEmpty(orderUser.getEmailAddress(), true))
 			{
 				return Optional.of(orderUser);
@@ -85,6 +84,7 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 		}
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
+
 		final IBPartnerBL.RetrieveContactRequest request = IBPartnerBL.RetrieveContactRequest
 				.builder()
 				.bpartnerId(bpartnerId)
