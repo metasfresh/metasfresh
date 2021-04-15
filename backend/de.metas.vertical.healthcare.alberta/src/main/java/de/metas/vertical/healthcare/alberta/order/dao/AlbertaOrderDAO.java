@@ -57,7 +57,7 @@ public class AlbertaOrderDAO
 
 		if (request.getPharmacyBPartnerId() != null)
 		{
-			albertaOrder.setC_Doctor_BPartner_ID(request.getPharmacyBPartnerId().getRepoId());
+			albertaOrder.setC_Pharmacy_BPartner_ID(request.getPharmacyBPartnerId().getRepoId());
 		}
 
 		albertaOrder.setRootId(request.getRootId());

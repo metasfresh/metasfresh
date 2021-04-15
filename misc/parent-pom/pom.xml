@@ -264,7 +264,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>21.0</version>
+                <version>30.1.1-jre</version>
             </dependency>
 
             <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->

@@ -47,7 +47,7 @@ import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PRO
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_DOCTOR_API;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_EXTERNAL_BP_IDENTIFIER_TO_API;
 
-public class CreateExternalReferenceLookupProcessor implements Processor
+public class ExternalReferenceLookupProcessor implements Processor
 {
 	@Override
 	public void process(final Exchange exchange)
