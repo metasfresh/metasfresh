@@ -22,12 +22,15 @@
 
 package de.metas.document.archive.mailrecipient.impl;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.user.User;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -41,11 +44,15 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 {
 
 	private final DocOutBoundRecipientRepository recipientRepository;
+	private final IBPartnerBL bpartnerBL;
+
 
 	public OrderDocOutboundLogMailRecipientProvider(
-			@NonNull final DocOutBoundRecipientRepository recipientRepository)
+			@NonNull final DocOutBoundRecipientRepository recipientRepository,
+			@NonNull final IBPartnerBL bpartnerBL)
 	{
 		this.recipientRepository = recipientRepository;
+		this.bpartnerBL = bpartnerBL;
 	}
 
 	@Override
@@ -77,6 +84,22 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 			}
 		}
 
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
+		final IBPartnerBL.RetrieveContactRequest request = IBPartnerBL.RetrieveContactRequest
+				.builder()
+				.bpartnerId(bpartnerId)
+				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, orderRecord.getC_BPartner_Location_ID()))
+				.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
+				.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
+				.build();
+
+		final User billContact = bpartnerBL.retrieveContactOrNull(request);
+		if (billContact != null)
+		{
+			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
+			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
+			return Optional.of(docOutBoundRecipient);
+		}
 		return Optional.empty();
 	}
 }
