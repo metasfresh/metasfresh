@@ -61,7 +61,7 @@ class TableQuickInput extends Component {
     }
   }
 
-  initQuickInput = () => {
+  initQuickInput = async () => {
     const {
       addNotification,
       docType,
@@ -71,7 +71,7 @@ class TableQuickInput extends Component {
       fetchQuickInputLayout,
     } = this.props;
 
-    fetchQuickInputData({
+    await fetchQuickInputData({
       windowId: docType,
       docId,
       tabId,
@@ -87,7 +87,7 @@ class TableQuickInput extends Component {
       }
     });
 
-    fetchQuickInputLayout({
+    await fetchQuickInputLayout({
       windowId: docType,
       docId,
       tabId,
@@ -277,6 +277,19 @@ const mapStateToProps = ({ widgetHandler }) => {
   };
 };
 
+const mapDispatchToProps = (dispatch, ownProps) => {
+  return {
+    fetchQuickInputData: (args) => dispatch(fetchQuickInputData({ ...args })),
+    // for tests purposes
+    fetchQuickInputLayout: (args) =>
+      ownProps.fetchQuickInputLayout(args, dispatch) ||
+      dispatch(fetchQuickInputLayout({ ...args })),
+    deleteQuickInput: () => dispatch(deleteQuickInput()),
+    setQuickinputData: (args) => dispatch(setQuickinputData(args)),
+    patchQuickInput: (args) => dispatch(patchQuickInput({ ...args })),
+  };
+};
+
 TableQuickInput.propTypes = {
   addNotification: PropTypes.func.isRequired,
   closeBatchEntry: PropTypes.func,
@@ -297,13 +310,7 @@ TableQuickInput.propTypes = {
 
 export default connect(
   mapStateToProps,
-  {
-    fetchQuickInputData,
-    fetchQuickInputLayout,
-    deleteQuickInput,
-    setQuickinputData,
-    patchQuickInput,
-  }
+  mapDispatchToProps
 )(TableQuickInput);
 
 export { TableQuickInput };
