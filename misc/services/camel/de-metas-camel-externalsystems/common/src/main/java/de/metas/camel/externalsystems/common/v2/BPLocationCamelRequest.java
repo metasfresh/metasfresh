@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-bpartner
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,24 +20,29 @@
  * #L%
  */
 
-package de.metas.common.bpartner.v2.response;
+package de.metas.camel.externalsystems.common.v2;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModel;
+import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import lombok.Builder;
-import lombok.Singular;
+import lombok.NonNull;
 import lombok.Value;
 
-import java.util.List;
-
-@ApiModel("Can be used as endpoint response if only one sort of entities was updated")
 @Value
 @Builder
-@JsonDeserialize(builder = JsonResponseUpsert.JsonResponseUpsertBuilder.class)
-public class JsonResponseUpsert
+@JsonDeserialize(builder = BPLocationCamelRequest.BPLocationCamelRequestBuilder.class)
+public class BPLocationCamelRequest
 {
-	@Singular
-	@JsonProperty("responseItems")
-	List<JsonResponseUpsertItem> responseItems;
+	@NonNull
+	@JsonProperty("orgCode")
+	String orgCode;
+
+	@NonNull
+	@JsonProperty("bpartnerIdentifier")
+	String bPartnerIdentifier;
+
+	@NonNull
+	@JsonProperty("jsonRequestLocationUpsert")
+	JsonRequestLocationUpsert jsonRequestLocationUpsert;
 }

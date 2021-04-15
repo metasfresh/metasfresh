@@ -28,11 +28,14 @@ import lombok.experimental.UtilityClass;
 public class ExternalSystemCamelConstants
 {
 	public static final String HEADER_ORG_CODE = "orgCode";
+	public static final String HEADER_BPARTNER_IDENTIFIER = "bPartnerIdentifier";
 	public static final String HEADER_PINSTANCE_ID = "pInstanceId";
 
 	public static String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 
 	public static String MF_UPSERT_BPARTNER_V2_CAMEL_URI = "metasfresh.upsert-bpartner-v2.camel.uri";
+
+	public static String MF_UPSERT_BPARTNER_LOCATION_V2_CAMEL_URI = "metasfresh.upsert-bpartnerlocation-v2.camel.uri";
 
 	public static String MF_UPSERT_BPRELATION_CAMEL_URI = "metasfresh.upsert-bprelation.camel.uri";
 
