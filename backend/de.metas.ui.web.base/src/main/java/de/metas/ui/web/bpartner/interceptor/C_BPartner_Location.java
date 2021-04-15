@@ -35,6 +35,7 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -45,6 +46,8 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.util.Objects;
 
 @Interceptor(I_C_BPartner_Location.class)
 @Component
@@ -78,7 +81,7 @@ public class C_BPartner_Location
 			final I_C_Location oldLocation = oldLocationId != null ? locationDAO.getById(oldLocationId) : null;
 			final String oldRegionName = oldLocation != null ? oldLocation.getRegionName() : null;
 
-			if (!Check.isEmpty(oldRegionName) && !Check.isEmpty(newRegionName) && !oldRegionName.equals(newRegionName))
+			if (!Objects.equals(StringUtils.trimBlankToNull(oldRegionName), StringUtils.trimBlankToNull(newRegionName)))
 			{
 				Execution.getCurrent().requestFrontendToTriggerAction(moveToAnotherOrgTriggerAction(bpLocation));
 			}
