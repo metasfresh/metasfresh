@@ -48,13 +48,12 @@ import lombok.Value;
 @Value
 public class JSONDocumentPath
 {
-	public static final JSONDocumentPath ofWindowDocumentPath(@NonNull final DocumentPath documentPath)
+	public static JSONDocumentPath ofWindowDocumentPath(@NonNull final DocumentPath documentPath)
 	{
-		final String fieldName = null;
-		return ofWindowDocumentPath(documentPath, fieldName);
+		return ofWindowDocumentPath(documentPath, null);
 	}
 
-	public static final JSONDocumentPath ofWindowDocumentPath(@NonNull final DocumentPath documentPath, @Nullable final String fieldName)
+	public static JSONDocumentPath ofWindowDocumentPath(@NonNull final DocumentPath documentPath, @Nullable final String fieldName)
 	{
 		final JSONDocumentPathBuilder builder = builder()
 				.windowId(documentPath.getWindowId())
@@ -78,7 +77,8 @@ public class JSONDocumentPath
 		}
 	}
 
-	public static final DocumentPath toDocumentPathOrNull(@Nullable final JSONDocumentPath jsonDocumentPath)
+	@Nullable
+	public static DocumentPath toDocumentPathOrNull(@Nullable final JSONDocumentPath jsonDocumentPath)
 	{
 		return jsonDocumentPath != null ? jsonDocumentPath.toDocumentPath() : null;
 	}
@@ -89,45 +89,38 @@ public class JSONDocumentPath
 	}
 
 	@JsonProperty("windowId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final WindowId windowId;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) WindowId windowId;
 
 	@JsonProperty("processId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final ProcessId processId;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) ProcessId processId;
 
 	@JsonProperty("viewId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final ViewId viewId;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) ViewId viewId;
 
 	//
 	@JsonProperty("documentId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final DocumentId documentId;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) DocumentId documentId;
 	//
 	@JsonProperty("tabId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final DetailId tabId;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) DetailId tabId;
 
 	//
 	@JsonProperty("rowId")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final DocumentId rowId;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) DocumentId rowId;
 
 	@JsonProperty("fieldName")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String fieldName;
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) String fieldName;
 
 	@JsonCreator
 	@Builder
 	private JSONDocumentPath(
-			@JsonProperty("windowId") final WindowId windowId,
-			@JsonProperty("processId") final ProcessId processId,
-			@JsonProperty("viewId") final ViewId viewId,
-			@JsonProperty("documentId") final DocumentId documentId,
-			@JsonProperty("tabId") final DetailId tabId,
-			@JsonProperty("rowId") final DocumentId rowId,
-			@JsonProperty("fieldName") final String fieldName)
+			@JsonProperty("windowId") @Nullable final WindowId windowId,
+			@JsonProperty("processId") @Nullable final ProcessId processId,
+			@JsonProperty("viewId") @Nullable final ViewId viewId,
+			@JsonProperty("documentId") @Nullable final DocumentId documentId,
+			@JsonProperty("tabId") @Nullable final DetailId tabId,
+			@JsonProperty("rowId") @Nullable final DocumentId rowId,
+			@JsonProperty("fieldName") @Nullable final String fieldName)
 	{
 		if (windowId != null)
 		{
