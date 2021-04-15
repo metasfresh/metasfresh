@@ -23,15 +23,13 @@
 package de.metas.rest_api.utils;
 
 import de.metas.business.BusinessTestHelper;
-import de.metas.common.rest_api.JsonAttributeSetInstance;
+import de.metas.common.rest_api.v1.JsonAttributeSetInstance;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.assertj.core.api.Assertions;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;

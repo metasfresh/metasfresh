@@ -59,7 +59,7 @@ public class PPOrderRouting
 	PPOrderRoutingActivityCode firstActivityCode;
 	@Getter(AccessLevel.NONE)
 	ImmutableSetMultimap<PPOrderRoutingActivityCode, PPOrderRoutingActivityCode> codeToNextCodeMap;
-
+	ImmutableList<PPOrderRoutingProduct> products;
 	@Builder
 	private PPOrderRouting(
 			@NonNull final PPOrderId ppOrderId,
@@ -68,6 +68,7 @@ public class PPOrderRouting
 			@Nullable final BigDecimal qtyPerBatch,
 			@NonNull final PPOrderRoutingActivityCode firstActivityCode,
 			@NonNull final ImmutableList<PPOrderRoutingActivity> activities,
+			@NonNull final ImmutableList<PPOrderRoutingProduct> products,
 			@NonNull final ImmutableSetMultimap<PPOrderRoutingActivityCode, PPOrderRoutingActivityCode> codeToNextCodeMap)
 	{
 		this.ppOrderId = ppOrderId;
@@ -77,6 +78,7 @@ public class PPOrderRouting
 		this.firstActivityCode = firstActivityCode;
 		activitiesByCode = Maps.uniqueIndex(activities, PPOrderRoutingActivity::getCode);
 		this.codeToNextCodeMap = codeToNextCodeMap;
+		this.products = products;
 	}
 
 	public ImmutableCollection<PPOrderRoutingActivity> getActivities()

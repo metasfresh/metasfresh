@@ -23,9 +23,9 @@
 package de.metas.cucumber.stepdefs.issue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonErrorItem;
-import de.metas.common.rest_api.issue.JsonCreateIssueResponse;
+import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.error.AdIssueId;
 import de.metas.organization.OrgId;

@@ -17,8 +17,8 @@ import com.google.common.collect.Maps;
 
 import de.metas.common.manufacturing.JsonRequestSetOrderExportStatus;
 import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;

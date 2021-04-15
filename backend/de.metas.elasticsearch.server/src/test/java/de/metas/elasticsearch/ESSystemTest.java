@@ -1,9 +1,9 @@
 package de.metas.elasticsearch;
 
+import de.metas.elasticsearch.impl.ESSystem;
+import de.metas.elasticsearch.server.ESServer;
 import org.junit.Assert;
 import org.junit.Test;
-
-import de.metas.elasticsearch.impl.ESSystem;
 
 /*
  * #%L

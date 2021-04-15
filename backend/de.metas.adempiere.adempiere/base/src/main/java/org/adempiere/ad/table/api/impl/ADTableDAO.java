@@ -61,6 +61,7 @@ import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -74,6 +75,12 @@ public class ADTableDAO implements IADTableDAO
 			"IsActive",
 			"Created", "CreatedBy",
 			"Updated", "UpdatedBy");
+
+	@Override
+	public I_AD_Column retrieveColumnById(@NonNull final AdColumnId columnId)
+	{
+		return load(columnId, I_AD_Column.class);
+	}
 
 	@Override
 	public I_AD_Column retrieveColumn(@NonNull final AdTableId tableId, @NonNull final String columnName)

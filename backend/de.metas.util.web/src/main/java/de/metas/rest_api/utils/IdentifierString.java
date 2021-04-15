@@ -25,8 +25,8 @@ package de.metas.rest_api.utils;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.bpartner.GLN;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.JsonExternalId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonExternalId;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
@@ -97,7 +97,7 @@ public class IdentifierString
 	}
 
 	@JsonCreator
-	public static final IdentifierString of(@NonNull final String rawIdentifierString)
+	public static IdentifierString of(@NonNull final String rawIdentifierString)
 	{
 		assumeNotEmpty("Parameter rawIdentifierString may not be empty", rawIdentifierString);
 		if (rawIdentifierString.toLowerCase().startsWith(PREFIX_EXTERNAL_ID))
@@ -123,7 +123,7 @@ public class IdentifierString
 			final String valueString = rawIdentifierString.substring(4).trim();
 			if (valueString.isEmpty())
 			{
-				throw new AdempiereException("Invalid inernal name: `" + rawIdentifierString + "`");
+				throw new AdempiereException("Invalid internal name: `" + rawIdentifierString + "`");
 			}
 			return new IdentifierString(Type.INTERNALNAME, valueString, rawIdentifierString);
 		}

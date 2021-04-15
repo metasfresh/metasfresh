@@ -50,7 +50,7 @@ public class FTSIndexTemplatesRepository
 		return FTSIndexTemplate.builder()
 				.name(record.getES_FTS_Settings())
 				.settingsJson(record.getES_FTS_Settings())
-				.indexStringFullTextSearchAnalyzer("fts_analyzer")
+				.indexStringFullTextSearchAnalyzer(ESTextAnalyzer.FULL_TEXT_SEARCH)
 				.build();
 	}
 }

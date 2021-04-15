@@ -48,9 +48,6 @@
         -->
         <assertj.version>3.19.0</assertj.version>
 
-        <!-- https://github.com/codecentric/spring-boot-admin -->
-        <spring-boot-admin.version>2.1.5</spring-boot-admin.version>
-
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
 
@@ -220,21 +217,20 @@
                 <version>${spring-boot.version}</version>
                 <executions>
                     <execution>
+                        <id>camel-externalsystems-repackage</id>
                         <goals>
                             <goal>repackage</goal>
                         </goals>
+                        <configuration>
+                            <!-- we *also* need the normal main jar to be used in app
+                            so don't replace the normal jar, but create the executable jar with this classifier -->
+                            <classifier>exec</classifier>
+
+                            <executable>true</executable>
+                            <mainClass>de.metas.edi.esb.ESBCamelApplication</mainClass>
+                        </configuration>
                     </execution>
                 </executions>
-
-                <configuration>
-                    <!-- we *also* need the normal main jar to be used in app
-                    so don't replace the normal jar, but create the executable jar with this classifier -->
-                    <classifier>exec</classifier>
-
-                    <executable>true</executable>
-                    <mainClass>de.metas.edi.esb.ESBCamelApplication</mainClass>
-
-                </configuration>
             </plugin>
 
             <!-- Allows the example to be run via 'mvn camel:run' -->
@@ -257,7 +253,7 @@
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
-                 <configuration>
+                <configuration>
                     <to>
                         <!-- we expect those environment variables to be set from the outside world -->
                         <!-- without specifying the tag in the image name, jib will push "latest", thx https://github.com/GoogleContainerTools/jib/issues/2237#issuecomment-575967019 -->
@@ -286,7 +282,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <!-- Create tests JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

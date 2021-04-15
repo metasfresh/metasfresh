@@ -1,14 +1,14 @@
 package de.metas.contracts.commission.salesrep;
 
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_C_Invoice;
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.Customer;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.model.I_C_Invoice;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -54,6 +54,10 @@ public class InvoiceRecordSalesRepDescriptor extends DocumentSalesRepDescriptor
 	{
 		invoiceRecord.setIsSalesPartnerRequired(isSalesRepRequired());
 		invoiceRecord.setSalesPartnerCode(getSalesPartnerCode());
-		invoiceRecord.setC_BPartner_SalesRep_ID(Beneficiary.toRepoId(getSalesRep()));
+		final int repId = Beneficiary.toRepoId(getSalesRep());
+		if (repId != invoiceRecord.getC_BPartner_ID())
+		{
+			invoiceRecord.setC_BPartner_SalesRep_ID(repId);
+		}
 	}
 }

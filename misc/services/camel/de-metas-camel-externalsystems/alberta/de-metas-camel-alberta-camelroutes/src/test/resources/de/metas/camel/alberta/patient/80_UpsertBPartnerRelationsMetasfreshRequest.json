@@ -1,0 +1,81 @@
+{
+  "orgCode": "001",
+  "locationIdentifier": "2910",
+  "relatesTo": [
+    {
+      "targetBpartnerIdentifier": "1000",
+      "targetLocationIdentifier": "2000",
+      "name": "PhysicianDoctor",
+      "description": null,
+      "externalId": null,
+      "role": "PhysicianDoctor",
+      "billTo": null,
+      "fetchedFrom": null,
+      "payFrom": null,
+      "handOverLocation": null,
+      "remitTo": null,
+      "shipTo": null,
+      "active": null
+    },
+    {
+      "targetBpartnerIdentifier": "1040",
+      "targetLocationIdentifier": "2040",
+      "name": "NursingService",
+      "description": null,
+      "externalId": null,
+      "role": "NursingService",
+      "billTo": null,
+      "fetchedFrom": null,
+      "payFrom": null,
+      "handOverLocation": null,
+      "remitTo": null,
+      "shipTo": null,
+      "active": null
+    },
+    {
+      "targetBpartnerIdentifier": "1050",
+      "targetLocationIdentifier": "2050",
+      "name": "Hospital",
+      "description": null,
+      "externalId": null,
+      "role": "Hospital",
+      "billTo": null,
+      "fetchedFrom": null,
+      "payFrom": null,
+      "handOverLocation": null,
+      "remitTo": null,
+      "shipTo": null,
+      "active": null
+    },
+    {
+      "targetBpartnerIdentifier": "1060",
+      "targetLocationIdentifier": "2060",
+      "name": "Payer",
+      "description": null,
+      "externalId": null,
+      "role": "Payer",
+      "billTo": null,
+      "fetchedFrom": null,
+      "payFrom": null,
+      "handOverLocation": null,
+      "remitTo": null,
+      "shipTo": null,
+      "active": null
+    },
+    {
+      "targetBpartnerIdentifier": "1070",
+      "targetLocationIdentifier": "2070",
+      "name": "Pharmacy",
+      "description": null,
+      "externalId": null,
+      "role": "Pharmacy",
+      "billTo": null,
+      "fetchedFrom": null,
+      "payFrom": null,
+      "handOverLocation": null,
+      "remitTo": null,
+      "shipTo": null,
+      "active": null
+    }
+  ]
+}

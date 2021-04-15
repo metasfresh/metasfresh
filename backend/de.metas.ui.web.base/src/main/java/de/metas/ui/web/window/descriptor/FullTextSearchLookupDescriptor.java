@@ -57,17 +57,18 @@ import lombok.Value;
 @Value
 public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, LookupDataSourceFetcher
 {
-	// services
 	private static final Logger logger = LogManager.getLogger(FullTextSearchLookupDescriptor.class);
-	private Client elasticsearchClient;
 
-	private final String modelTableName;
-	private final String esIndexName;
-	private final String esKeyColumnName;
-	private final String[] esSearchFieldNames;
+	// services
+	Client elasticsearchClient;
 
-	private final ISqlLookupDescriptor sqlLookupDescriptor;
-	private final LookupDataSource databaseLookup;
+	String modelTableName;
+	String esIndexName;
+	String esKeyColumnName;
+	String[] esSearchFieldNames;
+
+	ISqlLookupDescriptor sqlLookupDescriptor;
+	LookupDataSource databaseLookup;
 
 	@Builder
 	private FullTextSearchLookupDescriptor(
@@ -130,12 +131,12 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 		final QueryBuilder query = createElasticsearchQuery(evalCtx);
 		logger.trace("ES query: {}", query);
 
-		int maxSize = Math.min(evalCtx.getLimit(100), 100);
+		final int maxSize = Math.min(evalCtx.getLimit(100), 100);
 		final SearchResponse searchResponse = elasticsearchClient.prepareSearch(esIndexName)
 				.setQuery(query)
 				.setExplain(logger.isTraceEnabled())
 				.setSize(maxSize)
-				.addField(esKeyColumnName)
+				.addStoredField(esKeyColumnName) // not sure it's right
 				.get();
 		logger.trace("ES response: {}", searchResponse);
 

@@ -22,21 +22,19 @@ package de.metas.tax.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Properties;
-
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
-
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Tax;
 
-import de.metas.util.ISingletonService;
-
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Optional;
+import java.util.Properties;
 
 public interface ITaxBL extends ISingletonService
 {
@@ -121,4 +119,6 @@ public interface ITaxBL extends ISingletonService
 	void setupIfIsWholeTax(final I_C_Tax tax);
 
 	TaxCategoryId retrieveRegularTaxCategoryId();
+
+	Optional<TaxCategoryId> getTaxCategoryIdByInternalName(String internalName);
 }

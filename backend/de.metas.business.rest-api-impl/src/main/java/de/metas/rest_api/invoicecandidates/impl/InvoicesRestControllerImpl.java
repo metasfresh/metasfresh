@@ -1,7 +1,7 @@
 package de.metas.rest_api.invoicecandidates.impl;
 
 import de.metas.Profiles;
-import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.v1.JsonError;
 import de.metas.invoice.InvoiceId;
 import de.metas.rest_api.invoice.impl.InvoiceService;
 import de.metas.rest_api.invoice.impl.JSONInvoiceInfoResponse;

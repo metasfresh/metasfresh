@@ -162,7 +162,7 @@ public interface IBPartnerBL extends ISingletonService
 
 	BPartnerId getBPartnerSalesRepId(BPartnerId bpartnerId);
 
-	void setBPartnerSalesRepIdOutOfTrx(BPartnerId bPartnerId,BPartnerId salesRepBPartnerId);
+	void setBPartnerSalesRepIdOutOfTrx(BPartnerId bPartnerId, BPartnerId salesRepBPartnerId);
 
 	/**
 	 * @return previous sales rep or null
@@ -232,4 +232,6 @@ public interface IBPartnerBL extends ISingletonService
 	Optional<PaymentRule> getPaymentRuleForBPartner(BPartnerId bpartnerId);
 
 	boolean isSalesRep(BPartnerId bpartnerId);
+
+	void validateSalesRep(@NonNull BPartnerId bPartnerId, @Nullable BPartnerId salesRepId);
 }

@@ -63,9 +63,7 @@
         </dependencies>
     </dependencyManagement>
 
-
     <dependencies>
-
 		<dependency>
 			<groupId>de.metas.common.procurement</groupId>
 			<artifactId>de-metas-common-procurement</artifactId>
@@ -84,10 +82,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
-        <!--		<dependency>-->
-        <!--			<groupId>org.springframework.boot</groupId>-->
-        <!--			<artifactId>spring-boot-starter-validation</artifactId>-->
-        <!--		</dependency>-->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -96,14 +91,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-amqp</artifactId>
         </dependency>
-        <!--		<dependency>-->
-        <!--			<groupId>org.springframework.boot</groupId>-->
-        <!--			<artifactId>spring-boot-starter-web-services</artifactId>-->
-        <!--		</dependency>-->
-        <!--		<dependency>-->
-        <!--			<groupId>org.springframework.boot</groupId>-->
-        <!--			<artifactId>spring-boot-starter-websocket</artifactId>-->
-        <!--		</dependency>-->
 
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -197,7 +184,6 @@
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
-                <version>2.5.2</version>
                 <configuration>
                     <to>
                         <!-- we expect those environment variables to be set from the outside world -->

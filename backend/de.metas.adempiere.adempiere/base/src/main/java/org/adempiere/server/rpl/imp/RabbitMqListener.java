@@ -215,7 +215,6 @@ public class RabbitMqListener implements MessageListener
 			if (connectionFactory != null)
 			{
 				connectionFactory.destroy();
-				connectionFactory.stop();
 				connectionFactory = null;
 			}
 		}

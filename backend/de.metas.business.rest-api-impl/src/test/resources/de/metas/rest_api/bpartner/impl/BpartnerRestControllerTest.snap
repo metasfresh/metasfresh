@@ -383,8 +383,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+            "seconds": 1561134,
+            "nanos": 560000000
           },
           "entries": [ ]
         },
@@ -660,8 +660,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+            "seconds": 1561134,
+            "nanos": 560000000
           },
           "entries": [ ]
         },
@@ -847,7 +847,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
 
 
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact_update_idContactIdentifier=[
-  {
+{
     "bankAccounts": [
       {
         "active": true,
@@ -868,8 +868,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+            "seconds": 1561134,
+            "nanos": 560000000
           },
           "entries": [ ]
         },
@@ -1076,8 +1076,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+            "seconds": 1561134,
+            "nanos": 560000000
           },
           "entries": [ ]
         },

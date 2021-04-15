@@ -5,13 +5,13 @@ import com.google.common.base.Stopwatch;
 import de.metas.CommandLineParser.CommandLineOptions;
 import de.metas.dao.selection.QuerySelectionToDeleteHelper;
 import de.metas.dao.selection.model.I_T_Query_Selection;
-import de.metas.elasticsearch.ESLoggingInit;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.ConnectionUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.housekeeping.HouseKeepingService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -36,7 +37,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -45,7 +46,6 @@ import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -104,9 +104,6 @@ public class ServerBoot implements InitializingBean
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
-		// Make sure slf4j is used (by default, log4j is used)
-		ESLoggingInit.init();
-
 		logger.info("Parse command line arguments (if any!)");
 		final CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
 
@@ -129,7 +126,7 @@ public class ServerBoot implements InitializingBean
 			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 			new SpringApplicationBuilder(ServerBoot.class)
 					.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
-					.web(true)
+					.web(WebApplicationType.SERVLET)
 					// consider removing the jasper profile
 					// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
 					.profiles(activeProfiles.toArray(new String[0]))
@@ -159,7 +156,7 @@ public class ServerBoot implements InitializingBean
 	}
 
 	@Configuration
-	public static class StaticResourceConfiguration extends WebMvcConfigurerAdapter
+	public static class StaticResourceConfiguration implements WebMvcConfigurer
 	{
 		private static final Logger LOG = LogManager.getLogger(StaticResourceConfiguration.class);
 
@@ -168,7 +165,7 @@ public class ServerBoot implements InitializingBean
 		private String downloadsPath;
 
 		@Override
-		public void addResourceHandlers(final ResourceHandlerRegistry registry)
+		public void addResourceHandlers(final @NonNull ResourceHandlerRegistry registry)
 		{
 			if (Check.isEmpty(downloadsPath, true))
 			{
@@ -224,7 +221,7 @@ public class ServerBoot implements InitializingBean
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception
+	public void afterPropertiesSet()
 	{
 		if (clearQuerySelectionsRateInSeconds > 0)
 		{

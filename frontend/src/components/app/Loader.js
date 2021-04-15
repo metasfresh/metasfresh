@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { CSSTransition } from 'react-transition-group';
 import PropTypes from 'prop-types';
 
 /**
@@ -18,15 +18,13 @@ const Loader = (props) => {
       }
     >
       {!loaderType && (
-        <ReactCSSTransitionGroup
-          transitionName="rotate"
-          transitionEnterTimeout={1000}
-          transitionLeaveTimeout={1000}
-        >
-          <div className="rotate icon-rotate">
-            <i className="meta-icon-settings" />
+        <CSSTransition className="rotate" timeout={{ enter: 1000, exit: 1000 }}>
+          <div>
+            <div className="rotate icon-rotate">
+              <i className="meta-icon-settings" />
+            </div>
           </div>
-        </ReactCSSTransitionGroup>
+        </CSSTransition>
       )}
       {loaderType && loaderType === 'bootstrap' && (
         <div className="spinner-border text-success" role="status">

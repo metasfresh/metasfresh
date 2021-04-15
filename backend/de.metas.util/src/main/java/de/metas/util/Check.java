@@ -450,7 +450,7 @@ public final class Check
 		return valueBD;
 	}
 
-	public static <T> void assumeEquals(final T value1, final T value2)
+	public static <T> void assumeEquals(@Nullable final T value1, @Nullable final T value2)
 	{
 		if (Objects.equals(value1, value2))
 		{

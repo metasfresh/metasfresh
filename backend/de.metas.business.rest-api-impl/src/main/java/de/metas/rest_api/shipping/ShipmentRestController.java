@@ -24,7 +24,7 @@ package de.metas.rest_api.shipping;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
 import de.metas.common.shipment.JsonCreateShipmentResponse;
 import de.metas.common.shipment.mpackage.JsonCreateShippingPackagesRequest;

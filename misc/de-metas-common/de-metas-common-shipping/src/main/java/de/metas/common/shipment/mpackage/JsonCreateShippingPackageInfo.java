@@ -25,7 +25,7 @@ package de.metas.common.shipment.mpackage;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipment.JsonPackage;
 import lombok.Builder;
 import lombok.NonNull;

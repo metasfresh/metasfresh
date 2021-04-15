@@ -30,7 +30,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_S_PostgREST_Config;
 import org.springframework.stereotype.Repository;
-
+import java.time.Duration;
 import java.util.Optional;
 
 @Repository
@@ -58,8 +58,8 @@ public class PostgRESTConfigRepository
 
 
 		return PostgRESTConfig.builder()
-				.readTimeout(config.get().getRead_timeout())
-				.connectionTimeout(config.get().getConnection_timeout())
+				.readTimeout(Duration.ofMillis(config.get().getRead_timeout()))
+				.connectionTimeout(Duration.ofMillis(config.get().getConnection_timeout()))
 				.baseURL(config.get().getBase_url())
 				.build();
 	}

@@ -1,15 +1,16 @@
 package de.metas.contracts.commission.salesrep;
 
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_C_Order;
-
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.Customer;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.model.I_C_Order;
+
+import javax.annotation.Nullable;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /*
  * #%L
@@ -55,6 +56,10 @@ public class OrderRecordSalesRepDescriptor extends DocumentSalesRepDescriptor
 	{
 		orderRecord.setIsSalesPartnerRequired(isSalesRepRequired());
 		orderRecord.setSalesPartnerCode(getSalesPartnerCode());
-		orderRecord.setC_BPartner_SalesRep_ID(Beneficiary.toRepoId(getSalesRep()));
+		final int repId = Beneficiary.toRepoId(getSalesRep());
+		if (repId != firstGreaterThanZero(orderRecord.getBill_BPartner_ID(), orderRecord.getC_BPartner_ID()))
+		{
+			orderRecord.setC_BPartner_SalesRep_ID(repId);
+		}
 	}
 }

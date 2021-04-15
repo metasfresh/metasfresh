@@ -447,7 +447,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	{
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(hu.getC_BPartner_ID(), hu.getC_BPartner_Location_ID());
 		return bpartnerLocationId != null
-				? Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpartnerLocationId)
+				? Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(bpartnerLocationId)
 				: null;
 	}
 

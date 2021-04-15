@@ -24,6 +24,8 @@ package de.metas.ui.web.picking.packageable.filters;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
@@ -45,6 +47,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -111,7 +114,44 @@ public class ProductBarcodeFilterServicesFacade
 		return Optional.ofNullable(hu);
 	}
 
-	public ImmutableSet<ProductId> extractProductIds(@NonNull final I_M_HU hu)
+	public Optional<ProductBarcodeFilterData> createDataFromHU(
+			final @Nullable String barcode,
+			final @Nullable I_M_HU hu)
+	{
+		if (hu == null)
+		{
+			return Optional.empty();
+		}
+
+		final ImmutableSet<ProductId> productIds = extractProductIds(hu);
+		if (productIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final ICompositeQueryFilter<I_M_Packageable_V> filter = queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
+				.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, productIds);
+
+		final WarehouseId warehouseId = IHandlingUnitsBL.extractWarehouseIdOrNull(hu);
+		if (warehouseId != null)
+		{
+			filter.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID, null, warehouseId);
+		}
+
+		final BPartnerId bpartnerId = IHandlingUnitsBL.extractBPartnerIdOrNull(hu);
+		if (bpartnerId != null)
+		{
+			filter.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, bpartnerId);
+		}
+
+		return Optional.of(ProductBarcodeFilterData.builder()
+								   .barcode(barcode)
+								   .huId(HuId.ofRepoId(hu.getM_HU_ID()))
+								   .sqlWhereClause(toSqlAndParams(filter))
+								   .build());
+	}
+
+	private ImmutableSet<ProductId> extractProductIds(@NonNull final I_M_HU hu)
 	{
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
 		return huContext.getHUStorageFactory()
@@ -122,7 +162,7 @@ public class ProductBarcodeFilterServicesFacade
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public Optional<SqlAndParams> createSqlWhereClauseByProductIds(@Nullable final ImmutableSet<ProductId> productIds)
+	private Optional<SqlAndParams> createSqlWhereClauseByProductIds(@Nullable final ImmutableSet<ProductId> productIds)
 	{
 		if (productIds == null || productIds.isEmpty())
 		{

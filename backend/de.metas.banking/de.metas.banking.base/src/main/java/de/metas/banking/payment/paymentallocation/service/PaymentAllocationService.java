@@ -30,6 +30,7 @@ import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfig;
@@ -39,10 +40,11 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -59,9 +61,9 @@ import java.util.Optional;
 @Service
 public class PaymentAllocationService
 {
-	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public PaymentAllocationService(final MoneyService moneyService, final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService)
 	{
@@ -120,6 +122,7 @@ public class PaymentAllocationService
 		final PaymentDirection paymentDirection = extractPaymentDirection(payment);
 
 		final Money openAmt = extractPayAmt(payment).negateIf(paymentDirection.isOutboundPayment());
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(payment.getAD_Org_ID()));
 
 		return PaymentDocument.builder()
 				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
@@ -128,7 +131,7 @@ public class PaymentAllocationService
 				.paymentDirection(paymentDirection)
 				.openAmt(openAmt)
 				.amountToAllocate(openAmt)
-				.dateTrx(TimeUtil.asLocalDate(payment.getDateTrx()))
+				.dateTrx(TimeUtil.asLocalDate(payment.getDateTrx(), timeZone))
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(payment.getAD_Client_ID(), payment.getAD_Org_ID()))
 				.paymentCurrencyContext(PaymentCurrencyContext.ofPaymentRecord(payment))
 				.build();
@@ -145,8 +148,7 @@ public class PaymentAllocationService
 		return Money.of(payment.getPayAmt(), currencyId);
 	}
 
-	@VisibleForTesting
-	PayableDocument toPayableDocument(
+	private PayableDocument toPayableDocument(
 			final PaymentAllocationPayableItem paymentAllocationPayableItem,
 			final PaymentDocument paymentDocument)
 	{
@@ -163,8 +165,12 @@ public class PaymentAllocationService
 		{
 			final @NonNull ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
 
-			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(paymentDocument.getBpartnerId(), evaluationDate)
-					.orElseThrow(() -> new AdempiereException("Invoice with Service Fees: no config found for invoice " + paymentDocument.getDocumentNo()));
+			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(paymentAllocationPayableItem.getInvoiceBPartnerId(), evaluationDate)
+					.orElseThrow(() -> new AdempiereException("Invoice with Service Fees: no config found for invoice-C_BPartner_ID=" + BPartnerId.toRepoId(paymentAllocationPayableItem.getInvoiceBPartnerId()))
+							.appendParametersToMessage()
+							.setParameter("C_Invoice_ID", InvoiceId.toRepoId(paymentAllocationPayableItem.getInvoiceId()))
+							.setParameter("C_Invoice.DocumentNo", paymentAllocationPayableItem.getDocumentNo())
+					);
 
 			invoiceProcessingFeeCalculation = invoiceProcessingServiceCompanyService.createFeeCalculationForPayment(
 					InvoiceProcessingFeeWithPrecalculatedAmountRequest.builder()

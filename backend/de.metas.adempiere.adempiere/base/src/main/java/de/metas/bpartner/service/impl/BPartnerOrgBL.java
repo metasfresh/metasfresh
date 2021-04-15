@@ -106,7 +106,7 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 			return null;
 		}
 
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(orgBPLocationId);
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(orgBPLocationId);
 		if (bpLocation != null) // 03378 : Temporary. Will be removed when OrgBP_Location is mandatory.
 		{
 			return bpLocation.getC_Location();

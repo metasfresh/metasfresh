@@ -24,7 +24,7 @@
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 
-import 'cypress-plugin-snapshots/commands';
+// import 'cypress-plugin-snapshots/commands';
 
 import { List } from 'immutable';
 import { goBack, push } from 'react-router-redux';

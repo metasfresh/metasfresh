@@ -15,10 +15,14 @@ import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingChangeRequest;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.PPRoutingProduct;
+import de.metas.material.planning.pporder.PPRoutingProductId;
 import de.metas.material.planning.pporder.PPRoutingType;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -35,15 +39,19 @@ import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_WF_Node_Asset;
+import org.eevolution.model.I_PP_WF_Node_Product;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -73,6 +81,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class PPRoutingRepository implements IPPRoutingRepository
 {
 	private static final Logger logger = LogManager.getLogger(PPRoutingRepository.class);
+	public final IProductBL productBL = Services.get(IProductBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
@@ -81,7 +90,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 			.additionalTableNameToResetFor(I_AD_WF_Node.Table_Name)
 			.additionalTableNameToResetFor(I_AD_WF_NodeNext.Table_Name)
 			.additionalTableNameToResetFor(I_PP_WF_Node_Asset.Table_Name)
-			// .additionalTableNameToResetFor(I_PP_WF_Node_Product.Table_Name)
+			.additionalTableNameToResetFor(I_PP_WF_Node_Product.Table_Name)
 			.build();
 
 	@Override
@@ -105,11 +114,20 @@ public class PPRoutingRepository implements IPPRoutingRepository
 
 		final List<I_AD_WF_Node> activityRecords = retrieveNodes(routingRecord);
 		final Set<PPRoutingActivityId> activityIds = activityRecords.stream().map(r -> PPRoutingActivityId.ofAD_WF_Node_ID(routingId, r.getAD_WF_Node_ID())).collect(ImmutableSet.toImmutableSet());
+		final List<I_PP_WF_Node_Product> productRecords = retrieveProducts(activityIds);
 		final ImmutableSetMultimap<PPRoutingActivityId, PPRoutingActivityId> nextActivityIdByActivityId = retrieveNextActivityIdsIndexedByActivityId(activityIds);
 
 		final ImmutableList<PPRoutingActivity> activities = activityRecords
 				.stream()
 				.map(activityRecord -> toRoutingActivity(activityRecord, durationUnit, qtyPerBatch, nextActivityIdByActivityId))
+				.collect(ImmutableList.toImmutableList());
+
+		final Map<Integer, PPRoutingActivityId> nodeIdToActivityIds = activityRecords
+				.stream()
+				.collect(Collectors.toMap(I_AD_WF_Node::getAD_WF_Node_ID, r -> PPRoutingActivityId.ofAD_WF_Node_ID(routingId, r.getAD_WF_Node_ID())));
+		final ImmutableList<PPRoutingProduct> products = productRecords
+				.stream()
+				.map(productRecord -> toRoutingProduct(productRecord, nodeIdToActivityIds))
 				.collect(ImmutableList.toImmutableList());
 
 		final PPRoutingActivityId firstActivityId = PPRoutingActivityId.ofAD_WF_Node_ID(routingId, routingRecord.getAD_WF_Node_ID());
@@ -126,6 +144,20 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.userInChargeId(UserId.ofRepoIdOrNull(routingRecord.getAD_User_InCharge_ID()))
 				.firstActivityId(firstActivityId)
 				.activities(activities)
+				.products(products)
+				.build();
+	}
+
+	private PPRoutingProduct toRoutingProduct(final I_PP_WF_Node_Product productRecord, final Map<Integer, PPRoutingActivityId> nodeIdToActivityIds)
+	{
+		return PPRoutingProduct.builder()
+				.id(PPRoutingProductId.ofRepoId(productRecord.getPP_WF_Node_Product_ID()))
+				.activityId(nodeIdToActivityIds.get(productRecord.getAD_WF_Node_ID()))
+				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+				.qty(Quantity.of(productRecord.getQty(), productBL.getStockUOM(productRecord.getM_Product_ID())))
+				.subcontracting(productRecord.isSubcontracting())
+				.seqNo(productRecord.getSeqNo())
+				.specification(productRecord.getSpecification())
 				.build();
 	}
 
@@ -300,6 +332,21 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_Workflow_ID, routingId)
 				.orderBy(I_AD_WF_Node.COLUMNNAME_AD_WF_Node_ID)
+				.create()
+				.list();
+	}
+
+	private List<I_PP_WF_Node_Product> retrieveProducts(final Set<PPRoutingActivityId> activityIds)
+	{
+		if (Check.isEmpty(activityIds))
+		{
+			return Collections.emptyList();
+		}
+		return queryBL
+				.createQueryBuilder(I_PP_WF_Node_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addInArrayFilter(I_PP_WF_Node_Product.COLUMNNAME_AD_WF_Node_ID, activityIds)
 				.create()
 				.list();
 	}

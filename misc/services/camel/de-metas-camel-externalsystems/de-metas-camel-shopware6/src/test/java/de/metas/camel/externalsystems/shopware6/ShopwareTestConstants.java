@@ -25,4 +25,6 @@ package de.metas.camel.externalsystems.shopware6;
 public interface ShopwareTestConstants
 {
 	String MOCK_ORG_CODE = "orgCode";
+	String MOCK_BPARTNER_LOCATION_ID_JSON_PATH = "/customFields/originalAddressId";
+	String MOCK_BPARTNER_ID_JSON_PATH = "/customFields/originalAddressId";
 }

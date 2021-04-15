@@ -23,7 +23,7 @@
 package de.metas.rest_api.shipping;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.common.rest_api.JsonAttributeInstance;
+import de.metas.common.rest_api.v1.JsonAttributeInstance;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;

@@ -6,7 +6,7 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for C_OLCandProcessor
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_OLCandProcessor 
 {
 

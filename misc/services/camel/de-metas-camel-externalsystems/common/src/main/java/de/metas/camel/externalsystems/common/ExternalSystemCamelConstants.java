@@ -32,6 +32,8 @@ public class ExternalSystemCamelConstants
 
 	public static String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 
+	public static String MF_UPSERT_BPARTNER_V2_CAMEL_URI = "metasfresh.upsert-bpartner-v2.camel.uri";
+
 	public static String MF_UPSERT_BPRELATION_CAMEL_URI = "metasfresh.upsert-bprelation.camel.uri";
 
 	public static String MF_CREATE_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.create-externalreference.camel.uri";
@@ -40,7 +42,13 @@ public class ExternalSystemCamelConstants
 
 	public static String MF_EXTERNAL_SYSTEM_URI = "metasfresh.externalsystem.api.uri";
 
+	public static String MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.upsert-externalreference.camel.uri";
+
 	public final String MF_ERROR_ROUTE_ID = "Error-Route";
 
 	public final String MF_LOG_MESSAGE_ROUTE_ID = "Log-Message-Route";
+
+	public static String MF_GET_PRODUCTS_ROUTE_ID = "To-MF_GetProducts-Route";
+
+	public static String MF_PUSH_OL_CANDIDATES_ROUTE_ID = "To-MF_PushOLCandidates-Route";
 }
