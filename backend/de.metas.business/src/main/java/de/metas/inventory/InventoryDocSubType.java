@@ -1,12 +1,12 @@
 package de.metas.inventory;
 
-import org.compiere.model.X_C_DocType;
-
+import de.metas.document.DocBaseAndSubType;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.model.X_C_DocType;
 
 /*
  * #%L
@@ -58,5 +58,13 @@ public enum InventoryDocSubType implements ReferenceListAwareEnum
 		return X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory;
 	}
 
-	public String toDocSubTypeString() { return getCode(); }
+	public String toDocSubTypeString()
+	{
+		return getCode();
+	}
+
+	public DocBaseAndSubType toDocBaseAndSubType()
+	{
+		return DocBaseAndSubType.of(getDocBaseType(), toDocSubTypeString());
+	}
 }
