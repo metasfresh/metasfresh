@@ -8,19 +8,6 @@ import classnames from 'classnames';
  */
 const Checkbox = (props) => {
   const rawWidget = useRef(null);
-  const { value } = props.widgetData[0];
-  const [checkedState, setCheckedState] = useState(value);
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    // const initialChecked = defaultValue ? defaultValue : value;
-    setCheckedState(value);
-  }, []);
-
-  if (value !== checkedState && count > 0) {
-    setCheckedState(value);
-  }
-
   const {
     widgetData,
     disabled,
@@ -30,7 +17,13 @@ const Checkbox = (props) => {
     widgetField,
     id,
     filterWidget,
+    isFilterActive,
   } = props;
+  let { value, defaultValue } = props.widgetData[0];
+ 
+  value = typeof value === 'string' || typeof value === 'undefined' ? false : value;
+  const initialChecked = defaultValue && !isFilterActive ? defaultValue : value;
+  const [checkedState, setCheckedState] = useState(initialChecked);
 
   /**
    * @method handleClear
@@ -38,7 +31,6 @@ const Checkbox = (props) => {
    */
   const handleClear = () => {
     const { handlePatch, widgetField, id } = props;
-    setCount(count + 1);
     handlePatch(widgetField, '', id);
   };
 

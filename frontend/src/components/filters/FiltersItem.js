@@ -584,6 +584,7 @@ class FiltersItem extends PureComponent {
                           disableShortcut,
                           timeZone,
                           modalVisible,
+                          isFilterActive: isActive,
                         }}
                       />
                     );

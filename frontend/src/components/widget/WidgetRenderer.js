@@ -115,6 +115,7 @@ class WidgetRenderer extends PureComponent {
       onHandleProcess,
       forwardedRef,
       disconnected,
+      isFilterActive, // flag used to identify if the component belongs to an active filter
     } = this.props;
     const { tabIndex, onFocus } = widgetProperties;
     const widgetValue = get(widgetProperties, ['value'], null);
@@ -459,6 +460,7 @@ class WidgetRenderer extends PureComponent {
               widgetField,
               id,
               filterWidget,
+              isFilterActive,
             }}
             handlePatch={onPatch}
           />
