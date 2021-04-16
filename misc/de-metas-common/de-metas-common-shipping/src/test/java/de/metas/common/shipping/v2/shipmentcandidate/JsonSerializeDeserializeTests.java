@@ -56,7 +56,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonSerializeDeserializeTests
 {
-	private static final String SHIPMENT_SCHEDULE_JSON_FILE = "/de/metas/common/shipping/shipmentcandidate/BigShipmentScheduleJSON.json";
+	private static final String SHIPMENT_SCHEDULE_JSON_FILE = "/de/metas/common/shipping/v2/shipmentcandidate/BigShipmentScheduleJSON.json";
 
 	@BeforeEach
 	public void beforeEach()
@@ -250,6 +250,7 @@ class JsonSerializeDeserializeTests
 	void deserializeBigJson() throws IOException
 	{
 		final InputStream bigJson = getClass().getResourceAsStream(SHIPMENT_SCHEDULE_JSON_FILE);
+		assertThat(bigJson).isNotNull();
 
 		// when
 		final JsonResponseShipmentCandidates result = ConfiguredJsonMapper.get().readValue(bigJson, JsonResponseShipmentCandidates.class);
