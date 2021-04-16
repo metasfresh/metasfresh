@@ -31,6 +31,7 @@ const Checkbox = (props) => {
    */
   const handleClear = () => {
     const { handlePatch, widgetField, id } = props;
+    setCheckedState(false);
     handlePatch(widgetField, '', id);
   };
 
