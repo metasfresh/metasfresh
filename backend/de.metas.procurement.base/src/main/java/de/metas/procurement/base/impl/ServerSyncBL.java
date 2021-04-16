@@ -17,6 +17,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.procurement.base.IServerSyncBL;
+import de.metas.procurement.base.IWebuiPush;
 import de.metas.procurement.base.model.I_AD_User;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.base.model.I_PMM_QtyReport_Event;
@@ -84,10 +85,14 @@ public class ServerSyncBL implements IServerSyncBL
 
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final SenderToProcurementWeb senderToProcurementWebUI;
+	private final IWebuiPush webuiPush;
 
-	public ServerSyncBL(@NonNull final SenderToProcurementWeb senderToProcurementWebUI)
+	public ServerSyncBL(
+			@NonNull final SenderToProcurementWeb senderToProcurementWebUI,
+			@NonNull final IWebuiPush webuiPush)
 	{
 		this.senderToProcurementWebUI = senderToProcurementWebUI;
+		this.webuiPush = webuiPush;
 	}
 
 	@Override
@@ -541,9 +546,12 @@ public class ServerSyncBL implements IServerSyncBL
 	@Override
 	public void reportUserChanged(@NonNull final PutUserChangedRequest request)
 	{
-		final UserId userId = SyncUUIDs.getUserId(request.getUserUUID());
-		final I_AD_User user = userDAO.getByIdInTrx(userId, I_AD_User.class);
-		user.setProcurementPassword(request.getNewPassword());
-		userDAO.save(user);
+		try(final IAutoCloseable ignored = webuiPush.disable())
+		{
+			final UserId userId = SyncUUIDs.getUserId(request.getUserUUID());
+			final I_AD_User user = userDAO.getByIdInTrx(userId, I_AD_User.class);
+			user.setProcurementPassword(request.getNewPassword());
+			userDAO.save(user);
+		}
 	}
 }
