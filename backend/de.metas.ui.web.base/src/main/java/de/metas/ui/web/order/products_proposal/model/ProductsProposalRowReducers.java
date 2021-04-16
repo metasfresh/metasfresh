@@ -64,7 +64,12 @@ public class ProductsProposalRowReducers
 
 		if (request.getQty() != null)
 		{
-			newRowBuilder.qty(request.getQty().orElse(null));
+			final BigDecimal newQty = request.getQty().orElse(null);
+			newRowBuilder.qty(newQty);
+
+			final ProductProposalPrice newPrice = row.getPrice().withUserEnteredQty(newQty);
+			return newRowBuilder.build();
+
 		}
 
 		if (request.getPrice() != null)

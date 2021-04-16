@@ -1,0 +1,51 @@
+package de.metas.ui.web.order.products_proposal.campaign_price;
+
+import java.util.Optional;
+
+import de.metas.pricing.ProductPriceId;
+import de.metas.pricing.rules.scale_price.ScalePriceService;
+import de.metas.ui.web.order.products_proposal.model.ProductProposalScalePrices;
+import lombok.Builder;
+import lombok.NonNull;
+
+/*
+ * #%L
+ * metasfresh-webui-api
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+public class StandardScalePriceProvider implements ScalePriceProvider
+{
+	private final ScalePriceService scalePriceService;
+	@Builder
+	private StandardScalePriceProvider(
+			@NonNull final ScalePriceService scalePriceService)
+	{
+		this.scalePriceService = scalePriceService;
+	}
+
+	@Override
+	public Optional<ProductProposalScalePrices> getScalePrice(@NonNull final ProductPriceId productPriceId)
+	{
+		return Optional.ofNullable(ProductProposalScalePrices.builder()
+				.scalePrices(scalePriceService.getScalePrice(productPriceId))
+				.build());
+	}
+
+}
