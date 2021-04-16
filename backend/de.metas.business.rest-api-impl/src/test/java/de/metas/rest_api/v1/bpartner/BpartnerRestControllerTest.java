@@ -111,7 +111,7 @@ import de.metas.common.bpartner.v1.response.JsonResponseUpsert;
 import de.metas.common.bpartner.v1.response.JsonResponseUpsertItem;
 import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsertItem;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.common.rest_api.v1.SyncAdvise.IfExists;
 import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;

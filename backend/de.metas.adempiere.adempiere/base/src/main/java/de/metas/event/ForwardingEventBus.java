@@ -57,9 +57,9 @@ abstract class ForwardingEventBus implements IEventBus
 	}
 
 	@Override
-	public <T> void subscribeOn(final Class<T> type, final Consumer<T> eventConsumer)
+	public <T> IEventListener subscribeOn(final Class<T> type, final Consumer<T> eventConsumer)
 	{
-		delegate().subscribeOn(type, eventConsumer);
+		return delegate().subscribeOn(type, eventConsumer);
 	}
 
 	@Override

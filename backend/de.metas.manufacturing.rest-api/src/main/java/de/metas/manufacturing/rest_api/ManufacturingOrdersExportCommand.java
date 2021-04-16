@@ -26,7 +26,7 @@ import de.metas.common.manufacturing.JsonResponseManufacturingOrderBOMLine;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonQuantity;
-import de.metas.common.shipping.JsonProduct;
+import de.metas.common.shipping.v2.JsonProduct;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.error.IssueCreateRequest;

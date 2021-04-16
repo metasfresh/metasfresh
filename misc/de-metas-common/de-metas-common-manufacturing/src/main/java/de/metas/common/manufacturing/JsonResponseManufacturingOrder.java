@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v1.JsonQuantity;
-import de.metas.common.shipping.JsonProduct;
+import de.metas.common.shipping.v2.JsonProduct;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;

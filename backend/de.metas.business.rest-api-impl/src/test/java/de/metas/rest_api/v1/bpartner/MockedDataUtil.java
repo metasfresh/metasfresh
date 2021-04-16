@@ -38,7 +38,7 @@ import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsert.JsonRequestLocationUpsertBuilder;
 import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsertItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.IdentifierString;
 import lombok.NonNull;

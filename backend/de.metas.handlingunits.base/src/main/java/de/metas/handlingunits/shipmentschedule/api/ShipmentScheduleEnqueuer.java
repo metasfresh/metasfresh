@@ -22,38 +22,20 @@ package de.metas.handlingunits.shipmentschedule.api;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import de.metas.async.event.WorkpackagesProcessedWaiter;
-import de.metas.event.IEventBus;
-import de.metas.event.IEventBusFactory;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.IQuery;
-import org.compiere.util.Env;
-import org.compiere.util.TrxRunnableAdapter;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.async.QueueWorkPackageId;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.event.WorkpackagesProcessedWaiter;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
+import de.metas.common.util.EmptyUtil;
+import de.metas.event.IEventBus;
+import de.metas.event.IEventBusFactory;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
 import de.metas.i18n.IMsgBL;
@@ -72,6 +54,31 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.IQuery;
+import org.compiere.util.Env;
+import org.compiere.util.TrxRunnableAdapter;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 
 import static de.metas.async.Async_Constants.WORKPACKAGE_LIFECYCLE_TOPIC;
 
@@ -83,7 +90,6 @@ import static de.metas.async.Async_Constants.WORKPACKAGE_LIFECYCLE_TOPIC;
  */
 public class ShipmentScheduleEnqueuer
 {
-
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleEnqueuer.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -92,6 +98,7 @@ public class ShipmentScheduleEnqueuer
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	private final IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
 
 	private Properties _ctx;
 	private String _trxNameInitial;
@@ -129,7 +136,6 @@ public class ShipmentScheduleEnqueuer
 							PlainContextAware.newWithTrxName(_ctx, localTrxName),
 							workPackageParameters,
 							mainLock);
-
 					result.setValue(result0);
 				}
 			}
@@ -175,6 +181,17 @@ public class ShipmentScheduleEnqueuer
 
 		final Result result = new Result();
 
+		final WorkpackagesProcessedWaiter consumer;
+		if (workPackageParameters.isWaitUtilProcessed())
+		{
+			final IEventBus eventBus = eventBusFactory.getEventBus(WORKPACKAGE_LIFECYCLE_TOPIC);
+			consumer = WorkpackagesProcessedWaiter.create(eventBus);
+		}
+		else
+		{
+			consumer = WorkpackagesProcessedWaiter.NOOP;
+		}
+
 		while (shipmentSchedules.hasNext())
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedules.next();
@@ -210,6 +227,7 @@ public class ShipmentScheduleEnqueuer
 							.bindToTrxName(localCtx.getTrxName());
 
 					workpackageBuilder
+							.setCorrelationId(consumer.getCorrelationId())
 							.parameters()
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
@@ -225,7 +243,18 @@ public class ShipmentScheduleEnqueuer
 					workpackageBuilder.setElementsLocker(workpackageElementsLocker);
 				}
 
-				//
+				final String advisedShipmentDocumentNumber = workPackageParameters
+						.getAdvisedShipmentDocumentNumbers()
+						.get(shipmentScheduleId);
+				if (EmptyUtil.isNotBlank(advisedShipmentDocumentNumber))
+				{
+					workpackageBuilder
+							.parameters()
+							.setParameter(
+									ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNumber + Integer.toString(shipmentScheduleId.getRepoId()),
+									advisedShipmentDocumentNumber);
+				}
+
 				// Enqueue shipmentSchedule to current workpackage
 				workpackageBuilder.addElement(shipmentSchedule);
 			}
@@ -235,9 +264,12 @@ public class ShipmentScheduleEnqueuer
 		// Close last workpackage (if any, and if there was no error)
 		handleAllSchedsAdded(workpackageBuilder, lastHeaderAggregationKey, doEnqueueCurrentPackage, result);
 
+		consumer.waitForWorkpackagesDone(result.getEnqueuedPackagesCount()); // ...only waits if not NOOP
+
 		return result;
 	}
 
+	@Nullable
 	private void handleAllSchedsAdded(
 			@Nullable final IWorkPackageBuilder workpackageBuilder,
 			@Nullable final String lastHeaderAggregationKey,
@@ -252,8 +284,8 @@ public class ShipmentScheduleEnqueuer
 		if (noSchedsAreToRecompute)
 		{
 			// while building, we also split the shipment scheduled from the main lock to the lock defined by 'workpackageElementsLocker' (see below)
-			workpackageBuilder.build();
-			result.incEnqueued();
+			final I_C_Queue_WorkPackage workPackage = workpackageBuilder.build();
+			result.addEnqueuedWorkPackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()));
 		}
 		else
 		{
@@ -301,16 +333,22 @@ public class ShipmentScheduleEnqueuer
 	 */
 	public static class Result
 	{
-		private int enqueuedPackagesCount;
 		private int skippedPackagesCount;
+
+		private final List<QueueWorkPackageId> enqueuedWorkpackageIds = new ArrayList<>();
 
 		private Result()
 		{
 		}
 
-		public int getEneuedPackagesCount()
+		public int getEnqueuedPackagesCount()
 		{
-			return enqueuedPackagesCount;
+			return enqueuedWorkpackageIds.size();
+		}
+
+		public ImmutableList<QueueWorkPackageId> getEnqueuedPackageIds()
+		{
+			return ImmutableList.copyOf(enqueuedWorkpackageIds);
 		}
 
 		public int getSkippedPackagesCount()
@@ -318,15 +356,16 @@ public class ShipmentScheduleEnqueuer
 			return skippedPackagesCount;
 		}
 
-		private void incEnqueued()
+		private void addEnqueuedWorkPackageId(@NonNull final QueueWorkPackageId workPackageId)
 		{
-			enqueuedPackagesCount++;
+			enqueuedWorkpackageIds.add(workPackageId);
 		}
 
 		private void incSkipped()
 		{
 			skippedPackagesCount++;
 		}
+
 	}
 
 	@Builder
@@ -336,7 +375,10 @@ public class ShipmentScheduleEnqueuer
 		public static final String PARAM_QuantityType = "QuantityType";
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
-
+		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNumber = "Advised_ShipmentDocumentNumber_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
+		/**
+		 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
+		 */
 		@NonNull
 		PInstanceId adPInstanceId;
 
@@ -345,8 +387,17 @@ public class ShipmentScheduleEnqueuer
 
 		@NonNull
 		M_ShipmentSchedule_QuantityTypeToUse quantityType;
+
 		boolean completeShipments;
 		boolean isShipmentDateToday;
+
+		boolean waitUtilProcessed;
+
+		/**
+		 * Can be used if the caller thinks that the shipping in which the respective shipment-schedules end up shall have the given documentNos.
+		 * ShipmentScheduleIds that are not matched by {@link #getQueryFilters()} are ignored.
+		 */
+		ImmutableMap<ShipmentScheduleId, String> advisedShipmentDocumentNumbers;
 	}
 
 }
