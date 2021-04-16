@@ -38,7 +38,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionHandler;
-
 import de.metas.event.Event;
 import de.metas.event.EventBusConfig;
 import de.metas.event.EventBusStats;
@@ -83,6 +82,7 @@ final class EventBus implements IEventBus
 
 	@Getter
 	private final String topicName;
+
 	private com.google.common.eventbus.EventBus eventBus;
 
 	private final IdentityHashMap<IEventListener, GuavaEventListenerAdapter> subscribedEventListener2GuavaListener = new IdentityHashMap<>();
@@ -169,9 +169,11 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
-	public <T> void subscribeOn(@NonNull final Class<T> type, @NonNull final Consumer<T> eventConsumer)
+	public <T> IEventListener subscribeOn(@NonNull final Class<T> type, @NonNull final Consumer<T> eventConsumer)
 	{
-		subscribe(new TypedConsumerAsEventListener<>(type, eventConsumer));
+		final TypedConsumerAsEventListener<T> listener = new TypedConsumerAsEventListener<>(type, eventConsumer);
+		subscribe(listener);
+		return listener;
 	}
 
 	@Override
@@ -294,7 +296,6 @@ final class EventBus implements IEventBus
 				eventConsumer.accept(obj);
 			}
 		}
-
 	}
 
 	@AllArgsConstructor

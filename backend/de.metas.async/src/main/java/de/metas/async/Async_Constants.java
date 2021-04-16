@@ -22,7 +22,8 @@ package de.metas.async;
  * #L%
  */
 
-
+import de.metas.async.event.WorkpackageProcessedEvent;
+import de.metas.async.event.WorkpackagesProcessedWaiter;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.event.Topic;
 import de.metas.event.Type;
@@ -34,8 +35,13 @@ public final class Async_Constants
 	public static final String ENTITY_TYPE = "de.metas.async";
 
 	/**
-	 * If a package has been skipped by a {@link IWorkpackageProcessor}, then this constant is the default timeout before that work package is once again returned by
-	 * {@link #retrieveAndLockNextWorkPackage(Properties, int, int)}.
+	 * See {@link de.metas.async.api.IWorkPackageBuilder#setCorrelationId(java.util.UUID)}
+	 */
+	public static final String ASYNC_PARAM_CORRELATION_UUID = "CorrelationUUID";
+
+	/**
+	 * If a package has been skipped by a {@link IWorkpackageProcessor}, then this constant is the default timeout
+	 * before that work package is once again processed.
 	 */
 	public static final int DEFAULT_RETRY_TIMEOUT_MILLIS = 5000;
 
@@ -43,6 +49,14 @@ public final class Async_Constants
 
 	public static final Topic WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.async.UserNotifications.WorkpackageProcessingErrors")
+			.type(Type.REMOTE)
+			.build();
+
+	/**
+	 * metasfresh posts {@link WorkpackageProcessedEvent}s to this topic when a workpackage that has a corelation-id set was processed. Also see {@link WorkpackagesProcessedWaiter}.
+	 */
+	public static final Topic WORKPACKAGE_LIFECYCLE_TOPIC = Topic.builder()
+			.name("de.metas.async.WorkpackageLifeCycle")
 			.type(Type.REMOTE)
 			.build();
 }

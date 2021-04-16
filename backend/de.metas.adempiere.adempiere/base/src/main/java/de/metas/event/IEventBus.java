@@ -58,7 +58,16 @@ public interface IEventBus
 	 */
 	void subscribe(Consumer<Event> eventConsumer);
 
-	<T> void subscribeOn(Class<T> type, Consumer<T> eventConsumer);
+	/**
+	 * Subscribe and expect events with to have bodys of a particular type.
+	 * Also see {@link #postObject(Object)}.
+	 *
+	 * @param type the class of the object the consumer is subscribed to.
+	 *             The event-bus will attempt to deserialize the event's body to an instance of this class.
+	 *             
+	 * @return the newly created event-listener, in case the caller wants to unsubscribe later           
+	 */
+	<T> IEventListener subscribeOn(Class<T> type, Consumer<T> eventConsumer);
 
 	/**
 	 * Post given event on this bus.

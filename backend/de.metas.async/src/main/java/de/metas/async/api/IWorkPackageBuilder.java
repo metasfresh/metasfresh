@@ -79,7 +79,7 @@ public interface IWorkPackageBuilder
 	IWorkPackageBlockBuilder end();
 
 	/**
-	 * Start creating the workpackage parameters.
+	 * Creates or exturns the existing workpackage parameters builder of this package builder.
 	 * <p>
 	 * NOTE: the {@link IWorkPackageParamsBuilder} will trigger the creation of {@link I_C_Queue_WorkPackage}.
 	 */
@@ -100,6 +100,18 @@ public interface IWorkPackageBuilder
 	default IWorkPackageBuilder parameter(final String parameterName, final Object parameterValue)
 	{
 		parameters().setParameter(parameterName, parameterValue);
+		return this;
+	}
+
+	/**
+	 * Set a work-package parameter to the value of the given UUID.
+	 * When a work-package with a correlation-id is processed, a {@link de.metas.async.event.WorkpackageProcessedEvent} is posted.
+	 * 
+	 * Works in conjuction with {@link de.metas.async.event.WorkpackagesProcessedWaiter}.
+	 */
+	default IWorkPackageBuilder setCorrelationId(@Nullable final UUID correlationId)
+	{
+		parameter(Async_Constants.ASYNC_PARAM_CORRELATION_UUID, correlationId.toString());
 		return this;
 	}
 
