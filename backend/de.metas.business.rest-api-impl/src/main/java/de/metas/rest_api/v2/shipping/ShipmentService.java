@@ -37,7 +37,6 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -107,14 +106,11 @@ public class ShipmentService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-
-	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService;
+	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final AttributeSetHelper attributeSetHelper;
 
-	public ShipmentService(final ShipmentScheduleWithHUService shipmentScheduleWithHUService,
-			final AttributeSetHelper attributeSetHelper)
+	public ShipmentService(@NonNull final AttributeSetHelper attributeSetHelper)
 	{
-		this.shipmentScheduleWithHUService = shipmentScheduleWithHUService;
 		this.attributeSetHelper = attributeSetHelper;
 	}
 
@@ -347,31 +343,17 @@ public class ShipmentService
 				.addInArrayFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, request.getScheduleIds());
 
 		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
-				.adPInstanceId(Services.get(IADPInstanceDAO.class).createSelectionId())
+				.adPInstanceId(adPInstanceDAO.createSelectionId())
 				.queryFilters(queryFilters)
 				.quantityType(request.getQuantityTypeToUse())
 				.completeShipments(true)
 				//.waitUtilProcessed(true)
-				.advisedShipmentDocumentNumbers(request.extractShipmentDocumentNos())
+				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
 				.build();
 
-		final ShipmentScheduleEnqueuer.Result result = new ShipmentScheduleEnqueuer()
+		return new ShipmentScheduleEnqueuer()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.createWorkpackages(workPackageParameters);
-		return result;
-		// final ImmutableList<I_M_ShipmentSchedule> shipmentSchedules = ImmutableList.copyOf(shipmentScheduleBL.getByIds(request.getScheduleIds()).values());
-
-		// final ImmutableList<ShipmentScheduleWithHU> scheduleWithHUS = shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
-		//		shipmentSchedules,
-		//		request.getQuantityTypeToUse());
-
-		// return huShipmentScheduleBL
-		// 		.createInOutProducerFromShipmentSchedule()
-		// 		.setProcessShipments(true)
-		// 		.setScheduleIdToExternalInf(request.getScheduleToExternalInfo())
-		// 		.computeShipmentDate(CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE)
-		// 		.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
-		// 		.createShipments(scheduleWithHUS);
 	}
 
 	private Optional<BPartnerId> getBPartnerIdByValue(@Nullable final String bPartnerValue)

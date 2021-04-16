@@ -73,10 +73,8 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
@@ -243,17 +241,7 @@ public class ShipmentScheduleEnqueuer
 					workpackageBuilder.setElementsLocker(workpackageElementsLocker);
 				}
 
-				final String advisedShipmentDocumentNumber = workPackageParameters
-						.getAdvisedShipmentDocumentNumbers()
-						.get(shipmentScheduleId);
-				if (EmptyUtil.isNotBlank(advisedShipmentDocumentNumber))
-				{
-					workpackageBuilder
-							.parameters()
-							.setParameter(
-									ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNumber + Integer.toString(shipmentScheduleId.getRepoId()),
-									advisedShipmentDocumentNumber);
-				}
+				addAdvisedShipmentDocumentNo(workPackageParameters, workpackageBuilder, shipmentScheduleId);
 
 				// Enqueue shipmentSchedule to current workpackage
 				workpackageBuilder.addElement(shipmentSchedule);
@@ -269,7 +257,24 @@ public class ShipmentScheduleEnqueuer
 		return result;
 	}
 
-	@Nullable
+	private void addAdvisedShipmentDocumentNo(
+			@NonNull final ShipmentScheduleWorkPackageParameters workPackageParameters,
+			@NonNull final IWorkPackageBuilder workpackageBuilder,
+			@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final String advisedShipmentDocumentNo = workPackageParameters
+				.getAdvisedShipmentDocumentNos()
+				.get(shipmentScheduleId);
+		if (EmptyUtil.isNotBlank(advisedShipmentDocumentNo))
+		{
+			workpackageBuilder
+					.parameters()
+					.setParameter(
+							ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo + shipmentScheduleId.getRepoId(),
+							advisedShipmentDocumentNo);
+		}
+	}
+
 	private void handleAllSchedsAdded(
 			@Nullable final IWorkPackageBuilder workpackageBuilder,
 			@Nullable final String lastHeaderAggregationKey,
@@ -375,7 +380,7 @@ public class ShipmentScheduleEnqueuer
 		public static final String PARAM_QuantityType = "QuantityType";
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
-		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNumber = "Advised_ShipmentDocumentNumber_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
+		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
 		/**
 		 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
 		 */
@@ -397,7 +402,7 @@ public class ShipmentScheduleEnqueuer
 		 * Can be used if the caller thinks that the shipping in which the respective shipment-schedules end up shall have the given documentNos.
 		 * ShipmentScheduleIds that are not matched by {@link #getQueryFilters()} are ignored.
 		 */
-		ImmutableMap<ShipmentScheduleId, String> advisedShipmentDocumentNumbers;
+		ImmutableMap<ShipmentScheduleId, String> advisedShipmentDocumentNos;
 	}
 
 }

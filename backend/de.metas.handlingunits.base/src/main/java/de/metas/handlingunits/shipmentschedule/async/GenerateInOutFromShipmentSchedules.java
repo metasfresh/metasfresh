@@ -1,8 +1,13 @@
 package de.metas.handlingunits.shipmentschedule.async;
 
+import java.util.Collection;
 import java.util.List;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
+import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -63,7 +68,9 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 		final IParams parameters = getParameters();
 		final boolean isCompleteShipments = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
 		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
-		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = parameters.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
+
+		final M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse = parameters
+				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
 				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
 		final boolean onlyUsePicked = quantityTypeToUse.isOnlyUsePicked();
@@ -74,23 +81,45 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				? CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY
 				: CalculateShippingDateRule.NONE;
 
+		final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = extractScheduleId2ExternalInfo(parameters);
+
 		final InOutGenerateResult result = shipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(isCompleteShipments)
 				.setCreatePackingLines(isCreatPackingLines)
 				.computeShipmentDate(calculateShippingDateRule)
+				.setScheduleIdToExternalInfo(scheduleId2ExternalInfo)
 				// Fail on any exception, because we cannot create just a part of those shipments.
 				// Think about HUs which are linked to multiple shipments: you will not see them in Aggregation POS because are already assigned, but u are not able to create shipment from them again.
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)
 				.createShipments(shipmentSchedulesWithHU);
-		Loggables.addLog("Generated: {}", result);
 
+		Loggables.addLog("Generated: {}", result);
 		return Result.SUCCESS;
+	}
+
+	private ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> extractScheduleId2ExternalInfo(@NonNull final IParams parameters)
+	{
+		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentScheduleExternalInfo> result = ImmutableMap.builder();
+		final Collection<String> parameterNames = parameters.getParameterNames();
+		for (final String parameterName : parameterNames)
+		{
+			if (parameterName.startsWith(ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo))
+			{
+				final String advisedDocumentNo = parameters.getParameterAsString(parameterName);
+				final String shipmentScheduleIdStr = parameterName.substring(ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo.length());
+				result.put(
+						ShipmentScheduleId.ofRepoId(Integer.parseInt(shipmentScheduleIdStr)), 
+						ShipmentScheduleExternalInfo.builder().documentNo(advisedDocumentNo).build());
+			}
+		}
+
+		return result.build();
 	}
 
 	/**
 	 * Returns an instance of {@link CreateShipmentLatch}.
-	 *
+	 * <p>
 	 * task http://dewiki908/mediawiki/index.php/09216_Async_-_Need_SPI_to_decide_if_packets_can_be_processed_in_parallel_of_not_%28106397206117%29
 	 */
 	@Override
@@ -101,7 +130,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 	/**
 	 * Retrieves the {@link ShipmentScheduleWithHU}s for which we will create the shipment(s).
-	 *
+	 * <p>
 	 * Note that required and missing handling units can be "picked" on the fly.
 	 */
 	private List<ShipmentScheduleWithHU> retrieveCandidates()
