@@ -24,6 +24,7 @@ package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
@@ -450,8 +451,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 		final boolean isSOTrx = true;
-
-		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
+		final BPartnerLocationId shipToLocationId = bPartnerDAO.getBPartnerLocationIdByRepoId(CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID())); // place of service performance
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
@@ -583,7 +583,8 @@ public class FlatrateBL implements IFlatrateBL
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
 		final boolean isSOTrx = true;
 
-		final int shipToLocationId = CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID());  // place of service performance
+		final BPartnerLocationId shipToLocationId = bPartnerDAO.getBPartnerLocationIdByRepoId(CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID()));
+
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
 				term,

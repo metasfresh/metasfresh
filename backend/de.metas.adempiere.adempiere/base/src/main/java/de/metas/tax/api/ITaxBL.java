@@ -22,6 +22,7 @@ package de.metas.tax.api;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
@@ -54,7 +55,7 @@ public interface ITaxBL extends ISingletonService
 			Timestamp shipDate,
 			OrgId orgId,
 			@Nullable WarehouseId warehouseId,
-			int shipC_BPartner_Location_ID,
+			BPartnerLocationId shipC_BPartner_Location_ID,
 			boolean isSOTrx);
 
 	/**

@@ -7,6 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.tax.api.TaxId;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -15,6 +17,8 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -89,6 +93,9 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	{
 		SystemTime.setTimeSource(new FixedTimeSource(2013, 5, 28)); // today
 
+		final I_C_BPartner bpartner = BusinessTestHelper.createBPartner("bpartner");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bpartner);
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 		final I_M_Product product1 = createProduct();
 		final ProductId productId1 = ProductId.ofRepoId(product1.getM_Product_ID());
 		final I_C_Flatrate_Conditions conditions = newFlatrateConditionss()
@@ -102,6 +109,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				.conditions(conditions)
 				.product(product1)
 				.orderLine(orderLine)
+				.billBPartnerLocationId(bPartnerLocationId)
 				.startDate(TimeUtil.getDay(2013, 5, 27)) // yesterday
 				.build();
 
@@ -124,7 +132,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				term1.getStartDate(),
 				OrgId.ofRepoId(term1.getAD_Org_ID()),
 				(WarehouseId)null,
-				CoalesceUtil.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID()),
+				bPartnerLocationId,
 				SOTrx.SALES.toBoolean()))
 				.thenReturn(TaxId.ofRepoId(3));
 
@@ -192,6 +200,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 			final I_M_Product product,
 			final I_C_OrderLine orderLine,
 			@NonNull final Timestamp startDate,
+			final BPartnerLocationId billBPartnerLocationId,
 			final boolean isAutoRenew)
 	{
 		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
@@ -199,6 +208,8 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 		term.setAD_Org_ID(conditions.getAD_Org_ID());
 		term.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		term.setC_Flatrate_Conditions(conditions);
+		term.setBill_BPartner_ID(billBPartnerLocationId.getBpartnerId().getRepoId());
+		term.setBill_Location_ID(billBPartnerLocationId.getRepoId());
 		term.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
 		term.setM_Product_ID(product.getM_Product_ID());
 		term.setStartDate(startDate);

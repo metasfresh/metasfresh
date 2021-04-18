@@ -35,12 +35,12 @@ import java.sql.Timestamp;
 
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.tax.api.TaxId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.model.I_C_PricingRule;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -252,7 +252,7 @@ public class FlatrateBLTest extends ContractsTestBase
 						any(Timestamp.class),
 						any(OrgId.class),
 						any(WarehouseId.class),
-						anyInt(),
+						any(BPartnerLocationId.class),
 						anyBoolean()))
 				.thenReturn(TaxId.ofRepoId(3));
 	}

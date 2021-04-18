@@ -116,7 +116,7 @@ public class ManualCandidateService
 				TimeUtil.asTimestamp(newIC.getDateOrdered(), timeZone), // shipDate
 				newIC.getOrgId(),
 				newIC.getSoTrx().isSales() ? orgDAO.getOrgWarehouseId(newIC.getOrgId()) : orgDAO.getOrgPOWarehouseId(newIC.getOrgId()),
-				newIC.getBillPartnerInfo().getBpartnerLocationId().getRepoId(), // ship location id
+				newIC.getBillPartnerInfo().getBpartnerLocationId(), // ship location id
 				newIC.getSoTrx().toBoolean());
 		candidate.taxId(taxId);
 

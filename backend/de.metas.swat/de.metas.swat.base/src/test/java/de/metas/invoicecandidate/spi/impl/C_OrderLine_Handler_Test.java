@@ -2,19 +2,19 @@ package de.metas.invoicecandidate.spi.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.business.BusinessTestHelper;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
-import de.metas.invoice_gateway.spi.model.BPartnerId;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.InvoiceCandidatesTestHelper;
 import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
-import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
@@ -32,6 +32,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -121,15 +122,18 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 	@Test
 	public void testSimilarAggregationKeys()
 	{
-		final I_C_BPartner bp = InterfaceWrapperHelper.create(bpartner("Test1"), I_C_BPartner.class);
-		InterfaceWrapperHelper.saveRecord(bp);
+		final org.compiere.model.I_C_BPartner bPartner = BusinessTestHelper.createBPartner("Test1");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
 
 		final I_C_OrderLine orderLine1;
 		{
 			final I_C_Order order1 = order("1");
 			order1.setAD_Org_ID(orgId.getRepoId());
 			order1.setM_Warehouse_ID(warehouseId.getRepoId());
-			order1.setBill_BPartner_ID(bp.getC_BPartner_ID());
+			order1.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+			order1.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
+			order1.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
+			order1.setBill_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 			InterfaceWrapperHelper.save(order1);
 
 			orderLine1 = orderLine("1");
@@ -145,7 +149,10 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 			final I_C_Order order2 = order("2");
 			order2.setAD_Org_ID(orgId.getRepoId());
 			order2.setM_Warehouse_ID(warehouseId.getRepoId());
-			order2.setBill_BPartner_ID(bp.getC_BPartner_ID());
+			order2.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+			order2.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
+			order2.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
+			order2.setBill_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 			InterfaceWrapperHelper.save(order2);
 
 			orderLine2 = orderLine("2");
@@ -179,7 +186,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		assertEquals(key1, key2);
 	}
 
-	private void setUpActivityAndTaxRetrieval(final I_C_Order order1, final I_C_OrderLine oL1)
+	private void setUpActivityAndTaxRetrieval(final I_C_Order order, final I_C_OrderLine ol)
 	{
 		IProductAcctDAO productAcctDAO = Mockito.mock(IProductAcctDAO.class);
 		ITaxBL taxBL = Mockito.mock(ITaxBL.class);
@@ -196,14 +203,14 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		Mockito
 				.when(taxBL.getTaxNotNull(
 						ctx,
-						order1,
+						order,
 						(TaxCategoryId)null,
-						oL1.getM_Product_ID(),
-						order1.getDatePromised(),
-						OrgId.ofRepoId(order1.getAD_Org_ID()),
-						WarehouseId.ofRepoId(order1.getM_Warehouse_ID()),
-						order1.getC_BPartner_Location_ID(),
-						order1.isSOTrx()))
+						ol.getM_Product_ID(),
+						order.getDatePromised(),
+						OrgId.ofRepoId(order.getAD_Org_ID()),
+						WarehouseId.ofRepoId(order.getM_Warehouse_ID()),
+						BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()), // note that we care about the place where the service is performed
+						order.isSOTrx()))
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 
@@ -218,7 +225,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		bestellung.setC_DocType_ID(2);
 		InterfaceWrapperHelper.save(bestellung);
 
-		final I_C_BPartner bp = InterfaceWrapperHelper.create(bpartner("Test1"), I_C_BPartner.class);
+		final org.compiere.model.I_C_BPartner bp = BusinessTestHelper.createBPartner("Test1");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bp);
 		InterfaceWrapperHelper.save(bp);
 
 		// Taken into consideration: valid Auftrag for creating invoice cand
@@ -227,7 +235,10 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order1.setM_Warehouse_ID(warehouseId.getRepoId());
 		order1.setIsSOTrx(true);
 		order1.setC_DocType_ID(1);
+		order1.setC_BPartner_ID(bp.getC_BPartner_ID());
+		order1.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 		order1.setBill_BPartner_ID(bp.getC_BPartner_ID());
+		order1.setBill_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 		order1.setDocStatus(DocStatus.Completed.getCode());
 		InterfaceWrapperHelper.save(order1);
 
@@ -247,7 +258,10 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order2.setM_Warehouse_ID(warehouseId.getRepoId());
 		order2.setIsSOTrx(false);
 		order2.setC_DocType_ID(2);
+		order2.setC_BPartner_ID(bp.getC_BPartner_ID());
+		order2.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 		order2.setBill_BPartner_ID(bp.getC_BPartner_ID());
+		order2.setBill_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 		order2.setDocStatus(DocStatus.Completed.getCode());
 		InterfaceWrapperHelper.save(order2);
 
@@ -267,7 +281,10 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order3.setM_Warehouse_ID(warehouseId.getRepoId());
 		order3.setIsSOTrx(false);
 		order3.setC_DocType_ID(2);
+		order3.setC_BPartner_ID(bp.getC_BPartner_ID());
+		order3.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 		order3.setBill_BPartner_ID(bp.getC_BPartner_ID());
+		order3.setBill_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 		order3.setDocStatus(DocStatus.WaitingConfirmation.getCode());
 		InterfaceWrapperHelper.save(order3);
 
@@ -287,7 +304,10 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		order4.setM_Warehouse_ID(warehouseId.getRepoId());
 		order4.setIsSOTrx(true);
 		order4.setC_DocType_ID(1);
+		order4.setC_BPartner_ID(bp.getC_BPartner_ID());
+		order4.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 		order4.setBill_BPartner_ID(bp.getC_BPartner_ID());
+		order4.setBill_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 		order4.setDocStatus(DocStatus.Completed.getCode());
 		InterfaceWrapperHelper.save(order4);
 
@@ -325,14 +345,18 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 
 	private void test_PresetDateInvoiced(final LocalDate presetDateInvoiced)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner("bp").getC_BPartner_ID());
-
+		final org.compiere.model.I_C_BPartner bPartner = BusinessTestHelper.createBPartner("bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+				
 		final I_C_OrderLine orderLine1;
 		{
 			final I_C_Order order1 = order("1");
 			order1.setAD_Org_ID(orgId.getRepoId());
 			order1.setM_Warehouse_ID(warehouseId.getRepoId());
-			order1.setBill_BPartner_ID(bpartnerId.getRepoId());
+			order1.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+			order1.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
+			order1.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
+			order1.setBill_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 			InterfaceWrapperHelper.save(order1);
 
 			orderLine1 = orderLine("1");

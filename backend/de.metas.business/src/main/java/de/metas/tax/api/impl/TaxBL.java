@@ -1,6 +1,7 @@
 package de.metas.tax.api.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.location.CountryId;
@@ -59,8 +60,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class TaxBL implements de.metas.tax.api.ITaxBL
 {
 	private static final Logger log = LogManager.getLogger(TaxBL.class);
+	
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+	
 	@Override
 	public I_C_Tax getTaxById(final TaxId taxId)
 	{
@@ -84,7 +90,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			@NonNull final Timestamp shipDate,
 			@NonNull final OrgId orgId,
 			@Nullable final WarehouseId warehouseId,
-			final int shipC_BPartner_Location_ID,
+			@NonNull final BPartnerLocationId shipC_BPartner_Location_ID,
 			final boolean isSOTrx)
 	{
 		if (taxCategoryId != null)
@@ -92,11 +98,10 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final CountryId countryFromId;
 			if (warehouseId != null)
 			{
-				countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
+				countryFromId = warehouseBL.getCountryId(warehouseId);
 			}
 			else
 			{
-				final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 				final CountryId orgCountryId = bPartnerOrgBL.getOrgCountryId(orgId);
 				if (orgCountryId != null)
 				{
@@ -104,11 +109,11 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				}
 				else
 				{
-					countryFromId = Services.get(ICountryDAO.class).getDefaultCountryId();
+					countryFromId = countryDAO.getDefaultCountryId();
 				}
 			}
-
-			final I_C_BPartner_Location bpLocTo = loadOutOfTrx(shipC_BPartner_Location_ID, I_C_BPartner_Location.class);
+			
+			final I_C_BPartner_Location bpLocTo = bPartnerDAO.getBPartnerLocationByIdEvenInactive(shipC_BPartner_Location_ID);
 
 			final TaxId taxIdForCategory = retrieveTaxIdForCategory(ctx,
 					countryFromId,

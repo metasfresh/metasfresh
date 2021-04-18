@@ -45,6 +45,7 @@ import java.util.Properties;
 
 import javax.swing.JLabel;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.tax.api.TaxId;
 import org.adempiere.ad.trx.api.ITrx;
@@ -443,6 +444,8 @@ public class CreateInvoiceCandidateDialog
 
 			final TaxCategoryId taxCategoryId = null; // FIXME for accuracy, we will need the tax category
 
+			final BPartnerLocationId bPartnerLocationId = Services.get(IBPartnerDAO.class).getBPartnerLocationIdByRepoId(locationField.getValueAsInt());
+			
 			priceTaxId = Services.get(ITaxBL.class).getTaxNotNull(
 					ctx,
 					null, // no model
@@ -451,7 +454,7 @@ public class CreateInvoiceCandidateDialog
 					date, // shipDate
 					OrgId.ofRepoId(product.getAD_Org_ID()), // orgId
 					(WarehouseId)null,
-					locationField.getValueAsInt(), // shipC_BPartner_Location_ID
+					bPartnerLocationId, // shipC_BPartner_Location_ID
 					soTrx.toBoolean());
 		}
 		catch (final ProductPriceNotFoundException ppnfe)
