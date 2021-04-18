@@ -20,53 +20,37 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.order;
+package de.metas.camel.externalsystems.shopware6.currency;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.collect.ImmutableMap;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.io.Serializable;
+
 @Value
 @Builder
-@JsonDeserialize(builder = JsonOrderCustomer.JsonOrderCustomerBuilder.class)
-public class JsonOrderCustomer
+@Getter(AccessLevel.NONE)
+@JsonDeserialize(builder = CurrencyInfoProvider.CurrencyInfoProviderBuilder.class)
+public class CurrencyInfoProvider implements Serializable
 {
 	@NonNull
-	@JsonProperty("id")
-	String id;
+	ImmutableMap<String, String> currencyId2IsoCode;
 
 	@NonNull
-	@JsonProperty("orderId")
-	String orderId;
-
-	@JsonProperty("customerId")
-	String customerId;
-
-	@NonNull
-	@JsonProperty("firstName")
-	String firstName;
-
-	@NonNull
-	@JsonProperty("lastName")
-	String lastName;
-
-	@JsonProperty("company")
-	String company;
-
-	@JsonProperty("customerNumber")
-	String customerNumber;
-
-	@JsonProperty("email")
-	String email;
-
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonOrderCustomerBuilder
+	public String getIsoCodeByCurrencyIdNotNull(@NonNull final String currencyId)
 	{
+		final String isoCode = currencyId2IsoCode.get(currencyId);
+
+		if (isoCode == null || isoCode.isBlank())
+		{
+			throw new RuntimeException("Missing currency iso code for currencyId=" + currencyId);
+		}
+
+		return isoCode;
 	}
 }
-

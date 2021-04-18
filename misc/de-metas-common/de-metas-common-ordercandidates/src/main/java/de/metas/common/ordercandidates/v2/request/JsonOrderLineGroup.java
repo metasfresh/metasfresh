@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.common.ordercandidates.v1.request;
+package de.metas.common.ordercandidates.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

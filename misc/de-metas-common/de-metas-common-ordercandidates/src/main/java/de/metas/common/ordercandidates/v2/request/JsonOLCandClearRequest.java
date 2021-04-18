@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-common-ordercandidates
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,53 +20,24 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.order;
+package de.metas.common.ordercandidates.v2.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonOrderCustomer.JsonOrderCustomerBuilder.class)
-public class JsonOrderCustomer
+@JsonDeserialize(builder = JsonOLCandClearRequest.JsonOLCandClearRequestBuilder.class)
+public class JsonOLCandClearRequest
 {
-	@NonNull
-	@JsonProperty("id")
-	String id;
+	@ApiModelProperty(required = true, value = "This translates to 'C_OLCand.externalLineId'.")
+	@JsonProperty("externalHeaderId")
+	String externalHeaderId;
 
-	@NonNull
-	@JsonProperty("orderId")
-	String orderId;
-
-	@JsonProperty("customerId")
-	String customerId;
-
-	@NonNull
-	@JsonProperty("firstName")
-	String firstName;
-
-	@NonNull
-	@JsonProperty("lastName")
-	String lastName;
-
-	@JsonProperty("company")
-	String company;
-
-	@JsonProperty("customerNumber")
-	String customerNumber;
-
-	@JsonProperty("email")
-	String email;
-
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonOrderCustomerBuilder
-	{
-	}
+	@ApiModelProperty(required = true, value = "This translates to 'AD_InputDataSource.internalName' of the data source the candidates in question were added with.")
+	@JsonProperty("inputDataSourceName")
+	String inputDataSourceName;
 }
-

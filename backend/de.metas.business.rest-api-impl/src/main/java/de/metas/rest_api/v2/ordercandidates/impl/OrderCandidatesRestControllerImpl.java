@@ -2,8 +2,10 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.Profiles;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
+import de.metas.common.ordercandidates.v2.response.JsonOLCandClearingResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.logging.LogManager;
@@ -21,6 +23,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -53,6 +56,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderCandidatesRestControllerImpl
 {
 	private final String PATH_BULK = "/bulk";
+	private final String PATH_CLEAR_TO_PROCESS = "/clearToProcess";
 
 	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestControllerImpl.class);
 
@@ -112,6 +116,23 @@ public class OrderCandidatesRestControllerImpl
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 			return ResponseEntity.badRequest()
 					.body(JsonOLCandCreateBulkResponse.error(JsonErrors.ofThrowable(ex, adLanguage)));
+		}
+	}
+
+	@PutMapping(PATH_CLEAR_TO_PROCESS)
+	public ResponseEntity<JsonOLCandClearingResponse> clearOLCandidates(@RequestBody @NonNull final JsonOLCandClearRequest jsonOLCandClearRequest)
+	{
+		try
+		{
+			final JsonOLCandClearingResponse clearingResponse = orderCandidateRestControllerService.clearOLCandidates(jsonOLCandClearRequest);
+
+			return ResponseEntity.ok(clearingResponse);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Got exception while processing {}", jsonOLCandClearRequest, ex);
+
+			return ResponseEntity.badRequest().build();
 		}
 	}
 }

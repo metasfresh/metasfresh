@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-common-ordercandidates
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,26 +20,21 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+package de.metas.common.ordercandidates.v2.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
+import lombok.Value;
 
-@AllArgsConstructor
-@Getter
-public enum PathSegmentsEnum
+import java.util.Map;
+
+@Value
+@Builder
+public class JsonOLCandClearingResponse
 {
-	API("api"),
-	V3("v3"),
-	SEARCH("search"),
-	ORDER("order"),
-	DELIVERIES("deliveries"),
-	ORDER_ADDRESS("order-address"),
-	OATH("oauth"),
-	TOKEN("token"),
-	COUNTRY("country"),
-	LINE_ITEMS("line-items"),
-	CURRENCY("currency");
+	@JsonProperty("successfullyCleared")
+	boolean successfullyCleared;
 
-	private final String value;
+	@JsonProperty("olCandIdToValidationStatus")
+	Map<Integer, Boolean> olCandIdToValidationStatus;
 }

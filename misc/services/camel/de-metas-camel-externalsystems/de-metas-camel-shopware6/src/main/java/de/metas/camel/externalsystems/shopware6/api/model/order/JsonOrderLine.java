@@ -30,43 +30,58 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+
 @Value
 @Builder
-@JsonDeserialize(builder = JsonOrderCustomer.JsonOrderCustomerBuilder.class)
-public class JsonOrderCustomer
+@JsonDeserialize(builder = JsonOrderLine.JsonOrderLineBuilder.class)
+public class JsonOrderLine
 {
 	@NonNull
 	@JsonProperty("id")
 	String id;
 
 	@NonNull
-	@JsonProperty("orderId")
-	String orderId;
-
-	@JsonProperty("customerId")
-	String customerId;
+	@JsonProperty("productId")
+	String productId;
 
 	@NonNull
-	@JsonProperty("firstName")
-	String firstName;
+	@JsonProperty("quantity")
+	BigDecimal quantity;
 
-	@NonNull
-	@JsonProperty("lastName")
-	String lastName;
+	@Nullable
+	@JsonProperty("parentId")
+	String parentId;
 
-	@JsonProperty("company")
-	String company;
+	@Nullable
+	@JsonProperty("unitPrice")
+	BigDecimal unitPrice;
 
-	@JsonProperty("customerNumber")
-	String customerNumber;
+	@Nullable
+	@JsonProperty("description")
+	String description;
 
-	@JsonProperty("email")
-	String email;
+	@Nullable
+	@JsonProperty("position")
+	Integer position;
+
+	@Nullable
+	@JsonProperty("createdAt")
+	ZonedDateTime createdAt;
+
+	@Nullable
+	@JsonProperty("updatedAt")
+	ZonedDateTime updatedAt;
+
+	@Nullable
+	@JsonProperty("payload")
+	JsonOrderLinePayload payload;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonOrderCustomerBuilder
+	static class JsonOrderLineBuilder
 	{
 	}
 }
-

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de.metas.salescandidate.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,26 +20,26 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+package de.metas.ordercandidate.api;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
 
-@AllArgsConstructor
-@Getter
-public enum PathSegmentsEnum
+@Value
+public class OLCandValidationResult
 {
-	API("api"),
-	V3("v3"),
-	SEARCH("search"),
-	ORDER("order"),
-	DELIVERIES("deliveries"),
-	ORDER_ADDRESS("order-address"),
-	OATH("oauth"),
-	TOKEN("token"),
-	COUNTRY("country"),
-	LINE_ITEMS("line-items"),
-	CURRENCY("currency");
+	@NonNull
+	OLCandId olCandId;
 
-	private final String value;
+	boolean isOk;
+
+	public static OLCandValidationResult ok(@NonNull final OLCandId olCandId)
+	{
+		return new OLCandValidationResult(olCandId, true);
+	}
+
+	public static OLCandValidationResult error(@NonNull final OLCandId olCandId)
+	{
+		return new OLCandValidationResult(olCandId, false);
+	}
 }

@@ -20,26 +20,29 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+package de.metas.camel.externalsystems.shopware6.api.model.order;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import lombok.Builder;
+import lombok.Value;
 
-@AllArgsConstructor
-@Getter
-public enum PathSegmentsEnum
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+@JsonDeserialize(builder = JsonOrderLinePayload.JsonOrderLinePayloadBuilder.class)
+public class JsonOrderLinePayload
 {
-	API("api"),
-	V3("v3"),
-	SEARCH("search"),
-	ORDER("order"),
-	DELIVERIES("deliveries"),
-	ORDER_ADDRESS("order-address"),
-	OATH("oauth"),
-	TOKEN("token"),
-	COUNTRY("country"),
-	LINE_ITEMS("line-items"),
-	CURRENCY("currency");
+	@Nullable
+	@JsonProperty("isBundle")
+	Boolean isBundle;
 
-	private final String value;
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	@JsonPOJOBuilder(withPrefix = "")
+	static class JsonOrderLinePayloadBuilder
+	{
+	}
 }
