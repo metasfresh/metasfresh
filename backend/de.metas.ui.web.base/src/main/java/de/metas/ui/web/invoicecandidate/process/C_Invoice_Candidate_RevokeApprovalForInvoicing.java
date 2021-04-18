@@ -1,20 +1,8 @@
-package de.metas.ui.web.invoicecandidate.process;
-
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.IQuery;
-
-import java.util.Set;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,21 +20,27 @@ import java.util.Set;
  * #L%
  */
 
-/**
- * Process used to approve (for invoicing) the selected billing candidates.
- * <p>
- * This process is the webui alternative for swing's side action: de.metas.invoicecandidate.callout.IC_ApproveForInvoicing_Action
- *
- * @author metas-dev <dev@metasfresh.com>
- * task https://github.com/metasfresh/metasfresh/issues/2361
- */
-public class C_Invoice_Candidate_ApproveForInvoicing extends C_Invoice_Candidate_ProcessHelper
+package de.metas.ui.web.invoicecandidate.process;
+
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.IQuery;
+
+import java.util.Set;
+
+public class C_Invoice_Candidate_RevokeApprovalForInvoicing extends C_Invoice_Candidate_ProcessHelper
 {
+
 	@Override
 	protected boolean isApproveForInvoicing()
 	{
-		return true;
+		return false;
 	}
+
 
 	/**
 	 * Implementation detail: during `checkPreconditionsApplicable` `getProcessInfo` throws exception because it is not configured for the Process, so we ignore it.
@@ -60,9 +54,8 @@ public class C_Invoice_Candidate_ApproveForInvoicing extends C_Invoice_Candidate
 			queryBuilder.filter(getProcessInfo().getQueryFilterOrElseFalse());
 		}
 
-		queryBuilder.addOnlyActiveRecordsFilter()
-				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_Processed, true) // not processed
-				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_ApprovalForInvoicing, true) // not already approved
+		queryBuilder.addOnlyActiveRecordsFilter() // not processed
+				.addNotEqualsFilter(I_C_Invoice_Candidate.COLUMN_ApprovalForInvoicing, false) // not already rejected
 		;
 
 		// Only selected rows

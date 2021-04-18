@@ -47,6 +47,7 @@ from (
 			, p_Conv_Client_ID := target_plv.AD_Client_ID
 			, p_Conv_Org_ID := target_plv.AD_Org_ID
 			, p_ApplyDiscountSchema := source_pp.IsSeasonFixedPrice='N' and source_pp.IsActive='Y'
+		    , p_doNotChangeZeroPrices := ds.donotchangezeroprices = 'Y'
 		) as prices
 		--
 		, source_pp.M_Product_ID
@@ -90,6 +91,8 @@ from (
 		, p_M_Product_ID := source_pp.M_Product_ID
 		, p_C_TaxCategory_ID := source_pp.C_TaxCategory_ID
 	))
+
+    left outer join M_DiscountSchema ds on dsl.m_discountschema_id = ds.m_discountschema_id
 ) pp
 ;
 
