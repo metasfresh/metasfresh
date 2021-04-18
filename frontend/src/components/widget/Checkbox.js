@@ -8,14 +8,18 @@ import classnames from 'classnames';
  */
 const Checkbox = (props) => {
   const rawWidget = useRef(null);
-  const { defaultValue, value } = props.widgetData[0];
-  const initialChecked = defaultValue ? defaultValue : value;
-
-  const [checkedState, setCheckedState] = useState(initialChecked);
+  const { value } = props.widgetData[0];
+  const [checkedState, setCheckedState] = useState(value);
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    setCheckedState(initialChecked);
-  }, [props]);
+    // const initialChecked = defaultValue ? defaultValue : value;
+    setCheckedState(value);
+  }, []);
+
+  if (value !== checkedState && count > 0) {
+    setCheckedState(value);
+  }
 
   const {
     widgetData,
@@ -34,6 +38,7 @@ const Checkbox = (props) => {
    */
   const handleClear = () => {
     const { handlePatch, widgetField, id } = props;
+    setCount(count + 1);
     handlePatch(widgetField, '', id);
   };
 

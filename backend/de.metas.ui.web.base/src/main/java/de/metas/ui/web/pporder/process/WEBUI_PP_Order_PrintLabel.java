@@ -26,8 +26,10 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Product_PrintFormat;
 import org.compiere.util.DB;
 
 import com.google.common.base.Joiner;
@@ -43,6 +45,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.ProductId;
 import de.metas.report.PrintFormat;
 import de.metas.report.PrintFormatId;
 import de.metas.report.PrintFormatRepository;
@@ -69,11 +72,11 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 	{
 
 		final Set<HuId> distinctHuIds = retrieveSelectedHuIds();
-		if (distinctHuIds.isEmpty())
+		if (distinctHuIds.isEmpty() || !hasPrintFormatAssigned())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-
+		
 		return ProcessPreconditionsResolution.accept();
 	}
 
@@ -118,15 +121,42 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 							.filter(Objects::nonNull)
 							.forEach(huIds::add);
 				}
-				else if (row.getHuId() != null && type.isHUOrHUStorage())
-				{
-					huIds.add(row.getHuId());
-				}
 		}
 
 		return huIds;
 	}
+	
+	private boolean hasPrintFormatAssigned()
+	{
+		 final int cnt = Services.get(IQueryBL.class)
+			.createQueryBuilder(I_M_Product_PrintFormat.class)
+			.addInArrayFilter(I_M_Product_PrintFormat.COLUMNNAME_M_Product_ID, retrieveSelectedProductIDs())
+			.create()
+			.count();
+		
+		return cnt > 0 ;
+	}
 
+	
+	private Set<ProductId> retrieveSelectedProductIDs()
+	{
+		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
+
+		final ImmutableList<PPOrderLineRow> selectedRows = getView()
+				.streamByIds(selectedRowIds)
+				.collect(ImmutableList.toImmutableList());
+
+		final Set<ProductId> productIds = new HashSet<ProductId>();
+
+		for (final PPOrderLineRow row : selectedRows)
+		{
+			productIds.add(row.getProductId());
+		}
+
+		return productIds;
+	}
+	
+	
 	private ReportResult printLabel()
 	{
 		final PInstanceRequest pinstanceRequest = createPInstanceRequest();
