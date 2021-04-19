@@ -8,6 +8,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -31,7 +32,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.IDocumentLocationBL;
-import de.metas.document.model.impl.PlainDocumentLocation;
+import de.metas.document.model.PlainDocumentLocation;
 import de.metas.i18n.IMsgBL;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letters.api.ITextTemplateBL;
@@ -136,7 +137,7 @@ public class LetterRestController
 		final BoilerPlateContext context = documentCollection.createBoilerPlateContext(contextDocumentPath);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(context.getC_BPartner_ID(-1));
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, context.getC_BPartner_Location_ID(-1));
-		final UserId contactId = UserId.ofRepoIdOrNull(context.getAD_User_ID(-1));
+		final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, context.getAD_User_ID(-1));
 
 		//
 		// Build BPartnerAddress
@@ -154,7 +155,7 @@ public class LetterRestController
 				.adOrgId(context.getAD_Org_ID(userSession.getOrgId().getRepoId()))
 				.bpartnerId(BPartnerId.toRepoId(bpartnerId))
 				.bpartnerLocationId(BPartnerLocationId.toRepoId(bpartnerLocationId))
-				.bpartnerContactId(UserId.toRepoId(contactId))
+				.bpartnerContactId(BPartnerContactId.toRepoId(contactId))
 				.bpartnerAddress(bpartnerAddress));
 
 		return JSONLetter.of(letter);

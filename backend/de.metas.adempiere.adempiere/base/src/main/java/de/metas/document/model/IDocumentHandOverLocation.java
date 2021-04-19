@@ -28,15 +28,9 @@ public interface IDocumentHandOverLocation
 
 	int getHandOver_Partner_ID();
 
-	org.compiere.model.I_C_BPartner getHandOver_Partner();
-
 	int getHandOver_Location_ID();
 
-	org.compiere.model.I_C_BPartner_Location getHandOver_Location();
-
 	int getHandOver_User_ID();
-
-	org.compiere.model.I_AD_User getHandOver_User();
 
 	String getHandOverAddress();
 

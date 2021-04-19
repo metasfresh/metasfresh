@@ -13,7 +13,6 @@ import de.metas.util.ISingletonService;
  */
 public interface IDocumentLocationBL extends ISingletonService
 {
-
 	void setBPartnerAddress(IDocumentLocation order);
 
 	void setBillToAddress(IDocumentBillLocation billLocation);
@@ -21,5 +20,4 @@ public interface IDocumentLocationBL extends ISingletonService
 	void setDeliveryToAddress(IDocumentDeliveryLocation order);
 	
 	void setHandOverAddress(IDocumentHandOverLocation order);
-
 }

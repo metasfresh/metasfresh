@@ -24,7 +24,6 @@ package de.metas.document.model;
 
 public interface IDocumentLocation
 {
-
 	int getC_BPartner_ID();
 
 	int getC_BPartner_Location_ID();

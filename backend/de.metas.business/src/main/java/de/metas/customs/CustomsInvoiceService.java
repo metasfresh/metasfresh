@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import de.metas.bpartner.BPartnerContactId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -36,7 +37,7 @@ import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.document.model.impl.PlainDocumentLocation;
+import de.metas.document.model.PlainDocumentLocation;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.AdMessageKey;
@@ -67,6 +68,8 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -343,7 +346,7 @@ public class CustomsInvoiceService
 
 	public CustomsInvoice generateNewCustomsInvoice(
 			final BPartnerLocationId bpartnerLocationId,
-			final UserId contactId,
+			@Nullable final BPartnerContactId contactId,
 			final IQueryFilter<I_M_InOut> queryFilter)
 	{
 		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
@@ -384,7 +387,7 @@ public class CustomsInvoiceService
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(bpartnerLocationId)
 				.bpartnerAddress(bpartnerAddress)
-				.userId(contactId)
+				.userId(BPartnerContactId.toUserIdOrNull(contactId))
 				.currencyId(currencyId)
 				.linesToExportMap(linesToExportMap)
 				.invoiceDate(invoiceDate)
