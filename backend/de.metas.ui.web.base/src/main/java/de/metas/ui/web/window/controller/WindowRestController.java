@@ -62,6 +62,7 @@ import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.LabelFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
@@ -780,6 +781,12 @@ public class WindowRestController
 
 			final String tableName = adTableDAO.retrieveTableName(adTableId);
 			return DocumentZoomIntoInfo.of(tableName, recordId);
+		}
+		// label field
+		else if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.Labels)
+		{
+			final DocumentFieldDescriptor labelDescriptor = field.getDescriptor();
+			labelDescriptor.getLookupDescriptor();
 		}
 		// Key Field
 		else if (singleKeyFieldDescriptor != null && singleKeyFieldDescriptor.getFieldName().equals(fieldName))
