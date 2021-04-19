@@ -578,8 +578,10 @@ export function createWindow({
       if (!response || !response.data) {
         return Promise.resolve(null);
       }
-
-      const data = response.data[0];
+      // Note: this `documents` key comes only as a result of a PATCH, this is the reason this check is needed
+      const data = response.data.documents
+        ? response.data.documents[0]
+        : response.data[0];
       const tabs = data.includedTabsInfo;
       let docId = data.id;
 
