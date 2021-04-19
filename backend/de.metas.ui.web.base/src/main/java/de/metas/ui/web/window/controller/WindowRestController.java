@@ -792,17 +792,20 @@ public class WindowRestController
 		{
 
 			final LabelsLookup lookup = LabelsLookup.cast(field.getDescriptor().getLookupDescriptor().orElse(null));
-			
+
 			final String labelsValueColumnName = lookup.getLabelsValueColumnName();
-			
-			
+
 			if (labelsValueColumnName.endsWith("_ID"))
 			{
-			final TableRefInfo tableRefInfo = Services.get(ILookupDAO.class).retrieveTableDirectRefInfo(labelsValueColumnName);
-			
-			return DocumentZoomIntoInfo.of(tableRefInfo.getTableName(), -1);
+				final TableRefInfo tableRefInfo = Services.get(ILookupDAO.class)
+						.retrieveTableDirectRefInfo(labelsValueColumnName);
+
+				return DocumentZoomIntoInfo.of(tableRefInfo.getTableName(), -1);
 			}
-			else  return null;
+			else
+			{
+				return DocumentZoomIntoInfo.of(lookup.getLabelsTableName(), -1);
+			}
 		}
 		// Key Field
 		else if (singleKeyFieldDescriptor != null && singleKeyFieldDescriptor.getFieldName().equals(fieldName))
