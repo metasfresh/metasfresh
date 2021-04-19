@@ -608,7 +608,10 @@ export function createWindow({
 
       let elem = 0;
 
-      response.data.forEach((value, index) => {
+      let responseDocuments = response.data.documents
+        ? response.data.documents
+        : response.data;
+      responseDocuments.forEach((value, index) => {
         if (value.rowId === rowId) {
           elem = index;
         }
@@ -619,10 +622,10 @@ export function createWindow({
       }
 
       // TODO: Is `elem` ever different than 0 ?
-      docId = response.data[elem].id;
+      docId = responseDocuments[elem].id;
       dispatch(
         initDataSuccess({
-          data: parseToDisplay(response.data[elem].fieldsByName),
+          data: parseToDisplay(responseDocuments[elem].fieldsByName),
           docId,
           saveStatus: data.saveStatus,
           scope: getScope(isModal),
@@ -639,11 +642,11 @@ export function createWindow({
           dispatch(
             mapDataToState(response.data, false, 'NEW', docId, windowType)
           );
-          dispatch(updateStatus(response.data));
+          dispatch(updateStatus(responseDocuments));
           dispatch(updateModal(data.rowId));
           /** special case of inlineTab - disconnectedData will be used for data feed */
           if (disconnected === 'inlineTab') {
-            disconnectedData = response.data[0];
+            disconnectedData = responseDocuments[0];
           }
         }
       } else {
@@ -838,7 +841,9 @@ export function patch(
     try {
       const response = await patchRequest(options);
       const data =
-        response.data instanceof Array ? response.data : [response.data];
+        response.data.documents instanceof Array
+          ? response.data.documents
+          : [response.data.documents];
       const dataItem = data[0];
 
       await dispatch(
