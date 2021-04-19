@@ -52,7 +52,7 @@ public class ElasticsearchConfig extends AbstractElasticsearchConfiguration
 	private static final PropertyValueWithOrigin DEFAULT_host = PropertyValueWithOrigin.builder()
 			.propertyName(PROP_host)
 			.propertyValue("search:9200")
-			.origin("default")
+			.origin("default specified by " + ElasticsearchConfig.class)
 			.build();
 
 	private final Environment environment;
@@ -102,8 +102,7 @@ public class ElasticsearchConfig extends AbstractElasticsearchConfiguration
 				{
 					if (propertySource instanceof OriginLookup)
 					{
-						@SuppressWarnings({ "unchecked", "rawtypes" })
-						final Origin origin = ((OriginLookup)propertySource).getOrigin(propertyName);
+						@SuppressWarnings({ "unchecked", "rawtypes" }) final Origin origin = ((OriginLookup)propertySource).getOrigin(propertyName);
 						return Optional.of(origin.toString());
 					}
 					else
