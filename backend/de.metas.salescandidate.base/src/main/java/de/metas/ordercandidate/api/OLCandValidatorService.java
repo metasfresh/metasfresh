@@ -106,10 +106,7 @@ public class OLCandValidatorService
 			for (final I_C_OLCand cand : olCandList)
 			{
 				validate(cand);
-				if (InterfaceWrapperHelper.hasChanges(cand))
-				{
-					InterfaceWrapperHelper.save(cand);
-				}
+				InterfaceWrapperHelper.save(cand); // will only access the DB is there are changes in cand
 
 				olCandValidationResultBuilder.add(cand.isError()
 														  ? OLCandValidationResult.error(OLCandId.ofRepoId(cand.getC_OLCand_ID()))
