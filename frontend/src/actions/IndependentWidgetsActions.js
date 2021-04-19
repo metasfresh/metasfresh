@@ -183,7 +183,7 @@ export function setQuickinputData(fieldData) {
 export function patchQuickInput({ windowId, docId, tabId, prop, value }) {
   return (dispatch, getState) => {
     const state = getState();
-    const id = state.widgetHandler.quickInput.id;
+    const { id } = state.widgetHandler.quickInput;
 
     dispatch(setQuickinputPending());
 

@@ -194,39 +194,36 @@ export function createTableData(rawData) {
 export function fetchAttributes(tableId, tableResponse) {
   return (dispatch, getState) => {
     const state = getState();
+    const tableData = state.tables[tableId]
+      ? state.tables[tableId]
+      : tableResponse;
 
-    // this check is only for unit tests purposes
-    if (state.tables) {
-      const tableData = state.tables[tableId]
-        ? state.tables[tableId]
-        : tableResponse;
+    const {
+      rows,
+      supportAttribute,
+      keyProperty,
+      windowId,
+      viewId,
+      selected,
+    } = tableData;
 
-      const {
-        rows,
-        supportAttribute,
-        keyProperty,
-        windowId,
-        viewId,
-        selected,
-      } = tableData;
+    let rowId =
+      selected && selected.length
+        ? state.tables[tableId].selected[0]
+        : tableResponse &&
+          tableResponse.rows &&
+          tableResponse.rows.length &&
+          tableResponse.rows[0][keyProperty];
 
-      let rowId =
-        selected && selected.length
-          ? state.tables[tableId].selected[0]
-          : tableResponse &&
-            tableResponse.rows &&
-            tableResponse.rows[0][keyProperty];
+    if (supportAttribute && rowId) {
+      const rowSupportAttribute = getSupportAttribute([rowId], rows);
 
-      if (supportAttribute && rowId) {
-        const rowSupportAttribute = getSupportAttribute([rowId], rows);
-
-        if (rowSupportAttribute) {
-          dispatch(fetchViewAttributesLayout({ windowId, viewId, rowId }));
-          dispatch(fetchViewAttributes({ windowId, viewId: viewId, rowId }));
-        }
-      } else {
-        dispatch(deleteViewAttributes());
+      if (rowSupportAttribute) {
+        dispatch(fetchViewAttributesLayout({ windowId, viewId, rowId }));
+        dispatch(fetchViewAttributes({ windowId, viewId: viewId, rowId }));
       }
+    } else {
+      dispatch(deleteViewAttributes());
     }
   };
 }
@@ -277,86 +274,80 @@ export function createGridTable(tableId, tableResponse) {
 export function updateGridTable(tableId, tableResponse) {
   return (dispatch, getState) => {
     const state = getState();
+    const tableExists = state.tables[tableId];
+    const isModal = !!tableResponse.modalId;
+    const windowId = isModal
+      ? tableResponse.modalId
+      : tableResponse.windowType || tableResponse.windowId;
+    const view = getView(getState(), windowId, isModal);
+    const tableLayout = view.layout;
+    let tableData;
 
-    // this check is only for unit tests purposes
-    if (state.tables) {
-      const tableExists = state.tables[tableId];
-      const isModal = !!tableResponse.modalId;
-      const windowId = isModal
-        ? tableResponse.modalId
-        : tableResponse.windowType || tableResponse.windowId;
-      const view = getView(getState(), windowId, isModal);
-      const tableLayout = view.layout;
-      let tableData;
+    if (tableExists) {
+      const { indentSupported } = tableExists;
+      const { collapsible, expandedDepth } = tableExists;
+      tableData = createTableData({
+        ...tableResponse,
+        ...tableLayout,
+        headerElements: tableResponse.columnsByFieldName,
+        keyProperty: 'id',
+      });
+      const { keyProperty } = tableData;
 
-      if (tableExists) {
-        const { indentSupported } = tableExists;
-        const { collapsible, expandedDepth } = tableExists;
-        tableData = createTableData({
-          ...tableResponse,
-          ...tableLayout,
-          headerElements: tableResponse.columnsByFieldName,
-          keyProperty: 'id',
-        });
-        const { keyProperty } = tableData;
-
-        // Parse `rows` to add `indent` property
-        if (tableData.rows.length && indentSupported) {
-          tableData.rows = flattenRows(tableData.rows);
-        }
-
-        dispatch(updateTable(tableId, tableData));
-
-        if (indentSupported) {
-          dispatch(
-            createCollapsedRows({
-              tableId,
-              rows: tableData.rows,
-              collapsible,
-              expandedDepth,
-              keyProperty,
-            })
-          );
-        }
-      } else {
-        tableData = createTableData({
-          ...tableResponse,
-          ...tableLayout,
-          headerElements: tableResponse.columnsByFieldName,
-          keyProperty: 'id',
-        });
-        const {
-          collapsible,
-          expandedDepth,
-          keyProperty,
-          indentSupported,
-        } = tableData;
-
-        if (tableData.rows && tableData.rows.length && indentSupported) {
-          tableData.rows = flattenRows(tableData.rows);
-        }
-
-        dispatch(createTable(tableId, tableData));
-
-        if (indentSupported) {
-          dispatch(
-            createCollapsedRows({
-              tableId,
-              rows: tableData.rows,
-              collapsible,
-              expandedDepth,
-              keyProperty,
-            })
-          );
-        }
+      // Parse `rows` to add `indent` property
+      if (tableData.rows.length && indentSupported) {
+        tableData.rows = flattenRows(tableData.rows);
       }
 
-      dispatch(fetchAttributes(tableId, tableData));
+      dispatch(updateTable(tableId, tableData));
 
-      return Promise.resolve(true);
+      if (indentSupported) {
+        dispatch(
+          createCollapsedRows({
+            tableId,
+            rows: tableData.rows,
+            collapsible,
+            expandedDepth,
+            keyProperty,
+          })
+        );
+      }
+    } else {
+      tableData = createTableData({
+        ...tableResponse,
+        ...tableLayout,
+        headerElements: tableResponse.columnsByFieldName,
+        keyProperty: 'id',
+      });
+      const {
+        collapsible,
+        expandedDepth,
+        keyProperty,
+        indentSupported,
+      } = tableData;
+
+      if (tableData.rows && tableData.rows.length && indentSupported) {
+        tableData.rows = flattenRows(tableData.rows);
+      }
+
+      dispatch(createTable(tableId, tableData));
+
+      if (indentSupported) {
+        dispatch(
+          createCollapsedRows({
+            tableId,
+            rows: tableData.rows,
+            collapsible,
+            expandedDepth,
+            keyProperty,
+          })
+        );
+      }
     }
 
-    return Promise.resolve(false);
+    dispatch(fetchAttributes(tableId, tableData));
+
+    return Promise.resolve(true);
   };
 }
 

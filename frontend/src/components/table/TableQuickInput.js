@@ -91,9 +91,12 @@ class TableQuickInput extends Component {
       windowId: docType,
       docId,
       tabId,
-    }).catch((err) => {
+    }).catch(({ response }) => {
+      const { error, message } = response.data;
+
+      addNotification(error, message, 5000, 'error');
       // eslint-disable-next-line no-console
-      console.error(err);
+      console.error(error);
       this.closeBatchEntry();
     });
   };
@@ -122,10 +125,12 @@ class TableQuickInput extends Component {
   };
 
   closeBatchEntry() {
-    const { closeBatchEntry, deleteQuickInput } = this.props;
+    const { closeBatchEntry, deleteQuickInput, id } = this.props;
 
-    deleteQuickInput();
-    closeBatchEntry();
+    if (id) {
+      deleteQuickInput();
+      closeBatchEntry();
+    }
   }
 
   renderFields = () => {
@@ -282,8 +287,9 @@ const mapDispatchToProps = (dispatch, ownProps) => {
     fetchQuickInputData: (args) => dispatch(fetchQuickInputData({ ...args })),
     // for tests purposes
     fetchQuickInputLayout: (args) =>
-      ownProps.fetchQuickInputLayout(args, dispatch) ||
-      dispatch(fetchQuickInputLayout({ ...args })),
+      ownProps.fetchQuickInputLayout
+        ? ownProps.fetchQuickInputLayout(args, dispatch)
+        : dispatch(fetchQuickInputLayout({ ...args })),
     deleteQuickInput: () => dispatch(deleteQuickInput()),
     setQuickinputData: (args) => dispatch(setQuickinputData(args)),
     patchQuickInput: (args) => dispatch(patchQuickInput({ ...args })),
