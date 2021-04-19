@@ -54,4 +54,6 @@ public class ExternalSystemCamelConstants
 	public static String MF_GET_PRODUCTS_ROUTE_ID = "To-MF_GetProducts-Route";
 
 	public static String MF_PUSH_OL_CANDIDATES_ROUTE_ID = "To-MF_PushOLCandidates-Route";
+
+	public static String MF_CLEAR_OL_CANDIDATES_ROUTE_ID = "To-MF_ClearOLCandidates-Route";
 }

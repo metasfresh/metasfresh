@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de.metas.adempiere.adempiere.migration-sql
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,26 +20,10 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+-- 2021-04-16T16:31:41.232Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_InputDataSource (AD_Client_ID,AD_InputDataSource_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,IsDestination,IsEdiEnabled,Name,Updated,UpdatedBy,Value) VALUES (1000000,540217,1000000,TO_TIMESTAMP('2021-04-16 19:31:41','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.swat','Y','N','N','Shopware',TO_TIMESTAMP('2021-04-16 19:31:41','YYYY-MM-DD HH24:MI:SS'),100,'Shopware')
+;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@AllArgsConstructor
-@Getter
-public enum PathSegmentsEnum
-{
-	API("api"),
-	V3("v3"),
-	SEARCH("search"),
-	ORDER("order"),
-	DELIVERIES("deliveries"),
-	ORDER_ADDRESS("order-address"),
-	OATH("oauth"),
-	TOKEN("token"),
-	COUNTRY("country"),
-	LINE_ITEMS("line-items"),
-	CURRENCY("currency");
-
-	private final String value;
-}
+UPDATE AD_InputDataSource SET InternalName = 'Shopware' where AD_InputDataSource_ID = 540217
+;

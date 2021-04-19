@@ -30,40 +30,19 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.List;
+
 @Value
 @Builder
-@JsonDeserialize(builder = JsonOrderAddress.JsonOrderAddressBuilder.class)
-public class JsonOrderAddress
+@JsonDeserialize(builder = JsonOrderLines.JsonOrderLinesBuilder.class)
+public class JsonOrderLines
 {
-	@NonNull
-	@JsonProperty("id")
-	String id;
-
-	@NonNull
-	@JsonProperty("countryId")
-	String countryId;
-
-	@JsonProperty("street")
-	String street;
-
-	@JsonProperty("zipcode")
-	String zipcode;
-
-	@JsonProperty("city")
-	String city;
-
-	@JsonProperty("phoneNumber")
-	String phoneNumber;
-
-	@JsonProperty("additionalAddressLine1")
-	String additionalAddressLine1;
-
-	@JsonProperty("additionalAddressLine2")
-	String additionalAddressLine2;
+	@JsonProperty("data")
+	@NonNull List<JsonOrderLine> orderLines;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonOrderAddressBuilder
+	static class JsonOrderLinesBuilder
 	{
 	}
 }

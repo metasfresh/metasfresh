@@ -15,15 +15,15 @@
           "locations": {
             "requestItems": [
               {
-                "locationIdentifier": "ext-Shopware6-shippingAddressId_custom",
+                "locationIdentifier": "ext-Shopware6-customerId-billTo",
                 "location": {
-                  "address1": "Teststrasse 121",
-                  "address2": null,
-                  "address3": null,
-                  "postal": "99999",
-                  "city": "Teststadt",
+                  "address1": "billingAddressStreet",
+                  "address2": "additionalAddressLine1",
+                  "address3": "additionalAddressLine2",
+                  "postal": "0000123",
+                  "city": "Billing City",
                   "countryCode": "DE",
-                  "shipTo": true,
+                  "shipTo": false,
                   "billTo": true
                 }
               },
@@ -31,8 +31,8 @@
                 "locationIdentifier": "ext-Shopware6-customerId-shipTo",
                 "location": {
                   "address1": "ShippingAddressStreet",
-                  "address2": null,
-                  "address3": null,
+                  "address2": "additionalAddressLine1",
+                  "address3": "additionalAddressLine2",
                   "postal": "0000123",
                   "city": "Test City",
                   "countryCode": "DE",
@@ -49,7 +49,7 @@
                 "contact": {
                   "firstName": "firstName",
                   "lastName": "lastName",
-                  "email": "test@email.com"
+                  "email": "someEamil@web.de"
                 }
               }
             ],
