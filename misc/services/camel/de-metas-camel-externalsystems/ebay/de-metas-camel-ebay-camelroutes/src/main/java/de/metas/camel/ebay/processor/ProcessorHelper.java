@@ -24,6 +24,8 @@ package de.metas.camel.ebay.processor;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
 
+import java.time.LocalDate;
+
 import javax.annotation.Nullable;
 
 import org.apache.camel.Exchange;
@@ -63,4 +65,5 @@ public class ProcessorHelper
 		exchange.getContext().createProducerTemplate()
 				.sendBody("direct:" + MF_LOG_MESSAGE_ROUTE_ID, logMessageRequest);
 	}
+	
 }

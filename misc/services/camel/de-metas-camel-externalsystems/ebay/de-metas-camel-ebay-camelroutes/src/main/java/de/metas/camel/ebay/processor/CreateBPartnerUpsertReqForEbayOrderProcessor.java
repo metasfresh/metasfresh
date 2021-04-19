@@ -9,6 +9,7 @@ import java.util.List;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
+import de.metas.camel.ebay.EbayUtils;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.ebay.api.model.Order;
 import de.metas.camel.externalsystems.ebay.api.model.ShippingStep;
@@ -48,7 +49,7 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor {
 		final String orgCode = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_ORG_CODE, String.class);
 
 		// create bPartner request items based on ebay field mapping.
-		final String bPartnerIdentifier = EXTERNAL_ID_PREFIX + order.getBuyer().getUsername();
+		final String bPartnerIdentifier = EbayUtils.bPartnerIdentifier(order);
 
 		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
 		final JsonRequestContact bpartnerContact = new JsonRequestContact();

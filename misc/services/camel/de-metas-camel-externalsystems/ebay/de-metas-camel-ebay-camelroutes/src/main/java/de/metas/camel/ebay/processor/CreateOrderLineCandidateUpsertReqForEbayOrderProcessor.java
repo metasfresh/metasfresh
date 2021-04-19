@@ -1,0 +1,193 @@
+package de.metas.camel.ebay.processor;
+
+import static de.metas.camel.ebay.EbayConstants.DATA_SOURCE_INT_EBAY;
+import static de.metas.camel.ebay.EbayConstants.DEFAULT_DELIVERY_RULE;
+import static de.metas.camel.ebay.EbayConstants.DEFAULT_DELIVERY_VIA_RULE;
+import static de.metas.camel.ebay.EbayConstants.DEFAULT_ORDER_LINE_DISCOUNT;
+import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
+import static de.metas.camel.ebay.processor.ProcessorHelper.getPropertyOrThrowError;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.camel.ebay.EbayImportOrdersRouteContext;
+import de.metas.camel.ebay.EbayUtils;
+import de.metas.camel.externalsystems.ebay.api.model.LineItem;
+import de.metas.camel.externalsystems.ebay.api.model.Order;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
+import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
+import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.Check;
+import lombok.NonNull;
+
+public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements Processor {
+
+	@Override
+	public void process(final Exchange exchange) throws Exception
+	{
+		final EbayImportOrdersRouteContext importOrdersRouteContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, EbayImportOrdersRouteContext.class);
+
+		final JsonResponseBPartnerCompositeUpsert bPartnerUpsertResponseList = exchange.getIn().getBody(JsonResponseBPartnerCompositeUpsert.class);
+		final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse = Check.singleElement(bPartnerUpsertResponseList.getResponseItems());
+
+		if (bPartnerUpsertResponse == null)
+		{
+			throw new RuntimeException("No JsonResponseUpsert present! OrderId=" + importOrdersRouteContext.getOrderNotNull().getOrderId());
+		}
+
+		final JsonOLCandCreateBulkRequest olCandBulkRequest = buildOlCandRequest(importOrdersRouteContext, bPartnerUpsertResponse);
+
+		exchange.getIn().setBody(olCandBulkRequest);
+	}
+
+	private JsonOLCandCreateBulkRequest buildOlCandRequest(
+			@NonNull final EbayImportOrdersRouteContext context,
+			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
+	{
+		final JsonOLCandCreateBulkRequest.JsonOLCandCreateBulkRequestBuilder olCandCreateBulkRequestBuilder = JsonOLCandCreateBulkRequest.builder();
+
+		final Order ebayOrder = context.getOrderNotNull();
+
+	
+		final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder = JsonOLCandCreateRequest.builder();
+		olCandCreateRequestBuilder
+				.orgCode(context.getOrgCode())
+				.currencyCode(getCurrencyCode(ebayOrder))
+				.externalHeaderId(ebayOrder.getOrderId())
+				.poReference(ebayOrder.getOrderId())
+				.bpartner(getBPartnerInfo(context, bPartnerUpsertResponse))
+				.billBPartner(getBillBPartnerInfo(context, bPartnerUpsertResponse))
+				.dateOrdered(getDateOrdered(ebayOrder))
+				.dateRequired(getDateOrdered(ebayOrder).plusDays(7)) //TODO - no mapping. 
+				.dataSource(DATA_SOURCE_INT_EBAY)
+				.isManualPrice(true)
+				.isImportedWithIssues(true)
+				.discount(DEFAULT_ORDER_LINE_DISCOUNT)
+				.deliveryViaRule(DEFAULT_DELIVERY_VIA_RULE)
+				.deliveryRule(DEFAULT_DELIVERY_RULE)
+				.importWarningMessage("PRE ALPHA TEST IMPORT"); //FIXME ;)
+
+		final List<LineItem> orderLines = ebayOrder.getLineItems();
+
+		if (orderLines.isEmpty())
+		{
+			throw new RuntimeException("Missing order lines! OrderId=" + ebayOrder.getOrderId());
+		}
+
+		orderLines.stream()
+				.map(orderLine -> processOrderLine(olCandCreateRequestBuilder, ebayOrder, orderLine))
+				.forEach(olCandCreateBulkRequestBuilder::request);
+
+		return olCandCreateBulkRequestBuilder.build();
+	}
+
+	@NonNull
+	private JsonRequestBPartnerLocationAndContact getBPartnerInfo(
+			@NonNull final EbayImportOrdersRouteContext context,
+			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
+	{
+		final Order orderAndCustomId = context.getOrderNotNull();
+		final String bPartnerExternalIdentifier = EbayUtils.bPartnerIdentifier(orderAndCustomId);
+
+		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()), bPartnerExternalIdentifier);
+
+		final String shippingBPLocationExternalIdentifier = context.getShippingBPLocationExternalIdNotNull();
+		final JsonMetasfreshId shippingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(bPartnerUpsertResponse.getResponseLocationItems(), shippingBPLocationExternalIdentifier);
+
+		return JsonRequestBPartnerLocationAndContact.builder()
+				.bPartnerIdentifier(String.valueOf(bpartnerId.getValue()))
+				.bPartnerLocationIdentifier(String.valueOf(shippingBPartnerLocationId.getValue()))
+				.build();
+	}
+
+	@NonNull
+	private JsonRequestBPartnerLocationAndContact getBillBPartnerInfo(
+			@NonNull final EbayImportOrdersRouteContext context,
+			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
+	{
+		final Order orderAndCustomId = context.getOrderNotNull();
+
+		final String bPartnerExternalIdentifier = EbayUtils.bPartnerIdentifier(orderAndCustomId);
+
+		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()), bPartnerExternalIdentifier);
+
+		final String billingBPLocationExternalIdentifier = context.getBillingBPLocationExternalIdNotNull();
+		final JsonMetasfreshId billingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(bPartnerUpsertResponse.getResponseLocationItems(), billingBPLocationExternalIdentifier);
+
+		return JsonRequestBPartnerLocationAndContact.builder()
+				.bPartnerIdentifier(String.valueOf(bpartnerId.getValue()))
+				.bPartnerLocationIdentifier(String.valueOf(billingBPartnerLocationId.getValue()))
+				.build();
+	}
+
+
+	private JsonOLCandCreateRequest processOrderLine(
+			@NonNull final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder,
+			@NonNull final Order order,
+			@NonNull final LineItem orderLine)
+	{
+		return olCandCreateRequestBuilder
+				.externalLineId(orderLine.getLineItemId())
+				.productIdentifier("TODO")
+				.price(new BigDecimal(orderLine.getTotal().getValue()))  
+				.qty(BigDecimal.valueOf(orderLine.getQuantity()))
+				.description(orderLine.getTitle())
+				.dateCandidate(getDateCandidate(order))
+				.build();
+	}
+
+	@Nullable
+	private LocalDate getDateCandidate(@NonNull final Order orderLine)
+	{
+		if (orderLine.getLastModifiedDate() != null)
+		{
+			return EbayUtils.toLocalDate(orderLine.getLastModifiedDate());
+		}
+		else if (orderLine.getCreationDate() != null)
+		{
+			return EbayUtils.toLocalDate(orderLine.getCreationDate());
+		}
+
+		return null;
+	}
+
+	@NonNull
+	private JsonMetasfreshId getMetasfreshIdForExternalIdentifier(
+			@NonNull final List<JsonResponseUpsertItem> bPartnerResponseUpsertItems,
+			@NonNull final String externalIdentifier)
+	{
+		return bPartnerResponseUpsertItems
+				.stream()
+				.filter(responseItem -> responseItem.getIdentifier().equals(externalIdentifier) && responseItem.getMetasfreshId() != null)
+				.findFirst()
+				.map(JsonResponseUpsertItem::getMetasfreshId)
+				.orElseThrow(() -> new RuntimeException("Something went wrong! No JsonResponseUpsertItem was found for the externalIdentifier:" + externalIdentifier));
+	}
+
+	@Nullable
+	private String getCurrencyCode(@NonNull final Order order)
+	{
+		return order.getPaymentSummary().getTotalDueSeller().getCurrency();
+	}
+
+	@Nullable
+	private LocalDate getDateOrdered(@NonNull final Order order)
+	{
+		return order.getCreationDate() != null
+				? EbayUtils.toLocalDate(order.getCreationDate())
+				: null;
+	}
+	
+}
