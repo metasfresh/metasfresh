@@ -13,26 +13,26 @@ Here come the actual release notes:
 ## Features
 * metasfresh
   * [#10912](https://github.com/metasfresh/metasfresh/issues/10912) Pimp the menu structure & UI
-  * https://github.com/metasfresh/metasfresh/issues/10947
-  * https://github.com/metasfresh/metasfresh/issues/10964
+  * [#10947](https://github.com/metasfresh/metasfresh/issues/10947) Display `ApprovalForInvoicing` in invoice candidates (single view)
   * [#10958](https://github.com/metasfresh/metasfresh/issues/10958) "Add New" not present in the Warehouse NEW
-  * https://github.com/metasfresh/metasfresh/pull/10975
-  * https://github.com/metasfresh/metasfresh/issues/10979
+  * [#10964](https://github.com/metasfresh/metasfresh/issues/10964) End of Year GL Journal
+  * [#10975](https://github.com/metasfresh/metasfresh/pull/10975) `PPOrderLineRow.lineStatusColor`
+  * [#10979](https://github.com/metasfresh/metasfresh/issues/10979) Option for keeping price 0 when copying price lists
   * [#10980](https://github.com/metasfresh/metasfresh/pull/10980) Bump up guava version and remove obsolete log4j dependency
-  https://github.com/metasfresh/metasfresh/issues/10985
+  * [#10985](https://github.com/metasfresh/metasfresh/issues/10985) Email in orders' doc outbound documents
   * [#10987](https://github.com/metasfresh/metasfresh/pull/10987) Alberta orders: always sync delivery address before importing
-  * https://github.com/metasfresh/metasfresh/pull/10993
-  * https://github.com/metasfresh/metasfresh/issues/10997
+  * [#10993](https://github.com/metasfresh/metasfresh/pull/10993) Price Comparation report performance improvements
+  * [#10997](https://github.com/metasfresh/metasfresh/issues/10997) Import Shopware `OL_Cands`
 
 ## Fixes
 * metasfresh
   * [#10931](https://github.com/metasfresh/metasfresh/issues/10931) Filter default values are ignored
   * [#10953](https://github.com/metasfresh/metasfresh/issues/10953) Fix dependency in the frontend packages
-  * https://github.com/metasfresh/metasfresh/pull/10974
+  * [#10974](https://github.com/metasfresh/metasfresh/pull/10974) Bidirectional sync between `AD_User` and procurement user
   * [#10976](https://github.com/metasfresh/metasfresh/pull/10976) `ProductBOMDAO.getDefaultBOM`, consider `MakeToOrder` too when checking for default BOM
-  * https://github.com/metasfresh/metasfresh/issues/10981
-  * https://github.com/metasfresh/metasfresh/pull/10986
-  * https://github.com/metasfresh/metasfresh/pull/10994
+  * [#10981](https://github.com/metasfresh/metasfresh/issues/10981) procurement-webui-frontend cannot be started on localhost
+  * [#10986](https://github.com/metasfresh/metasfresh/pull/10986) Don't check the last HU Trx for internal use inventory
+  * [#10994](https://github.com/metasfresh/metasfresh/pull/10994) Fix procurement WebUI RfQ import
 
 # metasfresh 5.165
 ## Features
