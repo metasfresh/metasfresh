@@ -283,12 +283,28 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   doCompleteRequest = () => {
-    const { attributeType, patch } = this.props;
+    const { attributeType, patch, createProcess } = this.props;
     const { data } = this.state;
     const attrId = data && data.ID ? data.ID.value : -1;
 
     completeRequest(attributeType, attrId).then((response) => {
-      patch(response.data);
+      patch(response.data).then(({ triggerActions }) => {
+        // post PATCH actions if we have `triggerActions` present
+        if (triggerActions) {
+          triggerActions.forEach((itemTriggerAction) => {
+            let {
+              selectedDocumentPath: { windowId, documentId },
+              processId,
+            } = itemTriggerAction;
+
+            createProcess({
+              documentType: windowId,
+              ids: [`${documentId}`],
+              processType: processId,
+            });
+          });
+        }
+      });
     });
   };
 
@@ -387,4 +403,5 @@ Attributes.propTypes = {
   rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
   widgetType: PropTypes.string,
   disconnected: PropTypes.any, // this is used to differentiate in which type of parent widget we are rendering the SubSection elements (ie. `inlineTab`)
+  createProcess: PropTypes.func, // function called to initiate a process
 };

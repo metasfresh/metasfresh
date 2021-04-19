@@ -9,6 +9,7 @@ import {
   updatePropertyValue,
   allowShortcut,
   disableShortcut,
+  createProcess,
 } from '../actions/WindowActions';
 import { getCellWidgetData } from '../utils/tableHelpers';
 import { getTable } from '../reducers/tables';
@@ -164,6 +165,7 @@ WidgetWrapper.propTypes = {
   openModal: PropTypes.func.isRequired,
   patch: PropTypes.func.isRequired,
   updatePropertyValue: PropTypes.func.isRequired,
+  createProcess: PropTypes.func,
   widgetType: PropTypes.string,
   disconnected: PropTypes.string,
 };
@@ -175,6 +177,7 @@ export default connect(
     disableShortcut,
     openModal,
     patch,
+    createProcess,
     updatePropertyValue,
   },
   null,

@@ -874,7 +874,7 @@ export function patch(
         await dispatch(indicatorState('saved'));
         await dispatch({ type: PATCH_SUCCESS, symbol });
 
-        return data;
+        return response.data;
       }
     } catch (error) {
       await dispatch(indicatorState('error'));
