@@ -1,13 +1,12 @@
 package de.metas.bpartner;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.user.UserId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -128,4 +127,11 @@ public class BPartnerContactId implements RepoIdAware
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
+
+	@Nullable
+	public static UserId toUserIdOrNull(@Nullable final BPartnerContactId id)
+	{
+		return id != null ? id.getUserId() : null;
+	}
+
 }
