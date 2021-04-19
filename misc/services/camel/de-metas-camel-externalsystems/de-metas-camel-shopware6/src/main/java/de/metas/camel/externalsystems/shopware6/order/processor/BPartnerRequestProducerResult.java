@@ -20,26 +20,29 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+package de.metas.camel.externalsystems.shopware6.order.processor;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-@AllArgsConstructor
-@Getter
-public enum PathSegmentsEnum
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+
+@Value
+@Builder
+public class BPartnerRequestProducerResult
 {
-	API("api"),
-	V3("v3"),
-	SEARCH("search"),
-	ORDER("order"),
-	DELIVERIES("deliveries"),
-	ORDER_ADDRESS("order-address"),
-	OATH("oauth"),
-	TOKEN("token"),
-	COUNTRY("country"),
-	LINE_ITEMS("line-items"),
-	CURRENCY("currency");
+	@NonNull
+	JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert;
 
-	private final String value;
+	@NonNull
+	String shippingBPartnerLocationExternalId;
+
+	@NonNull
+	String billingBPartnerLocationExternalId;
+
+	@Nullable
+	LocalDate deliveryDate;
 }

@@ -20,17 +20,22 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.processor;
+package de.metas.camel.externalsystems.shopware6.order.processor;
 
+import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
 import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
+import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
+import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
+import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
+import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
 
 import java.time.Instant;
@@ -42,9 +47,8 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_CREATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_UPDATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_DATE_GTE;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_ORG_CODE;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_LOCATION_ID;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_SHOPWARE_CLIENT;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
+import static de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRoute.GET_CURRENCY_ROUTE_ID;
 
 public class GetOrdersProcessor implements Processor
 {
@@ -76,10 +80,24 @@ public class GetOrdersProcessor implements Processor
 		final List<JsonOrderAndCustomId> ordersToProcess = shopwareClient.getOrders(getOrdersRequest, bPartnerIdJSONPath);
 
 		exchange.getIn().setBody(ordersToProcess);
-		exchange.setProperty(ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
-		exchange.setProperty(ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_LOCATION_ID, bPartnerLocationIdJSONPath);
-		exchange.setProperty(ROUTE_PROPERTY_SHOPWARE_CLIENT, shopwareClient);
 
+		final GetCurrenciesRequest getCurrenciesRequest = GetCurrenciesRequest.builder()
+				.baseUrl(basePath)
+				.clientId(clientId)
+				.clientSecret(clientSecret)
+				.build();
+
+		final CurrencyInfoProvider currencyInfoProvider = (CurrencyInfoProvider) exchange.getContext().createProducerTemplate()
+				.sendBody("direct:" + GET_CURRENCY_ROUTE_ID, ExchangePattern.InOut, getCurrenciesRequest);
+
+		final ImportOrdersRouteContext ordersContext = ImportOrdersRouteContext.builder()
+				.orgCode(request.getOrgCode())
+				.shopwareClient(shopwareClient)
+				.bpLocationCustomJsonPath(bPartnerLocationIdJSONPath)
+				.currencyInfoProvider(currencyInfoProvider)
+				.build();
+
+		exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 	}
 
 	@NonNull

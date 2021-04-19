@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.order;
+package de.metas.camel.externalsystems.shopware6.api.model.currency;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,40 +30,20 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.List;
+
 @Value
 @Builder
-@JsonDeserialize(builder = JsonOrderAddress.JsonOrderAddressBuilder.class)
-public class JsonOrderAddress
+@JsonDeserialize(builder = JsonCurrencies.JsonCurrenciesBuilder.class)
+public class JsonCurrencies
 {
 	@NonNull
-	@JsonProperty("id")
-	String id;
-
-	@NonNull
-	@JsonProperty("countryId")
-	String countryId;
-
-	@JsonProperty("street")
-	String street;
-
-	@JsonProperty("zipcode")
-	String zipcode;
-
-	@JsonProperty("city")
-	String city;
-
-	@JsonProperty("phoneNumber")
-	String phoneNumber;
-
-	@JsonProperty("additionalAddressLine1")
-	String additionalAddressLine1;
-
-	@JsonProperty("additionalAddressLine2")
-	String additionalAddressLine2;
+	@JsonProperty("data")
+	List<JsonCurrency> currencyList;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonOrderAddressBuilder
+	static class JsonCurrenciesBuilder
 	{
 	}
 }

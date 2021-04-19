@@ -22,48 +22,17 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model.order;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonOrderAddress.JsonOrderAddressBuilder.class)
-public class JsonOrderAddress
+public class OrderDeliveryItem
 {
 	@NonNull
-	@JsonProperty("id")
-	String id;
+	JsonOrderAddressAndCustomId jsonOrderAddressAndCustomId;
 
 	@NonNull
-	@JsonProperty("countryId")
-	String countryId;
-
-	@JsonProperty("street")
-	String street;
-
-	@JsonProperty("zipcode")
-	String zipcode;
-
-	@JsonProperty("city")
-	String city;
-
-	@JsonProperty("phoneNumber")
-	String phoneNumber;
-
-	@JsonProperty("additionalAddressLine1")
-	String additionalAddressLine1;
-
-	@JsonProperty("additionalAddressLine2")
-	String additionalAddressLine2;
-
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonOrderAddressBuilder
-	{
-	}
+	JsonOrderDelivery jsonOrderDelivery;
 }

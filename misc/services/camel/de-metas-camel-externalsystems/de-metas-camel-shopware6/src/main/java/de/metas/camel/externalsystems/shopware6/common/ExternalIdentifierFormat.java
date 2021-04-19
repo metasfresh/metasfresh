@@ -20,26 +20,18 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+package de.metas.camel.externalsystems.shopware6.common;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.NonNull;
 
-@AllArgsConstructor
-@Getter
-public enum PathSegmentsEnum
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.EXTERNAL_ID_PREFIX;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWARE6_SYSTEM_NAME;
+
+public class ExternalIdentifierFormat
 {
-	API("api"),
-	V3("v3"),
-	SEARCH("search"),
-	ORDER("order"),
-	DELIVERIES("deliveries"),
-	ORDER_ADDRESS("order-address"),
-	OATH("oauth"),
-	TOKEN("token"),
-	COUNTRY("country"),
-	LINE_ITEMS("line-items"),
-	CURRENCY("currency");
-
-	private final String value;
+	@NonNull
+	public static String formatExternalId(@NonNull final String externalId)
+	{
+		return EXTERNAL_ID_PREFIX + "-" + SHOPWARE6_SYSTEM_NAME + "-" + externalId;
+	}
 }

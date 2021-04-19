@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.processor;
+package de.metas.camel.externalsystems.shopware6;
 
 import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;

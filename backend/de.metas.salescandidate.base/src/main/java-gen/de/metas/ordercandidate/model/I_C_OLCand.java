@@ -2137,4 +2137,25 @@ public interface I_C_OLCand
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Import warning message.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setImportWarningMessage (@Nullable java.lang.String ImportWarningMessage);
+
+	/**
+	 * Get Import warning message.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getImportWarningMessage();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_ImportWarningMessage = new ModelColumn<>(I_C_OLCand.class, "ImportWarningMessage", null);
+	String COLUMNNAME_ImportWarningMessage = "ImportWarningMessage";
 }
