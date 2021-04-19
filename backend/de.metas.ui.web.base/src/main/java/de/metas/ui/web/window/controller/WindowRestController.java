@@ -96,6 +96,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
+import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.util.Services;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -786,9 +787,14 @@ public class WindowRestController
 		// label field
 		else if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.Labels)
 		{
-			final DocumentFieldDescriptor labelDescriptor = field.getDescriptor();
-			labelDescriptor.getLookupDescriptor();
-			return null;
+
+			final LabelsLookup lookup = LabelsLookup.cast(field.getDescriptor().getLookupDescriptor().orElse(null));
+			
+			final String labelsValueColumnName = lookup.getLabelsValueColumnName();
+			final Integer adTableId = document.getFieldView(labelsValueColumnName).getValueAs(Integer.class);
+		
+			final String tableName = adTableDAO.retrieveTableName(adTableId);
+			return DocumentZoomIntoInfo.of(tableName, field.getValueAs(Integer.class));
 		}
 		// Key Field
 		else if (singleKeyFieldDescriptor != null && singleKeyFieldDescriptor.getFieldName().equals(fieldName))
