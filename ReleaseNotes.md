@@ -9,6 +9,20 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.166
+## Features
+* metasfresh
+  * [#10912](https://github.com/metasfresh/metasfresh/issues/10912) Pimp the menu structure & UI
+  * [#10958](https://github.com/metasfresh/metasfresh/issues/10958) "Add New" not present in the Warehouse NEW
+  * [#10980](https://github.com/metasfresh/metasfresh/pull/10980) Bump up guava version and remove obsolete log4j dependency
+  * [#10987](https://github.com/metasfresh/metasfresh/pull/10987) Alberta orders: always sync delivery address before importing
+
+## Fixes
+* metasfresh
+  * [#10931](https://github.com/metasfresh/metasfresh/issues/10931) Filter default values are ignored
+  * [#10953](https://github.com/metasfresh/metasfresh/issues/10953) Fix dependency in the frontend packages
+  * [#10976](https://github.com/metasfresh/metasfresh/pull/10976) `ProductBOMDAO.getDefaultBOM`, consider `MakeToOrder` too when checking for default BOM
+
 # metasfresh 5.165
 ## Features
 * metasfresh
