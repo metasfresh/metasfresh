@@ -28,6 +28,8 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -97,6 +99,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.util.Services;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -791,10 +794,15 @@ public class WindowRestController
 			final LabelsLookup lookup = LabelsLookup.cast(field.getDescriptor().getLookupDescriptor().orElse(null));
 			
 			final String labelsValueColumnName = lookup.getLabelsValueColumnName();
-			final Integer adTableId = document.getFieldView(labelsValueColumnName).getValueAs(Integer.class);
-		
-			final String tableName = adTableDAO.retrieveTableName(adTableId);
-			return DocumentZoomIntoInfo.of(tableName, field.getValueAs(Integer.class));
+			
+			
+			if (labelsValueColumnName.endsWith("_ID"))
+			{
+			final TableRefInfo tableRefInfo = Services.get(ILookupDAO.class).retrieveTableDirectRefInfo(labelsValueColumnName);
+			
+			return DocumentZoomIntoInfo.of(tableRefInfo.getTableName(), -1);
+			}
+			else  return null;
 		}
 		// Key Field
 		else if (singleKeyFieldDescriptor != null && singleKeyFieldDescriptor.getFieldName().equals(fieldName))
