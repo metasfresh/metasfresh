@@ -787,6 +787,7 @@ public class WindowRestController
 		{
 			final DocumentFieldDescriptor labelDescriptor = field.getDescriptor();
 			labelDescriptor.getLookupDescriptor();
+			return null;
 		}
 		// Key Field
 		else if (singleKeyFieldDescriptor != null && singleKeyFieldDescriptor.getFieldName().equals(fieldName))
