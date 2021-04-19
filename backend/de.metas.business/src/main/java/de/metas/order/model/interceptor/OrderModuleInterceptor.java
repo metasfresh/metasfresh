@@ -54,9 +54,16 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 			return;
 		}
 
-		esSystem.newModelIndexerConfig(ESModelIndexerProfile.KPI, "orders", I_C_OrderLine.class)
-				.triggerOnDocumentChanged(I_C_Order.class, I_C_OrderLine.COLUMN_C_Order_ID)
-				.triggerOnDelete()
-				.buildAndInstall();
+		try
+		{
+			esSystem.newModelIndexerConfig(ESModelIndexerProfile.KPI, "orders", I_C_OrderLine.class)
+					.triggerOnDocumentChanged(I_C_Order.class, I_C_OrderLine.COLUMN_C_Order_ID)
+					.triggerOnDelete()
+					.buildAndInstall();
+		}
+		catch(final Exception ex)
+		{
+			logger.warn("Failed installing triggers for orders to elasticsearch indexer", ex);
+		}
 	}
 }
