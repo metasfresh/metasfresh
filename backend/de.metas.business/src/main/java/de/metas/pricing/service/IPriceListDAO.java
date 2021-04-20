@@ -76,6 +76,11 @@ public interface IPriceListDAO extends ISingletonService
 
 	PriceListsCollection retrievePriceListsCollectionByPricingSystemId(PricingSystemId pricingSystemId);
 
+	PriceListId retrievePriceListIdByPricingSyst(
+			@Nullable PricingSystemId pricingSystemId,
+			CountryId countryId,
+			SOTrx soTrx);
+
 	/**
 	 * Returns a list containing all the PO price lists for a given pricing system and a country.<br>
 	 * The method returns both price lists with the given country and without any country. The price list
