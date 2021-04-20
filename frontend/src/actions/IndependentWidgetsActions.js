@@ -217,21 +217,17 @@ export function patchQuickInput({ windowId, docId, tabId, prop, value }) {
  */
 export function fetchQuickInputData({ windowId, docId, tabId }) {
   return (dispatch) => {
-    return initQuickInput(
-      'window',
-      windowId,
-      docId,
-      tabId,
-      'quickInput'
-    ).then(({ data }) => {
-      dispatch({
-        type: FETCH_QUICKINPUT_DATA,
-        payload: {
-          data: parseToDisplay(data.fieldsByName),
-          id: data.id,
-        },
-      });
-    });
+    return initQuickInput('window', windowId, docId, tabId, 'quickInput').then(
+      ({ data }) => {
+        dispatch({
+          type: FETCH_QUICKINPUT_DATA,
+          payload: {
+            data: parseToDisplay(data.fieldsByName),
+            id: data.id,
+          },
+        });
+      }
+    );
   };
 }
 
