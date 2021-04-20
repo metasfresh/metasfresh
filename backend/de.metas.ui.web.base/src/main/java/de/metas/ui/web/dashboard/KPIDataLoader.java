@@ -224,7 +224,7 @@ public class KPIDataLoader
 
 			logger.trace("Got response: \n{}", response);
 		}
-		catch (final NoNodeAvailableException e)
+		catch (final NoNodeAvailableException | java.net.ConnectException e)
 		{
 			// elastic search transport error => nothing to do about it
 			throw new AdempiereException("Cannot connect to elasticsearch node."
@@ -276,7 +276,7 @@ public class KPIDataLoader
 
 	private static String toESQueryString(@NonNull final Instant instant)
 	{
-		return "\"" + instant.toString() + "\"";
+		return "\"" + instant + "\"";
 	}
 
 	private void loadDataFromMultiBucketsAggregation(
