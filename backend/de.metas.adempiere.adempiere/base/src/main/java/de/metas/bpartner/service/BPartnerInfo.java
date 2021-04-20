@@ -38,11 +38,11 @@ import lombok.Value;
  * So, actually just a bunch of IDs. Not DDD at all.
  */
 @Value
-public final class BPartnerInfo
+public class BPartnerInfo
 {
-	private final BPartnerId bpartnerId;
-	private final BPartnerLocationId bpartnerLocationId;
-	private final BPartnerContactId contactId;
+	BPartnerId bpartnerId;
+	BPartnerLocationId bpartnerLocationId;
+	BPartnerContactId contactId;
 
 	@Builder
 	private BPartnerInfo(
