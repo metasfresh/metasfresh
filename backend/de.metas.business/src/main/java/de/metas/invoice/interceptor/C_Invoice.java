@@ -8,8 +8,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.IDocumentLocationBL;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.service.IInvoiceBL;
@@ -34,6 +35,7 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
@@ -56,7 +58,7 @@ public class C_Invoice // 03771
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
-	private final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
+	private final IDocumentLocationBL documentLocationBL;
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
@@ -65,9 +67,12 @@ public class C_Invoice // 03771
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-	public C_Invoice(@NonNull final PaymentReservationService paymentReservationService)
+	public C_Invoice(
+			@NonNull final PaymentReservationService paymentReservationService,
+			@NonNull final IDocumentLocationBL documentLocationBL)
 	{
 		this.paymentReservationService = paymentReservationService;
+		this.documentLocationBL = documentLocationBL;
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
@@ -113,7 +118,7 @@ public class C_Invoice // 03771
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_ID, I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID, I_C_Invoice.COLUMNNAME_AD_User_ID })
 	public void updateBPartnerAddress(final I_C_Invoice doc)
 	{
-		documentLocationBL.setBPartnerAddress(doc);
+		documentLocationBL.setBPartnerAddress(InvoiceDocumentLocationAdapterFactory.locationAdapter(doc));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }

@@ -114,6 +114,7 @@ public class OrderBL implements IOrderBL
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
 	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
@@ -405,43 +406,40 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void updateAddresses(final org.compiere.model.I_C_Order order)
+	public void updateOrderLineAddressesFromOrder(final org.compiere.model.I_C_Order order)
 	{
-		final de.metas.adempiere.model.I_C_Order orderEx = InterfaceWrapperHelper.create(order, de.metas.adempiere.model.I_C_Order.class);
-
-		for (final I_C_OrderLine line : Services.get(IOrderDAO.class).retrieveOrderLines(orderEx))
+		for (final I_C_OrderLine line : orderDAO.retrieveOrderLines(order))
 		{
-			if (orderEx.isDropShip() && orderEx.getDropShip_BPartner_ID() > 0)
+			if (order.isDropShip() && order.getDropShip_BPartner_ID() > 0)
 			{
-				line.setC_BPartner_ID(orderEx.getDropShip_BPartner_ID());
+				line.setC_BPartner_ID(order.getDropShip_BPartner_ID());
 			}
 			else
 			{
-				line.setC_BPartner_ID(orderEx.getC_BPartner_ID());
+				line.setC_BPartner_ID(order.getC_BPartner_ID());
 			}
 
-			if (orderEx.isDropShip() && orderEx.getDropShip_Location_ID() > 0)
+			if (order.isDropShip() && order.getDropShip_Location_ID() > 0)
 			{
-				line.setC_BPartner_Location_ID(orderEx.getDropShip_Location_ID());
-				line.setBPartnerAddress(orderEx.getDeliveryToAddress());
-
+				line.setC_BPartner_Location_ID(order.getDropShip_Location_ID());
+				line.setBPartnerAddress(order.getDeliveryToAddress());
 			}
 			else
 			{
-				line.setC_BPartner_Location_ID(orderEx.getC_BPartner_Location_ID());
-				line.setBPartnerAddress(orderEx.getBPartnerAddress());
+				line.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
+				line.setBPartnerAddress(order.getBPartnerAddress());
 			}
 
-			if (orderEx.isDropShip() && orderEx.getDropShip_User_ID() > 0)
+			if (order.isDropShip() && order.getDropShip_User_ID() > 0)
 			{
-				line.setAD_User_ID(orderEx.getDropShip_User_ID());
+				line.setAD_User_ID(order.getDropShip_User_ID());
 			}
 			else
 			{
-				line.setAD_User_ID(orderEx.getAD_User_ID());
+				line.setAD_User_ID(order.getAD_User_ID());
 			}
 
-			InterfaceWrapperHelper.save(line);
+			orderDAO.save(line);
 		}
 	}
 

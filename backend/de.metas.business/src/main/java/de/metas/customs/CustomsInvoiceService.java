@@ -33,11 +33,11 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.customs.event.CustomsInvoiceUserNotificationsProducer;
 import de.metas.customs.process.ShipmentLinesForCustomsInvoiceRepo;
 import de.metas.document.DocTypeId;
-import de.metas.document.IDocumentLocationBL;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.document.model.PlainDocumentLocation;
+import de.metas.document.location.DocumentLocation;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.AdMessageKey;
@@ -103,16 +103,18 @@ public class CustomsInvoiceService
 	private final CustomsInvoiceRepository customsInvoiceRepo;
 	private final OrderLineRepository orderLineRepo;
 	private final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo;
+	private final IDocumentLocationBL documentLocationBL;
 
 	public CustomsInvoiceService(
 			@NonNull final CustomsInvoiceRepository customsInvoiceRepo,
 			@NonNull final OrderLineRepository orderLineRepo,
-			@NonNull final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo)
+			@NonNull final ShipmentLinesForCustomsInvoiceRepo shipmentLinesForCustomsInvoiceRepo,
+			@NonNull final IDocumentLocationBL documentLocationBL)
 	{
 		this.customsInvoiceRepo = customsInvoiceRepo;
 		this.orderLineRepo = orderLineRepo;
 		this.shipmentLinesForCustomsInvoiceRepo = shipmentLinesForCustomsInvoiceRepo;
-
+		this.documentLocationBL = documentLocationBL;
 	}
 
 	public CustomsInvoice generateCustomsInvoice(@NonNull final CustomsInvoiceRequest customsInvoiceRequest)
@@ -374,15 +376,11 @@ public class CustomsInvoiceService
 
 		final String documentNo = reserveDocumentNo(docTypeId);
 
-		final PlainDocumentLocation documentLocation = PlainDocumentLocation.builder()
-				.bpartnerId(bpartnerLocationId.getBpartnerId())
-				.bpartnerLocationId(bpartnerLocationId)
-				.contactId(contactId)
-				.build();
-
-		Services.get(IDocumentLocationBL.class).setBPartnerAddress(documentLocation);
-
-		final String bpartnerAddress = documentLocation.getBPartnerAddress();
+		final String bpartnerAddress = documentLocationBL.mkFullAddress(DocumentLocation.builder()
+												 .bpartnerId(bpartnerLocationId.getBpartnerId())
+												 .bpartnerLocationId(bpartnerLocationId)
+												 .contactId(contactId)
+												 .build());
 
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(bpartnerLocationId)

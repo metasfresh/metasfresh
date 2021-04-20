@@ -1,16 +1,27 @@
 package de.metas.contracts.inoutcandidate;
 
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.sql.Timestamp;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_SubscriptionProgress;
+import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.inoutcandidate.api.IDeliverRequest;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -30,29 +41,15 @@ import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
+import java.sql.Timestamp;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_SubscriptionProgress;
-import de.metas.contracts.model.X_C_SubscriptionProgress;
-import de.metas.document.IDocumentLocationBL;
-import de.metas.document.model.IDocumentLocation;
-import de.metas.inoutcandidate.api.IDeliverRequest;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
-import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
-import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 {
@@ -236,8 +233,9 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setBill_Location_ID(term.getBill_Location_ID());
 		shipmentSchedule.setBill_User_ID(term.getBill_User_ID());
 
-		final IDocumentLocation documentLocation = InterfaceWrapperHelper.create(shipmentSchedule, IDocumentLocation.class);
-		documentLocationBL.setBPartnerAddress(documentLocation);
+		// commented out because there is no BPartnerAddress field nor BillToAddress field
+		// final IDocumentLocation documentLocation = InterfaceWrapperHelper.create(shipmentSchedule, IDocumentLocation.class);
+		// documentLocationBL.setBPartnerAddress(documentLocation);
 
 		shipmentSchedule.setDeliveryRule(term.getDeliveryRule());
 		shipmentSchedule.setDeliveryViaRule(term.getDeliveryViaRule());

@@ -1,16 +1,15 @@
 package de.metas.dunning.api.impl;
 
-import de.metas.document.model.IDocumentLocation;
+import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.dunning.model.I_C_DunningDoc;
-import de.metas.util.Check;
+import lombok.NonNull;
 
-public class DunningDocDocumentLocationAdapter implements IDocumentLocation
+class DunningDocDocumentLocationAdapter implements IDocumentLocationAdapter
 {
 	private final I_C_DunningDoc delegate;
 
-	public DunningDocDocumentLocationAdapter(I_C_DunningDoc delegate)
+	public DunningDocDocumentLocationAdapter(@NonNull final I_C_DunningDoc delegate)
 	{
-		Check.assume(delegate != null, "delegate not null");
 		this.delegate = delegate;
 	}
 
@@ -24,6 +23,17 @@ public class DunningDocDocumentLocationAdapter implements IDocumentLocation
 	public int getC_BPartner_Location_ID()
 	{
 		return delegate.getC_BPartner_Location_ID();
+	}
+
+	@Override
+	public int getC_BPartner_Location_Value_ID()
+	{
+		return -1;
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value_ID(final int C_BPartner_Location_Value_ID)
+	{
 	}
 
 	@Override
@@ -42,7 +52,5 @@ public class DunningDocDocumentLocationAdapter implements IDocumentLocation
 	public void setBPartnerAddress(String address)
 	{
 		delegate.setBPartnerAddress(address);
-
 	}
-
 }

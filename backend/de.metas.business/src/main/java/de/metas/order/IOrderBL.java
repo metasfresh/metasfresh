@@ -143,7 +143,7 @@ public interface IOrderBL extends ISingletonService
 	/**
 	 * Updates the addresses in the order lines from the order. Also sets the header info in the lines.
 	 */
-	void updateAddresses(I_C_Order order);
+	void updateOrderLineAddressesFromOrder(I_C_Order order);
 
 	/**
 	 * Retrieve deliveryVIaRule from order if the rule is already set, is retrieving the one set in order, if not, retrieves the deliveryViaRule from partner

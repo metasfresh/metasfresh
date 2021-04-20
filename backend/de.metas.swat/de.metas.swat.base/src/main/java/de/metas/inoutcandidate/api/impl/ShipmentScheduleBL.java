@@ -230,8 +230,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final String address = bPartnerBL.mkFullAddress(
 				bpartner,
 				location,
-				user,
-				InterfaceWrapperHelper.getTrxName(sched));
+				null, // locationId
+				user);
 
 		sched.setBPartnerAddress_Override(address);
 	}

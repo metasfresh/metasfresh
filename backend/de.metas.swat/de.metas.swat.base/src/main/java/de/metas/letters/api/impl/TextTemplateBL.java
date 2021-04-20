@@ -43,8 +43,8 @@ import org.slf4j.Logger;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
-import de.metas.document.IDocumentLocationBL;
-import de.metas.document.model.IDocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.letters.api.ITextTemplateBL;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.I_C_Letter;
@@ -155,7 +155,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 
 		//
 		// Update BPartnerAddress string
-		final IDocumentLocation docLocation = new LetterDocumentLocationAdapter(letter);
+		final IDocumentLocationAdapter docLocation = new LetterDocumentLocationAdapter(letter);
 		Services.get(IDocumentLocationBL.class).setBPartnerAddress(docLocation);
 
 		//

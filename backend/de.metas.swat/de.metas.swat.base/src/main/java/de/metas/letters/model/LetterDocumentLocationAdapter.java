@@ -1,9 +1,9 @@
 package de.metas.letters.model;
 
-import de.metas.document.model.IDocumentLocation;
+import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import lombok.NonNull;
 
-public class LetterDocumentLocationAdapter implements IDocumentLocation
+public class LetterDocumentLocationAdapter implements IDocumentLocationAdapter
 {
 	private final I_C_Letter delegate;
 
@@ -22,6 +22,17 @@ public class LetterDocumentLocationAdapter implements IDocumentLocation
 	public int getC_BPartner_Location_ID()
 	{
 		return delegate.getC_BPartner_Location_ID();
+	}
+
+	@Override
+	public int getC_BPartner_Location_Value_ID()
+	{
+		return -1;
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value_ID(final int C_BPartner_Location_Value_ID)
+	{
 	}
 
 	@Override

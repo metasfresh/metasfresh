@@ -17,6 +17,7 @@ import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationBL;
+import de.metas.location.LocationId;
 import de.metas.location.impl.AddressBuilder;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -105,16 +106,16 @@ public class BPartnerBL implements IBPartnerBL
 
 	@Override
 	public String mkFullAddress(
-			@NonNull final org.compiere.model.I_C_BPartner bPartner,
-			final I_C_BPartner_Location location,
-			final I_AD_User user,
-			final String trxName)
+			@NonNull final org.compiere.model.I_C_BPartner bpartner,
+			@Nullable final I_C_BPartner_Location bpLocation,
+			@Nullable final LocationId locationId,
+			@Nullable final I_AD_User bpContact)
 	{
 		final AddressBuilder addressBuilder = AddressBuilder.builder()
-				.orgId(OrgId.ofRepoId(bPartner.getAD_Org_ID()))
-				.adLanguage(bPartner.getAD_Language())
+				.orgId(OrgId.ofRepoId(bpartner.getAD_Org_ID()))
+				.adLanguage(bpartner.getAD_Language())
 				.build();
-		return addressBuilder.buildBPartnerFullAddressString(bPartner, location, user, trxName);
+		return addressBuilder.buildBPartnerFullAddressString(bpartner, bpLocation, locationId, bpContact);
 	}
 
 	@Override
@@ -289,9 +290,6 @@ public class BPartnerBL implements IBPartnerBL
 
 	/**
 	 * Selects the default contact from a list of BPartner users. Returns first user with IsDefaultContact=Y found or first contact.
-	 *
-	 * @param users
-	 * @return default user/contact.
 	 */
 	private I_AD_User getDefaultBPContact(final List<I_AD_User> users)
 	{
@@ -500,7 +498,7 @@ public class BPartnerBL implements IBPartnerBL
 		InterfaceWrapperHelper.saveRecord(template);
 	}
 
-	private final String extractName(final I_C_BPartner_QuickInput template)
+	private String extractName(final I_C_BPartner_QuickInput template)
 	{
 		if (template.isCompany())
 		{

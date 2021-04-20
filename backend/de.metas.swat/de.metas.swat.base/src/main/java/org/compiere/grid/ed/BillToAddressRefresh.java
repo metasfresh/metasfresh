@@ -4,8 +4,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.AbstractContextMenuAction;
 import org.compiere.model.GridTab;
 
-import de.metas.document.IDocumentLocationBL;
-import de.metas.document.model.IDocumentBillLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.util.Services;
 
 public class BillToAddressRefresh extends AbstractContextMenuAction
@@ -45,7 +45,7 @@ public class BillToAddressRefresh extends AbstractContextMenuAction
 	public void run()
 	{
 		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
-		final IDocumentBillLocation location = InterfaceWrapperHelper.create(getGridTab(), IDocumentBillLocation.class);
+		final IDocumentBillLocationAdapter location = InterfaceWrapperHelper.create(getGridTab(), IDocumentBillLocationAdapter.class);
 		documentLocationBL.setBillToAddress(location);	
 
 	}

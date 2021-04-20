@@ -1,6 +1,8 @@
 package de.metas.order.model.interceptor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.event.Topic;
@@ -28,6 +30,8 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	private static final Logger logger = LogManager.getLogger(OrderModuleInterceptor.class);
 	private final OrderGroupCompensationChangesHandler groupChangesHandler = SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class);
 	private final OrderLineDetailRepository orderLineDetailRepository = SpringContextHolder.instance.getBean(OrderLineDetailRepository.class);
+	private final IBPartnerBL bpartnerBL = SpringContextHolder.instance.getBean(IBPartnerBL.class);
+	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 	private final IESSystem esSystem = Services.get(IESSystem.class);
 
 	@Override
@@ -39,7 +43,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(orderLineDetailRepository)); // FRESH-348
+		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL)); // FRESH-348
 		engine.addModelValidator(new de.metas.order.model.interceptor.C_OrderLine(groupChangesHandler, orderLineDetailRepository));
 
 		setupElasticsearchIndexing();

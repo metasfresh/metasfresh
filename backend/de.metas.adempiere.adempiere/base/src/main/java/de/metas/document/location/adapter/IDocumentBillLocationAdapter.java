@@ -1,10 +1,8 @@
-package de.metas.document.model;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,16 +20,32 @@ package de.metas.document.model;
  * #L%
  */
 
-public interface IDocumentLocation
+package de.metas.document.location.adapter;
+
+import de.metas.location.LocationId;
+
+import javax.annotation.Nullable;
+
+public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTemplate
 {
-	int getC_BPartner_ID();
+	int getBill_BPartner_ID();
 
-	int getC_BPartner_Location_ID();
+	int getBill_Location_ID();
 
-	 // TODO this should be refactored to return BPartnerContactID
-	int getAD_User_ID();
+	int getBill_Location_Value_ID();
 
-	String getBPartnerAddress();
+	void setBill_Location_Value_ID(int Bill_Location_Value_ID);
 
-	void setBPartnerAddress(String address);
+	int getBill_User_ID();
+
+	String getBillToAddress();
+
+	void setBillToAddress(String address);
+
+	@Override
+	default void setLocationAndAddress(@Nullable final LocationId locationId, @Nullable final String address)
+	{
+		setBill_Location_Value_ID(LocationId.toRepoId(locationId));
+		setBillToAddress(address);
+	}
 }

@@ -1,38 +1,11 @@
 package de.metas.ui.web.letter;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.UnaryOperator;
-
-import de.metas.bpartner.BPartnerContactId;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.apache.commons.io.FileUtils;
-import org.compiere.util.Env;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.IDocumentLocationBL;
-import de.metas.document.model.PlainDocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.IMsgBL;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letters.api.ITextTemplateBL;
@@ -56,6 +29,31 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiOperation;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.apache.commons.io.FileUtils;
+import org.compiere.util.Env;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.UnaryOperator;
 
 /*
  * #%L
@@ -86,18 +84,26 @@ public class LetterRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/letter";
 
-	@Autowired
-	private UserSession userSession;
-
-	@Autowired
-	private WebuiLetterRepository lettersRepo;
-
-	@Autowired
-	private DocumentCollection documentCollection;
+	private final UserSession userSession;
+	private final WebuiLetterRepository lettersRepo;
+	private final DocumentCollection documentCollection;
+	private final IDocumentLocationBL documentLocationBL;
 
 	private static final String PATCH_FIELD_Message = "message";
 	private static final String PATCH_FIELD_TemplateId = "templateId";
 	private static final Set<String> PATCH_FIELD_ALL = ImmutableSet.of(PATCH_FIELD_Message, PATCH_FIELD_TemplateId);
+
+	public LetterRestController(
+			@NonNull final UserSession userSession,
+			@NonNull final WebuiLetterRepository lettersRepo,
+			@NonNull final DocumentCollection documentCollection,
+			@NonNull final IDocumentLocationBL documentLocationBL)
+	{
+		this.userSession = userSession;
+		this.lettersRepo = lettersRepo;
+		this.documentCollection = documentCollection;
+		this.documentLocationBL = documentLocationBL;
+	}
 
 	private final void assertReadable(final WebuiLetter letter)
 	{
@@ -141,22 +147,21 @@ public class LetterRestController
 
 		//
 		// Build BPartnerAddress
-		final PlainDocumentLocation documentLocation = PlainDocumentLocation.builder()
-				.bpartnerId(bpartnerId)
-				.bpartnerLocationId(bpartnerLocationId)
-				.contactId(contactId)
-				.build();
-		Services.get(IDocumentLocationBL.class).setBPartnerAddress(documentLocation);
-		final String bpartnerAddress = documentLocation.getBPartnerAddress();
 
-		final WebuiLetter letter = lettersRepo.createNewLetter(WebuiLetter.builder()
-				.contextDocumentPath(contextDocumentPath)
-				.ownerUserId(userSession.getLoggedUserId())
-				.adOrgId(context.getAD_Org_ID(userSession.getOrgId().getRepoId()))
-				.bpartnerId(BPartnerId.toRepoId(bpartnerId))
-				.bpartnerLocationId(BPartnerLocationId.toRepoId(bpartnerLocationId))
-				.bpartnerContactId(BPartnerContactId.toRepoId(contactId))
-				.bpartnerAddress(bpartnerAddress));
+		final WebuiLetter letter = lettersRepo.createNewLetter(
+				WebuiLetter.builder()
+						.contextDocumentPath(contextDocumentPath)
+						.ownerUserId(userSession.getLoggedUserId())
+						.adOrgId(context.getAD_Org_ID(userSession.getOrgId().getRepoId()))
+						.bpartnerId(BPartnerId.toRepoId(bpartnerId))
+						.bpartnerLocationId(BPartnerLocationId.toRepoId(bpartnerLocationId))
+						.bpartnerContactId(BPartnerContactId.toRepoId(contactId))
+						.bpartnerAddress(documentLocationBL.mkFullAddress(
+								DocumentLocation.builder()
+										.bpartnerId(bpartnerId)
+										.bpartnerLocationId(bpartnerLocationId)
+										.contactId(contactId)
+										.build())));
 
 		return JSONLetter.of(letter);
 	}

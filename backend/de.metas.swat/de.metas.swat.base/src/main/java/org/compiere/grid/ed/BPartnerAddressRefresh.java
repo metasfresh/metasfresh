@@ -4,8 +4,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.AbstractContextMenuAction;
 import org.compiere.model.GridTab;
 
-import de.metas.document.IDocumentLocationBL;
-import de.metas.document.model.IDocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.util.Services;
 
 public class BPartnerAddressRefresh extends AbstractContextMenuAction
@@ -40,7 +40,7 @@ public class BPartnerAddressRefresh extends AbstractContextMenuAction
 	public void run()
 	{
 		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
-		final IDocumentLocation location = InterfaceWrapperHelper.create(getGridTab(), IDocumentLocation.class);
+		final IDocumentLocationAdapter location = InterfaceWrapperHelper.create(getGridTab(), IDocumentLocationAdapter.class);
 		documentLocationBL.setBPartnerAddress(location);
 	}
 

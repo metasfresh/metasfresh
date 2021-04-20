@@ -20,36 +20,33 @@
  * #L%
  */
 
-package de.metas.document.model;
+package de.metas.document.location;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.model.IDocumentLocation;
+import de.metas.location.LocationId;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
-/**
- * Plain implementation of {@link IDocumentLocation} which will load dependent objects (bpartner, location, contact) on demand, using given context and trxName.
- *
- * @author tsa
- */
-@Data
-public final class PlainDocumentLocation implements IDocumentLocation
+@Value
+public class DocumentLocation
 {
-	private final BPartnerId bpartnerId;
-	private final BPartnerLocationId bpartnerLocationId;
-	private final BPartnerContactId contactId;
+	BPartnerId bpartnerId;
+	BPartnerLocationId bpartnerLocationId;
+	LocationId locationId;
+	BPartnerContactId contactId;
+	String bpartnerAddress;
 
-	private String bpartnerAddress;
-
-	@Builder
-	private PlainDocumentLocation(
+	@Builder(toBuilder = true)
+	private DocumentLocation(
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final BPartnerLocationId bpartnerLocationId,
+			@Nullable final LocationId locationId,
 			@Nullable final BPartnerContactId contactId,
 			@Nullable final String bpartnerAddress)
 	{
@@ -64,38 +61,15 @@ public final class PlainDocumentLocation implements IDocumentLocation
 
 		this.bpartnerId = bpartnerId;
 		this.bpartnerLocationId = bpartnerLocationId;
+		this.locationId = locationId;
 		this.contactId = contactId;
 		this.bpartnerAddress = bpartnerAddress;
 	}
 
-	@Override
-	public int getC_BPartner_ID()
+	public DocumentLocation withLocationId(@Nullable final LocationId locationId)
 	{
-		return BPartnerId.toRepoId(bpartnerId);
+		return !Objects.equals(this.locationId, locationId)
+				? toBuilder().locationId(locationId).build()
+				: this;
 	}
-
-	@Override
-	public int getC_BPartner_Location_ID()
-	{
-		return BPartnerLocationId.toRepoId(bpartnerLocationId);
-	}
-
-	@Override
-	public int getAD_User_ID()
-	{
-		return BPartnerContactId.toRepoId(contactId);
-	}
-
-	@Override
-	public String getBPartnerAddress()
-	{
-		return bpartnerAddress;
-	}
-
-	@Override
-	public void setBPartnerAddress(@Nullable final String bpartnerAddress)
-	{
-		this.bpartnerAddress = bpartnerAddress;
-	}
-
 }

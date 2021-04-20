@@ -29,6 +29,7 @@ package de.metas.adempiere.process;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.invoice.InvoiceDocumentLocationAdapterFactory;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
@@ -43,7 +44,7 @@ import org.compiere.util.TrxRunnable;
 
 import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.document.IDocumentLocationBL;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -73,9 +74,11 @@ public class C_Invoice_Fix_DocumentLocations
 
 					while (!invoicesToFix.isEmpty())
 					{
+						final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
+
 						for (final I_C_Invoice invoiceToFix : invoicesToFix)
 						{
-							Services.get(IDocumentLocationBL.class).setBPartnerAddress(invoiceToFix);
+							documentLocationBL.setBPartnerAddress(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoiceToFix));
 							InterfaceWrapperHelper.save(invoiceToFix);
 
 							counter++;

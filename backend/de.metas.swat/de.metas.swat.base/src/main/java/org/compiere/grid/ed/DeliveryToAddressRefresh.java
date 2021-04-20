@@ -4,8 +4,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.AbstractContextMenuAction;
 import org.compiere.model.GridTab;
 
-import de.metas.document.IDocumentLocationBL;
-import de.metas.document.model.IDocumentDeliveryLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.util.Services;
 
 public class DeliveryToAddressRefresh extends AbstractContextMenuAction
@@ -45,7 +45,7 @@ public class DeliveryToAddressRefresh extends AbstractContextMenuAction
 	public void run()
 	{
 		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
-		final IDocumentDeliveryLocation location = InterfaceWrapperHelper.create(getGridTab(), IDocumentDeliveryLocation.class);
+		final IDocumentDeliveryLocationAdapter location = InterfaceWrapperHelper.create(getGridTab(), IDocumentDeliveryLocationAdapter.class);
 		documentLocationBL.setDeliveryToAddress(location);
 	}
 
