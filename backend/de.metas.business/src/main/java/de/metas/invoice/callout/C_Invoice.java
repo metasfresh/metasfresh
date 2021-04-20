@@ -106,11 +106,11 @@ public class C_Invoice
 			dateInvoiced = SystemTime.asZonedDateTime();
 		}
 
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
 
 		final I_M_PriceList priceListNew = priceListBL.getCurrentPricelistOrNull(
 				pricingSystemId,
-				CountryId.ofRepoId(bPartnerLocationRecord.getC_Location().getC_Country_ID()),
+				bpartnerDAO.getBPartnerLocationCountryId(bpartnerLocationId),
 				dateInvoiced,
 				soTrx);
 		if (priceListNew == null)

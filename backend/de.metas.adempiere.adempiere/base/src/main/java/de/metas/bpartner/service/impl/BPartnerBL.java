@@ -331,7 +331,7 @@ public class BPartnerBL implements IBPartnerBL
 		final ILocationBL locationBL = Services.get(ILocationBL.class);
 
 		final String address = locationBL.mkAddress(
-				bpLocation.getC_Location(),
+				locationBL.getRecordById(LocationId.ofRepoId(bpLocation.getC_Location_ID())),
 				bpartner,
 				"",  // bPartnerBlock
 				"" // userBlock

@@ -454,9 +454,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		{
 			return null;
 		}
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
-
-		return CountryId.ofRepoId(bPartnerLocationRecord.getC_Location().getC_Country_ID());
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+		return Services.get(IBPartnerDAO.class).getBPartnerLocationCountryId(bpartnerLocationId);
 	}
 
 	@Override
