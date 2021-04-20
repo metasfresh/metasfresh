@@ -62,6 +62,7 @@ public class GetCurrenciesRoute extends RouteBuilder
 		jcachePolicy.setCache(cache);
 
 		from(direct(GET_CURRENCY_ROUTE_ID))
+				.id(GET_CURRENCY_ROUTE_ID)
 				.streamCaching()
 				.policy(jcachePolicy)
 				.log("Route invoked!")
