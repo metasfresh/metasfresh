@@ -104,12 +104,25 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public <T extends I_M_Product> T getById(@NonNull final ProductId productId, @NonNull final Class<T> productClass)
 	{
-		final T product = load(productId, productClass); // we can't load out-of-trx, because it's possible that the product was created just now, within the current trx!
+		// we can't load out-of-trx, because it's possible that the product was created just now, within the current trx!
+		return getByIdInTrx(productId, productClass);
+	}
+
+	@Override
+	public <T extends I_M_Product> T getByIdInTrx(@NonNull final ProductId productId, @NonNull final Class<T> productClass)
+	{
+		final T product = load(productId, productClass);
 		if (product == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_Product_ID@: " + productId);
 		}
 		return product;
+	}
+
+	@Override
+	public I_M_Product getByIdInTrx(@NonNull final ProductId productId)
+	{
+		return getByIdInTrx(productId, I_M_Product.class);
 	}
 
 	@Override
@@ -539,13 +552,18 @@ public class ProductDAO implements IProductDAO
 	public int getGuaranteeMonthsInDays(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
-		if(product != null && Check.isNotBlank(product.getGuaranteeMonths()))
+		if (product != null && Check.isNotBlank(product.getGuaranteeMonths()))
 		{
-			switch (product.getGuaranteeMonths()) {
-				case X_M_Product.GUARANTEEMONTHS_12: return ONE_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_24: return TWO_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_36: return THREE_YEAR_DAYS;
-				default: return 0;
+			switch (product.getGuaranteeMonths())
+			{
+				case X_M_Product.GUARANTEEMONTHS_12:
+					return ONE_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_24:
+					return TWO_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_36:
+					return THREE_YEAR_DAYS;
+				default:
+					return 0;
 			}
 		}
 		return 0;

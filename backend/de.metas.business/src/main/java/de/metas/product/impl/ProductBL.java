@@ -72,6 +72,12 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public I_M_Product getByIdInTrx(@NonNull final ProductId productId)
+	{
+		return productsRepo.getByIdInTrx(productId);
+	}
+
+	@Override
 	public ProductId getProductIdByValue(String productValue)
 	{
 		return productsRepo.retrieveProductIdByValue(productValue);
