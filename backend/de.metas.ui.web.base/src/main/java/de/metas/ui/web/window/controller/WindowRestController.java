@@ -794,7 +794,8 @@ public class WindowRestController
 
 			if (labelsValueColumnName.endsWith("_ID"))
 			{
-				final TableRefInfo tableRefInfo = Services.get(ILookupDAO.class)
+				final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
+				final TableRefInfo tableRefInfo = lookupDAO
 						.retrieveTableDirectRefInfo(labelsValueColumnName);
 
 				return DocumentZoomIntoInfo.of(tableRefInfo.getTableName(), -1);
