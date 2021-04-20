@@ -7,6 +7,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -57,6 +58,14 @@ public class BPartnerLocationId implements RepoIdAware
 				? ofRepoId(bpartnerId, bpartnerLocationId)
 				: null;
 	}
+
+	public static Optional<BPartnerLocationId> optionalOfRepoId(
+			@Nullable final Integer bpartnerId,
+			@Nullable final Integer bpartnerLocationId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(bpartnerId, bpartnerLocationId));
+	}
+
 
 	@Nullable
 	public static BPartnerLocationId ofRepoIdOrNull(
