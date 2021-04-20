@@ -9,7 +9,7 @@ import {
   getProcessData,
   formatParentUrl,
   deleteRequest,
-  initQuickActions,
+  initQuickInput,
   completeRequest,
 } from './window';
 import {
@@ -98,6 +98,6 @@ export {
   patchViewAttributesRequest,
   getViewAttributeDropdown,
   getViewAttributeTypeahead,
-  initQuickActions,
+  initQuickInput,
   completeRequest,
 };

@@ -227,19 +227,20 @@ export function getPrintingOptions({ entity, windowId, docId, tabId, rowId }) {
 }
 
 /**
- * @method initQuickActions
+ * @method initQuickInput
  * @summary Fetch data for table quick input
  * @param {string} entity - for example 'window'
  * @param {string} windowId
  * @param {string} docId
  * @param {string} tabId
- * @param {string} subentity
+ * @param {string} subentity - for example `quickInput`
  */
-export function initQuickActions(entity, windowId, docId, tabId, subentity) {
+export function initQuickInput(entity, windowId, docId, tabId, subentity) {
+  tabId = tabId ? `/${tabId}` : '';
+  subentity = subentity ? `/${subentity}` : '';
+
   return post(
-    `${config.API_URL}/${entity}/${windowId}/${docId}${
-      tabId ? `/${tabId}` : ''
-    }${subentity ? `/${subentity}` : ''}`
+    `${config.API_URL}/${entity}/${windowId}/${docId}${tabId}${subentity}`
   );
 }
 
@@ -250,7 +251,7 @@ export function initQuickActions(entity, windowId, docId, tabId, subentity) {
  * @param {string} windowId
  * @param {string} docId
  * @param {string} tabId
- * @param {string} subentity
+ * @param {string} subentity - for example `quickInput`
  * @param {string} subentityId
  */
 export function completeRequest(
@@ -262,11 +263,16 @@ export function completeRequest(
   subentity,
   subentityId
 ) {
+  docType = docType ? `/${docType}` : '';
+  docId = docId ? `/${docId}` : '';
+  tabId = tabId ? `/${tabId}` : '';
+  rowId = rowId ? `/${rowId}` : '';
+  subentity = subentity ? `/${subentity}` : '';
+  subentityId = subentityId ? `/${subentityId}` : '';
+
   return post(
-    `${config.API_URL}/${entity}${docType ? `/${docType}` : ''}${
-      docId ? `/${docId}` : ''
-    }${tabId ? `/${tabId}` : ''}${rowId ? `/${rowId}` : ''}${
-      subentity ? `/${subentity}` : ''
-    }${subentityId ? `/${subentityId}` : ''}/complete`
+    `${
+      config.API_URL
+    }/${entity}${docType}${docId}${tabId}${rowId}${subentity}${subentityId}/complete`
   );
 }

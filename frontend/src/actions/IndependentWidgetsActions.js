@@ -2,7 +2,7 @@ import {
   getViewAttributesRequest,
   getViewAttributesLayoutRequest,
   patchViewAttributesRequest,
-  initQuickActions,
+  initQuickInput,
   getLayout,
   patchRequest,
 } from '../api';
@@ -217,7 +217,7 @@ export function patchQuickInput({ windowId, docId, tabId, prop, value }) {
  */
 export function fetchQuickInputData({ windowId, docId, tabId }) {
   return (dispatch) => {
-    return initQuickActions(
+    return initQuickInput(
       'window',
       windowId,
       docId,
