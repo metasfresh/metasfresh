@@ -789,7 +789,7 @@ public class WindowRestController
 		// label field
 		else if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.Labels)
 		{
-			final LabelsLookup lookup = LabelsLookup.cast(field.getDescriptor().getLookupDescriptor().orElse(null));
+			final LabelsLookup lookup = LabelsLookup.cast(field.getDescriptor().getLookupDescriptor().orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor").setParameter("field", field)));
 			final String labelsValueColumnName = lookup.getLabelsValueColumnName();
 
 			if (labelsValueColumnName.endsWith("_ID"))
