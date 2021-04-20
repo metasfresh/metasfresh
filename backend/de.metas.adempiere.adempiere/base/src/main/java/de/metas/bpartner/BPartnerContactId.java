@@ -75,9 +75,14 @@ public class BPartnerContactId implements RepoIdAware
 
 	@Nullable
 	public static BPartnerContactId ofRepoIdOrNull(
-			@NonNull final BPartnerId bpartnerId,
+			@Nullable final BPartnerId bpartnerId,
 			@Nullable final Integer contactRepoId)
 	{
+		if(bpartnerId == null)
+		{
+			return null;
+		}
+
 		final UserId userId = toValidContactUserIdOrNull(contactRepoId);
 		return userId != null ? of(bpartnerId, userId) : null;
 	}
