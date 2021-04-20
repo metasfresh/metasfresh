@@ -1,15 +1,15 @@
 package de.metas.bpartner.service;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.location.LocationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -40,30 +40,37 @@ import lombok.Value;
 @Value
 public class BPartnerInfo
 {
-	BPartnerId bpartnerId;
+	@NonNull BPartnerId bpartnerId;
+
+	@Nullable
 	BPartnerLocationId bpartnerLocationId;
+
+	@Nullable
+	LocationId locationId;
+
+	@Nullable
 	BPartnerContactId contactId;
 
 	@Builder
 	private BPartnerInfo(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final BPartnerLocationId bpartnerLocationId,
+			@Nullable final LocationId locationId,
 			@Nullable final BPartnerContactId contactId)
 	{
-		if (bpartnerLocationId != null
-				&& !bpartnerId.equals(bpartnerLocationId.getBpartnerId()))
+		if (bpartnerLocationId != null && !bpartnerId.equals(bpartnerLocationId.getBpartnerId()))
 		{
 			throw new AdempiereException("" + bpartnerId + " and " + bpartnerLocationId + " not matching");
 		}
 
-		if (contactId != null
-				&& !bpartnerId.equals(contactId.getBpartnerId()))
+		if (contactId != null && !bpartnerId.equals(contactId.getBpartnerId()))
 		{
 			throw new AdempiereException("" + bpartnerId + " and " + contactId + " not matching");
 		}
 
 		this.bpartnerId = bpartnerId;
 		this.bpartnerLocationId = bpartnerLocationId;
+		this.locationId = locationId;
 		this.contactId = contactId;
 	}
 }

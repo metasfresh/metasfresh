@@ -12,6 +12,7 @@ import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
+import de.metas.location.ILocationDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParams;
@@ -81,6 +82,7 @@ public class OLCandBL implements IOLCandBL
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
 
@@ -219,8 +221,8 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getPaymentRule();
 
 		return coalesce(orderCandidatePaymentRule,
-				bpartnerOrderParamsPaymentRule,
-				orderDefaultsPaymentRule);
+						bpartnerOrderParamsPaymentRule,
+						orderDefaultsPaymentRule);
 	}
 
 	@Override
@@ -238,8 +240,8 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getPaymentTermId();
 
 		return coalesce(orderCandidatePaymenTermId,
-				bpartnerOrderParamsPaymentTermId,
-				orderDefaultsPaymentTermId);
+						bpartnerOrderParamsPaymentTermId,
+						orderDefaultsPaymentTermId);
 	}
 
 	@Override
@@ -257,8 +259,8 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getShipperId();
 
 		return coalesce(orderCandiateShipperId,
-				bpartnerOrderParamsShipperId,
-				orderDefaultsShipperId);
+						bpartnerOrderParamsShipperId,
+						orderDefaultsShipperId);
 	}
 
 	@Override
@@ -272,7 +274,7 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getDocTypeTargetId();
 
 		return coalesce(orderDocTypeId,
-				orderDefaultsDocTypeId);
+						orderDefaultsDocTypeId);
 	}
 
 	@Override
@@ -344,18 +346,17 @@ public class OLCandBL implements IOLCandBL
 
 		pricingCtx.setDisallowDiscount(olCandRecord.isManualDiscount());
 
+		final CountryId countryId = getCountryId(shipToPartnerInfo);
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemId,
-				shipToPartnerInfo.getBpartnerLocationId(),
+				countryId,
 				SOTrx.SALES);
 		if (plId == null)
 		{
-			throw new AdempiereException("@M_PriceList@ @NotFound@: @M_PricingSystem@ " + pricingSystemId + ", @DropShip_Location@ " + shipToPartnerInfo.getBpartnerLocationId());
+			throw new AdempiereException("@M_PriceList_ID@ @NotFound@: @M_PricingSystem_ID@ " + pricingSystemId + ", @DropShip_Location_ID@ " + shipToPartnerInfo.getBpartnerLocationId());
 		}
 		pricingCtx.setPriceListId(plId);
 		pricingCtx.setProductId(effectiveValuesBL.getM_Product_Effective_ID(olCandRecord));
-
-		final CountryId countryId = bpartnerDAO.getBPartnerLocationCountryId(shipToPartnerInfo.getBpartnerLocationId());
 		pricingCtx.setCountryId(countryId);
 
 		pricingResult = pricingBL.calculatePrice(pricingCtx.setFailIfNotCalculated());
@@ -388,8 +389,8 @@ public class OLCandBL implements IOLCandBL
 		if (currencyId == null)
 		{
 			throw new AdempiereException("@NotFound@ @C_Currency@"
-					+ "\n Pricing context: " + pricingCtx
-					+ "\n Pricing result: " + pricingResult);
+												 + "\n Pricing context: " + pricingCtx
+												 + "\n Pricing result: " + pricingResult);
 		}
 
 		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, pricingResult.getPrecision().toInt());
@@ -400,6 +401,18 @@ public class OLCandBL implements IOLCandBL
 		pricingResult.setDisallowDiscount(olCandRecord.isManualDiscount());
 
 		return pricingResult;
+	}
+
+	private CountryId getCountryId(final BPartnerInfo bpartnerInfo)
+	{
+		if (bpartnerInfo.getLocationId() != null)
+		{
+			return locationDAO.getCountryIdByLocationId(bpartnerInfo.getLocationId());
+		}
+		else
+		{
+			return bpartnerDAO.getBPartnerLocationCountryId(bpartnerInfo.getBpartnerLocationId());
+		}
 	}
 
 	@Override
@@ -416,8 +429,7 @@ public class OLCandBL implements IOLCandBL
 				.shipBPartnerId(shipToPartnerInfo.getBpartnerId())
 				.billBPartnerId(billBPartnerId)
 				.build();
-		final BPartnerOrderParams params = bPartnerOrderParamsRepository.getBy(query);
-		return params;
+		return bPartnerOrderParamsRepository.getBy(query);
 	}
 
 	@Override
@@ -455,7 +467,7 @@ public class OLCandBL implements IOLCandBL
 	@Override
 	public void markAsProcessed(final OLCand olCand)
 	{
-		olCand.setProcessed(true);
+		olCand.setProcessed();
 		saveCandidate(olCand);
 	}
 

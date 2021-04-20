@@ -139,6 +139,8 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 
 	BPartnerInfo getBuyerPartnerInfo(I_C_OLCand olCandRecord);
 
+	BPartnerInfo getBillToPartnerInfo(@NonNull I_C_OLCand olCandRecord);
+
 	Optional<BPartnerInfo> getDropShipPartnerInfo(I_C_OLCand olCandRecord);
 
 	Optional<BPartnerInfo> getHandOverPartnerInfo(I_C_OLCand olCandRecord);
@@ -171,44 +173,5 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 */
 	I_C_UOM getC_UOM_Effective(I_C_OLCand olCand);
 
-	/**
-	 * Returns, falling back to the next if not set:
-	 *
-	 * <ul>
-	 * <li><code>HandOver_Partner_Override_ID</code></li>
-	 * <li><code>HandOver_Partner_ID</code></li>
-	 * <li><code>C_BPartner_Override_ID</code></li>
-	 * <li><code>C_BPartner_ID</code></li>
-	 * </ul>
-	 *
-	 * #100 FRESH-435: even if the (effective) HandOver_Partner_ID is the same as the (effective) C_BPartner_ID, this method shall not return 0.
-	 *
-	 * @return id or {@code null}.
-	 */
-	BPartnerId getHandOverPartnerEffectiveId(I_C_OLCand olCand);
-
-	/**
-	 * Like {@link #getHandOverPartnerEffectiveId(I_C_OLCand)}, but returns the actual partner.
-	 */
-	I_C_BPartner getHandOver_Partner_Effective(I_C_OLCand olCand);
-
-	/**
-	 *
-	 * Returns, falling back to the next if not set:
-	 * <ul>
-	 * <li><code>HandOver_Location_Override_ID</code></li>
-	 * <li><code>HandOver_Location_ID</code></li>
-	 * <li><code>C_BPartner_Location_Override_ID</code></li>
-	 * <li><code>C_BPartner_Location_ID</code></li>
-	 * <li>the effective BPartner's ShipTo-location</li>
-	 * </ul>
-	 *
-	 * #100 FRESH-435: even if the (effective) HandOver_Location_ID is the same as the (effective) C_BPartner_Location_ID, this method shall not return 0.
-	 */
-	BPartnerLocationId getHandOverLocationEffectiveId(I_C_OLCand olCand);
-
-	/**
-	 * Like {@link #getHandOverLocationEffectiveId(I_C_OLCand)}, but returns the actual location.
-	 */
 	I_C_BPartner_Location getHandOver_Location_Effective(I_C_OLCand olCand);
 }

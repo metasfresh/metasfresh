@@ -19,6 +19,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryRule;
@@ -199,6 +200,7 @@ class OLCandOrderFactory
 		final BPartnerInfo bpartner = candidateOfGroup.getBPartnerInfo();
 		order.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
 		order.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
+		order.setC_BPartner_Location_Value_ID(LocationId.toRepoId(bpartner.getLocationId()));
 		order.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 
 		// if the olc has no value set, we are not falling back here!
@@ -207,6 +209,7 @@ class OLCandOrderFactory
 		{
 			order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
 			order.setBill_Location_ID(BPartnerLocationId.toRepoId(billBPartner.getBpartnerLocationId()));
+			order.setBill_Location_Value_ID(LocationId.toRepoId(billBPartner.getLocationId()));
 			order.setBill_User_ID(BPartnerContactId.toRepoId(billBPartner.getContactId()));
 		}
 
@@ -226,6 +229,7 @@ class OLCandOrderFactory
 		{
 			order.setDropShip_BPartner_ID(BPartnerId.toRepoId(dropShipBPartner.getBpartnerId()));
 			order.setDropShip_Location_ID(BPartnerLocationId.toRepoId(dropShipBPartner.getBpartnerLocationId()));
+			order.setDropShip_Location_Value_ID(LocationId.toRepoId(dropShipBPartner.getLocationId()));
 			order.setDropShip_User_ID(BPartnerContactId.toRepoId(dropShipBPartner.getContactId()));
 			final boolean isDropShip = dropShipBPartner.getBpartnerId() != null || dropShipBPartner.getBpartnerLocationId() != null;
 			order.setIsDropShip(isDropShip);
@@ -240,6 +244,7 @@ class OLCandOrderFactory
 		{
 			order.setHandOver_Partner_ID(BPartnerId.toRepoId(handOverBPartner.getBpartnerId()));
 			order.setHandOver_Location_ID(BPartnerLocationId.toRepoId(handOverBPartner.getBpartnerLocationId()));
+			order.setHandOver_Location_Value_ID(LocationId.toRepoId(handOverBPartner.getLocationId()));
 			order.setHandOver_User_ID(BPartnerContactId.toRepoId(handOverBPartner.getContactId()));
 		}
 		order.setIsUseHandOver_Location(handOverBPartner != null && handOverBPartner.getBpartnerLocationId() != null);
