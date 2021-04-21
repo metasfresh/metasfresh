@@ -1,138 +1,145 @@
 package de.metas.invoicecandidate.model;
 
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ProductGroup_Product
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_ProductGroup_Product 
 {
 
-    /** TableName=M_ProductGroup_Product */
-    public static final String Table_Name = "M_ProductGroup_Product";
+	String Table_Name = "M_ProductGroup_Product";
 
-    /** AD_Table_ID=540324 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540324 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, Object>(I_M_ProductGroup_Product.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_ProductGroup_Product, Object> COLUMN_Created = new ModelColumn<>(I_M_ProductGroup_Product.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, Object>(I_M_ProductGroup_Product.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_ProductGroup_Product, Object> COLUMN_IsActive = new ModelColumn<>(I_M_ProductGroup_Product.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Produkt Kategorie.
-	 * Kategorie eines Produktes
+	 * Set Product Category.
+	 * Category of a Product
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_Category_ID (int M_Product_Category_ID);
+	void setM_Product_Category_ID (int M_Product_Category_ID);
 
 	/**
-	 * Get Produkt Kategorie.
-	 * Kategorie eines Produktes
+	 * Get Product Category.
+	 * Category of a Product
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_Category_ID();
+	int getM_Product_Category_ID();
 
-    /** Column name M_Product_Category_ID */
-    public static final String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
+	String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Produktgruppe.
@@ -142,7 +149,7 @@ public interface I_M_ProductGroup_Product
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ProductGroup_ID (int M_ProductGroup_ID);
+	void setM_ProductGroup_ID (int M_ProductGroup_ID);
 
 	/**
 	 * Get Produktgruppe.
@@ -152,16 +159,14 @@ public interface I_M_ProductGroup_Product
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_ProductGroup_ID();
+	int getM_ProductGroup_ID();
 
-	public de.metas.invoicecandidate.model.I_M_ProductGroup getM_ProductGroup();
+	de.metas.invoicecandidate.model.I_M_ProductGroup getM_ProductGroup();
 
-	public void setM_ProductGroup(de.metas.invoicecandidate.model.I_M_ProductGroup M_ProductGroup);
+	void setM_ProductGroup(de.metas.invoicecandidate.model.I_M_ProductGroup M_ProductGroup);
 
-    /** Column definition for M_ProductGroup_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, de.metas.invoicecandidate.model.I_M_ProductGroup> COLUMN_M_ProductGroup_ID = new org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, de.metas.invoicecandidate.model.I_M_ProductGroup>(I_M_ProductGroup_Product.class, "M_ProductGroup_ID", de.metas.invoicecandidate.model.I_M_ProductGroup.class);
-    /** Column name M_ProductGroup_ID */
-    public static final String COLUMNNAME_M_ProductGroup_ID = "M_ProductGroup_ID";
+	ModelColumn<I_M_ProductGroup_Product, de.metas.invoicecandidate.model.I_M_ProductGroup> COLUMN_M_ProductGroup_ID = new ModelColumn<>(I_M_ProductGroup_Product.class, "M_ProductGroup_ID", de.metas.invoicecandidate.model.I_M_ProductGroup.class);
+	String COLUMNNAME_M_ProductGroup_ID = "M_ProductGroup_ID";
 
 	/**
 	 * Set Produktgruppe - Produkt.
@@ -170,7 +175,7 @@ public interface I_M_ProductGroup_Product
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ProductGroup_Product_ID (int M_ProductGroup_Product_ID);
+	void setM_ProductGroup_Product_ID (int M_ProductGroup_Product_ID);
 
 	/**
 	 * Get Produktgruppe - Produkt.
@@ -179,61 +184,33 @@ public interface I_M_ProductGroup_Product
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_ProductGroup_Product_ID();
+	int getM_ProductGroup_Product_ID();
 
-    /** Column definition for M_ProductGroup_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, Object> COLUMN_M_ProductGroup_Product_ID = new org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, Object>(I_M_ProductGroup_Product.class, "M_ProductGroup_Product_ID", null);
-    /** Column name M_ProductGroup_Product_ID */
-    public static final String COLUMNNAME_M_ProductGroup_Product_ID = "M_ProductGroup_Product_ID";
+	ModelColumn<I_M_ProductGroup_Product, Object> COLUMN_M_ProductGroup_Product_ID = new ModelColumn<>(I_M_ProductGroup_Product.class, "M_ProductGroup_Product_ID", null);
+	String COLUMNNAME_M_ProductGroup_Product_ID = "M_ProductGroup_Product_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getM_Product_ID();
-
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_ProductGroup_Product, Object>(I_M_ProductGroup_Product.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_ProductGroup_Product, Object> COLUMN_Updated = new ModelColumn<>(I_M_ProductGroup_Product.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }
