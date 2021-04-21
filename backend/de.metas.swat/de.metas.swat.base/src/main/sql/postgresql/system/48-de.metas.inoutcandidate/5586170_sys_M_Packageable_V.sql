@@ -1,6 +1,3 @@
-DROP VIEW IF EXISTS M_Packageable_V
-;
-
 CREATE OR REPLACE VIEW M_Packageable_V AS
 SELECT p.*
 
