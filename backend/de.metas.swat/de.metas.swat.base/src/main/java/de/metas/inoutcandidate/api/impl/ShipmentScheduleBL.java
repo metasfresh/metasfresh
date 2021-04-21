@@ -73,6 +73,7 @@ import org.adempiere.util.lang.NullAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -175,14 +176,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IDocumentLocationBL documentLocationBL;
 
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
-
-	public ShipmentScheduleBL(@NonNull final IDocumentLocationBL documentLocationBL)
-	{
-		this.documentLocationBL = documentLocationBL;
-	}
 
 	@Override
 	public boolean allMissingSchedsWillBeCreatedLater()
@@ -220,6 +215,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void updateCapturedLocationsAndRenderedAddresses(final I_M_ShipmentSchedule sched)
 	{
+		// TODO: atm we are getting it just in time instead of wiring it at construction time,
+		// because if not we have to adapt >300 tests which would fail
+		final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+
 		ShipmentScheduleLocationsUpdater.builder()
 				.documentLocationBL(documentLocationBL)
 				.record(sched)
