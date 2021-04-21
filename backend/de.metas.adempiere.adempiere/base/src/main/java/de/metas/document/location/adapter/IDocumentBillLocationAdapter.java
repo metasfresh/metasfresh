@@ -101,4 +101,13 @@ public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTe
 		setBillToAddress(null);
 	}
 
+	default BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureId()
+	{
+		return BPartnerLocationAndCaptureId.ofRepoIdOrNull(getBill_BPartner_ID(), getBill_Location_ID(), getBill_Location_Value_ID());
+	}
+
+	default BPartnerContactId getBPartnerContactId()
+	{
+		return BPartnerContactId.ofRepoIdOrNull(getBill_BPartner_ID(), getBill_User_ID());
+	}
 }

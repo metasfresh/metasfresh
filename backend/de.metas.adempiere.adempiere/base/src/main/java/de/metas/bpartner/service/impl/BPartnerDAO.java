@@ -387,6 +387,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@NonNull
 	public BPartnerLocationId getBPartnerLocationIdByRepoId(final int repoId)
 	{
 		Check.assumeGreaterThanZero(repoId, "C_BPartner_Location_ID");
@@ -1225,7 +1226,7 @@ public class BPartnerDAO implements IBPartnerDAO
 												   I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
 	}
 
-	private BPartnerLocationId createLocationIdOrNull(
+	private static BPartnerLocationId createLocationIdOrNull(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final I_C_BPartner_Location bpLocationRecord)
 	{
@@ -1683,16 +1684,14 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public BPartnerLocationId retrieveCurrentBillLocationOrNull(final BPartnerId partnerId)
+	public I_C_BPartner_Location retrieveCurrentBillLocationOrNull(final BPartnerId partnerId)
 	{
 		final BPartnerLocationQuery query = BPartnerLocationQuery
 				.builder()
 				.type(Type.BILL_TO)
 				.bpartnerId(partnerId)
 				.build();
-		final I_C_BPartner_Location billToLocation = retrieveBPartnerLocation(query);
-
-		return createLocationIdOrNull(partnerId, billToLocation);
+		return retrieveBPartnerLocation(query);
 	}
 
 	@Override

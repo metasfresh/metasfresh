@@ -2,7 +2,9 @@ package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.location.DocumentLocation;
 import de.metas.location.LocationId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -10,6 +12,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -72,5 +75,32 @@ public class BPartnerInfo
 		this.bpartnerLocationId = bpartnerLocationId;
 		this.locationId = locationId;
 		this.contactId = contactId;
+	}
+
+	public static BPartnerInfo ofLocationAndContact(
+			@NonNull final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId,
+			@Nullable final BPartnerContactId contactId)
+	{
+		return builder()
+				.bpartnerId(bpartnerLocationAndCaptureId.getBpartnerId())
+				.bpartnerLocationId(bpartnerLocationAndCaptureId.getBpartnerLocationId())
+				.locationId(bpartnerLocationAndCaptureId.getLocationCaptureId())
+				.contactId(contactId)
+				.build();
+	}
+
+	public static boolean equals(@Nullable final BPartnerInfo o1, @Nullable final BPartnerInfo o2)
+	{
+		return Objects.equals(o1, o2);
+	}
+
+	public DocumentLocation toDocumentLocation()
+	{
+		return DocumentLocation.builder()
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(bpartnerLocationId)
+				.contactId(contactId)
+				.locationId(locationId)
+				.build();
 	}
 }

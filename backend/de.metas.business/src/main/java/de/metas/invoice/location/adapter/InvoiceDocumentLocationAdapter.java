@@ -22,6 +22,7 @@
 
 package de.metas.invoice.location.adapter;
 
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import lombok.NonNull;
