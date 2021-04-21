@@ -22,12 +22,8 @@
 
 package de.metas.ui.web.picking.packageable.filters;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.product.ProductId;
-import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;

@@ -49,6 +49,7 @@ search:
    - "9300:9300"
   volumes:
     - metasfresh_elasticsearch:/usr/share/elasticsearch/data
+#    - ./myvolumefolder:/usr/share/elasticsearch/data
   environment:
     - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
   restart: always

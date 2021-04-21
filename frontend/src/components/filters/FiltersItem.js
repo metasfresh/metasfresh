@@ -352,6 +352,23 @@ class FiltersItem extends PureComponent {
   };
 
   /**
+   * @method checkFilterTypeByName
+   * @summary Gets the corresponding widgetType from the filters data
+   * @param {*} filterItem - the active one that does not contain the widgetType
+   * @returns {string} widgetType
+   */
+  checkFilterTypeByName = (filterItem) => {
+    const {
+      filter: { parameters },
+    } = this.state;
+
+    const targetFilter = parameters.filter(
+      (item) => item.field === filterItem.parameterName
+    );
+    return targetFilter[0] ? targetFilter[0].widgetType : '';
+  };
+
+  /**
    * @method handleApply
    * @summary ToDo: Describe the method
    * @todo Write the documentation
@@ -385,11 +402,14 @@ class FiltersItem extends PureComponent {
       // update the active filter with the defaultValue if value from active filter is empty
       const activeFilterClone = _.cloneDeep(activeFilter);
       activeFilterClone.parameters.map((afcItem, index) => {
-        // YesNo filters (checkboxes) can be either null, true or false
-        afcItem.value =
-          !afcItem.value && afcItem.value !== false
-            ? filter.parameters[index].defaultValue
-            : afcItem.value;
+        let filterType = this.checkFilterTypeByName(afcItem);
+        if (filterType === 'YesNo') {
+          // YesNo filters (checkboxes) can be either null, true or false
+          afcItem.value =
+            !afcItem.value && afcItem.value !== false
+              ? filter.parameters[index].defaultValue
+              : afcItem.value;
+        }
         return afcItem;
       });
 

@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import de.metas.currency.CurrencyPrecision;
+import de.metas.product.acct.api.ActivityId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
@@ -58,6 +59,9 @@ public class Group
 	@Getter
 	private final GroupTemplateId groupTemplateId;
 
+	@Getter
+	private final ActivityId activityId;
+
 	private final CurrencyPrecision pricePrecision;
 	private final CurrencyPrecision amountPrecision;
 
@@ -77,6 +81,7 @@ public class Group
 	private Group(
 			@NonNull final GroupId groupId,
 			@Nullable final GroupTemplateId groupTemplateId,
+			@Nullable ActivityId activityId,
 			@NonNull final CurrencyPrecision pricePrecision,
 			@NonNull final CurrencyPrecision amountPrecision,
 			@Nullable final BPartnerId bpartnerId,
@@ -87,6 +92,7 @@ public class Group
 	{
 		this.groupId = groupId;
 		this.groupTemplateId = groupTemplateId;
+		this.activityId = activityId;
 		this.pricePrecision = pricePrecision;
 		this.amountPrecision = amountPrecision;
 		this.bpartnerId = bpartnerId;

@@ -280,7 +280,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
 
 		final IModelInterceptorRegistry registry = Services.get(IModelInterceptorRegistry.class);
-		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(olCandValidatorService));
+		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(new BPartnerBL(new UserRepository()), olCandValidatorService));
 	}
 
 	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider

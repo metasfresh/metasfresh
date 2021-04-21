@@ -38,6 +38,7 @@ import java.util.Properties;
 import de.metas.tax.api.TaxId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.model.I_C_PricingRule;
+import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
@@ -131,9 +132,7 @@ public class FlatrateBLTest extends ContractsTestBase
 	@BeforeEach
 	public void before()
 	{
-		final I_AD_Org org = newInstance(I_AD_Org.class);
-		save(org);
-		orgId = OrgId.ofRepoId(org.getAD_Org_ID());
+		orgId = AdempiereTestHelper.createOrgWithTimeZone();
 
 		final I_C_Activity activity = newInstance(I_C_Activity.class);
 		save(activity);
@@ -148,7 +147,6 @@ public class FlatrateBLTest extends ContractsTestBase
 	@Test
 	public void beforeCompleteDataEntry_test()
 	{
-
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 		final I_C_Flatrate_Transition flatrateTransition = newInstance(I_C_Flatrate_Transition.class);

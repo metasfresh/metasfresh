@@ -81,6 +81,13 @@
             <scope>test</scope>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <groupId>org.skyscreamer</groupId>-->
+<!--            <artifactId>jsonassert</artifactId>-->
+<!--            <scope>test</scope>-->
+<!--            <version>1.5.0</version>-->
+<!--        </dependency>-->
+
         <!--
         Not using junit5 (jupiter) right now, because it seems to be half baked.
         Instead I'm following the docs at https://cucumber.io/docs/cucumber/api/ .

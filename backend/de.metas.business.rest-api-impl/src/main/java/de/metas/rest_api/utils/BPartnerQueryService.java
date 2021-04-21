@@ -1,6 +1,7 @@
 package de.metas.rest_api.utils;
 
 import static de.metas.util.Check.isEmpty;
+
 import java.util.Collection;
 
 import javax.annotation.Nullable;
@@ -79,7 +80,8 @@ public class BPartnerQueryService
 		final BPartnerQueryBuilder query = BPartnerQuery.builder();
 		if (onlyOrgId != null)
 		{
-			query.onlyOrgId(onlyOrgId);
+			query.onlyOrgId(onlyOrgId)
+					.onlyOrgId(OrgId.ANY);
 		}
 
 		for (final BPartnerCompositeLookupKey bpartnerLookupKey : bpartnerLookupKeys)

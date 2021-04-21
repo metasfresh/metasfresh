@@ -37,7 +37,7 @@
         <!-- For versions info, see https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
         <spring.version>5.3.4</spring.version>
 
-        <guava.version>21.0</guava.version>
+        <guava.version>30.1.1-jre</guava.version>
 
         <!-- jackson-dataformat-xml:2.9.9 has two different version in its dependency tree -->
         <woodstox.stax2-api.version>4.1</woodstox.stax2-api.version>

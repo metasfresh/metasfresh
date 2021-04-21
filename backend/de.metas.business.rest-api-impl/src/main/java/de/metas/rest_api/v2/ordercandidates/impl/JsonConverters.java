@@ -6,16 +6,19 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v2.response.JsonResponseBPartnerLocationAndContact;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
@@ -145,6 +148,11 @@ public class JsonConverters
 			uomId = productInfo.getUomId();
 		}
 
+		final JsonOrderLineGroup jsonOrderLineGroup = request.getOrderLineGroup();
+		final OrderLineGroup orderLineGroup = jsonOrderLineGroup == null
+				? null
+				: OrderLineGroup.ofOrNull(jsonOrderLineGroup.getGroupKey(), jsonOrderLineGroup.isGroupMainItem());
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -163,6 +171,7 @@ public class JsonConverters
 				//
 				.dateOrdered(request.getDateOrdered())
 				.dateRequired(request.getDateRequired())
+				.dateCandidate(request.getDateCandidate())
 				//
 				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(request.getInvoiceDocType(), orgId))
 				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
@@ -193,6 +202,16 @@ public class JsonConverters
 				.salesRepId(salesRepId)
 
 				.paymentTermId(paymentTermId)
+
+				.orderLineGroup(orderLineGroup)
+
+				.description(request.getDescription())
+				.line(request.getLine())
+				.isManualPrice(request.getIsManualPrice())
+				.isImportedWithIssues(request.getIsImportedWithIssues())
+				.importWarningMessage(request.getImportWarningMessage())
+				.deliveryRule(request.getDeliveryRule())
+				.deliveryViaRule(request.getDeliveryViaRule())
 				//
 				;
 	}
@@ -277,6 +296,14 @@ public class JsonConverters
 		final ZoneId orgTimeZone = masterdataProvider.getOrgTimeZone(orgId);
 		final String orgCode = orgDAO.retrieveOrgValue(orgId);
 
+		final OrderLineGroup orderLineGroup = olCand.getOrderLineGroup();
+		final JsonOrderLineGroup jsonOrderLineGroup = orderLineGroup == null
+				? null
+				: JsonOrderLineGroup.builder()
+				.groupKey(orderLineGroup.getGroupKey())
+				.isGroupMainItem(orderLineGroup.isGroupMainItem())
+				.build();
+
 		return JsonOLCand.builder()
 				.id(olCand.getId())
 				.poReference(olCand.getPOReference())
@@ -290,6 +317,7 @@ public class JsonConverters
 				.dropShipBPartner(toJson(orgCode, olCand.getDropShipBPartnerInfo().orElse(null), masterdataProvider))
 				.handOverBPartner(toJson(orgCode, olCand.getHandOverBPartnerInfo().orElse(null), masterdataProvider))
 				//
+				.dateCandidate(TimeUtil.asLocalDate(olCand.unbox().getDateCandidate(), SystemTime.zoneId()))
 				.dateOrdered(olCand.getDateDoc())
 				.datePromised(TimeUtil.asLocalDate(olCand.getDatePromised(), orgTimeZone))
 				.flatrateConditionsId(olCand.getFlatrateConditionsId())
@@ -307,6 +335,10 @@ public class JsonConverters
 				//
 				.warehouseDestId(WarehouseId.toRepoId(olCand.getWarehouseDestId()))
 				//
+				.jsonOrderLineGroup(jsonOrderLineGroup)
+
+				.description(olCand.unbox().getDescription())
+				.line(olCand.getLine())
 				.build();
 	}
 }

@@ -25,7 +25,7 @@ package de.metas.rest_api.v2.order;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
-import de.metas.rest_api.order.JsonPurchaseCandidatesRequest;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.web.exception.InvalidEntityException;
 import lombok.NonNull;

@@ -1,4 +1,4 @@
- ${AnsiColor.BRIGHT_GREEN}
+${AnsiColor.BRIGHT_GREEN}
            _                        _                 _                       _       _             __               
           | |                      | |               | |                     (_)     | |           / _|              
   _____  _| |_ ___ _ __ _ __   __ _| |  ___ _   _ ___| |_ ___ _ __ ___  ___   _ _ __ | |_ ___ _ __| |_ __ _  ___ ___ 
@@ -8,7 +8,7 @@
                                              __/ |                                                                   
                                             |___/                                                                    
 ${AnsiStyle.NORMAL}
-METASFRESH-INFO: ${application.title} | ${application.formatted-version} | SpringBoot version ${spring-boot.formatted-version}
+APP-INFO: ${info.app.title} | SpringBoot version ${spring-boot.formatted-version}
 BUILD-INFO: build [${info.build.ciBuildNo:local}], tag [${info.build.ciBuildTag:none}], job [${info.build.ciJobName:none}]
             ${info.build.ciBuildUrl:}
 

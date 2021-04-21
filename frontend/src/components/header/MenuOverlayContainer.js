@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { getWindowBreadcrumb } from '../../actions/MenuActions';
 import MenuOverlayItem from './MenuOverlayItem';
+import classnames from 'classnames';
 
 class MenuOverlayContainer extends Component {
   constructor(props) {
@@ -35,30 +36,37 @@ class MenuOverlayContainer extends Component {
       transparentBookmarks,
       onKeyDown,
       indexOrder,
+      menuType,
+      levelType,
     } = this.props;
-
-    let menuOverlayClasses = 'menu-overlay-node-container js-menu-container ';
-    menuOverlayClasses =
-      indexOrder === 1 ? `${menuOverlayClasses} mt-0 ` : menuOverlayClasses;
 
     return (
       <div
         tabIndex={0}
         onKeyDown={onKeyDown}
-        className={
-          `${menuOverlayClasses}` +
-          (deep
-            ? 'menu-overlay-node-spaced '
-            : 'menu-overlay-expanded-link-spaced js-menu-main-container')
-        }
+        className={classnames('menu-overlay-node-container js-menu-container', {
+          'mt-0': indexOrder === 1,
+          'menu-overlay-node-spaced': deep,
+          'menu-overlay-expanded-link-spaced js-menu-main-container': !deep,
+          'menu-overlay-sitemap-col-2': menuType === 'sitemap', // we apply this only for the sitemap
+        })}
       >
-        {type === 'group' && (
+        {type === 'group' && !deep && (
+          <div
+            className={classnames('menu-overlay-header-main', {
+              'sitemap-box-header': menuType === 'sitemap',
+            })}
+          >
+            {caption}
+          </div>
+        )}
+
+        {type === 'group' && deep && (
           <span
-            className={
-              'menu-overlay-header ' +
-              (!printChildren ? 'menu-overlay-header-spaced ' : '') +
-              (!deep ? 'menu-overlay-header-main' : '')
-            }
+            className={classnames('menu-overlay-header', {
+              'menu-overlay-header-spaced': !printChildren,
+              'sitemap-level-one': menuType === 'sitemapLevelOne',
+            })}
           >
             {caption}
           </span>
@@ -93,6 +101,9 @@ class MenuOverlayContainer extends Component {
                 key={subindex}
                 printChildren={true}
                 deep={true}
+                menuType={
+                  levelType === 'navigationTree' ? 'sitemapLevelOne' : ''
+                }
                 {...subitem}
                 {...{
                   showBookmarks,
@@ -146,10 +157,12 @@ MenuOverlayContainer.propTypes = {
   back: PropTypes.any,
   openModal: PropTypes.func,
   showBookmarks: PropTypes.bool,
-  onUpdateData: PropTypes.bool,
+  onUpdateData: PropTypes.func,
   transparentBookmarks: PropTypes.bool,
   onKeyDown: PropTypes.func,
   indexOrder: PropTypes.number,
+  menuType: PropTypes.string,
+  levelType: PropTypes.string, // pass this to be able to differentiate between sitemap levels and breadcrumbs/quick menu listing
 };
 
 export default connect()(MenuOverlayContainer);

@@ -33,7 +33,6 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 @Builder
 @ToString
@@ -47,10 +46,11 @@ public final class PPOrderRoutingProduct
 	private final boolean subcontracting;
 	@Nullable
 	private Quantity qty;
-	@Nullable
 	private int seqNo;
 	@NonNull
 	private ProductId productId;
+	@Nullable
+	private String specification;
 
 	public void setId(final PPOrderRoutingProductId id)
 	{

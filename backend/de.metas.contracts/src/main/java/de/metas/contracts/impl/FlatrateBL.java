@@ -60,6 +60,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductDAO;
@@ -112,6 +113,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -157,6 +159,7 @@ public class FlatrateBL implements IFlatrateBL
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public String beforeCompleteDataEntry(final I_C_Flatrate_DataEntry dataEntry)
@@ -599,9 +602,10 @@ public class FlatrateBL implements IFlatrateBL
 		return newCand;
 	}
 
-	private static LocalDate getPeriodStartDate(final I_C_Flatrate_DataEntry dataEntry)
+	private LocalDate getPeriodStartDate(final I_C_Flatrate_DataEntry dataEntry)
 	{
-		return TimeUtil.asLocalDate(dataEntry.getC_Period().getStartDate());
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(dataEntry.getAD_Org_ID()));
+		return TimeUtil.asLocalDate(dataEntry.getC_Period().getStartDate(), timeZone);
 	}
 
 	/**

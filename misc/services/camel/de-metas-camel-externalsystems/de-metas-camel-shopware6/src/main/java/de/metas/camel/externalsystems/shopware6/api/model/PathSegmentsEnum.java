@@ -37,7 +37,9 @@ public enum PathSegmentsEnum
 	ORDER_ADDRESS("order-address"),
 	OATH("oauth"),
 	TOKEN("token"),
-	COUNTRY("country");
+	COUNTRY("country"),
+	LINE_ITEMS("line-items"),
+	CURRENCY("currency");
 
 	private final String value;
 }

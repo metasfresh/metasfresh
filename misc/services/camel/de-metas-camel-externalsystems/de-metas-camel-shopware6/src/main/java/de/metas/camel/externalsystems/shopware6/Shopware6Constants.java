@@ -22,6 +22,8 @@
 
 package de.metas.camel.externalsystems.shopware6;
 
+import java.math.BigDecimal;
+
 public interface Shopware6Constants
 {
 	String SHOPWARE6_SYSTEM_NAME = "Shopware6";
@@ -32,10 +34,7 @@ public interface Shopware6Constants
 	String PARAMETERS_DATE_GTE = "gte";
 
 	//camel route properties
-	String ROUTE_PROPERTY_SHOPWARE_CLIENT = "shopwareClient";
-	String ROUTE_PROPERTY_ORG_CODE = "orgCode";
-	String ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_ID = "JSONPathConstantBPartnerID";
-	String ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_LOCATION_ID = "JSONPathConstantBPartnerLocationID";
+	String ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT = "GetOrdersRouteContext";
 
 	//nodes
 	String JSON_NODE_DATA = "data";
@@ -47,8 +46,14 @@ public interface Shopware6Constants
 	int READ_TIMEOUT_SECONDS = 600;
 
 	//external identifier
-	String EXTERNAL_ID_PREFIX = "ext-" + SHOPWARE6_SYSTEM_NAME + "-";
+	String EXTERNAL_ID_PREFIX = "ext";
 	String BILL_TO_SUFFIX = "-billTo";
 	String SHIP_TO_SUFFIX = "-shipTo";
 
+	//default values
+	String DATA_SOURCE_INT_SHOPWARE = "int-Shopware";
+	String DEFAULT_DELIVERY_RULE = "A";
+	String DEFAULT_DELIVERY_VIA_RULE = "D";
+	BigDecimal DEFAULT_ORDER_LINE_DISCOUNT = BigDecimal.ZERO;
+	String MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE = "The order had multiple shipping addresses, the process picked the last one!";
 }

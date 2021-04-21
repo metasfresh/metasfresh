@@ -10,6 +10,7 @@ import de.metas.procurement.webui.model.User;
 import de.metas.procurement.webui.repository.UserRepository;
 import de.metas.procurement.webui.service.I18N;
 import de.metas.procurement.webui.service.ILoginService;
+import de.metas.procurement.webui.sync.ISenderToMetasfreshService;
 import de.metas.procurement.webui.util.LanguageKey;
 import lombok.NonNull;
 import org.slf4j.Logger;
@@ -63,6 +64,7 @@ public class LoginService implements ILoginService
 	private final UserRepository userRepository;
 	private final JavaMailSender emailSender;
 	private final I18N i18n;
+	private final ISenderToMetasfreshService senderToMetasfreshService;
 
 	private final String emailFrom;
 	private final String passwordResetUrl;
@@ -76,13 +78,15 @@ public class LoginService implements ILoginService
 			@NonNull final ProcurementWebuiProperties config,
 			@NonNull final UserRepository userRepository,
 			@NonNull final JavaMailSender emailSender,
-			@NonNull final I18N i18n)
+			@NonNull final I18N i18n,
+			@NonNull final ISenderToMetasfreshService senderToMetasfreshService)
 	{
 		this.userRepository = userRepository;
 		this.emailSender = emailSender;
 		this.i18n = i18n;
 
 		this.emailFrom = config.getMail().getFrom();
+		this.senderToMetasfreshService = senderToMetasfreshService;
 		logger.info("emailFrom={}", emailFrom);
 
 		this.passwordResetUrl = config.getPasswordResetUrl();
@@ -311,6 +315,8 @@ public class LoginService implements ILoginService
 		user.setPassword(passwordNew);
 		user.setPasswordResetKey(null);
 		userRepository.save(user);
+
+		senderToMetasfreshService.syncAfterCommit().add(user);
 
 		return user;
 	}
