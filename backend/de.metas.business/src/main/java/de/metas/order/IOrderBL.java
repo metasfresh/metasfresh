@@ -29,6 +29,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
+import de.metas.document.location.DocumentLocation;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -84,7 +85,7 @@ public interface IOrderBL extends ISingletonService
 	 */
 	I_AD_User getShipToUser(I_C_Order order);
 
-	BPartnerLocationId getBillToLocationId(I_C_Order order);
+	BPartnerLocationAndCaptureId getBillToLocationId(I_C_Order order);
 
 	@Nullable
 	BPartnerId getEffectiveBillPartnerId(@NonNull I_C_Order orderRecord);
@@ -158,8 +159,6 @@ public interface IOrderBL extends ISingletonService
 	 * @param bp business partner
 	 */
 	void setBPartner(I_C_Order order, I_C_BPartner bp);
-
-	void setBPartnerLocation(I_C_Order order, @Nullable BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId);
 
 	/**
 	 * Attempts to set the <code>Bill_Location_ID</code> in the given <code>order</code>. If the bill location is found, also set the bill partner accordingly. First tries to use the order's BPartner

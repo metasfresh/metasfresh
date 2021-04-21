@@ -22,7 +22,12 @@
 
 package de.metas.document.location.adapter;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
 import lombok.NonNull;
@@ -33,6 +38,8 @@ public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTe
 {
 	int getBill_BPartner_ID();
 
+	void setBill_BPartner_ID(int Bill_BPartner_ID);
+
 	int getBill_Location_ID();
 
 	void setBill_Location_ID(int Bill_Location_ID);
@@ -42,6 +49,8 @@ public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTe
 	void setBill_Location_Value_ID(int Bill_Location_Value_ID);
 
 	int getBill_User_ID();
+
+	void setBill_User_ID(int Bill_User_ID);
 
 	String getBillToAddress();
 
@@ -61,4 +70,35 @@ public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTe
 		setBill_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
 		setBillToAddress(null);
 	}
+
+	default DocumentLocation toDocumentLocation()
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(getBill_BPartner_ID());
+		return DocumentLocation.builder()
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(bpartnerId, getBill_Location_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, getBill_User_ID()))
+				.locationId(LocationId.ofRepoIdOrNull(getBill_Location_Value_ID()))
+				.bpartnerAddress(getBillToAddress())
+				.build();
+	}
+
+	default void setFrom(@NonNull final DocumentLocation from)
+	{
+		setBill_BPartner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
+		setBill_Location_ID(BPartnerLocationId.toRepoId(from.getBpartnerLocationId()));
+		setBill_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
+		setBill_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
+		setBillToAddress(from.getBpartnerAddress());
+	}
+
+	default void setFrom(@NonNull final BPartnerInfo from)
+	{
+		setBill_BPartner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
+		setBill_Location_ID(BPartnerLocationId.toRepoId(from.getBpartnerLocationId()));
+		setBill_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
+		setBill_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
+		setBillToAddress(null);
+	}
+
 }

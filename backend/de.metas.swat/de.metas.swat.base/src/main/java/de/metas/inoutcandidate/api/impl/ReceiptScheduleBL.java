@@ -53,7 +53,6 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.element.api.AdUIElementId;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
@@ -596,29 +595,35 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 	private static class ReceiptScheduleDocumentLocationAdapter implements IDocumentLocationAdapter
 	{
-		private final I_M_ReceiptSchedule receiptSchedule;
+		private final I_M_ReceiptSchedule delegate;
 
-		private ReceiptScheduleDocumentLocationAdapter(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+		private ReceiptScheduleDocumentLocationAdapter(@NonNull final I_M_ReceiptSchedule delegate)
 		{
-			this.receiptSchedule = receiptSchedule;
+			this.delegate = delegate;
 		}
 
 		@Override
 		public int getC_BPartner_ID()
 		{
-			return receiptSchedule.getC_BPartner_ID();
+			return delegate.getC_BPartner_ID();
+		}
+
+		@Override
+		public void setC_BPartner_ID(final int C_BPartner_ID)
+		{
+			delegate.setC_BPartner_ID(C_BPartner_ID);
 		}
 
 		@Override
 		public int getC_BPartner_Location_ID()
 		{
-			return receiptSchedule.getC_BPartner_Location_ID();
+			return delegate.getC_BPartner_Location_ID();
 		}
 
 		@Override
 		public void setC_BPartner_Location_ID(final int C_BPartner_Location_ID)
 		{
-			receiptSchedule.setC_BPartner_Location_ID(C_BPartner_Location_ID);
+			delegate.setC_BPartner_Location_ID(C_BPartner_Location_ID);
 		}
 
 		@Override
@@ -635,49 +640,59 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		@Override
 		public int getAD_User_ID()
 		{
-			return receiptSchedule.getAD_User_ID();
+			return delegate.getAD_User_ID();
+		}
+
+		@Override
+		public void setAD_User_ID(final int AD_User_ID)
+		{
+			delegate.setAD_User_ID(AD_User_ID);
 		}
 
 		@Override
 		public String getBPartnerAddress()
 		{
-			return receiptSchedule.getBPartnerAddress();
+			return delegate.getBPartnerAddress();
 		}
 
 		@Override
 		public void setBPartnerAddress(final String address)
 		{
-			receiptSchedule.setBPartnerAddress(address);
+			delegate.setBPartnerAddress(address);
 		}
 
 	}
 
 	private class ReceiptScheduleEffectiveDocumentLocation implements IDocumentLocationAdapter
 	{
-		private final I_M_ReceiptSchedule receiptSchedule;
+		private final I_M_ReceiptSchedule delegate;
 
-		private ReceiptScheduleEffectiveDocumentLocation(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+		private ReceiptScheduleEffectiveDocumentLocation(@NonNull final I_M_ReceiptSchedule delegate)
 		{
-			this.receiptSchedule = receiptSchedule;
+			this.delegate = delegate;
 		}
 
 		@Override
 		public int getC_BPartner_ID()
 		{
-			return getC_BPartner_Effective_ID(receiptSchedule);
+			return BPartnerId.toRepoId(getBPartnerEffectiveId(delegate));
+		}
+
+		@Override
+		public void setC_BPartner_ID(final int C_BPartner_ID)
+		{
 		}
 
 		@Override
 		public int getC_BPartner_Location_ID()
 		{
-			return getC_BPartner_Location_Effective_ID(receiptSchedule);
+			return getC_BPartner_Location_Effective_ID(delegate);
 		}
 
 		@Override
 		@Deprecated
 		public void setC_BPartner_Location_ID(final int C_BPartner_Location_ID)
 		{
-			throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -694,19 +709,24 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		@Override
 		public int getAD_User_ID()
 		{
-			return BPartnerContactId.toRepoId(getBPartnerContactID(receiptSchedule));
+			return BPartnerContactId.toRepoId(getBPartnerContactID(delegate));
+		}
+
+		@Override
+		public void setAD_User_ID(final int AD_User_ID)
+		{
 		}
 
 		@Override
 		public String getBPartnerAddress()
 		{
-			return receiptSchedule.getBPartnerAddress_Override();
+			return delegate.getBPartnerAddress_Override();
 		}
 
 		@Override
 		public void setBPartnerAddress(final String address)
 		{
-			receiptSchedule.setBPartnerAddress_Override(address);
+			delegate.setBPartnerAddress_Override(address);
 		}
 	}
 }

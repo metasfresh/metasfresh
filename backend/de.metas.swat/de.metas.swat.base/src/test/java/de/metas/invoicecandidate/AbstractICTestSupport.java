@@ -40,6 +40,7 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.dao.IQueryBL;
@@ -735,7 +736,8 @@ public class AbstractICTestSupport extends AbstractTestSupport
 			invoiceCandidateValidator = new C_Invoice_Candidate(
 					new InvoiceCandidateRecordService(),
 					groupsRepo,
-					attachmentEntryService);
+					attachmentEntryService,
+					new DocumentLocationBL(new BPartnerBL(new UserRepository())));
 		}
 		return invoiceCandidateValidator;
 	}

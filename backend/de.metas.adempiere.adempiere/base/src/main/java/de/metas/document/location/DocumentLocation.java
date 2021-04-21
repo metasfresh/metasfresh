@@ -27,8 +27,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.LocationId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.w3c.dom.Document;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -36,10 +38,17 @@ import java.util.Objects;
 @Value
 public class DocumentLocation
 {
+	public static final DocumentLocation EMPTY = builder().build();
+
+	@Nullable
 	BPartnerId bpartnerId;
+	@Nullable
 	BPartnerLocationId bpartnerLocationId;
+	@Nullable
 	LocationId locationId;
+	@Nullable
 	BPartnerContactId contactId;
+	@Nullable
 	String bpartnerAddress;
 
 	@Builder(toBuilder = true)
@@ -64,6 +73,17 @@ public class DocumentLocation
 		this.locationId = locationId;
 		this.contactId = contactId;
 		this.bpartnerAddress = bpartnerAddress;
+	}
+
+	public static DocumentLocation ofBPartnerLocationId(@NonNull BPartnerLocationId bpartnerLocationId)
+	{
+		return builder()
+				.bpartnerId(bpartnerLocationId.getBpartnerId())
+				.bpartnerLocationId(bpartnerLocationId)
+				.contactId(null)
+				.locationId(null)
+				.bpartnerAddress(null)
+				.build();
 	}
 
 	public DocumentLocation withLocationId(@Nullable final LocationId locationId)

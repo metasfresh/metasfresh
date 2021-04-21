@@ -43,6 +43,12 @@ public class BPartnerOverrideLocationAdapter implements IDocumentLocationAdapter
 	}
 
 	@Override
+	public void setC_BPartner_ID(final int C_BPartner_ID)
+	{
+		delegate.setC_BPartner_ID(C_BPartner_ID);
+	}
+
+	@Override
 	public int getC_BPartner_Location_ID()
 	{
 		return delegate.getC_BP_Location_Override_ID();
@@ -70,6 +76,11 @@ public class BPartnerOverrideLocationAdapter implements IDocumentLocationAdapter
 	public int getAD_User_ID()
 	{
 		return -1;
+	}
+
+	@Override
+	public void setAD_User_ID(final int AD_User_ID)
+	{
 	}
 
 	@Override

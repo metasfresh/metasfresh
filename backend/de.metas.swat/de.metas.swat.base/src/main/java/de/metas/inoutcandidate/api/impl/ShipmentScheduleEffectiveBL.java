@@ -1,10 +1,21 @@
 package de.metas.inoutcandidate.api.impl;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.location.DocumentLocation;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.location.LocationId;
+import de.metas.logging.LogManager;
+import de.metas.order.DeliveryRule;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -15,20 +26,9 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.logging.LogManager;
-import de.metas.order.DeliveryRule;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 {
@@ -52,6 +52,14 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 		{
 			return BPartnerId.ofRepoId(sched.getC_BPartner_Override_ID());
 		}
+	}
+
+	@Override
+	public String getBPartnerAddress(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		return CoalesceUtil.firstNotBlank(
+				sched::getBPartnerAddress_Override,
+				sched::getBPartnerAddress);
 	}
 
 	@Override
@@ -91,65 +99,82 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	@Override
 	public I_C_BPartner getBPartner(final I_M_ShipmentSchedule sched)
 	{
+		final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 		final BPartnerId bpartnerId = getBPartnerId(sched);
-		return Services.get(IBPartnerDAO.class).getById(bpartnerId, I_C_BPartner.class);
+		return partnerDAO.getById(bpartnerId, I_C_BPartner.class);
 	}
 
 	@Override
 	public BPartnerLocationId getBPartnerLocationId(final I_M_ShipmentSchedule sched)
 	{
-		final int bpartnerId = sched.getC_BPartner_ID();
-		final int bpLocationId = sched.getC_BPartner_Location_ID();
-
-		final int bpartnerIdOverride = sched.getC_BPartner_Override_ID();
-		final int bpLocationIdOverride = sched.getC_BP_Location_Override_ID();
-
-		if (bpartnerIdOverride > 0)
-		{
-			if (bpLocationIdOverride > 0)
-			{
-				return BPartnerLocationId.ofRepoId(bpartnerIdOverride, bpLocationIdOverride);
-			}
-			else if (bpartnerId == bpartnerIdOverride)
-			{
-				return BPartnerLocationId.ofRepoId(bpartnerIdOverride, bpLocationId);
-			}
-			else
-			{
-				logger.warn("C_BPartner_ID and C_BPartner_Override_ID are not matching. Returning standard location."
-						+ "\n BPartner/Location={}/{}"
-						+ "\n BPartner/Location Override={}/{}", bpartnerId, bpLocationId, bpartnerIdOverride, bpLocationIdOverride);
-				return BPartnerLocationId.ofRepoId(bpartnerId, bpLocationId);
-			}
-		}
-		else
-		{
-			if (bpLocationIdOverride > 0)
-			{
-				return BPartnerLocationId.ofRepoId(bpartnerId, bpLocationIdOverride);
-			}
-			else
-			{
-				return BPartnerLocationId.ofRepoId(bpartnerId, bpLocationId);
-			}
-		}
+		return getDocumentLocation(sched).getBpartnerLocationId();
 	}
 
 	@Nullable
 	@Override
 	public BPartnerContactId getBPartnerContactId(final @NonNull I_M_ShipmentSchedule sched)
 	{
-		final int adUserIdRepo = sched.getAD_User_Override_ID() > 0 ? sched.getAD_User_Override_ID() : sched.getAD_User_ID();
-		final int cBPartnerIdRepo = sched.getC_BPartner_Override_ID() > 0 ? sched.getC_BPartner_Override_ID() : sched.getC_BPartner_ID();
-		return BPartnerContactId.ofRepoIdOrNull(cBPartnerIdRepo, adUserIdRepo);
+		return getDocumentLocation(sched).getContactId();
+	}
+
+	@Override
+	public DocumentLocation getDocumentLocation(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final BPartnerId bpartnerOverrideId = BPartnerId.ofRepoIdOrNull(sched.getC_BPartner_Override_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(sched.getC_BPartner_ID());
+
+		final BPartnerLocationId bpLocationOverrideId = BPartnerLocationId.ofRepoIdOrNull(bpartnerOverrideId, sched.getC_BP_Location_Override_ID());
+		if (bpLocationOverrideId != null)
+		{
+			final BPartnerContactId contactId;
+			if (sched.getAD_User_Override_ID() > 0)
+			{
+				contactId = BPartnerContactId.ofRepoId(bpartnerOverrideId, sched.getAD_User_Override_ID());
+			}
+			else if (sched.getAD_User_ID() > 0 && sched.getC_BPartner_ID() == bpLocationOverrideId.getBpartnerId().getRepoId())
+			{
+				contactId = BPartnerContactId.ofRepoId(bpartnerOverrideId, sched.getAD_User_ID());
+			}
+			else
+			{
+				contactId = null;
+			}
+
+			return DocumentLocation.builder()
+					.bpartnerId(bpLocationOverrideId.getBpartnerId())
+					.bpartnerLocationId(bpLocationOverrideId)
+					.locationId(LocationId.ofRepoIdOrNull(sched.getC_BP_Location_Override_Value_ID()))
+					.bpartnerAddress(sched.getBPartnerAddress_Override())
+					.contactId(contactId)
+					.build();
+		}
+		else
+		{
+			final BPartnerContactId contactId;
+			if (sched.getAD_User_Override_ID() > 0 && BPartnerId.equals(bpartnerId, bpartnerOverrideId))
+			{
+				contactId = BPartnerContactId.ofRepoId(bpartnerId, sched.getAD_User_Override_ID());
+			}
+			else
+			{
+				contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, sched.getAD_User_ID());
+			}
+
+			return DocumentLocation.builder()
+					.bpartnerId(bpartnerId)
+					.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, sched.getC_BPartner_Location_ID()))
+					.locationId(LocationId.ofRepoIdOrNull(sched.getC_BPartner_Location_Value_ID()))
+					.bpartnerAddress(sched.getBPartnerAddress())
+					.contactId(contactId)
+					.build();
+		}
 	}
 
 	@Deprecated
 	@Override
 	public org.compiere.model.I_AD_User getBPartnerContact(final I_M_ShipmentSchedule sched)
 	{
-		final org.compiere.model.I_AD_User user = sched.getAD_User_Override_ID() <= 0 ? InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_ID(), I_AD_User.class) : InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_Override_ID(), I_AD_User.class);
-		return user;
+		return sched.getAD_User_Override_ID() <= 0 ? InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_ID(), I_AD_User.class) : InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_Override_ID(), I_AD_User.class);
 	}
 
 	@Override

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.order;
+package de.metas.invoice.location.adapter;
 
 import de.metas.document.location.adapter.DocumentLocationAdapterFactory;
 import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
@@ -29,23 +29,23 @@ import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
 @Component
-public class OrderLineDocumentLocationAdapterFactory implements DocumentLocationAdapterFactory
+public class InvoiceDocumentLocationAdapterFactory implements DocumentLocationAdapterFactory
 {
-	public static OrderLineDocumentLocationAdapter locationAdapter(@NonNull final I_C_OrderLine delegate)
+	public static InvoiceDocumentLocationAdapter locationAdapter(@NonNull final I_C_Invoice delegate)
 	{
-		return new OrderLineDocumentLocationAdapter(delegate);
+		return new InvoiceDocumentLocationAdapter(delegate);
 	}
 
 	@Override
 	public Optional<IDocumentLocationAdapter> getDocumentLocationAdapterIfHandled(final Object record)
 	{
-		return toOrderLine(record).map(OrderLineDocumentLocationAdapterFactory::locationAdapter);
+		return toInvoice(record).map(InvoiceDocumentLocationAdapterFactory::locationAdapter);
 	}
 
 	@Override
@@ -66,67 +66,10 @@ public class OrderLineDocumentLocationAdapterFactory implements DocumentLocation
 		return Optional.empty();
 	}
 
-	private static Optional<I_C_OrderLine> toOrderLine(final Object record)
+	private static Optional<I_C_Invoice> toInvoice(Object record)
 	{
-		return InterfaceWrapperHelper.isInstanceOf(record, I_C_OrderLine.class)
-				? Optional.of(InterfaceWrapperHelper.create(record, I_C_OrderLine.class))
+		return InterfaceWrapperHelper.isInstanceOf(record, I_C_Invoice.class)
+				? Optional.of(InterfaceWrapperHelper.create(record, I_C_Invoice.class))
 				: Optional.empty();
-	}
-
-	public static class OrderLineDocumentLocationAdapter implements IDocumentLocationAdapter
-	{
-		private final I_C_OrderLine delegate;
-
-		private OrderLineDocumentLocationAdapter(@NonNull final I_C_OrderLine delegate)
-		{
-			this.delegate = delegate;
-		}
-
-		@Override
-		public int getC_BPartner_ID()
-		{
-			return delegate.getC_BPartner_ID();
-		}
-
-		@Override
-		public int getC_BPartner_Location_ID()
-		{
-			return delegate.getC_BPartner_Location_ID();
-		}
-
-		@Override
-		public void setC_BPartner_Location_ID(final int C_BPartner_Location_ID)
-		{
-			delegate.setC_BPartner_Location_ID(C_BPartner_Location_ID);
-		}
-
-		@Override
-		public int getC_BPartner_Location_Value_ID()
-		{
-			return -1;
-		}
-
-		@Override
-		public void setC_BPartner_Location_Value_ID(final int C_BPartner_Location_Value_ID)
-		{
-		}
-
-		@Override
-		public int getAD_User_ID()
-		{
-			return delegate.getAD_User_ID();
-		}
-
-		@Override
-		public String getBPartnerAddress()
-		{
-			return delegate.getBPartnerAddress();
-		}
-
-		@Override
-		public void setBPartnerAddress(String address)
-		{
-			delegate.setBPartnerAddress(address);
-		}
 	}
 }

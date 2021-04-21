@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
 @Value
 public class RenderedAddressAndCapturedLocation
 {
-	public static RenderedAddressAndCapturedLocation of(String renderedAddress, LocationId capturedLocationId)
+	public static RenderedAddressAndCapturedLocation of(@Nullable final String renderedAddress, @Nullable final LocationId capturedLocationId)
 	{
 		if (Check.isEmpty(renderedAddress) && capturedLocationId == null)
 		{
@@ -41,6 +41,11 @@ public class RenderedAddressAndCapturedLocation
 		{
 			return new RenderedAddressAndCapturedLocation(renderedAddress, capturedLocationId);
 		}
+	}
+
+	public static RenderedAddressAndCapturedLocation of(@Nullable final String renderedAddress, final int capturedLocationRepoId)
+	{
+		return of(renderedAddress, LocationId.ofRepoIdOrNull(capturedLocationRepoId));
 	}
 
 	public static RenderedAddressAndCapturedLocation NONE = new RenderedAddressAndCapturedLocation("", null);
@@ -55,5 +60,20 @@ public class RenderedAddressAndCapturedLocation
 	{
 		this.renderedAddress = renderedAddress;
 		this.capturedLocationId = capturedLocationId;
+	}
+
+	/**
+	 * @deprecated please use getRenderedAddress().
+	 */
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		return getRenderedAddress();
+	}
+
+	public boolean isNone()
+	{
+		return this.equals(NONE);
 	}
 }

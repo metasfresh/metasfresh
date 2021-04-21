@@ -29,7 +29,12 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.location.DocumentLocation;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import org.adempiere.banking.model.I_C_Invoice;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -141,11 +146,11 @@ public class BankingBL implements IBankingBL
 		invoice.setDateInvoiced(dateInvoiced);
 		invoice.setDateAcct(dateInvoiced);
 
-		invoice.setC_BPartner_ID(header.getC_BPartner_ID());
-		invoice.setC_BPartner_Location_ID(header.getC_BPartner_Location_ID());
+		InvoiceDocumentLocationAdapterFactory
+				.locationAdapter(invoice)
+				.setFrom(extractDocumentLocation(header, line));
 
 		invoice.setC_Currency_ID(line.getC_Currency_ID());
-		invoice.setAD_User_ID(line.getAD_User_ID());
 		invoice.setSalesRep_ID(line.getSalesRep_ID());
 		invoice.setC_PaymentTerm_ID(line.getC_PaymentTerm_ID());
 		invoice.setIsSOTrx(false); // always vendor invoice
@@ -183,5 +188,15 @@ public class BankingBL implements IBankingBL
 		history.saveEx();
 
 		return extInvoice;
+	}
+
+	private static DocumentLocation extractDocumentLocation(final I_C_RecurrentPayment header, final MRecurrentPaymentLine line)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(header.getC_BPartner_ID());
+		return DocumentLocation.builder()
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(bpartnerId, header.getC_BPartner_Location_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, line.getAD_User_ID()))
+				.build();
 	}
 }

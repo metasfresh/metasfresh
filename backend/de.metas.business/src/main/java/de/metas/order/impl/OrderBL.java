@@ -53,7 +53,7 @@ import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
@@ -697,12 +697,6 @@ public class OrderBL implements IOrderBL
 	public void setBPartnerLocation(@NonNull final I_C_Order order, @Nullable final I_C_BPartner_Location bpartnerLocation)
 	{
 		BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = bpartnerLocation != null ? BPartnerLocationAndCaptureId.ofRecord(bpartnerLocation) : null;
-		setBPartnerLocation(order, bpartnerLocationAndCaptureId);
-	}
-
-	@Override
-	public void setBPartnerLocation(@NonNull final I_C_Order order, @Nullable final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
-	{
 		OrderDocumentLocationAdapterFactory.locationAdapter(order).setLocationAndResetRenderedAddress(bpartnerLocationAndCaptureId);
 	}
 
@@ -790,8 +784,7 @@ public class OrderBL implements IOrderBL
 		order.setIsUseHandOver_Location(from.getBpartnerLocationId() != null);
 	}
 
-
-		@Override
+	@Override
 	public CurrencyPrecision getPricePrecision(final I_C_Order order)
 	{
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
@@ -921,13 +914,16 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public BPartnerLocationId getBillToLocationId(@NonNull final I_C_Order order)
+	public BPartnerLocationAndCaptureId getBillToLocationId(@NonNull final I_C_Order order)
 	{
-		final BPartnerLocationId billToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
+		final BPartnerLocationAndCaptureId billToBPLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(
+				order.getBill_BPartner_ID(),
+				order.getBill_Location_ID(),
+				order.getBill_Location_Value_ID());
 
 		return billToBPLocationId != null
 				? billToBPLocationId
-				: BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+				: BPartnerLocationAndCaptureId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID(), order.getC_BPartner_Location_Value_ID());
 	}
 
 	@Override

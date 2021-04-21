@@ -61,6 +61,13 @@ public class BPartnerLocationAndCaptureId
 
 	public static BPartnerLocationAndCaptureId ofRepoId(
 			final int bpartnerRepoId,
+			final int bpartnerLocationRepoId)
+	{
+		return ofRepoId(bpartnerRepoId, bpartnerLocationRepoId, -1);
+	}
+
+	public static BPartnerLocationAndCaptureId ofRepoId(
+			final int bpartnerRepoId,
 			final int bpartnerLocationRepoId,
 			final int locationCaptureRepoId)
 	{
@@ -110,9 +117,19 @@ public class BPartnerLocationAndCaptureId
 		return getBpartnerLocationId().getBpartnerId();
 	}
 
+	public int getBpartnerRepoId()
+	{
+		return getBpartnerLocationId().getBpartnerId().getRepoId();
+	}
+
 	public int getBPartnerLocationRepoId()
 	{
 		return getBpartnerLocationId().getRepoId();
+	}
+
+	public static int toBPartnerLocationRepoId(@Nullable BPartnerLocationAndCaptureId value)
+	{
+		return value != null ? value.getBPartnerLocationRepoId() : -1;
 	}
 
 	public int getLocationCaptureRepoId()

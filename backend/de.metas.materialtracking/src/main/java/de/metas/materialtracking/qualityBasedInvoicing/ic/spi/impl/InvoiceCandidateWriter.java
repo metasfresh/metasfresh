@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.tax.api.TaxId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -426,10 +427,9 @@ public class InvoiceCandidateWriter
 		ic.setDateOrdered(materialTrackingPPOrderBL.getDateOfProduction(order.getPP_Order()));
 
 		// bill partner data
-		final BPartnerId billBPartnerId = vendorInvoicingInfo.getBill_BPartner_ID();
-		ic.setBill_BPartner_ID(billBPartnerId != null ? billBPartnerId.getRepoId() : -1);
-		ic.setBill_Location_ID(vendorInvoicingInfo.getBill_Location_ID());
-		ic.setBill_User_ID(vendorInvoicingInfo.getBill_User_ID());
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(ic)
+				.setFrom(vendorInvoicingInfo.getBillLocation());
 
 		//
 		// Pricing

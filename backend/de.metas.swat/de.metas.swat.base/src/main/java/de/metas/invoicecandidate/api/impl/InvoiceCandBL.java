@@ -79,6 +79,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
 import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
@@ -1095,9 +1096,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		splitCand.setIsSOTrx(ic.isSOTrx());
 		splitCand.setC_ILCandHandler(ic.getC_ILCandHandler());
 
-		splitCand.setBill_BPartner_ID(ic.getBill_BPartner_ID());
-		splitCand.setBill_Location_ID(ic.getBill_Location_ID());
-		splitCand.setBill_User_ID(ic.getBill_User_ID());
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(splitCand)
+				.setFrom(ic);
 
 		splitCand.setC_Invoice_Candidate_Agg_ID(ic.getC_Invoice_Candidate_Agg_ID());
 		aggregationBL.setHeaderAggregationKey(splitCand);

@@ -25,7 +25,7 @@ package de.metas.order.callout;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
-import de.metas.order.OrderLineDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;

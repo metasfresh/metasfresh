@@ -42,6 +42,7 @@ import de.metas.inout.InOutLineId;
 import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -563,9 +564,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		//
 		invoice.setSalesRep_ID(order.getSalesRep_ID());
 		//
-		invoice.setC_BPartner_ID(order.getBill_BPartner_ID());
-		invoice.setC_BPartner_Location_ID(order.getBill_Location_ID());
-		invoice.setAD_User_ID(order.getBill_User_ID());
+		InvoiceDocumentLocationAdapterFactory
+				.locationAdapter(invoice)
+				.setFromBillLocation(order);
+
 		invoice.setExternalId(order.getExternalId());
 
 		return invoice;
@@ -648,8 +650,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		final BPartnerInvoicingInfo invoicingInfo = getBPartnerInvoicingInfo(bpartnerId, soTrx, date);
-		invoice.setC_BPartner_Location_ID(invoicingInfo.getBillBPartnerLocationId().getRepoId());
-		invoice.setAD_User_ID(invoicingInfo.getBillContactId().map(BPartnerContactId::getRepoId).orElse(-1));
+		InvoiceDocumentLocationAdapterFactory
+				.locationAdapter(invoice)
+				.setFrom(invoicingInfo.getBillLocation());
 
 		invoicingInfo.getPaymentRule().ifPresent(paymentRule -> invoice.setPaymentRule(paymentRule.getCode()));
 		invoicingInfo.getPaymentTermId().ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));

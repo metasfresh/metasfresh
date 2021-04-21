@@ -22,7 +22,11 @@
 
 package de.metas.document.location.adapter;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
 import lombok.NonNull;
@@ -33,6 +37,8 @@ public interface IDocumentDeliveryLocationAdapter extends IDocumentLocationAdapt
 {
 	int getDropShip_BPartner_ID();
 
+	void setDropShip_BPartner_ID(int DropShip_BPartner_ID);
+
 	int getDropShip_Location_ID();
 
 	void setDropShip_Location_ID(int DropShip_Location_ID);
@@ -42,6 +48,8 @@ public interface IDocumentDeliveryLocationAdapter extends IDocumentLocationAdapt
 	void setDropShip_Location_Value_ID(int DropShip_Location_Value_ID);
 
 	int getDropShip_User_ID();
+
+	void setDropShip_User_ID(int DropShip_User_ID);
 
 	int getM_Warehouse_ID();
 
@@ -65,4 +73,26 @@ public interface IDocumentDeliveryLocationAdapter extends IDocumentLocationAdapt
 		setDropShip_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
 		setDeliveryToAddress(null);
 	}
+
+	default DocumentLocation toDocumentLocation()
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(getDropShip_BPartner_ID());
+		return DocumentLocation.builder()
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(bpartnerId, getDropShip_Location_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, getDropShip_User_ID()))
+				.locationId(LocationId.ofRepoIdOrNull(getDropShip_Location_Value_ID()))
+				.bpartnerAddress(getDeliveryToAddress())
+				.build();
+	}
+
+	default void setFrom(@NonNull final DocumentLocation from)
+	{
+		setDropShip_BPartner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
+		setDropShip_Location_ID(BPartnerLocationId.toRepoId(from.getBpartnerLocationId()));
+		setDropShip_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
+		setDropShip_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
+		setDeliveryToAddress(from.getBpartnerAddress());
+	}
+
 }

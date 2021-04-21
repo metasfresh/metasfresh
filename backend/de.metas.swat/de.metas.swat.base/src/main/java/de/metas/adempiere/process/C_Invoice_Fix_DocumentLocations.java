@@ -29,7 +29,7 @@ package de.metas.adempiere.process;
 import java.util.List;
 import java.util.Properties;
 
-import de.metas.invoice.InvoiceDocumentLocationAdapterFactory;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;

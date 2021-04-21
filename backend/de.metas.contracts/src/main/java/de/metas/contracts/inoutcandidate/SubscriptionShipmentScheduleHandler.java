@@ -2,15 +2,21 @@ package de.metas.contracts.inoutcandidate;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.location.ContractLocationHelper;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.model.X_C_SubscriptionProgress;
+import de.metas.document.location.DocumentLocation;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
+import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
@@ -194,7 +200,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				.ofReferenced(shipmentSchedule) // Record_Id and AD_Table_ID are mandatory
 				.getModel(I_C_SubscriptionProgress.class);
 
-		updateShipmentScheduleFromSubscriptionLine(shipmentSchedule,subscriptionProgressRecord);
+		updateShipmentScheduleFromSubscriptionLine(shipmentSchedule, subscriptionProgressRecord);
 	}
 
 	private void updateShipmentScheduleFromSubscriptionLine(
@@ -222,13 +228,13 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		shipmentSchedule.setPriorityRule(X_M_ShipmentSchedule.PRIORITYRULE_High);
 
-		shipmentSchedule.setC_BPartner_Location_ID(subscriptionLine.getDropShip_Location_ID());
-		shipmentSchedule.setC_BPartner_ID(subscriptionLine.getDropShip_BPartner_ID());
-		shipmentSchedule.setAD_User_ID(subscriptionLine.getDropShip_User_ID());
+		ShipmentScheduleDocumentLocationAdapterFactory
+				.mainLocationAdapter(shipmentSchedule)
+				.setFrom(ContractLocationHelper.extractDropShipLocation(subscriptionLine));
 
-		shipmentSchedule.setBill_BPartner_ID(term.getBill_BPartner_ID());
-		shipmentSchedule.setBill_Location_ID(term.getBill_Location_ID());
-		shipmentSchedule.setBill_User_ID(term.getBill_User_ID());
+		ShipmentScheduleDocumentLocationAdapterFactory
+				.billLocationAdapter(shipmentSchedule)
+				.setFrom(ContractLocationHelper.extractBillLocation(term));
 
 		// commented out because there is no BPartnerAddress field nor BillToAddress field
 		// final IDocumentLocation documentLocation = InterfaceWrapperHelper.create(shipmentSchedule, IDocumentLocation.class);
@@ -248,7 +254,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setAD_Org_ID(subscriptionLine.getAD_Org_ID());
 
 		Check.assume(shipmentSchedule.getAD_Client_ID() == subscriptionLine.getAD_Client_ID(),
-				"The new M_ShipmentSchedule has the same AD_Client_ID as " + subscriptionLine + ", i.e." + shipmentSchedule.getAD_Client_ID() + " == " + subscriptionLine.getAD_Client_ID());
+					 "The new M_ShipmentSchedule has the same AD_Client_ID as " + subscriptionLine + ", i.e." + shipmentSchedule.getAD_Client_ID() + " == " + subscriptionLine.getAD_Client_ID());
 
 		// only display item products
 		// note: at least for C_Subscription_Progress records, we won't even create records for non-items

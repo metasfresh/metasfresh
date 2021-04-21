@@ -61,6 +61,12 @@ public class DropShipLocationAdapter implements IDocumentDeliveryLocationAdapter
 	}
 
 	@Override
+	public void setDropShip_BPartner_ID(final int DropShip_BPartner_ID)
+	{
+		delegate.setDropShip_BPartner_ID(DropShip_BPartner_ID);
+	}
+
+	@Override
 	public int getDropShip_Location_ID()
 	{
 		return delegate.getDropShip_Location_ID();
@@ -88,5 +94,11 @@ public class DropShipLocationAdapter implements IDocumentDeliveryLocationAdapter
 	public int getDropShip_User_ID()
 	{
 		return delegate.getDropShip_User_ID();
+	}
+
+	@Override
+	public void setDropShip_User_ID(final int DropShip_User_ID)
+	{
+		delegate.setDropShip_User_ID(DropShip_User_ID);
 	}
 }

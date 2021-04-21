@@ -1,6 +1,7 @@
 package de.metas.contracts.commission.invoicecandidate;
 
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -12,7 +13,9 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.location.DocumentLocation;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -96,7 +99,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	private final transient ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 	@Override
-	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit_IGNORED)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(int limit_IGNORED)
 	{
 		return createShareWithMissingICsQuery()
 				.iterate(I_C_Commission_Share.class);
@@ -212,9 +215,13 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		icRecord.setDiscount(pricingResult.getDiscount().toBigDecimal());
 
 		// bill location
-		icRecord.setBill_BPartner_ID(bPartnerId.getRepoId());
-		icRecord.setBill_Location_ID(commissionToLocationId.getRepoId());
-		icRecord.setBill_User_ID(flatrateTerm.getBill_User_ID());
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(icRecord)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(bPartnerId)
+								 .bpartnerLocationId(commissionToLocationId)
+								 .contactId(BPartnerContactId.ofRepoIdOrNull(bPartnerId, flatrateTerm.getBill_User_ID()))
+								 .build());
 
 		icRecord.setInvoiceRule(flatrateTerm.getC_Flatrate_Conditions().getInvoiceRule());
 
@@ -268,14 +275,18 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(model));
 	}
 
-	/** @return {@code C_Commission_Share} */
+	/**
+	 * @return {@code C_Commission_Share}
+	 */
 	@Override
 	public String getSourceTable()
 	{
 		return I_C_Commission_Share.Table_Name;
 	}
 
-	/** @return {@code false} */
+	/**
+	 * @return {@code false}
+	 */
 	@Override
 	public boolean isUserInChargeUserEditable()
 	{
@@ -285,7 +296,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	/**
 	 * <ul>
 	 * <li>QtyEntered := sum of all 3 C_Commission_Share.PointsSum_* columns
-	 * <li>C_UOM_ID := {@link #COMMISSION_PRODUCT_ID}'s stock UOM
+	 * <li>C_UOM_ID := COMMISSION_PRODUCT_ID's stock UOM
 	 * <li>QtyOrdered := QtyEntered
 	 * <li>DateOrdered := C_Commission_Share.Created
 	 * <li>C_Order_ID: -1
@@ -309,9 +320,9 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		// Also note that for non-item products (which is usually the case for commission products), we have QtyInvoicable := QtyOrdered,
 		// which is why we don't include the forecasted and invoiceable quantities in the ordered qty
 		final BigDecimal ordered = commissionShareRecord.getPointsSum_Invoiced()
-		// .add(commissionShareRecord.getPointsSum_Invoiceable())
-		// .add(commissionShareRecord.getPointsSum_Forecasted())
-		;
+				// .add(commissionShareRecord.getPointsSum_Invoiceable())
+				// .add(commissionShareRecord.getPointsSum_Forecasted())
+				;
 
 		ic.setQtyEntered(ordered);
 		ic.setC_UOM_ID(uomId.getRepoId());
@@ -337,8 +348,8 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		// Right now, only invoiced sales transactions are commission-worthy.
 		// We can later add a tick-box in the commission settings to make this configurable.
 		final BigDecimal delivered = commissionShareRecord.getPointsSum_Invoiced()
-		// .add(commissionShareRecord.getPointsSum_Invoiceable())
-		;
+				// .add(commissionShareRecord.getPointsSum_Invoiceable())
+				;
 
 		ic.setQtyDelivered(delivered);
 		ic.setQtyDeliveredInUOM(delivered);  // we use the commission product's stock uom, so no uom conversion is needed

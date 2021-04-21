@@ -4,12 +4,12 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.event.IEventBusFactory;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.api.IInOutMovementBL;
 import de.metas.inout.api.IMaterialBalanceDetailBL;
 import de.metas.inout.api.IMaterialBalanceDetailDAO;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
+import de.metas.inout.location.InOutLocationsUpdater;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.logging.TableRecordMDC;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout_Async;
@@ -18,6 +18,7 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.ModelValidator;
 import org.slf4j.MDC.MDCCloseable;
@@ -27,7 +28,7 @@ import java.util.List;
 @Interceptor(I_M_InOut.class)
 public class M_InOut
 {
-	private final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
+	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 
 	@Init
 	public void onInit()
@@ -37,23 +38,16 @@ public class M_InOut
 		Services.get(IEventBusFactory.class).addAvailableUserNotificationsTopic(ReturnInOutUserNotificationsProducer.EVENTBUS_TOPIC);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
-			I_M_InOut.COLUMNNAME_C_BPartner_ID, I_M_InOut.COLUMNNAME_C_BPartner_Location_ID, I_M_InOut.COLUMNNAME_AD_User_ID })
-	public void updateBPartnerAddress(final I_M_InOut inoutRecord)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void updateCapturedLocationsAndRenderedAddresses(final I_M_InOut inoutRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			documentLocationBL.updateRenderedAddressAndCapturedLocation(InOutDocumentLocationAdapterFactory.locationAdapter(inoutRecord));
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
-			I_M_InOut.COLUMNNAME_DropShip_BPartner_ID, I_M_InOut.COLUMNNAME_DropShip_Location_ID, I_M_InOut.COLUMNNAME_DropShip_User_ID })
-	public void updateDeliveryToAddress(final I_M_InOut inoutRecord)
-	{
-		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
-		{
-			Services.get(IDocumentLocationBL.class).updateRenderedAddressAndCapturedLocation(InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(inoutRecord));
+			InOutLocationsUpdater.builder()
+					.documentLocationBL(documentLocationBL)
+					.record(inoutRecord)
+					.build()
+					.updateAllIfNeeded();
 		}
 	}
 

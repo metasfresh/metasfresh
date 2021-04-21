@@ -25,9 +25,6 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -45,6 +42,7 @@ import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentSch
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.event.InOutUserNotificationsProducer;
@@ -74,12 +72,12 @@ import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.slf4j.MDC;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.MDC;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -178,7 +176,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		try
 		{
 			final InOutGenerateResult result = trxItemProcessorExecutorService
-					.<ShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
+					.<ShipmentScheduleWithHU, InOutGenerateResult>createExecutor()
 					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.setProcessor(this)
 					.setExceptionHandler(trxItemExceptionHandler)
@@ -283,7 +281,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@VisibleForTesting
-	static LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule,@NonNull final CalculateShippingDateRule calculateShippingDateType)
+	static LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, @NonNull final CalculateShippingDateRule calculateShippingDateType)
 	{
 		final LocalDate today = de.metas.common.util.time.SystemTime.asLocalDate();
 
@@ -345,13 +343,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 		//
 		// BPartner, Location & Contact
-		{
-			final BPartnerId bpartnerId = shipmentScheduleEffectiveValuesBL.getBPartnerId(shipmentSchedule);
-			final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(shipmentSchedule);
-			shipment.setC_BPartner_ID(bpartnerId.getRepoId());
-			shipment.setC_BPartner_Location_ID(bpLocationId.getRepoId());
-			shipment.setAD_User_ID(BPartnerContactId.toRepoId(shipmentScheduleEffectiveValuesBL.getBPartnerContactId(shipmentSchedule)));
-		}
+		InOutDocumentLocationAdapterFactory
+				.locationAdapter(shipment)
+				.setFrom(shipmentScheduleEffectiveValuesBL.getDocumentLocation(shipmentSchedule));
 
 		//
 		// Document Dates
@@ -698,12 +692,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	/**
-	 *  Adding the tracking codes will be skipped
-	 *  if no shipperId was provided or a ShipperTransportation order was already created
-	 *  as it means the tracking codes would be added/or not by whoever created the shipper transportation
-	 *  and the corresponding packages.
+	 * Adding the tracking codes will be skipped
+	 * if no shipperId was provided or a ShipperTransportation order was already created
+	 * as it means the tracking codes would be added/or not by whoever created the shipper transportation
+	 * and the corresponding packages.
+	 * <p>
+	 * Also note that, if they made it so far, all the candidates have the same shipperId as it's part of the aggregation key
 	 *
-	 *  Also note that, if they made it so far, all the candidates have the same shipperId as it's part of the aggregation key
 	 * @see ShipmentScheduleKeyValueHandler#getValues(de.metas.inoutcandidate.model.I_M_ShipmentSchedule)
 	 */
 	private void addTrackingCodes()

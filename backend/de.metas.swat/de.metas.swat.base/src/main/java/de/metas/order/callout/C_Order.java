@@ -26,7 +26,7 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
-import de.metas.order.OrderDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;

@@ -8,7 +8,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
-import de.metas.invoice.InvoiceDocumentLocationAdapterFactory;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.payment.PaymentRule;

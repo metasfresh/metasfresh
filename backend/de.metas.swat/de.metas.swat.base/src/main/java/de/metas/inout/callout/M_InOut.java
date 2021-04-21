@@ -23,7 +23,7 @@
 package de.metas.inout.callout;
 
 import de.metas.document.location.IDocumentLocationBL;
-import de.metas.inout.InOutDocumentLocationAdapterFactory;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;

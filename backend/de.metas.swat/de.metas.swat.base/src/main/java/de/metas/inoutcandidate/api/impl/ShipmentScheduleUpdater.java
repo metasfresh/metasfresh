@@ -272,7 +272,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 				updateWarehouseId(sched);
 
-				shipmentScheduleBL.updateBPartnerAddressOverrideIfNotYetSet(sched);
+				shipmentScheduleBL.updateCapturedLocationsAndRenderedAddresses(sched);
 
 				shipmentScheduleBL.updateHeaderAggregationKey(sched);
 
@@ -704,7 +704,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
 
 		final ShipmentScheduleReferencedLine scheduleSourceDoc = shipmentScheduleReferencedLineFactory.createFor(sched);
-		final String bpartnerAddress = sched.getBPartnerAddress_Override();
+		final String bpartnerAddress = shipmentScheduleEffectiveBL.getBPartnerAddress(sched);
 
 		DeliveryGroupCandidate candidate;
 
@@ -736,7 +736,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	{
 		return DeliveryGroupCandidate.builder()
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(sched))
-				.bPartnerAddress(sched.getBPartnerAddress_Override())
+				.bPartnerAddress(shipmentScheduleEffectiveBL.getBPartnerAddress(sched))
 				.groupId(DeliveryGroupCandidateGroupId.of(scheduleSourceDoc.getRecordRef()))
 				.shipperId(scheduleSourceDoc.getShipperId())
 				.build();

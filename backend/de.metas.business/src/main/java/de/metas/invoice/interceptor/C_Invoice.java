@@ -10,7 +10,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.engine.DocStatus;
-import de.metas.invoice.InvoiceDocumentLocationAdapterFactory;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.service.IInvoiceBL;

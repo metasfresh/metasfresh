@@ -6,19 +6,21 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvBL;
@@ -62,14 +64,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
@@ -371,14 +371,18 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			setC_DocType(invoice, invoiceHeader);
 
-			final BPartnerId bpartnerID = invoiceHeader.getBillBPartnerId();
-			invoice.setC_BPartner_ID(bpartnerID.getRepoId());
-			invoice.setC_BPartner_Location_ID(invoiceHeader.getBill_Location_ID());
-			final BPartnerContactId adUserId = BPartnerContactId.ofRepoIdOrNull(invoiceHeader.getBillBPartnerId(), invoiceHeader.getBill_User_ID());
-			invoice.setAD_User_ID(BPartnerContactId.toRepoId(adUserId));
+			final BPartnerId bpartnerId = invoiceHeader.getBillBPartnerId();
+			InvoiceDocumentLocationAdapterFactory
+					.locationAdapter(invoice)
+					.setFrom(DocumentLocation.builder()
+									 .bpartnerId(bpartnerId)
+									 .bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, invoiceHeader.getBill_Location_ID()))
+									 .contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, invoiceHeader.getBill_User_ID()))
+									 .build());
+
 			invoice.setC_Currency_ID(invoiceHeader.getCurrencyId().getRepoId()); // 03805
 			final BPartnerId salesRepId = invoiceHeader.getSalesPartnerId();
-			if (!bpartnerID.equals(salesRepId))
+			if (!bpartnerId.equals(salesRepId))
 			{
 				invoice.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(salesRepId));
 			}

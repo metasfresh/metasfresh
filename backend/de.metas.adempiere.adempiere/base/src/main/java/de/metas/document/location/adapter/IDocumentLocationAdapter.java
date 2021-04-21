@@ -22,7 +22,11 @@
 
 package de.metas.document.location.adapter;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
 import lombok.NonNull;
@@ -32,6 +36,8 @@ import javax.annotation.Nullable;
 public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTemplate
 {
 	int getC_BPartner_ID();
+
+	void setC_BPartner_ID(int C_BPartner_ID);
 
 	int getC_BPartner_Location_ID();
 
@@ -43,9 +49,16 @@ public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTempla
 
 	int getAD_User_ID();
 
+	void setAD_User_ID(int AD_User_ID);
+
 	String getBPartnerAddress();
 
 	void setBPartnerAddress(String address);
+
+	default BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureId()
+	{
+		return BPartnerLocationAndCaptureId.ofRepoIdOrNull(getC_BPartner_ID(), getC_BPartner_Location_ID(), getC_BPartner_Location_Value_ID());
+	}
 
 	@Override
 	default void setRenderedAddressAndCapturedLocation(@NonNull final RenderedAddressAndCapturedLocation from)
@@ -60,5 +73,26 @@ public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTempla
 		setC_BPartner_Location_ID(from != null ? from.getBPartnerLocationRepoId() : -1);
 		setC_BPartner_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
 		setBPartnerAddress(null);
+	}
+
+	default DocumentLocation toDocumentLocation()
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(getC_BPartner_ID());
+		return DocumentLocation.builder()
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(bpartnerId, getC_BPartner_Location_ID()))
+				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, getAD_User_ID()))
+				.locationId(LocationId.ofRepoIdOrNull(getC_BPartner_Location_Value_ID()))
+				.bpartnerAddress(getBPartnerAddress())
+				.build();
+	}
+
+	default void setFrom(@NonNull final DocumentLocation from)
+	{
+		setC_BPartner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
+		setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(from.getBpartnerLocationId()));
+		setC_BPartner_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
+		setAD_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
+		setBPartnerAddress(from.getBpartnerAddress());
 	}
 }

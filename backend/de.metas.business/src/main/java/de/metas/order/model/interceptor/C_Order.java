@@ -42,7 +42,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
-import de.metas.order.OrderDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.OrgId;

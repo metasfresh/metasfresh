@@ -10,6 +10,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -18,6 +19,7 @@ import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.IUOMConversionBL;
@@ -456,7 +458,7 @@ public class InOutProducer implements IInOutProducer
 
 			receiptHeader.setC_BPartner_ID(bpartnerId);
 			receiptHeader.setC_BPartner_Location_ID(bpartnerLocationId);
-			receiptHeader.setAD_User_ID(bpartnerContactId.toRepoId(bpartnerContactId));
+			receiptHeader.setAD_User_ID(BPartnerContactId.toRepoId(bpartnerContactId));
 		}
 
 		//
@@ -491,9 +493,9 @@ public class InOutProducer implements IInOutProducer
 		if (order != null && order.isDropShip())
 		{
 			receiptHeader.setIsDropShip(true);
-			receiptHeader.setDropShip_BPartner_ID(order.getDropShip_BPartner_ID());
-			receiptHeader.setDropShip_Location_ID(order.getDropShip_Location_ID());
-			receiptHeader.setDropShip_User_ID(order.getDropShip_User_ID());
+			InOutDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(receiptHeader)
+					.setFrom(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).toDocumentLocation());
 		}
 		else
 		{

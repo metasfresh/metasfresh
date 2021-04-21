@@ -16,16 +16,23 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.bpartner.BPartnerContactId;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.uom.LegacyUOMConversionUtils;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,20 +43,12 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DisplayType;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.document.sequence.impl.IDocumentNoInfo;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.uom.LegacyUOMConversionUtils;
-import de.metas.uom.UOMPrecision;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
  * Shipment/Receipt Callouts
@@ -118,10 +117,7 @@ public class CalloutInOut extends CalloutEngine
 		inout.setFreightCostRule(order.getFreightCostRule());
 		inout.setFreightAmt(order.getFreightAmt());
 
-		inout.setC_BPartner_ID(order.getC_BPartner_ID());
-		inout.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
-		final BPartnerContactId bpartnerContactId = BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
-		inout.setAD_User_ID(BPartnerContactId.toRepoId(bpartnerContactId));
+		InOutDocumentLocationAdapterFactory.locationAdapter(inout).setFrom(order);
 
 		return NO_ERROR;
 	} // order
@@ -164,11 +160,7 @@ public class CalloutInOut extends CalloutEngine
 			inout.setFreightCostRule(originalReceipt.getFreightCostRule());
 			inout.setFreightAmt(originalReceipt.getFreightAmt());
 
-			inout.setC_BPartner_ID(originalReceipt.getC_BPartner_ID());
-
-			// [ 1867464 ]
-			inout.setC_BPartner_Location_ID(originalReceipt.getC_BPartner_Location_ID());
-			inout.setAD_User_ID(originalReceipt.getAD_User_ID());
+			InOutDocumentLocationAdapterFactory.locationAdapter(inout).setFrom(originalReceipt);
 		}
 
 		return NO_ERROR;

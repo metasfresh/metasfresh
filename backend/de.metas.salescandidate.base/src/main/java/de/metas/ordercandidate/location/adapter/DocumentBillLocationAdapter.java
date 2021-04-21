@@ -48,6 +48,12 @@ public class DocumentBillLocationAdapter implements IDocumentBillLocationAdapter
 	}
 
 	@Override
+	public void setBill_BPartner_ID(final int Bill_BPartner_ID)
+	{
+		delegate.setBill_BPartner_ID(Bill_BPartner_ID);
+	}
+
+	@Override
 	public int getBill_Location_ID()
 	{
 		return delegate.getBill_Location_ID();
@@ -75,5 +81,11 @@ public class DocumentBillLocationAdapter implements IDocumentBillLocationAdapter
 	public int getBill_User_ID()
 	{
 		return delegate.getBill_User_ID();
+	}
+
+	@Override
+	public void setBill_User_ID(final int Bill_User_ID)
+	{
+		delegate.setBill_User_ID(Bill_User_ID);
 	}
 }
