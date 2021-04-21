@@ -201,7 +201,7 @@ public class UpdateAddresses extends JavaProcess
 			if (I_C_Order.COLUMNNAME_BPartnerAddress.equals(columnName))
 			{
 				final IDocumentLocationAdapter doc = documentLocationAdaptersRegistry.getDocumentLocationAdapterIfHandled(po).get();
-				documentLocationBL.setBPartnerAddress(doc);
+				documentLocationBL.updateRenderedAddressAndCapturedLocation(doc);
 				InterfaceWrapperHelper.save(doc);
 			}
 			//
@@ -209,7 +209,7 @@ public class UpdateAddresses extends JavaProcess
 			else if (I_C_Order.COLUMNNAME_BillToAddress.equals(columnName))
 			{
 				final IDocumentBillLocationAdapter doc = documentLocationAdaptersRegistry.getDocumentBillLocationAdapterIfHandled(po).get();
-				documentLocationBL.setBillToAddress(doc);
+				documentLocationBL.updateRenderedAddressAndCapturedLocation(doc);
 				InterfaceWrapperHelper.save(doc);
 			}
 			//
@@ -217,7 +217,7 @@ public class UpdateAddresses extends JavaProcess
 			else if (I_C_Order.COLUMNNAME_DeliveryToAddress.equals(columnName))
 			{
 				final IDocumentDeliveryLocationAdapter doc = documentLocationAdaptersRegistry.getDocumentDeliveryLocationAdapter(po).get();
-				documentLocationBL.setDeliveryToAddress(doc);
+				documentLocationBL.updateRenderedAddressAndCapturedLocation(doc);
 				InterfaceWrapperHelper.save(doc);
 			}
 			// Not handled column => error

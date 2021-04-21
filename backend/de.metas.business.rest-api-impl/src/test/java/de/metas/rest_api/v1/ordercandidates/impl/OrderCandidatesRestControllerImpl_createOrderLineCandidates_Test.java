@@ -31,6 +31,7 @@ import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
@@ -44,6 +45,7 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.modelvalidator.OLCandLocationUpdateHelper;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
 import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.organization.OrgId;
@@ -278,9 +280,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				Optional.empty(),
 				Optional.of(ImmutableList.of(defaultOLCandValidator)));
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
+		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		final OLCandLocationUpdateHelper olCandLocationUpdateHelper = new OLCandLocationUpdateHelper(new DocumentLocationBL(bpartnerBL));
 
 		final IModelInterceptorRegistry registry = Services.get(IModelInterceptorRegistry.class);
-		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(new BPartnerBL(new UserRepository()), olCandValidatorService));
+		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(new BPartnerBL(new UserRepository()), olCandValidatorService, olCandLocationUpdateHelper));
 	}
 
 	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider

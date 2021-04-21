@@ -11,7 +11,6 @@ import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.invoice.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListBL;
@@ -22,7 +21,6 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.util.Env;
@@ -172,6 +170,6 @@ public class C_Invoice
 			skipIfCopying = true)
 	public void updateBPartnerAddress(final I_C_Invoice invoice)
 	{
-		documentLocationBL.setBPartnerAddress(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice));
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice));
 	}
 }

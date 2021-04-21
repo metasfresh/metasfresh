@@ -22,9 +22,10 @@
 
 package de.metas.document.location.adapter;
 
-import de.metas.location.LocationId;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
+import lombok.NonNull;
 
 public interface IDocumentLocationAdapterTemplate
 {
-	void setLocationAndAddress(LocationId locationId, String address);
+	void setRenderedAddressAndCapturedLocation(@NonNull final RenderedAddressAndCapturedLocation from);
 }

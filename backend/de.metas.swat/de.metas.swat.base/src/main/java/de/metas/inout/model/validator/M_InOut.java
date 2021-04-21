@@ -43,7 +43,7 @@ public class M_InOut
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			documentLocationBL.setBPartnerAddress(InOutDocumentLocationAdapterFactory.locationAdapter(inoutRecord));
+			documentLocationBL.updateRenderedAddressAndCapturedLocation(InOutDocumentLocationAdapterFactory.locationAdapter(inoutRecord));
 		}
 	}
 
@@ -53,7 +53,7 @@ public class M_InOut
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			Services.get(IDocumentLocationBL.class).setDeliveryToAddress(InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(inoutRecord));
+			Services.get(IDocumentLocationBL.class).updateRenderedAddressAndCapturedLocation(InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(inoutRecord));
 		}
 	}
 

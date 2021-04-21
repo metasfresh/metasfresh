@@ -22,7 +22,9 @@
 
 package de.metas.document.location.adapter;
 
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
@@ -47,9 +49,9 @@ public interface IDocumentDeliveryLocationAdapter extends IDocumentLocationAdapt
 	void setDeliveryToAddress(String address);
 
 	@Override
-	default void setLocationAndAddress(@Nullable final LocationId locationId, @Nullable final String address)
+	default void setRenderedAddressAndCapturedLocation(@NonNull final RenderedAddressAndCapturedLocation from)
 	{
-		setDropShip_Location_Value_ID(LocationId.toRepoId(locationId));
-		setDeliveryToAddress(address);
+		setDropShip_Location_Value_ID(LocationId.toRepoId(from.getCapturedLocationId()));
+		setDeliveryToAddress(from.getRenderedAddress());
 	}
 }

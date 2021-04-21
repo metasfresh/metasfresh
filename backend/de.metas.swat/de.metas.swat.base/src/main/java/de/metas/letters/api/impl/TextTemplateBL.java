@@ -155,8 +155,8 @@ public final class TextTemplateBL implements ITextTemplateBL
 
 		//
 		// Update BPartnerAddress string
-		final IDocumentLocationAdapter docLocation = new LetterDocumentLocationAdapter(letter);
-		Services.get(IDocumentLocationBL.class).setBPartnerAddress(docLocation);
+		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(new LetterDocumentLocationAdapter(letter));
 
 		//
 		// Check/Set BP Contact

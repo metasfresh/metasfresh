@@ -78,7 +78,7 @@ public class C_Invoice_Fix_DocumentLocations
 
 						for (final I_C_Invoice invoiceToFix : invoicesToFix)
 						{
-							documentLocationBL.setBPartnerAddress(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoiceToFix));
+							documentLocationBL.updateRenderedAddressAndCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoiceToFix));
 							InterfaceWrapperHelper.save(invoiceToFix);
 
 							counter++;

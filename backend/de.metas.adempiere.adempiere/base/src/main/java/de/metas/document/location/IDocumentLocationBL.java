@@ -39,23 +39,31 @@ import java.util.Optional;
  */
 public interface IDocumentLocationBL extends ISingletonService
 {
-	String mkFullAddress(@NonNull DocumentLocation location);
+	RenderedAddressAndCapturedLocation computeRenderedAddress(@NonNull DocumentLocation location);
 
-	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentLocationAdapter location);
+	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentLocationAdapter locationAdapter);
 
-	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentBillLocationAdapter location);
+	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentBillLocationAdapter locationAdapter);
 
-	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentDeliveryLocationAdapter location);
+	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentDeliveryLocationAdapter locationAdapter);
 
-	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentHandOverLocationAdapter location);
+	Optional<DocumentLocation> toPlainDocumentLocation(@NonNull IDocumentHandOverLocationAdapter locationAdapter);
 
-	void setBPartnerAddress(IDocumentLocationAdapter location);
+	void updateRenderedAddressAndCapturedLocation(IDocumentLocationAdapter locationAdapter);
 
-	void setBillToAddress(IDocumentBillLocationAdapter location);
+	void updateCapturedLocation(IDocumentLocationAdapter locationAdapter);
 
-	void setDeliveryToAddress(IDocumentDeliveryLocationAdapter location);
+	void updateCapturedLocation(IDocumentBillLocationAdapter locationAdapter);
 
-	void setHandOverAddress(IDocumentHandOverLocationAdapter location);
+	void updateRenderedAddressAndCapturedLocation(IDocumentBillLocationAdapter locationAdapter);
+
+	void updateRenderedAddressAndCapturedLocation(IDocumentDeliveryLocationAdapter locationAdapter);
+
+	void updateCapturedLocation(IDocumentDeliveryLocationAdapter locationAdapter);
+
+	void updateRenderedAddressAndCapturedLocation(IDocumentHandOverLocationAdapter locationAdapter);
+
+	void updateCapturedLocation(IDocumentHandOverLocationAdapter locationAdapter);
 
 	<RECORD, ADAPTER extends IDocumentLocationAdapterTemplate>
 	UpdateRecordLocationCommandBuilder<RECORD, ADAPTER> prepareUpdateRecordLocation();

@@ -69,6 +69,6 @@ public class C_OrderLine
 			skipIfCopying = true)
 	public void updateBPartnerAddress(final I_C_OrderLine orderLine)
 	{
-		documentLocationBL.setBPartnerAddress(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
 	}
 }

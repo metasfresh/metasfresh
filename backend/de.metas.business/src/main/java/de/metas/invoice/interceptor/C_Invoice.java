@@ -35,7 +35,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.checkerframework.common.value.qual.IntRangeFromGTENegativeOne;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
@@ -118,7 +117,7 @@ public class C_Invoice // 03771
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_ID, I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID, I_C_Invoice.COLUMNNAME_AD_User_ID })
 	public void updateBPartnerAddress(final I_C_Invoice doc)
 	{
-		documentLocationBL.setBPartnerAddress(InvoiceDocumentLocationAdapterFactory.locationAdapter(doc));
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(doc));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }

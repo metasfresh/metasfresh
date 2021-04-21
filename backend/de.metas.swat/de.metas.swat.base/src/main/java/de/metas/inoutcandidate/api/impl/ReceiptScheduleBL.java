@@ -254,14 +254,14 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	public void updateBPartnerAddress(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final IDocumentLocationAdapter documentLocation = asDocumentLocation(receiptSchedule);
-		Services.get(IDocumentLocationBL.class).setBPartnerAddress(documentLocation);
+		Services.get(IDocumentLocationBL.class).updateRenderedAddressAndCapturedLocation(documentLocation);
 	}
 
 	@Override
 	public void updateBPartnerAddressOverride(final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final IDocumentLocationAdapter documentLocation = asDocumentLocationEffective(receiptSchedule);
-		Services.get(IDocumentLocationBL.class).setBPartnerAddress(documentLocation);
+		Services.get(IDocumentLocationBL.class).updateRenderedAddressAndCapturedLocation(documentLocation);
 	}
 
 	@Override

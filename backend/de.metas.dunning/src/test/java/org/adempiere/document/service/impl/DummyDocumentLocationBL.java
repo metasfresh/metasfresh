@@ -41,27 +41,27 @@ public class DummyDocumentLocationBL extends DocumentLocationBL
 	}
 
 	@Override
-	public void setBPartnerAddress(IDocumentLocationAdapter location)
+	public void updateRenderedAddressAndCapturedLocation(IDocumentLocationAdapter locationAdapter)
 	{
-		location.setBPartnerAddress("Dummy BP Address: " + location);
+		locationAdapter.setBPartnerAddress("Dummy BP Address: " + locationAdapter);
 	}
 
 	@Override
-	public void setBillToAddress(IDocumentBillLocationAdapter location)
+	public void updateRenderedAddressAndCapturedLocation(IDocumentBillLocationAdapter locationAdapter)
 	{
-		location.setBillToAddress("Dummy BillTo Address: " + location);
+		locationAdapter.setBillToAddress("Dummy BillTo Address: " + locationAdapter);
 	}
 
 	@Override
-	public void setDeliveryToAddress(IDocumentDeliveryLocationAdapter location)
+	public void updateRenderedAddressAndCapturedLocation(IDocumentDeliveryLocationAdapter locationAdapter)
 	{
-		location.setDeliveryToAddress("Dummy DeliveryTo Address: " + location);
+		locationAdapter.setDeliveryToAddress("Dummy DeliveryTo Address: " + locationAdapter);
 	}
 
 	@Override
-	public void setHandOverAddress(IDocumentHandOverLocationAdapter location)
+	public void updateRenderedAddressAndCapturedLocation(IDocumentHandOverLocationAdapter locationAdapter)
 	{
-		location.setHandOverAddress("Dummy Handover Address: " + location);
+		locationAdapter.setHandOverAddress("Dummy Handover Address: " + locationAdapter);
 	}
 
 }

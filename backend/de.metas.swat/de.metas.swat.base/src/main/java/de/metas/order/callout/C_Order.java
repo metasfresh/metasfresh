@@ -74,7 +74,7 @@ public class C_Order
 			skipIfCopying = true)
 	public void updateBPartnerAddress(final I_C_Order order)
 	{
-		documentLocationBL.setBPartnerAddress(OrderDocumentLocationAdapterFactory.locationAdapter(order));
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.locationAdapter(order));
 	}
 
 	@CalloutMethod(columnNames = {
@@ -84,7 +84,7 @@ public class C_Order
 			skipIfCopying = true)
 	public void updateBillToAddress(final I_C_Order order)
 	{
-		documentLocationBL.setBillToAddress(OrderDocumentLocationAdapterFactory.billLocationAdapter(order));
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.billLocationAdapter(order));
 	}
 
 	@CalloutMethod(columnNames = {
@@ -96,7 +96,7 @@ public class C_Order
 			skipIfCopying = true)
 	public void updateDeliveryToAddress(final I_C_Order order)
 	{
-		documentLocationBL.setDeliveryToAddress(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order));
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order));
 	}
 
 	@CalloutMethod(columnNames = {
@@ -107,6 +107,6 @@ public class C_Order
 			skipIfCopying = true)
 	public void updateHandOverAddress(final I_C_Order order)
 	{
-		documentLocationBL.setHandOverAddress(OrderDocumentLocationAdapterFactory.handOverLocationAdapter(order));
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderDocumentLocationAdapterFactory.handOverLocationAdapter(order));
 	}
 }

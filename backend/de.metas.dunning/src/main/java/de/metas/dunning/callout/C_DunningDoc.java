@@ -52,6 +52,6 @@ public class C_DunningDoc
 			skipIfCopying = true)
 	public void updateBPartnerAddress(final I_C_DunningDoc dunningDoc)
 	{
-		documentLocationBL.setBPartnerAddress(DunningDocDocumentLocationAdapterFactory.locationAdapter(dunningDoc));
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(DunningDocDocumentLocationAdapterFactory.locationAdapter(dunningDoc));
 	}
 }

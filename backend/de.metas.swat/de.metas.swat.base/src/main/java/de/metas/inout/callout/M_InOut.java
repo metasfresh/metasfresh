@@ -53,7 +53,7 @@ public class M_InOut
 			skipIfCopying = true)
 	public void updateBPartnerAddress(final I_M_InOut inout)
 	{
-		documentLocationBL.setBPartnerAddress(InOutDocumentLocationAdapterFactory.locationAdapter(inout));
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(InOutDocumentLocationAdapterFactory.locationAdapter(inout));
 	}
 
 	@CalloutMethod(columnNames = {
@@ -65,6 +65,6 @@ public class M_InOut
 			skipIfCopying = true)
 	public void updateDeliveryToAddress(final I_M_InOut inout)
 	{
-		documentLocationBL.setDeliveryToAddress(InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(inout));
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(inout));
 	}
 }

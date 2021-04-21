@@ -22,9 +22,9 @@
 
 package de.metas.document.location.adapter;
 
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
-
-import javax.annotation.Nullable;
+import lombok.NonNull;
 
 public interface IDocumentHandOverLocationAdapter extends IDocumentLocationAdapterTemplate
 {
@@ -45,9 +45,9 @@ public interface IDocumentHandOverLocationAdapter extends IDocumentLocationAdapt
 	void setHandOverAddress(String address);
 
 	@Override
-	default void setLocationAndAddress(@Nullable final LocationId locationId, @Nullable final String address)
+	default void setRenderedAddressAndCapturedLocation(@NonNull final RenderedAddressAndCapturedLocation from)
 	{
-		setHandOver_Location_Value_ID(LocationId.toRepoId(locationId));
-		setHandOverAddress(address);
+		setHandOver_Location_Value_ID(LocationId.toRepoId(from.getCapturedLocationId()));
+		setHandOverAddress(from.getRenderedAddress());
 	}
 }

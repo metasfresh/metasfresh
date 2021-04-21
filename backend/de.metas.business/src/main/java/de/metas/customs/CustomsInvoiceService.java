@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -376,7 +377,7 @@ public class CustomsInvoiceService
 
 		final String documentNo = reserveDocumentNo(docTypeId);
 
-		final String bpartnerAddress = documentLocationBL.mkFullAddress(DocumentLocation.builder()
+		final RenderedAddressAndCapturedLocation bpartnerAddress = documentLocationBL.computeRenderedAddress(DocumentLocation.builder()
 												 .bpartnerId(bpartnerLocationId.getBpartnerId())
 												 .bpartnerLocationId(bpartnerLocationId)
 												 .contactId(contactId)
@@ -384,7 +385,7 @@ public class CustomsInvoiceService
 
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(bpartnerLocationId)
-				.bpartnerAddress(bpartnerAddress)
+				.bpartnerAddress(bpartnerAddress.getRenderedAddress())
 				.userId(BPartnerContactId.toUserIdOrNull(contactId))
 				.currencyId(currencyId)
 				.linesToExportMap(linesToExportMap)

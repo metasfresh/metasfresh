@@ -24,6 +24,7 @@ package de.metas.document.location.commands.update_record_location;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentLocationAdapterTemplate;
 import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.location.LocationId;
@@ -90,7 +91,7 @@ public class UpdateRecordLocationCommand<RECORD, ADAPTER extends IDocumentLocati
 
 		if (currentAndPrevLocation.getCurrent() == null)
 		{
-			toDocumentLocationAdapter.apply(record).setLocationAndAddress(null, null);
+			toDocumentLocationAdapter.apply(record).setRenderedAddressAndCapturedLocation(RenderedAddressAndCapturedLocation.NONE);
 			return;
 		}
 
@@ -110,11 +111,8 @@ public class UpdateRecordLocationCommand<RECORD, ADAPTER extends IDocumentLocati
 
 		if (!LocationId.equals(oldLocationId, newLocationId))
 		{
-			final DocumentLocation currentLocation = currentAndPrevLocation.getCurrent()
-					.withLocationId(newLocationId);
-			final String address = documentLocationBL.mkFullAddress(currentLocation);
-
-			toDocumentLocationAdapter.apply(record).setLocationAndAddress(currentLocation.getLocationId(), address);
+			final RenderedAddressAndCapturedLocation renderedAddress = documentLocationBL.computeRenderedAddress(currentAndPrevLocation.getCurrent().withLocationId(newLocationId));
+			toDocumentLocationAdapter.apply(record).setRenderedAddressAndCapturedLocation(renderedAddress);
 		}
 	}
 

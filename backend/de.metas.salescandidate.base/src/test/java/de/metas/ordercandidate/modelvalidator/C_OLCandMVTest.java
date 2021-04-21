@@ -5,6 +5,7 @@ import de.metas.StartupListener;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.ordercandidate.AbstractOLCandTestSupport;
 import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandValidatorService;
@@ -70,9 +71,10 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 				Optional.empty(),
 				Optional.empty());
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
+		final OLCandLocationUpdateHelper olCandLocationUpdateHelper = new OLCandLocationUpdateHelper(new DocumentLocationBL(bpartnerBL));
 
 		// Initialize C_OLCand MV Only!
-		final C_OLCand orderCandidateMV = new C_OLCand(bpartnerBL, olCandValidatorService);
+		final C_OLCand orderCandidateMV = new C_OLCand(bpartnerBL, olCandValidatorService, olCandLocationUpdateHelper);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(orderCandidateMV, null);
 	}
 

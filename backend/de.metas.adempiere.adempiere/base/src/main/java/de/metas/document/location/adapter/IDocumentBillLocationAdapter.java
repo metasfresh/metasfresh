@@ -22,7 +22,9 @@
 
 package de.metas.document.location.adapter;
 
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
 
@@ -43,9 +45,9 @@ public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTe
 	void setBillToAddress(String address);
 
 	@Override
-	default void setLocationAndAddress(@Nullable final LocationId locationId, @Nullable final String address)
+	default void setRenderedAddressAndCapturedLocation(@NonNull final RenderedAddressAndCapturedLocation from)
 	{
-		setBill_Location_Value_ID(LocationId.toRepoId(locationId));
-		setBillToAddress(address);
+		setBill_Location_Value_ID(LocationId.toRepoId(from.getCapturedLocationId()));
+		setBillToAddress(from.getRenderedAddress());
 	}
 }

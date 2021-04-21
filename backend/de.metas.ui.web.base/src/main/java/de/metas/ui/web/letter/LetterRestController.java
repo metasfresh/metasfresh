@@ -4,8 +4,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.i18n.IMsgBL;
 import de.metas.letter.BoilerPlateId;
 import de.metas.letters.api.ITextTemplateBL;
@@ -105,7 +106,7 @@ public class LetterRestController
 		this.documentLocationBL = documentLocationBL;
 	}
 
-	private final void assertReadable(final WebuiLetter letter)
+	private void assertReadable(final WebuiLetter letter)
 	{
 		// Make sure current logged in user is the owner
 		final UserId loggedUserId = userSession.getLoggedUserId();
@@ -118,7 +119,7 @@ public class LetterRestController
 		}
 	}
 
-	private final void assertWritable(final WebuiLetter letter)
+	private void assertWritable(final WebuiLetter letter)
 	{
 		assertReadable(letter);
 
@@ -145,8 +146,12 @@ public class LetterRestController
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, context.getC_BPartner_Location_ID(-1));
 		final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, context.getAD_User_ID(-1));
 
-		//
-		// Build BPartnerAddress
+		final RenderedAddressAndCapturedLocation renderedAddress = documentLocationBL.computeRenderedAddress(
+				DocumentLocation.builder()
+						.bpartnerId(bpartnerId)
+						.bpartnerLocationId(bpartnerLocationId)
+						.contactId(contactId)
+						.build());
 
 		final WebuiLetter letter = lettersRepo.createNewLetter(
 				WebuiLetter.builder()
@@ -156,12 +161,7 @@ public class LetterRestController
 						.bpartnerId(BPartnerId.toRepoId(bpartnerId))
 						.bpartnerLocationId(BPartnerLocationId.toRepoId(bpartnerLocationId))
 						.bpartnerContactId(BPartnerContactId.toRepoId(contactId))
-						.bpartnerAddress(documentLocationBL.mkFullAddress(
-								DocumentLocation.builder()
-										.bpartnerId(bpartnerId)
-										.bpartnerLocationId(bpartnerLocationId)
-										.contactId(contactId)
-										.build())));
+						.bpartnerAddress(renderedAddress.getRenderedAddress()));
 
 		return JSONLetter.of(letter);
 	}
@@ -222,7 +222,7 @@ public class LetterRestController
 		return createPDFResponseEntry(result.getLetter().getTemporaryPDFData());
 	}
 
-	private final WebuiLetter complete0(final WebuiLetter letter)
+	private WebuiLetter complete0(final WebuiLetter letter)
 	{
 		lettersRepo.createC_Letter(letter);
 

@@ -235,7 +235,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		// commented out because there is no BPartnerAddress field nor BillToAddress field
 		// final IDocumentLocation documentLocation = InterfaceWrapperHelper.create(shipmentSchedule, IDocumentLocation.class);
-		// documentLocationBL.setBPartnerAddress(documentLocation);
+		// documentLocationBL.updateRenderedAddressAndCapturedLocation(documentLocation);
 
 		shipmentSchedule.setDeliveryRule(term.getDeliveryRule());
 		shipmentSchedule.setDeliveryViaRule(term.getDeliveryViaRule());

@@ -177,7 +177,7 @@ public class Order implements ModelValidator
 			final String BPartnerAddress = orderLine.getBPartnerAddress();
 			if (Check.isEmpty(BPartnerAddress, true))
 			{
-				documentLocationBL.setBPartnerAddress(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
+				documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
 			}
 		}
 

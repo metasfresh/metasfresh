@@ -53,7 +53,7 @@ public class C_DunningDoc
 	public void updateAddressField(final I_C_DunningDoc dunningDoc)
 	{
 		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
-		documentLocationBL.setBPartnerAddress(DunningDocDocumentLocationAdapterFactory.locationAdapter(dunningDoc));
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(DunningDocDocumentLocationAdapterFactory.locationAdapter(dunningDoc));
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
