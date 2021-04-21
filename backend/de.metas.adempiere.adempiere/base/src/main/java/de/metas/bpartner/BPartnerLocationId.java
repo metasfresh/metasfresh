@@ -70,9 +70,9 @@ public class BPartnerLocationId implements RepoIdAware
 	@Nullable
 	public static BPartnerLocationId ofRepoIdOrNull(
 			@Nullable final BPartnerId bpartnerId,
-			final int bpartnerLocationId)
+			@Nullable final Integer bpartnerLocationId)
 	{
-		return bpartnerId != null && bpartnerLocationId > 0 ? ofRepoId(bpartnerId, bpartnerLocationId) : null;
+		return bpartnerId != null && bpartnerLocationId != null && bpartnerLocationId > 0 ? ofRepoId(bpartnerId, bpartnerLocationId) : null;
 	}
 
 	private BPartnerLocationId(@NonNull final BPartnerId bpartnerId, final int bpartnerLocationId)
