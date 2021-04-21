@@ -6,6 +6,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.location.DocumentLocation;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -27,6 +28,7 @@ import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -194,6 +196,16 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
 
+		DocumentLocation orderDeliveryLocation = OrderDocumentLocationAdapterFactory
+				.deliveryLocationAdapter(order)
+				.toDocumentLocation();
+		if(orderDeliveryLocation.getBpartnerLocationId() == null)
+		{
+			orderDeliveryLocation = OrderDocumentLocationAdapterFactory
+					.locationAdapter(order)
+					.toDocumentLocation();
+		}
+
 		//
 		// Tax
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
@@ -204,7 +216,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				order.getDatePromised(), // shipDate
 				OrgId.ofRepoId(order.getAD_Org_ID()),
 				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-				CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
+				orderDeliveryLocation.getBpartnerLocationId(), // ship location id
 				order.isSOTrx());
 		icRecord.setC_Tax_ID(TaxId.toRepoId(taxId)); // avoid NPE in tests
 

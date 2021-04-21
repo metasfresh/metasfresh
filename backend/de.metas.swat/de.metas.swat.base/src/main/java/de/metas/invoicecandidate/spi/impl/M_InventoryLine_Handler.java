@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.spi.impl;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -10,6 +11,7 @@ import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
 import de.metas.inout.invoicecandidate.M_InOutLine_Handler;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
@@ -197,7 +199,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final Properties ctx = InterfaceWrapperHelper.getCtx(inventoryLine);
 		final TaxCategoryId taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : null;
 		final Timestamp shipDate = inOut.getMovementDate();
-		final int locationId = inOut.getC_BPartner_Location_ID();
+		final BPartnerLocationAndCaptureId inoutBPLocationId = InOutDocumentLocationAdapterFactory
+				.locationAdapter(inOut)
+				.getBPartnerLocationAndCaptureId();
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
@@ -207,7 +211,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 				shipDate,
 				orgId,
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
-				locationId, // shipC_BPartner_Location_ID
+				inoutBPLocationId.getBpartnerLocationId(), // shipC_BPartner_Location_ID
 				false); // isSOTrx same as in vendor return
 		ic.setC_Tax_ID(taxId.getRepoId());
 

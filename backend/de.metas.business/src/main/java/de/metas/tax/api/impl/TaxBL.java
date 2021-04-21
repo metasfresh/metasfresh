@@ -1,6 +1,7 @@
 package de.metas.tax.api.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.location.CountryId;
@@ -84,7 +85,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			@NonNull final Timestamp shipDate,
 			@NonNull final OrgId orgId,
 			@Nullable final WarehouseId warehouseId,
-			final int shipC_BPartner_Location_ID,
+			final BPartnerLocationId shipC_BPartner_Location_ID,
 			final boolean isSOTrx)
 	{
 		if (taxCategoryId != null)
@@ -108,7 +109,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				}
 			}
 
-			final I_C_BPartner_Location bpLocTo = loadOutOfTrx(shipC_BPartner_Location_ID, I_C_BPartner_Location.class);
+			final I_C_BPartner_Location bpLocTo = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(shipC_BPartner_Location_ID);
 
 			final TaxId taxIdForCategory = retrieveTaxIdForCategory(ctx,
 					countryFromId,
@@ -153,7 +154,8 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	 */
 	@Override
 	@Nullable
-	public TaxId retrieveTaxIdForCategory(final Properties ctx,
+	public TaxId retrieveTaxIdForCategory(
+			final Properties ctx,
 			final CountryId countryFromId,
 			final OrgId orgId,
 			@NonNull final I_C_BPartner_Location bpLocTo,
@@ -163,10 +165,11 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final boolean throwEx)
 	{
 		final I_C_BPartner bPartner = Services.get(IBPartnerDAO.class).getById(bpLocTo.getC_BPartner_ID());
+		final LocationId locationId = LocationId.ofRepoId(bpLocTo.getC_Location_ID());
 
 		final boolean hasTaxCertificate = !Check.isEmpty(bPartner.getVATaxID());
 
-		final I_C_Location locationTo = Services.get(ILocationDAO.class).getById(LocationId.ofRepoId(bpLocTo.getC_Location_ID()));
+		final I_C_Location locationTo = Services.get(ILocationDAO.class).getById(locationId);
 		final CountryId countryToId = CountryId.ofRepoId(locationTo.getC_Country_ID());
 		final I_C_Country countryTo = Services.get(ICountryDAO.class).getById(countryToId);
 		final boolean toEULocation = Services.get(ICountryAreaBL.class).isMemberOf(ctx,

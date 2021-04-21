@@ -260,7 +260,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 					icRecord.getDeliveryDate(),
 					orgId,
 					(WarehouseId)null,
-					commissionToLocationId.getRepoId(),
+					commissionToLocationId,
 					false /* isSOTrx */);
 		}
 		icRecord.setC_Tax_ID(taxId.getRepoId());

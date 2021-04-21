@@ -22,6 +22,7 @@ package de.metas.tax.api;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
@@ -41,7 +42,7 @@ public interface ITaxBL extends ISingletonService
 	I_C_Tax getTaxById(TaxId taxId);
 
 	/**
-	 * Try to retrieve tax by {@link #retrieveTaxIdForCategory(Properties, CountryId, OrgId, I_C_BPartner_Location, Timestamp, TaxCategoryId, boolean, boolean)} (Properties, int, int, org.compiere.model.I_C_BPartner_Location, Timestamp, TaxCategoryId, boolean, boolean)} first.<br>
+	 * Try to retrieve tax by "retrieveTaxIdForCategory" first.<br>
 	 * If that doesn't work, try retrieving the German tax
 	 *
 	 * @param shipC_BPartner_Location_ID place where the service is provided
@@ -54,7 +55,7 @@ public interface ITaxBL extends ISingletonService
 			Timestamp shipDate,
 			OrgId orgId,
 			@Nullable WarehouseId warehouseId,
-			int shipC_BPartner_Location_ID,
+			BPartnerLocationId shipC_BPartner_Location_ID,
 			boolean isSOTrx);
 
 	/**

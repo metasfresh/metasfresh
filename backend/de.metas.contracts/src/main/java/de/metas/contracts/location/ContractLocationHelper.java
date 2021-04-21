@@ -36,7 +36,7 @@ public class ContractLocationHelper
 {
 	public static DocumentLocation extractBillLocation(@NonNull final I_C_Flatrate_Term contract)
 	{
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(contract.getBill_BPartner_ID());
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contract.getBill_BPartner_ID());
 		return DocumentLocation.builder()
 				.bpartnerId(bpartnerId)
 				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contract.getBill_Location_ID()))

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
@@ -386,6 +387,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final TaxCategoryId taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : null;
 		final Timestamp shipDate = inOut.getMovementDate();
 		final int locationId = inOut.getC_BPartner_Location_ID();
+		final BPartnerLocationAndCaptureId deliveryLocation = InOutDocumentLocationAdapterFactory
+				.locationAdapter(inOut)
+				.getBPartnerLocationAndCaptureId();
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
@@ -395,7 +399,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				shipDate,
 				orgId,
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
-				locationId, // shipC_BPartner_Location_ID
+				deliveryLocation.getBpartnerLocationId(), // shipC_BPartner_Location_ID
 				isSOTrx);
 		icRecord.setC_Tax_ID(taxId.getRepoId());
 
