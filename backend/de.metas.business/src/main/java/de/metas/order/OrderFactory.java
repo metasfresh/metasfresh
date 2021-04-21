@@ -299,7 +299,7 @@ public class OrderFactory
 		}
 
 		order.setC_BPartner_ID(bpartnerId.getRepoId());
-		orderBL.setBPartnerLocation(order, BPartnerLocationAndCaptureId.ofLocationWithUnknownCapture(bpartnerLocationId));
+		orderBL.setBPartnerLocation(order, BPartnerLocationAndCaptureId.ofNullableLocationWithUnknownCapture(bpartnerLocationId));
 		order.setAD_User_ID(BPartnerContactId.toRepoId(contactId));
 		return this;
 	}

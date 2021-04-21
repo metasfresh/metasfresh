@@ -159,7 +159,7 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void setBPartner(I_C_Order order, I_C_BPartner bp);
 
-	void setBPartnerLocation(I_C_Order order, BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId);
+	void setBPartnerLocation(I_C_Order order, @Nullable BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId);
 
 	/**
 	 * Attempts to set the <code>Bill_Location_ID</code> in the given <code>order</code>. If the bill location is found, also set the bill partner accordingly. First tries to use the order's BPartner

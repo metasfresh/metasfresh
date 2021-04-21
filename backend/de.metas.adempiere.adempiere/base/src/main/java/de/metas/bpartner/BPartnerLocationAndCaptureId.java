@@ -93,9 +93,11 @@ public class BPartnerLocationAndCaptureId
 		return new BPartnerLocationAndCaptureId(bpartnerLocationId, locationCaptureId);
 	}
 
-	public static BPartnerLocationAndCaptureId ofLocationWithUnknownCapture(@NonNull final BPartnerLocationId bpartnerLocationId)
+	public static BPartnerLocationAndCaptureId ofNullableLocationWithUnknownCapture(@Nullable final BPartnerLocationId bpartnerLocationId)
 	{
-		return new BPartnerLocationAndCaptureId(bpartnerLocationId, null);
+		return bpartnerLocationId != null
+				? new BPartnerLocationAndCaptureId(bpartnerLocationId, null)
+				: null;
 	}
 
 	public static boolean equals(@Nullable BPartnerLocationAndCaptureId o1, @Nullable BPartnerLocationAndCaptureId o2)
