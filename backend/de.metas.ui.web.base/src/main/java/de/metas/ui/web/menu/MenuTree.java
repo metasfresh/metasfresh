@@ -26,6 +26,8 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -50,7 +52,7 @@ import lombok.NonNull;
 
 public final class MenuTree
 {
-	public static final MenuTree of(final long version, final MenuNode rootNode)
+	public static MenuTree of(final long version, final MenuNode rootNode)
 	{
 		return new MenuTree(version, rootNode);
 	}
@@ -90,7 +92,7 @@ public final class MenuTree
 		nodesByMainTableName = nodesByMainTableNameBuilder.build();
 	}
 
-	private static final ArrayKey mkTypeAndElementIdKey(final MenuNodeType type, final DocumentId elementId)
+	private static ArrayKey mkTypeAndElementIdKey(final MenuNodeType type, final DocumentId elementId)
 	{
 		return Util.mkKey(type, elementId);
 	}
@@ -131,6 +133,7 @@ public final class MenuTree
 				.filter(node -> node.getAD_Menu_ID() == adMenuId);
 	}
 
+	@Nullable
 	private MenuNode getFirstNodeByElementIdOrNull(final MenuNodeType type, final DocumentId elementId)
 	{
 		final ArrayKey key = mkTypeAndElementIdKey(type, elementId);
@@ -193,6 +196,7 @@ public final class MenuTree
 		return Optional.of(path);
 	}
 
+	@Nullable
 	public MenuNode getTopLevelMenuGroupOrNull(final WindowId windowId)
 	{
 		final DocumentId elementId = windowId.toDocumentId();
@@ -210,9 +214,8 @@ public final class MenuTree
 		return path.get(1);
 	}
 
-	private List<MenuNode> getPath(final MenuNode node)
+	private List<MenuNode> getPath(@NonNull final MenuNode node)
 	{
-		Preconditions.checkNotNull(node, "node not null");
 		final List<MenuNode> path = new ArrayList<>();
 
 		MenuNode n = node;
@@ -228,7 +231,6 @@ public final class MenuTree
 	/**
 	 * Filters this node and its children recursively.
 	 *
-	 * @param nameQuery
 	 * @param includeLeafsIfGroupAccepted
 	 *            <ul>
 	 *            <li><code>false</code> populate groups only with the leafs that match (default)
@@ -279,14 +281,14 @@ public final class MenuTree
 				});
 	}
 
-	private static final boolean matchesNameQuery(final MenuNode node, final String nameQueryLC)
+	private static boolean matchesNameQuery(final MenuNode node, final String nameQueryLC)
 	{
 		final String captionNorm = stripDiacritics(node.getCaption().toLowerCase());
 		final String queryNorm = stripDiacritics(nameQueryLC);
-		return captionNorm.indexOf(queryNorm) >= 0;
+		return captionNorm.contains(queryNorm);
 	}
 
-	private static final String stripDiacritics(final String string)
+	private static String stripDiacritics(final String string)
 	{
 		String s = Normalizer.normalize(string, Normalizer.Form.NFD);
 		s = s.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");

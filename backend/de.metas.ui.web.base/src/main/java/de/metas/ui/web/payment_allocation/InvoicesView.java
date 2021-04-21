@@ -1,11 +1,6 @@
 package de.metas.ui.web.payment_allocation;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceId;
 import de.metas.process.RelatedProcessDescriptor;
@@ -15,9 +10,13 @@ import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import lombok.Builder;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -29,12 +28,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -57,9 +56,9 @@ public class InvoicesView extends AbstractCustomView<InvoiceRow> implements IEdi
 			@Nullable final List<RelatedProcessDescriptor> processes)
 	{
 		super(viewId,
-				TranslatableStrings.empty(),
-				rows,
-				NullDocumentFilterDescriptorsProvider.instance);
+			  TranslatableStrings.empty(),
+			  rows,
+			  NullDocumentFilterDescriptorsProvider.instance);
 
 		this.processes = processes != null ? ImmutableList.copyOf(processes) : ImmutableList.of();
 	}
@@ -98,5 +97,17 @@ public class InvoicesView extends AbstractCustomView<InvoiceRow> implements IEdi
 	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
 	{
 		throw new UnsupportedOperationException();
+	}
+
+	public void markPreparedForAllocation(@NonNull final DocumentIdsSelection rowIds)
+	{
+		getRowsData().markPreparedForAllocation(rowIds);
+		invalidateAll();
+	}
+
+	public void unmarkPreparedForAllocation(@NonNull final DocumentIdsSelection rowIds)
+	{
+		getRowsData().unmarkPreparedForAllocation(rowIds);
+		invalidateAll();
 	}
 }

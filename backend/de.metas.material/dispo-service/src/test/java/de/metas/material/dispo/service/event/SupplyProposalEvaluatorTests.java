@@ -129,7 +129,7 @@ public class SupplyProposalEvaluatorTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService, dimensionService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService));
 	}
 
 	/**

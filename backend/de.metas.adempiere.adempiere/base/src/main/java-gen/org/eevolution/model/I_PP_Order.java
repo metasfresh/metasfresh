@@ -1369,6 +1369,27 @@ public interface I_PP_Order
 	String COLUMNNAME_PriorityRule = "PriorityRule";
 
 	/**
+	 * Set ProblemCode.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProblemCode (@Nullable java.lang.String ProblemCode);
+
+	/**
+	 * Get ProblemCode.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProblemCode();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_ProblemCode = new ModelColumn<>(I_PP_Order.class, "ProblemCode", null);
+	String COLUMNNAME_ProblemCode = "ProblemCode";
+
+	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
@@ -1562,7 +1583,7 @@ public interface I_PP_Order
 	String COLUMNNAME_QtyReject = "QtyReject";
 
 	/**
-	 * Set Open Qty.
+	 * Set Qty Reserved.
 	 * Open Qty
 	 *
 	 * <br>Type: Quantity
@@ -1572,7 +1593,7 @@ public interface I_PP_Order
 	void setQtyReserved (@Nullable BigDecimal QtyReserved);
 
 	/**
-	 * Get Open Qty.
+	 * Get Qty Reserved.
 	 * Open Qty
 	 *
 	 * <br>Type: Quantity

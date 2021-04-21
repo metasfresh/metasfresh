@@ -108,8 +108,6 @@ public class DimensionSpec
 	 * Create a new {@link I_M_AttributeSetInstance} containing instances for relevant attributes in dimensionSpec and values from the given asi.<br>
 	 * In other words, create a "projection" of the given asi, with respect to the given dimensionSpec.
 	 *
-	 * @param asi
-	 * @param dimensionSpec
 	 * @return the new ASI if at least one of the relevant attribute/value couple in the given ASI, null otherwise
 	 *
 	 * @deprecated this method does not correctly handle dimensions with multiple M_AttributeValue_IDs in one group and is also only used by an oboslete feature.
@@ -153,10 +151,6 @@ public class DimensionSpec
 	/**
 	 * Create {@link KeyNamePair}s of attribute IDs and values taken from the given <code>asi</code> that are relevant for the given dimensionSpec.
 	 * In case of <code>null</code> asi or attributes not found or attributes with non relevant values, their values will be set to {@link DimensionConstants#DIM_EMPTY}.
-	 *
-	 * @param asi
-	 * @param dimensionSpec
-	 * @return
 	 *
 	 * @deprecated this method does not correctly handle dimensions with multiple M_AttributeValue_IDs in one group and is also only used by an oboslete feature.
 	 */

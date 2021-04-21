@@ -45,7 +45,7 @@ import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
  * HU editor: Move selected HUs to a given quality issues warehouse
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task initial task https://github.com/metasfresh/metasfresh-webui-api/issues/396
+ * Task initial task https://github.com/metasfresh/metasfresh-webui-api/issues/396
  */
 public class WEBUI_M_HU_MoveToQualityWarehouse extends HUEditorProcessTemplate implements IProcessPrecondition
 {
@@ -91,11 +91,9 @@ public class WEBUI_M_HU_MoveToQualityWarehouse extends HUEditorProcessTemplate i
 	@Override
 	protected void postProcess(final boolean success)
 	{
-		// Invalidate the view
-		// On refresh we expect the HUs we moved, to not be present here anymore.
 		if (movementResult != null)
 		{
-			getView().removeHUsAndInvalidate(movementResult.getHusMoved());
+			getView().invalidateAll();
 		}
 	}
 }

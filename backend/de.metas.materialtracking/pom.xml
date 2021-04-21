@@ -17,7 +17,7 @@
 
 	<properties>
 		<!-- empty property because the sql migration dir already contains a list of base directories -->
-		<migration-sql-basedir></migration-sql-basedir>
+		<migration-sql-basedir/>
 	</properties>
 
 	<dependencies>
@@ -74,6 +74,13 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<version>${assertj.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
 	</dependencies>
 
 	<build>

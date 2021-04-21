@@ -236,7 +236,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		final String timestampStr = formatter.format(timestamp);
 		final UserId loggedUserId = Env.getLoggedUserIdIfExists(ctx).orElse(null);
 		final String username = loggedUserId != null
-				? Services.get(IUserDAO.class).retrieveUserFullname(loggedUserId)
+				? Services.get(IUserDAO.class).retrieveUserFullName(loggedUserId)
 				: "-";
 
 		final String language = Env.getADLanguageOrBaseLanguage();
@@ -319,7 +319,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		}
 	}
 
-	private static List<I_AD_Table> retrieveChildTablesForParentColumn(final String columnName)
+	private List<I_AD_Table> retrieveChildTablesForParentColumn(final String columnName)
 	{
 		final String whereClause = " EXISTS (SELECT 1 FROM AD_Column c WHERE c.ColumnName = ? AND c.ad_table_id = ad_table.ad_table_id  AND c.IsParent = 'Y')"
 				+ " AND NOT EXISTS (SELECT 1 FROM AD_Column c WHERE c.ColumnName = ? AND c.ad_table_id = ad_table.ad_table_id AND c.ColumnName = ?)"
@@ -335,11 +335,12 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	}
 
 	/**
-	 * verify if a table can or not be copied
+	 * Verify if a table can or not be copied.
 	 *
 	 * @return true if the table can be copied
 	 */
-	private static boolean isCopyTable(final String tableName)
+	@OverridingMethodsMustInvokeSuper
+	protected boolean isCopyTable(final String tableName)
 	{
 		final String upperTableName = tableName.toUpperCase();
 

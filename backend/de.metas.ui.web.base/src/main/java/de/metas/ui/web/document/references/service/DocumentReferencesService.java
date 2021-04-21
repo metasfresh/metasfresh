@@ -17,10 +17,10 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.references.IZoomSource;
-import de.metas.document.references.ZoomInfo;
-import de.metas.document.references.ZoomInfoFactory;
-import de.metas.document.references.ZoomInfoPermissions;
+import de.metas.document.references.related_documents.IZoomSource;
+import de.metas.document.references.related_documents.ZoomInfo;
+import de.metas.document.references.related_documents.ZoomInfoFactory;
+import de.metas.document.references.related_documents.ZoomInfoPermissions;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
@@ -68,10 +68,14 @@ public class DocumentReferencesService
 {
 	private static final Logger logger = LogManager.getLogger(DocumentReferencesService.class);
 	private final DocumentCollection documentCollection;
+	private final ZoomInfoFactory zoomInfoFactory;
 
-	public DocumentReferencesService(@NonNull final DocumentCollection documentCollection)
+	public DocumentReferencesService(
+			@NonNull final DocumentCollection documentCollection,
+			@NonNull final ZoomInfoFactory zoomInfoFactory)
 	{
 		this.documentCollection = documentCollection;
+		this.zoomInfoFactory = zoomInfoFactory;
 	}
 
 	public ImmutableList<DocumentReferenceCandidate> getDocumentReferenceCandidates(
@@ -84,8 +88,6 @@ public class DocumentReferencesService
 			return ImmutableList.of();
 		}
 
-		final ZoomInfoFactory zoomInfoFactory = ZoomInfoFactory.get();
-
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final ImmutableList<DocumentReferenceCandidate> documentReferences = documentCollection.forDocumentReadonly(
 				documentPath,
@@ -95,7 +97,7 @@ public class DocumentReferencesService
 						return ImmutableList.of();
 					}
 
-					final ITranslatableString filterCaption = extractFilterCaption(document, (ZoomInfo)null);
+					final ITranslatableString filterCaption = extractFilterCaption(document, null);
 
 					final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
 					return zoomInfoFactory
@@ -127,8 +129,6 @@ public class DocumentReferencesService
 			@Nullable final DocumentReferenceId documentReferenceId,
 			@NonNull final ZoomInfoPermissions permissions)
 	{
-		final ZoomInfoFactory zoomInfoFactory = ZoomInfoFactory.get();
-
 		return documentCollection.forDocumentReadonly(sourceDocumentPath, sourceDocument -> {
 			if (sourceDocument.isNew())
 			{
@@ -148,7 +148,7 @@ public class DocumentReferencesService
 		});
 	}
 
-	private final ITranslatableString extractFilterCaption(
+	private ITranslatableString extractFilterCaption(
 			@NonNull final Document sourceDocument,
 			@Nullable final ZoomInfo zoomInfo)
 	{
@@ -225,12 +225,13 @@ public class DocumentReferencesService
 
 			adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 			recordId = document.getDocumentId().toInt();
-			keyColumnName = extractSingleKeyColumNameOrNull(entityDescriptor);
+			keyColumnName = extractSingleKeyColumnNameOrNull(entityDescriptor);
 
 			genericZoomOrigin = extractGenericZoomOrigin(tableName, keyColumnName);
 		}
 
-		private static String extractSingleKeyColumNameOrNull(final DocumentEntityDescriptor entityDescriptor)
+		@Nullable
+		private static String extractSingleKeyColumnNameOrNull(final DocumentEntityDescriptor entityDescriptor)
 		{
 			final DocumentFieldDescriptor idField = entityDescriptor.getSingleIdFieldOrNull();
 			if (idField == null)
@@ -244,8 +245,7 @@ public class DocumentReferencesService
 				return null;
 			}
 
-			final String keyColumnName = idFieldBinding.getColumnName();
-			return keyColumnName;
+			return idFieldBinding.getColumnName();
 		}
 
 		private boolean extractGenericZoomOrigin(

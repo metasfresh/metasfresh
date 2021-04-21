@@ -1,7 +1,5 @@
 package de.metas.security;
 
-import org.adempiere.service.ClientId;
-
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -9,6 +7,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -36,19 +37,19 @@ import lombok.Value;
 @ToString(exclude = "authToken")
 public class UserAuthToken
 {
-	UserId userId;
-	String authToken;
-	String description;
+	@NonNull UserId userId;
+	@NonNull String authToken;
+	@Nullable String description;
 
-	ClientId clientId;
-	OrgId orgId;
-	RoleId roleId;
+	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
+	@NonNull RoleId roleId;
 
 	@Builder
 	private UserAuthToken(
 			@NonNull final UserId userId,
-			final String authToken,
-			final String description,
+			@NonNull final String authToken,
+			@Nullable final String description,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId,
 			@NonNull final RoleId roleId)

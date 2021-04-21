@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 580093825L;
+	private static final long serialVersionUID = -2039473194L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -1037,6 +1037,33 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public java.lang.String getPriorityRule() 
 	{
 		return get_ValueAsString(COLUMNNAME_PriorityRule);
+	}
+
+	/** 
+	 * ProblemCode AD_Reference_ID=541259
+	 * Reference name: ProblemCode
+	 */
+	public static final int PROBLEMCODE_AD_Reference_ID=541259;
+	/** Electrical surge damage = ED */
+	public static final String PROBLEMCODE_ElectricalSurgeDamage = "ED";
+	/** No detactable fault = NF */
+	public static final String PROBLEMCODE_NoDetactableFault = "NF";
+	/** Configuration Error = CE */
+	public static final String PROBLEMCODE_ConfigurationError = "CE";
+	/** Software Fault = SF */
+	public static final String PROBLEMCODE_SoftwareFault = "SF";
+	/** Hardware Fault = HF */
+	public static final String PROBLEMCODE_HardwareFault = "HF";
+	@Override
+	public void setProblemCode (final @Nullable java.lang.String ProblemCode)
+	{
+		set_Value (COLUMNNAME_ProblemCode, ProblemCode);
+	}
+
+	@Override
+	public java.lang.String getProblemCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProblemCode);
 	}
 
 	@Override

@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -28,7 +29,6 @@ import org.compiere.model.X_M_Product;
 import org.compiere.util.TimeUtil;
 
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
@@ -73,10 +73,10 @@ public class FlatrateTermDataFactory
 	private static final String valuePricingSystem = "Abo";
 
 	@Builder(builderMethodName = "userNew")
-	public static I_AD_User createADUser(@NonNull final I_C_BPartner bpartner, final String lastName, final String firstName, final boolean isBillToContact_Default, final boolean isShipToContact_Default)
+	public static org.compiere.model.I_AD_User createADUser(@NonNull final I_C_BPartner bpartner, final String lastName, final String firstName, final boolean isBillToContact_Default, final boolean isShipToContact_Default)
 	{
-		final I_AD_User user = newInstance(I_AD_User.class, bpartner);
-		user.setC_BPartner(bpartner);
+		final org.compiere.model.I_AD_User user = newInstance(I_AD_User.class, bpartner);
+		user.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		user.setLastname(lastName);
 		user.setFirstname(firstName);
 		user.setIsBillToContact_Default(isBillToContact_Default);

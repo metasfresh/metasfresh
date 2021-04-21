@@ -25,7 +25,7 @@ package de.metas.order.process;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.CreateSalesOrderAndBOMsFromQuotationCommand;
@@ -49,7 +49,7 @@ public class C_Order_CreateFromQuotation_Construction extends JavaProcess implem
 {
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final Optional<AdWindowId> orderWindowId = RecordZoomWindowFinder.findAdWindowId(I_C_Order.Table_Name);
+	private final Optional<AdWindowId> orderWindowId = RecordWindowFinder.findAdWindowId(I_C_Order.Table_Name);
 
 	@Param(parameterName = "C_DocType_ID")
 	private int salesOrderDocTypeRepoId;

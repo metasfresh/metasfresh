@@ -27,6 +27,7 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -39,7 +40,8 @@ public class ReceiptScheduleDimensionFactory implements DimensionFactory<I_M_Rec
 	}
 
 	@Override
-	public Dimension getFromRecord(final I_M_ReceiptSchedule record)
+	@NonNull
+	public Dimension getFromRecord(@NonNull final I_M_ReceiptSchedule record)
 	{
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))

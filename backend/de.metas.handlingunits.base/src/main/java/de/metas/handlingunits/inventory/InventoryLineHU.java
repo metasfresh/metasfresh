@@ -2,10 +2,13 @@ package de.metas.handlingunits.inventory;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.quantity.QuantityUOMConverter;
+import de.metas.uom.UomId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
@@ -193,5 +196,13 @@ public class InventoryLineHU
 	public InventoryLineHU withHuId(final @NonNull HuId huId)
 	{
 		return toBuilder().huId(huId).build();
+	}
+
+	public InventoryLineHU convertQuantities(@NonNull final UnaryOperator<Quantity> qtyConverter)
+	{
+		return toBuilder()
+				.qtyCount(qtyConverter.apply(getQtyCount()))
+				.qtyBook(qtyConverter.apply(getQtyBook()))
+				.build();
 	}
 }

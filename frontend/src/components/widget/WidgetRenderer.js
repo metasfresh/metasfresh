@@ -27,6 +27,7 @@ import Lookup from './Lookup/Lookup';
 import Switch from './Switch';
 import Amount from './Amount';
 import Password from './Password';
+import CostPrice from './CostPrice';
 
 class WidgetRenderer extends PureComponent {
   constructor(props) {
@@ -329,6 +330,8 @@ class WidgetRenderer extends PureComponent {
             forceHeight={forceHeight}
             newRecordCaption={fields[0].newRecordCaption}
             newRecordWindowId={fields[0].newRecordWindowId}
+            advSearchCaption={fields[0].advSearchCaption} // Search Assistant entry in the  Lookup
+            advSearchWindowId={fields[0].advSearchWindowId}
             listenOnKeys={listenOnKeys}
             listenOnKeysFalse={listenOnKeysFalse}
             closeTableField={closeTableField}
@@ -375,6 +378,8 @@ class WidgetRenderer extends PureComponent {
       case 'LongText': {
         const classNameParams = { icon: true };
         let renderContent = null;
+        delete widgetProperties.id; // removed the id as this is not used anyway
+        // this was passed as a prop (i.e inline filter and due to that we got warnings due to dup ID for elements)
 
         if (widgetType === 'Text') {
           renderContent = (
@@ -437,7 +442,10 @@ class WidgetRenderer extends PureComponent {
       case 'CostPrice':
         return (
           <div className={classnames(this.getClassNames(), 'number-field')}>
-            <input {...widgetProperties} type="number" />
+            <CostPrice
+              {...widgetProperties}
+              precision={widgetData[0].precision}
+            />
           </div>
         );
       case 'YesNo':

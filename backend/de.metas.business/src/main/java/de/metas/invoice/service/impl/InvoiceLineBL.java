@@ -11,6 +11,7 @@ import java.util.Properties;
 
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
+import de.metas.tax.api.TaxId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -167,7 +168,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(il.getC_Invoice_ID());
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
-		final I_C_BPartner_Location locationTo = bpartnerDAO.getBPartnerLocationById(partnerLocationId);
+		final I_C_BPartner_Location locationTo = bpartnerDAO.getBPartnerLocationByIdEvenInactive(partnerLocationId);
 
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(il))
 		{
@@ -188,7 +189,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			final Properties ctx = getCtx(invoice);
 
-			final int taxId = taxBL.retrieveTaxIdForCategory(ctx,
+			final TaxId taxId = taxBL.retrieveTaxIdForCategory(ctx,
 					countryFromId,
 					orgId,
 					locationTo,
@@ -197,9 +198,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 					isSOTrx,
 					false);
 
-			if (taxId <= 0)
+			if (taxId == null)
 			{
-				final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+				final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
 
 				throw TaxNotFoundException.builder()
 						.taxCategoryId(taxCategoryId)
@@ -213,13 +214,13 @@ public class InvoiceLineBL implements IInvoiceLineBL
 						.build();
 			}
 
-			final boolean taxChange = il.getC_Tax_ID() != taxId;
+			final boolean taxChange = il.getC_Tax_ID() != taxId.getRepoId();
 			if (taxChange)
 			{
 				logger.info("Changing C_Tax_ID to " + taxId + " for " + il);
-				il.setC_Tax_ID(taxId);
+				il.setC_Tax_ID(taxId.getRepoId());
 
-				final I_C_Tax tax = taxDAO.getTaxByIdOrNull(taxId);
+				final I_C_Tax tax = taxDAO.getTaxByIdOrNull(taxId.getRepoId());
 
 				il.setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
 			}
@@ -453,7 +454,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		{
 			return null;
 		}
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
 
 		return CountryId.ofRepoId(bPartnerLocationRecord.getC_Location().getC_Country_ID());
 	}

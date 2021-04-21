@@ -1,7 +1,7 @@
-import deepUnfreeze from 'deep-unfreeze';
 import _ from 'lodash';
 
 import { DATE_FIELD_TYPES } from '../constants/Constants';
+import { deepUnfreeze } from '../utils';
 import { fieldValueToString } from '../utils/tableHelpers';
 import { getFormatForDateField, getFormattedDate } from './widgetHelpers';
 
@@ -14,38 +14,42 @@ import { getFormatForDateField, getFormattedDate } from './widgetHelpers';
  * @param {array} filtersActive - active filters array
  */
 export function formatFilters({ filtersData, filtersActive = [] }) {
-  const filters = filtersActive.map((filter) => {
-    if (filter.parameters) {
-      const filterData = getParentFilterFromFilterData({
-        filterId: filter.filterId,
-        filterData: filtersData,
-      });
+  // for inline filters (if they were modified) in the response data we're getting a filter with
+  // empty parameters
+  const filters = filtersActive
+    .filter((filter) => filter.parameters && filter.parameters.length)
+    .map((filter) => {
+      if (filter.parameters && filter.parameters.length) {
+        const filterData = getParentFilterFromFilterData({
+          filterId: filter.filterId,
+          filterData: filtersData,
+        });
 
-      filter.parameters = filter.parameters.map((filterParameter) => {
-        const { parameterName, value, valueTo } = filterParameter;
-        const dataFilterParameter = filterData.parameters.find(
-          (param) => param.parameterName === parameterName
-        );
-        const { widgetType } = dataFilterParameter;
+        filter.parameters = filter.parameters.map((filterParameter) => {
+          const { parameterName, value, valueTo } = filterParameter;
+          const dataFilterParameter = filterData.parameters.find(
+            (param) => param.parameterName === parameterName
+          );
+          const { widgetType } = dataFilterParameter;
 
-        if (DATE_FIELD_TYPES.includes(widgetType)) {
-          const dateFormat = getFormatForDateField(widgetType);
-          const date = getFormattedDate(value, dateFormat);
-          const dateTo = getFormattedDate(valueTo, dateFormat);
+          if (DATE_FIELD_TYPES.includes(widgetType)) {
+            const dateFormat = getFormatForDateField(widgetType);
+            const date = getFormattedDate(value, dateFormat);
+            const dateTo = getFormattedDate(valueTo, dateFormat);
 
-          filterParameter = {
-            parameterName,
-            value: date,
-            valueTo: dateTo,
-          };
-        }
+            filterParameter = {
+              parameterName,
+              value: date,
+              valueTo: dateTo,
+            };
+          }
 
-        return filterParameter;
-      });
-    }
+          return filterParameter;
+        });
+      }
 
-    return filter;
-  });
+      return filter;
+    });
 
   return filters;
 }
@@ -58,18 +62,20 @@ export function formatFilters({ filtersData, filtersActive = [] }) {
  */
 export function getParentFilterFromFilterData({ filterId, filterData }) {
   let parentFilter = {};
-  filterData.forEach((filter) => {
-    if (filter.filterId && filter.filterId === filterId) {
-      parentFilter = filter;
-    }
-    if (filter.includedFilters) {
-      filter.includedFilters.forEach((incFilter) => {
-        if (incFilter.filterId && incFilter.filterId === filterId) {
-          parentFilter = incFilter;
-        }
-      });
-    }
-  });
+
+  filterData &&
+    filterData.forEach((filter) => {
+      if (filter.filterId && filter.filterId === filterId) {
+        parentFilter = filter;
+      }
+      if (filter.includedFilters) {
+        filter.includedFilters.forEach((incFilter) => {
+          if (incFilter.filterId && incFilter.filterId === filterId) {
+            parentFilter = incFilter;
+          }
+        });
+      }
+    });
   return parentFilter;
 }
 

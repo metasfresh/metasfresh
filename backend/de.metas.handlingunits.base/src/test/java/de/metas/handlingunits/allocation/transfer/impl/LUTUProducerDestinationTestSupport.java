@@ -22,6 +22,7 @@ import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
@@ -61,7 +62,7 @@ import static org.junit.Assert.assertThat;
 
 /**
  * Contains masterdata and common stuff to be used by different tests.
- * This class is convenient whenever you want to test with (aggregate) HUs that were created by the {@link LUTUProducerDestination}.
+ * This class is convenient whenever you want to test with HUs that were created by the {@link LUTUProducerDestination}.
  *
  * @author metas-dev <dev@metasfresh.com>
  */
@@ -243,7 +244,7 @@ public class LUTUProducerDestinationTestSupport
 	/**
 	 * Makes a stand alone CU with the given quantity and status "active".
 	 */
-	public I_M_HU mkRealStandAloneCuWithCuQty(final String strCuQty)
+	public I_M_HU mkRealStandAloneCuWithCuQty(@NonNull final String strCuQty)
 	{
 		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
 				.setLocatorId(defaultLocatorId);
@@ -265,7 +266,7 @@ public class LUTUProducerDestinationTestSupport
 		final I_M_HU cuToSplit = createdCUs.get(0);
 		huStatusBL.setHUStatus(helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
 		save(cuToSplit);
-
+		
 		return cuToSplit;
 	}
 

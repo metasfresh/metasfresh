@@ -22,7 +22,6 @@
 
 package de.metas.externalreference.rest;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
@@ -31,26 +30,42 @@ import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
+import de.metas.common.externalreference.JsonSingleExternalReferenceCreateReq;
+import de.metas.common.externalsystem.JsonExternalSystemName;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
+import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+
+import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 
 @Component
 public class ExternalReferenceRestControllerService
 {
+	private static final Logger logger = LogManager.getLogger(ExternalReferenceRestControllerService.class);
+
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ExternalSystems externalSystems;
 	private final ExternalReferenceTypes externalReferenceTypes;
@@ -65,28 +80,37 @@ public class ExternalReferenceRestControllerService
 		this.externalReferenceTypes = externalReferenceTypes;
 	}
 
-	JsonExternalReferenceLookupResponse performLookup(
-			@NonNull final String orgCode,
+	public JsonExternalReferenceLookupResponse performLookup(
+			@Nullable OrgId orgId,
 			@NonNull final JsonExternalReferenceLookupRequest request)
 	{
-		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
+		orgId = orgId != null ? orgId : Env.getOrgId();
 
 		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
 				.orElseThrow(() -> new InvalidIdentifierException("systemName", request));
 
-		final ImmutableList<ExternalReferenceQuery> queries = extractRepoQueries(request, orgId, externalSystem);
+		final ImmutableSet<ExternalReferenceQuery> queries = extractRepoQueries(request, orgId, externalSystem);
 
 		final ImmutableMap<ExternalReferenceQuery, ExternalReference> externalReferences = externalReferenceRepository.getExternalReferences(queries);
 
 		return createResponseFromRepoResult(externalReferences);
 	}
 
-	private ImmutableList<ExternalReferenceQuery> extractRepoQueries(
+	public JsonExternalReferenceLookupResponse performLookup(
+			@Nullable final String orgCode,
+			@NonNull final JsonExternalReferenceLookupRequest request)
+	{
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
+
+		return performLookup(orgId, request);
+	}
+
+	private ImmutableSet<ExternalReferenceQuery> extractRepoQueries(
 			@NonNull final JsonExternalReferenceLookupRequest request,
 			@NonNull final OrgId orgId,
 			@NonNull final IExternalSystem externalSystem)
 	{
-		final ImmutableList.Builder<ExternalReferenceQuery> queriesBuilder = ImmutableList.builder();
+		final ImmutableSet.Builder<ExternalReferenceQuery> queriesBuilder = ImmutableSet.builder();
 
 		final ExternalReferenceQuery.ExternalReferenceQueryBuilder queryBuilder = ExternalReferenceQuery.builder().externalSystem(externalSystem);
 		for (final JsonExternalReferenceLookupItem item : request.getItems())
@@ -101,8 +125,7 @@ public class ExternalReferenceRestControllerService
 					.build();
 			queriesBuilder.add(query);
 		}
-		final ImmutableList<ExternalReferenceQuery> queries = queriesBuilder.build();
-		return queries;
+		return queriesBuilder.build();
 	}
 
 	private JsonExternalReferenceLookupResponse createResponseFromRepoResult(
@@ -127,7 +150,12 @@ public class ExternalReferenceRestControllerService
 			}
 			else
 			{
-				responseItem = JsonExternalReferenceItem.of(lookupItem, JsonMetasfreshId.of(externalReference.getRecordId()));
+				responseItem = JsonExternalReferenceItem.builder()
+						.lookupItem(lookupItem)
+						.metasfreshId(JsonMetasfreshId.of(externalReference.getRecordId()))
+						.version(externalReference.getVersion())
+						.build();
+
 			}
 			result.item(responseItem);
 		}
@@ -157,8 +185,138 @@ public class ExternalReferenceRestControllerService
 					.externalReference(lookupItem.getId())
 					.externalReferenceType(type)
 					.recordId(metasfreshId.getValue())
+					.version(reference.getVersion())
 					.build();
 			externalReferenceRepository.save(externalReference);
 		}
+	}
+
+	public void performInsertIfMissing(
+			@NonNull final JsonSingleExternalReferenceCreateReq externalRefCreateReq,
+			@Nullable final String orgCode)
+	{
+		final JsonExternalReferenceLookupRequest externalRefLookupReq = JsonExternalReferenceLookupRequest.builder()
+				.systemName(externalRefCreateReq.getSystemName())
+				.item(externalRefCreateReq.getExternalReferenceItem().getLookupItem())
+				.build();
+
+		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgCode, externalRefLookupReq);
+
+		if (lookupResponse != null)
+		{
+			final boolean isExternalRefAlreadyCreated = lookupResponse.getItems()
+					.stream()
+					.filter(item -> item.getLookupItem().equals(externalRefCreateReq.getExternalReferenceItem().getLookupItem()))
+					.findFirst()
+					.map(externalRefItem -> externalRefItem.getMetasfreshId() != null)
+					.orElse(false);
+
+			if (isExternalRefAlreadyCreated)
+			{
+				logger.debug("insertExternalReferenceIfMissing: There is already an external reference stored for: " + externalRefCreateReq);
+				return; // nothing to do for now, but it might be a good idea to support updates on external ref
+			}
+		}
+
+		final JsonExternalReferenceCreateRequest jsonExternalReferenceCreateRequest = JsonExternalReferenceCreateRequest.builder()
+				.systemName(externalRefCreateReq.getSystemName())
+				.item(externalRefCreateReq.getExternalReferenceItem())
+				.build();
+
+		performInsert(orgCode, jsonExternalReferenceCreateRequest);
+	}
+
+	@NonNull
+	public Optional<JsonMetasfreshId> getJsonMetasfreshIdFromExternalReference(
+			@NonNull final String orgCode,
+			@NonNull final ExternalIdentifier externalIdentifier,
+			@NonNull final IExternalReferenceType externalReferenceType)
+	{
+		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
+
+		return getJsonMetasfreshIdFromExternalReference(orgId,externalIdentifier,externalReferenceType);
+	}
+
+	@NonNull
+	public Optional<JsonMetasfreshId> getJsonMetasfreshIdFromExternalReference(
+			@Nullable final OrgId orgId,
+			@NonNull final ExternalIdentifier externalIdentifier,
+			@NonNull final IExternalReferenceType externalReferenceType)
+	{
+		final OrgId orgIdToUse = CoalesceUtil.coalesceSuppliers(() -> orgId, () -> Env.getOrgId());
+
+		final JsonExternalSystemName externalSystemName = JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem());
+
+		final JsonExternalReferenceLookupRequest lookupRequest = JsonExternalReferenceLookupRequest.builder()
+				.systemName(externalSystemName)
+				.item(JsonExternalReferenceLookupItem.builder()
+							  .type(externalReferenceType.getCode())
+							  .id(externalIdentifier.asExternalValueAndSystem().getValue())
+							  .build())
+				.build();
+
+		final JsonExternalReferenceLookupResponse lookupResponse = performLookup(orgIdToUse, lookupRequest);
+		return lookupResponse.getItems()
+				.stream()
+				.map(JsonExternalReferenceItem::getMetasfreshId)
+				.filter(Objects::nonNull)
+				.findFirst();
+	}
+
+	public void performUpsert(@NonNull final JsonRequestExternalReferenceUpsert request, @Nullable final String orgCode)
+	{
+		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
+		final ExternalReference externalReferenceCandidate = mapJsonToExternalReference(request, orgId);
+
+		final GetExternalReferenceByRecordIdReq getExternalRefRequest = GetExternalReferenceByRecordIdReq.builder()
+				.externalReferenceType(externalReferenceCandidate.getExternalReferenceType())
+				.externalSystem(externalReferenceCandidate.getExternalSystem())
+				.recordId(externalReferenceCandidate.getRecordId())
+				.build();
+
+		final ExternalReference externalReferenceToUpsert = externalReferenceRepository.getExternalReferenceByMFReference(getExternalRefRequest)
+				.map(existingRecord -> syncCandidateWithExisting(externalReferenceCandidate, existingRecord))
+				.orElse(externalReferenceCandidate);
+
+		externalReferenceRepository.save(externalReferenceToUpsert);
+	}
+
+	@NonNull
+	private ExternalReference mapJsonToExternalReference(@NonNull final JsonRequestExternalReferenceUpsert request, @NonNull final OrgId orgId)
+	{
+		Check.assumeNotNull(request.getExternalReferenceItem().getMetasfreshId(), "MetasfreshId cannot be null at this stage!");
+
+		final IExternalReferenceType externalReferenceType = externalReferenceTypes.ofCode(request.getExternalReferenceItem().getLookupItem().getType())
+				.orElseThrow(() -> new InvalidIdentifierException("type", request.getExternalReferenceItem().getLookupItem().getType()));
+
+		final IExternalSystem externalSystem = externalSystems.ofCode(request.getSystemName().getName())
+				.orElseThrow(() -> new InvalidIdentifierException("externalSystem", request.getSystemName().getName()));
+
+		return ExternalReference.builder()
+				.orgId(orgId)
+				.externalSystem(externalSystem)
+				.externalReferenceType(externalReferenceType)
+				.externalReference(request.getExternalReferenceItem().getLookupItem().getId())
+				.recordId(request.getExternalReferenceItem().getMetasfreshId().getValue())
+				.version(request.getExternalReferenceItem().getVersion())
+				.build();
+	}
+
+	@NonNull
+	private ExternalReference syncCandidateWithExisting(
+			@NonNull final ExternalReference candidate,
+			@NonNull final ExternalReference existingReference)
+	{
+		return ExternalReference.builder()
+				//existing
+				.externalReferenceId(existingReference.getExternalReferenceId())
+				//candidate
+				.orgId(candidate.getOrgId())
+				.externalSystem(candidate.getExternalSystem())
+				.externalReferenceType(candidate.getExternalReferenceType())
+				.externalReference(candidate.getExternalReference())
+				.recordId(candidate.getRecordId())
+				.version(candidate.getVersion())
+				.build();
 	}
 }

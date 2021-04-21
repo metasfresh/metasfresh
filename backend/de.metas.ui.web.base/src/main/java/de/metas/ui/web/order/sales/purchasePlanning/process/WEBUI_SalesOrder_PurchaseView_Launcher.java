@@ -2,6 +2,9 @@ package de.metas.ui.web.order.sales.purchasePlanning.process;
 
 import java.util.Set;
 
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_OrderLine;
@@ -42,21 +45,25 @@ public class WEBUI_SalesOrder_PurchaseView_Launcher
 		extends JavaProcess
 		implements IProcessPrecondition
 {
+
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (!context.isSingleSelection())
 		{
-			return ProcessPreconditionsResolution
-					.rejectWithInternalReason("one and only one order shall be selected");
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		// Only sales orders
-		final I_C_Order salesOrder = context.getSelectedModel(I_C_Order.class);
+		final I_C_Order salesOrder = orderDAO.getById(OrderId.ofRepoId(context.getSingleSelectedRecordId()), I_C_Order.class);
+		if (salesOrder == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only existing records that were saved at least once are allowed");
+		}
 		if (!salesOrder.isSOTrx())
 		{
-			return ProcessPreconditionsResolution
-					.rejectWithInternalReason("only sales orders are allowed");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only sales orders are allowed");
 		}
 
 		final DocStatus docStatus = DocStatus.ofCode(salesOrder.getDocStatus());

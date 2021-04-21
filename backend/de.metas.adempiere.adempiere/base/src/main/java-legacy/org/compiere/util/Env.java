@@ -2496,8 +2496,6 @@ public final class Env
 
 	/**
 	 * Helper method to bind <code>@Autowire</code> annotated properties of given bean using current Spring Application Context.
-	 *
-	 * @param bean
 	 */
 	public static void autowireBean(final Object bean)
 	{
@@ -2507,7 +2505,6 @@ public final class Env
 	/**
 	 * Gets Login/System date
 	 *
-	 * @param ctx
 	 * @return login/system date; never return null
 	 */
 	public static Timestamp getDate(final Properties ctx)

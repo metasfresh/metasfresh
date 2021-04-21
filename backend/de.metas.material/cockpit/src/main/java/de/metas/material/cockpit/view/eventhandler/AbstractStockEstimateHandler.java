@@ -1,7 +1,11 @@
 package de.metas.material.cockpit.view.eventhandler;
 
+import java.time.ZoneId;
 import java.util.Collection;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -9,7 +13,6 @@ import org.springframework.stereotype.Service;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
-import de.metas.material.cockpit.CockpitConstants;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
@@ -47,6 +50,7 @@ public class AbstractStockEstimateHandler
 		implements MaterialEventHandler<AbstractStockEstimateEvent>
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public AbstractStockEstimateHandler(
 			@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
@@ -70,9 +74,12 @@ public class AbstractStockEstimateHandler
 	private UpdateMainDataRequest createDataUpdateRequestForEvent(
 			@NonNull final AbstractStockEstimateEvent stockEstimateEvent)
 	{
+		final OrgId orgId = stockEstimateEvent.getEventDescriptor().getOrgId();
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+		
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
 				.productDescriptor(stockEstimateEvent.getProductDescriptor())
-				.date(TimeUtil.getDay(stockEstimateEvent.getDate(), CockpitConstants.TIME_ZONE))
+				.date(TimeUtil.getDay(stockEstimateEvent.getDate(), timeZone))
 				.plantId(stockEstimateEvent.getPlantId())
 				.build();
 

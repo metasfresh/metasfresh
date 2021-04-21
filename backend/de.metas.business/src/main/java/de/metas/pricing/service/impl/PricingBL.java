@@ -279,7 +279,7 @@ public class PricingBL implements IPricingBL
 				&& pricingCtx.getPriceListId() == null
 				&& pricingCtx.getPriceListVersionId() == null)
 		{
-			final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(pricingCtx.getBPartnerId(), pricingCtx.getSoTrx());
+			final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNullInTrx(pricingCtx.getBPartnerId(), pricingCtx.getSoTrx());
 			if (pricingSystemId == null)
 			{
 				throw new AdempiereException("BPartnerId=" + pricingCtx.getBPartnerId().getRepoId() + " has no assigned " + pricingCtx.getSoTrx() + " pricingSystem")

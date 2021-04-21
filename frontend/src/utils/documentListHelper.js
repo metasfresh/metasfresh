@@ -2,10 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
-import deepUnfreeze from 'deep-unfreeze';
 import { toInteger } from 'lodash';
 
-import { getItemsByProperty, nullToEmptyStrings } from './index';
+import { getItemsByProperty, nullToEmptyStrings, deepUnfreeze } from './index';
 import { viewState, getView } from '../reducers/viewHandler';
 import { getTable, getTableId, getSelection } from '../reducers/tables';
 import { getEntityRelatedId, getCachedFilter } from '../reducers/filters';
@@ -218,6 +217,12 @@ export function mergeColumnInfosIntoViewRows(columnInfosByFieldName, rows) {
   );
 }
 
+/**
+ * @method mergeColumnInfosIntoViewRow
+ * @summary add additional data to row's fields
+ * @param {*} rows
+ * @param {object} map
+ */
 function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
   const fieldsByName = Object.values(row.fieldsByName)
     .map((viewRowField) =>
@@ -234,6 +239,12 @@ function mergeColumnInfosIntoViewRow(columnInfosByFieldName, row) {
   return Object.assign({}, row, { fieldsByName });
 }
 
+/**
+ * @method mergeColumnInfoIntoViewRowField
+ * @summary merge field's widget data of the row with additional data
+ * @param {*} rows
+ * @param {object} map
+ */
 function mergeColumnInfoIntoViewRowField(columnInfo, viewRowField) {
   if (!columnInfo) {
     return viewRowField;
@@ -252,6 +263,12 @@ function mergeColumnInfoIntoViewRowField(columnInfo, viewRowField) {
   return viewRowField;
 }
 
+/**
+ * @method indexRows
+ * @summary create a key/value map of rows with their ids as keys (including nested rows)
+ * @param {*} rows
+ * @param {object} map
+ */
 function indexRows(rows, map) {
   for (const row of rows) {
     const { id, includedDocuments } = row;
@@ -266,6 +283,13 @@ function indexRows(rows, map) {
   return map;
 }
 
+/**
+ * @method mapRows
+ * @summary TODO
+ * @param {*} rows
+ * @param {*} map
+ * @param {*} columnInfosByFieldName
+ */
 function mapRows(rows, map, columnInfosByFieldName) {
   return rows.map((row) => {
     const { id, includedDocuments } = row;
@@ -310,6 +334,14 @@ export function removeRows(rowsList, changedRows) {
   };
 }
 
+/**
+ * @method mergeRows
+ * @summary merge existing rows with new rows
+ * @param {*} toRows
+ * @param {*} fromRows
+ * @param {*} columnInfosByFieldName
+ * @param {*} changedIds
+ */
 export function mergeRows({
   toRows,
   fromRows,

@@ -28,6 +28,7 @@ import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
+import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
@@ -43,9 +44,14 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 	@VisibleForTesting
 	static final String LOOKUP_ROUTE_ID = "To-MF_Lookup-ExternalReference";
 
+	@VisibleForTesting
+	static final String UPSERT_ROUTE_ID = "To-MF_Upsert-ExternalReference";
+
 	@Override
 	public void configure()
 	{
+		errorHandler(noErrorHandler());
+
 		from("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNALREFERENCE_CAMEL_URI + "}}")
 				.routeId(CREATE_ROUTE_ID)
 				.streamCaching()
@@ -83,5 +89,25 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("http://{{metasfresh.lookup-externalreference.api.uri}}/${header.orgCode}");
+
+		from("{{" + ExternalSystemCamelConstants.MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI + "}}")
+				.routeId(UPSERT_ROUTE_ID)
+				.streamCaching()
+				.process(exchange -> {
+					final Object request = exchange.getIn().getBody();
+					if (!(request instanceof JsonRequestExternalReferenceUpsert))
+					{
+						throw new RuntimeCamelException("The route " + UPSERT_ROUTE_ID + " requires the body to be instanceof JsonRequestExternalReferenceUpsert. "
+																+ "However, it is " + (request == null ? "null" : request.getClass().getName()));
+					}
+
+					final JsonRequestExternalReferenceUpsert upsertRequest = (JsonRequestExternalReferenceUpsert)request;
+					log.info("Route invoked with system name: " + upsertRequest.getSystemName().getName());
+				})
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestExternalReferenceUpsert.class))
+				.removeHeaders("CamelHttp*")
+				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.toD("http://{{metasfresh.upsert-externalreference.api.uri}}/${header.orgCode}");
 	}
 }

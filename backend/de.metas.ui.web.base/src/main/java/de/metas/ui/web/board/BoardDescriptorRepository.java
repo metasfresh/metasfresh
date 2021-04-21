@@ -44,7 +44,7 @@ import de.metas.cache.CCache;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -182,7 +182,7 @@ public class BoardDescriptorRepository
 		AdWindowId adWindowId = null; // TODO boardPO.getAD_Window_ID();
 		if (adWindowId == null)
 		{
-			adWindowId = RecordZoomWindowFinder.findAdWindowId(tableName).get();
+			adWindowId = RecordWindowFinder.findAdWindowId(tableName).get();
 		}
 		final WindowId documentWindowId = WindowId.of(adWindowId);
 

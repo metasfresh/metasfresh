@@ -1,0 +1,17 @@
+{
+  "systemName": "Shopware6",
+  "items": [
+    {
+      "id": "customerId",
+      "type": "BPartner"
+    },
+    {
+      "id": "billingAddressId",
+      "type": "BPartnerLocation"
+    },
+    {
+      "id": "shippingAddressId",
+      "type": "BPartnerLocation"
+    }
+  ]
+}

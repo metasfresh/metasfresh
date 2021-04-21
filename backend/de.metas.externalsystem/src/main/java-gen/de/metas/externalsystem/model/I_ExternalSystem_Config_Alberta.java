@@ -6,13 +6,13 @@ import org.adempiere.model.ModelColumn;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_Alberta 
+public interface I_ExternalSystem_Config_Alberta
 {
 
 	String Table_Name = "ExternalSystem_Config_Alberta";
 
-//	/** AD_Table_ID=541577 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=541577 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -163,6 +163,27 @@ public interface I_ExternalSystem_Config_Alberta
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
+	 * Set Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystemValue (java.lang.String ExternalSystemValue);
+
+	/**
+	 * Get Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getExternalSystemValue();
+
+	ModelColumn<I_ExternalSystem_Config_Alberta, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Config_Alberta.class, "ExternalSystemValue", null);
+	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -186,25 +207,24 @@ public interface I_ExternalSystem_Config_Alberta
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Name.
+	 * Set Pharmacy price list.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	void setPharmacy_PriceList_ID (int Pharmacy_PriceList_ID);
 
 	/**
-	 * Get Name.
+	 * Get Pharmacy price list.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	int getPharmacy_PriceList_ID();
 
-	ModelColumn<I_ExternalSystem_Config_Alberta, Object> COLUMN_Name = new ModelColumn<>(I_ExternalSystem_Config_Alberta.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
+	String COLUMNNAME_Pharmacy_PriceList_ID = "Pharmacy_PriceList_ID";
 
 	/**
 	 * Set Tenant.

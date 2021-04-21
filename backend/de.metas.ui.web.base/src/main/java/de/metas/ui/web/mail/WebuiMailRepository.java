@@ -2,7 +2,6 @@ package de.metas.ui.web.mail;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -19,6 +18,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
+import org.compiere.model.I_AD_User;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
@@ -127,8 +127,6 @@ public class WebuiMailRepository
 
 	/**
 	 * Called when the email was removed from our internal cache.
-	 *
-	 * @param email
 	 */
 	private void onEmailRemoved(final WebuiEmail email)
 	{

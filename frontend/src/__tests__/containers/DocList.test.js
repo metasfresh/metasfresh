@@ -54,6 +54,8 @@ import quickActionsData from '../../../test_setup/fixtures/grid/doclist_quickact
 
 jest.mock(`../../components/app/QuickActions`);
 
+jest.useFakeTimers();
+
 const middleware = [thunk];
 
 localStorage.setItem('isLogged', true);

@@ -12,12 +12,12 @@ import javax.annotation.Nullable;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -37,12 +37,11 @@ public enum OptionalBoolean
 	{
 		return value != null ? ofBoolean(value) : UNKNOWN;
 	}
-	
+
 	public static OptionalBoolean ofNullableString(@Nullable final String value)
 	{
 		return ofNullableBoolean(StringUtils.toBooleanOrNull(value));
 	}
-
 
 	public boolean isTrue()
 	{
@@ -62,5 +61,25 @@ public enum OptionalBoolean
 	public boolean isUnknown()
 	{
 		return this == UNKNOWN;
+	}
+
+	public boolean orElseTrue() { return orElse(true); }
+
+	public boolean orElseFalse() { return orElse(false); }
+
+	public boolean orElse(final boolean other)
+	{
+		if (this == TRUE)
+		{
+			return true;
+		}
+		else if (this == FALSE)
+		{
+			return false;
+		}
+		else
+		{
+			return other;
+		}
 	}
 }

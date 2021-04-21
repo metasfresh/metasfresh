@@ -30,7 +30,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.rest_api.JsonAttributeInstance;
+import de.metas.common.rest_api.v1.JsonAttributeInstance;
 import de.metas.common.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;

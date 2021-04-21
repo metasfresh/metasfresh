@@ -168,7 +168,7 @@ class FiltersNotIncluded extends PureComponent {
                 item.parameters.map((filter, idx) => (
                   <InlineFilterItem
                     captionValue={filter.captionValue}
-                    key={idx}
+                    key={`${idx}_${item.filterId}`}
                     id={idx}
                     parentFilter={item}
                     windowType={windowType}

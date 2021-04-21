@@ -25,6 +25,7 @@ package de.metas.document.dimension;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -37,7 +38,8 @@ public class MDCandidateDimensionFactory implements DimensionFactory<I_MD_Candid
 	}
 
 	@Override
-	public Dimension getFromRecord(final I_MD_Candidate record)
+	@NonNull
+	public Dimension getFromRecord(@NonNull final I_MD_Candidate record)
 	{
 		return Dimension.builder()
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))

@@ -1600,7 +1600,8 @@ public class MOrder extends X_C_Order implements IDocument
 		//
 		// Offers
 		if (X_C_DocType.DOCSUBTYPE_Proposal.equals(docSubType)
-				|| X_C_DocType.DOCSUBTYPE_Quotation.equals(docSubType))
+				|| X_C_DocType.DOCSUBTYPE_Quotation.equals(docSubType)
+				|| X_C_DocType.DOCSUBTYPE_FrameAgrement.equals(docSubType))
 		{
 			// Binding
 			if (X_C_DocType.DOCSUBTYPE_Quotation.equals(docSubType))

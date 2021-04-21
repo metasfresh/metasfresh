@@ -72,7 +72,6 @@ public interface ITaxDAO extends ISingletonService
 	/**
 	 * If the taxBL can't find a tax, it shall return this one instead
 	 *
-	 * @param ctx
 	 * @return placeholder tax that is used when no other tax was found
 	 */
 	I_C_Tax retrieveNoTaxFound(Properties ctx);
@@ -80,7 +79,6 @@ public interface ITaxDAO extends ISingletonService
 	/**
 	 * If the taxBL can't find a tax category, it shall return this one instead
 	 *
-	 * @param ctx
 	 * @return placeholder tax category that is used when no other tax was found (note: not used yet; may be helpful in the future)
 	 */
 	I_C_TaxCategory retrieveNoTaxCategoryFound(Properties ctx);

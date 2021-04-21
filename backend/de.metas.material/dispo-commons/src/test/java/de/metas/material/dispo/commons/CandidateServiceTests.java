@@ -63,8 +63,7 @@ public class CandidateServiceTests
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		requestMaterialOrderService = new RequestMaterialOrderService(
 				new CandidateRepositoryRetrieval(dimensionService),
-				postMaterialEventService,
-				dimensionService);
+				postMaterialEventService);
 	}
 
 	@Test

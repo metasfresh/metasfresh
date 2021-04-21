@@ -22,7 +22,7 @@
 
 package de.metas.order.process;
 
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.process.IProcessPrecondition;
@@ -35,6 +35,8 @@ import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
+
+import javax.annotation.Nullable;
 
 public abstract class C_Order_CreationProcess extends JavaProcess implements IProcessPrecondition
 {
@@ -63,13 +65,13 @@ public abstract class C_Order_CreationProcess extends JavaProcess implements IPr
 
 	protected void openOrder(@NonNull final I_C_Order order)
 	{
-		final AdWindowId orderWindowId = RecordZoomWindowFinder
+		final AdWindowId orderWindowId = RecordWindowFinder
 				.findAdWindowId(TableRecordReference.of(order))
 				.orElse(null);
 		openOrder(order, orderWindowId);
 	}
 
-	protected void openOrder(@NonNull final I_C_Order order, AdWindowId orderWindowId)
+	protected void openOrder(@NonNull final I_C_Order order, @Nullable final AdWindowId orderWindowId)
 	{
 		if (orderWindowId == null)
 		{

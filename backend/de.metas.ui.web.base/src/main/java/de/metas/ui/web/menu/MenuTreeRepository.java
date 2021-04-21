@@ -1,23 +1,10 @@
 package de.metas.ui.web.menu;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.UserRolePermissionsKey;
@@ -26,6 +13,18 @@ import de.metas.user.UserId;
 import de.metas.user.api.IUserMenuFavoritesDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Repository;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L
@@ -52,19 +51,18 @@ import de.metas.util.Services;
 @Repository
 public class MenuTreeRepository implements MenuNodeFavoriteProvider
 {
-	private static final transient Logger logger = LogManager.getLogger(MenuTreeRepository.class);
-
-	@Autowired
-	private UserSession userSession;
+	private static final Logger logger = LogManager.getLogger(MenuTreeRepository.class);
+	private final UserSession userSession;
+	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
 	private final LoadingCache<MenuTreeKey, MenuTree> menuTrees = CacheBuilder.newBuilder().expireAfterAccess(1, TimeUnit.HOURS).build(new CacheLoader<MenuTreeKey, MenuTree>()
 	{
-
 		@Override
 		public MenuTree load(final MenuTreeKey key)
 		{
 			return MenuTreeLoader
 					.newInstance()
+					.setCustomizedWindowInfoMap(customizedWindowInfoMapRepository.get())
 					.setUserRolePermissionsKey(key.getUserRolePermissionsKey())
 					.setAD_Language(key.getAD_Language())
 					.load();
@@ -75,13 +73,20 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 			.expireAfterAccess(1, TimeUnit.HOURS)
 			.build(new CacheLoader<UserId, UserMenuFavorites>()
 			{
-
 				@Override
 				public UserMenuFavorites load(final UserId adUserId)
 				{
 					return retrieveFavoriteMenuIds(adUserId);
 				}
 			});
+
+	public MenuTreeRepository(
+			@NonNull final UserSession userSession,
+			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
+	{
+		this.userSession = userSession;
+		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
+	}
 
 	public MenuTree getUserSessionMenuTree()
 	{
@@ -242,7 +247,7 @@ public class MenuTreeRepository implements MenuNodeFavoriteProvider
 
 	private static final class UserMenuFavorites
 	{
-		private static final Builder builder()
+		private static Builder builder()
 		{
 			return new Builder();
 		}

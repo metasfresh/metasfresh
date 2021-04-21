@@ -22,18 +22,19 @@ package de.metas.tax.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Properties;
-
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
-
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Tax;
 
-import de.metas.util.ISingletonService;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Optional;
+import java.util.Properties;
 
 public interface ITaxBL extends ISingletonService
 {
@@ -45,13 +46,14 @@ public interface ITaxBL extends ISingletonService
 	 *
 	 * @param shipC_BPartner_Location_ID place where the service is provided
 	 */
-	int getTax(Properties ctx,
-			Object model,
-			TaxCategoryId taxCategoryId,
+	@NonNull
+	TaxId getTaxNotNull(Properties ctx,
+			@Nullable Object model,
+			@Nullable TaxCategoryId taxCategoryId,
 			int productId,
 			Timestamp shipDate,
 			OrgId orgId,
-			WarehouseId warehouseId,
+			@Nullable WarehouseId warehouseId,
 			int shipC_BPartner_Location_ID,
 			boolean isSOTrx);
 
@@ -62,7 +64,7 @@ public interface ITaxBL extends ISingletonService
 	 * 			Otherwise, just log and return <code>-1</code>.
 	 * @return taxId
 	 */
-	int retrieveTaxIdForCategory(Properties ctx,
+	TaxId retrieveTaxIdForCategory(Properties ctx,
 			CountryId countryFromId,
 			OrgId orgId,
 			org.compiere.model.I_C_BPartner_Location bpLocTo,
@@ -117,4 +119,6 @@ public interface ITaxBL extends ISingletonService
 	void setupIfIsWholeTax(final I_C_Tax tax);
 
 	TaxCategoryId retrieveRegularTaxCategoryId();
+
+	Optional<TaxCategoryId> getTaxCategoryIdByInternalName(String internalName);
 }

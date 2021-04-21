@@ -112,7 +112,7 @@ public class S_ExternalReference
 	{
 		try
 		{
-			userDAO.getById(userId);
+			userDAO.getByIdInTrx(userId);
 		}
 		catch (final AdempiereException ex)
 		{

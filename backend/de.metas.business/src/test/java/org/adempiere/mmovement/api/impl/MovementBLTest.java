@@ -158,7 +158,10 @@ public class MovementBLTest
 	private I_M_Locator createLocator(final I_C_Activity activity)
 	{
 		final I_M_Warehouse warehouseDest = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class, context);
-		warehouseDest.setC_Activity(activity);
+		if(activity != null)
+		{
+			warehouseDest.setC_Activity_ID(activity.getC_Activity_ID());
+		}
 		InterfaceWrapperHelper.save(warehouseDest);
 
 		final I_M_Locator locatorTo = InterfaceWrapperHelper.newInstance(I_M_Locator.class, context);

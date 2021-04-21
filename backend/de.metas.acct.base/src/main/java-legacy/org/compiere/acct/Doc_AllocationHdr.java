@@ -30,7 +30,6 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.acct.api.IFactAcctBL;
@@ -497,8 +496,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	/**
 	 * Creates the {@link FactLine} to book the payment document.
 	 *
-	 * @param fact
-	 * @param line
 	 * @return source and accounted amount
 	 */
 	private AmountSourceAndAcct createPaymentFacts(final Fact fact, final DocLine_Allocation line)
@@ -529,10 +526,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 		if (line.isSOTrxInvoice())
 		{
+			// ARC:
 			if (line.isCreditMemoInvoice())
 			{
 				factLineBuilder.setAmtSource(null, paymentAllocatedAmt.negate());
 			}
+			// ARI:
 			else
 			{
 				factLineBuilder.setAmtSource(paymentAllocatedAmt, null);
@@ -540,10 +539,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 		else
 		{
+			// APC
 			if (line.isCreditMemoInvoice())
 			{
 				factLineBuilder.setAmtSource(paymentAllocatedAmt, null);
 			}
+			// API
 			else
 			{
 				factLineBuilder.setAmtSource(null, paymentAllocatedAmt.negate());
@@ -551,7 +552,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 
 		final FactLine factLine = factLineBuilder.buildAndAdd();
-		factLine.invertDrAndCrAmountsIfTrue(line.isCreditMemoInvoice() && !line.isSOTrxInvoice());
 
 		return factLine.getAmtSourceAndAcctDrOrCr();
 	}
@@ -843,16 +843,35 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		if (line.isSOTrxInvoice())
 		{
 			factLineBuilder.setAccount(getAccount(AccountType.C_Receivable, as));
-			factLineBuilder.setAmtSource(null, allocationSource);
+
+			// ARC
+			if (line.isCreditMemoInvoice())
+			{
+				factLineBuilder.setAmtSource(allocationSource, null);
+			}
+			// ARI
+			else
+			{
+				factLineBuilder.setAmtSource(null, allocationSource);
+			}
 		}
 		else
 		{
 			factLineBuilder.setAccount(getAccount(AccountType.V_Liability, as));
-			factLineBuilder.setAmtSource(allocationSource, null);
+
+			// APC
+			if (line.isCreditMemoInvoice())
+			{
+				factLineBuilder.setAmtSource(null, allocationSource);
+			}
+			// API
+			else
+			{
+				factLineBuilder.setAmtSource(allocationSource, null);
+			}
 		}
 
 		final FactLine factLine = factLineBuilder.buildAndAdd();
-		factLine.invertDrAndCrAmountsIfTrue(line.isCreditMemoInvoice() && line.isSOTrxInvoice());
 
 		final Money allocationSourceOnPaymentDate = Money.of(invoiceTotalAllocatedAmtSourceAndAcct.getAmtSource(), line.getCurrencyId());
 		createRealizedGainLossFactLine(line, fact, factLine, allocationSourceOnPaymentDate);
@@ -1130,9 +1149,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 * Allocation Tax Adjustment
 	 */
 	public Doc_AllocationTax(final Doc_AllocationHdr doc,
-			final MAccount DiscountAccount, final BigDecimal DiscountAmt,
-			final MAccount WriteOffAccount, final BigDecimal WriteOffAmt,
-			final boolean isDiscountExpense)
+							 final MAccount DiscountAccount, final BigDecimal DiscountAmt,
+							 final MAccount WriteOffAccount, final BigDecimal WriteOffAmt,
+							 final boolean isDiscountExpense)
 	{
 		super();
 		this.doc = doc;

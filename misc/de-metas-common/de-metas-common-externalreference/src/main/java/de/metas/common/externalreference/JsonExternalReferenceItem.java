@@ -25,7 +25,8 @@ package de.metas.common.externalreference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -38,13 +39,13 @@ public class JsonExternalReferenceItem
 			@NonNull final JsonExternalReferenceLookupItem lookupItem,
 			@NonNull final JsonMetasfreshId metasfreshId)
 	{
-		return new JsonExternalReferenceItem(lookupItem, metasfreshId);
+		return new JsonExternalReferenceItem(lookupItem, metasfreshId, null);
 	}
 
 	public static JsonExternalReferenceItem of(
 			@NonNull final JsonExternalReferenceLookupItem lookupItem)
 	{
-		return new JsonExternalReferenceItem(lookupItem, null);
+		return new JsonExternalReferenceItem(lookupItem, null, null);
 	}
 
 	@NonNull
@@ -54,12 +55,19 @@ public class JsonExternalReferenceItem
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId metasfreshId;
 
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	String version;
+
 	@JsonCreator
+	@Builder
 	private JsonExternalReferenceItem(
 			@JsonProperty("lookupItem") @NonNull final JsonExternalReferenceLookupItem lookupItem,
-			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId)
+			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId,
+			@JsonProperty("version") @Nullable final String version)
 	{
 		this.lookupItem = lookupItem;
 		this.metasfreshId = metasfreshId;
+		this.version = version;
 	}
 }

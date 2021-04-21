@@ -805,5 +805,352 @@
     "supportNewRecord": false,
     "supportOpenRecord": true,
     "supportGeoLocations": false
+  },
+  "layout3_payments": {
+    "type": "195",
+    "windowId": "195",
+    "caption": "Zahlung",
+    "description": "Payment or Receipt",
+    "emptyResultText": "Es sind noch keine Detailzeilen vorhanden.",
+    "emptyResultHint": "Du kannst sie im jeweiligen Fenster erfassen.",
+    "elements": [
+      {
+        "caption": "Belegart",
+        "description": "Belegart oder Verarbeitungsvorgaben",
+        "widgetType": "List",
+        "size": "M",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "C_DocType_ID",
+            "caption": "Belegart",
+            "emptyText": "leer",
+            "clearValueText": "leer",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Nr.",
+        "description": "Document sequence number of the document",
+        "widgetType": "Text",
+        "maxLength": 30,
+        "size": "S",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "DocumentNo",
+            "caption": "Nr.",
+            "emptyText": "leer",
+            "clearValueText": "leer"
+          }
+        ]
+      },
+      {
+        "caption": "Datum",
+        "description": "Vorgangsdatum",
+        "widgetType": "Date",
+        "size": "S",
+        "gridAlign": "right",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "DateTrx",
+            "caption": "Datum",
+            "emptyText": "leer",
+            "clearValueText": "leer"
+          }
+        ]
+      },
+      {
+        "caption": "Geschäftspartner",
+        "description": "Bezeichnet einen Geschäftspartner",
+        "widgetType": "Lookup",
+        "size": "L",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "C_BPartner_ID",
+            "caption": "Geschäftspartner",
+            "emptyText": "leer",
+            "clearValueText": "leer",
+            "source": "lookup",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Bankkonto",
+        "description": "Bank Account of the Business Partner",
+        "widgetType": "List",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "C_BP_BankAccount_ID",
+            "caption": "Bankkonto",
+            "emptyText": "leer",
+            "clearValueText": "leer",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Zahlungsbetrag",
+        "description": "Gezahlter Betrag",
+        "widgetType": "Amount",
+        "size": "S",
+        "gridAlign": "right",
+        "viewEditorRenderMode": "on-demand",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "PayAmt",
+            "caption": "Zahlungsbetrag",
+            "emptyText": "leer",
+            "clearValueText": "leer"
+          }
+        ]
+      },
+      {
+        "caption": "Währung",
+        "description": "Die Währung für diesen Eintrag",
+        "widgetType": "List",
+        "size": "S",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "C_Currency_ID",
+            "caption": "Währung",
+            "emptyText": "leer",
+            "clearValueText": "leer",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Zugeordnet",
+        "description": "Zeigt an ob eine Zahlung bereits zugeordnet wurde",
+        "widgetType": "YesNo",
+        "gridAlign": "center",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "IsAllocated",
+            "caption": "Zugeordnet",
+            "emptyText": "leer",
+            "clearValueText": "leer"
+          }
+        ]
+      },
+      {
+        "caption": "Abgeglichen",
+        "description": "Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde",
+        "widgetType": "YesNo",
+        "gridAlign": "center",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "IsReconciled",
+            "caption": "Abgeglichen",
+            "emptyText": "leer",
+            "clearValueText": "leer"
+          }
+        ]
+      },
+      {
+        "caption": "Rechnung",
+        "description": "Invoice Identifier",
+        "widgetType": "Lookup",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "C_Invoice_ID",
+            "caption": "Rechnung",
+            "emptyText": "leer",
+            "clearValueText": "leer",
+            "source": "lookup",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Status",
+        "description": "The current status of the document",
+        "widgetType": "List",
+        "size": "S",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "DocStatus",
+            "caption": "Status",
+            "emptyText": "leer",
+            "clearValueText": "leer",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500
+          }
+        ]
+      },
+      {
+        "caption": "Buchungsstatus",
+        "description": "Buchungsstatus",
+        "widgetType": "List",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "Posted",
+            "caption": "Buchungsstatus",
+            "emptyText": "leer",
+            "clearValueText": "leer",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500
+          }
+        ]
+      },
+      {
+        "caption": "Sektion",
+        "description": "Organisatorische Einheit des Mandanten",
+        "widgetType": "Lookup",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "AD_Org_ID",
+            "caption": "Sektion",
+            "emptyText": "leer",
+            "clearValueText": "leer",
+            "source": "lookup",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      }
+    ],
+    "filters": [
+      {
+        "filterId": "default-date",
+        "caption": "Datum",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Datum",
+            "parameterName": "DateTrx",
+            "widgetType": "Date",
+            "range": true,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          }
+        ],
+        "debugProperties": {
+          "sortNo": -2147483648
+        },
+        "sortNo": -2147483648
+      },
+      {
+        "caption": "Filter",
+        "includedFilters": [
+          {
+            "filterId": "default",
+            "caption": "Standard",
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "parameters": [
+              {
+                "caption": "Sektion",
+                "parameterName": "AD_Org_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Geschäftspartner",
+                "parameterName": "C_BPartner_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Nr.",
+                "parameterName": "DocumentNo",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              }
+            ],
+            "debugProperties": {
+              "sortNo": 10000
+            },
+            "sortNo": 10000
+          }
+        ],
+        "debugProperties": {}
+      }
+    ],
+    "supportAttributes": false,
+    "supportTree": false,
+    "allowedCloseActions": [
+      "DONE"
+    ],
+    "includedView": null,
+    "supportIncludedView": false,
+    "supportIncludedViewOnSelect": null,
+    "supportNewRecord": false,
+    "supportOpenRecord": true,
+    "supportGeoLocations": true
   }
 }

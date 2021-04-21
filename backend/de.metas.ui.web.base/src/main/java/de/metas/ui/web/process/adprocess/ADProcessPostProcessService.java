@@ -2,7 +2,7 @@ package de.metas.ui.web.process.adprocess;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.logging.LogManager;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.JavaProcess;
@@ -209,7 +209,7 @@ public class ADProcessPostProcessService
 		WindowId windowId = WindowId.fromNullableJson(recordsToOpen.getWindowIdString());
 		if (windowId == null)
 		{
-			windowId = WindowId.ofNullable(RecordZoomWindowFinder.findAdWindowId(recordRef).orElse(null));
+			windowId = WindowId.ofNullable(RecordWindowFinder.findAdWindowId(recordRef).orElse(null));
 		}
 
 		return DocumentPath.rootDocumentPath(windowId, documentId);
@@ -242,14 +242,14 @@ public class ADProcessPostProcessService
 			}
 
 			final TableRecordReference firstRecordRef = TableRecordReference.of(tableName, recordIds.get(0));
-			final WindowId windowId = WindowId.of(RecordZoomWindowFinder.findAdWindowId(firstRecordRef).get()); // assume all records are from same window
+			final WindowId windowId = WindowId.of(RecordWindowFinder.findAdWindowId(firstRecordRef).get()); // assume all records are from same window
 			return recordIds.stream()
 					.map(recordId -> DocumentPath.rootDocumentPath(windowId, recordId))
 					.collect(ImmutableSet.toImmutableSet());
 		}
 		else if (sourceRecordRef != null)
 		{
-			final WindowId windowId = WindowId.of(RecordZoomWindowFinder.findAdWindowId(sourceRecordRef).get());
+			final WindowId windowId = WindowId.of(RecordWindowFinder.findAdWindowId(sourceRecordRef).get());
 			final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, sourceRecordRef.getRecord_ID());
 			return ImmutableSet.of(documentPath);
 		}
@@ -278,7 +278,7 @@ public class ADProcessPostProcessService
 		final Map<WindowId, CreateViewRequest.Builder> viewRequestBuilders = new HashMap<>();
 		for (final TableRecordReference recordRef : recordRefs)
 		{
-			final WindowId recordWindowId = windowId_Override != null ? windowId_Override : WindowId.ofNullable(RecordZoomWindowFinder.findAdWindowId(recordRef).orElse(null));
+			final WindowId recordWindowId = windowId_Override != null ? windowId_Override : WindowId.ofNullable(RecordWindowFinder.findAdWindowId(recordRef).orElse(null));
 			final CreateViewRequest.Builder viewRequestBuilder = viewRequestBuilders.computeIfAbsent(recordWindowId, key -> CreateViewRequest.builder(recordWindowId, JSONViewDataType.grid));
 
 			viewRequestBuilder.addFilterOnlyId(recordRef.getRecord_ID());

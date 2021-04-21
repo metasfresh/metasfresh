@@ -54,9 +54,6 @@ public interface IHUStorageFactory
 	 *
 	 * NOTE: Collect the product storages directly from given HUs. Don't navigate them to collect the product storages from possible included HUs.
 	 *
-	 *
-	 * @param hus
-	 * @param productId
 	 * @return product storages; never return {@code null}. Only return items for existing storages. E.g. if none of the given {@code hus} has a storage, return an empty list.
 	 */
 	List<IHUProductStorage> getHUProductStorages(List<I_M_HU> hus, ProductId productId);

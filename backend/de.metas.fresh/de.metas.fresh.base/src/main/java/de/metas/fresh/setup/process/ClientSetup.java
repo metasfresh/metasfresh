@@ -13,6 +13,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
@@ -25,7 +26,6 @@ import org.compiere.util.TrxRunnable;
 
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -83,7 +83,7 @@ import lombok.NonNull;
  */
 class ClientSetup
 {
-	public static final ClientSetup newInstance(final Properties ctx)
+	public static ClientSetup newInstance(final Properties ctx)
 	{
 		return new ClientSetup(ctx);
 	}
@@ -98,8 +98,6 @@ class ClientSetup
 	private final transient IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final transient ILocationBL locationBL = Services.get(ILocationBL.class);
 
-	private static final OrgId AD_Org_ID_Main = OrgId.ofRepoId(1000000);
-
 	// Parameters
 	private final Properties _ctx;
 	private final I_AD_Client adClient;
@@ -108,7 +106,7 @@ class ClientSetup
 	private final OrgInfoUpdateRequest.OrgInfoUpdateRequestBuilder adOrgInfoChangeRequest;
 	private final I_C_BPartner orgBPartner;
 	private final I_C_BPartner_Location orgBPartnerLocation;
-	private final I_AD_User orgContact;
+	private final org.compiere.model.I_AD_User orgContact;
 	private final I_C_BP_BankAccount orgBankAccount;
 	private final I_C_AcctSchema acctSchema;
 	private final I_M_PriceList priceList_None;
@@ -128,15 +126,15 @@ class ClientSetup
 			adClientInfo = clientDAO.retrieveClientInfo(getCtx(), adClient.getAD_Client_ID());
 			InterfaceWrapperHelper.setTrxName(adClientInfo, ITrx.TRXNAME_ThreadInherited);
 			//
-			adOrg = orgDAO.getById(AD_Org_ID_Main);
+			adOrg = orgDAO.getById(OrgId.MAIN);
 			InterfaceWrapperHelper.setTrxName(adOrg, ITrx.TRXNAME_ThreadInherited);
 			//
-			final OrgInfo adOrgInfo = orgDAO.getOrgInfoByIdInTrx(AD_Org_ID_Main);
+			final OrgInfo adOrgInfo = orgDAO.getOrgInfoByIdInTrx(OrgId.MAIN);
 			adOrgInfoChangeRequest = OrgInfoUpdateRequest.builder()
 					.orgId(OrgId.ofRepoId(adOrg.getAD_Org_ID()));
 			//
 			orgBPartner = partnerOrgBL.retrieveLinkedBPartner(adOrg);
-			orgBPartnerLocation = bpartnerDAO.getBPartnerLocationById(adOrgInfo.getOrgBPartnerLocationId());
+			orgBPartnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(adOrgInfo.getOrgBPartnerLocationId());
 			orgContact = bpartnerDAO.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
 			Check.assumeNotNull(orgContact, "orgContact not null"); // TODO: create if does not exist
 			

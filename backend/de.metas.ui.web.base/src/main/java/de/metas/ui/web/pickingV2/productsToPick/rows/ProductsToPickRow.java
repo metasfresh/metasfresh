@@ -108,12 +108,12 @@ public class ProductsToPickRow implements IViewRow
 			widgetSize = WidgetSize.Small)
 	private final LookupValue locator;
 
-	public static final String FIELD_HUValue = "huValue";
+	public static final String FIELD_HUValue = "huCode";
 	@ViewColumn(fieldName = FIELD_HUValue, widgetType = DocumentFieldWidgetType.Text,
-			captionKey = "HUValue",
+			captionKey = "HUCode",
 			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCONFIG_PREFIX,
 			widgetSize = WidgetSize.Small)
-	private final String huValue;
+	private final String huCode;
 
 	public static final String FIELD_SerialNo = "serialNo";
 	@ViewColumn(fieldName = FIELD_SerialNo, widgetType = DocumentFieldWidgetType.Text,
@@ -198,7 +198,7 @@ public class ProductsToPickRow implements IViewRow
 			//
 			final LookupValue locator,
 			//
-			final String huValue,
+			final String huCode,
 			final String serialNo,
 			final String lotNumber,
 			final LocalDate expiringDate,
@@ -230,7 +230,7 @@ public class ProductsToPickRow implements IViewRow
 		this.huReservedForThisRow = huReservedForThisRow;
 
 		this.locator = locator;
-		this.huValue = huValue;
+		this.huCode = huCode;
 		this.serialNo = serialNo;
 		this.lotNumber = lotNumber;
 		this.expiringDate = expiringDate;

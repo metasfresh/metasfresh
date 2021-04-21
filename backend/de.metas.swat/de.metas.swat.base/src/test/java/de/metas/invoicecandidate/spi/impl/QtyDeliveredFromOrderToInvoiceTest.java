@@ -37,6 +37,7 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
+import de.metas.tax.api.TaxId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -162,16 +163,18 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		Mockito.doReturn(activityId).when(productAcctDAO).retrieveActivityForAcct(clientId, orgId, productId);
 
 		final Properties ctx = Env.getCtx();
-		Mockito.doReturn(3).when(taxBL).getTax(
-				ctx,
-				order,
-				(TaxCategoryId)null, // taxCategoryId
-				orderLine.getM_Product_ID(),
-				order.getDatePromised(),
-				OrgId.ofRepoId(order.getAD_Org_ID()),
-				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-				order.getC_BPartner_Location_ID(),
-				order.isSOTrx());
+		Mockito
+				.when(taxBL.getTaxNotNull(
+						ctx,
+						order,
+						(TaxCategoryId)null, // taxCategoryId
+						orderLine.getM_Product_ID(),
+						order.getDatePromised(),
+						OrgId.ofRepoId(order.getAD_Org_ID()),
+						WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
+						order.getC_BPartner_Location_ID(),
+						order.isSOTrx()))
+				.thenReturn(TaxId.ofRepoId(3));
 	}
 
 	private void initC_BPartner()

@@ -30,8 +30,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.user.UserId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
@@ -40,10 +38,10 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.references.ZoomInfoPermissionsFactory;
+import de.metas.document.references.related_documents.ZoomInfoPermissionsFactory;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.filter.DocumentFilter.Builder;
+import de.metas.ui.web.document.filter.DocumentFilter.DocumentFilterBuilder;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
@@ -238,7 +236,7 @@ public class SqlViewFactory implements IViewFactory
 			throw new AdempiereException("Not an auto filter: " + filterDescriptor);
 		}
 
-		final Builder filterBuilder = DocumentFilter.builder()
+		final DocumentFilterBuilder filterBuilder = DocumentFilter.builder()
 				.setFilterId(filterDescriptor.getFilterId());
 
 		filterDescriptor.getParameters()

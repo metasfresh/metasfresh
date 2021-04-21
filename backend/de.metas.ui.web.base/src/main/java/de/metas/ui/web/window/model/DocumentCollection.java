@@ -28,7 +28,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.AdMessageKey;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
@@ -532,17 +532,20 @@ public class DocumentCollection
 			return zoomIntoInfo.getWindowId();
 		}
 
-		final RecordZoomWindowFinder zoomWindowFinder;
+		final AdWindowId zoomInto_adWindowId;
 		if (zoomIntoInfo.isRecordIdPresent())
 		{
-			zoomWindowFinder = RecordZoomWindowFinder.newInstance(zoomIntoInfo.getTableName(), zoomIntoInfo.getRecordId());
+			zoomInto_adWindowId = RecordWindowFinder.newInstance(zoomIntoInfo.getTableName(), zoomIntoInfo.getRecordId())
+					.checkRecordPresentInWindow()
+					.checkParentRecord()
+					.findAdWindowId()
+					.orElse(null);
 		}
 		else
 		{
-			zoomWindowFinder = RecordZoomWindowFinder.newInstance(zoomIntoInfo.getTableName());
+			zoomInto_adWindowId = RecordWindowFinder.findAdWindowId(zoomIntoInfo.getTableName()).orElse(null);
 		}
 
-		final AdWindowId zoomInto_adWindowId = zoomWindowFinder.findAdWindowId().orElse(null);
 		if (zoomInto_adWindowId == null)
 		{
 			throw new EntityNotFoundException("No windowId found")

@@ -12,6 +12,7 @@ import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -51,6 +52,7 @@ import java.util.function.Function;
 public class BPartnerBL implements IBPartnerBL
 {
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
+	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 
 	private final IBPartnerDAO bpartnersRepo;
 	private final UserRepository userRepository;
@@ -464,14 +466,14 @@ public class BPartnerBL implements IBPartnerBL
 			//
 			// BPartner contact
 			final I_AD_User bpContact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
-			bpContact.setC_BPartner(bpartner);
+			bpContact.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 			bpContact.setC_Greeting(template.getC_Greeting());
 			bpContact.setFirstname(template.getFirstname());
 			bpContact.setLastname(template.getLastname());
 			bpContact.setPhone(template.getPhone());
 			bpContact.setEMail(template.getEMail());
 			bpContact.setIsNewsletter(template.isNewsletter());
-			bpContact.setC_BPartner_Location(bpLocation);
+			bpContact.setC_BPartner_Location_ID(bpLocation.getC_BPartner_Location_ID());
 			if (template.isCustomer())
 			{
 				bpContact.setIsSalesContact(true);
@@ -571,7 +573,7 @@ public class BPartnerBL implements IBPartnerBL
 			return "?";
 		}
 
-		final I_C_BPartner_Location bpLocation = bpartnersRepo.getBPartnerLocationById(bpartnerLocationId);
+		final I_C_BPartner_Location bpLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
 		return bpLocation != null ? bpLocation.getAddress() : "<" + bpartnerLocationId.getRepoId() + ">";
 	}
 
@@ -599,6 +601,10 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public void setBPartnerSalesRepIdOutOfTrx(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerId salesRepBPartnerId)
 	{
+		if (bPartnerId.equals(salesRepBPartnerId))
+		{
+			return;
+		}
 		final I_C_BPartner bPartnerRecord = bpartnersRepo.getByIdOutOfTrx(bPartnerId);
 
 		final int salesRepBPartnerIdInt = salesRepBPartnerId != null ? salesRepBPartnerId.getRepoId() : -1;
@@ -683,5 +689,20 @@ public class BPartnerBL implements IBPartnerBL
 	public BPartnerPrintFormatMap getPrintFormats(final @NonNull BPartnerId bpartnerId)
 	{
 		return bpartnersRepo.getPrintFormats(bpartnerId);
+	}
+
+	@Override
+	public boolean isSalesRep(@NonNull final BPartnerId bpartnerId)
+	{
+		return getById(bpartnerId).isSalesRep();
+	}
+
+	@Override
+	public void validateSalesRep(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerId salesRepId)
+	{
+		if (bPartnerId.equals(salesRepId))
+		{
+			throw new AdempiereException(MSG_SALES_REP_EQUALS_BPARTNER);
+		}
 	}
 }

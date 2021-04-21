@@ -43,7 +43,7 @@ import static de.metas.procurement.base.model.I_AD_User.COLUMNNAME_IsMFProcureme
 import static de.metas.procurement.base.model.I_AD_User.COLUMNNAME_ProcurementPassword;
 import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_AD_User.COLUMNNAME_EMail;
-import static org.compiere.model.I_AD_User.COLUMNNAME_Language;
+import static org.compiere.model.I_AD_User.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Name;
 import static org.compiere.model.I_AD_User.COLUMNNAME_Password;
 
@@ -75,7 +75,7 @@ public class AD_User_StepDef
 			userRecord.setName(name);
 			userRecord.setEMail(email);
 			userRecord.setPassword(tableRow.get("OPT." + COLUMNNAME_Password));
-			userRecord.setAD_Language(tableRow.get("OPT." + COLUMNNAME_Language));
+			userRecord.setAD_Language(tableRow.get("OPT." + COLUMNNAME_AD_Language));
 
 			if (tableRow.containsKey("OPT." + COLUMNNAME_IsMFProcurementUser))
 			{

@@ -15,7 +15,7 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
 import de.metas.ui.web.handlingunits.HUEditorRowFilters;
 import de.metas.ui.web.handlingunits.HUEditorViewRepository;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
+import de.metas.ui.web.handlingunits.HUIdsFilterData;
 import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowIdsOrderedSelection;
@@ -24,6 +24,7 @@ import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.collections.PagedIterator.Page;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -84,7 +85,10 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 	}
 
 	@Override
-	public Set<HuId> retrieveHUIdsEffective(final HUIdsFilterData huIdsFilter, final DocumentFilterList filters, final SqlDocumentFilterConverterContext context)
+	public Set<HuId> retrieveHUIdsEffective(
+			@NonNull final HUIdsFilterData huIdsFilterData,
+			@NonNull final DocumentFilterList allOtherFilters,
+			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		throw new UnsupportedOperationException("not implemented");
 	}
@@ -145,7 +149,7 @@ public class MockedHUEditorViewRepository implements HUEditorViewRepository
 
 	/** Does nothing. */
 	@Override
-	public void warmUp(Set<HuId> huIds)
+	public void warmUp(final Set<HuId> huIds)
 	{
 		// nothing to do
 	}

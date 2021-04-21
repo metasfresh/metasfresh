@@ -138,8 +138,7 @@ public class RabbitMqExportProcessor implements IExportProcessor
 		admin.declareBinding(BindingBuilder.bind(queue).to(exchange).with(routingKey));
 		template.convertAndSend(msg);
 		log.info("AMQP Message sent!");
-		connectionFactory.stop();
-
+		connectionFactory.destroy();
 	}
 
 	@Override

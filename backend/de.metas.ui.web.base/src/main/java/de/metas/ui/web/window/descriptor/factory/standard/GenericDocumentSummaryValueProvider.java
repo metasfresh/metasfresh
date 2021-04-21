@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.ILookupDAO.ILookupDisplayInfo;
-import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
+import org.adempiere.ad.service.TableRefInfo;
 import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -90,7 +90,7 @@ public class GenericDocumentSummaryValueProvider implements IDocumentFieldValueP
 			}
 
 			final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-			final ITableRefInfo tableRefInfo = lookupDAO.retrieveTableDirectRefInfo(idField.getFieldName());
+			final TableRefInfo tableRefInfo = lookupDAO.retrieveTableDirectRefInfo(idField.getFieldName());
 			final ILookupDisplayInfo displayInfo = lookupDAO.retrieveLookupDisplayInfo(tableRefInfo);
 
 			final ImmutableList<FieldValueExtractor> displayColumnNames = displayInfo.getLookupDisplayColumns()

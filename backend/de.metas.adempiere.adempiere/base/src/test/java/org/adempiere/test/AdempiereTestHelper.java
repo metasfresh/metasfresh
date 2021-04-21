@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Stopwatch;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.interceptor.CacheInterceptor;
 import de.metas.common.util.time.SystemTime;
@@ -47,6 +46,7 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -266,7 +266,7 @@ public class AdempiereTestHelper
 		allOrgs.setAD_Org_ID(OrgId.ANY.getRepoId());
 		save(allOrgs);
 
-		final I_AD_User systemUser = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User systemUser = newInstance(I_AD_User.class);
 		systemUser.setAD_User_ID(UserId.SYSTEM.getRepoId());
 		save(systemUser);
 

@@ -248,3 +248,31 @@ export async function quickActionsRequest({
     query ? `?${query}` : ''
   }`);
 }
+
+/*
+ * @method advSearchRequest
+ * @summary Does a POST to communicate to the BE what was selected
+ *
+ * @param {string} windowId
+ * @param {string} documentId
+ * @param {string} fieldName
+ * @param {string} advSearchWindowId
+ * @param {string} selectedId
+ */
+export function advSearchRequest({
+  windowId,
+  documentId,
+  fieldName,
+  advSearchWindowId,
+  selectedId,
+}) {
+  return post(
+    `${
+      config.API_URL
+    }/window/${windowId}/${documentId}/field/${fieldName}/advSearchResult`,
+    {
+      advSearchWindowId,
+      selectedId,
+    }
+  );
+}

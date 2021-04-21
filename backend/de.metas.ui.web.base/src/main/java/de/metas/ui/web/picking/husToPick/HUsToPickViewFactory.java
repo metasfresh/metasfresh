@@ -3,6 +3,7 @@ package de.metas.ui.web.picking.husToPick;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -18,6 +19,7 @@ import de.metas.ui.web.handlingunits.HUEditorViewBuilder;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
 import de.metas.ui.web.order.sales.hu.reservation.HUReservationDocumentFilterService;
+import de.metas.ui.web.picking.packageable.filters.ProductBarcodeFilterData;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRowId;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.view.CreateViewRequest;
@@ -36,6 +38,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -84,12 +88,20 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	public CreateViewRequest createViewRequest(
 			@NonNull final ViewId pickingSlotViewId,
 			@NonNull final PickingSlotRowId pickingSlotRowId,
-			@NonNull final ShipmentScheduleId shipmentScheduleId)
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@Nullable final ProductBarcodeFilterData barcodeFilterData)
 	{
 		final ShipmentAllocationBestBeforePolicy bestBeforePolicy = shipmentScheduleBL.getBestBeforePolicy(shipmentScheduleId);
 
+		final ArrayList<DocumentFilter> stickyFilters = new ArrayList<>();
+
 		final Packageable packageable = packagingDAO.getByShipmentScheduleId(shipmentScheduleId);
-		final DocumentFilter stickyFilter = huReservationDocumentFilterService.createDocumentFilterIgnoreAttributes(packageable);
+		stickyFilters.add(huReservationDocumentFilterService.createDocumentFilterIgnoreAttributes(packageable));
+
+		if (barcodeFilterData != null && barcodeFilterData.getHuId() != null)
+		{
+			stickyFilters.add(DocumentFilter.equalsFilter(I_M_HU.COLUMNNAME_M_HU_ID, barcodeFilterData.getHuId()));
+		}
 
 		return CreateViewRequest.builder(WINDOW_ID, JSONViewDataType.includedView)
 				.setParentViewId(pickingSlotViewId)
@@ -97,7 +109,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 				.setParameter(HUsToPickViewFilters.PARAM_CurrentShipmentScheduleId, shipmentScheduleId)
 				.setParameter(HUsToPickViewFilters.PARAM_BestBeforePolicy, bestBeforePolicy)
 				//
-				.addStickyFilters(stickyFilter)
+				.setStickyFilters(stickyFilters)
 				.setFilters(DocumentFilterList.of(HUsToPickViewFilters.createHUIdsFilter(true))) // https://github.com/metasfresh/metasfresh-webui-api/issues/1067
 				//
 				.build();
@@ -115,7 +127,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	@Override
 	protected List<SqlDocumentFilterConverter> createFilterConverters()
 	{
-		return ImmutableList.<SqlDocumentFilterConverter> builder()
+		return ImmutableList.<SqlDocumentFilterConverter>builder()
 				.addAll(super.createFilterConverters())
 				.addAll(HUsToPickViewFilters.createFilterConverters())
 				.build();
@@ -127,17 +139,17 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 		viewLayoutBuilder
 				.clearElements()
 				.addElementsFromViewRowClassAndFieldNames(HUEditorRow.class,
-						viewDataType,
-						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUCode).restrictToMediaType(MediaType.SCREEN).build(),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Product),
-						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HU_UnitType).restrictToMediaType(MediaType.SCREEN).build(),
-						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_PackingInfo).restrictToMediaType(MediaType.SCREEN).build(),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_QtyCU),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_WeightGross),
-						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build(),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_BestBeforeDate),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Locator));
+														  viewDataType,
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUCode).restrictToMediaType(MediaType.SCREEN).build(),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Product),
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HU_UnitType).restrictToMediaType(MediaType.SCREEN).build(),
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_PackingInfo).restrictToMediaType(MediaType.SCREEN).build(),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_QtyCU),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_WeightGross),
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build(),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_BestBeforeDate),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Locator));
 	}
 
 	@Override

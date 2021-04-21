@@ -23,11 +23,12 @@
 package de.metas.externalsystem.process;
 
 import de.metas.common.externalsystem.ExternalSystemConstants;
-import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
-import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
+import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.process.IProcessPreconditionsContext;
 import lombok.NonNull;
@@ -48,10 +49,18 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
-		// note: we can blindly get the first I_ExternalSystem_Config_Alberta, because the checkPreconditionsApplicable impl made sure there is exactly one.
-		final int id = this.configId != null
-				? this.configId.getValue()
-				: getSelectedIncludedRecordIds(I_ExternalSystem_Config_Alberta.class).stream().findFirst().get();
+		final int id;
+
+		if (this.childConfigId > 0)
+		{
+			id = this.childConfigId;
+		}
+		else
+		{
+			id = externalSystemConfigDAO.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()), getExternalSystemType())
+					.get().getId().getRepoId();
+		}
+
 		return ExternalSystemAlbertaConfigId.ofRepoId(id);
 	}
 
@@ -65,6 +74,7 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 		parameters.put(ExternalSystemConstants.PARAM_BASE_PATH, albertaConfig.getBaseUrl());
 		parameters.put(ExternalSystemConstants.PARAM_TENANT, albertaConfig.getTenant());
 		parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, extractEffectiveSinceTimestamp().toInstant().toString());
+		parameters.put(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE, albertaConfig.getValue());
 
 		return parameters;
 	}
@@ -73,5 +83,11 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 	protected String getTabName()
 	{
 		return ExternalSystemType.Alberta.getName();
+	}
+
+	@NonNull
+	protected ExternalSystemType getExternalSystemType()
+	{
+		return ExternalSystemType.Alberta;
 	}
 }

@@ -364,6 +364,7 @@ export default function windowHandler(state = initialState, action) {
           windowId: action.windowId,
           viewId: action.viewId,
           profileId: action.profileId,
+          title: action.title,
         },
       };
     case UPDATE_RAW_MODAL: {

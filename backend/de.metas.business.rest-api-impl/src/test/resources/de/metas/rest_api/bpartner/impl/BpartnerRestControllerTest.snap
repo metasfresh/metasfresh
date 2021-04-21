@@ -1,5 +1,6 @@
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartner_Update_BPartner_Name_Insert_Location=[
   {
+    "orgCode": "<10>",
     "bpartner": {
       "metasfreshId": 100010,
       "code": "12345",
@@ -67,8 +68,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateBPartne
           }
         },
         "baseLanguage": true,
-        "decimalPoint": false,
-        "leftToRight": true
+        "leftToRight": true,
+        "decimalPoint": false
       },
       "url": "bPartner.url",
       "groupId": 15,
@@ -382,8 +383,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+            "seconds": 1561134,
+            "nanos": 560000000
           },
           "entries": [ ]
         },
@@ -659,8 +660,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+            "seconds": 1561134,
+            "nanos": 560000000
           },
           "entries": [ ]
         },
@@ -846,7 +847,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
 
 
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact_update_idContactIdentifier=[
-  {
+{
     "bankAccounts": [
       {
         "active": true,
@@ -867,8 +868,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateContact
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+            "seconds": 1561134,
+            "nanos": 560000000
           },
           "entries": [ ]
         },
@@ -1075,8 +1076,8 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.createOrUpdateLocatio
           },
           "lastChangedByUserId": 30,
           "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+            "seconds": 1561134,
+            "nanos": 560000000
           },
           "entries": [ ]
         },
@@ -1378,6 +1379,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnerLocat
 
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=[
   {
+    "orgCode": "<10>",
     "bpartner": {
       "metasfreshId": 20,
       "externalId": "fghij",
@@ -1456,6 +1458,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_ext=
 
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=[
   {
+    "orgCode": "<10>",
     "bpartner": {
       "metasfreshId": 20,
       "externalId": "fghij",
@@ -1534,6 +1537,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_gln=
 
 de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartner_id=[
   {
+    "orgCode": "<10>",
     "bpartner": {
       "metasfreshId": 20,
       "externalId": "fghij",
@@ -1618,6 +1622,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
     "nextPage": "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_D",
     "items": [
       {
+        "orgCode": "<10>",
         "bpartner": {
           "metasfreshId": 20,
           "externalId": "fghij",
@@ -1692,6 +1697,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
         ]
       },
       {
+        "orgCode": "<10>",
         "bpartner": {
           "metasfreshId": 21,
           "externalId": "fghij_1",
@@ -1774,6 +1780,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
     "nextPage": "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_E",
     "items": [
       {
+        "orgCode": "<10>",
         "bpartner": {
           "metasfreshId": 22,
           "externalId": "fghij_2",
@@ -1848,6 +1855,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
         ]
       },
       {
+        "orgCode": "<10>",
         "bpartner": {
           "metasfreshId": 23,
           "externalId": "fghij_3",
@@ -1929,6 +1937,7 @@ de.metas.rest_api.bpartner.impl.BpartnerRestControllerTest.retrieveBPartnersSinc
     "pageSize": 1,
     "items": [
       {
+        "orgCode": "<10>",
         "bpartner": {
           "metasfreshId": 24,
           "externalId": "fghij_4",

@@ -1,110 +1,141 @@
-import React, { useContext, useEffect } from 'react';
-import { observer } from 'mobx-react';
+import React, { ReactElement } from 'react';
 import { getSnapshot } from 'mobx-state-tree';
-import { useParams, useHistory } from 'react-router-dom';
+import { observer, inject } from 'mobx-react';
+import { withRouter, RouteComponentProps } from 'react-router';
 
 import { translate } from '../utils/translate';
 import { formDate, prettyDate } from '../utils/date';
 import View from './View';
-import { RootStoreContext } from '../models/Store';
 
-interface RouteParams {
+import { RootInstance } from '../models/Store';
+
+interface MatchParams {
   rfqId?: string;
   targetDate: string;
 }
 
-const RfQDailyEdit: React.FunctionComponent = observer(() => {
-  const { rfqId, targetDate } = useParams<RouteParams>();
-  const store = useContext(RootStoreContext);
-  const rfQs = getSnapshot(store.rfqs);
-  const { quotations } = rfQs;
-  const rfq = quotations.find((rfqItem) => rfqItem.rfqId === rfqId);
-  const quantity = rfq.quantities.find((qItem) => qItem.date === targetDate);
-  const currentDay = targetDate ? targetDate : store.app.currentDay;
-  const qtyInput = React.createRef<HTMLInputElement>();
-  const { lang } = store.i18n;
-  const history = useHistory();
-  const { navigation } = store;
+interface Props extends RouteComponentProps<MatchParams> {
+  store?: RootInstance;
+}
 
-  const selectAndFocus = () => {
-    if (qtyInput.current) {
-      qtyInput.current.focus();
-      qtyInput.current.select();
-    }
-  };
+@inject('store')
+@observer
+class RfQDailyEdit extends React.Component<Props> {
+  private qtyInput = React.createRef<HTMLInputElement>();
+  private isUnmounting = false;
 
-  useEffect(() => {
+  componentDidMount(): void {
+    document.addEventListener('focusout', this.handleFocusOut);
+
+    const { store, match } = this.props;
+    const { targetDate } = match.params;
+    const { lang } = store.i18n;
+    const currentDay = targetDate ? targetDate : store.app.currentDay;
     const qtyEditorCaption = translate('RfQView.QtyEditor.caption');
+
     store.navigation.setViewNames(
       qtyEditorCaption.replace('{0}', prettyDate({ lang, date: formDate({ currentDay: new Date(currentDay) }) }))
     );
-    selectAndFocus();
-  }, [store]);
+  }
 
-  const saveQty = (newQty: number) => {
+  componentWillUnmount(): void {
+    document.removeEventListener('focusout', this.handleFocusOut);
+  }
+
+  saveQty = (newQty: number): void => {
+    const { store, match } = this.props;
+    const { rfqId, targetDate } = match.params;
+    const currentDay = targetDate ? targetDate : store.app.currentDay;
+
     store.rfqs.updateRfQ({
       quantities: [{ date: currentDay, qtyPromised: newQty }],
       rfqId,
     });
   };
 
-  const qtyPromised = quantity.qtyPromised.toString();
+  handleFocusOut = (): void => {
+    const { store, history } = this.props;
+    const { navigation } = store;
 
-  return (
-    <View>
-      <div>
-        <div className="mt-5 p-4">
-          <div className="columns is-mobile">
-            <div className="column is-11">
-              <input
-                className="product-input"
-                type="number"
-                ref={qtyInput}
-                step="1"
-                onKeyUp={(e) => {
-                  if (e.key === 'Enter') {
-                    qtyInput.current.blur();
-                    navigation.removeViewFromHistory();
-                    history.goBack();
-                  }
-                }}
-                value={qtyPromised.length > 1 ? qtyPromised.replace(/^0+/, '') : qtyPromised}
-                onChange={(e) => {
-                  let updatedQty = parseInt(e.target.value, 10);
-                  updatedQty = isNaN(updatedQty) ? 0 : updatedQty;
-                  store.rfqs.updateRfQ({
-                    quantities: [{ date: currentDay, qtyPromised: updatedQty }],
-                    rfqId,
-                  });
-                }}
-                onBlur={(e) => saveQty(parseInt(e.target.value, 10))}
-              />
-            </div>
-            {/* The arrows */}
-            <div className="columns pt-4 green-color">
-              <div
-                className="column is-6"
-                onClick={() => {
-                  saveQty(parseInt(qtyInput.current.value, 10) + 1);
-                }}
-              >
-                <i className="fas fa-2x fa-arrow-up"></i>
+    if (!this.isUnmounting) {
+      this.isUnmounting = true;
+
+      this.qtyInput.current.blur();
+      navigation.removeViewFromHistory();
+      history.goBack();
+    }
+  };
+
+  render(): ReactElement {
+    const { store, match } = this.props;
+    const { rfqId, targetDate } = match.params;
+    const rfQs = getSnapshot(store.rfqs);
+    const { quotations } = rfQs;
+    const rfq = quotations.find((rfqItem) => rfqItem.rfqId === rfqId);
+    const quantity = rfq.quantities.find((qItem) => qItem.date === targetDate);
+    const qtyPromised = quantity.qtyPromised.toString();
+    const currentDay = targetDate ? targetDate : store.app.currentDay;
+
+    return (
+      <View>
+        <div>
+          <div className="mt-5 p-4">
+            <div className="columns is-mobile">
+              <div className="column is-11">
+                <input
+                  className="product-input"
+                  type="number"
+                  ref={this.qtyInput}
+                  step="1"
+                  onKeyUp={(e) => {
+                    if (e.key === 'Enter') {
+                      this.handleFocusOut();
+                    }
+                  }}
+                  onBlur={(e) => {
+                    this.saveQty(parseFloat(e.target.value));
+                  }}
+                  onTouchStart={() => {
+                    this.qtyInput.current.focus();
+                    this.qtyInput.current.select();
+                  }}
+                  value={qtyPromised.length > 1 ? qtyPromised.replace(/^0+/, '') : qtyPromised}
+                  onChange={(e) => {
+                    let updatedQty = parseInt(e.target.value, 10);
+                    updatedQty = isNaN(updatedQty) ? 0 : updatedQty;
+                    store.rfqs.updateRfQ({
+                      quantities: [{ date: currentDay, qtyPromised: updatedQty }],
+                      rfqId,
+                    });
+                  }}
+                />
               </div>
-              <div
-                className="column is-6"
-                onClick={() => {
-                  const currentQty = parseInt(qtyInput.current.value, 10);
-                  currentQty > 0 && saveQty(currentQty - 1);
-                }}
-              >
-                <i className="fas fa-2x fa-arrow-down"></i>
+              {/* The arrows */}
+              <div className="columns pt-4 green-color">
+                <div
+                  className="column is-6"
+                  onClick={() => {
+                    this.saveQty(parseInt(this.qtyInput.current.value, 10) + 1);
+                  }}
+                >
+                  <i className="fas fa-2x fa-arrow-up"></i>
+                </div>
+                <div
+                  className="column is-6"
+                  onClick={() => {
+                    const currentQty = parseInt(this.qtyInput.current.value, 10);
+                    currentQty > 0 && this.saveQty(currentQty - 1);
+                  }}
+                >
+                  <i className="fas fa-2x fa-arrow-down"></i>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </View>
-  );
-});
+      </View>
+    );
+  }
+}
 
-export default RfQDailyEdit;
+export default withRouter(RfQDailyEdit);

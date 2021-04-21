@@ -7,6 +7,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent;
 import de.metas.ui.web.session.json.JSONUserSessionChangesEvent.JSONUserSessionChangesEventBuilder;
 import de.metas.ui.web.websocket.WebsocketSender;
@@ -62,11 +62,11 @@ public class UserSessionRepository
 
 	public void load(final UserSession userSession)
 	{
-		final I_AD_User fromUser = Services.get(IUserDAO.class).getById(userSession.getLoggedUserId());
+		final org.compiere.model.I_AD_User fromUser = Services.get(IUserDAO.class).getById(userSession.getLoggedUserId());
 		loadFromAD_User(userSession, fromUser);
 	}
 
-	private void loadFromAD_User(final UserSession userSession, final I_AD_User fromUser)
+	private void loadFromAD_User(final UserSession userSession, final org.compiere.model.I_AD_User fromUser)
 	{
 		final JSONUserSessionChangesEventBuilder changesCollector = JSONUserSessionChangesEvent.builder();
 
@@ -128,7 +128,7 @@ public class UserSessionRepository
 	 * @return user's full name (e.g. FirstName LastName)
 	 * @task https://github.com/metasfresh/metasfresh-webui-api/issues/468
 	 */
-	private final String buildUserFullname(final I_AD_User user)
+	private final String buildUserFullname(final org.compiere.model.I_AD_User user)
 	{
 		final StringBuilder fullname = new StringBuilder();
 		final String firstname = user.getFirstname();
@@ -166,7 +166,7 @@ public class UserSessionRepository
 
 	public void setAD_Language(final UserId adUserId, final String adLanguage)
 	{
-		final I_AD_User user = Services.get(IUserDAO.class).getByIdInTrx(adUserId, I_AD_User.class);
+		final org.compiere.model.I_AD_User user = Services.get(IUserDAO.class).getByIdInTrx(adUserId, I_AD_User.class);
 		user.setAD_Language(adLanguage);
 		InterfaceWrapperHelper.save(user);
 	}
@@ -181,7 +181,7 @@ public class UserSessionRepository
 		 * If system user and it's the user's of current session, then load the current session.
 		 */
 		@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, afterCommit = true)
-		public void onUserChanged(final I_AD_User user)
+		public void onUserChanged(final org.compiere.model.I_AD_User user)
 		{
 			if (!user.isSystemUser())
 			{

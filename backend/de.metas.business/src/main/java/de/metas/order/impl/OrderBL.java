@@ -107,6 +107,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 public class OrderBL implements IOrderBL
 {
@@ -134,7 +135,7 @@ public class OrderBL implements IOrderBL
 		final boolean overridePricingSystem = overridePricingSystemAndDontThrowExIfNotFound;
 		if (overridePricingSystem || previousPricingSystemId <= 0)
 		{
-			final BPartnerLocationId bpartnerAndLocation = getShipToLocationIdOrNull(order);
+			final BPartnerLocationId bpartnerAndLocation = extractBPartnerLocationOrNull(order);
 			if (bpartnerAndLocation == null)
 			{
 				logger.debug("Order {} has no C_BPartner_ID. Doing nothing", order);
@@ -181,7 +182,7 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		final BPartnerLocationId bpartnerAndLocationId = getShipToLocationIdOrNull(order);
+		final BPartnerLocationId bpartnerAndLocationId = extractBPartnerLocationOrNull(order);
 		if (bpartnerAndLocationId == null)
 		{
 			logger.debug("order {} has no C_BPartner_Location_ID. Doing nothing", order);
@@ -209,7 +210,7 @@ public class OrderBL implements IOrderBL
 			return;
 		}
 
-		final BPartnerLocationId bpartnerAndLocationId = getShipToLocationIdOrNull(order);
+		final BPartnerLocationId bpartnerAndLocationId = extractBPartnerLocationOrNull(order);
 		if (bpartnerAndLocationId == null)
 		{
 			return;
@@ -246,7 +247,7 @@ public class OrderBL implements IOrderBL
 		}
 
 		final PricingSystemId pricingSystemId = pricingSystemIdOverride != null ? pricingSystemIdOverride : PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
-		final BPartnerLocationId bpartnerAndLocationId = getShipToLocationIdOrNull(order);
+		final BPartnerLocationId bpartnerAndLocationId = extractBPartnerLocationOrNull(order);
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 		return retrievePriceListIdOrNull(pricingSystemId, bpartnerAndLocationId, soTrx);
 	}
@@ -268,9 +269,15 @@ public class OrderBL implements IOrderBL
 	@Override
 	public boolean setBill_User_ID(final org.compiere.model.I_C_Order order)
 	{
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID());
+		if(billBPartnerId == null)
+		{
+			return false;
+		}
+
 		// First try: if order and bill partner and location are the same, and the contact is set
 		// we can use the same contact
-		final BPartnerLocationId billToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());
+		final BPartnerLocationId billToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, order.getBill_Location_ID());
 		final BPartnerLocationId shipToBPLocationId = extractBPartnerLocationOrNull(order);
 		final BPartnerContactId shipToContactId = BPartnerContactId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getAD_User_ID());
 		if (BPartnerLocationId.equals(shipToBPLocationId, billToBPLocationId) && shipToContactId != null)
@@ -279,16 +286,16 @@ public class OrderBL implements IOrderBL
 			return true;
 		}
 
-		final RetrieveContactRequestBuilder retrieveBillContanctRequest = RetrieveContactRequest.builder()
-				.bpartnerId(BPartnerId.ofRepoId(order.getBill_BPartner_ID()));
+		final RetrieveContactRequestBuilder retrieveBillContactRequest = RetrieveContactRequest.builder()
+				.bpartnerId(billBPartnerId);
 		if (billToBPLocationId != null)
 		{
 			// Case: Bill Location is set, we can use it to retrieve the contact for that location
-			retrieveBillContanctRequest.bPartnerLocationId(billToBPLocationId);
+			retrieveBillContactRequest.bPartnerLocationId(billToBPLocationId);
 
 		}
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-		final User billContact = bpartnerBL.retrieveContactOrNull(retrieveBillContanctRequest.build());
+		final User billContact = bpartnerBL.retrieveContactOrNull(retrieveBillContactRequest.build());
 		if (billContact == null)
 		{
 			return false;
@@ -873,6 +880,15 @@ public class OrderBL implements IOrderBL
 				: BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
 	}
 
+	@Override
+	@Nullable
+	public BPartnerId getEffectiveBillPartnerId(@NonNull final I_C_Order orderRecord)
+	{
+		return BPartnerId.ofRepoIdOrNull(firstGreaterThanZero(
+				orderRecord.getBill_BPartner_ID(),
+				orderRecord.getC_BPartner_ID()));
+	}
+	
 	@Override
 	@NonNull
 	public BPartnerContactId getBillToContactId(@NonNull final I_C_Order order)

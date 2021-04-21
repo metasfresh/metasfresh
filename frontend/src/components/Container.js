@@ -150,6 +150,10 @@ class Container extends PureComponent {
               windowId={rawModal.windowId}
               viewId={rawModal.viewId}
               masterDocumentList={masterDocumentList}
+              parentWindowId={modal.parentWindowId} // parentWindowId, parentDocumentId, parentFieldId were added to
+              parentDocumentId={modal.parentDocumentId} // support the Search feature
+              parentFieldId={modal.parentFieldId}
+              featureType={modal.dataId} // 'SEARCH'
             >
               <div className="document-lists-wrapper">
                 <DocumentList
@@ -167,6 +171,8 @@ class Container extends PureComponent {
                     includedView && includedView.windowId && includedView.viewId
                   }
                   inModal={modal.visible}
+                  featureType={modal.dataId} // pass along this type to be able to know down below -> at table level if we need to disable or not
+                  // the multi selection depending on the feature type rendered  - as it happens in the `SEARCH` feat)
                 />
 
                 {includedView &&

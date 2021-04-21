@@ -58,7 +58,7 @@ import lombok.NonNull;
 
 public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSelectionFactory
 {
-	public static final SqlViewRowIdsOrderedSelectionFactory of(final SqlViewBinding viewBinding)
+	public static SqlViewRowIdsOrderedSelectionFactory of(final SqlViewBinding viewBinding)
 	{
 		return new SqlViewRowIdsOrderedSelectionFactory(viewBinding);
 	}
@@ -137,7 +137,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 		final UserRolePermissionsKey permissionsKey = viewEvalCtx.getPermissionsKey();
 		final IUserRolePermissions permissions = userRolePermissionsRepo.getUserRolePermissions(permissionsKey);
 		return permissions.getConstraint(WindowMaxQueryRecordsConstraint.class)
-				.or(WindowMaxQueryRecordsConstraint.DEFAULT)
+				.orElse(WindowMaxQueryRecordsConstraint.DEFAULT)
 				.getMaxQueryRecordsPerRole();
 	}
 

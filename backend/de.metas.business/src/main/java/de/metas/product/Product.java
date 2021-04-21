@@ -3,6 +3,7 @@ package de.metas.product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.organization.OrgId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,6 +39,9 @@ import java.math.BigDecimal;
 public class Product
 {
 	@NonNull
+	OrgId orgId;
+
+	@NonNull
 	ProductId id;
 
 	@NonNull
@@ -45,6 +49,9 @@ public class Product
 
 	@NonNull
 	String productNo;
+
+	@Nullable
+	ProductCategoryId productCategoryId;
 
 	@NonNull
 	ITranslatableString name;
@@ -56,6 +63,21 @@ public class Product
 	@NonNull
 	@Builder.Default
 	ITranslatableString documentNote = TranslatableStrings.empty();
+
+	@NonNull
+	String productType;
+
+	@Nullable
+	String ean;
+
+	@Nullable
+	String gtin;
+
+	@Nullable
+	Boolean discontinued;
+
+	@Nullable
+	Boolean active;
 
 	@Nullable
 	BPartnerId manufacturerId;

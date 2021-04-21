@@ -12,13 +12,16 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
+import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.PlainStringLoggable;
@@ -55,7 +58,7 @@ import lombok.NonNull;
  */
 public class ESRDataImporterV11 implements IESRDataImporter
 {
-	public final static String ERR_WRONG_CTRL_LINE_LENGTH = "ESR_Wrong_Ctrl_Line_Length";
+	public final static  AdMessageKey ERR_WRONG_CTRL_LINE_LENGTH =  AdMessageKey.of("ESR_Wrong_Ctrl_Line_Length");
 
 	private static final transient Logger logger = LogManager.getLogger(ESRDataImporterV11.class);
 
@@ -161,6 +164,8 @@ public class ESRDataImporterV11 implements IESRDataImporter
 
 				final Date accountingDate = ESRTransactionLineMatcherUtil.extractAccountingDate(currentTextLine);
 				esrTransactionBuilder.accountingDate(accountingDate);
+				
+				esrTransactionBuilder.type(ESRType.TYPE_ESR);
 			}
 			else
 			{

@@ -1,5 +1,4 @@
 package de.metas.util;
-
 /*
  * #%L
  * de.metas.util
@@ -22,8 +21,9 @@ package de.metas.util;
  * #L%
  */
 
+import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
 import org.adempiere.util.lang.IPair;
@@ -659,30 +659,17 @@ public final class StringUtils
 	 * @param in in
 	 * @return cleaned string
 	 */
-	public static String cleanWhitespace(final String in)
+	public static String cleanWhitespace(@Nullable String in)
 	{
-		final char[] inArray = in.toCharArray();
-		final StringBuilder out = new StringBuilder(inArray.length);
-		boolean lastWasSpace = false;
-		for (final char c : inArray)
+		if (in == null)
 		{
-			if (Character.isWhitespace(c))
-			{
-				if (!lastWasSpace)
-				{
-					out.append(' ');
-				}
-				lastWasSpace = true;
-			}
-			else
-			{
-				out.append(c);
-				lastWasSpace = false;
-			}
+			return in;
 		}
-		return out.toString();
+		
+		return CharMatcher.whitespace().removeFrom(in);
 	}    // cleanWhitespace
 
+	
 	/**
 	 * remove white space from the begin
 	 */

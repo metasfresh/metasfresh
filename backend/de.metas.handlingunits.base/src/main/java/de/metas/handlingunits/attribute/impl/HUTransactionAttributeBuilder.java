@@ -133,7 +133,7 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 			// Only transfer value if the request allows it
 			if (!transferFromStrategy.isTransferable(request, attribute))
 			{
-				logger.trace("Skip transfering attribute {} because trasfer strategy says so: {}", attribute, transferFromStrategy);
+				logger.trace("Skip transfering attribute {} because transfer strategy says so: {}", attribute, transferFromStrategy);
 				continue;
 			}
 
@@ -145,8 +145,7 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 	private IHUAttributeTransferStrategy getHUAttributeTransferStrategy(final IHUAttributeTransferRequest request, final I_M_Attribute attribute)
 	{
 		final IAttributeStorage attributesFrom = request.getAttributesFrom();
-		final IHUAttributeTransferStrategy transferFromStrategy = attributesFrom.retrieveTransferStrategy(attribute);
-		return transferFromStrategy;
+		return attributesFrom.retrieveTransferStrategy(attribute);
 	}
 
 	@Override
@@ -159,14 +158,12 @@ public class HUTransactionAttributeBuilder implements IHUTransactionAttributeBui
 			return AllocationUtils.nullResult();
 		}
 
-		final IAllocationResult result = AllocationUtils.createQtyAllocationResult(
+		return AllocationUtils.createQtyAllocationResult(
 				BigDecimal.ZERO, // qtyToAllocate
 				BigDecimal.ZERO, // qtyAllocated
-				Collections.<IHUTransactionCandidate> emptyList(), // trxs
+				Collections.emptyList(), // trxs
 				attributeTrxs // attribute transactions
 		);
-
-		return result;
 	}
 
 	@Override

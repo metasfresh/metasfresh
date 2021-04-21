@@ -338,7 +338,7 @@ public final class WorkflowExecutionContext
 
 	public String getUserFullnameById(@NonNull final UserId userId)
 	{
-		return userDAO.retrieveUserFullname(userId);
+		return userDAO.retrieveUserFullName(userId);
 	}
 
 	public OrgInfo getOrgInfoById(@NonNull final OrgId orgId)

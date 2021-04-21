@@ -1,6 +1,7 @@
 package de.metas.procurement.base.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import de.metas.common.procurement.sync.protocol.dto.SyncProduct;
@@ -58,6 +59,7 @@ import java.util.List;
 public class WebuiPush implements IWebuiPush
 {
 	private static final Logger logger = LogManager.getLogger(WebuiPush.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	private final ThreadLocal<Boolean> disabled = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
@@ -137,7 +139,13 @@ public class WebuiPush implements IWebuiPush
 	@Override
 	public void pushBPartnerForContact(final I_AD_User contact)
 	{
-		final I_C_BPartner bpartner = contact.getC_BPartner();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contact.getC_BPartner_ID());
+		if(bpartnerId == null)
+		{
+			return;
+		}
+
+		final I_C_BPartner bpartner = bpartnerDAO.getById(bpartnerId);
 		if (bpartner == null)
 		{
 			return;

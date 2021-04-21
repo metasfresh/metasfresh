@@ -1,24 +1,15 @@
 package de.metas.handlingunits.inventory;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.LocatorId;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryLineId;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityUOMConverter;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.reducers.Reducers;
@@ -29,6 +20,13 @@ import lombok.Singular;
 import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.NonFinal;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.LocatorId;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -196,6 +194,14 @@ public class InventoryLine
 				.map(InventoryLineHU::getQtyCount)
 				.reduce(Quantity::add)
 				.get();
+	}
+
+	public InventoryLine distributeQtyCountToHUs(
+			@NonNull final Quantity qtyCountToDistribute,
+			@NonNull final QuantityUOMConverter uomConverter)
+	{
+		final Quantity qtyCountToDistributeConv = uomConverter.convertQuantityTo(qtyCountToDistribute, getProductId(), getQtyCount().getUomId());
+		return distributeQtyCountToHUs(qtyCountToDistributeConv);
 	}
 
 	public InventoryLine distributeQtyCountToHUs(@NonNull final Quantity qtyCountToDistribute)

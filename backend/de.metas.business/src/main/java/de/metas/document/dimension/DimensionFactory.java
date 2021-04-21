@@ -22,11 +22,14 @@
 
 package de.metas.document.dimension;
 
+import lombok.NonNull;
+
 public interface DimensionFactory<T>
 {
 	String getHandledTableName();
 
-	Dimension getFromRecord(final T record);
+	@NonNull
+	Dimension getFromRecord(@NonNull T record);
 
-	void updateRecord(final T record, final Dimension from);
+	void updateRecord(T record, Dimension from);
 }

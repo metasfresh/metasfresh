@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_Alberta
  *  @author metasfresh (generated) 
@@ -12,19 +12,19 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_Alberta extends org.compiere.model.PO implements I_ExternalSystem_Config_Alberta, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1524631305L;
+	private static final long serialVersionUID = -563079533L;
 
-    /** Standard Constructor */
-    public X_ExternalSystem_Config_Alberta (final Properties ctx, final int ExternalSystem_Config_Alberta_ID, @Nullable final String trxName)
-    {
-      super (ctx, ExternalSystem_Config_Alberta_ID, trxName);
-    }
+	/** Standard Constructor */
+	public X_ExternalSystem_Config_Alberta (final Properties ctx, final int ExternalSystem_Config_Alberta_ID, @Nullable final String trxName)
+	{
+		super (ctx, ExternalSystem_Config_Alberta_ID, trxName);
+	}
 
-    /** Load Constructor */
-    public X_ExternalSystem_Config_Alberta (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	/** Load Constructor */
+	public X_ExternalSystem_Config_Alberta (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+	{
+		super (ctx, rs, trxName);
+	}
 
 
 	/** Load Meta Data */
@@ -35,25 +35,25 @@ public class X_ExternalSystem_Config_Alberta extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public void setApiKey (final java.lang.String ApiKey)
+	public void setApiKey (final String ApiKey)
 	{
 		set_Value (COLUMNNAME_ApiKey, ApiKey);
 	}
 
 	@Override
-	public java.lang.String getApiKey() 
+	public String getApiKey()
 	{
 		return get_ValueAsString(COLUMNNAME_ApiKey);
 	}
 
 	@Override
-	public void setBaseURL (final java.lang.String BaseURL)
+	public void setBaseURL (final String BaseURL)
 	{
 		set_Value (COLUMNNAME_BaseURL, BaseURL);
 	}
 
 	@Override
-	public java.lang.String getBaseURL() 
+	public String getBaseURL()
 	{
 		return get_ValueAsString(COLUMNNAME_BaseURL);
 	}
@@ -74,15 +74,15 @@ public class X_ExternalSystem_Config_Alberta extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public de.metas.externalsystem.model.I_ExternalSystem_Config getExternalSystem_Config()
+	public I_ExternalSystem_Config getExternalSystem_Config()
 	{
-		return get_ValueAsPO(COLUMNNAME_ExternalSystem_Config_ID, de.metas.externalsystem.model.I_ExternalSystem_Config.class);
+		return get_ValueAsPO(COLUMNNAME_ExternalSystem_Config_ID, I_ExternalSystem_Config.class);
 	}
 
 	@Override
-	public void setExternalSystem_Config(final de.metas.externalsystem.model.I_ExternalSystem_Config ExternalSystem_Config)
+	public void setExternalSystem_Config(final I_ExternalSystem_Config ExternalSystem_Config)
 	{
-		set_ValueFromPO(COLUMNNAME_ExternalSystem_Config_ID, de.metas.externalsystem.model.I_ExternalSystem_Config.class, ExternalSystem_Config);
+		set_ValueFromPO(COLUMNNAME_ExternalSystem_Config_ID, I_ExternalSystem_Config.class, ExternalSystem_Config);
 	}
 
 	@Override
@@ -101,25 +101,40 @@ public class X_ExternalSystem_Config_Alberta extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setExternalSystemValue (final @Nullable String ExternalSystemValue)
 	{
-		set_Value (COLUMNNAME_Name, Name);
+		set_Value (COLUMNNAME_ExternalSystemValue, ExternalSystemValue);
 	}
 
 	@Override
-	public java.lang.String getName() 
+	public String getExternalSystemValue()
 	{
-		return get_ValueAsString(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
 	}
 
 	@Override
-	public void setTenant (final java.lang.String Tenant)
+	public void setPharmacy_PriceList_ID (final int Pharmacy_PriceList_ID)
+	{
+		if (Pharmacy_PriceList_ID < 1) 
+			set_Value (COLUMNNAME_Pharmacy_PriceList_ID, null);
+		else 
+			set_Value (COLUMNNAME_Pharmacy_PriceList_ID, Pharmacy_PriceList_ID);
+	}
+
+	@Override
+	public int getPharmacy_PriceList_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Pharmacy_PriceList_ID);
+	}
+
+	@Override
+	public void setTenant (final String Tenant)
 	{
 		set_Value (COLUMNNAME_Tenant, Tenant);
 	}
 
 	@Override
-	public java.lang.String getTenant() 
+	public String getTenant()
 	{
 		return get_ValueAsString(COLUMNNAME_Tenant);
 	}

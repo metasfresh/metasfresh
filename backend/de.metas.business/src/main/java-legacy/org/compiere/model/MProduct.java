@@ -320,9 +320,16 @@ public class MProduct extends X_M_Product
 		// New - Acct, Tree, Old Costing
 		if (newRecord)
 		{
-			insert_Accounting(I_M_Product_Acct.Table_Name,
-					I_M_Product_Category_Acct.Table_Name,
-					"p.M_Product_Category_ID=" + getM_Product_Category_ID());
+			if (this.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
+			{
+				insert_Accounting(I_M_Product_Acct.Table_Name,
+								  I_M_Product_Category_Acct.Table_Name,
+								  "p.M_Product_Category_ID=" + getM_Product_Category_ID());
+			}
+			else
+			{
+				log.info("This M_Product is created via CopyRecordSupport; -> don't insert the default _acct records");
+			}
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
 		}
 		

@@ -74,7 +74,7 @@ public final class CollectionUtils
 	 */
 	public static <ET, CT extends Collection<ET>> String toString(final CT collection,
 			final String separator,
-			final Converter<String, ET> elementStringConverter)
+			@Nullable final Converter<String, ET> elementStringConverter)
 	{
 		if (collection == null)
 		{
@@ -119,7 +119,7 @@ public final class CollectionUtils
 		}
 
 		final Set<Integer> set = new HashSet<>(arr.length);
-		for (int i : arr)
+		for (final int i : arr)
 		{
 			set.add(i);
 		}
@@ -135,10 +135,7 @@ public final class CollectionUtils
 		}
 
 		final Set<T> set = new HashSet<>(arr.length);
-		for (final T e : arr)
-		{
-			set.add(e);
-		}
+		Collections.addAll(set, arr);
 
 		return set;
 	}
@@ -148,7 +145,6 @@ public final class CollectionUtils
 	 *
 	 * If there were more elements matching or no element was matching an exception will be thrown.
 	 *
-	 * @param collection
 	 * @param filter filter used to match the element
 	 * @return matching element; returns null ONLY if the element is null
 	 * @see de.metas.util.reducers.Reducers#singleValue()
@@ -157,10 +153,8 @@ public final class CollectionUtils
 	{
 		final List<T> result = new ArrayList<>();
 
-		final Iterator<T> it = collection.iterator();
-		while (it.hasNext())
+		for (final T e : collection)
 		{
-			final T e = it.next();
 			if (filter.test(e))
 			{
 				result.add(e);
@@ -176,7 +170,6 @@ public final class CollectionUtils
 	 *
 	 * If the collection has more elements or no element then an exception will be thrown.
 	 *
-	 * @param collection
 	 * @return element; returns null ONLY if the element is null
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
@@ -191,10 +184,9 @@ public final class CollectionUtils
 	 *
 	 * If the collection has more elements or no element then <code>null</code> will be returned.
 	 *
-	 * @param collection
-	 * @return element
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
+	@Nullable
 	public static <T> T singleElementOrNull(final Collection<T> collection)
 	{
 		final T defaultValue = null;
@@ -206,12 +198,11 @@ public final class CollectionUtils
 	 *
 	 * If the collection has more elements or no element then <code>defaultValue</code> will be returned.
 	 *
-	 * @param collection
 	 * @param defaultValue value to be returned in case there are more then one elements or no element
-	 * @return element
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
-	public static <T> T singleElementOrDefault(final Collection<T> collection, final T defaultValue)
+	@Nullable
+	public static <T> T singleElementOrDefault(final Collection<T> collection, @Nullable final T defaultValue)
 	{
 		if (collection == null)
 		{
@@ -244,6 +235,7 @@ public final class CollectionUtils
 	/**
 	 * @see de.metas.util.reducers.Reducers#singleValue()
 	 */
+	@Nullable
 	public static <T, R> R extractSingleElementOrDefault(
 			@NonNull final Collection<T> collection,
 			@NonNull final Function<T, R> extractFuntion,
@@ -291,10 +283,11 @@ public final class CollectionUtils
 	/**
 	 * Converts the element of given <code>list</code> of type <code>InputType</code> to a list of <code>OutputType</code> by using given <code>converter</code>.
 	 *
-	 * @param list input list (i.e. list to convert)
-	 * @param converter converter to be used to convert elements
+	 * @param collection input list (i.e. list to convert)
+	 * @param extractFuntion converter to be used to convert elements
 	 * @return list of OutputTypes.
 	 */
+	@Nullable
 	public static <R, T> ImmutableList<R> convert(
 			@Nullable final Collection<T> collection,
 			@NonNull final Function<T, R> extractFuntion)
@@ -315,10 +308,9 @@ public final class CollectionUtils
 	 *
 	 * NOTE: this method is NOT checking if the set is null or empty.
 	 *
-	 * @param set
-	 * @return firt element
+	 * @return the removed first element
 	 */
-	public static <T> T removeFirst(final Set<T> set)
+	public static <T> T removeFirst(@NonNull final Set<T> set)
 	{
 		final Iterator<T> it = set.iterator();
 		final T element = it.next();

@@ -34,19 +34,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
-import de.metas.document.dimension.DimensionFactory;
-import de.metas.document.dimension.DimensionService;
-import de.metas.document.dimension.InOutLineDimensionFactory;
-import de.metas.document.dimension.InvoiceLineDimensionFactory;
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
-import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IParams;
-import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.X_AD_User;
@@ -54,7 +48,6 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageParamDAO;
@@ -184,7 +177,7 @@ public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 
 		//
 		// Make sure the current user is configured to receive notifications
-		final I_AD_User user = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User user = InterfaceWrapperHelper.newInstance(I_AD_User.class);
 		user.setAD_User_ID(0);
 		user.setNotificationType(X_AD_User.NOTIFICATIONTYPE_Notice);
 		InterfaceWrapperHelper.save(user);

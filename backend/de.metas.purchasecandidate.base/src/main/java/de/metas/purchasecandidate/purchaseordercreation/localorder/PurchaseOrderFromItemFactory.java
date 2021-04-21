@@ -109,13 +109,17 @@ import java.util.Set;
 				.orderLineByProductAndUom(
 						purchaseOrderItem.getProductId(),
 						UomId.ofRepoId(purchaseOrderItem.getUomId()))
-				.orElseGet(() -> orderFactory
-						.newOrderLine())
-						.productId(purchaseOrderItem.getProductId());
+				.orElseGet(orderFactory::newOrderLine)
+				.productId(purchaseOrderItem.getProductId());
 
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
 
 		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
+		if (purchaseOrderItem.getDiscount() != null)
+		{
+			orderLineBuilder.manualDiscount(purchaseOrderItem.getDiscount().toBigDecimal());
+		}
+		orderLineBuilder.manualPrice(purchaseOrderItem.getPrice());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}

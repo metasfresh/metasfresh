@@ -502,7 +502,7 @@ public class WFActivity
 			@NonNull final DocumentToApproveRequest document)
 	{
 		final DocumentApprovalConstraint docApprovalConstraints = role.getConstraint(DocumentApprovalConstraint.class)
-				.or(DocumentApprovalConstraint.DEFAULT);
+				.orElse(DocumentApprovalConstraint.DEFAULT);
 
 		final boolean ownDocument = UserId.equals(document.getDocumentOwnerId(), userId);
 		if (ownDocument && !docApprovalConstraints.canApproveOwnDoc())

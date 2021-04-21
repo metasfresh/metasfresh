@@ -1,32 +1,34 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.ui.web.devices.JSONDeviceDescriptor;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.FieldType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiModel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * #%L
@@ -70,7 +72,7 @@ public final class JSONDocumentLayoutElementField
 
 	/**
 	 * Optional property used to address special cases. Most fields don't need it.
-	 *
+	 * <p>
 	 * Please keep in sync with {@link FieldType}
 	 */
 	@ApiModel("field-type")
@@ -82,7 +84,9 @@ public final class JSONDocumentLayoutElementField
 		 */
 		ActionButtonStatus,
 
-		/** See ActionButtonStatus. */
+		/**
+		 * See ActionButtonStatus.
+		 */
 		ActionButton,
 
 		/**
@@ -106,7 +110,7 @@ public final class JSONDocumentLayoutElementField
 			return jsonFieldType;
 		}
 
-		private static final Map<FieldType, JSONFieldType> fieldType2json = ImmutableMap.<FieldType, JSONFieldType> builder()
+		private static final Map<FieldType, JSONFieldType> fieldType2json = ImmutableMap.<FieldType, JSONFieldType>builder()
 				.put(FieldType.ActionButtonStatus, JSONFieldType.ActionButtonStatus)
 				.put(FieldType.ActionButton, JSONFieldType.ActionButton)
 				.put(FieldType.Tooltip, JSONFieldType.Tooltip)
@@ -117,7 +121,7 @@ public final class JSONDocumentLayoutElementField
 	/**
 	 * If one {@link DocumentLayoutElementDescriptor} has multiple fields,
 	 * then this tells the frontend how to render each particular "sub-widget".
-	 *
+	 * <p>
 	 * Please keep in sync with {@link LookupSource}.
 	 */
 	@ApiModel("lookup-source")
@@ -125,7 +129,9 @@ public final class JSONDocumentLayoutElementField
 	{
 		lookup, list,
 
-		/** This one is used for fields that are tooltips. Also see {@link FieldType#Tooltip}. */
+		/**
+		 * This one is used for fields that are tooltips. Also see {@link FieldType#Tooltip}.
+		 */
 		text;
 
 		@Nullable
@@ -143,7 +149,7 @@ public final class JSONDocumentLayoutElementField
 			return jsonLookupSource;
 		}
 
-		private static final Map<LookupSource, JSONLookupSource> lookupSource2json = ImmutableMap.<LookupSource, JSONLookupSource> builder()
+		private static final Map<LookupSource, JSONLookupSource> lookupSource2json = ImmutableMap.<LookupSource, JSONLookupSource>builder()
 				.put(LookupSource.list, list)
 				.put(LookupSource.lookup, lookup)
 				.put(LookupSource.text, text)
@@ -165,12 +171,16 @@ public final class JSONDocumentLayoutElementField
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String tooltipIconName;
 
-	/** Text to be displayed when the field is empty */
+	/**
+	 * Text to be displayed when the field is empty
+	 */
 	@JsonProperty("emptyText")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String emptyText;
 
-	/** Null Item's caption */
+	/**
+	 * Null Item's caption
+	 */
 	@JsonProperty("clearValueText")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String clearValueText;
@@ -187,6 +197,16 @@ public final class JSONDocumentLayoutElementField
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String newRecordCaption;
 
+	@JsonProperty("advSearchWindowId")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Nullable
+	private String advSearchWindowId;
+
+	@JsonProperty("advSearchCaption")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Nullable
+	private String advSearchCaption;
+
 	//
 	// Lookup
 	@JsonProperty("source")
@@ -200,6 +220,10 @@ public final class JSONDocumentLayoutElementField
 	@JsonProperty("lookupSearchStartDelayMillis")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final Integer lookupSearchStartDelayMillis;
+
+	@JsonIgnore
+	@Nullable
+	private final String lookupTableName;
 
 	//
 	// Zoom
@@ -240,11 +264,13 @@ public final class JSONDocumentLayoutElementField
 			lookupSearchStartDelayMillis = (int)fieldDescriptor.getLookupSearchStartDelay()
 					.orElseGet(jsonOpts::getDefaultLookupSearchStartDelay)
 					.toMillis();
+			lookupTableName = fieldDescriptor.getLookupTableName().orElse(null);
 		}
 		else
 		{
 			lookupSearchStringMinLength = null;
 			lookupSearchStartDelayMillis = null;
+			lookupTableName = null;
 		}
 
 		supportZoomInto = fieldDescriptor.isSupportZoomInto() ? Boolean.TRUE : null;
@@ -262,6 +288,8 @@ public final class JSONDocumentLayoutElementField
 			@JsonProperty("devices") final List<JSONDeviceDescriptor> devices,
 			@JsonProperty("newRecordWindowId") final String newRecordWindowId,
 			@JsonProperty("newRecordCaption") final String newRecordCaption,
+			@Nullable @JsonProperty("advSearchWindowId") final String advSearchWindowId,
+			@Nullable @JsonProperty("advSearchCaption") final String advSearchCaption,
 			//
 			@JsonProperty("source") final JSONLookupSource source,
 			@JsonProperty("lookupSearchStringMinLength") final Integer lookupSearchStringMinLength,
@@ -279,12 +307,15 @@ public final class JSONDocumentLayoutElementField
 
 		this.newRecordWindowId = newRecordWindowId;
 		this.newRecordCaption = newRecordCaption;
+		this.advSearchWindowId = advSearchWindowId;
+		this.advSearchCaption = advSearchCaption;
 
 		//
 		// Lookup
 		this.source = source;
 		this.lookupSearchStringMinLength = lookupSearchStringMinLength;
 		this.lookupSearchStartDelayMillis = lookupSearchStartDelayMillis;
+		this.lookupTableName = null;
 
 		this.supportZoomInto = supportZoomInto;
 	}
@@ -301,6 +332,7 @@ public final class JSONDocumentLayoutElementField
 				.add("clearValueText", clearValueText)
 				.add("actions", devices.isEmpty() ? null : devices)
 				.add("newRecordWindowId", newRecordWindowId)
+				.add("advSearchWindowId", advSearchWindowId)
 				.add("supportZoomInto", supportZoomInto)
 				.toString();
 	}
@@ -322,5 +354,41 @@ public final class JSONDocumentLayoutElementField
 		}
 
 		return newRecordDescriptorsProvider.getNewRecordEntityDescriptorIfAvailable(lookupTableName);
+	}
+
+	void setAdvSearchWindow(
+			final @NonNull WindowId windowId,
+			final @Nullable DetailId tabId,
+			final @NonNull JSONDocumentLayoutOptions jsonOpts)
+	{
+		if (lookupTableName == null)
+		{
+			return;
+		}
+
+		// avoid enabling advanced search assistant for included tabs,
+		// because atm frontend does not support it.
+		if (tabId != null)
+		{
+			return;
+		}
+
+		final AdvancedSearchDescriptorsProvider provider = jsonOpts.getAdvancedSearchDescriptorsProvider();
+		if (provider == null)
+		{
+			return;
+		}
+
+		final DocumentEntityDescriptor advancedSearchEntityDescriptor = provider.getAdvancedSearchDescriptorIfAvailable(lookupTableName);
+		if (advancedSearchEntityDescriptor != null)
+		{
+			advSearchWindowId = advancedSearchEntityDescriptor.getDocumentTypeId().toJson();
+			advSearchCaption = advancedSearchEntityDescriptor.getCaption().translate(jsonOpts.getAdLanguage());
+		}
+		else
+		{
+			advSearchWindowId = null;
+			advSearchCaption = null;
+		}
 	}
 }

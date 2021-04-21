@@ -1,6 +1,5 @@
 package de.metas.request.api.impl;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.common.util.time.SystemTime;
 import de.metas.inout.api.impl.QualityNoteDAO;
@@ -10,6 +9,7 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.request.api.IRequestBL;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Attribute;
@@ -244,9 +244,9 @@ public class RequestBLTest
 		return inout;
 	}
 
-	private I_AD_User createUser(final String name)
+	private org.compiere.model.I_AD_User createUser(final String name)
 	{
-		final I_AD_User user = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User user = newInstance(I_AD_User.class);
 		user.setName(name);
 		save(user);
 		return user;

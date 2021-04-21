@@ -1,6 +1,7 @@
 package de.metas.rest_api.utils;
 
 import static de.metas.util.Check.isEmpty;
+
 import java.util.Collection;
 
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ import de.metas.bpartner.GLN;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.BPartnerQuery.BPartnerQueryBuilder;
 import de.metas.organization.OrgId;
-import de.metas.common.rest_api.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonExternalId;
 import lombok.NonNull;
 
 /*
@@ -79,7 +80,8 @@ public class BPartnerQueryService
 		final BPartnerQueryBuilder query = BPartnerQuery.builder();
 		if (onlyOrgId != null)
 		{
-			query.onlyOrgId(onlyOrgId);
+			query.onlyOrgId(onlyOrgId)
+					.onlyOrgId(OrgId.ANY);
 		}
 
 		for (final BPartnerCompositeLookupKey bpartnerLookupKey : bpartnerLookupKeys)

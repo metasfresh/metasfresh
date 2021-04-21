@@ -8,6 +8,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.window.api.impl.ADWindowDAO;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -22,13 +23,14 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 public interface IADWindowDAO extends ISingletonService
 {
 
 	/**
 	 * Loads the given window (cached) and returns its name. Uses {@link org.compiere.util.Env#getCtx()} to get the context.
 	 *
-	 * @param adWindowId
 	 * @return the name for the given <code>AD_Window_ID</code> or <code>null</code> if the given ID is less or equal zero.
 	 */
 	ITranslatableString retrieveWindowName(AdWindowId adWindowId);
@@ -55,23 +57,20 @@ public interface IADWindowDAO extends ISingletonService
 
 	List<I_AD_Tab> retrieveTabs(final I_AD_Window adWindow);
 
-	void deleteTabsByWindowId(AdWindowId adWindowId);
-
 	void moveElementGroup(I_AD_UI_ElementGroup uiElementGroup, I_AD_UI_Column toUIColumn);
 
 	void moveElement(I_AD_UI_Element uiElement, I_AD_UI_ElementGroup toUIElementGroup);
 
 	/**
 	 * Retrieve the first tab of the given window (seqNo = 10)
-	 *
-	 * @param window
-	 * @return
 	 */
+	@Nullable
 	I_AD_Tab retrieveFirstTab(final AdWindowId adWindowId);
 
+	@Nullable
 	String getFirstTabWhereClause(@NonNull AdWindowId adWindowId);
 
-	void copyWindow(AdWindowId targetWindowId, AdWindowId sourceWindowId);
+	void copyWindow(@NonNull WindowCopyRequest request);
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
 
@@ -100,6 +99,7 @@ public interface IADWindowDAO extends ISingletonService
 	 *
 	 * @return never return {@code null}
 	 */
+	@Deprecated
 	AdWindowId getAdWindowId(String tableName, SOTrx soTrx, AdWindowId defaultValue);
 
 	List<I_AD_Tab_Callout> retrieveTabCallouts(AdTabId tabId);

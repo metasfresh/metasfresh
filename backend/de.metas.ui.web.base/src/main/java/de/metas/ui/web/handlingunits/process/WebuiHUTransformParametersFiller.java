@@ -22,6 +22,7 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.HUEditorView;
 import de.metas.ui.web.handlingunits.process.WebuiHUTransformCommand.ActionType;
 import de.metas.ui.web.handlingunits.util.WEBUI_ProcessHelper;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -347,9 +348,8 @@ public class WebuiHUTransformParametersFiller
 					.setCtxColumnName("M_HU_ID")
 					.setDisplayType(DisplayType.Search)
 					.buildForDefaultScope();
-			LookupDataSource dataSource = LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
-			final LookupValuesList result = dataSource.findEntities(context, context.getFilter(), context.getOffset(0), context.getLimit(10));
-			return result;
+			
+			return findEntries(lookupDescriptor, context);
 		}
 
 		return LookupValuesList.EMPTY;
@@ -403,13 +403,29 @@ public class WebuiHUTransformParametersFiller
 					.setCtxColumnName("M_HU_ID")
 					.setDisplayType(DisplayType.Search)
 					.buildForDefaultScope();
-			LookupDataSource dataSource = LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
-			final LookupValuesList result = dataSource.findEntities(context, context.getFilter(), context.getOffset(0), context.getLimit(10));
-			return result;
+			
+			return findEntries(lookupDescriptor, context);
 		}
 		else
 		{
 			return LookupValuesList.EMPTY;
+		}
+	}
+	
+	private LookupValuesList findEntries(
+			final LookupDescriptor lookupDescriptor,
+			final LookupDataSourceContext context)
+	{
+		LookupDataSource dataSource = LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
+
+		if(context.getIdToFilter() != null)
+		{
+			final LookupValue result = dataSource.findById(context.getIdToFilter());
+			return LookupValuesList.fromNullable(result);
+		}
+		else
+		{
+			return dataSource.findEntities(context, context.getFilter(), context.getOffset(0), context.getLimit(10));
 		}
 	}
 

@@ -30,6 +30,7 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import de.metas.tax.api.TaxId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -675,11 +676,11 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		final BPartnerLocationId taxBPartnerLocationId = io != null ? BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID())
 				: BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
 
-		final I_C_BPartner_Location toBPLocation = bpartnerDAO.getBPartnerLocationById(taxBPartnerLocationId);
+		final I_C_BPartner_Location toBPLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(taxBPartnerLocationId);
 
 		final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
 
-		final int taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
+		final TaxId taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
 				getCtx(),
 				fromCountryId, // countryFromId,
 				fromOrgId,
@@ -689,7 +690,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				isSOTrx,
 				true); // throwEx
 
-		if (taxId <= 0)
+		if (taxId == null)
 		{
 			final TaxNotFoundException ex = TaxNotFoundException.builder()
 					.taxCategoryId(taxCategoryId)
@@ -701,7 +702,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			log.error("No Tax found", ex);
 			return false;
 		}
-		setC_Tax_ID(taxId);
+		setC_Tax_ID(taxId.getRepoId());
 
 		return true;
 	}    // setTax

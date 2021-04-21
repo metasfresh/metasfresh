@@ -22,7 +22,13 @@
 
 package de.metas.edi.process;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.ZebraConfigId;
+import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.api.ZebraConfigRepository;
 import de.metas.edi.api.ZebraPrinterService;
+import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -31,29 +37,57 @@ import de.metas.report.ReportResultData;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class EDI_GenerateCSV_FileForSSCC_Labels extends JavaProcess implements IProcessPrecondition
 {
 	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
+	protected final ZebraConfigRepository zebraConfigRepository = SpringContextHolder.instance.getBean(ZebraConfigRepository.class);
 
-	@Override public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull IProcessPreconditionsContext context)
+	protected static final AdMessageKey MSG_DIFFERENT_ZEBRA_CONFIG_NOT_SUPPORTED = AdMessageKey.of("WEBUI_ZebraConfigError");
+
+	private final ZebraPrinterService zebraPrinterService = SpringContextHolder.instance.getBean(ZebraPrinterService.class);
+	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
+
+	@Override public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
 		if (context.getSelectionSize().isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
+		else  if (context.getSelectionSize().isMoreThanOneSelected())
+		{
+			final IQueryFilter<I_EDI_Desadv> selectedRecordsFilter = context.getQueryFilter(I_EDI_Desadv.class);
+			final int differentConfigsSize = queryBL
+					.createQueryBuilder(I_EDI_Desadv.class)
+					.filter(selectedRecordsFilter)
+					.create()
+					.list()
+					.stream()
+					.map(ediDesadv -> BPartnerId.ofRepoId(ediDesadv.getC_BPartner_ID()))
+					.map(bpartnerId -> zebraConfigRepository.retrieveZebraConfigId(bpartnerId, zebraConfigRepository.getDefaultZebraConfigId()))
+					.collect(Collectors.toSet())
+					.size();
+
+			if (differentConfigsSize > 1)
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(MSG_DIFFERENT_ZEBRA_CONFIG_NOT_SUPPORTED));
+			}
+
+		}
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	void generateCSV_FileForSSCC_Labels(final Collection<Integer> desadvLinePackIDsToPrint)
+	void generateCSV_FileForSSCC_Labels(final List<Integer> desadvLinePackIDsToPrint)
 	{
-		final ZebraPrinterService zebraPrinterService = SpringContextHolder.instance.getBean(ZebraPrinterService.class);
-
+		final BPartnerId bPartnerId = desadvDAO.retrieveBPartnerFromEdiDesadvPackId(desadvLinePackIDsToPrint.get(0));
+		final ZebraConfigId zebraConfigId = zebraConfigRepository.retrieveZebraConfigId(bPartnerId, zebraConfigRepository.getDefaultZebraConfigId());
 		final ReportResultData reportResultData = zebraPrinterService
-				.createCSV_FileForSSCC18_Labels(desadvLinePackIDsToPrint, getProcessInfo().getAD_Client_ID(), getProcessInfo().getAD_Org_ID(), getProcessInfo().getPinstanceId());
+				.createCSV_FileForSSCC18_Labels(desadvLinePackIDsToPrint, zebraConfigId, getProcessInfo().getPinstanceId());
 
 		getProcessInfo().getResult().setReportData(reportResultData);
 	}

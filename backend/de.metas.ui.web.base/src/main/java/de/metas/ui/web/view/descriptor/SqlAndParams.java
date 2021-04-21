@@ -1,21 +1,20 @@
 package de.metas.ui.web.view.descriptor;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.dao.sql.SqlParamsInliner;
+import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.Check;
-import lombok.NonNull;
-import lombok.Value;
 
 /*
  * #%L
@@ -40,26 +39,30 @@ import lombok.Value;
  */
 
 @Value
-public final class SqlAndParams
+public class SqlAndParams
 {
 	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static SqlAndParams of(final String sql)
+	public static SqlAndParams of(@NonNull final String sql)
 	{
-		final Object[] sqlParams = null;
-		return new SqlAndParams(sql, sqlParams);
+		return new SqlAndParams(sql, null);
 	}
 
-	public static SqlAndParams of(final CharSequence sql, final List<Object> sqlParams)
+	public static SqlAndParams of(@NonNull final CharSequence sql, @Nullable final List<Object> sqlParams)
 	{
 		final Object[] sqlParamsArray = sqlParams != null && !sqlParams.isEmpty() ? sqlParams.toArray() : null;
 		return new SqlAndParams(sql, sqlParamsArray);
 	}
 
-	public static final SqlAndParams of(final CharSequence sql, final Object... sqlParamsArray)
+	public static SqlAndParams of(@NonNull final CharSequence sql, @Nullable final SqlParamsCollector sqlParams)
+	{
+		return of(sql, sqlParams != null ? sqlParams.toLiveList() : null);
+	}
+
+	public static SqlAndParams of(final CharSequence sql, final Object... sqlParamsArray)
 	{
 		return new SqlAndParams(sql, sqlParamsArray);
 	}
@@ -133,8 +136,10 @@ public final class SqlAndParams
 		}
 	}
 
-	private final String sql;
-	private final List<Object> sqlParams;
+	private static final SqlParamsInliner sqlParamsInliner = SqlParamsInliner.builder().failOnError(true).build();
+
+	String sql;
+	List<Object> sqlParams;
 
 	private SqlAndParams(@NonNull final CharSequence sql, @Nullable final Object[] sqlParamsArray)
 	{
@@ -147,6 +152,7 @@ public final class SqlAndParams
 		return builder().append(this);
 	}
 
+	@Nullable
 	public Object[] getSqlParamsArray()
 	{
 		return sqlParams == null ? null : sqlParams.toArray();
@@ -160,6 +166,11 @@ public final class SqlAndParams
 	public boolean isEmpty()
 	{
 		return Check.isBlank(sql) && !hasParams();
+	}
+
+	public String toSqlStringInlineParams()
+	{
+		return sqlParamsInliner.inline(sql, sqlParams);
 	}
 
 	//
@@ -177,7 +188,9 @@ public final class SqlAndParams
 		{
 		}
 
-		/** @deprecated I think you wanted to call {@link #build()} */
+		/**
+		 * @deprecated I think you wanted to call {@link #build()}
+		 */
 		@Deprecated
 		public String toString()
 		{
@@ -222,13 +235,13 @@ public final class SqlAndParams
 			}
 		}
 
-		public Builder append(@NonNull final CharSequence sql, final Object... sqlParams)
+		public Builder append(@NonNull final CharSequence sql, @Nullable final Object... sqlParams)
 		{
 			final List<Object> sqlParamsList = sqlParams != null && sqlParams.length > 0 ? Arrays.asList(sqlParams) : null;
 			return append(sql, sqlParamsList);
 		}
 
-		public Builder append(@NonNull final CharSequence sql, final List<Object> sqlParams)
+		public Builder append(@NonNull final CharSequence sql, @Nullable final List<Object> sqlParams)
 		{
 			if (sql.length() > 0)
 			{

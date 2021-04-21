@@ -1,16 +1,12 @@
 package de.metas.elasticsearch.denormalizers.impl;
 
-import java.io.IOException;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.elasticsearch.denormalizers.IESValueDenormalizer;
+import lombok.ToString;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.elasticsearch.denormalizers.IESDenormalizer;
-import de.metas.elasticsearch.types.ESDataType;
-import de.metas.elasticsearch.types.ESIndexType;
-import lombok.ToString;
+import java.io.IOException;
+import java.util.Map;
 
 /*
  * #%L
@@ -35,15 +31,9 @@ import lombok.ToString;
  */
 
 @ToString
-final class AD_Ref_List_Denormalizer implements IESDenormalizer
+final class AD_Ref_List_Denormalizer implements IESValueDenormalizer
 {
-	public static final AD_Ref_List_Denormalizer of(final int AD_Reference_ID)
-	{
-		// TODO: use AD_Reference_ID to extract the AD_Ref_List.Name
-		return instance;
-	}
-
-	private static final transient AD_Ref_List_Denormalizer instance = new AD_Ref_List_Denormalizer();
+	public static final transient AD_Ref_List_Denormalizer instance = new AD_Ref_List_Denormalizer();
 
 	private static final String FIELDNAME_Value = "value";
 
@@ -52,15 +42,13 @@ final class AD_Ref_List_Denormalizer implements IESDenormalizer
 	}
 
 	@Override
-	public void appendMapping(final Object builderObj, final String fieldName) throws IOException
+	public void appendMapping(final XContentBuilder builder, final String fieldName) throws IOException
 	{
-		final XContentBuilder builder = ESDenormalizerHelper.extractXContentBuilder(builderObj);
 		//@formatter:off
 		builder.startObject(fieldName)
 				.startObject("properties")
 					.startObject(FIELDNAME_Value)
-						.field("type", ESDataType.String.getEsTypeAsString())
-						.field("index", ESIndexType.NotAnalyzed.getEsTypeAsString())
+						.field("type", ESDataType.Keyword.getEsTypeAsString())
 					.endObject()
 				.endObject()
 			.endObject();
@@ -68,7 +56,7 @@ final class AD_Ref_List_Denormalizer implements IESDenormalizer
 	}
 
 	@Override
-	public Map<String, Object> denormalize(final Object valueObj)
+	public Map<String, Object> denormalizeValue(final Object valueObj)
 	{
 		final ImmutableMap.Builder<String, Object> result = ImmutableMap.builder();
 

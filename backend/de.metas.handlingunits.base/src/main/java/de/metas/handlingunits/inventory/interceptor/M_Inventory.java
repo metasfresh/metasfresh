@@ -5,7 +5,6 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionBL;
 import de.metas.handlingunits.inventory.Inventory;
-import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.tabcallout.M_InventoryLineTabCallout;
 import de.metas.handlingunits.model.I_M_Inventory;
@@ -23,7 +22,6 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.mmovement.api.IMovementDAO;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_M_Inventory;
 import org.springframework.stereotype.Component;
@@ -91,17 +89,13 @@ public class M_Inventory
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)
 	public void checkHUTransformationBeforeReverseCorrect(final I_M_Inventory inventory)
 	{
-		final InventoryRepository inventoryRepository = SpringContextHolder.instance.getBean(InventoryRepository.class);
-		final Inventory invObj = inventoryRepository.toInventory(inventory);
-		invObj.getLines().forEach( line ->
-	    {
-			line.getInventoryLineHUs().forEach(hu -> {
-				if (!huTransactionBL.isLatestHUTrx(hu.getHuId(), TableRecordReference.of(I_M_InventoryLine.Table_Name, line.getId())))
-					{
-						throw new HUException("@InventoryReverseError@");
-					}
-			});
-		});
+		final Inventory invObj = inventoryLineRecordService.toInventory(inventory);
+		invObj.getLines().forEach(line -> line.getInventoryLineHUs().forEach(hu -> {
+			if (!huTransactionBL.isLatestHUTrx(hu.getHuId(), TableRecordReference.of(I_M_InventoryLine.Table_Name, line.getId())))
+			{
+				throw new HUException("@InventoryReverseError@");
+			}
+		}));
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REVERSECORRECT)

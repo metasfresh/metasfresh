@@ -1,39 +1,25 @@
 package de.metas.tax.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Objects;
-import java.util.Properties;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryAreaBL;
+import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
+import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.TaxNotFoundException;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -56,26 +42,19 @@ import org.compiere.model.X_C_TaxCategory;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.location.CountryId;
-import de.metas.location.ICountryAreaBL;
-import de.metas.location.ICountryDAO;
-import de.metas.location.ILocationDAO;
-import de.metas.location.LocationId;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.tax.api.TaxNotFoundException;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
 import org.slf4j.MDC;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class TaxBL implements de.metas.tax.api.ITaxBL
 {
@@ -97,13 +76,14 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	 * 07739: If that's not available, then throw an exception; don't attempt to retrieve the German tax because that method proved to return a wrong result
 	 */
 	@Override
-	public int getTax(final Properties ctx,
-			final Object model,
-			final TaxCategoryId taxCategoryId,
+	@NonNull
+	public TaxId getTaxNotNull(final Properties ctx,
+			@Nullable final Object model,
+			@Nullable final TaxCategoryId taxCategoryId,
 			final int productId,
 			@NonNull final Timestamp shipDate,
 			@NonNull final OrgId orgId,
-			final WarehouseId warehouseId,
+			@Nullable final WarehouseId warehouseId,
 			final int shipC_BPartner_Location_ID,
 			final boolean isSOTrx)
 	{
@@ -130,7 +110,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 			final I_C_BPartner_Location bpLocTo = loadOutOfTrx(shipC_BPartner_Location_ID, I_C_BPartner_Location.class);
 
-			final int taxIdForCategory = retrieveTaxIdForCategory(ctx,
+			final TaxId taxIdForCategory = retrieveTaxIdForCategory(ctx,
 					countryFromId,
 					orgId,
 					bpLocTo,
@@ -139,7 +119,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 					isSOTrx,
 					false // throwEx
 			);
-			if (taxIdForCategory > 0)
+			if (taxIdForCategory != null)
 			{
 				return taxIdForCategory;
 			}
@@ -162,8 +142,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		// 07814
 		// If we got here, it means that no tax was found to satisfy the conditions
 		// In this case, the Tax_Not_Found placeholder will be returned
-		final I_C_Tax taxNotFound = taxDAO.retrieveNoTaxFound(ctx);
-		return taxNotFound.getC_Tax_ID();
+		return TaxId.ofRepoId(TaxDAO.C_TAX_ID_NO_TAX_FOUND);
 	}
 
 	/**
@@ -173,7 +152,8 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	 * </ul>
 	 */
 	@Override
-	public int retrieveTaxIdForCategory(final Properties ctx,
+	@Nullable
+	public TaxId retrieveTaxIdForCategory(final Properties ctx,
 			final CountryId countryFromId,
 			final OrgId orgId,
 			@NonNull final I_C_BPartner_Location bpLocTo,
@@ -270,10 +250,10 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 					.build()
 					.setParameter("query", query.toString())
 					.throwOrLogWarning(throwEx, log);
-			return -1;
+			return null;
 		}
 
-		return taxId;
+		return TaxId.ofRepoId(taxId);
 	}
 
 	private int getGermanTax(final Properties ctx,
@@ -584,5 +564,18 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 
 		return taxCategoryId;
+	}
+
+	@NonNull
+	public Optional<TaxCategoryId> getTaxCategoryIdByInternalName(@NonNull final String internalName)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_TaxCategory.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_InternalName, internalName)
+				.create()
+				.firstOnlyOptional(I_C_TaxCategory.class)
+				.map(I_C_TaxCategory::getC_TaxCategory_ID)
+				.map(TaxCategoryId::ofRepoId);
 	}
 }

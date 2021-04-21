@@ -1,16 +1,20 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
-import org.compiere.model.I_C_UOM;
-
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.process.IProcessPrecondition;
+import de.metas.ui.web.picking.packageable.PackageableView;
+import de.metas.ui.web.picking.packageable.filters.ProductBarcodeFilterData;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.view.ViewId;
 import de.metas.util.Services;
+import org.compiere.model.I_C_UOM;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -36,6 +40,9 @@ import de.metas.util.Services;
 
 abstract class PickingSlotViewBasedProcess extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+
 	private I_M_ShipmentSchedule _shipmentSchedule; // lazy
 
 	@Override
@@ -44,10 +51,20 @@ abstract class PickingSlotViewBasedProcess extends ViewBasedProcessTemplate impl
 		return PickingSlotView.cast(super.getView());
 	}
 
+	protected PickingSlotView getPickingSlotView()
+	{
+		return getView();
+	}
+
 	@Override
 	protected final PickingSlotRow getSingleSelectedRow()
 	{
 		return PickingSlotRow.cast(super.getSingleSelectedRow());
+	}
+
+	protected final PickingSlotRow getSingleSelectedPickingSlotRow()
+	{
+		return getSingleSelectedRow();
 	}
 
 	protected final void invalidatePickingSlotsView()
@@ -55,14 +72,9 @@ abstract class PickingSlotViewBasedProcess extends ViewBasedProcessTemplate impl
 		invalidateView();
 	}
 
-	protected final void invalidatePackablesView()
-	{
-		invalidateParentView();
-	}
-
 	protected final ShipmentScheduleId getCurrentShipmentScheduleId()
 	{
-		return getView().getCurrentShipmentScheduleId();
+		return getPickingSlotView().getCurrentShipmentScheduleId();
 	}
 
 	protected final I_M_ShipmentSchedule getCurrentShipmentSchedule()
@@ -71,7 +83,6 @@ abstract class PickingSlotViewBasedProcess extends ViewBasedProcessTemplate impl
 		if (shipmentSchedule == null)
 		{
 			final ShipmentScheduleId shipmentScheduleId = getCurrentShipmentScheduleId();
-			final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 			_shipmentSchedule = shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		}
 		return shipmentSchedule;
@@ -80,8 +91,22 @@ abstract class PickingSlotViewBasedProcess extends ViewBasedProcessTemplate impl
 	protected final I_C_UOM getCurrentShipmentScheuduleUOM()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
-		final I_C_UOM uom = Services.get(IShipmentScheduleBL.class).getUomOfProduct(shipmentSchedule);
-		return uom;
+		return shipmentScheduleBL.getUomOfProduct(shipmentSchedule);
 	}
 
+	protected PackageableView getPackageableView()
+	{
+		final ViewId packageableViewId = getPickingSlotView().getParentViewId();
+		return PackageableView.cast(getViewsRepo().getView(packageableViewId));
+	}
+
+	protected final void invalidatePackablesView()
+	{
+		invalidateParentView();
+	}
+
+	protected Optional<ProductBarcodeFilterData> getBarcodeFilterData()
+	{
+		return Optional.ofNullable(getPackageableView().getBarcodeFilterData());
+	}
 }

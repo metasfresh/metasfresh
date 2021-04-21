@@ -67,7 +67,7 @@ public class MainRowWithSubRows
 		dimensionGroupSubRows.computeIfAbsent(dimensionSpecGroup, DimensionGroupSubRowBucket::create);
 	}
 
-	public void addEmptyCountingSubrowBucket(int plantId)
+	public void addEmptyCountingSubrowBucket(final int plantId)
 	{
 		countingSubRows.computeIfAbsent(plantId, CountingSubRowBucket::create);
 	}
@@ -77,16 +77,25 @@ public class MainRowWithSubRows
 			@NonNull final DimensionSpec dimensionSpec,
 			final boolean includePerPlantDetailRows)
 	{
+		boolean addedToAtLeastOneBucket = false;
 		if (cockpitRecord.getQtyOnHandCount().signum() != 0 || cockpitRecord.getPP_Plant_ID() > 0)
 		{
 			if (includePerPlantDetailRows)
 			{
 				addCockpitRecordToCounting(cockpitRecord);
+				addedToAtLeastOneBucket = true;
 			}
 		}
 		else
 		{
-			addCockpitRecordToDimensionGroups(cockpitRecord, dimensionSpec);
+			addedToAtLeastOneBucket = addCockpitRecordToDimensionGroups(cockpitRecord, dimensionSpec);
+		}
+
+		if (!addedToAtLeastOneBucket)
+		{
+			// we need at least one subRow-bucket, even if there is no qtyOnHandCount, no plant and our dimensionSpec is empty!
+			final DimensionGroupSubRowBucket fallbackBucket = dimensionGroupSubRows.computeIfAbsent(DimensionSpecGroup.OTHER_GROUP, DimensionGroupSubRowBucket::create);
+			fallbackBucket.addCockpitRecord(cockpitRecord);
 		}
 		mainRow.addDataRecord(cockpitRecord);
 	}
@@ -97,7 +106,10 @@ public class MainRowWithSubRows
 		countingSubRow.addCockpitRecord(stockEstimate);
 	}
 
-	private void addCockpitRecordToDimensionGroups(
+	/**
+	 * @return true if there was at least one {@link DimensionGroupSubRowBucket} to which the given dataRecord could be added.
+	 */
+	private boolean addCockpitRecordToDimensionGroups(
 			@NonNull final I_MD_Cockpit dataRecord,
 			@NonNull final DimensionSpec dimensionSpec)
 	{
@@ -106,6 +118,7 @@ public class MainRowWithSubRows
 		final AttributesKey attributesKey = AttributesKey.ofString(dataRecord.getAttributesKey());
 		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(attributesKey, dimensionSpec);
 		subRowBuckets.forEach(bucket -> bucket.addCockpitRecord(dataRecord));
+		return !subRowBuckets.isEmpty();
 	}
 
 	private void assertProductIdAndDateOfDataRecord(@NonNull final I_MD_Cockpit dataRecord)
@@ -163,11 +176,20 @@ public class MainRowWithSubRows
 			@NonNull final DimensionSpec dimensionSpec,
 			final boolean includePerPlantDetailRows)
 	{
+		boolean addedToAtLeastOneBucket = false;
 		if (includePerPlantDetailRows)
 		{
 			addStockRecordToCounting(stockRecord);
+			addedToAtLeastOneBucket = true;
 		}
-		addStockRecordToDimensionGroups(stockRecord, dimensionSpec);
+		addedToAtLeastOneBucket = addStockRecordToDimensionGroups(stockRecord, dimensionSpec) || addedToAtLeastOneBucket;
+
+		if (!addedToAtLeastOneBucket)
+		{
+			// we need at least one subRow-bucket, even if there is no qtyOnHandCount, no plant and our dimensionSpec is empty!
+			final DimensionGroupSubRowBucket fallbackBucket = dimensionGroupSubRows.computeIfAbsent(DimensionSpecGroup.OTHER_GROUP, DimensionGroupSubRowBucket::create);
+			fallbackBucket.addStockRecord(stockRecord);
+		}
 
 		mainRow.addStockRecord(stockRecord);
 	}
@@ -179,13 +201,18 @@ public class MainRowWithSubRows
 		countingSubRow.addStockRecord(stockRecord);
 	}
 
-	private void addStockRecordToDimensionGroups(
+	/**
+	 * @return true if there was at least one {@link DimensionGroupSubRowBucket} to which the given dataRecord could be added.
+	 */
+	private boolean addStockRecordToDimensionGroups(
 			@NonNull final I_MD_Stock dataRecord,
 			@NonNull final DimensionSpec dimensionSpec)
 	{
 		final AttributesKey attributesKey = AttributesKey.ofString(dataRecord.getAttributesKey());
 		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(attributesKey, dimensionSpec);
 		subRowBuckets.forEach(bucket -> bucket.addStockRecord(dataRecord));
+
+		return !subRowBuckets.isEmpty();
 	}
 
 	public MaterialCockpitRow createMainRowWithSubRows()

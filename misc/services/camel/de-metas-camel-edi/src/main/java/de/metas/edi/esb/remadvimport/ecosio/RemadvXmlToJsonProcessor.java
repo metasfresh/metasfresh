@@ -30,9 +30,9 @@ import at.erpel.schemas._1p0.documents.extensions.edifact.REMADVListLineItemExte
 import at.erpel.schemas._1p0.messaging.header.DateTimeType;
 import at.erpel.schemas._1p0.messaging.message.ErpelMessageType;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceRequest;
-import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdvice;
-import de.metas.common.rest_api.remittanceadvice.JsonRemittanceAdviceLine;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRequest;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdvice;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;

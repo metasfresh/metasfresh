@@ -71,5 +71,10 @@
     ],
     "queryLimit": 5000,
     "type": "540345"
+  },
+  "data3_payments": {
+    "includedViewId": "invoicesToAllocate-OY",
+    "includedWindowId": "invoicesToAllocate",
+    "includedParentWindowId": "540759"
   }
 }

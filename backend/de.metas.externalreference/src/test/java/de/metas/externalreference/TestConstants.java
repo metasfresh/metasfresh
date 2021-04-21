@@ -32,6 +32,7 @@ public interface TestConstants
 {
 	String MOCK_EXTERNAL_PROJECT_OWNER = "externalProjectOwner";
 	String MOCK_EXTERNAL_REFERENCE = "externalReference";
+	String MOCK_EXTERNAL_REFERENCE_VERSION = "externalReferenceVersion";
 	IExternalReferenceType MOCK_EXTERNAL_REFERENCE_TYPE = new PlainExternalReferenceType("code", "tableName");
 
 	IExternalSystem MOCK_EXTERNAL_SYSTEM = new PlainExternalSystem("Github");

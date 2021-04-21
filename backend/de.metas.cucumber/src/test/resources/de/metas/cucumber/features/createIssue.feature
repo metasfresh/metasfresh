@@ -3,11 +3,11 @@ Feature: issue creation using metasfresh api
   I want want to be able to create issues
 
   Background:
-    Given the existing user has a valid API token
-    And I_AD_PInstance with id '9999999' is created
+    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And I_AD_PInstance with id '123123' is created
 
   Scenario: The request is good and the issue is created
-    When the metasfresh REST-API endpoint for issue creation receives a request with the payload
+    When the metasfresh REST-API endpoint path 'api/externalsystem/123123/externalstatus/error' receives a 'POST' request with the payload
 """
 {
 	"errors": [

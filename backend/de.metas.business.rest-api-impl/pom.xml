@@ -15,7 +15,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <migration-sql-basedir></migration-sql-basedir>
+        <migration-sql-basedir/>
         <metasfresh.version>10.0.0</metasfresh.version>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
@@ -30,6 +30,12 @@
         <dependency>
             <groupId>de.metas.salescandidate</groupId>
             <artifactId>de.metas.salescandidate.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.purchasecandidate</groupId>
+            <artifactId>de.metas.purchasecandidate.base</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
 
@@ -99,6 +105,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
             <groupId>de.metas.business</groupId>
             <artifactId>de.metas.business</artifactId>
             <version>${metasfresh.version}</version>
@@ -121,6 +134,30 @@
             <groupId>de.metas.externalreference</groupId>
             <artifactId>de.metas.externalreference</artifactId>
             <version>${metasfresh.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.externalsystem</groupId>
+            <artifactId>de.metas.externalsystem</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.vertical.healthcare.alberta</groupId>
+            <artifactId>de.metas.vertical.healthcare.alberta</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.product</groupId>
+            <artifactId>de-metas-common-product</artifactId>
+            <version>${metasfresh-common.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.pricing</groupId>
+            <artifactId>de-metas-common-pricing</artifactId>
+            <version>${metasfresh-common.version}</version>
             <scope>compile</scope>
         </dependency>
 

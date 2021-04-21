@@ -72,7 +72,7 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 	private final PurchaseCandidateRepository purchaseCandidateRepo = SpringContextHolder.instance.getBean(PurchaseCandidateRepository.class);
 	private final VendorGatewayInvokerFactory vendorGatewayInvokerFactory = SpringContextHolder.instance.getBean(VendorGatewayInvokerFactory.class);
 
-	public static void enqueue(final Collection<PurchaseCandidateId> purchaseCandidateIds)
+	public static void enqueue(@NonNull final Collection<PurchaseCandidateId> purchaseCandidateIds)
 	{
 		enqueue(purchaseCandidateIds, null);
 	}
@@ -116,7 +116,7 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage_IGNORED, final String localTrxName_IGNORED)
 	{
 		final BigDecimal docTypeRepoId = getParameters().getParameterAsBigDecimal(DOC_TYPE_ID);
 		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(docTypeRepoId != null ? docTypeRepoId.intValue() : 0);

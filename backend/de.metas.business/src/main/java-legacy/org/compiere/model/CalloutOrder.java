@@ -16,7 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
@@ -339,9 +338,9 @@ public class CalloutOrder extends CalloutEngine
 
 		final boolean IsSOTrx = order.isSOTrx();
 		// #928: Make sure the user is of the right SOTrx value and it is set as default for that SOTrx value.
-		final String userFlag = IsSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact : I_AD_User.COLUMNNAME_IsPurchaseContact;
+		final String userFlag = IsSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact : org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact;
 
-		final String defaultUserFlag = IsSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact_Default : I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
+		final String defaultUserFlag = IsSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact_Default : org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
 
 		// task FRESH-152: Joining with the BPartner Stats.
 		// will use the table and column names so if somebody wants to know the references of the stats table, he will also get here
@@ -372,7 +371,7 @@ public class CalloutOrder extends CalloutEngine
 				// 08578 take default users first.
 				// #928: The IsDefaultContact is no longer important
 				// + " , c." + I_AD_User.COLUMNNAME_IsDefaultContact + " DESC"
-				+ " , c." + I_AD_User.COLUMNNAME_AD_User_ID + " ASC "; // #1
+				+ " , c." + org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID + " ASC "; // #1
 		final Object[] sqlParams = new Object[] { C_BPartner_ID };
 
 		PreparedStatement pstmt = null;
@@ -664,9 +663,9 @@ public class CalloutOrder extends CalloutEngine
 		// #928: Make sure the user is of the right SOTrx value and it is set as default for that SOTrx value.
 
 		final boolean isSOTrx = order.isSOTrx();
-		final String userFlag = isSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact : I_AD_User.COLUMNNAME_IsPurchaseContact;
+		final String userFlag = isSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact : org.compiere.model.I_AD_User.COLUMNNAME_IsPurchaseContact;
 
-		final String defaultUserFlag = isSOTrx ? I_AD_User.COLUMNNAME_IsSalesContact_Default : I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
+		final String defaultUserFlag = isSOTrx ? org.compiere.model.I_AD_User.COLUMNNAME_IsSalesContact_Default : I_AD_User.COLUMNNAME_IsPurchaseContact_Default;
 
 		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ "p.M_PriceList_ID,p.PaymentRule,p.POReference,"

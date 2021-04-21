@@ -29,7 +29,7 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.email.EMail;
 import de.metas.email.EMailCustomType;
 import de.metas.email.MailService;
@@ -269,7 +269,7 @@ public class NotificationSenderTemplate
 			return Optional.empty();
 		}
 
-		final RecordZoomWindowFinder recordWindowFinder = RecordZoomWindowFinder.newInstance(targetRecordAction.getRecord());
+		final RecordWindowFinder recordWindowFinder = RecordWindowFinder.newInstance(targetRecordAction.getRecord());
 		return recordWindowFinder.findAdWindowId();
 	}
 

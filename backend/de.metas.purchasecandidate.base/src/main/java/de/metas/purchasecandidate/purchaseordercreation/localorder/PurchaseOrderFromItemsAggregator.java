@@ -43,12 +43,12 @@ import java.util.List;
 public class PurchaseOrderFromItemsAggregator
 		extends MapReduceAggregator<PurchaseOrderFromItemFactory, PurchaseOrderItem>
 {
-	public static final PurchaseOrderFromItemsAggregator newInstance()
+	public static PurchaseOrderFromItemsAggregator newInstance()
 	{
 		return new PurchaseOrderFromItemsAggregator();
 	}
 
-	public static final PurchaseOrderFromItemsAggregator newInstance(@Nullable DocTypeId docType)
+	public static PurchaseOrderFromItemsAggregator newInstance(@Nullable final DocTypeId docType)
 	{
 		return new PurchaseOrderFromItemsAggregator(docType);
 	}
@@ -65,7 +65,7 @@ public class PurchaseOrderFromItemsAggregator
 	}
 
 	@VisibleForTesting
-	PurchaseOrderFromItemsAggregator(@Nullable DocTypeId docType)
+	PurchaseOrderFromItemsAggregator(@Nullable final DocTypeId docType)
 	{
 		setItemAggregationKeyBuilder(PurchaseOrderAggregationKey::fromPurchaseOrderItem);
 		this.docType = docType;
@@ -86,7 +86,7 @@ public class PurchaseOrderFromItemsAggregator
 	}
 
 	@Override
-	protected void closeGroup(final PurchaseOrderFromItemFactory orderFactory)
+	protected void closeGroup(@NonNull final PurchaseOrderFromItemFactory orderFactory)
 	{
 		final I_C_Order newPurchaseOrder = orderFactory.createAndComplete();
 		createdPurchaseOrders.add(newPurchaseOrder);

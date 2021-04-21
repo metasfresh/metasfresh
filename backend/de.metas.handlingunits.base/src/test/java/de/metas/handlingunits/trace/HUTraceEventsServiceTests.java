@@ -15,6 +15,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,7 +25,6 @@ import org.mockito.Mockito;
 import com.google.common.collect.ImmutableList;
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -91,12 +91,12 @@ public class HUTraceEventsServiceTests
 	@Test
 	public void createAndAddEventsWithTwoLUs()
 	{
-		final I_AD_User user1 = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User user1 = newInstance(I_AD_User.class);
 		user1.setLogin("user");
 		user1.setName("we-just-need-some-record-as-a-reference");
 		save(user1);
 
-		final I_AD_User user2 = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User user2 = newInstance(I_AD_User.class);
 		user2.setLogin("user2");
 		user1.setName("we-just-need-some-record-as-a-reference");
 		save(user2);

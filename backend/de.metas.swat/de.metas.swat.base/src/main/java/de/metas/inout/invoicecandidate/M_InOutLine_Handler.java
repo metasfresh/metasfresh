@@ -40,6 +40,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -380,7 +381,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final Timestamp shipDate = inOut.getMovementDate();
 		final int locationId = inOut.getC_BPartner_Location_ID();
 
-		final int taxId = Services.get(ITaxBL.class).getTax(
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
 				icRecord,
 				taxCategoryId,
@@ -390,7 +391,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
 				locationId, // shipC_BPartner_Location_ID
 				isSOTrx);
-		icRecord.setC_Tax_ID(taxId);
+		icRecord.setC_Tax_ID(taxId.getRepoId());
 
 		//
 		// Save the Invoice Candidate, so that we can use it's ID further down

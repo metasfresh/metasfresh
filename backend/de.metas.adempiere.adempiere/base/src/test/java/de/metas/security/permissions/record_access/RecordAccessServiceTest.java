@@ -1,13 +1,14 @@
 package de.metas.security.permissions.record_access;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-
-import java.util.Optional;
-
+import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogsRepository;
+import de.metas.security.Principal;
+import de.metas.security.RoleId;
+import de.metas.security.permissions.Access;
+import de.metas.user.UserGroupRepository;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -21,15 +22,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.event.impl.PlainEventBusFactory;
-import de.metas.event.log.EventLogService;
-import de.metas.security.Principal;
-import de.metas.security.RoleId;
-import de.metas.security.permissions.Access;
-import de.metas.user.UserGroupRepository;
-import de.metas.user.UserId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 /*
  * #%L
@@ -68,7 +66,6 @@ public class RecordAccessServiceTest
 		AdempiereTestHelper.get().init();
 
 		SpringContextHolder.registerJUnitBean(new EventLogService(mock(EventLogsRepository.class)));
-		final PlainEventBusFactory eventBusFactory = new PlainEventBusFactory();
 
 		createAD_Role_Record_Access_Config("MyTable");
 		// final ImmutableList<RecordAccessHandler> handlers = ImmutableList.of(
@@ -76,11 +73,12 @@ public class RecordAccessServiceTest
 		this.configs = new RecordAccessConfigService(Optional.empty());
 
 		recordAccessService = new RecordAccessService(
+				new RecordAccessRepository(),
 				configs,
-				new UserGroupRepository(),
-				eventBusFactory);
+				new UserGroupRepository());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void createAD_Role_Record_Access_Config(@NonNull final String tableName)
 	{
 		final I_AD_Role_Record_Access_Config config = newInstance(I_AD_Role_Record_Access_Config.class);
@@ -90,9 +88,10 @@ public class RecordAccessServiceTest
 		saveRecord(config);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private AbstractBooleanAssert<?> assertHasPermission(
 			@NonNull final TableRecordReference recordRef,
-			@NonNull Access access)
+			@NonNull final Access access)
 	{
 		return assertThat(recordAccessService.hasRecordPermission(userId, roleId, recordRef, access));
 	}

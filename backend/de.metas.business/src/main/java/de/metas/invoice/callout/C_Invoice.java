@@ -1,10 +1,19 @@
 package de.metas.invoice.callout;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.time.ZonedDateTime;
-
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.payment.PaymentRule;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
@@ -17,19 +26,9 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.document.sequence.impl.IDocumentNoInfo;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
-import de.metas.payment.PaymentRule;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.service.IPriceListBL;
-import de.metas.util.Services;
+import java.time.ZonedDateTime;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 @Callout(I_C_Invoice.class)
 @Component
@@ -49,7 +48,7 @@ public class C_Invoice
 			return;
 		}
 
-		if (invoice.getC_BPartner_ID()<=0)
+		if (invoice.getC_BPartner_ID() <= 0)
 		{
 			return;
 		}
@@ -94,7 +93,7 @@ public class C_Invoice
 			dateInvoiced = SystemTime.asZonedDateTime();
 		}
 
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
 
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 		final I_M_PriceList priceListNew = priceListBL.getCurrentPricelistOrNull(
@@ -146,5 +145,11 @@ public class C_Invoice
 
 		//
 		Services.get(IInvoiceBL.class).updateDescriptionFromDocTypeTargetId(invoice, null, null);
+	}
+
+	@CalloutMethod(columnNames = I_C_Invoice.COLUMNNAME_DateInvoiced )
+	public void updateFromDateInvoiced(final I_C_Invoice invoice, final ICalloutField field)
+	{
+		invoice.setDateAcct(invoice.getDateInvoiced());
 	}
 }

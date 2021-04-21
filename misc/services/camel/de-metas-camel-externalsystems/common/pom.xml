@@ -55,17 +55,10 @@
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>de.metas.common.bpartner</groupId>
             <artifactId>de-metas-common-bpartner</artifactId>
             <version>${metasfresh-common.version}</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
         </dependency>
     </dependencies>
 

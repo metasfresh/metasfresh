@@ -34,7 +34,7 @@ import lombok.NonNull;
  * Constraint used to determine if the UI elements (windows, tabs, fields, menu, processes etc) shall be displayed in UI.
  * 
  * @author metas-dev <dev@metasfresh.com>
- * @task http://dewiki908/mediawiki/index.php/09474_make_entity_type_disableable_and_hidable_for_certains_roles_%28107519600505%29
+ * Task http://dewiki908/mediawiki/index.php/09474_make_entity_type_disableable_and_hidable_for_certains_roles_%28107519600505%29
  */
 public final class UIDisplayedEntityTypes extends Constraint
 {
@@ -78,7 +78,7 @@ public final class UIDisplayedEntityTypes extends Constraint
 	{
 		final UIDisplayedEntityTypes constraint = role
 				.getConstraint(UIDisplayedEntityTypes.class)
-				.orNull();
+				.orElse(null);
 
 		// If no constraint => return default (true)
 		if (constraint == null)
@@ -105,7 +105,6 @@ public final class UIDisplayedEntityTypes extends Constraint
 	}
 
 	/**
-	 * @param entityType
 	 * @return true if UI elements for given entity type shall be displayed
 	 */
 	public boolean isDisplayedInUI(final String entityType)

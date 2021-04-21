@@ -26,6 +26,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.servicerepair.customerreturns.WarrantyCase;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.uom.UomId;
@@ -47,6 +48,7 @@ public class CreateProjectCostCollectorRequest
 
 	@NonNull ProductId productId;
 	@NonNull AttributeSetInstanceId asiId;
+	@NonNull WarrantyCase warrantyCase;
 	@NonNull Quantity qtyReserved;
 	@NonNull Quantity qtyConsumed;
 
@@ -60,6 +62,7 @@ public class CreateProjectCostCollectorRequest
 			@NonNull final ServiceRepairProjectCostCollectorType type,
 			@NonNull final ProductId productId,
 			@Nullable final AttributeSetInstanceId asiId,
+			@Nullable final WarrantyCase warrantyCase,
 			@Nullable final Quantity qtyReserved,
 			@Nullable final Quantity qtyConsumed,
 			@Nullable final HuId reservedVhuId,
@@ -75,6 +78,7 @@ public class CreateProjectCostCollectorRequest
 		this.type = type;
 		this.productId = productId;
 		this.asiId = asiId != null ? asiId : AttributeSetInstanceId.NONE;
+		this.warrantyCase = warrantyCase != null ? warrantyCase : WarrantyCase.NO;
 		this.qtyReserved = qtyReserved != null ? qtyReserved : qtyFirstNotNull.toZero();
 		this.qtyConsumed = qtyConsumed != null ? qtyConsumed : qtyFirstNotNull.toZero();
 		this.reservedVhuId = reservedVhuId;

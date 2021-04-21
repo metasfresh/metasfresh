@@ -10,15 +10,15 @@ Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
       | pmp_1      | p_1                     |
     And metasfresh contains C_BPartners:
       | Identifier | Name                   | OPT.IsVendor | OPT.IsCustomer | OPT.AD_Language |
-      | bpartner_1 | ProcurementPartner1    | Y            | Y              | de_DE           |
-      | bpartner_2 | ProcurementPartner2    | Y            | N              | de_DE           |
-      | bpartner_3 | NotAProcurementPartner | N            | Y              | de_DE           |
+      | bpartner_1 | ProcurementPartner1    | Y            | Y              | en_US           |
+      | bpartner_2 | ProcurementPartner2    | Y            | N              | en_US           |
+      | bpartner_3 | NotAProcurementPartner | N            | Y              | en_US           |
     And metasfresh contains AD_Users:
       | C_BPartner_ID.Identifier | Name         | OPT.EMail     | OPT.Password | OPT.AD_Language | OPT.IsMFProcurementUser | OPT.ProcurementPassword |
-      | bpartner_1               | user1_1_name | user1_1@email | password1_1  | en_US           | Y                       | procurementPW1_1        |
-      | bpartner_1               | user1_2_name | user1_2@email | password1_2  | en_US           | Y                       | procurementPW1_2        |
-      | bpartner_2               | user2_1_name | user2_1@email | password2_1  | en_US           | Y                       | procurementPW2_1        |
-      | bpartner_3               | user3_1_name | user3_1@email | password3_1  | en_US           | Y                       | procurementPW3_1        |
+      | bpartner_1               | user1_1_name | user1_1@email | password1_1  | de_DE           | Y                       | procurementPW1_1        |
+      | bpartner_1               | user1_2_name | user1_2@email | password1_2  | de_DE           | Y                       | procurementPW1_2        |
+      | bpartner_2               | user2_1_name | user2_1@email | password2_1  | de_DE           | Y                       | procurementPW2_1        |
+      | bpartner_3               | user3_1_name | user3_1@email | password3_1  | de_DE           | Y                       | procurementPW3_1        |
     And metasfresh contains procurement C_Flatrate_Terms:
       | Identifier | Bill_BPartner_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.PMM_Product_ID.Identifier | StartDate  | EndDate    |
       | c1         | bpartner_1                  | bpartner_1                          | p_1                         | pmp_1                         | 2020-01-01 | 2021-01-31 |

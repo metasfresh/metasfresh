@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import de.metas.tax.api.TaxId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -316,9 +317,9 @@ public class MOrderLine extends X_C_OrderLine
 		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
 
 		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(getC_BPartner_ID(), getC_BPartner_Location_ID());
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationById(bpLocationId);
+		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(bpLocationId);
 
-		final int taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
+		final TaxId taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
 				getCtx(),
 				countryFromId,
 				OrgId.ofRepoId(getAD_Org_ID()),
@@ -328,10 +329,12 @@ public class MOrderLine extends X_C_OrderLine
 				getParent().isSOTrx(),
 				true); // throwEx
 
-		setC_Tax_ID(taxId);
-
-		final I_C_Tax tax = InterfaceWrapperHelper.create(getCtx(), taxId, I_C_Tax.class, ITrx.TRXNAME_None);
-		setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+		setC_Tax_ID(TaxId.toRepoId(taxId));
+		if (taxId != null)
+		{
+			final I_C_Tax tax = InterfaceWrapperHelper.create(getCtx(), taxId.getRepoId(), I_C_Tax.class, ITrx.TRXNAME_None);
+			setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+		}
 	}	// setTax
 
 	/**

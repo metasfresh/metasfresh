@@ -4,10 +4,11 @@ import { push } from 'react-router-redux';
 import { Set as iSet } from 'immutable';
 import currentDevice from 'current-device';
 import { get, debounce } from 'lodash';
-import deepUnfreeze from 'deep-unfreeze';
+
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
 import { locationSearchRequest, getViewRowsByIds } from '../api';
 import { connectWS, disconnectWS } from '../utils/websockets';
+import { deepUnfreeze } from '../utils';
 
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
@@ -246,6 +247,7 @@ class DocumentListContainer extends Component {
                 viewId,
                 selectedIds: table.selected,
                 viewProfileId,
+                isModal,
               });
             }
 
@@ -636,10 +638,13 @@ class DocumentListContainer extends Component {
 
   /**
    * @method resetInitialFilters
-   * @summary ToDo: Describe the method.
+   * @summary resets the initial filters
+   * @param {string} filterId
+   * @param {string} parameterName
    */
   resetInitialFilters = (filterId, parameterName) => {
     let { initialValuesNulled } = this.state;
+
     let filterParams = initialValuesNulled.get(filterId);
 
     if (!filterParams && parameterName) {
@@ -649,9 +654,9 @@ class DocumentListContainer extends Component {
     }
 
     if (!parameterName) {
-      initialValuesNulled = initialValuesNulled.delete(filterId);
+      initialValuesNulled.delete(filterId);
     } else {
-      initialValuesNulled = initialValuesNulled.set(filterId, filterParams);
+      initialValuesNulled.set(filterId, filterParams);
     }
 
     this.setState({

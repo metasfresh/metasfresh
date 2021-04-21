@@ -193,4 +193,5 @@ public interface IProductBL extends ISingletonService
 	ProductId retrieveMappedProductIdOrNull(ProductId productId, OrgId orgId);
 
 	boolean isHaddexProduct(ProductId productId);
+
 }

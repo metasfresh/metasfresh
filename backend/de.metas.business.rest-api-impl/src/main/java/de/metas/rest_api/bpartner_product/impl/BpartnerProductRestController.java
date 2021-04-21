@@ -44,12 +44,13 @@ import io.swagger.annotations.ApiParam;
  */
 
 @RestController
-@RequestMapping(BpartnerProductRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/bpartnerProducts",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/bpartnerProducts",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bpartnerProducts" })
 //the spelling "Bpartner.." is to avoid swagger spelling it "b-partner-prod.."
 public class BpartnerProductRestController
 {
-	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartnerProducts";
-
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IBPartnerProductDAO bpartnerProductsRepo = Services.get(IBPartnerProductDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);

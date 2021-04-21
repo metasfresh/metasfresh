@@ -88,6 +88,9 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * This is the rest controller used when processes are invoked from the <b>WebUI</b>.
+ */
 @Api
 @RestController
 @RequestMapping(ProcessRestController.ENDPOINT)
@@ -152,7 +155,7 @@ public class ProcessRestController
 				.flatMap(repo -> repo.streamDocumentRelatedProcesses(preconditionsContext));
 	}
 
-	private final IProcessInstancesRepository getRepository(@NonNull final ProcessId processId)
+	private IProcessInstancesRepository getRepository(@NonNull final ProcessId processId)
 	{
 		final String processHandlerType = processId.getProcessHandlerType();
 		final IProcessInstancesRepository processInstanceRepo = pinstancesRepositoriesByHandlerType.get(processHandlerType);
@@ -175,7 +178,7 @@ public class ProcessRestController
 	{
 		final ProcessId processId = ProcessId.fromJson(adProcessIdStr);
 
-		try (final MDCCloseable processMDC = putMDC(processId))
+		try (final MDCCloseable ignored = putMDC(processId))
 		{
 			userSession.assertLoggedIn();
 
@@ -199,7 +202,7 @@ public class ProcessRestController
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 
 		final DocumentId pinstanceId;
-		try (final MDCCloseable processMDC = putMDC(processId))
+		try (final MDCCloseable ignored = putMDC(processId))
 		{
 			userSession.assertLoggedIn();
 
@@ -252,7 +255,7 @@ public class ProcessRestController
 
 	private JSONProcessInstance getInstance(final ProcessId processId, final DocumentId pinstanceId)
 	{
-		try (final IAutoCloseable mdcCloseable = putMDC(processId, pinstanceId))
+		try (final IAutoCloseable ignored = putMDC(processId, pinstanceId))
 		{
 			userSession.assertLoggedIn();
 
@@ -272,7 +275,7 @@ public class ProcessRestController
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		try (final IAutoCloseable mdcCloseable = putMDC(processId, pinstanceId))
+		try (final IAutoCloseable ignored = putMDC(processId, pinstanceId))
 		{
 			userSession.assertLoggedIn();
 			Check.assumeNotEmpty(events, "events is not empty");
@@ -301,7 +304,7 @@ public class ProcessRestController
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		try (final IAutoCloseable mdcCloseable = putMDC(processId, pinstanceId))
+		try (final IAutoCloseable ignored = putMDC(processId, pinstanceId))
 		{
 			userSession.assertLoggedIn();
 
@@ -333,12 +336,12 @@ public class ProcessRestController
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		try (final IAutoCloseable mdcCloseable = putMDC(processId, pinstanceId))
+		try (final IAutoCloseable ignored = putMDC(processId, pinstanceId))
 		{
 			userSession.assertLoggedIn();
 
 			final IProcessInstancesRepository instancesRepository = getRepository(processId);
-			final ProcessInstanceResult executionResult = instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getExecutionResult());
+			final ProcessInstanceResult executionResult = instancesRepository.forProcessInstanceReadonly(pinstanceId, IProcessInstanceController::getExecutionResult);
 
 			final OpenReportAction action = executionResult.getAction(OpenReportAction.class);
 			final String reportFilename = action.getFilename();
@@ -351,8 +354,8 @@ public class ProcessRestController
 			headers.setContentType(MediaType.parseMediaType(reportContentType));
 			headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + reportFilenameEffective + "\"");
 			headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-			final ResponseEntity<byte[]> response = new ResponseEntity<>(reportData, headers, HttpStatus.OK);
-			return response;
+			
+			return new ResponseEntity<>(reportData, headers, HttpStatus.OK);
 		}
 	}
 
@@ -361,13 +364,13 @@ public class ProcessRestController
 			@PathVariable("processId") final String processIdStr //
 			, @PathVariable("pinstanceId") final String pinstanceIdStr //
 			, @PathVariable("parameterName") final String parameterName //
-			, @RequestParam(name = "query", required = true) final String query //
+			, @RequestParam(name = "query") final String query //
 	)
 	{
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		try (final IAutoCloseable mdcCloseable = putMDC(processId, pinstanceId))
+		try (final IAutoCloseable ignored = putMDC(processId, pinstanceId))
 		{
 			userSession.assertLoggedIn();
 
@@ -393,7 +396,7 @@ public class ProcessRestController
 		final ProcessId processId = ProcessId.fromJson(processIdStr);
 		final DocumentId pinstanceId = DocumentId.of(pinstanceIdStr);
 
-		try (final IAutoCloseable mdcCloseable = putMDC(processId, pinstanceId))
+		try (final IAutoCloseable ignored = putMDC(processId, pinstanceId))
 		{
 			userSession.assertLoggedIn();
 

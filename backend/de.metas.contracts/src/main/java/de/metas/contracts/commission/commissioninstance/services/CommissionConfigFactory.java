@@ -27,21 +27,18 @@ import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
-import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_Product_Category;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -81,10 +78,9 @@ import java.util.stream.StreamSupport;
 @Service
 public class CommissionConfigFactory
 {
-
 	private static final Logger logger = LogManager.getLogger(CommissionConfigFactory.class);
 
-	private CommissionConfigStagingDataService commissionConfigStagingDataService;
+	private final CommissionConfigStagingDataService commissionConfigStagingDataService;
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -98,7 +94,11 @@ public class CommissionConfigFactory
 	public ImmutableList<CommissionConfig> createForNewCommissionInstances(@NonNull final ConfigRequestForNewInstance contractRequest)
 	{
 		final Hierarchy hierarchy = contractRequest.getCommissionHierarchy();
-		final Iterable<HierarchyNode> beneficiaries = hierarchy.getUpStream(Beneficiary.of(contractRequest.getSalesRepBPartnerId()));
+		
+		// Note: we start with the customer which *might* be a sales rep too. 
+		// If that's the case, the contract's C_HierarchyCommissionSettings might indicate that we need a 0% C_CommissionShare for that endcustomer
+		final Beneficiary beneficiary = Beneficiary.of(contractRequest.getCustomerBPartnerId()); 
+		final Iterable<HierarchyNode> beneficiaries = hierarchy.getUpStream(beneficiary);
 
 		final ImmutableList<BPartnerId> allBPartnerIds = StreamSupport
 				.stream(beneficiaries.spliterator(), false)
@@ -109,6 +109,7 @@ public class CommissionConfigFactory
 		// don't look up the terms via product; instead, get all commission-terms for the respective sales reps that are currently active
 		final TermsQuery termsQuery = TermsQuery.builder()
 				.billPartnerIds(allBPartnerIds)
+				.orgId(contractRequest.getOrgId())
 				.dateOrdered(contractRequest.getCommissionDate())
 				.build();
 		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
@@ -170,7 +171,8 @@ public class CommissionConfigFactory
 
 			final ArrayList<HierarchyConfig> hierarchyConfigs = new ArrayList<>();
 
-			// i know the nesting is way too deep here; however if i extract methods, i end up with a lot of parameters per method. or with big "request"-classes that i use as params.
+			// i know the nesting is way too deep here; however if i extract methods, i end up with a lot of parameters per method
+			// or with big "request"-classes that i use as params.
 			for (final Entry<Integer, Collection<Integer>> settingsId2TermsIds : settingsIdWithTermId)
 			{
 				final Integer settingsId = settingsId2TermsIds.getKey();
@@ -178,7 +180,7 @@ public class CommissionConfigFactory
 				final I_C_HierarchyCommissionSettings settingsRecord = stagingData.getId2SettingsRecord().get(settingsId);
 				try (final MDCCloseable ignore2 = TableRecordMDC.putTableRecordReference(settingsRecord))
 				{
-					final HierarchyConfigBuilder builder = HierarchyConfig
+					final HierarchyConfigBuilder configBuilder = HierarchyConfig
 							.builder()
 							.id(HierarchyConfigId.ofRepoId(settingsRecord.getC_HierarchyCommissionSettings_ID()))
 							.commissionProductId(ProductId.ofRepoId(settingsRecord.getCommission_Product_ID()))
@@ -191,10 +193,10 @@ public class CommissionConfigFactory
 						{
 							final FlatrateTermId termId = FlatrateTermId.ofRepoId(termRepoId);
 
-							final ImmutableList<BPartnerId> bPartnerIds = conditionRecordId2BPartnerIds.get(termRecord.getC_Flatrate_Conditions_ID());
-							for (final BPartnerId bPartnerId : bPartnerIds)
+							final ImmutableList<BPartnerId> salesRepBPartnerIds = conditionRecordId2BPartnerIds.get(termRecord.getC_Flatrate_Conditions_ID());
+							for (final BPartnerId salesRepBPartnerId : salesRepBPartnerIds)
 							{
-								if (!bPartnerId2FlatrateTermIds.get(bPartnerId).contains(termId))
+								if (!bPartnerId2FlatrateTermIds.get(salesRepBPartnerId).contains(termId))
 								{
 									continue;
 								}
@@ -217,24 +219,42 @@ public class CommissionConfigFactory
 												settingsLineRecord);
 										if (settingsLineMatches)
 										{
-											logger.debug("Settings line matches; -> commissionPercent={}", settingsLineRecord.getPercentOfBasePoints());
-											contractBuilder
-													.commissionSettingsLineId(CommissionSettingsLineId.ofRepoId(settingsLineRecord.getC_CommissionSettingsLine_ID()))
-													.commissionPercent(Percent.of(settingsLineRecord.getPercentOfBasePoints()));
-											foundMatchingSettingsLine = true;
+											if (Objects.equals(salesRepBPartnerId, customerBPartnerId))
+											{
+												if (settingsRecord.isCreateShareForOwnRevenue())
+												{
+													logger.debug("Settings line matches; salesRep is also endcustomer and createShareOnOwnReveneue=Y; -> commissionPercent=0");
+													contractBuilder
+															.commissionSettingsLineId(CommissionSettingsLineId.ofRepoId(settingsLineRecord.getC_CommissionSettingsLine_ID()))
+															.commissionPercent(Percent.ZERO);
+													foundMatchingSettingsLine = true;
+												}
+												else
+												{
+													logger.debug("Settings line matches; salesRep is also endcustomer and createShareOnOwnReveneue=N; -> nothing to do");
+												}
+											}
+											else
+											{
+												logger.debug("Settings line matches; -> commissionPercent={}", settingsLineRecord.getPercentOfBasePoints());
+												contractBuilder
+														.commissionSettingsLineId(CommissionSettingsLineId.ofRepoId(settingsLineRecord.getC_CommissionSettingsLine_ID()))
+														.commissionPercent(Percent.of(settingsLineRecord.getPercentOfBasePoints()));
+												foundMatchingSettingsLine = true;
+											}
 											break;
 										}
 									}
 								}
 								if (foundMatchingSettingsLine)
 								{
-									builder.beneficiary2HierarchyContract(Beneficiary.of(bPartnerId), contractBuilder);
+									configBuilder.beneficiary2HierarchyContract(Beneficiary.of(salesRepBPartnerId), contractBuilder);
 								}
 							}
 						}
 					}
 
-					final HierarchyConfig config = builder.build();
+					final HierarchyConfig config = configBuilder.build();
 					if (config.containsContracts()) // discard it if there aren't any beneficiaries/contracts
 					{
 						hierarchyConfigs.add(config);
@@ -243,7 +263,7 @@ public class CommissionConfigFactory
 			}
 
 			// finally index the configs by contract-Id
-			final ImmutableMap.Builder<FlatrateTermId, CommissionConfig> result = ImmutableMap.<FlatrateTermId, CommissionConfig>builder();
+			final ImmutableMap.Builder<FlatrateTermId, CommissionConfig> result = ImmutableMap.builder();
 			for (final HierarchyConfig hierarchyConfig : hierarchyConfigs)
 			{
 				final int settingsRepoId = hierarchyConfig.getId().getRepoId();
@@ -263,7 +283,7 @@ public class CommissionConfigFactory
 			@NonNull final I_C_CommissionSettingsLine settingsLineRecord)
 	{
 		final ProductCategoryId settingsProductCategoryId = ProductCategoryId.ofRepoIdOrNull(settingsLineRecord.getM_Product_Category_ID());
-		String logMessagePrefix = new StringBuilder("SeqNo ").append(settingsLineRecord.getSeqNo()).append(": ").toString();
+		final String logMessagePrefix = "SeqNo " + settingsLineRecord.getSeqNo() + ": ";
 		final boolean productMatches;
 		if (settingsProductCategoryId == null)
 		{
@@ -304,6 +324,9 @@ public class CommissionConfigFactory
 	@Value
 	public static class ConfigRequestForNewInstance
 	{
+		@NonNull 
+		OrgId orgId;
+		
 		@NonNull
 		BPartnerId salesRepBPartnerId;
 

@@ -1,15 +1,18 @@
 package de.metas.ui.web.document.filter.provider;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import lombok.ToString;
+
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -71,10 +74,10 @@ final class CompositeDocumentFilterDescriptorsProvider implements DocumentFilter
 	{
 		return providers
 				.stream()
-				.map(provider -> provider.getAll())
-				.flatMap(descriptors -> descriptors.stream())
+				.map(DocumentFilterDescriptorsProvider::getAll)
+				.flatMap(Collection::stream)
 				.sorted(Comparator.comparing(DocumentFilterDescriptor::getSortNo))
-				.collect(GuavaCollectors.toImmutableMapByKey(descriptor -> descriptor.getFilterId())) // make sure each filterId is unique!
+				.collect(GuavaCollectors.toImmutableMapByKey(DocumentFilterDescriptor::getFilterId)) // make sure each filterId is unique!
 				.values();
 	}
 
@@ -84,8 +87,24 @@ final class CompositeDocumentFilterDescriptorsProvider implements DocumentFilter
 		return providers
 				.stream()
 				.map(provider -> provider.getByFilterIdOrNull(filterId))
-				.filter(descriptor -> descriptor != null)
+				.filter(Objects::nonNull)
 				.findFirst()
 				.orElse(null);
+	}
+
+	@Override
+	public DocumentFilter unwrap(@NonNull final JSONDocumentFilter jsonFilter)
+	{
+		return getProviderByFilterId(jsonFilter.getFilterId())
+				.map(provider -> provider.unwrap(jsonFilter))
+				.orElseGet(() -> JSONDocumentFilter.unwrapAsGenericFilter(jsonFilter));
+	}
+
+	private Optional<DocumentFilterDescriptorsProvider> getProviderByFilterId(@NonNull final String filterId)
+	{
+		return providers
+				.stream()
+				.filter(provider -> provider.getByFilterIdOrNull(filterId) != null)
+				.findFirst();
 	}
 }

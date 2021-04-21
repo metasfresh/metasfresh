@@ -48,13 +48,14 @@ import lombok.NonNull;
  * #L%
  */
 
-@RequestMapping(ManufacturingOrderRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/manufacturing/orders",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/manufacturing/orders",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/manufacturing/orders" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ManufacturingOrderRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/manufacturing/orders";
-
 	private final ManufacturingOrderAPIService manufacturingOrderAPIService;
 
 	public ManufacturingOrderRestController(

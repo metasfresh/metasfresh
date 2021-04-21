@@ -1,18 +1,19 @@
 package de.metas.util.hash;
 
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Objects;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.hash.HashCode;
 import com.google.common.hash.Hashing;
-
 import de.metas.util.Check;
 import de.metas.util.lang.UIDStringUtil;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -39,7 +40,7 @@ import lombok.NonNull;
 @EqualsAndHashCode
 public final class HashableString
 {
-	public static HashableString ofPlainValue(final String value)
+	public static HashableString ofPlainValue(@Nullable final String value)
 	{
 		if (value == null || value.isEmpty())
 		{
@@ -47,8 +48,7 @@ public final class HashableString
 		}
 
 		final boolean hashed = false;
-		final String salt = null;
-		return new HashableString(value, hashed, salt);
+		return new HashableString(value, hashed, null);
 	}
 
 	public static HashableString empty()
@@ -56,7 +56,7 @@ public final class HashableString
 		return EMPTY;
 	}
 
-	public static HashableString ofHashedValue(@NonNull final String hashedValue, final String salt)
+	public static HashableString ofHashedValue(@NonNull final String hashedValue, @Nullable final String salt)
 	{
 		if (!hashedValue.startsWith(PREFIX_SHA512))
 		{
@@ -67,7 +67,7 @@ public final class HashableString
 		return new HashableString(hashedValue, hashed, salt);
 	}
 
-	public static HashableString fromString(final String value)
+	public static HashableString fromString(@Nullable final String value)
 	{
 		if (value == null || value.isEmpty())
 		{
@@ -95,11 +95,14 @@ public final class HashableString
 	@Getter
 	private final boolean hashed;
 	@Getter
-	private String salt;
+	private final String salt;
 
 	private transient HashableString _hashedObject = null;
 
-	private HashableString(final String value, final boolean hashed, final String salt)
+	private HashableString(
+			final String value,
+			final boolean hashed,
+			@Nullable final String salt)
 	{
 		this.value = value;
 		this.hashed = hashed;
@@ -117,10 +120,10 @@ public final class HashableString
 
 	public boolean isEmpty()
 	{
-		return isPlain() && Check.isEmpty(value, false);
+		return isPlain() && Check.isEmpty(value);
 	}
 
-	public static boolean isEmpty(final HashableString hashableString)
+	public static boolean isEmpty(@Nullable final HashableString hashableString)
 	{
 		return hashableString == null || hashableString.isEmpty();
 	}
@@ -136,7 +139,7 @@ public final class HashableString
 		return hashWithSalt(salt);
 	}
 
-	public HashableString hashWithSalt(final String salt)
+	public HashableString hashWithSalt(@Nullable final String salt)
 	{
 		if (hashed)
 		{
@@ -153,7 +156,7 @@ public final class HashableString
 		return hashedObject;
 	}
 
-	private static String hashValue(final String valuePlain, final String salt)
+	private static String hashValue(final String valuePlain, @Nullable final String salt)
 	{
 		// IMPORTANT: please keep it in sync with "hash_column_value" database function
 
@@ -170,11 +173,11 @@ public final class HashableString
 		}
 
 		final HashCode valueHashed = Hashing.sha512().hashString(valueWithSalt, StandardCharsets.UTF_8);
-		String valueHasedAndEncoded = valueHashed.toString(); // hex encoding
-		return PREFIX_SHA512 + valueHasedAndEncoded + SEPARATOR + salt;
+		final String valueHashedAndEncoded = valueHashed.toString(); // hex encoding
+		return PREFIX_SHA512 + valueHashedAndEncoded + SEPARATOR + salt;
 	}
 
-	public boolean isMatching(final HashableString other)
+	public boolean isMatching(@Nullable final HashableString other)
 	{
 		if (this == other)
 		{

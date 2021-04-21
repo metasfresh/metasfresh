@@ -42,7 +42,6 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cache.CCache;
-import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -79,7 +78,7 @@ import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery.InvoiceCandidate
 import de.metas.invoicecandidate.api.InvoiceCandidateQuery;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.invoicecandidate.async.spi.impl.InvoiceCandWorkpackageProcessor;
-import de.metas.invoicecandidate.exceptions.InconsistentUpdateExeption;
+import de.metas.invoicecandidate.exceptions.InconsistentUpdateException;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
@@ -1030,7 +1029,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		else if (icRecord.getM_PricingSystem_ID() > 0)
 		{
 			// take the precision from the bpartner price list
-			final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationById(
+			final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(
 					BPartnerLocationId.ofRepoIdOrNull(
 							icRecord.getBill_BPartner_ID(),
 							firstGreaterThanZero(icRecord.getBill_Location_Override_ID(), icRecord.getBill_Location_ID())));
@@ -1769,9 +1768,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// 02817: Don't only handle InconsistentUpdateExeptions, but handle RuntimeExceptions in general
 		// (albeit less user-friendly)
 		// Reason: The system should be able to mark the problematic record and go on
-		if (e instanceof InconsistentUpdateExeption)
+		if (e instanceof InconsistentUpdateException)
 		{
-			final InconsistentUpdateExeption iue = (InconsistentUpdateExeption)e;
+			final InconsistentUpdateException iue = (InconsistentUpdateException)e;
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 			note = new MNote(ctx,
 							 iue.getAdMessageHeadLine().toAD_Message(),

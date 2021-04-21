@@ -1,11 +1,6 @@
 package de.metas.edi.process;
 
-import java.util.List;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-
+import de.metas.edi.api.EDIDesadvLinePackId;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.process.IProcessPrecondition;
@@ -15,6 +10,11 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.ReportResultData;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -59,11 +59,11 @@ public class EDI_DesadvLine_Pack_PrintSSCCLabels extends JavaProcess implements 
 		final IQueryFilter<I_EDI_DesadvLine_Pack> selectedRecordsFilter = getProcessInfo()
 				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		final List<Integer> list = queryBL
+		final Set<EDIDesadvLinePackId> list = queryBL
 				.createQueryBuilder(I_EDI_DesadvLine_Pack.class)
 				.filter(selectedRecordsFilter)
 				.create()
-				.listIds();
+				.listIds(EDIDesadvLinePackId::ofRepoId);
 
 		final ReportResultData reportResult = desadvBL.printSSCC18_Labels(getCtx(), list);
 		getProcessInfo().getResult().setReportData(reportResult);

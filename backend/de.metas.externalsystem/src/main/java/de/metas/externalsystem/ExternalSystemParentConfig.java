@@ -22,9 +22,12 @@
 
 package de.metas.externalsystem;
 
+import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 @Value
 public class ExternalSystemParentConfig
@@ -48,5 +51,10 @@ public class ExternalSystemParentConfig
 		this.camelUrl = camelUrl;
 		this.name = name;
 		this.childConfig = childConfig;
+	}
+
+	public ITableRecordReference getTableRecordReference()
+	{
+		return TableRecordReference.of(I_ExternalSystem_Config.Table_Name, this.id);
 	}
 }

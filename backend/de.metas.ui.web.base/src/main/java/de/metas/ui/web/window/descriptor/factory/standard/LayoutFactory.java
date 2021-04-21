@@ -151,7 +151,7 @@ public class LayoutFactory
 			if (uiSections.isEmpty())
 			{
 				uiProvider = new InMemoryUIElementsProvider();
-				logger.warn("No UI Sections found for {}. Switching to {}", gridTabVO, uiProvider);
+				logger.debug("No UI Sections found for {}. Switching to {}", gridTabVO, uiProvider);
 
 				uiSections = uiProvider.getUISections(templateTabId);
 			}
@@ -534,6 +534,12 @@ public class LayoutFactory
 			return ViewEditorRenderMode.NEVER;
 		}
 
+		final ViewEditorRenderMode viewEditMode = ViewEditorRenderMode.ofNullableCode(uiElement.getViewEditMode());
+		if(viewEditMode != null)
+		{
+			return viewEditMode;
+		}
+
 		// if we can't tell the mode from field, then use our "old" logic
 		if (widgetType == DocumentFieldWidgetType.Amount
 				|| widgetType == DocumentFieldWidgetType.CostPrice
@@ -640,7 +646,7 @@ public class LayoutFactory
 		// Fallback: when no elements were found: creating the view using the single row layout
 		if (!layout.hasElements())
 		{
-			logger.warn("No grid layout was found for {}. Trying to create one based on single row layout elements", entityDescriptor);
+			logger.debug("No grid layout was found for {}. Trying to create one based on single row layout elements", entityDescriptor);
 			streamAD_UI_Elements()
 					.filter(adUIElement -> adUIElement.isDisplayed() && !adUIElement.isAdvancedField())
 					.map(adUIElement -> layoutElement(adUIElement))
@@ -758,7 +764,7 @@ public class LayoutFactory
 		// Fallback: when no elements were found: creating the view using the single row layout
 		if (!layoutBuilder.hasElements())
 		{
-			logger.warn("No side list layout was found for {}. Trying to create one based on single row layout elements", this);
+			logger.debug("No side list layout was found for {}. Trying to create one based on single row layout elements", this);
 			streamAD_UI_Elements()
 					.filter(adUIElement -> adUIElement.isDisplayed() && !adUIElement.isAdvancedField())
 					.map(adUIElement -> layoutElement(adUIElement))

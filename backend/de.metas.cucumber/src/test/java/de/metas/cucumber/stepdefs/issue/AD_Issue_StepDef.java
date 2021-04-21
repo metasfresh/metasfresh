@@ -23,19 +23,16 @@
 package de.metas.cucumber.stepdefs.issue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonErrorItem;
-import de.metas.common.rest_api.issue.JsonCreateIssueResponse;
-import de.metas.cucumber.stepdefs.APIResponse;
-import de.metas.cucumber.stepdefs.RESTUtil;
+import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.error.AdIssueId;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
-import io.cucumber.java.en.When;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Issue;
@@ -50,28 +47,13 @@ import static org.assertj.core.api.Assertions.*;
 public class AD_Issue_StepDef
 {
 	private PInstanceId pInstanceId;
-	private String userAuthToken;
-	private APIResponse apiResponse;
-	private String apiRequest;
+	private final TestContext testContext;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	public static final String endpointPath = "api/process/$pInstanceId/externalstatus/error";
-
-	@Given("the existing user has a valid API token")
-	public void the_existing_user_has_the_authtoken() throws IOException
+	public AD_Issue_StepDef(final TestContext testContext)
 	{
-		userAuthToken = RESTUtil.getAuthToken("metasfresh", "WebUI");
-	}
-
-	@When("the metasfresh REST-API endpoint for issue creation receives a request with the payload")
-	public void metasfresh_rest_api_endpoint_api_external_ref_receives_get_request_with_the_payload(
-			final String payload) throws IOException
-	{
-		apiRequest = payload;
-		apiResponse = RESTUtil.performHTTPRequest(endpointPath.replace("$pInstanceId", String.valueOf(pInstanceId.getRepoId())),
-												  "POST", payload, userAuthToken);
+		this.testContext = testContext;
 	}
 
 	@Given("I_AD_PInstance with id {string} is created")
@@ -88,11 +70,11 @@ public class AD_Issue_StepDef
 	@Then("a new metasfresh AD issue is created")
 	public void new_metasfresh_ad_issue_is_created() throws IOException
 	{
-		final String responseJson = apiResponse.getContent();
+		final String responseJson = testContext.getApiResponse().getContent();
 		final ObjectMapper mapper = new ObjectMapper();
 
 		final JsonCreateIssueResponse response = mapper.readValue(responseJson, JsonCreateIssueResponse.class);
-		final List<JsonErrorItem> requestErrorItemList = mapper.readValue(apiRequest, JsonError.class).getErrors();
+		final List<JsonErrorItem> requestErrorItemList = mapper.readValue(testContext.getRequestPayload(), JsonError.class).getErrors();
 		assertThat(requestErrorItemList).isNotNull();
 		final JsonErrorItem jsonErrorItem = requestErrorItemList.get(0);
 		assertThat(jsonErrorItem).isNotNull();
@@ -121,6 +103,5 @@ public class AD_Issue_StepDef
 		assertThat(issue.getAD_PInstance_ID()).isEqualTo(pInstanceId.getRepoId());
 		assertThat(orgId).isNotNull();
 		assertThat(issue.getAD_Org_ID()).isEqualTo(orgId.getRepoId());
-
 	}
 }

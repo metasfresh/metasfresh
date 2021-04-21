@@ -492,4 +492,7 @@ public final class ProductBL implements IProductBL
 
 		return product.isHaddexCheck();
 	}
+
+
+
 }

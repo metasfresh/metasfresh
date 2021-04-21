@@ -26,10 +26,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -44,7 +47,6 @@ import de.metas.process.PInstanceId;
 import de.metas.process.Param;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.apache.http.client.methods.HttpPut;
@@ -58,6 +60,7 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Optional;
 
 public abstract class InvokeExternalSystemProcess extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
@@ -67,15 +70,15 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 	public final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 
-	private static final String PARAM_CONFIG_ID = "configId";
-	@Param(parameterName = PARAM_CONFIG_ID)
-	protected MetasfreshId configId;
+	public static final String PARAM_CHILD_CONFIG_ID = "ChildConfigId";
+	@Param(parameterName = PARAM_CHILD_CONFIG_ID)
+	protected int childConfigId;
 
 	private static final String PARAM_SINCE = "since";
 	@Param(parameterName = PARAM_SINCE)
 	private Timestamp since;
 
-	private static final String PARAM_EXTERNAL_REQUEST = "External_Request";
+	public static final String PARAM_EXTERNAL_REQUEST = "External_Request";
 	@Param(parameterName = PARAM_EXTERNAL_REQUEST)
 	protected String externalRequest;
 
@@ -86,7 +89,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	{
 		final Timestamp sinceEff = extractEffectiveSinceTimestamp();
 
-		addLog("Calling with params: configId {}, since {}, command {}", configId, sinceEff.toInstant(), externalRequest);
+		addLog("Calling with params: childConfigId {}, since {}, command {}", childConfigId, sinceEff.toInstant(), externalRequest);
 		try (final CloseableHttpClient aDefault = HttpClients.createDefault())
 		{
 			return aDefault.execute(getRequest(), response -> {
@@ -127,19 +130,25 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		if (configId != null)
+		if (childConfigId > 0)
 		{
 			return ProcessPreconditionsResolution.accept();
 		}
 
 		final long selectedRecordsCount = getSelectedRecordCount(context);
-		if (selectedRecordsCount == 0)
-		{
-			return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getTabName()));
-		}
 		if (selectedRecordsCount > 1)
 		{
 			return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ERR_MULTIPLE_EXTERNAL_SELECTION, getTabName()));
+		}
+		else if (selectedRecordsCount == 0)
+		{
+			final Optional<IExternalSystemChildConfig> childConfig =
+					externalSystemConfigDAO.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()), getExternalSystemType());
+
+			if (!childConfig.isPresent())
+			{
+				return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getTabName()));
+			}
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -156,10 +165,10 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	}
 
 	/** Needed so we also have a "since" when the process is run via AD_Scheduler */
-	@Nullable
+	@NonNull
 	protected Timestamp extractEffectiveSinceTimestamp()
 	{
-		return CoalesceUtil.coalesceSuppliers(() -> since, () -> retrieveSinceValue());
+		return CoalesceUtil.coalesceSuppliers(() -> since, () -> retrieveSinceValue(), () -> Timestamp.from(Instant.ofEpochSecond(0)));
 	}
 	
 	private Timestamp retrieveSinceValue()
@@ -173,6 +182,8 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	protected abstract Map<String, String> extractExternalSystemParameters(ExternalSystemParentConfig externalSystemParentConfig);
 	
 	protected abstract String getTabName();
+
+	protected abstract ExternalSystemType getExternalSystemType();
 
 	protected abstract long getSelectedRecordCount(final IProcessPreconditionsContext context);
 

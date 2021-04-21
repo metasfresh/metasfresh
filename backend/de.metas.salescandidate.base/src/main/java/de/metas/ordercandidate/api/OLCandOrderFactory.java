@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.api;
 
-import de.metas.adempiere.model.I_AD_User;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -16,13 +17,23 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderLineGroup;
+import de.metas.order.OrderLineId;
+import de.metas.order.compensationGroup.GroupCompensationAmtType;
+import de.metas.order.compensationGroup.GroupCompensationType;
+import de.metas.order.compensationGroup.GroupRepository;
+import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.ordercandidate.spi.IOLCandListener;
@@ -30,13 +41,17 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
-import de.metas.pricing.attributebased.IProductPriceAware;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -45,6 +60,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
@@ -52,24 +68,32 @@ import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.MNote;
 import org.compiere.model.X_C_Order;
+import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.deleteAll;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -98,18 +122,26 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 class OLCandOrderFactory
 {
 	private static final Logger logger = LogManager.getLogger(OLCandOrderFactory.class);
+	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IAttributeSetInstanceAwareFactoryService attributeSetInstanceAwareFactoryService = Services.get(IAttributeSetInstanceAwareFactoryService.class);
 	private final IAttributePricingBL attributePricingBL = Services.get(IAttributePricingBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IOLCandBL olcandBL = Services.get(IOLCandBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
+	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_OLCAND_GROUPING_ERROR = AdMessageKey.of("OLCandProcessor.OLCandGroupingError");
 
 	//
 	// Parameters
@@ -122,9 +154,12 @@ class OLCandOrderFactory
 
 	//
 	private I_C_Order order;
+	private final Collection<I_C_Order_Line_Alloc> allocations = new HashSet<>();
 	private I_C_OrderLine currentOrderLine = null;
 	private final Map<Integer, I_C_OrderLine> orderLines = new LinkedHashMap<>();
 	private final List<OLCand> candidates = new ArrayList<>();
+	private final ListMultimap<String, OrderLineId> groupsToOrderLines = ArrayListMultimap.create();
+	private final Set<OrderLineId> primaryOrderLines = new HashSet<>();
 
 	@Builder
 	private OLCandOrderFactory(
@@ -156,7 +191,7 @@ class OLCandOrderFactory
 		// use values from orderDefaults when the order candidate doesn't have such values
 		order.setC_DocTypeTarget_ID(DocTypeId.toRepoId(orderDefaults.getDocTypeTargetId()));
 
-		order.setM_Warehouse_ID(WarehouseId.toRepoId(CoalesceUtil.coalesce(candidateOfGroup.getWarehouseId(), orderDefaults.getWarehouseId())) );
+		order.setM_Warehouse_ID(WarehouseId.toRepoId(CoalesceUtil.coalesce(candidateOfGroup.getWarehouseId(), orderDefaults.getWarehouseId())));
 
 		// use the values from 'olCand'
 		order.setAD_Org_ID(candidateOfGroup.getAD_Org_ID());
@@ -168,7 +203,7 @@ class OLCandOrderFactory
 
 		// if the olc has no value set, we are not falling back here!
 		final BPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
-		if(billBPartner != null)
+		if (billBPartner != null)
 		{
 			order.setBill_BPartner_ID(BPartnerId.toRepoId(billBPartner.getBpartnerId()));
 			order.setBill_Location_ID(BPartnerLocationId.toRepoId(billBPartner.getBpartnerLocationId()));
@@ -232,7 +267,8 @@ class OLCandOrderFactory
 		}
 
 		final BPartnerId salesRepId = candidateOfGroup.getSalesRepId();
-		if (salesRepId != null)
+		final BPartnerId effectiveBillPartnerId = orderBL.getEffectiveBillPartnerId(order);
+		if (salesRepId != null && !salesRepId.equals(effectiveBillPartnerId))
 		{
 			order.setC_BPartner_SalesRep_ID(salesRepId.getRepoId());
 
@@ -267,6 +303,16 @@ class OLCandOrderFactory
 		{
 			try
 			{
+				validateAndCreateCompensationGroups();
+			}
+			catch (final AdempiereException ex)
+			{
+				logger.warn("Caught exception while validating compensation groups for OLCands: {}", ex);
+				onCompensationGroupFailure(ex);
+				return;
+			}
+			try
+			{
 				documentBL.processEx(order, X_C_Order.DOCACTION_Complete, DocStatus.Completed.getCode());
 				save(order);
 
@@ -282,10 +328,75 @@ class OLCandOrderFactory
 				for (final OLCand candidate : candidates)
 				{
 					candidate.setError(errorMsg, note.getAD_Note_ID());
-					InterfaceWrapperHelper.save(candidate);
+					save(candidate.unbox());
 				}
 			}
 		}
+	}
+
+	private void onCompensationGroupFailure(final AdempiereException ex)
+	{
+		deleteAll(allocations);
+		deleteAll(orderLines.values());
+		delete(order);
+
+		for (final OLCand candidate : candidates)
+		{
+			candidate.setGroupingError(ex.getLocalizedMessage());
+			save(candidate.unbox());
+		}
+	}
+
+	private void validateAndCreateCompensationGroups()
+	{
+		groupsToOrderLines.keySet()
+				.stream()
+				.map(groupsToOrderLines::get)
+				.forEach(this::createCompensationGroup);
+	}
+
+	private void createCompensationGroup(final List<OrderLineId> orderLineIds)
+	{
+		final Collection<I_C_OrderLine> mainOrderLineInGroupOpt = orderLineIds.stream()
+				.filter(primaryOrderLines::contains)
+				.map(OrderLineId::getRepoId)
+				.map(orderLines::get)
+				.collect(Collectors.toList());
+		if (mainOrderLineInGroupOpt.size() != 1)
+		{
+			throw new AdempiereException("@" + MSG_OL_CAND_PROCESSOR_OLCAND_GROUPING_ERROR + "@");
+		}
+		final I_C_OrderLine mainOrderLineInGroup = mainOrderLineInGroupOpt.stream().findFirst().get();
+
+		final ProductId productId = ProductId.ofRepoId(mainOrderLineInGroup.getM_Product_ID());
+		final I_M_Product productForMainLine = productDAO.getById(productId);
+
+		mainOrderLineInGroup.setIsGroupCompensationLine(true);
+		mainOrderLineInGroup.setGroupCompensationType(getGroupCompensationType(productForMainLine));
+		mainOrderLineInGroup.setGroupCompensationAmtType(getGroupCompensationAmtType(productForMainLine));
+		orderDAO.save(mainOrderLineInGroup);
+		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
+				.orderLineIds(new HashSet<>(orderLineIds))
+				.newGroupTemplate(createNewGroupTemplate(productId, productDAO.retrieveProductCategoryByProductId(productId)))
+				.build());
+	}
+
+	private String getGroupCompensationAmtType(final I_M_Product productForMainLine)
+	{
+		return GroupCompensationAmtType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(productForMainLine.getGroupCompensationAmtType(), X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent)).getAdRefListValue();
+	}
+
+	private String getGroupCompensationType(final I_M_Product productForMainLine)
+	{
+		return GroupCompensationType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(productForMainLine.getGroupCompensationType(), X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount)).getAdRefListValue();
+	}
+
+	private GroupTemplate createNewGroupTemplate(@NonNull final ProductId productId, @Nullable final ProductCategoryId productCategoryId)
+	{
+		return GroupTemplate.builder()
+				.name(productBL.getProductName(productId))
+				.productCategoryId(productCategoryId)
+				.build();
 	}
 
 	public void closeCurrentOrderLine()
@@ -304,15 +415,15 @@ class OLCandOrderFactory
 		try
 		{
 			addOLCand0(candidate);
-			markAsProcessed(candidate);
+			olcandBL.markAsProcessed(candidate);
 		}
 		catch (final Exception ex)
 		{
-			markAsError(candidate, ex);
+			olcandBL.markAsError(userInChargeId, candidate, ex);
 		}
 	}
 
-	private void addOLCand0(@NonNull final OLCand candidate) throws Exception
+	private void addOLCand0(@NonNull final OLCand candidate)
 	{
 		if (currentOrderLine == null)
 		{
@@ -372,8 +483,7 @@ class OLCandOrderFactory
 			final IAttributeSetInstanceAware orderLineASIAware = attributeSetInstanceAwareFactoryService.createOrNull(currentOrderLine);
 			Check.assumeNotNull(orderLineASIAware, "We can allways obtain a not-null ASI aware for C_OrderLine {} ", currentOrderLine);
 
-			final IProductPriceAware productPriceAware = candidate;
-			attributePricingBL.setDynAttrProductPriceAttributeAware(orderLineASIAware, productPriceAware);
+			attributePricingBL.setDynAttrProductPriceAttributeAware(orderLineASIAware, candidate);
 		}
 
 		//
@@ -386,6 +496,16 @@ class OLCandOrderFactory
 
 		// Establishing a "real" link with FK-constraints between order candidate and order line (03472)
 		createOla(candidate, currentOrderLine);
+		final OrderLineGroup orderLineGroup = candidate.getOrderLineGroup();
+		if (orderLineGroup != null && !Check.isBlank(orderLineGroup.getGroupKey()))
+		{
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(currentOrderLine.getC_OrderLine_ID());
+			if (currentOrderLine.isGroupCompensationLine() || orderLineGroup.isGroupMainItem())
+			{
+				primaryOrderLines.add(orderLineId);
+			}
+			groupsToOrderLines.put(orderLineGroup.getGroupKey(), orderLineId);
+		}
 
 		//
 		orderLines.put(currentOrderLine.getC_OrderLine_ID(), currentOrderLine);
@@ -440,61 +560,28 @@ class OLCandOrderFactory
 		newOla.setC_OrderLine_ID(orderLineId);
 		newOla.setQtyOrdered(orderLine.getQtyOrdered());
 		newOla.setC_OLCandProcessor_ID(olCandProcessorId);
+		allocations.add(newOla);
 
 		InterfaceWrapperHelper.save(newOla);
 	}
 
-	private void markAsProcessed(final OLCand olCand)
-	{
-		olCand.setProcessed(true);
-		saveCandidate(olCand);
-	}
-
-	private void markAsError(final OLCand olCand, final Exception ex)
-	{
-		Loggables.addLog("Caught exception while processing {}; message={}; exception={}", olCand, ex.getLocalizedMessage(), ex);
-		logger.warn("Caught exception while processing {}", olCand, ex);
-
-		final I_AD_Note note = createOLCandErrorNote(olCand, ex);
-
-		olCand.setError(ex.getLocalizedMessage(), note.getAD_Note_ID());
-		saveCandidate(olCand);
-	}
-
-	private void saveCandidate(final OLCand cand)
-	{
-		save(cand.unbox());
-	}
-
 	private I_AD_Note createOrderCompleteErrorNote(final String errorMsg)
 	{
-		final I_AD_User user = userDAO.getById(userInChargeId);
+		final org.compiere.model.I_AD_User user = userDAO.getById(userInChargeId);
 
 		final String candidateIdsAsString = candidates.stream()
 				.map(OLCand::getId)
 				.map(String::valueOf)
 				.collect(Collectors.joining(", "));
-		final String adLanguage = user.getC_BPartner().getAD_Language();
+		final Language adLanguage = userBL.getUserLanguage(user);
 
 		final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId.getRepoId(), ITrx.TRXNAME_None);
 		note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
 		note.setReference(errorMsg);
-		note.setTextMsg(msgBL.getMsg(adLanguage, MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P, new Object[] { candidateIdsAsString }));
+		note.setTextMsg(msgBL.getMsg(adLanguage.getAD_Language(), MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P, new Object[] { candidateIdsAsString }));
 		save(note);
 
 		return note;
 	}
 
-	private I_AD_Note createOLCandErrorNote(final OLCand olCand, final Exception ex)
-	{
-		final I_AD_User user = userDAO.getById(userInChargeId);
-
-		final MNote note = new MNote(ctx, IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId.getRepoId(), ITrx.TRXNAME_None);
-		note.setRecord(olCand.toTableRecordReference());
-		note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
-		note.setTextMsg(ex.getLocalizedMessage());
-		save(note);
-
-		return note;
-	}
 }

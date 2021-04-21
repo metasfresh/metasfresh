@@ -24,7 +24,6 @@ package de.metas.handlingunits.attributes.sscc18;
 
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.util.lang.ObjectUtils;
 
 /**
  * Immutable POJO for Serial Shipping Container Code (SSCC-18)
@@ -71,30 +70,11 @@ public class SSCC18
 		this.checkDigit = checkDigit;
 	}
 
+	@Deprecated
 	@Override
 	public String toString()
 	{
-		return ObjectUtils.toString(this);
-	}
-
-	public int getExtensionDigit()
-	{
-		return extensionDigit;
-	}
-
-	public String getManufacturerCode()
-	{
-		return manufacturerCode;
-	}
-
-	public String getSerialNumber()
-	{
-		return serialNumber;
-	}
-
-	public int getCheckDigit()
-	{
-		return checkDigit;
+		return asString();
 	}
 
 	/**

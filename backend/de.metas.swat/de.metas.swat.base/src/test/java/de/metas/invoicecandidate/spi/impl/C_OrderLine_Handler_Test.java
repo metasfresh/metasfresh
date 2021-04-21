@@ -1,6 +1,61 @@
 package de.metas.invoicecandidate.spi.impl;
 
+import ch.qos.logback.classic.Level;
+import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.document.engine.DocStatus;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.invoice_gateway.spi.model.BPartnerId;
+import de.metas.invoicecandidate.AbstractICTestSupport;
+import de.metas.invoicecandidate.InvoiceCandidatesTestHelper;
+import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
+import de.metas.invoicecandidate.model.I_C_BPartner;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
+import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.logging.LogManager;
+import de.metas.order.invoicecandidate.C_OrderLine_Handler;
+import de.metas.organization.OrgId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.AdditionalMatchers;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /*
  * #%L
@@ -24,65 +79,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * #L%
  */
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.document.dimension.DimensionFactory;
-import de.metas.document.dimension.DimensionService;
-import de.metas.document.dimension.OrderLineDimensionFactory;
-import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
-import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.AdditionalMatchers;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-
-import ch.qos.logback.classic.Level;
-import de.metas.acct.api.IProductAcctDAO;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.document.engine.DocStatus;
-import de.metas.invoice_gateway.spi.model.BPartnerId;
-import de.metas.invoicecandidate.AbstractICTestSupport;
-import de.metas.invoicecandidate.InvoiceCandidatesTestHelper;
-import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
-import de.metas.invoicecandidate.model.I_C_BPartner;
-import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
-import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
-import de.metas.logging.LogManager;
-import de.metas.order.invoicecandidate.C_OrderLine_Handler;
-import de.metas.organization.OrgId;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.user.UserRepository;
-import de.metas.util.Services;
-
 public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 {
-	private  C_OrderLine_Handler orderLineHandler;
+	private C_OrderLine_Handler orderLineHandler;
 	private final IAggregationKeyBuilder<I_C_Invoice_Candidate> headerAggregationKeyBuilder = new HeaderAggregationKeyBuilder();
 
 	@Before
@@ -92,7 +91,6 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_CH");
 
-
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new OrderLineDimensionFactory());
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
@@ -101,7 +99,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
-		orderLineHandler  = new C_OrderLine_Handler();
+		orderLineHandler = new C_OrderLine_Handler();
 
 		// current DB structure for OLHandler
 		final I_C_ILCandHandler handler = InterfaceWrapperHelper.create(Env.getCtx(), I_C_ILCandHandler.class, ITrx.TRXNAME_None);
@@ -117,7 +115,6 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		LogManager.setLevel(Level.DEBUG);
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
-
 
 	}
 
@@ -196,16 +193,18 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 				AdditionalMatchers.not(ArgumentMatchers.eq(productId)));
 
 		final Properties ctx = Env.getCtx();
-		Mockito.doReturn(3).when(taxBL).getTax(
-				ctx,
-				order1,
-				(TaxCategoryId)null,
-				oL1.getM_Product_ID(),
-				order1.getDatePromised(),
-				OrgId.ofRepoId(order1.getAD_Org_ID()),
-				WarehouseId.ofRepoId(order1.getM_Warehouse_ID()),
-				order1.getC_BPartner_Location_ID(),
-				order1.isSOTrx());
+		Mockito
+				.when(taxBL.getTaxNotNull(
+						ctx,
+						order1,
+						(TaxCategoryId)null,
+						oL1.getM_Product_ID(),
+						order1.getDatePromised(),
+						OrgId.ofRepoId(order1.getAD_Org_ID()),
+						WarehouseId.ofRepoId(order1.getM_Warehouse_ID()),
+						order1.getC_BPartner_Location_ID(),
+						order1.isSOTrx()))
+				.thenReturn(TaxId.ofRepoId(3));
 	}
 
 	@Test

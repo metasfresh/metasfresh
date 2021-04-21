@@ -123,6 +123,7 @@ public class CreateServiceRepairProjectCommand
 					.customerReturnLineId(productToRepair.getCustomerReturnLineId())
 					.productId(productToRepair.getProductId())
 					.asiId(productToRepair.getAsiId())
+					.warrantyCase(productToRepair.getWarrantyCase())
 					.qtyRequired(productToRepair.getQty())
 					.repairVhuId(productToRepair.getRepairVhuId())
 					.build());

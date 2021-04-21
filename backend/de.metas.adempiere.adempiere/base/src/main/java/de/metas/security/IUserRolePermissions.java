@@ -1,14 +1,13 @@
 package de.metas.security;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
-
-import com.google.common.base.Optional;
 
 import de.metas.document.engine.DocActionOptionsContext;
 import de.metas.organization.OrgId;
@@ -115,33 +114,33 @@ public interface IUserRolePermissions
 	/** @return window permissions; never return null */
 	ElementPermission checkWindowPermission(AdWindowId AD_Window_ID);
 
-	Boolean getWindowAccess(AdWindowId AD_Window_ID);
+	@Nullable Boolean getWindowAccess(AdWindowId AD_Window_ID);
 
-	Boolean checkWorkflowAccess(int AD_Workflow_ID);
+	@Nullable Boolean checkWorkflowAccess(int AD_Workflow_ID);
 
 	ElementPermission checkWorkflowPermission(int AD_Workflow_ID);
 
-	Boolean getWorkflowAccess(int AD_Workflow_ID);
+	@Nullable Boolean getWorkflowAccess(int AD_Workflow_ID);
 
-	Boolean checkFormAccess(int AD_Form_ID);
+	@Nullable Boolean checkFormAccess(int AD_Form_ID);
 
 	ElementPermission checkFormPermission(int AD_Form_ID);
 
-	Boolean getFormAccess(int AD_Form_ID);
+	@Nullable Boolean getFormAccess(int AD_Form_ID);
 
-	Boolean checkTaskAccess(int AD_Task_ID);
+	@Nullable Boolean checkTaskAccess(int AD_Task_ID);
 
 	ElementPermission checkTaskPermission(int AD_Task_ID);
 
-	Boolean getTaskAccess(int AD_Task_ID);
+	@Nullable Boolean getTaskAccess(int AD_Task_ID);
 
 	//
 	// Process
 	// @formatter:off
-	Boolean checkProcessAccess(int AD_Process_ID);
+	@Nullable Boolean checkProcessAccess(int AD_Process_ID);
 	default boolean checkProcessAccessRW(final int AD_Process_ID) { return isReadWriteAccess(checkProcessAccess(AD_Process_ID)); }
 	ElementPermission checkProcessPermission(int AD_Process_ID);
-	Boolean getProcessAccess(int AD_Process_ID);
+	@Nullable Boolean getProcessAccess(int AD_Process_ID);
 	// @formatter:on
 
 	void applyActionAccess(DocActionOptionsContext optionsCtx);
@@ -167,7 +166,7 @@ public interface IUserRolePermissions
 	 *
 	 * @return error message or <code>null</code> if it's OK and can be viewed
 	 */
-	String checkCanView(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
+	@Nullable String checkCanView(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
 
 	/**
 	 * Checks if given record can be updated by this role.
@@ -191,10 +190,11 @@ public interface IUserRolePermissions
 	 * @param Record_ID record id
 	 * @return error message or <code>null</code> if it's OK and can be updated
 	 **/
-	String checkCanUpdate(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
+	@Nullable String checkCanUpdate(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
 
-	String checkCanCreateNewRecord(ClientId clientId, OrgId orgId, int AD_Table_ID);
+	@Nullable String checkCanCreateNewRecord(ClientId clientId, OrgId orgId, int AD_Table_ID);
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	boolean isColumnAccess(int AD_Table_ID, int AD_Column_ID, Access access);
 
 	boolean isTableAccess(int AD_Table_ID, Access access);
@@ -232,37 +232,11 @@ public interface IUserRolePermissions
 
 	boolean isCanReport();
 
-	boolean isAllow_Info_Product();
-
-	boolean isAllow_Info_BPartner();
-
-	boolean isAllow_Info_Account();
-
-	boolean isAllow_Info_Schedule();
-
-	boolean isAllow_Info_MRP();
-
-	boolean isAllow_Info_CRP();
-
-	boolean isAllow_Info_Order();
-
-	boolean isAllow_Info_Invoice();
-
-	boolean isAllow_Info_InOut();
-
-	boolean isAllow_Info_Payment();
-
-	boolean isAllow_Info_CashJournal();
-
-	boolean isAllow_Info_Resource();
-
-	boolean isAllow_Info_Asset();
-
 	//
 	// Static Helpers
 	//
-	static boolean isReadWriteAccess(final Boolean access)
+	static boolean isReadWriteAccess(@Nullable final Boolean access)
 	{
-		return access != null && access.booleanValue();
+		return access != null && access;
 	}
 }

@@ -30,6 +30,7 @@ import java.util.Properties;
 
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.tax.api.TaxId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -219,7 +220,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Tax
-		final int taxId = Services.get(ITaxBL.class).getTax(
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
 				icRecord,
 				TaxCategoryId.ofRepoIdOrNull(orderLine.getC_TaxCategory_ID()),
@@ -229,7 +230,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
 				CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
 				order.isSOTrx());
-		icRecord.setC_Tax_ID(taxId);
+		icRecord.setC_Tax_ID(TaxId.toRepoId(taxId)); // avoid NPE in tests
 
 		// set Quality Issue Percentage Override
 

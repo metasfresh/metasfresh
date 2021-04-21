@@ -1,5 +1,5 @@
 import React, { createRef, PureComponent } from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { CSSTransition } from 'react-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
@@ -51,7 +51,11 @@ export class RawWidget extends PureComponent {
     const { rawWidget } = this;
 
     if (rawWidget.current && autoFocus) {
-      rawWidget.current.focus();
+      try {
+        rawWidget.current.focus();
+      } catch (e) {
+        console.error(`Custom widget doesn't have 'focus' function defined`);
+      }
     }
 
     if (textSelected) {
@@ -629,17 +633,19 @@ export class RawWidget extends PureComponent {
               })}
               title={valueDescription}
             >
-              <ReactCSSTransitionGroup
-                transitionName="fade"
-                transitionEnterTimeout={200}
-                transitionLeaveTimeout={200}
+              <CSSTransition
+                key={`trans_${fields[0].fieldName}`}
+                className="fade"
+                timeout={{ enter: 200, exit: 200 }}
               >
-                {errorPopup &&
-                  validStatus &&
-                  !validStatus.valid &&
-                  !validStatus.initialValue &&
-                  this.renderErrorPopup(validStatus.reason)}
-              </ReactCSSTransitionGroup>
+                <div>
+                  {errorPopup &&
+                    validStatus &&
+                    !validStatus.valid &&
+                    !validStatus.initialValue &&
+                    this.renderErrorPopup(validStatus.reason)}
+                </div>
+              </CSSTransition>
               {widgetBody}
             </div>
             {fields[0].devices && !widgetData[0].readonly && (

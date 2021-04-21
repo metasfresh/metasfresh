@@ -326,7 +326,7 @@ PieChartComponent.propTypes = {
   chartClass: PropTypes.string,
   reRender: PropTypes.any,
   fields: PropTypes.array,
-  groupBy: PropTypes.string,
+  groupBy: PropTypes.object,
   height: PropTypes.any,
   isMaximized: PropTypes.bool,
   chartTitle: PropTypes.string,

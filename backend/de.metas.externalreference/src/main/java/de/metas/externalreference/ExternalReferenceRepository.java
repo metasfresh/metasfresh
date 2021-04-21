@@ -39,6 +39,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
@@ -49,7 +50,8 @@ public class ExternalReferenceRepository
 	private final ExternalReferenceTypes externalReferenceTypes;
 	private final ExternalSystems externalSystems;
 
-	public ExternalReferenceRepository(@NonNull final IQueryBL queryBL,
+	public ExternalReferenceRepository(
+			@NonNull final IQueryBL queryBL,
 			@NonNull final ExternalSystems externalSystems,
 			@NonNull final ExternalReferenceTypes externalReferenceTypes)
 	{
@@ -86,13 +88,14 @@ public class ExternalReferenceRepository
 
 	public ExternalReferenceId save(@NonNull final ExternalReference externalReference)
 	{
-		final I_S_ExternalReference record = InterfaceWrapperHelper.newInstance(I_S_ExternalReference.class);
+		final I_S_ExternalReference record = InterfaceWrapperHelper.loadOrNew(externalReference.getExternalReferenceId(), I_S_ExternalReference.class);
 
 		record.setAD_Org_ID(externalReference.getOrgId().getRepoId());
 		record.setExternalReference(externalReference.getExternalReference());
 		record.setExternalSystem(externalReference.getExternalSystem().getCode());
 		record.setType(externalReference.getExternalReferenceType().getCode());
 		record.setRecord_ID(externalReference.getRecordId());
+		record.setVersion(externalReference.getVersion());
 
 		InterfaceWrapperHelper.saveRecord(record);
 
@@ -122,7 +125,7 @@ public class ExternalReferenceRepository
 	/**
 	 * @return a map with one entry for each given {@link ExternalReferenceQuery}.
 	 */
-	public ImmutableMap<ExternalReferenceQuery, ExternalReference> getExternalReferences(@NonNull final List<ExternalReferenceQuery> queries)
+	public ImmutableMap<ExternalReferenceQuery, ExternalReference> getExternalReferences(@NonNull final Set<ExternalReferenceQuery> queries)
 	{
 		final IQueryBuilder<I_S_ExternalReference> queryBuilder = queryBL.createQueryBuilder(I_S_ExternalReference.class).setJoinOr()
 				.setOption(IQueryBuilder.OPTION_Explode_OR_Joins_To_SQL_Unions, true);
@@ -147,6 +150,19 @@ public class ExternalReferenceRepository
 		}
 
 		return result.build();
+	}
+
+	@NonNull
+	public Optional<ExternalReference> getExternalReferenceByMFReference(@NonNull final GetExternalReferenceByRecordIdReq request)
+	{
+		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Record_ID, request.getRecordId())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, request.getExternalReferenceType().getCode())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, request.getExternalSystem().getCode())
+				.create()
+				.firstOnlyOptional(I_S_ExternalReference.class)
+				.map(this::buildExternalReference);
 	}
 
 	private ExternalReferenceQuery buildExternalReferenceQuery(final I_S_ExternalReference record)
@@ -215,6 +231,7 @@ public class ExternalReferenceRepository
 				.externalReferenceType(type)
 				.externalSystem(externalSystem)
 				.recordId(record.getRecord_ID())
+				.version(record.getVersion())
 				.build();
 	}
 

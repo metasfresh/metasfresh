@@ -7,6 +7,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.picking.packageable.filters.ProductBarcodeFilterData;
 import de.metas.ui.web.picking.pickingslot.PickingSlotView;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.ViewCloseAction;
@@ -14,6 +15,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -49,29 +51,32 @@ import java.util.function.Supplier;
  * Note that technically this view also contains the right-hand side {@link PickingSlotView}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class PackageableView extends AbstractCustomView<PackageableRow>
 {
-	private final PickingCandidateService pickingCandidateService;
-
 	public static PackageableView cast(final IView view)
 	{
 		return (PackageableView)view;
 	}
 
+	private final PickingCandidateService pickingCandidateService;
+
+	@Getter
+	private final ProductBarcodeFilterData barcodeFilterData;
 	private final ConcurrentHashMap<DocumentId, PickingSlotView> pickingSlotsViewByRowId = new ConcurrentHashMap<>();
 
 	@Builder
 	private PackageableView(
+			@NonNull final PickingCandidateService pickingCandidateService,
 			@NonNull final ViewId viewId,
 			@Nullable final ITranslatableString description,
 			@NonNull final PackageableRowsData rowsData,
-			@NonNull final PickingCandidateService pickingCandidateService)
+			@Nullable final ProductBarcodeFilterData barcodeFilterData)
 	{
 		super(viewId, description, rowsData, NullDocumentFilterDescriptorsProvider.instance);
 
 		this.pickingCandidateService = pickingCandidateService;
+		this.barcodeFilterData = barcodeFilterData;
 	}
 
 	@Override
@@ -107,10 +112,10 @@ public class PackageableView extends AbstractCustomView<PackageableRow>
 
 		// Close all picking candidates which are on a rack system picking slot (gh2740)
 		pickingCandidateService.closeForShipmentSchedules(CloseForShipmentSchedulesRequest.builder()
-				.shipmentScheduleIds(shipmentScheduleIds)
-				.pickingSlotIsRackSystem(true)
-				.failOnError(false) // close as much candidates as it's possible
-				.build());
+																  .shipmentScheduleIds(shipmentScheduleIds)
+																  .pickingSlotIsRackSystem(true)
+																  .failOnError(false) // close as much candidates as it's possible
+																  .build());
 	}
 
 	public void setPickingSlotView(@NonNull final DocumentId rowId, @NonNull final PickingSlotView pickingSlotView)

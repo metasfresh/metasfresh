@@ -23,7 +23,7 @@ package de.metas.edi.esb.remadvimport.ecosio;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceRequest;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWithRouteBuilder;

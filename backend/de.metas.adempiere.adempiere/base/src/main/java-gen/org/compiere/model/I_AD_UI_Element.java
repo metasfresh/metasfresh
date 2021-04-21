@@ -6,6 +6,7 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for AD_UI_Element
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_AD_UI_Element 
 {
 
@@ -678,6 +679,27 @@ public interface I_AD_UI_Element
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set View Edit Mode.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setViewEditMode (@Nullable java.lang.String ViewEditMode);
+
+	/**
+	 * Get View Edit Mode.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getViewEditMode();
+
+	ModelColumn<I_AD_UI_Element, Object> COLUMN_ViewEditMode = new ModelColumn<>(I_AD_UI_Element.class, "ViewEditMode", null);
+	String COLUMNNAME_ViewEditMode = "ViewEditMode";
 
 	/**
 	 * Set Widget size.
