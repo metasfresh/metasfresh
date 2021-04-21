@@ -54,6 +54,12 @@ public class DocumentBillLocationAdapter implements IDocumentBillLocationAdapter
 	}
 
 	@Override
+	public void setBill_Location_ID(final int Bill_Location_ID)
+	{
+		delegate.setBill_Location_ID(Bill_Location_ID);
+	}
+
+	@Override
 	public int getBill_Location_Value_ID()
 	{
 		return delegate.getBill_Location_Value_ID();

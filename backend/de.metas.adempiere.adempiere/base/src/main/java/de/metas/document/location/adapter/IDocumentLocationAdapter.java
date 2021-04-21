@@ -22,6 +22,7 @@
 
 package de.metas.document.location.adapter;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
 import lombok.NonNull;
@@ -34,11 +35,12 @@ public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTempla
 
 	int getC_BPartner_Location_ID();
 
+	void setC_BPartner_Location_ID(int C_BPartner_Location_ID);
+
 	int getC_BPartner_Location_Value_ID();
 
 	void setC_BPartner_Location_Value_ID(int C_BPartner_Location_Value_ID);
 
-	// TODO this should be refactored to return BPartnerContactID
 	int getAD_User_ID();
 
 	String getBPartnerAddress();
@@ -50,5 +52,13 @@ public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTempla
 	{
 		setC_BPartner_Location_Value_ID(LocationId.toRepoId(from.getCapturedLocationId()));
 		setBPartnerAddress(from.getRenderedAddress());
+	}
+
+	@Override
+	default void setLocationAndResetRenderedAddress(@Nullable final BPartnerLocationAndCaptureId from)
+	{
+		setC_BPartner_Location_ID(from != null ? from.getBPartnerLocationRepoId() : -1);
+		setC_BPartner_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
+		setBPartnerAddress(null);
 	}
 }

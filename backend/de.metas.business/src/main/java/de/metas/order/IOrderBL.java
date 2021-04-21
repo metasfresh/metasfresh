@@ -24,7 +24,9 @@ package de.metas.order;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.pricing.PriceListId;
@@ -157,6 +159,8 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void setBPartner(I_C_Order order, I_C_BPartner bp);
 
+	void setBPartnerLocation(I_C_Order order, BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId);
+
 	/**
 	 * Attempts to set the <code>Bill_Location_ID</code> in the given <code>order</code>. If the bill location is found, also set the bill partner accordingly. First tries to use the order's BPartner
 	 * & Bill location, then look into the order's BP_Relations for it. Note that this method does not save the given order.
@@ -170,6 +174,14 @@ public interface IOrderBL extends ISingletonService
 	 * Set C_BPartner_Location in order
 	 */
 	void setBPLocation(I_C_Order order, I_C_BPartner bp);
+
+	void setBPartnerLocationAndContact(@NonNull I_C_Order order, @NonNull BPartnerInfo from);
+
+	void setBillBPartnerLocationAndContact(@NonNull I_C_Order order, @NonNull BPartnerInfo from);
+
+	void setDropShipBPartnerLocationAndContact(@NonNull I_C_Order order, @NonNull BPartnerInfo from);
+
+	void setHandOverBPartnerLocationAndContact(@NonNull I_C_Order order, @NonNull BPartnerInfo from);
 
 	CurrencyPrecision getPricePrecision(I_C_Order order);
 

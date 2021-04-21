@@ -24,7 +24,9 @@ package de.metas.order.impl;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.RetrieveContactRequestBuilder;
@@ -42,6 +44,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
@@ -50,6 +53,7 @@ import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderDocumentLocationAdapterFactory;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
@@ -271,7 +275,7 @@ public class OrderBL implements IOrderBL
 	public boolean setBill_User_ID(final org.compiere.model.I_C_Order order)
 	{
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID());
-		if(billBPartnerId == null)
+		if (billBPartnerId == null)
 		{
 			return false;
 		}
@@ -647,9 +651,7 @@ public class OrderBL implements IOrderBL
 	@Override
 	public void setBPLocation(final org.compiere.model.I_C_Order order, final org.compiere.model.I_C_BPartner bp)
 	{
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
-		final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(bp);
+		final List<I_C_BPartner_Location> locations = partnerDAO.retrieveBPartnerLocations(bp);
 
 		// Set Locations
 		final List<I_C_BPartner_Location> shipLocations = new ArrayList<>();
@@ -664,7 +666,7 @@ public class OrderBL implements IOrderBL
 			final org.compiere.model.I_C_BPartner_Location bpLoc = InterfaceWrapperHelper.create(loc, org.compiere.model.I_C_BPartner_Location.class);
 			if (bpLoc.isShipToDefault())
 			{
-				order.setC_BPartner_Location_ID(bpLoc.getC_BPartner_Location_ID());
+				setBPartnerLocation(order, bpLoc);
 				foundLoc = true;
 			}
 		}
@@ -674,15 +676,14 @@ public class OrderBL implements IOrderBL
 		{
 			if (!shipLocations.isEmpty())
 			{
-				order.setC_BPartner_Location_ID(shipLocations.get(0).getC_BPartner_Location_ID());
+				setBPartnerLocation(order, shipLocations.get(0));
 			}
 			else if (!locations.isEmpty())
 			{
 				// set to first
 				if (order.getC_BPartner_Location_ID() == 0)
 				{
-					order.setC_BPartner_Location_ID(locations.get(0)
-															.getC_BPartner_Location_ID());
+					setBPartnerLocation(order, locations.get(0));
 				}
 			}
 		}
@@ -691,6 +692,18 @@ public class OrderBL implements IOrderBL
 		{
 			logger.error("MOrder.setBPartner - Has no Ship To Address: {}", bp);
 		}
+	}
+
+	public void setBPartnerLocation(@NonNull final I_C_Order order, @Nullable final I_C_BPartner_Location bpartnerLocation)
+	{
+		BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = bpartnerLocation != null ? BPartnerLocationAndCaptureId.ofRecord(bpartnerLocation) : null;
+		setBPartnerLocation(order, bpartnerLocationAndCaptureId);
+	}
+
+	@Override
+	public void setBPartnerLocation(@NonNull final I_C_Order order, @Nullable final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
+	{
+		OrderDocumentLocationAdapterFactory.locationAdapter(order).setLocationAndResetRenderedAddress(bpartnerLocationAndCaptureId);
 	}
 
 	@Override
@@ -740,6 +753,45 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public void setBPartnerLocationAndContact(@NonNull final I_C_Order order, @NonNull final BPartnerInfo from)
+	{
+		order.setC_BPartner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
+		order.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(from.getBpartnerLocationId()));
+		order.setC_BPartner_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
+		order.setAD_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
+	}
+
+	@Override
+	public void setBillBPartnerLocationAndContact(@NonNull final I_C_Order order, @NonNull final BPartnerInfo from)
+	{
+		order.setBill_BPartner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
+		order.setBill_Location_ID(BPartnerLocationId.toRepoId(from.getBpartnerLocationId()));
+		order.setBill_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
+		order.setBill_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
+	}
+
+	@Override
+	public void setDropShipBPartnerLocationAndContact(@NonNull final I_C_Order order, @NonNull final BPartnerInfo from)
+	{
+		order.setDropShip_BPartner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
+		order.setDropShip_Location_ID(BPartnerLocationId.toRepoId(from.getBpartnerLocationId()));
+		order.setDropShip_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
+		order.setDropShip_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
+		order.setIsDropShip(true);
+	}
+
+	@Override
+	public void setHandOverBPartnerLocationAndContact(@NonNull final I_C_Order order, @NonNull final BPartnerInfo from)
+	{
+		order.setHandOver_Partner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
+		order.setHandOver_Location_ID(BPartnerLocationId.toRepoId(from.getBpartnerLocationId()));
+		order.setHandOver_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
+		order.setHandOver_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
+		order.setIsUseHandOver_Location(from.getBpartnerLocationId() != null);
+	}
+
+
+		@Override
 	public CurrencyPrecision getPricePrecision(final I_C_Order order)
 	{
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(order.getM_PriceList_ID());
@@ -886,7 +938,7 @@ public class OrderBL implements IOrderBL
 				orderRecord.getBill_BPartner_ID(),
 				orderRecord.getC_BPartner_ID()));
 	}
-	
+
 	@Override
 	@NonNull
 	public BPartnerContactId getBillToContactId(@NonNull final I_C_Order order)
@@ -964,7 +1016,7 @@ public class OrderBL implements IOrderBL
 
 	@Override
 	public boolean isSalesProposalOrQuotation(@NonNull final I_C_Order order)
-		{
+	{
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 		if (!soTrx.isSales())
 		{

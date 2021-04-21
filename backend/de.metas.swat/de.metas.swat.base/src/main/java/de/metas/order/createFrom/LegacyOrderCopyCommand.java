@@ -73,8 +73,10 @@ public class LegacyOrderCopyCommand
 		newOrder.setC_Activity_ID(originalOrder.getC_Activity_ID());
 		newOrder.setC_BPartner_ID(originalOrder.getC_BPartner_ID());
 		newOrder.setC_BPartner_Location_ID(originalOrder.getC_BPartner_Location_ID());
+		newOrder.setC_BPartner_Location_Value_ID(originalOrder.getC_BPartner_Location_Value_ID());
 		newOrder.setBill_BPartner_ID(originalOrder.getBill_BPartner_ID());
 		newOrder.setBill_Location_ID(originalOrder.getBill_Location_ID());
+		newOrder.setBill_Location_Value_ID(originalOrder.getBill_Location_Value_ID());
 		newOrder.setBill_User_ID(originalOrder.getBill_User_ID());
 		newOrder.setC_Campaign_ID(originalOrder.getC_Campaign_ID());
 		newOrder.setC_CashLine_ID(originalOrder.getC_CashLine_ID());

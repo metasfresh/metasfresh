@@ -22,6 +22,7 @@
 
 package de.metas.document.location.adapter;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
 import lombok.NonNull;
@@ -33,6 +34,8 @@ public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTe
 	int getBill_BPartner_ID();
 
 	int getBill_Location_ID();
+
+	void setBill_Location_ID(int Bill_Location_ID);
 
 	int getBill_Location_Value_ID();
 
@@ -49,5 +52,13 @@ public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTe
 	{
 		setBill_Location_Value_ID(LocationId.toRepoId(from.getCapturedLocationId()));
 		setBillToAddress(from.getRenderedAddress());
+	}
+
+	@Override
+	default void setLocationAndResetRenderedAddress(@Nullable final BPartnerLocationAndCaptureId from)
+	{
+		setBill_Location_ID(from != null ? from.getBPartnerLocationRepoId() : -1);
+		setBill_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
+		setBillToAddress(null);
 	}
 }

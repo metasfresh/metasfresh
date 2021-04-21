@@ -22,6 +22,7 @@
 
 package de.metas.order;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.location.adapter.DocumentLocationAdapterFactory;
 import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
@@ -32,6 +33,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Component
@@ -110,6 +112,12 @@ public class OrderDocumentLocationAdapterFactory implements DocumentLocationAdap
 		}
 
 		@Override
+		public void setC_BPartner_Location_ID(final int C_BPartner_Location_ID)
+		{
+			delegate.setC_BPartner_Location_ID(C_BPartner_Location_ID);
+		}
+
+		@Override
 		public int getC_BPartner_Location_Value_ID()
 		{
 			return delegate.getC_BPartner_Location_Value_ID();
@@ -162,6 +170,12 @@ public class OrderDocumentLocationAdapterFactory implements DocumentLocationAdap
 		}
 
 		@Override
+		public void setBill_Location_ID(final int Bill_Location_ID)
+		{
+			delegate.setBill_Location_ID(Bill_Location_ID);
+		}
+
+		@Override
 		public int getBill_Location_Value_ID()
 		{
 			return delegate.getBill_Location_Value_ID();
@@ -211,6 +225,12 @@ public class OrderDocumentLocationAdapterFactory implements DocumentLocationAdap
 		public int getDropShip_Location_ID()
 		{
 			return delegate.getDropShip_Location_ID();
+		}
+
+		@Override
+		public void setDropShip_Location_ID(final int DropShip_Location_ID)
+		{
+			delegate.setDropShip_Location_ID(DropShip_Location_ID);
 		}
 
 		@Override
@@ -281,6 +301,12 @@ public class OrderDocumentLocationAdapterFactory implements DocumentLocationAdap
 		public int getHandOver_Location_ID()
 		{
 			return delegate.getHandOver_Location_ID();
+		}
+
+		@Override
+		public void setHandOver_Location_ID(final int HandOver_Location_ID)
+		{
+			delegate.setHandOver_Location_ID(HandOver_Location_ID);
 		}
 
 		@Override

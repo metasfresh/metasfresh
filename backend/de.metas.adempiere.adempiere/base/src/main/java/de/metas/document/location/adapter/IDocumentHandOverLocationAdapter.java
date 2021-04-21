@@ -22,9 +22,12 @@
 
 package de.metas.document.location.adapter;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 public interface IDocumentHandOverLocationAdapter extends IDocumentLocationAdapterTemplate
 {
@@ -33,6 +36,8 @@ public interface IDocumentHandOverLocationAdapter extends IDocumentLocationAdapt
 	int getHandOver_Partner_ID();
 
 	int getHandOver_Location_ID();
+
+	void setHandOver_Location_ID(int HandOver_Location_ID);
 
 	int getHandOver_Location_Value_ID();
 
@@ -49,5 +54,13 @@ public interface IDocumentHandOverLocationAdapter extends IDocumentLocationAdapt
 	{
 		setHandOver_Location_Value_ID(LocationId.toRepoId(from.getCapturedLocationId()));
 		setHandOverAddress(from.getRenderedAddress());
+	}
+
+	@Override
+	default void setLocationAndResetRenderedAddress(@Nullable final BPartnerLocationAndCaptureId from)
+	{
+		setHandOver_Location_ID(from != null ? from.getBPartnerLocationRepoId() : -1);
+		setHandOver_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
+		setHandOverAddress(null);
 	}
 }

@@ -25,6 +25,7 @@ package de.metas.bpartner;
 import de.metas.location.LocationId;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -58,7 +59,6 @@ public class BPartnerLocationAndCaptureId
 		return new BPartnerLocationAndCaptureId(bpartnerLocationId, null);
 	}
 
-	@Nullable
 	public static BPartnerLocationAndCaptureId ofRepoId(
 			final int bpartnerRepoId,
 			final int bpartnerLocationRepoId,
@@ -86,6 +86,18 @@ public class BPartnerLocationAndCaptureId
 		return new BPartnerLocationAndCaptureId(bpartnerLocationId, locationCaptureId);
 	}
 
+	public static BPartnerLocationAndCaptureId ofRecord(@NonNull final I_C_BPartner_Location record)
+	{
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID());
+		final LocationId locationCaptureId = LocationId.ofRepoIdOrNull(record.getC_Location_ID());
+		return new BPartnerLocationAndCaptureId(bpartnerLocationId, locationCaptureId);
+	}
+
+	public static BPartnerLocationAndCaptureId ofLocationWithUnknownCapture(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		return new BPartnerLocationAndCaptureId(bpartnerLocationId, null);
+	}
+
 	public static boolean equals(@Nullable BPartnerLocationAndCaptureId o1, @Nullable BPartnerLocationAndCaptureId o2)
 	{
 		return Objects.equals(o1, o2);
@@ -94,5 +106,15 @@ public class BPartnerLocationAndCaptureId
 	public BPartnerId getBpartnerId()
 	{
 		return getBpartnerLocationId().getBpartnerId();
+	}
+
+	public int getBPartnerLocationRepoId()
+	{
+		return getBpartnerLocationId().getRepoId();
+	}
+
+	public int getLocationCaptureRepoId()
+	{
+		return LocationId.toRepoId(getLocationCaptureId());
 	}
 }

@@ -77,9 +77,11 @@ public class RMACreateOrder extends JavaProcess
         order.setAD_Org_ID(rma.getAD_Org_ID());
         order.setC_BPartner_ID(originalOrder.getC_BPartner_ID());
         order.setC_BPartner_Location_ID(originalOrder.getC_BPartner_Location_ID());
+        order.setC_BPartner_Location_Value_ID(originalOrder.getC_BPartner_Location_Value_ID());
         order.setAD_User_ID(originalOrder.getAD_User_ID());
         order.setBill_BPartner_ID(originalOrder.getBill_BPartner_ID());
         order.setBill_Location_ID(originalOrder.getBill_Location_ID());
+        order.setBill_Location_Value_ID(originalOrder.getBill_Location_Value_ID());
         order.setBill_User_ID(originalOrder.getBill_User_ID());
         order.setSalesRep_ID(rma.getSalesRep_ID());
         order.setM_PriceList_ID(originalOrder.getM_PriceList_ID());

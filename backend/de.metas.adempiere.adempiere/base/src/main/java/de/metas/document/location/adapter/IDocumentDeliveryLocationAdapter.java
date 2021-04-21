@@ -22,6 +22,7 @@
 
 package de.metas.document.location.adapter;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
 import lombok.NonNull;
@@ -33,6 +34,8 @@ public interface IDocumentDeliveryLocationAdapter extends IDocumentLocationAdapt
 	int getDropShip_BPartner_ID();
 
 	int getDropShip_Location_ID();
+
+	void setDropShip_Location_ID(int DropShip_Location_ID);
 
 	int getDropShip_Location_Value_ID();
 
@@ -53,5 +56,13 @@ public interface IDocumentDeliveryLocationAdapter extends IDocumentLocationAdapt
 	{
 		setDropShip_Location_Value_ID(LocationId.toRepoId(from.getCapturedLocationId()));
 		setDeliveryToAddress(from.getRenderedAddress());
+	}
+
+	@Override
+	default void setLocationAndResetRenderedAddress(@Nullable final BPartnerLocationAndCaptureId from)
+	{
+		setDropShip_Location_ID(from != null ? from.getBPartnerLocationRepoId() : -1);
+		setDropShip_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
+		setDeliveryToAddress(null);
 	}
 }

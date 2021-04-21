@@ -67,6 +67,12 @@ public class DropShipOverrideLocationAdapter implements IDocumentDeliveryLocatio
 	}
 
 	@Override
+	public void setDropShip_Location_ID(final int DropShip_Location_ID)
+	{
+		delegate.setDropShip_Location_Override_ID(DropShip_Location_ID);
+	}
+
+	@Override
 	public int getDropShip_Location_Value_ID()
 	{
 		return delegate.getDropShip_Location_Override_Value_ID();

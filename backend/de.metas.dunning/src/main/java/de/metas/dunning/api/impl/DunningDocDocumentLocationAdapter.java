@@ -26,6 +26,12 @@ class DunningDocDocumentLocationAdapter implements IDocumentLocationAdapter
 	}
 
 	@Override
+	public void setC_BPartner_Location_ID(final int C_BPartner_Location_ID)
+	{
+		delegate.setC_BPartner_Location_ID(C_BPartner_Location_ID);
+	}
+
+	@Override
 	public int getC_BPartner_Location_Value_ID()
 	{
 		return -1;

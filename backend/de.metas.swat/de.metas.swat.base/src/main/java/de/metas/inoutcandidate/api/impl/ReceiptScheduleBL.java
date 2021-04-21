@@ -53,6 +53,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.element.api.AdUIElementId;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
@@ -615,6 +616,12 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		}
 
 		@Override
+		public void setC_BPartner_Location_ID(final int C_BPartner_Location_ID)
+		{
+			receiptSchedule.setC_BPartner_Location_ID(C_BPartner_Location_ID);
+		}
+
+		@Override
 		public int getC_BPartner_Location_Value_ID()
 		{
 			return -1;
@@ -664,6 +671,13 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		public int getC_BPartner_Location_ID()
 		{
 			return getC_BPartner_Location_Effective_ID(receiptSchedule);
+		}
+
+		@Override
+		@Deprecated
+		public void setC_BPartner_Location_ID(final int C_BPartner_Location_ID)
+		{
+			throw new UnsupportedOperationException();
 		}
 
 		@Override

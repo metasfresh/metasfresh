@@ -29,8 +29,10 @@ import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.checkerframework.checker.units.qual.C;
 import org.compiere.model.I_M_InOut;
 
+import java.sql.DriverPropertyInfo;
 import java.util.Optional;
 
 public class InOutDocumentLocationAdapterFactory implements DocumentLocationAdapterFactory
@@ -98,6 +100,12 @@ public class InOutDocumentLocationAdapterFactory implements DocumentLocationAdap
 		}
 
 		@Override
+		public void setC_BPartner_Location_ID(final int C_BPartner_Location_ID)
+		{
+			delegate.setC_BPartner_Location_ID(C_BPartner_Location_ID);
+		}
+
+		@Override
 		public int getC_BPartner_Location_Value_ID()
 		{
 			return delegate.getC_BPartner_Location_Value_ID();
@@ -147,6 +155,12 @@ public class InOutDocumentLocationAdapterFactory implements DocumentLocationAdap
 		public int getDropShip_Location_ID()
 		{
 			return delegate.getDropShip_Location_ID();
+		}
+
+		@Override
+		public void setDropShip_Location_ID(final int DropShip_Location_ID)
+		{
+			delegate.setDropShip_Location_ID(DropShip_Location_ID);
 		}
 
 		@Override

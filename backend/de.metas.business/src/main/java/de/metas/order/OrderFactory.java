@@ -3,6 +3,7 @@ package de.metas.order;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
@@ -298,7 +299,7 @@ public class OrderFactory
 		}
 
 		order.setC_BPartner_ID(bpartnerId.getRepoId());
-		order.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
+		orderBL.setBPartnerLocation(order, BPartnerLocationAndCaptureId.ofLocationWithUnknownCapture(bpartnerLocationId));
 		order.setAD_User_ID(BPartnerContactId.toRepoId(contactId));
 		return this;
 	}
