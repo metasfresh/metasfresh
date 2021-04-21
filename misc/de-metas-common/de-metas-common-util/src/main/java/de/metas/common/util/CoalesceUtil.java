@@ -181,6 +181,32 @@ public class CoalesceUtil
 		return null;
 	}
 
+	@SafeVarargs
+	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
+	{
+		if(valueSuppliers == null || valueSuppliers.length == 0)
+		{
+			return null;
+		}
+
+		for (final Supplier<String> valueSupplier : valueSuppliers)
+		{
+			if(valueSupplier == null)
+			{
+				continue;
+			}
+
+			final String value = valueSupplier.get();
+			if (value != null && EmptyUtil.isNotBlank(value))
+			{
+				return value.trim();
+			}
+		}
+
+		return null;
+	}
+
+
 
 	public int countNotNulls(@Nullable final Object... values)
 	{
