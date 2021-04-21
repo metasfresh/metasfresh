@@ -61,6 +61,12 @@ public class HandOverOverrideLocationAdapter implements IDocumentHandOverLocatio
 	}
 
 	@Override
+	public void setHandOver_Location_ID(final int HandOver_Location_ID)
+	{
+		delegate.setHandOver_Location_Override_ID(HandOver_Location_ID);
+	}
+
+	@Override
 	public int getHandOver_Location_Value_ID()
 	{
 		return delegate.getHandOver_Location_Override_Value_ID();
