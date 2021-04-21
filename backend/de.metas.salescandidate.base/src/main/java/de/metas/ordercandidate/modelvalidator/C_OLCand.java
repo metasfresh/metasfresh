@@ -1,6 +1,5 @@
 package de.metas.ordercandidate.modelvalidator;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.api.IBPRelationDAO;
@@ -40,11 +39,11 @@ import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
 
 import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 @Interceptor(I_C_OLCand.class)
 @Callout(I_C_OLCand.class)
@@ -52,7 +51,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class C_OLCand
 {
 	private final OLCandValidatorService olCandValidatorService;
+	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPRelationDAO bpRelationDAO = Services.get(IBPRelationDAO.class);
+	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerBL bPartnerBL;
 
 	public C_OLCand(
@@ -61,6 +65,12 @@ public class C_OLCand
 	{
 		this.bPartnerBL = bPartnerBL;
 		this.olCandValidatorService = olCandValidatorService;
+	}
+
+	@Init
+	public void registerCallout()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_IsError)
@@ -79,8 +89,6 @@ public class C_OLCand
 	/**
 	 * Method is fired before an order candidate is deleted.<br>
 	 * It deletes all {@link I_C_Order_Line_Alloc}s referencing the given order candidate.
-	 *
-	 * @param olCand
 	 */
 	// 03472
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -88,7 +96,6 @@ public class C_OLCand
 	{
 		try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(olCand))
 		{
-			final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 			final List<I_C_Order_Line_Alloc> olasToDelete = olCandDAO.retrieveAllOlas(olCand);
 
 			for (final I_C_Order_Line_Alloc ola : olasToDelete)
@@ -103,11 +110,10 @@ public class C_OLCand
 	 * <p>
 	 * Before that it resets the pricing system if there is a new C_BPartner or C_BPartner_Override.<br>
 	 * The {@link de.metas.ordercandidate.spi.IOLCandValidator} framework is then supposed to call {@link de.metas.ordercandidate.api.IOLCandBL} to come up with the then-correct pricing system.
-	 *
-	 * @param olCand
-	 * @task http://dewiki908/mediawiki/index.php/09686_PricingSystem_sometimes_not_updated_in_C_OLCand_%28105127201494%29
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/09686_PricingSystem_sometimes_not_updated_in_C_OLCand_%28105127201494%29
 	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validateC_OLCand(final I_C_OLCand olCand)
 	{
 		try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(olCand))
@@ -116,11 +122,7 @@ public class C_OLCand
 			{
 				return; // we are already within the validation process. no need to call the logic from here.
 			}
-			if (InterfaceWrapperHelper.isValueChanged(
-					olCand,
-					ImmutableSet.<String>of(
-							I_C_OLCand.COLUMNNAME_C_BPartner_ID,
-							I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID))
+			if (InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_C_BPartner_ID, I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID)
 					&& InterfaceWrapperHelper.isUIAction(olCand))
 			{
 				// task 09686
@@ -130,9 +132,12 @@ public class C_OLCand
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
-			I_C_OLCand.COLUMNNAME_C_BPartner_ID, I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID,
-			I_C_OLCand.COLUMNNAME_M_Product_ID, I_C_OLCand.COLUMNNAME_M_Product_Override_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					I_C_OLCand.COLUMNNAME_C_BPartner_ID,
+					I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID,
+					I_C_OLCand.COLUMNNAME_M_Product_ID,
+					I_C_OLCand.COLUMNNAME_M_Product_Override_ID })
 	public void setProductDescription(final I_C_OLCand olCand)
 	{
 		try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(olCand))
@@ -141,10 +146,6 @@ public class C_OLCand
 			{
 				return; // if olCand is new and product description is already set, do not copy anything
 			}
-
-			// Services
-			final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
-			final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 
 			final I_C_BPartner partner = olCandEffectiveValuesBL.getC_BPartner_Effective(olCand);
 			final I_M_Product product = olCandEffectiveValuesBL.getM_Product_Effective(olCand);
@@ -155,9 +156,7 @@ public class C_OLCand
 
 			final OrgId orgId = OrgId.ofRepoId(product.getAD_Org_ID());
 
-			final I_C_BPartner_Product bpp = InterfaceWrapperHelper.create(
-					bpartnerProductDAO.retrieveBPartnerProductAssociation(partner, product, orgId),
-					I_C_BPartner_Product.class);
+			final I_C_BPartner_Product bpp = bpartnerProductDAO.retrieveBPartnerProductAssociation(partner, product, orgId);
 			if (bpp == null)
 			{
 				return; // nothing that we can add here with any benefit
@@ -177,31 +176,35 @@ public class C_OLCand
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID)
 	@CalloutMethod(columnNames = { I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID })
-	public void onCBPartnerOverride(final I_C_OLCand olCand)
+	public void onBPartnerOverride(final I_C_OLCand olCand)
 	{
 		try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(olCand))
 		{
-			final BPartnerId bpartnerOverrideId = BPartnerId.ofRepoIdOrNull(olCand.getC_BPartner_Override_ID());
-			if (bpartnerOverrideId == null)
-			{
-				// in case the bpartner Override was deleted, also delete the bpartner Location Override
-				olCand.setC_BP_Location_Override_ID(0);
-				return;
-			}
+			setBPLocationOverride(olCand, computeBPLocationOverride(olCand));
+		}
+	}
+
+	@Nullable
+	private I_C_BPartner_Location computeBPLocationOverride(final I_C_OLCand olCand)
+	{
+		final BPartnerId bpartnerOverrideId = BPartnerId.ofRepoIdOrNull(olCand.getC_BPartner_Override_ID());
+		if (bpartnerOverrideId == null)
+		{
+			// in case the bpartner Override was deleted, also delete the bpartner Location Override
+			return null;
+		}
+		else
+		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
 			final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
-
-			final I_C_BPartner_Location shipToLocation = Services.get(IBPartnerDAO.class).retrieveShipToLocation(ctx, bpartnerOverrideId.getRepoId(), trxName);
-
-			if (shipToLocation == null)
-			{
-				// no location was found
-				olCand.setC_BP_Location_Override_ID(0);
-				return;
-			}
-
-			olCand.setC_BP_Location_Override_ID(shipToLocation.getC_BPartner_Location_ID());
+			return bPartnerDAO.retrieveShipToLocation(ctx, bpartnerOverrideId.getRepoId(), trxName);
 		}
+	}
+
+	private static void setBPLocationOverride(final I_C_OLCand olCand, final I_C_BPartner_Location bpLocationOverride)
+	{
+		olCand.setC_BP_Location_Override_ID(bpLocationOverride != null ? bpLocationOverride.getC_BPartner_Location_ID() : -1);
+		olCand.setC_BP_Location_Override_Value_ID(bpLocationOverride != null ? bpLocationOverride.getC_Location_ID() : -1);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_DropShip_BPartner_Override_ID)
@@ -210,45 +213,40 @@ public class C_OLCand
 	{
 		try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(olCand))
 		{
-			final BPartnerId dropShipPartnerOverrideId = BPartnerId.ofRepoIdOrNull(olCand.getDropShip_BPartner_Override_ID());
-			if (dropShipPartnerOverrideId == null)
-			{
-				// in case the drop-ship bpartner Override was deleted, also delete the drop-ship Location Override
-				olCand.setDropShip_Location_Override_ID(0);
-
-				return;
-			}
-			final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
-			final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
-
-			final I_C_BPartner_Location dropShipLocation = Services.get(IBPartnerDAO.class).retrieveShipToLocation(ctx, dropShipPartnerOverrideId.getRepoId(), trxName);
-
-			if (dropShipLocation == null)
-			{
-				// no location was found
-				olCand.setDropShip_Location_Override_ID(0);
-
-				return;
-			}
-
-			olCand.setDropShip_Location_Override_ID(dropShipLocation.getC_BPartner_Location_ID());
+			setDropShipLocationOverride(olCand, computeDropShipLocationOverride(olCand));
 		}
 	}
 
+	private I_C_BPartner_Location computeDropShipLocationOverride(final I_C_OLCand olCand)
+	{
+		final BPartnerId dropShipPartnerOverrideId = BPartnerId.ofRepoIdOrNull(olCand.getDropShip_BPartner_Override_ID());
+		if (dropShipPartnerOverrideId == null)
+		{
+			// in case the drop-ship bpartner Override was deleted, also delete the drop-ship Location Override
+			return null;
+		}
+		else
+		{
+			final Properties ctx = InterfaceWrapperHelper.getCtx(olCand);
+			final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
+			return bPartnerDAO.retrieveShipToLocation(ctx, dropShipPartnerOverrideId.getRepoId(), trxName);
+		}
+	}
+
+	private static void setDropShipLocationOverride(@NonNull final I_C_OLCand olCand, @Nullable final I_C_BPartner_Location dropShipLocation)
+	{
+		olCand.setDropShip_Location_Override_ID(dropShipLocation != null ? dropShipLocation.getC_BPartner_Location_ID() : -1);
+		olCand.setDropShip_Location_Override_Value_ID(dropShipLocation != null ? dropShipLocation.getC_Location_ID() : -1);
+	}
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_HandOver_Partner_Override_ID)
-	public void onHandOverPartnerOverrideIntercept(final I_C_OLCand olCand)
+	public void onHandOverPartnerOverrideInterceptor(final I_C_OLCand olCand)
 	{
 		try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(olCand))
 		{
-			final boolean handoverLocatinOverrideChanged = InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_HandOver_Location_Override_ID);
-
-			if (handoverLocatinOverrideChanged)
-			{
-				// do nothing;
-				// It is not wanted for the handoverLocationOverride to be changed if it was manually set to another value
-			}
-
-			else
+			// NOTE: It is not wanted for the handoverLocationOverride to be changed if it was manually set to another value
+			final boolean handoverLocationOverrideChanged = InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_HandOver_Location_Override_ID);
+			if (!handoverLocationOverrideChanged)
 			{
 				updateHandoverLocationOverride(olCand);
 			}
@@ -256,7 +254,7 @@ public class C_OLCand
 	}
 
 	@CalloutMethod(columnNames = { I_C_OLCand.COLUMNNAME_HandOver_Partner_Override_ID })
-	public void onHandOverPartnerOverride(@NonNull final I_C_OLCand olCand)
+	public void onHandOverPartnerOverrideCallout(@NonNull final I_C_OLCand olCand)
 	{
 		try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(olCand))
 		{
@@ -266,49 +264,47 @@ public class C_OLCand
 
 	private void updateHandoverLocationOverride(@NonNull final I_C_OLCand olCand)
 	{
+		setHandOverLocationOverride(olCand, computeHandoverLocationOverride(olCand));
+	}
+
+	private I_C_BPartner_Location computeHandoverLocationOverride(@NonNull final I_C_OLCand olCand)
+	{
 		final BPartnerId handOverPartnerOverrideId = BPartnerId.ofRepoIdOrNull(olCand.getHandOver_Partner_Override_ID());
 		if (handOverPartnerOverrideId == null)
 		{
 			// in case the handover bpartner Override was deleted, also delete the handover Location Override
-			olCand.setHandOver_Location_Override_ID(0);
-
-			return;
-		}
-
-		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
-
-		final I_C_BPartner partner = olCandEffectiveValuesBL.getC_BPartner_Effective(olCand);
-
-		final I_C_BP_Relation handoverRelation = Services.get(IBPRelationDAO.class).retrieveHandoverBPRelation(
-				partner,
-				loadOutOfTrx(handOverPartnerOverrideId.getRepoId(), I_C_BPartner.class));
-
-		if (handoverRelation == null)
-		{
-			// this shall never happen, since both Handover_BPartner and Handover_BPartner_Override must come from such a bpp relation.
-			// but I will leave this condition here as extra safety
-			olCand.setHandOver_Location_Override_ID(0);
+			return null;
 		}
 		else
 		{
-			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(handoverRelation.getC_BPartnerRelation_ID(), handoverRelation.getC_BPartnerRelation_Location_ID());
-			final org.compiere.model.I_C_BPartner_Location handOverLocation = bPartnerDAO.getBPartnerLocationById(bPartnerLocationId);
-
-			if (handOverLocation == null)
+			final I_C_BPartner partner = olCandEffectiveValuesBL.getC_BPartner_Effective(olCand);
+			final I_C_BPartner handoverPartnerOverride = bPartnerDAO.getById(handOverPartnerOverrideId);
+			final I_C_BP_Relation handoverRelation = bpRelationDAO.retrieveHandoverBPRelation(partner, handoverPartnerOverride);
+			if (handoverRelation == null)
 			{
-				// this should also not happen because C_BPartnerRelation_Location is mandatory
-				olCand.setHandOver_Location_Override_ID(0);
-				return;
+				// this shall never happen, since both Handover_BPartner and Handover_BPartner_Override must come from such a bpp relation.
+				// but I will leave this condition here as extra safety
+				return null;
 			}
-			olCand.setHandOver_Location_Override_ID(handOverLocation.getC_BPartner_Location_ID());
+			else
+			{
+				final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(handoverRelation.getC_BPartnerRelation_ID(), handoverRelation.getC_BPartnerRelation_Location_ID());
+				return bPartnerDAO.getBPartnerLocationByIdEvenInactive(bPartnerLocationId);
+			}
 		}
+	}
+
+	private static void setHandOverLocationOverride(
+			@NonNull final I_C_OLCand olCand,
+			@Nullable final I_C_BPartner_Location handOverLocation)
+	{
+		olCand.setHandOver_Location_Override_ID(handOverLocation != null ? handOverLocation.getC_BPartner_Location_ID() : -1);
+		olCand.setHandOver_Location_Override_Value_ID(handOverLocation != null ? handOverLocation.getC_Location_ID() : -1);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_POReference)
 	public void updatePOReferenceOnSalesOrder(@NonNull final I_C_OLCand olCand)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final IQueryBuilder<I_C_Order> updateOrdersQuery = queryBL
 				.createQueryBuilder(I_C_Order_Line_Alloc.class)
 				.addOnlyActiveRecordsFilter()
@@ -329,11 +325,5 @@ public class C_OLCand
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(CoalesceUtil.firstGreaterThanZero(cand.getBill_BPartner_ID(), cand.getC_BPartner_ID()));
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(cand.getC_BPartner_SalesRep_ID());
 		bPartnerBL.validateSalesRep(bPartnerId, salesRepId);
-	}
-
-	@Init
-	public void registerCallout()
-	{
-		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 }
