@@ -10,6 +10,7 @@ import de.metas.ui.web.window.datatypes.json.JSONTriggerAction;
 import de.metas.ui.web.window.model.DocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -245,7 +246,8 @@ public class Execution implements IAutoCloseable
 						}
 					}
 
-					assert versionException != null;
+					Check.assumeNotNull(versionException, "VersionException must not be null");
+
 					throw versionException;
 				};
 			}
