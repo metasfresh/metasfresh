@@ -159,15 +159,28 @@ public class CoalesceUtil
 	@Nullable
 	public String firstNotEmptyTrimmed(@NonNull final String... values)
 	{
+		return firstNotBlank(values);
+	}
+
+	@Nullable
+	public String firstNotBlank(@Nullable final String... values)
+	{
+		if(values == null || values.length == 0)
+		{
+			return null;
+		}
+
 		for (final String value : values)
 		{
-			if (EmptyUtil.isNotBlank(value))
+			if (value != null && EmptyUtil.isNotBlank(value))
 			{
 				return value.trim();
 			}
 		}
+
 		return null;
 	}
+
 
 	public int countNotNulls(@Nullable final Object... values)
 	{
