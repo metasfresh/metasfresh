@@ -369,7 +369,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		// metas end
 
 		//
-		if (ship.getC_Order_ID() != 0)
+		if (ship.getC_Order_ID() > 0)
 		{
 			setC_Order_ID(ship.getC_Order_ID());
 			final MOrder order = new MOrder(getCtx(), ship.getC_Order_ID(), get_TrxName());
@@ -393,7 +393,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			//
 		}
 		// Check if Shipment/Receipt is based on RMA
-		if (ship.getM_RMA_ID() != 0)
+		if (ship.getM_RMA_ID() > 0)
 		{
 
 			final MRMA rma = new MRMA(getCtx(), ship.getM_RMA_ID(), get_TrxName());
@@ -409,7 +409,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 			// Retrieves the invoice DocType
 			final I_C_DocType dt = MDocType.get(getCtx(), rma.getC_DocType_ID());
-			if (dt.getC_DocTypeInvoice_ID() != 0)
+			if (dt.getC_DocTypeInvoice_ID() > 0)
 			{
 				Services.get(IInvoiceBL.class).setDocTypeTargetIdAndUpdateDescription(this, dt.getC_DocTypeInvoice_ID());
 			}
