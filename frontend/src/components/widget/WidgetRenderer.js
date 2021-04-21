@@ -113,6 +113,8 @@ class WidgetRenderer extends PureComponent {
       onBlurWithParams,
       onSetWidgetType,
       onHandleProcess,
+      openModal,
+      closeModal,
       forwardedRef,
       disconnected,
     } = this.props;
@@ -180,6 +182,8 @@ class WidgetRenderer extends PureComponent {
       fieldName: widgetField,
       handleBackdropLock,
       patch: (option) => onPatch(widgetField, option),
+      openModal,
+      closeModal,
       tabIndex,
       autoFocus,
       readonly,
