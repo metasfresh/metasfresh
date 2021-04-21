@@ -215,7 +215,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void updateCapturedLocationsAndRenderedAddresses(final I_M_ShipmentSchedule sched)
 	{
-		// TODO: atm we are getting it just in time instead of wiring it at construction time,
+		// NOTE: atm we are getting it just in time instead of wiring it at construction time,
 		// because if not we have to adapt >300 tests which would fail
 		final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 
