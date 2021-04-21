@@ -460,7 +460,8 @@ class WidgetRenderer extends PureComponent {
               widgetField,
               id,
               filterWidget,
-              isFilterActive,
+              isFilterActive:
+                typeof isFilterActive === 'undefined' ? false : isFilterActive, // safety check - do not pass `undefined` further down
             }}
             handlePatch={onPatch}
           />

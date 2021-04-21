@@ -20,10 +20,17 @@ const Checkbox = (props) => {
     isFilterActive,
   } = props;
   let { value, defaultValue } = props.widgetData[0];
- 
-  value = typeof value === 'string' || typeof value === 'undefined' ? false : value;
+
+  value =
+    typeof value === 'string' || typeof value === 'undefined' ? false : value;
   const initialChecked = defaultValue && !isFilterActive ? defaultValue : value;
   const [checkedState, setCheckedState] = useState(initialChecked);
+
+  useEffect(() => {
+    defaultValue &&
+      !isFilterActive &&
+      handlePatch(widgetField, defaultValue, id);
+  }, []);
 
   /**
    * @method handleClear
@@ -110,6 +117,7 @@ Checkbox.propTypes = {
   filterWidget: PropTypes.bool,
   handlePatch: PropTypes.func,
   widgetField: PropTypes.string,
+  isFilterActive: PropTypes.bool,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
 };
 

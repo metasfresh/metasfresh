@@ -174,7 +174,7 @@ describe('Filters tests', () => {
       wrapper.find('.meta-icon-close-alt').simulate('click');
       wrapper.update();
 
-      expect(wrapper.find('FiltersItem').state().activeFilter).toBeFalsy();
+      expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
       wrapper
         .find('.filter-widget .filter-btn-wrapper .applyBtn')
         .simulate('click');
