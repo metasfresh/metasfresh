@@ -611,6 +611,7 @@ export function createWindow({
       let responseDocuments = response.data.documents
         ? response.data.documents
         : response.data;
+
       responseDocuments.forEach((value, index) => {
         if (value.rowId === rowId) {
           elem = index;
