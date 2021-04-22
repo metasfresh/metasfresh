@@ -24,8 +24,10 @@ package de.metas.inout.location.adapter;
 
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.compiere.model.I_M_InOut;
 
+@ToString
 public class DocumentDeliveryLocationAdapter implements IDocumentDeliveryLocationAdapter
 {
 	private final I_M_InOut delegate;
