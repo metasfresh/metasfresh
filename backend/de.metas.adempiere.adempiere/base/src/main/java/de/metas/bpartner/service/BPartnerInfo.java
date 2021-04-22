@@ -54,7 +54,7 @@ public class BPartnerInfo
 	@Nullable
 	BPartnerContactId contactId;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private BPartnerInfo(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final BPartnerLocationId bpartnerLocationId,
@@ -102,5 +102,12 @@ public class BPartnerInfo
 				.contactId(contactId)
 				.locationId(locationId)
 				.build();
+	}
+
+	public BPartnerInfo withLocationId(@Nullable final LocationId locationId)
+	{
+		return !LocationId.equals(this.locationId, locationId)
+				? toBuilder().locationId(locationId).build()
+				: this;
 	}
 }

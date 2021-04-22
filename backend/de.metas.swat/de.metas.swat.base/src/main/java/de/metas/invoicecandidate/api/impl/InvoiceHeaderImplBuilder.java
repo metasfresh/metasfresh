@@ -202,12 +202,17 @@ public class InvoiceHeaderImplBuilder
 
 	public void setBillTo(@NonNull final BPartnerInfo billTo)
 	{
-		if(this.billTo != null && !BPartnerInfo.equals(this.billTo, billTo))
+		if (this.billTo == null)
 		{
-			throw new AdempiereException("BillTo not matching: new="+billTo+", previous="+this.billTo);
+			this.billTo = billTo;
 		}
-
-		this.billTo = billTo;
+		else if (!BPartnerInfo.equals(this.billTo, billTo))
+		{
+			if (!BPartnerInfo.equals(this.billTo.withLocationId(null), billTo.withLocationId(null)))
+			{
+				throw new AdempiereException("BillTo not matching: new=" + billTo + ", previous=" + this.billTo);
+			}
+		}
 	}
 
 	public BPartnerInfo getBillTo()
@@ -330,8 +335,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-					+ "\n Current value: " + value
-					+ "\n New value: " + valueNew);
+												 + "\n Current value: " + value
+												 + "\n New value: " + valueNew);
 		}
 	}
 
@@ -352,8 +357,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new AdempiereException("Overriding field " + name + " not allowed"
-					+ "\n Current value: " + id
-					+ "\n New value: " + idNew);
+												 + "\n Current value: " + id
+												 + "\n New value: " + idNew);
 		}
 	}
 
@@ -386,8 +391,8 @@ public class InvoiceHeaderImplBuilder
 		else
 		{
 			throw new IllegalStateException("Internal error: invalid ID " + modelIdToUse
-					+ "\n Model: " + model
-					+ "\n Model new: " + modelNew);
+													+ "\n Model: " + model
+													+ "\n Model new: " + modelNew);
 		}
 	}
 
@@ -404,8 +409,8 @@ public class InvoiceHeaderImplBuilder
 		}
 
 		throw new AdempiereException("Overriding field " + name + " not allowed"
-				+ "\n Current value: " + value
-				+ "\n New value: " + valueNew);
+											 + "\n Current value: " + value
+											 + "\n New value: " + valueNew);
 	}
 
 	public void setExternalId(final String externalId)
