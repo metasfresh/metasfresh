@@ -26,6 +26,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.greeting.GreetingRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.AbstractICTestSupport;
@@ -49,6 +50,7 @@ import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -94,6 +96,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		LogManager.setLevel(Level.DEBUG);
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 	}
 
 	protected final List<IInvoiceLineRW> getInvoiceLines(final IInvoiceHeader invoice)
