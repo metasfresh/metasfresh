@@ -81,7 +81,7 @@ import de.metas.util.Services;
  *
  * @author tsa
  */
-public abstract class InvoiceCandidateEnqueueToInvoiceTestBase
+abstract class InvoiceCandidateEnqueueToInvoiceTestBase
 {
 	protected PlainLockManager lockManager;
 	protected PlainLockDatabase locksDatabase;
