@@ -22,17 +22,23 @@
 
 package de.metas.invoice.location.adapter;
 
-import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RecordBasedLocationAdapter;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.MInvoice;
+
+import java.util.Optional;
 
 @ToString
-public class InvoiceDocumentLocationAdapter implements IDocumentLocationAdapter
+public class InvoiceDocumentLocationAdapter
+		implements IDocumentLocationAdapter, RecordBasedLocationAdapter<InvoiceDocumentLocationAdapter>
 {
 	private final I_C_Invoice delegate;
 
@@ -101,6 +107,12 @@ public class InvoiceDocumentLocationAdapter implements IDocumentLocationAdapter
 		delegate.setBPartnerAddress(address);
 	}
 
+	@Override
+	public void setRenderedAddressAndCapturedLocation(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
+	}
+
 	public void setFromBillLocation(final I_C_Order from)
 	{
 		setFrom(OrderDocumentLocationAdapterFactory.billLocationAdapter(from).toDocumentLocation());
@@ -109,5 +121,24 @@ public class InvoiceDocumentLocationAdapter implements IDocumentLocationAdapter
 	public void setFrom(final I_C_Invoice from)
 	{
 		setFrom(new InvoiceDocumentLocationAdapter(from).toDocumentLocation());
+	}
+
+	@Override
+	public I_C_Invoice getWrappedRecord()
+	{
+		return delegate;
+	}
+
+	@Override
+	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
+	{
+		return documentLocationBL.toPlainDocumentLocation(this);
+	}
+
+	@Override
+	public InvoiceDocumentLocationAdapter toOldValues()
+	{
+		InterfaceWrapperHelper.assertNotOldValues(delegate);
+		return new InvoiceDocumentLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_C_Invoice.class));
 	}
 }

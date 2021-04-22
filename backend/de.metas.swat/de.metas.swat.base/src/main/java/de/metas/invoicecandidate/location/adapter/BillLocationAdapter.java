@@ -22,15 +22,23 @@
 
 package de.metas.invoicecandidate.location.adapter;
 
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RecordBasedLocationAdapter;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 
-public class BillLocationAdapter implements IDocumentBillLocationAdapter
+import java.util.Optional;
+
+public class BillLocationAdapter
+		implements IDocumentBillLocationAdapter, RecordBasedLocationAdapter<BillLocationAdapter>
 {
 	private final I_C_Invoice_Candidate delegate;
 
@@ -91,6 +99,12 @@ public class BillLocationAdapter implements IDocumentBillLocationAdapter
 		delegate.setBill_User_ID(Bill_User_ID);
 	}
 
+	@Override
+	public void setRenderedAddressAndCapturedLocation(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentBillLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
+	}
+
 	public void setFrom(@NonNull final I_C_Invoice_Candidate from)
 	{
 		setFrom(new BillLocationAdapter(from).toDocumentLocation());
@@ -99,5 +113,24 @@ public class BillLocationAdapter implements IDocumentBillLocationAdapter
 	public void setFrom(@NonNull final I_C_Order order)
 	{
 		setFrom(OrderDocumentLocationAdapterFactory.billLocationAdapter(order).toDocumentLocation());
+	}
+
+	@Override
+	public I_C_Invoice_Candidate getWrappedRecord()
+	{
+		return delegate;
+	}
+
+	@Override
+	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
+	{
+		return documentLocationBL.toPlainDocumentLocation(this);
+	}
+
+	@Override
+	public BillLocationAdapter toOldValues()
+	{
+		InterfaceWrapperHelper.assertNotOldValues(delegate);
+		return new BillLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_C_Invoice_Candidate.class));
 	}
 }

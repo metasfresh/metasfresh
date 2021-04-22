@@ -23,20 +23,15 @@
 package de.metas.inout.location;
 
 import de.metas.document.location.IDocumentLocationBL;
-import de.metas.inout.location.adapter.DocumentDeliveryLocationAdapter;
-import de.metas.inout.location.adapter.DocumentLocationAdapter;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
-import de.metas.location.LocationId;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 
 public class InOutLocationsUpdater
 {
 	private final IDocumentLocationBL documentLocationBL;
 	private final I_M_InOut record;
-	private final boolean isNewRecord;
 
 	@Builder
 	private InOutLocationsUpdater(
@@ -45,62 +40,11 @@ public class InOutLocationsUpdater
 	{
 		this.documentLocationBL = documentLocationBL;
 		this.record = record;
-		this.isNewRecord = InterfaceWrapperHelper.isNew(record);
 	}
 
 	public void updateAllIfNeeded()
 	{
-		updateMainLocationIfNeeded();
-		updateDeliveryLocationIfNeeded();
-	}
-
-	private void updateMainLocationIfNeeded()
-	{
-		final boolean updateCapturedLocation = isNewRecord
-				? LocationId.ofRepoIdOrNull(record.getC_BPartner_Location_Value_ID()) == null
-				: InterfaceWrapperHelper.isValueChanged(record, I_M_InOut.COLUMNNAME_C_BPartner_Location_ID);
-
-		final boolean updateRenderedAddress = isNewRecord
-				|| updateCapturedLocation
-				|| InterfaceWrapperHelper.isValueChanged(record,
-														 I_M_InOut.COLUMNNAME_C_BPartner_ID,
-														 I_M_InOut.COLUMNNAME_C_BPartner_Location_ID,
-														 I_M_InOut.COLUMNNAME_C_BPartner_Location_Value_ID,
-														 I_M_InOut.COLUMNNAME_AD_User_ID);
-
-		if (updateCapturedLocation || updateRenderedAddress)
-		{
-			final DocumentLocationAdapter locationAdapter = InOutDocumentLocationAdapterFactory.locationAdapter(record);
-
-			documentLocationBL.toPlainDocumentLocation(locationAdapter)
-					.map(location -> updateCapturedLocation ? location.withLocationId(null) : location)
-					.map(documentLocationBL::computeRenderedAddress)
-					.ifPresent(locationAdapter::setRenderedAddressAndCapturedLocation);
-		}
-	}
-
-	private void updateDeliveryLocationIfNeeded()
-	{
-		final boolean updateCapturedLocation = isNewRecord
-				? LocationId.ofRepoIdOrNull(record.getC_BPartner_Location_Value_ID()) == null
-				: InterfaceWrapperHelper.isValueChanged(record, I_M_InOut.COLUMNNAME_DropShip_Location_ID);
-
-		final boolean updateRenderedAddress = isNewRecord
-				|| updateCapturedLocation
-				|| InterfaceWrapperHelper.isValueChanged(record,
-														 I_M_InOut.COLUMNNAME_DropShip_BPartner_ID,
-														 I_M_InOut.COLUMNNAME_DropShip_Location_ID,
-														 I_M_InOut.COLUMNNAME_DropShip_Location_Value_ID,
-														 I_M_InOut.COLUMNNAME_DropShip_User_ID);
-
-		if (updateCapturedLocation || updateRenderedAddress)
-		{
-			final DocumentDeliveryLocationAdapter locationAdapter = InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(record);
-
-			documentLocationBL.toPlainDocumentLocation(locationAdapter)
-					.map(location -> updateCapturedLocation ? location.withLocationId(null) : location)
-					.map(documentLocationBL::computeRenderedAddress)
-					.ifPresent(locationAdapter::setRenderedAddressAndCapturedLocation);
-		}
+		InOutDocumentLocationAdapterFactory.locationAdapter(record).updateCapturedLocationAndRenderedAddressIfNeeded(documentLocationBL);
+		InOutDocumentLocationAdapterFactory.deliveryLocationAdapter(record).updateCapturedLocationAndRenderedAddressIfNeeded(documentLocationBL);
 	}
 }

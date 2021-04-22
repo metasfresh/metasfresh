@@ -22,17 +22,25 @@
 
 package de.metas.inout.location.adapter;
 
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RecordBasedLocationAdapter;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 
+import java.util.Optional;
+
 @ToString
-public class DocumentLocationAdapter implements IDocumentLocationAdapter
+public class DocumentLocationAdapter
+		implements IDocumentLocationAdapter, RecordBasedLocationAdapter<DocumentLocationAdapter>
 {
 	private final I_M_InOut delegate;
 
@@ -101,6 +109,12 @@ public class DocumentLocationAdapter implements IDocumentLocationAdapter
 		delegate.setBPartnerAddress(address);
 	}
 
+	@Override
+	public void setRenderedAddressAndCapturedLocation(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
+	}
+
 	public void setFrom(@NonNull final I_M_InOut from)
 	{
 		setFrom(new DocumentLocationAdapter(from).toDocumentLocation());
@@ -116,4 +130,22 @@ public class DocumentLocationAdapter implements IDocumentLocationAdapter
 		setFrom(InvoiceDocumentLocationAdapterFactory.locationAdapter(from).toDocumentLocation());
 	}
 
+	@Override
+	public I_M_InOut getWrappedRecord()
+	{
+		return delegate;
+	}
+
+	@Override
+	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
+	{
+		return documentLocationBL.toPlainDocumentLocation(this);
+	}
+
+	@Override
+	public DocumentLocationAdapter toOldValues()
+	{
+		InterfaceWrapperHelper.assertNotOldValues(delegate);
+		return new DocumentLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_M_InOut.class));
+	}
 }

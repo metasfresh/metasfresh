@@ -22,13 +22,21 @@
 
 package de.metas.inout.location.adapter;
 
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RecordBasedLocationAdapter;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 
+import java.util.Optional;
+
 @ToString
-public class DocumentDeliveryLocationAdapter implements IDocumentDeliveryLocationAdapter
+public class DocumentDeliveryLocationAdapter
+		implements IDocumentDeliveryLocationAdapter, RecordBasedLocationAdapter<DocumentDeliveryLocationAdapter>
 {
 	private final I_M_InOut delegate;
 
@@ -107,5 +115,30 @@ public class DocumentDeliveryLocationAdapter implements IDocumentDeliveryLocatio
 	public void setDeliveryToAddress(final String address)
 	{
 		delegate.setDeliveryToAddress(address);
+	}
+
+	@Override
+	public void setRenderedAddressAndCapturedLocation(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentDeliveryLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
+	}
+
+	@Override
+	public I_M_InOut getWrappedRecord()
+	{
+		return delegate;
+	}
+
+	@Override
+	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
+	{
+		return documentLocationBL.toPlainDocumentLocation(this);
+	}
+
+	@Override
+	public DocumentDeliveryLocationAdapter toOldValues()
+	{
+		InterfaceWrapperHelper.assertNotOldValues(delegate);
+		return new DocumentDeliveryLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_M_InOut.class));
 	}
 }
