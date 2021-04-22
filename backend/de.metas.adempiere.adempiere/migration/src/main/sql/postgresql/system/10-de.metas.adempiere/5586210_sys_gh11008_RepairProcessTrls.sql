@@ -73,9 +73,6 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2021-04-22 11:15:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544434
 ;
 
---Rename Process Ersatzteile hinzuf�gen => Zubeh�rteile hinzuf�gen
-
-
 -- 2021-04-22T09:26:09.687Z
 -- URL zum Konzept
 UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Zuberhörteile hintzufügen',Updated=TO_TIMESTAMP('2021-04-22 11:26:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584776
@@ -126,8 +123,6 @@ UPDATE AD_Process_Trl SET Name='Zubehörteile hinzufügen',Updated=TO_TIMESTAMP(
 UPDATE AD_Process_Trl SET Name='Zubehörteile hinzufügen',Updated=TO_TIMESTAMP('2021-04-22 11:30:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584776
 ;
 
---Rename firts list
-
 -- 2021-04-22T10:33:55.916Z
 -- URL zum Konzept
 UPDATE AD_Ref_List_Trl SET Name='Zubehörteil',Updated=TO_TIMESTAMP('2021-04-22 12:33:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=542239
@@ -148,8 +143,6 @@ UPDATE AD_Ref_List_Trl SET Name='Zubehörteil',Updated=TO_TIMESTAMP('2021-04-22 
 -- URL zum Konzept
 UPDATE AD_Ref_List SET Name='Zubehörteil',Updated=TO_TIMESTAMP('2021-04-22 12:35:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542239
 ;
-
---rename second list
 
 -- 2021-04-22T10:38:12.309Z
 -- URL zum Konzept
