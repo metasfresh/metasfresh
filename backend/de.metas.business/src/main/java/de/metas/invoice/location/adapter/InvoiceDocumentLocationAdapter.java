@@ -26,10 +26,12 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import lombok.NonNull;
+import lombok.ToString;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MInvoice;
 
+@ToString
 public class InvoiceDocumentLocationAdapter implements IDocumentLocationAdapter
 {
 	private final I_C_Invoice delegate;

@@ -2,7 +2,9 @@ package de.metas.letters.model;
 
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString
 public class LetterDocumentLocationAdapter implements IDocumentLocationAdapter
 {
 	private final I_C_Letter delegate;

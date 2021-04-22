@@ -52,6 +52,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
@@ -663,6 +664,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 	}
 
+	@ToString
 	private class ReceiptScheduleEffectiveDocumentLocation implements IDocumentLocationAdapter
 	{
 		private final I_M_ReceiptSchedule delegate;

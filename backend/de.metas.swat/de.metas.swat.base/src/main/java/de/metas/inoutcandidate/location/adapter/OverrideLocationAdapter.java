@@ -25,7 +25,9 @@ package de.metas.inoutcandidate.location.adapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString
 public class OverrideLocationAdapter implements IDocumentLocationAdapter
 {
 	private final I_M_ShipmentSchedule delegate;

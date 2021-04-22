@@ -30,6 +30,7 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -57,7 +58,12 @@ public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTempla
 
 	default BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureId()
 	{
-		return BPartnerLocationAndCaptureId.ofRepoIdOrNull(getC_BPartner_ID(), getC_BPartner_Location_ID(), getC_BPartner_Location_Value_ID());
+		final BPartnerLocationAndCaptureId partnerLocationAndCaptureId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(getC_BPartner_ID(), getC_BPartner_Location_ID(), getC_BPartner_Location_Value_ID());
+		if (partnerLocationAndCaptureId == null)
+		{
+			throw new AdempiereException("Failed extracting " + BPartnerLocationAndCaptureId.class.getSimpleName() + " from " + this);
+		}
+		return partnerLocationAndCaptureId;
 	}
 
 	@Override

@@ -25,7 +25,9 @@ package de.metas.ordercandidate.location.adapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString
 public class BPartnerLocationAdapter implements IDocumentLocationAdapter
 {
 	private final I_C_OLCand delegate;

@@ -24,8 +24,10 @@ package de.metas.order.location.adapter;
 
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import lombok.NonNull;
+import lombok.ToString;
 import org.compiere.model.I_C_Order;
 
+@ToString
 public class OrderMainLocationAdapter implements IDocumentLocationAdapter
 {
 	private final I_C_Order delegate;

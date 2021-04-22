@@ -3,7 +3,9 @@ package de.metas.dunning.api.impl;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.dunning.model.I_C_DunningDoc;
 import lombok.NonNull;
+import lombok.ToString;
 
+@ToString
 class DunningDocDocumentLocationAdapter implements IDocumentLocationAdapter
 {
 	private final I_C_DunningDoc delegate;
