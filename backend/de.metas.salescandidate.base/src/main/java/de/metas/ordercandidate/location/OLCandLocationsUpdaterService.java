@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.ordercandidate.modelvalidator;
+package de.metas.ordercandidate.location;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -30,7 +30,6 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.logging.TableRecordMDC;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
-import de.metas.ordercandidate.location.adapter.OLCandDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -44,48 +43,25 @@ import javax.annotation.Nullable;
 import java.util.Properties;
 
 @Component
-public class OLCandLocationUpdateHelper
+public class OLCandLocationsUpdaterService
 {
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 	private final IBPRelationDAO bpRelationDAO = Services.get(IBPRelationDAO.class);
 	private final IDocumentLocationBL documentLocationBL;
 
-	public OLCandLocationUpdateHelper(@NonNull final IDocumentLocationBL documentLocationBL)
+	public OLCandLocationsUpdaterService(@NonNull final IDocumentLocationBL documentLocationBL)
 	{
 		this.documentLocationBL = documentLocationBL;
 	}
 
 	public void updateCapturedLocations(final I_C_OLCand olCand)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_C_BPartner_Location_ID))
-		{
-			documentLocationBL.updateCapturedLocation(OLCandDocumentLocationAdapterFactory.bpartnerLocationAdapter(olCand));
-		}
-		if (InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID))
-		{
-			documentLocationBL.updateCapturedLocation(OLCandDocumentLocationAdapterFactory.bpartnerLocationOverrideAdapter(olCand));
-		}
-		if (InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_Bill_Location_ID))
-		{
-			documentLocationBL.updateCapturedLocation(OLCandDocumentLocationAdapterFactory.billLocationAdapter(olCand));
-		}
-		if (InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_DropShip_Location_ID))
-		{
-			documentLocationBL.updateCapturedLocation(OLCandDocumentLocationAdapterFactory.dropShipAdapter(olCand));
-		}
-		if (InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_DropShip_Location_Override_ID))
-		{
-			documentLocationBL.updateCapturedLocation(OLCandDocumentLocationAdapterFactory.dropShipOverrideAdapter(olCand));
-		}
-		if (InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_HandOver_Location_ID))
-		{
-			documentLocationBL.updateCapturedLocation(OLCandDocumentLocationAdapterFactory.handOverLocationAdapter(olCand));
-		}
-		if (InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_HandOver_Location_Override_ID))
-		{
-			documentLocationBL.updateCapturedLocation(OLCandDocumentLocationAdapterFactory.handOverOverrideLocationAdapter(olCand));
-		}
+		OLCandLocationsUpdater.builder()
+				.documentLocationBL(documentLocationBL)
+				.record(olCand)
+				.build()
+				.updateAllIfNeeded();
 	}
 
 	public void updateBPartnerLocationOverride(final I_C_OLCand olCand)

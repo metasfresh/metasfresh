@@ -23,13 +23,21 @@
 package de.metas.ordercandidate.location.adapter;
 
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RecordBasedLocationAdapter;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.model.InterfaceWrapperHelper;
 
-public class DropShipOverrideLocationAdapter implements IDocumentDeliveryLocationAdapter
+import java.util.Optional;
+
+public class DropShipOverrideLocationAdapter
+		implements IDocumentDeliveryLocationAdapter, RecordBasedLocationAdapter<DropShipOverrideLocationAdapter>
 {
 	private final I_C_OLCand delegate;
 
@@ -102,5 +110,30 @@ public class DropShipOverrideLocationAdapter implements IDocumentDeliveryLocatio
 	public void setDropShip_User_ID(final int DropShip_User_ID)
 	{
 		this.dropShipUserId = DropShip_User_ID;
+	}
+
+	@Override
+	public void setRenderedAddressAndCapturedLocation(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentDeliveryLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
+	}
+
+	@Override
+	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
+	{
+		return documentLocationBL.toPlainDocumentLocation(this);
+	}
+
+	@Override
+	public DropShipOverrideLocationAdapter toOldValues()
+	{
+		InterfaceWrapperHelper.assertNotOldValues(delegate);
+		return new DropShipOverrideLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_C_OLCand.class));
+	}
+
+	@Override
+	public I_C_OLCand getWrappedRecord()
+	{
+		return delegate;
 	}
 }

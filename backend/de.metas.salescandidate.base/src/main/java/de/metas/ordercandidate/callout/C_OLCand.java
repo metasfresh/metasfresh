@@ -23,7 +23,7 @@
 package de.metas.ordercandidate.callout;
 
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.modelvalidator.OLCandLocationUpdateHelper;
+import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -37,11 +37,11 @@ import javax.annotation.PostConstruct;
 @Component
 public class C_OLCand
 {
-	private final OLCandLocationUpdateHelper olCandLocationUpdateHelper;
+	private final OLCandLocationsUpdaterService olCandLocationsUpdaterService;
 
-	public C_OLCand(@NonNull final OLCandLocationUpdateHelper olCandLocationUpdateHelper)
+	public C_OLCand(@NonNull final OLCandLocationsUpdaterService olCandLocationsUpdaterService)
 	{
-		this.olCandLocationUpdateHelper = olCandLocationUpdateHelper;
+		this.olCandLocationsUpdaterService = olCandLocationsUpdaterService;
 	}
 
 	@PostConstruct
@@ -53,19 +53,19 @@ public class C_OLCand
 	@CalloutMethod(columnNames = { I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID })
 	public void onBPartnerOverride(final I_C_OLCand olCand)
 	{
-		olCandLocationUpdateHelper.updateBPartnerLocationOverride(olCand);
+		olCandLocationsUpdaterService.updateBPartnerLocationOverride(olCand);
 	}
 
 	@CalloutMethod(columnNames = { I_C_OLCand.COLUMNNAME_DropShip_BPartner_Override_ID })
 	public void onDropShipPartnerOverride(final I_C_OLCand olCand)
 	{
-		olCandLocationUpdateHelper.updateDropShipLocationOverride(olCand);
+		olCandLocationsUpdaterService.updateDropShipLocationOverride(olCand);
 	}
 
 	@CalloutMethod(columnNames = { I_C_OLCand.COLUMNNAME_HandOver_Partner_Override_ID })
 	public void onHandOverPartnerOverrideCallout(@NonNull final I_C_OLCand olCand)
 	{
-		olCandLocationUpdateHelper.updateHandoverLocationOverride(olCand);
+		olCandLocationsUpdaterService.updateHandoverLocationOverride(olCand);
 	}
 
 }

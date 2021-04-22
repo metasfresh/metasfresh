@@ -26,11 +26,11 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.LocationId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.w3c.dom.Document;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -91,5 +91,17 @@ public class DocumentLocation
 		return !Objects.equals(this.locationId, locationId)
 				? toBuilder().locationId(locationId).build()
 				: this;
+	}
+
+	public DocumentLocation withoutCapturedLocationAndRenderedAddress()
+	{
+		return this.locationId != null || !Check.isBlank(bpartnerAddress)
+				? toBuilder().locationId(null).bpartnerAddress(null).build()
+				: this;
+	}
+
+	public boolean equalsIgnoringCapturedLocationAndRenderedAddress(@NonNull final DocumentLocation other)
+	{
+		return Objects.equals(this.withoutCapturedLocationAndRenderedAddress(), other.withoutCapturedLocationAndRenderedAddress());
 	}
 }

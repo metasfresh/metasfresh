@@ -8,6 +8,7 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandValidatorService;
+import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.organization.OrgId;
@@ -40,7 +41,7 @@ import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 public class C_OLCand
 {
 	private final OLCandValidatorService olCandValidatorService;
-	private final OLCandLocationUpdateHelper olCandLocationUpdateHelper;
+	private final OLCandLocationsUpdaterService olCandLocationsUpdaterService;
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
@@ -50,11 +51,11 @@ public class C_OLCand
 	public C_OLCand(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final OLCandValidatorService olCandValidatorService,
-			@NonNull final OLCandLocationUpdateHelper olCandLocationUpdateHelper)
+			@NonNull final OLCandLocationsUpdaterService olCandLocationsUpdaterService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.olCandValidatorService = olCandValidatorService;
-		this.olCandLocationUpdateHelper = olCandLocationUpdateHelper;
+		this.olCandLocationsUpdaterService = olCandLocationsUpdaterService;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_C_OLCand.COLUMNNAME_IsError)
@@ -164,12 +165,12 @@ public class C_OLCand
 		{
 			if (timing.isChange() && InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID))
 			{
-				olCandLocationUpdateHelper.updateBPartnerLocationOverride(olCand);
+				olCandLocationsUpdaterService.updateBPartnerLocationOverride(olCand);
 			}
 
 			if (timing.isChange() && InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_DropShip_BPartner_Override_ID))
 			{
-				olCandLocationUpdateHelper.updateDropShipLocationOverride(olCand);
+				olCandLocationsUpdaterService.updateDropShipLocationOverride(olCand);
 			}
 
 			if (timing.isChange() && InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_HandOver_Partner_Override_ID))
@@ -178,11 +179,11 @@ public class C_OLCand
 				final boolean handoverLocationOverrideChanged = InterfaceWrapperHelper.isValueChanged(olCand, I_C_OLCand.COLUMNNAME_HandOver_Location_Override_ID);
 				if (!handoverLocationOverrideChanged)
 				{
-					olCandLocationUpdateHelper.updateHandoverLocationOverride(olCand);
+					olCandLocationsUpdaterService.updateHandoverLocationOverride(olCand);
 				}
 			}
 
-			olCandLocationUpdateHelper.updateCapturedLocations(olCand);
+			olCandLocationsUpdaterService.updateCapturedLocations(olCand);
 		}
 	}
 
