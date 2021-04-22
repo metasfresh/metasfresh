@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.greeting.GreetingRepository;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -156,7 +157,7 @@ public class InvoiceCandBLCreateInvoicesTest
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
-
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 	}
 
 	/**
@@ -190,7 +191,7 @@ public class InvoiceCandBLCreateInvoicesTest
 	 *
 	 * User Story: there can be cases where invoice candidates had Processed=N when fetched, but in meantime, some of them were already processed and so we need to skip those
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/04533_Erstellung_einer_Rechnung_%282013070810000082%29
+	 * Task http://dewiki908/mediawiki/index.php/04533_Erstellung_einer_Rechnung_%282013070810000082%29
 	 */
 	@Test
 	public void test_submitAlreadyProcessedCandidate()
@@ -263,7 +264,7 @@ public class InvoiceCandBLCreateInvoicesTest
 	/**
 	 * Test: Invoice candidates with discount
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/04868_Fehler_beim_Abrechen_von_Rechnungskandidaten_%28102205076842%29
+	 * Task http://dewiki908/mediawiki/index.php/04868_Fehler_beim_Abrechen_von_Rechnungskandidaten_%28102205076842%29
 	 */
 	@Test
 	public void test_DiscountInvoiceCandidates()
@@ -329,7 +330,7 @@ public class InvoiceCandBLCreateInvoicesTest
 	/**
 	 * Test: priceEntered in Invoice candidadates
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
+	 * Task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
 	public void test_PriceEnteredInvoiceCandidates()
