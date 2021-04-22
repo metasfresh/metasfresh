@@ -24,11 +24,13 @@ package de.metas.async.event;
 
 import de.metas.event.IEventBus;
 import de.metas.event.IEventListener;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
 
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -46,6 +48,8 @@ import static de.metas.async.event.WorkpackageProcessedEvent.Status.ERROR;
 @ToString
 public class WorkpackagesProcessedWaiter
 {
+	private final static transient Logger logger = LogManager.getLogger(WorkpackagesProcessedWaiter.class);
+
 	public static final WorkpackagesProcessedWaiter NOOP = new WorkpackagesProcessedWaiter();
 
 	/**
@@ -97,6 +101,7 @@ public class WorkpackagesProcessedWaiter
 	{
 		if (isNoopConsumer)
 		{
+			logger.info("accept - isNoopConsumer; -> return directly");
 			return; // accept "should" not be called because we are not subscribed anywhere
 		}
 
@@ -105,6 +110,7 @@ public class WorkpackagesProcessedWaiter
 						&& correlationId.equals(workpackageLifeCycleEvent.getCorrelationId());
 		if (!eventShallBeCounted)
 		{
+			logger.info("accept - workpackageLifeCycleEvent shall not be counted; -> return directly; event={}", workpackageLifeCycleEvent);
 			return;
 		}
 
@@ -112,10 +118,12 @@ public class WorkpackagesProcessedWaiter
 		{
 			if (countDownLatch != null)
 			{
+				logger.info("accept  - invoke countDownLatch.countDown()");
 				countDownLatch.countDown();
 			}
 			else
 			{
+				logger.info("accept  - countDownLatch == null; increase eventsReceivedBeforeWaitStarted");
 				eventsReceivedBeforeWaitStarted++;
 			}
 		}
@@ -125,28 +133,32 @@ public class WorkpackagesProcessedWaiter
 	{
 		if (isNoopConsumer)
 		{
+			logger.info("waitForWorkpackagesDone - isNoopConsumer; -> return directly");
 			return;
 		}
 
-		boolean alreadyDoneBeforeWeStarted;
+		final boolean alreadyDoneBeforeWeStarted;
 		synchronized (this)
 		{
 			final int remainingWorkpackages = enqueuedWorkpackages - eventsReceivedBeforeWaitStarted;
 			alreadyDoneBeforeWeStarted = remainingWorkpackages <= 0;
+			logger.info("waitForWorkpackagesDone - param enqueuedWorkpackages={}; field eventsReceivedBeforeWaitStarted={}; -> create latch={}",
+					enqueuedWorkpackages, eventsReceivedBeforeWaitStarted, !alreadyDoneBeforeWeStarted);
 			if (!alreadyDoneBeforeWeStarted)
 			{
 				countDownLatch = new CountDownLatch(remainingWorkpackages);
 			}
 		}
-		
-		if(alreadyDoneBeforeWeStarted)
+
+		if (alreadyDoneBeforeWeStarted)
 		{
 			eventBus.unsubscribe(eventListener);
 			return; // the workpackages were already processed before we even started waiting; => nothing more to do)
 		}
-		
+
 		try
 		{
+			logger.info("waitForWorkpackagesDone - invoke countDownLatch.await()");
 			countDownLatch.await();
 		}
 		catch (final InterruptedException e)
