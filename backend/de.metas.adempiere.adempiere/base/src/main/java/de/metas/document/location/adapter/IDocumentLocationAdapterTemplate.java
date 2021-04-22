@@ -22,11 +22,8 @@
 
 package de.metas.document.location.adapter;
 
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import lombok.NonNull;
-
-import javax.annotation.Nullable;
 
 public interface IDocumentLocationAdapterTemplate
 {
