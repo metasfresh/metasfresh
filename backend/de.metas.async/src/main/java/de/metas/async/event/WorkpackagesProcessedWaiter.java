@@ -40,7 +40,7 @@ import static de.metas.async.event.WorkpackageProcessedEvent.Status.ERROR;
 /**
  * Use this if you want to enqueue asynchronous-queue-workpackages and then wait for them to be done.
  * See {@link #create(IEventBus)}.
- * 
+ * <p>
  * Note: if the workpackage is processed on the same machine you might also take a look as {@link de.metas.async.processor.impl.SyncQueueProcessorListener}
  */
 @ToString
@@ -49,8 +49,8 @@ public class WorkpackagesProcessedWaiter
 	public static final WorkpackagesProcessedWaiter NOOP = new WorkpackagesProcessedWaiter();
 
 	/**
-	 * Creates a new instance. This registers an event listener that will count the processed workpackages. 
-	 * 
+	 * Creates a new instance. This registers an event listener that will count the processed workpackages.
+	 *
 	 * @param eventBus the event bus must have the topic {@link de.metas.async.Async_Constants#WORKPACKAGE_LIFECYCLE_TOPIC}.
 	 */
 	public static WorkpackagesProcessedWaiter create(@NonNull final IEventBus eventBus)
@@ -60,7 +60,7 @@ public class WorkpackagesProcessedWaiter
 	}
 
 	private final boolean isNoopConsumer;
-	private int eventsReceivedBeforeWaitStarted = 0;
+	private volatile int eventsReceivedBeforeWaitStarted = 0;
 
 	@Getter
 	private final UUID correlationId;
@@ -128,16 +128,23 @@ public class WorkpackagesProcessedWaiter
 			return;
 		}
 
+		boolean alreadyDoneBeforeWeStarted;
 		synchronized (this)
 		{
 			final int remainingWorkpackages = enqueuedWorkpackages - eventsReceivedBeforeWaitStarted;
-			if(remainingWorkpackages<=0)
+			alreadyDoneBeforeWeStarted = remainingWorkpackages <= 0;
+			if (!alreadyDoneBeforeWeStarted)
 			{
-				eventBus.unsubscribe(eventListener);
-				return; // the workpackages were already processed before we even started waiting; => nothing more to do
+				countDownLatch = new CountDownLatch(remainingWorkpackages);
 			}
-			countDownLatch = new CountDownLatch(remainingWorkpackages);
 		}
+		
+		if(alreadyDoneBeforeWeStarted)
+		{
+			eventBus.unsubscribe(eventListener);
+			return; // the workpackages were already processed before we even started waiting; => nothing more to do)
+		}
+		
 		try
 		{
 			countDownLatch.await();

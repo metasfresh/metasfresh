@@ -106,12 +106,14 @@ public interface IWorkPackageBuilder
 	/**
 	 * Set a work-package parameter to the value of the given UUID.
 	 * When a work-package with a correlation-id is processed, a {@link de.metas.async.event.WorkpackageProcessedEvent} is posted.
-	 * 
+	 * <p>
 	 * Works in conjuction with {@link de.metas.async.event.WorkpackagesProcessedWaiter}.
 	 */
 	default IWorkPackageBuilder setCorrelationId(@Nullable final UUID correlationId)
 	{
-		parameter(Async_Constants.ASYNC_PARAM_CORRELATION_UUID, correlationId.toString());
+		final String uuidStr = correlationId != null ? correlationId.toString() : null;
+		
+		parameter(Async_Constants.ASYNC_PARAM_CORRELATION_UUID, uuidStr);
 		return this;
 	}
 

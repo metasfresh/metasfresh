@@ -52,6 +52,7 @@ import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
@@ -139,6 +140,9 @@ public class ShipmentScheduleEnqueuer
 			}
 		});
 
+		// this will directly return if the ShipmentScheduleWorkPackageParameters indicate not to wait
+		result.getValue().waitForWorkpackagesDone();
+
 		return result.getValue();
 	}
 
@@ -177,19 +181,18 @@ public class ShipmentScheduleEnqueuer
 
 		boolean doEnqueueCurrentPackage = true;
 
-		final Result result = new Result();
-
-		final WorkpackagesProcessedWaiter consumer;
+		final WorkpackagesProcessedWaiter workpackagesProcessedWaiter;
 		if (workPackageParameters.isWaitUtilProcessed())
 		{
 			final IEventBus eventBus = eventBusFactory.getEventBus(WORKPACKAGE_LIFECYCLE_TOPIC);
-			consumer = WorkpackagesProcessedWaiter.create(eventBus);
+			workpackagesProcessedWaiter = WorkpackagesProcessedWaiter.create(eventBus);
 		}
 		else
 		{
-			consumer = WorkpackagesProcessedWaiter.NOOP;
+			workpackagesProcessedWaiter = WorkpackagesProcessedWaiter.NOOP;
 		}
-
+		final Result result = new Result(workpackagesProcessedWaiter);
+		
 		while (shipmentSchedules.hasNext())
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedules.next();
@@ -225,7 +228,7 @@ public class ShipmentScheduleEnqueuer
 							.bindToTrxName(localCtx.getTrxName());
 
 					workpackageBuilder
-							.setCorrelationId(consumer.getCorrelationId())
+							.setCorrelationId(workpackagesProcessedWaiter.getCorrelationId())
 							.parameters()
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, workPackageParameters.getQuantityType())
 							.setParameter(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments, workPackageParameters.isCompleteShipments())
@@ -251,9 +254,6 @@ public class ShipmentScheduleEnqueuer
 		//
 		// Close last workpackage (if any, and if there was no error)
 		handleAllSchedsAdded(workpackageBuilder, lastHeaderAggregationKey, doEnqueueCurrentPackage, result);
-
-		consumer.waitForWorkpackagesDone(result.getEnqueuedPackagesCount()); // ...only waits if not NOOP
-
 		return result;
 	}
 
@@ -338,12 +338,16 @@ public class ShipmentScheduleEnqueuer
 	 */
 	public static class Result
 	{
+		@Getter
 		private int skippedPackagesCount;
-
+		
 		private final List<QueueWorkPackageId> enqueuedWorkpackageIds = new ArrayList<>();
 
-		private Result()
+		private final WorkpackagesProcessedWaiter workpackagesProcessedWaiter;
+
+		private Result(@NonNull final WorkpackagesProcessedWaiter workpackagesProcessedWaiter)
 		{
+			this.workpackagesProcessedWaiter = workpackagesProcessedWaiter;
 		}
 
 		public int getEnqueuedPackagesCount()
@@ -356,11 +360,6 @@ public class ShipmentScheduleEnqueuer
 			return ImmutableList.copyOf(enqueuedWorkpackageIds);
 		}
 
-		public int getSkippedPackagesCount()
-		{
-			return skippedPackagesCount;
-		}
-
 		private void addEnqueuedWorkPackageId(@NonNull final QueueWorkPackageId workPackageId)
 		{
 			enqueuedWorkpackageIds.add(workPackageId);
@@ -371,6 +370,10 @@ public class ShipmentScheduleEnqueuer
 			skippedPackagesCount++;
 		}
 
+		public void waitForWorkpackagesDone()
+		{
+			workpackagesProcessedWaiter.waitForWorkpackagesDone(getEnqueuedPackagesCount());
+		}
 	}
 
 	@Builder
