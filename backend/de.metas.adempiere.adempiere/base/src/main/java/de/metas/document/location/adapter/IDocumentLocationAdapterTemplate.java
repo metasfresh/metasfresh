@@ -31,6 +31,4 @@ import javax.annotation.Nullable;
 public interface IDocumentLocationAdapterTemplate
 {
 	void setRenderedAddressAndCapturedLocation(@NonNull final RenderedAddressAndCapturedLocation from);
-
-	void setLocationAndResetRenderedAddress(@Nullable final BPartnerLocationAndCaptureId from);
 }

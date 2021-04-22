@@ -74,14 +74,6 @@ public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTempla
 		setBPartnerAddress(from.getRenderedAddress());
 	}
 
-	@Override
-	default void setLocationAndResetRenderedAddress(@Nullable final BPartnerLocationAndCaptureId from)
-	{
-		setC_BPartner_Location_ID(from != null ? from.getBPartnerLocationRepoId() : -1);
-		setC_BPartner_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
-		setBPartnerAddress(null);
-	}
-
 	default DocumentLocation toDocumentLocation()
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(getC_BPartner_ID());

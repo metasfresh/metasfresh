@@ -63,14 +63,6 @@ public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTe
 		setBillToAddress(from.getRenderedAddress());
 	}
 
-	@Override
-	default void setLocationAndResetRenderedAddress(@Nullable final BPartnerLocationAndCaptureId from)
-	{
-		setBill_Location_ID(from != null ? from.getBPartnerLocationRepoId() : -1);
-		setBill_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
-		setBillToAddress(null);
-	}
-
 	default DocumentLocation toDocumentLocation()
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(getBill_BPartner_ID());

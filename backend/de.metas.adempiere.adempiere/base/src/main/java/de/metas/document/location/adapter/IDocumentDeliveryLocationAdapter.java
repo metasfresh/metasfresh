@@ -67,14 +67,6 @@ public interface IDocumentDeliveryLocationAdapter extends IDocumentLocationAdapt
 		setDeliveryToAddress(from.getRenderedAddress());
 	}
 
-	@Override
-	default void setLocationAndResetRenderedAddress(@Nullable final BPartnerLocationAndCaptureId from)
-	{
-		setDropShip_Location_ID(from != null ? from.getBPartnerLocationRepoId() : -1);
-		setDropShip_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
-		setDeliveryToAddress(null);
-	}
-
 	default DocumentLocation toDocumentLocation()
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(getDropShip_BPartner_ID());

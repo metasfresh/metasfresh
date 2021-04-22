@@ -22,6 +22,7 @@
 
 package de.metas.order.location.adapter;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RecordBasedLocationAdapter;
@@ -32,6 +33,7 @@ import lombok.ToString;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @ToString
@@ -133,5 +135,12 @@ public class OrderMainLocationAdapter
 	{
 		InterfaceWrapperHelper.assertNotOldValues(delegate);
 		return new OrderMainLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_C_Order.class));
+	}
+
+	public void setLocationAndResetRenderedAddress(@Nullable final BPartnerLocationAndCaptureId from)
+	{
+		setC_BPartner_Location_ID(from != null ? from.getBPartnerLocationRepoId() : -1);
+		setC_BPartner_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
+		setBPartnerAddress(null);
 	}
 }

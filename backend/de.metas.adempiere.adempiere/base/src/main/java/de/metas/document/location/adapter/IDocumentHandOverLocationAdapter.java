@@ -64,14 +64,6 @@ public interface IDocumentHandOverLocationAdapter extends IDocumentLocationAdapt
 		setHandOverAddress(from.getRenderedAddress());
 	}
 
-	@Override
-	default void setLocationAndResetRenderedAddress(@Nullable final BPartnerLocationAndCaptureId from)
-	{
-		setHandOver_Location_ID(from != null ? from.getBPartnerLocationRepoId() : -1);
-		setHandOver_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
-		setHandOverAddress(null);
-	}
-
 	default void setFrom(@NonNull final BPartnerInfo from)
 	{
 		setHandOver_Partner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
