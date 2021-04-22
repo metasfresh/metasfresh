@@ -34,6 +34,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.DB;
@@ -155,7 +156,7 @@ public final class TextTemplateBL implements ITextTemplateBL
 
 		//
 		// Update BPartnerAddress string
-		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
+		final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(new LetterDocumentLocationAdapter(letter));
 
 		//

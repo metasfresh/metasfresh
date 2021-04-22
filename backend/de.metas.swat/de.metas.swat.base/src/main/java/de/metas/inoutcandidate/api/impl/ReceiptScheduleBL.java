@@ -67,6 +67,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -254,15 +255,19 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public void updateBPartnerAddress(final I_M_ReceiptSchedule receiptSchedule)
 	{
+		final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+
 		final IDocumentLocationAdapter documentLocation = asDocumentLocation(receiptSchedule);
-		Services.get(IDocumentLocationBL.class).updateRenderedAddressAndCapturedLocation(documentLocation);
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(documentLocation);
 	}
 
 	@Override
 	public void updateBPartnerAddressOverride(final I_M_ReceiptSchedule receiptSchedule)
 	{
+		final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+
 		final IDocumentLocationAdapter documentLocation = asDocumentLocationEffective(receiptSchedule);
-		Services.get(IDocumentLocationBL.class).updateRenderedAddressAndCapturedLocation(documentLocation);
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(documentLocation);
 	}
 
 	@Override

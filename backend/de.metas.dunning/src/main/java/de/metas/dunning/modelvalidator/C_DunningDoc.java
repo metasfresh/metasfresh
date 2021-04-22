@@ -13,6 +13,7 @@ import de.metas.workflow.api.IWorkflowBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 
 @Validator(I_C_DunningDoc.class)
@@ -52,7 +53,7 @@ public class C_DunningDoc
 			ifColumnsChanged = I_C_DunningDoc.COLUMNNAME_C_BPartner_Location_ID)
 	public void updateAddressField(final I_C_DunningDoc dunningDoc)
 	{
-		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
+		final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(DunningDocDocumentLocationAdapterFactory.locationAdapter(dunningDoc));
 	}
 

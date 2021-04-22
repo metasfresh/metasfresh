@@ -17,6 +17,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
@@ -37,7 +38,7 @@ import org.compiere.util.Env;
 public class Order implements ModelValidator
 {
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
+	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 
 	private int ad_Client_ID = -1;
 

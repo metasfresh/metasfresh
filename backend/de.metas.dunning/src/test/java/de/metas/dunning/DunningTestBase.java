@@ -122,7 +122,7 @@ public class DunningTestBase
 
 		db = dao.getDB();
 
-		Services.registerService(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
+		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
 
 		//
 		invoiceBL = new PlainInvoiceBL();
@@ -178,15 +178,13 @@ public class DunningTestBase
 
 	/**
 	 * Process {@link I_C_Dunning_Candidate}s and generate {@link I_C_DunningDoc}s.
-	 *
-	 * @param dunningContext
 	 */
 	protected void processDunningCandidates(final PlainDunningContext dunningContext)
 	{
 		dunningBL.processCandidates(dunningContext);
 	}
 
-	protected void processDunningDocs(final PlainDunningContext dunningContext)
+	protected void processDunningDocs()
 	{
 		final List<I_C_DunningDoc> dunningDocs = db.getRecords(I_C_DunningDoc.class);
 		for (final I_C_DunningDoc dunningDoc : dunningDocs)
@@ -226,8 +224,6 @@ public class DunningTestBase
 
 	/**
 	 * @param dunningDateStr dunningDate in format yyyy-MM-dd
-	 * @param dunningLevel
-	 * @return
 	 */
 	protected PlainDunningContext createPlainDunningContext(String dunningDateStr, I_C_DunningLevel dunningLevel)
 	{
@@ -259,6 +255,7 @@ public class DunningTestBase
 		return dunning;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	protected I_C_DunningLevel createDunningLevel(I_C_Dunning dunning, int DaysBetweenDunning, int DaysAfterDue, int InterestPercent)
 	{
 		final IDunningContext dunningContext = null; // not needed for creating an instance
