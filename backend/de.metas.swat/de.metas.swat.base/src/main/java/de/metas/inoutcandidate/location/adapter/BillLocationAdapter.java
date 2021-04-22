@@ -22,13 +22,21 @@
 
 package de.metas.inoutcandidate.location.adapter;
 
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RecordBasedLocationAdapter;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.model.InterfaceWrapperHelper;
 
-public class BillLocationAdapter implements IDocumentBillLocationAdapter
+import java.util.Optional;
+
+public class BillLocationAdapter
+		implements IDocumentBillLocationAdapter, RecordBasedLocationAdapter<BillLocationAdapter>
 {
 	private final I_M_ShipmentSchedule delegate;
 
@@ -87,5 +95,30 @@ public class BillLocationAdapter implements IDocumentBillLocationAdapter
 	public void setBill_User_ID(final int Bill_User_ID)
 	{
 		delegate.setBill_User_ID(Bill_User_ID);
+	}
+
+	@Override
+	public void setRenderedAddressAndCapturedLocation(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentBillLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
+	}
+
+	@Override
+	public I_M_ShipmentSchedule getWrappedRecord()
+	{
+		return delegate;
+	}
+
+	@Override
+	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
+	{
+		return documentLocationBL.toPlainDocumentLocation(this);
+	}
+
+	@Override
+	public BillLocationAdapter toOldValues()
+	{
+		InterfaceWrapperHelper.assertNotOldValues(delegate);
+		return new BillLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_M_ShipmentSchedule.class));
 	}
 }

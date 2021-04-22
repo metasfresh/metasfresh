@@ -22,13 +22,21 @@
 
 package de.metas.inoutcandidate.location.adapter;
 
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RecordBasedLocationAdapter;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.Optional;
 
 @ToString
-public class MainLocationAdapter implements IDocumentLocationAdapter
+public class MainLocationAdapter
+		implements IDocumentLocationAdapter, RecordBasedLocationAdapter<MainLocationAdapter>
 {
 	private final I_M_ShipmentSchedule delegate;
 
@@ -95,5 +103,30 @@ public class MainLocationAdapter implements IDocumentLocationAdapter
 	public void setBPartnerAddress(String address)
 	{
 		delegate.setBPartnerAddress(address);
+	}
+
+	@Override
+	public void setRenderedAddressAndCapturedLocation(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
+	}
+
+	@Override
+	public I_M_ShipmentSchedule getWrappedRecord()
+	{
+		return delegate;
+	}
+
+	@Override
+	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
+	{
+		return documentLocationBL.toPlainDocumentLocation(this);
+	}
+
+	@Override
+	public MainLocationAdapter toOldValues()
+	{
+		InterfaceWrapperHelper.assertNotOldValues(delegate);
+		return new MainLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_M_ShipmentSchedule.class));
 	}
 }
