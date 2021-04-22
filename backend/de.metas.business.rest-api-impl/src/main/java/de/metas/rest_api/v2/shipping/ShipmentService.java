@@ -347,7 +347,7 @@ public class ShipmentService
 				.queryFilters(queryFilters)
 				.quantityType(request.getQuantityTypeToUse())
 				.completeShipments(true)
-				//.waitUtilProcessed(true)
+				//.waitUtilProcessed(true) // return directly when the workpackage is enqueued
 				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
 				.build();
 
