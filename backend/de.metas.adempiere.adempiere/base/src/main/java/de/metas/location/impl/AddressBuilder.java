@@ -380,7 +380,7 @@ public class AddressBuilder
 					|| Uservars.Title.getName().equals(token)
 					|| Uservars.Greeting.getName().equals(token))
 			{
-				; // nothing to do
+				// nothing to do
 			}
 			else
 			{
@@ -744,7 +744,7 @@ public class AddressBuilder
 		return bracketsTxt;
 	}
 
-	private String getDisplaySequence(final I_C_Country country, final boolean isLocalAddress)
+	private String getDisplaySequence(@NonNull final I_C_Country country, final boolean isLocalAddress)
 	{
 		final CountryId countryId = CountryId.ofRepoId(country.getC_Country_ID());
 		final CountrySequences countrySequence = countriesRepo
