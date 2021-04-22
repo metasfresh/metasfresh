@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.processor;
+package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
@@ -45,17 +45,20 @@ import org.springframework.util.StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.BILL_TO_SUFFIX;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.EXTERNAL_ID_PREFIX;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHIP_TO_SUFFIX;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWARE6_SYSTEM_NAME;
 
 @Value
 public class BPartnerUpsertRequestProducer
 {
+	@NonNull
+	String externalBPartnerId;
+
 	@NonNull
 	String orgCode;
 
@@ -66,7 +69,7 @@ public class BPartnerUpsertRequestProducer
 	JsonOrderCustomer orderCustomer;
 
 	@NonNull
-	List<JsonOrderAddressAndCustomId> shippingAddressList;
+	JsonOrderAddressAndCustomId shippingAddress;
 
 	@NonNull
 	String billingAddressId;
@@ -77,32 +80,33 @@ public class BPartnerUpsertRequestProducer
 	@Nullable
 	String bPartnerLocationIdentifierCustomPath;
 
-	@Nullable
-	String bPartnerCustomIdentifier;
+	@NonNull
+	BPartnerRequestProducerResult.BPartnerRequestProducerResultBuilder resultBuilder;
 
 	@Builder
 	public BPartnerUpsertRequestProducer(
 			@NonNull final String orgCode,
 			@NonNull final ShopwareClient shopwareClient,
 			@NonNull final JsonOrderCustomer orderCustomer,
-			@NonNull final List<JsonOrderAddressAndCustomId> shippingAddressList,
+			@NonNull final JsonOrderAddressAndCustomId shippingAddress,
 			@NonNull final String billingAddressId,
 			@Nullable final String bPartnerLocationIdentifierCustomPath,
-			@Nullable final String bPartnerCustomIdentifier)
+			@NonNull final String externalBPartnerId)
 	{
 		this.orgCode = orgCode;
 		this.shopwareClient = shopwareClient;
 		this.orderCustomer = orderCustomer;
-		this.shippingAddressList = shippingAddressList;
+		this.shippingAddress = shippingAddress;
 		this.billingAddressId = billingAddressId;
 		this.bPartnerLocationIdentifierCustomPath = bPartnerLocationIdentifierCustomPath;
-		this.bPartnerCustomIdentifier = bPartnerCustomIdentifier != null ? bPartnerCustomIdentifier : orderCustomer.getCustomerId();
+		this.externalBPartnerId = externalBPartnerId;
 		this.countryIdToISOCode = new HashMap<>();
+		this.resultBuilder = BPartnerRequestProducerResult.builder();
 	}
 
-	public JsonRequestBPartnerUpsert run()
+	public BPartnerRequestProducerResult run()
 	{
-		final String customerBPartnerIdentifier = EXTERNAL_ID_PREFIX + bPartnerCustomIdentifier;
+		final String customerBPartnerIdentifier = asExternalIdentifier(externalBPartnerId);
 
 		final JsonRequestComposite.JsonRequestCompositeBuilder jsonRequestCompositeBuilder = JsonRequestComposite.builder()
 				.orgCode(orgCode)
@@ -115,10 +119,12 @@ public class BPartnerUpsertRequestProducer
 				.bpartnerComposite(jsonRequestCompositeBuilder.build())
 				.build();
 
-		return JsonRequestBPartnerUpsert.builder()
-				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
-				.requestItem(bPartnerUpsertItem)
-				.build();
+		resultBuilder.jsonRequestBPartnerUpsert(JsonRequestBPartnerUpsert.builder()
+														.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+														.requestItem(bPartnerUpsertItem)
+														.build());
+
+		return resultBuilder.build();
 	}
 
 	@NonNull
@@ -127,7 +133,7 @@ public class BPartnerUpsertRequestProducer
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 		jsonRequestBPartner.setName(orderCustomer.getFirstName() + " " + orderCustomer.getLastName());
 		jsonRequestBPartner.setCompanyName(orderCustomer.getCompany());
-		jsonRequestBPartner.setCode(EXTERNAL_ID_PREFIX + orderCustomer.getCustomerNumber());
+		jsonRequestBPartner.setCode(asExternalIdentifier(orderCustomer.getCustomerNumber()));
 		jsonRequestBPartner.setCustomer(true);
 		// jsonRequestBPartner.setEmail(orderCustomer.getEmail()) todo
 
@@ -144,7 +150,7 @@ public class BPartnerUpsertRequestProducer
 
 		return JsonRequestContactUpsert.builder()
 				.requestItem(JsonRequestContactUpsertItem.builder()
-									 .contactIdentifier(EXTERNAL_ID_PREFIX + orderCustomer.getCustomerId())
+									 .contactIdentifier(asExternalIdentifier(externalBPartnerId))
 									 .contact(contactRequest)
 									 .build())
 				.build();
@@ -154,29 +160,32 @@ public class BPartnerUpsertRequestProducer
 	private JsonRequestLocationUpsert getUpsertLocationsRequest()
 	{
 		final JsonRequestLocationUpsert.JsonRequestLocationUpsertBuilder upsertLocationsRequestBuilder = JsonRequestLocationUpsert.builder();
+		upsertLocationsRequestBuilder.requestItem(getBillingLocationUpsertRequest());
 
-		getBillingLocationUpsertRequest()
-				.ifPresent(upsertLocationsRequestBuilder::requestItem);
-
-		shippingAddressList.stream()
-				.filter(shippingAddress -> !shippingAddress.getJsonOrderAddress().getId().equals(billingAddressId))
-				.map(shippingAddress -> getUpsertLocationItemRequest(shippingAddress, false,
-																	 true, shippingAddressList.indexOf(shippingAddress)))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.forEach(upsertLocationsRequestBuilder::requestItem);
+		if (!billingAddressId.equals(shippingAddress.getJsonOrderAddress().getId()))
+		{
+			upsertLocationsRequestBuilder.requestItem(getUpsertLocationItemRequest(shippingAddress, false, true));
+		}
 
 		return upsertLocationsRequestBuilder.build();
 	}
 
 	@NonNull
-	private Optional<JsonRequestLocationUpsertItem> getUpsertLocationItemRequest(
+	private JsonRequestLocationUpsertItem getUpsertLocationItemRequest(
 			@NonNull final JsonOrderAddressAndCustomId orderAddressWithCustomId,
 			final boolean isBillingAddress,
-			final boolean isShippingAddress,
-			@Nullable final Integer locationIndex)
+			final boolean isShippingAddress)
 	{
-		final StringBuilder bpLocationIdentifier = getBpLocationIdentifier(orderAddressWithCustomId, isBillingAddress, locationIndex);
+		final String bpLocationExternalId = getBpLocationIdentifier(orderAddressWithCustomId, isBillingAddress);
+
+		if (isBillingAddress)
+		{
+			resultBuilder.billingBPartnerLocationExternalId(bpLocationExternalId);
+		}
+		if (isShippingAddress)
+		{
+			resultBuilder.shippingBPartnerLocationExternalId(bpLocationExternalId);
+		}
 
 		final JsonOrderAddress orderAddress = orderAddressWithCustomId.getJsonOrderAddress();
 
@@ -191,40 +200,23 @@ public class BPartnerUpsertRequestProducer
 		jsonRequestLocation.setBillTo(isBillingAddress);
 		//jsonRequestLocation.setPhoneNumber(orderAddress.getPhoneNumber()); todo
 
-		return Optional.of(JsonRequestLocationUpsertItem.builder()
-								   .locationIdentifier(bpLocationIdentifier.toString())
-								   .location(jsonRequestLocation)
-								   .build());
+		return JsonRequestLocationUpsertItem.builder()
+				.locationIdentifier(asExternalIdentifier(bpLocationExternalId))
+				.location(jsonRequestLocation)
+				.build();
 	}
 
 	@NonNull
-	private StringBuilder getBpLocationIdentifier(
-			@NonNull final JsonOrderAddressAndCustomId orderAddressWithCustomId,
-			final boolean isBillingAddress,
-			@Nullable final Integer locationIndex)
+	private String getBpLocationIdentifier(@NonNull final JsonOrderAddressAndCustomId orderAddressWithCustomId,
+			final boolean isBillingAddress)
 	{
-		final boolean customIdPresent = orderAddressWithCustomId.getCustomId() != null;
-		final String bpLocationId = customIdPresent ? orderAddressWithCustomId.getCustomId() : orderCustomer.getCustomerId();
 
-		final StringBuilder bpLocationIdentifier = new StringBuilder(EXTERNAL_ID_PREFIX + bpLocationId);
+		return Optional.ofNullable(orderAddressWithCustomId.getCustomId())
+				.orElseGet(() -> {
+					final String suffix = isBillingAddress ? BILL_TO_SUFFIX : SHIP_TO_SUFFIX;
 
-		if (!customIdPresent)
-		{
-			if (isBillingAddress)
-			{
-				bpLocationIdentifier.append(BILL_TO_SUFFIX);
-			}
-			else
-			{
-				bpLocationIdentifier.append(SHIP_TO_SUFFIX);
-				if (locationIndex > 0)
-				{
-					bpLocationIdentifier.append(SHIP_TO_SUFFIX).append(locationIndex + 1);
-				}
-			}
-		}
-
-		return bpLocationIdentifier;
+					return externalBPartnerId + suffix;
+				});
 	}
 
 	@NonNull
@@ -247,26 +239,23 @@ public class BPartnerUpsertRequestProducer
 	}
 
 	@NonNull
-	private Optional<JsonOrderAddressAndCustomId> getBillingAddress()
+	private JsonRequestLocationUpsertItem getBillingLocationUpsertRequest()
 	{
-		final JsonOrderAddressAndCustomId billingAddress = shopwareClient.getOrderAddressDetails(billingAddressId, bPartnerLocationIdentifierCustomPath)
+		final boolean isSameAsShippingAddress = shippingAddress.getJsonOrderAddress().getId().equals(billingAddressId);
+
+		final JsonOrderAddressAndCustomId billingAddress = isSameAsShippingAddress
+				? shippingAddress
+				: shopwareClient.getOrderAddressDetails(billingAddressId, bPartnerLocationIdentifierCustomPath)
 				.orElseThrow(() -> new RuntimeException("Missing address details for addressId: " + billingAddressId));
 
-		return Optional.of(billingAddress);
+		final boolean isBillingAddress = true;
+		return getUpsertLocationItemRequest(billingAddress, isBillingAddress, isSameAsShippingAddress);
 	}
 
 	@NonNull
-	private Optional<JsonRequestLocationUpsertItem> getBillingLocationUpsertRequest()
+	private String asExternalIdentifier(@NonNull final String externalId)
 	{
-		return getBillingAddress()
-				.map(billingAddress -> {
-					final boolean isAlsoShippingAddress = shippingAddressList.stream()
-							.anyMatch(shippingAddress -> shippingAddress.getJsonOrderAddress().getId().equals(billingAddress.getJsonOrderAddress().getId()));
-
-					final boolean isBillingAddress = true;
-					return getUpsertLocationItemRequest(billingAddress, isBillingAddress, isAlsoShippingAddress, null);
-				})
-				.orElse(Optional.empty());
+		return EXTERNAL_ID_PREFIX + "-" + SHOPWARE6_SYSTEM_NAME + "-" + externalId;
 	}
 }
 

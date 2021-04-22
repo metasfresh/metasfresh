@@ -30,14 +30,16 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.time.ZonedDateTime;
+
 @Value
 @Builder
 @JsonDeserialize(builder = JsonOrderDelivery.JsonOrderDeliveryBuilder.class)
 public class JsonOrderDelivery
 {
 	@NonNull
-	@JsonProperty("shippingOrderAddress")
-	JsonOrderAddress shippingOrderAddress;
+	@JsonProperty("shippingDateLatest")
+	ZonedDateTime shippingDateLatest;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
