@@ -57,6 +57,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
+@SuppressWarnings("FieldCanBeLocal")
 @ExtendWith(AdempiereTestWatcher.class)
 public class QtyDeliveredFromOrderToInvoiceTest
 {
@@ -145,7 +146,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 				.when(taxBL.getTaxNotNull(
 						ctx,
 						order,
-						(TaxCategoryId)null, // taxCategoryId
+						null, // taxCategoryId
 						orderLine.getM_Product_ID(),
 						order.getDatePromised(),
 						OrgId.ofRepoId(order.getAD_Org_ID()),
@@ -187,8 +188,13 @@ public class QtyDeliveredFromOrderToInvoiceTest
 	{
 		order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, trxName);
 		order.setAD_Org_ID(orgId.getRepoId());
+
 		order.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
 		order.setC_BPartner_Location_ID(bpartnerAndLocationId.getRepoId());
+
+		order.setBill_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
+		order.setBill_Location_ID(bpartnerAndLocationId.getRepoId());
+
 		order.setDocStatus(DocStatus.Completed.getCode());
 		order.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
 		InterfaceWrapperHelper.save(order);
