@@ -113,6 +113,8 @@ class WidgetRenderer extends PureComponent {
       onBlurWithParams,
       onSetWidgetType,
       onHandleProcess,
+      openModal,
+      closeModal,
       forwardedRef,
       disconnected,
       isFilterActive, // flag used to identify if the component belongs to an active filter
@@ -181,6 +183,8 @@ class WidgetRenderer extends PureComponent {
       fieldName: widgetField,
       handleBackdropLock,
       patch: (option) => onPatch(widgetField, option),
+      openModal,
+      closeModal,
       tabIndex,
       autoFocus,
       readonly,

@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 
 import {
   openModal,
+  closeModal,
   patch,
   updatePropertyValue,
   allowShortcut,
@@ -162,6 +163,7 @@ WidgetWrapper.propTypes = {
   allowShortcut: PropTypes.func.isRequired,
   disableShortcut: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
+  closeModal: PropTypes.func,
   patch: PropTypes.func.isRequired,
   updatePropertyValue: PropTypes.func.isRequired,
   widgetType: PropTypes.string,
@@ -174,6 +176,7 @@ export default connect(
     allowShortcut,
     disableShortcut,
     openModal,
+    closeModal,
     patch,
     updatePropertyValue,
   },
