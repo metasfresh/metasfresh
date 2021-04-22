@@ -25,11 +25,8 @@ package de.metas.order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
-import de.metas.document.location.DocumentLocation;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -48,8 +45,6 @@ import org.compiere.model.I_M_PriceList_Version;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Optional;
-
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -78,7 +73,7 @@ public interface IOrderBL extends ISingletonService
 	 */
 	I_M_PriceList_Version getPriceListVersion(I_C_Order order);
 
-	BPartnerLocationId getShipToLocationId(I_C_Order order);
+	BPartnerLocationAndCaptureId getShipToLocationId(I_C_Order order);
 
 	/**
 	 * Returns the given order's <code>AD_User</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_User</code>.
@@ -173,14 +168,6 @@ public interface IOrderBL extends ISingletonService
 	 * Set C_BPartner_Location in order
 	 */
 	void setBPLocation(I_C_Order order, I_C_BPartner bp);
-
-	void setBPartnerLocationAndContact(@NonNull I_C_Order order, @NonNull BPartnerInfo from);
-
-	void setBillBPartnerLocationAndContact(@NonNull I_C_Order order, @NonNull BPartnerInfo from);
-
-	void setDropShipBPartnerLocationAndContact(@NonNull I_C_Order order, @NonNull BPartnerInfo from);
-
-	void setHandOverBPartnerLocationAndContact(@NonNull I_C_Order order, @NonNull BPartnerInfo from);
 
 	CurrencyPrecision getPricePrecision(I_C_Order order);
 

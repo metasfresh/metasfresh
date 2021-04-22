@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.PO;
 
 @UtilityClass
 public class RecordBasedLocationUtils
@@ -34,8 +35,15 @@ public class RecordBasedLocationUtils
 			@NonNull RecordBasedLocationAdapter<SELF> locationAdapter,
 			@NonNull final IDocumentLocationBL documentLocationBL)
 	{
-		final Object delegate = locationAdapter.getWrappedRecord();
-		final boolean isNewRecord = InterfaceWrapperHelper.isNew(delegate);
+		final Object record = locationAdapter.getWrappedRecord();
+
+		// do nothing if we are cloning the record
+		if (InterfaceWrapperHelper.getDynAttribute(record, PO.DYNATTR_CopyRecordSupport) != null)
+		{
+			return;
+		}
+
+		final boolean isNewRecord = InterfaceWrapperHelper.isNew(record);
 		final DocumentLocation currentLocation = locationAdapter.toPlainDocumentLocation(documentLocationBL).orElse(DocumentLocation.EMPTY);
 		final DocumentLocation previousLocation = !isNewRecord
 				? locationAdapter.toOldValues().toPlainDocumentLocation(documentLocationBL).orElse(DocumentLocation.EMPTY)

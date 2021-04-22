@@ -63,6 +63,12 @@ public class HandOverOverrideLocationAdapter
 	}
 
 	@Override
+	public void setHandOver_Partner_ID(final int HandOver_Partner_ID)
+	{
+		delegate.setHandOver_Partner_ID(HandOver_Partner_ID);
+	}
+
+	@Override
 	public int getHandOver_Location_ID()
 	{
 		return delegate.getHandOver_Location_Override_ID();
@@ -90,6 +96,12 @@ public class HandOverOverrideLocationAdapter
 	public int getHandOver_User_ID()
 	{
 		return -1;
+	}
+
+	@Override
+	public void setHandOver_User_ID(final int HandOver_User_ID)
+	{
+		delegate.setHandOver_User_ID(HandOver_User_ID);
 	}
 
 	@Override

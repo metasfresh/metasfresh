@@ -22,11 +22,19 @@
 
 package de.metas.order.location.adapter;
 
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RecordBasedLocationAdapter;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 
-public class OrderBillLocationAdapter implements IDocumentBillLocationAdapter
+import java.util.Optional;
+
+public class OrderBillLocationAdapter
+		implements IDocumentBillLocationAdapter, RecordBasedLocationAdapter<OrderBillLocationAdapter>
 {
 	private final I_C_Order delegate;
 
@@ -93,5 +101,35 @@ public class OrderBillLocationAdapter implements IDocumentBillLocationAdapter
 	public void setBillToAddress(final String address)
 	{
 		delegate.setBillToAddress(address);
+	}
+
+	@Override
+	public void setRenderedAddressAndCapturedLocation(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentBillLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
+	}
+
+	public void setFromBillLocation(@NonNull final I_C_Order from)
+	{
+		setFrom(OrderDocumentLocationAdapterFactory.billLocationAdapter(from).toDocumentLocation());
+	}
+
+	@Override
+	public I_C_Order getWrappedRecord()
+	{
+		return delegate;
+	}
+
+	@Override
+	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
+	{
+		return documentLocationBL.toPlainDocumentLocation(this);
+	}
+
+	@Override
+	public OrderBillLocationAdapter toOldValues()
+	{
+		InterfaceWrapperHelper.assertNotOldValues(delegate);
+		return new OrderBillLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_C_Order.class));
 	}
 }

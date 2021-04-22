@@ -35,9 +35,6 @@ import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
-import de.metas.document.location.adapter.IDocumentLocationAdapterTemplate;
-import de.metas.document.location.commands.update_record_location.UpdateRecordLocationCommand;
-import de.metas.document.location.commands.update_record_location.UpdateRecordLocationCommand.UpdateRecordLocationCommandBuilder;
 import de.metas.location.LocationId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -253,14 +250,4 @@ public class DocumentLocationBL implements IDocumentLocationBL
 				.map(this::withUpdatedLocationId)
 				.ifPresent(location -> locationAdapter.setHandOver_Location_Value_ID(LocationId.toRepoId(location.getLocationId())));
 	}
-
-	@Override
-	public <RECORD, ADAPTER extends IDocumentLocationAdapterTemplate>
-	UpdateRecordLocationCommandBuilder<RECORD, ADAPTER> prepareUpdateRecordLocation()
-	{
-		return UpdateRecordLocationCommand.<RECORD, ADAPTER>builder()
-				.documentLocationBL(this)
-				.bpartnerDAO(bpartnerDAO);
-	}
-
 }

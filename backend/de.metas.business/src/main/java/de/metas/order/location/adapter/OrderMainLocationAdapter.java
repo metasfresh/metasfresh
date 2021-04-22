@@ -22,13 +22,21 @@
 
 package de.metas.order.location.adapter;
 
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RecordBasedLocationAdapter;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 
+import java.util.Optional;
+
 @ToString
-public class OrderMainLocationAdapter implements IDocumentLocationAdapter
+public class OrderMainLocationAdapter
+		implements IDocumentLocationAdapter, RecordBasedLocationAdapter<OrderMainLocationAdapter>
 {
 	private final I_C_Order delegate;
 
@@ -95,5 +103,35 @@ public class OrderMainLocationAdapter implements IDocumentLocationAdapter
 	public void setBPartnerAddress(String address)
 	{
 		delegate.setBPartnerAddress(address);
+	}
+
+	@Override
+	public void setRenderedAddressAndCapturedLocation(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
+	}
+
+	public void setFrom(@NonNull final I_C_Order from)
+	{
+		setFrom(OrderDocumentLocationAdapterFactory.locationAdapter(from).toDocumentLocation());
+	}
+
+	@Override
+	public I_C_Order getWrappedRecord()
+	{
+		return delegate;
+	}
+
+	@Override
+	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
+	{
+		return documentLocationBL.toPlainDocumentLocation(this);
+	}
+
+	@Override
+	public OrderMainLocationAdapter toOldValues()
+	{
+		InterfaceWrapperHelper.assertNotOldValues(delegate);
+		return new OrderMainLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_C_Order.class));
 	}
 }

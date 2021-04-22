@@ -35,6 +35,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -59,11 +60,11 @@ import static org.assertj.core.api.Assertions.*;
 @ExtendWith(AdempiereTestWatcher.class)
 public class QtyDeliveredFromOrderToInvoiceTest
 {
-	protected final Properties ctx = Env.getCtx();
-	protected final String trxName = ITrx.TRXNAME_None;
+	private final Properties ctx = Env.getCtx();
+	private final String trxName = ITrx.TRXNAME_None;
 
-	protected C_OrderLine_Handler olHandler;
-	protected I_C_ILCandHandler handler;
+	private C_OrderLine_Handler olHandler;
+	private I_C_ILCandHandler handler;
 
 	// task 07442
 	private final ClientId clientId = ClientId.ofRepoId(2);
@@ -71,13 +72,13 @@ public class QtyDeliveredFromOrderToInvoiceTest
 	private ProductId productId;
 	private final ActivityId activityId = ActivityId.ofRepoId(4);
 
-	protected I_C_Order order;
-	protected I_C_OrderLine orderLine;
+	private I_C_Order order;
+	private I_C_OrderLine orderLine;
 
-	protected I_M_InOut mInOut;
-	protected I_M_InOutLine mInOutLine;
+	private I_M_InOut mInOut;
+	private I_M_InOutLine mInOutLine;
 
-	protected I_C_BPartner bPartner;
+	private BPartnerLocationId bpartnerAndLocationId;
 
 	private UomId stockUomId;
 
@@ -156,11 +157,14 @@ public class QtyDeliveredFromOrderToInvoiceTest
 
 	private void initC_BPartner()
 	{
-		bPartner = InterfaceWrapperHelper.create(ctx, I_C_BPartner.class, trxName);
+		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		InterfaceWrapperHelper.save(bpartner);
 
-		// ...
+		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		InterfaceWrapperHelper.save(bpLocation);
 
-		InterfaceWrapperHelper.save(bPartner);
+		bpartnerAndLocationId = BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 	}
 
 	private void initHandlers()
@@ -183,7 +187,8 @@ public class QtyDeliveredFromOrderToInvoiceTest
 	{
 		order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, trxName);
 		order.setAD_Org_ID(orgId.getRepoId());
-		order.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
+		order.setC_BPartner_ID(bpartnerAndLocationId.getBpartnerId().getRepoId());
+		order.setC_BPartner_Location_ID(bpartnerAndLocationId.getRepoId());
 		order.setDocStatus(DocStatus.Completed.getCode());
 		order.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
 		InterfaceWrapperHelper.save(order);

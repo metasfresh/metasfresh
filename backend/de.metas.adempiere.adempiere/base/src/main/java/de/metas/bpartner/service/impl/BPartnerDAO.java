@@ -566,9 +566,8 @@ public class BPartnerDAO implements IBPartnerDAO
 	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpartnerLocationId)
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
-
-		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
-
+		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+		return Services.get(ILocationDAO.class).getCountryIdByLocationId(locationId);
 	}
 
 	@Override

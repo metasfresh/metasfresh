@@ -29,6 +29,7 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 @Value
 public class BPartnerLocationAndCaptureId
@@ -76,7 +77,15 @@ public class BPartnerLocationAndCaptureId
 		return new BPartnerLocationAndCaptureId(bpartnerLocationId, locationCaptureId);
 	}
 
-	@Nullable
+	public static Optional<BPartnerLocationAndCaptureId> optionalOfRepoId(
+			final int bpartnerRepoId,
+			final int bpartnerLocationRepoId,
+			final int locationCaptureRepoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(bpartnerRepoId, bpartnerLocationRepoId, locationCaptureRepoId));
+	}
+
+			@Nullable
 	public static BPartnerLocationAndCaptureId ofRepoIdOrNull(
 			final int bpartnerRepoId,
 			final int bpartnerLocationRepoId,

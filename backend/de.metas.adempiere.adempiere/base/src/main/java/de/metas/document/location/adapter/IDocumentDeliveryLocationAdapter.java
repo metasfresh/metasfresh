@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
@@ -95,4 +96,12 @@ public interface IDocumentDeliveryLocationAdapter extends IDocumentLocationAdapt
 		setDeliveryToAddress(from.getBpartnerAddress());
 	}
 
+	default void setFrom(@NonNull final BPartnerInfo from)
+	{
+		setDropShip_BPartner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
+		setDropShip_Location_ID(BPartnerLocationId.toRepoId(from.getBpartnerLocationId()));
+		setDropShip_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
+		setDropShip_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
+		setDeliveryToAddress(null);
+	}
 }

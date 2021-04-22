@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
@@ -100,5 +101,14 @@ public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTempla
 		setC_BPartner_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
 		setAD_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
 		setBPartnerAddress(from.getBpartnerAddress());
+	}
+
+	default void setFrom(@NonNull final BPartnerInfo from)
+	{
+		setC_BPartner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
+		setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(from.getBpartnerLocationId()));
+		setC_BPartner_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
+		setAD_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
+		setBPartnerAddress(null);
 	}
 }

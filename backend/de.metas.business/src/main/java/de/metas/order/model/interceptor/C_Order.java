@@ -29,10 +29,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.IDocumentLocationBL;
-import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
-import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
-import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
-import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -42,9 +38,9 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.order.location.OrderLocationsUpdater;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentDAO;
@@ -60,7 +56,6 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -143,75 +138,14 @@ public class C_Order
 		order.setIsTaxIncluded(pl.isTaxIncluded());
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {
-					I_C_Order.COLUMNNAME_C_BPartner_Location_ID,
-					I_C_Order.COLUMNNAME_C_BPartner_Location_Value_ID,
-			})
-	public void beforeChange_updateShipLocationAndRenderedAddress(final I_C_Order order, final ModelChangeType timing)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeChange_updateLocationAndRenderedAddress(final I_C_Order order)
 	{
-		documentLocationBL.<I_C_Order, IDocumentLocationAdapter>prepareUpdateRecordLocation()
+		OrderLocationsUpdater.builder()
+				.documentLocationBL(documentLocationBL)
 				.record(order)
-				.recordType(I_C_Order.class)
-				.timing(timing)
-				.toDocumentLocationAdapter(OrderDocumentLocationAdapterFactory::locationAdapter)
-				.toPlainDocumentLocation(documentLocationBL::toPlainDocumentLocation)
 				.build()
-				.execute();
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {
-					I_C_Order.COLUMNNAME_Bill_Location_ID,
-					I_C_Order.COLUMNNAME_Bill_Location_Value_ID,
-			})
-	public void beforeChange_updateBillLocationAndRenderedAddress(final I_C_Order order, final ModelChangeType timing)
-	{
-		documentLocationBL.<I_C_Order, IDocumentBillLocationAdapter>prepareUpdateRecordLocation()
-				.record(order)
-				.recordType(I_C_Order.class)
-				.timing(timing)
-				.toDocumentLocationAdapter(OrderDocumentLocationAdapterFactory::billLocationAdapter)
-				.toPlainDocumentLocation(documentLocationBL::toPlainDocumentLocation)
-				.build()
-				.execute();
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {
-					I_C_Order.COLUMNNAME_IsDropShip,
-					I_C_Order.COLUMNNAME_DropShip_Location_ID,
-					I_C_Order.COLUMNNAME_DropShip_Location_Value_ID,
-					I_C_Order.COLUMNNAME_M_Warehouse_ID,
-			})
-	public void beforeChange_updateDeliveryLocationAndRenderedAddress(final I_C_Order order, final ModelChangeType timing)
-	{
-		documentLocationBL.<I_C_Order, IDocumentDeliveryLocationAdapter>prepareUpdateRecordLocation()
-				.record(order)
-				.recordType(I_C_Order.class)
-				.timing(timing)
-				.toDocumentLocationAdapter(OrderDocumentLocationAdapterFactory::deliveryLocationAdapter)
-				.toPlainDocumentLocation(documentLocationBL::toPlainDocumentLocation)
-				.build()
-				.execute();
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {
-					I_C_Order.COLUMNNAME_IsUseHandOver_Location,
-					I_C_Order.COLUMNNAME_HandOver_Location_ID,
-					I_C_Order.COLUMNNAME_HandOver_Location_Value_ID,
-			})
-	public void beforeChange_updateHandOverLocationAndRenderedAddress(final I_C_Order order, final ModelChangeType timing)
-	{
-		documentLocationBL.<I_C_Order, IDocumentHandOverLocationAdapter>prepareUpdateRecordLocation()
-				.record(order)
-				.recordType(I_C_Order.class)
-				.timing(timing)
-				.toDocumentLocationAdapter(OrderDocumentLocationAdapterFactory::handOverLocationAdapter)
-				.toPlainDocumentLocation(documentLocationBL::toPlainDocumentLocation)
-				.build()
-				.execute();
+				.updateAllIfNeeded();
 	}
 
 	// 03409: Context menu fixes (2012101810000086)

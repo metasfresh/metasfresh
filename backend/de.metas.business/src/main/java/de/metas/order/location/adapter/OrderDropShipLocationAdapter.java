@@ -22,11 +22,19 @@
 
 package de.metas.order.location.adapter;
 
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RecordBasedLocationAdapter;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 
-public class OrderDropShipLocationAdapter implements IDocumentDeliveryLocationAdapter
+import java.util.Optional;
+
+public class OrderDropShipLocationAdapter
+		implements IDocumentDeliveryLocationAdapter, RecordBasedLocationAdapter<OrderDropShipLocationAdapter>
 {
 	private final I_C_Order delegate;
 
@@ -105,5 +113,40 @@ public class OrderDropShipLocationAdapter implements IDocumentDeliveryLocationAd
 	public void setDeliveryToAddress(final String address)
 	{
 		delegate.setDeliveryToAddress(address);
+	}
+
+	@Override
+	public void setRenderedAddressAndCapturedLocation(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentDeliveryLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
+	}
+
+	public void setFromDeliveryLocation(@NonNull final I_C_Order from)
+	{
+		setFrom(new OrderDropShipLocationAdapter(from).toDocumentLocation());
+	}
+
+	public void setFromShipLocation(@NonNull final I_C_Order from)
+	{
+		setFrom(OrderDocumentLocationAdapterFactory.locationAdapter(from).toDocumentLocation());
+	}
+
+	@Override
+	public I_C_Order getWrappedRecord()
+	{
+		return delegate;
+	}
+
+	@Override
+	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
+	{
+		return documentLocationBL.toPlainDocumentLocation(this);
+	}
+
+	@Override
+	public OrderDropShipLocationAdapter toOldValues()
+	{
+		InterfaceWrapperHelper.assertNotOldValues(delegate);
+		return new OrderDropShipLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_C_Order.class));
 	}
 }

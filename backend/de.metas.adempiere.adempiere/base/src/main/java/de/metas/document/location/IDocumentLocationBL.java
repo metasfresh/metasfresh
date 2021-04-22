@@ -26,8 +26,6 @@ import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
 import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
 import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
-import de.metas.document.location.adapter.IDocumentLocationAdapterTemplate;
-import de.metas.document.location.commands.update_record_location.UpdateRecordLocationCommand.UpdateRecordLocationCommandBuilder;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 
@@ -64,7 +62,4 @@ public interface IDocumentLocationBL extends ISingletonService
 	void updateRenderedAddressAndCapturedLocation(IDocumentHandOverLocationAdapter locationAdapter);
 
 	void updateCapturedLocation(IDocumentHandOverLocationAdapter locationAdapter);
-
-	<RECORD, ADAPTER extends IDocumentLocationAdapterTemplate>
-	UpdateRecordLocationCommandBuilder<RECORD, ADAPTER> prepareUpdateRecordLocation();
 }

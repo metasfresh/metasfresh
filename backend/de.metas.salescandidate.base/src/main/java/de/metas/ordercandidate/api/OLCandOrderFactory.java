@@ -3,9 +3,8 @@ package de.metas.ordercandidate.api;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.BPartnerContactId;
+import de.metas.adempiere.modelvalidator.Order;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -19,7 +18,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryRule;
@@ -35,6 +33,7 @@ import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.ordercandidate.spi.IOLCandListener;
@@ -197,14 +196,17 @@ class OLCandOrderFactory
 		// use the values from 'olCand'
 		order.setAD_Org_ID(candidateOfGroup.getAD_Org_ID());
 
-		final BPartnerInfo bpartner = candidateOfGroup.getBPartnerInfo();
-		orderBL.setBPartnerLocationAndContact(order, bpartner);
+		OrderDocumentLocationAdapterFactory
+				.locationAdapter(order)
+				.setFrom(candidateOfGroup.getBPartnerInfo());
 
 		// if the olc has no value set, we are not falling back here!
 		final BPartnerInfo billBPartner = candidateOfGroup.getBillBPartnerInfo();
 		if (billBPartner != null)
 		{
-			orderBL.setBillBPartnerLocationAndContact(order, billBPartner);
+			OrderDocumentLocationAdapterFactory
+					.billLocationAdapter(order)
+					.setFrom(billBPartner);
 		}
 
 		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
@@ -221,7 +223,9 @@ class OLCandOrderFactory
 		final BPartnerInfo dropShipBPartner = candidateOfGroup.getDropShipBPartnerInfo().orElse(null);
 		if (dropShipBPartner != null)
 		{
-			orderBL.setDropShipBPartnerLocationAndContact(order, dropShipBPartner);
+			OrderDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(order)
+					.setFrom(dropShipBPartner);
 		}
 		else
 		{
@@ -231,7 +235,9 @@ class OLCandOrderFactory
 		final BPartnerInfo handOverBPartner = candidateOfGroup.getHandOverBPartnerInfo().orElse(null);
 		if (handOverBPartner != null)
 		{
-			orderBL.setHandOverBPartnerLocationAndContact(order, handOverBPartner);
+			OrderDocumentLocationAdapterFactory
+					.handOverLocationAdapter(order)
+					.setFrom(handOverBPartner);
 		}
 		else
 		{

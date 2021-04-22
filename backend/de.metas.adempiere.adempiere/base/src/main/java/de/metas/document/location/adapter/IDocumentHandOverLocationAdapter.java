@@ -22,7 +22,11 @@
 
 package de.metas.document.location.adapter;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
 import lombok.NonNull;
@@ -35,6 +39,8 @@ public interface IDocumentHandOverLocationAdapter extends IDocumentLocationAdapt
 
 	int getHandOver_Partner_ID();
 
+	void setHandOver_Partner_ID(int HandOver_Partner_ID);
+
 	int getHandOver_Location_ID();
 
 	void setHandOver_Location_ID(int HandOver_Location_ID);
@@ -44,6 +50,8 @@ public interface IDocumentHandOverLocationAdapter extends IDocumentLocationAdapt
 	void setHandOver_Location_Value_ID(int HandOver_Location_Value_ID);
 
 	int getHandOver_User_ID();
+
+	void setHandOver_User_ID(int HandOver_User_ID);
 
 	String getHandOverAddress();
 
@@ -61,6 +69,15 @@ public interface IDocumentHandOverLocationAdapter extends IDocumentLocationAdapt
 	{
 		setHandOver_Location_ID(from != null ? from.getBPartnerLocationRepoId() : -1);
 		setHandOver_Location_Value_ID(from != null ? from.getLocationCaptureRepoId() : -1);
+		setHandOverAddress(null);
+	}
+
+	default void setFrom(@NonNull final BPartnerInfo from)
+	{
+		setHandOver_Partner_ID(BPartnerId.toRepoId(from.getBpartnerId()));
+		setHandOver_Location_ID(BPartnerLocationId.toRepoId(from.getBpartnerLocationId()));
+		setHandOver_Location_Value_ID(LocationId.toRepoId(from.getLocationId()));
+		setHandOver_User_ID(BPartnerContactId.toRepoId(from.getContactId()));
 		setHandOverAddress(null);
 	}
 }

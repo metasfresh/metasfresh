@@ -2,7 +2,7 @@ package de.metas.order.impl;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
@@ -10,6 +10,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_OrderLine;
@@ -23,6 +24,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.PriceAndDiscount;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -77,7 +79,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import static de.metas.util.Check.assume;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
@@ -293,15 +294,18 @@ public class OrderLineBL implements IOrderLineBL
 
 		if (order.isSOTrx() && order.isDropShip())
 		{
-			final int bpartnerId = order.getDropShip_BPartner_ID() > 0 ? order.getDropShip_BPartner_ID() : order.getC_BPartner_ID();
-			ol.setC_BPartner_ID(bpartnerId);
-
-			final BPartnerLocationId deliveryLocationId = orderBL().getShipToLocationId(order);
-			ol.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(deliveryLocationId));
-
+			final BPartnerLocationAndCaptureId deliveryLocationId = orderBL().getShipToLocationId(order);
 			final int contactIdRepo = order.getDropShip_User_ID() > 0 ? order.getDropShip_User_ID() : order.getAD_User_ID();
-			final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, contactIdRepo);
-			ol.setAD_User_ID(BPartnerContactId.toRepoId(contactId));
+			final BPartnerContactId contactId = BPartnerContactId.ofRepoIdOrNull(deliveryLocationId.getBpartnerId(), contactIdRepo);
+
+			OrderLineDocumentLocationAdapterFactory
+					.locationAdapter(ol)
+					.setFrom(DocumentLocation.builder()
+									 .bpartnerId(deliveryLocationId.getBpartnerId())
+									 .bpartnerLocationId(deliveryLocationId.getBpartnerLocationId())
+									 .locationId(deliveryLocationId.getLocationCaptureId())
+									 .contactId(contactId)
+									 .build());
 		}
 
 		return ol;

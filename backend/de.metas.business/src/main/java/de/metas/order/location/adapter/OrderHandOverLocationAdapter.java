@@ -22,11 +22,19 @@
 
 package de.metas.order.location.adapter;
 
+import de.metas.document.location.DocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.RecordBasedLocationAdapter;
+import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentHandOverLocationAdapter;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 
-public class OrderHandOverLocationAdapter implements IDocumentHandOverLocationAdapter
+import java.util.Optional;
+
+public class OrderHandOverLocationAdapter
+		implements IDocumentHandOverLocationAdapter, RecordBasedLocationAdapter<OrderHandOverLocationAdapter>
 {
 	private final I_C_Order delegate;
 
@@ -45,6 +53,12 @@ public class OrderHandOverLocationAdapter implements IDocumentHandOverLocationAd
 	public int getHandOver_Partner_ID()
 	{
 		return delegate.getHandOver_Partner_ID();
+	}
+
+	@Override
+	public void setHandOver_Partner_ID(final int HandOver_Partner_ID)
+	{
+		delegate.setHandOver_Partner_ID(HandOver_Partner_ID);
 	}
 
 	@Override
@@ -78,6 +92,12 @@ public class OrderHandOverLocationAdapter implements IDocumentHandOverLocationAd
 	}
 
 	@Override
+	public void setHandOver_User_ID(final int HandOver_User_ID)
+	{
+		delegate.setHandOver_User_ID(HandOver_User_ID);
+	}
+
+	@Override
 	public String getHandOverAddress()
 	{
 		return delegate.getHandOverAddress();
@@ -87,5 +107,30 @@ public class OrderHandOverLocationAdapter implements IDocumentHandOverLocationAd
 	public void setHandOverAddress(final String address)
 	{
 		delegate.setHandOverAddress(address);
+	}
+
+	@Override
+	public void setRenderedAddressAndCapturedLocation(final @NonNull RenderedAddressAndCapturedLocation from)
+	{
+		IDocumentHandOverLocationAdapter.super.setRenderedAddressAndCapturedLocation(from);
+	}
+
+	@Override
+	public I_C_Order getWrappedRecord()
+	{
+		return delegate;
+	}
+
+	@Override
+	public Optional<DocumentLocation> toPlainDocumentLocation(final IDocumentLocationBL documentLocationBL)
+	{
+		return documentLocationBL.toPlainDocumentLocation(this);
+	}
+
+	@Override
+	public OrderHandOverLocationAdapter toOldValues()
+	{
+		InterfaceWrapperHelper.assertNotOldValues(delegate);
+		return new OrderHandOverLocationAdapter(InterfaceWrapperHelper.createOld(delegate, I_C_Order.class));
 	}
 }
