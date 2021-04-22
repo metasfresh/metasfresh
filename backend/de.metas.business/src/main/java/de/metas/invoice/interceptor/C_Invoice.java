@@ -8,11 +8,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.engine.DocStatus;
-import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
+import de.metas.invoice.location.InvoiceLocationsUpdater;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
@@ -114,17 +114,21 @@ public class C_Invoice // 03771
 		invoiceBL.handleReversalForInvoice(invoice);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Invoice.COLUMNNAME_C_BPartner_ID, I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID, I_C_Invoice.COLUMNNAME_AD_User_ID })
-	public void updateBPartnerAddress(final I_C_Invoice doc)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeSave_updateCapturedLocationsAndRenderedAddresses(final I_C_Invoice invoice)
 	{
-		documentLocationBL.updateRenderedAddressAndCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(doc));
+		InvoiceLocationsUpdater.builder()
+				.documentLocationBL(documentLocationBL)
+				.record(invoice)
+				.build()
+				.updateAllIfNeeded();
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }
-	// exclude columns which are not relevant if they change
+			// exclude columns which are not relevant if they change
 			, ignoreColumnsChanged = {
-					I_C_Invoice.COLUMNNAME_IsPaid
-			})
+			I_C_Invoice.COLUMNNAME_IsPaid
+	})
 	public void updateIsReadOnly(final I_C_Invoice invoice)
 	{
 		invoiceBL.updateInvoiceLineIsReadOnlyFlags(invoice);
@@ -233,7 +237,7 @@ public class C_Invoice // 03771
 		{
 			final I_C_Invoice parentInvoice = InterfaceWrapperHelper.create(creditMemo.getRef_Invoice(), I_C_Invoice.class);
 			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmt(parentInvoice,
-					false); // creditMemoAdjusted = false
+																			false); // creditMemoAdjusted = false
 
 			final BigDecimal amtToAllocate = invoiceOpenAmt.min(creditMemoLeft);
 
@@ -357,12 +361,12 @@ public class C_Invoice // 03771
 		final Money grandTotal = extractGrandTotal(salesInvoice);
 
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
-				.salesOrderId(salesOrderId)
-				.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
-				.customerId(BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()))
-				.dateTrx(dateTrx)
-				.amount(grandTotal)
-				.build());
+														.salesOrderId(salesOrderId)
+														.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
+														.customerId(BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()))
+														.dateTrx(dateTrx)
+														.amount(grandTotal)
+														.build());
 	}
 
 	private static Money extractGrandTotal(@NonNull final I_C_Invoice salesInvoice)

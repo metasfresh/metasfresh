@@ -39,7 +39,7 @@ public class M_InOut
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void updateCapturedLocationsAndRenderedAddresses(final I_M_InOut inoutRecord)
+	public void beforeSave_updateCapturedLocationsAndRenderedAddresses(final I_M_InOut inoutRecord)
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
