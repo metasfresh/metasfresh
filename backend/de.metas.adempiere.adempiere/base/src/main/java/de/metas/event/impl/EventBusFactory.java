@@ -1,21 +1,5 @@
 package de.metas.event.impl;
 
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.concurrent.CustomizableThreadFactory;
-import org.adempiere.util.jmx.JMXRegistry;
-import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -35,6 +19,20 @@ import de.metas.event.jmx.JMXEventBusManager;
 import de.metas.event.remote.IEventBusRemoteEndpoint;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.concurrent.CustomizableThreadFactory;
+import org.adempiere.util.jmx.JMXRegistry;
+import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 public class EventBusFactory implements IEventBusFactory
@@ -54,7 +52,7 @@ public class EventBusFactory implements IEventBusFactory
 			.build(new CacheLoader<Topic, EventBus>()
 			{
 				@Override
-				public EventBus load(final @NonNull Topic topic) throws Exception
+				public EventBus load(final @NonNull Topic topic)
 				{
 					return createEventBus(topic);
 				}

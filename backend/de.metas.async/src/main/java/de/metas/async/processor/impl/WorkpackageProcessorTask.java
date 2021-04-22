@@ -25,10 +25,15 @@ package de.metas.async.processor.impl;
 import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
+import de.metas.async.event.WorkpackageProcessedEvent;
+import de.metas.async.event.WorkpackageProcessedEvent.Status;
+import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.event.IEventBusFactory;
 import de.metas.i18n.AdMessageKey;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -95,6 +100,10 @@ import de.metas.util.exceptions.ServiceConnectionException;
 import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
+import static de.metas.async.event.WorkpackageProcessedEvent.Status.DONE;
+import static de.metas.async.event.WorkpackageProcessedEvent.Status.ERROR;
+import static de.metas.async.event.WorkpackageProcessedEvent.Status.SKIPPED;
+
 @ToString(exclude = { "queueDAO", "workpackageParamDAO", "contextFactory", "iAsyncBatchBL", "logsRepository", "workPackageProcessorOriginal" })
 class WorkpackageProcessorTask implements Runnable
 {
@@ -102,16 +111,22 @@ class WorkpackageProcessorTask implements Runnable
 	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle");
 	// services
 	private static final transient Logger logger = LogManager.getLogger(WorkpackageProcessorTask.class);
+
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
+	private final transient IEventBusFactory eventBusFactory = Services.get(IEventBusFactory.class);
 	private final transient IWorkpackageParamDAO workpackageParamDAO = Services.get(IWorkpackageParamDAO.class);
 	private final transient IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
-	private final transient IAsyncBatchBL iAsyncBatchBL = Services.get(IAsyncBatchBL.class);
+	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IWorkpackageLogsRepository logsRepository;
 
 	private final IQueueProcessor queueProcessor;
-	/** Workpackage processor (that we got as parameter) */
+	/**
+	 * Workpackage processor (that we got as parameter)
+	 */
 	private final IWorkpackageProcessor workPackageProcessorOriginal;
-	/** Workpackage processor which is wrapped with all features that we have */
+	/**
+	 * Workpackage processor which is wrapped with all features that we have
+	 */
 	private final IWorkpackageProcessor2 workPackageProcessorWrapped;
 	private final I_C_Queue_WorkPackage workPackage;
 	private final String trxNamePrefix;
@@ -140,11 +155,10 @@ class WorkpackageProcessorTask implements Runnable
 	 *
 	 * @return processing context
 	 */
-	private final Properties createProcessingCtx()
+	private Properties createProcessingCtx()
 	{
 		// NOTE: we assume de.metas.async.api.impl.WorkPackageQueue.setupWorkpackageContext(Properties, I_C_Queue_WorkPackage) is correctly setting the workpackage ctx
-		final Properties processingCtx = InterfaceWrapperHelper.getCtx(workPackage);
-		return processingCtx;
+		return InterfaceWrapperHelper.getCtx(workPackage);
 	}
 
 	@Override
@@ -218,10 +232,10 @@ class WorkpackageProcessorTask implements Runnable
 
 				//
 				// create notification record if needed
-				iAsyncBatchBL.createNotificationRecord(workPackage);
+				asyncBatchBL.createNotificationRecord(workPackage);
 
 				// increase processed counter
-				iAsyncBatchBL.increaseProcessed(workPackage);
+				asyncBatchBL.increaseProcessed(workPackage);
 			}
 			else
 			{
@@ -267,6 +281,26 @@ class WorkpackageProcessorTask implements Runnable
 		}
 	}
 
+	/** Get the workpackage's correlation-uuid-parameter */
+	@Nullable
+	private UUID extractCorrelationIdOrNull()
+	{
+		final UUID correlationId;
+		final String correlationIdStr = workpackageParamDAO
+				.retrieveWorkpackageParams(workPackage)
+				.getParameterAsString(Async_Constants.ASYNC_PARAM_CORRELATION_UUID);
+
+		if (EmptyUtil.isNotBlank(correlationIdStr))
+		{
+			correlationId = UUID.fromString(correlationIdStr);
+		}
+		else
+		{
+			correlationId = null;
+		}
+		return correlationId;
+	}
+
 	private WorkpackageLoggable createLoggable(@NonNull final I_C_Queue_WorkPackage workPackage)
 	{
 		final UserId userId = UserId.ofRepoIdOrNull(workPackage.getAD_User_ID()); // NOTE: in junit tests this is -1/null when it's not saved
@@ -298,7 +332,7 @@ class WorkpackageProcessorTask implements Runnable
 	 * @param trxName transaction name to be used
 	 * @return result
 	 */
-	private final Result processWorkpackage(final String trxName)
+	private Result processWorkpackage(final String trxName)
 	{
 		// Setup context and everything that needs to be setup before actually starting to process the workpackage
 		beforeWorkpackageProcessing();
@@ -315,9 +349,9 @@ class WorkpackageProcessorTask implements Runnable
 		{
 			final IQueryBuilder<I_C_Queue_WorkPackage> queryBuilder = Services.get(ILockManager.class)
 					.getLockedRecordsQueryBuilder(I_C_Queue_WorkPackage.class, workPackage)
-			// do not exclude the current WP; see the ILatchstragegy javadoc for background info.
-			// .addNotEqualsFilter(I_C_Queue_WorkPackage.COLUMN_C_Queue_WorkPackage_ID, workPackage.getC_Queue_WorkPackage_ID())
-			;
+					// do not exclude the current WP; see the ILatchstragegy javadoc for background info.
+					// .addNotEqualsFilter(I_C_Queue_WorkPackage.COLUMN_C_Queue_WorkPackage_ID, workPackage.getC_Queue_WorkPackage_ID())
+					;
 			workPackageProcessorWrapped
 					.getLatchStrategy()
 					.postponeIfNeeded(workPackage, queryBuilder);
@@ -325,8 +359,7 @@ class WorkpackageProcessorTask implements Runnable
 
 		//
 		// Execute the processor
-		final Result result = invokeProcessorAndHandleException(trxName);
-		return result;
+		return invokeProcessorAndHandleException(trxName);
 	}
 
 	private Result invokeProcessorAndHandleException(@Nullable final String trxName)
@@ -363,7 +396,7 @@ class WorkpackageProcessorTask implements Runnable
 					e.getClass().getSimpleName(), retryAdvisedInMillis, e.getServiceURL());
 
 			final WorkpackageSkipRequestException //
-			workpackageSkipRequestException = WorkpackageSkipRequestException
+					workpackageSkipRequestException = WorkpackageSkipRequestException
 					.createWithTimeoutAndThrowable(
 							e.getMessage(),
 							retryAdvisedInMillis,
@@ -432,8 +465,6 @@ class WorkpackageProcessorTask implements Runnable
 
 	/**
 	 * Mark {@link I_C_Queue_WorkPackage} as started to process.
-	 *
-	 * @param workPackage
 	 */
 	private void markStartProcessing(final I_C_Queue_WorkPackage workPackage)
 	{
@@ -443,8 +474,6 @@ class WorkpackageProcessorTask implements Runnable
 
 	/**
 	 * Sets workpackage's LastEndTime and LastDurationMillis.
-	 *
-	 * @param workPackage
 	 */
 	private void setLastEndTime(final I_C_Queue_WorkPackage workPackage)
 	{
@@ -466,8 +495,6 @@ class WorkpackageProcessorTask implements Runnable
 
 	/**
 	 * Unlock and mark {@link I_C_Queue_WorkPackage} as processed
-	 *
-	 * @param workPackage
 	 */
 	private void markProcessed(@NonNull final I_C_Queue_WorkPackage workPackage)
 	{
@@ -482,18 +509,17 @@ class WorkpackageProcessorTask implements Runnable
 		setLastEndTime(workPackage); // update statistics
 
 		queueDAO.save(workPackage);
+
+		createAndFireEventWithStatus(workPackage, DONE);
 	}
 
 	/**
 	 * Sets the current workpagage's skipped-at timestamp.
-	 *
-	 * @param workPackage
 	 */
 	private void markSkipped(
 			@NonNull final I_C_Queue_WorkPackage workPackage,
 			@NonNull final IWorkpackageSkipRequest skipRequest)
 	{
-
 		final Timestamp skippedAt = SystemTime.asTimestamp();
 		final Exception skipException = skipRequest.getException();
 		final int skippedCount = workPackage.getSkipped_Count();
@@ -532,6 +558,8 @@ class WorkpackageProcessorTask implements Runnable
 		// log error to console (for later audit):
 		logger.info(msg, skipException);
 		Loggables.addLog(msg);
+
+		createAndFireEventWithStatus(workPackage, SKIPPED);
 	}
 
 	private void markError(final I_C_Queue_WorkPackage workPackage, final AdempiereException ex)
@@ -567,6 +595,26 @@ class WorkpackageProcessorTask implements Runnable
 		Loggables.addLog("Error while processing workpackage: {0}", workPackage);
 
 		notifyErrorAfterCommit(workPackage, ex);
+
+		createAndFireEventWithStatus(workPackage, ERROR);
+	}
+
+	private void createAndFireEventWithStatus(
+			@NonNull final I_C_Queue_WorkPackage workPackage,
+			@NonNull final Status status)
+	{
+		final UUID correlationId = extractCorrelationIdOrNull();
+		if (correlationId == null)
+		{
+			return; // nothing to do
+		}
+		
+		final WorkpackageProcessedEvent processingDoneEvent = WorkpackageProcessedEvent.builder()
+				.correlationId(correlationId)
+				.workPackageId(QueueWorkPackageId.ofRepoId(workPackage.getC_Queue_WorkPackage_ID()))
+				.status(status)
+				.build();
+		eventBusFactory.getEventBus(Async_Constants.WORKPACKAGE_LIFECYCLE_TOPIC).postObject(processingDoneEvent);
 	}
 
 	private void notifyErrorAfterCommit(final I_C_Queue_WorkPackage workpackage, final AdempiereException ex)
@@ -600,10 +648,10 @@ class WorkpackageProcessorTask implements Runnable
 	/**
 	 * Extracts the {@link IWorkpackageSkipRequest} from given exception
 	 *
-	 * @param ex
 	 * @return {@link IWorkpackageSkipRequest} or null
 	 */
-	private static final IWorkpackageSkipRequest getWorkpackageSkipRequest(final Throwable ex)
+	@Nullable
+	private static IWorkpackageSkipRequest getWorkpackageSkipRequest(final Throwable ex)
 	{
 		if (ex instanceof IWorkpackageSkipRequest)
 		{
