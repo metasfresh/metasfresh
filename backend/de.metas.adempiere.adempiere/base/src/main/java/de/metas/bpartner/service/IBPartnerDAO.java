@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.location.LocationId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -144,6 +145,8 @@ public interface IBPartnerDAO extends ISingletonService
 	Set<CountryId> retrieveBPartnerLocationCountryIds(BPartnerId bpartnerId);
 
 	CountryId getCountryIdInTrx(BPartnerLocationId bpLocationId);
+
+	LocationId getLocationId(@NonNull BPartnerLocationId bpLocationId);
 
 	/**
 	 * @return Contacts of the partner, ordered by ad_user_ID, ascending

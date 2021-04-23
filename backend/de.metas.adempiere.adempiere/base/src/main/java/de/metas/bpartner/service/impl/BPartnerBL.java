@@ -632,22 +632,10 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public CountryId getCountryId(@NonNull final BPartnerLocationId bpLocationId)
-	{
-		return bpartnersRepo.getCountryId(bpLocationId);
-	}
-
-	@Override
 	public CountryId getCountryId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
 	{
-		if (bpartnerLocationAndCaptureId.getLocationCaptureId() != null)
-		{
-			return locationDAO.getCountryIdByLocationId(bpartnerLocationAndCaptureId.getLocationCaptureId());
-		}
-		else
-		{
-			return bpartnersRepo.getCountryId(bpartnerLocationAndCaptureId.getBpartnerLocationId());
-		}
+		final LocationId locationId = getLocationId(bpartnerLocationAndCaptureId);
+		return locationDAO.getCountryIdByLocationId(locationId);
 	}
 
 	@Override
@@ -663,6 +651,18 @@ public class BPartnerBL implements IBPartnerBL
 		}
 	}
 
+	@Override
+	public LocationId getLocationId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
+	{
+		if (bpartnerLocationAndCaptureId.getLocationCaptureId() != null)
+		{
+			return bpartnerLocationAndCaptureId.getLocationCaptureId();
+		}
+		else
+		{
+			return bpartnersRepo.getLocationId(bpartnerLocationAndCaptureId.getBpartnerLocationId());
+		}
+	}
 
 	@Override
 	public int getFreightCostIdByBPartnerId(@NonNull final BPartnerId bpartnerId)

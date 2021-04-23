@@ -584,6 +584,13 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public LocationId getLocationId(@NonNull final BPartnerLocationId bpLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpLocationId);
+		return LocationId.ofRepoId(bpLocation.getC_Location_ID());
+	}
+
+	@Override
 	@Cached(cacheName = I_AD_User.Table_Name + "#by#" + I_AD_User.COLUMNNAME_C_BPartner_ID)
 	public ImmutableList<I_AD_User> retrieveContacts(@CacheCtx final Properties ctx, final int bpartnerId, @CacheTrx @Nullable final String trxName)
 	{

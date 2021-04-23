@@ -22,7 +22,9 @@
 
 package org.adempiere.warehouse.api.impl;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
@@ -51,6 +53,7 @@ public class WarehouseBL implements IWarehouseBL
 	private static final Logger logger = LogManager.getLogger(WarehouseBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 
 	@Override
@@ -174,13 +177,12 @@ public class WarehouseBL implements IWarehouseBL
 	@Override
 	public DocumentLocation getPlainDocumentLocation(@NonNull final WarehouseId warehouseId)
 	{
-		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
-		final BPartnerLocationId bpLocationId = extractBPartnerLocationId(warehouse);
-		final LocationId locationId = getLocationIdFromBPartnerLocationId(bpLocationId);
+		final BPartnerLocationAndCaptureId bpLocationId = warehouseDAO.getWarehouseLocationById(warehouseId);
+		final LocationId locationId = partnerBL.getLocationId(bpLocationId);
 
 		return DocumentLocation.builder()
 				.bpartnerId(bpLocationId.getBpartnerId())
-				.bpartnerLocationId(bpLocationId)
+				.bpartnerLocationId(bpLocationId.getBpartnerLocationId())
 				.locationId(locationId)
 				.contactId(null) // N/A
 				.bpartnerAddress(null) // N/A

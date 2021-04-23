@@ -225,9 +225,9 @@ public interface IBPartnerBL extends ISingletonService
 
 	CountryId getCountryId(@NonNull BPartnerInfo bpartnerInfo);
 
-	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
+	LocationId getLocationId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId);
 
-	CountryId getCountryId(BPartnerLocationId bpLocationId);
+	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
 
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(BPartnerId bpartnerId);
 
