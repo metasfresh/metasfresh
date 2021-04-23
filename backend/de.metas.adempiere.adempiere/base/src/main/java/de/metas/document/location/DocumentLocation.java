@@ -94,16 +94,16 @@ public class DocumentLocation
 				: this;
 	}
 
-	public DocumentLocation withoutCapturedLocationAndRenderedAddress()
+	private DocumentLocation withoutRenderedAddress()
 	{
-		return this.locationId != null || !Check.isBlank(bpartnerAddress)
-				? toBuilder().locationId(null).bpartnerAddress(null).build()
+		return bpartnerAddress != null
+				? toBuilder().bpartnerAddress(null).build()
 				: this;
 	}
 
-	public boolean equalsIgnoringCapturedLocationAndRenderedAddress(@NonNull final DocumentLocation other)
+	public boolean equalsIgnoringRenderedAddress(@NonNull final DocumentLocation other)
 	{
-		return Objects.equals(this.withoutCapturedLocationAndRenderedAddress(), other.withoutCapturedLocationAndRenderedAddress());
+		return Objects.equals(this.withoutRenderedAddress(), other.withoutRenderedAddress());
 	}
 
 	public BPartnerLocationAndCaptureId toBPartnerLocationAndCaptureId()

@@ -55,7 +55,7 @@ public class RecordBasedLocationUtils
 
 		final boolean updateRenderedAddress = isNewRecord
 				|| updateCapturedLocation
-				|| !currentLocation.equalsIgnoringCapturedLocationAndRenderedAddress(previousLocation);
+				|| !currentLocation.equalsIgnoringRenderedAddress(previousLocation);
 
 		if (updateCapturedLocation || updateRenderedAddress)
 		{
