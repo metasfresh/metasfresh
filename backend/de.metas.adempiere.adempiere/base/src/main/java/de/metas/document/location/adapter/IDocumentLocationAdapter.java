@@ -33,7 +33,6 @@ import de.metas.location.LocationId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
 import java.util.Optional;
 
 public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTemplate
