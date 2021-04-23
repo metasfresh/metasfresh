@@ -25,6 +25,7 @@ package de.metas.order.location.adapter;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.location.DocumentLocation;
@@ -39,6 +40,7 @@ import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
@@ -47,6 +49,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -56,8 +59,7 @@ import javax.annotation.Nullable;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-@SuppressWarnings("ConstantConditions")
-class OrderMainLocationAdapterTest
+class OrderDropShipLocationAdapterTest
 {
 	private IDocumentLocationBL documentLocationBL;
 
@@ -67,10 +69,22 @@ class OrderMainLocationAdapterTest
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		documentLocationBL = new DocumentLocationBL(new BPartnerBL(new UserRepository()));
+		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+		documentLocationBL = new DocumentLocationBL(bpartnerBL);
 
 		countryDE = createCountry("DE", "@A1@ @CO@");
+	}
+
+	private WarehouseId createWarehouse(final DocumentLocation orgLocation)
+	{
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setC_BPartner_ID(orgLocation.getBpartnerId().getRepoId());
+		warehouse.setC_BPartner_Location_ID(orgLocation.getBpartnerLocationId().getRepoId());
+		warehouse.setC_Location_ID(orgLocation.getLocationId().getRepoId());
+		saveRecord(warehouse);
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 	}
 
 	public CountryId createCountry(@NonNull final String countryCode, @Nullable String addressFormat)
@@ -131,9 +145,9 @@ class OrderMainLocationAdapterTest
 		return LocationId.ofRepoId(location.getC_Location_ID());
 	}
 
-	private OrderMainLocationAdapter adapter(@NonNull final I_C_Order order)
+	private OrderDropShipLocationAdapter adapter(@NonNull final I_C_Order order)
 	{
-		return new OrderMainLocationAdapter(order);
+		return new OrderDropShipLocationAdapter(order);
 	}
 
 	@Nested
@@ -143,16 +157,34 @@ class OrderMainLocationAdapterTest
 		class newRecord
 		{
 			@Test
+			void with_IsDropShip_flag_false()
+			{
+				final DocumentLocation whLocation = documentLocation().bpName("OrgBP").address1("OrgBP-addr1").build();
+				final WarehouseId warehouseId = createWarehouse(whLocation);
+
+				final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+				order.setIsDropShip(false);
+				order.setM_Warehouse_ID(warehouseId.getRepoId());
+				order.setDeliveryToAddress("we expect this to be set");
+
+				adapter(order).updateCapturedLocationAndRenderedAddressIfNeeded(documentLocationBL);
+
+				Assertions.assertThat(adapter(order).getDeliveryToAddress())
+						.isEqualTo("OrgBP-addr1\nDE");
+			}
+
+			@Test
 			void withoutLocationIdSet()
 			{
 				final DocumentLocation documentLocation = documentLocation().bpName("bp1").address1("addr1").build();
 
 				final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-				order.setC_BPartner_ID(documentLocation.getBpartnerId().getRepoId());
-				order.setC_BPartner_Location_ID(documentLocation.getBpartnerLocationId().getRepoId());
-				order.setC_BPartner_Location_Value_ID(-1);
-				order.setBPartnerAddress("we expect this to be set");
-				order.setAD_User_ID(documentLocation.getContactId().getRepoId());
+				order.setIsDropShip(true);
+				order.setDropShip_BPartner_ID(documentLocation.getBpartnerId().getRepoId());
+				order.setDropShip_Location_ID(documentLocation.getBpartnerLocationId().getRepoId());
+				order.setDropShip_Location_Value_ID(-1);
+				order.setDeliveryToAddress("we expect this to be set");
+				order.setDropShip_User_ID(documentLocation.getContactId().getRepoId());
 
 				adapter(order).updateCapturedLocationAndRenderedAddressIfNeeded(documentLocationBL);
 
@@ -170,11 +202,12 @@ class OrderMainLocationAdapterTest
 				final LocationId addr2 = createLocation("addr2");
 
 				final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-				order.setC_BPartner_ID(documentLocation.getBpartnerId().getRepoId());
-				order.setC_BPartner_Location_ID(documentLocation.getBpartnerLocationId().getRepoId());
-				order.setC_BPartner_Location_Value_ID(addr2.getRepoId());
-				order.setBPartnerAddress("we expect this to be set");
-				order.setAD_User_ID(documentLocation.getContactId().getRepoId());
+				order.setIsDropShip(true);
+				order.setDropShip_BPartner_ID(documentLocation.getBpartnerId().getRepoId());
+				order.setDropShip_Location_ID(documentLocation.getBpartnerLocationId().getRepoId());
+				order.setDropShip_Location_Value_ID(addr2.getRepoId());
+				order.setDeliveryToAddress("we expect this to be set");
+				order.setDropShip_User_ID(documentLocation.getContactId().getRepoId());
 
 				adapter(order).updateCapturedLocationAndRenderedAddressIfNeeded(documentLocationBL);
 
@@ -188,11 +221,12 @@ class OrderMainLocationAdapterTest
 		}
 
 		@Nested
-		class existingRecord
+		class existingRecord_with_IsDropShip_true
 		{
 			I_C_Order createExistingOrder(DocumentLocation documentLocation)
 			{
 				final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+				order.setIsDropShip(true);
 				adapter(order).setFrom(documentLocation);
 				InterfaceWrapperHelper.saveRecord(order);
 				return order;
@@ -203,10 +237,10 @@ class OrderMainLocationAdapterTest
 			{
 				final DocumentLocation location = documentLocation().bpName("bp1").address1("addr1").build();
 				final I_C_Order order = createExistingOrder(location);
-				order.setBPartnerAddress("we expect this to be set");
+				order.setDeliveryToAddress("we expect this to be set");
 
 				final DocumentLocation newLocation = withNewBPartnerLocation(location, "addr2");
-				order.setC_BPartner_Location_ID(newLocation.getBpartnerLocationId().getRepoId());
+				order.setDropShip_Location_ID(newLocation.getBpartnerLocationId().getRepoId());
 				adapter(order).updateCapturedLocationAndRenderedAddressIfNeeded(documentLocationBL);
 
 				Assertions.assertThat(adapter(order).toDocumentLocation())
@@ -221,10 +255,10 @@ class OrderMainLocationAdapterTest
 			{
 				final DocumentLocation location = documentLocation().bpName("bp1").address1("addr1").build();
 				final I_C_Order order = createExistingOrder(location);
-				order.setBPartnerAddress("we expect this to be set");
+				order.setDeliveryToAddress("we expect this to be set");
 
 				final LocationId newLocationId = createLocation("addr2");
-				order.setC_BPartner_Location_Value_ID(newLocationId.getRepoId());
+				order.setDropShip_Location_Value_ID(newLocationId.getRepoId());
 				adapter(order).updateCapturedLocationAndRenderedAddressIfNeeded(documentLocationBL);
 
 				Assertions.assertThat(adapter(order).toDocumentLocation())
@@ -240,7 +274,7 @@ class OrderMainLocationAdapterTest
 			{
 				final DocumentLocation location = documentLocation().bpName("bp1").address1("addr1").build();
 				final I_C_Order order = createExistingOrder(location);
-				order.setBPartnerAddress("expect this value to be preserved");
+				order.setDeliveryToAddress("expect this value to be preserved");
 
 				adapter(order).updateCapturedLocationAndRenderedAddressIfNeeded(documentLocationBL);
 
@@ -251,6 +285,20 @@ class OrderMainLocationAdapterTest
 										   .build());
 			}
 
+			@Test
+			void changeIsDropShipToFalse()
+			{
+				final DocumentLocation orgLocation = documentLocation().bpName("org").address1("org-addr").build();
+				final WarehouseId warehouseId = createWarehouse(orgLocation);
+				final I_C_Order order = createExistingOrder(documentLocation().bpName("bp").address1("addr").build());
+
+				order.setIsDropShip(false);
+				order.setM_Warehouse_ID(warehouseId.getRepoId());
+				adapter(order).updateCapturedLocationAndRenderedAddressIfNeeded(documentLocationBL);
+
+				Assertions.assertThat(adapter(order).getDeliveryToAddress())
+						.isEqualTo("org-addr\nDE");
+			}
 		}
 	}
 }
