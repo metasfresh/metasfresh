@@ -78,7 +78,6 @@ import org.eevolution.util.ProductBOMBuilder;
 import org.junit.Assert;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.dimension.model.I_DIM_Dimension_Spec;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -434,7 +433,6 @@ public class HUTestHelper
 		beforeRegisteringServices();
 
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
-		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());

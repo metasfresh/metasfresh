@@ -3,6 +3,7 @@ package org.adempiere.warehouse.api.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.i18n.ITranslatableString;
@@ -665,5 +666,12 @@ public class WarehouseDAO implements IWarehouseDAO
 				.firstId();
 
 		return WarehouseId.ofRepoIdOrNull(productRepoId);
+	}
+
+	@Override
+	public BPartnerLocationAndCaptureId getWarehouseLocationById(final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = getById(warehouseId);
+		return BPartnerLocationAndCaptureId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID(), warehouse.getC_Location_ID());
 	}
 }

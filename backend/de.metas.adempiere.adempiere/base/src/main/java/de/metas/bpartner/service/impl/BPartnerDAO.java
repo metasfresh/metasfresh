@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
@@ -424,6 +425,17 @@ public class BPartnerDAO implements IBPartnerDAO
 				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
 				.findFirst()
 				.orElse(null);
+	}
+
+	@Override
+	public BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdInTrx(bpartnerLocationId);
+		if (bpLocation == null)
+		{
+			throw new AdempiereException("No location found for " + bpartnerLocationId);
+		}
+		return BPartnerLocationAndCaptureId.ofRecord(bpLocation);
 	}
 
 	@Override

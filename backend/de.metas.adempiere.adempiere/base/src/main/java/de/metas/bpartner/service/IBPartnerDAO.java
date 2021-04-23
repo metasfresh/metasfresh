@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -129,6 +130,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);
+
+	BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureIdInTrx(@NonNull BPartnerLocationId bpartnerLocationId);
 
 	boolean existsAndIsActive(BPartnerLocationId bpartnerLocationId);
 
