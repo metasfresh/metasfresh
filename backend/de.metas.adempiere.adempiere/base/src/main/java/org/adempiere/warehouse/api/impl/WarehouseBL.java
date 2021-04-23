@@ -39,6 +39,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_Locator;
@@ -53,7 +54,7 @@ public class WarehouseBL implements IWarehouseBL
 	private static final Logger logger = LogManager.getLogger(WarehouseBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
+	private final IBPartnerBL partnerBL = SpringContextHolder.instance.getBean(IBPartnerBL.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 
 	@Override
