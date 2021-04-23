@@ -169,3 +169,9 @@ export const HOME_MENU_USER_MAX_ITEMS = 10;
  * @type {integer} Used to indicate the number of rows from where we display the `Show more...` button
  */
 export const INLINE_TAB_SHOW_MORE_FROM = 5;
+
+/**
+ * @constant
+ * @type {string} Used to identify the type of filter passed to checkClearedFilters
+ */
+export const FILTERS_TYPE_NOT_INCLUDED = 'NotIncluded';

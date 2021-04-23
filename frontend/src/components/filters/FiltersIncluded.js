@@ -91,6 +91,7 @@ class FiltersIncluded extends PureComponent {
       modalVisible,
       activeFiltersCaptions,
       resetInitialValues,
+      allChildFiltersCleared,
     } = this.props;
 
     const { isOpenDropdown, openFilterId } = this.state;
@@ -120,14 +121,17 @@ class FiltersIncluded extends PureComponent {
             'btn-distance btn-sm',
             {
               'btn-select': isOpenDropdown,
-              'btn-active': activeFilter ? activeFilter.isActive : false,
+              'btn-active':
+                activeFilter && !allChildFiltersCleared
+                  ? activeFilter.isActive
+                  : false,
             }
           )}
           title={buttonCaption}
           tabIndex={modalVisible ? -1 : 0}
         >
           <i className="meta-icon-preview" />
-          {activeFilter ? (
+          {activeFilter && !allChildFiltersCleared ? (
             activeFilter.parameters &&
             activeFilter.parameters.length === 1 &&
             activeFilter.captionValue ? (
@@ -184,6 +188,7 @@ class FiltersIncluded extends PureComponent {
                 onHide={this.handleShowFalse}
                 openedFilter={true}
                 filtersWrapper={this.props.filtersWrapper}
+                allChildFiltersCleared={allChildFiltersCleared}
               />
             )}
           </div>
@@ -209,6 +214,7 @@ FiltersIncluded.propTypes = {
   active: PropTypes.any,
   widgetShown: PropTypes.any,
   dropdownToggled: PropTypes.any,
+  allChildFiltersCleared: PropTypes.bool, // indicator used to know when all the child filters of a filter were cleared
 };
 
 export default onClickOutside(FiltersIncluded);
