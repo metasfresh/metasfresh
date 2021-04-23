@@ -119,7 +119,6 @@ public class OrderBL implements IOrderBL
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
@@ -266,6 +265,7 @@ public class OrderBL implements IOrderBL
 			return null;
 		}
 
+		final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class); // keep it here as this is spring service
 		final CountryId countryId = partnerBL.getCountryId(shipToBPLocationId);
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
