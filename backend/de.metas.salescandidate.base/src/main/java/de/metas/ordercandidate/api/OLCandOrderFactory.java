@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.api;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
@@ -584,4 +585,10 @@ class OLCandOrderFactory
 		return note;
 	}
 
+	@Nullable
+	@VisibleForTesting
+	I_C_Order getOrder()
+	{
+		return order;
+	}
 }

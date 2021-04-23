@@ -81,9 +81,7 @@ public class OLCandBL implements IOLCandBL
 	private final IOLCandEffectiveValuesBL effectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
@@ -483,14 +481,22 @@ public class OLCandBL implements IOLCandBL
 
 	private I_AD_Note createOLCandErrorNote(final UserId userInChargeId, final OLCand olCand, final Exception ex)
 	{
-		final I_AD_User user = userDAO.getById(userInChargeId);
+		try
+		{
+			final I_AD_User user = userDAO.getById(userInChargeId);
 
-		final MNote note = new MNote(Env.getCtx(), IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId.getRepoId(), ITrx.TRXNAME_None);
-		note.setRecord(olCand.toTableRecordReference());
-		note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
-		note.setTextMsg(ex.getLocalizedMessage());
-		save(note);
+			final MNote note = new MNote(Env.getCtx(), IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId.getRepoId(), ITrx.TRXNAME_None);
+			note.setRecord(olCand.toTableRecordReference());
+			note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
+			note.setTextMsg(ex.getLocalizedMessage());
+			save(note);
 
-		return note;
+			return note;
+		}
+		catch (RuntimeException ex2)
+		{
+			ex2.addSuppressed(ex);
+			throw ex2;
+		}
 	}
 }
