@@ -2,7 +2,7 @@ package de.metas.invoicecandidate.spi.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.IProductAcctDAO;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.dimension.DimensionFactory;
@@ -24,7 +24,6 @@ import de.metas.logging.LogManager;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -203,7 +202,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 						order1.getDatePromised(),
 						OrgId.ofRepoId(order1.getAD_Org_ID()),
 						WarehouseId.ofRepoId(order1.getM_Warehouse_ID()),
-						BPartnerLocationId.ofRepoIdOrNull(order1.getC_BPartner_ID(), order1.getC_BPartner_Location_ID()),
+						BPartnerLocationAndCaptureId.ofRepoId(order1.getC_BPartner_ID(), order1.getC_BPartner_Location_ID(), order1.getC_BPartner_Location_Value_ID()),
 						order1.isSOTrx()))
 				.thenReturn(TaxId.ofRepoId(3));
 	}

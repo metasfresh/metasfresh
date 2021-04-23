@@ -108,7 +108,7 @@ public class C_Invoice
 
 		final I_M_PriceList priceListNew = priceListBL.getCurrentPricelistOrNull(
 				pricingSystemId,
-				bpartnerDAO.getBPartnerLocationCountryId(bpartnerLocationId),
+				bpartnerDAO.getCountryId(bpartnerLocationId),
 				dateInvoiced,
 				soTrx);
 		if (priceListNew == null)

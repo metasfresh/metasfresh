@@ -262,7 +262,8 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 		return getBillLocationAndCaptureEffectiveId(olCand).getBpartnerLocationId();
 	}
 
-	private BPartnerLocationAndCaptureId getBillLocationAndCaptureEffectiveId(final @NonNull I_C_OLCand olCand)
+	@Override
+	public BPartnerLocationAndCaptureId getBillLocationAndCaptureEffectiveId(final @NonNull I_C_OLCand olCand)
 	{
 		return coalesceSuppliers(
 				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(olCand.getBill_BPartner_ID(), olCand.getBill_Location_ID(), olCand.getBill_Location_Value_ID()),
@@ -295,11 +296,19 @@ public class OLCandEffectiveValuesBL implements IOLCandEffectiveValuesBL
 	@Override
 	public BPartnerInfo getBillToPartnerInfo(@NonNull final I_C_OLCand olCandRecord)
 	{
-		return BPartnerInfo.builder()
-				.bpartnerId(getBillBPartnerEffectiveId(olCandRecord))
-				.bpartnerLocationId(getBillLocationEffectiveId(olCandRecord))
-				.contactId(getBillContactEffectiveId(olCandRecord))
-				.build();
+		final BPartnerContactId contactId = getBillContactEffectiveId(olCandRecord);
+		final BPartnerLocationAndCaptureId bpLocationId = getBillLocationAndCaptureEffectiveId(olCandRecord);
+		if (bpLocationId != null)
+		{
+			return BPartnerInfo.ofLocationAndContact(bpLocationId, contactId);
+		}
+		else
+		{
+			return BPartnerInfo.builder()
+					.bpartnerId(getBPartnerEffectiveId(olCandRecord))
+					.contactId(contactId)
+					.build();
+		}
 	}
 
 	@Override

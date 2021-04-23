@@ -1,6 +1,7 @@
 package de.metas.invoicecandidate.spi.impl;
 
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -23,7 +24,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
@@ -151,7 +151,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 						order.getDatePromised(),
 						OrgId.ofRepoId(order.getAD_Org_ID()),
 						WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-						BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()),
+						BPartnerLocationAndCaptureId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID(), order.getC_BPartner_Location_Value_ID()),
 						order.isSOTrx()))
 				.thenReturn(TaxId.ofRepoId(3));
 	}

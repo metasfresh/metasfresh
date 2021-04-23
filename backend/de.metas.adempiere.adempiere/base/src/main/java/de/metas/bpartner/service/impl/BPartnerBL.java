@@ -4,8 +4,10 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerAware;
@@ -17,6 +19,7 @@ import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ILocationBL;
+import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.location.impl.AddressBuilder;
 import de.metas.organization.OrgId;
@@ -55,6 +58,7 @@ public class BPartnerBL implements IBPartnerBL
 	/* package */static final String SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override = "C_BPartner.SOTrx_AllowConsolidateInOut_Override";
 	private static final AdMessageKey MSG_SALES_REP_EQUALS_BPARTNER = AdMessageKey.of("SALES_REP_EQUALS_BPARTNER");
 
+	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final IBPartnerDAO bpartnersRepo;
 	private final UserRepository userRepository;
 
@@ -628,10 +632,37 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
+	public CountryId getCountryId(@NonNull final BPartnerLocationId bpLocationId)
 	{
-		return bpartnersRepo.retrieveBPartnerLocationCountryId(bpLocationId);
+		return bpartnersRepo.getCountryId(bpLocationId);
 	}
+
+	@Override
+	public CountryId getCountryId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
+	{
+		if (bpartnerLocationAndCaptureId.getLocationCaptureId() != null)
+		{
+			return locationDAO.getCountryIdByLocationId(bpartnerLocationAndCaptureId.getLocationCaptureId());
+		}
+		else
+		{
+			return bpartnersRepo.getCountryId(bpartnerLocationAndCaptureId.getBpartnerLocationId());
+		}
+	}
+
+	@Override
+	public CountryId getCountryId(@NonNull final BPartnerInfo bpartnerInfo)
+	{
+		if (bpartnerInfo.getLocationId() != null)
+		{
+			return locationDAO.getCountryIdByLocationId(bpartnerInfo.getLocationId());
+		}
+		else
+		{
+			return bpartnersRepo.getCountryId(bpartnerInfo.getBpartnerLocationId());
+		}
+	}
+
 
 	@Override
 	public int getFreightCostIdByBPartnerId(@NonNull final BPartnerId bpartnerId)

@@ -8,6 +8,7 @@ import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -39,6 +40,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -744,7 +746,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 					.appendParametersToMessage();
 		}
 
-		final CountryId countryId = bpartnersRepo.getBPartnerLocationCountryId(bpartnerLocationId);
+		final CountryId countryId = bpartnersRepo.getCountryId(bpartnerLocationId);
 
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 		return priceListBL.getCurrentPriceList(pricingSystemId, countryId, date, soTrx)
@@ -1394,8 +1396,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			final Timestamp taxDate = io != null ? io.getMovementDate() : invoice.getDateInvoiced();
 
-			final BPartnerLocationId taxBPartnerLocationId = io != null ? BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID())
-					: BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+			final BPartnerLocationAndCaptureId taxBPartnerLocationId = io != null
+					? InOutDocumentLocationAdapterFactory.locationAdapter(io).getBPartnerLocationAndCaptureId()
+					: InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureId();
 
 			final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
 

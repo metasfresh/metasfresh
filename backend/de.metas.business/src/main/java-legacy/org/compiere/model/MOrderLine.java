@@ -23,6 +23,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.tax.api.TaxId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -316,14 +318,13 @@ public class MOrderLine extends X_C_OrderLine
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this);
 		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
 
-		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(getC_BPartner_ID(), getC_BPartner_Location_ID());
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(bpLocationId);
+		final BPartnerLocationAndCaptureId bpLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(this).getBPartnerLocationAndCaptureId();
 
 		final TaxId taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
 				getCtx(),
 				countryFromId,
 				OrgId.ofRepoId(getAD_Org_ID()),
-				bpLocation, // should be bill to
+				bpLocationId, // should be bill to
 				getDateOrdered(),
 				taxCategoryId,
 				getParent().isSOTrx(),

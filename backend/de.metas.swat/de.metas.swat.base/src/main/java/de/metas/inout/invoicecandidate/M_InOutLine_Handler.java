@@ -399,7 +399,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				shipDate,
 				orgId,
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
-				deliveryLocation.getBpartnerLocationId(), // shipC_BPartner_Location_ID
+				deliveryLocation, // shipC_BPartner_Location_ID
 				isSOTrx);
 		icRecord.setC_Tax_ID(taxId.getRepoId());
 

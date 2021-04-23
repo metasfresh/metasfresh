@@ -26,8 +26,11 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.tax.api.TaxId;
@@ -673,10 +676,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		final Timestamp taxDate = io != null ? io.getMovementDate() : invoice.getDateInvoiced();
 
-		final BPartnerLocationId taxBPartnerLocationId = io != null ? BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID())
-				: BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
-
-		final I_C_BPartner_Location toBPLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(taxBPartnerLocationId);
+		final BPartnerLocationAndCaptureId taxBPartnerLocationId = io != null
+				? InOutDocumentLocationAdapterFactory.locationAdapter(io).getBPartnerLocationAndCaptureId()
+				: InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureId();
 
 		final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
 
@@ -684,7 +686,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				getCtx(),
 				fromCountryId, // countryFromId,
 				fromOrgId,
-				toBPLocation, // should be bill to
+				taxBPartnerLocationId, // should be bill to
 				taxDate,
 				taxCategoryId,
 				isSOTrx,
@@ -697,7 +699,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 					.isSOTrx(isSOTrx)
 					.billDate(taxDate)
 					.billFromCountryId(fromCountryId)
-					.billToC_Location_ID(toBPLocation.getC_Location_ID())
 					.build();
 			log.error("No Tax found", ex);
 			return false;

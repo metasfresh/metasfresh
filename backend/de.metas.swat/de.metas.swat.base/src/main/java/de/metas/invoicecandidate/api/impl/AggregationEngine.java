@@ -402,7 +402,7 @@ public final class AggregationEngine
 			}
 			else
 			{
-				final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(icRecord.getBill_BPartner_ID(), icRecord.getBill_Location_ID());
+				final BPartnerLocationAndCaptureId bpLocationId = InvoiceCandidateLocationAdapterFactory.billLocationAdapter(icRecord).getBPartnerLocationAndCaptureId();
 				final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 						PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()),
 						bpLocationId,
@@ -523,7 +523,8 @@ public final class AggregationEngine
 	{
 		final BPartnerLocationAndCaptureId billBPLocationOverrideId = InvoiceCandidateLocationAdapterFactory
 				.billLocationOverrideAdapter(ic)
-				.getBPartnerLocationAndCaptureId();
+				.getBPartnerLocationAndCaptureIdIfExists()
+				.orElse(null);
 		if (billBPLocationOverrideId != null)
 		{
 			return billBPLocationOverrideId;

@@ -110,4 +110,13 @@ public class BPartnerInfo
 				? toBuilder().locationId(locationId).build()
 				: this;
 	}
+
+	public BPartnerLocationAndCaptureId toBPartnerLocationAndCaptureId()
+	{
+		if (bpartnerLocationId == null)
+		{
+			throw new AdempiereException("Cannot convert " + this + " to " + BPartnerLocationAndCaptureId.class.getSimpleName() + " because bpartnerLocationId is null");
+		}
+		return BPartnerLocationAndCaptureId.of(bpartnerLocationId, locationId);
+	}
 }

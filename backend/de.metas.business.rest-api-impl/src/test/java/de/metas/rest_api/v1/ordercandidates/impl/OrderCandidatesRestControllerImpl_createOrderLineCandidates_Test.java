@@ -188,10 +188,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		SystemTime.setFixedTimeSource(FIXED_TIME);
 
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		Services.registerService(IBPartnerBL.class, bpartnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
-		olCandBL = new OLCandBL(new BPartnerOrderParamsRepository());
+		olCandBL = new OLCandBL(bpartnerBL, new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
 
 		final I_AD_Org defaultOrgRecord;
@@ -440,6 +441,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			assertThat(bpartner.getVatId()).isEqualTo("newVatId");
 		}
 
+		@SuppressWarnings({ "SameParameterValue", "OptionalUsedAsFieldOrParameterType" })
 		private JsonOLCand importOLCandWithVatId(
 				final String currentVatId,
 				@Nullable final Optional<String> newVatId)

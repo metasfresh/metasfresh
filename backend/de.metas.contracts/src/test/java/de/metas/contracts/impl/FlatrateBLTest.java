@@ -2,6 +2,7 @@ package de.metas.contracts.impl;
 
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
@@ -226,7 +227,7 @@ public class FlatrateBLTest extends ContractsTestBase
 						any(Timestamp.class),
 						any(OrgId.class),
 						any(WarehouseId.class),
-						any(BPartnerLocationId.class),
+						any(BPartnerLocationAndCaptureId.class),
 						anyBoolean()))
 				.thenReturn(TaxId.ofRepoId(3));
 	}

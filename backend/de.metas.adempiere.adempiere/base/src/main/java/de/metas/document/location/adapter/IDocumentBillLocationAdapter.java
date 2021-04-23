@@ -31,8 +31,10 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.location.LocationId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTemplate
 {
@@ -95,7 +97,13 @@ public interface IDocumentBillLocationAdapter extends IDocumentLocationAdapterTe
 
 	default BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureId()
 	{
-		return BPartnerLocationAndCaptureId.ofRepoIdOrNull(getBill_BPartner_ID(), getBill_Location_ID(), getBill_Location_Value_ID());
+		return getBPartnerLocationAndCaptureIdIfExists()
+				.orElseThrow(() -> new AdempiereException("Failed extracting " + BPartnerLocationAndCaptureId.class.getSimpleName() + " from " + this));
+	}
+
+	default Optional<BPartnerLocationAndCaptureId> getBPartnerLocationAndCaptureIdIfExists()
+	{
+		return BPartnerLocationAndCaptureId.optionalOfRepoId(getBill_BPartner_ID(), getBill_Location_ID(), getBill_Location_Value_ID());
 	}
 
 	default BPartnerContactId getBPartnerContactId()

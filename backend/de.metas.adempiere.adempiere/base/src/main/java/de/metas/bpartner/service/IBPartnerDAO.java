@@ -140,9 +140,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Set<CountryId> retrieveBPartnerLocationCountryIds(BPartnerId bpartnerId);
 
-	CountryId retrieveBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
-
-	CountryId retrieveBPartnerLocationCountryIdInTrx(BPartnerLocationId bpLocationId);
+	CountryId getCountryIdInTrx(BPartnerLocationId bpLocationId);
 
 	/**
 	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
@@ -259,7 +257,7 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
-	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpartnerLocationId);
+	CountryId getCountryId(BPartnerLocationId bpLocationId);
 	
 	/**
 	 * Retrieve default/first bill to location.

@@ -25,7 +25,9 @@ package de.metas.pricing.service.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -205,7 +207,7 @@ public class PriceListDAO implements IPriceListDAO
 	@Override
 	public PriceListId retrievePriceListIdByPricingSyst(
 			@Nullable final PricingSystemId pricingSystemId,
-			final BPartnerLocationId bpartnerLocationId,
+			final BPartnerLocationAndCaptureId bpartnerLocationId,
 			final SOTrx soTrx)
 	{
 		if (pricingSystemId == null)
@@ -220,7 +222,7 @@ public class PriceListDAO implements IPriceListDAO
 		}
 
 		assumeNotNull(bpartnerLocationId, "If the given pricingSystemId={} is not null and not-none, then bpartnerLocationId may not be null", pricingSystemId);
-		final CountryId countryId = Services.get(IBPartnerDAO.class).getBPartnerLocationCountryId(bpartnerLocationId);
+		final CountryId countryId = Services.get(IBPartnerBL.class).getCountryId(bpartnerLocationId);
 
 		final List<I_M_PriceList> priceLists = retrievePriceLists(pricingSystemId, countryId, soTrx);
 

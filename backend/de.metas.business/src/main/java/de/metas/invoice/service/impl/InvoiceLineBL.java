@@ -9,8 +9,12 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.tax.api.TaxId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
@@ -142,7 +146,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final Timestamp shipDate = io.getMovementDate();
 
-		final BPartnerLocationId shipToPartnerLocationId = BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID());
+		final BPartnerLocationAndCaptureId shipToPartnerLocationId = InOutDocumentLocationAdapterFactory
+				.locationAdapter(io)
+				.getBPartnerLocationAndCaptureId();
 
 		final boolean isSOTrx = io.isSOTrx();
 
@@ -157,7 +163,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final OrgId orgId,
 			final Timestamp taxDate,
 			final CountryId countryFromId,
-			final BPartnerLocationId partnerLocationId,
+			final BPartnerLocationAndCaptureId partnerLocationId,
 			final boolean isSOTrx)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
@@ -167,8 +173,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(il.getC_Invoice_ID());
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
-
-		final I_C_BPartner_Location locationTo = bpartnerDAO.getBPartnerLocationByIdEvenInactive(partnerLocationId);
 
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(il))
 		{
@@ -192,7 +196,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final TaxId taxId = taxBL.retrieveTaxIdForCategory(ctx,
 					countryFromId,
 					orgId,
-					locationTo,
+					partnerLocationId,
 					taxDate,
 					taxCategoryId,
 					isSOTrx,
@@ -207,7 +211,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 						.isSOTrx(isSOTrx)
 						.shipDate(taxDate)
 						.shipFromCountryId(countryFromId)
-						.shipToC_Location_ID(locationTo.getC_Location_ID())
+						.shipToC_Location_ID(partnerLocationId)
 						.billDate(invoice.getDateInvoiced())
 						.billFromCountryId(countryFromId)
 						.billToC_Location_ID(bPartnerLocationRecord.getC_Location_ID())
@@ -441,8 +445,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	private CountryId getCountryIdOrNull(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
 		if (invoice.getC_BPartner_Location_ID() <= 0)
@@ -454,8 +456,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		{
 			return null;
 		}
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
-		return Services.get(IBPartnerDAO.class).getBPartnerLocationCountryId(bpartnerLocationId);
+		final BPartnerLocationAndCaptureId bpartnerLocationId = InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureId();
+		return Services.get(IBPartnerBL.class).getCountryId(bpartnerLocationId);
 	}
 
 	@Override

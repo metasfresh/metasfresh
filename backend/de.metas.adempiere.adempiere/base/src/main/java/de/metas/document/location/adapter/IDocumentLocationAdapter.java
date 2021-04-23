@@ -34,6 +34,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTemplate
 {
@@ -59,12 +60,13 @@ public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTempla
 
 	default BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureId()
 	{
-		final BPartnerLocationAndCaptureId partnerLocationAndCaptureId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(getC_BPartner_ID(), getC_BPartner_Location_ID(), getC_BPartner_Location_Value_ID());
-		if (partnerLocationAndCaptureId == null)
-		{
-			throw new AdempiereException("Failed extracting " + BPartnerLocationAndCaptureId.class.getSimpleName() + " from " + this);
-		}
-		return partnerLocationAndCaptureId;
+		return getBPartnerLocationAndCaptureIdIfExists()
+				.orElseThrow(() -> new AdempiereException("Failed extracting " + BPartnerLocationAndCaptureId.class.getSimpleName() + " from " + this));
+	}
+
+	default Optional<BPartnerLocationAndCaptureId> getBPartnerLocationAndCaptureIdIfExists()
+	{
+		return BPartnerLocationAndCaptureId.optionalOfRepoId(getC_BPartner_ID(), getC_BPartner_Location_ID(), getC_BPartner_Location_Value_ID());
 	}
 
 	@Override
@@ -85,6 +87,7 @@ public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTempla
 				.bpartnerAddress(getBPartnerAddress())
 				.build();
 	}
+
 
 	default void setFrom(@NonNull final DocumentLocation from)
 	{

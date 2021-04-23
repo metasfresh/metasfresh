@@ -3,7 +3,7 @@ package de.metas.contracts.commission.invoicecandidate;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
@@ -186,7 +186,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		icRecord.setQtyToInvoice(ZERO); // to be computed
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(commissionShareRecord.getC_BPartner_SalesRep_ID());
-		final BPartnerLocationId commissionToLocationId = BPartnerLocationId.ofRepoId(flatrateTerm.getBill_BPartner_ID(), flatrateTerm.getBill_Location_ID());
+		final BPartnerLocationAndCaptureId commissionToLocationId = BPartnerLocationAndCaptureId.ofRepoId(flatrateTerm.getBill_BPartner_ID(), flatrateTerm.getBill_Location_ID());
 
 		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerId, SOTrx.PURCHASE);
 
@@ -219,7 +219,8 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 				.billLocationAdapter(icRecord)
 				.setFrom(DocumentLocation.builder()
 								 .bpartnerId(bPartnerId)
-								 .bpartnerLocationId(commissionToLocationId)
+								 .bpartnerLocationId(commissionToLocationId.getBpartnerLocationId())
+								 .locationId(commissionToLocationId.getLocationCaptureId())
 								 .contactId(BPartnerContactId.ofRepoIdOrNull(bPartnerId, flatrateTerm.getBill_User_ID()))
 								 .build());
 

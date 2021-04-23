@@ -216,7 +216,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				order.getDatePromised(), // shipDate
 				OrgId.ofRepoId(order.getAD_Org_ID()),
 				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-				orderDeliveryLocation.getBpartnerLocationId(), // ship location id
+				orderDeliveryLocation.toBPartnerLocationAndCaptureId(), // ship location id
 				order.isSOTrx());
 		icRecord.setC_Tax_ID(TaxId.toRepoId(taxId)); // avoid NPE in tests
 

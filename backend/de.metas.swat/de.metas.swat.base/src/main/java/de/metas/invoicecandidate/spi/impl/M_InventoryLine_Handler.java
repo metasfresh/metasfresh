@@ -211,7 +211,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 				shipDate,
 				orgId,
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
-				inoutBPLocationId.getBpartnerLocationId(), // shipC_BPartner_Location_ID
+				inoutBPLocationId, // shipC_BPartner_Location_ID
 				false); // isSOTrx same as in vendor return
 		ic.setC_Tax_ID(taxId.getRepoId());
 

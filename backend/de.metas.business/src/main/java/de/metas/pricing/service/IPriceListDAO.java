@@ -23,7 +23,7 @@
 package de.metas.pricing.service;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -94,7 +94,7 @@ public interface IPriceListDAO extends ISingletonService
 	 * @return the price list for the given pricing system and location or <code>null</code>.
 	 */
 	@Nullable
-	PriceListId retrievePriceListIdByPricingSyst(PricingSystemId pricingSystemId, BPartnerLocationId bpartnerLocationId, SOTrx soTrx);
+	PriceListId retrievePriceListIdByPricingSyst(PricingSystemId pricingSystemId, BPartnerLocationAndCaptureId bpartnerLocationId, SOTrx soTrx);
 
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>

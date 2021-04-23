@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -126,7 +127,7 @@ public class PriceListDAOTest
 
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
-				toBPartnerLocationId(bpl),
+				BPartnerLocationAndCaptureId.ofRecord(bpl),
 				SOTrx.SALES);
 
 		assertThat(plId).isNotNull();
@@ -165,18 +166,11 @@ public class PriceListDAOTest
 
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
-				toBPartnerLocationId(bpl),
+				BPartnerLocationAndCaptureId.ofRecord(bpl),
 				SOTrx.SALES);
 
 		assertThat(plId).isNotNull();
 		assertThat(plId.getRepoId()).isEqualByComparingTo(pl1.getM_PriceList_ID());
-	}
-
-	private BPartnerLocationId toBPartnerLocationId(@NonNull final I_C_BPartner_Location bplRecord)
-	{
-		return BPartnerLocationId.ofRepoId(
-				bplRecord.getC_BPartner_ID(),
-				bplRecord.getC_BPartner_Location_ID());
 	}
 
 	@Test

@@ -3,6 +3,7 @@ package de.metas.ordercandidate.api;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import lombok.NonNull;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -113,6 +114,8 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * See {@link #getBillLocationEffectiveId(I_C_OLCand)}
 	 */
 	I_C_BPartner_Location getBill_Location_Effective(I_C_OLCand olCand);
+
+	BPartnerLocationAndCaptureId getBillLocationAndCaptureEffectiveId(@NonNull I_C_OLCand olCand);
 
 	/**
 	 * Returns, falling back to the next if not set:

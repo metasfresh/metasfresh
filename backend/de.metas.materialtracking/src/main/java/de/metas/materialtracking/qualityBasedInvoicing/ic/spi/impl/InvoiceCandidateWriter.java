@@ -624,7 +624,7 @@ public class InvoiceCandidateWriter
 				date, // ship date
 				OrgId.ofRepoId(ic.getAD_Org_ID()),
 				(WarehouseId)null,
-				billToLocation.getBpartnerLocationId(), // shipPartnerLocation TODO
+				billToLocation, // shipPartnerLocation TODO
 				SOTrx.PURCHASE.toBoolean());
 		ic.setC_Tax_ID(taxID.getRepoId());
 	}

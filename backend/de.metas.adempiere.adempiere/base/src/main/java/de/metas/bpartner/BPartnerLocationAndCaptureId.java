@@ -85,13 +85,43 @@ public class BPartnerLocationAndCaptureId
 		return Optional.ofNullable(ofRepoIdOrNull(bpartnerRepoId, bpartnerLocationRepoId, locationCaptureRepoId));
 	}
 
-			@Nullable
+	@Nullable
+	public static BPartnerLocationAndCaptureId ofRepoIdOrNull(
+			final int bpartnerRepoId,
+			final int bpartnerLocationRepoId)
+	{
+		return ofRepoIdOrNull(bpartnerRepoId, bpartnerLocationRepoId, -1);
+	}
+
+	@Nullable
+	public static BPartnerLocationAndCaptureId ofRepoIdOrNull(
+			@Nullable final BPartnerId bpartnerId,
+			final int bpartnerLocationRepoId)
+	{
+		return ofRepoIdOrNull(bpartnerId, bpartnerLocationRepoId, -1);
+	}
+
+	@Nullable
 	public static BPartnerLocationAndCaptureId ofRepoIdOrNull(
 			final int bpartnerRepoId,
 			final int bpartnerLocationRepoId,
 			final int locationCaptureRepoId)
 	{
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerRepoId, bpartnerLocationRepoId);
+		return ofRepoIdOrNull(BPartnerId.ofRepoIdOrNull(bpartnerRepoId), bpartnerLocationRepoId, locationCaptureRepoId);
+	}
+
+	@Nullable
+	public static BPartnerLocationAndCaptureId ofRepoIdOrNull(
+			@Nullable final BPartnerId bpartnerId,
+			final int bpartnerLocationRepoId,
+			final int locationCaptureRepoId)
+	{
+		if (bpartnerId == null)
+		{
+			return null;
+		}
+
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, bpartnerLocationRepoId);
 		if (bpartnerLocationId == null)
 		{
 			return null;

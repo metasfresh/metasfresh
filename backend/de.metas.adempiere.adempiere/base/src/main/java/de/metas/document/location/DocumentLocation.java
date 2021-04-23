@@ -24,6 +24,7 @@ package de.metas.document.location;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.LocationId;
 import de.metas.util.Check;
@@ -103,5 +104,14 @@ public class DocumentLocation
 	public boolean equalsIgnoringCapturedLocationAndRenderedAddress(@NonNull final DocumentLocation other)
 	{
 		return Objects.equals(this.withoutCapturedLocationAndRenderedAddress(), other.withoutCapturedLocationAndRenderedAddress());
+	}
+
+	public BPartnerLocationAndCaptureId toBPartnerLocationAndCaptureId()
+	{
+		if (bpartnerLocationId == null)
+		{
+			throw new AdempiereException("Cannot convert " + this + " to " + BPartnerLocationAndCaptureId.class.getSimpleName() + " because bpartnerLocationId is null");
+		}
+		return BPartnerLocationAndCaptureId.of(bpartnerLocationId, locationId);
 	}
 }

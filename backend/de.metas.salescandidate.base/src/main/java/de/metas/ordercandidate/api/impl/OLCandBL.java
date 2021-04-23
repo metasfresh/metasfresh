@@ -6,6 +6,7 @@ import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
@@ -84,10 +85,14 @@ public class OLCandBL implements IOLCandBL
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 
+	private final IBPartnerBL bpartnerBL;
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
 
-	public OLCandBL(@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository)
+	public OLCandBL(
+			@NonNull final IBPartnerBL bpartnerBL,
+			@NonNull final BPartnerOrderParamsRepository bPartnerOrderParamsRepository)
 	{
+		this.bpartnerBL = bpartnerBL;
 		this.bPartnerOrderParamsRepository = bPartnerOrderParamsRepository;
 	}
 
@@ -346,7 +351,7 @@ public class OLCandBL implements IOLCandBL
 
 		pricingCtx.setDisallowDiscount(olCandRecord.isManualDiscount());
 
-		final CountryId countryId = getCountryId(shipToPartnerInfo);
+		final CountryId countryId = bpartnerBL.getCountryId(shipToPartnerInfo);
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemId,
 				countryId,
@@ -401,18 +406,6 @@ public class OLCandBL implements IOLCandBL
 		pricingResult.setDisallowDiscount(olCandRecord.isManualDiscount());
 
 		return pricingResult;
-	}
-
-	private CountryId getCountryId(final BPartnerInfo bpartnerInfo)
-	{
-		if (bpartnerInfo.getLocationId() != null)
-		{
-			return locationDAO.getCountryIdByLocationId(bpartnerInfo.getLocationId());
-		}
-		else
-		{
-			return bpartnerDAO.getBPartnerLocationCountryId(bpartnerInfo.getBpartnerLocationId());
-		}
 	}
 
 	@Override

@@ -85,7 +85,7 @@ public class OrderLineCountryAware implements ICountryAware
 			return null;
 		}
 		
-		final CountryId countryId = Services.get(IBPartnerBL.class).getBPartnerLocationCountryId(bpLocationId);
+		final CountryId countryId = Services.get(IBPartnerBL.class).getCountryId(bpLocationId);
 		return Services.get(ICountryDAO.class).getById(countryId);
 	}
 

@@ -22,13 +22,12 @@ package de.metas.tax.api;
  * #L%
  */
 
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Tax;
 
 import javax.annotation.Nullable;
@@ -45,7 +44,7 @@ public interface ITaxBL extends ISingletonService
 	 * Try to retrieve tax by "retrieveTaxIdForCategory" first.<br>
 	 * If that doesn't work, try retrieving the German tax
 	 *
-	 * @param shipC_BPartner_Location_ID place where the service is provided
+	 * @param shipBPartnerLocationId place where the service is provided
 	 */
 	@NonNull
 	TaxId getTaxNotNull(Properties ctx,
@@ -55,7 +54,7 @@ public interface ITaxBL extends ISingletonService
 			Timestamp shipDate,
 			OrgId orgId,
 			@Nullable WarehouseId warehouseId,
-			BPartnerLocationId shipC_BPartner_Location_ID,
+			BPartnerLocationAndCaptureId shipBPartnerLocationId,
 			boolean isSOTrx);
 
 	/**
@@ -68,7 +67,7 @@ public interface ITaxBL extends ISingletonService
 	TaxId retrieveTaxIdForCategory(Properties ctx,
 			CountryId countryFromId,
 			OrgId orgId,
-			org.compiere.model.I_C_BPartner_Location bpLocTo,
+			BPartnerLocationAndCaptureId shipBPartnerLocationId,
 			Timestamp billDate,
 			TaxCategoryId taxCategoryId,
 			boolean isSOTrx,
@@ -111,7 +110,8 @@ public interface ITaxBL extends ISingletonService
 	int get(Properties ctx, int M_Product_ID, int C_Charge_ID,
 			Timestamp billDate, Timestamp shipDate,
 			int AD_Org_ID, int M_Warehouse_ID,
-			int billC_BPartner_Location_ID, int shipC_BPartner_Location_ID,
+			BPartnerLocationAndCaptureId billC_BPartner_Location_ID,
+			BPartnerLocationAndCaptureId shipC_BPartner_Location_ID,
 			boolean IsSOTrx);
 
 	/**

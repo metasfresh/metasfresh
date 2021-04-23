@@ -18,6 +18,7 @@ package org.compiere.model;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
@@ -41,6 +42,7 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.PriceAndDiscount;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -1017,16 +1019,16 @@ public class CalloutOrder extends CalloutEngine
 
 		// Check Partner Location
 		final I_C_Order order = ol.getC_Order();
-		int shipC_BPartner_Location_ID = ol.getC_BPartner_Location_ID();
-		if (shipC_BPartner_Location_ID <= 0)
+		BPartnerLocationAndCaptureId shipBPLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(ol).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
+		if (shipBPLocationId == null)
 		{
-			shipC_BPartner_Location_ID = order.getC_BPartner_Location_ID();
+			shipBPLocationId = OrderDocumentLocationAdapterFactory.locationAdapter(order).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
 		}
-		if (shipC_BPartner_Location_ID <= 0)
+		if (shipBPLocationId == null)
 		{
 			return amt(calloutField); //
 		}
-		log.debug("Ship BP_Location={}", shipC_BPartner_Location_ID);
+		log.debug("Ship BP_Location={}", shipBPLocationId);
 
 		//
 		Timestamp billDate = ol.getDateOrdered();
@@ -1053,17 +1055,19 @@ public class CalloutOrder extends CalloutEngine
 		}
 		log.debug("Warehouse={}", M_Warehouse_ID);
 
-		int billC_BPartner_Location_ID = order.getBill_Location_ID();
-		if (billC_BPartner_Location_ID <= 0)
+		BPartnerLocationAndCaptureId billBPLocationId = OrderDocumentLocationAdapterFactory.billLocationAdapter(order).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
+		if (billBPLocationId == null)
 		{
-			billC_BPartner_Location_ID = shipC_BPartner_Location_ID;
+			billBPLocationId = shipBPLocationId;
 		}
-		log.debug("Bill BP_Location={}", billC_BPartner_Location_ID);
+		log.debug("Bill BP_Location={}", billBPLocationId);
 
 		//
 		final int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
 									 shipDate, AD_Org_ID, M_Warehouse_ID,
-									 billC_BPartner_Location_ID, shipC_BPartner_Location_ID, order.isSOTrx());
+									 billBPLocationId,
+									 shipBPLocationId,
+									 order.isSOTrx());
 		log.trace("Tax ID={}", C_Tax_ID);
 		//
 		if (C_Tax_ID <= 0)

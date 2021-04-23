@@ -1,6 +1,7 @@
 package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.i18n.Language;
@@ -220,9 +221,13 @@ public interface IBPartnerBL extends ISingletonService
 		IfNotFound ifNotFound = IfNotFound.RETURN_DEFAULT_CONTACT;
 	}
 
+	CountryId getCountryId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId);
+
+	CountryId getCountryId(@NonNull BPartnerInfo bpartnerInfo);
+
 	int getFreightCostIdByBPartnerId(BPartnerId bpartnerId);
 
-	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
+	CountryId getCountryId(BPartnerLocationId bpLocationId);
 
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(BPartnerId bpartnerId);
 

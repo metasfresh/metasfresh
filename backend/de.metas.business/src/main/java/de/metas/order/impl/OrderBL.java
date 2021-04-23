@@ -45,7 +45,6 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
-import de.metas.location.ILocationDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.BPartnerOrderParamsRepository;
@@ -120,8 +119,8 @@ public class OrderBL implements IOrderBL
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 
 	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
 	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
@@ -267,22 +266,10 @@ public class OrderBL implements IOrderBL
 			return null;
 		}
 
-		final CountryId countryId = getCountryId(shipToBPLocationId);
+		final CountryId countryId = partnerBL.getCountryId(shipToBPLocationId);
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		return priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, soTrx);
-	}
-
-	private CountryId getCountryId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
-	{
-		if (bpartnerLocationAndCaptureId.getLocationCaptureId() != null)
-		{
-			return locationDAO.getCountryIdByLocationId(bpartnerLocationAndCaptureId.getLocationCaptureId());
-		}
-		else
-		{
-			return partnerDAO.getBPartnerLocationCountryId(bpartnerLocationAndCaptureId.getBpartnerLocationId());
-		}
 	}
 
 	@Override

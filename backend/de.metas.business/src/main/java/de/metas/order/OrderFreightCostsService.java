@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
@@ -191,7 +190,7 @@ public class OrderFreightCostsService
 
 		final BPartnerLocationId shipToBPLocationId = BPartnerLocationId.ofRepoIdOrNull(shipToBPartnerId, orderRecord.getC_BPartner_Location_ID());
 		final CountryId shipToCountryId = shipToBPLocationId != null
-				? bpartnerBL.getBPartnerLocationCountryId(shipToBPLocationId)
+				? bpartnerBL.getCountryId(shipToBPLocationId)
 				: null;
 
 		final FreightCostRule freightCostRule = FreightCostRule.ofNullableCodeOr(orderRecord.getFreightCostRule(), FreightCostRule.FreightIncluded);
@@ -338,9 +337,7 @@ public class OrderFreightCostsService
 		final int bpartnerRecordId = salesOrder.getC_BPartner_ID();
 		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(bpartnerRecordId, locationRecordId);
 
-		final CountryId countryId = bpartnerDAO.retrieveBPartnerLocationCountryId(bpLocationId);
-
-		return countryId;
+		return bpartnerDAO.getCountryId(bpLocationId);
 	}
 
 	private Optional<Money> computeShipmentValueAmt(@NonNull final OrderId orderId)

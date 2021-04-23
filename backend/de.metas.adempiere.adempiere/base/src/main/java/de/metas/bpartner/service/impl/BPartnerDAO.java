@@ -533,41 +533,42 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public CountryId retrieveBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
+	public CountryId getCountryId(@NonNull final BPartnerLocationId bpLocationId)
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpLocationId);
+		if (bpLocation == null)
+		{
+			throw new AdempiereException("No location found for " + bpLocationId);
+		}
 
+		return getCountryId(bpLocation);
+	}
+
+	private CountryId getCountryId(@NonNull final I_C_BPartner_Location bpLocation)
+	{
 		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
 
-		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
-		return locationRepos.getCountryIdByLocationId(locationId);
+		final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+		return locationDAO.getCountryIdByLocationId(locationId);
 	}
 
 	@Override
-	public CountryId retrieveBPartnerLocationCountryIdInTrx(@NonNull final BPartnerLocationId bpLocationId)
+	public CountryId getCountryIdInTrx(@NonNull final BPartnerLocationId bpLocationId)
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdInTrx(bpLocationId);
-		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+		if (bpLocation == null)
+		{
+			throw new AdempiereException("No location found for " + bpLocationId);
+		}
 
-		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
-		return locationRepos.getCountryIdByLocationId(locationId);
+		return getCountryId(bpLocation);
 	}
 
 	@Override
 	public CountryId getDefaultShipToLocationCountryIdOrNull(final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner_Location bpl = getDefaultShipToLocation(bpartnerId);
-		return bpl != null
-				? CountryId.ofRepoId(bpl.getC_Location().getC_Country_ID())
-				: null;
-	}
-
-	@Override
-	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpartnerLocationId)
-	{
-		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
-		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
-		return Services.get(ILocationDAO.class).getCountryIdByLocationId(locationId);
+		return bpl != null ? getCountryId(bpl) : null;
 	}
 
 	@Override

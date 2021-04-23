@@ -224,7 +224,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				CoalesceUtil.coalesce(olcRecord.getDatePromised_Override(), olcRecord.getDatePromised(), olcRecord.getPresetDateInvoiced()),
 				orgId,
 				(WarehouseId)null,
-				shipToPartnerInfo.getBpartnerLocationId(),
+				shipToPartnerInfo.toBPartnerLocationAndCaptureId(),
 				true /* isSOTrx */);
 		ic.setC_Tax_ID(taxId.getRepoId());
 
