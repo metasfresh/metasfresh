@@ -155,6 +155,7 @@ public interface IBPartnerBL extends ISingletonService
 	 * <p>
 	 * See {@link RetrieveContactRequest}.
 	 */
+	@Nullable
 	User retrieveContactOrNull(RetrieveContactRequest request);
 
 	String getAddressStringByBPartnerLocationId(BPartnerLocationId bpartnerLocationId);

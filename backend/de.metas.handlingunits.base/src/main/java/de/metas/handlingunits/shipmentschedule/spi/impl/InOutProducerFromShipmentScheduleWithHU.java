@@ -505,9 +505,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 			InterfaceWrapperHelper.save(shipmentSchedule, processorCtx.getTrxName());
 		}
 
-		//create transportation order and packages with tracking codes
-		addTrackingCodes();
-
 		Loggables.addLog("Shipment {0} was created;\nShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
 	}
 
@@ -690,55 +687,4 @@ public class InOutProducerFromShipmentScheduleWithHU
 				+ ", currentShipmentLineBuilder=" + currentShipmentLineBuilder + ", currentCandidates=" + currentCandidates
 				+ ", lastItem=" + lastItem + "]";
 	}
-
-	/**
-	 * Adding the tracking codes will be skipped
-	 * if no shipperId was provided or a ShipperTransportation order was already created
-	 * as it means the tracking codes would be added/or not by whoever created the shipper transportation
-	 * and the corresponding packages.
-	 * <p>
-	 * Also note that, if they made it so far, all the candidates have the same shipperId as it's part of the aggregation key
-	 *
-	 * @see ShipmentScheduleKeyValueHandler#getValues(de.metas.inoutcandidate.model.I_M_ShipmentSchedule)
-	 */
-	private void addTrackingCodes()
-	{
-		final ShipperId shipperId = currentCandidates.get(0).getShipperId();
-
-		if (shipperId == null || currentShipment.getM_ShipperTransportation_ID() > 0)
-		{
-			return;
-		}
-
-		final List<PackageInfo> packageInfos = currentCandidates
-				.stream()
-				.map(candidate -> scheduleId2ExternalInfo.get(candidate.getShipmentScheduleId()))
-				.filter(Objects::nonNull)
-				.map(ShipmentScheduleExternalInfo::getPackageInfoList)
-				.filter(Objects::nonNull)
-				.flatMap(Collection::stream)
-				.collect(Collectors.toList());
-
-		if (packageInfos.isEmpty())
-		{
-			return;
-		}
-
-		final AddTrackingInfosForInOutWithoutHUReq addTrackingInfosForInOutWithoutHUReq = AddTrackingInfosForInOutWithoutHUReq.builder()
-				.shipperId(shipperId)
-				.inOutId(InOutId.ofRepoId(currentShipment.getM_InOut_ID()))
-				.packageInfos(packageInfos)
-				.build();
-
-		final ShipperTransportationId shipperTransportationId =
-				huShipperTransportationBL.addTrackingInfosForInOutWithoutHU(addTrackingInfosForInOutWithoutHUReq);
-
-		if (processShipments)
-		{
-			final I_M_ShipperTransportation shipperTransportation = huShipperTransportationBL.getById(shipperTransportationId);
-
-			docActionBL.processEx(shipperTransportation, IDocument.ACTION_Complete);
-		}
-	}
-
 }

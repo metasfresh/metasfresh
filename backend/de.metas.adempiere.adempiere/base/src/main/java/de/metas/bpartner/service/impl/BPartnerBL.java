@@ -146,6 +146,7 @@ public class BPartnerBL implements IBPartnerBL
 		return contact;
 	}
 
+	@Nullable
 	@Override
 	public User retrieveContactOrNull(@NonNull final RetrieveContactRequest request)
 	{
