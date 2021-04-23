@@ -54,7 +54,6 @@ public class WarehouseBL implements IWarehouseBL
 	private static final Logger logger = LogManager.getLogger(WarehouseBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IBPartnerBL partnerBL = SpringContextHolder.instance.getBean(IBPartnerBL.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 
 	@Override
@@ -179,6 +178,8 @@ public class WarehouseBL implements IWarehouseBL
 	public DocumentLocation getPlainDocumentLocation(@NonNull final WarehouseId warehouseId)
 	{
 		final BPartnerLocationAndCaptureId bpLocationId = warehouseDAO.getWarehouseLocationById(warehouseId);
+
+		final IBPartnerBL partnerBL = SpringContextHolder.instance.getBean(IBPartnerBL.class); // NOTE: keep it local because if declared as a field would fail a lot of junit tests
 		final LocationId locationId = partnerBL.getLocationId(bpLocationId);
 
 		return DocumentLocation.builder()
