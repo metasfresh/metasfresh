@@ -28,10 +28,13 @@ import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateItem;
 import de.metas.common.rest_api.v2.JsonRequestAttributeInstance;
 import de.metas.common.rest_api.v2.JsonRequestAttributeSetInstance;
+import de.metas.common.rest_api.v2.JsonVendor;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
@@ -47,13 +50,10 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.quantity.Quantity;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateItem;
-import de.metas.common.rest_api.v2.JsonVendor;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.utils.RestApiUtils;
+import de.metas.rest_api.utils.RestApiUtilsV2;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -118,7 +118,7 @@ public class CreatePurchaseCandidatesService
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(request.getOrgCode());
 		final ProductId productId = getProductByIdentifier(orgId, request.getProductIdentifier());
-		final Quantity quantity = RestApiUtils.getQuantity(request);
+		final Quantity quantity = RestApiUtilsV2.getQuantity(request);
 		final BPartnerId vendorId = getBPartnerId(orgId, request.getVendor());
 		final ZonedDateTime datePromised = getOrDefaultDatePromised(request.getPurchaseDatePromised(), orgId);
 		if (request.isManualDiscount() && request.getDiscount() == null)

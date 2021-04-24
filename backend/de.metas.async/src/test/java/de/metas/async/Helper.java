@@ -178,12 +178,6 @@ public class Helper
 
 	/**
 	 * Mark the workpackage as ready for processing and wait until the workpackage gets processed
-	 * 
-	 * @param workpackageQueue
-	 * @param workpackage
-	 * @throws TimeoutException
-	 * @throws ExecutionException
-	 * @throws InterruptedException
 	 */
 	public void markReadyForProcessingAndWait(final IWorkPackageQueue workpackageQueue, final I_C_Queue_WorkPackage workpackage) throws InterruptedException, ExecutionException, TimeoutException
 	{
@@ -210,7 +204,6 @@ public class Helper
 	 * the method throws an Exception.
 	 * 
 	 * @param timeoutMillis how many millis to wait for result. If ZERO, we will wait forever
-	 * @throws InterruptedException
 	 * @throws TimeoutException if the timeout exceeded
 	 */
 	public void waitUntilSize(final List<?> list, final int targetSize, final long timeoutMillis) throws InterruptedException, TimeoutException
