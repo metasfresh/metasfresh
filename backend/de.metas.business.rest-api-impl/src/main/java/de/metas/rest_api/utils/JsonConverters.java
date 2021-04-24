@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 
 import de.metas.dao.selection.pagination.PageDescriptor;
 import de.metas.dao.selection.pagination.QueryResultPage;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.JsonPagingDescriptor;
 import de.metas.common.rest_api.v1.JsonPagingDescriptor.JsonPagingDescriptorBuilder;
 import de.metas.util.lang.ExternalId;

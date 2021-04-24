@@ -26,10 +26,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.v1.JsonPrice;
-import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.common.util.CoalesceUtil;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

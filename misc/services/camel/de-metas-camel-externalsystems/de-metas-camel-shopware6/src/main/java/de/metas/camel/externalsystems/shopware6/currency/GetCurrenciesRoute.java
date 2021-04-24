@@ -65,7 +65,7 @@ public class GetCurrenciesRoute extends RouteBuilder
 				.id(GET_CURRENCY_ROUTE_ID)
 				.streamCaching()
 				.policy(jcachePolicy)
-				.log("Route invoked!")
+				.log("Route invoked. Results will be cached")
 				.process(this::getCurrencies);
 	}
 
