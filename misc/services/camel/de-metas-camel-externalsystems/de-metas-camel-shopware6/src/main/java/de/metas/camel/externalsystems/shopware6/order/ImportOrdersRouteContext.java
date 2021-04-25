@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.shopware6.order;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -35,6 +36,7 @@ import lombok.Setter;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Data
@@ -51,6 +53,9 @@ public class ImportOrdersRouteContext
 	@Builder.Default
 	@Setter(AccessLevel.NONE)
 	private Set<String> importedExternalHeaderIds = new HashSet<>();
+
+	@Nullable
+	private List<JsonExternalSystemShopware6ConfigMapping> salesOrderMappingRules;
 
 	@Nullable
 	private JsonOrderAndCustomId order;

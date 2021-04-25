@@ -26,6 +26,7 @@ import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
@@ -257,6 +258,17 @@ class ExternalSystemConfigRepoTest
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		saveRecord(childRecord);
+
+		final I_ExternalSystem_Config_Shopware6Mapping childMappingRecord = newInstance(I_ExternalSystem_Config_Shopware6Mapping.class);
+		childMappingRecord.setC_PaymentTerm_ID(10000);
+		childMappingRecord.setC_DocTypeOrder_ID(10000);
+		childMappingRecord.setPaymentRule("K");
+		childMappingRecord.setSeqNo(10);
+		childMappingRecord.setSW6_Customer_Group("test");
+		childMappingRecord.setSW6_Payment_Method("test");
+		childMappingRecord.setDescription("test");
+		childMappingRecord.setExternalSystem_Config_Shopware6_ID(childRecord.getExternalSystem_Config_Shopware6_ID());
+		saveRecord(childMappingRecord);
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when

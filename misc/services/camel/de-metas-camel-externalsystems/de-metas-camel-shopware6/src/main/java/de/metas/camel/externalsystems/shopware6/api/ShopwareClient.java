@@ -34,6 +34,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.PathSegmentsEnum;
 import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.currency.JsonCurrencies;
+import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
@@ -324,6 +325,30 @@ public class ShopwareClient
 		}
 
 		return response.getBody();
+	}
+
+	@NonNull
+	public Optional<JsonCustomerGroups> getCustomerGroup(@NonNull final String customerId)
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.CUSTOMER.getValue())
+				.pathSegment(customerId)
+				.pathSegment(PathSegmentsEnum.GROUP.getValue());
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonCustomerGroups> response = performWithRetry(resourceURI, HttpMethod.GET, JsonCustomerGroups.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(response.getBody());
 	}
 
 	@NonNull

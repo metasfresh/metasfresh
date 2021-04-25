@@ -36,5 +36,6 @@ public class ExternalSystemConstants
 	public static final String PARAM_CHILD_CONFIG_VALUE = "ChildConfigValue";
 	public static final String PARAM_JSON_PATH_CONSTANT_BPARTNER_ID = "JSONPathConstantBPartnerID";
 	public static final String PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID = "JSONPathConstantBPartnerLocationID";
+	public static final String PARAM_CONFIG_MAPPINGS = "ConfigMappings";
 
 }

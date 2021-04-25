@@ -22,6 +22,8 @@
 
 package de.metas.camel.externalsystems.shopware6.order.processor;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonFilter;
@@ -33,11 +35,13 @@ import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -90,14 +94,32 @@ public class GetOrdersProcessor implements Processor
 		final CurrencyInfoProvider currencyInfoProvider = (CurrencyInfoProvider) exchange.getContext().createProducerTemplate()
 				.sendBody("direct:" + GET_CURRENCY_ROUTE_ID, ExchangePattern.InOut, getCurrenciesRequest);
 
+		getSalesOrderMappingRules(request);
+
 		final ImportOrdersRouteContext ordersContext = ImportOrdersRouteContext.builder()
 				.orgCode(request.getOrgCode())
+				.salesOrderMappingRules(getSalesOrderMappingRules(request))
 				.shopwareClient(shopwareClient)
 				.bpLocationCustomJsonPath(bPartnerLocationIdJSONPath)
 				.currencyInfoProvider(currencyInfoProvider)
 				.build();
 
 		exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
+	}
+
+	@Nullable
+	private List<JsonExternalSystemShopware6ConfigMapping> getSalesOrderMappingRules(@NonNull final JsonExternalSystemRequest request)
+	{
+		final ObjectMapper mapper = new ObjectMapper();
+		try
+		{
+			return mapper.readValue(request.getParameters().get(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS),
+									mapper.getTypeFactory().constructCollectionType(List.class, JsonExternalSystemShopware6ConfigMapping.class));
+		}
+		catch (JsonProcessingException e)
+		{
+			return null;
+		}
 	}
 
 	@NonNull

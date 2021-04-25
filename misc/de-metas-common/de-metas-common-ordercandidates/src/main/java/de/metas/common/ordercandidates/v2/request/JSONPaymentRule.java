@@ -34,6 +34,21 @@ public enum JSONPaymentRule
 	@ApiEnum("Specifies that the order will have paymentRule = On Credit")
 	OnCredit("P"),
 
+	@ApiEnum("Specifies that the order will have paymentRule = Cash")
+	Cash("B"),
+
+	@ApiEnum("Specifies that the order will have paymentRule = CreditCard")
+	CreditCard("K"),
+
+	@ApiEnum("Specifies that the order will have paymentRule = DirectDeposit")
+	DirectDeposit("T"),
+
+	@ApiEnum("Specifies that the order will have paymentRule = Check")
+	Check("S"),
+
+	@ApiEnum("Specifies that the order will have paymentRule = Mixed")
+	Mixed("M"),
+
 	@ApiEnum("Specifies that the order will have paymentRule = Direct Debit")
 	DirectDebit("D");
 

@@ -380,10 +380,16 @@ public class JsonOLCandCreateRequest
 	public enum OrderDocType
 	{
 		@ApiEnum("Specifies if the order will be a standard one. A standard order will be created if no DocTYpe is specified.")
-		SalesOrder("SalesOrder"),
+		SalesOrder("SO"),
+
+		@ApiEnum("Specifies if the order is ReturnMaterial")
+		ReturnMaterial("RM"),
+
+		@ApiEnum("Specifies if the order is Quotation")
+		Quotation("OB"),
 
 		@ApiEnum("Specifies if the order will be prepaid")
-		PrepayOrder("PrepayOrder");
+		PrepayOrder("PR");
 
 		@Getter
 		private final String code;
