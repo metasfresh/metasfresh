@@ -11,18 +11,19 @@ Here come the actual release notes:
 
 # metasfresh 5.167
 ## Features
-* https://github.com/metasfresh/metasfresh/pull/10899
-* https://github.com/metasfresh/metasfresh/issues/10990
-* https://github.com/metasfresh/metasfresh/issues/10955
-* https://github.com/metasfresh/metasfresh/issues/10999
-* https://github.com/metasfresh/metasfresh/issues/11000
-* https://github.com/metasfresh/metasfresh/pull/11001
-* https://github.com/metasfresh/metasfresh/issues/11008
-* https://github.com/metasfresh/metasfresh/pull/11011
-* https://github.com/metasfresh/metasfresh/pull/11012
+* metasfresh
+  * [#10955](https://github.com/metasfresh/metasfresh/issues/10955) Update Elasticsearch in our stack
+  * [#10990](https://github.com/metasfresh/metasfresh/issues/10990) Support for a process triggered by model interceptor
+  * [#10999](https://github.com/metasfresh/metasfresh/issues/10999) Support for a process triggered by model interceptor - frontend
+  * [#11000](https://github.com/metasfresh/metasfresh/issues/11000) Support zoom for labels
+  * [#11001](https://github.com/metasfresh/metasfresh/pull/11001) Elasticsearch docker integration
+  * [#11008](https://github.com/metasfresh/metasfresh/issues/11008) Add TRL for the Repair Workflows
+  * [#11011](https://github.com/metasfresh/metasfresh/pull/11011) Allow webAPI to schedule a workpackage and wait for it to be done
 
 ## Fixes
-* https://github.com/metasfresh/metasfresh/issues/11007
+* metasfresh
+  * [#10899](https://github.com/metasfresh/metasfresh/pull/10899) Elasticsearch / dashboard fix
+  * [#11007](https://github.com/metasfresh/metasfresh/issues/11007) Uncaught error in promise when setting Business Partner
 
 # metasfresh 5.166
 ## Features
