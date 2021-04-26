@@ -11,18 +11,18 @@ Here come the actual release notes:
 
 # metasfresh 5.167
 ## Features
-https://github.com/metasfresh/metasfresh/pull/10899
-https://github.com/metasfresh/metasfresh/issues/10990
-https://github.com/metasfresh/metasfresh/issues/10955
-https://github.com/metasfresh/metasfresh/issues/10999
-https://github.com/metasfresh/metasfresh/issues/11000
-https://github.com/metasfresh/metasfresh/pull/11001
-https://github.com/metasfresh/metasfresh/issues/11008
-https://github.com/metasfresh/metasfresh/pull/11011
-https://github.com/metasfresh/metasfresh/pull/11012
+* https://github.com/metasfresh/metasfresh/pull/10899
+* https://github.com/metasfresh/metasfresh/issues/10990
+* https://github.com/metasfresh/metasfresh/issues/10955
+* https://github.com/metasfresh/metasfresh/issues/10999
+* https://github.com/metasfresh/metasfresh/issues/11000
+* https://github.com/metasfresh/metasfresh/pull/11001
+* https://github.com/metasfresh/metasfresh/issues/11008
+* https://github.com/metasfresh/metasfresh/pull/11011
+* https://github.com/metasfresh/metasfresh/pull/11012
 
 ## Fixes
-https://github.com/metasfresh/metasfresh/issues/11007
+* https://github.com/metasfresh/metasfresh/issues/11007
 
 # metasfresh 5.166
 ## Features
