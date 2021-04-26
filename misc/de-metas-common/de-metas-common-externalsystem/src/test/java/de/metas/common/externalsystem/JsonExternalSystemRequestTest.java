@@ -61,12 +61,12 @@ class JsonExternalSystemRequestTest
 
 		final JsonExternalSystemShopware6ConfigMapping externalSystemShopware6ConfigMapping = externalSystemShopware6ConfigMappings.get(0);
 		assertThat(externalSystemShopware6ConfigMapping).isNotNull();
-		assertThat(externalSystemShopware6ConfigMapping.getDescription()).isEqualTo("test");
-		assertThat(externalSystemShopware6ConfigMapping.getPaymentRule()).isEqualTo("test");
-		assertThat(externalSystemShopware6ConfigMapping.getSw6CustomerGroup()).isEqualTo("test");
-		assertThat(externalSystemShopware6ConfigMapping.getSw6PaymentMethod()).isEqualTo("test");
-		assertThat(externalSystemShopware6ConfigMapping.getPaymentTerm()).isEqualTo("test");
-		assertThat(externalSystemShopware6ConfigMapping.getDocTypeOrder()).isEqualTo("test");
+		assertThat(externalSystemShopware6ConfigMapping.getDescription()).isEqualTo("testDescription");
+		assertThat(externalSystemShopware6ConfigMapping.getPaymentRule()).isEqualTo("testPaymentRule");
+		assertThat(externalSystemShopware6ConfigMapping.getSw6CustomerGroup()).isEqualTo("testSw6CustomerGroup");
+		assertThat(externalSystemShopware6ConfigMapping.getSw6PaymentMethod()).isEqualTo("testSw6PaymentMethod");
+		assertThat(externalSystemShopware6ConfigMapping.getPaymentTermValue()).isEqualTo("testPaymentTerm");
+		assertThat(externalSystemShopware6ConfigMapping.getDocTypeOrder()).isEqualTo("testDocTypeOrder");
 		assertThat(externalSystemShopware6ConfigMapping.getSeqNo()).isEqualTo(10);
 
 
@@ -77,12 +77,12 @@ class JsonExternalSystemRequestTest
 
 		final JsonExternalSystemShopware6ConfigMapping externalSystemShopware6ConfigMapping =
 				JsonExternalSystemShopware6ConfigMapping.builder()
-						.sw6PaymentMethod("test")
-						.sw6CustomerGroup("test")
-						.paymentTerm("test")
-						.paymentRule("test")
-						.docTypeOrder("test")
-						.description("test")
+						.sw6PaymentMethod("testSw6PaymentMethod")
+						.sw6CustomerGroup("testSw6CustomerGroup")
+						.paymentTermValue("testPaymentTerm")
+						.paymentRule("testPaymentRule")
+						.docTypeOrder("testDocTypeOrder")
+						.description("testDescription")
 						.seqNo(10)
 						.build();
 

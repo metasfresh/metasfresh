@@ -27,6 +27,11 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>de.metas.common.ordercandidates</groupId>
+			<artifactId>de-metas-common-ordercandidates</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>de.metas.adempiere.adempiere</groupId>
 			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
 			<version>${metasfresh.version}</version>

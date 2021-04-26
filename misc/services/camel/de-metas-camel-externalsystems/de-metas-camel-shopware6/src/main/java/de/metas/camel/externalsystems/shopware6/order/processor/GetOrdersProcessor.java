@@ -94,8 +94,6 @@ public class GetOrdersProcessor implements Processor
 		final CurrencyInfoProvider currencyInfoProvider = (CurrencyInfoProvider) exchange.getContext().createProducerTemplate()
 				.sendBody("direct:" + GET_CURRENCY_ROUTE_ID, ExchangePattern.InOut, getCurrenciesRequest);
 
-		getSalesOrderMappingRules(request);
-
 		final ImportOrdersRouteContext ordersContext = ImportOrdersRouteContext.builder()
 				.orgCode(request.getOrgCode())
 				.salesOrderMappingRules(getSalesOrderMappingRules(request))

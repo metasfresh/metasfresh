@@ -26,9 +26,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
-import de.metas.document.DocTypeId;
+import de.metas.common.ordercandidates.v2.request.OrderDocType;
 import de.metas.document.IDocTypeBL;
-import de.metas.document.impl.DocTypeBL;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -37,15 +36,15 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
+import de.metas.order.impl.DocTypeService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_DocType;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.model.X_C_DocType;
 
 import java.util.HashMap;
 import java.util.List;
@@ -61,8 +60,9 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDAT
 
 public class InvokeShopware6Action extends InvokeExternalSystemProcess
 {
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+	private final DocTypeService docTypeService = SpringContextHolder.instance.getBean(DocTypeService.class);
+
 
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
@@ -154,20 +154,18 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 						.description(externalSystemShopware6ConfigMapping.getDescription())
 						.seqNo(externalSystemShopware6ConfigMapping.getSeqNo());
 
-		final I_C_DocType docType = docTypeBL.getById(externalSystemShopware6ConfigMapping.getDocTypeOrderId());
+		final OrderDocType orderDocType = docTypeService
+				.getOrderDocType(externalSystemShopware6ConfigMapping.getDocTypeOrderId())
+				.orElseThrow(() -> new AdempiereException("OrderDocType was not found for Id: "
+																  + externalSystemShopware6ConfigMapping.getDocTypeOrderId()));
 
-		if(!X_C_DocType.DOCBASETYPE_SalesOrder.equals(docType.getDocBaseType()))
-		{
-			throw new AdempiereException("Invalid base doc type!");
-		}
-
-		builder.docTypeOrder(docType.getDocSubType());
+		builder.docTypeOrder(orderDocType.getCode());
 
 		final PaymentTermId paymentTermId = externalSystemShopware6ConfigMapping.getPaymentTermId();
 		if(paymentTermId != null)
 		{
 			final I_C_PaymentTerm paymentTerm = paymentTermRepository.getById(paymentTermId);
-			builder.paymentTerm(paymentTerm.getValue());
+			builder.paymentTermValue(paymentTerm.getValue());
 
 		}
 

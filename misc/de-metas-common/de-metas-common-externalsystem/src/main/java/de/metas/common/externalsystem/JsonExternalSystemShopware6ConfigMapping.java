@@ -43,7 +43,7 @@ public class JsonExternalSystemShopware6ConfigMapping
 	String paymentRule;
 
 	@Nullable
-	String paymentTerm;
+	String paymentTermValue;
 
 	@Nullable
 	String sw6CustomerGroup;
@@ -60,7 +60,7 @@ public class JsonExternalSystemShopware6ConfigMapping
 			@JsonProperty("seqNo") @NonNull final Integer seqNo,
 			@JsonProperty("docTypeOrder") @NonNull final String docTypeOrder,
 			@JsonProperty("paymentRule") @NonNull final String paymentRule,
-			@JsonProperty("paymentTerm") @Nullable final String paymentTerm,
+			@JsonProperty("paymentTerm") @Nullable final String paymentTermValue,
 			@JsonProperty("sw6CustomerGroup") @Nullable final String sw6CustomerGroup,
 			@JsonProperty("sw6PaymentMethod") @Nullable final String sw6PaymentMethod,
 			@JsonProperty("description") @Nullable final String description)
@@ -68,7 +68,7 @@ public class JsonExternalSystemShopware6ConfigMapping
 		this.seqNo = seqNo;
 		this.docTypeOrder = docTypeOrder;
 		this.paymentRule = paymentRule;
-		this.paymentTerm = paymentTerm;
+		this.paymentTermValue = paymentTermValue;
 		this.sw6CustomerGroup = sw6CustomerGroup;
 		this.sw6PaymentMethod = sw6PaymentMethod;
 		this.description = description;

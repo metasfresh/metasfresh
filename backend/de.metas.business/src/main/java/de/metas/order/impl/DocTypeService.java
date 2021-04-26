@@ -1,27 +1,8 @@
-package de.metas.rest_api.v2.util;
-
-import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest.OrderDocType;
-import de.metas.common.rest_api.v2.JsonDocTypeInfo;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeDAO;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.X_C_DocType;
-import org.springframework.stereotype.Service;
-
-import javax.annotation.Nullable;
-
-import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
-
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.business
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -39,6 +20,27 @@ import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
  * #L%
  */
 
+package de.metas.order.impl;
+
+import de.metas.common.ordercandidates.v2.request.OrderDocType;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.X_C_DocType;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+
+import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
+
 @Service
 public class DocTypeService
 {
@@ -46,24 +48,17 @@ public class DocTypeService
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	public DocTypeId getInvoiceDocTypeId(
-			@Nullable final JsonDocTypeInfo invoiceDocType,
+			@Nullable final String docBaseType,
+			@Nullable final String docSubType,
 			@NonNull final OrgId orgId)
 	{
-		if (invoiceDocType == null)
-		{
-			return null;
-		}
-
-		final String docSubType = firstNotEmptyTrimmed(
-				invoiceDocType.getDocSubType(),
-				DocTypeQuery.DOCSUBTYPE_NONE);
 
 		final I_AD_Org orgRecord = orgsDAO.getById(orgId);
 
 		final DocTypeQuery query = DocTypeQuery
 				.builder()
-				.docBaseType(invoiceDocType.getDocBaseType())
-				.docSubType(docSubType)
+				.docBaseType(docBaseType)
+				.docSubType(firstNotEmptyTrimmed(docSubType, DocTypeQuery.DOCSUBTYPE_NONE))
 				.adClientId(orgRecord.getAD_Client_ID())
 				.adOrgId(orgRecord.getAD_Org_ID())
 				.build();
@@ -101,5 +96,25 @@ public class DocTypeService
 				.build();
 
 		return docTypeDAO.getDocTypeId(query);
+	}
+
+	@NonNull
+	public Optional<OrderDocType> getOrderDocType(@NonNull final DocTypeId docTypeId)
+	{
+
+		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
+
+		if (!X_C_DocType.DOCBASETYPE_SalesOrder.equals(docType.getDocBaseType()))
+		{
+			throw new AdempiereException("Invalid base doc type!");
+		}
+
+		if (docType != null)
+		{
+			return Optional.of(OrderDocType.ofCode(docType.getDocSubType()));
+		}
+
+		return Optional.empty();
+
 	}
 }

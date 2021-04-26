@@ -19,6 +19,7 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineGroup;
+import de.metas.order.impl.DocTypeService;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
@@ -28,7 +29,6 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.utils.CurrencyService;
-import de.metas.rest_api.v2.util.DocTypeService;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -173,7 +173,8 @@ public class JsonConverters
 				.dateRequired(request.getDateRequired())
 				.dateCandidate(request.getDateCandidate())
 				//
-				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(request.getInvoiceDocType(), orgId))
+				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(request.getInvoiceDocType().getDocBaseType(),
+																	 request.getInvoiceDocType().getDocSubType(), orgId))
 				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//
