@@ -261,26 +261,7 @@ class FiltersItem extends PureComponent {
     const parametersArray = [];
 
     newActiveFilter.parameters.forEach((param) => {
-      if (updatedParameters[param.parameterName]) {
-        const { value, activeValue, activeValueTo } = paramsMap[
-          param.parameterName
-        ];
-
-        // if there's no value but param exists in the updated parameters,
-        // remove the parameter from active filter.
-        // Otherwise just update it's value
-        if (value !== null && value !== '') {
-          parametersArray.push({
-            ...param,
-            value: convertDateToReadable(param.widgetType, activeValue),
-            valueTo: convertDateToReadable(param.widgetType, activeValueTo),
-            defaultValue: null,
-            defaultValueTo: null,
-          });
-        }
-
-        delete updatedParameters[param.parameterName];
-      } else {
+      if (!updatedParameters[param.parameterName]) {
         // copy params that were not updated
         parametersArray.push({
           ...param,
@@ -401,17 +382,19 @@ class FiltersItem extends PureComponent {
     } else {
       // update the active filter with the defaultValue if value from active filter is empty
       const activeFilterClone = _.cloneDeep(activeFilter);
-      activeFilterClone.parameters.map((afcItem, index) => {
-        let filterType = this.checkFilterTypeByName(afcItem);
-        if (filterType === 'YesNo') {
-          // YesNo filters (checkboxes) can be either null, true or false
-          afcItem.value =
-            !afcItem.value && afcItem.value !== false
-              ? filter.parameters[index].defaultValue
-              : afcItem.value;
-        }
-        return afcItem;
-      });
+      // - DISABLED setting the value to the defaultValue - we need to see the impact and if all the filters functionality works as expected
+      // TODO: do some cleaning in here once the filters are tested
+      // activeFilterClone.parameters.map((afcItem, index) => {
+      //   let filterType = this.checkFilterTypeByName(afcItem);
+      //   if (filterType === 'YesNo') {
+      //     // YesNo filters (checkboxes) can be either null, true or false
+      //     afcItem.value =
+      //       !afcItem.value && afcItem.value !== false
+      //         ? filter.parameters[index].defaultValue
+      //         : afcItem.value;
+      //   }
+      //   return afcItem;
+      // });
 
       applyFilters(activeFilterClone, () => {
         closeFilterMenu();
@@ -572,6 +555,7 @@ class FiltersItem extends PureComponent {
                           windowType,
                           onShow,
                           onHide,
+                          isFilterActive: isActive,
                         }}
                       />
                     );

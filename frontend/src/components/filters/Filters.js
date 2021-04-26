@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import deepUnfreeze from 'deep-unfreeze';
-
+import { FILTERS_TYPE_NOT_INCLUDED } from '../../constants/Constants';
 import { getEntityRelatedId, getCachedFilter } from '../../reducers/filters';
 import {
   updateFilterWidgetShown,
@@ -111,6 +111,35 @@ class Filters extends PureComponent {
   };
 
   /**
+   * @method checkClearedFilters
+   * @summary verifies if the active filter has all the parameters (filters) already cleared
+   * @param {object} { activeFilterId, filtersActive, filterType }
+   *                 activeFilterId - the active filter ID to check
+   *                 filtersActive  - the array contining the current active filters
+   *                 filterTyope    - the type of the filter applied
+   */
+  checkClearedFilters = ({ activeFilterId, filtersActive, filterType }) => {
+    if (!filtersActive || filtersActive.length === 0) return false;
+    let mainFilter = filtersActive.filter(
+      (item) => item.filterId === activeFilterId
+    );
+    if (mainFilter.length) {
+      const { parameters } = mainFilter[0];
+      if (parameters) {
+        return parameters.every((filterItem) => {
+          return filterType === FILTERS_TYPE_NOT_INCLUDED &&
+            filterItem.value &&
+            filterItem.value.values &&
+            !filterItem.value.values.length
+            ? true
+            : filterItem.value === null;
+        });
+      }
+    }
+    return false;
+  };
+
+  /**
    * @method render
    * @summary Main render function - renders the filters
    */
@@ -133,6 +162,8 @@ class Filters extends PureComponent {
     if (!filters || !viewId || !filters.filterData || !allFilters.length)
       return false;
     const { filtersActive, filtersCaptions: activeFiltersCaptions } = filters;
+    let activeFilterId = null;
+    let allChildFiltersCleared = false;
 
     return (
       <div
@@ -152,7 +183,16 @@ class Filters extends PureComponent {
                 dropdownFilterItem.isActive = flatActiveFilterIds.includes(
                   dropdownFilterItem.filterId
                 );
+                if (dropdownFilterItem.isActive) {
+                  activeFilterId = dropdownFilterItem.filterId;
+                }
+
                 return dropdownFilterItem;
+              });
+
+              allChildFiltersCleared = this.checkClearedFilters({
+                activeFilterId,
+                filtersActive,
               });
 
               // we render the FiltersNotFrequent for normal filters
@@ -179,10 +219,17 @@ class Filters extends PureComponent {
                   active={filtersActive}
                   dropdownToggled={this.dropdownToggled}
                   filtersWrapper={this.filtersWrapper}
+                  allChildFiltersCleared={allChildFiltersCleared}
                 />
               );
             }
             if (!item.includedFilters) {
+              allChildFiltersCleared = this.checkClearedFilters({
+                activeFilterId: item.filterId,
+                filtersActive,
+                filterType: FILTERS_TYPE_NOT_INCLUDED,
+              });
+
               return (
                 <FiltersNotIcluded
                   {...{
@@ -203,6 +250,7 @@ class Filters extends PureComponent {
                   filtersWrapper={this.filtersWrapper}
                   key={item.filterId}
                   filterId={filterId}
+                  allChildFiltersCleared={allChildFiltersCleared}
                 />
               );
             }

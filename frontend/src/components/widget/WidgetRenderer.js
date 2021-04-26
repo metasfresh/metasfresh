@@ -117,6 +117,7 @@ class WidgetRenderer extends PureComponent {
       closeModal,
       forwardedRef,
       disconnected,
+      isFilterActive, // flag used to identify if the component belongs to an active filter
     } = this.props;
     const { tabIndex, onFocus } = widgetProperties;
     const widgetValue = get(widgetProperties, ['value'], null);
@@ -463,6 +464,8 @@ class WidgetRenderer extends PureComponent {
               widgetField,
               id,
               filterWidget,
+              isFilterActive:
+                typeof isFilterActive === 'undefined' ? false : isFilterActive, // safety check - do not pass `undefined` further down
             }}
             handlePatch={onPatch}
           />
