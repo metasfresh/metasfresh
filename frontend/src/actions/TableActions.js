@@ -5,9 +5,14 @@ import * as types from '../constants/ActionTypes';
 
 import { fetchQuickActions } from '../actions/Actions';
 import { showIncludedView } from '../actions/ViewActions';
+import {
+  fetchViewAttributes,
+  fetchViewAttributesLayout,
+  deleteViewAttributes,
+} from '../actions/IndependentWidgetsActions';
 
 import { getView } from '../reducers/viewHandler';
-import { getTable } from '../reducers/tables';
+import { getTable, getSupportAttribute } from '../reducers/tables';
 
 /**
  * @method createTable
@@ -29,17 +34,6 @@ function updateTable(id, data) {
   return {
     type: types.UPDATE_TABLE,
     payload: { id, data },
-  };
-}
-
-/**
- * @method deleteTable
- * @summary Remove the table with specified `id` from the store
- */
-export function deleteTable(id) {
-  return {
-    type: types.DELETE_TABLE,
-    payload: { id },
   };
 }
 
@@ -191,6 +185,65 @@ export function createTableData(rawData) {
 // THUNK ACTION CREATORS
 
 /*
+ * @method updateGridTable
+ * @summary Populate grid table with data and initial settings
+ *
+ * @param {string} tableId - table id
+ * @param {object} tableResponse - response data for the table
+ */
+export function fetchAttributes(tableId, tableResponse) {
+  return (dispatch, getState) => {
+    const state = getState();
+    const tableData = state.tables[tableId]
+      ? state.tables[tableId]
+      : tableResponse;
+
+    const {
+      rows,
+      supportAttribute,
+      keyProperty,
+      windowId,
+      viewId,
+      selected,
+    } = tableData;
+
+    let rowId =
+      selected && selected.length
+        ? state.tables[tableId].selected[0]
+        : tableResponse &&
+          tableResponse.rows &&
+          tableResponse.rows.length &&
+          tableResponse.rows[0][keyProperty];
+
+    if (supportAttribute && rowId) {
+      const rowSupportAttribute = getSupportAttribute([rowId], rows);
+
+      if (rowSupportAttribute) {
+        dispatch(fetchViewAttributesLayout({ windowId, viewId, rowId }));
+        dispatch(fetchViewAttributes({ windowId, viewId: viewId, rowId }));
+      }
+    } else {
+      dispatch(deleteViewAttributes());
+    }
+  };
+}
+
+/**
+ * @method deleteTable
+ * @summary Remove the table with specified `id` from the store
+ */
+export function deleteTable(id) {
+  return (dispatch) => {
+    // remove old attributes data
+    dispatch(deleteViewAttributes());
+    dispatch({
+      type: types.DELETE_TABLE,
+      payload: { id },
+    });
+  };
+}
+
+/*
  * @method createGridTable
  * @summary Create a new table entry for grids using data from the window
  * layout (so not populated with data yet)
@@ -201,8 +254,8 @@ export function createGridTable(tableId, tableResponse) {
     const windowId = isModal
       ? tableResponse.modalId
       : tableResponse.windowType || tableResponse.windowId;
-    const tableLayout = getView(getState(), windowId, isModal).layout;
-
+    const view = getView(getState(), windowId, isModal);
+    const tableLayout = view.layout;
     const tableData = createTableData({
       ...tableResponse,
       ...tableLayout,
@@ -221,85 +274,80 @@ export function createGridTable(tableId, tableResponse) {
 export function updateGridTable(tableId, tableResponse) {
   return (dispatch, getState) => {
     const state = getState();
+    const tableExists = state.tables[tableId];
+    const isModal = !!tableResponse.modalId;
+    const windowId = isModal
+      ? tableResponse.modalId
+      : tableResponse.windowType || tableResponse.windowId;
+    const view = getView(getState(), windowId, isModal);
+    const tableLayout = view.layout;
+    let tableData;
 
-    // this check is only for unit tests purposes
-    if (state.tables) {
-      const tableExists = state.tables[tableId];
-      const isModal = !!tableResponse.modalId;
-      const windowId = isModal
-        ? tableResponse.modalId
-        : tableResponse.windowType || tableResponse.windowId;
+    if (tableExists) {
+      const { indentSupported } = tableExists;
+      const { collapsible, expandedDepth } = tableExists;
+      tableData = createTableData({
+        ...tableResponse,
+        ...tableLayout,
+        headerElements: tableResponse.columnsByFieldName,
+        keyProperty: 'id',
+      });
+      const { keyProperty } = tableData;
 
-      const tableLayout = getView(getState(), windowId, isModal).layout;
+      // Parse `rows` to add `indent` property
+      if (tableData.rows.length && indentSupported) {
+        tableData.rows = flattenRows(tableData.rows);
+      }
 
-      if (tableExists) {
-        const { indentSupported } = tableExists;
-        const tableData = createTableData({
-          ...tableResponse,
-          ...tableLayout,
-          headerElements: tableResponse.columnsByFieldName,
-          keyProperty: 'id',
-        });
-        const { collapsible, expandedDepth } = tableExists;
-        const { keyProperty } = tableData;
+      dispatch(updateTable(tableId, tableData));
 
-        // Parse `rows` to add `indent` property
-        if (tableData.rows.length && indentSupported) {
-          tableData.rows = flattenRows(tableData.rows);
-        }
+      if (indentSupported) {
+        dispatch(
+          createCollapsedRows({
+            tableId,
+            rows: tableData.rows,
+            collapsible,
+            expandedDepth,
+            keyProperty,
+          })
+        );
+      }
+    } else {
+      tableData = createTableData({
+        ...tableResponse,
+        ...tableLayout,
+        headerElements: tableResponse.columnsByFieldName,
+        keyProperty: 'id',
+      });
+      const {
+        collapsible,
+        expandedDepth,
+        keyProperty,
+        indentSupported,
+      } = tableData;
 
-        dispatch(updateTable(tableId, tableData));
+      if (tableData.rows && tableData.rows.length && indentSupported) {
+        tableData.rows = flattenRows(tableData.rows);
+      }
 
-        if (indentSupported) {
-          dispatch(
-            createCollapsedRows({
-              tableId,
-              rows: tableData.rows,
-              collapsible,
-              expandedDepth,
-              keyProperty,
-            })
-          );
-        }
+      dispatch(createTable(tableId, tableData));
 
-        return Promise.resolve(true);
-      } else {
-        const tableData = createTableData({
-          ...tableResponse,
-          ...tableLayout,
-          headerElements: tableResponse.columnsByFieldName,
-          keyProperty: 'id',
-        });
-        const {
-          collapsible,
-          expandedDepth,
-          keyProperty,
-          indentSupported,
-        } = tableData;
-
-        if (tableData.rows && tableData.rows.length && indentSupported) {
-          tableData.rows = flattenRows(tableData.rows);
-        }
-
-        dispatch(createTable(tableId, tableData));
-
-        if (indentSupported) {
-          dispatch(
-            createCollapsedRows({
-              tableId,
-              rows: tableData.rows,
-              collapsible,
-              expandedDepth,
-              keyProperty,
-            })
-          );
-        }
-
-        return Promise.resolve(true);
+      if (indentSupported) {
+        dispatch(
+          createCollapsedRows({
+            tableId,
+            rows: tableData.rows,
+            collapsible,
+            expandedDepth,
+            keyProperty,
+          })
+        );
       }
     }
 
-    return Promise.resolve(false);
+    dispatch(fetchAttributes(tableId, tableData));
+
+    return Promise.resolve(true);
   };
 }
 
@@ -600,7 +648,7 @@ export function updateTableSelection({
           selection,
           isModal,
         })
-      );
+      ).then(dispatch(fetchAttributes(id)));
     }
 
     return Promise.resolve(selection);
@@ -639,7 +687,7 @@ export function deselectTableRows({
           selection,
           isModal,
         })
-      );
+      ).then(dispatch(fetchAttributes(id)));
     }
 
     return Promise.resolve(selection);
