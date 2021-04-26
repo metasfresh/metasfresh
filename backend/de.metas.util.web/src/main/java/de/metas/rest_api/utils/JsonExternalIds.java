@@ -29,7 +29,7 @@ import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
