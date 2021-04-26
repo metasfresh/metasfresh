@@ -40,7 +40,7 @@ public enum OrderDocType
 	ReturnMaterial("RM"),
 
 	@ApiEnum("Specifies if the order is Quotation")
-	Quotation("ON"),
+	Proposal("ON"),
 
 	@ApiEnum("Specifies if the order will be prepaid")
 	PrepayOrder("PR");
