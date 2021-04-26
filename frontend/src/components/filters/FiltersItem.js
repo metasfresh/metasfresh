@@ -455,10 +455,6 @@ class FiltersItem extends PureComponent {
       closeFilterMenu,
       captionValue,
       openedFilter,
-      modalVisible,
-      timeZone,
-      allowShortcut,
-      disableShortcut,
     } = this.props;
     const { filter, isTooltipShow, maxWidth, maxHeight } = this.state;
     const style = {};
