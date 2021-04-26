@@ -112,11 +112,19 @@ export function getItemsByProperty(arr, prop, value) {
   return ret;
 }
 
-const cleanupParameter = ({ parameterName, value, valueTo }) => ({
-  parameterName,
-  value,
-  valueTo,
-});
+const cleanupParameter = ({ parameterName, value, valueTo }) => {
+  return {
+    parameterName,
+    value:
+      value &&
+      value.values &&
+      Array.isArray(value.values) &&
+      value.values.length === 0
+        ? [] // case when facets gets cleared
+        : value,
+    valueTo,
+  };
+};
 
 export function cleanupFilter({ filterId, parameters }) {
   if (parameters && parameters.length) {
@@ -124,7 +132,6 @@ export function cleanupFilter({ filterId, parameters }) {
       if (param.widgetType === 'Date' && param.value) {
         param.value = Moment(param.value).format(DATE_FORMAT);
       }
-
       param = cleanupParameter(param);
       parameters[index] = param;
     });
