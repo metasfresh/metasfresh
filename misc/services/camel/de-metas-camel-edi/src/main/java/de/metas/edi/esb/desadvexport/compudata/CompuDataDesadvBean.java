@@ -22,6 +22,7 @@
 
 package de.metas.edi.esb.desadvexport.compudata;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.DesadvSettings;
 import de.metas.edi.esb.commons.SystemTime;
@@ -318,7 +319,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setEanArtNo(xmlDesadvLine.getEANCU());
 		p100.setBuyerArtNo(xmlDesadvLine.getProductNo());
 		p100.setArtDescription(xmlDesadvLine.getProductDescription() == null ? voidString : xmlDesadvLine.getProductDescription());
-		p100.setGrainItemNummer(pack.getGTINTUPackingMaterial());
+		p100.setGrainItemNummer(CoalesceUtil.coalesce(pack.getGTINTUPackingMaterial(), ""));
 
 		return p100;
 	}
