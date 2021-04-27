@@ -22,10 +22,8 @@
 
 package de.metas.common.externalsystem;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,15 +35,7 @@ import java.util.List;
 @JsonDeserialize(builder = JsonExternalSystemShopware6ConfigMappings.JsonExternalSystemShopware6ConfigMappingsBuilder.class)
 public class JsonExternalSystemShopware6ConfigMappings
 {
-
 	@NonNull
 	@JsonProperty("mappings")
 	List<JsonExternalSystemShopware6ConfigMapping> jsonExternalSystemShopware6ConfigMappingList;
-
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonExternalSystemShopware6ConfigMappingsBuilder
-	{
-	}
-
 }

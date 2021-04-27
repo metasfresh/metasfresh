@@ -35,16 +35,18 @@ import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
+import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
@@ -73,7 +75,9 @@ public class GetOrdersProcessor implements Processor
 		final String clientSecret = request.getParameters().get(ExternalSystemConstants.PARAM_CLIENT_SECRET);
 
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
-		final String updatedAfter = request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER);
+		final String updatedAfter = CoalesceUtil.coalesce(
+				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
+				Instant.ofEpochSecond(0).toString());
 
 		final String bPartnerIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID);
 		final String bPartnerLocationIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID);
@@ -96,7 +100,8 @@ public class GetOrdersProcessor implements Processor
 
 		final ImportOrdersRouteContext ordersContext = ImportOrdersRouteContext.builder()
 				.orgCode(request.getOrgCode())
-				.salesOrderMappingRules(getSalesOrderMappingRules(request))
+				.externalSystemRequest(request)
+				.shopware6ConfigMappings(getSalesOrderMappingRules(request).orElse(null))
 				.shopwareClient(shopwareClient)
 				.bpLocationCustomJsonPath(bPartnerLocationIdJSONPath)
 				.currencyInfoProvider(currencyInfoProvider)
@@ -105,18 +110,24 @@ public class GetOrdersProcessor implements Processor
 		exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 	}
 
-	@Nullable
-	private List<JsonExternalSystemShopware6ConfigMapping> getSalesOrderMappingRules(@NonNull final JsonExternalSystemRequest request)
+	@NonNull
+	private Optional<JsonExternalSystemShopware6ConfigMappings> getSalesOrderMappingRules(@NonNull final JsonExternalSystemRequest request)
 	{
+		final String shopware6Mappings = request.getParameters().get(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS);
+
+		if (Check.isBlank(shopware6Mappings))
+		{
+			return Optional.empty();
+		}
+
 		final ObjectMapper mapper = new ObjectMapper();
 		try
 		{
-			return mapper.readValue(request.getParameters().get(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS),
-									mapper.getTypeFactory().constructCollectionType(List.class, JsonExternalSystemShopware6ConfigMapping.class));
+			return Optional.of(mapper.readValue(shopware6Mappings, JsonExternalSystemShopware6ConfigMappings.class));
 		}
-		catch (JsonProcessingException e)
+		catch (final JsonProcessingException e)
 		{
-			return null;
+			throw new RuntimeException(e);
 		}
 	}
 

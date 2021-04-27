@@ -24,6 +24,7 @@ package de.metas.common.externalsystem;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -72,6 +73,16 @@ public class JsonExternalSystemShopware6ConfigMapping
 		this.sw6CustomerGroup = sw6CustomerGroup;
 		this.sw6PaymentMethod = sw6PaymentMethod;
 		this.description = description;
+	}
+
+	public boolean isGroupMatching(@NonNull final String sw6CustomerGroup)
+	{
+		return Check.isBlank(this.sw6CustomerGroup) || this.sw6CustomerGroup.equals(sw6CustomerGroup);
+	}
+
+	public boolean isPaymentMethodMatching(@NonNull final String sw6PaymentMethod)
+	{
+		return Check.isBlank(this.sw6PaymentMethod) || this.sw6PaymentMethod.equals(sw6PaymentMethod);
 	}
 
 }

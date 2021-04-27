@@ -11,6 +11,7 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v2.response.JsonResponseBPartnerLocationAndContact;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.externalreference.ExternalIdentifier;
@@ -47,6 +48,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -153,6 +155,15 @@ public class JsonConverters
 				? null
 				: OrderLineGroup.ofOrNull(jsonOrderLineGroup.getGroupKey(), jsonOrderLineGroup.isGroupMainItem());
 
+		final String docBaseType = Optional.ofNullable(request.getInvoiceDocType())
+				.map(JsonDocTypeInfo::getDocBaseType)
+				.orElse(null);
+
+		final String subType = Optional.ofNullable(request.getInvoiceDocType())
+				.map(JsonDocTypeInfo::getDocSubType)
+				.orElse(null);
+
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -173,8 +184,7 @@ public class JsonConverters
 				.dateRequired(request.getDateRequired())
 				.dateCandidate(request.getDateCandidate())
 				//
-				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(request.getInvoiceDocType().getDocBaseType(),
-																	 request.getInvoiceDocType().getDocSubType(), orgId))
+				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(docBaseType, subType, orgId))
 				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//

@@ -24,20 +24,26 @@ package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLine;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
+import de.metas.camel.externalsystems.shopware6.api.model.order.PaymentMethodType;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
+import de.metas.camel.externalsystems.shopware6.order.OrderCompositeInfo;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
+import de.metas.common.ordercandidates.v2.request.JSONPaymentRule;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
+import de.metas.common.ordercandidates.v2.request.OrderDocType;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -47,7 +53,9 @@ import org.apache.camel.Processor;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import static de.metas.camel.externalsystems.shopware6.ProcessorHelper.getPropertyOrThrowError;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DATA_SOURCE_INT_SHOPWARE;
@@ -56,6 +64,7 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAUL
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_ORDER_LINE_DISCOUNT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.VALUE_PREFIX;
 
 public class OLCandRequestProcessor implements Processor
 {
@@ -103,6 +112,8 @@ public class OLCandRequestProcessor implements Processor
 				.deliveryViaRule(DEFAULT_DELIVERY_VIA_RULE)
 				.deliveryRule(DEFAULT_DELIVERY_RULE)
 				.importWarningMessage(context.isMultipleShippingAddresses() ? MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE : null);
+
+		processShopwareConfigs(context, olCandCreateRequestBuilder);
 
 		final List<JsonOrderLine> orderLines = getJsonOrderLines(context, orderAndCustomId.getJsonOrder().getId());
 
@@ -248,5 +259,44 @@ public class OLCandRequestProcessor implements Processor
 		return order.getOrderDate() != null
 				? order.getOrderDate().toLocalDate()
 				: null;
+	}
+
+	private void processShopwareConfigs(
+			@NonNull final ImportOrdersRouteContext routeContext,
+			@NonNull final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder)
+	{
+		if (routeContext.getShopware6ConfigMappings() == null
+				|| routeContext.getShopware6ConfigMappings().getJsonExternalSystemShopware6ConfigMappingList().isEmpty())
+		{
+			return;
+		}
+
+		final Optional<JsonCustomerGroup> customerGroup = routeContext.getShopwareClient()
+				.getCustomerGroup(routeContext.getOrderNotNull().getEffectiveCustomerId())
+				.filter(customerGroups -> customerGroups.getCustomerGroupList().size() == 1)
+				.map(jsonCustomerGroups -> jsonCustomerGroups.getCustomerGroupList().get(0));
+
+		if (customerGroup.isEmpty())
+		{
+			return;
+		}
+
+		final OrderCompositeInfo orderCompositeInfo = routeContext.getCompositeOrderNotNull();
+
+		final PaymentMethodType candidatePaymentMethod = PaymentMethodType.ofValue(orderCompositeInfo.getJsonPaymentMethod().getShortName());
+		final String customerGroupValue = customerGroup.get().getName();
+
+		final Optional<JsonExternalSystemShopware6ConfigMapping> matchingConfig = routeContext.getShopware6ConfigMappings()
+				.getJsonExternalSystemShopware6ConfigMappingList()
+				.stream()
+				.sorted(Comparator.comparingInt(JsonExternalSystemShopware6ConfigMapping::getSeqNo))
+				.filter(config -> config.isGroupMatching(customerGroupValue) && config.isPaymentMethodMatching(candidatePaymentMethod.getValue()))
+				.findFirst();
+
+		matchingConfig.ifPresent(config -> olCandCreateRequestBuilder.orderDocType(OrderDocType.ofCode(config.getDocTypeOrder()))
+				.paymentRule(JSONPaymentRule.ofCode(config.getPaymentRule()))
+				.paymentTerm(Check.isBlank(config.getPaymentTermValue())
+									 ? null
+									 : VALUE_PREFIX + "-" + config.getPaymentTermValue()));
 	}
 }

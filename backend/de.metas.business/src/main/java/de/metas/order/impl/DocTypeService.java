@@ -28,6 +28,7 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -47,11 +48,16 @@ public class DocTypeService
 	private final IOrgDAO orgsDAO = Services.get(IOrgDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
+	@Nullable
 	public DocTypeId getInvoiceDocTypeId(
 			@Nullable final String docBaseType,
 			@Nullable final String docSubType,
 			@NonNull final OrgId orgId)
 	{
+		if (Check.isBlank(docBaseType))
+		{
+			return null;
+		}
 
 		final I_AD_Org orgRecord = orgsDAO.getById(orgId);
 

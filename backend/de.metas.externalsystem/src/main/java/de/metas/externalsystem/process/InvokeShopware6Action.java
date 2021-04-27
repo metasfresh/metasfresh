@@ -26,8 +26,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.ordercandidates.v2.request.OrderDocType;
-import de.metas.document.IDocTypeBL;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -63,7 +63,6 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final DocTypeService docTypeService = SpringContextHolder.instance.getBean(DocTypeService.class);
 
-
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -94,7 +93,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_UPDATED_AFTER, extractEffectiveSinceTimestamp().toInstant().toString());
 		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_ID, shopware6Config.getBPartnerIdJSONPath());
 		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID, shopware6Config.getBPartnerLocationIdJSONPath());
-		parameters.put(PARAM_CONFIG_MAPPINGS,getConfigMappings(shopware6Config));
+		parameters.put(PARAM_CONFIG_MAPPINGS, getConfigMappings(shopware6Config));
 
 		return parameters;
 	}
@@ -121,26 +120,26 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	}
 
 	@NonNull
-	private String getConfigMappings(final ExternalSystemShopware6Config shopware6Config){
-
-		final String configMappings;
+	private String getConfigMappings(final ExternalSystemShopware6Config shopware6Config)
+	{
 		try
 		{
 			final List<JsonExternalSystemShopware6ConfigMapping> externalSystemShopware6ConfigMappings =
 					shopware6Config.getExternalSystemShopware6ConfigMappingList()
-					.stream()
-					.map(this::toJsonExternalSystemShopware6ConfigMapping)
-					.collect(ImmutableList.toImmutableList());
+							.stream()
+							.map(this::toJsonExternalSystemShopware6ConfigMapping)
+							.collect(ImmutableList.toImmutableList());
 
-			final ObjectMapper objectMapper = new ObjectMapper();
-			configMappings= objectMapper.writeValueAsString(externalSystemShopware6ConfigMappings);
+			final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = JsonExternalSystemShopware6ConfigMappings.builder()
+					.jsonExternalSystemShopware6ConfigMappingList(externalSystemShopware6ConfigMappings)
+					.build();
+
+			return new ObjectMapper().writeValueAsString(shopware6ConfigMappings);
 		}
 		catch (final JsonProcessingException e)
 		{
 			throw new AdempiereException("Shopware6 config mappings serialization failed! Shopware6 config id: " + shopware6Config.getId().getRepoId());
 		}
-
-		return configMappings;
 	}
 
 	private JsonExternalSystemShopware6ConfigMapping toJsonExternalSystemShopware6ConfigMapping(
@@ -162,7 +161,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		builder.docTypeOrder(orderDocType.getCode());
 
 		final PaymentTermId paymentTermId = externalSystemShopware6ConfigMapping.getPaymentTermId();
-		if(paymentTermId != null)
+		if (paymentTermId != null)
 		{
 			final I_C_PaymentTerm paymentTerm = paymentTermRepository.getById(paymentTermId);
 			builder.paymentTermValue(paymentTerm.getValue());

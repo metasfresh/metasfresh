@@ -1,22 +1,6 @@
 package de.metas.banking.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.ICompositeQueryUpdater;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.trx.api.ITrx;
-import org.compiere.model.I_C_BP_BankAccount;
-
 import com.google.common.collect.ImmutableListMultimap;
-
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
@@ -30,6 +14,20 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_C_BP_BankAccount;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -181,5 +179,12 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	public BankId getBankId(@NonNull final BankAccountId bankAccountId)
 	{
 		return getById(bankAccountId).getBankId();
+	}
+
+	@NonNull
+	public Optional<BankAccount> getDefaultBankAccount(@NonNull final BPartnerId bPartnerId)
+	{
+		return retrieveDefaultBankAccountInTrx(bPartnerId)
+				.map(BPBankAccountDAO::toBankAccount);
 	}
 }

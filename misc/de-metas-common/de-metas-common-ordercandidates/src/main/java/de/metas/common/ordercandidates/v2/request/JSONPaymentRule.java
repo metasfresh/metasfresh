@@ -24,6 +24,9 @@ package de.metas.common.ordercandidates.v2.request;
 
 import de.pentabyte.springfox.ApiEnum;
 import lombok.Getter;
+import lombok.NonNull;
+
+import java.util.Arrays;
 
 public enum JSONPaymentRule
 {
@@ -58,6 +61,15 @@ public enum JSONPaymentRule
 	JSONPaymentRule(final String code)
 	{
 		this.code = code;
+	}
+
+	@NonNull
+	public static JSONPaymentRule ofCode(@NonNull final String code)
+	{
+		return Arrays.stream(values())
+				.filter(type -> type.getCode().equals(code))
+				.findFirst()
+				.orElseThrow(() -> new RuntimeException("No JSONPaymentRule found for code:" + code));
 	}
 
 }
