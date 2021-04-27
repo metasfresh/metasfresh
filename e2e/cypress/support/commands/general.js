@@ -290,9 +290,11 @@ Cypress.Commands.add('expectNumberOfDOMNotifications', expectedNumber => {
     .get('.header-item-badge', timeout)
     .find('.notification-number', timeout)
     .then(el => {
-      const val = el[0].textContent;
+      if (el[0]) {
+        const val = el[0].textContent;
 
-      return cy.wrap(parseInt(val, 10));
+        return cy.wrap(parseInt(val, 10));
+      }
     })
     .should('eq', expectedNumber);
 });
