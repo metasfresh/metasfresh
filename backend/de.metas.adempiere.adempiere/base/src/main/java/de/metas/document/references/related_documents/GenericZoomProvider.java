@@ -30,6 +30,7 @@ import de.metas.document.references.related_documents.generic.GenericZoomInfoDes
 import de.metas.document.references.related_documents.generic.LegacyGenericZoomInfoDescriptorsRepository;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -109,7 +110,11 @@ import java.util.List;
 			result.add(ZoomInfoCandidate.builder()
 					.id(ZoomInfoId.ofString("generic-" + windowId.getRepoId()))
 					.internalName(zoomInfoDescriptor.getTargetWindowInternalName())
-					.targetWindow(ZoomTargetWindow.ofAdWindowId(windowId))
+					.targetWindow(ZoomTargetWindow.ofAdWindowIdAndCategory(
+							windowId,
+							zoomInfoDescriptor.getTargetColumnName(),
+							TranslatableStrings.anyLanguage(zoomInfoDescriptor.getTargetColumnName())
+					))
 					.priority(zoomInfoPriority)
 					.query(query)
 					.destinationDisplay(zoomInfoDescriptor.getName())
@@ -136,7 +141,7 @@ import java.util.List;
 		final CustomizedWindowInfoMap customizedWindowInfoMap = customizedWindowInfoMapRepository.get();
 		return repository.getZoomInfoDescriptors(sourceKeyColumnName)
 				.stream()
-				.map(descriptor -> descriptor.withCustomizedWindows(customizedWindowInfoMap))
+				.filter(descriptor -> customizedWindowInfoMap.isTopLevelCustomizedWindow(descriptor.getTargetWindowId()))
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}

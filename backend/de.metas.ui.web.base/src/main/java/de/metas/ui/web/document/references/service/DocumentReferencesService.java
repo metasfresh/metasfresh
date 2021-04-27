@@ -1,22 +1,8 @@
 package de.metas.ui.web.document.references.service;
 
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Column;
-import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.ZoomInfo;
 import de.metas.document.references.related_documents.ZoomInfoFactory;
@@ -40,6 +26,17 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_Column;
+import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Properties;
 
 /*
  * #%L

@@ -22,24 +22,21 @@
 
 package de.metas.document.references.related_documents;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdWindowId;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.element.api.AdWindowId;
+
+import javax.annotation.Nullable;
 
 @Value
 public class ZoomTargetWindow
 {
 	public static ZoomTargetWindow ofAdWindowId(@NonNull final AdWindowId adWindowId)
 	{
-		final String category = null;
-		final ITranslatableString categoryDisplayName = null;
-		return new ZoomTargetWindow(adWindowId, category, categoryDisplayName);
+		return new ZoomTargetWindow(adWindowId, null, null);
 	}
 
 	public static ZoomTargetWindow ofAdWindowIdAndCategory(
@@ -48,6 +45,14 @@ public class ZoomTargetWindow
 			@NonNull final ITranslatableString categoryDisplayName)
 	{
 		return new ZoomTargetWindow(adWindowId, category.getCode(), categoryDisplayName);
+	}
+
+	public static ZoomTargetWindow ofAdWindowIdAndCategory(
+			@NonNull final AdWindowId adWindowId,
+			@NonNull final String categoryCode,
+			@NonNull final ITranslatableString categoryDisplayName)
+	{
+		return new ZoomTargetWindow(adWindowId, categoryCode, categoryDisplayName);
 	}
 
 	AdWindowId adWindowId;

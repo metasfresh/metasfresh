@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1295204142L;
+	private static final long serialVersionUID = 437427151L;
 
     /** Standard Constructor */
     public X_AD_Column (final Properties ctx, final int AD_Column_ID, @Nullable final String trxName)
@@ -213,7 +213,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setColumnSQL (final java.lang.String ColumnSQL)
+	public void setColumnSQL (final @Nullable java.lang.String ColumnSQL)
 	{
 		set_Value (COLUMNNAME_ColumnSQL, ColumnSQL);
 	}
@@ -237,7 +237,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setDefaultValue (final java.lang.String DefaultValue)
+	public void setDefaultValue (final @Nullable java.lang.String DefaultValue)
 	{
 		set_Value (COLUMNNAME_DefaultValue, DefaultValue);
 	}
@@ -249,7 +249,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -302,7 +302,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setFilterDefaultValue (final java.lang.String FilterDefaultValue)
+	public void setFilterDefaultValue (final @Nullable java.lang.String FilterDefaultValue)
 	{
 		set_Value (COLUMNNAME_FilterDefaultValue, FilterDefaultValue);
 	}
@@ -325,7 +325,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	/** NotNull = N */
 	public static final String FILTEROPERATOR_NotNull = "N";
 	@Override
-	public void setFilterOperator (final java.lang.String FilterOperator)
+	public void setFilterOperator (final @Nullable java.lang.String FilterOperator)
 	{
 		set_Value (COLUMNNAME_FilterOperator, FilterOperator);
 	}
@@ -337,7 +337,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setFormatPattern (final java.lang.String FormatPattern)
+	public void setFormatPattern (final @Nullable java.lang.String FormatPattern)
 	{
 		set_Value (COLUMNNAME_FormatPattern, FormatPattern);
 	}
@@ -349,7 +349,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setHelp (final java.lang.String Help)
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
@@ -361,7 +361,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setInfoFactoryClass (final java.lang.String InfoFactoryClass)
+	public void setInfoFactoryClass (final @Nullable java.lang.String InfoFactoryClass)
 	{
 		set_Value (COLUMNNAME_InfoFactoryClass, InfoFactoryClass);
 	}
@@ -451,6 +451,18 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public java.lang.String getIsEncrypted() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsEncrypted);
+	}
+
+	@Override
+	public void setIsExcludeFromZoomTargets (final boolean IsExcludeFromZoomTargets)
+	{
+		set_Value (COLUMNNAME_IsExcludeFromZoomTargets, IsExcludeFromZoomTargets);
+	}
+
+	@Override
+	public boolean isExcludeFromZoomTargets() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsExcludeFromZoomTargets);
 	}
 
 	@Override
@@ -598,7 +610,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setIsSyncDatabase (final java.lang.String IsSyncDatabase)
+	public void setIsSyncDatabase (final @Nullable java.lang.String IsSyncDatabase)
 	{
 		set_Value (COLUMNNAME_IsSyncDatabase, IsSyncDatabase);
 	}
@@ -646,7 +658,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setMandatoryLogic (final java.lang.String MandatoryLogic)
+	public void setMandatoryLogic (final @Nullable java.lang.String MandatoryLogic)
 	{
 		set_Value (COLUMNNAME_MandatoryLogic, MandatoryLogic);
 	}
@@ -670,7 +682,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setName (final @Nullable java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -693,7 +705,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	/** SensitivePersonal = SP */
 	public static final String PERSONALDATACATEGORY_SensitivePersonal = "SP";
 	@Override
-	public void setPersonalDataCategory (final java.lang.String PersonalDataCategory)
+	public void setPersonalDataCategory (final @Nullable java.lang.String PersonalDataCategory)
 	{
 		set_Value (COLUMNNAME_PersonalDataCategory, PersonalDataCategory);
 	}
@@ -705,7 +717,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setReadOnlyLogic (final java.lang.String ReadOnlyLogic)
+	public void setReadOnlyLogic (final @Nullable java.lang.String ReadOnlyLogic)
 	{
 		set_Value (COLUMNNAME_ReadOnlyLogic, ReadOnlyLogic);
 	}
@@ -741,7 +753,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setTechnicalNote (final java.lang.String TechnicalNote)
+	public void setTechnicalNote (final @Nullable java.lang.String TechnicalNote)
 	{
 		set_Value (COLUMNNAME_TechnicalNote, TechnicalNote);
 	}
@@ -753,7 +765,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setValueMax (final java.lang.String ValueMax)
+	public void setValueMax (final @Nullable java.lang.String ValueMax)
 	{
 		set_Value (COLUMNNAME_ValueMax, ValueMax);
 	}
@@ -765,7 +777,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setValueMin (final java.lang.String ValueMin)
+	public void setValueMin (final @Nullable java.lang.String ValueMin)
 	{
 		set_Value (COLUMNNAME_ValueMin, ValueMin);
 	}
@@ -790,7 +802,7 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	}
 
 	@Override
-	public void setVFormat (final java.lang.String VFormat)
+	public void setVFormat (final @Nullable java.lang.String VFormat)
 	{
 		set_Value (COLUMNNAME_VFormat, VFormat);
 	}
