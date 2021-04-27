@@ -3,7 +3,7 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
-import { push } from 'react-router-redux';
+import { push } from 'connected-react-router';
 
 import {
   resetPasswordRequest,

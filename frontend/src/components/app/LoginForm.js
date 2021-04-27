@@ -4,7 +4,8 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { List } from 'immutable';
 import { connect } from 'react-redux';
-import { goBack, push } from 'react-router-redux';
+// import { goBack, push } from 'react-router-redux';
+import { goBack, push } from 'connected-react-router';
 import classnames from 'classnames';
 
 import {
@@ -108,11 +109,12 @@ class LoginForm extends Component {
    * @param {*} err
    */
   checkIfAlreadyLogged(err) {
-    const { router } = this.context;
+    // const { router } = this.context;
+    const { dispatch } = this.props;
 
     return localLoginRequest().then((response) => {
       if (response.data) {
-        return router.push('/');
+        return dispatch(push('/'));
       }
 
       return Promise.reject(err);
@@ -398,10 +400,6 @@ LoginForm.propTypes = {
   token: PropTypes.string,
   redirect: PropTypes.any,
   auth: PropTypes.object,
-};
-
-LoginForm.contextTypes = {
-  router: PropTypes.object.isRequired,
 };
 
 export default connect()(LoginForm);

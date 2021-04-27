@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
 import { toInteger } from 'lodash';
+import qs from 'qs';
 
 import { getItemsByProperty, nullToEmptyStrings, deepUnfreeze } from './index';
 import { viewState, getView } from '../reducers/viewHandler';
@@ -59,21 +60,52 @@ const DLpropTypes = {
  * @typedef {object} Props Component context
  * @prop {object} DLcontextTypes
  */
-const DLmapStateToProps = (state, props) => {
+// <<<<<<< HEAD
+// const DLmapStateToProps = (state, props) => {
+//   const {
+//     page: queryPage,
+//     sort: querySort,
+//     viewId: queryViewId,
+//     isModal,
+//     defaultViewId,
+//     windowId,
+//     referenceId: queryReferenceId,
+//     refType: queryRefType,
+//     refDocumentId: queryRefDocumentId,
+//     refTabId: queryRefTabId,
+//   } = props;
+//   let master = getView(state, windowId, isModal);
+
+//   // use empty view's data. This is used in tests
+// =======
+const DLmapStateToProps = (state, { location, ...props }) => {
+  const query = qs.parse(location.search);
   const {
     page: queryPage,
     sort: querySort,
     viewId: queryViewId,
-    isModal,
-    defaultViewId,
-    windowId,
     referenceId: queryReferenceId,
     refType: queryRefType,
     refDocumentId: queryRefDocumentId,
     refTabId: queryRefTabId,
+  } = query;
+  const {
+    // page: queryPage,
+    // sort: querySort,
+    // viewId: queryViewId,
+    isModal,
+    defaultViewId,
+    windowId,
+    // referenceId: queryReferenceId,
+    // refType: queryRefType,
+    // refDocumentId: queryRefDocumentId,
+    // refTabId: queryRefTabId,
   } = props;
-  let master = getView(state, windowId, isModal);
 
+  const identifier = props.isModal ? props.defaultViewId : props.windowType;
+  let master = state.viewHandler.views[identifier];
+
+// >>>>>>> 76ce88db54... - tmp move to react-router v5
   // use empty view's data. This is used in tests
   if (!master) {
     master = viewState;

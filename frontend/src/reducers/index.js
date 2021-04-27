@@ -1,4 +1,5 @@
-import { routerReducer as routing } from 'react-router-redux';
+import { combineReducers } from 'redux';
+import { connectRouter } from 'connected-react-router';
 
 import appHandler from './appHandler';
 import listHandler from './listHandler';
@@ -11,16 +12,27 @@ import commentsPanel from './commentsPanel';
 import tables from './tables';
 import actionsHandler from './actionsHandler';
 
-export default {
-  appHandler,
-  listHandler,
-  menuHandler,
-  windowHandler,
-  viewHandler,
-  pluginsHandler,
-  filters,
-  commentsPanel,
-  tables,
-  routing,
-  actionsHandler,
-};
+export const createRootReducer = (history) =>
+  combineReducers({
+    router: connectRouter(history),
+    appHandler,
+    listHandler,
+    menuHandler,
+    windowHandler,
+    viewHandler,
+    pluginsHandler,
+    filters,
+    commentsPanel,
+    tables,
+    // routing,
+    actionsHandler,
+  });
+
+// import { combineReducers } from 'redux'
+// import { connectRouter } from 'connected-react-router'
+
+// const createRootReducer = (history) => combineReducers({
+//   router: connectRouter(history),
+//   ... // rest of your reducers
+// })
+// export default createRootReducer

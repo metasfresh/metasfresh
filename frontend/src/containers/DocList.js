@@ -1,6 +1,8 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+import qs from 'qs';
 import classnames from 'classnames';
 
 import { updateUri } from '../actions/AppActions';
@@ -19,6 +21,17 @@ const EMPTY_OBJECT = {};
  */
 class DocList extends PureComponent {
   state = {};
+
+  // shouldComponentUpdate(nextProps) {
+  //   const { query } = this.props;
+  //   const { query: nextQuery } = nextProps;
+
+  //   if (_.isEqual(query, nextQuery)) {
+  //     return false;
+  //   }
+
+  //   return true;
+  // }
 
   /**
    * getDerivedStateFromProps lifecycle - hold in the state of the component the last page
@@ -50,7 +63,15 @@ class DocList extends PureComponent {
    * @summary Update the url with query params if needed (ie add viewId, page etc)
    */
   updateUriCallback = (updatedQuery) => {
-    const { updateUri, query, pathname } = this.props;
+    // const { updateUri, query, pathname } = this.props;
+    // const { viewId } = updatedQuery;
+    // viewId && updateUri(pathname, query, updatedQuery);
+    const { updateUri, location, pathname } = this.props;
+    const query = qs.parse(location.search, {
+      ignoreQueryPrefix: true,
+    });
+
+    // updateUri(pathname, query, prop, value);
     const { viewId } = updatedQuery;
     viewId && updateUri(pathname, query, updatedQuery);
   };

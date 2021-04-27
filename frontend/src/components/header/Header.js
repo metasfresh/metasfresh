@@ -2,7 +2,7 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+import { push } from 'connected-react-router';
 import classnames from 'classnames';
 import { getPrintingOptions } from '../../api/window';
 import { deleteRequest } from '../../api';
@@ -556,6 +556,7 @@ class Header extends PureComponent {
    */
   redirect = (where) => {
     const { dispatch } = this.props;
+
     dispatch(push(where));
   };
 
@@ -970,6 +971,37 @@ Header.propTypes = {
  * @summary ToDo: Describe the method
  * @param {object} state
  */
+// const mapStateToProps = (state) => {
+//   const { master } = state.windowHandler;
+//   const { docActionElement, documentSummaryElement } = master.layout;
+//   const docSummaryData =
+//     documentSummaryElement &&
+//     master.data[documentSummaryElement.fields[0].field];
+
+//   return {
+//     inbox: state.appHandler.inbox,
+//     me: state.appHandler.me,
+//     pathname: state.routing.locationBeforeTransitions.pathname,
+//     plugins: state.pluginsHandler.files,
+//     indicator: state.windowHandler.indicator,
+//     docStatus: docActionElement,
+//     docSummaryData,
+//   };
+// };
+// =======
+// const mapStateToProps = (state) => ({
+//   inbox: state.appHandler.inbox,
+//   me: state.appHandler.me,
+//   pathname: state.router.location.pathname,
+//   plugins: state.pluginsHandler.files,
+// });
+// >>>>>>> 76ce88db54... - tmp move to react-router v5
+
+/**
+ * @method mapStateToProps
+ * @summary ToDo: Describe the method
+ * @param {object} state
+ */
 const mapStateToProps = (state) => {
   const { master } = state.windowHandler;
   const { docActionElement, documentSummaryElement } = master.layout;
@@ -980,7 +1012,7 @@ const mapStateToProps = (state) => {
   return {
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
-    pathname: state.routing.locationBeforeTransitions.pathname,
+    pathname: state.router.location.pathname,
     plugins: state.pluginsHandler.files,
     indicator: state.windowHandler.indicator,
     docStatus: docActionElement,

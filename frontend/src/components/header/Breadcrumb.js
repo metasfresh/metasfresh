@@ -2,7 +2,7 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+import { push } from 'connected-react-router';
 import { clearAllFilters } from '../../actions/FiltersActions';
 import keymap from '../../shortcuts/keymap';
 import Tooltips from '../tooltips/Tooltips';

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { clearStaticFilters } from '../../actions/FiltersActions';
 import { connect } from 'react-redux';
 import { deleteStaticFilter } from '../../api';
-import { push } from 'react-router-redux';
+import { push } from 'connected-react-router';
 
 export class FiltersStatic extends PureComponent {
   clearItemOfStaticFilters = (staticFilterId) => {

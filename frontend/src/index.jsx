@@ -8,6 +8,10 @@ import App from './containers/App';
 //   whyDidYouRender(React, { include: [/RawWidget/] });
 // }
 
+//   const {whyDidYouUpdate} = require('why-did-you-update')
+//   // whyDidYouUpdate(React);
+//   whyDidYouUpdate(React, { include: [/DocList/] });
+
 /* eslint-disable */
 console.info(`%c
     metasfresh-webui-frontend build ${COMMIT_HASH}

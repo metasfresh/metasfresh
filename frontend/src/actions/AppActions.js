@@ -1,8 +1,12 @@
 import axios from 'axios';
 import MomentTZ from 'moment-timezone';
 import numeral from 'numeral';
-import { push, replace } from 'react-router-redux';
+// <<<<<<< HEAD
+// import { push, replace } from 'react-router-redux';
 import queryString from 'query-string';
+// =======
+import { push, replace } from 'connected-react-router';
+// >>>>>>> 76ce88db54... - tmp move to react-router v5
 
 import * as types from '../constants/ActionTypes';
 import { setCurrentActiveLocale } from '../utils/locale';
@@ -77,6 +81,16 @@ function initNumeralLocales(lang, locale) {
   }
 }
 
+// TODO: This should either be some utility or return an action
+// TODO: Apparently we don't use this anymore
+// export function languageSuccess(lang) {
+//   localStorage.setItem(LOCAL_LANG, lang);
+//   Moment.locale(lang);
+
+//   axios.defaults.headers.common['Accept-Language'] = lang;
+// }
+
+// TODO: This should either be some utility or return an action
 export function logoutSuccess(auth) {
   auth.close();
   localStorage.removeItem('isLogged');
@@ -166,7 +180,8 @@ export function loginSuccess(auth) {
           if (e.response) {
             let { status } = e.response;
             if (status === 401) {
-              window.location.href = '/';
+              console.log('TOTUTAJ DO GLOWNEJ ?')
+              // window.location.href = '/';
             }
           }
         })
@@ -241,6 +256,22 @@ export function clearNotifications() {
  * @method updateUri
  * @summary Prepends viewId/page/sorting to the url
  */
+// export function updateUri(pathname, query, prop, value) {
+//   return (dispatch) => {
+//     let url = `${pathname}?`;
+
+//     // add new prop or overwrite existing
+//     query[prop] = value;
+
+//     const queryKeys = Object.keys(query);
+
+//     queryKeys.forEach((key, idx) => {
+//       url += `${key}=${query[key]}${queryKeys.length - 1 !== idx ? '&' : ''}`;
+//     });
+
+//     dispatch(replace(url));
+//   };
+// }
 export function updateUri(pathname, query, updatedQuery) {
   const fullPath = window.location.href;
 

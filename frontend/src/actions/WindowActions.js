@@ -1,6 +1,6 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
-import { push, replace } from 'react-router-redux';
+import { push, replace } from 'connected-react-router';
 import currentDevice from 'current-device';
 import { Set } from 'immutable';
 import { openInNewTab } from '../utils/index';

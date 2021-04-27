@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+import { push } from 'connected-react-router';
 import { detect } from 'detect-browser';
 
 import LoginForm from '../components/app/LoginForm';
@@ -14,9 +14,9 @@ const BROWSER = detect();
  * @extends Component
  */
 class Login extends Component {
-  constructor(props) {
-    super(props);
-  }
+  // constructor(props) {
+  //   super(props);
+  // }
   /**
    * @method UNSAFE_componentWillMount
    * @summary ToDo: Describe the method.
@@ -24,6 +24,7 @@ class Login extends Component {
   UNSAFE_componentWillMount() {
     const { logged, dispatch } = this.props;
     if (logged) {
+      console.log('Login component redirect')
       dispatch(push('/'));
     }
   }
@@ -79,7 +80,7 @@ class Login extends Component {
  */
 Login.propTypes = {
   dispatch: PropTypes.func.isRequired,
-  logged: PropTypes.bool,
+  // logged: PropTypes.bool,
   redirect: PropTypes.string,
   splat: PropTypes.string,
   token: PropTypes.string,

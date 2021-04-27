@@ -1,6 +1,8 @@
-import React from 'react';
-import { IndexRoute, NoMatch, Route } from 'react-router';
-import { push } from 'react-router-redux';
+import React, { Component } from 'react';
+import { push } from 'connected-react-router';
+import { Route, Switch, Redirect, BrowserRouter, Link, withRouter, } from 'react-router-dom';
+import qs from 'qs';
+import _ from 'lodash';
 
 import { loginSuccess, logoutSuccess } from './actions/AppActions';
 import {
@@ -13,6 +15,7 @@ import { clearNotifications, enableTutorial } from './actions/AppActions';
 import { createWindow } from './actions/WindowActions';
 import { setBreadcrumb } from './actions/MenuActions';
 import Translation from './components/Translation';
+import BlankPage from './components/BlankPage';
 import Board from './containers/Board.js';
 import Dashboard from './containers/Dashboard.js';
 import Calendar from './containers/Calendar';
@@ -26,217 +29,613 @@ import PaypalReservationConfirm from './containers/PaypalReservationConfirm.js';
 
 let hasTutorial = false;
 
-const DocListRoute = (nextState) => (
-  <DocList
-    query={nextState.location.query}
-    windowId={nextState.params.windowId}
-  />
-);
-const BoardRoute = (nextState) => (
-  <Board query={nextState.location.query} boardId={nextState.params.boardId} />
-);
+// const DocListRoute = (nextState) => (
+//   <DocList
+//     query={nextState.location.query}
+//     windowId={nextState.params.windowId}
+//   />
+// );
+// const BoardRoute = (nextState) => (
+//   <Board query={nextState.location.query} boardId={nextState.params.boardId} />
+// );
 
-export const getRoutes = (store, auth, plugins) => {
-  const authRequired = (nextState, replace, callback) => {
-    hasTutorial =
-      nextState &&
-      nextState.location &&
-      nextState.location.query &&
-      typeof nextState.location.query.tutorial !== 'undefined';
+class LoginRoute extends Component {
+  shouldComponentUpdate(nextProps) {
+    const { location } = this.props;
+    const { location: nextLocation } = nextProps;
 
-    if (!localStorage.isLogged) {
-      localLoginRequest().then((resp) => {
-        if (resp.data) {
-          store.dispatch(loginSuccess(auth));
-          callback(null, nextState.location.pathname);
-        } else {
-          //redirect tells that there should be
-          //step back in history after login
-          store.dispatch(push('/login?redirect=true'));
-        }
-      });
-    } else {
-      if (hasTutorial) {
-        store.dispatch(enableTutorial());
-      }
-
-      store.dispatch(clearNotifications());
-      store.dispatch(loginSuccess(auth));
-
-      callback();
+    if (_.isEqual(location, nextLocation)) {
+      return false;
     }
-  };
+    return true;
+  }
 
+  render() {
+    const { location, auth } = this.props;
+    const query = qs.parse(location.search, { ignoreQueryPrefix: true });
+
+    const logged = localStorage.isLogged;
+
+    console.log('LoginRoute params: ', location, query)
+
+    return <Login redirect={query.redirect} {...{ auth }} logged={logged} />;
+  }
+}
+
+// class LogoutRoute extends Component {
+//   constructor(props) {
+//     // super(props);
+
+//     // this.state = {
+//     //   loggedIn: true,
+//     // };
+
+//     console.log('LOGOUTROUTE')
+
+//     logoutRequest()
+//       .then(() => logoutSuccess(auth))
+//       .then(() => {
+//         console.log('redirecting to login')
+//         dispatch(setBreadcrumb([]));
+//         dispatch(push('/login'));
+//         // this.setState({ loggedIn: false })
+//       });
+//   }
+
+//   render() {
+//     // const { component: Component, ...rest } = this.props;
+//     // const { loggedIn } = this.state;
+
+//     // return (
+//     //   <Route
+//     //     {...rest}
+//     //     render={(props) => {
+//     //       if (loggedIn) {
+//     //         return <Component {...props} />;
+//     //       } else {
+//     //         //redirect tells that there should be
+//     //         //step back in history after login
+//     //         return <Redirect to="/login" />;
+//     //       }
+//     //     }}
+//     //   />
+//     // );
+//     // if (loggedIn) {
+//       return null;
+//     // }
+
+//     // return <Redirect to="/login" />;
+//   }
+// }
+
+function DocListRoute({ location, match }) {
+  const query = qs.parse(location.search);
+
+  return <DocList query={query} windowId={match.params.windowId} />;
+}
+function BoardRoute({ location, match }) {
+  const query = qs.parse(location.search);
+
+  return <Board query={query} boardId={match.params.boardId} />;
+}
+
+// TODO: PASS PARAMS
+class MasterWindowRoute extends Component {
+  constructor(props) {
+    super(props);
+
+    const {
+      match: { params },
+      dispatch,
+    } = props;
+
+    dispatch(createWindow(params.windowId, params.docId));
+  }
+
+  render() {
+    return <MasterWindow {...this.props} params={this.props.match.params} />;
+  }
+}
+
+class Index extends Component {
+  shouldComponentUpdate(nextProps) {
+    const { location } = this.props;
+    const { location: nextLocation } = nextProps;
+
+    if (_.isEqual(location, nextLocation)) {
+      return false;
+    }
+    return true;
+  }
+
+  render() {
+  console.log('render index')
+    return this.props.childRoutes;
+  }
+}
+
+const WrappedIndex = withRouter(Index);
+
+// export const getRoutes = (store, auth, plugins) => {
+export default class Routes extends Component {
+  // TODO
+  // const authRequired = (nextState, replace, callback) => {
+  //   hasTutorial =
+  //     nextState &&
+  //     nextState.location &&
+  //     nextState.location.query &&
+  //     typeof nextState.location.query.tutorial !== 'undefined';
+
+  //   if (!localStorage.isLogged) {
+  //     localLoginRequest().then((resp) => {
+  //       if (resp.data) {
+  //         dispatch(loginSuccess(auth));
+  //         callback(null, nextState.location.pathname);
+  //       } else {
+  //         //redirect tells that there should be
+  //         //step back in history after login
+  //         dispatch(push('/login?redirect=true'));
+  //       }
+  //     });
+  //   } else {
+  //     if (hasTutorial) {
+  //       dispatch(enableTutorial());
+  //     }
+
+  //     dispatch(clearNotifications());
+  //     dispatch(loginSuccess(auth));
+
+  //     callback();
+  //   }
+  // };
+
+  // MASTER
   /**
    * @method tokenAuthentication
    * @summary - method executed when we authenticate directly by using a `token` without the need to supply a `username` and a `password`
    * @param {object} - tokenId prop given as param to the /token path i.e  /token/xxxxxxx   (`xxxxxxx` will be the value of the tokenId )
    */
-  const tokenAuthentication = ({ params: { tokenId } }) => {
-    loginWithToken(tokenId)
-      .then(() => {
-        store.dispatch(push('/'));
-      })
-      .catch(() => {
-        store.dispatch(push('/login?redirect=true'));
-      });
-  };
+  // const tokenAuthentication = ({ params: { tokenId } }) => {
+  //   loginWithToken(tokenId)
+  //     .then(() => {
+  //       dispatch(push('/'));
+  //     })
+  //     .catch(() => {
+  //       dispatch(push('/login?redirect=true'));
+  //     });
+  // };
+  //
 
-  const onResetEnter = (nextState, replace, callback) => {
-    const token = nextState.location.query.token;
+  // TODO
+  // const onResetEnter = (nextState, replace, callback) => {
+  //   const token = nextState.location.query.token;
 
-    if (!token) {
-      callback(null, nextState.location.pathname);
-    }
+  //   if (!token) {
+  //     callback(null, nextState.location.pathname);
+  //   }
 
-    return getResetPasswordInfo(token).then(() => {
-      return Translation.getMessages().then(() => {
-        callback(null, nextState.location.pathname);
-      });
-    });
-  };
+  //   return getResetPasswordInfo(token).then(() => {
+  //     return Translation.getMessages().then(() => {
+  //       callback(null, nextState.location.pathname);
+  //     });
+  //   });
+  // };
 
-  const logout = () => {
-    logoutRequest()
-      .then(() => logoutSuccess(auth))
-      .then(() => {
-        store.dispatch(setBreadcrumb([]));
-        store.dispatch(push('/login'));
-      });
-  };
+  // MASTER
+  // const logout = () => {
+  //   logoutRequest()
+  //     .then(() => logoutSuccess(auth))
+  //     .then(() => {
+  //       dispatch(setBreadcrumb([]));
+  //       dispatch(push('/login'));
+  //     });
+  // };
+  //
 
-  function setPluginBreadcrumbHandlers(routesArray, currentBreadcrumb) {
-    routesArray.forEach((route) => {
-      const routeBreadcrumb = [
-        ...currentBreadcrumb,
-        {
-          caption: route.breadcrumb.caption,
-          type: route.breadcrumb.type,
-        },
-      ];
+  // function setPluginBreadcrumbHandlers(routesArray, currentBreadcrumb) {
+  //   routesArray.forEach((route) => {
+  //     const routeBreadcrumb = [
+  //       ...currentBreadcrumb,
+  //       {
+  //         caption: route.breadcrumb.caption,
+  //         type: route.breadcrumb.type,
+  //       },
+  //     ];
 
-      route.onEnter = () => store.dispatch(setBreadcrumb(routeBreadcrumb));
+  //     route.onEnter = () => dispatch(setBreadcrumb(routeBreadcrumb));
 
-      if (route.childRoutes) {
-        setPluginBreadcrumbHandlers(route.childRoutes, routeBreadcrumb);
-      }
-    });
-  }
+  //     if (route.childRoutes) {
+  //       setPluginBreadcrumbHandlers(route.childRoutes, routeBreadcrumb);
+  //     }
+  //   });
+  // }
 
-  const getPluginsRoutes = (plugins) => {
-    if (plugins.length) {
-      const routes = plugins.map((plugin) => {
-        if (plugin.routes && plugin.routes.length) {
-          const pluginRoutes = [...plugin.routes];
-          const ParentComponent = pluginRoutes[0].component;
+  // const getPluginsRoutes = (plugins) => {
+  //   if (plugins.length) {
+  //     const routes = plugins.map((plugin) => {
+  //       if (plugin.routes && plugin.routes.length) {
+  //         const pluginRoutes = [...plugin.routes];
+  //         const ParentComponent = pluginRoutes[0].component;
 
-          // wrap main plugin component in a HOC that'll render it
-          // inside the app using a Container element
-          if (ParentComponent.name !== 'WrappedPlugin') {
-            const wrapped = pluginWrapper(PluginContainer, ParentComponent);
+  //         // wrap main plugin component in a HOC that'll render it
+  //         // inside the app using a Container element
+  //         if (ParentComponent.name !== 'WrappedPlugin') {
+  //           const wrapped = pluginWrapper(PluginContainer, ParentComponent);
 
-            pluginRoutes[0].component = wrapped;
+  //           pluginRoutes[0].component = wrapped;
 
-            if (pluginRoutes[0].breadcrumb) {
-              setPluginBreadcrumbHandlers(pluginRoutes, []);
-            }
-          }
+  //           if (pluginRoutes[0].breadcrumb) {
+  //             setPluginBreadcrumbHandlers(pluginRoutes, []);
+  //           }
+  //         }
 
-          return pluginRoutes[0];
+  //         return pluginRoutes[0];
+  //       }
+
+  //       return [];
+  //     });
+
+  //     return routes;
+  //   }
+
+  //   return [];
+  // };
+  // const pluginRoutes = getPluginsRoutes(plugins);
+
+  //MASTER
+  //   const childRoutes = [
+  //     {
+  //       path: '/window/:windowId',
+  //       // eslint-disable-next-line react/display-name
+  //       component: DocListRoute,
+  //     },
+  //     {
+  //       path: '/window/:windowType/:docId',
+  //       component: MasterWindow,
+  //       onEnter: ({ params }) =>
+  //         dispatch(
+  //           createWindow({
+  //             windowId: params.windowType,
+  //             docId: params.docId,
+  //           })
+  //         ),
+  //     },
+  //     {
+  //       path: '/sitemap',
+  //       component: NavigationTree,
+  //     },
+  //     {
+  //       path: '/board/:boardId',
+  //       // eslint-disable-next-line react/display-name
+  //       component: BoardRoute,
+  //     },
+  //     {
+  //       path: '/inbox',
+  //       component: InboxAll,
+  //     },
+  //     {
+  //       path: 'logout',
+  //       onEnter: logout,
+  //     },
+  //     ...pluginRoutes,
+  //   ];
+
+  //   return (
+  //     <Route path="/">
+  //       <Route onEnter={authRequired} childRoutes={childRoutes}>
+  //         <IndexRoute component={Dashboard} />
+  //       </Route>
+  //       <Route path="/token/:tokenId" onEnter={tokenAuthentication} />
+  //       <Route
+  //         path="/login"
+  //         component={({ location }) => (
+  //           <Login
+  //             redirect={location.query.redirect}
+  //             logged={localStorage.getItem('isLogged') === 'true'}
+  //             {...{ auth }}
+  //           />
+  //         )}
+  //       />
+  //       <Route
+  //         path="/forgottenPassword"
+  //         component={({ location }) => (
+  //           <Login splat={location.pathname.replace('/', '')} {...{ auth }} />
+  //         )}
+  //       />
+  //       <Route
+  //         path="/resetPassword"
+  //         onEnter={onResetEnter}
+  //         component={({ location }) => (
+  //           <Login
+  //             splat={location.pathname.replace('/', '')}
+  //             token={location.query.token}
+  //             {...{ auth }}
+  //           />
+  //         )}
+  //       />
+  //       <Route
+  //         path="/paypal_confirm"
+  //         component={({ location }) => (
+  //           <PaypalReservationConfirm
+  //             token={location.query.token}
+  //             {...{ auth }}
+  //           />
+  //         )}
+  //       />
+  //       <Route path="/calendar" component={Calendar} />
+  //       <Route path="*" component={NoMatch} />
+  //     </Route>
+  //   );
+  // };
+
+
+  // const PrivateRoute = ({ component: Component, ...rest }) => (
+  //   <Route
+  //     {...rest}
+  //     render={(props) => {
+  //       const { location } = props;
+  //       const query = qs.parse(location.search, { ignoreQueryPrefix: true });
+
+  //       // console.log('COMPONENT: ', localStorage.isLogged)
+
+  //       hasTutorial = query && typeof query.tutorial !== 'undefined';
+
+  //       if (!localStorage.isLogged) {
+  //         // console.log('1');
+  //         localLoginRequest().then((resp) => {
+  //           // console.log('2')
+  //           if (resp.data) {
+  //             // console.log('3: ', resp.data)
+  //             dispatch(loginSuccess(auth));
+
+  //             return <Component {...props} />;
+  //           } else {
+  //             // console.log('4');
+  //             //redirect tells that there should be
+  //             //step back in history after login
+  //             dispatch(push('/login?redirect=true'))
+  //           }
+  //         });
+  //       } else {
+  //         // console.log('5')
+  //         if (hasTutorial) {
+  //           dispatch(enableTutorial());
+  //         }
+
+  //         dispatch(clearNotifications());
+  //         dispatch(loginSuccess(auth));
+
+  //         return <Component {...props} />;
+  //       }
+  //     }}
+  //   />
+  // );
+
+  // const childRoutes = (
+  //   <Switch>
+  //     <PrivateRoute exact path="/" component={Dashboard} />
+  //     <PrivateRoute
+  //       path="/window/:windowId/:docId"
+  //       component={MasterWindowRoute}
+  //     />
+  //     <PrivateRoute path="/window/:windowId" component={DocListRoute} />
+  //     <PrivateRoute path="/sitemap" component={NavigationTree} />
+  //     <PrivateRoute path="/board/:boardId" component={BoardRoute} />
+  //     <PrivateRoute path="/inbox" component={InboxAll} />
+  //     <Route
+  //       path="/logout"
+  //       render={() => {
+  //         // console.log('BLA: ', localStorage.isLogged)
+  //         if (localStorage.isLogged) {
+  //           logoutRequest()
+  //             .then(() => logoutSuccess(auth))
+  //             .then(() => {
+  //               console.log('store dispatch');
+  //               dispatch(push('/login'));
+  //             });
+
+  //           return null;
+  //         }
+
+  //         return <Redirect to="/login" />;
+  //       }}
+  //     />
+  //     {pluginRoutes}
+  //     <Route path="*" component={BlankPage} />
+  //   </Switch>
+  // );
+
+  // function LogoutPath() {
+  //   console.log('FOOO LOGOUT')
+  //   logoutRequest()
+  //     .then(() => logoutSuccess(auth))
+  //     .then(() => {
+  //       dispatch(setBreadcrumb([]));
+  //       dispatch(push('/login'));
+  //     });
+
+  //   return (
+  //     <Route
+  //       render={() => (
+  //         <Redirect
+  //           to={{
+  //             pathname: '/login',
+  //           }}
+  //         />
+  //       )}
+  //     />
+  //   );
+  // }
+
+//   return (
+//     <Switch>
+//       <Route
+//         path="/login"
+//         component={({ location }) => {
+//           // console.log('LOGIN !!')
+//           const query = qs.parse(location.search, { ignoreQueryPrefix: true });
+//           return (
+//             <Login
+//               redirect={query.redirect}
+//               logged={localStorage.getItem('isLogged') === 'true'}
+//               {...{ auth }}
+//             />
+//           );
+//         }}
+//       />
+//       <Route
+//         path="/forgottenPassword"
+//         component={({ location }) => (
+//           <Login splat={location.pathname.replace('/', '')} {...{ auth }} />
+//         )}
+//       />
+//       <Route
+//         path="/resetPassword"
+//         onEnter={onResetEnter}
+//         component={({ location }) => {
+//           const query = qs.parse(location.search, { ignoreQueryPrefix: true });
+//           return (
+//             <Login
+//               splat={location.pathname.replace('/', '')}
+//               token={query.token}
+//               {...{ auth }}
+//             />
+//           );
+//         }}
+//       />
+//       <Route
+//         path="/paypal_confirm"
+//         component={({ location }) => {
+//           const query = qs.parse(location.search, { ignoreQueryPrefix: true });
+//           return <PaypalReservationConfirm token={query.token} {...{ auth }} />;
+//         }}
+//       />
+//       <Route path="/calendar" component={Calendar} />
+//       <Route path="/" component={Index} />
+//       <Route path="*" component={BlankPage} />
+//     </Switch>
+//   );
+  render() {
+    const { dispatch, auth } = this.props;
+
+    const childRoutes = (
+      <>
+        <Switch>
+          <Route exact path="/" component={Dashboard} />
+          <Route path="/window/:windowId/:docId" component={MasterWindowRoute} />
+          <Route path="/window/:windowId" component={DocListRoute} />
+          <Route path="/sitemap" component={NavigationTree} />
+          <Route path="/board/:boardId" component={BoardRoute} />
+          <Route path="/inbox" component={InboxAll} />
+
+          <Route
+            path="/logout"
+            render={() => {
+              console.log('logout path: ', localStorage.isLogged)
+              if (localStorage.isLogged) {
+                logoutRequest()
+                  .then(() => logoutSuccess(auth))
+                  .then(() => {
+                    console.log('store dispatch');
+                    // dispatch(push('/login'));
+                  });
+
+                return null;
+              }
+
+              // return <Redirect to="/login" />;
+            }}
+          />
+        </Switch>
+      </>
+    );
+
+    class PrivateRoute extends Component {
+      shouldComponentUpdate(nextProps) {
+        const { location } = this.props;
+        const { location: nextLocation } = nextProps;
+
+        if (_.isEqual(location, nextLocation)) {
+          return false;
         }
+        return true;
+      }
 
-        return [];
-      });
+      render() {
+        const loggedIn = localStorage.isLogged;
+        // const { dispatch, auth } = this.props;
+      // const authRequired = (nextState, replace, callback) => {
+      //   hasTutorial =
+      //     nextState &&
+      //     nextState.location &&
+      //     nextState.location.query &&
+      //     typeof nextState.location.query.tutorial !== 'undefined';
+        console.log('PrivateRoute');
 
-      return routes;
+        if (!localStorage.isLogged) {
+          console.log('notlogged')
+          localLoginRequest().then((resp) => {
+            console.log('logindata: ', resp)
+            if (resp.data) {
+              dispatch(loginSuccess(auth));
+              // callback(null, nextState.location.pathname);
+            } else {
+              console.log('nie ma logindata ')
+              //redirect tells that there should be
+              //step back in history after login
+              // dispatch(push('/login?redirect=true'));
+            }
+          });
+        } else {
+          // if (hasTutorial) {
+          //   dispatch(enableTutorial());
+          // }
+          console.log('PrivateRoute logged: ', auth)
+
+          dispatch(clearNotifications());
+          dispatch(loginSuccess(auth));
+
+          // callback();
+        }
+      // };
+
+        return (
+          <Route
+            {...this.props}
+            render={() =>
+              loggedIn ? (
+                <WrappedIndex childRoutes={childRoutes} />
+              ) : (
+                <Redirect
+                  to={{
+                    pathname: '/login',
+                  }}
+                />
+              )
+            }
+          />
+        );
+      }
     }
 
-    return [];
-  };
+    const WrappedLoginRoute = withRouter(LoginRoute);
 
-  const pluginRoutes = getPluginsRoutes(plugins);
+    // const state = store.getState();
+    const loggedIn = localStorage.isLogged;
 
-  const childRoutes = [
-    {
-      path: '/window/:windowId',
-      // eslint-disable-next-line react/display-name
-      component: DocListRoute,
-    },
-    {
-      path: '/window/:windowType/:docId',
-      component: MasterWindow,
-      onEnter: ({ params }) =>
-        store.dispatch(
-          createWindow({
-            windowId: params.windowType,
-            docId: params.docId,
-          })
-        ),
-    },
-    {
-      path: '/sitemap',
-      component: NavigationTree,
-    },
-    {
-      path: '/board/:boardId',
-      // eslint-disable-next-line react/display-name
-      component: BoardRoute,
-    },
-    {
-      path: '/inbox',
-      component: InboxAll,
-    },
-    {
-      path: 'logout',
-      onEnter: logout,
-    },
-    ...pluginRoutes,
-  ];
+    console.log('routes render loggedIN: ', loggedIn)
 
-  return (
-    <Route path="/">
-      <Route onEnter={authRequired} childRoutes={childRoutes}>
-        <IndexRoute component={Dashboard} />
-      </Route>
-      <Route path="/token/:tokenId" onEnter={tokenAuthentication} />
-      <Route
-        path="/login"
-        component={({ location }) => (
-          <Login
-            redirect={location.query.redirect}
-            logged={localStorage.getItem('isLogged') === 'true'}
-            {...{ auth }}
-          />
-        )}
-      />
-      <Route
-        path="/forgottenPassword"
-        component={({ location }) => (
-          <Login splat={location.pathname.replace('/', '')} {...{ auth }} />
-        )}
-      />
-      <Route
-        path="/resetPassword"
-        onEnter={onResetEnter}
-        component={({ location }) => (
-          <Login
-            splat={location.pathname.replace('/', '')}
-            token={location.query.token}
-            {...{ auth }}
-          />
-        )}
-      />
-      <Route
-        path="/paypal_confirm"
-        component={({ location }) => (
-          <PaypalReservationConfirm
-            token={location.query.token}
-            {...{ auth }}
-          />
-        )}
-      />
-      <Route path="/calendar" component={Calendar} />
-      <Route path="*" component={NoMatch} />
-    </Route>
-  );
-};
+    return (
+      <BrowserRouter>
+        <>
+          <Switch>
+            <Route exact path="/login">
+              {loggedIn ? <Redirect to="/" /> : <WrappedLoginRoute auth={auth} />}
+            </Route>
+            <PrivateRoute path="/" />
+          </Switch>
+        </>
+      </BrowserRouter>
+    );
+  }
+}

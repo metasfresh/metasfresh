@@ -2,9 +2,9 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
-import { withRouter } from 'react-router';
+import { withRouter } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+import { push } from 'connected-react-router';
 import { get } from 'lodash';
 
 import {
@@ -153,7 +153,7 @@ class Inbox extends Component {
     return (
       <div
         className="js-inbox-wrapper js-not-unselect"
-        onKeyDown={(e) => this.handleKeyDown(e)}
+        onKeyDown={this.handleKeyDown}
       >
         {(all || open) && (
           <div className={all ? 'inbox-all ' : 'inbox'}>
@@ -248,9 +248,9 @@ Inbox.propTypes = {
 Inbox.defaultProps = {};
 
 const routerInbox = withRouter(
-  connect((state, props) => ({
+  connect((state, { location }) => ({
     modalVisible: state.windowHandler.modal.visible,
-    location: props.router.location,
+    location,
   }))(Inbox)
 );
 

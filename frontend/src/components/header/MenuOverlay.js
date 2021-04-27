@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+
 import { debounce } from 'lodash';
+import { push } from 'connected-react-router';
 
 import {
   breadcrumbRequest,
