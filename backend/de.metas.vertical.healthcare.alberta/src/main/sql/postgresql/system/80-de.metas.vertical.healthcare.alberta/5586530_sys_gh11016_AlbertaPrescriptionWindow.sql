@@ -6326,3 +6326,33 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2021-04-27 10:14:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=583813
 ;
 
+-- 2021-04-27T10:00:19.852Z
+-- URL zum Konzept
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=573636
+;
+
+-- 2021-04-27T10:00:20.056Z
+-- URL zum Konzept
+DELETE FROM AD_Column WHERE AD_Column_ID=573636
+;
+
+-- 2021-04-27T10:00:25.942Z
+-- URL zum Konzept
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=573637
+;
+
+-- 2021-04-27T10:00:26.142Z
+-- URL zum Konzept
+DELETE FROM AD_Column WHERE AD_Column_ID=573637
+;
+
+-- 2021-04-27T10:09:00.796Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=10, FieldLength=255,Updated=TO_TIMESTAMP('2021-04-27 13:09:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=573587
+;
+
+-- 2021-04-27T10:09:10.460Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('alberta_prescriptionrequest_line','ArticleUnit','VARCHAR(255)',null,null)
+;
+
