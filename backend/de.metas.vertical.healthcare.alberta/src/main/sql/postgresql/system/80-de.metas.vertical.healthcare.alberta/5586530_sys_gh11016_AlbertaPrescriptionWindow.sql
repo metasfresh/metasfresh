@@ -6356,3 +6356,17 @@ UPDATE AD_Column SET AD_Reference_ID=10, FieldLength=255,Updated=TO_TIMESTAMP('2
 INSERT INTO t_alter_column values('alberta_prescriptionrequest_line','ArticleUnit','VARCHAR(255)',null,null)
 ;
 
+-- 2021-04-27T11:34:24.725Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=541280, FieldLength=3,Updated=TO_TIMESTAMP('2021-04-27 14:34:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=573587
+;
+
+-- 2021-04-27T11:36:02.598Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('alberta_prescriptionrequest_line','ArticleUnit','VARCHAR(3)',null,null)
+;
+
+-- 2021-04-27T11:39:37.955Z
+-- URL zum Konzept
+UPDATE AD_Menu SET IsCreateNew='N',Updated=TO_TIMESTAMP('2021-04-27 14:39:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541703
+;
