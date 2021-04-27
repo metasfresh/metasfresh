@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.shopware6.api.model.customer;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
@@ -35,6 +36,7 @@ import lombok.Value;
 public class JsonCustomerGroup
 {
 	@NonNull
+	@JsonProperty("name")
 	String name;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

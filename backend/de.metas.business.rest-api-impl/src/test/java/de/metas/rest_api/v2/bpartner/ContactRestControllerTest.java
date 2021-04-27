@@ -41,6 +41,9 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.TranslatableStrings;
@@ -51,6 +54,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -67,7 +71,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -75,8 +78,8 @@ import java.util.Optional;
 
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_ORG_ID;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
+import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID_NEW;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_USER_ID;
-import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_USER_VALUE;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.C_BPARTNER_ID;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.C_BP_GROUP_ID;
@@ -123,6 +126,12 @@ class ContactRestControllerTest
 
 		recordChangeLogRepository = new MockLogEntriesRepository();
 
+		final ExternalReferenceRepository externalReferenceRepository =
+				new ExternalReferenceRepository(Services.get(IQueryBL.class), new ExternalSystems(), new ExternalReferenceTypes());
+
+		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
+				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
+
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(recordChangeLogRepository);
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
@@ -131,7 +140,7 @@ class ContactRestControllerTest
 				new BPGroupRepository(),
 				new GreetingRepository(),
 				new CurrencyRepository(),
-				Mockito.mock(ExternalReferenceRestControllerService.class));
+				externalReferenceRestControllerService);
 
 		contactRestController = new ContactRestController(
 				new BPartnerEndpointService(jsonServiceFactory),
@@ -217,7 +226,7 @@ class ContactRestControllerTest
 	void retrieveContact_ext()
 	{
 		// invoke the method under test
-		final ResponseEntity<JsonResponseContact> result = contactRestController.retrieveContact("ext-" + AD_USER_EXTERNAL_ID);
+		final ResponseEntity<JsonResponseContact> result = contactRestController.retrieveContact("ext-" + "Other" + "-" + AD_USER_EXTERNAL_ID);
 
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
@@ -268,18 +277,6 @@ class ContactRestControllerTest
 	}
 
 	@Test
-	void retrieveContact_val()
-	{
-		// invoke the method under test
-		final ResponseEntity<JsonResponseContact> result = contactRestController.retrieveContact("val-" + "contactRecord.value");
-
-		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final JsonResponseContact resultBody = result.getBody();
-
-		expect(resultBody).toMatchSnapshot();
-	}
-
-	@Test
 	void createOrUpdateContact_create()
 	{
 		final JsonRequestContact jsonContact = new JsonRequestContact();
@@ -287,7 +284,7 @@ class ContactRestControllerTest
 		jsonContact.setCode("jsonContact.code");
 		jsonContact.setMetasfreshBPartnerId(JsonMetasfreshId.of(C_BPARTNER_ID));
 
-		final String contactIdentifier = "ext-externalId-1";
+		final String contactIdentifier = "ext-Other-" + AD_USER_EXTERNAL_ID_NEW;
 
 		final JsonRequestContactUpsert upsertRequest = JsonRequestContactUpsert.builder()
 				.syncAdvise(SyncAdvise.builder().ifExists(IfExists.UPDATE_MERGE).build())
@@ -322,14 +319,7 @@ class ContactRestControllerTest
 	@Test
 	void createOrUpdateContact_update_extContactIdentifier()
 	{
-		final BPartnerContact updateContact = perform_createOrUpdateContact_update("ext-" + AD_USER_EXTERNAL_ID);
-		expect(updateContact).toMatchSnapshot();
-	}
-
-	@Test
-	void createOrUpdateContact_update_valContactIdentifier()
-	{
-		final BPartnerContact updateContact = perform_createOrUpdateContact_update("val-" + AD_USER_VALUE);
+		final BPartnerContact updateContact = perform_createOrUpdateContact_update("ext-" + "Other" + "-" + AD_USER_EXTERNAL_ID);
 		expect(updateContact).toMatchSnapshot();
 	}
 
@@ -367,7 +357,6 @@ class ContactRestControllerTest
 		assertThat(resultBody.getResponseItems().get(0).getIdentifier()).isEqualTo(contactIdentifier);
 
 		final JsonMetasfreshId updatedMetasfreshId = resultBody.getResponseItems().get(0).getMetasfreshId();
-		assertThat(updatedMetasfreshId.getValue()).isEqualTo(AD_USER_ID);
 
 		final BPartnerContactId updatedContactId = BPartnerContactId.ofRepoId(C_BPARTNER_ID, updatedMetasfreshId.getValue());
 

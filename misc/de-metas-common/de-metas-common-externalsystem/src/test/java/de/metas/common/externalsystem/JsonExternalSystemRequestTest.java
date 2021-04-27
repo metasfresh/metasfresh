@@ -24,13 +24,14 @@ package de.metas.common.externalsystem;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class JsonExternalSystemRequestTest
 {
@@ -42,6 +43,7 @@ class JsonExternalSystemRequestTest
 		final String sw6ConfigMappings = getExternalSystemShopware6ConfigMappings();
 
 		final JsonExternalSystemRequest requestDeserialized = JsonExternalSystemRequest.builder().externalSystemName(JsonExternalSystemName.of("externalSystem"))
+				.externalSystemConfigId(JsonMetasfreshId.of(1))
 				.orgCode("orgCode")
 				.command("command")
 				.parameter("parameterName1", "parameterValue1")
