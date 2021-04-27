@@ -192,7 +192,7 @@ public class ShipmentScheduleEnqueuer
 			workpackagesProcessedWaiter = WorkpackagesProcessedWaiter.NOOP;
 		}
 		final Result result = new Result(workpackagesProcessedWaiter);
-		
+
 		while (shipmentSchedules.hasNext())
 		{
 			final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedules.next();
@@ -262,8 +262,13 @@ public class ShipmentScheduleEnqueuer
 			@NonNull final IWorkPackageBuilder workpackageBuilder,
 			@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
-		final String advisedShipmentDocumentNo = workPackageParameters
-				.getAdvisedShipmentDocumentNos()
+		final ImmutableMap<ShipmentScheduleId, String> advisedShipmentDocumentNos = workPackageParameters.getAdvisedShipmentDocumentNos();
+		if (advisedShipmentDocumentNos == null)
+		{
+			return;
+		}
+
+		final String advisedShipmentDocumentNo = advisedShipmentDocumentNos
 				.get(shipmentScheduleId);
 		if (EmptyUtil.isNotBlank(advisedShipmentDocumentNo))
 		{
@@ -340,7 +345,7 @@ public class ShipmentScheduleEnqueuer
 	{
 		@Getter
 		private int skippedPackagesCount;
-		
+
 		private final List<QueueWorkPackageId> enqueuedWorkpackageIds = new ArrayList<>();
 
 		private final WorkpackagesProcessedWaiter workpackagesProcessedWaiter;
