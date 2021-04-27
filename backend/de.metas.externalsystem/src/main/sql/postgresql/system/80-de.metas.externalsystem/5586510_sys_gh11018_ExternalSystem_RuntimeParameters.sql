@@ -8,9 +8,14 @@ INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Tabl
 INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Table_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Table_ID=541627 AND NOT EXISTS (SELECT 1 FROM AD_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Table_ID=t.AD_Table_ID)
 ;
 
--- 2021-04-26T12:59:23.288Z
+-- 2021-04-26T12:37:12.012Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER SEQUENCE EXTERNALSYSTEM_RUNTIMEPARAMETER_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 RESTART 1000000
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,555377,TO_TIMESTAMP('2021-04-26 15:37:11','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table ExternalSystem_RuntimeParameters',1,'Y','N','Y','Y','ExternalSystem_RuntimeParameters','N',1000000,TO_TIMESTAMP('2021-04-26 15:37:11','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-04-26T12:37:12.036Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+CREATE SEQUENCE EXTERNALSYSTEM_RUNTIMEPARAMETERS_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1000000
 ;
 
 -- 2021-04-26T12:59:34.711Z
