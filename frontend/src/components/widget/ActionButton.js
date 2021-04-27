@@ -407,5 +407,7 @@ const mapStateToProps = ({ windowHandler, appHandler }) => ({
 
 export default connect(
   mapStateToProps,
-  { fetchTopActions }
+  { fetchTopActions },
+  null,
+  { forwardRef: true }
 )(ActionButton);

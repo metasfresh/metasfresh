@@ -4,6 +4,8 @@ import { createCachedSelector } from 're-reselect';
 import * as types from '../constants/ActionTypes';
 import { deepUnfreeze } from '../utils';
 
+const EMPTY_OBJECT = {};
+
 export const initialFiltersBranchState = {};
 export const initialFiltersLeafState = {
   widgetShown: false,
@@ -19,7 +21,7 @@ export const initialFiltersLeafState = {
 export function getFilterFromState(state, filterId) {
   return state.filters && state.filters[filterId]
     ? state.filters[filterId]
-    : null;
+    : EMPTY_OBJECT;
 }
 
 /**

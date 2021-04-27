@@ -11,17 +11,20 @@ import React, { PureComponent, Fragment } from 'react';
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import SectionGroup from '../SectionGroup';
+import counterpart from 'counterpart';
+
+import { deleteRequest } from '../../api';
 import { updateDataValidStatus } from '../../actions/WindowActions';
 import {
   getInlineTabLayoutAndData,
   setInlineTabItemProp,
 } from '../../actions/InlineTabActions';
-import { fieldValueToString } from '../../utils/tableHelpers';
-import { deleteRequest } from '../../api';
-import Prompt from '../app/Prompt';
-import counterpart from 'counterpart';
 import { isGermanLanguage } from '../../utils/locale';
+import { fieldValueToString } from '../../utils/tableHelpers';
+
+import Prompt from '../app/Prompt';
+import SectionGroup from '../SectionGroup';
+
 class InlineTab extends PureComponent {
   /**
    * @method toggleOpen
@@ -275,3 +278,5 @@ export default connect(
     setInlineTabItemProp,
   }
 )(InlineTab);
+
+export { InlineTab };

@@ -18,6 +18,12 @@ import React, { PureComponent } from 'react';
 import InlineTab from './InlineTab';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import counterpart from 'counterpart';
+import classnames from 'classnames';
+import onClickOutside from 'react-onclickoutside';
+
+import { INLINE_TAB_SHOW_MORE_FROM } from '../../constants/Constants';
+import { deleteRequest } from '../../api';
 import {
   createWindow,
   updateDataValidStatus,
@@ -28,15 +34,11 @@ import {
   setInlineTabShowMore,
 } from '../../actions/InlineTabActions';
 import SectionGroup from '../SectionGroup';
-import counterpart from 'counterpart';
-import classnames from 'classnames';
-import { INLINE_TAB_SHOW_MORE_FROM } from '../../constants/Constants';
-import { deleteRequest } from '../../api';
-import onClickOutside from 'react-onclickoutside';
 
 class InlineTabWrapper extends PureComponent {
   constructor(props) {
     super(props);
+
     this.updateTable(); // this is getting table rows
   }
 
@@ -378,3 +380,5 @@ export default connect(
     updateDataValidStatus,
   }
 )(onClickOutside(InlineTabWrapper));
+
+export { InlineTabWrapper };

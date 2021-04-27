@@ -1,9 +1,8 @@
 import axios from 'axios';
 import MomentTZ from 'moment-timezone';
 import numeral from 'numeral';
-import { push, replace } from 'react-router-redux';
-import queryString from 'query-string';
 
+import history from '../services/History';
 import * as types from '../constants/ActionTypes';
 import { setCurrentActiveLocale } from '../utils/locale';
 import { getUserSession } from '../api';
@@ -77,117 +76,7 @@ function initNumeralLocales(lang, locale) {
   }
 }
 
-export function logoutSuccess(auth) {
-  auth.close();
-  localStorage.removeItem('isLogged');
-}
-
 // REDUX ACTIONS
-
-export function loginSuccess(auth) {
-  return async (dispatch) => {
-    localStorage.setItem('isLogged', true);
-
-    const requests = [];
-
-    requests.push(
-      getUserSession()
-        .then(({ data }) => {
-          dispatch(userSessionInit(data));
-          setCurrentActiveLocale(data.language['key']);
-          initNumeralLocales(data.language['key'], data.locale);
-          MomentTZ.tz.setDefault(data.timeZone);
-
-          auth.initSessionClient(data.websocketEndpoint, (msg) => {
-            const me = JSON.parse(msg.body);
-            dispatch(userSessionUpdate(me));
-            me.language && setCurrentActiveLocale(me.language['key']);
-            me.locale && initNumeralLocales(me.language['key'], me.locale);
-
-            getNotifications().then((response) => {
-              dispatch(
-                getNotificationsSuccess(
-                  response.data.notifications,
-                  response.data.unreadCount
-                )
-              );
-            });
-          });
-        })
-        .catch((e) => e)
-    );
-
-    requests.push(
-      getNotificationsEndpoint()
-        .then((topic) => {
-          auth.initNotificationClient(topic, (msg) => {
-            const notification = JSON.parse(msg.body);
-
-            if (notification.eventType === 'Read') {
-              dispatch(
-                readNotification(
-                  notification.notificationId,
-                  notification.unreadCount
-                )
-              );
-            } else if (notification.eventType === 'ReadAll') {
-              dispatch(readAllNotifications());
-            } else if (notification.eventType === 'Delete') {
-              dispatch(
-                removeNotification(
-                  notification.notificationId,
-                  notification.unreadCount
-                )
-              );
-            } else if (notification.eventType === 'DeleteAll') {
-              dispatch(deleteAllNotifications());
-            } else if (notification.eventType === 'New') {
-              dispatch(
-                newNotification(
-                  notification.notification,
-                  notification.unreadCount
-                )
-              );
-              const notif = notification.notification;
-              if (notif.important) {
-                dispatch(
-                  addNotification(
-                    'Important notification',
-                    notif.message,
-                    5000,
-                    'primary'
-                  )
-                );
-              }
-            }
-          });
-        })
-        .catch((e) => {
-          if (e.response) {
-            let { status } = e.response;
-            if (status === 401) {
-              window.location.href = '/';
-            }
-          }
-        })
-    );
-
-    requests.push(
-      getNotifications()
-        .then((response) => {
-          dispatch(
-            getNotificationsSuccess(
-              response.data.notifications,
-              response.data.unreadCount
-            )
-          );
-        })
-        .catch((e) => e)
-    );
-
-    return await Promise.all(requests);
-  };
-}
 
 export function enableTutorial(flag = true) {
   return {
@@ -234,26 +123,6 @@ export function deleteNotification(key) {
 export function clearNotifications() {
   return {
     type: types.CLEAR_NOTIFICATIONS,
-  };
-}
-
-/**
- * @method updateUri
- * @summary Prepends viewId/page/sorting to the url
- */
-export function updateUri(pathname, query, updatedQuery) {
-  const fullPath = window.location.href;
-
-  return (dispatch) => {
-    const queryObject = {
-      ...query,
-      ...updatedQuery,
-    };
-
-    const queryUrl = queryString.stringify(queryObject);
-    const url = `${pathname}?${queryUrl}`;
-
-    !fullPath.includes('viewId') ? dispatch(replace(url)) : dispatch(push(url));
   };
 }
 
@@ -359,5 +228,110 @@ export function updateHotkeys(hotkeys) {
   return {
     type: types.UPDATE_HOTKEYS,
     payload: hotkeys,
+  };
+}
+
+export function loginSuccess(auth) {
+  return async (dispatch) => {
+    const requests = [];
+
+    requests.push(
+      getUserSession()
+        .then(({ data }) => {
+          dispatch(userSessionInit(data));
+
+          setCurrentActiveLocale(data.language['key']);
+          initNumeralLocales(data.language['key'], data.locale);
+          MomentTZ.tz.setDefault(data.timeZone);
+
+          auth.initSessionClient(data.websocketEndpoint, (msg) => {
+            const me = JSON.parse(msg.body);
+            dispatch(userSessionUpdate(me));
+
+            me.language && setCurrentActiveLocale(me.language['key']);
+            me.locale && initNumeralLocales(me.language['key'], me.locale);
+
+            getNotifications().then((response) => {
+              dispatch(
+                getNotificationsSuccess(
+                  response.data.notifications,
+                  response.data.unreadCount
+                )
+              );
+            });
+          });
+        })
+        .catch((e) => e)
+    );
+
+    requests.push(
+      getNotificationsEndpoint()
+        .then((topic) => {
+          auth.initNotificationClient(topic, (msg) => {
+            const notification = JSON.parse(msg.body);
+
+            if (notification.eventType === 'Read') {
+              dispatch(
+                readNotification(
+                  notification.notificationId,
+                  notification.unreadCount
+                )
+              );
+            } else if (notification.eventType === 'ReadAll') {
+              dispatch(readAllNotifications());
+            } else if (notification.eventType === 'Delete') {
+              dispatch(
+                removeNotification(
+                  notification.notificationId,
+                  notification.unreadCount
+                )
+              );
+            } else if (notification.eventType === 'DeleteAll') {
+              dispatch(deleteAllNotifications());
+            } else if (notification.eventType === 'New') {
+              dispatch(
+                newNotification(
+                  notification.notification,
+                  notification.unreadCount
+                )
+              );
+              const notif = notification.notification;
+              if (notif.important) {
+                dispatch(
+                  addNotification(
+                    'Important notification',
+                    notif.message,
+                    5000,
+                    'primary'
+                  )
+                );
+              }
+            }
+          });
+        })
+        .catch((e) => {
+          if (e.response) {
+            let { status } = e.response;
+            if (status === 401) {
+              history.push('/');
+            }
+          }
+        })
+    );
+
+    requests.push(
+      getNotifications()
+        .then((response) => {
+          dispatch(
+            getNotificationsSuccess(
+              response.data.notifications,
+              response.data.unreadCount
+            )
+          );
+        })
+        .catch((e) => e)
+    );
+
+    return await Promise.all(requests);
   };
 }

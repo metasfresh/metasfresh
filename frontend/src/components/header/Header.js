@@ -2,8 +2,9 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+import { withRouter } from 'react-router';
 import classnames from 'classnames';
+
 import { getPrintingOptions } from '../../api/window';
 import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
@@ -220,9 +221,10 @@ class Header extends PureComponent {
    * @summary Reset breadcrumbs after clicking the logo
    */
   handleDashboardLink = () => {
-    const { dispatch } = this.props;
+    const { dispatch, history } = this.props;
+
     dispatch(setBreadcrumb([]));
-    dispatch(push('/'));
+    history.push('/');
   };
 
   /**
@@ -395,11 +397,9 @@ class Header extends PureComponent {
    * @param {string} docId
    */
   handleClone = (windowId, docId) => {
-    const { dispatch } = this.props;
-
     duplicateRequest('window', windowId, docId).then((response) => {
       if (response && response.data && response.data.id) {
-        dispatch(push(`/window/${windowId}/${response.data.id}`));
+        this.redirect(`/window/${windowId}/${response.data.id}`);
       }
     });
   };
@@ -461,7 +461,7 @@ class Header extends PureComponent {
    * @summary Hanndler for the prompt submit action
    */
   handlePromptSubmitClick = () => {
-    const { dispatch, handleDeletedStatus, windowId, dataId } = this.props;
+    const { handleDeletedStatus, windowId, dataId } = this.props;
 
     this.setState(
       {
@@ -470,7 +470,7 @@ class Header extends PureComponent {
       () => {
         deleteRequest('window', windowId, null, null, [dataId]).then(() => {
           handleDeletedStatus(true);
-          dispatch(push(`/window/${windowId}`));
+          this.redirect(`/window/${windowId}`);
         });
       }
     );
@@ -551,12 +551,11 @@ class Header extends PureComponent {
 
   /**
    * @method redirect
-   * @summary ToDo: Describe the method
-   * @param {*} where
+   * @summary Redirect to a page
+   * @param {string} where
    */
   redirect = (where) => {
-    const { dispatch } = this.props;
-    dispatch(push(where));
+    this.props.history.push(where);
   };
 
   /**
@@ -936,6 +935,7 @@ class Header extends PureComponent {
  * @prop {*} siteName
  * @prop {*} windowId
  * @prop {bool} hasComments - used to indicate comments available for the details view
+ * @prop {object} history
  */
 Header.propTypes = {
   activeTab: PropTypes.any,
@@ -963,14 +963,11 @@ Header.propTypes = {
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   indicator: PropTypes.string,
   hasComments: PropTypes.bool,
+  history: PropTypes.object.isRequired,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method
- * @param {object} state
- */
-const mapStateToProps = (state) => {
+const mapStateToProps = (state, ownProps) => {
+  const { location } = ownProps;
   const { master } = state.windowHandler;
   const { docActionElement, documentSummaryElement } = master.layout;
   const docSummaryData =
@@ -980,7 +977,7 @@ const mapStateToProps = (state) => {
   return {
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
-    pathname: state.routing.locationBeforeTransitions.pathname,
+    pathname: location.pathname,
     plugins: state.pluginsHandler.files,
     indicator: state.windowHandler.indicator,
     docStatus: docActionElement,
@@ -988,4 +985,4 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps)(Header);
+export default withRouter(connect(mapStateToProps)(Header));

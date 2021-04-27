@@ -1,17 +1,21 @@
 import React from 'react';
+import { act } from 'react-dom/test-utils';
 import { mount } from 'enzyme';
 import nock from 'nock';
 import { Provider } from 'react-redux';
 import { applyMiddleware, createStore, combineReducers } from 'redux';
-import { routerReducer as routing } from 'react-router-redux';
-import { createMemoryHistory } from 'react-router';
+import { Router } from 'react-router-dom';
+import { createMemoryHistory } from 'history';
 import waitForExpect from 'wait-for-expect';
 import { waitFor } from '@testing-library/dom';
 import { merge } from 'merge-anything';
 import thunk from 'redux-thunk';
 
 import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
-import CustomRouter from '../../containers/CustomRouter';
+// import CustomRouter from '../../containers/CustomRouter';
+import { ProvideAuth } from '../../hooks/useAuth';
+import { Routes } from '../../routes';
+
 
 import pluginsHandler, {
   initialState as pluginsHandlerState,
@@ -51,6 +55,8 @@ import rowFixtures from '../../../test_setup/fixtures/grid/doclist_row_data.json
 import userSessionData from '../../../test_setup/fixtures/user_session.json';
 import notificationsData from '../../../test_setup/fixtures/notifications.json';
 import quickActionsData from '../../../test_setup/fixtures/grid/doclist_quickactions.json';
+import attributesData from '../../../test_setup/fixtures/attributes.json';
+
 
 jest.mock(`../../components/app/QuickActions`);
 
@@ -60,6 +66,19 @@ const middleware = [thunk];
 
 localStorage.setItem('isLogged', true);
 
+// const rootReducer = combineReducers({
+//   appHandler,
+//   listHandler,
+//   viewHandler,
+//   menuHandler,
+//   windowHandler,
+//   pluginsHandler,
+//   tables,
+//   routing,
+//   filters,
+//   actionsHandler,
+// });
+
 const rootReducer = combineReducers({
   appHandler,
   listHandler,
@@ -68,7 +87,6 @@ const rootReducer = combineReducers({
   windowHandler,
   pluginsHandler,
   tables,
-  routing,
   filters,
   actionsHandler,
 });
@@ -84,7 +102,7 @@ const createInitialState = function(state = {}) {
       pluginsHandler: { ...pluginsHandlerState },
       tables: tablesHandlerState,
       filters: { ...filtersHandlerState },
-      routing: { ...propsFixtures.state1.routing },
+      // routing: { ...propsFixtures.state1.routing },
       actionsHandler: actionsHandlerState,
     },
     state
@@ -93,14 +111,40 @@ const createInitialState = function(state = {}) {
   return res;
 };
 
-describe('DocList', () => {
+describe.skip('DocList', () => {
   describe('included views grid', () => {
     const props = propsFixtures.props1;
     const history = createMemoryHistory(`/window/${props.windowId}`);
-    const auth = {
-      initNotificationClient: jest.fn(),
-      initSessionClient: jest.fn(),
-    };
+    // const auth = {
+    //   initNotificationClient: jest.fn(),
+    //   initSessionClient: jest.fn(),
+    // };
+
+
+  // beforeAll(() => {
+    
+  //   localStorage.clear();
+  //   jest.clearAllMocks();
+
+    // localStorage.setItem('isLogged', true);
+
+    // console.log('localStoare before: ', localStorage.getItem('isLogged'))
+    // server = http.createServer();
+
+    // mockServer = new StompServer({
+    //   server,
+    //   path: '/ws',
+    // });
+
+    // server.listen(serverTestPort); // this is defined in the jestSetup file
+  // });
+
+  // afterEach stop server
+  // afterAll(async () => {
+  //   console.log('LocalStorage after: ', localStorage)
+  //   await server.close();
+  // });
+
 
     it('renders without errors and loads quick actions', async (done) => {
       const initialState = createInitialState();
@@ -111,6 +155,8 @@ describe('DocList', () => {
       );
       const windowId = props.windowId;
       const viewId = props.query.viewId;
+      const attributes = attributesData.data2;
+      const rowId = attributes.data.id;
       const data = rowFixtures.rowData1;
       const includedData = rowFixtures.includedViewData1;
       const includedWindowId = includedData.windowId;
@@ -132,6 +178,20 @@ describe('DocList', () => {
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get('/geolocation/config')
         .reply(200, []);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(
+          `/documentView/${includedWindowId}/${includedViewId}/${rowId}/attributes/layout`
+        )
+        .reply(200, attributes.layout);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(
+          `/documentView/${includedWindowId}/${includedViewId}/${rowId}/attributes`
+        )
+        .reply(200, attributes.data);
 
       // included view
       nock(config.API_URL)
@@ -199,19 +259,32 @@ describe('DocList', () => {
         )
         .reply(200, rowFixtures.includedViewData1);
 
-      const wrapper = mount(
-        <Provider store={store}>
-          <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
-            <CustomRouter history={history} auth={auth} />
-          </ShortcutProvider>
-        </Provider>
-      );
+      let wrapper;
 
-      await waitFor(() =>
+      await act(async () => {
+        wrapper = await mount(
+          <Provider store={store}>
+            <ProvideAuth>
+              <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
+                <Router history={history}>
+                  <Routes />
+                </Router>
+              </ShortcutProvider>
+            </ProvideAuth>
+          </Provider>
+        );
+      });
+
+
+      act(() => {
+        wrapper.update()
+      });
+
+      await waitFor(() => {
         expect(Object.keys(store.getState().viewHandler.views).length).toBe(2)
-      );
+      }, { timeout: 5000 });
 
-      wrapper.update();
+      // wrapper.update();
 
       await waitFor(() =>
         expect(
@@ -234,6 +307,6 @@ describe('DocList', () => {
       });
 
       done();
-    }, 10000);
+    }, 20000);
   });
 });

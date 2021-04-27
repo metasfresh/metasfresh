@@ -4,6 +4,9 @@ import Enzyme, { shallow, render, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import { JSDOM } from 'jsdom';
 import EventSource from 'eventsourcemock';
+import React from "react" 
+
+React.useLayoutEffect = React.useEffect 
 
 // React 16 Enzyme adapter
 Enzyme.configure({ adapter: new Adapter() });

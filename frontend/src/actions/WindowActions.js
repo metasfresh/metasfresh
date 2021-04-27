@@ -1,8 +1,9 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
-import { push, replace } from 'react-router-redux';
 import currentDevice from 'current-device';
 import { Set } from 'immutable';
+
+import history from '../services/History';
 import { openInNewTab } from '../utils/index';
 
 import {
@@ -603,7 +604,7 @@ export function createWindow({
 
       if (documentId === 'NEW' && !isModal) {
         // redirect immedietely
-        return dispatch(replace(`/window/${windowType}/${docId}`));
+        return history.replace(`/window/${windowType}/${docId}`);
       }
 
       let elem = 0;
@@ -1310,9 +1311,7 @@ export function handleProcessResponse(response, type, id, parentId) {
                 })
               );
             } else {
-              await dispatch(
-                push(`/window/${action.windowId}/${action.documentId}`)
-              );
+              history.push(`/window/${action.windowId}/${action.documentId}`);
             }
             break;
           case 'openIncludedView':
