@@ -147,7 +147,7 @@ public class OrderService
 						.documentNo(orderIdentifier.asDoc())
 						.build();
 
-				orderDAO.retrieveByOrderCriteria(getOrderByDocQuery)
+				return orderDAO.retrieveByOrderCriteria(getOrderByDocQuery)
 						.map(I_C_Order::getC_Order_ID)
 						.map(OrderId::ofRepoId);
 			case EXTERNAL_ID:
@@ -155,7 +155,7 @@ public class OrderService
 						.externalId(orderIdentifier.asExternalId())
 						.build();
 
-				orderDAO.retrieveByOrderCriteria(getOrderByExternalId)
+				return orderDAO.retrieveByOrderCriteria(getOrderByExternalId)
 						.map(I_C_Order::getC_Order_ID)
 						.map(OrderId::ofRepoId);
 			default:
