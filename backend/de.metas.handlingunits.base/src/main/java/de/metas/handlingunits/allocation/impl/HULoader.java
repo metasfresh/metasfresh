@@ -251,7 +251,7 @@ public class HULoader
 	 *
 	 * @return result (already processed)
 	 */
-	private IMutableAllocationResult unloadSourceThenLoadDestination(final IAllocationRequest unloadRequest)
+	private IMutableAllocationResult unloadSourceThenLoadDestination(@NonNull final IAllocationRequest unloadRequest)
 	{
 		//
 		// HU Context to use
