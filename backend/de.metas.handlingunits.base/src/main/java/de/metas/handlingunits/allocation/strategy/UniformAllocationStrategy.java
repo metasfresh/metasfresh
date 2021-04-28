@@ -185,8 +185,8 @@ public class UniformAllocationStrategy implements IAllocationStrategy
 			{
 				final BigDecimal currentCandidateQtyBD = candidate.getCurrentQty().toBigDecimal();
 				final BigDecimal currentQtyTotalBD = currentQtyTotal.toBigDecimal();
-				final int precision = currentCandidateQtyBD.precision() + currentCandidateQtyBD.precision(); // avoid nasty rounding errors
-				final Percent percent = Percent.of(currentCandidateQtyBD, currentQtyTotalBD, precision);
+				final int precisionSum = currentCandidateQtyBD.precision() + currentCandidateQtyBD.precision(); // avoid nasty rounding errors
+				final Percent percent = Percent.of(currentCandidateQtyBD, currentQtyTotalBD, precisionSum * 2);
 				qtyToAllocate = qtyToAllocateTarget.multiply(percent);
 			}
 			else

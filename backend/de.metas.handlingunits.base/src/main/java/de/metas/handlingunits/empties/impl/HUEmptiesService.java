@@ -59,10 +59,8 @@ import de.metas.util.Services;
 public class HUEmptiesService implements IHUEmptiesService
 {
 	@Override
-	public I_M_Warehouse getEmptiesWarehouse(final I_M_Warehouse warehouse)
+	public I_M_Warehouse getEmptiesWarehouse(@NonNull final I_M_Warehouse warehouse)
 	{
-		Check.assumeNotNull(warehouse, "warehouse not null");
-
 		// services
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IDistributionNetworkDAO distributionNetworkDAO = Services.get(IDistributionNetworkDAO.class);
