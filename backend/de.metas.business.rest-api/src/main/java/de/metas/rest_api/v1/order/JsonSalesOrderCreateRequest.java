@@ -1,13 +1,19 @@
-package de.metas.common.rest_api.v2.order;
+package de.metas.rest_api.v1.order;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
+import com.google.common.collect.ImmutableList;
+import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 /*
  * #%L
@@ -33,43 +39,35 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class JsonSalesOrderAttachment
+public class JsonSalesOrderCreateRequest
 {
-	@JsonProperty("salesOrderId")
-	private String salesOrderId;
+	@JsonProperty("docTypeName")
+	String docTypeName;
 
-	@JsonProperty("id")
-	private final int id;
+	@JsonProperty("shipBPartnerCode")
+	String shipBPartnerCode;
 
-	@JsonProperty("type")
-	private final JsonAttachmentType type;
+	@JsonProperty("datePromised")
+	ZonedDateTime datePromised;
 
-	@JsonProperty("filename")
-	private final String filename;
+	@JsonProperty("lines")
+	List<JsonSalesOrderLine> lines;
 
-	@JsonProperty("mimeType")
-	private final String mimeType;
-
-	@JsonProperty("url")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String url;
-
-	@JsonCreator
 	@Builder
-	private JsonSalesOrderAttachment(
-			@JsonProperty("salesOrderId") final String salesOrderId,
-			@JsonProperty("id") final int id,
-			@JsonProperty("type") final JsonAttachmentType type,
-			@JsonProperty("filename") final String filename,
-			@JsonProperty("mimeType") final String mimeType,
-			@JsonProperty("url") final String url)
+	@JsonCreator
+	public JsonSalesOrderCreateRequest(
+			@JsonProperty("docTypeName") @Nullable final String docTypeName,
+			@JsonProperty("shipBPartnerCode") @NonNull final String shipBPartnerCode,
+			@JsonProperty("datePromised") @NonNull final ZonedDateTime datePromised,
+			@JsonProperty("lines") @NonNull @Singular final List<JsonSalesOrderLine> lines)
 	{
-		this.salesOrderId = salesOrderId;
-		this.id = id;
-		this.type = type;
-		this.filename = filename;
-		this.mimeType = mimeType;
-		this.url = url;
+		Check.assumeNotEmpty(shipBPartnerCode, "shipBPartnerCode is not empty");
+		Check.assumeNotEmpty(lines, "lines is not empty");
+
+		this.docTypeName = docTypeName;
+		this.shipBPartnerCode = shipBPartnerCode;
+		this.datePromised = datePromised;
+		this.lines = ImmutableList.copyOf(lines);
 	}
 
 }

@@ -1,4 +1,26 @@
-package de.metas.common.rest_api.v2.order.impl;
+/*
+ * #%L
+ * de.metas.business.rest-api-impl
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.rest_api.v1.order.sales;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
@@ -18,10 +40,10 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.common.rest_api.v2.order.JsonSalesOrder;
-import de.metas.common.rest_api.v2.order.JsonSalesOrderAttachment;
-import de.metas.common.rest_api.v2.order.JsonSalesOrderCreateRequest;
-import de.metas.common.rest_api.v2.order.JsonSalesOrderLine;
+import de.metas.rest_api.v1.order.JsonSalesOrder;
+import de.metas.rest_api.v1.order.JsonSalesOrderAttachment;
+import de.metas.rest_api.v1.order.JsonSalesOrderCreateRequest;
+import de.metas.rest_api.v1.order.JsonSalesOrderLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -47,33 +69,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
-/*
- * #%L
- * de.metas.business
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @RestController
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/sales/order",
-		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/sales/order",
-		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/orders/sales" })
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/sales/order"})
 @Profile(Profiles.PROFILE_App)
 public class SalesOrderRestController
 {

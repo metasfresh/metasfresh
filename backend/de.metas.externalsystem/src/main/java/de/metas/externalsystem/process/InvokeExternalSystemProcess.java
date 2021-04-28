@@ -200,6 +200,12 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		return parameters;
 	}
 
+	@Nullable
+	protected Timestamp getSinceParameterValue()
+	{
+		return since;
+	}
+
 	protected abstract IExternalSystemChildConfigId getExternalChildConfigId();
 
 	protected abstract Map<String, String> extractExternalSystemParameters(ExternalSystemParentConfig externalSystemParentConfig);

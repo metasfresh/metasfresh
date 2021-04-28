@@ -1,27 +1,8 @@
-package de.metas.common.rest_api.v2.order.model;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
-import de.metas.common.rest_api.v2.order.JsonSalesOrder;
-import de.metas.common.rest_api.v2.order.JsonSalesOrderAttachment;
-import de.metas.common.rest_api.v2.order.JsonSalesOrderCreateRequest;
-import de.metas.common.rest_api.v2.order.JsonSalesOrderLine;
-import lombok.NonNull;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-
 /*
  * #%L
- * de.metas.order.rest-api
+ * de.metas.business.rest-api
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -38,6 +19,21 @@ import java.time.ZonedDateTime;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.rest_api.v1.order;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
+import lombok.NonNull;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 public class JsonSerializationDeserializationTest
 {

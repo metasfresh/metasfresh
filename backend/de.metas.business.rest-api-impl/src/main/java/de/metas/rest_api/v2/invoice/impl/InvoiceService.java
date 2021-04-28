@@ -1,8 +1,68 @@
+package de.metas.rest_api.v2.invoice.impl;
+
+import de.metas.RestUtils;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.allocation.api.C_AllocationHdr_Builder;
+import de.metas.allocation.api.IAllocationBL;
+import de.metas.banking.BankAccountId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.v2.invoice.JsonInvoicePaymentCreateRequest;
+import de.metas.common.rest_api.v2.invoice.JsonPaymentAllocationLine;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.externalreference.ExternalIdentifier;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.payment.TenderType;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidatesResponseItem;
+import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
+import de.metas.rest_api.utils.CurrencyService;
+import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.payment.PaymentService;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Archive;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,51 +80,17 @@
  * #L%
  */
 
-package de.metas.rest_api.v2.invoice;
-
-import de.metas.RestUtils;
-import de.metas.allocation.api.C_AllocationHdr_Builder;
-import de.metas.allocation.api.IAllocationBL;
-import de.metas.banking.BankAccountId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.common.rest_api.v2.invoice.JsonInvoicePaymentCreateRequest;
-import de.metas.common.rest_api.v2.invoice.JsonPaymentAllocationLine;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.common.util.time.SystemTime;
-import de.metas.document.DocBaseAndSubType;
-import de.metas.externalreference.ExternalIdentifier;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceQuery;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.payment.TenderType;
-import de.metas.rest_api.utils.CurrencyService;
-import de.metas.rest_api.utils.IdentifierString;
-import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
-import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
-import de.metas.rest_api.v2.payment.PaymentService;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.ExternalId;
-import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Payment;
-import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import javax.annotation.Nullable;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
 @Service
 public class InvoiceService
 {
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 
 	private final CurrencyService currencyService;
@@ -79,6 +105,66 @@ public class InvoiceService
 		this.currencyService = currencyService;
 		this.paymentService = paymentService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
+	}
+
+	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
+	{
+		return getLastArchive(invoiceId).map(archiveBL::getBinaryData);
+	}
+
+	public boolean hasArchive(@NonNull final InvoiceId invoiceId)
+	{
+		return getLastArchive(invoiceId).isPresent();
+	}
+
+	@NonNull
+	public JSONInvoiceInfoResponse getInvoiceInfo(@NonNull final InvoiceId invoiceId, final String ad_language)
+	{
+		final JSONInvoiceInfoResponse.JSONInvoiceInfoResponseBuilder result = JSONInvoiceInfoResponse.builder();
+
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+
+		final CurrencyCode currency = currencyDAO.getCurrencyCodeById(CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+
+		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoiceId);
+		for (final I_C_InvoiceLine line : lines)
+		{
+			final String productName = productBL.getProductNameTrl(ProductId.ofRepoId(line.getM_Product_ID())).translate(ad_language);
+			final Percent taxRate = taxDAO.getRateById(TaxId.ofRepoId(line.getC_Tax_ID()));
+
+			result.lineInfo(JSONInvoiceLineInfo.builder()
+									.lineNumber(line.getLine())
+									.productName(productName)
+									.qtyInvoiced(line.getQtyEntered())
+									.price(line.getPriceEntered())
+									.taxRate(taxRate)
+									.lineNetAmt(line.getLineNetAmt())
+									.currency(currency)
+									.build());
+		}
+		return result.build();
+	}
+
+	@NonNull
+	public Optional<JsonReverseInvoiceResponse> reverseInvoice(@NonNull final InvoiceId invoiceId)
+	{
+		final I_C_Invoice documentRecord = invoiceDAO.getByIdInTrx(invoiceId);
+		if (documentRecord == null)
+		{
+			return Optional.empty();
+		}
+
+		documentBL.processEx(documentRecord, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+
+		final JsonReverseInvoiceResponse.JsonReverseInvoiceResponseBuilder responseBuilder = JsonReverseInvoiceResponse.builder();
+
+		invoiceCandDAO
+				.retrieveInvoiceCandidates(invoiceId)
+				.stream()
+				.map(this::buildJSONItem)
+				.forEach(responseBuilder::affectedInvoiceCandidate);
+
+		return Optional.of(responseBuilder.build());
 	}
 
 	public void createInboundPaymentFromJson(@NonNull @RequestBody final JsonInvoicePaymentCreateRequest request)
@@ -135,6 +221,16 @@ public class InvoiceService
 
 			createAllocationsForPayment(payment, lines);
 		});
+	}
+
+	private JsonInvoiceCandidatesResponseItem buildJSONItem(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		return JsonInvoiceCandidatesResponseItem
+				.builder()
+				.externalHeaderId(JsonExternalId.ofOrNull(invoiceCandidate.getExternalHeaderId()))
+				.externalLineId(JsonExternalId.ofOrNull(invoiceCandidate.getExternalLineId()))
+				.metasfreshId(MetasfreshId.of(invoiceCandidate.getC_Invoice_Candidate_ID()))
+				.build();
 	}
 
 	private boolean validateAllocationLineAmounts(@Nullable final List<JsonPaymentAllocationLine> lines)
@@ -213,5 +309,10 @@ public class InvoiceService
 				throw new AdempiereException("Invalid identifierString: " + identifierString);
 		}
 		return invoiceQueryBuilder.build();
+	}
+
+	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
+	{
+		return archiveBL.getLastArchive(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId));
 	}
 }

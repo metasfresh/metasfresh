@@ -1,10 +1,9 @@
-package de.metas.common.rest_api.v2.order;
+package de.metas.rest_api.v2.order;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,8 +39,7 @@ public class JsonSalesOrder
 
 	@Builder
 	@JsonCreator
-	private JsonSalesOrder(
-			@JsonProperty("salesOrderId") @NonNull final String salesOrderId)
+	JsonSalesOrder(@JsonProperty("salesOrderId") @NonNull final String salesOrderId)
 	{
 		this.salesOrderId = salesOrderId;
 	}

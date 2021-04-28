@@ -80,6 +80,7 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidEntityException;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
@@ -513,7 +514,7 @@ public class JsonRetrieverService
 
 				return bpartnersRepo.retrieveBPartnerIdBy(bPartnerQuery);
 			default:
-				throw new AdempiereException("Given external identifier type is not supported!")
+				throw new InvalidIdentifierException("Given external identifier type is not supported!")
 						.setParameter("externalIdentifierType", bPartnerExternalIdentifier.getType())
 						.setParameter("rawExternalIdentifier", bPartnerExternalIdentifier.getRawValue());
 		}

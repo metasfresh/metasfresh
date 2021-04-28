@@ -20,11 +20,13 @@
  * #L%
  */
 
-package de.metas.rest_api.v1.invoice;
+package de.metas.rest_api.v2.invoice;
 
 import de.metas.Profiles;
 import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v2.invoice.JsonInvoicePaymentCreateRequest;
 import de.metas.invoice.InvoiceId;
+import de.metas.logging.LogManager;
 import de.metas.rest_api.invoicecandidates.impl.CheckInvoiceCandidatesStatusService;
 import de.metas.rest_api.invoicecandidates.impl.CloseInvoiceCandidatesService;
 import de.metas.rest_api.invoicecandidates.impl.CreateInvoiceCandidatesService;
@@ -39,8 +41,8 @@ import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesR
 import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonReverseInvoiceResponse;
 import de.metas.rest_api.utils.JsonErrors;
-import de.metas.rest_api.v1.invoice.impl.InvoiceService;
-import de.metas.rest_api.v1.invoice.impl.JSONInvoiceInfoResponse;
+import de.metas.rest_api.v2.invoice.impl.InvoiceService;
+import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -48,6 +50,7 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,18 +65,17 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(value = {
-		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/invoices",
-		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/invoices"})
+@RequestMapping(value = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/invoices")
 @Profile(Profiles.PROFILE_App)
-class InvoicesRestController
+public class InvoicesRestController
 {
-	
+	private static final Logger logger = LogManager.getLogger(InvoicesRestController.class);
+
+	private final InvoiceService invoiceService;
 	private final CheckInvoiceCandidatesStatusService checkInvoiceCandidatesStatusService;
 	private final CreateInvoiceCandidatesService createInvoiceCandidatesService;
 	private final EnqueueForInvoicingService enqueueForInvoicingService;
 	private final CloseInvoiceCandidatesService closeInvoiceCandidatesService;
-	private final InvoiceService invoiceService;
 
 	public InvoicesRestController(
 			@NonNull final CreateInvoiceCandidatesService createInvoiceCandidatesService,
@@ -219,5 +221,33 @@ class InvoicesRestController
 
 			return ResponseEntity.unprocessableEntity().body(error);
 		}
+	}
+
+	@ApiOperation("Create new invoice payment")
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully created new invoice payment"),
+			@ApiResponse(code = 401, message = "You are not authorized to create a new invoice payment"),
+			@ApiResponse(code = 403, message = "Accessing a related resource is forbidden"),
+			@ApiResponse(code = 422, message = "The request body could not be processed")
+	})
+	@PostMapping("/payment")
+	public ResponseEntity<?> createInvoicePayment(@NonNull @RequestBody final JsonInvoicePaymentCreateRequest request)
+	{
+		try
+		{
+			invoiceService.createInboundPaymentFromJson(request);
+
+			return ResponseEntity.ok().build();
+		}
+		catch (final Exception ex)
+		{
+			logger.error(ex.getMessage(), ex);
+
+			final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
+			return ResponseEntity.unprocessableEntity()
+					.body(JsonErrors.ofThrowable(ex, adLanguage));
+		}
+
 	}
 }

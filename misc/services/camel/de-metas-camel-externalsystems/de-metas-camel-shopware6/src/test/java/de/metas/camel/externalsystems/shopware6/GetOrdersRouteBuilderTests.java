@@ -43,6 +43,7 @@ import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -94,6 +95,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 	private static final String MOCK_CREATE_PAYMENT = "mock:createPayment";
 	private static final String MOCK_UPSERT_RUNTIME_PARAMETERS = "mock:upsertRuntimeParams";
 
+	private static final String JSON_SHOPWARE_MAPPINGS = "01_JsonExternalSystemShopware6ConfigMappings.json";
 	private static final String JSON_ORDERS_RESOURCE_PATH = "10_JsonOrders.json";
 	private static final String JSON_ORDER_TRANSACTIONS_PATH = "12_JsonOrderTransactions.json";
 	private static final String JSON_ORDER_PAYMENT_METHOD_PATH = "14_JsonPaymentMethod.json";
@@ -303,16 +305,19 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.command("command")
 					.build();
 
+			final InputStream shopwareMappingsIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS);
+			final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = mapper.readValue(shopwareMappingsIS, JsonExternalSystemShopware6ConfigMappings.class);
+
 			final ImportOrdersRouteContext ordersContext = ImportOrdersRouteContext.builder()
 					.orgCode(MOCK_ORG_CODE)
 					.externalSystemRequest(externalSystemRequest)
 					.shopwareClient(shopwareClient)
 					.currencyInfoProvider(currencyInfoProvider)
+					.shopware6ConfigMappings(shopware6ConfigMappings)
 					.build();
 
 			exchange.getIn().setBody(jsonOrderAndCustomIds);
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
-
 		}
 
 		@NonNull

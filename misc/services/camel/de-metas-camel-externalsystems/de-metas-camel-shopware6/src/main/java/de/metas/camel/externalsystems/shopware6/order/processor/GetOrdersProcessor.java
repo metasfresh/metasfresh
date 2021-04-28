@@ -76,6 +76,7 @@ public class GetOrdersProcessor implements Processor
 
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 		final String updatedAfter = CoalesceUtil.coalesce(
+				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
 				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
 				Instant.ofEpochSecond(0).toString());
 

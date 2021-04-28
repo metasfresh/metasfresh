@@ -113,7 +113,7 @@ public class OrderFilter implements Processor
 		{
 			logger.warning("*** Skipping the current order based on transaction status & payment method! OrderId = "
 								   + orderAndCustomId.getJsonOrder().getId()
-								   + "transactionStatus = " + orderTransaction.getStateMachine()
+								   + "transactionStatus = " + orderTransaction.getStateMachine().getTechnicalName()
 								   + "paymentType = " + paymentMethod.get().getShortName());
 			return Optional.empty();
 		}

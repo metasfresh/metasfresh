@@ -56,7 +56,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIEN
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE;
 
 public class InvokeShopware6Action extends InvokeExternalSystemProcess
 {
@@ -90,10 +90,14 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_BASE_PATH, shopware6Config.getBaseUrl());
 		parameters.put(PARAM_CLIENT_SECRET, shopware6Config.getClientSecret());
 		parameters.put(PARAM_CLIENT_ID, shopware6Config.getClientId());
-		parameters.put(PARAM_UPDATED_AFTER, extractEffectiveSinceTimestamp().toInstant().toString());
 		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_ID, shopware6Config.getBPartnerIdJSONPath());
 		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID, shopware6Config.getBPartnerLocationIdJSONPath());
 		parameters.put(PARAM_CONFIG_MAPPINGS, getConfigMappings(shopware6Config));
+
+		if (getSinceParameterValue() != null)
+		{
+			parameters.put(PARAM_UPDATED_AFTER_OVERRIDE, getSinceParameterValue().toInstant().toString());
+		}
 
 		return parameters;
 	}

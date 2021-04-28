@@ -1,20 +1,12 @@
-package de.metas.common.rest_api.v2.order;
-
-import java.time.ZonedDateTime;
-import java.util.List;
-
-import javax.annotation.Nullable;
+package de.metas.rest_api.v1.order;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.Check;
+import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
 import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
 /*
@@ -41,35 +33,43 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-public class JsonSalesOrderCreateRequest
+public class JsonSalesOrderAttachment
 {
-	@JsonProperty("docTypeName")
-	String docTypeName;
+	@JsonProperty("salesOrderId")
+	private String salesOrderId;
 
-	@JsonProperty("shipBPartnerCode")
-	String shipBPartnerCode;
+	@JsonProperty("id")
+	private final int id;
 
-	@JsonProperty("datePromised")
-	ZonedDateTime datePromised;
+	@JsonProperty("type")
+	private final JsonAttachmentType type;
 
-	@JsonProperty("lines")
-	List<JsonSalesOrderLine> lines;
+	@JsonProperty("filename")
+	private final String filename;
 
-	@Builder
+	@JsonProperty("mimeType")
+	private final String mimeType;
+
+	@JsonProperty("url")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private final String url;
+
 	@JsonCreator
-	private JsonSalesOrderCreateRequest(
-			@JsonProperty("docTypeName") @Nullable final String docTypeName,
-			@JsonProperty("shipBPartnerCode") @NonNull final String shipBPartnerCode,
-			@JsonProperty("datePromised") @NonNull final ZonedDateTime datePromised,
-			@JsonProperty("lines") @NonNull @Singular final List<JsonSalesOrderLine> lines)
+	@Builder
+	public JsonSalesOrderAttachment(
+			@JsonProperty("salesOrderId") final String salesOrderId,
+			@JsonProperty("id") final int id,
+			@JsonProperty("type") final JsonAttachmentType type,
+			@JsonProperty("filename") final String filename,
+			@JsonProperty("mimeType") final String mimeType,
+			@JsonProperty("url") final String url)
 	{
-		Check.assumeNotEmpty(shipBPartnerCode, "shipBPartnerCode is not empty");
-		Check.assumeNotEmpty(lines, "lines is not empty");
-
-		this.docTypeName = docTypeName;
-		this.shipBPartnerCode = shipBPartnerCode;
-		this.datePromised = datePromised;
-		this.lines = ImmutableList.copyOf(lines);
+		this.salesOrderId = salesOrderId;
+		this.id = id;
+		this.type = type;
+		this.filename = filename;
+		this.mimeType = mimeType;
+		this.url = url;
 	}
 
 }

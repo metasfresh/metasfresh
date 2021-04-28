@@ -43,6 +43,8 @@ import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.payment.PaymentService;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
+import de.metas.util.web.exception.InvalidIdentifierException;
+import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -124,9 +126,10 @@ public class OrderService
 			}
 			else if (!orderId.isPresent())
 			{
-				throw new AdempiereException("No order could be found for the given order identifier!")
-						.appendParametersToMessage()
-						.setParameter("orderIdentifier", orderIdentifier.getRawIdentifierString());
+				throw MissingResourceException.builder()
+						.resourceName("I_C_Order")
+						.resourceIdentifier(orderIdentifier.getRawIdentifierString())
+						.build();
 			}
 
 			paymentBuilder.createAndProcess();
@@ -159,7 +162,7 @@ public class OrderService
 						.map(I_C_Order::getC_Order_ID)
 						.map(OrderId::ofRepoId);
 			default:
-				throw new AdempiereException("Given IdentifierString type is not supported!")
+				throw new InvalidIdentifierException("Given IdentifierString type is not supported!")
 						.appendParametersToMessage()
 						.setParameter("IdentifierStringType", orderIdentifier.getType())
 						.setParameter("rawIdentifierString", orderIdentifier.getRawIdentifierString());
