@@ -163,7 +163,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else
 		{
-			order.setInvoiceRule(setDefaultInvoiceRule());
+			order.setInvoiceRule(getDefaultInvoiceRule());
 		}
 
 		// Payment Rule - POS Order
@@ -503,7 +503,7 @@ public class CalloutOrder extends CalloutEngine
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
 				final String OrderType = order.getOrderType();
-				order.setInvoiceRule(setDefaultInvoiceRule());
+				order.setInvoiceRule(getDefaultInvoiceRule());
 				// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
 				order.setPaymentRule(PaymentRule.OnCredit.getCode());
 				if (MOrder.DocSubType_Prepay.equals(OrderType))
@@ -586,7 +586,7 @@ public class CalloutOrder extends CalloutEngine
 		return NO_ERROR;
 	} // bPartner
 
-	private String setDefaultInvoiceRule()
+	private String getDefaultInvoiceRule()
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -820,7 +820,7 @@ public class CalloutOrder extends CalloutEngine
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
 				final String OrderType = order.getOrderType();
-				order.setInvoiceRule(setDefaultInvoiceRule());
+				order.setInvoiceRule(getDefaultInvoiceRule());
 				order.setPaymentRule(PaymentRule.OnCredit.getCode());
 				if (MOrder.DocSubType_Prepay.equals(OrderType))
 				{
