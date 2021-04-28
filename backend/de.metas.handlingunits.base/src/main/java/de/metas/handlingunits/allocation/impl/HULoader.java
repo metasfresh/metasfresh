@@ -471,7 +471,7 @@ public class HULoader
 				unloadTrx.getDate());
 	}
 
-	// static
+	@Nullable
 	private IAttributeStorage getAttributeStorageOrNull(final IHUTransactionAttributeBuilder attributeStorageBuilder, final IHUTransactionCandidate trx, final boolean useVHU)
 	{
 		final IAttributeStorageFactory attributeStorageFactory = attributeStorageBuilder.getAttributeStorageFactory();
