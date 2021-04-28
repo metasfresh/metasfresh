@@ -34,6 +34,7 @@ import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.organization.IOrgDAO;
@@ -59,6 +60,7 @@ import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -68,6 +70,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	public final static AdMessageKey MSG_ERR_MULTIPLE_EXTERNAL_SELECTION = AdMessageKey.of("MultipleExternalSelection");
 
 	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	public final RuntimeParametersRepository runtimeParametersRepository = SpringContextHolder.instance.getBean(RuntimeParametersRepository.class);
 	public final IADPInstanceDAO pInstanceDAO = Services.get(IADPInstanceDAO.class);
 
 	public static final String PARAM_CHILD_CONFIG_ID = "ChildConfigId";
@@ -112,8 +115,9 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
 
 		final JsonExternalSystemRequest jsonExternalSystemRequest = JsonExternalSystemRequest.builder()
+				.externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
 				.externalSystemName(JsonExternalSystemName.of(config.getType().getName()))
-				.parameters(extractExternalSystemParameters(config))
+				.parameters(extractParameters(config))
 				.orgCode(orgDAO.getById(getOrgId()).getValue())
 				.command(externalRequest)
 				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(getPinstanceId())))
@@ -164,23 +168,48 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
-	/** Needed so we also have a "since" when the process is run via AD_Scheduler */
+	/**
+	 * Needed so we also have a "since" when the process is run via AD_Scheduler
+	 */
 	@NonNull
 	protected Timestamp extractEffectiveSinceTimestamp()
 	{
 		return CoalesceUtil.coalesceSuppliers(() -> since, () -> retrieveSinceValue(), () -> Timestamp.from(Instant.ofEpochSecond(0)));
 	}
-	
+
 	private Timestamp retrieveSinceValue()
 	{
 		final ProcessInfo processInfo = getProcessInfo();
 		return pInstanceDAO.getLastRunDate(processInfo.getAdProcessId(), processInfo.getPinstanceId());
 	}
 
+	private Map<String, String> extractParameters(@NonNull final ExternalSystemParentConfig externalSystemParentConfig)
+	{
+		final Map<String, String> parameters = new HashMap<>();
+
+		final Map<String, String> childSpecificParams = extractExternalSystemParameters(externalSystemParentConfig);
+
+		if (childSpecificParams != null && !childSpecificParams.isEmpty())
+		{
+			parameters.putAll(childSpecificParams);
+		}
+
+		runtimeParametersRepository.getByConfigIdAndRequest(externalSystemParentConfig.getId(), externalRequest)
+				.forEach(runtimeParameter -> parameters.put(runtimeParameter.getName(), runtimeParameter.getValue()));
+
+		return parameters;
+	}
+
+	@Nullable
+	protected Timestamp getSinceParameterValue()
+	{
+		return since;
+	}
+
 	protected abstract IExternalSystemChildConfigId getExternalChildConfigId();
 
 	protected abstract Map<String, String> extractExternalSystemParameters(ExternalSystemParentConfig externalSystemParentConfig);
-	
+
 	protected abstract String getTabName();
 
 	protected abstract ExternalSystemType getExternalSystemType();

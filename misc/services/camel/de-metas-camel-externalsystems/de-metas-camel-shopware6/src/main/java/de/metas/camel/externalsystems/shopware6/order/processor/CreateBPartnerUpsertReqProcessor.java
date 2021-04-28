@@ -27,7 +27,6 @@ import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderDeliveryItem;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
-import de.metas.common.util.CoalesceUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.springframework.util.CollectionUtils;
@@ -45,7 +44,6 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 		final ImportOrdersRouteContext importOrdersRouteContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
 
 		final JsonOrderAndCustomId orderAndCustomId = exchange.getIn().getBody(JsonOrderAndCustomId.class);
-		importOrdersRouteContext.setOrder(orderAndCustomId);
 
 		final String orgCode = importOrdersRouteContext.getOrgCode();
 		final ShopwareClient shopwareClient = importOrdersRouteContext.getShopwareClient();
@@ -68,7 +66,7 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 				.orderCustomer(orderAndCustomId.getJsonOrder().getOrderCustomer())
 				.shippingAddress(lastOrderDeliveryItem.getJsonOrderAddressAndCustomId())
 				.orgCode(orgCode)
-				.externalBPartnerId(CoalesceUtil.coalesce(orderAndCustomId.getCustomBPartnerId(), orderAndCustomId.getJsonOrder().getOrderCustomer().getCustomerId()))
+				.externalBPartnerId(orderAndCustomId.getEffectiveCustomerId())
 				.bPartnerLocationIdentifierCustomPath(bPartnerLocationIdJSONPath)
 				.build();
 

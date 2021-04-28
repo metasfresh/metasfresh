@@ -19,7 +19,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     },
     "locations" : [
       {
-        "metasfreshId" : 100014,
+        "metasfreshId" : 100015,
         "active" : true,
         "postal" : "5040",
         "poBox" : "poBox",
@@ -44,7 +44,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
   {
     "bankAccounts" : [ ],
     "bpartner" : {
-      "id" : 100015,
+      "id" : 100016,
       "active" : true,
       "name" : "bPartner.name",
       "companyName" : "bPartner.companyName",
@@ -61,9 +61,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "value" : 4
           }
         },
+        "baseLanguage" : true,
         "leftToRight" : true,
-        "decimalPoint" : false,
-        "baseLanguage" : true
+        "decimalPoint" : false
       },
       "url" : "bPartner.url",
       "groupId" : 15,
@@ -78,7 +78,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "C_BPartner_ID"
           ],
           "keysByColumnName" : {
-            "C_BPartner_ID" : 100015
+            "C_BPartner_ID" : 100016
           }
         },
         "createdByUserId" : 30,
@@ -96,74 +96,6 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "identifiedByExternalReference" : false
     },
     "contacts" : [
-      {
-        "active" : true,
-        "changeLog" : {
-          "tableName" : "AD_User",
-          "recordId" : {
-            "keyColumnNames" : [
-              "AD_User_ID"
-            ],
-            "keysByColumnName" : {
-              "AD_User_ID" : 100020
-            }
-          },
-          "createdByUserId" : 30,
-          "createdTimestamp" : {
-            "seconds" : 1561134,
-            "nanos" : 560000000
-          },
-          "lastChangedByUserId" : 30,
-          "lastChangedTimestamp" : {
-            "seconds" : 1561134,
-            "nanos" : 560000000
-          },
-          "entries" : [ ]
-        },
-        "contactType" : {
-          "billToDefault" : {
-            "value" : false,
-            "present" : true
-          },
-          "defaultContact" : {
-            "value" : false,
-            "present" : true
-          },
-          "purchase" : {
-            "value" : false,
-            "present" : true
-          },
-          "purchaseDefault" : {
-            "value" : false,
-            "present" : true
-          },
-          "sales" : {
-            "value" : false,
-            "present" : true
-          },
-          "salesDefault" : {
-            "value" : false,
-            "present" : true
-          },
-          "shipToDefault" : {
-            "value" : false,
-            "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
-          }
-        },
-        "email" : "c1_email@email.net",
-        "handles" : [ ],
-        "id" : {
-          "bpartnerId" : 100015,
-          "userId" : 100020
-        },
-        "name" : "c1_name",
-        "newsletter" : false,
-        "phone" : "c1_phone"
-      },
       {
         "active" : true,
         "changeLog" : {
@@ -222,11 +154,79 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "present" : true
           }
         },
+        "email" : "c1_email@email.net",
+        "handles" : [ ],
+        "id" : {
+          "bpartnerId" : 100016,
+          "userId" : 100021
+        },
+        "name" : "c1_name",
+        "newsletter" : false,
+        "phone" : "c1_phone"
+      },
+      {
+        "active" : true,
+        "changeLog" : {
+          "tableName" : "AD_User",
+          "recordId" : {
+            "keyColumnNames" : [
+              "AD_User_ID"
+            ],
+            "keysByColumnName" : {
+              "AD_User_ID" : 100022
+            }
+          },
+          "createdByUserId" : 30,
+          "createdTimestamp" : {
+            "seconds" : 1561134,
+            "nanos" : 560000000
+          },
+          "lastChangedByUserId" : 30,
+          "lastChangedTimestamp" : {
+            "seconds" : 1561134,
+            "nanos" : 560000000
+          },
+          "entries" : [ ]
+        },
+        "contactType" : {
+          "billToDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "defaultContact" : {
+            "value" : false,
+            "present" : true
+          },
+          "purchase" : {
+            "value" : false,
+            "present" : true
+          },
+          "purchaseDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "sales" : {
+            "value" : false,
+            "present" : true
+          },
+          "salesDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "shipToDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "subjectMatter" : {
+            "value" : false,
+            "present" : true
+          }
+        },
         "email" : "c2_email@email.net",
         "handles" : [ ],
         "id" : {
-          "bpartnerId" : 100015,
-          "userId" : 100021
+          "bpartnerId" : 100016,
+          "userId" : 100022
         },
         "name" : "c2_name",
         "newsletter" : false,
@@ -245,7 +245,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
               "C_BPartner_Location_ID"
             ],
             "keysByColumnName" : {
-              "C_BPartner_Location_ID" : 100017
+              "C_BPartner_Location_ID" : 100018
             }
           },
           "createdByUserId" : 30,
@@ -265,8 +265,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "gln" : "l1_gln",
         "handles" : [ ],
         "id" : {
-          "repoId" : 100017,
-          "bpartnerId" : 100015
+          "repoId" : 100018,
+          "bpartnerId" : 100016
         },
         "locationType" : {
           "billTo" : {
@@ -301,7 +301,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
               "C_BPartner_Location_ID"
             ],
             "keysByColumnName" : {
-              "C_BPartner_Location_ID" : 100019
+              "C_BPartner_Location_ID" : 100020
             }
           },
           "createdByUserId" : 30,
@@ -321,8 +321,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "gln" : "l2_gln",
         "handles" : [ ],
         "id" : {
-          "repoId" : 100019,
-          "bpartnerId" : 100015
+          "repoId" : 100020,
+          "bpartnerId" : 100016
         },
         "locationType" : {
           "billTo" : {
@@ -503,7 +503,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
               "AD_User_ID"
             ],
             "keysByColumnName" : {
-              "AD_User_ID" : 100013
+              "AD_User_ID" : 100014
             }
           },
           "createdByUserId" : 30,
@@ -556,7 +556,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "handles" : [ ],
         "id" : {
           "bpartnerId" : 20,
-          "userId" : 100013
+          "userId" : 100014
         },
         "name" : "newContact_name",
         "newsletter" : false,
@@ -778,7 +778,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
               "AD_User_ID"
             ],
             "keysByColumnName" : {
-              "AD_User_ID" : 100013
+              "AD_User_ID" : 100014
             }
           },
           "createdByUserId" : 30,
@@ -830,7 +830,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "handles" : [ ],
         "id" : {
           "bpartnerId" : 20,
-          "userId" : 100013
+          "userId" : 100014
         },
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false
@@ -1319,7 +1319,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
               "C_BPartner_Location_ID"
             ],
             "keysByColumnName" : {
-              "C_BPartner_Location_ID" : 100015
+              "C_BPartner_Location_ID" : 100016
             }
           },
           "createdByUserId" : 30,
@@ -1339,7 +1339,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "gln" : "newLocation_gln",
         "handles" : [ ],
         "id" : {
-          "repoId" : 100015,
+          "repoId" : 100016,
           "bpartnerId" : 20
         },
         "locationType" : {

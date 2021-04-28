@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
@@ -42,6 +43,9 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
@@ -375,22 +379,5 @@ public class JsonOLCandCreateRequest
 								this);
 		}
 		return this;
-	}
-
-	public enum OrderDocType
-	{
-		@ApiEnum("Specifies if the order will be a standard one. A standard order will be created if no DocTYpe is specified.")
-		SalesOrder("SalesOrder"),
-
-		@ApiEnum("Specifies if the order will be prepaid")
-		PrepayOrder("PrepayOrder");
-
-		@Getter
-		private final String code;
-
-		OrderDocType(final String code)
-		{
-			this.code = code;
-		}
 	}
 }
