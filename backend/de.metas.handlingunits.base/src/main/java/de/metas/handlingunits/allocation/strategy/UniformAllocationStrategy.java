@@ -183,7 +183,10 @@ public class UniformAllocationStrategy implements IAllocationStrategy
 			final Quantity qtyToAllocate;
 			if (idx != lastIdx)
 			{
-				final Percent percent = Percent.of(candidate.getCurrentQty().toBigDecimal(), currentQtyTotal.toBigDecimal());
+				final BigDecimal currentCandidateQtyBD = candidate.getCurrentQty().toBigDecimal();
+				final BigDecimal currentQtyTotalBD = currentQtyTotal.toBigDecimal();
+				final int precision = currentCandidateQtyBD.precision() + currentCandidateQtyBD.precision(); // avoid nasty rounding errors
+				final Percent percent = Percent.of(currentCandidateQtyBD, currentQtyTotalBD, precision);
 				qtyToAllocate = qtyToAllocateTarget.multiply(percent);
 			}
 			else
