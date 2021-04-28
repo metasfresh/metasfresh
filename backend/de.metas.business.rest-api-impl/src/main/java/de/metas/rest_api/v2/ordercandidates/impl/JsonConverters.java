@@ -29,6 +29,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.IProductBL;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
@@ -82,6 +83,7 @@ public class JsonConverters
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public JsonConverters(
 			@NonNull final CurrencyService currencyService,
@@ -105,7 +107,8 @@ public class JsonConverters
 
 		final OrgId orgId = masterdataProvider.getOrgId(request.getOrgCode());
 
-		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(request.getProductIdentifier());
+		final String jsonProductIdentifier = request.getProductIdentifier();
+		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(jsonProductIdentifier);
 		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfo(productIdentifier, orgId);
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
@@ -128,8 +131,8 @@ public class JsonConverters
 		if (!"DEST.de.metas.invoicecandidate".equals(dataDestInternalName)) // TODO extract constant
 		{
 			Check.assumeNotNull(request.getDateRequired(),
-								"dateRequired may not be null, unless dataDestInternalName={}; this={}",
-								"DEST.de.metas.invoicecandidate", this);
+					"dateRequired may not be null, unless dataDestInternalName={}; this={}",
+					"DEST.de.metas.invoicecandidate", this);
 		}
 
 		final ShipperId shipperId = masterdataProvider.getShipperId(request);
@@ -154,6 +157,10 @@ public class JsonConverters
 		final OrderLineGroup orderLineGroup = jsonOrderLineGroup == null
 				? null
 				: OrderLineGroup.ofOrNull(jsonOrderLineGroup.getGroupKey(), jsonOrderLineGroup.isGroupMainItem());
+		if (orderLineGroup != null && orderLineGroup.isGroupMainItem() && productBL.isStocked(productInfo.getProductId()))
+		{
+			throw new AdempiereException("The stocked product identified by: " + jsonProductIdentifier + " cannot be used as compensation group main item.");
+		}
 
 		final String docBaseType = Optional.ofNullable(request.getInvoiceDocType())
 				.map(JsonDocTypeInfo::getDocBaseType)
@@ -269,6 +276,7 @@ public class JsonConverters
 		return dataSourceId;
 	}
 
+	@Nullable
 	private JsonResponseBPartnerLocationAndContact toJson(
 			@Nullable final String orgCode,
 			@Nullable final BPartnerInfo bpartnerInfo,
@@ -295,8 +303,8 @@ public class JsonConverters
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		return JsonOLCandCreateBulkResponse.ok(olCands.stream()
-													   .map(olCand -> toJson(olCand, masterdataProvider))
-													   .collect(ImmutableList.toImmutableList()));
+				.map(olCand -> toJson(olCand, masterdataProvider))
+				.collect(ImmutableList.toImmutableList()));
 	}
 
 	private JsonOLCand toJson(
