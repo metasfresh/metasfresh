@@ -9,8 +9,6 @@ import {
   getProcessData,
   formatParentUrl,
   deleteRequest,
-  initQuickInput,
-  completeRequest,
 } from './window';
 import {
   browseViewRequest,
@@ -29,11 +27,6 @@ import {
   patchRequest,
   quickActionsRequest,
   advSearchRequest,
-  getViewAttributesRequest,
-  getViewAttributesLayoutRequest,
-  patchViewAttributesRequest,
-  getViewAttributeDropdown,
-  getViewAttributeTypeahead,
 } from './view';
 import {
   loginRequest,
@@ -93,11 +86,4 @@ export {
   startProcess,
   topActionsRequest,
   advSearchRequest,
-  getViewAttributesRequest,
-  getViewAttributesLayoutRequest,
-  patchViewAttributesRequest,
-  getViewAttributeDropdown,
-  getViewAttributeTypeahead,
-  initQuickInput,
-  completeRequest,
 };

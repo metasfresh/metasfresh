@@ -9,7 +9,7 @@ import {
   dropdownRequest,
   dropdownModalRequest,
 } from '../../../actions/GenericActions';
-import { getViewAttributeDropdown } from '../../../api';
+import { getViewAttributeDropdown } from '../../../actions/ViewAttributesActions';
 import RawList from './RawList';
 
 class ListWidget extends Component {

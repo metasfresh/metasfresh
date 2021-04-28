@@ -76,7 +76,7 @@ export const getSelection = () => {
   );
 };
 
-export const getSupportAttribute = (selected, rows) => {
+const setSupportAttribute = (selected, rows) => {
   if (!selected.length || !rows.length) {
     return;
   }
@@ -101,7 +101,7 @@ const reducer = produce((draftState, action) => {
         const selected = [data.rows[0][data.keyProperty]];
         updatedSelected = {
           selected,
-          supportAttribute: getSupportAttribute(selected, data.rows),
+          supportAttribute: setSupportAttribute(selected, data.rows),
         };
       }
 
@@ -138,7 +138,7 @@ const reducer = produce((draftState, action) => {
           const newSelected = [data.rows[0][data.keyProperty]];
           updatedSelected = {
             selected: newSelected,
-            supportAttribute: getSupportAttribute(newSelected, data.rows),
+            supportAttribute: setSupportAttribute(newSelected, data.rows),
           };
         }
       }
@@ -178,7 +178,7 @@ const reducer = produce((draftState, action) => {
         const newSelected = [rows[0][keyProperty]];
         updatedSelected = {
           selected: newSelected,
-          supportAttribute: getSupportAttribute(newSelected, rows),
+          supportAttribute: setSupportAttribute(newSelected, rows),
         };
       }
 
@@ -256,7 +256,7 @@ const reducer = produce((draftState, action) => {
 
       if (selectionValid) {
         draftState[id].selected = selection;
-        draftState[id].supportAttribute = getSupportAttribute(selection, rows);
+        draftState[id].supportAttribute = setSupportAttribute(selection, rows);
       }
 
       return;
@@ -274,7 +274,7 @@ const reducer = produce((draftState, action) => {
             draftState[id].selected,
             selection
           );
-          draftState[id].supportAttribute = getSupportAttribute(
+          draftState[id].supportAttribute = setSupportAttribute(
             draftState[id].selected,
             rows
           );

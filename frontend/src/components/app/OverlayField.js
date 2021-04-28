@@ -8,8 +8,11 @@ import {
   openModal,
   patch,
   updatePropertyValue,
+  allowShortcut,
+  disableShortcut,
 } from '../../actions/WindowActions';
-import WidgetWrapper from '../../containers/WidgetWrapper';
+import MasterWidget from '../widget/MasterWidget';
+import RawWidget from '../widget/RawWidget';
 import BarcodeScanner from '../widget/BarcodeScanner/BarcodeScannerWidget';
 
 /**
@@ -83,6 +86,8 @@ class OverlayField extends Component {
       openModal,
       patch,
       updatePropertyValue,
+      allowShortcut,
+      disableShortcut,
     } = this.props;
     const elements = layout.elements;
 
@@ -95,9 +100,7 @@ class OverlayField extends Component {
       }
 
       return (
-        <WidgetWrapper
-          dataSource="overlay-field"
-          renderMaster={true}
+        <MasterWidget
           entity="process"
           key={'element' + id}
           windowId={type}
@@ -112,6 +115,8 @@ class OverlayField extends Component {
           openModal={openModal}
           patch={patch}
           updatePropertyValue={updatePropertyValue}
+          allowShortcut={allowShortcut}
+          disableShortcut={disableShortcut}
           {...elem}
         />
       );
@@ -134,6 +139,10 @@ class OverlayField extends Component {
       handleChange,
       captionValue,
       codeSelected,
+      modalVisible,
+      timeZone,
+      allowShortcut,
+      disableShortcut,
     } = this.props;
     const parameters = layout.parameters;
     return parameters.map((item, index) => {
@@ -148,8 +157,7 @@ class OverlayField extends Component {
       }
 
       return (
-        <WidgetWrapper
-          dataSource="overlay-field"
+        <RawWidget
           defaultValue={captionValue}
           captionElement={captionElement}
           entity="documentView"
@@ -174,6 +182,10 @@ class OverlayField extends Component {
             onShow,
             onHide,
             viewId,
+            modalVisible,
+            timeZone,
+            allowShortcut,
+            disableShortcut,
           }}
         />
       );
@@ -213,6 +225,15 @@ class OverlayField extends Component {
   }
 }
 
+const mapStateToProps = (state) => {
+  const { appHandler, windowHandler } = state;
+
+  return {
+    modalVisible: windowHandler.modal.visible,
+    timeZone: appHandler.me.timeZone,
+  };
+};
+
 /**
  * @typedef {object} OverlayField
  * @prop {func} onChange
@@ -235,6 +256,10 @@ class OverlayField extends Component {
  * @prop {any} onScanBarcode
  * @prop {any} onSelectBarcode
  * @prop {any} handleSubmit
+ * @prop {bool} modalVisible
+ * @prop {string} timeZone
+ * @prop {func} allowShortcut
+ * @prop {func} disableShortcut
  * @prop {func} updatePropertyValue
  * @prop {func} openModal
  * @prop {func} patch
@@ -260,6 +285,10 @@ OverlayField.propTypes = {
   onScanBarcode: PropTypes.any,
   onSelectBarcode: PropTypes.any,
   handleSubmit: PropTypes.any,
+  allowShortcut: PropTypes.func.isRequired,
+  disableShortcut: PropTypes.func.isRequired,
+  modalVisible: PropTypes.bool.isRequired,
+  timeZone: PropTypes.string.isRequired,
   updatePropertyValue: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
   patch: PropTypes.func.isRequired,
@@ -267,8 +296,10 @@ OverlayField.propTypes = {
 
 export default BarcodeScanner(
   connect(
-    null,
+    mapStateToProps,
     {
+      allowShortcut,
+      disableShortcut,
       openModal,
       patch,
       updatePropertyValue,

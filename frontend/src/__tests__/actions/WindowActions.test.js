@@ -87,13 +87,6 @@ describe('WindowActions thunks', () => {
         .get(`/window/${windowType}/layout`)
         .reply(200, layoutResp);
 
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/menu/elementPath?type=window&elementId=${windowType}&inclusive=true`
-        )
-        .reply(200, dataFixtures.breadcrumbs1);
-
       const expectedActions = [
         { type: ACTION_TYPES.INIT_WINDOW },
         { type: ACTION_TYPES.INIT_DATA_SUCCESS, ...data },
@@ -165,13 +158,6 @@ describe('WindowActions thunks', () => {
         .get(`/window/${windowType}/${docId}/`)
         .reply(404);
 
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/menu/elementPath?type=window&elementId=${windowType}&inclusive=true`
-        )
-        .reply(200, dataFixtures.breadcrumbs1);
-
       const expectedActions = [
         { type: ACTION_TYPES.INIT_WINDOW },
         { type: ACTION_TYPES.INIT_DATA_SUCCESS, ...notFoundResp },
@@ -239,13 +225,6 @@ describe('WindowActions thunks', () => {
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get(`/window/${windowType}/${docId}/${tabId}/`)
         .reply(200, tabsData);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/menu/elementPath?type=window&elementId=${windowType}&inclusive=true`
-        )
-        .reply(200, dataFixtures.breadcrumbs1);
 
       const expectedActions = [
         { type: ACTION_TYPES.INIT_WINDOW },

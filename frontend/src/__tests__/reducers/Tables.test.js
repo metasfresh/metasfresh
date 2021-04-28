@@ -3,7 +3,7 @@ import merge from 'merge';
 import { deleteTable, updateTableSelection } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import reducer, {
-  initialState, 
+  initialState,
   initialTableState,
 } from '../../reducers/tables';
 
@@ -121,11 +121,8 @@ describe('Tables reducer', () => {
       [id]: { ...initialTableState, ...basicData },
       length: 1,
     });
-    const deleteAction = {
-      type: ACTION_TYPES.DELETE_TABLE,
-      payload: { id },
-    }
-    const actions = [deleteAction];
+
+    const actions = [deleteTable(id)];
     const state = actions.reduce(reducer, initialStateData);
 
     expect(state).toEqual({ length: 0 });

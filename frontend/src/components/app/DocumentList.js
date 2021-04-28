@@ -13,7 +13,7 @@ import {
 } from '../../utils/documentListHelper';
 import Spinner from './SpinnerOverlay';
 import BlankPage from '../BlankPage';
-import SelectionAttributes from './SelectionAttributes';
+import DataLayoutWrapper from '../DataLayoutWrapper';
 import Filters from '../filters/Filters';
 import FiltersStatic from '../filters/FiltersStatic';
 import Table from '../../containers/Table';
@@ -355,7 +355,8 @@ export default class DocumentList extends Component {
                 }}
               >
                 {layout.supportAttributes && !isIncluded && !hasIncluded && (
-                  <SelectionAttributes
+                  <DataLayoutWrapper
+                    className="table-flex-wrapper attributes-selector js-not-unselect"
                     entity="documentView"
                     supportAttribute={table.supportAttribute}
                     setClickOutsideLock={this.setClickOutsideLock}

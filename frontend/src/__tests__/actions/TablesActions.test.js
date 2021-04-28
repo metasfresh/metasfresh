@@ -51,24 +51,11 @@ const createState = function(state = {}) {
 
 describe('TableActions general', () => {
   it('should call DELETE_TABLE action with correct payload', () => {
-    const { windowType, viewId } = gridProps.props1;
-    const id = getTableId({ windowId: windowType, viewId });
-    const payload = { id };
+    const payload = { id: '143_143-F' };
+    const action = deleteTable(payload.id);
 
-    const initialState = createState({
-      tables: {
-        length: 1,
-        [id]: { id },
-      },
-    });
-    const store = mockStore(initialState);
-    const expectedActions = [
-      { type: ACTION_TYPES.DELETE_ATTRIBUTES },
-      { type: ACTION_TYPES.DELETE_TABLE, payload }
-    ];
-
-    store.dispatch(deleteTable(id));
-    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
+    expect(action.type).toEqual(ACTION_TYPES.DELETE_TABLE);
+    expect(action.payload).toHaveProperty('id', payload.id);
   });
 
   it(`dispatches 'SET_ACTIVE_SORT' action when setting active sort`, () => {

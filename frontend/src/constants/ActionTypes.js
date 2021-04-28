@@ -5,7 +5,6 @@ export * from './actions/TabTypes';
 export * from './actions/FilterTypes';
 export * from './actions/Actions';
 export * from './actions/InlineTabTypes';
-export * from './actions/WindowActions';
 
 /**
  * @constant
