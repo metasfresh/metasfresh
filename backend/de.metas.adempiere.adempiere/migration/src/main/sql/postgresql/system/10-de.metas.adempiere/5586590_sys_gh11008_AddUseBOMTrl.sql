@@ -95,42 +95,42 @@ UPDATE AD_Element_Trl SET IsTranslated='N',Updated=TO_TIMESTAMP('2021-04-27 10:2
 
 -- 2021-04-27T08:30:19.419Z
 -- URL zum Konzept
-UPDATE AD_Process SET Name='Zubehörteile reservieren',Updated=TO_TIMESTAMP('2021-04-27 10:30:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584783
+UPDATE AD_Process SET Name='ZubehÃ¶rteile reservieren',Updated=TO_TIMESTAMP('2021-04-27 10:30:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584783
 ;
 
 -- 2021-04-27T08:31:00.073Z
 -- URL zum Konzept
-UPDATE AD_Process SET Name='Reservierte Zubehörteile stornieren',Updated=TO_TIMESTAMP('2021-04-27 10:31:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584785
+UPDATE AD_Process SET Name='Reservierte ZubehÃ¶rteile stornieren',Updated=TO_TIMESTAMP('2021-04-27 10:31:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584785
 ;
 
 -- 2021-04-27T10:57:59.199Z
 -- URL zum Konzept
-UPDATE AD_Process_Trl SET Name='Zubehörteile reservieren',Updated=TO_TIMESTAMP('2021-04-27 12:57:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584783
+UPDATE AD_Process_Trl SET Name='ZubehÃ¶rteile reservieren',Updated=TO_TIMESTAMP('2021-04-27 12:57:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584783
 ;
 
 -- 2021-04-27T10:58:06.321Z
 -- URL zum Konzept
-UPDATE AD_Process_Trl SET Name='Zubehörteile reservieren',Updated=TO_TIMESTAMP('2021-04-27 12:58:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584783
+UPDATE AD_Process_Trl SET Name='ZubehÃ¶rteile reservieren',Updated=TO_TIMESTAMP('2021-04-27 12:58:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584783
 ;
 
 -- 2021-04-27T10:58:13.849Z
 -- URL zum Konzept
-UPDATE AD_Process_Trl SET Name='Zubehörteile reservieren',Updated=TO_TIMESTAMP('2021-04-27 12:58:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584783
+UPDATE AD_Process_Trl SET Name='ZubehÃ¶rteile reservieren',Updated=TO_TIMESTAMP('2021-04-27 12:58:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584783
 ;
 
 -- 2021-04-27T10:59:19.233Z
 -- URL zum Konzept
-UPDATE AD_Process_Trl SET Name='Reservierte Zubehörteile stornieren',Updated=TO_TIMESTAMP('2021-04-27 12:59:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584785
+UPDATE AD_Process_Trl SET Name='Reservierte ZubehÃ¶rteile stornieren',Updated=TO_TIMESTAMP('2021-04-27 12:59:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584785
 ;
 
 -- 2021-04-27T10:59:23.862Z
 -- URL zum Konzept
-UPDATE AD_Process_Trl SET Name='Reservierte Zubehörteile stornieren',Updated=TO_TIMESTAMP('2021-04-27 12:59:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584785
+UPDATE AD_Process_Trl SET Name='Reservierte ZubehÃ¶rteile stornieren',Updated=TO_TIMESTAMP('2021-04-27 12:59:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584785
 ;
 
 -- 2021-04-27T10:59:32.116Z
 -- URL zum Konzept
-UPDATE AD_Process_Trl SET Name='Reservierte Zubehörteile stornieren',Updated=TO_TIMESTAMP('2021-04-27 12:59:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584785
+UPDATE AD_Process_Trl SET Name='Reservierte ZubehÃ¶rteile stornieren',Updated=TO_TIMESTAMP('2021-04-27 12:59:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584785
 ;
 
 
