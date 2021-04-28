@@ -164,7 +164,7 @@ public class MaterialTrackingAttributeValuesProvider implements IAttributeValues
 		if (attributeSet.hasAttribute(attributeRecord))
 		{
 			final int currentMaterialTrackingId = attributeSet.getValueAsInt(attributeRecord);
-			result.put(CTXNAME_M_Product_ID, idOrMinusOne(currentMaterialTrackingId));
+			result.put(CTXNAME_M_Material_Tracking, idOrMinusOne(currentMaterialTrackingId));
 		}
 		else
 		{
