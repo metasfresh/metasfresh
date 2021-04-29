@@ -96,7 +96,6 @@ class SelectionAttributes extends PureComponent {
                 entity={entity}
                 windowId={windowId}
                 dataId={dataId}
-                noLabel={true}
                 attribute={true}
                 widgetType={item.widgetType}
                 fields={item.fields}
