@@ -432,7 +432,7 @@ public class ShopwareClient
 					OrderCandidate.builder()
 							.jsonOrder(jsonOrder);
 
-			if (customIdJSONPath != null)
+			if (Check.isNotBlank(customIdJSONPath))
 			{
 				final String customId = orderJson.at(customIdJSONPath).asText();
 
@@ -450,7 +450,7 @@ public class ShopwareClient
 				return Optional.empty();
 			}
 
-			if (salesRepJSONPath != null){
+			if (Check.isNotBlank(salesRepJSONPath)){
 				final String salesRepId = orderJson.at(salesRepJSONPath).asText();
 				orderCandidateBuilder.salesRepId(salesRepId.isEmpty() ? null : salesRepId);
 			}
@@ -480,7 +480,7 @@ public class ShopwareClient
 			final JsonOrderAddressAndCustomId.JsonOrderAddressAndCustomIdBuilder jsonOrderAddressWithCustomId = JsonOrderAddressAndCustomId.builder()
 					.jsonOrderAddress(jsonOrderAddress);
 
-			if (customIdJSONPath != null)
+			if (Check.isNotBlank(customIdJSONPath))
 			{
 				final String customId = orderAddressJson.at(customIdJSONPath).asText();
 

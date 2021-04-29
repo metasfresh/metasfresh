@@ -65,7 +65,6 @@ public class OrderCandidatesRestControllerImpl
 	private final BpartnerRestController bpartnerRestController;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final OrderCandidateRestControllerService orderCandidateRestControllerService;
-	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final JsonRetrieverService jsonRetrieverService;
 
 	private PermissionServiceFactory permissionServiceFactory;
@@ -74,14 +73,12 @@ public class OrderCandidatesRestControllerImpl
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			@NonNull final OrderCandidateRestControllerService orderCandidateRestControllerService,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService)
+			@NonNull final OrderCandidateRestControllerService orderCandidateRestControllerService)
 	{
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.bpartnerRestController = bpartnerRestController;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.orderCandidateRestControllerService = orderCandidateRestControllerService;
-		this.externalReferenceService = externalReferenceService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
 	}
 
@@ -109,7 +106,6 @@ public class OrderCandidatesRestControllerImpl
 					.bpartnerRestController(bpartnerRestController)
 					.externalReferenceRestControllerService(externalReferenceRestControllerService)
 					.jsonRetrieverService(jsonRetrieverService)
-					.externalReferenceService(externalReferenceService)
 					.build();
 
 			final ITrxManager trxManager = Services.get(ITrxManager.class);

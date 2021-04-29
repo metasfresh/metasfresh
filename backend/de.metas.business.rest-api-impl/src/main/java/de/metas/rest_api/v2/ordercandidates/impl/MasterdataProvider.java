@@ -98,12 +98,13 @@ final class MasterdataProvider
 	private MasterdataProvider(
 			@NonNull final PermissionService permissionService,
 			@NonNull final BpartnerRestController bpartnerRestController,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService, final JsonRetrieverService jsonRetrieverService, final ExternalReferenceRestControllerService externalReferenceService)
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			@NonNull final JsonRetrieverService jsonRetrieverService)
 	{
 		this.permissionService = permissionService;
 		this.bpartnerEndpointAdapter = new BPartnerEndpointAdapter(bpartnerRestController);
 		this.jsonRetrieverService = jsonRetrieverService;
-		this.externalReferenceService = externalReferenceService;
+		this.externalReferenceService = externalReferenceRestControllerService;
 		this.productMasterDataProvider = new ProductMasterDataProvider(permissionService, externalReferenceRestControllerService);
 	}
 
