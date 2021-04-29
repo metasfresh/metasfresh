@@ -28,10 +28,8 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
-import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.util.lang.ITableRecordReference;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -113,6 +111,9 @@ class ExternalSystemConfigRepoTest
 		childRecord.setClient_Id("id");
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		childRecord.setExternalSystemValue("testShopware6Value");
+		childRecord.setJSONPathConstantBPartnerID("/test/bp");
+		childRecord.setJSONPathSalesRepID("/test/salesrep");
+		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		saveRecord(childRecord);
 
 		// when
@@ -140,6 +141,9 @@ class ExternalSystemConfigRepoTest
 		childRecord.setBaseURL("baseUrl");
 		childRecord.setClient_Secret("secret");
 		childRecord.setClient_Id("id");
+		childRecord.setJSONPathConstantBPartnerID("/test/bp");
+		childRecord.setJSONPathSalesRepID("/test/salesrep");
+		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		saveRecord(childRecord);
@@ -256,6 +260,9 @@ class ExternalSystemConfigRepoTest
 		childRecord.setClient_Secret("secret");
 		childRecord.setClient_Id("id");
 		childRecord.setExternalSystemValue(value);
+		childRecord.setJSONPathConstantBPartnerID("/test/bp");
+		childRecord.setJSONPathSalesRepID("/test/salesrep");
+		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		saveRecord(childRecord);
 

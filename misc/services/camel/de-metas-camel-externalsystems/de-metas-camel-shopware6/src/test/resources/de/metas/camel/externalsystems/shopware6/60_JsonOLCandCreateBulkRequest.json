@@ -19,6 +19,9 @@
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
       "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode" : "mockSalesRepIdentifier"
+      },
       "orderDocType": "SalesOrder",
       "paymentTerm": "val-paymentTermValue",
       "productIdentifier": "ext-Shopware6-productId",
@@ -62,6 +65,9 @@
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
       "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode" : "mockSalesRepIdentifier"
+      },
       "orderDocType": "SalesOrder",
       "paymentTerm": "val-paymentTermValue",
       "productIdentifier": "ext-Shopware6-productId2",

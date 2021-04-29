@@ -32,7 +32,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrders;
@@ -95,6 +95,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 	private static final String MOCK_CREATE_PAYMENT = "mock:createPayment";
 	private static final String MOCK_UPSERT_RUNTIME_PARAMETERS = "mock:upsertRuntimeParams";
 
+	private static final String SALES_REP_IDENTIFIER = "mockSalesRepIdentifier";
 	private static final String JSON_SHOPWARE_MAPPINGS = "01_JsonExternalSystemShopware6ConfigMappings.json";
 	private static final String JSON_ORDERS_RESOURCE_PATH = "10_JsonOrders.json";
 	private static final String JSON_ORDER_TRANSACTIONS_PATH = "12_JsonOrderTransactions.json";
@@ -283,10 +284,10 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 			final InputStream ordersIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDERS_RESOURCE_PATH);
 			final JsonOrders jsonOrders = mapper.readValue(ordersIS, JsonOrders.class);
 
-			final List<JsonOrderAndCustomId> jsonOrderAndCustomIds = jsonOrders
+			final List<OrderCandidate> orderCandidates = jsonOrders
 					.getData()
 					.stream()
-					.map(order -> JsonOrderAndCustomId.builder().jsonOrder(order).build())
+					.map(order -> OrderCandidate.builder().jsonOrder(order).salesRepId(SALES_REP_IDENTIFIER).build())
 					.collect(Collectors.toList());
 
 			// mock shopware client
@@ -316,7 +317,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.shopware6ConfigMappings(shopware6ConfigMappings)
 					.build();
 
-			exchange.getIn().setBody(jsonOrderAndCustomIds);
+			exchange.getIn().setBody(orderCandidates);
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 		}
 

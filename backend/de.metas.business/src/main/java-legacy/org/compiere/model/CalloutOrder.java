@@ -69,6 +69,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
@@ -99,6 +100,7 @@ public class CalloutOrder extends CalloutEngine
 
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
+	private static final String DEFAULT_INVOICE_RULE = "DEFAULT_INVOICE_RULE";
 
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
@@ -165,7 +167,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else
 		{
-			order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
+			order.setInvoiceRule(getDefaultInvoiceRule());
 		}
 
 		// Payment Rule - POS Order
@@ -505,7 +507,7 @@ public class CalloutOrder extends CalloutEngine
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
 				final String OrderType = order.getOrderType();
-				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
+				order.setInvoiceRule(getDefaultInvoiceRule());
 				// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
 				order.setPaymentRule(PaymentRule.OnCredit.getCode());
 				if (MOrder.DocSubType_Prepay.equals(OrderType))
@@ -587,6 +589,18 @@ public class CalloutOrder extends CalloutEngine
 		}
 		return NO_ERROR;
 	} // bPartner
+
+	private String getDefaultInvoiceRule()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+		final String invoiceRule = sysConfigBL.getValue(DEFAULT_INVOICE_RULE, X_C_Order.INVOICERULE_AfterDelivery);
+		if (!invoiceRule.trim().isEmpty())
+		{
+			return invoiceRule;
+		}
+		return X_C_Order.INVOICERULE_AfterDelivery;
+	}
 
 	private DocTypeId suggestDefaultSalesOrderDocTypeId(final I_C_Order order)
 	{
@@ -810,7 +824,7 @@ public class CalloutOrder extends CalloutEngine
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
 				final String OrderType = order.getOrderType();
-				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
+				order.setInvoiceRule(getDefaultInvoiceRule());
 				order.setPaymentRule(PaymentRule.OnCredit.getCode());
 				if (MOrder.DocSubType_Prepay.equals(OrderType))
 				{

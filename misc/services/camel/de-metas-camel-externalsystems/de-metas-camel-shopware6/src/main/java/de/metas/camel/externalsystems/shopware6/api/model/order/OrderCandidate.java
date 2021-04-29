@@ -31,7 +31,7 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class JsonOrderAndCustomId
+public class OrderCandidate
 {
 	@NonNull
 	JsonOrder jsonOrder;
@@ -39,9 +39,18 @@ public class JsonOrderAndCustomId
 	@Nullable
 	String customBPartnerId;
 
+	@Nullable
+	String salesRepId;
+
 	@NonNull
 	public String getEffectiveCustomerId()
 	{
-		return CoalesceUtil.coalesce(customBPartnerId, jsonOrder.getOrderCustomer().getCustomerId());
+		return CoalesceUtil.coalesce(customBPartnerId, getShopwareCustomerId());
+	}
+
+	@NonNull
+	public String getShopwareCustomerId()
+	{
+		return jsonOrder.getOrderCustomer().getCustomerId();
 	}
 }
