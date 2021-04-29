@@ -355,7 +355,12 @@ class FiltersItem extends PureComponent {
    * @todo Write the documentation
    */
   handleApply = () => {
-    const { applyFilters, closeFilterMenu, returnBackToDropdown } = this.props;
+    const {
+      applyFilters,
+      closeFilterMenu,
+      returnBackToDropdown,
+      isActive,
+    } = this.props;
     const { filter, activeFilter } = this.state;
 
     if (
@@ -382,20 +387,17 @@ class FiltersItem extends PureComponent {
     } else {
       // update the active filter with the defaultValue if value from active filter is empty
       let activeFilterClone = _.cloneDeep(activeFilter);
-      // if (!isActive) {
-      //   activeFilterClone = filter;
-      //   // - DISABLED setting the value to the defaultValue - we need to see the impact and if all the filters functionality works as expected
-      //   // TODO: do some cleaning in here once the filters are tested
-      //   activeFilterClone.parameters.map((afcItem) => {
-      //     let filterType = this.checkFilterTypeByName(afcItem);
-      //     if (filterType === 'YesNo') {
-      //       // YesNo filters (checkboxes) can be either null, true or false
-      //       afcItem.value = afcItem.defaultValue;
-      //     }
-      //     return afcItem;
-      //   });
-      // }
-      // console.log('A:', activeFilterClone);
+      if (!isActive) {
+        activeFilterClone = filter;
+        activeFilterClone.parameters.map((afcItem) => {
+          let filterType = this.checkFilterTypeByName(afcItem);
+          if (filterType === 'YesNo') {
+            // YesNo filters (checkboxes) can be either null, true or false
+            afcItem.value = afcItem.defaultValue;
+          }
+          return afcItem;
+        });
+      }
       applyFilters(activeFilterClone, () => {
         closeFilterMenu();
         returnBackToDropdown && returnBackToDropdown();
