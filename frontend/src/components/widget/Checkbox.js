@@ -18,6 +18,7 @@ const Checkbox = (props) => {
     id,
     filterWidget,
     isFilterActive,
+    updateItems,
   } = props;
   let { value, defaultValue } = props.widgetData[0];
 
@@ -43,6 +44,8 @@ const Checkbox = (props) => {
     setCheckedState(null);
     setChanged(true);
     handlePatch(widgetField, '', id);
+    // here we should call a method that would clear the filter item for the case when there is no active filter
+    !isFilterActive && updateItems({ widgetField, value: '' });
   };
 
   /**
@@ -53,6 +56,7 @@ const Checkbox = (props) => {
    */
   const updateCheckedState = (e) => {
     setCheckedState(!checkedState);
+    !isFilterActive && updateItems({ widgetField, value: !checkedState });
     setChanged(true);
     handlePatch(widgetField, e.target.checked, id);
   };
@@ -123,6 +127,7 @@ Checkbox.propTypes = {
   widgetField: PropTypes.string,
   isFilterActive: PropTypes.bool,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  updateItems: PropTypes.func, // function used for updating the filter items before having an active filter
 };
 
 export default Checkbox;

@@ -48,6 +48,7 @@ class FiltersItem extends PureComponent {
       isTooltipShow: false,
       maxWidth: null,
       maxHeight: null,
+      toChange: [],
     };
   }
 
@@ -350,6 +351,15 @@ class FiltersItem extends PureComponent {
   };
 
   /**
+   * updates the items for the case when there is no active filters, does this update within the existing default values
+   * @param {array} toChange
+   */
+  updateItems = (toChange) => {
+    console.log(toChange);
+    this.setState({ toChange });
+  };
+
+  /**
    * @method handleApply
    * @summary ToDo: Describe the method
    * @todo Write the documentation
@@ -361,7 +371,8 @@ class FiltersItem extends PureComponent {
       returnBackToDropdown,
       isActive,
     } = this.props;
-    const { filter, activeFilter } = this.state;
+    const { filter, activeFilter, toChange } = this.state;
+    console.log('toChange:', toChange);
 
     if (
       (filter &&
@@ -376,6 +387,7 @@ class FiltersItem extends PureComponent {
       this.setState(
         {
           activeFilter: filter,
+          toChange: [],
         },
         () => {
           applyFilters(this.state.activeFilter, () => {
@@ -394,6 +406,8 @@ class FiltersItem extends PureComponent {
           if (filterType === 'YesNo') {
             // YesNo filters (checkboxes) can be either null, true or false
             afcItem.value = afcItem.defaultValue;
+            // `toChange` holds the values to be updated for the case when there is noActive filter
+            console.log('ToCHange:', toChange);
           }
           return afcItem;
         });
@@ -558,6 +572,7 @@ class FiltersItem extends PureComponent {
                           onShow,
                           onHide,
                           isFilterActive: isActive,
+                          updateItems: this.updateItems,
                         }}
                       />
                     );

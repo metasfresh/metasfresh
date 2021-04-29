@@ -314,12 +314,10 @@ export function isFilterValid(filters) {
 export function parseFiltersToPatch(params) {
   return params.reduce((acc, param) => {
     // filters with only defaltValue shouldn't be sent to server
-    if (!param.defaultValue || !_.isEqual(param.defaultValue, param.value)) {
-      acc.push({
-        ...param,
-        value: param.value === '' ? null : param.value,
-      });
-    }
+    acc.push({
+      ...param,
+      value: param.value === '' ? null : param.value,
+    });
 
     return acc;
   }, []);
