@@ -180,13 +180,19 @@ public class UniformAllocationStrategy implements IAllocationStrategy
 		{
 			final AllocCandidate candidate = nonZeroCandidates.get(idx);
 
+			// metas-ts: i don't really understand what we do here, but to avoid rounding errors, we need a precision that is big, compared to the quantities' precisions.
+			// Otherwise, e.g. with a prcision of just four:
+			// currentQtyTotalBD=104 (HU with 104PCE)
+			// currentCandidateQtyBD=2 (TU with 2PCE)
+			// => percent = 1.9231 (<=rounded up) => qtyToAllocate ends up 3 instead of 2.
+			// why don't we take qtyToAllocate := currentCandidateQtyBD directly? IDK.
 			final Quantity qtyToAllocate;
 			if (idx != lastIdx)
 			{
 				final BigDecimal currentCandidateQtyBD = candidate.getCurrentQty().toBigDecimal();
 				final BigDecimal currentQtyTotalBD = currentQtyTotal.toBigDecimal();
-				final int precisionSum = currentCandidateQtyBD.precision() + currentCandidateQtyBD.precision(); // avoid nasty rounding errors
-				final Percent percent = Percent.of(currentCandidateQtyBD, currentQtyTotalBD, precisionSum * 2);
+				final int precision = (currentCandidateQtyBD.precision() + currentCandidateQtyBD.precision() + 1) * 20; // avoid nasty rounding errors
+				final Percent percent = Percent.of(currentCandidateQtyBD, currentQtyTotalBD, precision);
 				qtyToAllocate = qtyToAllocateTarget.multiply(percent);
 			}
 			else

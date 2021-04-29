@@ -106,6 +106,7 @@ public class Percent
 	 * Examples:
 	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("4"), 2)} returns an instance of "25%".
 	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("3"), 2)} returns an instance of "33.33%".
+	 * <li>{@code Percent.of(new BigDecimal("2"), new BigDecimal("100"), 2)} returns an instance of "2%".
 	 *
 	 * @param denominator if zero, then {@link #ZERO} percent is returned.
 	 * @return a percent instance with max. two digits after the decimal point.
