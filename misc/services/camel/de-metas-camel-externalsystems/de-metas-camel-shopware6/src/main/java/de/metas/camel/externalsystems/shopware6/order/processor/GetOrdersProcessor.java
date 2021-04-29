@@ -29,7 +29,7 @@ import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
 import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
@@ -82,11 +82,12 @@ public class GetOrdersProcessor implements Processor
 
 		final String bPartnerIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID);
 		final String bPartnerLocationIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID);
+		final String salesRepJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID);
 
 		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath);
 		final QueryRequest getOrdersRequest = buildQueryOrdersRequest(updatedAfter);
 
-		final List<JsonOrderAndCustomId> ordersToProcess = shopwareClient.getOrders(getOrdersRequest, bPartnerIdJSONPath);
+		final List<OrderCandidate> ordersToProcess = shopwareClient.getOrders(getOrdersRequest, bPartnerIdJSONPath, salesRepJSONPath);
 
 		exchange.getIn().setBody(ordersToProcess);
 

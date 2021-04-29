@@ -23,7 +23,7 @@
 package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransaction;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
@@ -51,7 +51,7 @@ public class OrderFilter implements Processor
 	{
 		final ImportOrdersRouteContext routeContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
 
-		final JsonOrderAndCustomId orderAndCustomId = exchange.getIn().getBody(JsonOrderAndCustomId.class);
+		final OrderCandidate orderAndCustomId = exchange.getIn().getBody(OrderCandidate.class);
 
 		final Optional<OrderCompositeInfo> orderToImport = checkOrderState(orderAndCustomId)
 				.flatMap(order -> checkOrderTransactionStateAndPayment(order, routeContext.getShopwareClient()));
@@ -68,7 +68,7 @@ public class OrderFilter implements Processor
 		exchange.getIn().setBody(orderAndCustomId);
 	}
 
-	private Optional<JsonOrderAndCustomId> checkOrderState(@NonNull final JsonOrderAndCustomId orderAndCustomId)
+	private Optional<OrderCandidate> checkOrderState(@NonNull final OrderCandidate orderAndCustomId)
 	{
 		final JsonStateMachine stateMachine = orderAndCustomId.getJsonOrder().getStateMachine();
 
@@ -83,7 +83,7 @@ public class OrderFilter implements Processor
 	}
 
 	private Optional<OrderCompositeInfo> checkOrderTransactionStateAndPayment(
-			@NonNull final JsonOrderAndCustomId orderAndCustomId,
+			@NonNull final OrderCandidate orderAndCustomId,
 			@NonNull final ShopwareClient shopwareClient)
 	{
 		final Optional<JsonOrderTransactions> orderTransactions = shopwareClient.getOrderTransactions(orderAndCustomId.getJsonOrder().getId());

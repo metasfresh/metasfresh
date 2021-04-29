@@ -1,11 +1,11 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
@@ -13,7 +13,11 @@ import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.ordercandidates.v2.request.JSONPaymentRule;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
+import de.metas.common.ordercandidates.v2.request.JsonSalesPartner;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -31,6 +35,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.shipping.IShipperDAO;
@@ -84,6 +89,8 @@ final class MasterdataProvider
 	private final PermissionService permissionService;
 	private final BPartnerEndpointAdapter bpartnerEndpointAdapter;
 	private final ProductMasterDataProvider productMasterDataProvider;
+	private final JsonRetrieverService jsonRetrieverService;
+	private final ExternalReferenceRestControllerService externalReferenceService;
 
 	private final Map<String, OrgId> orgIdsByCode = new HashMap<>();
 
@@ -91,10 +98,12 @@ final class MasterdataProvider
 	private MasterdataProvider(
 			@NonNull final PermissionService permissionService,
 			@NonNull final BpartnerRestController bpartnerRestController,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService)
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService, final JsonRetrieverService jsonRetrieverService, final ExternalReferenceRestControllerService externalReferenceService)
 	{
 		this.permissionService = permissionService;
 		this.bpartnerEndpointAdapter = new BPartnerEndpointAdapter(bpartnerRestController);
+		this.jsonRetrieverService = jsonRetrieverService;
+		this.externalReferenceService = externalReferenceService;
 		this.productMasterDataProvider = new ProductMasterDataProvider(permissionService, externalReferenceRestControllerService);
 	}
 
@@ -272,21 +281,61 @@ final class MasterdataProvider
 			@NonNull final JsonOLCandCreateRequest request,
 			@NonNull final OrgId orgId)
 	{
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+		final JsonSalesPartner jsonSalesPartner = request.getSalesPartner();
 
-		final String salesRepValue = request.getSalesPartnerCode();
-
-		if (Check.isEmpty(salesRepValue))
+		if (Check.isEmpty(jsonSalesPartner))
 		{
 			return null;
 		}
 
-		final Optional<BPartnerId> bPartnerIdBySalesPartnerCode = bPartnerDAO.getBPartnerIdBySalesPartnerCode(salesRepValue, ImmutableSet.of(OrgId.ANY, orgId));
+		final Optional<BPartnerId> bPartnerIdBySalesPartnerCode;
+		final String salesRepValue;
+
+		if (jsonSalesPartner.getSalesPartnerCode() != null)
+		{
+			salesRepValue = jsonSalesPartner.getSalesPartnerCode();
+			bPartnerIdBySalesPartnerCode = getBPartnerIdBySalesPartnerCode(orgId, salesRepValue);
+		}
+		else if (jsonSalesPartner.getSalesPartnerIdentifier() != null)
+		{
+			salesRepValue = jsonSalesPartner.getSalesPartnerIdentifier();
+			final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(salesRepValue);
+			bPartnerIdBySalesPartnerCode = jsonRetrieverService.resolveBPartnerExternalIdentifier(externalIdentifier, orgId);
+		}
+		else
+		{
+			throw new AdempiereException("JsonSalesPartner has all attributes empty!");
+		}
 
 		return bPartnerIdBySalesPartnerCode.orElseThrow(() -> MissingResourceException.builder()
 				.resourceName("salesPartnerCode")
 				.resourceIdentifier(salesRepValue)
 				.parentResource(request).build());
+
+	}
+
+	@NonNull
+	private Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(@NonNull final OrgId orgId, @NonNull final String salesRepValue)
+	{
+		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+
+		final ExternalBusinessKey externalBusinessKey = ExternalBusinessKey.of(salesRepValue);
+
+		if (ExternalBusinessKey.Type.VALUE.equals(externalBusinessKey.getType()))
+		{
+			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
+													 .bpartnerValue(externalBusinessKey.asValue())
+													 .build());
+		}
+		else if (ExternalBusinessKey.Type.EXTERNAL_REFERENCE.equals(externalBusinessKey.getType()))
+		{
+			final Optional<JsonMetasfreshId> metasfreshId = externalReferenceService
+					.getJsonMetasfreshIdFromExternalBusinessKey(orgId, externalBusinessKey, BPartnerExternalReferenceType.BPARTNER_VALUE);
+
+			return metasfreshId.map(id -> BPartnerId.ofRepoId(id.getValue()));
+		}
+
+		return Optional.empty();
 	}
 
 	public PaymentRule getPaymentRule(final JsonOLCandCreateRequest request)

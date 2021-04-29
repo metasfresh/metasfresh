@@ -11,6 +11,8 @@ import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Services;
@@ -63,17 +65,23 @@ public class OrderCandidatesRestControllerImpl
 	private final BpartnerRestController bpartnerRestController;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 	private final OrderCandidateRestControllerService orderCandidateRestControllerService;
+	private final ExternalReferenceRestControllerService externalReferenceService;
+	private final JsonRetrieverService jsonRetrieverService;
 
 	private PermissionServiceFactory permissionServiceFactory;
 
 	public OrderCandidatesRestControllerImpl(
+			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			@NonNull final OrderCandidateRestControllerService orderCandidateRestControllerService)
+			@NonNull final OrderCandidateRestControllerService orderCandidateRestControllerService,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService)
 	{
+		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.bpartnerRestController = bpartnerRestController;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.orderCandidateRestControllerService = orderCandidateRestControllerService;
+		this.externalReferenceService = externalReferenceService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
 	}
 
@@ -100,6 +108,8 @@ public class OrderCandidatesRestControllerImpl
 					.permissionService(permissionServiceFactory.createPermissionService())
 					.bpartnerRestController(bpartnerRestController)
 					.externalReferenceRestControllerService(externalReferenceRestControllerService)
+					.jsonRetrieverService(jsonRetrieverService)
+					.externalReferenceService(externalReferenceService)
 					.build();
 
 			final ITrxManager trxManager = Services.get(ITrxManager.class);

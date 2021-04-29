@@ -1,0 +1,154 @@
+{
+  "orderNumber": "orderNumber",
+  "currencyId": "currencyId",
+  "currencyFactor": 1,
+  "salesChannelId": "salesChannelId",
+  "billingAddressId": "billingAddressId",
+  "price": {
+    "netPrice": 10.00,
+    "totalPrice": 10.00,
+    "calculatedTaxes": [],
+    "taxRules": [],
+    "positionPrice": 8.00,
+    "taxStatus": "taxStatus",
+    "extensions": [],
+    "apiAlias": "apiAlias"
+  },
+  "amountTotal": 10.00,
+  "amountNet": 10.00,
+  "positionPrice": 8.00,
+  "taxStatus": "taxStatus",
+  "shippingCosts": {
+    "unitPrice": 1.00,
+    "quantity": 1,
+    "totalPrice": 1.00,
+    "calculatedTaxes": [],
+    "taxRules": [],
+    "referencePrice": null,
+    "listPrice": null,
+    "extensions": [],
+    "apiAlias": "apiAlias"
+  },
+  "shippingTotal": 1.00,
+  "orderCustomer": {
+    "email": "email@metasfresh.com",
+    "orderId": "orderId",
+    "salutationId": "salutationId",
+    "firstName": "firstName",
+    "lastName": "lastName",
+    "title": null,
+    "company": "company",
+    "customerNumber": "customerNumber",
+    "customerId": "customerId",
+    "customer": null,
+    "salutation": null,
+    "order": null,
+    "customFields": {
+      "metasfreshId": "123456",
+      "customUserId": "654321",
+      "custom_customer_attributes_user_id": "123456"
+    },
+    "remoteAddress": "1.1.1.1",
+    "_uniqueIdentifier": "_uniqueIdentifier",
+    "versionId": "versionId",
+    "translated": [],
+    "extensions": {
+      "internal_mapping_storage": {
+        "apiAlias": null,
+        "extensions": []
+      },
+      "foreignKeys": {
+        "apiAlias": null,
+        "extensions": []
+      }
+    },
+    "id": "id",
+    "orderVersionId": "orderVersionId",
+    "apiAlias": "apiAlias"
+  },
+  "currency": null,
+  "languageId": "languageId",
+  "language": null,
+  "salesChannel": null,
+  "addresses": null,
+  "billingAddress": null,
+  "deliveries": null,
+  "lineItems": null,
+  "transactions": null,
+  "autoIncrement": 66,
+  "stateMachineState": {
+    "name": "Open",
+    "technicalName": "open",
+    "stateMachineId": "stateMachineId",
+    "stateMachine": null,
+    "fromStateMachineTransitions": null,
+    "toStateMachineTransitions": null,
+    "translations": null,
+    "orders": null,
+    "orderTransactions": null,
+    "orderDeliveries": null,
+    "fromStateMachineHistoryEntries": null,
+    "toStateMachineHistoryEntries": null,
+    "customFields": null,
+    "_uniqueIdentifier": "_uniqueIdentifier1",
+    "versionId": null,
+    "translated": {
+      "name": "Open",
+      "customFields": []
+    },
+    "updatedAt": null,
+    "extensions": {
+      "internal_mapping_storage": {
+        "apiAlias": null,
+        "extensions": []
+      },
+      "foreignKeys": {
+        "apiAlias": null,
+        "extensions": []
+      }
+    },
+    "id": "id",
+    "apiAlias": "apiAlias"
+  },
+  "stateId": "stateId",
+  "customFields": {
+    "mad_order_customer_datatransfer": true,
+    "mad_order_customer_shippingdatatransfer": true
+  },
+  "documents": null,
+  "tags": null,
+  "affiliateCode": null,
+  "campaignCode": null,
+  "customerComment": null,
+  "ruleIds": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "10",
+    "11"
+  ],
+  "createdById": null,
+  "createdBy": null,
+  "updatedById": null,
+  "updatedBy": null,
+  "_uniqueIdentifier": "_uniqueIdentifier",
+  "versionId": "versionId",
+  "translated": [],
+  "createdAt": "2021-04-29T07:40:31.676+00:00",
+  "updatedAt": "2021-04-29T07:40:31.906+00:00",
+  "extensions": {
+    "foreignKeys": {
+      "apiAlias": null,
+      "extensions": []
+    }
+  },
+  "id": "id",
+  "billingAddressVersionId": "billingAddressVersionId",
+  "apiAlias": "order"
+}

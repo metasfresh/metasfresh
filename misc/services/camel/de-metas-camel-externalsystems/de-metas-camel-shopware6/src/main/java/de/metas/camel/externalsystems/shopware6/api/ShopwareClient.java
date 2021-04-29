@@ -38,11 +38,11 @@ import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerG
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDelivery;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderDeliveryItem;
 import de.metas.common.util.Check;
 import lombok.AllArgsConstructor;
@@ -102,10 +102,12 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	public List<JsonOrderAndCustomId> getOrders(@NonNull final QueryRequest queryRequest, @Nullable final String customIdentifierJSONPath)
+	public List<OrderCandidate> getOrders(@NonNull final QueryRequest queryRequest,
+			@Nullable final String customIdentifierJSONPath,
+			@Nullable final String salesRepJSONPath)
 	{
 		final URI resourceURI;
-		final List<JsonOrderAndCustomId> ordersAndCustomIds = new ArrayList<>();
+		final List<OrderCandidate> orderCandidates = new ArrayList<>();
 
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
@@ -122,7 +124,7 @@ public class ShopwareClient
 
 		if (response == null || response.getBody() == null)
 		{
-			return ordersAndCustomIds;
+			return orderCandidates;
 		}
 		else
 		{
@@ -142,15 +144,15 @@ public class ShopwareClient
 			{
 				for (final JsonNode orderCustomerNode : arrayJsonNode)
 				{
-					final Optional<JsonOrderAndCustomId> orderAddressCustomId =
-							getJsonOrderCustomId(orderCustomerNode, customIdentifierJSONPath);
+					final Optional<OrderCandidate> orderAddressCustomId =
+							getJsonOrderCandidate(orderCustomerNode, customIdentifierJSONPath, salesRepJSONPath);
 
-					orderAddressCustomId.ifPresent(ordersAndCustomIds::add);
+					orderAddressCustomId.ifPresent(orderCandidates::add);
 				}
 			}
 		}
 
-		return ordersAndCustomIds;
+		return orderCandidates;
 	}
 
 	@NonNull
@@ -413,7 +415,9 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	private Optional<JsonOrderAndCustomId> getJsonOrderCustomId(@Nullable final JsonNode orderJson, @Nullable final String customIdJSONPath)
+	protected Optional<OrderCandidate> getJsonOrderCandidate(@Nullable final JsonNode orderJson,
+			@Nullable final String customIdJSONPath,
+			@Nullable final String salesRepJSONPath)
 	{
 		if (orderJson == null)
 		{
@@ -424,8 +428,8 @@ public class ShopwareClient
 		{
 			final JsonOrder jsonOrder = objectMapper.treeToValue(orderJson, JsonOrder.class);
 
-			final JsonOrderAndCustomId.JsonOrderAndCustomIdBuilder jsonOrderAndCustomIdBuilder =
-					JsonOrderAndCustomId.builder()
+			final OrderCandidate.OrderCandidateBuilder orderCandidateBuilder =
+					OrderCandidate.builder()
 							.jsonOrder(jsonOrder);
 
 			if (customIdJSONPath != null)
@@ -434,7 +438,7 @@ public class ShopwareClient
 
 				if (!Strings.isBlank(customId))
 				{
-					jsonOrderAndCustomIdBuilder.customBPartnerId(customId);
+					orderCandidateBuilder.customBPartnerId(customId);
 				}
 				else
 				{
@@ -446,7 +450,12 @@ public class ShopwareClient
 				return Optional.empty();
 			}
 
-			return Optional.ofNullable(jsonOrderAndCustomIdBuilder.build());
+			if (salesRepJSONPath != null){
+				final String salesRepId = orderJson.at(salesRepJSONPath).asText();
+				orderCandidateBuilder.salesRepId(salesRepId.isEmpty() ? null : salesRepId);
+			}
+
+			return Optional.ofNullable(orderCandidateBuilder.build());
 
 		}
 		catch (final JsonProcessingException e)

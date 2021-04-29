@@ -50,6 +50,8 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	String bPartnerIdJSONPath;
 	@Nullable
 	String bPartnerLocationIdJSONPath;
+	@Nullable
+	String salesRepJSONPath;
 
 	@Builder
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
@@ -59,7 +61,8 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @NonNull String clientSecret,
 			final @NonNull List<ExternalSystemShopware6ConfigMapping> externalSystemShopware6ConfigMappingList,
 			final @Nullable String bPartnerIdJSONPath,
-			final @Nullable String bPartnerLocationIdJSONPath)
+			final @Nullable String bPartnerLocationIdJSONPath,
+			@Nullable final String salesRepJSONPath)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -69,6 +72,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.baseUrl = baseUrl;
 		this.bPartnerIdJSONPath = bPartnerIdJSONPath;
 		this.bPartnerLocationIdJSONPath = bPartnerLocationIdJSONPath;
+		this.salesRepJSONPath = salesRepJSONPath;
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)

@@ -27,7 +27,7 @@ import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLine;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
 import de.metas.camel.externalsystems.shopware6.api.model.order.PaymentMethodType;
@@ -45,6 +45,7 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
+import de.metas.common.ordercandidates.v2.request.JsonSalesPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -95,19 +96,20 @@ public class OLCandRequestProcessor implements Processor
 	{
 		final JsonOLCandCreateBulkRequest.JsonOLCandCreateBulkRequestBuilder olCandCreateBulkRequestBuilder = JsonOLCandCreateBulkRequest.builder();
 
-		final JsonOrderAndCustomId orderAndCustomId = context.getOrderNotNull();
+		final OrderCandidate orderCandidate = context.getOrderNotNull();
 
 		final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder = JsonOLCandCreateRequest.builder();
 		olCandCreateRequestBuilder
 				.orgCode(context.getOrgCode())
-				.currencyCode(getCurrencyCode(context.getCurrencyInfoProvider(), orderAndCustomId.getJsonOrder().getCurrencyId()))
-				.externalHeaderId(orderAndCustomId.getJsonOrder().getId())
-				.poReference(orderAndCustomId.getJsonOrder().getOrderNumber())
+				.currencyCode(getCurrencyCode(context.getCurrencyInfoProvider(), orderCandidate.getJsonOrder().getCurrencyId()))
+				.externalHeaderId(orderCandidate.getJsonOrder().getId())
+				.poReference(orderCandidate.getJsonOrder().getOrderNumber())
 				.bpartner(getBPartnerInfo(context, bPartnerUpsertResponse))
 				.billBPartner(getBillBPartnerInfo(context, bPartnerUpsertResponse))
-				.dateOrdered(getDateOrdered(orderAndCustomId.getJsonOrder()))
+				.dateOrdered(getDateOrdered(orderCandidate.getJsonOrder()))
 				.dateRequired(context.getDateRequired())
 				.dataSource(DATA_SOURCE_INT_SHOPWARE)
+				.salesPartner(JsonSalesPartner.builder().salesPartnerCode(context.getSalesRepId()).build())
 				.isManualPrice(true)
 				.isImportedWithIssues(true)
 				.discount(DEFAULT_ORDER_LINE_DISCOUNT)
@@ -117,11 +119,11 @@ public class OLCandRequestProcessor implements Processor
 
 		processShopwareConfigs(context, olCandCreateRequestBuilder);
 
-		final List<JsonOrderLine> orderLines = getJsonOrderLines(context, orderAndCustomId.getJsonOrder().getId());
+		final List<JsonOrderLine> orderLines = getJsonOrderLines(context, orderCandidate.getJsonOrder().getId());
 
 		if (orderLines.isEmpty())
 		{
-			throw new RuntimeException("Missing order lines! OrderId=" + orderAndCustomId.getJsonOrder().getId());
+			throw new RuntimeException("Missing order lines! OrderId=" + orderCandidate.getJsonOrder().getId());
 		}
 
 		orderLines.stream()
@@ -136,8 +138,8 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final JsonOrderAndCustomId orderAndCustomId = context.getOrderNotNull();
-		final String bPartnerExternalId = CoalesceUtil.coalesce(orderAndCustomId.getCustomBPartnerId(), orderAndCustomId.getJsonOrder().getOrderCustomer().getCustomerId());
+		final OrderCandidate orderCandidate = context.getOrderNotNull();
+		final String bPartnerExternalId = CoalesceUtil.coalesce(orderCandidate.getCustomBPartnerId(), orderCandidate.getJsonOrder().getOrderCustomer().getCustomerId());
 		final String bPartnerExternalIdentifier = ExternalIdentifierFormat.formatExternalId(bPartnerExternalId);
 
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()), bPartnerExternalIdentifier);
@@ -156,9 +158,9 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final JsonOrderAndCustomId orderAndCustomId = context.getOrderNotNull();
+		final OrderCandidate orderCandidate = context.getOrderNotNull();
 
-		final String bPartnerExternalId = CoalesceUtil.coalesce(orderAndCustomId.getCustomBPartnerId(), orderAndCustomId.getJsonOrder().getOrderCustomer().getCustomerId());
+		final String bPartnerExternalId = CoalesceUtil.coalesce(orderCandidate.getCustomBPartnerId(), orderCandidate.getJsonOrder().getOrderCustomer().getCustomerId());
 		final String bPartnerExternalIdentifier = ExternalIdentifierFormat.formatExternalId(bPartnerExternalId);
 
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()), bPartnerExternalIdentifier);
@@ -305,7 +307,7 @@ public class OLCandRequestProcessor implements Processor
 	@NonNull
 	private Optional<JsonCustomerGroups> invokeShopwareClientGetCustomerGroups(@NonNull final ImportOrdersRouteContext routeContext)
 	{
-		final JsonOrderAndCustomId order = routeContext.getOrderNotNull();
+		final OrderCandidate order = routeContext.getOrderNotNull();
 		final Optional<JsonCustomerGroups> groupsOptional;
 		try
 		{
