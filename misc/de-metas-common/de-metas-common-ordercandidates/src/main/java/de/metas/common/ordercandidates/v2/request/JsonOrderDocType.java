@@ -31,7 +31,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public enum OrderDocType
+public enum JsonOrderDocType
 {
 	@ApiEnum("Specifies if the order will be a standard one. A standard order will be created if no DocTYpe is specified.")
 	SalesOrder("SO"),
@@ -48,21 +48,21 @@ public enum OrderDocType
 	@Getter
 	private final String code;
 
-	OrderDocType(final String code)
+	JsonOrderDocType(final String code)
 	{
 		this.code = code;
 	}
 
-	private static final Map<String, OrderDocType> lookup;
+	private static final Map<String, JsonOrderDocType> lookup;
 
 	static
 	{
-		lookup = ImmutableMap.copyOf(Arrays.stream(OrderDocType.values())
-											 .collect(Collectors.toMap(OrderDocType::getCode, item -> item)));
+		lookup = ImmutableMap.copyOf(Arrays.stream(JsonOrderDocType.values())
+											 .collect(Collectors.toMap(JsonOrderDocType::getCode, item -> item)));
 	}
 
-	public static OrderDocType ofCode(@NonNull final String code){
-		final OrderDocType orderDocType = lookup.get(code);
+	public static JsonOrderDocType ofCode(@NonNull final String code){
+		final JsonOrderDocType orderDocType = lookup.get(code);
 
 		if(orderDocType == null){
 			throw new IllegalArgumentException("OrderDocType does not support code: " + code);

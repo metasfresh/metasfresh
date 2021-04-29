@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
-import de.metas.common.ordercandidates.v2.request.OrderDocType;
+import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -157,7 +157,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 						.description(externalSystemShopware6ConfigMapping.getDescription())
 						.seqNo(externalSystemShopware6ConfigMapping.getSeqNo());
 
-		final OrderDocType orderDocType = docTypeService
+		final JsonOrderDocType orderDocType = docTypeService
 				.getOrderDocType(externalSystemShopware6ConfigMapping.getDocTypeOrderId())
 				.orElseThrow(() -> new AdempiereException("OrderDocType was not found for Id: "
 																  + externalSystemShopware6ConfigMapping.getDocTypeOrderId()));

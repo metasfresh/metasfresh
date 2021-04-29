@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.shopware6.order.processor;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
+import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLine;
@@ -43,13 +44,14 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
-import de.metas.common.ordercandidates.v2.request.OrderDocType;
+import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.RuntimeCamelException;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -271,8 +273,8 @@ public class OLCandRequestProcessor implements Processor
 			return;
 		}
 
-		final Optional<JsonCustomerGroup> customerGroup = routeContext.getShopwareClient()
-				.getCustomerGroup(routeContext.getOrderNotNull().getEffectiveCustomerId())
+		final Optional<JsonCustomerGroups> groupsOptional = invokeShopwareClientGetCustomerGroups(routeContext);
+		final Optional<JsonCustomerGroup> customerGroup = groupsOptional
 				.filter(customerGroups -> customerGroups.getCustomerGroupList().size() == 1)
 				.map(jsonCustomerGroups -> jsonCustomerGroups.getCustomerGroupList().get(0));
 
@@ -293,10 +295,27 @@ public class OLCandRequestProcessor implements Processor
 				.filter(config -> config.isGroupMatching(customerGroupValue) && config.isPaymentMethodMatching(candidatePaymentMethod.getValue()))
 				.findFirst();
 
-		matchingConfig.ifPresent(config -> olCandCreateRequestBuilder.orderDocType(OrderDocType.ofCode(config.getDocTypeOrder()))
+		matchingConfig.ifPresent(config -> olCandCreateRequestBuilder.orderDocType(JsonOrderDocType.ofCode(config.getDocTypeOrder()))
 				.paymentRule(JSONPaymentRule.ofCode(config.getPaymentRule()))
 				.paymentTerm(Check.isBlank(config.getPaymentTermValue())
-									 ? null
-									 : VALUE_PREFIX + "-" + config.getPaymentTermValue()));
+						? null
+						: VALUE_PREFIX + "-" + config.getPaymentTermValue()));
+	}
+
+	@NonNull
+	private Optional<JsonCustomerGroups> invokeShopwareClientGetCustomerGroups(@NonNull final ImportOrdersRouteContext routeContext)
+	{
+		final JsonOrderAndCustomId order = routeContext.getOrderNotNull();
+		final Optional<JsonCustomerGroups> groupsOptional;
+		try
+		{
+
+			groupsOptional = routeContext.getShopwareClient().getCustomerGroup(order.getEffectiveCustomerId());
+		}
+		catch (final RuntimeException e)
+		{
+			throw new RuntimeCamelException("Exception getting CustomerGroup for order-id=" + order.getJsonOrder().getId() + " and customer-id=" + order.getEffectiveCustomerId(), e);
+		}
+		return groupsOptional;
 	}
 }

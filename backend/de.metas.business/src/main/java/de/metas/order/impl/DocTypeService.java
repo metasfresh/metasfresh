@@ -22,7 +22,7 @@
 
 package de.metas.order.impl;
 
-import de.metas.common.ordercandidates.v2.request.OrderDocType;
+import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -72,7 +72,8 @@ public class DocTypeService
 		return docTypeDAO.getDocTypeId(query);
 	}
 
-	public DocTypeId getOrderDocTypeId(final OrderDocType orderDocType, OrgId orgId)
+	@Nullable
+	public DocTypeId getOrderDocTypeId(@Nullable final JsonOrderDocType orderDocType, final OrgId orgId)
 	{
 		if (orderDocType == null)
 		{
@@ -82,7 +83,7 @@ public class DocTypeService
 		final String docBaseType = X_C_DocType.DOCBASETYPE_SalesOrder;
 		final String docSubType;
 
-		if (OrderDocType.PrepayOrder.equals(orderDocType))
+		if (JsonOrderDocType.PrepayOrder.equals(orderDocType))
 		{
 			docSubType = X_C_DocType.DOCSUBTYPE_PrepayOrder;
 		}
@@ -105,7 +106,7 @@ public class DocTypeService
 	}
 
 	@NonNull
-	public Optional<OrderDocType> getOrderDocType(@NonNull final DocTypeId docTypeId)
+	public Optional<JsonOrderDocType> getOrderDocType(@NonNull final DocTypeId docTypeId)
 	{
 
 		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
@@ -117,7 +118,7 @@ public class DocTypeService
 
 		if (docType != null)
 		{
-			return Optional.of(OrderDocType.ofCode(docType.getDocSubType()));
+			return Optional.of(JsonOrderDocType.ofCode(docType.getDocSubType()));
 		}
 
 		return Optional.empty();

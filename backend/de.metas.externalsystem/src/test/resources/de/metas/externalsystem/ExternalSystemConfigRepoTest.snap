@@ -77,7 +77,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "docTypeOrderId" : 10000,
         "paymentRule" : "K",
         "paymentTermId" : 10000,
-        "sw6CustomerGroup" : "test",
+        "sw6CustomerGroup" : "testWithAnä",
         "sw6PaymentMethod" : "test",
         "description" : "test"
       }

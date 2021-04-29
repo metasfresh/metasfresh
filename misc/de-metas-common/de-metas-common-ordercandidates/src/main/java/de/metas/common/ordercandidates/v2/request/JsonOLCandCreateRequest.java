@@ -43,9 +43,6 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
@@ -213,7 +210,7 @@ public class JsonOLCandCreateRequest
 
 	@ApiModelProperty(value = "Specifies if the created order will be a normal Sales Order or a Prepaid Sales Order")
 	@JsonInclude(Include.NON_NULL)
-	OrderDocType orderDocType;
+	JsonOrderDocType orderDocType;
 
 	@ApiModelProperty(value = "Specifies the payment rule that will propagate to the created order")
 	@JsonInclude(Include.NON_NULL)
@@ -298,7 +295,7 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType,
 			@JsonProperty("presetDateInvoiced") final @Nullable LocalDate presetDateInvoiced,
 			@JsonProperty("presetDateShipped") final @Nullable LocalDate presetDateShipped,
-			@JsonProperty("orderDocType") final @Nullable OrderDocType orderDocType,
+			@JsonProperty("orderDocType") final @Nullable JsonOrderDocType orderDocType,
 			@JsonProperty("paymentRule") final @Nullable JSONPaymentRule paymentRule,
 			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
 			@JsonProperty("shipper") final @Nullable String shipper,

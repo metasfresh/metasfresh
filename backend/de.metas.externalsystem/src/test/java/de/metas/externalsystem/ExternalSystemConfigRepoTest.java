@@ -264,7 +264,7 @@ class ExternalSystemConfigRepoTest
 		childMappingRecord.setC_DocTypeOrder_ID(10000);
 		childMappingRecord.setPaymentRule("K");
 		childMappingRecord.setSeqNo(10);
-		childMappingRecord.setSW6_Customer_Group("test");
+		childMappingRecord.setSW6_Customer_Group("testWithAnä");
 		childMappingRecord.setSW6_Payment_Method("test");
 		childMappingRecord.setDescription("test");
 		childMappingRecord.setExternalSystem_Config_Shopware6_ID(childRecord.getExternalSystem_Config_Shopware6_ID());
