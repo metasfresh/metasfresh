@@ -309,12 +309,12 @@ public class OLCandRequestProcessor implements Processor
 		final Optional<JsonCustomerGroups> groupsOptional;
 		try
 		{
-
-			groupsOptional = routeContext.getShopwareClient().getCustomerGroup(order.getEffectiveCustomerId());
+			// we need the "internal" shopware-ID to navigate to the customer
+			groupsOptional = routeContext.getShopwareClient().getCustomerGroup(order.getShopwareCustomerId());
 		}
 		catch (final RuntimeException e)
 		{
-			throw new RuntimeCamelException("Exception getting CustomerGroup for order-id=" + order.getJsonOrder().getId() + " and customer-id=" + order.getEffectiveCustomerId(), e);
+			throw new RuntimeCamelException("Exception getting CustomerGroup for order-id=" + order.getJsonOrder().getId() + " and customer-id=" + order.getShopwareCustomerId(), e);
 		}
 		return groupsOptional;
 	}

@@ -42,6 +42,12 @@ public class JsonOrderAndCustomId
 	@NonNull
 	public String getEffectiveCustomerId()
 	{
-		return CoalesceUtil.coalesce(customBPartnerId, jsonOrder.getOrderCustomer().getCustomerId());
+		return CoalesceUtil.coalesce(customBPartnerId, getShopwareCustomerId());
+	}
+
+	@NonNull
+	public String getShopwareCustomerId()
+	{
+		return jsonOrder.getOrderCustomer().getCustomerId();
 	}
 }
