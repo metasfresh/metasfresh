@@ -180,7 +180,7 @@ public class OLCandRequestProcessor implements Processor
 		final ShopwareClient shopwareClient = importOrdersRouteContext.getShopwareClient();
 
 		return shopwareClient.getOrderLines(orderId)
-				.map(JsonOrderLines::getOrderLines)
+				.map(JsonOrderLines::getOrderLinesWithProductId)
 				.orElseThrow(() -> new RuntimeException("Missing order lines! OrderId=" + orderId));
 	}
 
