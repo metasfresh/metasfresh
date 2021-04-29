@@ -29,16 +29,25 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
+import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrders;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
+import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
+import de.metas.common.externalsystem.JsonExternalSystemName;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -62,6 +71,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWARE6_SYSTEM_NAME;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_CURRENCY_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_EUR_CODE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_ORG_CODE;
@@ -71,6 +81,7 @@ import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuild
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.OLCAND_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -81,8 +92,14 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 	private static final String MOCK_BPARTNER_UPSERT = "mock:bPartnerUpsert";
 	private static final String MOCK_OL_CAND_CREATE = "mock:olCandCreate";
 	private static final String MOCK_OL_CAND_CLEAR = "mock:olCandClear";
+	private static final String MOCK_CREATE_PAYMENT = "mock:createPayment";
+	private static final String MOCK_UPSERT_RUNTIME_PARAMETERS = "mock:upsertRuntimeParams";
 
+	private static final String JSON_SHOPWARE_MAPPINGS = "01_JsonExternalSystemShopware6ConfigMappings.json";
 	private static final String JSON_ORDERS_RESOURCE_PATH = "10_JsonOrders.json";
+	private static final String JSON_ORDER_TRANSACTIONS_PATH = "12_JsonOrderTransactions.json";
+	private static final String JSON_ORDER_PAYMENT_METHOD_PATH = "14_JsonPaymentMethod.json";
+	private static final String JSON_ORDER_GROUPS_PATH = "16_JsonCustomerGroups.json";
 	private static final String JSON_ORDER_DELIVERIES_PATH = "20_JsonOrderDeliveries.json";
 	private static final String JSON_ORDER_BILLING_ADDRESS_PATH = "30_Billing_JsonOrderAddressCustomId.json";
 	private static final String JSON_ORDER_LINES = "40_JsonOrderLines.json";
@@ -92,6 +109,9 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 	private static final String JSON_UPSERT_BPARTNER_RESPONSE = "50_CamelUpsertBPartnerCompositeResponse.json";
 
 	private static final String JSON_OL_CAND_CREATE_REQUEST = "60_JsonOLCandCreateBulkRequest.json";
+	private static final String JSON_ORDER_PAYMENT_CREATE_REQUEST = "63_JsonOrderPaymentCreateRequest.json";
+
+	private static final String JSON_UPSERT_RUNTIME_PARAMS_REQUEST = "65_JsonESRuntimeParameterUpsertRequest.json";
 
 	private static final String JSON_OL_CAND_CLEAR_REQUEST = "70_JsonOLCandClearRequest.json";
 
@@ -128,8 +148,14 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 		final MockUpsertBPartnerProcessor createdBPartnerProcessor = new MockUpsertBPartnerProcessor();
 		final MockSuccessfullyCreatedOLCandProcessor successfullyCreatedOLCandProcessor = new MockSuccessfullyCreatedOLCandProcessor();
 		final MockSuccessfullyClearOrdersProcessor successfullyClearOrdersProcessor = new MockSuccessfullyClearOrdersProcessor();
+		final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor = new MockSuccessfullyCreatePaymentProcessor();
+		final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new MockSuccessfullyUpsertRuntimeParamsProcessor();
 
-		prepareRouteForTesting(createdBPartnerProcessor, successfullyCreatedOLCandProcessor, successfullyClearOrdersProcessor);
+		prepareRouteForTesting(createdBPartnerProcessor,
+							   successfullyCreatedOLCandProcessor,
+							   successfullyClearOrdersProcessor,
+							   runtimeParamsProcessor,
+							   createPaymentProcessor);
 
 		context.start();
 
@@ -154,18 +180,34 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 		final MockEndpoint olCandClearEndpoint = getMockEndpoint(MOCK_OL_CAND_CLEAR);
 		olCandClearEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonOLCandClearRequest, JsonOLCandClearRequest.class));
 
+		//validate create payment request
+		final InputStream jsonCreatePaymentRequest = this.getClass().getResourceAsStream(JSON_ORDER_PAYMENT_CREATE_REQUEST);
+
+		final MockEndpoint createPaymentEndpoint = getMockEndpoint(MOCK_CREATE_PAYMENT);
+		createPaymentEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonCreatePaymentRequest, JsonOrderPaymentCreateRequest.class));
+
+		//validate upsert runtime parameters request
+		final InputStream jsonUpsertRuntimeParamsRequest = this.getClass().getResourceAsStream(JSON_UPSERT_RUNTIME_PARAMS_REQUEST);
+
+		final MockEndpoint upsertRuntimeParametersEndpoint = getMockEndpoint(MOCK_UPSERT_RUNTIME_PARAMETERS);
+		upsertRuntimeParametersEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonUpsertRuntimeParamsRequest, JsonESRuntimeParameterUpsertRequest.class));
+
 		template.sendBody("direct:" + GET_ORDERS_ROUTE_ID, "Not relevant!");
 
 		assertThat(createdBPartnerProcessor.called).isEqualTo(1);
 		assertThat(successfullyCreatedOLCandProcessor.called).isEqualTo(1);
 		assertThat(successfullyClearOrdersProcessor.called).isEqualTo(1);
+		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
+		assertThat(createPaymentProcessor.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
 	}
 
 	private void prepareRouteForTesting(
 			final MockUpsertBPartnerProcessor upsertBPartnerProcessor,
 			final MockSuccessfullyCreatedOLCandProcessor olCandProcessor,
-			final MockSuccessfullyClearOrdersProcessor olCandClearProcessor) throws Exception
+			final MockSuccessfullyClearOrdersProcessor olCandClearProcessor,
+			final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
+			final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
 							  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
@@ -189,6 +231,11 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID)
 										  .skipSendToOriginalEndpoint()
 										  .process(olCandProcessor);
+
+								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .to(MOCK_CREATE_PAYMENT)
+										  .process(createPaymentProcessor);
 							  });
 
 		AdviceWith.adviceWith(context, CLEAR_ORDERS_ROUTE_ID,
@@ -196,6 +243,12 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 									  .skipSendToOriginalEndpoint()
 									  .to(MOCK_OL_CAND_CLEAR)
 									  .process(olCandClearProcessor));
+
+		AdviceWith.adviceWith(context, UPSERT_RUNTIME_PARAMS_ROUTE_ID,
+							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
+									  .skipSendToOriginalEndpoint()
+									  .to(MOCK_UPSERT_RUNTIME_PARAMETERS)
+									  .process(runtimeParamsProcessor));
 	}
 
 	private static String loadAsString(@NonNull final String name)
@@ -244,15 +297,27 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.currencyId2IsoCode(ImmutableMap.of(MOCK_CURRENCY_ID, MOCK_EUR_CODE))
 					.build();
 
+			final JsonExternalSystemRequest externalSystemRequest = JsonExternalSystemRequest
+					.builder()
+					.externalSystemName(JsonExternalSystemName.of(SHOPWARE6_SYSTEM_NAME))
+					.externalSystemConfigId(JsonMetasfreshId.of(1))
+					.orgCode(MOCK_ORG_CODE)
+					.command("command")
+					.build();
+
+			final InputStream shopwareMappingsIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS);
+			final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = mapper.readValue(shopwareMappingsIS, JsonExternalSystemShopware6ConfigMappings.class);
+
 			final ImportOrdersRouteContext ordersContext = ImportOrdersRouteContext.builder()
 					.orgCode(MOCK_ORG_CODE)
+					.externalSystemRequest(externalSystemRequest)
 					.shopwareClient(shopwareClient)
 					.currencyInfoProvider(currencyInfoProvider)
+					.shopware6ConfigMappings(shopware6ConfigMappings)
 					.build();
 
 			exchange.getIn().setBody(jsonOrderAndCustomIds);
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
-
 		}
 
 		@NonNull
@@ -296,6 +361,30 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.when(shopwareClientSpy)
 					.performWithRetry(any(), eq(HttpMethod.GET), eq(JsonOrderLines.class), any());
 
+			//5. mock order transactions
+			final InputStream orderTrxIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_TRANSACTIONS_PATH);
+			final JsonOrderTransactions orderTransactions = mapper.readValue(orderTrxIS, JsonOrderTransactions.class);
+
+			Mockito.doReturn(ResponseEntity.ok(orderTransactions))
+					.when(shopwareClientSpy)
+					.performWithRetry(any(), eq(HttpMethod.GET), eq(JsonOrderTransactions.class), any());
+
+			//6. mock payment method
+			final InputStream paymentMethodIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_PAYMENT_METHOD_PATH);
+			final JsonPaymentMethod paymentMethod = mapper.readValue(paymentMethodIS, JsonPaymentMethod.class);
+
+			Mockito.doReturn(Optional.of(paymentMethod))
+					.when(shopwareClientSpy)
+					.getPaymentMethod(any());
+
+			//7. mock order customer group
+			final InputStream orderCustomerGroup = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_GROUPS_PATH);
+			final JsonCustomerGroups customerGroups = mapper.readValue(orderCustomerGroup, JsonCustomerGroups.class);
+
+			Mockito.doReturn(ResponseEntity.ok(customerGroups))
+					.when(shopwareClientSpy)
+					.performWithRetry(any(), eq(HttpMethod.GET), eq(JsonCustomerGroups.class), any());
+
 			return shopwareClientSpy;
 		}
 	}
@@ -314,6 +403,28 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 	}
 
 	private static class MockSuccessfullyClearOrdersProcessor implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
+
+	private static class MockSuccessfullyUpsertRuntimeParamsProcessor implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
+
+	private static class MockSuccessfullyCreatePaymentProcessor implements Processor
 	{
 		private int called = 0;
 

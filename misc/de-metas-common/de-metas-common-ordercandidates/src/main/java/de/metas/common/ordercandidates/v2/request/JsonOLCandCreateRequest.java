@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
@@ -209,7 +210,7 @@ public class JsonOLCandCreateRequest
 
 	@ApiModelProperty(value = "Specifies if the created order will be a normal Sales Order or a Prepaid Sales Order")
 	@JsonInclude(Include.NON_NULL)
-	OrderDocType orderDocType;
+	JsonOrderDocType orderDocType;
 
 	@ApiModelProperty(value = "Specifies the payment rule that will propagate to the created order")
 	@JsonInclude(Include.NON_NULL)
@@ -294,7 +295,7 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType,
 			@JsonProperty("presetDateInvoiced") final @Nullable LocalDate presetDateInvoiced,
 			@JsonProperty("presetDateShipped") final @Nullable LocalDate presetDateShipped,
-			@JsonProperty("orderDocType") final @Nullable OrderDocType orderDocType,
+			@JsonProperty("orderDocType") final @Nullable JsonOrderDocType orderDocType,
 			@JsonProperty("paymentRule") final @Nullable JSONPaymentRule paymentRule,
 			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
 			@JsonProperty("shipper") final @Nullable String shipper,
@@ -375,22 +376,5 @@ public class JsonOLCandCreateRequest
 								this);
 		}
 		return this;
-	}
-
-	public enum OrderDocType
-	{
-		@ApiEnum("Specifies if the order will be a standard one. A standard order will be created if no DocTYpe is specified.")
-		SalesOrder("SalesOrder"),
-
-		@ApiEnum("Specifies if the order will be prepaid")
-		PrepayOrder("PrepayOrder");
-
-		@Getter
-		private final String code;
-
-		OrderDocType(final String code)
-		{
-			this.code = code;
-		}
 	}
 }

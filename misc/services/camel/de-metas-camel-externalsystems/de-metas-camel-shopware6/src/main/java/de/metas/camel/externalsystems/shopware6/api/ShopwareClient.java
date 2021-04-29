@@ -34,12 +34,15 @@ import de.metas.camel.externalsystems.shopware6.api.model.PathSegmentsEnum;
 import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.currency.JsonCurrencies;
+import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDelivery;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderDeliveryItem;
 import de.metas.common.util.Check;
 import lombok.AllArgsConstructor;
@@ -304,6 +307,65 @@ public class ShopwareClient
 	}
 
 	@NonNull
+	public Optional<JsonOrderTransactions> getOrderTransactions(@NonNull final String orderId)
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.V3.getValue())
+				.pathSegment(PathSegmentsEnum.ORDER.getValue())
+				.pathSegment(orderId)
+				.pathSegment(PathSegmentsEnum.TRANSACTIONS.getValue());
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonOrderTransactions> response = performWithRetry(resourceURI, HttpMethod.GET, JsonOrderTransactions.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(response.getBody());
+	}
+
+	@NonNull
+	public Optional<JsonPaymentMethod> getPaymentMethod(@NonNull final String paymentMethodId)
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.V3.getValue())
+				.pathSegment(PathSegmentsEnum.PAYMENT_METHOD.getValue())
+				.pathSegment(paymentMethodId);
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonNode> response = performWithRetry(resourceURI, HttpMethod.GET, JsonNode.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null || response.getBody().get(JSON_NODE_DATA) == null)
+		{
+			return Optional.empty();
+		}
+
+		final JsonPaymentMethod jsonPaymentMethod;
+		try
+		{
+			jsonPaymentMethod = new ObjectMapper().treeToValue(response.getBody().get(JSON_NODE_DATA), JsonPaymentMethod.class);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
+
+		return Optional.of(jsonPaymentMethod);
+	}
+
+	@NonNull
 	public JsonCurrencies getCurrencies()
 	{
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
@@ -324,6 +386,30 @@ public class ShopwareClient
 		}
 
 		return response.getBody();
+	}
+
+	@NonNull
+	public Optional<JsonCustomerGroups> getCustomerGroup(@NonNull final String customerId)
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.CUSTOMER.getValue())
+				.pathSegment(customerId)
+				.pathSegment(PathSegmentsEnum.GROUP.getValue());
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonCustomerGroups> response = performWithRetry(resourceURI, HttpMethod.GET, JsonCustomerGroups.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(response.getBody());
 	}
 
 	@NonNull

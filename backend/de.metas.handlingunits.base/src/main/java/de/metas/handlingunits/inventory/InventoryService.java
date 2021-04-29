@@ -95,16 +95,14 @@ public class InventoryService
 
 	public boolean isMaterialDisposal(final I_M_Inventory inventory)
 	{
-		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-				.docSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
-				.adClientId(inventory.getAD_Client_ID())
-				.adOrgId(inventory.getAD_Org_ID())
-				.build();
+		final DocTypeId inventoryDocTypeId = DocTypeId.ofRepoIdOrNull(inventory.getC_DocType_ID());
+		if(inventoryDocTypeId == null)
+		{
+			return false;
+		}
 
-		final DocTypeId disposalDocTypeId = docTypeDAO.getDocTypeIdOrNull(query);
-
-		return disposalDocTypeId != null && disposalDocTypeId.getRepoId() == inventory.getC_DocType_ID();
+		final DocBaseAndSubType inventoryDocBaseAndSubType = docTypeDAO.getDocBaseAndSubTypeById(inventoryDocTypeId);
+		return InventoryDocSubType.InternalUseInventory.toDocBaseAndSubType().equals(inventoryDocBaseAndSubType);
 	}
 
 	public static HUAggregationType computeHUAggregationType(@NonNull final DocBaseAndSubType baseAndSubType)

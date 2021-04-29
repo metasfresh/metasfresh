@@ -6,6 +6,7 @@ import de.metas.common.procurement.sync.protocol.request_to_metasfresh.PutWeekly
 import de.metas.procurement.base.IServerSyncBL;
 import de.metas.procurement.base.impl.ServerSyncBL;
 import de.metas.procurement.base.impl.SyncUUIDs;
+import de.metas.procurement.base.impl.WebuiPush;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.procurement.base.model.I_PMM_WeekReport_Event;
 import de.metas.procurement.base.model.X_PMM_WeekReport_Event;
@@ -28,7 +29,6 @@ import org.mockito.Mockito;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 /*
@@ -75,7 +75,7 @@ public class PMMWeekReportEventTrxItemProcessorTest
 		final SenderToProcurementWeb senderToProcurementWeb = Mockito.mock(SenderToProcurementWeb.class);
 		nextSyncWeeklySupplyVersion = 0;
 
-		serverSyncBL = new ServerSyncBL(senderToProcurementWeb);
+		serverSyncBL = new ServerSyncBL(senderToProcurementWeb, new WebuiPush());
 		Services.registerService(IServerSyncBL.class, serverSyncBL);
 	}
 

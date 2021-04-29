@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model.order;
 
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -37,4 +38,10 @@ public class JsonOrderAndCustomId
 
 	@Nullable
 	String customBPartnerId;
+
+	@NonNull
+	public String getEffectiveCustomerId()
+	{
+		return CoalesceUtil.coalesce(customBPartnerId, jsonOrder.getOrderCustomer().getCustomerId());
+	}
 }

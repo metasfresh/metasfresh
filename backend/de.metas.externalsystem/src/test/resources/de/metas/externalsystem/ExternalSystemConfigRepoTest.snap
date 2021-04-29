@@ -7,11 +7,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
-      "value": "testAlbertaValue",
+      "value" : "testAlbertaValue",
       "apiKey" : "apiKey",
       "baseUrl" : "baseUrl",
-      "tenant" : "tenant",
-      "value" : "testAlbertaValue"
+      "tenant" : "tenant"
     }
   }
 ]
@@ -19,13 +18,12 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndParent=[
   {
-      "id" : 100002,
-      "parentId" : 100001,
-    "value": "testAlbertaValue",
-      "apiKey" : "apiKey",
-      "baseUrl" : "baseUrl",
-    "tenant": "tenant",
-    "value":"testAlbertaValue"
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testAlbertaValue",
+    "apiKey" : "apiKey",
+    "baseUrl" : "baseUrl",
+    "tenant" : "tenant"
   }
 ]
 
@@ -39,11 +37,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
     "childConfig" : {
       "id" : 100002,
       "parentId" : 100001,
-      "value": "testAlbertaValue",
+      "value" : "testAlbertaValue",
       "apiKey" : "apiKey",
       "baseUrl" : "baseUrl",
-      "tenant": "tenant",
-      "value":"testAlbertaValue"
+      "tenant" : "tenant"
     }
   }
 ]
@@ -60,7 +57,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "parentId" : 100001,
       "baseUrl" : "baseUrl",
       "clientId" : "id",
-      "clientSecret": "secret"
+      "clientSecret" : "secret",
+      "externalSystemShopware6ConfigMappingList" : [ ]
     }
   }
 ]
@@ -68,12 +66,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByTypeAndParent=[
   {
-      "id" : 100002,
-      "parentId" : 100001,
-      "baseUrl" : "baseUrl",
-      "clientId" : "id",
-      "clientSecret" : "secret"
-    }
+    "id" : 100002,
+    "parentId" : 100001,
+    "baseUrl" : "baseUrl",
+    "clientId" : "id",
+    "clientSecret" : "secret",
+    "externalSystemShopware6ConfigMappingList" : [
+      {
+        "seqNo" : 10,
+        "docTypeOrderId" : 10000,
+        "paymentRule" : "K",
+        "paymentTermId" : 10000,
+        "sw6CustomerGroup" : "testWithAnä",
+        "sw6PaymentMethod" : "test",
+        "description" : "test"
+      }
+    ]
+  }
 ]
 
 
@@ -88,7 +97,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "parentId" : 100001,
       "baseUrl" : "baseUrl",
       "clientId" : "id",
-      "clientSecret" : "secret"
+      "clientSecret" : "secret",
+      "externalSystemShopware6ConfigMappingList" : [ ]
     }
   }
 ]

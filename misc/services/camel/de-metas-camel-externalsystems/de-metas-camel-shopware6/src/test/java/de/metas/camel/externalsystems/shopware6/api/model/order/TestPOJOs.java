@@ -53,6 +53,18 @@ public class TestPOJOs
 		testSerializeDeserializeObject(getMockJsonOrderLine());
 	}
 
+	@Test
+	public void givenJsonOrderTransactions_whenSerializeDeserialize_thenSuccess() throws IOException
+	{
+		testSerializeDeserializeObject(getMockOrderTransactions());
+	}
+
+	@Test
+	public void givenJsonPaymentMethod_whenSerializeDeserialize_thenSuccess() throws IOException
+	{
+		testSerializeDeserializeObject(getJsonPaymentMethod());
+	}
+
 	private void testSerializeDeserializeObject(final Object value) throws IOException
 	{
 		final Class<?> valueClass = value.getClass();
@@ -66,8 +78,16 @@ public class TestPOJOs
 		return JsonOrders.builder()
 				.data(ImmutableList.of(
 						JsonOrder.builder()
-								.billingAddressId("billingAddressId")
 								.id("orderId")
+								.billingAddressId("billingAddressId")
+								.orderNumber("orderNumber")
+								.currencyId("currencyId")
+								.orderDate(ZonedDateTime.now(ZoneId.of("UTC")))
+								.createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
+								.stateMachine(JsonStateMachine.builder()
+													  .technicalName("open")
+													  .build()
+								)
 								.orderCustomer(JsonOrderCustomer.builder()
 													   .id("orderCustomerId")
 													   .orderId("orderId")
@@ -98,6 +118,35 @@ public class TestPOJOs
 				.productId("productId")
 				.quantity(BigDecimal.ONE)
 				.unitPrice(BigDecimal.TEN)
+				.build();
+	}
+
+	private JsonOrderTransactions getMockOrderTransactions()
+	{
+		return JsonOrderTransactions.builder()
+				.transactionList(
+						ImmutableList.of(JsonOrderTransaction.builder()
+												 .id("id")
+												 .paymentMethodId("paymentMethodId")
+												 .amount(JsonAmount.builder()
+																 .totalPrice(BigDecimal.valueOf(100))
+																 .build()
+												 )
+												 .createdAt(ZonedDateTime.now(ZoneId.of("UTC")))
+												 .stateMachine(JsonStateMachine.builder()
+																	   .technicalName("paid")
+																	   .build()
+												 ).build()
+						)
+				)
+				.build();
+	}
+
+	private JsonPaymentMethod getJsonPaymentMethod()
+	{
+		return JsonPaymentMethod.builder()
+				.id("id")
+				.shortName("shortName")
 				.build();
 	}
 }
