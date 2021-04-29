@@ -43,8 +43,8 @@ public class JsonOrderLine
 	@JsonProperty("id")
 	String id;
 
-	/** The shop might return items with empty productId. We are going to ignore those */
 	@JsonProperty("productId")
+	@NonNull
 	String productId;
 
 	@NonNull

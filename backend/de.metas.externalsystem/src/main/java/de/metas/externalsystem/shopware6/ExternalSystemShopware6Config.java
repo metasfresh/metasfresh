@@ -62,7 +62,7 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @NonNull List<ExternalSystemShopware6ConfigMapping> externalSystemShopware6ConfigMappingList,
 			final @Nullable String bPartnerIdJSONPath,
 			final @Nullable String bPartnerLocationIdJSONPath,
-			@Nullable final String salesRepJSONPath)
+			final @Nullable String salesRepJSONPath)
 	{
 		this.id = id;
 		this.parentId = parentId;

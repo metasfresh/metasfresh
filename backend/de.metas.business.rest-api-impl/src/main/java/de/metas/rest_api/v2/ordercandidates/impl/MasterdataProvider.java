@@ -14,7 +14,6 @@ import de.metas.common.ordercandidates.v2.request.JSONPaymentRule;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.common.ordercandidates.v2.request.JsonSalesPartner;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
@@ -83,6 +82,7 @@ final class MasterdataProvider
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 
@@ -278,29 +278,28 @@ final class MasterdataProvider
 	 * @param orgId the method filters for the given orgId or {@link OrgId#ANY}.
 	 * @return the sales bpartnerId for the given {@code request}'s {@code salesPartnerCode} and orgId.
 	 */
+	@Nullable
 	public BPartnerId getSalesRepId(
 			@NonNull final JsonOLCandCreateRequest request,
 			@NonNull final OrgId orgId)
 	{
 		final JsonSalesPartner jsonSalesPartner = request.getSalesPartner();
 
-		if (Check.isEmpty(jsonSalesPartner))
+		if (jsonSalesPartner == null)
 		{
 			return null;
 		}
 
 		final Optional<BPartnerId> bPartnerIdBySalesPartnerCode;
-		final String salesRepValue;
 
 		if (jsonSalesPartner.getSalesPartnerCode() != null)
 		{
-			salesRepValue = jsonSalesPartner.getSalesPartnerCode();
-			bPartnerIdBySalesPartnerCode = getBPartnerIdBySalesPartnerCode(orgId, salesRepValue);
+			final ExternalBusinessKey bPartnerExternalBusinessKey = ExternalBusinessKey.of(jsonSalesPartner.getSalesPartnerCode());
+			bPartnerIdBySalesPartnerCode = resolveBPartnerExternalBusinessKey(orgId, bPartnerExternalBusinessKey);
 		}
 		else if (jsonSalesPartner.getSalesPartnerIdentifier() != null)
 		{
-			salesRepValue = jsonSalesPartner.getSalesPartnerIdentifier();
-			final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(salesRepValue);
+			final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(jsonSalesPartner.getSalesPartnerIdentifier());
 			bPartnerIdBySalesPartnerCode = jsonRetrieverService.resolveBPartnerExternalIdentifier(externalIdentifier, orgId);
 		}
 		else
@@ -308,35 +307,37 @@ final class MasterdataProvider
 			throw new AdempiereException("JsonSalesPartner has all attributes empty!");
 		}
 
-		return bPartnerIdBySalesPartnerCode.orElseThrow(() -> MissingResourceException.builder()
-				.resourceName("salesPartnerCode")
-				.resourceIdentifier(salesRepValue)
-				.parentResource(request).build());
+		return bPartnerIdBySalesPartnerCode
+				.orElseThrow(() -> MissingResourceException.builder()
+						.resourceName("salesPartnerCode")
+						.resourceIdentifier(jsonSalesPartner.toString())
+						.parentResource(request).build());
 
 	}
 
 	@NonNull
-	private Optional<BPartnerId> getBPartnerIdBySalesPartnerCode(@NonNull final OrgId orgId, @NonNull final String salesRepValue)
+	private Optional<BPartnerId> resolveBPartnerExternalBusinessKey(@NonNull final OrgId orgId, @NonNull final ExternalBusinessKey externalBusinessKey)
 	{
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
-		final ExternalBusinessKey externalBusinessKey = ExternalBusinessKey.of(salesRepValue);
-
 		if (ExternalBusinessKey.Type.VALUE.equals(externalBusinessKey.getType()))
 		{
 			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
 													 .bpartnerValue(externalBusinessKey.asValue())
+													 .onlyOrgId(orgId)
 													 .build());
 		}
 		else if (ExternalBusinessKey.Type.EXTERNAL_REFERENCE.equals(externalBusinessKey.getType()))
 		{
-			final Optional<JsonMetasfreshId> metasfreshId = externalReferenceService
-					.getJsonMetasfreshIdFromExternalBusinessKey(orgId, externalBusinessKey, BPartnerExternalReferenceType.BPARTNER_VALUE);
-
-			return metasfreshId.map(id -> BPartnerId.ofRepoId(id.getValue()));
+			return externalReferenceService
+					.getJsonMetasfreshIdFromExternalBusinessKey(orgId, externalBusinessKey, BPartnerExternalReferenceType.BPARTNER_VALUE)
+					.map(jsonMetasfreshId -> BPartnerId.ofRepoId(jsonMetasfreshId.getValue()));
 		}
-
-		return Optional.empty();
+		else
+		{
+			throw new InvalidIdentifierException("Given ExternalBusinessKeyType is not supported!")
+					.appendParametersToMessage()
+					.setParameter("ExternalBusinessKeyType", externalBusinessKey.getType())
+					.setParameter("RawValue", externalBusinessKey.getRawValue());
+		}
 	}
 
 	public PaymentRule getPaymentRule(final JsonOLCandCreateRequest request)

@@ -73,7 +73,6 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 		final BPartnerRequestProducerResult bPartnerRequestProducerResult = bPartnerUpsertRequestProducer.run();
 		importOrdersRouteContext.setBillingBPLocationExternalId(bPartnerRequestProducerResult.getBillingBPartnerLocationExternalId());
 		importOrdersRouteContext.setShippingBPLocationExternalId(bPartnerRequestProducerResult.getShippingBPartnerLocationExternalId());
-		importOrdersRouteContext.setSalesRepId(orderCandidate.getSalesRepId());
 
 		final BPUpsertCamelRequest bpUpsertCamelRequest = BPUpsertCamelRequest.builder()
 				.jsonRequestBPartnerUpsert(bPartnerRequestProducerResult.getJsonRequestBPartnerUpsert())

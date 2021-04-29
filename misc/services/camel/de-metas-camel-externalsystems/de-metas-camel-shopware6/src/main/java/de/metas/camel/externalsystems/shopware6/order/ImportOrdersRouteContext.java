@@ -81,9 +81,6 @@ public class ImportOrdersRouteContext
 	@Nullable
 	private LocalDate dateRequired;
 
-	@Nullable
-	private String salesRepId;
-
 	private boolean isMultipleShippingAddresses;
 
 	@Nullable
