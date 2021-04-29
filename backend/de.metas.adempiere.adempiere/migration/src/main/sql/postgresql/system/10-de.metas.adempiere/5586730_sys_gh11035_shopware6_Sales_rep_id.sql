@@ -180,7 +180,7 @@ UPDATE AD_WINDOW SET Name='Kunden JSON-Path', Description='JSON-Path, der angibt
 
 -- 2021-04-28T10:59:31.700427600Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Menu SET   Name = 'Kunden JSON-Path', Description = 'JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order die permanente ID des Kunden ausgelesen werden kann. ACHTUNG: wenn gesetzt, dann werden Orders ohne einen entsprechenden Wert ignoriert!', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 578989
+UPDATE AD_Menu SET   Name = 'Kunden JSON-Path', Description = 'JSON-Path, der angibt wo innerhalb einer kundenspezifisch angepassten Shopware-Order die permanente ID des Kunden ausgelesen werden kann. ACHTUNG: wenn gesetzt, dann werden Orders ohne einen entsprechenden Wert ignoriert!', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 578989
 ;
 
 -- 2021-04-28T10:59:59.638807300Z
@@ -310,7 +310,7 @@ UPDATE AD_WINDOW SET Name='Adress JSON-Path', Description='JSON-Path, der angibt
 
 -- 2021-04-28T11:00:46.522082Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Menu SET   Name = 'Adress JSON-Path', Description = 'JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Addresse die die permanente Address-ID ausgelesen werden kann. ACHTUNG: wenn gesetzt, dann werden Addressen ohne einen entsprechenden Wert ignoriert!', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 578990
+UPDATE AD_Menu SET   Name = 'Adress JSON-Path', Description = 'JSON-Path, der angibt wo innerhalb einer kundenspezifisch angepassten Shopware-Addresse die permanente Address-ID ausgelesen werden kann. ACHTUNG: wenn gesetzt, dann werden Addressen ohne einen entsprechenden Wert ignoriert!', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 578990
 ;
 
 -- 2021-04-28T11:01:08.333913400Z
@@ -398,27 +398,6 @@ UPDATE AD_Column SET ColumnName='JSONPathSalesRepID', Name='Vertriebpartner JSON
 UPDATE AD_Process_Para SET ColumnName='JSONPathSalesRepID', Name='Vertriebpartner JSON-Path', Description='JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order der Suchschlüssel der Vertriebspartners zu ausgelesen werden kann.', Help=NULL, AD_Element_ID=579062 WHERE UPPER(ColumnName)='JSONPATHSALESREPID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
 ;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.migration-sql
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 -- 2021-04-29T11:24:46.197444600Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -442,7 +421,7 @@ UPDATE AD_WINDOW SET Name='Vertriebpartner JSON-Path', Description='JSON-Path, d
 
 -- 2021-04-29T11:24:46.221104100Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Menu SET   Name = 'Vertriebpartner JSON-Path', Description = 'JSON-Path, der angibt wo innerhalb einer kundenspezifisch Angepassten Shopware-Order der Suchschlüssel der Vertriebspartners zu ausgelesen werden kann.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579062
+UPDATE AD_Menu SET   Name = 'Vertriebpartner JSON-Path', Description = 'JSON-Path, der angibt wo innerhalb einer kundenspezifisch angepassten Shopware-Order der Suchschlüssel des Vertriebspartners zu ausgelesen werden kann.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579062
 ;
 
 -- 2021-04-29T11:24:55.186433100Z
@@ -454,4 +433,3 @@ UPDATE AD_Element_Trl SET Description='JSON-Path expression that specifies where
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579062,'en_US') 
 ;
-
