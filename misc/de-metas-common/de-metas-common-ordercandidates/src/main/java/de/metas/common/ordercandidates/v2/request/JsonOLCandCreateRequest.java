@@ -27,16 +27,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.rest_api.v2.SwaggerDocConstants;
 import de.metas.common.util.Check;
-import de.pentabyte.springfox.ApiEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -218,7 +215,7 @@ public class JsonOLCandCreateRequest
 
 	@ApiModelProperty(value = "Specifies the SalesPartnerCode for the partner that will propagate as sales rep to the created order")
 	@JsonInclude(Include.NON_NULL)
-	String salesPartnerCode;
+	JsonSalesPartner salesPartner;
 
 	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order")
 	@JsonInclude(Include.NON_NULL)
@@ -297,7 +294,7 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("presetDateShipped") final @Nullable LocalDate presetDateShipped,
 			@JsonProperty("orderDocType") final @Nullable JsonOrderDocType orderDocType,
 			@JsonProperty("paymentRule") final @Nullable JSONPaymentRule paymentRule,
-			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
+			@JsonProperty("salesPartner") final @Nullable JsonSalesPartner salesPartner,
 			@JsonProperty("shipper") final @Nullable String shipper,
 			@JsonProperty("paymentTerm") final @Nullable String paymentTerm,
 			@JsonProperty("albertaOrderInfo") final @Nullable JsonAlbertaOrderInfo albertaOrderInfo,
@@ -342,7 +339,7 @@ public class JsonOLCandCreateRequest
 
 		this.orderDocType = orderDocType;
 		this.paymentRule = paymentRule;
-		this.salesPartnerCode = salesPartnerCode;
+		this.salesPartner = salesPartner;
 		this.shipper = shipper;
 
 		this.paymentTerm = paymentTerm;

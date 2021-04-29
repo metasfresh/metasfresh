@@ -22,7 +22,7 @@
 
 package de.metas.camel.externalsystems.shopware6.order;
 
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransaction;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
 import lombok.Builder;
@@ -34,7 +34,7 @@ import lombok.Value;
 public class OrderCompositeInfo
 {
 	@NonNull
-	JsonOrderAndCustomId orderAndCustomId;
+	OrderCandidate orderAndCustomId;
 
 	@NonNull
 	JsonOrderTransaction orderTransaction;
