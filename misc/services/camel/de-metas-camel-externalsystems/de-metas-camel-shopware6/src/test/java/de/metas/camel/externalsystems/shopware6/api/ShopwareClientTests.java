@@ -46,10 +46,10 @@ public class ShopwareClientTests
 	{
 		objectMapper.registerModule(new JavaTimeModule());
 
-		InputStream jsonOrderIS = ShopwareClientTests.class.getResourceAsStream("10_JsonOrder.json");
+		InputStream jsonOrderIS = ShopwareClientTests.class.getResourceAsStream("JsonOrder.json");
 		final JsonNode rootJsonNode = objectMapper.readValue(jsonOrderIS, JsonNode.class);
 
-		jsonOrderIS = ShopwareClientTests.class.getResourceAsStream("10_JsonOrder.json");
+		jsonOrderIS = ShopwareClientTests.class.getResourceAsStream("JsonOrder.json");
 		final JsonOrder jsonOrder = objectMapper.readValue(jsonOrderIS, JsonOrder.class);
 
 		final Optional<OrderCandidate> orderCandidateOptional
@@ -68,23 +68,23 @@ public class ShopwareClientTests
 	{
 		objectMapper.registerModule(new JavaTimeModule());
 
-		InputStream jsonOrderIS = ShopwareClientTests.class.getResourceAsStream("10_JsonOrder.json");
-		final JsonNode rootJsonNode = objectMapper.readValue(jsonOrderIS, JsonNode.class);
+		InputStream jsonOrderIS = ShopwareClientTests.class.getResourceAsStream("JsonOrder.json");
+		final JsonNode rootOrderJsonNode = objectMapper.readValue(jsonOrderIS, JsonNode.class);
 
-		jsonOrderIS = ShopwareClientTests.class.getResourceAsStream("10_JsonOrder.json");
-		final JsonOrder jsonOrder = objectMapper.readValue(jsonOrderIS, JsonOrder.class);
+		jsonOrderIS = ShopwareClientTests.class.getResourceAsStream("JsonOrder.json");
+		final JsonOrder standardFieldsOrder = objectMapper.readValue(jsonOrderIS, JsonOrder.class);
 
 		final Optional<OrderCandidate> orderCandidateOptional
-				= dumbShopwareClient.getJsonOrderCandidate(rootJsonNode,
+				= dumbShopwareClient.getJsonOrderCandidate(rootOrderJsonNode,
 														   "/orderCustomer/customFields/metasfreshId",
 														   "/orderCustomer/customFields/customUserId");
 
 		assertThat(orderCandidateOptional.isPresent()).isTrue();
 		final OrderCandidate orderCandidate = orderCandidateOptional.get();
 
-		assertThat(objectMapper.writeValueAsString(orderCandidate.getJsonOrder())).isEqualTo(objectMapper.writeValueAsString(jsonOrder));
-		assertThat(orderCandidate.getCustomBPartnerId()).isEqualTo("123456");
-		assertThat(orderCandidate.getSalesRepId()).isEqualTo("654321");
+		assertThat(objectMapper.writeValueAsString(orderCandidate.getJsonOrder())).isEqualTo(objectMapper.writeValueAsString(standardFieldsOrder));
+		assertThat(orderCandidate.getCustomBPartnerId()).isEqualTo("customBPartnerId");
+		assertThat(orderCandidate.getSalesRepId()).isEqualTo("customSalesRepId");
 	}
 
 	@Test
@@ -92,7 +92,7 @@ public class ShopwareClientTests
 	{
 		objectMapper.registerModule(new JavaTimeModule());
 
-		final InputStream jsonOrderIS = ShopwareClientTests.class.getResourceAsStream("10_JsonOrder.json");
+		final InputStream jsonOrderIS = ShopwareClientTests.class.getResourceAsStream("JsonOrder.json");
 		final JsonNode rootJsonNode = objectMapper.readValue(jsonOrderIS, JsonNode.class);
 
 		final Optional<OrderCandidate> orderCandidateOptional

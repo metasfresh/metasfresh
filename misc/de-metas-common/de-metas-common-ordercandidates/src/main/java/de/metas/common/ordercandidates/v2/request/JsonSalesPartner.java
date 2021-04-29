@@ -50,8 +50,13 @@ public class JsonSalesPartner
 			@JsonProperty("salesPartnerCode") @Nullable final String salesPartnerCode,
 			@JsonProperty("salesPartnerIdentifier") @Nullable final String salesPartnerIdentifier)
 	{
-		if(salesPartnerCode != null && salesPartnerIdentifier != null){
+		if(salesPartnerCode != null && salesPartnerIdentifier != null)
+		{
 			throw new IllegalArgumentException("Only one of the possible matching properties shall be set.");
+		}
+		else if (salesPartnerCode == null && salesPartnerIdentifier == null)
+		{
+			throw new IllegalArgumentException("At least one argument must be different from null!");
 		}
 
 		this.salesPartnerCode = salesPartnerCode;
