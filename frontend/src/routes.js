@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
+import React, { Component, PureComponent } from 'react';
 import { push } from 'connected-react-router';
-import { Route, Switch, Redirect, BrowserRouter, Link, withRouter, } from 'react-router-dom';
+import { Route, Switch, Redirect, Link, withRouter } from 'react-router-dom';
 import qs from 'qs';
 import _ from 'lodash';
 
@@ -41,12 +41,14 @@ let hasTutorial = false;
 
 class LoginRoute extends Component {
   shouldComponentUpdate(nextProps) {
-    const { location } = this.props;
-    const { location: nextLocation } = nextProps;
+    const { location, match } = this.props;
+    const { location: nextLocation, match: nextMatch } = nextProps;
 
-    if (_.isEqual(location, nextLocation)) {
+    if (_.isEqual(location, nextLocation) || _.isEqual(match, nextMatch)) {
+      // console.log('EQUAL')
       return false;
     }
+    // console.log('LOGINROUTE NOTEQUAL ')
     return true;
   }
 
@@ -56,7 +58,7 @@ class LoginRoute extends Component {
 
     const logged = localStorage.isLogged;
 
-    console.log('LoginRoute params: ', location, query)
+    // console.log('LoginRoute params: ', location, query)
 
     return <Login redirect={query.redirect} {...{ auth }} logged={logged} />;
   }
@@ -111,6 +113,8 @@ class LoginRoute extends Component {
 function DocListRoute({ location, match }) {
   const query = qs.parse(location.search);
 
+  console.log('DocListRoute')
+
   return <DocList query={query} windowId={match.params.windowId} />;
 }
 function BoardRoute({ location, match }) {
@@ -120,7 +124,7 @@ function BoardRoute({ location, match }) {
 }
 
 // TODO: PASS PARAMS
-class MasterWindowRoute extends Component {
+class MasterWindowRoute extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -137,16 +141,16 @@ class MasterWindowRoute extends Component {
   }
 }
 
-class Index extends Component {
-  shouldComponentUpdate(nextProps) {
-    const { location } = this.props;
-    const { location: nextLocation } = nextProps;
+class Index extends PureComponent {
+  // shouldComponentUpdate(nextProps) {
+  //   const { location } = this.props;
+  //   const { location: nextLocation } = nextProps;
 
-    if (_.isEqual(location, nextLocation)) {
-      return false;
-    }
-    return true;
-  }
+  //   if (_.isEqual(location, nextLocation)) {
+  //     return false;
+  //   }
+  //   return true;
+  // }
 
   render() {
   console.log('render index')
@@ -157,7 +161,7 @@ class Index extends Component {
 const WrappedIndex = withRouter(Index);
 
 // export const getRoutes = (store, auth, plugins) => {
-export default class Routes extends Component {
+class Routes extends PureComponent {
   // TODO
   // const authRequired = (nextState, replace, callback) => {
   //   hasTutorial =
@@ -515,10 +519,10 @@ export default class Routes extends Component {
 //       <Route path="*" component={BlankPage} />
 //     </Switch>
 //   );
-  render() {
-    const { dispatch, auth } = this.props;
+  constructor(props) {
+    super(props);
 
-    const childRoutes = (
+    this.childRoutes = (
       <>
         <Switch>
           <Route exact path="/" component={Dashboard} />
@@ -534,26 +538,65 @@ export default class Routes extends Component {
               console.log('logout path: ', localStorage.isLogged)
               if (localStorage.isLogged) {
                 logoutRequest()
-                  .then(() => logoutSuccess(auth))
+                  .then(() => logoutSuccess(props.auth))
                   .then(() => {
                     console.log('store dispatch');
                     // dispatch(push('/login'));
                   });
 
-                return null;
+                // return null;
               }
 
-              // return <Redirect to="/login" />;
+              return <Redirect to="/login" />;
             }}
           />
         </Switch>
       </>
     );
+  }
+
+  render() {
+    const { dispatch, auth } = this.props;
+    const getChildRoutes = this.childRoutes;
+
+    // const childRoutes = (
+    //   <>
+    //     <Switch>
+    //       <Route exact path="/" component={Dashboard} />
+    //       <Route path="/window/:windowId/:docId" component={MasterWindowRoute} />
+    //       <Route path="/window/:windowId" component={DocListRoute} />
+    //       <Route path="/sitemap" component={NavigationTree} />
+    //       <Route path="/board/:boardId" component={BoardRoute} />
+    //       <Route path="/inbox" component={InboxAll} />
+
+    //       <Route
+    //         path="/logout"
+    //         render={() => {
+    //           console.log('logout path: ', localStorage.isLogged)
+    //           if (localStorage.isLogged) {
+    //             logoutRequest()
+    //               .then(() => logoutSuccess(auth))
+    //               .then(() => {
+    //                 console.log('store dispatch');
+    //                 // dispatch(push('/login'));
+    //               });
+
+    //             // return null;
+    //           }
+
+    //           return <Redirect to="/login" />;
+    //         }}
+    //       />
+    //     </Switch>
+    //   </>
+    // );
 
     class PrivateRoute extends Component {
       shouldComponentUpdate(nextProps) {
         const { location } = this.props;
         const { location: nextLocation } = nextProps;
+
+        // console.log('PrivateRoute location: ', location, nextLocation)
 
         if (_.isEqual(location, nextLocation)) {
           return false;
@@ -570,7 +613,9 @@ export default class Routes extends Component {
       //     nextState.location &&
       //     nextState.location.query &&
       //     typeof nextState.location.query.tutorial !== 'undefined';
-        console.log('PrivateRoute');
+        console.log('PrivateRoute: ', this.props);
+
+        let pathname = '/login';
 
         if (!localStorage.isLogged) {
           console.log('notlogged')
@@ -584,16 +629,23 @@ export default class Routes extends Component {
               //redirect tells that there should be
               //step back in history after login
               // dispatch(push('/login?redirect=true'));
+              pathname = '/login?redirect=true';
             }
           });
         } else {
           // if (hasTutorial) {
           //   dispatch(enableTutorial());
           // }
-          console.log('PrivateRoute logged: ', auth)
+          console.log('PrivateRoute logged: ', this.props.location)
 
-          dispatch(clearNotifications());
-          dispatch(loginSuccess(auth));
+          if (this.props.location.pathname !== 'logout') {
+            dispatch(clearNotifications());
+            dispatch(loginSuccess(auth));
+
+            // return null;
+          } else {
+            return null;
+          }
 
           // callback();
         }
@@ -604,11 +656,11 @@ export default class Routes extends Component {
             {...this.props}
             render={() =>
               loggedIn ? (
-                <WrappedIndex childRoutes={childRoutes} />
+                <WrappedIndex childRoutes={getChildRoutes} />
               ) : (
                 <Redirect
                   to={{
-                    pathname: '/login',
+                    pathname,
                   }}
                 />
               )
@@ -619,23 +671,40 @@ export default class Routes extends Component {
     }
 
     const WrappedLoginRoute = withRouter(LoginRoute);
-
-    // const state = store.getState();
     const loggedIn = localStorage.isLogged;
 
     console.log('routes render loggedIN: ', loggedIn)
 
     return (
-      <BrowserRouter>
-        <>
-          <Switch>
-            <Route exact path="/login">
-              {loggedIn ? <Redirect to="/" /> : <WrappedLoginRoute auth={auth} />}
-            </Route>
-            <PrivateRoute path="/" />
-          </Switch>
-        </>
-      </BrowserRouter>
+      <>
+        <Switch>
+          <Route exact path="/login">
+            {loggedIn ? <Redirect to="/" /> : <WrappedLoginRoute auth={auth} />}
+          </Route>
+          <PrivateRoute path="/" />
+        </Switch>
+      </>
     );
   }
 }
+
+function propsAreEqual(prevProps, nextProps) {
+  const { auth, dispatch } = prevProps;
+  const { auth: nextAuth, dispatch: nextDispatch } = nextProps;
+
+  console.log('PROPSAREEQUAL1')
+
+  if (!dispatch || !nextDispatch) {
+    return false;
+  }
+
+  if (!auth || !nextAuth || auth.id !== nextAuth.id) {
+    return false;
+  }
+
+  console.log('PROPSAREEQUAL2')
+
+  return true;
+}
+
+export default React.memo(Routes, propsAreEqual);

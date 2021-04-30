@@ -3,14 +3,14 @@ import ReactDOM from 'react-dom';
 
 import App from './containers/App';
 
-// if (process.env.NODE_ENV !== 'production') {
-//   const whyDidYouRender = require('@welldone-software/why-did-you-render');
-//   whyDidYouRender(React, { include: [/RawWidget/] });
-// }
+if (process.env.NODE_ENV !== 'production') {
+  const whyDidYouRender = require('@welldone-software/why-did-you-render');
+  whyDidYouRender(React, { include: [/ConnectedRouter/] });
+}
 
-//   const {whyDidYouUpdate} = require('why-did-you-update')
-//   // whyDidYouUpdate(React);
-//   whyDidYouUpdate(React, { include: [/DocList/] });
+  const {whyDidYouUpdate} = require('why-did-you-update')
+  // whyDidYouUpdate(React);
+  whyDidYouUpdate(React, { include: [/ConnectedRouter/] });
 
 /* eslint-disable */
 console.info(`%c

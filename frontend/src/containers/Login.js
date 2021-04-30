@@ -25,7 +25,7 @@ class Login extends Component {
     const { logged, dispatch } = this.props;
     if (logged) {
       console.log('Login component redirect')
-      dispatch(push('/'));
+      // dispatch(push('/'));
     }
   }
 

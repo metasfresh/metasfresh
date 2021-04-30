@@ -1,11 +1,12 @@
 import SockJs from 'sockjs-client';
-
+import uuid from 'uuid/v4';
 import Stomp from 'stompjs/lib/stomp.min.js';
 
 class Auth {
   constructor() {
     this.notificationClient = null;
     this.sessionClient = null;
+    this.id = uuid();
   }
 
   initNotificationClient = (topic, cb) => {

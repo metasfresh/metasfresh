@@ -88,6 +88,7 @@ export default class App extends Component {
         if (error.response.status == 401) {
           store.dispatch(setProcessSaved());
           logoutSuccess(this.auth);
+          console.log('dodaj redirect nie wiadomo po co')
           store.dispatch(push('/login?redirect=true'));
         } else if (error.response.status == 503) {
           store.dispatch(noConnection(true));
@@ -247,7 +248,7 @@ export default class App extends Component {
         <ShortcutProvider>
           <Translation>
             <NotificationHandler>
-              <ConnectedRouter history={history}>
+              <ConnectedRouter history={history} noInitialPop>
                 <Routes dispatch={store.dispatch} auth={this.auth} />
               </ConnectedRouter>
             </NotificationHandler>
