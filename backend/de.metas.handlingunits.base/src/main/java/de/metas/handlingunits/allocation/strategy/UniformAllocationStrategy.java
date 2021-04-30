@@ -1,8 +1,8 @@
 package de.metas.handlingunits.allocation.strategy;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -136,7 +136,7 @@ public class UniformAllocationStrategy implements IAllocationStrategy
 		return candidates;
 	}
 
-	private void updateQtyToAllocate(
+	void updateQtyToAllocate(
 			@NonNull final List<AllocCandidate> candidates,
 			@NonNull final Quantity qtyToAllocateTarget)
 	{
@@ -191,9 +191,10 @@ public class UniformAllocationStrategy implements IAllocationStrategy
 			{
 				final BigDecimal currentCandidateQtyBD = candidate.getCurrentQty().toBigDecimal();
 				final BigDecimal currentQtyTotalBD = currentQtyTotal.toBigDecimal();
-				final int precision = (currentCandidateQtyBD.precision() + currentCandidateQtyBD.precision() + 1) * 20; // avoid nasty rounding errors
+				final int precision = (currentCandidateQtyBD.precision() + currentCandidateQtyBD.precision()) * 20; // try to avoid rounding issues
 				final Percent percent = Percent.of(currentCandidateQtyBD, currentQtyTotalBD, precision);
-				qtyToAllocate = qtyToAllocateTarget.multiply(percent);
+
+				qtyToAllocate = qtyToAllocateTarget.multiply(percent, RoundingMode.HALF_UP); // with the default UOM-rounding-mode of "UP", we might get 2.00..008 => 3 which was wrong
 			}
 			else
 			{
@@ -252,7 +253,7 @@ public class UniformAllocationStrategy implements IAllocationStrategy
 		return AllocationUtils.createQtyAllocationResult(
 				qtyToAllocate,
 				qtyAllocated,
-				Arrays.asList(trx), // trxs
+				ImmutableList.of(trx), // trxs
 				ImmutableList.of()); // attributeTrxs
 	}
 
