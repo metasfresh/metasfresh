@@ -23,7 +23,7 @@
 package de.metas.camel.externalsystems.shopware6.order;
 
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.DateAndImportStatus;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -89,7 +89,7 @@ public class ImportOrdersRouteContext
 	private DateAndImportStatus nextImportStartingTimestamp;
 
 	@NonNull
-	public JsonOrderAndCustomId getOrderNotNull()
+	public OrderCandidate getOrderNotNull()
 	{
 		if (order == null)
 		{

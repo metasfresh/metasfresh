@@ -202,6 +202,7 @@ public class ExternalSystemConfigRepo
 				.clientId(config.getClient_Id())
 				.bPartnerIdJSONPath(config.getJSONPathConstantBPartnerID())
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
+				.salesRepJSONPath(config.getJSONPathSalesRepID())
 				.build();
 	}
 
