@@ -469,7 +469,7 @@ public class WeightHUCommandTest
 							.includedHU(HUExpectation.newVirtualHU()
 									.storage(HUStorageExpectation.newExpectation()
 											.product(masterdata.productId)
-											.qty("381.204")
+											.qty("381.203")
 											.uom(masterdata.uomKg))))
 					.assertExpected("after weight", luId);
 		}
@@ -531,7 +531,7 @@ public class WeightHUCommandTest
 							.includedHU(HUExpectation.newVirtualHU()
 									.storage(HUStorageExpectation.newExpectation()
 											.product(masterdata.productId)
-											.qty("400.751")
+											.qty("400.752")
 											.uom(masterdata.uomKg))))
 					.assertExpected("after weight", luId);
 		}
