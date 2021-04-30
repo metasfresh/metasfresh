@@ -19,11 +19,6 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,2929,541091,540588,0,TO_TIMESTAMP('2021-04-21 16:35:30','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2021-04-21 16:35:30','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- 2021-04-21T14:35:49.149Z
--- URL zum Konzept
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,568141,541092,540588,0,TO_TIMESTAMP('2021-04-21 16:35:49','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',30,TO_TIMESTAMP('2021-04-21 16:35:49','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
 
 -- 2021-04-22T06:31:05.365Z
 -- URL zum Konzept
@@ -49,30 +44,6 @@ UPDATE AD_Index_Table_Trl SET ErrorMsg='Der MyKey-Code muss über alle Vertriebp
 -- URL zum Konzept
 UPDATE AD_Index_Table_Trl SET ErrorMsg='MyKey-Code needs to be unique among all sales reps of the same org.', IsTranslated='Y',Updated=TO_TIMESTAMP('2021-04-22 08:33:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540588 AND AD_Language='en_US'
 ;
-
-
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 
 -- 2021-04-22T07:07:48.040Z
 -- URL zum Konzept
