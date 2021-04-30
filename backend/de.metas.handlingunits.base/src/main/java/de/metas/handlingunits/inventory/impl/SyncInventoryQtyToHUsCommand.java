@@ -246,7 +246,7 @@ public class SyncInventoryQtyToHUsCommand
 				}
 			}
 			//
-			// Case: HU has less than counted
+			// Case: HU has more than counted
 			// => decrease HU qty; source=HU; dest=inventoryLine
 			else // qtyCountNotBooked < 0
 			{

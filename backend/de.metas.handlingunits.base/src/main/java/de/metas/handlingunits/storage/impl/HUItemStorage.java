@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.metas.uom.UOMPrecision;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUCapacityBL;
@@ -160,8 +161,9 @@ public class HUItemStorage implements IHUItemStorage
 		final I_C_UOM uomStorage = extractUOM(storageLine);
 		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qtyToAdd, uom, uomStorage);
 		
-		// avoid failing if we have qtyOld=15.3035 (despite uomStorage-precision=3) and qtyConv=15.304
-		final BigDecimal qtyOld = storageLine.getQty().setScale(uomStorage.getStdPrecision(), RoundingMode.HALF_UP);
+		// Avoid failing if we have qtyOld=15.3035 (despite uomStorage-precision=3) and qtyConv=15.304
+		final UOMPrecision uomPrecision = UOMPrecision.ofInt(uomStorage.getStdPrecision());
+		final BigDecimal qtyOld = storageLine.getQty().setScale(uomPrecision.toInt(), uomPrecision.getRoundingMode());
 		
 		// Update storage line
 		final BigDecimal qtyNew = qtyOld.add(qtyConv);
