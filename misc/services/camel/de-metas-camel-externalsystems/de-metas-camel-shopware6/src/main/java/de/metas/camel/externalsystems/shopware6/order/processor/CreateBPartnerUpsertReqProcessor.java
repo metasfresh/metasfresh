@@ -24,10 +24,9 @@ package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderDeliveryItem;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
-import de.metas.common.util.CoalesceUtil;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.springframework.util.CollectionUtils;
@@ -44,18 +43,17 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 	{
 		final ImportOrdersRouteContext importOrdersRouteContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
 
-		final JsonOrderAndCustomId orderAndCustomId = exchange.getIn().getBody(JsonOrderAndCustomId.class);
-		importOrdersRouteContext.setOrder(orderAndCustomId);
+		final OrderCandidate orderCandidate = exchange.getIn().getBody(OrderCandidate.class);
 
 		final String orgCode = importOrdersRouteContext.getOrgCode();
 		final ShopwareClient shopwareClient = importOrdersRouteContext.getShopwareClient();
 		final String bPartnerLocationIdJSONPath = importOrdersRouteContext.getBpLocationCustomJsonPath();
 
-		final List<OrderDeliveryItem> orderDeliveryItems = shopwareClient.getDeliveryAddresses(orderAndCustomId.getJsonOrder().getId(), bPartnerLocationIdJSONPath);
+		final List<OrderDeliveryItem> orderDeliveryItems = shopwareClient.getDeliveryAddresses(orderCandidate.getJsonOrder().getId(), bPartnerLocationIdJSONPath);
 
 		if (CollectionUtils.isEmpty(orderDeliveryItems))
 		{
-			throw new RuntimeException("Missing shipping address! OrderId=" + orderAndCustomId.getJsonOrder().getId());
+			throw new RuntimeException("Missing shipping address! OrderId=" + orderCandidate.getJsonOrder().getId());
 		}
 		final OrderDeliveryItem lastOrderDeliveryItem = orderDeliveryItems.get(orderDeliveryItems.size() - 1);
 
@@ -64,11 +62,11 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 
 		final BPartnerUpsertRequestProducer bPartnerUpsertRequestProducer = BPartnerUpsertRequestProducer.builder()
 				.shopwareClient(shopwareClient)
-				.billingAddressId(orderAndCustomId.getJsonOrder().getBillingAddressId())
-				.orderCustomer(orderAndCustomId.getJsonOrder().getOrderCustomer())
+				.billingAddressId(orderCandidate.getJsonOrder().getBillingAddressId())
+				.orderCustomer(orderCandidate.getJsonOrder().getOrderCustomer())
 				.shippingAddress(lastOrderDeliveryItem.getJsonOrderAddressAndCustomId())
 				.orgCode(orgCode)
-				.externalBPartnerId(CoalesceUtil.coalesce(orderAndCustomId.getCustomBPartnerId(), orderAndCustomId.getJsonOrder().getOrderCustomer().getCustomerId()))
+				.externalBPartnerId(orderCandidate.getEffectiveCustomerId())
 				.bPartnerLocationIdentifierCustomPath(bPartnerLocationIdJSONPath)
 				.build();
 

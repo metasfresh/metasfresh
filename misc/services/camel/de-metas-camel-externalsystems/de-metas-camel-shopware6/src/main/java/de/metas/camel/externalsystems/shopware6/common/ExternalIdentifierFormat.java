@@ -34,4 +34,10 @@ public class ExternalIdentifierFormat
 	{
 		return EXTERNAL_ID_PREFIX + "-" + SHOPWARE6_SYSTEM_NAME + "-" + externalId;
 	}
+
+	@NonNull
+	public static String formatOldStyleExternalId(@NonNull final String externalId)
+	{
+		return EXTERNAL_ID_PREFIX + "-" + externalId;
+	}
 }

@@ -34,7 +34,7 @@ import org.springframework.util.SocketUtils;
 import java.io.IOException;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class CallDispatcherRouteBuilderTest extends CamelTestSupport
 {
@@ -84,7 +84,7 @@ class CallDispatcherRouteBuilderTest extends CamelTestSupport
 				.wereSentTo("direct:" + externalSystem + "-" + command)
 				.whenDone(1).create();
 
-		final String jsonRequest = "{\"orgCode\":\"orgCode\",\"externalSystemName\":\"" + externalSystem + "\",\"command\":\"" + command + "\",\"parameters\":{\"parameterName1\":\"parameterValue1\",\"parameterName2\":\"parameterValue2\"}}";
+		final String jsonRequest = "{\"externalSystemConfigId\":1, \"orgCode\":\"orgCode\",\"externalSystemName\":\"" + externalSystem + "\",\"command\":\"" + command + "\",\"parameters\":{\"parameterName1\":\"parameterValue1\",\"parameterName2\":\"parameterValue2\"}}";
 
 		template.requestBody("direct:dispatch", jsonRequest);
 

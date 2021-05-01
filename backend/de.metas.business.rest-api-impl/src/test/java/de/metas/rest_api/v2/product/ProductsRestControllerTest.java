@@ -35,10 +35,11 @@ import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
+import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
-import de.metas.rest_api.externlasystem.dto.ExternalSystemService;
+import de.metas.rest_api.v2.externlasystem.dto.ExternalSystemService;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -96,7 +97,7 @@ public class ProductsRestControllerTest
 
 		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade();
 
-		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()), new ExternalSystemExportAuditRepo());
+		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()), new ExternalSystemExportAuditRepo(), new RuntimeParametersRepository());
 		final ProductRepository productRepository = new ProductRepository();
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
