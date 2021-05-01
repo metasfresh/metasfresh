@@ -28,6 +28,10 @@ import de.metas.externalsystem.IExternalSystemChildConfigId;
 import lombok.NonNull;
 import lombok.Value;
 
+/**
+ * Actually wraps the parent config ID, because each externalSystemConfig has just one child config
+ * => probably makes sens to do this for all {@link IExternalSystemChildConfigId}s.
+ */
 @Value
 public class ExternalSystemOtherConfigId implements IExternalSystemChildConfigId
 {
