@@ -217,17 +217,17 @@
                 <version>${spring-boot.version}</version>
                 <executions>
                     <execution>
-                        <id>camel-externalsystems-repackage</id>
+                        <id>spring-boot-externalsystems-build-info</id>
                         <goals>
-                            <goal>repackage</goal>
+                            <goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
                         </goals>
                         <configuration>
-                            <!-- we *also* need the normal main jar to be used in app
-                            so don't replace the normal jar, but create the executable jar with this classifier -->
-                            <classifier>exec</classifier>
-
-                            <executable>true</executable>
-                            <mainClass>de.metas.edi.esb.ESBCamelApplication</mainClass>
+                            <additionalProperties>
+                                <jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+                                <jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+                                <jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+                                <jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+                            </additionalProperties>
                         </configuration>
                     </execution>
                 </executions>
