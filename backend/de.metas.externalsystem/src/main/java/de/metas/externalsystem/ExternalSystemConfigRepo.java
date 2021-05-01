@@ -27,6 +27,9 @@ import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
+import de.metas.externalsystem.other.ExternalSystemOtherConfig;
+import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
+import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.pricing.PriceListId;
@@ -43,6 +46,12 @@ import java.util.Optional;
 public class ExternalSystemConfigRepo
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository;
+
+	public ExternalSystemConfigRepo(final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository)
+	{
+		this.externalSystemOtherConfigRepository = externalSystemOtherConfigRepository;
+	}
 
 	@NonNull
 	public ExternalSystemParentConfig getById(final @NonNull IExternalSystemChildConfigId id)
@@ -53,6 +62,8 @@ public class ExternalSystemConfigRepo
 				return getById(ExternalSystemAlbertaConfigId.cast(id));
 			case Shopware6:
 				return getById(ExternalSystemShopware6ConfigId.cast(id));
+			case Other:
+				return getById(ExternalSystemOtherConfigId.cast(id));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 		}
@@ -83,9 +94,20 @@ public class ExternalSystemConfigRepo
 				return getAlbertaConfigByParentId(id);
 			case Shopware6:
 				return getShopware6ConfigByParentId(id);
+			case Other:
+				final ExternalSystemOtherConfigId externalSystemOtherConfigId = ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(id);
+				return Optional.of(externalSystemOtherConfigRepository.getById(externalSystemOtherConfigId));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
+	}
+
+	@NonNull
+	public String getParentTypeById(final @NonNull ExternalSystemParentConfigId id)
+	{
+		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
+
+		return externalSystemConfigRecord.getType();
 	}
 
 	@NonNull
@@ -207,10 +229,12 @@ public class ExternalSystemConfigRepo
 				.name(externalSystemConfigRecord.getName());
 	}
 
-	public String getParentTypeById(final @NonNull ExternalSystemParentConfigId id)
+	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemOtherConfigId id)
 	{
-		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
+		final ExternalSystemOtherConfig childConfig = externalSystemOtherConfigRepository.getById(id);
 
-		return externalSystemConfigRecord.getType();
+		return getById(id.getParentConfigId())
+				.childConfig(childConfig)
+				.build();
 	}
 }

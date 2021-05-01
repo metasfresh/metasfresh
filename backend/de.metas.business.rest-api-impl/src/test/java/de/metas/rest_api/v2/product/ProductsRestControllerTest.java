@@ -34,6 +34,7 @@ import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
+import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
@@ -95,7 +96,7 @@ public class ProductsRestControllerTest
 
 		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade();
 
-		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(), new ExternalSystemExportAuditRepo());
+		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()), new ExternalSystemExportAuditRepo());
 		final ProductRepository productRepository = new ProductRepository();
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
