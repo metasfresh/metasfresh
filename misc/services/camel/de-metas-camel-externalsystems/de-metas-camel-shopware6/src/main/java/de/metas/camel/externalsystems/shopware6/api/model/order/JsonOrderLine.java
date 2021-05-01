@@ -43,8 +43,8 @@ public class JsonOrderLine
 	@JsonProperty("id")
 	String id;
 
-	@NonNull
 	@JsonProperty("productId")
+	@NonNull
 	String productId;
 
 	@NonNull
