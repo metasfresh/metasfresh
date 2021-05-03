@@ -23,12 +23,16 @@
 package de.metas.camel.alberta.ordercandidate.processor;
 
 import de.metas.camel.alberta.ordercandidate.GetOrdersRouteConstants;
+import de.metas.camel.alberta.patient.AlbertaConnectionDetails;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import io.swagger.client.ApiClient;
+import io.swagger.client.api.DoctorApi;
 import io.swagger.client.api.OrderApi;
+import io.swagger.client.api.PharmacyApi;
 import io.swagger.client.model.ArrayOfOrders;
 import io.swagger.client.model.Order;
+import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
@@ -40,6 +44,9 @@ import java.util.stream.Collectors;
 
 import static de.metas.camel.alberta.ordercandidate.GetOrdersRouteConstants.ROUTE_PROPERTY_ORG_CODE;
 import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.HEADER_ORG_CODE;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_CONN_DETAILS;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PHARMACY_API;
+import static de.metas.camel.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_DOCTOR_API;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 
 public class RetrieveOrdersProcessor implements Processor
@@ -57,7 +64,14 @@ public class RetrieveOrdersProcessor implements Processor
 
 		final String apiKey = request.getParameters().get(ExternalSystemConstants.PARAM_API_KEY);
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
+		final String tenant = request.getParameters().get(ExternalSystemConstants.PARAM_TENANT);
 		final String updatedAfter = request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER);
+
+		final AlbertaConnectionDetails albertaConnectionDetails = AlbertaConnectionDetails.builder()
+				.apiKey(apiKey)
+				.basePath(basePath)
+				.tenant(tenant)
+				.build();
 
 		final ApiClient apiClient = new ApiClient();
 		apiClient.setBasePath(basePath);
@@ -66,7 +80,7 @@ public class RetrieveOrdersProcessor implements Processor
 
 		final ArrayOfOrders createdOrders = orderApi.getCreatedOrders(apiKey, GetOrdersRouteConstants.OrderStatus.CREATED.getValue(), updatedAfter);
 
-		final List<Order> ordersToImport = createdOrders == null || createdOrders.isEmpty()
+		final @NonNull List<Order> ordersToImport = createdOrders == null || createdOrders.isEmpty()
 				? new ArrayList<>()
 				: createdOrders;
 
@@ -85,6 +99,10 @@ public class RetrieveOrdersProcessor implements Processor
 		}
 
 		exchange.setProperty(ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
-		exchange.getIn().setBody(ordersToImport);
+		exchange.setProperty(ROUTE_PROPERTY_ALBERTA_CONN_DETAILS, albertaConnectionDetails);
+		exchange.setProperty(ROUTE_PROPERTY_ALBERTA_PHARMACY_API, new PharmacyApi(apiClient));
+		exchange.setProperty(ROUTE_PROPERTY_DOCTOR_API, new DoctorApi(apiClient));
+
+		exchange.getIn().setBody(ordersToImport.isEmpty() ? null : ordersToImport);
 	}
 }

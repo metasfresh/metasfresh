@@ -3,6 +3,7 @@
   "externalSystemName": "Alberta",
   "command": "pushProducts",
   "adPInstanceId": 10009935,
+  "externalSystemConfigId": 1,
   "parameters": {
     "APIKey": "APIKey",
     "Tenant": "Tenant",

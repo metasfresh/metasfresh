@@ -27,16 +27,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.ordercandidates.v1.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.rest_api.v2.SwaggerDocConstants;
 import de.metas.common.util.Check;
-import de.pentabyte.springfox.ApiEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -119,6 +116,11 @@ public class JsonOLCandCreateRequest
 					+ "Note: may be empty, if `dataDestInternalName='DEST.de.metas.invoicecandidate'`")
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate dateRequired;
+
+	@ApiModelProperty( //
+			value = "This translates to `C_OLCand.dateCandidate`.\n")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate dateCandidate;
 
 	int flatrateConditionsId;
 
@@ -205,7 +207,7 @@ public class JsonOLCandCreateRequest
 
 	@ApiModelProperty(value = "Specifies if the created order will be a normal Sales Order or a Prepaid Sales Order")
 	@JsonInclude(Include.NON_NULL)
-	OrderDocType orderDocType;
+	JsonOrderDocType orderDocType;
 
 	@ApiModelProperty(value = "Specifies the payment rule that will propagate to the created order")
 	@JsonInclude(Include.NON_NULL)
@@ -213,7 +215,7 @@ public class JsonOLCandCreateRequest
 
 	@ApiModelProperty(value = "Specifies the SalesPartnerCode for the partner that will propagate as sales rep to the created order")
 	@JsonInclude(Include.NON_NULL)
-	String salesPartnerCode;
+	JsonSalesPartner salesPartner;
 
 	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order")
 	@JsonInclude(Include.NON_NULL)
@@ -224,10 +226,41 @@ public class JsonOLCandCreateRequest
 	String paymentTerm;
 
 	@JsonInclude(Include.NON_NULL)
+	Integer line;
+
+	@JsonInclude(Include.NON_NULL)
+	String description;
+
+	@JsonInclude(Include.NON_NULL)
 	JsonAlbertaOrderInfo albertaOrderInfo;
 
 	@JsonInclude(Include.NON_NULL)
 	JsonOrderLineGroup orderLineGroup;
+
+	@ApiModelProperty( //
+			value = "Translates to C_OLCand.isManualPrice ")
+	@JsonInclude(Include.NON_NULL)
+	Boolean isManualPrice;
+
+	@ApiModelProperty( //
+			value = "Translates to C_OLCand.isImportedWithIssues")
+	@JsonInclude(Include.NON_NULL)
+	Boolean isImportedWithIssues;
+
+	@ApiModelProperty( //
+			value = "Translates to C_OLCand.DeliveryViaRule")
+	@JsonInclude(Include.NON_NULL)
+	String deliveryViaRule;
+
+	@ApiModelProperty( //
+			value = "Translates to C_OLCand.DeliveryViaRule")
+	@JsonInclude(Include.NON_NULL)
+	String deliveryRule;
+
+	@ApiModelProperty( //
+			value = "Translates to C_OLCand.importWarningMessage")
+	@JsonInclude(Include.NON_NULL)
+	String importWarningMessage;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -259,13 +292,21 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType,
 			@JsonProperty("presetDateInvoiced") final @Nullable LocalDate presetDateInvoiced,
 			@JsonProperty("presetDateShipped") final @Nullable LocalDate presetDateShipped,
-			@JsonProperty("orderDocType") final @Nullable OrderDocType orderDocType,
+			@JsonProperty("orderDocType") final @Nullable JsonOrderDocType orderDocType,
 			@JsonProperty("paymentRule") final @Nullable JSONPaymentRule paymentRule,
-			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
+			@JsonProperty("salesPartner") final @Nullable JsonSalesPartner salesPartner,
 			@JsonProperty("shipper") final @Nullable String shipper,
 			@JsonProperty("paymentTerm") final @Nullable String paymentTerm,
 			@JsonProperty("albertaOrderInfo") final @Nullable JsonAlbertaOrderInfo albertaOrderInfo,
-			@JsonProperty("orderLineGroup") final @Nullable JsonOrderLineGroup orderLineGroup)
+			@JsonProperty("orderLineGroup") final @Nullable JsonOrderLineGroup orderLineGroup,
+			@JsonProperty("dateCandidate") final @Nullable LocalDate dateCandidate,
+			@JsonProperty("line") final @Nullable Integer line,
+			@JsonProperty("description") final @Nullable String description,
+			@JsonProperty("isManualPrice") final @Nullable Boolean isManualPrice,
+			@JsonProperty("isImportedWithIssues") final @Nullable Boolean isImportedWithIssues,
+			@JsonProperty("deliveryViaRule") final @Nullable String deliveryViaRule,
+			@JsonProperty("deliveryRule") final @Nullable String deliveryRule,
+			@JsonProperty("importWarningMessage") final @Nullable String importWarningMessage)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -278,6 +319,7 @@ public class JsonOLCandCreateRequest
 		this.handOverBPartner = handOverBPartner;
 		this.dateOrdered = dateOrdered;
 		this.dateRequired = dateRequired;
+		this.dateCandidate = dateCandidate;
 		this.flatrateConditionsId = flatrateConditionsId;
 		this.productIdentifier = productIdentifier;
 		this.productDescription = productDescription;
@@ -297,12 +339,19 @@ public class JsonOLCandCreateRequest
 
 		this.orderDocType = orderDocType;
 		this.paymentRule = paymentRule;
-		this.salesPartnerCode = salesPartnerCode;
+		this.salesPartner = salesPartner;
 		this.shipper = shipper;
 
 		this.paymentTerm = paymentTerm;
 		this.albertaOrderInfo = albertaOrderInfo;
 		this.orderLineGroup = orderLineGroup;
+		this.line = line;
+		this.description = description;
+		this.isManualPrice = isManualPrice;
+		this.isImportedWithIssues = isImportedWithIssues;
+		this.deliveryViaRule = deliveryViaRule;
+		this.deliveryRule = deliveryRule;
+		this.importWarningMessage = importWarningMessage;
 	}
 
 	/**
@@ -324,22 +373,5 @@ public class JsonOLCandCreateRequest
 								this);
 		}
 		return this;
-	}
-
-	public enum OrderDocType
-	{
-		@ApiEnum("Specifies if the order will be a standard one. A standard order will be created if no DocTYpe is specified.")
-		SalesOrder("SalesOrder"),
-
-		@ApiEnum("Specifies if the order will be prepaid")
-		PrepayOrder("PrepayOrder");
-
-		@Getter
-		private final String code;
-
-		OrderDocType(final String code)
-		{
-			this.code = code;
-		}
 	}
 }

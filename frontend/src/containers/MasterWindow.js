@@ -188,11 +188,13 @@ class MasterWindowContainer extends PureComponent {
       sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
     }
 
-    updateTabLayout(windowType, activeTabId).then(() => {
-      getTabRequest(activeTabId, windowType, docId, sortingOrder).then((rows) =>
-        updateTabTableData(tableId, rows)
-      );
-    });
+    updateTabLayout(windowType, activeTabId)
+      .then(() => {
+        getTabRequest(activeTabId, windowType, docId, sortingOrder).then(
+          (rows) => updateTabTableData(tableId, rows)
+        );
+      })
+      .catch((error) => error);
   };
 
   deleteTabsTables = () => {

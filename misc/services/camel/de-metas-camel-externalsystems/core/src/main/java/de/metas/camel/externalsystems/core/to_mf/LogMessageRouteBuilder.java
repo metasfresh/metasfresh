@@ -66,7 +66,7 @@ public class LogMessageRouteBuilder extends RouteBuilder
 
 		if (!(exchangeBody instanceof LogMessageRequest))
 		{
-			throw new RuntimeException("Wrong exchange boyd class! Expected: " + LogMessageRequest.class.getName() + "!");
+			throw new RuntimeException("Wrong exchange body class! Expected: " + LogMessageRequest.class.getName() + "!");
 		}
 
 		final LogMessageRequest logMessageRequest = (LogMessageRequest)exchangeBody;

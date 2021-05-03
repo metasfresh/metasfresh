@@ -468,6 +468,17 @@
     position: relative;
 }
 
+/* Two columns box for the sitemap menu group */
+.menu-overlay-sitemap-col-2 {
+    column-count: 2;
+    border: 1px solid #cccccc;
+    box-sizing: border-box;
+    border-radius: 5px;
+    padding-bottom: 10px;
+    margin-bottom: 1rem !important;
+    margin-right: 1rem !important;
+}
+
 .menu-overlay-caption {
     display: flex;
     flex-direction: column;
@@ -642,6 +653,6 @@
 }
 
 .menu-overlay-search-item-focused {
-  text-decoration: underline;
-  text-underline-position: under;
+    text-decoration: underline;
+    text-underline-position: under;
 }

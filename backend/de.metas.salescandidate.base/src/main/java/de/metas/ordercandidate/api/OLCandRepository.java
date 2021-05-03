@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.impex.InputDataSourceId;
@@ -23,6 +24,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -151,7 +153,7 @@ public class OLCandRepository
 			olCandPO.setPOReference(request.getPoReference());
 		}
 
-		olCandPO.setDateCandidate(SystemTime.asDayTimestamp());
+		olCandPO.setDateCandidate(CoalesceUtil.coalesce(TimeUtil.asTimestamp(request.getDateCandidate()), SystemTime.asDayTimestamp()));
 		olCandPO.setDateOrdered(TimeUtil.asTimestamp(request.getDateOrdered()));
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()
 				.atTime(LocalTime.MAX)
@@ -242,9 +244,29 @@ public class OLCandRepository
 			olCandPO.setIsGroupCompensationLine(orderLineGroup.isGroupMainItem());
 		}
 
-		saveRecord(olCandPO);
+		olCandPO.setDescription(request.getDescription());
+		olCandPO.setDeliveryRule(request.getDeliveryRule());
+		olCandPO.setDeliveryViaRule(request.getDeliveryViaRule());
+		olCandPO.setImportWarningMessage(request.getImportWarningMessage());
+		if (request.getPrice() == null)
+		{
+			olCandPO.setIsManualPrice(Boolean.TRUE.equals(request.getIsManualPrice()));
+		}
 
-		return olCandPO;
+		if (request.getLine() != null)
+		{
+			olCandPO.setLine(request.getLine());
+		}
+
+		final org.adempiere.process.rpl.model.I_C_OLCand olCandWithIssuesInterface = InterfaceWrapperHelper.create(olCandPO, org.adempiere.process.rpl.model.I_C_OLCand.class);
+		if (request.getIsImportedWithIssues() != null)
+		{
+			olCandWithIssuesInterface.setIsImportedWithIssues(request.getIsImportedWithIssues());
+		}
+
+		saveRecord(olCandWithIssuesInterface);
+
+		return olCandWithIssuesInterface;
 	}
 
 	public List<OLCand> getByQuery(@NonNull final OLCandQuery olCandQuery)
