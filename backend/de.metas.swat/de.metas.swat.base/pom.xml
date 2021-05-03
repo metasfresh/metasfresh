@@ -107,14 +107,6 @@
 			<version>10.0.0</version>
 		</dependency>
 
-		<!-- other 3rd party libs -->
-		<!-- Needed only for de.metas.impex.spi.impl.FtpImporter -->
-		<dependency>
-			<groupId>ftp4che</groupId>
-			<artifactId>ftp4che</artifactId>
-			<version>0.7.1</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
