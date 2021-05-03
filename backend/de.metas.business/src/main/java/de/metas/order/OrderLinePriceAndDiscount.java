@@ -7,6 +7,7 @@ import java.math.RoundingMode;
 
 import javax.annotation.Nullable;
 
+import de.metas.i18n.AdMessageKey;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -48,9 +49,9 @@ import lombok.Value;
 
 /** Order line price & discount calculations */
 @Value
-public class PriceAndDiscount
+public class OrderLinePriceAndDiscount
 {
-	public static PriceAndDiscount of(final I_C_OrderLine orderLine, final CurrencyPrecision precision)
+	public static OrderLinePriceAndDiscount of(final I_C_OrderLine orderLine, final CurrencyPrecision precision)
 	{
 		return builder()
 				.precision(precision)
@@ -61,7 +62,7 @@ public class PriceAndDiscount
 				.build();
 	}
 
-	private static final Logger logger = LogManager.getLogger(PriceAndDiscount.class);
+	private static final Logger logger = LogManager.getLogger(OrderLinePriceAndDiscount.class);
 
 	BigDecimal priceEntered;
 	BigDecimal priceActual;
@@ -74,15 +75,15 @@ public class PriceAndDiscount
 	ITranslatableString priceLimitNotEnforcedExplanation;
 
 	@Builder(toBuilder = true)
-	private PriceAndDiscount(
-			@Nullable BigDecimal priceEntered,
-			@Nullable BigDecimal priceActual,
-			@Nullable Percent discount,
-			@Nullable CurrencyPrecision precision,
-			@Nullable BigDecimal priceLimit,
-			boolean priceLimitEnforced,
-			@Nullable ITranslatableString priceLimitEnforcedExplanation,
-			@Nullable ITranslatableString priceLimitNotEnforcedExplanation)
+	private OrderLinePriceAndDiscount(
+			@Nullable final BigDecimal priceEntered,
+			@Nullable final BigDecimal priceActual,
+			@Nullable final Percent discount,
+			@Nullable final CurrencyPrecision precision,
+			@Nullable final BigDecimal priceLimit,
+			final boolean priceLimitEnforced,
+			@Nullable final ITranslatableString priceLimitEnforcedExplanation,
+			@Nullable final ITranslatableString priceLimitNotEnforcedExplanation)
 	{
 		this.precision = precision != null ? precision : CurrencyPrecision.ofInt(2);
 		this.priceEntered = this.precision.round(CoalesceUtil.coalesce(priceEntered, ZERO));
@@ -104,7 +105,7 @@ public class PriceAndDiscount
 		}
 	}
 
-	public PriceAndDiscount enforcePriceLimit(final PriceLimitRuleResult priceLimitResult)
+	public OrderLinePriceAndDiscount enforcePriceLimit(final PriceLimitRuleResult priceLimitResult)
 	{
 		if (!priceLimitResult.isApplicable())
 		{
@@ -180,13 +181,13 @@ public class PriceAndDiscount
 				.build();
 	}
 
-	public PriceAndDiscount updatePriceActual()
+	public OrderLinePriceAndDiscount updatePriceActual()
 	{
 		final BigDecimal priceActual = discount.subtractFromBase(priceEntered, precision.toInt());
 		return toBuilder().priceActual(priceActual).build();
 	}
 
-	public PriceAndDiscount updatePriceActualIfPriceEnteredIsNotZero()
+	public OrderLinePriceAndDiscount updatePriceActualIfPriceEnteredIsNotZero()
 	{
 		if (priceEntered.signum() == 0)
 		{
@@ -240,7 +241,7 @@ public class PriceAndDiscount
 		if (priceLimitEnforced)
 		{
 			msg = TranslatableStrings.builder()
-					.appendADMessage("Enforced")
+					.appendADMessage(AdMessageKey.of("Enforced"))
 					.append(": ")
 					.append(priceLimitEnforcedExplanation)
 					.build();
@@ -248,7 +249,7 @@ public class PriceAndDiscount
 		else
 		{
 			msg = TranslatableStrings.builder()
-					.appendADMessage("NotEnforced")
+					.appendADMessage(AdMessageKey.of("NotEnforced"))
 					.append(": ")
 					.append(priceLimitNotEnforcedExplanation)
 					.build();
