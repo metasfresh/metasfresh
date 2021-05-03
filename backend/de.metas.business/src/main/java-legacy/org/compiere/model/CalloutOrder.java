@@ -38,7 +38,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.order.PriceAndDiscount;
+import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.organization.IOrgDAO;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -1111,7 +1111,7 @@ public class CalloutOrder extends CalloutEngine
 		final CurrencyPrecision pricePrecision = Services.get(IPriceListBL.class).getPricePrecision(PriceListId.ofRepoId(order.getM_PriceList_ID()));
 
 		//
-		PriceAndDiscount priceAndDiscount;
+		OrderLinePriceAndDiscount priceAndDiscount;
 
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
 		{
@@ -1119,14 +1119,14 @@ public class CalloutOrder extends CalloutEngine
 					.applyPriceLimitRestrictions(false)
 					.build());
 
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision);
+			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision);
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceActual.equals(changedColumnName))
 		{
 			final BigDecimal priceActual = orderLine.getPriceActual();
 			final BigDecimal priceEntered = calculatePriceEnteredFromPriceActual(orderLine);
 
-			priceAndDiscount = PriceAndDiscount.builder()
+			priceAndDiscount = OrderLinePriceAndDiscount.builder()
 					.precision(pricePrecision)
 					.priceEntered(priceEntered)
 					.priceActual(priceActual)
@@ -1135,18 +1135,18 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName))
 		{
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision)
+			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision)
 					.updatePriceActual();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_Discount.equals(changedColumnName))
 		{
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision)
+			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision)
 					.updatePriceActualIfPriceEnteredIsNotZero();
 		}
 		// C_UOM_ID, PriceList, S_ResourceAssignment_ID
 		else
 		{
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision);
+			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision);
 		}
 
 		//

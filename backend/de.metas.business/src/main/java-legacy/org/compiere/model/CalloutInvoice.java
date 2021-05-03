@@ -635,7 +635,7 @@ public class CalloutInvoice extends CalloutEngine
 		{
 			priceActual = (BigDecimal)value;
 			priceEntered = LegacyUOMConversionUtils.convertToProductUOM(ctx, productID, uomToID, priceActual);
-
+ 
 			if (priceEntered == null)
 			{
 				priceEntered = priceActual;
@@ -645,20 +645,8 @@ public class CalloutInvoice extends CalloutEngine
 					+ " -> PriceEntered=" + priceEntered);
 
 			invoiceLine.setPriceEntered(priceEntered);
-
 		}
-		else if (columnName.equals("PriceEntered"))
-		{
-			priceEntered = (BigDecimal)value;
-
-			// task 08763: PriceActual = PriceEntered should be OK in invoices. see the task chant and wiki-page for details
-			priceActual = pricePrecision.round(priceEntered);
-			//
-			log.debug("amt - PriceEntered=" + priceEntered
-					+ " -> PriceActual=" + priceActual);
-
-			invoiceLine.setPriceActual(priceActual);
-		}
+		
 
 		/*
 		 * Discount entered - Calculate Actual/Entered
