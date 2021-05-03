@@ -318,10 +318,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, invoiceLine.getC_Invoice().getC_Order_ID(), I_C_Order.class, trxName);
 
 		final I_M_PriceList priceList = priceListDAO.getById(order.getM_PriceList_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
 				priceList,
-				TimeUtil.asZonedDateTime(invoice.getDateInvoiced()),
+				TimeUtil.asZonedDateTime(invoice.getDateInvoiced(), timeZone),
 				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
@@ -535,10 +536,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount
-		final BigDecimal priceActual = InvoiceLinePriceAndDiscount.of(invoiceLine, pricingResult.getPrecision())
+		InvoiceLinePriceAndDiscount.of(invoiceLine, pricingResult.getPrecision())
 				.withUpdatedPriceActual()
-				.getPriceActual();
-		invoiceLine.setPriceActual(priceActual);
+				.applyTo(invoiceLine);
 
 		invoiceLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); //
 	}
