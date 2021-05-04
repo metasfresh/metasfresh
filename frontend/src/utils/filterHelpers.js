@@ -1,5 +1,3 @@
-import _ from 'lodash';
-
 import { DATE_FIELD_TYPES } from '../constants/Constants';
 import { deepUnfreeze } from '../utils';
 import { fieldValueToString } from '../utils/tableHelpers';

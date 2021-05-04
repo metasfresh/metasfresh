@@ -48,7 +48,6 @@ class FiltersItem extends PureComponent {
       isTooltipShow: false,
       maxWidth: null,
       maxHeight: null,
-      toChange: [],
     };
   }
 
@@ -355,8 +354,17 @@ class FiltersItem extends PureComponent {
    * @param {array} toChange
    */
   updateItems = (toChange) => {
-    console.log(toChange);
-    this.setState({ toChange });
+    const { filter } = this.state;
+    if (filter.parameters) {
+      filter.parameters.map((filterItem) => {
+        if (filterItem.parameterName === toChange.widgetField) {
+          filterItem.defaultValue = toChange.value;
+          filterItem.value = toChange.value;
+        }
+        return filterItem;
+      });
+    }
+    this.setState({ filter });
   };
 
   /**
@@ -371,8 +379,7 @@ class FiltersItem extends PureComponent {
       returnBackToDropdown,
       isActive,
     } = this.props;
-    const { filter, activeFilter, toChange } = this.state;
-    console.log('toChange:', toChange);
+    const { filter, activeFilter } = this.state;
 
     if (
       (filter &&
@@ -387,7 +394,6 @@ class FiltersItem extends PureComponent {
       this.setState(
         {
           activeFilter: filter,
-          toChange: [],
         },
         () => {
           applyFilters(this.state.activeFilter, () => {
@@ -406,8 +412,6 @@ class FiltersItem extends PureComponent {
           if (filterType === 'YesNo') {
             // YesNo filters (checkboxes) can be either null, true or false
             afcItem.value = afcItem.defaultValue;
-            // `toChange` holds the values to be updated for the case when there is noActive filter
-            console.log('ToCHange:', toChange);
           }
           return afcItem;
         });
