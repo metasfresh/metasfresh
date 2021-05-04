@@ -4,8 +4,9 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { List } from 'immutable';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 // import { goBack, push } from 'react-router-redux';
-import { goBack, push } from 'connected-react-router';
+// import { goBack, push } from 'connected-react-router';
 import classnames from 'classnames';
 
 import {
@@ -89,16 +90,18 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    */
   handleSuccess = () => {
-    const { redirect, dispatch } = this.props;
+    const { redirect, history } = this.props;
 
     getUserLang().then((response) => {
       //GET language shall always return a result
       Moment.locale(response.data['key']);
 
       if (redirect) {
-        dispatch(goBack());
+        // dispatch(goBack());
+        history.goBack();
       } else {
-        dispatch(push('/'));
+        // dispatch(push('/'));
+        history.push('/');
       }
     });
   };
@@ -110,11 +113,12 @@ class LoginForm extends Component {
    */
   checkIfAlreadyLogged(err) {
     // const { router } = this.context;
-    const { dispatch } = this.props;
+    // const { dispatch } = this.props;
 
     return localLoginRequest().then((response) => {
       if (response.data) {
-        return dispatch(push('/'));
+        // return dispatch(push('/'));
+      return history.push('/');
       }
 
       return Promise.reject(err);
@@ -236,8 +240,9 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    */
   handleForgotPassword = () => {
-    const { dispatch } = this.props;
-    dispatch(push('/forgottenPassword'));
+    // const { dispatch } = this.props;
+    // dispatch(push('/forgottenPassword'));
+    this.props.history.push('/forgottenPassword');
   };
 
   /**
@@ -402,4 +407,4 @@ LoginForm.propTypes = {
   auth: PropTypes.object,
 };
 
-export default connect()(LoginForm);
+export default withRouter(connect()(LoginForm));

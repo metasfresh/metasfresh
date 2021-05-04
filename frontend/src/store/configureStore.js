@@ -1,5 +1,5 @@
 // import { routerMiddleware } from 'react-router-redux';
-import { routerMiddleware } from 'connected-react-router';
+// import { routerMiddleware } from 'connected-react-router';
 import { applyMiddleware, compose, createStore } from 'redux';
 // import { createStore } from 'redux-dynamic-reducer';
 import thunk from 'redux-thunk';
@@ -9,7 +9,7 @@ import navigationMiddleware from './customMiddlewares';
 // import rootReducer from '../reducers';
 import { createRootReducer } from '../reducers';
 
-export default function configureStore(history) {
+export default function configureStore() {
   const composeEnhancer =
     window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 
@@ -18,7 +18,7 @@ export default function configureStore(history) {
   //   composeEnhancer(applyMiddleware(...middleware))
   // );
 
-  const reducer = createRootReducer(history);
+  const reducer = createRootReducer();
 
   const store = createStore(
     reducer,
@@ -28,7 +28,7 @@ export default function configureStore(history) {
         thunk,
         promiseMiddleware,
         navigationMiddleware,
-        routerMiddleware(history)
+        // routerMiddleware(history)
       )
     )
   );
@@ -39,7 +39,7 @@ export default function configureStore(history) {
   if (module.hot) {
     module.hot.accept('../reducers', () => {
       // const nextReducer = rootReducer;
-      const nextReducer = createRootReducer(history);
+      const nextReducer = createRootReducer();
       store.replaceReducer(nextReducer);
     });
   }

@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import { connectRouter } from 'connected-react-router';
+// import { connectRouter } from 'connected-react-router';
 
 import appHandler from './appHandler';
 import listHandler from './listHandler';
@@ -12,9 +12,9 @@ import commentsPanel from './commentsPanel';
 import tables from './tables';
 import actionsHandler from './actionsHandler';
 
-export const createRootReducer = (history) =>
+export const createRootReducer = () =>
   combineReducers({
-    router: connectRouter(history),
+    // router: connectRouter(history),
     appHandler,
     listHandler,
     menuHandler,

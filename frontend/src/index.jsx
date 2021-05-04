@@ -1,16 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import { ProvideAuth } from './hooks/useAuth';
 import App from './containers/App';
 
 if (process.env.NODE_ENV !== 'production') {
   const whyDidYouRender = require('@welldone-software/why-did-you-render');
-  whyDidYouRender(React, { include: [/ConnectedRouter/] });
+  // whyDidYouRender(React, { include: [/Routes/] });
 }
 
   const {whyDidYouUpdate} = require('why-did-you-update')
   // whyDidYouUpdate(React);
-  whyDidYouUpdate(React, { include: [/ConnectedRouter/] });
+  whyDidYouUpdate(React, { include: [/LoginRoute/] });
 
 /* eslint-disable */
 console.info(`%c
@@ -19,4 +20,4 @@ console.info(`%c
 `, "color: blue;");
 /* eslint-enable */
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<ProvideAuth><App /></ProvideAuth>, document.getElementById('root'));

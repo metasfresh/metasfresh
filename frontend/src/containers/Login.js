@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
+// import { push } from 'connected-react-router';
 import { detect } from 'detect-browser';
 
 import LoginForm from '../components/app/LoginForm';

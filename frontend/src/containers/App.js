@@ -2,9 +2,9 @@ import axios from 'axios';
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import { Provider } from 'react-redux';
-import { createBrowserHistory } from 'history';
-import qhistory from 'qhistory';
-import { stringify, parse } from 'qs';
+// import { createBrowserHistory } from 'history';
+// import qhistory from 'qhistory';
+// import { stringify, parse } from 'qs';
 
 import '../assets/css/styles.css';
 import {
@@ -13,7 +13,7 @@ import {
 } from '../utils/locale';
 import {
   addNotification,
-  logoutSuccess,
+  // logoutSuccess,
   setProcessSaved,
   initHotkeys,
   initKeymap,
@@ -26,18 +26,18 @@ import PluginsRegistry from '../services/PluginsRegistry';
 import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
-import Auth from '../services/Auth';
+// import Auth from '../services/Auth';
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
 import configureStore from '../store/configureStore';
 
-import { ConnectedRouter, push } from 'connected-react-router';
+// import { ConnectedRouter, push } from 'connected-react-router';
 import Routes from '../routes.js';
 
 const hotkeys = generateHotkeys({ keymap, blacklist });
-const history = qhistory(createBrowserHistory(), stringify, parse);
+// const history = qhistory(createBrowserHistory(), stringify, parse);
 
-const store = configureStore(history);
+const store = configureStore();
 const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 
 if (window.Cypress) {
@@ -52,7 +52,7 @@ export default class App extends Component {
       pluginsLoading: !!APP_PLUGINS.length,
     };
 
-    this.auth = new Auth();
+    // this.auth = new Auth();
     this.pluginsRegistry = new PluginsRegistry(this);
     window.META_HOST_APP = this;
 
@@ -87,9 +87,9 @@ export default class App extends Component {
          */
         if (error.response.status == 401) {
           store.dispatch(setProcessSaved());
-          logoutSuccess(this.auth);
+          // logoutSuccess(this.auth);
           console.log('dodaj redirect nie wiadomo po co')
-          store.dispatch(push('/login?redirect=true'));
+          // store.dispatch(push('/login?redirect=true'));
         } else if (error.response.status == 503) {
           store.dispatch(noConnection(true));
         } else if (error.response.status != 404) {
@@ -243,14 +243,25 @@ export default class App extends Component {
     //     </ShortcutProvider>
     //   </Provider>
     // );
+    // return (
+    //   <Provider store={store}>
+    //     <ShortcutProvider>
+    //       <Translation>
+    //         <NotificationHandler>
+    //           <ConnectedRouter history={history} noInitialPop>
+    //             <Routes dispatch={store.dispatch} auth={this.auth} />
+    //           </ConnectedRouter>
+    //         </NotificationHandler>
+    //       </Translation>
+    //     </ShortcutProvider>
+    //   </Provider>
+    // );
     return (
       <Provider store={store}>
         <ShortcutProvider>
           <Translation>
             <NotificationHandler>
-              <ConnectedRouter history={history} noInitialPop>
-                <Routes dispatch={store.dispatch} auth={this.auth} />
-              </ConnectedRouter>
+              <Routes dispatch={store.dispatch} />
             </NotificationHandler>
           </Translation>
         </ShortcutProvider>
