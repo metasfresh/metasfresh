@@ -66,7 +66,11 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	
+	private final ICountryAreaBL countryAreaBL = Services.get(ICountryAreaBL.class);
+	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public I_C_Tax getTaxById(final TaxId taxId)
 	{
@@ -151,10 +155,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	}
 
 	/**
-	 * Important: This implementation makes two assumptions:
-	 * <ul>
-	 * <li>You are inside the EU</li>
-	 * </ul>
+	 * Important: This implementation assumes that you are inside the EU
 	 */
 	@Override
 	@Nullable
@@ -167,21 +168,21 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final boolean isSOTrx,
 			final boolean throwEx)
 	{
-		final I_C_BPartner bPartner = Services.get(IBPartnerDAO.class).getById(bpLocTo.getC_BPartner_ID());
+		final I_C_BPartner bPartner = bpartnerDAO.getById(bpLocTo.getC_BPartner_ID());
 
-		final boolean hasTaxCertificate = !Check.isEmpty(bPartner.getVATaxID());
+		final boolean hasTaxCertificate = Check.isNotBlank(bPartner.getVATaxID());
 
-		final I_C_Location locationTo = Services.get(ILocationDAO.class).getById(LocationId.ofRepoId(bpLocTo.getC_Location_ID()));
+		final I_C_Location locationTo = locationDAO.getById(LocationId.ofRepoId(bpLocTo.getC_Location_ID()));
 		final CountryId countryToId = CountryId.ofRepoId(locationTo.getC_Country_ID());
-		final I_C_Country countryTo = Services.get(ICountryDAO.class).getById(countryToId);
-		final boolean toEULocation = Services.get(ICountryAreaBL.class).isMemberOf(ctx,
+		final I_C_Country countryTo =countryDAO.getById(countryToId);
+		final boolean toEULocation = countryAreaBL.isMemberOf(ctx,
 				ICountryAreaBL.COUNTRYAREAKEY_EU,
 				countryTo.getCountryCode(),
 				date);
 
 		final boolean toSameCountry = Objects.equals(countryToId, countryFromId);
 
-		final IQueryBuilder<I_C_Tax> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_C_Tax> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Tax.class, ctx, ITrx.TRXNAME_None)
 				.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date)
 				.addOnlyActiveRecordsFilter();
@@ -276,8 +277,6 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		// If organization is tax exempted then we will return the Tax Exempt for that organization (03871)
 		final I_C_BPartner orgBPartner = Services.get(IBPartnerDAO.class).retrieveOrgBPartner(ctx, orgId.getRepoId(), I_C_BPartner.class, ITrx.TRXNAME_None);
 		log.debug("Org BP: {}", orgBPartner);
-
-		final ICountryAreaBL countryAreaBL = Services.get(ICountryAreaBL.class);
 
 		if (taxDAO.retrieveIsTaxExemptSmallBusiness(BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID()), billDate))
 		{
@@ -554,7 +553,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	@Override
 	public TaxCategoryId retrieveRegularTaxCategoryId()
 	{
-		final TaxCategoryId taxCategoryId = Services.get(IQueryBL.class)
+		final TaxCategoryId taxCategoryId = queryBL
 				.createQueryBuilder(I_C_TaxCategory.class)
 				.addEqualsFilter(I_C_TaxCategory.COLUMN_VATType, X_C_TaxCategory.VATTYPE_RegularVAT)
 				.addOnlyActiveRecordsFilter()
@@ -574,7 +573,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	@NonNull
 	public Optional<TaxCategoryId> getTaxCategoryIdByInternalName(@NonNull final String internalName)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_TaxCategory.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_TaxCategory.COLUMNNAME_InternalName, internalName)
