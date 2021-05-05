@@ -844,8 +844,13 @@ export function patch(
       const data =
         response.data.documents instanceof Array
           ? response.data.documents
-          : [response.data.documents];
+          : response.data;
       const dataItem = data[0];
+
+      // prevent recursion in merge
+      data.documents &&
+        data.documents.documents &&
+        delete data.documents.documents;
 
       await dispatch(
         mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
