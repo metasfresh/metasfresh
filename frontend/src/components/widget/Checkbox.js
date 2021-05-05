@@ -45,7 +45,7 @@ const Checkbox = (props) => {
     setChanged(true);
     handlePatch(widgetField, '', id);
     // here we should call a method that would clear the filter item for the case when there is no active filter
-    !isFilterActive && updateItems({ widgetField, value: '' });
+    !isFilterActive && updateItems && updateItems({ widgetField, value: '' });
   };
 
   /**
@@ -56,7 +56,9 @@ const Checkbox = (props) => {
    */
   const updateCheckedState = (e) => {
     setCheckedState(!checkedState);
-    !isFilterActive && updateItems({ widgetField, value: !checkedState });
+    !isFilterActive &&
+      updateItems &&
+      updateItems({ widgetField, value: !checkedState });
     setChanged(true);
     handlePatch(widgetField, e.target.checked, id);
   };
