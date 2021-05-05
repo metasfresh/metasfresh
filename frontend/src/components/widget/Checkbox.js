@@ -24,7 +24,8 @@ const Checkbox = (props) => {
 
   const [isChanged, setChanged] = useState(false);
 
-  let initialValue = !isFilterActive && !isChanged ? defaultValue : value;
+  let initialValue =
+    updateItems && !isFilterActive && !isChanged ? defaultValue : value;
   initialValue = typeof initialValue === 'undefined' ? null : initialValue;
   const [checkedState, setCheckedState] = useState(initialValue);
 
