@@ -138,7 +138,7 @@ public interface ISubscriptionBL extends ISingletonService
 
 	I_C_Flatrate_Term retrieveLastFlatrateTermFromOrder(I_C_Order order);
 
-	void updatePrices(
+	void updateQtysAndPrices(
 			@NonNull I_C_OrderLine ol,
 			@NonNull SOTrx soTrx,
 			boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet);

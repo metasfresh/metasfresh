@@ -129,7 +129,7 @@ public class C_OrderLine
 				return; // leave this job to the adempiere standard callouts
 			}
 
-			subscriptionBL.updatePrices(orderLine, soTrx, true);
+			subscriptionBL.updateQtysAndPrices(orderLine, soTrx, true);
 		}
 	}
 }

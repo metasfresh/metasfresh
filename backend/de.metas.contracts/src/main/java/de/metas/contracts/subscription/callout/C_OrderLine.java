@@ -77,7 +77,7 @@ public class C_OrderLine
 			return;
 		}
 
-		subscriptionBL.updatePrices(ol, soTrx, updatePriceEnteredAndDiscountOnlyIfNotAlreadySet);
+		subscriptionBL.updateQtysAndPrices(ol, soTrx, updatePriceEnteredAndDiscountOnlyIfNotAlreadySet);
 	}
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyEntered })
@@ -93,7 +93,7 @@ public class C_OrderLine
 		}
 
 		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = true;
-		subscriptionBL.updatePrices(ol, soTrx, updatePriceEnteredAndDiscountOnlyIfNotAlreadySet);
+		subscriptionBL.updateQtysAndPrices(ol, soTrx, updatePriceEnteredAndDiscountOnlyIfNotAlreadySet);
 	}
 
 }

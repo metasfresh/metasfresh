@@ -999,7 +999,7 @@ public class SubscriptionBL implements ISubscriptionBL
 	}
 
 	@Override
-	public void updatePrices(
+	public void updateQtysAndPrices(
 			@NonNull final I_C_OrderLine ol,
 			@NonNull final SOTrx soTrx,
 			final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
@@ -1056,17 +1056,19 @@ public class SubscriptionBL implements ISubscriptionBL
 		// priceQty is the qty do be delivered during one complete subscription term
 		final Quantity priceQty = qtyOrderedPerRun.multiply(numberOfRuns);
 
+		final Quantity orderLineQty = uomConversionBL.convertQtyTo(priceQty, UomId.ofRepoId(ol.getC_UOM_ID())).orElse(priceQty);
+		final BigDecimal olQty = orderLineQty.toBigDecimal();
 		// qty ordered needs to be set because it will be used to compute the
 		// line's NetLineAmount in MOrderLine.beforeSave()
-		ol.setQtyOrdered(priceQty.toBigDecimal());
+		ol.setQtyOrdered(olQty);
 
-		ol.setQtyEnteredInPriceUOM(priceQty.toBigDecimal());
+		ol.setQtyEnteredInPriceUOM(olQty);
 
 		// now compute the new prices
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 				.orderLine(ol)
 				.priceListIdOverride(subscriptionPLId)
-				.qtyOverride(priceQty)
+				.qtyOverride(orderLineQty)
 				.resultUOM(OrderLinePriceUpdateRequest.ResultUOM.PRICE_UOM)
 				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
 				.updateLineNetAmt(true)
