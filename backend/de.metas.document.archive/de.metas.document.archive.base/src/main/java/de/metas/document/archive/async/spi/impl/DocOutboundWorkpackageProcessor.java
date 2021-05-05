@@ -70,23 +70,21 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 	{
 		final UserId userId = UserId.ofRepoIdOrNull(workpackage.getAD_User_ID());
 		final I_C_Async_Batch asyncBatch = workpackage.getC_Async_Batch_ID() > 0 ? workpackage.getC_Async_Batch() : null;
-		final boolean isInvoiceEmailEnabled = isInvoiceEmailEnabled(asyncBatch);
 
 		final List<Object> records = queueDAO.retrieveItems(workpackage, Object.class, localTrxName);
 		for (final Object record : records)
 		{
 			InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.C_Async_Batch, asyncBatch);
-			generateOutboundDocument(record, userId, isInvoiceEmailEnabled);
+			generateOutboundDocument(record, userId);
 		}
 		return Result.SUCCESS;
 	}
 
 	private void generateOutboundDocument(
 			@NonNull final Object record,
-			@Nullable final UserId userId,
-			final boolean isInvoiceEmailEnabled)
+			@Nullable final UserId userId)
 	{
-		final boolean isInvoiceEmailEnabledEffective = isInvoiceEmailEnabled || computeInvoiceEmailEnabledFromRecord(record);
+		final boolean isInvoiceEmailEnabledEffective = computeInvoiceEmailEnabledFromRecord(record);
 
 		final ArchiveResult archiveResult = DefaultModelArchiver.of(record)
 				.flavor(isInvoiceEmailEnabledEffective ? DocumentReportFlavor.EMAIL : DocumentReportFlavor.PRINT)
@@ -100,19 +98,6 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 			Loggables.addLog("Created AD_Archive_ID={} for record={}", archiveResult.getArchiveRecord().getAD_Archive_ID(), record);
 			archiveEventManager.firePdfUpdate(archiveResult.getArchiveRecord(), userId);
 		}
-	}
-
-	private boolean isInvoiceEmailEnabled(@Nullable final I_C_Async_Batch asyncBatch)
-	{
-		if (asyncBatch == null)
-		{
-			return false;
-		}
-
-		// NOTE: because in some rollouts we have this C_Async_Batch.IsInvoiceEmailEnabled,
-		// we have to check it first
-		final Object valueObj = InterfaceWrapperHelper.getValueOrNull(asyncBatch, I_C_BPartner.COLUMNNAME_IsInvoiceEmailEnabled);
-		return StringUtils.toBoolean(valueObj);
 	}
 
 	private boolean computeInvoiceEmailEnabledFromRecord(@NonNull final Object record)
