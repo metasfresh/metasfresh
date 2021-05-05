@@ -22,13 +22,6 @@ package de.metas.contracts.subscription;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -38,11 +31,19 @@ import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.lang.SOTrx;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Properties;
 
 public interface ISubscriptionBL extends ISingletonService
 {
@@ -60,7 +61,7 @@ public interface ISubscriptionBL extends ISingletonService
 	/**
 	 * Iterate the given deliveries, sum up their price (using their orderline's product and priceActual). Then compute
 	 * the price that would be payable with the given pricing system and return the difference.
-	 * 
+	 *
 	 * @param ctx
 	 * @param pricingSystemId
 	 * @param deliveries
@@ -81,29 +82,29 @@ public interface ISubscriptionBL extends ISingletonService
 	 * "Next" means the next record after the given date. If the sc doesn't have a next record and the subscription is
 	 * supposed to go on, new records are created. If the next record's event date is the current date, the sc's
 	 * subscriptionStatus is set to the next record's subscription status.
-	 * 
+	 *
 	 * @param sc
 	 * @param currentDate
 	 */
 	void evalCurrentSPs(I_C_Flatrate_Term sc, Timestamp currentDate);
 
 	I_C_Flatrate_Matching retrieveMatching(
-			Properties ctx, 
-			int flatrateConditionsId, 
-			ProductAndCategoryId productAndCategoryId, 
+			Properties ctx,
+			int flatrateConditionsId,
+			ProductAndCategoryId productAndCategoryId,
 			String trxName);
 
 	/**
 	 * Use the given <code>C_Flatrate_Transition</code>'s <code>TermDurationUnit</code>,
 	 * <code>TermDuration</code>, <code>FrequencyType</code> and <code>Frequency</code> values to compute the number of
 	 * subscription deliveries, starting from the given date.
-	 * 
+	 *
 	 * @param trans
 	 * @param date
 	 *            note that the method uses a {@link GregorianCalendar} to make the computations. Because different
 	 *            months have different numbers of days, the result might be different for different <code>date</code>
 	 *            values.
-	 * 
+	 *
 	 * @return
 	 */
 	int computeNumberOfRuns(I_C_Flatrate_Transition trans, Timestamp date);
@@ -112,7 +113,7 @@ public interface ISubscriptionBL extends ISingletonService
 
 	/**
 	 * Creates a new term for the given order line
-	 * 
+	 *
 	 * @param ol
 	 * @param completeIt
 	 *            if <code>true</code>, then the new term is completed
@@ -123,13 +124,9 @@ public interface ISubscriptionBL extends ISingletonService
 	I_C_Flatrate_Term createSubscriptionTerm(I_C_OLCand olCand, boolean completeIt);
 
 	/**
-	 * 
-	 * 
 	 * @param ctx
-	 * @param completeId
-	 *            if <code>true</code>, the new terms will directly be completed.
-	 * @param AD_PInstance_ID
-	 *            the process instance ID of the process that called this method. Will be stored for documentation.
+	 * @param completeIt      if <code>true</code>, the new terms will directly be completed.
+	 * @param AD_PInstance_ID the process instance ID of the process that called this method. Will be stored for documentation.
 	 * @param trxName
 	 * @return the number of <code>C_OLCand</code> records that were processed.
 	 */
@@ -140,4 +137,9 @@ public interface ISubscriptionBL extends ISingletonService
 	boolean isActiveTerm(I_C_Flatrate_Term term);
 
 	I_C_Flatrate_Term retrieveLastFlatrateTermFromOrder(I_C_Order order);
+
+	void updatePrices(
+			@NonNull I_C_OrderLine ol,
+			@NonNull SOTrx soTrx,
+			boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet);
 }
