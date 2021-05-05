@@ -52,6 +52,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.IProductPA;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
+import de.metas.quantity.QuantitiesUOMNotMatchingExpection;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
@@ -1056,7 +1057,9 @@ public class SubscriptionBL implements ISubscriptionBL
 		// priceQty is the qty do be delivered during one complete subscription term
 		final Quantity priceQty = qtyOrderedPerRun.multiply(numberOfRuns);
 
-		final Quantity orderLineQty = uomConversionBL.convertQtyTo(priceQty, UomId.ofRepoId(ol.getC_UOM_ID())).orElse(priceQty);
+		final UomId olUomId = UomId.ofRepoId(ol.getC_UOM_ID());
+		final Quantity orderLineQty = uomConversionBL.convertQtyTo(priceQty, olUomId)
+				.orElseThrow(() -> new QuantitiesUOMNotMatchingExpection("Cannot convert " + priceQty + " to " + olUomId));
 		final BigDecimal olQty = orderLineQty.toBigDecimal();
 		// qty ordered needs to be set because it will be used to compute the
 		// line's NetLineAmount in MOrderLine.beforeSave()
