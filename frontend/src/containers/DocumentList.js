@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
+// import { push } from 'connected-react-router';
+import { withRouter } from 'react-router-dom';
 import { Set as iSet } from 'immutable';
 import currentDevice from 'current-device';
 import { get, debounce } from 'lodash';
@@ -684,7 +685,8 @@ class DocumentListContainer extends Component {
       windowId,
       isSideListShow,
       viewData,
-      push,
+      // push,
+      history,
       page,
       sort,
       setListSorting,
@@ -696,7 +698,7 @@ class DocumentListContainer extends Component {
       return;
     }
 
-    push(`/window/${windowId}/${id}`);
+    history.push(`/window/${windowId}/${id}`);
 
     if (!isSideListShow) {
       // Caching last settings
@@ -711,9 +713,9 @@ class DocumentListContainer extends Component {
    * @summary Redirect to a new document
    */
   redirectToNewDocument = () => {
-    const { push, windowId } = this.props;
+    const { history, windowId } = this.props;
 
-    push(`/window/${windowId}/new`);
+    history.push(`/window/${windowId}/new`);
   };
 
   /**
@@ -793,7 +795,7 @@ class DocumentListContainer extends Component {
  */
 DocumentListContainer.propTypes = { ...DLpropTypes };
 
-export default connect(
+export default withRouter(connect(
   DLmapStateToProps,
   {
     resetView,
@@ -810,7 +812,7 @@ export default connect(
     setListSorting,
     setListId,
     showIncludedView,
-    push,
+    // push,
     updateRawModal,
     deselectTableRows,
     fetchLocationConfig,
@@ -822,4 +824,4 @@ export default connect(
   },
   null,
   { forwardRef: true }
-)(DocumentListContainer);
+)(DocumentListContainer));

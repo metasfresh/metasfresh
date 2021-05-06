@@ -5,9 +5,11 @@ import numeral from 'numeral';
 // import { push, replace } from 'react-router-redux';
 import queryString from 'query-string';
 // =======
-import { push, replace } from 'connected-react-router';
+// import { push, replace } from 'connected-react-router';
+// import { useHistory } from 'react-router-dom';
 // >>>>>>> 76ce88db54... - tmp move to react-router v5
 
+import history from '../services/History';
 import * as types from '../constants/ActionTypes';
 import { setCurrentActiveLocale } from '../utils/locale';
 import { getUserSession } from '../api';
@@ -96,6 +98,39 @@ export function logoutSuccess(auth) {
   localStorage.removeItem('isLogged');
 }
 
+/**
+ * @method updateUri
+ * @summary Prepends viewId/page/sorting to the url
+ * TODO: Move outside of action as it's not an action anymore
+ */
+// export function updateUri(pathname, query, prop, value) {
+//   return (dispatch) => {
+//     let url = `${pathname}?`;
+
+//     // add new prop or overwrite existing
+//     query[prop] = value;
+
+//     const queryKeys = Object.keys(query);
+
+//     queryKeys.forEach((key, idx) => {
+//       url += `${key}=${query[key]}${queryKeys.length - 1 !== idx ? '&' : ''}`;
+//     });
+
+//     dispatch(replace(url));
+//   };
+// }
+export function updateUri(pathname, query, updatedQuery) {
+  const fullPath = window.location.href;
+  const queryObject = {
+    ...query,
+    ...updatedQuery,
+  };
+  const queryUrl = queryString.stringify(queryObject);
+  const url = `${pathname}?${queryUrl}`;
+
+  !fullPath.includes('viewId') ? history.replace(url) : history.push(url);
+}
+
 // REDUX ACTIONS
 
 export function loginSuccess(auth) {
@@ -180,8 +215,9 @@ export function loginSuccess(auth) {
           if (e.response) {
             let { status } = e.response;
             if (status === 401) {
-              console.log('TOTUTAJ DO GLOWNEJ ?')
+              console.log('redirect to main ?')
               // window.location.href = '/';
+              history.push('/');
             }
           }
         })
@@ -249,42 +285,6 @@ export function deleteNotification(key) {
 export function clearNotifications() {
   return {
     type: types.CLEAR_NOTIFICATIONS,
-  };
-}
-
-/**
- * @method updateUri
- * @summary Prepends viewId/page/sorting to the url
- */
-// export function updateUri(pathname, query, prop, value) {
-//   return (dispatch) => {
-//     let url = `${pathname}?`;
-
-//     // add new prop or overwrite existing
-//     query[prop] = value;
-
-//     const queryKeys = Object.keys(query);
-
-//     queryKeys.forEach((key, idx) => {
-//       url += `${key}=${query[key]}${queryKeys.length - 1 !== idx ? '&' : ''}`;
-//     });
-
-//     dispatch(replace(url));
-//   };
-// }
-export function updateUri(pathname, query, updatedQuery) {
-  const fullPath = window.location.href;
-
-  return (dispatch) => {
-    const queryObject = {
-      ...query,
-      ...updatedQuery,
-    };
-
-    const queryUrl = queryString.stringify(queryObject);
-    const url = `${pathname}?${queryUrl}`;
-
-    !fullPath.includes('viewId') ? dispatch(replace(url)) : dispatch(push(url));
   };
 }
 

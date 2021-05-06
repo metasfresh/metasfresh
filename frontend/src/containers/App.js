@@ -1,7 +1,8 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
-import React, { Component } from 'react';
-import { Provider } from 'react-redux';
+import React, { Component, useState } from 'react';
+// import { Provider } from 'react-redux';
+import { useDispatch } from 'react-redux';
 // import { createBrowserHistory } from 'history';
 // import qhistory from 'qhistory';
 // import { stringify, parse } from 'qs';
@@ -13,7 +14,7 @@ import {
 } from '../utils/locale';
 import {
   addNotification,
-  // logoutSuccess,
+  logoutSuccess,
   setProcessSaved,
   initHotkeys,
   initKeymap,
@@ -21,21 +22,18 @@ import {
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api';
 import { noConnection } from '../actions/WindowActions';
-// import { addPlugins } from '../actions/PluginActions';
 import PluginsRegistry from '../services/PluginsRegistry';
+import { useAuth } from '../hooks/useAuth';
+import Routes from '../routes.js';
+
 import { generateHotkeys, ShortcutProvider } from '../components/keyshortcuts';
 import Translation from '../components/Translation';
 import NotificationHandler from '../components/notifications/NotificationHandler';
-// import Auth from '../services/Auth';
 import blacklist from '../shortcuts/blacklist';
 import keymap from '../shortcuts/keymap';
 import configureStore from '../store/configureStore';
 
-// import { ConnectedRouter, push } from 'connected-react-router';
-import Routes from '../routes.js';
-
 const hotkeys = generateHotkeys({ keymap, blacklist });
-// const history = qhistory(createBrowserHistory(), stringify, parse);
 
 const store = configureStore();
 const APP_PLUGINS = PLUGINS ? PLUGINS : [];
@@ -44,17 +42,22 @@ if (window.Cypress) {
   window.store = store;
 }
 
-export default class App extends Component {
-  constructor(props) {
-    super(props);
+const App = () => {
+// export default class App extends Component {
+  // constructor(props) {
+  //   super(props);
 
-    this.state = {
-      pluginsLoading: !!APP_PLUGINS.length,
-    };
+    // this.state = {
+    //   pluginsLoading: !!APP_PLUGINS.length,
+    // };
+    const [pluginsLoading, setPluginsLoading] = useState(!!APP_PLUGINS.length);
+    const auth = useAuth();
+    const dispatch = useDispatch();
 
     // this.auth = new Auth();
-    this.pluginsRegistry = new PluginsRegistry(this);
-    window.META_HOST_APP = this;
+    // this.pluginsRegistry = new PluginsRegistry(this);
+    // const pluginsRegistry = new PluginsRegistry(this);
+    // window.META_HOST_APP = this;
 
     axios.defaults.withCredentials = true;
     axios.defaults.headers.common['Content-Type'] = 'application/json';
@@ -79,21 +82,21 @@ export default class App extends Component {
         }
 
         if (!error || !error.response || !error.response.status) {
-          store.dispatch(noConnection(true));
+          dispatch(noConnection(true));
         }
 
         /*
          * Authorization error
          */
         if (error.response.status == 401) {
-          store.dispatch(setProcessSaved());
-          // logoutSuccess(this.auth);
+          dispatch(setProcessSaved());
+          auth.logoutSuccess();
           console.log('dodaj redirect nie wiadomo po co')
           // store.dispatch(push('/login?redirect=true'));
         } else if (error.response.status == 503) {
-          store.dispatch(noConnection(true));
+          dispatch(noConnection(true));
         } else if (error.response.status != 404) {
-          if (localStorage.isLogged) {
+          if (auth.isLoggedIn) {
             const errorMessenger = (code) => {
               switch (code) {
                 case 500:
@@ -116,7 +119,7 @@ export default class App extends Component {
               return;
             }
 
-            store.dispatch(
+            dispatch(
               addNotification(
                 'Error: ' + message.split(' ', 4).join(' ') + '...',
                 data.message,
@@ -136,7 +139,7 @@ export default class App extends Component {
         if (error.response.request.responseURL.includes('showError=true')) {
           const { data } = error.response;
 
-          store.dispatch(
+          dispatch(
             addNotification(
               'Error: ' + data.message.split(' ', 4).join(' ') + '...',
               data.message,
@@ -148,14 +151,14 @@ export default class App extends Component {
         } else {
           return Promise.reject(error);
         }
-      }.bind(this)
+      }
     );
 
     getAvailableLang().then((response) => {
       const { defaultValue, values } = response.data;
       const valuesFlatten = values.map((item) => Object.keys(item)[0]);
       if (!store.getState().appHandler.me.language) {
-        store.dispatch(setLanguages(values));
+        dispatch(setLanguages(values));
       }
       const lang =
         valuesFlatten.indexOf(navigator.language) > -1
@@ -167,8 +170,8 @@ export default class App extends Component {
 
     counterpart.setMissingEntryGenerator(() => '');
 
-    store.dispatch(initKeymap(keymap));
-    store.dispatch(initHotkeys(hotkeys));
+    dispatch(initKeymap(keymap));
+    dispatch(initHotkeys(hotkeys));
 
     /**
      * this is the part of the application that activates the plugins from the plugins array found in - plugins.js
@@ -215,14 +218,14 @@ export default class App extends Component {
     //     });
     //   });
     // }
-  }
+  // }
 
-  getRegistry() {
-    return this.pluginsRegistry;
-  }
+  // const getRegistry = () => {
+  //   return pluginsRegistry;
+  // }
 
-  render() {
-    if (APP_PLUGINS.length && this.state.pluginsLoading) {
+  // render() {
+    if (APP_PLUGINS.length && pluginsLoading) {
       return null;
     }
 
@@ -256,16 +259,28 @@ export default class App extends Component {
     //     </ShortcutProvider>
     //   </Provider>
     // );
-    return (
-      <Provider store={store}>
-        <ShortcutProvider>
-          <Translation>
-            <NotificationHandler>
-              <Routes dispatch={store.dispatch} />
-            </NotificationHandler>
-          </Translation>
-        </ShortcutProvider>
-      </Provider>
-    );
-  }
-}
+    // return (
+    //   <Provider store={store}>
+    //     <ProvideAuth>
+    //       <ShortcutProvider>
+    //         <Translation>
+    //           <NotificationHandler>
+    //             <Routes />
+    //           </NotificationHandler>
+    //         </Translation>
+    //       </ShortcutProvider>
+    //     </ProvideAuth>
+    //   </Provider>
+    // );
+  return (
+    <ShortcutProvider>
+      <Translation>
+        <NotificationHandler>
+          <Routes />
+        </NotificationHandler>
+      </Translation>
+    </ShortcutProvider>
+  );
+};
+
+export default App;

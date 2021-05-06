@@ -5,7 +5,7 @@ import { applyMiddleware, compose, createStore } from 'redux';
 import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise';
 
-import navigationMiddleware from './customMiddlewares';
+// import navigationMiddleware from './customMiddlewares';
 // import rootReducer from '../reducers';
 import { createRootReducer } from '../reducers';
 
@@ -26,8 +26,8 @@ export default function configureStore() {
     composeEnhancer(
       applyMiddleware(
         thunk,
-        promiseMiddleware,
-        navigationMiddleware,
+        promiseMiddleware
+        // navigationMiddleware,
         // routerMiddleware(history)
       )
     )

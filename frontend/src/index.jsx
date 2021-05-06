@@ -1,17 +1,25 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import { Provider } from 'react-redux';
 
-import { ProvideAuth } from './hooks/useAuth';
 import App from './containers/App';
+import configureStore from './store/configureStore';
+import { ProvideAuth } from './hooks/useAuth';
 
-if (process.env.NODE_ENV !== 'production') {
-  const whyDidYouRender = require('@welldone-software/why-did-you-render');
-  // whyDidYouRender(React, { include: [/Routes/] });
+const store = configureStore();
+
+if (window.Cypress) {
+  window.store = store;
 }
 
-  const {whyDidYouUpdate} = require('why-did-you-update')
-  // whyDidYouUpdate(React);
-  whyDidYouUpdate(React, { include: [/LoginRoute/] });
+// if (process.env.NODE_ENV !== 'production') {
+//   const whyDidYouRender = require('@welldone-software/why-did-you-render');
+//   whyDidYouRender(React, { include: [/Routes/] });
+// }
+
+// const { whyDidYouUpdate } = require('why-did-you-update')
+// // whyDidYouUpdate(React);
+// whyDidYouUpdate(React, { include: [/Routes/] });
 
 /* eslint-disable */
 console.info(`%c
@@ -20,4 +28,11 @@ console.info(`%c
 `, "color: blue;");
 /* eslint-enable */
 
-ReactDOM.render(<ProvideAuth><App /></ProvideAuth>, document.getElementById('root'));
+ReactDOM.render(
+  <Provider store={store}>
+    <ProvideAuth>
+      <App />
+    </ProvideAuth>
+  </Provider>,
+  document.getElementById('root')
+);

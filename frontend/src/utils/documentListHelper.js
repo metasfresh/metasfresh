@@ -50,7 +50,7 @@ const DLpropTypes = {
   setListPagination: PropTypes.func.isRequired,
   setListSorting: PropTypes.func.isRequired,
   setListId: PropTypes.func.isRequired,
-  push: PropTypes.func.isRequired,
+  // push: PropTypes.func.isRequired,
   updateRawModal: PropTypes.func.isRequired,
   deselectTableRows: PropTypes.func.isRequired,
   fetchLocationConfig: PropTypes.func.isRequired,
@@ -79,6 +79,8 @@ const DLpropTypes = {
 //   // use empty view's data. This is used in tests
 // =======
 const DLmapStateToProps = (state, { location, ...props }) => {
+  // console.log('BLA: ')
+
   const query = qs.parse(location.search);
   const {
     page: queryPage,
@@ -102,10 +104,11 @@ const DLmapStateToProps = (state, { location, ...props }) => {
     // refTabId: queryRefTabId,
   } = props;
 
-  const identifier = props.isModal ? props.defaultViewId : props.windowType;
-  let master = state.viewHandler.views[identifier];
+  // const identifier = props.isModal ? props.defaultViewId : props.windowType;
+  // let master = state.viewHandler.views[identifier];
+  let master = getView(state, windowId, isModal);
 
-// >>>>>>> 76ce88db54... - tmp move to react-router v5
+  // >>>>>>> 76ce88db54... - tmp move to react-router v5
   // use empty view's data. This is used in tests
   if (!master) {
     master = viewState;
