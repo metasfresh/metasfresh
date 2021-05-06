@@ -64,6 +64,8 @@ const Checkbox = (props) => {
     handlePatch(widgetField, e.target.checked, id);
   };
 
+  initialValue = updateItems ? checkedState : initialValue;
+
   return (
     <div>
       <label
@@ -82,7 +84,7 @@ const Checkbox = (props) => {
         <input
           ref={rawWidget}
           type="checkbox"
-          checked={isChanged && value === '' ? false : checkedState}
+          checked={isChanged && value === '' ? false : initialValue}
           disabled={widgetData[0].readonly || disabled}
           onChange={updateCheckedState}
           tabIndex="-1"
