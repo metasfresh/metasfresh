@@ -60,7 +60,7 @@ public class AvailableForSalesSqlHelper
 	}
 
 	private IQuery<I_MD_Available_For_Sales_QueryResult> createDBQueryForAvailableForSalesQuery(
-			int queryNo,
+			final int queryNo,
 			@NonNull final AvailableForSalesQuery availableForSalesQuery)
 	{
 		final IQueryBuilder<I_MD_Available_For_Sales_QueryResult> queryBuilder = Services
