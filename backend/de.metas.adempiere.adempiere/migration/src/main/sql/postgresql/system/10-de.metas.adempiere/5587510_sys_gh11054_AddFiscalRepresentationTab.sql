@@ -1148,3 +1148,112 @@ INSERT INTO AD_UI_ElementField (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_UI_Element
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2021-05-06 14:01:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=584647
 ;
+
+-- To_Country_ID TRL
+
+
+-- 2021-05-06T12:13:34.999Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,579137,0,TO_TIMESTAMP('2021-05-06 15:13:34','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Destination country','Destination country',TO_TIMESTAMP('2021-05-06 15:13:34','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-05-06T12:13:35.002Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=579137 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2021-05-06T12:14:18.729Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Bestimmungs-/Leistungsland, d.h. das Land, in dem die Leistung erbracht, bzw. in das die Ware geliefert wirdWare geliefert wird.', IsTranslated='Y', Name='Bestimmungsland', PrintName='Bestimmungsland',Updated=TO_TIMESTAMP('2021-05-06 15:14:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579137 AND AD_Language='de_CH'
+;
+
+-- 2021-05-06T12:14:18.782Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579137,'de_CH')
+;
+
+-- 2021-05-06T12:14:30.344Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Bestimmungs-/Leistungsland, d.h. das Land, in dem die Leistung erbracht, bzw. in das die Ware geliefert wirdWare geliefert wird', IsTranslated='Y', Name='Bestimmungsland', PrintName='Bestimmungsland',Updated=TO_TIMESTAMP('2021-05-06 15:14:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579137 AND AD_Language='de_DE'
+;
+
+-- 2021-05-06T12:14:30.346Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579137,'de_DE')
+;
+
+-- 2021-05-06T12:14:47.720Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Bestimmungs-/Leistungsland, d.h. das Land, in dem die Leistung erbracht, bzw. in das die Ware geliefert wirdWare geliefert wird.', Name='Bestimmungsland', PrintName='Bestimmungsland',Updated=TO_TIMESTAMP('2021-05-06 15:14:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579137 AND AD_Language='nl_NL'
+;
+
+-- 2021-05-06T12:14:47.721Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579137,'nl_NL')
+;
+
+-- 2021-05-06T12:15:03.797Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Country in which the service is provided or to which the goods are delivered.', IsTranslated='Y',Updated=TO_TIMESTAMP('2021-05-06 15:15:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579137 AND AD_Language='en_US'
+;
+
+-- 2021-05-06T12:15:03.798Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579137,'en_US')
+;
+
+-- 2021-05-06T12:15:03.806Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579137,'en_US')
+;
+
+-- 2021-05-06T12:15:03.808Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName=NULL, Name='Destination country', Description='Country in which the service is provided or to which the goods are delivered.', Help=NULL WHERE AD_Element_ID=579137
+;
+
+-- 2021-05-06T12:15:03.825Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Destination country', Description='Country in which the service is provided or to which the goods are delivered.', Help=NULL WHERE AD_Element_ID=579137 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-05-06T12:15:03.826Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Destination country', Description='Country in which the service is provided or to which the goods are delivered.', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579137) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579137)
+;
+
+-- 2021-05-06T12:15:03.845Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Destination country', Description='Country in which the service is provided or to which the goods are delivered.', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579137
+;
+
+-- 2021-05-06T12:15:03.847Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Destination country', Description='Country in which the service is provided or to which the goods are delivered.', Help=NULL WHERE AD_Element_ID = 579137
+;
+
+-- 2021-05-06T12:15:03.847Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Destination country', Description = 'Country in which the service is provided or to which the goods are delivered.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579137
+;
+
+-- 2021-05-06T12:15:37.988Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Name_ID=579137, Description='Country in which the service is provided or to which the goods are delivered.', Help=NULL, Name='Destination country',Updated=TO_TIMESTAMP('2021-05-06 15:15:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=645210
+;
+
+-- 2021-05-06T12:15:37.989Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579137)
+;
+
+-- 2021-05-06T12:15:38.005Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=645210
+;
+
+-- 2021-05-06T12:15:38.011Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(645210)
+;
+
