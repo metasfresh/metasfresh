@@ -767,8 +767,37 @@ body{
 }
 
 .column-wrapper {
-    column-count: 2;
+    /* column-count: 2; */
     column-fill: auto;
+    margin-top: 1rem;
+}
+
+.sitemap-column {
+    column-count: 1;
+    width: 45vw;
+    float: left;
+    margin-right: 1rem;
+}
+.sitemap-box-header {
+    column-span: all;
+    border-bottom: 1px solid #cccccc;
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+    padding: 8px 0px 8px 15px;
+    background: #ffffff;
+    border-radius: 5px 5px 0px 0px;
+}
+.sitemap-box-content {
+    padding: 10px;
+}
+.sitemap-level-one {
+    color:$brand-logo-color;
+    font-weight: 500;
+}
+
+
+.js-menu-item {
+    line-height:2;
 }
 
 .font-weight-semibold {

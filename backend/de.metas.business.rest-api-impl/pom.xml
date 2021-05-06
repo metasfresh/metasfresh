@@ -34,6 +34,12 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.purchasecandidate</groupId>
+            <artifactId>de.metas.purchasecandidate.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>de.metas.business</groupId>
             <artifactId>de.metas.business.rest-api</artifactId>
             <version>${metasfresh.version}</version>

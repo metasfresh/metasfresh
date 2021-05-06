@@ -130,7 +130,7 @@ public class C_Order
 		}
 
 		final BPartnerId salesBPartnerId = BPartnerId.ofRepoIdOrNull(orderRecord.getC_BPartner_SalesRep_ID());
-		if (salesBPartnerId == null && salesBPartnerId.equals(effectiveBillPartnerId))
+		if (salesBPartnerId == null || salesBPartnerId.equals(effectiveBillPartnerId))
 		{
 			return; // leave the master data untouched
 		}

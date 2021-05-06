@@ -103,7 +103,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Override
 	public Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(@NonNull final List<OrderId> orderIds)
 	{
-		final Map<OrderId, InvoiceId> orderIdInvoiceIdMap = new HashMap<OrderId, InvoiceId>();
+		final Map<OrderId, InvoiceId> orderIdInvoiceIdMap = new HashMap<>();
 		final List<I_C_Invoice> invoices = getInvoicesForOrderIds(orderIds);
 		for (final I_C_Invoice invoice : invoices)
 		{
@@ -208,7 +208,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.list(I_C_InvoiceLine.class);
 	}
 
-	private final IQueryBuilder<I_C_InvoiceLine> retrieveLinesQuery(final Properties ctx, final int invoiceId, final String trxName)
+	private IQueryBuilder<I_C_InvoiceLine> retrieveLinesQuery(final Properties ctx, final int invoiceId, final String trxName)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceLine.class, ctx, trxName)
 				// FIXME find out if this needs to return *all* lines or just active ones
@@ -234,8 +234,8 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	public I_C_InvoiceLine retrieveReversalLine(final I_C_InvoiceLine line, final int reversalInvoiceId)
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceLine.class, line)
-				.filter(new EqualsQueryFilter<I_C_InvoiceLine>(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, reversalInvoiceId))
-				.filter(new EqualsQueryFilter<I_C_InvoiceLine>(I_C_InvoiceLine.COLUMNNAME_Line, line.getLine()))
+				.filter(new EqualsQueryFilter<>(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, reversalInvoiceId))
+				.filter(new EqualsQueryFilter<>(I_C_InvoiceLine.COLUMNNAME_Line, line.getLine()))
 				.create()
 				.setOnlyActiveRecords(true)
 				.setClient_ID()
@@ -250,7 +250,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 
 		final IQueryBuilder<I_C_InvoiceLine> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_C_InvoiceLine.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
-				.filter(new EqualsQueryFilter<I_C_InvoiceLine>(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inoutLine.getM_InOutLine_ID()));
+				.filter(new EqualsQueryFilter<>(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID, inoutLine.getM_InOutLine_ID()));
 
 		queryBuilder.orderBy()
 				.addColumn(I_C_InvoiceLine.COLUMNNAME_Line);
@@ -406,13 +406,27 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	@Override
 	public boolean hasCompletedInvoicesReferencing(@NonNull final InvoiceId invoiceId)
 	{
+		return retainIfHasCompletedInvoicesReferencing(ImmutableSet.of(invoiceId))
+				.contains(invoiceId);
+	}
+
+	@Override
+	public ImmutableSet<InvoiceId> retainIfHasCompletedInvoicesReferencing(@NonNull final Collection<InvoiceId> invoiceIds)
+	{
+		if(invoiceIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		return queryBL.createQueryBuilder(I_C_Invoice.class)
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, invoiceId)
+		final List<Integer> resultingInvoiceRepoIds = queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, invoiceIds)
 				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, DocStatus.Completed, DocStatus.Closed)
 				.create()
-				.anyMatch();
+				.listDistinct(I_C_Invoice.COLUMNNAME_Ref_Invoice_ID, Integer.class);
+		return InvoiceId.fromIntSet(resultingInvoiceRepoIds);
 	}
+
 
 	@Override
 	public List<I_C_InvoiceLine> retrieveReferringLines(@NonNull final InvoiceLineId invoiceLineId)

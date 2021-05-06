@@ -27,8 +27,17 @@ import lombok.Getter;
 
 public interface GetPatientsRouteConstants
 {
+	String ROUTE_PROPERTY_PATIENT_API = "AlbertaPatientApi";
+	String ROUTE_PROPERTY_DOCTOR_API = "AlbertaDoctorApi";
+	String ROUTE_PROPERTY_NURSINGHOME_API = "AlbertaNursingHomeApi";
+	String ROUTE_PROPERTY_NURSINGSERVICE_API = "AlbertaNursingServiceApi";
+	String ROUTE_PROPERTY_HOSPITAL_API = "AlbertaHospitalApi";
+	String ROUTE_PROPERTY_ALBERTA_PAYER_API = "AlbertaPayerApi";
+	String ROUTE_PROPERTY_ALBERTA_PHARMACY_API = "AlbertaPharmacyApi";
+
 	String ALBERTA_SYSTEM_NAME = "ALBERTA";
 	String ESR_TYPE_BPARTNER = "BPartner";
+	String ESR_TYPE_BPARTNER_LOCATION = "BPartnerLocation";
 	String COUNTRY_CODE_DE = "DE";
 
 	String EXTERNAL_ID_PREFIX = "ext-";
@@ -41,13 +50,19 @@ public interface GetPatientsRouteConstants
 	//Route properties
 	String ROUTE_PROPERTY_ORG_CODE = "orgCode";
 	String ROUTE_PROPERTY_ALBERTA_CONN_DETAILS = "albertaConnectionDetails";
+
+	/**
+	 * Property used to store the current patient while we need another object to be the exchange-body.
+	 */
 	String ROUTE_PROPERTY_CURRENT_PATIENT = "currentPatient";
 	String ROUTE_PROPERTY_BP_IDENTIFIER_TO_ROLE = "bpIdentifier2Role";
+	String ROUTE_PROPERTY_EXTERNAL_BP_IDENTIFIER_TO_API = "externalBPIdentifier2Api";
 
 	//Alberta constants
 	@AllArgsConstructor
 	@Getter
-	enum PatientStatus {
+	enum PatientStatus
+	{
 		CREATED("created"),
 		UPDATED("updated");
 

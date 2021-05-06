@@ -22,9 +22,34 @@
 
 package de.metas.ui.web.window.controller;
 
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.TableRefInfo;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
@@ -73,31 +98,12 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
+import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.util.Services;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import lombok.NonNull;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.WebRequest;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
+import lombok.NonNull;	
 
 @Api
 @RestController
@@ -112,6 +118,7 @@ public class WindowRestController
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final UserSession userSession;
 	private final DocumentCollection documentCollection;
 	private final DocumentChangeLogService documentChangeLogService;
@@ -120,6 +127,7 @@ public class WindowRestController
 	private final ProcessRestController processRestController;
 	private final DocumentWebsocketPublisher websocketPublisher;
 	private final CommentsService commentsService;
+	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
 	public WindowRestController(
 			@NonNull final UserSession userSession,
@@ -129,7 +137,8 @@ public class WindowRestController
 			@NonNull final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider,
 			@NonNull final ProcessRestController processRestController,
 			@NonNull final DocumentWebsocketPublisher websocketPublisher,
-			@NonNull final CommentsService commentsService)
+			@NonNull final CommentsService commentsService,
+			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
 		this.userSession = userSession;
 		this.documentCollection = documentCollection;
@@ -139,6 +148,7 @@ public class WindowRestController
 		this.processRestController = processRestController;
 		this.websocketPublisher = websocketPublisher;
 		this.commentsService = commentsService;
+		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
 	}
 
 	private JSONOptionsBuilder newJSONOptions()
@@ -740,7 +750,7 @@ public class WindowRestController
 				.build();
 	}
 
-	private static DocumentZoomIntoInfo getDocumentFieldZoomInto(
+	private DocumentZoomIntoInfo getDocumentFieldZoomInto(
 			@NonNull final Document document,
 			@NonNull final String fieldName)
 	{
@@ -773,8 +783,30 @@ public class WindowRestController
 						.setParameter("zoomIntoTableIdFieldName", zoomIntoTableIdFieldName);
 			}
 
-			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
+			final String tableName = adTableDAO.retrieveTableName(adTableId);
 			return DocumentZoomIntoInfo.of(tableName, recordId);
+		}
+		// label field
+		else if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.Labels)
+		{
+			final LabelsLookup lookup = LabelsLookup.cast(field.getDescriptor()
+					.getLookupDescriptor()
+					.orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
+							.setParameter("field", field)));
+			final String labelsValueColumnName = lookup.getLabelsValueColumnName();
+
+			if (labelsValueColumnName.endsWith("_ID"))
+			{
+				final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
+				final TableRefInfo tableRefInfo = lookupDAO
+						.retrieveTableDirectRefInfo(labelsValueColumnName);
+
+				return DocumentZoomIntoInfo.of(tableRefInfo.getTableName(), -1);
+			}
+			else
+			{
+				return DocumentZoomIntoInfo.of(lookup.getLabelsTableName(), -1);
+			}
 		}
 		// Key Field
 		else if (singleKeyFieldDescriptor != null && singleKeyFieldDescriptor.getFieldName().equals(fieldName))
@@ -788,7 +820,8 @@ public class WindowRestController
 		// Regular lookup value
 		else
 		{
-			return field.getZoomIntoInfo();
+			return field.getZoomIntoInfo()
+					.overrideWindowIdIfPossible(customizedWindowInfoMapRepository.get());
 		}
 	}
 

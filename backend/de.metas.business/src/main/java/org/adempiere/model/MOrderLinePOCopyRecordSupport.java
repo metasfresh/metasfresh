@@ -1,10 +1,13 @@
 package org.adempiere.model;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.order.OrderFreightCostsService;
 import de.metas.util.collections.CompositePredicate;
 import lombok.NonNull;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.PO;
@@ -19,6 +22,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 {
 	private static final String DYNATTR_OrderCompensationGroupIdsMap = "OrderCompensationGroupIdsMap";
+
+	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	/**
 	 * Skip predicates: if it's evaluated <code>true</code> (i.e. {@link Predicate#test(Object)} returns true) then the order line will NOT copied.
@@ -77,6 +82,9 @@ public class MOrderLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 	private void onOrderLineCopied(final I_C_OrderLine toOrderLine, final I_C_OrderLine fromOrderLine)
 	{
 		toOrderLine.setC_Order_CompensationGroup_ID(getOrCloneOrderCompensationGroup(fromOrderLine.getC_Order_CompensationGroup_ID()));
+
+		final Dimension dimension = dimensionService.getFromRecord(fromOrderLine);
+		dimensionService.updateRecord(toOrderLine, dimension);
 	}
 
 	private int getOrCloneOrderCompensationGroup(final int orderCompensationGroupId)

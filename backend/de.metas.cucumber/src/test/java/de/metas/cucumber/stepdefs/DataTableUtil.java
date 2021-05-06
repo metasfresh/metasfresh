@@ -35,6 +35,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,8 @@ public class DataTableUtil
 	 * Used in case no RecordIdentifier is given.
 	 */
 	private static int recordIdentifierFallback = 0;
+
+	private static final String NULL_STRING = "null";
 
 	/**
 	 * @param fallbackPrefix if the given dataTableRow has no {@value StepDefConstants#TABLECOLUMN_IDENTIFIER} column,
@@ -91,7 +94,7 @@ public class DataTableUtil
 		return extractIntForColumnName(dataTableRow, columnName);
 	}
 
-	@NonNull
+	@Nullable
 	public String extractStringOrNullForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
 		if (!dataTableRow.containsKey(columnName))
@@ -99,6 +102,12 @@ public class DataTableUtil
 			throw new AdempiereException("Missing column for columnName=" + columnName).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
+
+		if (NULL_STRING.equals(dataTableRow.get(columnName)))
+		{
+			return null;
+		}
+
 		return dataTableRow.get(columnName);
 	}
 
@@ -158,6 +167,35 @@ public class DataTableUtil
 		}
 	}
 
+	@Nullable
+	public static ZonedDateTime extractZonedDateTimeOrNullForColumnName(final Map<String, String> dataTableRow, final String columnName)
+	{
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+		try
+		{
+			return Check.isBlank(string) ? null : ZonedDateTime.parse(string);
+		}
+		catch (final DateTimeParseException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
+	public static ZonedDateTime extractZonedDateTimeForColumnName(final Map<String, String> dataTableRow, final String columnName)
+	{
+		final String string = extractStringForColumnName(dataTableRow, columnName);
+		try
+		{
+			return ZonedDateTime.parse(string);
+		}
+		catch (final DateTimeParseException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
 	public static Timestamp extractDateTimestampForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
 		final String string = extractStringForColumnName(dataTableRow, columnName);
@@ -186,6 +224,22 @@ public class DataTableUtil
 		}
 	}
 
+	@Nullable
+	public static BigDecimal extractBigDecimalOrNullForColumnName(final Map<String, String> dataTableRow, final String columnName)
+	{
+
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+
+		try
+		{
+			return Check.isBlank(string) ? null : new BigDecimal(string);
+		}
+		catch (final NumberFormatException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
 	public static BigDecimal extractBigDecimalForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
 		final String string = extractStringForColumnName(dataTableRow, columnName);

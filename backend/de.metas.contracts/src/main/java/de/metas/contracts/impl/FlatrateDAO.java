@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
@@ -45,6 +46,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
+import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Period;
@@ -109,6 +111,13 @@ public class FlatrateDAO implements IFlatrateDAO
 		Check.assumeGreaterThanZero(flatrateTermId, "flatrateTermId");
 		return load(flatrateTermId, I_C_Flatrate_Term.class);
 	}
+
+	@Override
+	public I_C_Flatrate_Term getById(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		return load(flatrateTermId, I_C_Flatrate_Term.class);
+	}
+
 
 	@Override
 	public List<I_C_Flatrate_Term> retrieveTerms(final I_C_Invoice_Candidate ic)
@@ -205,7 +214,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class, ctx, trxName)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_AD_Org_ID, orgId)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId)
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerIds)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate, Operator.LESS_OR_EQUAL, dateOrdered)
@@ -502,8 +511,8 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		queryBuilder
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_Bill_BPartner_ID, bPartner.getC_BPartner_ID())
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_C_Flatrate_Conditions_ID, flatrateConditions.getC_Flatrate_Conditions_ID())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartner.getC_BPartner_ID())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditions.getC_Flatrate_Conditions_ID())
 				.filterByClientId();
 
 		final IQueryOrderBy orderBy = queryBuilder.orderBy()
@@ -961,5 +970,11 @@ public class FlatrateDAO implements IFlatrateDAO
 	public I_C_Flatrate_Conditions getConditionsById(final int flatrateConditionsId)
 	{
 		return load(flatrateConditionsId, I_C_Flatrate_Conditions.class);
+	}
+
+	@Override
+	public I_C_Flatrate_Conditions getConditionsById (final ConditionsId flatrateConditionsId )
+	{
+		return  load(flatrateConditionsId, I_C_Flatrate_Conditions.class);
 	}
 }

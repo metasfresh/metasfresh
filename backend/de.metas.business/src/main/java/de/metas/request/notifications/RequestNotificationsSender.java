@@ -108,7 +108,7 @@ public class RequestNotificationsSender
 	private String getUserFullname(@Nullable final UserId userId)
 	{
 		return userId != null
-				? usersRepo.retrieveUserFullname(userId)
+				? usersRepo.retrieveUserFullName(userId)
 				: "-";
 	}
 }

@@ -40,8 +40,8 @@ import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v1.request.JsonRequestLocationUpsertItem;
 import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v1.response.JsonResponseBPartnerCompositeUpsertItem;
-import de.metas.common.rest_api.v1.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.RESTUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -299,8 +299,9 @@ public class CreateBPartnerV1_StepDef
 		assertThat(jsonRequestLocation.getRegion()).isEqualTo(bPartnerLocation.getRegion());
 		assertThat(jsonRequestLocation.getCountryCode()).isEqualTo(bPartnerLocation.getCountryCode());
 		assertThat(jsonRequestLocation.getCity()).isEqualTo(bPartnerLocation.getCity());
-		assertThat(jsonRequestLocation.getGln()).isEqualTo(bPartnerLocation.getGln().getCode());
 		assertThat(DataTableUtil.extractValueOrNull(jsonRequestLocation.getDistrict())).isEqualTo(bPartnerLocation.getDistrict());
+
+		assertThat(jsonRequestLocation.getGln()).isEqualTo(bPartnerLocation.getGln() != null ? bPartnerLocation.getGln().getCode() : null);
 	}
 
 	private void validateBPartnerContact(

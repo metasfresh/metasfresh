@@ -2,7 +2,7 @@
  * #%L
  * de.metas.elasticsearch
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,57 +27,79 @@ import com.google.common.base.Suppliers;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerConfigBuilder;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.scheduler.IESModelIndexingScheduler;
+import de.metas.elasticsearch.indexer.queue.ESModelIndexerQueue;
+import de.metas.elasticsearch.server.IESServer;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class ESSystem implements IESSystem
 {
 	private static final Logger logger = LogManager.getLogger(ESSystem.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	// IMPORTANT: fetch it only when needed and when this feature is enabled!!!
+	// else it might start the elasticsearch client when the elasticsearch server does not even exists,
+	// which will flood the console with errors
+	private RestHighLevelClient elasticsearchClient = null;
 
 	@VisibleForTesting
-	public static final String ESServer_Classname = "de.metas.elasticsearch.ESServer";
+	public static final String ESServer_Classname = "de.metas.elasticsearch.server.ESServer";
 
 	private static final String SYSTEM_PROPERTY_elastic_enable = "elastic_enable";
 
 	public static final String SYSCONFIG_PostKpiEvents = "de.metas.elasticsearch.PostKpiEvents";
 	private static final boolean SYSCONFIG_PostKpiEvents_Default = true;
 
+	public static final BooleanWithReason DISABLED_BEFORE_JUNIT_MODE = BooleanWithReason.falseBecause("JUnit test mode");
+	public static final BooleanWithReason DISABLED_BECAUSE_SYSTEM_PROPERTY_elastic_enable = BooleanWithReason.falseBecause("Disabled by system property `" + SYSTEM_PROPERTY_elastic_enable + "`");
+	public static final BooleanWithReason DISABLED_BECAUSE_SYSCONFIG = BooleanWithReason.falseBecause("Disabled by sysconfig `" + SYSCONFIG_PostKpiEvents + "`");
+
 	@Override
-	public boolean isEnabled()
+	public BooleanWithReason getEnabled()
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			return false;
+			return DISABLED_BEFORE_JUNIT_MODE;
 		}
 
 		// Check if disabled by system property (as documented on sysconfig description)
-		if (StringUtils.toBoolean(System.getProperty(SYSTEM_PROPERTY_elastic_enable)))
+		if (!StringUtils.toOptionalBoolean(System.getProperty(SYSTEM_PROPERTY_elastic_enable)).orElseTrue())
 		{
-			return false;
+			return DISABLED_BECAUSE_SYSTEM_PROPERTY_elastic_enable;
 		}
 
 		// Check if it was disabled by sysconfig
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PostKpiEvents, SYSCONFIG_PostKpiEvents_Default))
 		{
-			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-			return sysConfigBL.getBooleanValue(SYSCONFIG_PostKpiEvents, SYSCONFIG_PostKpiEvents_Default);
+			return DISABLED_BECAUSE_SYSCONFIG;
 		}
+
+		return BooleanWithReason.TRUE;
 	}
 
-	private void assertEnabled()
+	@Override
+	public void assertEnabled()
 	{
-		Check.assume(isEnabled(), "Elasticsearch system is enabled");
+		final BooleanWithReason enabled = getEnabled();
+		if (enabled.isFalse())
+		{
+			throw new AdempiereException("Expected elasticsearch feature to be enabled but is disabled because `" + enabled.getReasonAsString() + "`");
+		}
 	}
 
 	@Override
@@ -129,6 +151,7 @@ public class ESSystem implements IESSystem
 		return serverSupplier.get();
 	}
 
+	@Nullable
 	private IESServer findESServer()
 	{
 		try
@@ -154,8 +177,22 @@ public class ESSystem implements IESSystem
 	}
 
 	@Override
-	public IESModelIndexingScheduler scheduler()
+	public ESModelIndexerQueue indexingQueue()
 	{
-		return Services.get(IESModelIndexingScheduler.class);
+		return SpringContextHolder.instance.getBean(ESModelIndexerQueue.class);
+	}
+
+	@Override
+	public RestHighLevelClient elasticsearchClient()
+	{
+		assertEnabled();
+
+		RestHighLevelClient elasticsearchClient = this.elasticsearchClient;
+		if (elasticsearchClient == null)
+		{
+			elasticsearchClient = this.elasticsearchClient = SpringContextHolder.instance.getBean(RestHighLevelClient.class);
+		}
+
+		return elasticsearchClient;
 	}
 }

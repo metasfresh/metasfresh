@@ -69,7 +69,7 @@ public class FlatrateDAOTest extends ContractsTestBase
 		final I_C_Flatrate_Term ft = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
 		ft.setDocStatus(IDocument.STATUS_Completed);
 		ft.setC_Flatrate_Conditions(fc);
-		ft.setBill_BPartner(bpartner);
+		ft.setBill_BPartner_ID(bpartner.getC_BPartner_ID());
 		ft.setStartDate(TimeUtil.addDays(now, -10));
 		ft.setEndDate(TimeUtil.addDays(now, 10));
 		InterfaceWrapperHelper.save(ft);

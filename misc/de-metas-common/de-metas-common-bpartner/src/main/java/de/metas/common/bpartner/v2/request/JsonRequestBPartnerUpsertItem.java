@@ -37,14 +37,12 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIE
 @ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestBPartnerUpsertItem
 {
-	@ApiModelProperty(allowEmptyValue = false, //
-			position = 10,
+	@ApiModelProperty(position = 10,
 			value = BPARTNER_IDENTIFIER_DOC) //
 	@NonNull
 	String bpartnerIdentifier;
 
-	@ApiModelProperty(allowEmptyValue = false, //
-			position = 20,
+	@ApiModelProperty(position = 20,
 			value = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
 	JsonRequestComposite bpartnerComposite;

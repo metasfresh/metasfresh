@@ -25,7 +25,7 @@ package de.metas.common.bprelation.response;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.bprelation.JsonBPRelationRole;
 import io.swagger.annotations.ApiModel;
 import lombok.Builder;

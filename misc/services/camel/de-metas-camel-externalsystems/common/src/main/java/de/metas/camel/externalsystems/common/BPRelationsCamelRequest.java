@@ -22,6 +22,8 @@
 
 package de.metas.camel.externalsystems.common;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.bprelation.request.JsonRequestBPRelationsUpsert;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,4 +38,16 @@ public class BPRelationsCamelRequest
 
 	@NonNull
 	JsonRequestBPRelationsUpsert jsonRequestBPRelationsUpsert;
+
+	public String toString()
+	{
+		try
+		{
+			return new ObjectMapper().writeValueAsString(this);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException("toString() failed for BPRelationsCamelRequest", e);
+		}
+	}
 }

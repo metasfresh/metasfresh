@@ -25,18 +25,31 @@ package de.metas.camel.externalsystems.shopware6.api;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.shopware6.api.model.GetBearerRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonOauthResponse;
 import de.metas.camel.externalsystems.shopware6.api.model.PathSegmentsEnum;
 import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
+import de.metas.camel.externalsystems.shopware6.api.model.currency.JsonCurrencies;
+import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDeliveries;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrders;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDelivery;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderDeliveryItem;
+import de.metas.common.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -50,12 +63,15 @@ import javax.annotation.Nullable;
 import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.CONNECTION_TIMEOUT_SECONDS;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_DATA;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_DELIVERY_ADDRESS;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.READ_TIMEOUT_SECONDS;
 import static java.time.temporal.ChronoUnit.SECONDS;
 
@@ -68,6 +84,8 @@ public class ShopwareClient
 	private final AuthToken authToken;
 	@NonNull
 	private final String baseUrl;
+
+	private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
 	public static ShopwareClient of(
 			@NonNull final String clientId,
@@ -84,9 +102,12 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	public Optional<JsonOrders> getOrders(@NonNull final QueryRequest queryRequest)
+	public List<OrderCandidate> getOrders(@NonNull final QueryRequest queryRequest,
+			@Nullable final String customIdentifierJSONPath,
+			@Nullable final String salesRepJSONPath)
 	{
 		final URI resourceURI;
+		final List<OrderCandidate> orderCandidates = new ArrayList<>();
 
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
@@ -99,13 +120,43 @@ public class ShopwareClient
 
 		resourceURI = uriBuilder.build().toUri();
 
-		final ResponseEntity<JsonOrders> response = performWithRetry(resourceURI, HttpMethod.POST, JsonOrders.class, queryRequest);
+		final ResponseEntity<String> response = performWithRetry(resourceURI, HttpMethod.POST, String.class, queryRequest);
 
-		return response != null ? Optional.ofNullable(response.getBody()) : Optional.empty();
+		if (response == null || response.getBody() == null)
+		{
+			return orderCandidates;
+		}
+		else
+		{
+			final JsonNode arrayJsonNode;
+
+			try
+			{
+				final JsonNode rootJsonNode = objectMapper.readValue(response.getBody(), JsonNode.class);
+				arrayJsonNode = rootJsonNode.get(JSON_NODE_DATA);
+			}
+			catch (final JsonProcessingException e)
+			{
+				throw new RuntimeException(e);
+			}
+
+			if (arrayJsonNode != null)
+			{
+				for (final JsonNode orderCustomerNode : arrayJsonNode)
+				{
+					final Optional<OrderCandidate> orderAddressCustomId =
+							getJsonOrderCandidate(orderCustomerNode, customIdentifierJSONPath, salesRepJSONPath);
+
+					orderAddressCustomId.ifPresent(orderCandidates::add);
+				}
+			}
+		}
+
+		return orderCandidates;
 	}
 
 	@NonNull
-	public Optional<JsonOrderAddress> getOrderAddressDetails(@NonNull final String orderAddressId)
+	public Optional<JsonOrderAddressAndCustomId> getOrderAddressDetails(@NonNull final String orderAddressId, @Nullable final String customIdentifierJSONPath)
 	{
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
@@ -125,26 +176,24 @@ public class ShopwareClient
 			return Optional.empty();
 		}
 
-		final ObjectMapper objectMapper = new ObjectMapper();
-
 		try
 		{
 			final JsonNode jsonNode = objectMapper.readValue(response.getBody(), JsonNode.class);
 
-			return jsonNode.get(JSON_NODE_DATA) != null
-					? Optional.ofNullable(objectMapper.treeToValue(jsonNode.get(JSON_NODE_DATA), JsonOrderAddress.class))
-					: Optional.empty();
+			return getJsonOrderAddressCustomId(jsonNode.get(JSON_NODE_DATA), customIdentifierJSONPath);
 		}
 		catch (final JsonProcessingException e)
 		{
 			throw new RuntimeException(e);
 		}
+
 	}
 
 	@NonNull
-	public Optional<JsonOrderDeliveries> getDeliveries(@NonNull final String orderId)
+	public List<OrderDeliveryItem> getDeliveryAddresses(@NonNull final String orderId, @Nullable final String customIdentifierJSONPath)
 	{
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+		final List<OrderDeliveryItem> deliveryItemList = new ArrayList<>();
 
 		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
 				.pathSegment(PathSegmentsEnum.V3.getValue())
@@ -156,14 +205,46 @@ public class ShopwareClient
 
 		final URI resourceURI = uriBuilder.build().toUri();
 
-		final ResponseEntity<JsonOrderDeliveries> response = performWithRetry(resourceURI, HttpMethod.GET, JsonOrderDeliveries.class, null /*requestBody*/);
+		final ResponseEntity<String> response = performWithRetry(resourceURI, HttpMethod.GET, String.class, null /*requestBody*/);
 
 		if (response == null || response.getBody() == null)
 		{
-			return Optional.empty();
+			return deliveryItemList;
 		}
 
-		return Optional.of(response.getBody());
+		final JsonNode arrayJsonNode;
+
+		try
+		{
+			final JsonNode rootJsonNode = objectMapper.readValue(response.getBody(), JsonNode.class);
+			arrayJsonNode = rootJsonNode.get(JSON_NODE_DATA);
+
+			if (arrayJsonNode == null)
+			{
+				return deliveryItemList;
+			}
+
+			for (final JsonNode deliveryNode : arrayJsonNode)
+			{
+				final Optional<JsonOrderAddressAndCustomId> orderAddressCustomId =
+						getJsonOrderAddressCustomId(deliveryNode.get(JSON_NODE_DELIVERY_ADDRESS), customIdentifierJSONPath);
+
+				final JsonOrderDelivery orderDelivery = objectMapper.treeToValue(deliveryNode, JsonOrderDelivery.class);
+
+				orderAddressCustomId
+						.map(orderAddressAndCustomId -> OrderDeliveryItem.builder()
+								.jsonOrderAddressAndCustomId(orderAddressAndCustomId)
+								.jsonOrderDelivery(orderDelivery)
+								.build())
+						.ifPresent(deliveryItemList::add);
+			}
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
+
+		return deliveryItemList;
 	}
 
 	@NonNull
@@ -202,8 +283,229 @@ public class ShopwareClient
 		}
 	}
 
+	@NonNull
+	public Optional<JsonOrderLines> getOrderLines(@NonNull final String orderId)
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.V3.getValue())
+				.pathSegment(PathSegmentsEnum.ORDER.getValue())
+				.pathSegment(orderId)
+				.pathSegment(PathSegmentsEnum.LINE_ITEMS.getValue());
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonOrderLines> response = performWithRetry(resourceURI, HttpMethod.GET, JsonOrderLines.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(response.getBody());
+	}
+
+	@NonNull
+	public Optional<JsonOrderTransactions> getOrderTransactions(@NonNull final String orderId)
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.V3.getValue())
+				.pathSegment(PathSegmentsEnum.ORDER.getValue())
+				.pathSegment(orderId)
+				.pathSegment(PathSegmentsEnum.TRANSACTIONS.getValue());
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonOrderTransactions> response = performWithRetry(resourceURI, HttpMethod.GET, JsonOrderTransactions.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(response.getBody());
+	}
+
+	@NonNull
+	public Optional<JsonPaymentMethod> getPaymentMethod(@NonNull final String paymentMethodId)
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.V3.getValue())
+				.pathSegment(PathSegmentsEnum.PAYMENT_METHOD.getValue())
+				.pathSegment(paymentMethodId);
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonNode> response = performWithRetry(resourceURI, HttpMethod.GET, JsonNode.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null || response.getBody().get(JSON_NODE_DATA) == null)
+		{
+			return Optional.empty();
+		}
+
+		final JsonPaymentMethod jsonPaymentMethod;
+		try
+		{
+			jsonPaymentMethod = new ObjectMapper().treeToValue(response.getBody().get(JSON_NODE_DATA), JsonPaymentMethod.class);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
+
+		return Optional.of(jsonPaymentMethod);
+	}
+
+	@NonNull
+	public JsonCurrencies getCurrencies()
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.V3.getValue())
+				.pathSegment(PathSegmentsEnum.CURRENCY.getValue());
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonCurrencies> response = performWithRetry(resourceURI, HttpMethod.GET, JsonCurrencies.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null)
+		{
+			throw new RuntimeException("No currencies return from Shopware!");
+		}
+
+		return response.getBody();
+	}
+
+	@NonNull
+	public Optional<JsonCustomerGroups> getCustomerGroup(@NonNull final String customerId)
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.CUSTOMER.getValue())
+				.pathSegment(customerId)
+				.pathSegment(PathSegmentsEnum.GROUP.getValue());
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonCustomerGroups> response = performWithRetry(resourceURI, HttpMethod.GET, JsonCustomerGroups.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(response.getBody());
+	}
+
+	@NonNull
+	protected Optional<OrderCandidate> getJsonOrderCandidate(@Nullable final JsonNode orderJson,
+			@Nullable final String customIdJSONPath,
+			@Nullable final String salesRepJSONPath)
+	{
+		if (orderJson == null)
+		{
+			return Optional.empty();
+		}
+
+		try
+		{
+			final JsonOrder jsonOrder = objectMapper.treeToValue(orderJson, JsonOrder.class);
+
+			final OrderCandidate.OrderCandidateBuilder orderCandidateBuilder =
+					OrderCandidate.builder()
+							.jsonOrder(jsonOrder);
+
+			if (Check.isNotBlank(customIdJSONPath))
+			{
+				final String customId = orderJson.at(customIdJSONPath).asText();
+
+				if (!Strings.isBlank(customId))
+				{
+					orderCandidateBuilder.customBPartnerId(customId);
+				}
+				else
+				{
+					return Optional.empty();
+				}
+			}
+			else if (Check.isBlank(jsonOrder.getOrderCustomer().getCustomerId()))
+			{
+				return Optional.empty();
+			}
+
+			if (Check.isNotBlank(salesRepJSONPath)){
+				final String salesRepId = orderJson.at(salesRepJSONPath).asText();
+				orderCandidateBuilder.salesRepId(salesRepId.isEmpty() ? null : salesRepId);
+			}
+
+			return Optional.ofNullable(orderCandidateBuilder.build());
+
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
+
+	}
+
+	@NonNull
+	private Optional<JsonOrderAddressAndCustomId> getJsonOrderAddressCustomId(@Nullable final JsonNode orderAddressJson, @Nullable final String customIdJSONPath)
+	{
+		if (orderAddressJson == null)
+		{
+			return Optional.empty();
+		}
+
+		try
+		{
+			final JsonOrderAddress jsonOrderAddress = objectMapper.treeToValue(orderAddressJson, JsonOrderAddress.class);
+
+			final JsonOrderAddressAndCustomId.JsonOrderAddressAndCustomIdBuilder jsonOrderAddressWithCustomId = JsonOrderAddressAndCustomId.builder()
+					.jsonOrderAddress(jsonOrderAddress);
+
+			if (Check.isNotBlank(customIdJSONPath))
+			{
+				final String customId = orderAddressJson.at(customIdJSONPath).asText();
+
+				if (!Strings.isBlank(customId))
+				{
+					jsonOrderAddressWithCustomId.customId(customId);
+				}
+				else
+				{
+					throw new RuntimeException("Custom Identifier path provided for Location, but no custom identifier found. Location default identifier:" + jsonOrderAddress.getId());
+				}
+			}
+
+			return Optional.ofNullable(jsonOrderAddressWithCustomId.build());
+
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
 	@Nullable
-	private <T> ResponseEntity<T> performWithRetry(
+	@VisibleForTesting
+	public <T> ResponseEntity<T> performWithRetry(
 			@NonNull final URI resourceURI,
 			@NonNull final HttpMethod httpMethod,
 			@NonNull final Class<T> responseType,
@@ -243,7 +545,8 @@ public class ShopwareClient
 		return response;
 	}
 
-	private void refreshTokenIfExpired()
+	@VisibleForTesting
+	public void refreshTokenIfExpired()
 	{
 		if (authToken.isExpired())
 		{
@@ -290,6 +593,7 @@ public class ShopwareClient
 	{
 		final HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
 
 		if (authToken.getBearer() != null)
 		{

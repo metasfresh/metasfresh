@@ -141,7 +141,7 @@ import java.util.Properties;
 		final I_AD_User billUser = FlatrateTermImportFinder.findBillUser(ctx, billPartnerId);
 		if (billUser != null)
 		{
-			contract.setBill_User(billUser);
+			contract.setBill_User_ID(billUser.getAD_User_ID());
 		}
 	}
 
@@ -161,7 +161,7 @@ import java.util.Properties;
 		final I_AD_User dropShipUser = FlatrateTermImportFinder.findDropShipUser(ctx, dropShipBPartnerId);
 		if (dropShipUser != null)
 		{
-			contract.setDropShip_User(dropShipUser);
+			contract.setDropShip_User_ID(dropShipUser.getAD_User_ID());
 		}
 	}
 
@@ -171,7 +171,7 @@ import java.util.Properties;
 		final I_C_BPartner_Location dropShipBPLocation = FlatrateTermImportFinder.findBPartnerShipToLocation(ctx, dropShipBPartnerId);
 		if (dropShipBPLocation != null)
 		{
-			contract.setDropShip_Location(dropShipBPLocation);
+			contract.setDropShip_Location_ID(dropShipBPLocation.getC_BPartner_Location_ID());
 		}
 	}
 

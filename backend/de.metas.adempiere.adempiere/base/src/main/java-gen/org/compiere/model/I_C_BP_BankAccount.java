@@ -6,7 +6,7 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for C_BP_BankAccount
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_BP_BankAccount 
 {
 
@@ -118,6 +118,31 @@ public interface I_C_BP_BankAccount
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Org Mapping.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_Mapping_ID (int AD_Org_Mapping_ID);
+
+	/**
+	 * Get Org Mapping.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_Mapping_ID();
+
+	@Nullable org.compiere.model.I_AD_Org_Mapping getAD_Org_Mapping();
+
+	void setAD_Org_Mapping(@Nullable org.compiere.model.I_AD_Org_Mapping AD_Org_Mapping);
+
+	ModelColumn<I_C_BP_BankAccount, org.compiere.model.I_AD_Org_Mapping> COLUMN_AD_Org_Mapping_ID = new ModelColumn<>(I_C_BP_BankAccount.class, "AD_Org_Mapping_ID", org.compiere.model.I_AD_Org_Mapping.class);
+	String COLUMNNAME_AD_Org_Mapping_ID = "AD_Org_Mapping_ID";
 
 	/**
 	 * Set Contact.

@@ -36,17 +36,12 @@ public interface IWorkPackageQueueFactory extends ISingletonService
 {
 	/**
 	 * Return a queue for a <b>queue processor</b>, in order to poll and lock and process work-packages that were enqueued earlier.
-	 * 
-	 * @param processor
-	 * @return
 	 */
 	IWorkPackageQueue getQueueForPackageProcessing(I_C_Queue_Processor processor);
 
 	/**
 	 * Return a queue instance for a particular <b>work package processor</b>, in order to create new work-packages for it.
 	 * 
-	 * @param ctx
-	 * @param packageProcessorClass
 	 * @return a queue for the given work package processor (as specified by its class)
 	 */
 	IWorkPackageQueue getQueueForEnqueuing(Properties ctx, Class<? extends IWorkpackageProcessor> packageProcessorClass);
@@ -63,8 +58,6 @@ public interface IWorkPackageQueueFactory extends ISingletonService
 	/**
 	 * Return a queue instance for a particular <b>work package processor</b>, in order to create new work-packages for it.
 	 * 
-	 * @param ctx
-	 * @param packageProcessorClassname
 	 * @return a queue for the given work package processor (as specified by its class)
 	 */
 	IWorkPackageQueue getQueueForEnqueuing(Properties ctx, String packageProcessorClassname);

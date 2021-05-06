@@ -165,6 +165,7 @@ final class CreateOrderRoutingCommand
 				.subcontracting(product.isSubcontracting())
 				.id(productId)
 				.productId(product.getProductId())
+				.specification(product.getSpecification())
 				.build();
 	}
 

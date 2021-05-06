@@ -44,61 +44,61 @@ public class JsonRequestProduct
 		ITEM, SERVICE
 	}
 
-	@ApiModelProperty(position = 20, value = "Corresponding to I_M_Product.Value.", allowEmptyValue = true)
+	@ApiModelProperty(position = 20, value = "Corresponding to `M_Product.Value`")
 	private String code;
 
 	@ApiModelProperty(hidden = true)
 	private boolean codeSet;
 
-	@ApiModelProperty(position = 30, value = "Corresponding to I_M_Product.Name", required = true)
+	@ApiModelProperty(position = 30, value = "Corresponding to `M_Product.Name`", required = true)
 	private String name;
 
 	@ApiModelProperty(hidden = true)
 	private boolean nameSet;
 
-	@ApiModelProperty(position = 40, value = "Corresponding to I_M_Product.Type", required = true)
+	@ApiModelProperty(position = 40, value = "Corresponding to `M_Product.Type`", required = true)
 	private Type type;
 
 	@ApiModelProperty(hidden = true)
 	private boolean typeSet;
 
-	@ApiModelProperty(position = 50, value = "Corresponding to I_M_Product.C_UOM_ID", required = true)
+	@ApiModelProperty(position = 50, value = "Corresponding to `M_Product.C_UOM_ID`", required = true)
 	private String uomCode;
 
 	@ApiModelProperty(hidden = true)
 	private boolean uomCodeSet;
 
-	@ApiModelProperty(position = 60, value = "Corresponding to I_M_Product.UPC")
+	@ApiModelProperty(position = 60, value = "Corresponding to `M_Product.UPC`")
 	private String ean;
 
 	@ApiModelProperty(hidden = true)
 	private boolean eanSet;
 
-	@ApiModelProperty(position = 70, value = "Corresponding to I_M_Product.GTIN")
+	@ApiModelProperty(position = 70, value = "Corresponding to `M_Product.GTIN`")
 	private String gtin;
 
 	@ApiModelProperty(hidden = true)
 	private boolean gtinSet;
 
-	@ApiModelProperty(position = 80, value = "Corresponding to I_M_Product.Description")
+	@ApiModelProperty(position = 80, value = "Corresponding to `M_Product.Description`")
 	private String description;
 
 	@ApiModelProperty(hidden = true)
 	private boolean descriptionSet;
 
-	@ApiModelProperty(position = 90, value = "Corresponding to I_M_Product.isDiscontinued")
+	@ApiModelProperty(position = 90, value = "Corresponding to `M_Product.isDiscontinued`")
 	private Boolean discontinued;
 
 	@ApiModelProperty(hidden = true)
 	private boolean discontinuedSet;
 
-	@ApiModelProperty(position = 100, value = "Corresponding to I_M_Product.isActive")
+	@ApiModelProperty(position = 100, value = "Corresponding to `M_Product.isActive`")
 	private Boolean active;
 
 	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
-	@ApiModelProperty(position = 110, value = "Corresponding to I_M_Product.isStocked")
+	@ApiModelProperty(position = 110, value = "Corresponding to `M_Product.isStocked`")
 	private Boolean stocked;
 
 	@ApiModelProperty(hidden = true)

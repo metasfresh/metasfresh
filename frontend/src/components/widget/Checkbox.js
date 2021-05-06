@@ -8,11 +8,18 @@ import classnames from 'classnames';
  */
 const Checkbox = (props) => {
   const rawWidget = useRef(null);
-  const [checkedState, setCheckedState] = useState(props.widgetData[0].value);
+  const { value } = props.widgetData[0];
+  const [checkedState, setCheckedState] = useState(value);
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
-    setCheckedState(props.widgetData[0].value);
-  }, [props]);
+    // const initialChecked = defaultValue ? defaultValue : value;
+    setCheckedState(value);
+  }, []);
+
+  if (value !== checkedState && count > 0) {
+    setCheckedState(value);
+  }
 
   const {
     widgetData,
@@ -25,11 +32,22 @@ const Checkbox = (props) => {
     filterWidget,
   } = props;
 
+  /**
+   * @method handleClear
+   * @summary clears the widget field by calling the method handlePatch from its parent with an empty value
+   */
   const handleClear = () => {
     const { handlePatch, widgetField, id } = props;
+    setCount(count + 1);
     handlePatch(widgetField, '', id);
   };
 
+  /**
+   * @method updateCheckedState
+   * @summary toggles local checked state and in the same time it performs a patch to update
+   *          the widgetField with the current checked value of the element
+   * @param {object} e
+   */
   const updateCheckedState = (e) => {
     setCheckedState(!checkedState);
     handlePatch(widgetField, e.target.checked, id);

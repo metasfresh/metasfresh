@@ -1,4 +1,5 @@
 import update from 'immutability-helper';
+import produce from 'immer';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
@@ -6,14 +7,13 @@ import HTML5Backend from 'react-dnd-html5-backend';
 import { connect } from 'react-redux';
 import { List } from 'immutable';
 
-import { patchRequest } from '../../api';
 import { connectWS, disconnectWS } from '../../utils/websockets';
 import {
   changeKPIItem,
   changeTargetIndicatorsItem,
   getKPIsDashboard,
   getTargetIndicatorsDashboard,
-} from '../../actions/AppActions';
+} from '../../actions/DashboardActions';
 import {
   addDashboardWidget,
   removeDashboardWidget,
@@ -54,16 +54,7 @@ export class DraggableWrapper extends Component {
       prevState.websocketEndpoint !== websocketEndpoint
     ) {
       connectWS.call(this, websocketEndpoint, (msg) => {
-        msg.events.map((event) => {
-          switch (event.widgetType) {
-            case 'TargetIndicator':
-              this.getIndicators();
-              break;
-            case 'KPI':
-              this.getDashboard();
-              break;
-          }
-        });
+        msg.events.map((event) => this.onWebsocketEvent(event));
       });
     }
   };
@@ -96,7 +87,50 @@ export class DraggableWrapper extends Component {
     });
   };
 
-  getType = (entity) => (entity === 'cards' ? 'kpis' : 'targetIndicators');
+  onWebsocketEvent = (event) => {
+    switch (event.changeType) {
+      case 'itemDataChanged':
+        this.onDashboardItemDataChanged(event);
+        break;
+      case 'dashboardChanged':
+      case 'itemChanged':
+        this.onDashboardStructureChanged(event);
+        break;
+    }
+  };
+
+  onDashboardItemDataChanged = (event) => {
+    const { indicators, cards } = this.state;
+
+    const indicatorsNew = produce(indicators, (draft) => {
+      const index = draft.findIndex(
+        (indicator) => indicator.id === event.itemId
+      );
+      if (index !== -1) {
+        draft[index] = { ...draft[index], data: event.data };
+      }
+    });
+
+    const cardsNew = produce(cards, (draft) => {
+      const index = cards.findIndex((card) => card.id === event.itemId);
+      if (index !== -1) {
+        draft[index] = { ...draft[index], data: event.data };
+      }
+    });
+
+    this.setState({ cards: cardsNew, indicators: indicatorsNew });
+  };
+
+  onDashboardStructureChanged = (event) => {
+    switch (event.widgetType) {
+      case 'TargetIndicator':
+        this.getIndicators();
+        break;
+      case 'KPI':
+        this.getDashboard();
+        break;
+    }
+  };
 
   getIndicators = () => {
     getTargetIndicatorsDashboard().then((response) => {
@@ -115,6 +149,8 @@ export class DraggableWrapper extends Component {
     });
   };
 
+  getType = (entity) => (entity === 'cards' ? 'kpis' : 'targetIndicators');
+
   addCard = (entity, id) => {
     const tmpItemIndex = this.state[entity].findIndex((i) => i.id === id);
     addDashboardWidget(this.getType(entity), id, tmpItemIndex).then((res) => {
@@ -129,15 +165,14 @@ export class DraggableWrapper extends Component {
   };
 
   onDrop = (entity, id) => {
-    const tmpItemIndex = this.state[entity].findIndex((i) => i.id === id);
-    patchRequest({
-      entity: 'dashboard',
-      property: 'position',
-      value: tmpItemIndex,
-      subentity: this.getType(entity),
-      // TODO: This looks like it should rather be viewId: id
-      isAdvanced: id,
-    });
+    const position = this.state[entity].findIndex((i) => i.id === id);
+    console.log('entity=%o, id=%o, position=%o', entity, id, position);
+
+    if (entity === 'cards') {
+      changeKPIItem(id, 'position', position);
+    } else {
+      changeTargetIndicatorsItem(id, 'position', position);
+    }
   };
 
   moveCard = (entity, dragIndex, hoverIndex, item) => {
@@ -233,9 +268,9 @@ export class DraggableWrapper extends Component {
               index={id}
               caption={indicator.caption}
               fields={indicator.kpi.fields}
-              pollInterval={indicator.kpi.pollIntervalSec}
               chartType={'Indicator'}
               kpi={false}
+              data={indicator.data}
               noData={indicator.fetchOnDrop}
               handleChartOptions={this.handleChartOptions}
               {...{ editmode }}
@@ -296,12 +331,12 @@ export class DraggableWrapper extends Component {
                   caption={item.caption}
                   fields={item.kpi.fields}
                   groupBy={item.kpi.groupByField}
-                  pollInterval={item.kpi.pollIntervalSec}
                   kpi={true}
                   moveCard={this.moveCard}
                   idMaximized={idMaximized}
                   maximizeWidget={this.maximizeWidget}
                   text={item.caption}
+                  data={item.data}
                   noData={item.fetchOnDrop}
                   handleChartOptions={this.handleChartOptions}
                   {...{ editmode }}
@@ -409,7 +444,7 @@ export class DraggableWrapper extends Component {
       currentId: id,
       when: opened ? this.state.when : '',
       interval: opened ? this.state.interval : '',
-      isIndicator: isIndicator ? true : false,
+      isIndicator: !!isIndicator,
     });
   };
 

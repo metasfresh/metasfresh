@@ -1,410 +1,205 @@
-de.metas.rest_api.bpartner.impl.v2.bpartnercomposite.JsonRetrieverServiceTest.retrieveBPartnerComposite_byBPartnerCompositeLookupKeys=[
-  {
-    "bankAccounts": [
-      {
-        "active": true,
-        "changeLog": {
-          "tableName": "C_BP_BankAccount",
-          "recordId": {
-            "keyColumnNames": [
-              "C_BP_BankAccount_ID"
-            ],
-            "keysByColumnName": {
-              "C_BP_BankAccount_ID": 50
-            }
-          },
-          "createdByUserId": 30,
-          "createdTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
-          },
-          "lastChangedByUserId": 30,
-          "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
-          },
-          "entries": [ ]
-        },
-        "currencyId": 100012,
-        "iban": "INITIAL-IBAN-1",
-        "id": {
-          "repoId": 50,
-          "bpartnerId": 20
-        }
-      }
-    ],
-    "bpartner": {
-      "id": 20,
-      "active": true,
-      "value": "bpartnerRecord.value",
-      "name": "bpartnerRecord.name",
-      "groupId": 15,
-      "vendor": true,
-      "customer": true,
-      "company": false,
-      "vatId": "VATaxID",
-      "changeLog": {
-        "tableName": "C_BPartner",
-        "recordId": {
-          "keyColumnNames": [
-            "C_BPartner_ID"
-          ],
-          "keysByColumnName": {
-            "C_BPartner_ID": 20
-          }
-        },
-        "createdByUserId": 30,
-        "createdTimestamp": {
-          "seconds": 1561133,
-          "nanos": 544000000
-        },
-        "lastChangedByUserId": 30,
-        "lastChangedTimestamp": {
-          "seconds": 1561133,
-          "nanos": 544000000
-        },
-        "entries": [ ]
-      }
-    },
-    "contacts": [
-      {
-        "active": true,
-        "changeLog": {
-          "tableName": "AD_User",
-          "recordId": {
-            "keyColumnNames": [
-              "AD_User_ID"
-            ],
-            "keysByColumnName": {
-              "AD_User_ID": 30
-            }
-          },
-          "createdByUserId": 30,
-          "createdTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
-          },
-          "lastChangedByUserId": 30,
-          "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
-          },
-          "entries": [ ]
-        },
-        "contactType": {
-          "billToDefault": {
-            "value": false,
-            "present": true
-          },
-          "defaultContact": {
-            "value": false,
-            "present": true
-          },
-          "purchase": {
-            "value": false,
-            "present": true
-          },
-          "purchaseDefault": {
-            "value": false,
-            "present": true
-          },
-          "sales": {
-            "value": false,
-            "present": true
-          },
-          "salesDefault": {
-            "value": false,
-            "present": true
-          },
-          "shipToDefault": {
-            "value": false,
-            "present": true
-          },
-          "subjectMatter": {
-            "value": false,
-            "present": true
-          }
-        },
-        "email": "contactRecord.email",
-        "externalId": "contactRecord.externalId",
-        "firstName": "contactRecord.firstName",
-        "handles": [ ],
-        "id": {
-          "bpartnerId": 20,
-          "userId": 30
-        },
-        "lastName": "contactRecord.lastName",
-        "name": "contactRecord.name",
-        "newsletter": false,
-        "phone": "contactRecord.phone",
-        "value": "contactRecord.value"
-      }
-    ],
-    "locations": [
-      {
-        "active": true,
-        "address1": "locationRecord.address1",
-        "address2": "locationRecord.address2",
-        "changeLog": {
-          "tableName": "C_BPartner_Location",
-          "recordId": {
-            "keyColumnNames": [
-              "C_BPartner_Location_ID"
-            ],
-            "keysByColumnName": {
-              "C_BPartner_Location_ID": 40
-            }
-          },
-          "createdByUserId": 30,
-          "createdTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
-          },
-          "lastChangedByUserId": 30,
-          "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
-          },
-          "entries": [ ]
-        },
-        "city": "locationRecord.city",
-        "countryCode": "countryRecord.countryCode",
-        "district": "postalRecord.district",
-        "gln": "bpartnerLocationRecord.gln",
-        "handles": [ ],
-        "id": {
-          "repoId": 40,
-          "bpartnerId": 20
-        },
-        "locationType": {
-          "billTo": {
-            "value": false,
-            "present": true
-          },
-          "billToDefault": {
-            "value": false,
-            "present": true
-          },
-          "shipTo": {
-            "value": false,
-            "present": true
-          },
-          "shipToDefault": {
-            "value": false,
-            "present": true
-          }
-        },
-        "poBox": "locationRecord.poBox",
-        "postal": "locationRecord.postal",
-        "region": "locationRecord.regionName"
-      }
-    ],
-    "orgId": 10
-  }
-]
-
-
 de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retrieveBPartnerComposite_byBPartnerCompositeLookupKeys=[
   {
-    "bankAccounts": [
+    "bankAccounts" : [
       {
-        "active": true,
-        "changeLog": {
-          "tableName": "C_BP_BankAccount",
-          "recordId": {
-            "keyColumnNames": [
+        "active" : true,
+        "changeLog" : {
+          "tableName" : "C_BP_BankAccount",
+          "recordId" : {
+            "keyColumnNames" : [
               "C_BP_BankAccount_ID"
             ],
-            "keysByColumnName": {
-              "C_BP_BankAccount_ID": 50
+            "keysByColumnName" : {
+              "C_BP_BankAccount_ID" : 50
             }
           },
-          "createdByUserId": 30,
-          "createdTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+          "createdByUserId" : 30,
+          "createdTimestamp" : {
+            "seconds" : 1561133,
+            "nanos" : 544000000
           },
-          "lastChangedByUserId": 30,
-          "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+          "lastChangedByUserId" : 30,
+          "lastChangedTimestamp" : {
+            "seconds" : 1561133,
+            "nanos" : 544000000
           },
-          "entries": [ ]
+          "entries" : [ ]
         },
-        "currencyId": 100012,
-        "iban": "INITIAL-IBAN-1",
-        "id": {
-          "repoId": 50,
-          "bpartnerId": 20
+        "currencyId" : 100012,
+        "iban" : "INITIAL-IBAN-1",
+        "id" : {
+          "repoId" : 50,
+          "bpartnerId" : 20
         }
       }
     ],
-    "bpartner": {
-      "id": 20,
-      "active": true,
-      "value": "bpartnerRecord.value",
-      "name": "bpartnerRecord.name",
-      "groupId": 15,
-      "vendor": true,
-      "customer": true,
-      "company": false,
-      "vatId": "VATaxID",
-      "changeLog": {
-        "tableName": "C_BPartner",
-        "recordId": {
-          "keyColumnNames": [
+    "bpartner" : {
+      "id" : 20,
+      "active" : true,
+      "value" : "bpartnerRecord.value",
+      "name" : "bpartnerRecord.name",
+      "groupId" : 15,
+      "vendor" : true,
+      "customer" : true,
+      "company" : false,
+      "vatId" : "VATaxID",
+      "changeLog" : {
+        "tableName" : "C_BPartner",
+        "recordId" : {
+          "keyColumnNames" : [
             "C_BPartner_ID"
           ],
-          "keysByColumnName": {
-            "C_BPartner_ID": 20
+          "keysByColumnName" : {
+            "C_BPartner_ID" : 20
           }
         },
-        "createdByUserId": 30,
-        "createdTimestamp": {
-          "seconds": 1561133,
-          "nanos": 544000000
+        "createdByUserId" : 30,
+        "createdTimestamp" : {
+          "seconds" : 1561133,
+          "nanos" : 544000000
         },
-        "lastChangedByUserId": 30,
-        "lastChangedTimestamp": {
-          "seconds": 1561133,
-          "nanos": 544000000
+        "lastChangedByUserId" : 30,
+        "lastChangedTimestamp" : {
+          "seconds" : 1561133,
+          "nanos" : 544000000
         },
-        "entries": [ ]
-      }
+        "entries" : [ ]
+      },
+      "identifiedByExternalReference" : false
     },
-    "contacts": [
+    "contacts" : [
       {
-        "active": true,
-        "changeLog": {
-          "tableName": "AD_User",
-          "recordId": {
-            "keyColumnNames": [
+        "active" : true,
+        "changeLog" : {
+          "tableName" : "AD_User",
+          "recordId" : {
+            "keyColumnNames" : [
               "AD_User_ID"
             ],
-            "keysByColumnName": {
-              "AD_User_ID": 30
+            "keysByColumnName" : {
+              "AD_User_ID" : 30
             }
           },
-          "createdByUserId": 30,
-          "createdTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+          "createdByUserId" : 30,
+          "createdTimestamp" : {
+            "seconds" : 1561133,
+            "nanos" : 544000000
           },
-          "lastChangedByUserId": 30,
-          "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+          "lastChangedByUserId" : 30,
+          "lastChangedTimestamp" : {
+            "seconds" : 1561133,
+            "nanos" : 544000000
           },
-          "entries": [ ]
+          "entries" : [ ]
         },
-        "contactType": {
-          "billToDefault": {
-            "value": false,
-            "present": true
+        "contactType" : {
+          "billToDefault" : {
+            "value" : false,
+            "present" : true
           },
-          "defaultContact": {
-            "value": false,
-            "present": true
+          "defaultContact" : {
+            "value" : false,
+            "present" : true
           },
-          "purchase": {
-            "value": false,
-            "present": true
+          "purchase" : {
+            "value" : false,
+            "present" : true
           },
-          "purchaseDefault": {
-            "value": false,
-            "present": true
+          "purchaseDefault" : {
+            "value" : false,
+            "present" : true
           },
-          "sales": {
-            "value": false,
-            "present": true
+          "sales" : {
+            "value" : false,
+            "present" : true
           },
-          "salesDefault": {
-            "value": false,
-            "present": true
+          "salesDefault" : {
+            "value" : false,
+            "present" : true
           },
-          "shipToDefault": {
-            "value": false,
-            "present": true
+          "shipToDefault" : {
+            "value" : false,
+            "present" : true
           },
-          "subjectMatter": {
-            "value": false,
-            "present": true
+          "subjectMatter" : {
+            "value" : false,
+            "present" : true
           }
         },
-        "email": "contactRecord.email",
-        "externalId": "contactRecord.externalId",
-        "firstName": "contactRecord.firstName",
-        "handles": [ ],
-        "id": {
-          "bpartnerId": 20,
-          "userId": 30
+        "email" : "contactRecord.email",
+        "externalId" : "contactRecord.externalId",
+        "firstName" : "contactRecord.firstName",
+        "handles" : [ ],
+        "id" : {
+          "bpartnerId" : 20,
+          "userId" : 30
         },
-        "lastName": "contactRecord.lastName",
-        "name": "contactRecord.name",
-        "newsletter": false,
-        "phone": "contactRecord.phone",
-        "value": "contactRecord.value"
+        "lastName" : "contactRecord.lastName",
+        "name" : "contactRecord.name",
+        "newsletter" : false,
+        "phone" : "contactRecord.phone",
+        "value" : "contactRecord.value"
       }
     ],
-    "locations": [
+    "locations" : [
       {
-        "active": true,
-        "address1": "locationRecord.address1",
-        "address2": "locationRecord.address2",
-        "changeLog": {
-          "tableName": "C_BPartner_Location",
-          "recordId": {
-            "keyColumnNames": [
+        "active" : true,
+        "address1" : "locationRecord.address1",
+        "address2" : "locationRecord.address2",
+        "changeLog" : {
+          "tableName" : "C_BPartner_Location",
+          "recordId" : {
+            "keyColumnNames" : [
               "C_BPartner_Location_ID"
             ],
-            "keysByColumnName": {
-              "C_BPartner_Location_ID": 40
+            "keysByColumnName" : {
+              "C_BPartner_Location_ID" : 40
             }
           },
-          "createdByUserId": 30,
-          "createdTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+          "createdByUserId" : 30,
+          "createdTimestamp" : {
+            "seconds" : 1561133,
+            "nanos" : 544000000
           },
-          "lastChangedByUserId": 30,
-          "lastChangedTimestamp": {
-            "seconds": 1561133,
-            "nanos": 544000000
+          "lastChangedByUserId" : 30,
+          "lastChangedTimestamp" : {
+            "seconds" : 1561133,
+            "nanos" : 544000000
           },
-          "entries": [ ]
+          "entries" : [ ]
         },
-        "city": "locationRecord.city",
-        "countryCode": "countryRecord.countryCode",
-        "district": "postalRecord.district",
-        "gln": "bpartnerLocationRecord.gln",
-        "handles": [ ],
-        "id": {
-          "repoId": 40,
-          "bpartnerId": 20
+        "city" : "locationRecord.city",
+        "countryCode" : "countryRecord.countryCode",
+        "district" : "postalRecord.district",
+        "gln" : "bpartnerLocationRecord.gln",
+        "handles" : [ ],
+        "id" : {
+          "repoId" : 40,
+          "bpartnerId" : 20
         },
-        "locationType": {
-          "billTo": {
-            "value": false,
-            "present": true
+        "locationType" : {
+          "billTo" : {
+            "value" : false,
+            "present" : true
           },
-          "billToDefault": {
-            "value": false,
-            "present": true
+          "billToDefault" : {
+            "value" : false,
+            "present" : true
           },
-          "shipTo": {
-            "value": false,
-            "present": true
+          "shipTo" : {
+            "value" : false,
+            "present" : true
           },
-          "shipToDefault": {
-            "value": false,
-            "present": true
+          "shipToDefault" : {
+            "value" : false,
+            "present" : true
           }
         },
-        "poBox": "locationRecord.poBox",
-        "postal": "locationRecord.postal",
-        "region": "locationRecord.regionName"
+        "poBox" : "locationRecord.poBox",
+        "postal" : "locationRecord.postal",
+        "region" : "locationRecord.regionName"
       }
     ],
-    "orgId": 10
+    "orgId" : 10
   }
 ]

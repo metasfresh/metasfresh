@@ -1,51 +1,13 @@
 package de.metas.ordercandidate.api.impl;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.PO;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
@@ -60,6 +22,7 @@ import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
+import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
 import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
 import de.metas.ordercandidate.api.OLCandQuery;
@@ -78,13 +41,35 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.Percent;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Note;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.MNote;
+import org.compiere.model.PO;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Service
 public class OLCandBL implements IOLCandBL
@@ -95,6 +80,7 @@ public class OLCandBL implements IOLCandBL
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
 
@@ -464,5 +450,42 @@ public class OLCandBL implements IOLCandBL
 		}
 		final List<TableRecordReference> remainingOLCandRefs = olCandRefs.subList(1, olCandRefs.size());
 		return CollectionUtils.singleElement(attachmentEntryService.createAttachmentLinks(ImmutableList.of(attachmentEntry), remainingOLCandRefs));
+	}
+
+	@Override
+	public void markAsProcessed(final OLCand olCand)
+	{
+		olCand.setProcessed(true);
+		saveCandidate(olCand);
+	}
+
+	@Override
+	public void markAsError(final UserId userInChargeId, final OLCand olCand, final Exception ex)
+	{
+		Loggables.addLog("Caught exception while processing {}; message={}; exception={}", olCand, ex.getLocalizedMessage(), ex);
+		logger.warn("Caught exception while processing {}", olCand, ex);
+
+		final I_AD_Note note = createOLCandErrorNote(userInChargeId, olCand, ex);
+
+		olCand.setError(ex.getLocalizedMessage(), note.getAD_Note_ID());
+		saveCandidate(olCand);
+	}
+
+	private void saveCandidate(final OLCand cand)
+	{
+		save(cand.unbox());
+	}
+
+	private I_AD_Note createOLCandErrorNote(final UserId userInChargeId, final OLCand olCand, final Exception ex)
+	{
+		final I_AD_User user = userDAO.getById(userInChargeId);
+
+		final MNote note = new MNote(Env.getCtx(), IOLCandBL.MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_0P, userInChargeId.getRepoId(), ITrx.TRXNAME_None);
+		note.setRecord(olCand.toTableRecordReference());
+		note.setClientOrg(user.getAD_Client_ID(), user.getAD_Org_ID());
+		note.setTextMsg(ex.getLocalizedMessage());
+		save(note);
+
+		return note;
 	}
 }

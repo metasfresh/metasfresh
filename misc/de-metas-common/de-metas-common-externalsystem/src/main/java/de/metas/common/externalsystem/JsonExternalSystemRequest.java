@@ -36,11 +36,13 @@ import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
- * Send from metasfresh to indicate that metasfresh wants an external system to do something
+ * Send from metasfresh to camel to indicate that metasfresh wants an external system to do something.
  */
 @Value
 public class JsonExternalSystemRequest
 {
+	JsonMetasfreshId externalSystemConfigId;
+
 	String orgCode;
 
 	JsonExternalSystemName externalSystemName;
@@ -62,8 +64,10 @@ public class JsonExternalSystemRequest
 			@JsonProperty("externalSystemName") @NonNull final JsonExternalSystemName externalSystemName,
 			@JsonProperty("command") @NonNull final String command,
 			@JsonProperty("adPInstanceId") @Nullable final JsonMetasfreshId adPInstanceId,
+			@JsonProperty("externalSystemConfigId") @NonNull final JsonMetasfreshId externalSystemConfigId,
 			@JsonProperty("parameters") @Singular final Map<String, String> parameters)
 	{
+		this.externalSystemConfigId = externalSystemConfigId;
 		this.orgCode = orgCode;
 		this.externalSystemName = externalSystemName;
 		this.command = command;

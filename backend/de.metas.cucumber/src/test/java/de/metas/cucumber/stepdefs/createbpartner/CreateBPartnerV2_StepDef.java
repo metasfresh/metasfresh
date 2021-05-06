@@ -22,12 +22,6 @@
 
 package de.metas.cucumber.stepdefs.createbpartner;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.composite.BPartner;
-import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerContact;
-import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
@@ -38,13 +32,17 @@ import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
-import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
-import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
+import de.metas.common.bpartner.v2.response.JsonResponseComposite;
+import de.metas.common.bpartner.v2.response.JsonResponseContact;
+import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.RESTUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.i18n.Language;
+import de.metas.externalreference.ExternalIdentifier;
+import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
+import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -58,20 +56,21 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
 public class CreateBPartnerV2_StepDef
 {
 
-	private final BPartnerCompositeRepository bPartnerCompositeRepository;
+	private final BPartnerEndpointService bpartnerEndpointService;
 	private final TestContext testContext;
 	private final JsonRequestComposite.JsonRequestCompositeBuilder jsonRequestCompositeBuilder = JsonRequestComposite.builder();
 
 	public CreateBPartnerV2_StepDef(final TestContext testContext)
 	{
 		this.testContext = testContext;
-		this.bPartnerCompositeRepository = SpringContextHolder.instance.getBean(BPartnerCompositeRepository.class);
+		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
 	}
 
 	@Given("the user adds v2 bpartner")
@@ -134,57 +133,98 @@ public class CreateBPartnerV2_StepDef
 		testContext.setRequestPayload(new ObjectMapper().writeValueAsString(jsonRequestBPartnerUpsert));
 	}
 
-	@Then("verify if data is persisted correctly for v2 bpartnerId {string}")
-	public void verify_data_is_persisted_correctly(@NonNull final String bpartnerId) throws IOException
+	@Then("verify that bPartner was created for externalIdentifier")
+	public void verify_bPartner_was_created_for_externalIdentifier_v2(@NonNull final DataTable dataTable) throws IOException
 	{
-		//request
-		final String responseJson = testContext.getApiResponse().getContent();
-		final com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-
-		final JsonRequestBPartnerUpsert requestItemsList = mapper.readValue(testContext.getRequestPayload(), JsonRequestBPartnerUpsert.class);
-		assertThat(requestItemsList).isNotNull();
-
-		final String reqBPartnerIdentifier = requestItemsList.getRequestItems().get(0).getBpartnerIdentifier();
-		assertThat(reqBPartnerIdentifier).isEqualTo(bpartnerId);
-
-		//response
-		final JsonResponseBPartnerCompositeUpsert response = mapper.readValue(responseJson, JsonResponseBPartnerCompositeUpsert.class);
-		assertThat(response.getResponseItems()).hasSize(1);
-
-		final JsonResponseBPartnerCompositeUpsertItem jsonResponseBPartnerCompositeUpsertItem = response.getResponseItems().get(0);
-		final JsonMetasfreshId metasfreshId = jsonResponseBPartnerCompositeUpsertItem.getResponseBPartnerItem().getMetasfreshId();
-
-		final BPartnerComposite persistedResult = bPartnerCompositeRepository.getById(BPartnerId.ofRepoId(metasfreshId.getValue()));
-
-		//bpartner
-		final BPartner bPartner = persistedResult.getBpartner();
-		final JsonRequestBPartner jsonRequestBPartner = jsonRequestCompositeBuilder.build().getBpartner();
-		validateBPartner(bPartner, jsonRequestBPartner);
-
-		//location
-		final List<BPartnerLocation> locations = persistedResult.getLocations();
-		final JsonRequestLocationUpsert locationsUpsert = jsonRequestCompositeBuilder.build().getLocationsNotNull();
-		final List<JsonRequestLocationUpsertItem> jsonRequestLocations = locationsUpsert.getRequestItems();
-
-		for (final JsonRequestLocationUpsertItem jsonRequestLocation : jsonRequestLocations)
+		final List<Map<String, String>> bpartnerTableList = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : bpartnerTableList)
 		{
-			final JsonRequestLocation location = jsonRequestLocation.getLocation();
-			locations.stream()
-					.filter(item -> item.getGln().getCode().equals(location.getGln()))
-					.findFirst().ifPresent(bPartnerLocation -> validateBPartnerLocation(bPartnerLocation, location));
+			final String externalIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "externalIdentifier");
+			final String code = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Code");
+			final String name = DataTableUtil.extractStringForColumnName(dataTableRow, "Name");
+			final String companyName = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.CompanyName");
+			final String parentId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.ParentId");
+			final String phone = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Phone");
+			final String language = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Language");
+			final String url = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Url");
+			final String group = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Group");
+			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VatId");
+
+			// persisted value
+			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier));
+			final JsonResponseBPartner persistedBPartner = persistedResult.get().getBpartner();
+
+			assertThat(persistedBPartner.getCompanyName()).isEqualTo(companyName);
+			assertThat(persistedBPartner.getName()).isEqualTo(name);
+			assertThat(persistedBPartner.getUrl()).isEqualTo(url);
+			assertThat(persistedBPartner.getVatId()).isEqualTo(vatId);
+			assertThat(persistedBPartner.getLanguage()).contains(language);
+			assertThat(persistedBPartner.getCode()).isEqualTo(code);
+			assertThat(persistedBPartner.getPhone()).isEqualTo(phone);
+			assertThat(persistedBPartner.getGroup()).isEqualTo(group);
+
+			if (Check.isNotBlank(parentId))
+			{
+				assertThat(persistedBPartner.getParentId().getValue()).isEqualTo(Integer.parseInt(parentId));
+			}
 		}
+	}
 
-		//contact
-		final List<BPartnerContact> contacts = persistedResult.getContacts();
-		final JsonRequestContactUpsert contactsUpsert = jsonRequestCompositeBuilder.build().getContactsNotNull();
-		final List<JsonRequestContactUpsertItem> jsonRequestContacts = contactsUpsert.getRequestItems();
-
-		for (final JsonRequestContactUpsertItem jsonRequestContact : jsonRequestContacts)
+	@And("verify that location was created for bpartner")
+	public void verify_location_is_created_for_bpartner_v2(@NonNull final DataTable dataTable) throws IOException
+	{
+		final List<Map<String, String>> locationsTableList = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : locationsTableList)
 		{
-			final JsonRequestContact contact = jsonRequestContact.getContact();
-			contacts.stream()
-					.filter(item -> item.getValue().equals(contact.getCode()))
-					.findFirst().ifPresent(bPartnerContact -> validateBPartnerContact(bPartnerContact, contact));
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "bpartnerIdentifier");
+			final String locationIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "locationIdentifier");
+			final String address1 = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Address1");
+			final String address2 = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Address2");
+			final String postal = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Postal");
+			final String poBox = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.PoBox");
+			final String district = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.District");
+			final String region = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Region");
+			final String city = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.City");
+			final String countryCode = DataTableUtil.extractStringForColumnName(dataTableRow, "CountryCode");
+			final String gln = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Gln");
+
+			// persisted value
+			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(
+					null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(locationIdentifier));
+			final JsonResponseLocation persistedLocation = persistedResult.get();
+
+			assertThat(persistedLocation.getAddress1()).isEqualTo(address1);
+			assertThat(persistedLocation.getAddress2()).isEqualTo(address2);
+			assertThat(persistedLocation.getPostal()).isEqualTo(postal);
+			assertThat(persistedLocation.getPoBox()).isEqualTo(poBox);
+			assertThat(persistedLocation.getRegion()).isEqualTo(region);
+			assertThat(persistedLocation.getCountryCode()).isEqualTo(countryCode);
+			assertThat(persistedLocation.getCity()).isEqualTo(city);
+			assertThat(persistedLocation.getDistrict()).isEqualTo(DataTableUtil.extractValueOrNull(district));
+			assertThat(persistedLocation.getGln()).isEqualTo(gln);
+		}
+	}
+
+	@And("verify that contact was created for bpartner")
+	public void verify_contact_is_created_for_bpartner_v2(@NonNull final DataTable dataTable) throws IOException
+	{
+		final List<Map<String, String>> contactsTableList = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : contactsTableList)
+		{
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "bpartnerIdentifier");
+			final String contactIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "contactIdentifier");
+			final String name = DataTableUtil.extractStringForColumnName(dataTableRow, "Name");
+			final String email = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Email");
+			final String fax = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Fax");
+
+			// persisted value
+			final Optional<JsonResponseContact> persistedResult = bpartnerEndpointService.retrieveBPartnerContact(
+					null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(contactIdentifier));
+			final JsonResponseContact persistedContact = persistedResult.get();
+
+			assertThat(persistedContact.getEmail()).isEqualTo(email);
+			assertThat(persistedContact.getName()).isEqualTo(name);
+			assertThat(persistedContact.getFax()).isEqualTo(fax);
 		}
 	}
 
@@ -266,40 +306,5 @@ public class CreateBPartnerV2_StepDef
 		return JsonRequestContactUpsertItem.builder()
 				.contactIdentifier(contactIdentifier)
 				.contact(jsonRequestContact).build();
-	}
-
-	private void validateBPartner(
-			@NonNull final BPartner bPartner,
-			@NonNull final JsonRequestBPartner jsonRequestBPartner)
-	{
-		assertThat(jsonRequestBPartner.getCompanyName()).isEqualTo(bPartner.getCompanyName());
-		assertThat(Language.asLanguage(jsonRequestBPartner.getLanguage())).isEqualTo(bPartner.getLanguage());
-		assertThat(jsonRequestBPartner.getName()).isEqualTo(bPartner.getName());
-		assertThat(jsonRequestBPartner.getUrl()).isEqualTo(bPartner.getUrl());
-		assertThat(jsonRequestBPartner.getVatId()).isEqualTo(bPartner.getVatId());
-	}
-
-	private void validateBPartnerLocation(
-			@NonNull final BPartnerLocation bPartnerLocation,
-			@NonNull final JsonRequestLocation jsonRequestLocation)
-	{
-		assertThat(jsonRequestLocation.getAddress1()).isEqualTo(bPartnerLocation.getAddress1());
-		assertThat(jsonRequestLocation.getAddress2()).isEqualTo(bPartnerLocation.getAddress2());
-		assertThat(jsonRequestLocation.getPostal()).isEqualTo(bPartnerLocation.getPostal());
-		assertThat(jsonRequestLocation.getPoBox()).isEqualTo(bPartnerLocation.getPoBox());
-		assertThat(jsonRequestLocation.getRegion()).isEqualTo(bPartnerLocation.getRegion());
-		assertThat(jsonRequestLocation.getCountryCode()).isEqualTo(bPartnerLocation.getCountryCode());
-		assertThat(jsonRequestLocation.getCity()).isEqualTo(bPartnerLocation.getCity());
-		assertThat(jsonRequestLocation.getGln()).isEqualTo(bPartnerLocation.getGln().getCode());
-		assertThat(DataTableUtil.extractValueOrNull(jsonRequestLocation.getDistrict())).isEqualTo(bPartnerLocation.getDistrict());
-	}
-
-	private void validateBPartnerContact(
-			@NonNull final BPartnerContact bPartnerContact,
-			@NonNull final JsonRequestContact jsonRequestContact)
-	{
-		assertThat(jsonRequestContact.getEmail()).isEqualTo(bPartnerContact.getEmail());
-		assertThat(jsonRequestContact.getName()).isEqualTo(bPartnerContact.getName());
-		assertThat(jsonRequestContact.getFax()).isEqualTo(bPartnerContact.getFax());
 	}
 }

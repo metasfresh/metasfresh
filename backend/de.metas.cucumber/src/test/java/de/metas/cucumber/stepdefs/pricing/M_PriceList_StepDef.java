@@ -95,11 +95,7 @@ public class M_PriceList_StepDef
 		m_pricingSystem.setName(name);
 		m_pricingSystem.setValue(value);
 		m_pricingSystem.setIsActive(isActive);
-
-		if (!description.equals("null"))
-		{
-			m_pricingSystem.setDescription(description);
-		}
+		m_pricingSystem.setDescription(description);
 
 		saveRecord(m_pricingSystem);
 	}
@@ -112,15 +108,12 @@ public class M_PriceList_StepDef
 		final String isoCode = DataTableUtil.extractStringForColumnName(row, "C_Currency.ISO_Code");
 		final String name = DataTableUtil.extractStringForColumnName(row, "Name");
 		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.Description");
-		final String soTrxValue = DataTableUtil.extractStringForColumnName(row, "SOTrx");
-		final String isTaxIncludedValue = DataTableUtil.extractStringForColumnName(row, "IsTaxIncluded");
+		final boolean soTrx = DataTableUtil.extractBooleanForColumnName(row, "SOTrx");
+		final boolean isTaxIncluded = DataTableUtil.extractBooleanForColumnName(row, "IsTaxIncluded");
 		final String pricePrecision = DataTableUtil.extractStringForColumnName(row, "PricePrecision");
-		final String isActiveValue = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.IsActive");
+		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, "IsActive");
 
 		final CurrencyId currencyId = getCurrencyIdByCurrencyISO(isoCode);
-		final boolean isTaxIncluded = isTaxIncludedValue.equals("true");
-		final boolean isActive = isActiveValue.equals("true");
-		final boolean soTrx = soTrxValue.equals("true");
 
 		final I_M_PriceList m_priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
 
@@ -134,13 +127,13 @@ public class M_PriceList_StepDef
 		m_priceList.setIsActive(isActive);
 		m_priceList.setIsSOPriceList(soTrx);
 
-		if (!countryCode.equals("null"))
+		if (countryCode != null)
 		{
 			final I_C_Country countryPO = Services.get(ICountryDAO.class).retrieveCountryByCountryCode(countryCode);
 			m_priceList.setC_Country_ID(countryPO.getC_Country_ID());
 		}
 
-		if (!description.equals("null"))
+		if (description != null)
 		{
 			m_priceList.setDescription(description);
 		}
