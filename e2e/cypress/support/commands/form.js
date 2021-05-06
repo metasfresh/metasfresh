@@ -82,17 +82,17 @@ Cypress.Commands.add('expectCheckboxValue', (fieldName, isChecked, modal) => {
 
   const path = createFieldPath(fieldName, modal);
   cy.get('.notification-item').should('not.exist');
-  const timeout = { timeout: 20000 };
+
   if (isChecked) {
     cy.get(path).then(el => {
       const inputCheck = el.find('input');
       return inputCheck.hasClass('is-checked') ? true : false;
     });
   } else {
-    return cy
-      .get(path)
-      .find('.checked', timeout)
-      .should('not.exist');
+    cy.get(path).then(el => {
+      const inputCheck = el.find('input');
+      return inputCheck.hasClass('is-checked') ? false : true;
+    });
   }
 });
 
