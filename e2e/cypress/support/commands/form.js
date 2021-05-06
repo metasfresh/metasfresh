@@ -70,10 +70,8 @@ Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
 
   return cy.get(path).then(el => {
     // noinspection RedundantIfStatementJS
-    if (el.find('checked').length || el.find('.checked').length) {
-      return true;
-    }
-    return false;
+    const input = el.find('input');
+    return input.hasClass('is-checked') ? true : false;
   });
 });
 
@@ -83,13 +81,13 @@ Cypress.Commands.add('expectCheckboxValue', (fieldName, isChecked, modal) => {
   cy.waitForSaveIndicator();
 
   const path = createFieldPath(fieldName, modal);
-
+  cy.get('.notification-item').should('not.exist');
   const timeout = { timeout: 20000 };
   if (isChecked) {
-    return cy
-      .get(path)
-      .find('.checked', timeout)
-      .should('exist');
+    cy.get(path).then(el => {
+      const inputCheck = el.find('input');
+      return inputCheck.hasClass('is-checked') ? true : false;
+    });
   } else {
     return cy
       .get(path)
