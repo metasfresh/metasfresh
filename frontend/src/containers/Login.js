@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
+// import { connect } from 'react-redux';
 // import { push } from 'connected-react-router';
 import { detect } from 'detect-browser';
 
@@ -22,7 +22,7 @@ class Login extends Component {
    * @summary ToDo: Describe the method.
    */
   UNSAFE_componentWillMount() {
-    const { logged, dispatch } = this.props;
+    const { logged } = this.props;
     if (logged) {
       console.log('Login component redirect')
       // dispatch(push('/'));
@@ -79,7 +79,7 @@ class Login extends Component {
  * @prop {string} token
  */
 Login.propTypes = {
-  dispatch: PropTypes.func.isRequired,
+  // dispatch: PropTypes.func.isRequired,
   // logged: PropTypes.bool,
   redirect: PropTypes.string,
   splat: PropTypes.string,
@@ -87,4 +87,4 @@ Login.propTypes = {
   auth: PropTypes.object,
 };
 
-export default connect()(Login);
+export default Login;

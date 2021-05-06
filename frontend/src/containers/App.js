@@ -1,6 +1,6 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
-import React, { Component, useState } from 'react';
+import React, { useState } from 'react';
 // import { Provider } from 'react-redux';
 import { useDispatch } from 'react-redux';
 // import { createBrowserHistory } from 'history';
@@ -14,7 +14,6 @@ import {
 } from '../utils/locale';
 import {
   addNotification,
-  logoutSuccess,
   setProcessSaved,
   initHotkeys,
   initKeymap,

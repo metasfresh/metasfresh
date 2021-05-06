@@ -36,12 +36,10 @@ const ChildRoutes = () => {
         <Route
           path="/logout"
           render={() => {
-            console.log('logout path: ', loggedIn);
             if (loggedIn) {
               logoutRequest()
                 .then(() => auth.logoutSuccess())
                 .then(() => {
-                  console.log('store dispatch');
                   history.push('/login');
                   return null;
                 });

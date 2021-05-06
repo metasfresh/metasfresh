@@ -1,29 +1,18 @@
 import React from 'react';
-import {
-  Route,
-  Switch,
-  Redirect,
-  Router,
-} from 'react-router-dom';
+import { Route, Switch, Redirect, Router } from 'react-router-dom';
 import qs from 'qs';
 import _ from 'lodash';
 
-import { localLoginRequest } from './api';
-// import { clearNotifications, enableTutorial } from './actions/AppActions';
-// import { createWindow } from './actions/WindowActions';
-// import { setBreadcrumb } from './actions/MenuActions';
+// import { enableTutorial } from './actions/AppActions';
 import { useAuth } from './hooks/useAuth';
 import history from './services/History';
 
-import ChildRoutes from './routes/ChildRoutes';
+import PrivateRoute from './routes/PrivateRoute';
 
 // import Translation from './components/Translation';
 // import BlankPage from './components/BlankPage';
-// import Dashboard from './containers/Dashboard.js';
 // import Calendar from './containers/Calendar';
-// import InboxAll from './containers/InboxAll.js';
 import Login from './containers/Login.js';
-// import NavigationTree from './containers/NavigationTree.js';
 // import PluginContainer, { pluginWrapper } from './components/PluginContainer';
 // import PaypalReservationConfirm from './containers/PaypalReservationConfirm.js';
 
@@ -52,88 +41,56 @@ function propsAreEqual(prevProps, nextProps) {
 }
 const LoginRoute = React.memo(RawLoginRoute, propsAreEqual);
 
-const PrivateRoute = (props) => {
-  const auth = useAuth();
-  const loggedIn = auth.isLoggedIn();
-  // const authRequired = (nextState, replace, callback) => {
-  //   hasTutorial =
-  //     nextState &&
-  //     nextState.location &&
-  //     nextState.location.query &&
-  //     typeof nextState.location.query.tutorial !== 'undefined';
-  console.log('PrivateRoute: ', props);
 
-  let pathname = '/login';
+// MASTER
+/**
+ * @method tokenAuthentication
+ * @summary - method executed when we authenticate directly by using a `token` without the need to supply a `username` and a `password`
+ * @param {object} - tokenId prop given as param to the /token path i.e  /token/xxxxxxx   (`xxxxxxx` will be the value of the tokenId )
+ */
+// const tokenAuthentication = ({ params: { tokenId } }) => {
+//   loginWithToken(tokenId)
+//     .then(() => {
+//       dispatch(push('/'));
+//     })
+//     .catch(() => {
+//       dispatch(push('/login?redirect=true'));
+//     });
+// };
+//
 
-  if (!loggedIn) {
-    console.log('notlogged')
-    localLoginRequest().then((resp) => {
-      console.log('logindata: ', resp)
-      if (resp.data) {
-        // dispatch(loginSuccess(auth.auth));
-        auth.loginSuccess();
-        console.log('logged in: ', props.location.pathname);
-        // callback(null, nextState.location.pathname);
-      } else {
-        console.log('no logindata, redirect to login ')
-        //redirect tells that there should be
-        //step back in history after login
-        // dispatch(push('/login?redirect=true'));
-        pathname = '/login?redirect=true';
-      }
-    });
-  } else {
-    // if (hasTutorial) {
-    //   dispatch(enableTutorial());
-    // }
-    console.log('PrivateRoute logged: ', props.location)
+// TODO
+// const onResetEnter = (nextState, replace, callback) => {
+//   const token = nextState.location.query.token;
 
-    if (props.location.pathname !== 'logout') {
-      // dispatch(clearNotifications());
-      // dispatch(loginSuccess(auth));
-      auth.loginSuccess();
-
-      // return null;
-    }
-    else {
-      // return null;
-      console.log('pathname not equal logout: ', pathname)
-    }
-  // callback();
-  }
-  // };
-
-  return (
-    <Route
-      {...props}
-      render={() =>
-        loggedIn ? (
-          <ChildRoutes />
-        ) : (
-          <Redirect
-            to={{
-              pathname,
-            }}
-          />
-        )
-      }
-    />
-  );
-};
-
-// function propsAreEqual(prevProps, nextProps) {
-//   const { computedMatch, location: { key } } = prevProps;
-//   const { computedMatch: nextComputedMatch, location: { key: nextKey } } = nextProps;
-
-//   // console.log('EQUAL: ', _.isEqual(computedMatch, nextComputedMatch), key, nextKey)
-
-//   if (_.isEqual(computedMatch, nextComputedMatch) && key === nextKey) {
-//     return true;
+//   if (!token) {
+//     callback(null, nextState.location.pathname);
 //   }
 
-//   return false;
+//   return getResetPasswordInfo(token).then(() => {
+//     return Translation.getMessages().then(() => {
+//       callback(null, nextState.location.pathname);
+//     });
+//   });
+// };
+
+// function setPluginBreadcrumbHandlers(routesArray, currentBreadcrumb) {
+//   routesArray.forEach((route) => {
+//     const routeBreadcrumb = [
+//       ...currentBreadcrumb,
+//       {
+//         caption: route.breadcrumb.caption,
+//         type: route.breadcrumb.type,
+//       },
+//     ];
+
+//     route.onEnter = () => dispatch(setBreadcrumb(routeBreadcrumb));
+
+//     if (route.childRoutes) {
+//       setPluginBreadcrumbHandlers(route.childRoutes, routeBreadcrumb);
+//     }
+//   });
 // }
-// // const PrivateRoute = React.memo(RawPrivateRoute, propsAreEqual);
 
 const Routes = () => {
   const auth = useAuth();
@@ -154,5 +111,36 @@ const Routes = () => {
     </Router>
   );
 };
+/*
+<Route path="/token/:tokenId" onEnter={tokenAuthentication} />
+<Route
+  path="/forgottenPassword"
+  component={({ location }) => (
+    <Login splat={location.pathname.replace('/', '')} {...{ auth }} />
+  )}
+/>
+<Route
+  path="/resetPassword"
+  onEnter={onResetEnter}
+  component={({ location }) => (
+    <Login
+      splat={location.pathname.replace('/', '')}
+      token={location.query.token}
+      {...{ auth }}
+    />
+  )}
+/>
+<Route
+  path="/paypal_confirm"
+  component={({ location }) => (
+    <PaypalReservationConfirm
+      token={location.query.token}
+      {...{ auth }}
+    />
+  )}
+/>
+<Route path="/calendar" component={Calendar} />
+<Route path="*" component={NoMatch} />
+*/
 
 export default React.memo(Routes);

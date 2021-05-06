@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-// import { push } from 'connected-react-router';
 import { withRouter } from 'react-router-dom';
 import { Set as iSet } from 'immutable';
 import currentDevice from 'current-device';
@@ -685,7 +684,6 @@ class DocumentListContainer extends Component {
       windowId,
       isSideListShow,
       viewData,
-      // push,
       history,
       page,
       sort,
@@ -795,33 +793,34 @@ class DocumentListContainer extends Component {
  */
 DocumentListContainer.propTypes = { ...DLpropTypes };
 
-export default withRouter(connect(
-  DLmapStateToProps,
-  {
-    resetView,
-    deleteView,
-    fetchDocument,
-    fetchLayout,
-    createView,
-    filterView,
-    deleteTable,
-    indicatorState,
-    unsetIncludedView,
-    setIncludedView,
-    setListPagination,
-    setListSorting,
-    setListId,
-    showIncludedView,
-    // push,
-    updateRawModal,
-    deselectTableRows,
-    fetchLocationConfig,
-    updateGridTableData,
-    fetchHeaderProperties,
-    setBreadcrumb,
-    fetchQuickActions,
-    deleteQuickActions,
-  },
-  null,
-  { forwardRef: true }
-)(DocumentListContainer));
+export default withRouter(
+  connect(
+    DLmapStateToProps,
+    {
+      resetView,
+      deleteView,
+      fetchDocument,
+      fetchLayout,
+      createView,
+      filterView,
+      deleteTable,
+      indicatorState,
+      unsetIncludedView,
+      setIncludedView,
+      setListPagination,
+      setListSorting,
+      setListId,
+      showIncludedView,
+      updateRawModal,
+      deselectTableRows,
+      fetchLocationConfig,
+      updateGridTableData,
+      fetchHeaderProperties,
+      setBreadcrumb,
+      fetchQuickActions,
+      deleteQuickActions,
+    },
+    null,
+    { forwardRef: true }
+  )(DocumentListContainer)
+);
