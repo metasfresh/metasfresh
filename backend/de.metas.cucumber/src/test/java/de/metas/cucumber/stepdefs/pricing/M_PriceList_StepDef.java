@@ -164,12 +164,14 @@ public class M_PriceList_StepDef
 		final int priceListId = DataTableUtil.extractIntForColumnName(row, I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID);
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(row, I_M_PriceList_Version.COLUMNNAME_ValidFrom);
 		final String name = DataTableUtil.extractStringForColumnName(row, I_M_PriceList_Version.COLUMNNAME_Name);
+		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_PriceList_Version.COLUMNNAME_Name);
 
 		final I_M_PriceList_Version m_priceList_Version = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
 		m_priceList_Version.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		m_priceList_Version.setM_PriceList_Version_ID(priceListVersionId);
 		m_priceList_Version.setM_PriceList_ID(priceListId);
 		m_priceList_Version.setName(name);
+		m_priceList_Version.setDescription(description);
 		m_priceList_Version.setValidFrom(validFrom);
 
 		saveRecord(m_priceList_Version);

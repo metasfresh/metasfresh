@@ -97,11 +97,13 @@ public class DataTableUtil
 	@Nullable
 	public String extractStringOrNullForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
 	{
-		if (!dataTableRow.containsKey(columnName))
-		{
-			throw new AdempiereException("Missing column for columnName=" + columnName).appendParametersToMessage()
-					.setParameter("dataTableRow", dataTableRow);
-		}
+		// it's OK for "OPT." columns to be missing!
+		// TODO: add some dedicated methods to distinguish between OPT and not-OPT that can be null
+		// if (!dataTableRow.containsKey(columnName)) 
+		// {
+		// 	throw new AdempiereException("Missing column for columnName=" + columnName).appendParametersToMessage()
+		// 			.setParameter("dataTableRow", dataTableRow);
+		// }
 
 		if (NULL_STRING.equals(dataTableRow.get(columnName)))
 		{
@@ -227,7 +229,6 @@ public class DataTableUtil
 	@Nullable
 	public static BigDecimal extractBigDecimalOrNullForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
-
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
 
 		try
