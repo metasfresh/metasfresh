@@ -89,7 +89,7 @@ public interface IPriceListDAO extends ISingletonService
 	 * @return the price list for the given pricing system and location or <code>null</code>.
 	 */
 	@Nullable
-	PriceListId retrievePriceListIdByPricingSyst(PricingSystemId pricingSystemId, BPartnerLocationId bpartnerLocationId, SOTrx soTrx);
+	PriceListId retrievePriceListIdByPricingSyst(@Nullable PricingSystemId pricingSystemId, BPartnerLocationId bpartnerLocationId, SOTrx soTrx);
 
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>

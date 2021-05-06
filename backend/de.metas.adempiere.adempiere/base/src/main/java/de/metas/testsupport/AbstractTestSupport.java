@@ -53,6 +53,10 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+/**
+ * @deprecated please consider using e.g. BusinessTestHelper.
+ */
+@Deprecated
 public class AbstractTestSupport
 {
 	/**
@@ -195,9 +199,6 @@ public class AbstractTestSupport
 
 	/**
 	 * Gets/creates a BPartner with given Value
-	 *
-	 * @param bpValue
-	 * @return bpartner
 	 */
 	public I_C_BPartner bpartner(final String bpValue)
 	{

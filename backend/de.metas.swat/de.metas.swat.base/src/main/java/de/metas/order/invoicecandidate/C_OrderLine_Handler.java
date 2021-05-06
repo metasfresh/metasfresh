@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.tax.api.TaxId;
@@ -89,6 +91,7 @@ import lombok.NonNull;
 public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
@@ -215,8 +218,10 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Dimension
-		Dimension orderLineDimension = extractDimension(orderLine);
+		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
+
+		final BPartnerLocationId bPartnerLocationId = bPartnerDAO.getBPartnerLocationIdByRepoId(CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()));
 
 		//
 		// Tax
@@ -228,7 +233,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				order.getDatePromised(), // shipDate
 				OrgId.ofRepoId(order.getAD_Org_ID()),
 				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-				CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
+				bPartnerLocationId, // ship location id
 				order.isSOTrx());
 		icRecord.setC_Tax_ID(TaxId.toRepoId(taxId)); // avoid NPE in tests
 

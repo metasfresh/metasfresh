@@ -20,6 +20,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -48,6 +49,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.Iterator;
 
 import static java.math.BigDecimal.ONE;
@@ -91,12 +93,13 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	private final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final transient ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 	@Override
-	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit_IGNORED)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final int limit_IGNORED)
 	{
 		return createShareWithMissingICsQuery()
 				.iterate(I_C_Commission_Share.class);
@@ -116,22 +119,19 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 
 	public boolean recordHasAnInvoiceCandiate(@NonNull final I_C_Commission_Share commissionShareRecord)
 	{
-		final boolean recordHasInvoiceCandidate = createICsThatReferenceSharesQueryBuilder()
+		return createICsThatReferenceSharesQueryBuilder()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMN_Record_ID, commissionShareRecord.getC_Commission_Share_ID())
 				.create()
 				.anyMatch();
-		return recordHasInvoiceCandidate;
 	}
 
 	private IQuery<I_C_Commission_Share> createShareWithMissingICsQuery()
 	{
-		final IQuery<I_C_Commission_Share> shareWithMissingCandidateQuery = queryBL
+		return queryBL
 				.createQueryBuilder(I_C_Commission_Share.class)
 				.addOnlyActiveRecordsFilter()
 				.addNotInSubQueryFilter(I_C_Commission_Share.COLUMN_C_Commission_Share_ID, I_C_Invoice_Candidate.COLUMN_Record_ID, createICsThatReferenceSharesQuery())
 				.create();
-
-		return shareWithMissingCandidateQuery;
 	}
 
 	private IQuery<I_C_Invoice_Candidate> createICsThatReferenceSharesQuery()
@@ -164,6 +164,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class, commissionShareRecord);
 
 		final OrgId orgId = OrgId.ofRepoId(commissionShareRecord.getAD_Org_ID());
+		final ZoneId timeZoneId = orgDAO.getTimeZone(orgId);
 		icRecord.setAD_Org_ID(orgId.getRepoId());
 		icRecord.setC_ILCandHandler(getHandlerRecord());
 
@@ -197,7 +198,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 						Quantitys.create(ONE, commissionProductId),
 						SOTrx.PURCHASE)
 				.setPriceListId(priceListId)
-				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
+				.setPriceDate(TimeUtil.asLocalDate(icRecord.getDateOrdered(), timeZoneId))
 				.setFailIfNotCalculated();
 		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
 
@@ -253,7 +254,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 					icRecord.getDeliveryDate(),
 					orgId,
 					(WarehouseId)null,
-					commissionToLocationId.getRepoId(),
+					commissionToLocationId,
 					false /* isSOTrx */);
 		}
 		icRecord.setC_Tax_ID(taxId.getRepoId());
@@ -285,7 +286,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 	/**
 	 * <ul>
 	 * <li>QtyEntered := sum of all 3 C_Commission_Share.PointsSum_* columns
-	 * <li>C_UOM_ID := {@link #COMMISSION_PRODUCT_ID}'s stock UOM
+	 * <li>C_UOM_ID := commission-product's stock UOM
 	 * <li>QtyOrdered := QtyEntered
 	 * <li>DateOrdered := C_Commission_Share.Created
 	 * <li>C_Order_ID: -1
@@ -349,10 +350,9 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 
 	private I_C_Commission_Share getCommissionShareRecord(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final I_C_Commission_Share commissionShareRecord = TableRecordReference
+		return TableRecordReference
 				.ofReferenced(ic)
 				.getModel(I_C_Commission_Share.class);
-		return commissionShareRecord;
 	}
 
 	@Override

@@ -123,7 +123,6 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 		ilCandGenerator.setTableName(handlerClass.getSourceTable());
 		ilCandGenerator.setIs_AD_User_InCharge_UI_Setting(handlerClass.isUserInChargeUserEditable());
-		return;
 	}
 
 	@Override
@@ -167,7 +166,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	/**
 	 * Schedule invoice candidates generation for given model (asynchronously).
 	 */
-	private final void scheduleCreateMissingCandidatesFor(
+	private void scheduleCreateMissingCandidatesFor(
 			@NonNull final Object model,
 			@NonNull final IInvoiceCandidateHandler handler)
 	{
@@ -181,10 +180,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	 * Note that each <code>creatorRecord</code> is called multiple times, until it returns the empty list.<br>
 	 * That way it is possible to for a creator to create only a limited number of invoice candidates at a time and thus avoid memory issues.
 	 *
-	 * @param ctx
-	 * @param handlerRecords
 	 * @param model may be <code>{@link #NO_MODEL}</code>. If it not {@link #NO_MODEL}, then the method only created missing candidates for the given model.
-	 * @param trxName
+	 *
 	 * @return if model is <code>{@link #NO_MODEL}</code>, then we return the empty list. If not, then we return the created invoice candidates.
 	 */
 	private List<I_C_Invoice_Candidate> createInvoiceCandidates(
@@ -259,8 +256,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	 * Create candidates. If model is {@link #NO_MODEL} then all missing candidates will be created.
 	 *
 	 * @param modelOrNoModel if set to a value != {@link #NO_MODEL}, then only candidates for the given model are created,
-	 * @param bufferSize used only when creating missing candidates. See limit parameter of {@link IInvoiceCandidateHandler#createMissingCandidates(Properties, int, String)}.
-	 * @param invoiceCandiateHandler
+	 * @param bufferSize used only when creating missing candidates.
 	 *
 	 * @return created candidates
 	 */
@@ -271,7 +267,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	{
 		//
 		// Retrieve actual models for whom we will generate invoice candidates
-		final Iterator<? extends Object> models;
+		final Iterator<?> models;
 		if (Util.same(modelOrNoModel, InvoiceCandidateHandlerBL.NO_MODEL))
 		{
 			models = invoiceCandiateHandler.retrieveAllModelsWithMissingCandidates(bufferSize);
@@ -345,7 +341,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 						.setFailIfAlreadyLocked(true)
 						.acquire();
 
-				try (final ILockAutoCloseable unlocker = lock.asAutoCloseable())
+				try (final ILockAutoCloseable ignored = lock.asAutoCloseable())
 				{
 					final IInvoiceCandidateHandler handler = request.getHandler();
 					final InvoiceCandidateGenerateResult result = handler.createCandidatesFor(request);
@@ -478,15 +474,13 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 	/**
 	 * Create an instance of {@link IInvoiceCandidateHandler} implementation that can handle given invoice candidate.
 	 *
-	 * @param ic
 	 * @return handler instance
 	 */
 	private IInvoiceCandidateHandler createInvoiceCandidateHandler(final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandidateHandlerDAO invoiceCandidateHandlerDAO = Services.get(IInvoiceCandidateHandlerDAO.class);
 		final I_C_ILCandHandler handler = invoiceCandidateHandlerDAO.retrieveFor(ic);
-		final IInvoiceCandidateHandler handlerInstance = mkInstance(handler);
-		return handlerInstance;
+		return mkInstance(handler);
 	}
 
 	@Override

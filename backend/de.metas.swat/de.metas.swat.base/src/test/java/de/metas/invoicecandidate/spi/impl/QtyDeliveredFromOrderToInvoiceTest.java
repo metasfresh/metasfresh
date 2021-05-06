@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
@@ -172,7 +173,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 						order.getDatePromised(),
 						OrgId.ofRepoId(order.getAD_Org_ID()),
 						WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-						order.getC_BPartner_Location_ID(),
+						BPartnerLocationId.ofRepoId(order.getC_BPartner_ID(),order.getC_BPartner_Location_ID()),
 						order.isSOTrx()))
 				.thenReturn(TaxId.ofRepoId(3));
 	}

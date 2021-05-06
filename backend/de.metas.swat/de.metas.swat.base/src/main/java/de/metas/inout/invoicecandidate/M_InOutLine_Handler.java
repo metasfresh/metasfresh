@@ -379,7 +379,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final Properties ctx = getCtx(inOutLineRecord);
 		final TaxCategoryId taxCategoryId = priceAndQty != null ? priceAndQty.getTaxCategoryId() : null;
 		final Timestamp shipDate = inOut.getMovementDate();
-		final int locationId = inOut.getC_BPartner_Location_ID();
+		final BPartnerLocationId locationId = BPartnerLocationId.ofRepoId(inOut.getC_BPartner_ID(), inOut.getC_BPartner_Location_ID());
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
