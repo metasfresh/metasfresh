@@ -84,6 +84,7 @@ const Checkbox = (props) => {
         <input
           ref={rawWidget}
           type="checkbox"
+          className={initialValue ? 'is-checked' : ''}
           checked={isChanged && value === '' ? false : initialValue}
           disabled={widgetData[0].readonly || disabled}
           onChange={updateCheckedState}
