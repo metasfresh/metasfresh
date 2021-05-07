@@ -30,6 +30,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
 
 @Value
@@ -43,16 +45,23 @@ public class JsonRequestLocationUpsertItem
 	@NonNull
 	String locationIdentifier;
 
-	@ApiModelProperty(allowEmptyValue = false, position = 20, value = "The location to upsert")
+	@ApiModelProperty(position = 20, //
+			value = "Used only when the BPartner location identifier is an external reference.")
+	@Nullable
+	String externalVersion;
+
+	@ApiModelProperty(allowEmptyValue = false, position = 30, value = "The location to upsert")
 	@NonNull
 	JsonRequestLocation location;
 
 	@JsonCreator
 	public JsonRequestLocationUpsertItem(
 			@NonNull @JsonProperty("locationIdentifier") final String locationIdentifier,
+			@Nullable @JsonProperty("externalVersion") final String externalVersion,
 			@NonNull @JsonProperty("location") final JsonRequestLocation location)
 	{
 		this.locationIdentifier = locationIdentifier;
+		this.externalVersion = externalVersion;
 		this.location = location;
 	}
 }

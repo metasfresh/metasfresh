@@ -30,6 +30,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 
 @Value
@@ -42,7 +44,11 @@ public class JsonRequestBPartnerUpsertItem
 	@NonNull
 	String bpartnerIdentifier;
 
-	@ApiModelProperty(position = 20,
+	@ApiModelProperty(position = 20, //
+			value = "Used only when the BPartner identifier is an external reference.")
+	String externalVersion;
+
+	@ApiModelProperty(position = 30,
 			value = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
 	JsonRequestComposite bpartnerComposite;
@@ -50,9 +56,11 @@ public class JsonRequestBPartnerUpsertItem
 	@JsonCreator
 	public JsonRequestBPartnerUpsertItem(
 			@NonNull @JsonProperty("bpartnerIdentifier") final String bpartnerIdentifier,
+			@Nullable @JsonProperty("externalVersion") final String externalVersion,
 			@NonNull @JsonProperty("bpartnerComposite") final JsonRequestComposite bpartnerComposite)
 	{
 		this.bpartnerIdentifier = bpartnerIdentifier;
+		this.externalVersion = externalVersion;
 		this.bpartnerComposite = bpartnerComposite;
 	}
 }

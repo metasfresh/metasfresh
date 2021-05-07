@@ -62,8 +62,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           }
         },
         "baseLanguage" : true,
-        "leftToRight" : true,
-        "decimalPoint" : false
+        "decimalPoint" : false,
+        "leftToRight" : true
       },
       "url" : "bPartner.url",
       "groupId" : 15,
@@ -123,34 +123,42 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "contactType" : {
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "defaultContact" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchase" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchaseDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "sales" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "salesDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "subjectMatter" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -191,34 +199,42 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "contactType" : {
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "defaultContact" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchase" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchaseDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "sales" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "salesDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "subjectMatter" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -271,18 +287,22 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "locationType" : {
           "billTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -327,18 +347,22 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "locationType" : {
           "billTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -449,34 +473,42 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "contactType" : {
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "defaultContact" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchase" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchaseDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "sales" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "salesDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "subjectMatter" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -521,34 +553,42 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "contactType" : {
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "defaultContact" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchase" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchaseDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "sales" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "salesDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "subjectMatter" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -602,18 +642,22 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "locationType" : {
           "billTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -724,34 +768,42 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "contactType" : {
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "defaultContact" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchase" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchaseDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "sales" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "salesDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "subjectMatter" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -796,34 +848,42 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "contactType" : {
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "defaultContact" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchase" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchaseDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "sales" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "salesDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "subjectMatter" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -875,18 +935,22 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "locationType" : {
           "billTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -997,34 +1061,42 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "contactType" : {
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "defaultContact" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchase" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchaseDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "sales" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "salesDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "subjectMatter" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -1082,18 +1154,22 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "locationType" : {
           "billTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -1204,34 +1280,42 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "contactType" : {
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "defaultContact" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchase" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "purchaseDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "sales" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "salesDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "subjectMatter" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -1289,18 +1373,22 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "locationType" : {
           "billTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
@@ -1345,18 +1433,22 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "locationType" : {
           "billTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "billToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipTo" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           },
           "shipToDefault" : {
             "value" : false,
+            "empty" : false,
             "present" : true
           }
         },
