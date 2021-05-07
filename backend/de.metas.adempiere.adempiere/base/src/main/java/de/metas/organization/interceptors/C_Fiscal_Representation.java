@@ -22,7 +22,7 @@
 
 package de.metas.organization.interceptors;
 
-import de.metas.organization.IFiscalRepresentationBL;
+import de.metas.organization.impl.FiscalRepresentationBL;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -30,6 +30,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Fiscal_Representation;
 import org.compiere.model.ModelValidator;
 
@@ -37,8 +38,7 @@ import org.compiere.model.ModelValidator;
 @Callout(I_C_Fiscal_Representation.class)
 public class C_Fiscal_Representation
 {
-
-	private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
+	private final FiscalRepresentationBL fiscalRepresentationBL = SpringContextHolder.instance.getBean(FiscalRepresentationBL.class);
 
 	@Init
 	public void registerCallout()

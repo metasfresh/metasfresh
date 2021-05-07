@@ -25,11 +25,12 @@ package de.metas.organization.impl;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.location.CountryId;
-import de.metas.organization.IFiscalRepresentationBL;
 import de.metas.util.Services;
 import org.compiere.model.I_C_Fiscal_Representation;
+import org.springframework.stereotype.Service;
 
-public class FiscalRepresentationBL implements IFiscalRepresentationBL
+@Service
+public class FiscalRepresentationBL
 {
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
