@@ -22,11 +22,17 @@ package de.metas.invoice.callout;
  * #L%
  */
 
+import de.metas.currency.CurrencyPrecision;
+import de.metas.invoice.service.impl.InvoiceLinePriceAndDiscount;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListBL;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +40,8 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.util.Services;
+
+import javax.annotation.Nullable;
 
 @Callout(I_C_InvoiceLine.class)
 @Component
@@ -51,7 +59,7 @@ public class C_InvoiceLine
 			I_C_InvoiceLine.COLUMNNAME_PriceEntered,
 			I_C_InvoiceLine.COLUMNNAME_PriceActual,
 			I_C_InvoiceLine.COLUMNNAME_QtyInvoicedInPriceUOM })
-	public void setQtyInvoicedInPriceUOM_AndLineNetAMT(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
+	public void setQtyInvoicedInPriceUOM_AndLineNetAMT(final I_C_InvoiceLine invoiceLine)
 	{
 		if (invoiceLine == null)
 		{
@@ -68,23 +76,49 @@ public class C_InvoiceLine
 	}
 
 	/**
-	 * update prices on ASI or discount change
-	 *
-	 * @param invoiceLine
-	 * @param field
+	 * update prices on ASI change
 	 */
-	@CalloutMethod(columnNames = { I_C_InvoiceLine.COLUMNNAME_M_AttributeSetInstance_ID, I_C_InvoiceLine.COLUMNNAME_Discount })
+	@CalloutMethod(columnNames = { I_C_InvoiceLine.COLUMNNAME_M_AttributeSetInstance_ID })
 	public void onASIorDiscountChange(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
 	{
 		Services.get(IInvoiceLineBL.class).updatePrices(invoiceLine);
+	}
 
+	/**
+	 * Recalculate priceActual on discount or priceEntered change.
+	 * Don't invoice the pricing engine.
+	 */
+	@CalloutMethod(columnNames = {
+			I_C_InvoiceLine.COLUMNNAME_PriceEntered,
+			I_C_InvoiceLine.COLUMNNAME_Discount })
+	public void recomputePriceActual(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
+	{
+		final CurrencyPrecision pricePrecision = extractPrecision(invoiceLine);
+		if (pricePrecision == null)
+		{
+			return;
+		}
+
+		InvoiceLinePriceAndDiscount.of(invoiceLine, pricePrecision)
+				.withUpdatedPriceActual()
+				.applyTo(invoiceLine);
+	}
+	
+	@Nullable
+	private CurrencyPrecision extractPrecision(@NonNull final I_C_InvoiceLine invoiceLine)
+	{
+		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+		if (invoiceLine.getC_Invoice_ID() <= 0)
+		{
+			return null;
+		}
+
+		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
+		return priceListBL.getPricePrecision(PriceListId.ofRepoId(invoice.getM_PriceList_ID()));
 	}
 
 	/**
 	 * Set the product as soon as the order line is set
-	 *
-	 * @param invoiceLine
-	 * @param field
 	 */
 	@CalloutMethod(columnNames = { I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID })
 	public void setProduct(final I_C_InvoiceLine invoiceLine, final ICalloutField field)
@@ -115,5 +149,4 @@ public class C_InvoiceLine
 
 		invoiceLine.setIsPackagingMaterial(ol.isPackagingMaterial());
 	}
-
 }

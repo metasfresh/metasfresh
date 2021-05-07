@@ -23,7 +23,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.PriceAndDiscount;
+import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -259,7 +259,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(final BigDecimal priceActual, final BigDecimal discount, final int precision)
 	{
-		return PriceAndDiscount.calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, precision);
+		return OrderLinePriceAndDiscount.calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, precision);
 	}
 
 	@Override
@@ -459,7 +459,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void updatePriceActual(final I_C_OrderLine orderLine, final CurrencyPrecision precision)
 	{
-		final BigDecimal priceActual = PriceAndDiscount.of(orderLine, precision)
+		final BigDecimal priceActual = OrderLinePriceAndDiscount.of(orderLine, precision)
 				.updatePriceActual()
 				.getPriceActual();
 		orderLine.setPriceActual(priceActual);

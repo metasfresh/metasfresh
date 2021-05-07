@@ -88,6 +88,9 @@ public interface IInvoiceLineBL extends ISingletonService
 	 */
 	void updateLineNetAmt(I_C_InvoiceLine line, BigDecimal qtyEntered);
 
+	/**
+	 * Invoke the pricing engine to update the given invoiceLine's prices
+	 */
 	void updatePrices(I_C_InvoiceLine invoiceLine);
 
 	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, BPartnerLocationAndCaptureId taxPartnerLocationId, boolean isSOTrx);
