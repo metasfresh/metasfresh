@@ -33,7 +33,6 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.v2.JsonAttributeInstance;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentRequest;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
@@ -97,7 +96,6 @@ public class ShipmentService
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleEffectiveBL scheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
@@ -342,12 +340,17 @@ public class ShipmentService
 				.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
 				.addInArrayFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, request.getScheduleIds());
 
+		// Wait until processed because the next call might contain the same shipment schedules as the current one.
+		// In this case enqueing the same shipmentschedule will fail, because it requires a an exclusive lock and the sched is still enqueued from the current lock
+		// See ShipmentScheduleEnqueuer.acquireLock(...)
+		final boolean waitUtilProcessed = true;
+		
 		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(adPInstanceDAO.createSelectionId())
 				.queryFilters(queryFilters)
 				.quantityType(request.getQuantityTypeToUse())
 				.completeShipments(true)
-				//.waitUtilProcessed(true) // return directly when the workpackage is enqueued
+				.waitUtilProcessed(waitUtilProcessed)
 				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
 				.build();
 

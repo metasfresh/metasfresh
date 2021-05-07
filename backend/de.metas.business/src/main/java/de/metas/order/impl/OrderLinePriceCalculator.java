@@ -22,7 +22,7 @@ import de.metas.order.OrderLine;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.OrderLineRepository;
-import de.metas.order.PriceAndDiscount;
+import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IEditablePricingContext;
@@ -128,7 +128,7 @@ final class OrderLinePriceCalculator
 					.setParameter("pricingResult", pricingResult);
 		}
 
-		PriceAndDiscount priceAndDiscount = extractPriceAndDiscount(pricingResult, pricingCtx.getSoTrx());
+		OrderLinePriceAndDiscount priceAndDiscount = extractPriceAndDiscount(pricingResult, pricingCtx.getSoTrx());
 
 		//
 		// Apply price limit restrictions
@@ -448,9 +448,9 @@ final class OrderLinePriceCalculator
 		return pricingResult.getEnforcePriceLimit();
 	}
 
-	private PriceAndDiscount extractPriceAndDiscount(final IPricingResult pricingResult, final SOTrx soTrx)
+	private OrderLinePriceAndDiscount extractPriceAndDiscount(final IPricingResult pricingResult, final SOTrx soTrx)
 	{
-		return PriceAndDiscount.builder()
+		return OrderLinePriceAndDiscount.builder()
 				.precision(pricingResult.getPrecision())
 				.priceEntered(extractPriceEntered(pricingResult))
 				.priceLimit(pricingResult.getPriceLimit())

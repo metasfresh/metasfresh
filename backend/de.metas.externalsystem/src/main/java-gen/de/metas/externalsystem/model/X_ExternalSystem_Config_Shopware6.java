@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.externalsystem
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
@@ -12,7 +34,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO implements I_ExternalSystem_Config_Shopware6, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = -96827426L;
+	private static final long serialVersionUID = -1297414982L;
 
 	/** Standard Constructor */
 	public X_ExternalSystem_Config_Shopware6 (final Properties ctx, final int ExternalSystem_Config_Shopware6_ID, @Nullable final String trxName)
@@ -113,7 +135,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public void setExternalSystemValue (final java.lang.String ExternalSystemValue)
+	public void setExternalSystemValue (final @Nullable java.lang.String ExternalSystemValue)
 	{
 		set_Value (COLUMNNAME_ExternalSystemValue, ExternalSystemValue);
 	}
@@ -143,8 +165,20 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public java.lang.String getJSONPathConstantBPartnerLocationID()
+	public java.lang.String getJSONPathConstantBPartnerLocationID() 
 	{
 		return get_ValueAsString(COLUMNNAME_JSONPathConstantBPartnerLocationID);
+	}
+
+	@Override
+	public void setJSONPathSalesRepID (final @Nullable java.lang.String JSONPathSalesRepID)
+	{
+		set_Value (COLUMNNAME_JSONPathSalesRepID, JSONPathSalesRepID);
+	}
+
+	@Override
+	public java.lang.String getJSONPathSalesRepID() 
+	{
+		return get_ValueAsString(COLUMNNAME_JSONPathSalesRepID);
 	}
 }
