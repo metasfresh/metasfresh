@@ -1257,3 +1257,8 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=645210
 /* DDL */ select AD_Element_Link_Create_Missing_Field(645210)
 ;
 
+-- Parent link for new tab
+-- 2021-05-07T06:12:31.769Z
+-- URL zum Konzept
+UPDATE AD_Tab SET AD_Column_ID=573805, Parent_Column_ID=528,Updated=TO_TIMESTAMP('2021-05-07 08:12:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=543900
+;
