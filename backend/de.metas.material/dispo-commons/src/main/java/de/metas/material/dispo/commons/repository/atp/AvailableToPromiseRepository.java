@@ -1,22 +1,7 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import java.math.BigDecimal;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.function.Function;
-
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.IQuery;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.commons.attributes.AttributesKeyPattern;
 import de.metas.material.commons.attributes.AttributesKeyPatterns;
@@ -24,7 +9,20 @@ import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.Value;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -51,7 +49,7 @@ import lombok.Value;
 @Service
 public class AvailableToPromiseRepository
 {
-	private static final String SYSCONFIG_ATP_ATTRIBUTES_KEYS = "de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ATP.AttributesKeys";
+	private static final String SYSCONFIG_AVAILABILITY_INFO_ATTRIBUTES_KEYS = "de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.AvailabilityInfo.AttributesKeys";
 
 	@NonNull
 	public BigDecimal retrieveAvailableStockQtySum(@NonNull final AvailableToPromiseMultiQuery multiQuery)
@@ -116,11 +114,12 @@ public class AvailableToPromiseRepository
 		return result.build();
 	}
 
-	public AvailableToPromiseResult retrieveAvailableStock(@NonNull AvailableToPromiseQuery query)
+	public AvailableToPromiseResult retrieveAvailableStock(@NonNull final AvailableToPromiseQuery query)
 	{
 		return retrieveAvailableStock(AvailableToPromiseMultiQuery.of(query));
 	}
 
+	@Nullable
 	private IQuery<I_MD_Candidate_ATP_QueryResult> createDBQueryForMaterialQueryOrNull(
 			@NonNull final AvailableToPromiseMultiQuery multiQuery)
 	{
@@ -155,17 +154,10 @@ public class AvailableToPromiseRepository
 		final int orgId = Env.getAD_Org_ID(Env.getCtx());
 
 		final String storageAttributesKeys = sysConfigBL.getValue(
-				SYSCONFIG_ATP_ATTRIBUTES_KEYS,
+				SYSCONFIG_AVAILABILITY_INFO_ATTRIBUTES_KEYS,
 				AttributesKey.ALL.getAsString(),
 				clientId, orgId);
 
 		return AttributesKeyPatterns.parseCommaSeparatedString(storageAttributesKeys);
-	}
-
-	@Value
-	private static class ProductAndAttributeKey
-	{
-		int productId;
-		String attributeKey;
 	}
 }
