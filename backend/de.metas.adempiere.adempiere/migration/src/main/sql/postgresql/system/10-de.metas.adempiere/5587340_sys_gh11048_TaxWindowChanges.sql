@@ -1231,6 +1231,330 @@ UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2021-05-05 10:50:1
 UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2021-05-05 10:50:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544920
 ;
 
+-- 2021-05-07T10:48:36.764Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='If the flag is set, this tax can be used in documents where an entire line amount is a tax amount. Used, e.g., when a tax charge needs to be paid to a customs office.', Help='If the flag is set, this tax can be used in documents where an entire line amount is a tax amount. Used, e.g., when a tax charge needs to be paid to a customs office.',Updated=TO_TIMESTAMP('2021-05-07 13:48:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=57413 AND AD_Language='en_GB'
+;
+
+-- 2021-05-07T10:48:36.981Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(57413,'en_GB')
+;
+
+-- 2021-05-07T10:48:50.949Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='If the flag is set, this tax can be used in documents where an entire line amount is a tax amount. Used, e.g., when a tax charge needs to be paid to a customs office.', Help='If the flag is set, this tax can be used in documents where an entire line amount is a tax amount. Used, e.g., when a tax charge needs to be paid to a customs office.',Updated=TO_TIMESTAMP('2021-05-07 13:48:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=57413 AND AD_Language='en_US'
+;
+
+-- 2021-05-07T10:48:50.985Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(57413,'en_US')
+;
+
+-- 2021-05-07T10:48:53.225Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-05-07 13:48:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=57413 AND AD_Language='en_US'
+;
+
+-- 2021-05-07T10:48:53.260Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(57413,'en_US')
+;
+
+-- 2021-05-07T10:49:31.330Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', Help='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', IsTranslated='Y', Name='Steuer Ausschließlich', PrintName='Steuer Ausschließlich',Updated=TO_TIMESTAMP('2021-05-07 13:49:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=57413 AND AD_Language='de_CH'
+;
+
+-- 2021-05-07T10:49:31.373Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(57413,'de_CH')
+;
+
+-- 2021-05-07T10:49:43.046Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', Help='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.',Updated=TO_TIMESTAMP('2021-05-07 13:49:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=57413 AND AD_Language='nl_NL'
+;
+
+-- 2021-05-07T10:49:43.082Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(57413,'nl_NL')
+;
+
+-- 2021-05-07T10:50:18.926Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', Help='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', IsTranslated='Y',Updated=TO_TIMESTAMP('2021-05-07 13:50:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=57413 AND AD_Language='de_DE'
+;
+
+-- 2021-05-07T10:50:18.962Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(57413,'de_DE')
+;
+
+-- 2021-05-07T10:50:19.048Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(57413,'de_DE')
+;
+
+-- 2021-05-07T10:50:19.086Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='IsWholeTax', Name='Steuer Ausschließlich', Description='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', Help='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.' WHERE AD_Element_ID=57413
+;
+
+-- 2021-05-07T10:50:19.127Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='IsWholeTax', Name='Steuer Ausschließlich', Description='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', Help='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', AD_Element_ID=57413 WHERE UPPER(ColumnName)='ISWHOLETAX' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-05-07T10:50:19.168Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='IsWholeTax', Name='Steuer Ausschließlich', Description='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', Help='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.' WHERE AD_Element_ID=57413 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-05-07T10:50:19.203Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Steuer Ausschließlich', Description='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', Help='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=57413) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 57413)
+;
+
+-- 2021-05-07T10:50:19.253Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Steuer Ausschließlich', Description='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', Help='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', CommitWarning = NULL WHERE AD_Element_ID = 57413
+;
+
+-- 2021-05-07T10:50:19.289Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Steuer Ausschließlich', Description='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', Help='Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.' WHERE AD_Element_ID = 57413
+;
+
+-- 2021-05-07T10:50:19.324Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Steuer Ausschließlich', Description = 'Wenn gewählt, wird die Zeilensumme (z.B. in der Auftragszeile) als Steuerbetrag behandelt und nicht als Basis zur Berechnung der Steuer. Dieser Steuersatz wird z.B. in Belegen verwendet, bei denen ein Steuerbetrag an eine Behörde entrichtet werden soll.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 57413
+;
+
+-- 2021-05-07T11:33:07.278Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=544932
+;
+
+-- 2021-05-07T11:33:08.872Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=544933
+;
+
+-- 2021-05-07T11:33:10.148Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=544939
+;
+
+-- 2021-05-07T11:33:58.563Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,2091,0,174,540523,584672,'F',TO_TIMESTAMP('2021-05-07 14:33:58','YYYY-MM-DD HH24:MI:SS'),100,'Steuer wird dokumentbasiert berechnet (abweichend wäre zeilenweise)','If the tax is calculated on document level, all lines with that tax rate are added before calculating the total tax for the document.
+Otherwise the tax is calculated per line and then added.
+Due to rounding, the tax amount can differ.','Y','Y','N','Y','N','N','N',0,'Dokumentbasiert',10,0,0,TO_TIMESTAMP('2021-05-07 14:33:58','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-05-07T11:35:04.982Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=584465
+;
+
+-- 2021-05-07T11:35:54.682Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,8195,0,174,540520,584673,'F',TO_TIMESTAMP('2021-05-07 14:35:54','YYYY-MM-DD HH24:MI:SS'),100,'Steuer für Einkauf und/ oder Verkauf Transaktionen.','Sales Tax: charged when selling - examples: Sales Tax, Output VAT (payable)
+Purchase Tax: tax charged when purchasing - examples: Use Tax, Input VAT (receivable)','Y','N','N','Y','N','N','N',0,'VK/ EK Typ',5,0,0,TO_TIMESTAMP('2021-05-07 14:35:54','YYYY-MM-DD HH24:MI:SS'),100,'S')
+;
+
+-- 2021-05-07T11:36:29.134Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=544919
+;
+
+-- 2021-05-07T11:36:30.416Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=566596
+;
+
+-- 2021-05-07T11:38:14.677Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,2871,0,174,545777,584674,'F',TO_TIMESTAMP('2021-05-07 14:38:14','YYYY-MM-DD HH24:MI:SS'),100,'Rate or Tax or Exchange','The Rate indicates the percentage to be multiplied by the source to arrive at the tax or exchange amount.','Y','N','N','Y','N','N','N',0,'Satz',15,0,0,TO_TIMESTAMP('2021-05-07 14:38:14','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-05-07T11:39:28.261Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=544926
+;
+
+-- 2021-05-07T11:39:29.325Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=544927
+;
+
+-- 2021-05-07T11:39:30.478Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=544925
+;
+
+-- 2021-05-07T11:39:31.618Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=584457
+;
+
+-- 2021-05-07T11:39:32.881Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=544929
+;
+
+-- 2021-05-07T11:39:34.037Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=544928
+;
+
+-- 2021-05-07T11:41:13.471Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,6121,0,174,540519,584675,'F',TO_TIMESTAMP('2021-05-07 14:41:13','YYYY-MM-DD HH24:MI:SS'),100,'Steuersatz steuerbefreit','If a business partner is exempt from tax on sales, the exempt tax rate is used. For this, you need to set up a tax rate with a 0% rate and indicate that this is your tax exempt rate.  This is required for tax reporting, so that you can track tax exempt transactions.','Y','N','N','Y','N','N','N',0,'Steuerbefreit',40,0,0,TO_TIMESTAMP('2021-05-07 14:41:13','YYYY-MM-DD HH24:MI:SS'),100,'S')
+;
+
+-- 2021-05-07T11:41:45.522Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,2872,0,174,540519,584676,'F',TO_TIMESTAMP('2021-05-07 14:41:45','YYYY-MM-DD HH24:MI:SS'),100,'Matcht nur, wenn der betreffende Geschäftspartner eine Umsatzsteuer-ID hat.','Matcht nur, wenn der betreffende Geschäftspartner eine Umsatzsteuer-ID hat.','Y','N','N','Y','N','N','N',0,'Partner hat eine Ust.-ID',50,0,0,TO_TIMESTAMP('2021-05-07 14:41:45','YYYY-MM-DD HH24:MI:SS'),100,'S')
+;
+
+-- 2021-05-07T11:42:32.167Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,56447,0,174,540519,584677,'F',TO_TIMESTAMP('2021-05-07 14:42:31','YYYY-MM-DD HH24:MI:SS'),100,'Matcht nur, wenn das Land, in dem die Leistung erbracht wird, in der EU liegt.','Matcht nur, wenn das Land, in dem die Leistung erbracht wird, in der EU liegt.','Y','N','N','Y','N','N','N',0,'Nach EU',60,0,0,TO_TIMESTAMP('2021-05-07 14:42:31','YYYY-MM-DD HH24:MI:SS'),100,'S')
+;
+
+-- 2021-05-07T11:44:33.685Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,598475,0,174,545777,584678,'F',TO_TIMESTAMP('2021-05-07 14:44:33','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'External ID',17,0,0,TO_TIMESTAMP('2021-05-07 14:44:33','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-05-07T11:45:28.404Z
+-- URL zum Konzept
+UPDATE AD_UI_ElementGroup SET UIStyle='primary',Updated=TO_TIMESTAMP('2021-05-07 14:45:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=540520
+;
+
+-- 2021-05-07T11:46:25.304Z
+-- URL zum Konzept
+UPDATE AD_UI_ElementGroup SET Name='default',Updated=TO_TIMESTAMP('2021-05-07 14:46:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=540520
+;
+
+-- 2021-05-07T11:48:26.903Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=584673
+;
+
+-- 2021-05-07T11:48:27.990Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=544920
+;
+
+-- 2021-05-07T11:48:29.174Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=544921
+;
+
+-- 2021-05-07T11:48:45.406Z
+-- URL zum Konzept
+UPDATE AD_UI_ElementGroup SET Name='country', UIStyle='',Updated=TO_TIMESTAMP('2021-05-07 14:48:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=540520
+;
+
+-- 2021-05-07T11:49:39.085Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,8195,0,174,540519,584679,'F',TO_TIMESTAMP('2021-05-07 14:49:38','YYYY-MM-DD HH24:MI:SS'),100,'Steuer für Einkauf und/ oder Verkauf Transaktionen.','Sales Tax: charged when selling - examples: Sales Tax, Output VAT (payable)
+Purchase Tax: tax charged when purchasing - examples: Use Tax, Input VAT (receivable)','Y','N','N','Y','N','N','N',0,'VK/ EK Typ',70,0,0,TO_TIMESTAMP('2021-05-07 14:49:38','YYYY-MM-DD HH24:MI:SS'),100,'S')
+;
+
+-- 2021-05-07T11:50:49.410Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,974,0,174,540519,584680,'F',TO_TIMESTAMP('2021-05-07 14:50:48','YYYY-MM-DD HH24:MI:SS'),100,'Land des Leistungserbringers','Land des Leistungserbringers','Y','N','N','Y','N','N','N',0,'Ursprungsland',80,0,0,TO_TIMESTAMP('2021-05-07 14:50:48','YYYY-MM-DD HH24:MI:SS'),100,'M')
+;
+
+-- 2021-05-07T11:51:17.025Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,976,0,174,540519,584681,'F',TO_TIMESTAMP('2021-05-07 14:51:16','YYYY-MM-DD HH24:MI:SS'),100,'Bestimmungs-/Leistungsland, d.h. das Land, in dem die Leistung erbracht, bzw. in das die Ware geliefert wirdWare geliefert wird.','Bestimmungs-/Leistungsland, d.h. das Land, in dem die Leistung erbracht, bzw. in das die Ware geliefert wirdWare geliefert wird.','Y','N','N','Y','N','N','N',0,'Bestimmungsland',90,0,0,TO_TIMESTAMP('2021-05-07 14:51:16','YYYY-MM-DD HH24:MI:SS'),100,'M')
+;
+
+-- 2021-05-07T11:54:44.214Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2021-05-07 14:54:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=584674
+;
+
+-- 2021-05-07T11:54:44.505Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2021-05-07 14:54:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=584680
+;
+
+-- 2021-05-07T11:54:44.685Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2021-05-07 14:54:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=584681
+;
+
+-- 2021-05-07T11:54:44.867Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2021-05-07 14:54:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544924
+;
+
+-- 2021-05-07T11:54:45.089Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2021-05-07 14:54:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544930
+;
+
+-- 2021-05-07T11:55:45.041Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2021-05-07 14:55:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=584679
+;
+
+-- 2021-05-07T11:55:45.223Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2021-05-07 14:55:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=584675
+;
+
+-- 2021-05-07T11:55:45.407Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2021-05-07 14:55:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=584460
+;
+
+-- 2021-05-07T11:55:45.586Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2021-05-07 14:55:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=584677
+;
+
+-- 2021-05-07T11:55:45.770Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2021-05-07 14:55:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544924
+;
+
+-- 2021-05-07T11:55:45.945Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2021-05-07 14:55:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544930
+;
+
+-- 2021-05-07T12:00:56.280Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET WidgetSize='M',Updated=TO_TIMESTAMP('2021-05-07 15:00:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544918
+;
+
+-- 2021-05-07T12:02:29.811Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2021-05-07 15:02:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=584676
+;
+
+-- 2021-05-07T12:02:29.993Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2021-05-07 15:02:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=584675
+;
+
+-- 2021-05-07T12:02:30.175Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2021-05-07 15:02:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544924
+;
+
+-- 2021-05-07T12:02:30.350Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2021-05-07 15:02:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544930
+;
+
 
 
 
