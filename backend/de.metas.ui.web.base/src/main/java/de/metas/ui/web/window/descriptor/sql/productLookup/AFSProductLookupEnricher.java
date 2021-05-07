@@ -49,7 +49,9 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-
+/**
+ * Note: AFS stands for "available for sales" and basically means "on-hand qty minus pending shipments"
+ */
 public class AFSProductLookupEnricher
 {
 	@NonNull

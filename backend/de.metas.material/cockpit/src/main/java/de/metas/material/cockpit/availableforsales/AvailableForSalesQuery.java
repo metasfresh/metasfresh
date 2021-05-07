@@ -34,7 +34,7 @@ import java.time.Instant;
 @Builder
 public class AvailableForSalesQuery
 {
-	ProductId productId;
+	@NonNull ProductId productId;
 
 	@NonNull
 	AttributesKey storageAttributesKey;

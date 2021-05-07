@@ -34,7 +34,9 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.List;
-
+/**
+ * Note: ATP stands for "available to promise"
+ */
 public class ATPProductLookupEnricher
 {
 	final @Nullable
