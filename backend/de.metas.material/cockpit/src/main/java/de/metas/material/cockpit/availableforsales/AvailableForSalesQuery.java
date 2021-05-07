@@ -1,11 +1,12 @@
 package de.metas.material.cockpit.availableforsales;
 
-import java.time.Instant;
-
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.time.Instant;
 
 /*
  * #%L
@@ -33,7 +34,7 @@ import lombok.Value;
 @Builder
 public class AvailableForSalesQuery
 {
-	int productId;
+	ProductId productId;
 
 	@NonNull
 	AttributesKey storageAttributesKey;
