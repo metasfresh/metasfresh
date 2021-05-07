@@ -22,9 +22,7 @@
 
 package de.metas.organization.interceptors;
 
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.location.CountryId;
+import de.metas.organization.IFiscalRepresentationBL;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
@@ -39,7 +37,8 @@ import org.compiere.model.ModelValidator;
 @Callout(I_C_Fiscal_Representation.class)
 public class C_Fiscal_Representation
 {
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+	private final IFiscalRepresentationBL fiscalRepresentationBL = Services.get(IFiscalRepresentationBL.class);
 
 	@Init
 	public void registerCallout()
@@ -54,9 +53,9 @@ public class C_Fiscal_Representation
 	})
 	public void addFiscalRepresentationValidFromTo(final I_C_Fiscal_Representation fiscalRep)
 	{
-		if (fiscalRep.getValidFrom() != null && fiscalRep.getValidTo() != null && !isValidFromDate(fiscalRep))
+		if (fiscalRep.getValidFrom() != null && fiscalRep.getValidTo() != null && !fiscalRepresentationBL.isValidFromDate(fiscalRep))
 		{
-			updateValidFrom(fiscalRep);
+			fiscalRepresentationBL.updateValidFrom(fiscalRep);
 		}
 	}
 
@@ -67,9 +66,9 @@ public class C_Fiscal_Representation
 	})
 	public void addFiscalRepresentationValidTo(final I_C_Fiscal_Representation fiscalRep)
 	{
-		if (fiscalRep.getValidTo() != null && fiscalRep.getValidFrom() != null && !isValidToDate(fiscalRep))
+		if (fiscalRep.getValidTo() != null && fiscalRep.getValidFrom() != null && !fiscalRepresentationBL.isValidToDate(fiscalRep))
 		{
-			updateValidTo(fiscalRep);
+			fiscalRepresentationBL.updateValidTo(fiscalRep);
 		}
 	}
 
@@ -80,30 +79,30 @@ public class C_Fiscal_Representation
 	})
 	public void addFiscalRepresentationLocationId(final I_C_Fiscal_Representation fiscalRep)
 	{
-		updateCountryId(fiscalRep);
+		fiscalRepresentationBL.updateCountryId(fiscalRep);
 	}
 
 	@CalloutMethod(columnNames = { I_C_Fiscal_Representation.COLUMNNAME_ValidFrom })
 	public void updateFiscalRepresentationValidFrom(final I_C_Fiscal_Representation fiscalRep)
 	{
-		if (fiscalRep.getValidTo() != null && fiscalRep.getValidFrom() != null && !isValidFromDate(fiscalRep))
+		if (fiscalRep.getValidTo() != null && fiscalRep.getValidFrom() != null && !fiscalRepresentationBL.isValidFromDate(fiscalRep))
 		{
-			updateValidFrom(fiscalRep);
+			fiscalRepresentationBL.updateValidFrom(fiscalRep);
 		}
 	}
 
 	@CalloutMethod(columnNames = { I_C_Fiscal_Representation.COLUMNNAME_C_BPartner_Location_ID })
 	public void updateFiscalRepresentationLocationId(final I_C_Fiscal_Representation fiscalRep)
 	{
-		updateCountryId(fiscalRep);
+		fiscalRepresentationBL.updateCountryId(fiscalRep);
 	}
 
 	@CalloutMethod(columnNames = { I_C_Fiscal_Representation.COLUMNNAME_ValidTo })
 	public void updateFiscalRepresentationValidTo(final I_C_Fiscal_Representation fiscalRep)
 	{
-		if (fiscalRep.getValidTo() != null && fiscalRep.getValidFrom() != null && !isValidToDate(fiscalRep))
+		if (fiscalRep.getValidTo() != null && fiscalRep.getValidFrom() != null && !fiscalRepresentationBL.isValidToDate(fiscalRep))
 		{
-			updateValidTo(fiscalRep);
+			fiscalRepresentationBL.updateValidTo(fiscalRep);
 		}
 	}
 
@@ -113,34 +112,5 @@ public class C_Fiscal_Representation
 		fiscalRep.setC_BPartner_Location_ID(-1);
 	}
 
-	private boolean isValidFromDate(final I_C_Fiscal_Representation fiscalRep)
-	{
-		return fiscalRep.getValidFrom().before(fiscalRep.getValidTo());
-	}
-
-	private boolean isValidToDate(final I_C_Fiscal_Representation fiscalRep)
-	{
-		return fiscalRep.getValidTo().after(fiscalRep.getValidFrom());
-	}
-
-	private void updateValidTo(final I_C_Fiscal_Representation fiscalRep)
-	{
-		fiscalRep.setValidTo(fiscalRep.getValidFrom());
-	}
-
-	private void updateValidFrom(final I_C_Fiscal_Representation fiscalRep)
-	{
-		fiscalRep.setValidFrom(fiscalRep.getValidTo());
-	}
-
-	private void updateCountryId(final I_C_Fiscal_Representation fiscalRep)
-	{
-		if (fiscalRep.getC_BPartner_Location_ID() > 0)
-		{
-			final BPartnerLocationId bpLocation = BPartnerLocationId.ofRepoId(fiscalRep.getC_BPartner_Representative_ID(), fiscalRep.getC_BPartner_Location_ID());
-			final CountryId countryId = bpartnerDAO.retrieveBPartnerLocationCountryId(bpLocation);
-			fiscalRep.setTo_Country_ID(countryId.getRepoId());
-		}
-	}
 }
 
