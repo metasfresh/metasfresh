@@ -596,7 +596,7 @@ UPDATE AD_Element_Trl SET Description='Produkt, dass bei Versandkosten mit reduz
 -- 2021-05-07T11:00:27.686Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579142,'de_CH') 
-
+;
 
 -- 2021-05-07T13:50:06.358Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
