@@ -39,7 +39,11 @@ public enum PathSegmentsEnum
 	TOKEN("token"),
 	COUNTRY("country"),
 	LINE_ITEMS("line-items"),
-	CURRENCY("currency");
+	CURRENCY("currency"),
+	CUSTOMER("customer"),
+	GROUP("group"),
+	TRANSACTIONS("transactions"),
+	PAYMENT_METHOD("payment-method");
 
 	private final String value;
 }

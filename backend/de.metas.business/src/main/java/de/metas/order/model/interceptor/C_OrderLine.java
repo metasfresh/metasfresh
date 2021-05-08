@@ -125,22 +125,6 @@ public class C_OrderLine
 
 	}
 
-	/**
-	 * Set QtyOrderedInPriceUOM, just to make sure is up2date.
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
-			ModelValidator.TYPE_BEFORE_CHANGE
-	}, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyEntered,
-			I_C_OrderLine.COLUMNNAME_Price_UOM_ID,
-			I_C_OrderLine.COLUMNNAME_C_UOM_ID,
-			I_C_OrderLine.COLUMNNAME_M_Product_ID
-	})
-	public void setQtyEnteredInPriceUOM(final I_C_OrderLine orderLine)
-	{
-		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
-		orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
-	}
-
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE

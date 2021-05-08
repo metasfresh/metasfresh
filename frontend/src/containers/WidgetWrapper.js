@@ -67,15 +67,21 @@ const mapStateToProps = (state, props) => {
     fields,
     isModal,
   } = props;
-
   const data = getData(state, isModal);
-
   let widgetData = null;
   let fieldsCopy = null;
 
   switch (dataSource) {
     case 'doc-status':
       widgetData = getMasterDocStatus(state);
+
+      break;
+    case 'filter-item':
+    case 'overlay-field':
+    case 'attributes-dropdown':
+    case 'quick-input':
+    case 'selection-attributes':
+      widgetData = props.widgetData;
 
       break;
     case 'modal':

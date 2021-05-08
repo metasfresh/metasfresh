@@ -34,12 +34,15 @@ import de.metas.camel.externalsystems.shopware6.api.model.PathSegmentsEnum;
 import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.currency.JsonCurrencies;
+import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDelivery;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderDeliveryItem;
 import de.metas.common.util.Check;
 import lombok.AllArgsConstructor;
@@ -99,10 +102,12 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	public List<JsonOrderAndCustomId> getOrders(@NonNull final QueryRequest queryRequest, @Nullable final String customIdentifierJSONPath)
+	public List<OrderCandidate> getOrders(@NonNull final QueryRequest queryRequest,
+			@Nullable final String customIdentifierJSONPath,
+			@Nullable final String salesRepJSONPath)
 	{
 		final URI resourceURI;
-		final List<JsonOrderAndCustomId> ordersAndCustomIds = new ArrayList<>();
+		final List<OrderCandidate> orderCandidates = new ArrayList<>();
 
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
@@ -119,7 +124,7 @@ public class ShopwareClient
 
 		if (response == null || response.getBody() == null)
 		{
-			return ordersAndCustomIds;
+			return orderCandidates;
 		}
 		else
 		{
@@ -139,15 +144,15 @@ public class ShopwareClient
 			{
 				for (final JsonNode orderCustomerNode : arrayJsonNode)
 				{
-					final Optional<JsonOrderAndCustomId> orderAddressCustomId =
-							getJsonOrderCustomId(orderCustomerNode, customIdentifierJSONPath);
+					final Optional<OrderCandidate> orderAddressCustomId =
+							getJsonOrderCandidate(orderCustomerNode, customIdentifierJSONPath, salesRepJSONPath);
 
-					orderAddressCustomId.ifPresent(ordersAndCustomIds::add);
+					orderAddressCustomId.ifPresent(orderCandidates::add);
 				}
 			}
 		}
 
-		return ordersAndCustomIds;
+		return orderCandidates;
 	}
 
 	@NonNull
@@ -304,6 +309,65 @@ public class ShopwareClient
 	}
 
 	@NonNull
+	public Optional<JsonOrderTransactions> getOrderTransactions(@NonNull final String orderId)
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.V3.getValue())
+				.pathSegment(PathSegmentsEnum.ORDER.getValue())
+				.pathSegment(orderId)
+				.pathSegment(PathSegmentsEnum.TRANSACTIONS.getValue());
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonOrderTransactions> response = performWithRetry(resourceURI, HttpMethod.GET, JsonOrderTransactions.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(response.getBody());
+	}
+
+	@NonNull
+	public Optional<JsonPaymentMethod> getPaymentMethod(@NonNull final String paymentMethodId)
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.V3.getValue())
+				.pathSegment(PathSegmentsEnum.PAYMENT_METHOD.getValue())
+				.pathSegment(paymentMethodId);
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonNode> response = performWithRetry(resourceURI, HttpMethod.GET, JsonNode.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null || response.getBody().get(JSON_NODE_DATA) == null)
+		{
+			return Optional.empty();
+		}
+
+		final JsonPaymentMethod jsonPaymentMethod;
+		try
+		{
+			jsonPaymentMethod = new ObjectMapper().treeToValue(response.getBody().get(JSON_NODE_DATA), JsonPaymentMethod.class);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
+
+		return Optional.of(jsonPaymentMethod);
+	}
+
+	@NonNull
 	public JsonCurrencies getCurrencies()
 	{
 		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
@@ -327,7 +391,33 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	private Optional<JsonOrderAndCustomId> getJsonOrderCustomId(@Nullable final JsonNode orderJson, @Nullable final String customIdJSONPath)
+	public Optional<JsonCustomerGroups> getCustomerGroup(@NonNull final String customerId)
+	{
+		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+		uriBuilder.pathSegment(PathSegmentsEnum.API.getValue())
+				.pathSegment(PathSegmentsEnum.CUSTOMER.getValue())
+				.pathSegment(customerId)
+				.pathSegment(PathSegmentsEnum.GROUP.getValue());
+
+		refreshTokenIfExpired();
+
+		final URI resourceURI = uriBuilder.build().toUri();
+
+		final ResponseEntity<JsonCustomerGroups> response = performWithRetry(resourceURI, HttpMethod.GET, JsonCustomerGroups.class, null /*requestBody*/);
+
+		if (response == null || response.getBody() == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(response.getBody());
+	}
+
+	@NonNull
+	protected Optional<OrderCandidate> getJsonOrderCandidate(@Nullable final JsonNode orderJson,
+			@Nullable final String customIdJSONPath,
+			@Nullable final String salesRepJSONPath)
 	{
 		if (orderJson == null)
 		{
@@ -338,17 +428,17 @@ public class ShopwareClient
 		{
 			final JsonOrder jsonOrder = objectMapper.treeToValue(orderJson, JsonOrder.class);
 
-			final JsonOrderAndCustomId.JsonOrderAndCustomIdBuilder jsonOrderAndCustomIdBuilder =
-					JsonOrderAndCustomId.builder()
+			final OrderCandidate.OrderCandidateBuilder orderCandidateBuilder =
+					OrderCandidate.builder()
 							.jsonOrder(jsonOrder);
 
-			if (customIdJSONPath != null)
+			if (Check.isNotBlank(customIdJSONPath))
 			{
 				final String customId = orderJson.at(customIdJSONPath).asText();
 
 				if (!Strings.isBlank(customId))
 				{
-					jsonOrderAndCustomIdBuilder.customBPartnerId(customId);
+					orderCandidateBuilder.customBPartnerId(customId);
 				}
 				else
 				{
@@ -360,7 +450,12 @@ public class ShopwareClient
 				return Optional.empty();
 			}
 
-			return Optional.ofNullable(jsonOrderAndCustomIdBuilder.build());
+			if (Check.isNotBlank(salesRepJSONPath)){
+				final String salesRepId = orderJson.at(salesRepJSONPath).asText();
+				orderCandidateBuilder.salesRepId(salesRepId.isEmpty() ? null : salesRepId);
+			}
+
+			return Optional.ofNullable(orderCandidateBuilder.build());
 
 		}
 		catch (final JsonProcessingException e)
@@ -385,7 +480,7 @@ public class ShopwareClient
 			final JsonOrderAddressAndCustomId.JsonOrderAddressAndCustomIdBuilder jsonOrderAddressWithCustomId = JsonOrderAddressAndCustomId.builder()
 					.jsonOrderAddress(jsonOrderAddress);
 
-			if (customIdJSONPath != null)
+			if (Check.isNotBlank(customIdJSONPath))
 			{
 				final String customId = orderAddressJson.at(customIdJSONPath).asText();
 

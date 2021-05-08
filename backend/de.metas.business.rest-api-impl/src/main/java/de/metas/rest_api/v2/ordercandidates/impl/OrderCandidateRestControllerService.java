@@ -51,6 +51,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -99,13 +100,38 @@ public class OrderCandidateRestControllerService
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+		final HashMap<OLCandQuery, List<OLCand>> query2OLCandList = new HashMap<>();
+
 		final List<OLCand> olCandidates = bulkRequest
 				.getRequests()
 				.stream()
+				.filter(request -> !wasOLCandAlreadyCreated(request, query2OLCandList))
 				.map(request -> createOrderLineCandidate(request, masterdataProvider))
 				.collect(ImmutableList.toImmutableList());
 
 		return jsonConverters.toJson(olCandidates, masterdataProvider);
+	}
+
+	private boolean wasOLCandAlreadyCreated(
+			@NonNull final JsonOLCandCreateRequest olCandRequest,
+			@NonNull final HashMap<OLCandQuery, List<OLCand>> queryToOLCandList)
+	{
+		if (Check.isBlank(olCandRequest.getExternalHeaderId())
+				|| Check.isBlank(olCandRequest.getExternalLineId()))
+		{
+			return false;
+		}
+
+		final IdentifierString inputDataSourceIdentifier = IdentifierString.of(olCandRequest.getDataSource());
+
+		final OLCandQuery olCandQuery = OLCandQuery.builder()
+				.externalHeaderId(olCandRequest.getExternalHeaderId())
+				.inputDataSourceName(inputDataSourceIdentifier.asInternalName())
+				.build();
+
+		return queryToOLCandList.computeIfAbsent(olCandQuery, olCandRepo::getByQuery)
+				.stream()
+				.anyMatch(existingOLCand -> olCandRequest.getExternalLineId().equals(existingOLCand.getExternalLineId()));
 	}
 
 	private OLCandCreateRequest fromJson(

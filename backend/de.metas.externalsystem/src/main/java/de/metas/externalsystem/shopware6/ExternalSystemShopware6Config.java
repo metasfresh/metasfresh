@@ -29,6 +29,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
@@ -43,10 +44,14 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	String clientId;
 	@NonNull
 	String clientSecret;
+	@NonNull
+	List<ExternalSystemShopware6ConfigMapping> externalSystemShopware6ConfigMappingList;
 	@Nullable
 	String bPartnerIdJSONPath;
 	@Nullable
 	String bPartnerLocationIdJSONPath;
+	@Nullable
+	String salesRepJSONPath;
 
 	@Builder
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
@@ -54,16 +59,20 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @NonNull String baseUrl,
 			final @NonNull String clientId,
 			final @NonNull String clientSecret,
+			final @NonNull List<ExternalSystemShopware6ConfigMapping> externalSystemShopware6ConfigMappingList,
 			final @Nullable String bPartnerIdJSONPath,
-			final @Nullable String bPartnerLocationIdJSONPath)
+			final @Nullable String bPartnerLocationIdJSONPath,
+			final @Nullable String salesRepJSONPath)
 	{
 		this.id = id;
 		this.parentId = parentId;
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
+		this.externalSystemShopware6ConfigMappingList = externalSystemShopware6ConfigMappingList;
 		this.baseUrl = baseUrl;
 		this.bPartnerIdJSONPath = bPartnerIdJSONPath;
 		this.bPartnerLocationIdJSONPath = bPartnerLocationIdJSONPath;
+		this.salesRepJSONPath = salesRepJSONPath;
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)

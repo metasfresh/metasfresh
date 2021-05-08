@@ -38,7 +38,7 @@ public class JsonOrderLineGroup
 	@ApiModelProperty(value = "All JsonOLCandCreateRequests with the same ExternalHeaderId and the same groupId shall belong to the same bundle (compensation-group)")
 	@JsonInclude(NON_NULL)
 	String groupKey;
-	@ApiModelProperty(value = "If true, marks the associated as the \"main\" product")
+	@ApiModelProperty(value = "If true, marks the associated as the \"main\" product. Should only be set to true for non-stocked products.")
 	@JsonInclude(NON_NULL)
 	boolean isGroupMainItem;
 

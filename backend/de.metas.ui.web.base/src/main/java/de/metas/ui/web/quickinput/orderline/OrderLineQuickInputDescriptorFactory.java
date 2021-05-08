@@ -7,6 +7,8 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
+import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
+import de.metas.ui.web.material.adapter.AvailableForSaleAdapter;
 import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputConstants;
@@ -60,14 +62,20 @@ import java.util.Set;
 {
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final AvailableToPromiseAdapter availableToPromiseAdapter;
+	private final AvailableForSaleAdapter availableForSaleAdapter;
+	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
 
 	private final OrderLineQuickInputCallout callout;
 
 	public OrderLineQuickInputDescriptorFactory(
 			@NonNull final IBPartnerBL bpartnersService,
-			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter)
+			@NonNull final AvailableToPromiseAdapter availableToPromiseAdapter,
+			@NonNull final AvailableForSaleAdapter availableForSaleAdapter,
+			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo)
 	{
 		this.availableToPromiseAdapter = availableToPromiseAdapter;
+		this.availableForSaleAdapter = availableForSaleAdapter;
+		this.availableForSalesConfigRepo = availableForSalesConfigRepo;
 
 		callout = OrderLineQuickInputCallout.builder()
 				.bpartnersService(bpartnersService)
@@ -115,9 +123,9 @@ import java.util.Set;
 				.setTableName(I_C_OrderLine.Table_Name) // TODO: figure out if it's needed
 				//
 				.addField(createProductFieldBuilder(soTrx))
-				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), () -> createPackingInstructionFieldBuilder())
+				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), this::createPackingInstructionFieldBuilder)
 				.addField(createQuantityFieldBuilder())
-				.addFieldIf(QuickInputConstants.isEnableBestBeforePolicy(), () -> createBestBeforePolicyFieldBuilder())
+				.addFieldIf(QuickInputConstants.isEnableBestBeforePolicy(), this::createBestBeforePolicyFieldBuilder)
 				//
 				.build();
 	}
@@ -150,6 +158,8 @@ import java.util.Set;
 					.hideDiscontinued(true)
 					.availableStockDateParamName(I_C_Order.COLUMNNAME_PreparationDate)
 					.availableToPromiseAdapter(availableToPromiseAdapter)
+					.availableForSaleAdapter(availableForSaleAdapter)
+					.availableForSalesConfigRepo(availableForSalesConfigRepo)
 					.build();
 		}
 		else
@@ -161,6 +171,8 @@ import java.util.Set;
 					.hideDiscontinued(true)
 					.availableStockDateParamName(I_C_Order.COLUMNNAME_DatePromised)
 					.availableToPromiseAdapter(availableToPromiseAdapter)
+					.availableForSaleAdapter(availableForSaleAdapter)
+					.availableForSalesConfigRepo(availableForSalesConfigRepo)
 					.build();
 		}
 	}

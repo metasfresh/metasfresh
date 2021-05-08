@@ -45,6 +45,7 @@ public class ClearOrdersProcessor implements Processor
 		{
 			//nothing to do
 			exchange.getIn().setBody(null);
+			return;
 		}
 
 		final List<JsonOLCandClearRequest> olCandClearRequests = context.getImportedExternalHeaderIds().stream()

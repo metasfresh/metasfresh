@@ -1,29 +1,8 @@
 package de.metas.acct;
 
-import java.time.LocalDate;
-import java.util.Properties;
-
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_ConversionType;
-import org.compiere.model.I_C_Period;
-import org.compiere.model.I_C_PeriodControl;
-import org.compiere.model.I_GL_Distribution;
-import org.compiere.model.I_GL_DistributionLine;
-import org.compiere.model.I_I_ElementValue;
-import org.compiere.model.I_M_Product_Acct;
-import org.compiere.model.I_M_Product_Category_Acct;
-import org.compiere.model.MAccount;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-
 import de.metas.Profiles;
-import de.metas.acct.aggregation.async.ScheduleFactAcctLogProcessingFactAcctListener;
+import de.metas.acct.aggregation.FactAcctLogDBTableWatcher;
+import de.metas.acct.aggregation.IFactAcctLogBL;
 import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IFactAcctDAO;
@@ -51,6 +30,27 @@ import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.treenode.TreeNodeService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_ConversionType;
+import org.compiere.model.I_C_Period;
+import org.compiere.model.I_C_PeriodControl;
+import org.compiere.model.I_GL_Distribution;
+import org.compiere.model.I_GL_DistributionLine;
+import org.compiere.model.I_I_ElementValue;
+import org.compiere.model.I_M_Product_Acct;
+import org.compiere.model.I_M_Product_Category_Acct;
+import org.compiere.model.MAccount;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
+
+import java.time.LocalDate;
+import java.util.Properties;
 
 /**
  * Accounting module activator
@@ -69,6 +69,8 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IAccountBL accountBL = Services.get(IAccountBL.class);
+	private final IFactAcctLogBL factAcctLogBL = Services.get(IFactAcctLogBL.class);
+
 	private final ICostElementRepository costElementRepo;
 	private final TreeNodeService treeNodeService;
 
@@ -85,8 +87,6 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void onAfterInit()
 	{
-		factAcctListenersService.registerListener(ScheduleFactAcctLogProcessingFactAcctListener.instance);
-
 		// FRESH-539: register Reposting Handlers
 		documentBL.registerSupplier(new InvoiceDocumentRepostingSupplier());
 		documentBL.registerSupplier(new PaymentDocumentRepostingSupplier());
@@ -173,7 +173,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 
 		//
 		// Set default conversion type to context
-		if (adClientId != null && adClientId.isRegular())
+		if (adClientId.isRegular())
 		{
 			try
 			{
@@ -191,21 +191,23 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 
 	private void setupAccountingService()
 	{
-		startAccoutingDocsToRepostDBTableWatcher();
-	}
-
-	private void startAccoutingDocsToRepostDBTableWatcher()
-	{
-		final AccoutingDocsToRepostDBTableWatcher watcher = AccoutingDocsToRepostDBTableWatcher.builder()
+		runInThread(AccoutingDocsToRepostDBTableWatcher.builder()
 				.sysConfigBL(sysConfigBL)
 				.postingService(postingService)
-				.build();
+				.build());
 
+		runInThread(FactAcctLogDBTableWatcher.builder()
+				.sysConfigBL(sysConfigBL)
+				.factAcctLogBL(factAcctLogBL)
+				.build());
+	}
+
+	private void runInThread(@NonNull final Runnable watcher)
+	{
 		final Thread thread = new Thread(watcher);
 		thread.setDaemon(true);
-		thread.setName(watcher.getClass().getName());
+		thread.setName("accounting-" + watcher.getClass().getSimpleName());
 		thread.start();
 		logger.info("Started {}", thread);
 	}
-
 }

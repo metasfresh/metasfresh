@@ -283,3 +283,102 @@ export function advSearchRequest({
     }
   );
 }
+
+/**
+ * @method getViewAttributesLayoutRequest
+ * @summary gets layout for the selection attributes view
+ *
+ * @param {number} windowId
+ * @param {string} viewId
+ * @param {string} rowId
+ */
+export function getViewAttributesLayoutRequest(windowId, viewId, rowId) {
+  return get(
+    `${
+      config.API_URL
+    }/documentView/${windowId}/${viewId}/${rowId}/attributes/layout`
+  );
+}
+
+/**
+ * @method getViewAttributesRequest
+ * @summary gets field data for the selection attributes view
+ *
+ * @param {number} windowId
+ * @param {string} viewId
+ * @param {string} rowId
+ */
+export function getViewAttributesRequest(windowId, viewId, rowId) {
+  return get(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/attributes`
+  );
+}
+
+/**
+ * @method patchViewAttributesRequest
+ * @summary patches selection attributes field
+ *
+ * @param {number} windowId
+ * @param {string} viewId
+ * @param {string} rowId
+ * @param {string} property - field name
+ * @param {any} value - field value
+ */
+export function patchViewAttributesRequest(
+  windowId,
+  viewId,
+  rowId,
+  property,
+  value
+) {
+  const payload = createPatchRequestPayload(property, value);
+
+  return patch(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/attributes`,
+    payload
+  );
+}
+
+/**
+ * @method getViewAttributeDropdown
+ * @summary get data for a dropdown field in selection attributes
+ *
+ * @param {number} windowId
+ * @param {string} viewId
+ * @param {string} rowId
+ * @param {attribute} - field name
+ */
+export function getViewAttributeDropdown(windowId, viewId, rowId, attribute) {
+  return get(
+    `${
+      config.API_URL
+    }/documentView/${windowId}/${viewId}/${rowId}/attributes/attribute/${attribute}/dropdown`
+  );
+}
+
+/**
+ * @method getViewAttributeTypeahead
+ * @summary
+ *
+ * @param {number} windowId
+ * @param {string} viewId
+ * @param {string} rowId
+ * @param {string} attribute - field name
+ * @param {string} query - search phrase
+ */
+export function getViewAttributeTypeahead(
+  windowId,
+  viewId,
+  rowId,
+  attribute,
+  query
+) {
+  return get(
+    `${config.API_URL}/documentView/
+      ${windowId}/
+      ${viewId}/
+      ${rowId}/attributes/attribute/
+      ${attribute}/typeahead?query=
+      ${encodeURIComponent(query)}`
+  );
+}
