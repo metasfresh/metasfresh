@@ -70,6 +70,10 @@ public class JsonOrder
 	@JsonProperty("createdAt")
 	ZonedDateTime createdAt;
 
+	@Nullable
+	@JsonProperty("updatedAt")
+	ZonedDateTime updatedAt;
+
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
 	static class JsonOrderBuilder

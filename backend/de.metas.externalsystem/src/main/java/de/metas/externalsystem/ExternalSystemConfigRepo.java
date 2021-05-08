@@ -33,6 +33,7 @@ import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
 import de.metas.pricing.PriceListId;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -42,7 +43,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Repository
 public class ExternalSystemConfigRepo
@@ -193,7 +193,29 @@ public class ExternalSystemConfigRepo
 		final ExternalSystemShopware6ConfigId externalSystemShopware6ConfigId =
 				ExternalSystemShopware6ConfigId.ofRepoId(config.getExternalSystem_Config_Shopware6_ID());
 
-		return ExternalSystemShopware6Config.builder()
+		final ExternalSystemShopware6Config.ExternalSystemShopware6ConfigBuilder configBuilder = ExternalSystemShopware6Config.builder();
+
+		if (Check.isNotBlank(config.getFreightCost_NormalVAT_Rates()) && config.getM_FreightCost_NormalVAT_Product_ID() > 0)
+		{
+			final ExternalSystemShopware6Config.FreightCostConfig normalVatFreightCostConfig = ExternalSystemShopware6Config.FreightCostConfig.builder()
+					.productId(ProductId.ofRepoId(config.getM_FreightCost_NormalVAT_Product_ID()))
+					.vatRates(config.getFreightCost_NormalVAT_Rates())
+					.build();
+
+			configBuilder.freightCostNormalVatConfig(normalVatFreightCostConfig);
+		}
+
+		if (Check.isNotBlank(config.getFreightCost_Reduced_VAT_Rates()) && config.getM_FreightCost_ReducedVAT_Product_ID() > 0)
+		{
+			final ExternalSystemShopware6Config.FreightCostConfig reducedVatFreightCost = ExternalSystemShopware6Config.FreightCostConfig.builder()
+					.productId(ProductId.ofRepoId(config.getM_FreightCost_ReducedVAT_Product_ID()))
+					.vatRates(config.getFreightCost_Reduced_VAT_Rates())
+					.build();
+
+			configBuilder.freightCostReducedVatConfig(reducedVatFreightCost);
+		}
+
+		return configBuilder
 				.id(externalSystemShopware6ConfigId)
 				.parentId(parentConfigId)
 				.baseUrl(config.getBaseURL())
