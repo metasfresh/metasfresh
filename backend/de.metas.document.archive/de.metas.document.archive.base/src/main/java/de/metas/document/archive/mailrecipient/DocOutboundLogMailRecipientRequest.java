@@ -1,18 +1,8 @@
-package de.metas.material.cockpit.availableforsales;
-
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import java.time.Instant;
-
 /*
  * #%L
- * metasfresh-available-for-sales
+ * de.metas.document.archive.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,19 +20,31 @@ import java.time.Instant;
  * #L%
  */
 
+package de.metas.document.archive.mailrecipient;
+
+import de.metas.document.DocTypeId;
+import de.metas.organization.OrgId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+
 @Value
 @Builder
-public class AvailableForSalesQuery
+public class DocOutboundLogMailRecipientRequest
 {
-	@NonNull ProductId productId;
+	@Nullable
+	TableRecordReference recordRef;
 
 	@NonNull
-	AttributesKey storageAttributesKey;
+	ClientId clientId;
 
 	@NonNull
-	Instant dateOfInterest;
+	OrgId orgId;
 
-	int shipmentDateLookAheadHours;
-
-	int salesOrderLookBehindHours;
+	@Nullable
+	DocTypeId docTypeId;
 }
