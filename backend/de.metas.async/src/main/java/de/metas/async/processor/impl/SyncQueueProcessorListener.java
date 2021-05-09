@@ -36,7 +36,6 @@ import de.metas.async.spi.IWorkpackageProcessor;
  * Callback used to implement synchronous processing over our asynchronous queue
  * 
  * @author tsa
- * 
  */
 public class SyncQueueProcessorListener implements IQueueProcessorListener
 {
@@ -44,7 +43,7 @@ public class SyncQueueProcessorListener implements IQueueProcessorListener
 
 	public SyncQueueProcessorListener()
 	{
-		futureResult = new FutureValue<IWorkpackageProcessorExecutionResult>();
+		futureResult = new FutureValue<>();
 	}
 
 	@Override
@@ -56,8 +55,6 @@ public class SyncQueueProcessorListener implements IQueueProcessorListener
 
 	/**
 	 * Gets future workpackage processing result
-	 * 
-	 * @return
 	 */
 	public Future<IWorkpackageProcessorExecutionResult> getFutureResult()
 	{
