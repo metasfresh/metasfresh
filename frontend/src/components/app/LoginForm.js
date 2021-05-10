@@ -3,7 +3,6 @@ import Moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { List } from 'immutable';
-// import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import classnames from 'classnames';
 
@@ -13,7 +12,6 @@ import {
   loginCompletionRequest,
   loginRequest,
 } from '../../api';
-import { loginSuccess } from '../../actions/AppActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
@@ -392,7 +390,6 @@ class LoginForm extends Component {
 }
 
 LoginForm.propTypes = {
-  // dispatch: PropTypes.func.isRequired,
   path: PropTypes.string,
   token: PropTypes.string,
   redirect: PropTypes.any,

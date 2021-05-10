@@ -20,18 +20,20 @@ function propsAreEqual(prevProps, nextProps) {
 }
 
 const RawDocListRoute = ({ location, match }) => {
-  const query = qs.parse(location.search);
+  const { search } = location;
+  const { params } = match;
+  const query = qs.parse(search);
 
-  console.log('DocListRoute: ', query, location, match);
-
-  return <DocList query={query} windowId={match.params.windowId} />;
+  return <DocList query={query} windowId={params.windowId} />;
 };
 const DocListRoute = React.memo(RawDocListRoute, propsAreEqual);
 
 function BoardRoute({ location, match }) {
-  const query = qs.parse(location.search);
+  const { search } = location;
+  const { params } = match;
+  const query = qs.parse(search);
 
-  return <Board query={query} boardId={match.params.boardId} />;
+  return <Board query={query} boardId={params.boardId} />;
 }
 
 class MasterWindowRoute extends PureComponent {

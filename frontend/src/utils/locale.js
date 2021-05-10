@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Moment from 'moment';
 
-import LOCAL_LANG from '../constants/Constants';
+import { LOCAL_LANG } from '../constants/Constants';
 
 export function initCurrentActiveLocale() {
   const lang = getCurrentActiveLocale();

@@ -1,7 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-// import { connect } from 'react-redux';
-// import { push } from 'connected-react-router';
 import { detect } from 'detect-browser';
 
 import LoginForm from '../components/app/LoginForm';
@@ -14,21 +12,6 @@ const BROWSER = detect();
  * @extends Component
  */
 class Login extends Component {
-  // constructor(props) {
-  //   super(props);
-  // }
-  /**
-   * @method UNSAFE_componentWillMount
-   * @summary ToDo: Describe the method.
-   */
-  UNSAFE_componentWillMount() {
-    const { logged } = this.props;
-    if (logged) {
-      console.log('Login component redirect')
-      // dispatch(push('/'));
-    }
-  }
-
   /**
    * @method browserSupport
    * @summary ToDo: Describe the method.
@@ -45,10 +28,6 @@ class Login extends Component {
     return isSupported;
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
   render() {
     const { redirect, auth, splat, token } = this.props;
     const isYourBrowserSupported = this.browserSupport('chrome');
@@ -72,15 +51,11 @@ class Login extends Component {
 
 /**
  * @typedef {object} Props Component props
- * @prop {func} dispatch
- * @prop {bool} logged
  * @prop {string} redirect
  * @prop {string} splat
  * @prop {string} token
  */
 Login.propTypes = {
-  // dispatch: PropTypes.func.isRequired,
-  // logged: PropTypes.bool,
   redirect: PropTypes.string,
   splat: PropTypes.string,
   token: PropTypes.string,
