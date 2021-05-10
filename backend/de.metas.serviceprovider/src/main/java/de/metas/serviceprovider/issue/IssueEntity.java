@@ -94,7 +94,7 @@ public class IssueEntity
 	@NonNull
 	private Effort aggregatedEffort;
 
-	@NonNull
+	@Nullable
 	private Quantity invoicableChildEffort;
 
 	@NonNull
@@ -165,13 +165,10 @@ public class IssueEntity
 
 	public void addInvoiceableChildEffort(@Nullable final Quantity augent)
 	{
-		if (augent != null)
-		{
-			this.invoicableChildEffort = Quantitys.add(
-					UOMConversionContext.of((ProductId)null),
-					invoicableChildEffort,
-					augent);
-		}
+		this.invoicableChildEffort = Quantitys.addNullSafe(
+				UOMConversionContext.of((ProductId)null),
+				invoicableChildEffort,
+				augent);
 	}
 
 	@Nullable
