@@ -25,7 +25,9 @@ package de.metas.contracts.bpartner.process;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.location.PostalId;
@@ -38,30 +40,13 @@ import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 
 public class C_BPartner_MoveToAnotherOrg_PostalChange extends C_BPartner_MoveToAnotherOrg_ProcessHelper
 {
+
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-
-	@Override
-	protected BPartnerId getBPartnerIdFromProcessInfo()
-	{
-		final int bpLocationRecordId = getProcessInfo().getRecord_ID();
-		final BPartnerLocationId bpLocationId = bpartnerDAO.getBPartnerLocationIdByRepoId(bpLocationRecordId);
-
-		return bpLocationId.getBpartnerId();
-	}
-
-	@Override
-	protected BPartnerId getBPartnerId()
-	{
-		final int bpLocationRecordId = getRecord_ID();
-
-		final BPartnerLocationId bpLocationId = bpartnerDAO.getBPartnerLocationIdByRepoId(bpLocationRecordId);
-
-		return bpLocationId.getBpartnerId();
-	}
 
 	@Nullable
 	@Override
@@ -73,9 +58,9 @@ public class C_BPartner_MoveToAnotherOrg_PostalChange extends C_BPartner_MoveToA
 		}
 		else if (PARAM_AD_ORG_TARGET_ID.equals(parameter.getColumnName()))
 		{
-			final int bpLocationRecordId = getRecord_ID();
+			final BPartnerId bpartnerId = BPartnerId.ofRepoId(getRecord_ID());
 
-			final BPartnerLocationId bpLocationId = bpartnerDAO.getBPartnerLocationIdByRepoId(bpLocationRecordId);
+			final BPartnerLocationId bpLocationId = bpartnerDAO.retrieveLastUpdatedLocation(bpartnerId);
 
 			final I_C_BPartner_Location bpLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(bpLocationId);
 
@@ -89,7 +74,25 @@ public class C_BPartner_MoveToAnotherOrg_PostalChange extends C_BPartner_MoveToA
 
 			return postalRecord.getAD_Org_InCharge_ID();
 		}
+		else if (PARAM_IS_SHOW_MEMBERSHIP_PARAMETER.equals(parameter.getColumnName()))
+		{
+			if (p_orgTargetId == null)
+			{
+				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+			}
+			final BPartnerId partnerId = BPartnerId.ofRepoId(getRecord_ID());
+
+			final Instant orgChangeDate = CoalesceUtil.coalesce(p_startDate, SystemTime.asInstant());
+
+			final OrgChangeBPartnerComposite orgChangePartnerComposite = service.getByIdAndOrgChangeDate(partnerId, orgChangeDate);
+
+			isShowMembershipParameter = orgChangePartnerComposite.hasMembershipSubscriptions()
+					&& service.hasAnyMembershipProduct(p_orgTargetId);
+
+			return isShowMembershipParameter;
+		}
 
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
+
 }

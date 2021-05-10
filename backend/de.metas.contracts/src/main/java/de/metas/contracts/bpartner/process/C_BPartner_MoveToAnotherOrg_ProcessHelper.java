@@ -29,9 +29,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
 import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.bpartner.service.OrgChangeService;
-import de.metas.location.ILocationDAO;
 import de.metas.organization.OrgId;
-import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
@@ -45,41 +43,39 @@ import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
 
 public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProcess implements IProcessPrecondition,
 		IProcessParametersCallout,
 		IProcessDefaultParametersProvider
 {
+
+	final OrgChangeService service = SpringContextHolder.instance.getBean(OrgChangeService.class);
+	final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+
 	public static final String PARAM_AD_ORG_TARGET_ID = "AD_Org_Target_ID";
 	public static final String PARAM_M_PRODUCT_ID = "M_Product_Membership_ID";
 	public static final String PARAM_DATE_ORG_CHANGE = "Date_OrgChange";
 	public static final String PARAM_IS_SHOW_MEMBERSHIP_PARAMETER = "IsShowMembershipParameter";
 
 	@Param(parameterName = PARAM_AD_ORG_TARGET_ID, mandatory = true)
-	private OrgId p_orgTargetId;
+	protected OrgId p_orgTargetId;
 
 	@Param(parameterName = PARAM_M_PRODUCT_ID)
-	private ProductId p_membershipProductId;
+	protected ProductId p_membershipProductId;
 
 	@Param(parameterName = PARAM_DATE_ORG_CHANGE, mandatory = true)
-	private Instant p_startDate;
+	protected Instant p_startDate;
 
 	@Param(parameterName = PARAM_IS_SHOW_MEMBERSHIP_PARAMETER, mandatory = true)
-	private boolean isShowMembershipParameter;
+	protected boolean isShowMembershipParameter;
 
-	final OrgChangeService service = SpringContextHolder.instance.getBean(OrgChangeService.class);
-	final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-	final ILocationDAO locationDAo = Services.get(ILocationDAO.class);
 
-	protected abstract BPartnerId getBPartnerIdFromProcessInfo();
-	protected abstract BPartnerId getBPartnerId();
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final BPartnerId bpartnerId = getBPartnerIdFromProcessInfo();
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(getProcessInfo().getRecord_ID());
 
 		final I_C_BPartner bpartnerRecord = bpartnerBL.getById(bpartnerId);
 
@@ -106,7 +102,6 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 
 		return ProcessPreconditionsResolution.accept();
 	}
-
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
@@ -116,7 +111,7 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 			{
 				return;
 			}
-			final BPartnerId partnerId = getBPartnerId();
+			final BPartnerId partnerId = BPartnerId.ofRepoId(getRecord_ID());
 
 			final Instant orgChangeDate = CoalesceUtil.coalesce(p_startDate, SystemTime.asInstant());
 

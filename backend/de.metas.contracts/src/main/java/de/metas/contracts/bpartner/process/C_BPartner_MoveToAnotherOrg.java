@@ -22,7 +22,6 @@
 
 package de.metas.contracts.bpartner.process;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -31,19 +30,6 @@ import javax.annotation.Nullable;
 
 public class C_BPartner_MoveToAnotherOrg extends C_BPartner_MoveToAnotherOrg_ProcessHelper
 {
-	@Override
-	protected BPartnerId getBPartnerIdFromProcessInfo()
-	{
-		return BPartnerId.ofRepoId(getProcessInfo().getRecord_ID());
-	}
-
-	@Override
-	protected BPartnerId getBPartnerId()
-	{
-		return BPartnerId.ofRepoId(getRecord_ID());
-	}
-
-
 	@Nullable
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
