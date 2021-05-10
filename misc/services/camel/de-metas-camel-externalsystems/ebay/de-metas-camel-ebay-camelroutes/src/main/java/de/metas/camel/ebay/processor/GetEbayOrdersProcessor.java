@@ -11,6 +11,9 @@ import java.util.List;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ebay.api.client.auth.oauth2.OAuth2Api;
 import com.ebay.api.client.auth.oauth2.model.Environment;
@@ -27,9 +30,14 @@ import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 
 public class GetEbayOrdersProcessor implements Processor {
-
+	
+	protected Logger log = LoggerFactory.getLogger(getClass());
+	
 	@Override
 	public void process(Exchange exchange) throws Exception {
+		
+		log.debug("Execute ebay order request");
+		
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		exchange.getIn().setHeader(HEADER_ORG_CODE, request.getOrgCode());
