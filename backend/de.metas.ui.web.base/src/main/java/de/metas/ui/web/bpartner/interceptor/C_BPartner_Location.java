@@ -95,7 +95,7 @@ public class C_BPartner_Location
 			final I_C_Postal oldPostalRecord = oldPostalId == null ? null : locationDAO.getPostalById(oldPostalId);
 
 			if (oldPostalRecord == null ||
-					newPostalRecord.getAD_Org_InCharge_ID() == oldPostalRecord.getAD_Org_InCharge_ID())
+					newPostalRecord.getAD_Org_InCharge_ID() != oldPostalRecord.getAD_Org_InCharge_ID())
 			{
 				Execution.getCurrent().requestFrontendToTriggerAction(moveToAnotherOrgTriggerAction(bpLocation));
 			}
