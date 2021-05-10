@@ -84,7 +84,7 @@ public class WEBUI_PP_Order_HUEditor_IssueTopLevelHUs
 				.createIssues(hus);
 
 		final HUEditorView huEditorView = getView();
-		huEditorView.removeHUsAndInvalidate(hus);
+		huEditorView.invalidateAll();
 
 		ppOrderView.invalidateAll();
 

@@ -1,24 +1,24 @@
 package de.metas.material.planning.pporder.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
+import de.metas.material.planning.pporder.DraftPPOrderQuantities;
+import de.metas.product.ProductId;
+import de.metas.uom.impl.UOMTestHelper;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.apache.xmlbeans.impl.xb.xmlconfig.Extensionconfig;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.product.ProductId;
-import de.metas.uom.impl.UOMTestHelper;
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -42,7 +42,7 @@ import de.metas.uom.impl.UOMTestHelper;
  * #L%
  */
 
-public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
+public class PPOrderBOMBL_computeQtyToIssueBasedOnFinishedGoodReceipt_more_Test
 {
 	private UOMTestHelper helper;
 
@@ -51,8 +51,6 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 	//
 	// Master data
 	private I_C_UOM uomMm;
-	// private I_M_Product pABAliceSalad;
-	// private I_M_Product pFolie;
 	private I_PP_Order ppOrder;
 	private I_PP_Order_BOMLine ppOrderBOMLine;
 
@@ -98,30 +96,31 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 	 * Setup standard "P000787_AB Alicesalat 250g" test case.
 	 */
 	private void setup_StandardTestCase_ABAliceSalad( //
-			final BigDecimal finishedGood_QtyOrdered, //
-			final BigDecimal finishedGood_QtyReceived, //
-			final BigDecimal component_QtyIssued //
+													  final BigDecimal finishedGood_QtyOrdered, //
+													  final BigDecimal finishedGood_QtyReceived, //
+													  final BigDecimal component_QtyIssued //
 	)
 	{
 		// Finished good
 		ppOrder.setQtyOrdered(finishedGood_QtyOrdered);
 		ppOrder.setQtyDelivered(finishedGood_QtyReceived); // i.e. Qty Receipt
+		InterfaceWrapperHelper.saveRecord(ppOrder);
 
 		// Component
+		ppOrderBOMLine.setPP_Order_ID(ppOrder.getPP_Order_ID());
 		ppOrderBOMLine.setIssueMethod(BOMComponentIssueMethod.IssueOnlyForReceived.getCode());
 		ppOrderBOMLine.setIsQtyPercentage(false);
 		ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
 		ppOrderBOMLine.setQtyBatch(null);
 		ppOrderBOMLine.setScrap(new BigDecimal("10")); // 10%
-
 		ppOrderBOMLine.setQtyDelivered(component_QtyIssued);
-
 		PPOrderBOMBL_TestUtils.setCommonValues(ppOrderBOMLine);
+		InterfaceWrapperHelper.saveRecord(ppOrderBOMLine);
 	}
 
 	private void assertQtyToIssueBasedOnFinishedGoodReceived(final String expectedStr)
 	{
-		final BigDecimal actual = ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM()).toBigDecimal();
+		final BigDecimal actual = ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBOMLine, ppOrderBOMLine.getC_UOM(), DraftPPOrderQuantities.NONE).toBigDecimal();
 		assertThat(actual)
 				.as("qtyToIssue based on finished goods received")
 				.isEqualByComparingTo(expectedStr);
@@ -209,7 +208,7 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 	 * Case: per endproduct we need 350mm of folie (component) lets say we want to produce 100 pce of endproduct atm. the action_issue for folie takes what was planned for folie, so 3500 mm now. if we
 	 * overproduce end-product, lets say additional 10 pce, the expecation would be that if i do action_issue again for folie, that only addional 10x350mm is taken, so that it matches the qty of
 	 * produced end-products.
-	 *
+	 * <p>
 	 * See
 	 * <ul>
 	 * <li>initial concept: http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
@@ -224,10 +223,11 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 		{
 			ppOrder.setQtyOrdered(new BigDecimal("100"));
 			ppOrder.setQtyDelivered(new BigDecimal("0")); // i.e. Qty Receipt
-
 			PPOrderBOMBL_TestUtils.setCommonValues(ppOrder);
+			InterfaceWrapperHelper.saveRecord(ppOrder);
 
 			// Component
+			ppOrderBOMLine.setPP_Order_ID(ppOrder.getPP_Order_ID());
 			ppOrderBOMLine.setIssueMethod(BOMComponentIssueMethod.IssueOnlyForReceived.getCode());
 			ppOrderBOMLine.setIsQtyPercentage(false);
 			ppOrderBOMLine.setC_UOM(uomMm);
@@ -235,8 +235,8 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 			ppOrderBOMLine.setQtyBatch(null);
 			ppOrderBOMLine.setScrap(new BigDecimal("0")); // 0%
 			ppOrderBOMLine.setQtyDelivered(new BigDecimal("0"));
-
 			PPOrderBOMBL_TestUtils.setCommonValues(ppOrderBOMLine);
+			InterfaceWrapperHelper.saveRecord(ppOrderBOMLine);
 		}
 		// Validate
 		assertQtyToIssueBasedOnFinishedGoodReceived("0"); // because finished goods received quantity is ZERO
