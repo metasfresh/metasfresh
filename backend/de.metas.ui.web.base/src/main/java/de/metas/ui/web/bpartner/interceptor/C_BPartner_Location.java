@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.bpartner.interceptor;
 
+import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_PostalChange;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
@@ -83,7 +84,7 @@ public class C_BPartner_Location
 			final I_C_BPartner_Location bpLocationOld = InterfaceWrapperHelper.createOld(bpLocation, I_C_BPartner_Location.class);
 			final LocationId oldLocationId = LocationId.ofRepoIdOrNull(bpLocationOld.getC_Location_ID());
 			final I_C_Location oldLocation = oldLocationId != null ? locationDAO.getById(oldLocationId) : null;
-			final PostalId oldPostalId = PostalId.ofRepoIdOrNull(oldLocation.getC_Postal_ID());
+			final PostalId oldPostalId = oldLocationId == null ? null : PostalId.ofRepoIdOrNull(oldLocation.getC_Postal_ID());
 
 			if (newPostalId.equals(oldPostalId))
 			{
@@ -116,7 +117,7 @@ public class C_BPartner_Location
 
 	private ProcessId getMoveToAnotherOrgProcessId()
 	{
-		final AdProcessId adProcessId = adProcessDAO.retrieveProcessIdByClass(C_BPartner_MoveToAnotherOrg_ProcessHelper.class);
+		final AdProcessId adProcessId = adProcessDAO.retrieveProcessIdByClass(C_BPartner_MoveToAnotherOrg_PostalChange.class);
 		return ProcessId.ofAD_Process_ID(adProcessId);
 	}
 
