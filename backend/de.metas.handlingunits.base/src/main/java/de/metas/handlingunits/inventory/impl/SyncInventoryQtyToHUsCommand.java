@@ -251,7 +251,8 @@ public class SyncInventoryQtyToHUsCommand
 			else
 			{
 				final I_M_HU hu = handlingUnitsDAO.getById(inventoryLineHU.getHuId());
-				source = HUListAllocationSourceDestination.of(hu, AllocationStrategyType.UNIFORM);
+				source = HUListAllocationSourceDestination.of(hu, AllocationStrategyType.UNIFORM)
+						.setDestroyEmptyHUs(true);
 			}
 
 			destination = new GenericAllocationSourceDestination(
@@ -264,13 +265,13 @@ public class SyncInventoryQtyToHUsCommand
 
 		HULoader.of(source, destination)
 				.load(AllocationUtils.builder()
-						.setHUContext(huContextwithOrgId)
-						.setDateAsToday()
-						.setProduct(inventoryLine.getProductId())
-						.setQuantity(qtyToTransfer)
-						.setFromReferencedModel(inventoryLineRecord)
-						.setForceQtyAllocation(true)
-						.create());
+							  .setHUContext(huContextwithOrgId)
+							  .setDateAsToday()
+							  .setProduct(inventoryLine.getProductId())
+							  .setQuantity(qtyToTransfer)
+							  .setFromReferencedModel(inventoryLineRecord)
+							  .setForceQtyAllocation(true)
+							  .create());
 
 		if (inventoryLineHU.getHuId() == null)
 		{

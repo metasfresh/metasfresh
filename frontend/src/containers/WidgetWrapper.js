@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 
 import {
   openModal,
+  closeModal,
   patch,
   updatePropertyValue,
   allowShortcut,
@@ -66,15 +67,21 @@ const mapStateToProps = (state, props) => {
     fields,
     isModal,
   } = props;
-
   const data = getData(state, isModal);
-
   let widgetData = null;
   let fieldsCopy = null;
 
   switch (dataSource) {
     case 'doc-status':
       widgetData = getMasterDocStatus(state);
+
+      break;
+    case 'filter-item':
+    case 'overlay-field':
+    case 'attributes-dropdown':
+    case 'quick-input':
+    case 'selection-attributes':
+      widgetData = props.widgetData;
 
       break;
     case 'modal':
@@ -162,6 +169,7 @@ WidgetWrapper.propTypes = {
   allowShortcut: PropTypes.func.isRequired,
   disableShortcut: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
+  closeModal: PropTypes.func,
   patch: PropTypes.func.isRequired,
   updatePropertyValue: PropTypes.func.isRequired,
   widgetType: PropTypes.string,
@@ -174,6 +182,7 @@ export default connect(
     allowShortcut,
     disableShortcut,
     openModal,
+    closeModal,
     patch,
     updatePropertyValue,
   },

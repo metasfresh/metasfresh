@@ -129,3 +129,33 @@ export const SET_INCLUDED_VIEW = 'SET_INCLUDED_VIEW';
  * @type {string} Remove the included view's windowId
  */
 export const UNSET_INCLUDED_VIEW = 'UNSET_INCLUDED_VIEW';
+
+/**
+ * @constant
+ * @type {string} get fields data for the attributes view
+ */
+export const FETCH_ATTRIBUTES_DATA = 'FETCH_ATTRIBUTES_DATA';
+
+/**
+ * @constant
+ * @type {string} get layout for the attributes view
+ */
+export const FETCH_ATTRIBUTES_LAYOUT = 'FETCH_ATTRIBUTES_LAYOUT';
+
+/**
+ * @constant
+ * @type {string} delete attributes data
+ */
+export const DELETE_ATTRIBUTES = 'DELETE_ATTRIBUTES';
+
+/**
+ * @constant
+ * @type {string} patch attributes field
+ */
+export const PATCH_ATTRIBUTES = 'PATCH_ATTRIBUTES';
+
+/**
+ * @constant
+ * @type {string} store attributes field change locally
+ */
+export const SET_ATTRIBUTES_DATA = 'SET_ATTRIBUTES_DATA';

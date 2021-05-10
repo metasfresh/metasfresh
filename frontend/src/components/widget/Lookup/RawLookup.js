@@ -10,7 +10,7 @@ import {
   autocompleteRequest,
   autocompleteModalRequest,
 } from '../../../actions/GenericActions';
-import { getViewAttributeTypeahead } from '../../../actions/ViewAttributesActions';
+import { getViewAttributeTypeahead } from '../../../api';
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
 

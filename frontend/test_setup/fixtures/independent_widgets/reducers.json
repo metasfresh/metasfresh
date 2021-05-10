@@ -1,0 +1,879 @@
+{
+  "selectionAttributesData": {
+    "id": "IssuedOrReceivedHU-null-1002943",
+    "fieldsByName": {
+      "WeightGross": {
+        "field": "WeightGross",
+        "value": "1.250",
+        "readonly": false,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "Number",
+        "viewEditorRenderMode": "always"
+      },
+      "WeightNet": {
+        "field": "WeightNet",
+        "value": "1.250",
+        "readonly": true,
+        "mandatory": false,
+        "displayed": true,
+        "widgetType": "Number",
+        "viewEditorRenderMode": "never"
+      },
+      "WeightTare": {
+        "field": "WeightTare",
+        "value": "0.000",
+        "readonly": true,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "Number",
+        "viewEditorRenderMode": "never"
+      },
+      "HU_CostPrice": {
+        "field": "HU_CostPrice",
+        "value": "0",
+        "readonly": true,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "Number",
+        "viewEditorRenderMode": "never"
+      },
+      "QualityDiscountPercent": {
+        "field": "QualityDiscountPercent",
+        "value": "5.00",
+        "readonly": false,
+        "mandatory": false,
+        "displayed": true,
+        "widgetType": "Number",
+        "viewEditorRenderMode": "always"
+      },
+      "SerialNo": {
+        "field": "SerialNo",
+        "value": "P002737-1000013",
+        "readonly": false,
+        "mandatory": false,
+        "displayed": true,
+        "widgetType": "Text",
+        "viewEditorRenderMode": "always"
+      },
+      "QualityNotice": {
+        "field": "QualityNotice",
+        "value": {
+          "key": "0003",
+          "caption": "Analyse Zuckergehalt",
+          "description": "Analyse Zuckergehalt"
+        },
+        "readonly": false,
+        "mandatory": false,
+        "displayed": true,
+        "widgetType": "List",
+        "viewEditorRenderMode": "always"
+      },
+      "1000001": {
+        "field": "1000001",
+        "value": null,
+        "readonly": false,
+        "mandatory": false,
+        "displayed": true,
+        "widgetType": "List",
+        "viewEditorRenderMode": "always"
+      },
+      "1000004": {
+        "field": "1000004",
+        "value": null,
+        "readonly": false,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "List",
+        "viewEditorRenderMode": "always"
+      },
+      "SubProducerBPartner": {
+        "field": "SubProducerBPartner",
+        "value": {
+          "key": "0",
+          "caption": "Keine / Leer",
+          "description": "Keine / Leer"
+        },
+        "readonly": false,
+        "mandatory": false,
+        "displayed": true,
+        "widgetType": "Lookup",
+        "viewEditorRenderMode": "always"
+      },
+      "1000002": {
+        "field": "1000002",
+        "value": {
+          "key": "Bio",
+          "caption": "Bio",
+          "description": "Bio"
+        },
+        "readonly": false,
+        "mandatory": false,
+        "displayed": true,
+        "widgetType": "List",
+        "viewEditorRenderMode": "always"
+      },
+      "HU_LotNumberDate": {
+        "field": "HU_LotNumberDate",
+        "value": "2021-04-08T00:00:00.000+02:00",
+        "readonly": false,
+        "mandatory": false,
+        "displayed": true,
+        "widgetType": "Date",
+        "viewEditorRenderMode": "always"
+      },
+      "1000020": {
+        "field": "1000020",
+        "value": null,
+        "readonly": false,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "List",
+        "viewEditorRenderMode": "always"
+      },
+      "Lot-Nummer": {
+        "field": "Lot-Nummer",
+        "value": "144",
+        "readonly": false,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "Text",
+        "viewEditorRenderMode": "always"
+      },
+      "1000015": {
+        "field": "1000015",
+        "value": null,
+        "readonly": false,
+        "mandatory": false,
+        "displayed": true,
+        "widgetType": "List",
+        "viewEditorRenderMode": "always"
+      },
+      "M_Material_Tracking_ID": {
+        "field": "M_Material_Tracking_ID",
+        "value": null,
+        "readonly": true,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "Lookup",
+        "viewEditorRenderMode": "never"
+      },
+      "IsQualityInspection": {
+        "field": "IsQualityInspection",
+        "value": null,
+        "readonly": true,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "List",
+        "viewEditorRenderMode": "never"
+      },
+      "QualityInspectionCycle": {
+        "field": "QualityInspectionCycle",
+        "value": null,
+        "readonly": false,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "List",
+        "viewEditorRenderMode": "always"
+      },
+      "1000000": {
+        "field": "1000000",
+        "value": null,
+        "readonly": false,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "List",
+        "viewEditorRenderMode": "always"
+      },
+      "1000021": {
+        "field": "1000021",
+        "value": null,
+        "readonly": false,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "Text",
+        "viewEditorRenderMode": "always"
+      },
+      "HU_BestBeforeDate": {
+        "field": "HU_BestBeforeDate",
+        "value": null,
+        "readonly": false,
+        "mandatory": false,
+        "displayed": true,
+        "widgetType": "Date",
+        "viewEditorRenderMode": "always"
+      },
+      "HU_Expired": {
+        "field": "HU_Expired",
+        "value": null,
+        "readonly": true,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "List",
+        "viewEditorRenderMode": "never"
+      },
+      "ProductionDate": {
+        "field": "ProductionDate",
+        "value": null,
+        "readonly": false,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "Date",
+        "viewEditorRenderMode": "always"
+      },
+      "Age": {
+        "field": "Age",
+        "value": null,
+        "readonly": true,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "List",
+        "viewEditorRenderMode": "never"
+      },
+      "HU_PurchaseOrderLine_ID": {
+        "field": "HU_PurchaseOrderLine_ID",
+        "value": "0",
+        "readonly": true,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "Number",
+        "viewEditorRenderMode": "never"
+      },
+      "HU_ReceiptInOutLine_ID": {
+        "field": "HU_ReceiptInOutLine_ID",
+        "value": "0",
+        "readonly": true,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "Number",
+        "viewEditorRenderMode": "never"
+      },
+      "IsRepackNumberRequired": {
+        "field": "IsRepackNumberRequired",
+        "value": null,
+        "readonly": true,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "List",
+        "viewEditorRenderMode": "never"
+      },
+      "RepackNumber": {
+        "field": "RepackNumber",
+        "value": null,
+        "readonly": true,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "Text",
+        "viewEditorRenderMode": "never"
+      },
+      "HU_Quarantine": {
+        "field": "HU_Quarantine",
+        "value": null,
+        "readonly": true,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "List",
+        "viewEditorRenderMode": "never"
+      },
+      "MonthsUntilExpiry": {
+        "field": "MonthsUntilExpiry",
+        "value": "0",
+        "readonly": true,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "Number",
+        "viewEditorRenderMode": "never"
+      },
+      "Article_Flavor": {
+        "field": "Article_Flavor",
+        "value": null,
+        "readonly": false,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "Text",
+        "viewEditorRenderMode": "always"
+      },
+      "PP_Order_ID": {
+        "field": "PP_Order_ID",
+        "value": "1000049.00",
+        "readonly": true,
+        "mandatory": false,
+        "displayed": false,
+        "widgetType": "Number",
+        "viewEditorRenderMode": "never"
+      }
+    }
+  },
+  "selectionAttributesLayout": {
+    "elements": [
+      {
+        "caption": "Gewicht Brutto kg",
+        "description": "",
+        "widgetType": "Number",
+        "fields": [
+          {
+            "field": "WeightGross",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Gewicht Netto",
+        "description": "",
+        "widgetType": "Number",
+        "fields": [
+          {
+            "field": "WeightNet",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Gewicht Tara",
+        "description": "",
+        "widgetType": "Number",
+        "fields": [
+          {
+            "field": "WeightTare",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Einkaufspreis",
+        "description": "",
+        "widgetType": "Number",
+        "fields": [
+          {
+            "field": "HU_CostPrice",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Qualitäts Abzug %",
+        "description": "",
+        "widgetType": "Number",
+        "fields": [
+          {
+            "field": "QualityDiscountPercent",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "S/N",
+        "description": "",
+        "widgetType": "Text",
+        "fields": [
+          {
+            "field": "SerialNo",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Qualitäts Notiz",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "QualityNotice",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Herkunft",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "1000001",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Produktionsart",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "1000004",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Unterlieferanten",
+        "description": "Geschäftspartner Unterlieferanten",
+        "widgetType": "Lookup",
+        "fields": [
+          {
+            "field": "SubProducerBPartner",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Label",
+        "description": "Label",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "1000002",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Tageslot Datum",
+        "description": "",
+        "widgetType": "Date",
+        "fields": [
+          {
+            "field": "HU_LotNumberDate",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Zitrusfrüchte",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "1000020",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Lot-Nummer",
+        "description": "",
+        "widgetType": "Text",
+        "fields": [
+          {
+            "field": "Lot-Nummer",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Marke (ADR)",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "1000015",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Karotten-ID",
+        "description": "",
+        "widgetType": "Lookup",
+        "fields": [
+          {
+            "field": "M_Material_Tracking_ID",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Waschprobe alt",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "IsQualityInspection",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Waschprobe",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "QualityInspectionCycle",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "In-/Ausland",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "1000000",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "MHD",
+        "description": "",
+        "widgetType": "Text",
+        "fields": [
+          {
+            "field": "1000021",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Mindesthaltbarkeit",
+        "description": "",
+        "widgetType": "Date",
+        "fields": [
+          {
+            "field": "HU_BestBeforeDate",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Verfall",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "HU_Expired",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Herstelldatum",
+        "description": "",
+        "widgetType": "Date",
+        "fields": [
+          {
+            "field": "ProductionDate",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Alter",
+        "description": "Age in months",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "Age",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Bestellzeile",
+        "description": "",
+        "widgetType": "Number",
+        "fields": [
+          {
+            "field": "HU_PurchaseOrderLine_ID",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Wareneingang Zeile",
+        "description": "",
+        "widgetType": "Number",
+        "fields": [
+          {
+            "field": "HU_ReceiptInOutLine_ID",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Repack Nr. erforderlich",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "IsRepackNumberRequired",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Repack Nr.",
+        "description": "",
+        "widgetType": "Text",
+        "fields": [
+          {
+            "field": "RepackNumber",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Quarantäne",
+        "description": "",
+        "widgetType": "List",
+        "fields": [
+          {
+            "field": "HU_Quarantine",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "MHD Restlaufzeit in Monaten",
+        "description": "",
+        "widgetType": "Number",
+        "fields": [
+          {
+            "field": "MonthsUntilExpiry",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Article Flavor",
+        "description": "",
+        "widgetType": "Text",
+        "fields": [
+          {
+            "field": "Article_Flavor",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Produktionsauftrag",
+        "description": "",
+        "widgetType": "Number",
+        "fields": [
+          {
+            "field": "PP_Order_ID",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      }
+    ]
+  },
+  "selectionAttributesPatch": [
+    {
+      "id": "1002943",
+      "fieldsByName": {
+        "QualityDiscountPercent": {
+          "field": "QualityDiscountPercent",
+          "value": "4.00",
+          "widgetType": "Number"
+        }
+      }
+    }
+  ],
+  "quickInputData": {
+    "id": "2",
+    "fieldsByName": {
+      "ID": {
+        "field": "ID",
+        "value": 2,
+        "widgetType": "Integer",
+        "precision": 0
+      },
+      "M_Product_ID": {
+        "field": "M_Product_ID",
+        "value": null,
+        "readonly": false,
+        "mandatory": true,
+        "displayed": true,
+        "lookupValuesStale": true,
+        "widgetType": "Lookup",
+        "validStatus": {
+          "valid": false,
+          "initialValue": true,
+          "reason": "Mandatory field M_Product_ID not filled",
+          "fieldName": "M_Product_ID"
+        },
+        "viewEditorRenderMode": "always"
+      },
+      "M_HU_PI_Item_Product_ID": {
+        "field": "M_HU_PI_Item_Product_ID",
+        "value": null,
+        "readonly": false,
+        "mandatory": false,
+        "displayed": true,
+        "lookupValuesStale": true,
+        "widgetType": "Lookup",
+        "validStatus": {
+          "valid": false,
+          "initialValue": true,
+          "reason": "not validated yet"
+        },
+        "viewEditorRenderMode": "always"
+      },
+      "Qty": {
+        "field": "Qty",
+        "value": null,
+        "readonly": false,
+        "mandatory": true,
+        "displayed": true,
+        "widgetType": "Quantity",
+        "validStatus": {
+          "valid": false,
+          "initialValue": true,
+          "reason": "Mandatory field Qty not filled",
+          "fieldName": "Qty"
+        },
+        "viewEditorRenderMode": "always"
+      }
+    },
+    "validStatus": {
+      "valid": false,
+      "initialValue": true,
+      "reason": "Mandatory field M_Product_ID not filled",
+      "fieldName": "M_Product_ID"
+    },
+    "saveStatus": {
+      "deleted": false,
+      "saved": false,
+      "hasChanges": true,
+      "error": false,
+      "reason": "new"
+    },
+    "standardActions": [
+      "new",
+      "advancedEdit",
+      "clone",
+      "email",
+      "letter",
+      "delete",
+      "comments"
+    ]
+  },
+  "quickInputLayout": {
+    "elements": [
+      {
+        "caption": "Product",
+        "description": "",
+        "widgetType": "Lookup",
+        "fields": [
+          {
+            "field": "M_Product_ID",
+            "caption": "Product",
+            "emptyText": "Product",
+            "clearValueText": "none",
+            "source": "lookup",
+            "lookupSearchStringMinLength": 0,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          },
+          {
+            "field": "M_HU_PI_Item_Product_ID",
+            "caption": "Packing Instruction",
+            "emptyText": "Packing Instruction",
+            "clearValueText": "none",
+            "source": "list",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      },
+      {
+        "caption": "Quantity",
+        "description": "",
+        "widgetType": "Quantity",
+        "fields": [
+          {
+            "field": "Qty",
+            "caption": "Quantity",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      }
+    ]
+  },
+  "quickInputPatchData": [
+    {
+      "id": "3",
+      "fieldsByName": {
+        "Qty": {
+          "field": "Qty",
+          "value": "2",
+          "widgetType": "Quantity",
+          "validStatus": {
+            "valid": true,
+            "initialValue": false,
+            "fieldName": "Qty"
+          }
+        }
+      }
+    }
+  ]
+}

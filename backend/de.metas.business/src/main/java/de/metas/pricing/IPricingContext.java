@@ -55,7 +55,7 @@ public interface IPricingContext extends IContextAware
 
 	PriceListVersionId getPriceListVersionId();
 
-	/** @retun price list version or null */
+	/** @return price list version or null */
 	I_M_PriceList_Version getM_PriceList_Version();
 
 	/**

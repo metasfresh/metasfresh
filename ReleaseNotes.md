@@ -9,6 +9,51 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.168
+## Features
+* https://github.com/metasfresh/metasfresh/issues/10860
+* https://github.com/metasfresh/metasfresh/issues/11016
+* https://github.com/metasfresh/metasfresh/issues/11026
+* https://github.com/metasfresh/metasfresh/issues/11028
+* https://github.com/metasfresh/metasfresh/issues/11036
+* https://github.com/metasfresh/metasfresh/pull/11039
+* https://github.com/metasfresh/metasfresh/pull/11042
+* https://github.com/metasfresh/metasfresh/pull/11043
+* https://github.com/metasfresh/metasfresh/pull/11045
+* https://github.com/metasfresh/metasfresh/issues/11048
+* https://github.com/metasfresh/metasfresh/issues/11054
+* https://github.com/metasfresh/metasfresh/issues/11062
+* https://github.com/metasfresh/metasfresh/issues/11064
+
+## Fixes
+* https://github.com/metasfresh/metasfresh/issues/10655
+* https://github.com/metasfresh/metasfresh/pull/10992
+* https://github.com/metasfresh/metasfresh/issues/11014
+* https://github.com/metasfresh/metasfresh/pull/11019
+* https://github.com/metasfresh/metasfresh/pull/11031
+* https://github.com/metasfresh/metasfresh/pull/11044
+* https://github.com/metasfresh/metasfresh/pull/11046
+* https://github.com/metasfresh/metasfresh/issues/11049
+* https://github.com/metasfresh/metasfresh/issues/11050
+* https://github.com/metasfresh/metasfresh/pull/11055
+* https://github.com/metasfresh/metasfresh/pull/11057
+
+# metasfresh 5.167
+## Features
+* metasfresh
+  * [#10955](https://github.com/metasfresh/metasfresh/issues/10955) Update Elasticsearch in our stack
+  * [#10990](https://github.com/metasfresh/metasfresh/issues/10990) Support for a process triggered by model interceptor
+  * [#10999](https://github.com/metasfresh/metasfresh/issues/10999) Support for a process triggered by model interceptor - frontend
+  * [#11000](https://github.com/metasfresh/metasfresh/issues/11000) Support zoom for labels
+  * [#11001](https://github.com/metasfresh/metasfresh/pull/11001) Elasticsearch docker integration
+  * [#11008](https://github.com/metasfresh/metasfresh/issues/11008) Add TRL for the Repair Workflows
+  * [#11011](https://github.com/metasfresh/metasfresh/pull/11011) Allow webAPI to schedule a workpackage and wait for it to be done
+
+## Fixes
+* metasfresh
+  * [#10899](https://github.com/metasfresh/metasfresh/pull/10899) Elasticsearch / dashboard fix
+  * [#11007](https://github.com/metasfresh/metasfresh/issues/11007) Uncaught error in promise when setting Business Partner
+
 # metasfresh 5.166
 ## Features
 * metasfresh

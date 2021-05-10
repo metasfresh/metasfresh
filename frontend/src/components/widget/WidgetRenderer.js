@@ -113,8 +113,12 @@ class WidgetRenderer extends PureComponent {
       onBlurWithParams,
       onSetWidgetType,
       onHandleProcess,
+      openModal,
+      closeModal,
       forwardedRef,
       disconnected,
+      isFilterActive, // flag used to identify if the component belongs to an active filter
+      updateItems,
     } = this.props;
     const { tabIndex, onFocus } = widgetProperties;
     const widgetValue = get(widgetProperties, ['value'], null);
@@ -180,6 +184,8 @@ class WidgetRenderer extends PureComponent {
       fieldName: widgetField,
       handleBackdropLock,
       patch: (option) => onPatch(widgetField, option),
+      openModal,
+      closeModal,
       tabIndex,
       autoFocus,
       readonly,
@@ -459,6 +465,9 @@ class WidgetRenderer extends PureComponent {
               widgetField,
               id,
               filterWidget,
+              isFilterActive:
+                typeof isFilterActive === 'undefined' ? false : isFilterActive, // safety check - do not pass `undefined` further down
+              updateItems,
             }}
             handlePatch={onPatch}
           />
