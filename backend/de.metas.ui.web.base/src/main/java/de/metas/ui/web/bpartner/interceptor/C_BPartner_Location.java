@@ -23,7 +23,6 @@
 package de.metas.ui.web.bpartner.interceptor;
 
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_PostalChange;
-import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.location.PostalId;
