@@ -273,7 +273,7 @@ public class DataTableUtil
 			@NonNull final String columnName,
 			@Nullable final Boolean defaultValue)
 	{
-		final String string = extractStringForColumnName(dataTableRow, columnName);
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
 		return StringUtils.toBoolean(string, defaultValue);
 	}
 

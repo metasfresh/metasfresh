@@ -9,7 +9,7 @@ Feature: Create or update using prices API
       | M_PricingSystem_ID | Name                | Value                | OPT.Description            | IsActive |
       | 1                  | pricing_system_name | pricing_system_value | pricing_system_description | true     |
     And metasfresh contains M_PriceLists
-      | M_PriceList_ID | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | IsActive |
+      | M_PriceList_ID | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | 2              | 1                  | DE                        | CHF                 | price_list_name | null            | true  | false         | 2              | true     |
     When the user adds price list version data
       | Identifier  | OrgCode | M_PriceList_ID | OPT.Description                | ValidFrom            | OPT.IsActive |

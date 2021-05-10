@@ -86,7 +86,7 @@ public class M_PriceList_StepDef
 		final String name = DataTableUtil.extractStringForColumnName(row, "Name");
 		final String value = DataTableUtil.extractStringForColumnName(row, "Value");
 		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.Description");
-		final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsActive", false);
+		final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsActive", true);
 
 		final I_M_PricingSystem m_pricingSystem = InterfaceWrapperHelper.newInstance(I_M_PricingSystem.class);
 
@@ -111,7 +111,7 @@ public class M_PriceList_StepDef
 		final boolean soTrx = DataTableUtil.extractBooleanForColumnName(row, "SOTrx");
 		final boolean isTaxIncluded = DataTableUtil.extractBooleanForColumnName(row, "IsTaxIncluded");
 		final String pricePrecision = DataTableUtil.extractStringForColumnName(row, "PricePrecision");
-		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, "IsActive");
+		final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsActive", true);
 
 		final CurrencyId currencyId = getCurrencyIdByCurrencyISO(isoCode);
 
