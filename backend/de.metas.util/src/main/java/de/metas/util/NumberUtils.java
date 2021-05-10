@@ -22,12 +22,11 @@ package de.metas.util;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import de.metas.util.lang.RepoIdAware;
 
 import javax.annotation.Nullable;
-
-import de.metas.util.lang.RepoIdAware;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Number Utils
@@ -154,7 +153,7 @@ public final class NumberUtils
 			@Nullable final BigDecimal defaultValue,
 			final boolean failIfUnparsable)
 	{
-		if (value == null)
+		if (Check.isEmpty(value))
 		{
 			return defaultValue;
 		}
