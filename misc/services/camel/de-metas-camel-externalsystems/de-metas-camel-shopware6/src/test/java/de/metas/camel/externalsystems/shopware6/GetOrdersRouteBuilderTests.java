@@ -32,14 +32,15 @@ import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
-import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrders;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
+import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -48,6 +49,7 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
+import de.metas.common.util.NumberUtils;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -64,6 +66,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
@@ -74,7 +77,11 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWARE6_SYSTEM_NAME;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_CURRENCY_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_EUR_CODE;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_NORMAL_VAT_PRODUCT_ID;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_NORMAL_VAT_RATES;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_ORG_CODE;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_REDUCED_VAT_PRODUCT_ID;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_REDUCED_VAT_RATES;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CLEAR_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID;
@@ -298,6 +305,11 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.currencyId2IsoCode(ImmutableMap.of(MOCK_CURRENCY_ID, MOCK_EUR_CODE))
 					.build();
 
+			final ImmutableMap<JsonMetasfreshId, List<BigDecimal>> productId2VatRates = ImmutableMap.of(
+					JsonMetasfreshId.of(MOCK_NORMAL_VAT_PRODUCT_ID), NumberUtils.asBigDecimalListOrNull(MOCK_NORMAL_VAT_RATES, ","),
+					JsonMetasfreshId.of(MOCK_REDUCED_VAT_PRODUCT_ID), NumberUtils.asBigDecimalListOrNull(MOCK_REDUCED_VAT_RATES, ","));
+			final TaxProductIdProvider taxProductIdProvider = TaxProductIdProvider.of(productId2VatRates);
+
 			final JsonExternalSystemRequest externalSystemRequest = JsonExternalSystemRequest
 					.builder()
 					.externalSystemName(JsonExternalSystemName.of(SHOPWARE6_SYSTEM_NAME))
@@ -315,6 +327,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.shopwareClient(shopwareClient)
 					.currencyInfoProvider(currencyInfoProvider)
 					.shopware6ConfigMappings(shopware6ConfigMappings)
+					.taxProductIdProvider(taxProductIdProvider)
 					.build();
 
 			exchange.getIn().setBody(orderCandidates);

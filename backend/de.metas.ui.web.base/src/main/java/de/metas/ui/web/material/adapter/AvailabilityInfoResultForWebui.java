@@ -1,20 +1,18 @@
 package de.metas.ui.web.material.adapter;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -39,12 +37,12 @@ import lombok.Value;
  */
 
 @Value
-public class AvailableToPromiseResultForWebui
+public class AvailabilityInfoResultForWebui
 {
-	private final List<Group> groups;
+	List<Group> groups;
 
 	@Builder
-	private AvailableToPromiseResultForWebui(@Singular final List<Group> groups)
+	private AvailabilityInfoResultForWebui(@Singular final List<Group> groups)
 	{
 		Check.assumeNotEmpty(groups, "groups is not empty");
 		this.groups = groups;

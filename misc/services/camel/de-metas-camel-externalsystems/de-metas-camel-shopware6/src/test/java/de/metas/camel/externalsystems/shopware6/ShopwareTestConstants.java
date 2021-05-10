@@ -31,4 +31,10 @@ public interface ShopwareTestConstants
 
 	String MOCK_EUR_CODE = "EUR";
 	String MOCK_CURRENCY_ID = "currencyId";
+
+	int MOCK_NORMAL_VAT_PRODUCT_ID = 1001;
+	int MOCK_REDUCED_VAT_PRODUCT_ID = 1002;
+
+	String MOCK_NORMAL_VAT_RATES = "7.7,19";
+	String MOCK_REDUCED_VAT_RATES = "5.5,12";
 }

@@ -42,6 +42,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.SHIPPER_IDENTIFIER_DOC;
 
 /**
  * Specifies a single order line candidate for be created by the system
@@ -217,7 +218,7 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	JsonSalesPartner salesPartner;
 
-	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order")
+	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order. \n " + SHIPPER_IDENTIFIER_DOC)
 	@JsonInclude(Include.NON_NULL)
 	String shipper;
 

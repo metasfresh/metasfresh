@@ -59,6 +59,8 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 
 		importOrdersRouteContext.setMultipleShippingAddresses(orderDeliveryItems.size() > 1);
 		importOrdersRouteContext.setDateRequired(lastOrderDeliveryItem.getJsonOrderDelivery().getShippingDateLatest().toLocalDate());
+		importOrdersRouteContext.setShippingCost(lastOrderDeliveryItem.getJsonOrderDelivery().getShippingCost());
+		importOrdersRouteContext.setShippingMethodId(lastOrderDeliveryItem.getJsonOrderDelivery().getShippingMethodId());
 
 		final BPartnerUpsertRequestProducer bPartnerUpsertRequestProducer = BPartnerUpsertRequestProducer.builder()
 				.shopwareClient(shopwareClient)
