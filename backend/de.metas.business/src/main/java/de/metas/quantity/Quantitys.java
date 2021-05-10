@@ -139,10 +139,12 @@ public class Quantitys
 	}
 
 	/**
+	 * @param conversionCtx may be {@code null}, *if* the parameters are such that no real conversion has to be done.
+	 *    
 	 * @return the sum of the given quantities; the result has the first augent's UOM; conversion is done as required.
 	 */
 	public Quantity add(
-			@NonNull final UOMConversionContext conversionCtx,
+			@Nullable final UOMConversionContext conversionCtx,
 			@NonNull final Quantity firstAugent,
 			@NonNull final Quantity secondAugent)
 	{
