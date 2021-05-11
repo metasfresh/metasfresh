@@ -5,14 +5,14 @@ Feature: Create or update using prices API
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   Scenario: Create price list version from external ref
-    Given metasfresh contains M_PricingSystem
-      | M_PricingSystem_ID | Name                | Value                | Description                | IsActive |
+    Given metasfresh contains M_PricingSystems
+      | M_PricingSystem_ID | Name                | Value                | OPT.Description            | IsActive |
       | 1                  | pricing_system_name | pricing_system_value | pricing_system_description | true     |
-    And metasfresh contains M_PriceList
-      | M_PriceList_ID | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | IsActive |
+    And metasfresh contains M_PriceLists
+      | M_PriceList_ID | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | 2              | 1                  | DE                        | CHF                 | price_list_name | null            | true  | false         | 2              | true     |
     When the user adds price list version data
-      | Identifier  | OrgCode | M_PriceList_ID | Description                    | ValidFrom            | OPT.IsActive |
+      | Identifier  | OrgCode | M_PriceList_ID | OPT.Description                | ValidFrom            | OPT.IsActive |
       | ext-Other-3 | 001     | 2              | price_list_version_description | 2018-11-12T00:00:00Z | true         |
     And we create a JsonRequestPriceListVersionUpsert, set syncAdvise to 'CREATE_OR_MERGE' and store request payload it in the test context
     And the metasfresh REST-API endpoint path '/api/v2-pre/prices/priceListVersions' receives a 'PUT' request with the payload from context and responds with '200' status code
@@ -20,7 +20,7 @@ Feature: Create or update using prices API
 
   Scenario: Update price list version
     When the user adds price list version data
-      | Identifier  | OrgCode | M_PriceList_ID | Description                | ValidFrom            | OPT.IsActive |
+      | Identifier  | OrgCode | M_PriceList_ID | OPT.Description            | ValidFrom            | OPT.IsActive |
       | ext-Other-3 | 001     | 2              | price_list_version_updated | 2017-01-17T00:00:00Z | false        |
     And we create a JsonRequestPriceListVersionUpsert, set syncAdvise to 'CREATE_OR_MERGE' and store request payload it in the test context
     When the metasfresh REST-API endpoint path '/api/v2-pre/prices/priceListVersions' receives a 'PUT' request with the payload from context and responds with '200' status code
