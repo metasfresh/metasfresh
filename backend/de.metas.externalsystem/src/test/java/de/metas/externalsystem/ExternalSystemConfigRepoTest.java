@@ -114,6 +114,10 @@ class ExternalSystemConfigRepoTest
 		childRecord.setJSONPathConstantBPartnerID("/test/bp");
 		childRecord.setJSONPathSalesRepID("/test/salesrep");
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
+		childRecord.setBPartner_IfExists("UPDATE_MERGE");
+		childRecord.setBPartner_IfNotExists("FAIL");
+		childRecord.setBPartnerLocation_IfExists("DONT_UPDATE");
+		childRecord.setBPartnerLocation_IfNotExists("CREATE");
 		saveRecord(childRecord);
 
 		// when
@@ -146,6 +150,10 @@ class ExternalSystemConfigRepoTest
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setBPartner_IfExists("UPDATE_MERGE");
+		childRecord.setBPartner_IfNotExists("FAIL");
+		childRecord.setBPartnerLocation_IfExists("DONT_UPDATE");
+		childRecord.setBPartnerLocation_IfNotExists("CREATE");
 		saveRecord(childRecord);
 
 		// when
@@ -264,6 +272,10 @@ class ExternalSystemConfigRepoTest
 		childRecord.setJSONPathSalesRepID("/test/salesrep");
 		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setBPartner_IfExists("UPDATE_MERGE");
+		childRecord.setBPartner_IfNotExists("FAIL");
+		childRecord.setBPartnerLocation_IfExists("DONT_UPDATE");
+		childRecord.setBPartnerLocation_IfNotExists("CREATE");
 		saveRecord(childRecord);
 
 		final I_ExternalSystem_Config_Shopware6Mapping childMappingRecord = newInstance(I_ExternalSystem_Config_Shopware6Mapping.class);

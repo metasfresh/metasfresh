@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
@@ -38,6 +39,7 @@ import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.NumberUtils;
@@ -91,7 +93,6 @@ public class GetOrdersProcessor implements Processor
 				Instant.ofEpochSecond(0).toString());
 
 		final String bPartnerIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID);
-		final String bPartnerLocationIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID);
 		final String salesRepJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID);
 
 		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath);
@@ -110,26 +111,30 @@ public class GetOrdersProcessor implements Processor
 		final CurrencyInfoProvider currencyInfoProvider = (CurrencyInfoProvider) exchange.getContext().createProducerTemplate()
 				.sendBody("direct:" + GET_CURRENCY_ROUTE_ID, ExchangePattern.InOut, getCurrenciesRequest);
 
-		final String bpartnerIfExists = request.getParameters().get(ExternalSystemConstants.PARAM_BPARTNER_IFEXISTS);
-		final String bpartnerIfNotExists = request.getParameters().get(ExternalSystemConstants.PARAM_BPARTNER_IFNOTEXISTS);
-		final String bpartnerLocationIfExists = request.getParameters().get(ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFEXISTS);
-		final String bpartnerLocationIfNotExists = request.getParameters().get(ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFNOTEXISTS);
+		final ImportOrdersRouteContext ordersContext = buildContext(request, shopwareClient, currencyInfoProvider);
 
-		final ImportOrdersRouteContext ordersContext = ImportOrdersRouteContext.builder()
+		exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
+	}
+
+	@VisibleForTesting
+	public ImportOrdersRouteContext buildContext(
+			@NonNull final JsonExternalSystemRequest request,
+			@NonNull final ShopwareClient shopwareClient,
+			@NonNull final CurrencyInfoProvider currencyInfoProvider)
+	{
+		final String bpLocationCustomJsonPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID);
+
+		return ImportOrdersRouteContext.builder()
 				.orgCode(request.getOrgCode())
 				.externalSystemRequest(request)
 				.shopware6ConfigMappings(getSalesOrderMappingRules(request).orElse(null))
 				.shopwareClient(shopwareClient)
-				.bpLocationCustomJsonPath(bPartnerLocationIdJSONPath)
+				.bpLocationCustomJsonPath(bpLocationCustomJsonPath)
 				.currencyInfoProvider(currencyInfoProvider)
 				.taxProductIdProvider(getTaxProductIdProvider(request))
-				.bpartnerIfExists(bpartnerIfExists)
-				.bpartnerIfNotExists(bpartnerIfNotExists)
-				.bpartnerLocationIfExists(bpartnerLocationIfExists)
-				.bpartnerLocationIfNotExists(bpartnerLocationIfNotExists)
+				.bpartnerSyncAdvise(getBPartnerSyncAdvice(request.getParameters()))
+				.bPartnerLocationSynAdvise(getBPartnerLocationSyncAdvice(request.getParameters()))
 				.build();
-
-		exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 	}
 
 	@NonNull
@@ -211,5 +216,37 @@ public class GetOrdersProcessor implements Processor
 		}
 
 		return TaxProductIdProvider.of(productId2VatRates);
+	}
+
+	@NonNull
+	private SyncAdvise getBPartnerLocationSyncAdvice(@NonNull final Map<String, String> requestParameters)
+	{
+		final String locationIfExists = requestParameters.get(ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFEXISTS);
+		final String locationIfNotExists = requestParameters.get(ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFNOTEXISTS);
+
+		return getSyncAdviceFromString(locationIfExists, locationIfNotExists);
+	}
+
+	@NonNull
+	private SyncAdvise getBPartnerSyncAdvice(@NonNull final Map<String, String> requestParameters)
+	{
+		final String bpartnerIfExists = requestParameters.get(ExternalSystemConstants.PARAM_BPARTNER_IFEXISTS);
+		final String bpartnerIfNotExists = requestParameters.get(ExternalSystemConstants.PARAM_BPARTNER_IFNOTEXISTS);
+
+		return getSyncAdviceFromString(bpartnerIfExists, bpartnerIfNotExists);
+	}
+
+	@NonNull
+	private SyncAdvise getSyncAdviceFromString(@Nullable final String ifExists, @Nullable final String ifNotExists)
+	{
+		if (Check.isBlank(ifExists) || Check.isBlank(ifNotExists))
+		{
+			throw new RuntimeException("Missing sync advice information!");
+		}
+
+		return SyncAdvise.builder()
+				.ifExists(SyncAdvise.IfExists.valueOf(ifExists))
+				.ifNotExists(SyncAdvise.IfNotExists.valueOf(ifNotExists))
+				.build();
 	}
 }

@@ -40,7 +40,7 @@ import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
-import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
+import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcessor;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -49,7 +49,7 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
-import de.metas.common.util.NumberUtils;
+import lombok.Getter;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -66,9 +66,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -82,8 +83,8 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_ORG_CODE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_REDUCED_VAT_PRODUCT_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_REDUCED_VAT_RATES;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.SYNC_ADVISE_IFEXISTS_UPDATE_MERGE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.SYNC_ADVISE_IFEXISTS_DONT_UPDATE;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.SYNC_ADVISE_IFEXISTS_UPDATE_MERGE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.SYNC_ADVISE_IFNOTEXISTS_CREATE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.SYNC_ADVISE_IFNOTEXISTS_FAIL;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CLEAR_ORDERS_ROUTE_ID;
@@ -93,6 +94,15 @@ import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuild
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.OLCAND_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFEXISTS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFNOTEXISTS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_IFEXISTS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_IFNOTEXISTS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_VAT_RATES;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_VAT_RATES;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -283,7 +293,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 		}
 	}
 
-	private static class MockGetOrdersProcessor implements Processor
+	public static class MockGetOrdersProcessor implements Processor
 	{
 		@Override
 		public void process(final Exchange exchange) throws IOException
@@ -309,10 +319,19 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.currencyId2IsoCode(ImmutableMap.of(MOCK_CURRENCY_ID, MOCK_EUR_CODE))
 					.build();
 
-			final ImmutableMap<JsonMetasfreshId, List<BigDecimal>> productId2VatRates = ImmutableMap.of(
-					JsonMetasfreshId.of(MOCK_NORMAL_VAT_PRODUCT_ID), NumberUtils.asBigDecimalListOrNull(MOCK_NORMAL_VAT_RATES, ","),
-					JsonMetasfreshId.of(MOCK_REDUCED_VAT_PRODUCT_ID), NumberUtils.asBigDecimalListOrNull(MOCK_REDUCED_VAT_RATES, ","));
-			final TaxProductIdProvider taxProductIdProvider = TaxProductIdProvider.of(productId2VatRates);
+			final InputStream shopwareMappingsIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS);
+			final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = mapper.readValue(shopwareMappingsIS, JsonExternalSystemShopware6ConfigMappings.class);
+
+			final Map<String, String> parameters = new HashMap<>();
+			parameters.put(PARAM_FREIGHT_COST_NORMAL_VAT_RATES, MOCK_NORMAL_VAT_RATES);
+			parameters.put(PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID, String.valueOf(MOCK_NORMAL_VAT_PRODUCT_ID));
+			parameters.put(PARAM_FREIGHT_COST_REDUCED_VAT_RATES, MOCK_REDUCED_VAT_RATES);
+			parameters.put(PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID, String.valueOf(MOCK_REDUCED_VAT_PRODUCT_ID));
+			parameters.put(PARAM_CONFIG_MAPPINGS, mapper.writeValueAsString(shopware6ConfigMappings));
+			parameters.put(PARAM_BPARTNER_IFEXISTS, SYNC_ADVISE_IFEXISTS_UPDATE_MERGE);
+			parameters.put(PARAM_BPARTNER_IFNOTEXISTS, SYNC_ADVISE_IFNOTEXISTS_CREATE);
+			parameters.put(PARAM_BPARTNERLOCATION_IFEXISTS, SYNC_ADVISE_IFEXISTS_DONT_UPDATE);
+			parameters.put(PARAM_BPARTNERLOCATION_IFNOTEXISTS, SYNC_ADVISE_IFNOTEXISTS_FAIL);
 
 			final JsonExternalSystemRequest externalSystemRequest = JsonExternalSystemRequest
 					.builder()
@@ -320,23 +339,11 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.externalSystemConfigId(JsonMetasfreshId.of(1))
 					.orgCode(MOCK_ORG_CODE)
 					.command("command")
+					.parameters(parameters)
 					.build();
 
-			final InputStream shopwareMappingsIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS);
-			final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = mapper.readValue(shopwareMappingsIS, JsonExternalSystemShopware6ConfigMappings.class);
-
-			final ImportOrdersRouteContext ordersContext = ImportOrdersRouteContext.builder()
-					.orgCode(MOCK_ORG_CODE)
-					.externalSystemRequest(externalSystemRequest)
-					.shopwareClient(shopwareClient)
-					.currencyInfoProvider(currencyInfoProvider)
-					.shopware6ConfigMappings(shopware6ConfigMappings)
-					.taxProductIdProvider(taxProductIdProvider)
-					.bpartnerIfExists(SYNC_ADVISE_IFEXISTS_UPDATE_MERGE)
-					.bpartnerIfNotExists(SYNC_ADVISE_IFNOTEXISTS_CREATE)
-					.bpartnerLocationIfExists(SYNC_ADVISE_IFEXISTS_DONT_UPDATE)
-					.bpartnerLocationIfNotExists(SYNC_ADVISE_IFNOTEXISTS_FAIL)
-					.build();
+			final ImportOrdersRouteContext ordersContext = new GetOrdersProcessor()
+					.buildContext(externalSystemRequest, shopwareClient, currencyInfoProvider);
 
 			exchange.getIn().setBody(orderCandidates);
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
@@ -424,8 +431,9 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 		}
 	}
 
-	private static class MockSuccessfullyClearOrdersProcessor implements Processor
+	static class MockSuccessfullyClearOrdersProcessor implements Processor
 	{
+		@Getter
 		private int called = 0;
 
 		@Override
@@ -435,8 +443,9 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 		}
 	}
 
-	private static class MockSuccessfullyUpsertRuntimeParamsProcessor implements Processor
+	static class MockSuccessfullyUpsertRuntimeParamsProcessor implements Processor
 	{
+		@Getter
 		private int called = 0;
 
 		@Override

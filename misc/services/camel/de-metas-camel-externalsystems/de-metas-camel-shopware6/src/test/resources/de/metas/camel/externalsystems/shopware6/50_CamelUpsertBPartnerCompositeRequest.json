@@ -57,11 +57,7 @@
                 "contact": {
                   "firstName": "firstName",
                   "lastName": "lastName",
-                  "email": "someEamil@web.de",
-                  "syncAdvise": {
-                    "ifNotExists": "CREATE",
-                    "ifExists": "UPDATE_MERGE"
-                  }
+                  "email": "someEamil@web.de"
                 }
               }
             ],

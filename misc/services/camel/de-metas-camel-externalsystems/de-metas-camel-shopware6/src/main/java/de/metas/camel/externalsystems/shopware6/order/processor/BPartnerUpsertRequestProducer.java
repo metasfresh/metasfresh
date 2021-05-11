@@ -158,13 +158,13 @@ public class BPartnerUpsertRequestProducer
 		contactRequest.setFirstName(orderCustomer.getFirstName());
 		contactRequest.setLastName(orderCustomer.getLastName());
 		contactRequest.setEmail(orderCustomer.getEmail());
-		contactRequest.setSyncAdvise(bpartnerSyncAdvise);
 
 		return JsonRequestContactUpsert.builder()
 				.requestItem(JsonRequestContactUpsertItem.builder()
 									 .contactIdentifier(asExternalIdentifier(externalBPartnerId))
 									 .contact(contactRequest)
 									 .build())
+				.syncAdvise(bpartnerSyncAdvise)
 				.build();
 	}
 

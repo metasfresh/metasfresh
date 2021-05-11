@@ -61,7 +61,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "externalSystemShopware6ConfigMappingList" : [ ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
-      "salesRepJSONPath" : "/test/salesrep"
+      "salesRepJSONPath" : "/test/salesrep",
+      "bpartnerIfExists" : "UPDATE_MERGE",
+      "bpartnerIfNotExists" : "FAIL",
+      "bpartnerLocationIfExists" : "DONT_UPDATE",
+      "bpartnerLocationIfNotExists" : "CREATE"
     }
   }
 ]
@@ -87,7 +91,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     ],
     "bPartnerIdJSONPath" : "/test/bp",
     "bPartnerLocationIdJSONPath" : "/test/bpl",
-    "salesRepJSONPath" : "/test/salesrep"
+    "salesRepJSONPath" : "/test/salesrep",
+    "bpartnerIfExists" : "UPDATE_MERGE",
+    "bpartnerIfNotExists" : "FAIL",
+    "bpartnerLocationIfExists" : "DONT_UPDATE",
+    "bpartnerLocationIfNotExists" : "CREATE"
   }
 ]
 
@@ -107,7 +115,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "externalSystemShopware6ConfigMappingList" : [ ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
-      "salesRepJSONPath" : "/test/salesrep"
+      "salesRepJSONPath" : "/test/salesrep",
+      "bpartnerIfExists" : "UPDATE_MERGE",
+      "bpartnerIfNotExists" : "FAIL",
+      "bpartnerLocationIfExists" : "DONT_UPDATE",
+      "bpartnerLocationIfNotExists" : "CREATE"
     }
   }
 ]

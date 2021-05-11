@@ -27,8 +27,6 @@ import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderDeliveryItem;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
-import de.metas.common.rest_api.v2.SyncAdvise;
-import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.springframework.util.CollectionUtils;
@@ -64,14 +62,6 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 		importOrdersRouteContext.setShippingCost(lastOrderDeliveryItem.getJsonOrderDelivery().getShippingCost());
 		importOrdersRouteContext.setShippingMethodId(lastOrderDeliveryItem.getJsonOrderDelivery().getShippingMethodId());
 
-		final SyncAdvise bpartnerSyncAdvise = getSyncAdviceFromString(
-				importOrdersRouteContext.getBpartnerIfExists(),
-				importOrdersRouteContext.getBpartnerIfNotExists());
-
-		final SyncAdvise bpartnerLocationSyncAdvise = getSyncAdviceFromString(
-				importOrdersRouteContext.getBpartnerLocationIfExists(),
-				importOrdersRouteContext.getBpartnerLocationIfNotExists());
-
 		final BPartnerUpsertRequestProducer bPartnerUpsertRequestProducer = BPartnerUpsertRequestProducer.builder()
 				.shopwareClient(shopwareClient)
 				.billingAddressId(orderCandidate.getJsonOrder().getBillingAddressId())
@@ -80,8 +70,8 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 				.orgCode(orgCode)
 				.externalBPartnerId(orderCandidate.getEffectiveCustomerId())
 				.bPartnerLocationIdentifierCustomPath(bPartnerLocationIdJSONPath)
-				.bpartnerSyncAdvise(bpartnerSyncAdvise)
-				.bpartnerLocationSyncAdvise(bpartnerLocationSyncAdvise)
+				.bpartnerSyncAdvise(importOrdersRouteContext.getBpartnerSyncAdvise())
+				.bpartnerLocationSyncAdvise(importOrdersRouteContext.getBPartnerLocationSynAdvise())
 				.build();
 
 		final BPartnerRequestProducerResult bPartnerRequestProducerResult = bPartnerUpsertRequestProducer.run();
@@ -94,14 +84,5 @@ public class CreateBPartnerUpsertReqProcessor implements Processor
 				.build();
 
 		exchange.getIn().setBody(bpUpsertCamelRequest);
-	}
-
-	@NonNull
-	private SyncAdvise getSyncAdviceFromString(@NonNull final String ifExists, @NonNull final String ifNotExists)
-	{
-		return SyncAdvise.builder()
-				.ifExists(SyncAdvise.IfExists.valueOf(ifExists))
-				.ifNotExists(SyncAdvise.IfNotExists.valueOf(ifNotExists))
-				.build();
 	}
 }
