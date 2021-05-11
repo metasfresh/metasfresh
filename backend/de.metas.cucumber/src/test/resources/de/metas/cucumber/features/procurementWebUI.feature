@@ -1,5 +1,5 @@
 Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
-
+  
   Scenario: metasfresh provides bpartner data to the procurement-WebUI
     Given metasfresh has date and time 2020-02-28T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -25,6 +25,7 @@ Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
     And metasfresh contains C_Flatrate_Terms:
       | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.PMM_Product_ID.Identifier | StartDate  | EndDate    |
       | c1         | procurement_1                       | bpartner_1                  | bpartner_1                          | p_1                         | pmp_1                         | 2020-01-01 | 2021-01-31 |
+    And RabbitMQ's message queues are purged
     When metasfresh receives a GetAllBPartnersRequest via RabbitMQ
     Then metasfresh responds with a PutBPartnersRequest that contains these BPartners:
       | Identifier | Name                   | Deleted |
