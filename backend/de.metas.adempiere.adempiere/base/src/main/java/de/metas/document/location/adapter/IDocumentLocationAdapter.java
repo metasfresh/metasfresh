@@ -68,6 +68,11 @@ public interface IDocumentLocationAdapter extends IDocumentLocationAdapterTempla
 		return BPartnerLocationAndCaptureId.optionalOfRepoId(getC_BPartner_ID(), getC_BPartner_Location_ID(), getC_BPartner_Location_Value_ID());
 	}
 
+	default Optional<BPartnerContactId> getBPartnerContactId()
+	{
+		return Optional.ofNullable(BPartnerContactId.ofRepoIdOrNull(getC_BPartner_ID(), getAD_User_ID()));
+	}
+
 	@Override
 	default void setRenderedAddressAndCapturedLocation(@NonNull final RenderedAddressAndCapturedLocation from)
 	{
