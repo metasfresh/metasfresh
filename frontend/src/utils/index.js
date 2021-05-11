@@ -132,6 +132,9 @@ export function cleanupFilter({ filterId, parameters }) {
       if (param.widgetType === 'Date' && param.value) {
         param.value = Moment(param.value).format(DATE_FORMAT);
       }
+      if (param.widgetType === 'Date' && param.valueTo) {
+        param.valueTo = Moment(param.valueTo).format(DATE_FORMAT);
+      }
       param = cleanupParameter(param);
       parameters[index] = param;
     });
