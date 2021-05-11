@@ -6,9 +6,11 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService.HUsToNewCUs
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.process.IProcessDefaultParameter;
@@ -59,9 +61,11 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		extends WEBUI_PP_Order_Template
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
-	private final Logger logger = LogManager.getLogger(WEBUI_PP_Order_M_Source_HU_IssueCUQty.class);
-
+	private static final Logger logger = LogManager.getLogger(WEBUI_PP_Order_M_Source_HU_IssueCUQty.class);
 	private final IPPOrderBOMBL ppOrderBomBL = Services.get(IPPOrderBOMBL.class);
+	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 
 	private static final String PARAM_QtyCU = "QtyCU";
 
@@ -151,7 +155,7 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 		final PPOrderLinesView ppOrderView = getView();
 
 		final PPOrderId ppOrderId = ppOrderView.getPpOrderId();
-		Services.get(IHUPPOrderBL.class)
+		huPPOrderBL
 				.createIssueProducer(ppOrderId)
 				.considerIssueMethodForQtyToIssueCalculation(false) // issue exactly the CUs we split
 				.createIssues(extractedCUs);
@@ -197,9 +201,10 @@ public class WEBUI_PP_Order_M_Source_HU_IssueCUQty
 
 			if (row.isProcessed())
 			{
-				final I_PP_Order_BOMLine bomLine = Services.get(IPPOrderBOMDAO.class).getOrderBOMLineById(row.getOrderBOMLineId());
+				final I_PP_Order_BOMLine bomLine = ppOrderBOMDAO.getOrderBOMLineById(row.getOrderBOMLineId());
 
-				final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.computeQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getUom());
+				final DraftPPOrderQuantities draftQtys = huPPOrderQtyBL.getDraftPPOrderQuantities(row.getOrderId());
+				final Quantity quantityToIssueForWhatWasReceived = ppOrderBomBL.computeQtyToIssueBasedOnFinishedGoodReceipt(bomLine, row.getUom(), draftQtys);
 				return qtyLeftToIssue.min(quantityToIssueForWhatWasReceived);
 			}
 			else
