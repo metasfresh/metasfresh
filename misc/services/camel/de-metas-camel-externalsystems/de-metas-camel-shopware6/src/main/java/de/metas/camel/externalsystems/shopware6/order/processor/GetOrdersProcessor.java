@@ -110,6 +110,11 @@ public class GetOrdersProcessor implements Processor
 		final CurrencyInfoProvider currencyInfoProvider = (CurrencyInfoProvider) exchange.getContext().createProducerTemplate()
 				.sendBody("direct:" + GET_CURRENCY_ROUTE_ID, ExchangePattern.InOut, getCurrenciesRequest);
 
+		final String bpartnerIfExists = request.getParameters().get(ExternalSystemConstants.PARAM_BPARTNER_IFEXISTS);
+		final String bpartnerIfNotExists = request.getParameters().get(ExternalSystemConstants.PARAM_BPARTNER_IFNOTEXISTS);
+		final String bpartnerLocationIfExists = request.getParameters().get(ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFEXISTS);
+		final String bpartnerLocationIfNotExists = request.getParameters().get(ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFNOTEXISTS);
+
 		final ImportOrdersRouteContext ordersContext = ImportOrdersRouteContext.builder()
 				.orgCode(request.getOrgCode())
 				.externalSystemRequest(request)
@@ -118,6 +123,10 @@ public class GetOrdersProcessor implements Processor
 				.bpLocationCustomJsonPath(bPartnerLocationIdJSONPath)
 				.currencyInfoProvider(currencyInfoProvider)
 				.taxProductIdProvider(getTaxProductIdProvider(request))
+				.bpartnerIfExists(bpartnerIfExists)
+				.bpartnerIfNotExists(bpartnerIfNotExists)
+				.bpartnerLocationIfExists(bpartnerLocationIfExists)
+				.bpartnerLocationIfNotExists(bpartnerLocationIfNotExists)
 				.build();
 
 		exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);

@@ -10,7 +10,11 @@
             "code": "ext-Shopware6-customerNumber",
             "name": "firstName lastName",
             "companyName": "company",
-            "customer": true
+            "customer": true,
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "UPDATE_MERGE"
+            }
           },
           "locations": {
             "requestItems": [
@@ -40,7 +44,11 @@
                   "billTo": false
                 }
               }
-            ]
+            ],
+            "syncAdvise": {
+              "ifNotExists": "FAIL",
+              "ifExists": "DONT_UPDATE"
+            }
           },
           "contacts": {
             "requestItems": [
@@ -49,7 +57,11 @@
                 "contact": {
                   "firstName": "firstName",
                   "lastName": "lastName",
-                  "email": "someEamil@web.de"
+                  "email": "someEamil@web.de",
+                  "syncAdvise": {
+                    "ifNotExists": "CREATE",
+                    "ifExists": "UPDATE_MERGE"
+                  }
                 }
               }
             ],

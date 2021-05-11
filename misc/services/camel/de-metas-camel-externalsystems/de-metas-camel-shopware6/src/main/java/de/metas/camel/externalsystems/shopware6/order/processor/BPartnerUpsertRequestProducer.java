@@ -81,6 +81,12 @@ public class BPartnerUpsertRequestProducer
 	String bPartnerLocationIdentifierCustomPath;
 
 	@NonNull
+	SyncAdvise bpartnerSyncAdvise;
+
+	@NonNull
+	SyncAdvise bpartnerLocationSyncAdvise;
+
+	@NonNull
 	BPartnerRequestProducerResult.BPartnerRequestProducerResultBuilder resultBuilder;
 
 	@Builder
@@ -91,7 +97,9 @@ public class BPartnerUpsertRequestProducer
 			@NonNull final JsonOrderAddressAndCustomId shippingAddress,
 			@NonNull final String billingAddressId,
 			@Nullable final String bPartnerLocationIdentifierCustomPath,
-			@NonNull final String externalBPartnerId)
+			@NonNull final String externalBPartnerId,
+			@NonNull final SyncAdvise bpartnerSyncAdvise,
+			@NonNull final SyncAdvise bpartnerLocationSyncAdvise)
 	{
 		this.orgCode = orgCode;
 		this.shopwareClient = shopwareClient;
@@ -100,6 +108,8 @@ public class BPartnerUpsertRequestProducer
 		this.billingAddressId = billingAddressId;
 		this.bPartnerLocationIdentifierCustomPath = bPartnerLocationIdentifierCustomPath;
 		this.externalBPartnerId = externalBPartnerId;
+		this.bpartnerSyncAdvise = bpartnerSyncAdvise;
+		this.bpartnerLocationSyncAdvise = bpartnerLocationSyncAdvise;
 		this.countryIdToISOCode = new HashMap<>();
 		this.resultBuilder = BPartnerRequestProducerResult.builder();
 	}
@@ -135,6 +145,7 @@ public class BPartnerUpsertRequestProducer
 		jsonRequestBPartner.setCompanyName(orderCustomer.getCompany());
 		jsonRequestBPartner.setCode(asExternalIdentifier(orderCustomer.getCustomerNumber()));
 		jsonRequestBPartner.setCustomer(true);
+		jsonRequestBPartner.setSyncAdvise(bpartnerSyncAdvise);
 		// jsonRequestBPartner.setEmail(orderCustomer.getEmail()) todo
 
 		return jsonRequestBPartner;
@@ -147,6 +158,7 @@ public class BPartnerUpsertRequestProducer
 		contactRequest.setFirstName(orderCustomer.getFirstName());
 		contactRequest.setLastName(orderCustomer.getLastName());
 		contactRequest.setEmail(orderCustomer.getEmail());
+		contactRequest.setSyncAdvise(bpartnerSyncAdvise);
 
 		return JsonRequestContactUpsert.builder()
 				.requestItem(JsonRequestContactUpsertItem.builder()
@@ -166,6 +178,7 @@ public class BPartnerUpsertRequestProducer
 		{
 			upsertLocationsRequestBuilder.requestItem(getUpsertLocationItemRequest(shippingAddress, false, true));
 		}
+		upsertLocationsRequestBuilder.syncAdvise(bpartnerLocationSyncAdvise);
 
 		return upsertLocationsRequestBuilder.build();
 	}

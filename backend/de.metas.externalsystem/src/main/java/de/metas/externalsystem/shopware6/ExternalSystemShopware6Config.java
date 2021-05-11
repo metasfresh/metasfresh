@@ -57,6 +57,14 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	FreightCostConfig freightCostNormalVatConfig;
 	@Nullable
 	FreightCostConfig freightCostReducedVatConfig;
+	@NonNull
+	String bpartnerIfExists;
+	@NonNull
+	String bpartnerIfNotExists;
+	@NonNull
+	String bpartnerLocationIfExists;
+	@NonNull
+	String bpartnerLocationIfNotExists;
 
 	@Builder
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
@@ -69,7 +77,11 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @Nullable String bPartnerLocationIdJSONPath,
 			final @Nullable String salesRepJSONPath,
 			final @Nullable FreightCostConfig freightCostNormalVatConfig,
-			final @Nullable FreightCostConfig freightCostReducedVatConfig)
+			final @Nullable FreightCostConfig freightCostReducedVatConfig,
+			final @NonNull String bpartnerIfExists,
+			final @NonNull String bpartnerIfNotExists,
+			final @NonNull String bpartnerLocationIfExists,
+			final @NonNull String bpartnerLocationIfNotExists)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -82,6 +94,10 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.salesRepJSONPath = salesRepJSONPath;
 		this.freightCostNormalVatConfig = freightCostNormalVatConfig;
 		this.freightCostReducedVatConfig = freightCostReducedVatConfig;
+		this.bpartnerIfExists = bpartnerIfExists;
+		this.bpartnerIfNotExists = bpartnerIfNotExists;
+		this.bpartnerLocationIfExists = bpartnerLocationIfExists;
+		this.bpartnerLocationIfNotExists = bpartnerLocationIfNotExists;
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)

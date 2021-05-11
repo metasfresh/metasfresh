@@ -51,6 +51,10 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BASE_PATH;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFEXISTS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFNOTEXISTS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_IFEXISTS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_IFNOTEXISTS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_SECRET;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
@@ -99,6 +103,10 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID, shopware6Config.getBPartnerLocationIdJSONPath());
 		parameters.put(PARAM_JSON_PATH_SALES_REP_ID, shopware6Config.getSalesRepJSONPath());
 		parameters.put(PARAM_CONFIG_MAPPINGS, getConfigMappings(shopware6Config));
+		parameters.put(PARAM_BPARTNER_IFEXISTS, shopware6Config.getBpartnerIfExists());
+		parameters.put(PARAM_BPARTNER_IFNOTEXISTS, shopware6Config.getBpartnerIfNotExists());
+		parameters.put(PARAM_BPARTNERLOCATION_IFEXISTS, shopware6Config.getBpartnerLocationIfExists());
+		parameters.put(PARAM_BPARTNERLOCATION_IFNOTEXISTS, shopware6Config.getBpartnerLocationIfNotExists());
 
 		if (shopware6Config.getFreightCostNormalVatConfig() != null)
 		{

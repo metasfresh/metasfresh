@@ -101,6 +101,18 @@ public class ImportOrdersRouteContext
 	private TaxProductIdProvider taxProductIdProvider;
 
 	@NonNull
+	private String bpartnerIfExists;
+
+	@NonNull
+	private String bpartnerIfNotExists;
+
+	@NonNull
+	private String bpartnerLocationIfExists;
+
+	@NonNull
+	private String bpartnerLocationIfNotExists;
+
+	@NonNull
 	public OrderCandidate getOrderNotNull()
 	{
 		if (order == null)

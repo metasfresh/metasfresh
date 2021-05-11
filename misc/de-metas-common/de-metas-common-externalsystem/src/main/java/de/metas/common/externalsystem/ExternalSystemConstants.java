@@ -47,4 +47,9 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_UPDATED_AFTER_OVERRIDE = "UpdatedAfterOverride";
 
+	public static final String PARAM_BPARTNER_IFEXISTS = "BPartner_IfExists";
+	public static final String PARAM_BPARTNER_IFNOTEXISTS = "BPartner_IfNotExists";
+	public static final String PARAM_BPARTNERLOCATION_IFEXISTS = "BPartnerLocation_IfExists";
+	public static final String PARAM_BPARTNERLOCATION_IFNOTEXISTS = "BPartnerLocation_IfNotExists";
+
 }
