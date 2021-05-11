@@ -115,7 +115,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	@NonNull
 	BPartnerLocationId getBPartnerLocationIdByRepoId(final int repoId);
-	
+
 	/**
 	 * @deprecated in all cases i can imagine, if the caller has a {@code bpartnerLocationId}, they need the actual record, even if it is inactive.
 	 * Think e.g. of a completed shipment. Therefore, please consider using {@link #getBPartnerLocationByIdEvenInactive(BPartnerLocationId)} instead.
@@ -201,7 +201,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * <p>
 	 * Use case: why have BPartner-Values such as "G01234", but on ESR-payment documents, there is only "01234", because there it may only contain digits.
 	 *
-	 * @param bpValue an exact bpartner value. Try to retrieve by that value first, if <code>null</code> or empty, directly try the fallback
+	 * @param bpValue                 an exact bpartner value. Try to retrieve by that value first, if <code>null</code> or empty, directly try the fallback
 	 * @param bpValueSuffixToFallback the suffix of a bpartner value. Only use if retrieval by <code>bpValue</code> produced no results. If <code>null</code> or empty, return <code>null</code>.
 	 * @return a single bPartner or <code>null</code>
 	 * @throws org.adempiere.exceptions.DBMoreThanOneRecordsFoundException if there is more than one matching partner.
@@ -260,12 +260,12 @@ public interface IBPartnerDAO extends ISingletonService
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
 	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpartnerLocationId);
-	
+
 	/**
 	 * Retrieve default/first bill to location.
 	 *
 	 * @param alsoTryBilltoRelation if <code>true</code> and the given partner has no billTo location, then the method also checks if there is a billTo-<code>C_BP_Relation</code> and if so, returns
-	 *            that relation's bPartner location.
+	 *                              that relation's bPartner location.
 	 * @return bill to location or null
 	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */
@@ -371,4 +371,5 @@ public interface IBPartnerDAO extends ISingletonService
 
 	BPartnerLocationId retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
 
+	BPartnerLocationId retrieveLastUpdatedLocation(BPartnerId bpartnerId);
 }
