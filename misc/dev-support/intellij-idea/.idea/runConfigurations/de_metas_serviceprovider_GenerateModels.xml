@@ -1,0 +1,15 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="de.metas.serviceprovider_GenerateModels" type="Application" factoryName="Application">
+    <option name="ALTERNATIVE_JRE_PATH" value="1.8" />
+    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
+    <option name="INCLUDE_PROVIDED_SCOPE" value="true" />
+    <option name="MAIN_CLASS_NAME" value="org.adempiere.util.GenerateModel" />
+    <module name="de.metas.serviceprovider.base" />
+    <option name="PROGRAM_PARAMETERS" value="./src/main/java-gen/de/metas/serviceprovider/model de.metas.serviceprovider.model 'de.metas.serviceprovider'" />
+    <option name="VM_PARAMETERS" value="-DPropertyFile=$ProjectFileDir$\metasfresh.properties" />
+    <option name="WORKING_DIRECTORY" value="$MODULE_WORKING_DIR$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
