@@ -769,7 +769,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final LookupValuesList productLookupValues,
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final ZonedDateTime dateOrNull,
-			@NonNull final WarehouseId warehouseId,
+			@Nullable final WarehouseId warehouseId,
 			@NonNull final String adLanguage,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId)
@@ -811,7 +811,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private List<Group> getAFSAvailabilityInfoGroups(final @NonNull LookupValuesList productLookupValues,
 			final @NonNull ZonedDateTime dateOrNull,
-			final @NonNull WarehouseId warehouseId,
+			final @Nullable WarehouseId warehouseId,
 			final @NonNull ClientId clientId,
 			final @NonNull OrgId orgId)
 	{
