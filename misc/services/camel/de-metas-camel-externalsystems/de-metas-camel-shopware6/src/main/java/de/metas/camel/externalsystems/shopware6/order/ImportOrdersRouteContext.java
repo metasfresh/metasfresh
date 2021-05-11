@@ -23,9 +23,11 @@
 package de.metas.camel.externalsystems.shopware6.order;
 
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonShippingCost;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.processor.DateAndImportStatus;
+import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import lombok.AccessLevel;
@@ -87,6 +89,16 @@ public class ImportOrdersRouteContext
 	@Setter(AccessLevel.NONE)
 	@Getter(AccessLevel.NONE)
 	private DateAndImportStatus nextImportStartingTimestamp;
+
+	@Nullable
+	@Getter(AccessLevel.NONE)
+	private JsonShippingCost shippingCost;
+
+	@Nullable
+	private String shippingMethodId;
+
+	@Nullable
+	private TaxProductIdProvider taxProductIdProvider;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()
@@ -179,5 +191,16 @@ public class ImportOrdersRouteContext
 		}
 
 		return Optional.of(nextImportStartingTimestamp.getTimestamp());
+	}
+
+	@NonNull
+	public JsonShippingCost getShippingCostNotNull()
+	{
+		if (shippingCost == null)
+		{
+			throw new RuntimeException("shippingCost cannot be null at this stage!");
+		}
+
+		return shippingCost;
 	}
 }
