@@ -57,4 +57,5 @@ public interface Shopware6Constants
 	String DEFAULT_DELIVERY_VIA_RULE = "D";
 	BigDecimal DEFAULT_ORDER_LINE_DISCOUNT = BigDecimal.ZERO;
 	String MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE = "The order had multiple shipping addresses, the process picked the last one!";
+	String FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX = "TaxRate_";
 }

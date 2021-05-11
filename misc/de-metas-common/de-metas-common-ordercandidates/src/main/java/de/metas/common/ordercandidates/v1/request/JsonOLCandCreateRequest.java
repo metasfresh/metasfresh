@@ -153,7 +153,8 @@ public class JsonOLCandCreateRequest
 	String pricingSystemCode;
 
 	@ApiModelProperty( //
-			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) price.")
+			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) price.\n"
+					+ "If the price has too many digits, it is rounded according to the price list's price precision.")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal price;
 

@@ -14,10 +14,12 @@ import de.metas.common.ordercandidates.v2.request.JSONPaymentRule;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.common.ordercandidates.v2.request.JsonSalesPartner;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.shipper.ShipperExternalReferenceType;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.impl.InputDataSourceQuery;
@@ -236,6 +238,7 @@ final class MasterdataProvider
 		return dataSourceId.orElse(null);
 	}
 
+	@Nullable
 	public ShipperId getShipperId(final JsonOLCandCreateRequest request)
 	{
 		final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
@@ -247,31 +250,38 @@ final class MasterdataProvider
 			return null;
 		}
 
-		final IdentifierString shipperIdentifier = IdentifierString.of(shipper);
-
+		final OrgId orgId = getOrgId(request.getOrgCode());
+		final ExternalIdentifier shipperExternalIdentifier = ExternalIdentifier.of(shipper);
 		final ShipperId shipperId;
 
-		switch (shipperIdentifier.getType())
+		switch (shipperExternalIdentifier.getType())
 		{
-
 			case METASFRESH_ID:
-				shipperId = ShipperId.ofRepoIdOrNull(shipperIdentifier.asMetasfreshId().getValue());
+				shipperId = ShipperId.ofRepoId(shipperExternalIdentifier.asMetasfreshId().getValue());
 				break;
 			case VALUE:
-				shipperId = shipperDAO.getShipperIdByValue(shipperIdentifier.asValue(), getOrgId(request.getOrgCode())).orElse(null);
+				shipperId = shipperDAO.getShipperIdByValue(shipperExternalIdentifier.asValue(), orgId).orElse(null);
 				break;
-
+			case EXTERNAL_REFERENCE:
+				shipperId = externalReferenceService.getJsonMetasfreshIdFromExternalReference(orgId, shipperExternalIdentifier, ShipperExternalReferenceType.SHIPPER)
+						.map(JsonMetasfreshId::getValue)
+						.map(ShipperId::ofRepoId)
+						.orElse(null);
+				break;
 			default:
-				throw new InvalidIdentifierException(shipperIdentifier);
+				throw new InvalidIdentifierException(shipperExternalIdentifier.getRawValue());
 		}
 
 		if (shipperId == null)
 		{
-			throw MissingResourceException.builder().resourceName("shipper").resourceIdentifier(shipperIdentifier.toJson()).parentResource(request).build();
+			throw MissingResourceException.builder()
+					.resourceName("shipper")
+					.resourceIdentifier(shipperExternalIdentifier.getRawValue())
+					.parentResource(request)
+					.build();
 		}
 
 		return shipperId;
-
 	}
 
 	/**

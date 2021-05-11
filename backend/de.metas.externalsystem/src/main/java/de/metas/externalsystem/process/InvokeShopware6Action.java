@@ -54,6 +54,10 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BASE_
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_SECRET;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_VAT_RATES;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID;
@@ -95,6 +99,18 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID, shopware6Config.getBPartnerLocationIdJSONPath());
 		parameters.put(PARAM_JSON_PATH_SALES_REP_ID, shopware6Config.getSalesRepJSONPath());
 		parameters.put(PARAM_CONFIG_MAPPINGS, getConfigMappings(shopware6Config));
+
+		if (shopware6Config.getFreightCostNormalVatConfig() != null)
+		{
+			parameters.put(PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID, String.valueOf(shopware6Config.getFreightCostNormalVatConfig().getProductId().getRepoId()));
+			parameters.put(PARAM_FREIGHT_COST_NORMAL_VAT_RATES, shopware6Config.getFreightCostNormalVatConfig().getVatRates());
+		}
+
+		if (shopware6Config.getFreightCostReducedVatConfig() != null)
+		{
+			parameters.put(PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID, String.valueOf(shopware6Config.getFreightCostReducedVatConfig().getProductId().getRepoId()));
+			parameters.put(PARAM_FREIGHT_COST_REDUCED_VAT_RATES, shopware6Config.getFreightCostReducedVatConfig().getVatRates());
+		}
 
 		if (getSinceParameterValue() != null)
 		{

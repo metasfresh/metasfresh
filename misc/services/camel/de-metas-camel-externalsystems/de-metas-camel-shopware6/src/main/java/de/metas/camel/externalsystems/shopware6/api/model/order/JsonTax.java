@@ -20,21 +20,34 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6;
+package de.metas.camel.externalsystems.shopware6.api.model.order;
 
-public interface ShopwareTestConstants
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.math.BigDecimal;
+
+@Value
+@Builder
+@JsonDeserialize(builder = JsonTax.JsonTaxBuilder.class)
+public class JsonTax
 {
-	String MOCK_ORG_CODE = "orgCode";
+	@NonNull
+	@JsonProperty("taxRate")
+	BigDecimal taxRate;
 
-	String MOCK_BPARTNER_LOCATION_ID_JSON_PATH = "/customFields/originalAddressId";
-	String MOCK_BPARTNER_ID_JSON_PATH = "/customFields/originalAddressId";
+	@NonNull
+	@JsonProperty("price")
+	BigDecimal price;
 
-	String MOCK_EUR_CODE = "EUR";
-	String MOCK_CURRENCY_ID = "currencyId";
-
-	int MOCK_NORMAL_VAT_PRODUCT_ID = 1001;
-	int MOCK_REDUCED_VAT_PRODUCT_ID = 1002;
-
-	String MOCK_NORMAL_VAT_RATES = "7.7,19";
-	String MOCK_REDUCED_VAT_RATES = "5.5,12";
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	@JsonPOJOBuilder(withPrefix = "")
+	static class JsonTaxBuilder
+	{
+	}
 }

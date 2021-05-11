@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,43 +20,44 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.FlatrateTransitionId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.order.InvoiceRule;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
 
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_M_Product_ID;
 import static de.metas.procurement.base.model.I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class C_Flatrate_Term_StepDef
 {
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final StepDefData<I_M_Product> productTable;
+	private final StepDefData<I_C_Flatrate_Conditions> conditionsTable;
 	private final StepDefData<I_PMM_Product> pmmProductTable;
 	private final StepDefData<I_C_Flatrate_Term> contractTable;
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
@@ -65,51 +66,39 @@ public class C_Flatrate_Term_StepDef
 	public C_Flatrate_Term_StepDef(
 			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
 			@NonNull final StepDefData<I_M_Product> productTable,
+			@NonNull final StepDefData<I_C_Flatrate_Conditions> conditionsTable,
 			@NonNull final StepDefData<I_PMM_Product> pmmProductTable,
 			@NonNull final StepDefData<I_C_Flatrate_Term> contractTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.productTable = productTable;
+		this.conditionsTable = conditionsTable;
 		this.pmmProductTable = pmmProductTable;
 		this.contractTable = contractTable;
 	}
 
-	@Given("metasfresh contains procurement C_Flatrate_Terms:")
-	public void metasfresh_contains_c_flatrate_terms(@NonNull final io.cucumber.datatable.DataTable dataTable)
+	@Given("metasfresh contains C_Flatrate_Terms:")
+	public void metasfresh_contains_c_flatrate_terms(@NonNull final DataTable dataTable)
 	{
-		final I_C_Flatrate_Conditions flatrateConditions = flatrateDAO
-				.retrieveConditions(Env.getCtx())
-				.stream()
-				.filter(c -> c.getName().equals("Procurement-Test") && c.getAD_Org_ID() == StepDefConstants.ORG_ID.getRepoId())
-				.findAny()
-				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_C_Flatrate_Conditions.class));
-
-		flatrateConditions.setName("Procurement-Test");
-		flatrateConditions.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-		flatrateConditions.setType_Conditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Procurement);
-		flatrateConditions.setC_Flatrate_Transition_ID(StepDefConstants.FLATRATE_TRANSITION_ID.getRepoId());
-		flatrateConditions.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
-		flatrateConditions.setDocStatus(X_C_Flatrate_Conditions.DOCSTATUS_Completed);
-		flatrateConditions.setProcessed(true);
-		InterfaceWrapperHelper.saveRecord(flatrateConditions);
-
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String billPartnerIdentifier = tableRow.get(COLUMNNAME_Bill_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			assertThat(billPartnerIdentifier).as("Bill_BPartner_ID.RecordIdentifier is mandatory").isNotBlank();
+			final String billPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Bill_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_C_BPartner billPartner = bpartnerTable.get(billPartnerIdentifier);
 
 			final I_C_BPartner_Location billPartnerLocation = bPartnerDAO.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery.builder().bpartnerId(BPartnerId.ofRepoId(billPartner.getC_BPartner_ID()))
-					.type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
-					.build());
+																										   .type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
+																										   .build());
 			assertThat(billPartnerLocation).isNotNull(); // guard
 
+			final String conditionsIdentifier =DataTableUtil.extractStringForColumnName(tableRow,COLUMNNAME_C_Flatrate_Conditions_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_Flatrate_Conditions conditions = conditionsTable.get(conditionsIdentifier);
+			
 			final I_C_Flatrate_Data flatrateData = flatrateDAO.retriveOrCreateFlatrateData(billPartner);
 
 			final I_C_Flatrate_Term contractRecord = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
 			contractRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			contractRecord.setC_Flatrate_Conditions_ID(flatrateConditions.getC_Flatrate_Conditions_ID());
+			contractRecord.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
 			contractRecord.setC_Flatrate_Data_ID(flatrateData.getC_Flatrate_Data_ID());
 			contractRecord.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 			contractRecord.setProcessed(true);
@@ -123,8 +112,8 @@ public class C_Flatrate_Term_StepDef
 				contractRecord.setDropShip_BPartner_ID(dropshipPartner.getC_BPartner_ID());
 
 				final I_C_BPartner_Location dropshipLocation = bPartnerDAO.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery.builder().bpartnerId(BPartnerId.ofRepoId(billPartner.getC_BPartner_ID()))
-						.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
-						.build());
+																											.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
+																											.build());
 				assertThat(dropshipLocation).isNotNull(); // guard
 				contractRecord.setDropShip_Location_ID(dropshipLocation.getC_BPartner_Location_ID());
 			}

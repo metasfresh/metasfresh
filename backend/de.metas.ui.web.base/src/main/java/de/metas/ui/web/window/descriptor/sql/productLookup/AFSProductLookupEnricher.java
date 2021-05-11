@@ -38,6 +38,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
@@ -49,6 +50,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
 /**
  * Note: AFS stands for "available for sales" and basically means "on-hand qty minus pending shipments"
  */
@@ -110,7 +112,7 @@ public class AFSProductLookupEnricher
 			@NonNull final Instant dateOfInterest,
 			final int salesOrderLookBehindHours,
 			final int shipmentDateLookAheadHours,
-			@NonNull final WarehouseId warehouseId)
+			@Nullable final WarehouseId warehouseId)
 	{
 		final AvailableForSalesMultiQuery.AvailableForSalesMultiQueryBuilder result = AvailableForSalesMultiQuery.builder();
 
@@ -140,13 +142,17 @@ public class AFSProductLookupEnricher
 		return result.build();
 	}
 
-	private ImmutableList<AttributesKey> retrieveAttributesKeys(final WarehouseId warehouseId, final ProductId productId)
+	private ImmutableList<AttributesKey> retrieveAttributesKeys(@Nullable final WarehouseId warehouseId, @NonNull final ProductId productId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_MD_Stock.class)
+		final IQueryBuilder<I_MD_Stock> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Stock.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, warehouseId.getRepoId())
 				.addEqualsFilter(I_MD_Stock.COLUMN_M_Product_ID, productId.getRepoId())
-				.addCompareFilter(I_MD_Stock.COLUMN_QtyOnHand, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
+				.addCompareFilter(I_MD_Stock.COLUMN_QtyOnHand, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);
+		if (warehouseId != null)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, warehouseId.getRepoId());
+		}
+		return queryBuilder
 				.create()
 				.stream().map(s -> AttributesKey.ofString(s.getAttributesKey()))
 				.collect(ImmutableList.toImmutableList());
