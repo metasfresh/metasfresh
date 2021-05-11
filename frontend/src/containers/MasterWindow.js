@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
 import { forEach, get } from 'lodash';
 
 import { connectWS, disconnectWS } from '../utils/websockets';
@@ -190,7 +189,8 @@ class MasterWindowContainer extends PureComponent {
 
     updateTabLayout(windowId, activeTabId)
       .then(() => {
-        getTabRequest(activeTabId, windowId, docId, sortingOrder).then((rows) => updateTabTableData(tableId, rows)
+        getTabRequest(activeTabId, windowId, docId, sortingOrder).then((rows) =>
+          updateTabTableData(tableId, rows)
         );
       })
       .catch((error) => error);
@@ -303,7 +303,6 @@ MasterWindowContainer.propTypes = {
   fireUpdateData: PropTypes.func.isRequired,
   sortTab: PropTypes.func.isRequired,
   updateTabRowsData: PropTypes.func.isRequired,
-  push: PropTypes.func.isRequired,
   deleteTable: PropTypes.func.isRequired,
   updateTabTableData: PropTypes.func.isRequired,
   updateTabLayout: PropTypes.func.isRequired,
@@ -334,7 +333,6 @@ export default connect(
     sortTab,
     updateTabRowsData,
     updateTabTableData,
-    push,
     deleteTable,
     updateTabLayout,
   }

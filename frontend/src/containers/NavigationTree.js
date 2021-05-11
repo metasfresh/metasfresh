@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import DebounceInput from 'react-debounce-input';
 import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
 
+import history from '../services/History';
 import {
   nodePathsRequest,
   queryPathsRequest,
@@ -267,13 +267,11 @@ class NavigationTree extends Component {
   }
 
   handleRedirect = (elementId, isNew, type) => {
-    const { dispatch } = this.props;
-    dispatch(push('/' + (type ? type : 'window') + '/' + elementId));
+    history.push('/' + (type ? type : 'window') + '/' + elementId);
   };
 
   handleNewRedirect = (elementId) => {
-    const { dispatch } = this.props;
-    dispatch(push('/window/' + elementId + '/new'));
+    history.push('/window/' + elementId + '/new');
   };
 
   handleDeeper = (e, nodeId) => {

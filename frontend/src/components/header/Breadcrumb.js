@@ -2,7 +2,8 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
+
+import history from '../../services/History';
 import { clearAllFilters } from '../../actions/FiltersActions';
 import keymap from '../../shortcuts/keymap';
 import Tooltips from '../tooltips/Tooltips';
@@ -39,8 +40,7 @@ class Breadcrumb extends Component {
    * @param {*} page
    */
   linkToEntityPage = (entity, page) => {
-    const { dispatch } = this.props;
-    dispatch(push(`/${entity}/${page}`));
+    history.push(`/${entity}/${page}`);
   };
 
   /**

@@ -4,6 +4,7 @@ import React, { PureComponent } from 'react';
 
 import { discardNewRequest } from '../../api';
 import { getTableId } from '../../reducers/tables';
+import history from '../../services/History';
 
 import BlankPage from '../BlankPage';
 import Container from '../Container';
@@ -102,7 +103,6 @@ export default class MasterWindow extends PureComponent {
   componentWillUnmount() {
     const {
       master,
-      push,
       location: { pathname },
       params: { windowId, docId: documentId },
     } = this.props;
@@ -119,7 +119,7 @@ export default class MasterWindow extends PureComponent {
         // discardNewRequest({ windowType, documentId });
         discardNewRequest({ windowType: windowId, documentId });
       } else {
-        push(pathname);
+        history.push(pathname);
       }
     }
   }
@@ -398,6 +398,5 @@ MasterWindow.propTypes = {
   attachFileAction: PropTypes.func,
   sortTab: PropTypes.func,
   onSortTable: PropTypes.func,
-  push: PropTypes.func,
   updateTabRowsData: PropTypes.func.isRequired,
 };

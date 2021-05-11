@@ -5,8 +5,8 @@ import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
 import { debounce } from 'lodash';
-import { push } from 'connected-react-router';
 
+import history from '../../services/History';
 import {
   breadcrumbRequest,
   flattenLastElem,
@@ -156,14 +156,8 @@ class MenuOverlay extends Component {
     dispatch(closeModal());
     dispatch(clearMasterData());
 
-    this.props.dispatch(
-      push(
-        '/' +
-          (entity ? entity : 'window') +
-          '/' +
-          elementId +
-          (isNew ? '/new' : '')
-      )
+    history.push(
+      `/${entity ? entity : 'window'}/${elementId}${isNew ? '/new' : ''}`
     );
   };
 
@@ -247,7 +241,7 @@ class MenuOverlay extends Component {
               dispatch(closeModal());
               dispatch(clearMasterData());
               dispatch(setBreadcrumb([]));
-              dispatch(push('/'));
+              history.push('/');
             }}
             tabIndex={0}
           >
@@ -267,7 +261,7 @@ class MenuOverlay extends Component {
                 dispatch(closeModal());
                 dispatch(clearMasterData());
 
-                dispatch(push('/sitemap'));
+                history.push('/sitemap');
               }}
               tabIndex={0}
             >
