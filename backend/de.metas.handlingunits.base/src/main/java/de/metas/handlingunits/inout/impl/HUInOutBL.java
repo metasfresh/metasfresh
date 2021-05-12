@@ -299,7 +299,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isEmptiesReturn(final I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
 				.docSubType(X_C_DocType.DOCSUBTYPE_Leergutanlieferung)
 				.build();
 
