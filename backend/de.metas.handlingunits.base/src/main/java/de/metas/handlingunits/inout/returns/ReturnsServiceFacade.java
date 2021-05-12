@@ -71,6 +71,11 @@ public class ReturnsServiceFacade
 		return huInOutBL.isVendorReturn(inout);
 	}
 
+	public boolean isEmptiesReturn(@NonNull final org.compiere.model.I_M_InOut inout)
+	{
+		return huInOutBL.isEmptiesReturn(inout);
+	}
+	
 	public void createCustomerReturnInOutForHUs(final Collection<I_M_HU> hus)
 	{
 		MultiCustomerHUReturnsInOutProducer.newInstance()

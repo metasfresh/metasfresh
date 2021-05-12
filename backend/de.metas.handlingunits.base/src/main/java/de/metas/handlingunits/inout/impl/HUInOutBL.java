@@ -78,6 +78,7 @@ public class HUInOutBL implements IHUInOutBL
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -280,7 +281,7 @@ public class HUInOutBL implements IHUInOutBL
 				.isSOTrx(true)
 				.build();
 
-		return Services.get(IDocTypeDAO.class).queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
+		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
 	}
 
 	@Override
@@ -291,7 +292,18 @@ public class HUInOutBL implements IHUInOutBL
 				.isSOTrx(false)
 				.build();
 
-		return Services.get(IDocTypeDAO.class).queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
+		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
+	}
+
+	@Override
+	public boolean isEmptiesReturn(final I_M_InOut inOut)
+	{
+		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.docSubType(X_C_DocType.DOCSUBTYPE_Leergutanlieferung)
+				.build();
+
+		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());
 	}
 
 	private DocTypeQueryBuilder createDocTypeQueryBuilder(@NonNull final org.compiere.model.I_M_InOut inOut)
