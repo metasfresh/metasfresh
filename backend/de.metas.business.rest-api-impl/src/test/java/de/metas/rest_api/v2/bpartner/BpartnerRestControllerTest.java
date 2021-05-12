@@ -107,6 +107,7 @@ import java.util.Optional;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_ORG_ID;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_USER_ID;
+import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.BP_EXTERNAL_VERSION;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.C_BBPARTNER_LOCATION_ID;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.C_BPARTNER_EXTERNAL_ID;
@@ -342,6 +343,7 @@ class BpartnerRestControllerTest
 
 		final JsonRequestBPartnerUpsertItem requestItem = JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerIdentifier(bPartnerIdentifier)
+				.externalVersion(BP_EXTERNAL_VERSION)
 				.bpartnerComposite(bpartnerComposite)
 				.build();
 

@@ -30,6 +30,7 @@ public class ExternalSystemConstants
 	public static final String PARAM_API_KEY = "APIKey";
 	public static final String PARAM_BASE_PATH = "BasePath";
 	public static final String PARAM_TENANT = "Tenant";
+	public static final String PARAM_BPARTNER_GROUP = "BPartnerGroup";
 	public static final String PARAM_UPDATED_AFTER = "UpdatedAfter";
 	public static final String PARAM_CLIENT_ID = "ClientId";
 	public static final String PARAM_CLIENT_SECRET = "ClientSecret";
