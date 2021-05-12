@@ -69,7 +69,7 @@ import java.util.TreeSet;
 @Component
 public class M_InOut
 {
-	final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
