@@ -26,34 +26,42 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_cr
     "contactType" : {
       "billToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "defaultContact" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchase" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchaseDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "sales" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "salesDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "shipToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "subjectMatter" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       }
     },
@@ -97,34 +105,42 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
     "contactType" : {
       "billToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "defaultContact" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchase" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchaseDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "sales" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "salesDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "shipToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "subjectMatter" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       }
     },
@@ -173,34 +189,42 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
     "contactType" : {
       "billToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "defaultContact" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchase" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchaseDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "sales" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "salesDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "shipToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "subjectMatter" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       }
     },
@@ -249,34 +273,42 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
     "contactType" : {
       "billToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "defaultContact" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchase" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "purchaseDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "sales" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "salesDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "shipToDefault" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       },
       "subjectMatter" : {
         "value" : false,
+        "empty" : false,
         "present" : true
       }
     },

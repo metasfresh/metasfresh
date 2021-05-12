@@ -33,6 +33,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.EXTERNAL_VERSION_DOC;
 
 @Value
 @Builder(toBuilder = true)
@@ -45,7 +46,7 @@ public class JsonRequestBPartnerUpsertItem
 	String bpartnerIdentifier;
 
 	@ApiModelProperty(position = 20, //
-			value = "Used only when the BPartner identifier is an external reference.")
+			value = "The version of the business partner." + EXTERNAL_VERSION_DOC)
 	String externalVersion;
 
 	@ApiModelProperty(position = 30,

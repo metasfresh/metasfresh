@@ -32,6 +32,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.EXTERNAL_VERSION_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIER_DOC;
 
 @Value
@@ -46,7 +47,7 @@ public class JsonRequestLocationUpsertItem
 	String locationIdentifier;
 
 	@ApiModelProperty(position = 20, //
-			value = "Used only when the BPartner location identifier is an external reference.")
+			value = "The version of the business partner location." + EXTERNAL_VERSION_DOC)
 	@Nullable
 	String externalVersion;
 
