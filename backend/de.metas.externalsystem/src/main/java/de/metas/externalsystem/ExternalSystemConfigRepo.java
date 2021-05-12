@@ -225,10 +225,10 @@ public class ExternalSystemConfigRepo
 				.bPartnerIdJSONPath(config.getJSONPathConstantBPartnerID())
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
 				.salesRepJSONPath(config.getJSONPathSalesRepID())
-				.bpartnerIfExists(config.getBPartner_IfExists())
-				.bpartnerIfNotExists(config.getBPartner_IfNotExists())
-				.bpartnerLocationIfExists(config.getBPartnerLocation_IfExists())
-				.bpartnerLocationIfNotExists(config.getBPartnerLocation_IfNotExists())
+				// .bpartnerIfExists(config.getBPartner_IfExists())
+				// .bpartnerIfNotExists(config.getBPartner_IfNotExists())
+				// .bpartnerLocationIfExists(config.getBPartnerLocation_IfExists())
+				// .bpartnerLocationIfNotExists(config.getBPartnerLocation_IfNotExists())
 				.build();
 	}
 
