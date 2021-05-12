@@ -11,32 +11,30 @@ Here come the actual release notes:
 
 # metasfresh 5.168
 ## Features
-* https://github.com/metasfresh/metasfresh/issues/10860
-* https://github.com/metasfresh/metasfresh/issues/11016
-* https://github.com/metasfresh/metasfresh/issues/11026
-* https://github.com/metasfresh/metasfresh/issues/11028
-* https://github.com/metasfresh/metasfresh/issues/11036
-* https://github.com/metasfresh/metasfresh/pull/11039
-* https://github.com/metasfresh/metasfresh/pull/11042
-* https://github.com/metasfresh/metasfresh/pull/11043
-* https://github.com/metasfresh/metasfresh/pull/11045
-* https://github.com/metasfresh/metasfresh/issues/11048
-* https://github.com/metasfresh/metasfresh/issues/11054
-* https://github.com/metasfresh/metasfresh/issues/11062
-* https://github.com/metasfresh/metasfresh/issues/11064
+* metasfresh
+  * [#10860](https://github.com/metasfresh/metasfresh/issues/10860) Refactor the rest of the direct usages of RawWidget
+  * [#11016](https://github.com/metasfresh/metasfresh/issues/11016) `Alberta_PrescriptionRequest` Tables and Window
+  * [#11026](https://github.com/metasfresh/metasfresh/issues/11026) Provisionsübersicht Window Update
+  * [#11028](https://github.com/metasfresh/metasfresh/issues/11028) Create default `invoiceRule` Configuration
+  * [#11036](https://github.com/metasfresh/metasfresh/issues/11036) Do not allow to create duplicate sales partner code
+  * [#11039](https://github.com/metasfresh/metasfresh/pull/11039) `DocOutbound` shall consider `IsInvoiceEmailEnabled` flag
+  * [#11041](https://github.com/metasfresh/metasfresh/issues/11041) External system "Other" setup
+  * [#11043](https://github.com/metasfresh/metasfresh/pull/11043) Build improvements
+  * [#11045](https://github.com/metasfresh/metasfresh/pull/11045) Replace `FactAcctLogWorkpackageProcessor` with `FactAcctLogDBTableWatcher`
+  * [#11048](https://github.com/metasfresh/metasfresh/issues/11048) `C_Tax` window Changes
+  * [#11054](https://github.com/metasfresh/metasfresh/issues/11054) Create `C_Fiscal_Representation` table, tab and model
+  * [#11062](https://github.com/metasfresh/metasfresh/issues/11062) Add "Available For Sales" stock info to `productLookup` and make it the default look-up method
+  * [#11064](https://github.com/metasfresh/metasfresh/issues/11064) Add organization in charge to postal
 
 ## Fixes
-* https://github.com/metasfresh/metasfresh/issues/10655
-* https://github.com/metasfresh/metasfresh/pull/10992
-* https://github.com/metasfresh/metasfresh/issues/11014
-* https://github.com/metasfresh/metasfresh/pull/11019
-* https://github.com/metasfresh/metasfresh/pull/11031
-* https://github.com/metasfresh/metasfresh/pull/11044
-* https://github.com/metasfresh/metasfresh/pull/11046
-* https://github.com/metasfresh/metasfresh/issues/11049
-* https://github.com/metasfresh/metasfresh/issues/11050
-* https://github.com/metasfresh/metasfresh/pull/11055
-* https://github.com/metasfresh/metasfresh/pull/11057
+* metasfresh
+  * [#10655](https://github.com/metasfresh/metasfresh/issues/10655) Pricesystem of contract term not considered correctly
+  * [#10931](https://github.com/metasfresh/metasfresh/issues/10931) Filter default values are ignored
+  * [#11014](https://github.com/metasfresh/metasfresh/issues/11014) Check automated e2e tests mid April
+  * [#11031](https://github.com/metasfresh/metasfresh/pull/11031) Prevent creating OL candidates with stocked products that are flagged as main product in compensation group
+  * [#11044](https://github.com/metasfresh/metasfresh/pull/11044) Invoice-Line: Update `PriceActual` as user edits `PriceEntered` and Discount
+  * [#11049](https://github.com/metasfresh/metasfresh/issues/11049) Beginning of May e2e checks
+  * [#11050](https://github.com/metasfresh/metasfresh/issues/11050) "Not Found" error when using "Create purchase orders" action for sales orderline
 
 # metasfresh 5.167
 ## Features

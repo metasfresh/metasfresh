@@ -66,8 +66,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           }
         },
         "leftToRight" : true,
-        "decimalPoint" : false,
-        "baseLanguage" : true
+        "baseLanguage" : true,
+        "decimalPoint" : false
       },
       "url" : "bPartner.url",
       "groupId" : 15,

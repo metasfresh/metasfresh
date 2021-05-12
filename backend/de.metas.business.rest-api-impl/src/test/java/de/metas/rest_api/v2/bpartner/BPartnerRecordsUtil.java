@@ -59,6 +59,7 @@ public class BPartnerRecordsUtil
 
 	public static final int C_BP_GROUP_ID = 15;
 	public static final String BP_GROUP_RECORD_NAME = "bpGroupRecord.name";
+	public static final String BP_EXTERNAL_VERSION = "bpRecord.externalVersion";
 
 	public static final String C_BPARTNER_LOCATION_GLN = "bpartnerLocationRecord.gln";
 	public static final String C_BPARTNER_LOCATION_EXTERNAL_ID = "bpartnerLocation.externalId";
