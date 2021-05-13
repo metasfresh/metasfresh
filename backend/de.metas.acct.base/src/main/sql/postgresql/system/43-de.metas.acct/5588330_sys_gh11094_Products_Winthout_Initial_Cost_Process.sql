@@ -794,3 +794,15 @@ UPDATE AD_Process SET SQLStatement='SELECT * FROM ProductsWithoutInitialCost(@#A
 UPDATE AD_Process SET SQLStatement='SELECT * FROM ProductsWithoutInitialCost(@#AD_Client_ID/-1@, @PARAM_AD_Org_ID/-1@)',Updated=TO_TIMESTAMP('2021-05-13 19:11:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584828
 ;
 
+
+
+-- 2021-05-13T16:35:49.537Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET SQLStatement='SELECT * FROM "de_metas_acct".report_ProductsWithoutInitialCost(@#AD_Client_ID/-1@, @PARAM_AD_Org_ID/-1@)',Updated=TO_TIMESTAMP('2021-05-13 19:35:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584828
+;
+
+
+
+
+
+

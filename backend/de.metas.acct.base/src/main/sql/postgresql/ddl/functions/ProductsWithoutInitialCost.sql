@@ -1,8 +1,8 @@
-DROP FUNCTION IF EXISTS ProductsWithoutInitialCost
+DROP FUNCTION IF EXISTS "de_metas_acct".report_ProductsWithoutInitialCost
 (p_D_Client_ID NUMERIC,
  p_ad_org_id NUMERIC);
 
-CREATE OR REPLACE FUNCTION ProductsWithoutInitialCost(
+CREATE OR REPLACE FUNCTION "de_metas_acct".report_ProductsWithoutInitialCost(
     p_AD_Client_Id NUMERIC,
     p_AD_Org_Id NUMERIC)
     RETURNS table
@@ -75,6 +75,6 @@ $$
 How to run:
 
 SELECT *
-FROM ProductsWithoutInitialCost(1000000, 1000000)
+FROM "de_metas_acct".report_ProductsWithoutInitialCost(1000000, 1000000)
 ;
  */
