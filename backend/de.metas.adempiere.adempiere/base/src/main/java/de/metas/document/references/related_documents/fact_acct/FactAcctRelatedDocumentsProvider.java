@@ -46,12 +46,12 @@ import java.util.List;
 
 public class FactAcctRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
-	public static final transient FactAcctRelatedDocumentsProvider instance = new FactAcctRelatedDocumentsProvider();
-	private static final String COLUMNNAME_Posted = "Posted";
+	private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 
+	private static final String COLUMNNAME_Posted = "Posted";
 	private final Priority relatedDocumentsPriority = Priority.HIGHEST;
 
-	private FactAcctRelatedDocumentsProvider()
+	public FactAcctRelatedDocumentsProvider()
 	{
 	}
 
@@ -90,7 +90,6 @@ public class FactAcctRelatedDocumentsProvider implements IRelatedDocumentsProvid
 		query.addRestriction(I_Fact_Acct.COLUMNNAME_AD_Table_ID, Operator.EQUAL, fromDocument.getAD_Table_ID());
 		query.addRestriction(I_Fact_Acct.COLUMNNAME_Record_ID, Operator.EQUAL, fromDocument.getRecord_ID());
 
-		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 		final ITranslatableString windowCaption = adWindowDAO.retrieveWindowName(factAcctWindowId);
 
 		final RelatedDocumentsCountSupplier recordsCountSupplier = new FactAcctRelatedDocumentsCountSupplier(fromDocument.getAD_Table_ID(), fromDocument.getRecord_ID());

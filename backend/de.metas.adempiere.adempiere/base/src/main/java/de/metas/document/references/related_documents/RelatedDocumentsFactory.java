@@ -171,7 +171,7 @@ public class RelatedDocumentsFactory
 		relatedDocumentsProviders.add(genericRelatedDocumentsProvider);
 		if (factAcctRelatedDocumentsProviderEnabled)
 		{
-			relatedDocumentsProviders.add(FactAcctRelatedDocumentsProvider.instance);
+			relatedDocumentsProviders.add(new FactAcctRelatedDocumentsProvider());
 		}
 		relatedDocumentsProviders.add(new AdIssueRelatedDocumentsProvider());
 
