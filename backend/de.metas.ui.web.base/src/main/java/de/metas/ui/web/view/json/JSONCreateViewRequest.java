@@ -14,7 +14,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
-import de.metas.ui.web.document.references.DocumentReferenceId;
+import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentPath;
@@ -134,10 +134,10 @@ public final class JSONCreateViewRequest
 		}
 	}
 
-	public Optional<DocumentReferenceId> getDocumentReferenceId()
+	public Optional<WebuiDocumentReferenceId> getDocumentReferenceId()
 	{
 		return referencing != null && !Check.isBlank(referencing.getReferenceId())
-				? Optional.of(DocumentReferenceId.ofString(referencing.getReferenceId()))
+				? Optional.of(WebuiDocumentReferenceId.ofString(referencing.getReferenceId()))
 				: Optional.empty();
 	}
 
