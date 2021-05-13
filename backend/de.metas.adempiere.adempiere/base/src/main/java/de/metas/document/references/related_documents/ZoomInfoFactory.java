@@ -75,10 +75,10 @@ public class ZoomInfoFactory
 	}
 
 	public ImmutableList<ZoomInfoCandidateGroup> getZoomInfoCandidates(
-			@NonNull final IZoomSource zoomOrigin,
+			@NonNull final IZoomSource zoomSource,
 			@NonNull final ZoomInfoPermissions permissions)
 	{
-		return getZoomInfoCandidates(zoomOrigin, null, permissions);
+		return getZoomInfoCandidates(zoomSource, null, permissions);
 	}
 
 	private ImmutableList<ZoomInfoCandidateGroup> getZoomInfoCandidates(
@@ -180,7 +180,7 @@ public class ZoomInfoFactory
 	}
 
 	/**
-	 * Disable the {@link FactAcctZoomProvider} (which is enabled by default
+	 * Disable the {@link FactAcctZoomProvider} (which is enabled by default)
 	 *
 	 * @deprecated Needed only for Swing
 	 */
@@ -188,5 +188,6 @@ public class ZoomInfoFactory
 	public void disableFactAcctZoomProvider()
 	{
 		factAcctZoomProviderEnabled = false;
+		logger.info("Disabled FactAcctZoomProvider");
 	}
 }
