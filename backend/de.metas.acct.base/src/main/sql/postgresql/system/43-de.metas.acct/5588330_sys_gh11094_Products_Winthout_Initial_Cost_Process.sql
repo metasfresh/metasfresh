@@ -589,3 +589,84 @@ UPDATE AD_Menu SET EntityType='D',Updated=TO_TIMESTAMP('2021-05-13 11:32:25','YY
 
 
 
+-- 2021-05-13T08:50:19.285Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Produkte ohne initialen Kostenpreis', PrintName='Produkte ohne initialen Kostenpreis',Updated=TO_TIMESTAMP('2021-05-13 11:50:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579151 AND AD_Language='de_CH'
+;
+
+-- 2021-05-13T08:50:19.301Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579151,'de_CH') 
+;
+
+-- 2021-05-13T08:50:23.397Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Produkte ohne initialen Kostenpreis', PrintName='Produkte ohne initialen Kostenpreis',Updated=TO_TIMESTAMP('2021-05-13 11:50:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579151 AND AD_Language='de_DE'
+;
+
+-- 2021-05-13T08:50:23.399Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579151,'de_DE') 
+;
+
+-- 2021-05-13T08:50:23.410Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579151,'de_DE') 
+;
+
+-- 2021-05-13T08:50:23.413Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName=NULL, Name='Produkte ohne initialen Kostenpreis', Description=NULL, Help=NULL WHERE AD_Element_ID=579151
+;
+
+-- 2021-05-13T08:50:23.416Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Produkte ohne initialen Kostenpreis', Description=NULL, Help=NULL WHERE AD_Element_ID=579151 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-05-13T08:50:23.418Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Produkte ohne initialen Kostenpreis', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579151) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579151)
+;
+
+-- 2021-05-13T08:50:23.426Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Produkte ohne initialen Kostenpreis', Name='Produkte ohne initialen Kostenpreis' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579151)
+;
+
+-- 2021-05-13T08:50:23.428Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Produkte ohne initialen Kostenpreis', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579151
+;
+
+-- 2021-05-13T08:50:23.432Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Produkte ohne initialen Kostenpreis', Description=NULL, Help=NULL WHERE AD_Element_ID = 579151
+;
+
+-- 2021-05-13T08:50:23.434Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Produkte ohne initialen Kostenpreis', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579151
+;
+
+-- 2021-05-13T08:50:38.741Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET Name='Produkte ohne initialen Kostenpreis',Updated=TO_TIMESTAMP('2021-05-13 11:50:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584828
+;
+
+-- 2021-05-13T08:50:43.415Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Produkte ohne initialen Kostenpreis',Updated=TO_TIMESTAMP('2021-05-13 11:50:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584828
+;
+
+-- 2021-05-13T08:50:48.035Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Produkte ohne initialen Kostenpreis',Updated=TO_TIMESTAMP('2021-05-13 11:50:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584828
+;
+
+
+
+
+
+
+
