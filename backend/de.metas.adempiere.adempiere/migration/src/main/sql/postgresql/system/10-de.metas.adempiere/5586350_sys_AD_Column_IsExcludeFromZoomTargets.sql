@@ -13,11 +13,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(578771) 
 ;
 
-alter table ad_column add column IsExcludeFromZoomTargets char(1)
-    default 'N'
-    check (IsExcludeFromZoomTargets in ('Y', 'N'))
-    not null;
-
 -- 2021-04-26T07:53:38.077Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,573542,643997,0,101,TO_TIMESTAMP('2021-04-26 10:53:37','YYYY-MM-DD HH24:MI:SS'),100,'Exclude from zoom targets / related documents',1,'D','Y','N','N','N','N','N','N','N','Exclude from Zoom Targets',TO_TIMESTAMP('2021-04-26 10:53:37','YYYY-MM-DD HH24:MI:SS'),100)
