@@ -802,6 +802,36 @@ UPDATE AD_Process SET SQLStatement='SELECT * FROM "de_metas_acct".report_Product
 ;
 
 
+-- 2021-05-13T16:59:33.593Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,2700,0,584828,541978,30,'M_CostElement_ID',TO_TIMESTAMP('2021-05-13 19:59:33','YYYY-MM-DD HH24:MI:SS'),100,'@M_CostElement_ID/-1@','Produkt-Kostenart','D',0,'Y','N','Y','N','N','N','Kostenart',20,TO_TIMESTAMP('2021-05-13 19:59:33','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-05-13T16:59:33.595Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=541978 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
+;
+
+-- 2021-05-13T17:00:03.106Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET SQLStatement='SELECT * FROM "de_metas_acct".report_ProductsWithoutInitialCost(@#AD_Client_ID/-1@, @PARAM_AD_Org_ID/-1@, @M_CostElement_ID/-1@)',Updated=TO_TIMESTAMP('2021-05-13 20:00:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584828
+;
+
+-- 2021-05-13T17:07:00.371Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue=' @SQL=SELECT ce.M_CostElement_ID AS DefaultValue  FROM M_CostElement ce                                                     JOIN c_acctschema sch on ce.costingmethod = sch.costingmethod                                                   JOIN ad_clientinfo ci on sch.c_acctschema_id = ci.c_acctschema1_id WHERE ci.ad_client_id = @#AD_Client_ID@',Updated=TO_TIMESTAMP('2021-05-13 20:07:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541978
+;
+
+-- 2021-05-13T17:11:37.279Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET DefaultValue='@SQL=SELECT ce.M_CostElement_ID AS DefaultValue  FROM M_CostElement ce JOIN c_acctschema sch on ce.costingmethod = sch.costingmethod JOIN ad_clientinfo ci on sch.c_acctschema_id = ci.c_acctschema1_id WHERE ci.ad_client_id = @#AD_Client_ID@',Updated=TO_TIMESTAMP('2021-05-13 20:11:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541978
+;
+
+-- 2021-05-13T17:19:27.520Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-05-13 20:19:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541978
+;
+
 
 
 

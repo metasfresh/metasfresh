@@ -1,10 +1,12 @@
 DROP FUNCTION IF EXISTS "de_metas_acct".report_ProductsWithoutInitialCost
 (p_D_Client_ID NUMERIC,
- p_ad_org_id NUMERIC);
+ p_ad_org_id NUMERIC,
+ p_M_CostElement_ID NUMERIC);
 
 CREATE OR REPLACE FUNCTION "de_metas_acct".report_ProductsWithoutInitialCost(
     p_AD_Client_Id NUMERIC,
-    p_AD_Org_Id NUMERIC)
+    p_AD_Org_Id NUMERIC,
+    p_M_CostElement_ID NUMERIC)
     RETURNS table
             (
                 AD_Org_ID    numeric,
@@ -16,14 +18,13 @@ CREATE OR REPLACE FUNCTION "de_metas_acct".report_ProductsWithoutInitialCost(
             )
 AS
 $$
-WITH element AS
+WITH sch AS
          (
-             SELECT el.m_costelement_id
+             select s.c_acctschema_id
 
              FROM c_acctschema s
                       JOIN ad_clientinfo ci on ci.ad_client_id = p_AD_Client_Id
                  AND s.c_acctschema_id = ci.c_acctschema1_id
-                      JOIN m_costelement el on s.costingmethod = el.costingmethod
          ),
      firstCostDetails AS
          (
@@ -32,9 +33,12 @@ WITH element AS
                     min(M_CostDetail_ID) as firstCostDetail
 
              from M_costDetail cd
-                      JOIN element on cd.m_costelement_id = element.m_costelement_id
+                      JOIN sch on
+                 cd.c_acctschema_id = sch.c_acctschema_id
 
              where (case when p_AD_Org_Id < 0 or p_ad_org_ID IS NULL then 1 = 1 else cd.ad_org_id = p_AD_Org_Id end)
+               AND  cd.m_costelement_id = p_M_CostElement_ID
+
              group by cd.M_Product_ID, cd.AD_Org_ID
          )
         ,
@@ -56,8 +60,8 @@ SELECT fp.AD_Org_ID,
        o.value as OrgValue,
        o.name  as OrgName,
        p.M_Product_ID,
-       p.value,
-       p.name
+       p.value as ProductValue,
+       p.name  as ProductName
 from m_product p
          JOIN firstPrices fp on p.m_product_id = fp.m_product_id
          JOIN AD_Org o on fp.ad_org_ID = o.ad_org_ID
@@ -75,6 +79,7 @@ $$
 How to run:
 
 SELECT *
-FROM "de_metas_acct".report_ProductsWithoutInitialCost(1000000, 1000000)
+FROM "de_metas_acct".report_ProductsWithoutInitialCost(1000000, 1000000, 1000002)
 ;
  */
+
