@@ -30,8 +30,8 @@ import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.POZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
-import de.metas.document.references.related_documents.RelatedDocumentsId;
 import de.metas.document.references.related_documents.RelatedDocumentsCountSupplier;
+import de.metas.document.references.related_documents.RelatedDocumentsId;
 import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.CustomizedWindowInfo;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
@@ -82,6 +82,7 @@ public class RelationTypeRelatedDocumentsProvider implements IRelatedDocumentsPr
 	private final String internalName;
 	private final boolean isTableRecordIdTarget;
 
+	@Nullable
 	private final ZoomProviderDestination source;
 	private final ZoomProviderDestination target;
 
@@ -177,7 +178,10 @@ public class RelationTypeRelatedDocumentsProvider implements IRelatedDocumentsPr
 						RelatedDocumentsCandidate.builder()
 								.id(getRelatedDocumentsId())
 								.internalName(getInternalName())
-								.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowIdAndCategory(adWindowId, getTarget().getTableRefInfo().getKeyColumn()))
+								.targetWindow(
+										RelatedDocumentsTargetWindow.ofAdWindowIdAndCategory(
+												adWindowId,
+												getSource() != null ? getSource().getTableRefInfo().getKeyColumn() : null))
 								.priority(relatedDocumentsPriority)
 								.query(query)
 								.windowCaption(display)
@@ -210,6 +214,7 @@ public class RelationTypeRelatedDocumentsProvider implements IRelatedDocumentsPr
 		return target;
 	}
 
+	@Nullable
 	private ZoomProviderDestination getSource()
 	{
 		return source;
@@ -335,7 +340,6 @@ public class RelationTypeRelatedDocumentsProvider implements IRelatedDocumentsPr
 		}
 		else
 		{
-
 			final String refTableWhereClause = whereClause;
 			if (!Check.isEmpty(refTableWhereClause))
 			{
@@ -354,8 +358,8 @@ public class RelationTypeRelatedDocumentsProvider implements IRelatedDocumentsPr
 	 * Parses given <code>where</code>
 	 *
 	 * @param fromDocument zoom source
-	 * @param where      where clause to be parsed
-	 * @param throwEx    true if an exception shall be thrown in case the parsing failed.
+	 * @param where        where clause to be parsed
+	 * @param throwEx      true if an exception shall be thrown in case the parsing failed.
 	 * @return parsed where clause or empty string in case parsing failed and throwEx is <code>false</code>
 	 */
 	private static String parseWhereClause(@NonNull final IZoomSource fromDocument, final String where, final boolean throwEx)
@@ -650,6 +654,7 @@ public class RelationTypeRelatedDocumentsProvider implements IRelatedDocumentsPr
 			return sourceReferenceId;
 		}
 
+		@Nullable
 		private TableRefInfo getSourceTableRefInfoOrNull()
 		{
 			if (sourceTableRefInfo == null)
