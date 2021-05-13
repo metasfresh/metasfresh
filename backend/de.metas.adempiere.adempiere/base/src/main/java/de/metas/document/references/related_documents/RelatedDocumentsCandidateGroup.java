@@ -103,42 +103,50 @@ public class RelatedDocumentsCandidateGroup
 			@NonNull final RelatedDocumentsCandidate candidate,
 			@NonNull final RelatedDocumentsEvaluationContext context)
 	{
-		// Apply onlyRelatedDocumentsId
-		if (context.getOnlyRelatedDocumentsId() != null && !RelatedDocumentsId.equals(context.getOnlyRelatedDocumentsId(), candidate.getId()))
+		try
 		{
+			// Apply onlyRelatedDocumentsId
+			if (context.getOnlyRelatedDocumentsId() != null && !RelatedDocumentsId.equals(context.getOnlyRelatedDocumentsId(), candidate.getId()))
+			{
+				return null;
+			}
+
+			//
+			// Only consider a window already seen if it actually has record count > 0 (task #1062)
+			final Priority alreadySeenRelatedDocumentsPriority = context.getPriorityOrNull(candidate.getTargetWindow());
+			if (alreadySeenRelatedDocumentsPriority != null
+					&& alreadySeenRelatedDocumentsPriority.isHigherThan(candidate.getPriority()))
+			{
+				logger.debug("Skipping related documents {} because there is already one for destination '{}'", this, candidate.getTargetWindow());
+				return null;
+			}
+
+			//
+			// Compute records count
+			final Stopwatch stopwatch = Stopwatch.createStarted();
+			final int recordsCount = candidate.getDocumentsCountSupplier().getRecordsCount(context.getPermissions());
+			stopwatch.stop();
+			logger.debug("Computed records count for {} in {}", this, stopwatch);
+			if (recordsCount <= 0)
+			{
+				logger.debug("No records found for {}", this);
+				return null;
+			}
+			final Duration recordsCountDuration = Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
+
+			context.putAlreadySeenWindow(candidate.getTargetWindow(), candidate.getPriority());
+
+			return RelatedDocumentsCandidateWithRecordsCount.builder()
+					.candidate(candidate)
+					.recordsCount(recordsCount)
+					.recordsCountDuration(recordsCountDuration)
+					.build();
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed evaluating {}", candidate, ex);
 			return null;
 		}
-
-		//
-		// Only consider a window already seen if it actually has record count > 0 (task #1062)
-		final Priority alreadySeenRelatedDocumentsPriority = context.getPriorityOrNull(candidate.getTargetWindow());
-		if (alreadySeenRelatedDocumentsPriority != null
-				&& alreadySeenRelatedDocumentsPriority.isHigherThan(candidate.getPriority()))
-		{
-			logger.debug("Skipping related documents {} because there is already one for destination '{}'", this, candidate.getTargetWindow());
-			return null;
-		}
-
-		//
-		// Compute records count
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final int recordsCount = candidate.getDocumentsCountSupplier().getRecordsCount(context.getPermissions());
-		stopwatch.stop();
-		logger.debug("Computed records count for {} in {}", this, stopwatch);
-		if (recordsCount <= 0)
-		{
-			logger.debug("No records found for {}", this);
-			return null;
-		}
-		final Duration recordsCountDuration = Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
-
-		context.putAlreadySeenWindow(candidate.getTargetWindow(), candidate.getPriority());
-
-		return RelatedDocumentsCandidateWithRecordsCount.builder()
-				.candidate(candidate)
-				.recordsCount(recordsCount)
-				.recordsCountDuration(recordsCountDuration)
-				.build();
 	}
 
 	private RelatedDocuments toRelatedDocuments(@NonNull final RelatedDocumentsCandidateGroup.RelatedDocumentsCandidateWithRecordsCount candidateWithRecordsCount)
@@ -187,5 +195,4 @@ public class RelatedDocumentsCandidateGroup
 		@With
 		boolean appendFilterByFieldCaption;
 	}
-
 }
