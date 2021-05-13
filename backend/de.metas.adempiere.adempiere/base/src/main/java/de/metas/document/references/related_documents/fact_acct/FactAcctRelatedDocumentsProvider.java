@@ -32,6 +32,7 @@ import de.metas.document.references.related_documents.RelatedDocumentsId;
 import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import de.metas.util.lang.Priority;
 import lombok.NonNull;
@@ -40,19 +41,36 @@ import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+@Component
 public class FactAcctRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
+	private static final Logger logger = LogManager.getLogger(FactAcctRelatedDocumentsProvider.class);
 	private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 
 	private static final String COLUMNNAME_Posted = "Posted";
 	private final Priority relatedDocumentsPriority = Priority.HIGHEST;
 
+	private final AtomicBoolean enabled = new AtomicBoolean(true);
+
 	public FactAcctRelatedDocumentsProvider()
 	{
+	}
+
+	/**
+	 * @deprecated Needed only for Swing
+	 */
+	@Deprecated
+	public void disable()
+	{
+		enabled.set(false);
+		logger.info("Disabled FactAcctRelatedDocumentsProvider");
 	}
 
 	@Override
@@ -60,6 +78,12 @@ public class FactAcctRelatedDocumentsProvider implements IRelatedDocumentsProvid
 			@NonNull final IZoomSource fromDocument,
 			@Nullable final AdWindowId targetWindowId)
 	{
+		// Return empty if not enabled
+		if (!enabled.get())
+		{
+			return ImmutableList.of();
+		}
+
 		//
 		// Get the Fact_Acct AD_Window_ID
 		final AdWindowId factAcctWindowId = RecordWindowFinder.findAdWindowId(I_Fact_Acct.Table_Name).orElse(null);

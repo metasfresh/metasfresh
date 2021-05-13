@@ -30,7 +30,6 @@ import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.POZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
-import de.metas.document.references.related_documents.RelatedDocumentsCountSupplier;
 import de.metas.document.references.related_documents.RelatedDocumentsId;
 import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.CustomizedWindowInfo;
@@ -50,17 +49,14 @@ import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.ITableRecordIdDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.PORelationException;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
-import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
@@ -68,14 +64,17 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
 
-public class RelationTypeRelatedDocumentsProvider implements IRelatedDocumentsProvider
+/**
+ * Related documents provider for one single relation type
+ */
+public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
-	public static Builder builder()
+	static Builder builder()
 	{
 		return new Builder();
 	}
 
-	private static final Logger logger = LogManager.getLogger(RelationTypeRelatedDocumentsProvider.class);
+	private static final Logger logger = LogManager.getLogger(SpecificRelationTypeRelatedDocumentsProvider.class);
 
 	private final boolean directed;
 	private final RelatedDocumentsId relatedDocumentsId;
@@ -88,7 +87,7 @@ public class RelationTypeRelatedDocumentsProvider implements IRelatedDocumentsPr
 
 	private final Priority relatedDocumentsPriority = Priority.MEDIUM;
 
-	private RelationTypeRelatedDocumentsProvider(@NonNull final Builder builder)
+	private SpecificRelationTypeRelatedDocumentsProvider(@NonNull final Builder builder)
 	{
 		directed = builder.isDirected();
 		relatedDocumentsId = builder.getRelatedDocumentsId();
@@ -550,7 +549,7 @@ public class RelationTypeRelatedDocumentsProvider implements IRelatedDocumentsPr
 		}
 
 		@Nullable
-		public RelationTypeRelatedDocumentsProvider buildOrNull()
+		public SpecificRelationTypeRelatedDocumentsProvider buildOrNull()
 		{
 			if (!isTableRecordIdTarget() && getSourceTableRefInfoOrNull() == null)
 			{
@@ -565,7 +564,7 @@ public class RelationTypeRelatedDocumentsProvider implements IRelatedDocumentsPr
 				return null;
 			}
 
-			return new RelationTypeRelatedDocumentsProvider(this);
+			return new SpecificRelationTypeRelatedDocumentsProvider(this);
 		}
 
 		public Builder setCustomizedWindowInfoMap(final CustomizedWindowInfoMap customizedWindowInfoMap)

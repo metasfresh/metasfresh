@@ -23,8 +23,6 @@
 package de.metas.document.references.related_documents.relation_type;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvider;
-import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvidersFactory;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -99,7 +97,7 @@ public class RelationTypeRelatedDocumentsProvidersFactoryTest
 				referenceTarget.getAD_Reference_ID(), targetTableRefInfo));
 
 		final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory = new RelationTypeRelatedDocumentsProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
-		final RelationTypeRelatedDocumentsProvider provider = relationTypeRelatedDocumentsProvidersFactory.findRelatedDocumentsProvider(relationType);
+		final SpecificRelationTypeRelatedDocumentsProvider provider = relationTypeRelatedDocumentsProvidersFactory.findRelatedDocumentsProvider(relationType);
 
 		assertThat(provider.isTableRecordIdTarget()).isTrue();
 	}
@@ -164,7 +162,7 @@ public class RelationTypeRelatedDocumentsProvidersFactoryTest
 				referenceSource.getAD_Reference_ID(), sourceTableRefInfo));
 
 		final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory = new RelationTypeRelatedDocumentsProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
-		final RelationTypeRelatedDocumentsProvider provider = relationTypeRelatedDocumentsProvidersFactory.findRelatedDocumentsProvider(relationType);
+		final SpecificRelationTypeRelatedDocumentsProvider provider = relationTypeRelatedDocumentsProvidersFactory.findRelatedDocumentsProvider(relationType);
 
 		assertThat(provider.isTableRecordIdTarget()).isFalse();
 	}

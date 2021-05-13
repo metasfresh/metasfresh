@@ -44,11 +44,13 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.function.Supplier;
 
+@Component
 public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);

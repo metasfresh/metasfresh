@@ -24,10 +24,6 @@ package de.metas.document.references.related_documents;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-import de.metas.document.references.related_documents.fact_acct.FactAcctRelatedDocumentsProvider;
-import de.metas.document.references.related_documents.generic.GenericRelatedDocumentsProvider;
-import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvidersFactory;
-import de.metas.error.related_documents.AdIssueRelatedDocumentsProvider;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -36,7 +32,6 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -44,16 +39,13 @@ public class RelatedDocumentsFactory
 {
 	private static final Logger logger = LogManager.getLogger(RelatedDocumentsFactory.class);
 
-	private final GenericRelatedDocumentsProvider genericRelatedDocumentsProvider;
-	private final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory;
-	private boolean factAcctRelatedDocumentsProviderEnabled = true;
+	private final ImmutableList<IRelatedDocumentsProvider> providers;
 
-	public RelatedDocumentsFactory(
-			@NonNull final GenericRelatedDocumentsProvider genericRelatedDocumentsProvider,
-			@NonNull final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory)
+	public RelatedDocumentsFactory(@NonNull final List<IRelatedDocumentsProvider> providers)
 	{
-		this.genericRelatedDocumentsProvider = genericRelatedDocumentsProvider;
-		this.relationTypeRelatedDocumentsProvidersFactory = relationTypeRelatedDocumentsProvidersFactory;
+		this.providers = ImmutableList.copyOf(providers);
+
+		logger.info("Providers: {}", providers);
 	}
 
 	public List<RelatedDocuments> retrieveRelatedDocuments(
@@ -84,9 +76,6 @@ public class RelatedDocumentsFactory
 			@NonNull final RelatedDocumentsPermissions permissions)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-
-		final String tableName = fromDocument.getTableName();
-		final List<IRelatedDocumentsProvider> providers = retrieveRelatedDocumentsProviders(tableName);
 
 		final ImmutableList.Builder<RelatedDocumentsCandidateGroup> result = ImmutableList.builder();
 		for (final IRelatedDocumentsProvider provider : providers)
@@ -160,33 +149,5 @@ public class RelatedDocumentsFactory
 				.flatMap(candidatesGroup -> candidatesGroup.evaluateAndStream(context))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No related documents found for source=" + fromDocument + ", targetWindowId=" + targetWindowId));
-	}
-
-	private List<IRelatedDocumentsProvider> retrieveRelatedDocumentsProviders(@NonNull final String tableName)
-	{
-		// NOTE: providers order IS NOT important because each provider creates RelatedDocuments with a priority.
-
-		final ArrayList<IRelatedDocumentsProvider> relatedDocumentsProviders = new ArrayList<>();
-		relatedDocumentsProviders.addAll(relationTypeRelatedDocumentsProvidersFactory.getRelatedDocumentsProvidersBySourceDocumentTableName(tableName));
-		relatedDocumentsProviders.add(genericRelatedDocumentsProvider);
-		if (factAcctRelatedDocumentsProviderEnabled)
-		{
-			relatedDocumentsProviders.add(new FactAcctRelatedDocumentsProvider());
-		}
-		relatedDocumentsProviders.add(new AdIssueRelatedDocumentsProvider());
-
-		return relatedDocumentsProviders;
-	}
-
-	/**
-	 * Disable the {@link FactAcctRelatedDocumentsProvider} (which is enabled by default)
-	 *
-	 * @deprecated Needed only for Swing
-	 */
-	@Deprecated
-	public void disableFactAcctRelatedDocumentsProvider()
-	{
-		factAcctRelatedDocumentsProviderEnabled = false;
-		logger.info("Disabled FactAcctRelatedDocumentsProvider");
 	}
 }

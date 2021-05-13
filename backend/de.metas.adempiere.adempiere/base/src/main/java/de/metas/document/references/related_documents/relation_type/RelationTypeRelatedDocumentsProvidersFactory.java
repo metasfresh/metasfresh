@@ -25,12 +25,16 @@ package de.metas.document.references.related_documents.relation_type;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
+import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
+import de.metas.document.references.related_documents.IZoomSource;
+import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.ad.trx.api.ITrx;
@@ -55,6 +59,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_AD_Reference_ID;
@@ -62,13 +67,13 @@ import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_OrderByClause;
 import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_WhereClause;
 
 @Component
-public final class RelationTypeRelatedDocumentsProvidersFactory
+public final class RelationTypeRelatedDocumentsProvidersFactory implements IRelatedDocumentsProvider
 {
 	private static final Logger logger = LogManager.getLogger(RelationTypeRelatedDocumentsProvidersFactory.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
-	private final CCache<String, ImmutableList<RelationTypeRelatedDocumentsProvider>> sourceTableName2zoomProviders = CCache.newLRUCache(I_AD_RelationType.Table_Name + "#ZoomProvidersBySourceTableName", 100, 0);
+	private final CCache<String, ImmutableList<SpecificRelationTypeRelatedDocumentsProvider>> providersBySourceTableName = CCache.newLRUCache(I_AD_RelationType.Table_Name + "#ZoomProvidersBySourceTableName", 100, 0);
 
 	private final static String SQL_Default_RelationType = createSelectFrom()
 			+ createSharedWhereClause()
@@ -138,12 +143,39 @@ public final class RelationTypeRelatedDocumentsProvidersFactory
 		return "  ORDER BY rt.Name ";
 	}
 
-	public ImmutableList<RelationTypeRelatedDocumentsProvider> getRelatedDocumentsProvidersBySourceDocumentTableName(final String zoomOriginTableName)
+	@Override
+	public List<RelatedDocumentsCandidateGroup> retrieveRelatedDocumentsCandidates(
+			@NonNull final IZoomSource fromDocument,
+			@Nullable final AdWindowId targetWindowId)
 	{
-		return sourceTableName2zoomProviders.getOrLoad(zoomOriginTableName, this::retrieveRelatedDocumentsProvidersBySourceTableName);
+		return getRelatedDocumentsProvidersBySourceDocumentTableName(fromDocument.getTableName())
+				.stream()
+				.flatMap(provider -> streamRelatedDocumentsCandidatesNoFail(provider, fromDocument, targetWindowId))
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	public ImmutableList<RelationTypeRelatedDocumentsProvider> retrieveRelatedDocumentsProvidersBySourceTableName(final String zoomOriginTableName)
+	private Stream<RelatedDocumentsCandidateGroup> streamRelatedDocumentsCandidatesNoFail(
+			@NonNull final SpecificRelationTypeRelatedDocumentsProvider provider,
+			@NonNull final IZoomSource fromDocument,
+			@Nullable final AdWindowId targetWindowId)
+	{
+		try
+		{
+			return provider.retrieveRelatedDocumentsCandidates(fromDocument, targetWindowId).stream();
+		}
+		catch (Exception ex)
+		{
+			logger.warn("Failed retrieving candidates from {} for {}/{}", provider, fromDocument, targetWindowId);
+			return Stream.empty();
+		}
+	}
+
+	private ImmutableList<SpecificRelationTypeRelatedDocumentsProvider> getRelatedDocumentsProvidersBySourceDocumentTableName(final String sourceTableName)
+	{
+		return providersBySourceTableName.getOrLoad(sourceTableName, this::retrieveRelatedDocumentsProvidersBySourceTableName);
+	}
+
+	public ImmutableList<SpecificRelationTypeRelatedDocumentsProvider> retrieveRelatedDocumentsProvidersBySourceTableName(final String zoomOriginTableName)
 	{
 		Check.assumeNotEmpty(zoomOriginTableName, "tableName is not empty");
 
@@ -161,7 +193,7 @@ public final class RelationTypeRelatedDocumentsProvidersFactory
 
 		final Object[] sqlParamsDefaultRelationType = new Object[] { adTableId, keyColumnId };
 
-		final ArrayList<RelationTypeRelatedDocumentsProvider> providers = new ArrayList<>();
+		final ArrayList<SpecificRelationTypeRelatedDocumentsProvider> providers = new ArrayList<>();
 		providers.addAll(runRelationTypeSQLQuery(SQL_Default_RelationType, sqlParamsDefaultRelationType));
 		providers.addAll(runRelationTypeSQLQuery(SQL_TableRecordIDReference_RelationType, null));
 
@@ -170,7 +202,7 @@ public final class RelationTypeRelatedDocumentsProvidersFactory
 		return ImmutableList.copyOf(providers);
 	}
 
-	private List<RelationTypeRelatedDocumentsProvider> runRelationTypeSQLQuery(final String sqlQuery, @Nullable final Object[] sqlParams)
+	private List<SpecificRelationTypeRelatedDocumentsProvider> runRelationTypeSQLQuery(final String sqlQuery, @Nullable final Object[] sqlParams)
 	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -192,9 +224,9 @@ public final class RelationTypeRelatedDocumentsProvidersFactory
 		}
 	}
 
-	private List<RelationTypeRelatedDocumentsProvider> retrieveRelatedDocumentsProviders(final ResultSet rs) throws SQLException
+	private List<SpecificRelationTypeRelatedDocumentsProvider> retrieveRelatedDocumentsProviders(final ResultSet rs) throws SQLException
 	{
-		final ArrayList<RelationTypeRelatedDocumentsProvider> result = new ArrayList<>();
+		final ArrayList<SpecificRelationTypeRelatedDocumentsProvider> result = new ArrayList<>();
 		final Set<Integer> alreadySeen = new HashSet<>();
 
 		while (rs.next())
@@ -209,7 +241,7 @@ public final class RelationTypeRelatedDocumentsProvidersFactory
 
 			try
 			{
-				final RelationTypeRelatedDocumentsProvider providerForRelType = findRelatedDocumentsProvider(relationType);
+				final SpecificRelationTypeRelatedDocumentsProvider providerForRelType = findRelatedDocumentsProvider(relationType);
 				if (providerForRelType == null)
 				{
 					continue;
@@ -228,7 +260,7 @@ public final class RelationTypeRelatedDocumentsProvidersFactory
 
 	@VisibleForTesting
 	@Nullable
-	protected RelationTypeRelatedDocumentsProvider findRelatedDocumentsProvider(@NonNull final I_AD_RelationType relationType)
+	protected SpecificRelationTypeRelatedDocumentsProvider findRelatedDocumentsProvider(@NonNull final I_AD_RelationType relationType)
 	{
 		final ADRefListItem roleSourceItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_SOURCE_AD_Reference_ID, relationType.getRole_Source());
 		final ITranslatableString roleSourceDisplayName = roleSourceItem == null ? null : roleSourceItem.getName();
@@ -236,7 +268,7 @@ public final class RelationTypeRelatedDocumentsProvidersFactory
 		final ADRefListItem roleTargetItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_TARGET_AD_Reference_ID, relationType.getRole_Target());
 		final ITranslatableString roleTargetDisplayName = roleTargetItem == null ? null : roleTargetItem.getName();
 
-		return RelationTypeRelatedDocumentsProvider.builder()
+		return SpecificRelationTypeRelatedDocumentsProvider.builder()
 				.setCustomizedWindowInfoMap(customizedWindowInfoMapRepository.get())
 				.setDirected(relationType.isDirected())
 				.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
@@ -253,7 +285,7 @@ public final class RelationTypeRelatedDocumentsProvidersFactory
 				.buildOrNull();
 	}
 
-	public RelationTypeRelatedDocumentsProvider getRelatedDocumentsProviderBySourceTableNameAndInternalName(final String zoomOriginTableName, final String internalName)
+	public SpecificRelationTypeRelatedDocumentsProvider getRelatedDocumentsProviderBySourceTableNameAndInternalName(final String zoomOriginTableName, final String internalName)
 	{
 		return getRelatedDocumentsProvidersBySourceDocumentTableName(zoomOriginTableName)
 				.stream()
