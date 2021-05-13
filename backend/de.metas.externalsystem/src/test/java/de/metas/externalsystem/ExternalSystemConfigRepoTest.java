@@ -275,6 +275,10 @@ class ExternalSystemConfigRepoTest
 		childMappingRecord.setSW6_Payment_Method("test");
 		childMappingRecord.setDescription("test");
 		childMappingRecord.setExternalSystem_Config_Shopware6_ID(childRecord.getExternalSystem_Config_Shopware6_ID());
+		childMappingRecord.setBPartner_IfExists("UPDATE_MERGE");
+		childMappingRecord.setBPartner_IfNotExists("FAIL");
+		childMappingRecord.setBPartnerLocation_IfExists("DONT_UPDATE");
+		childMappingRecord.setBPartnerLocation_IfNotExists("CREATE");
 		saveRecord(childMappingRecord);
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
