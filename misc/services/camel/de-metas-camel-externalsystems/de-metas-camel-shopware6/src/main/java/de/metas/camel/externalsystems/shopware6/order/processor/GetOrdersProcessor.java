@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
@@ -91,7 +92,6 @@ public class GetOrdersProcessor implements Processor
 				Instant.ofEpochSecond(0).toString());
 
 		final String bPartnerIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID);
-		final String bPartnerLocationIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID);
 		final String salesRepJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID);
 
 		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath);
@@ -110,17 +110,28 @@ public class GetOrdersProcessor implements Processor
 		final CurrencyInfoProvider currencyInfoProvider = (CurrencyInfoProvider) exchange.getContext().createProducerTemplate()
 				.sendBody("direct:" + GET_CURRENCY_ROUTE_ID, ExchangePattern.InOut, getCurrenciesRequest);
 
-		final ImportOrdersRouteContext ordersContext = ImportOrdersRouteContext.builder()
+		final ImportOrdersRouteContext ordersContext = buildContext(request, shopwareClient, currencyInfoProvider);
+
+		exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
+	}
+
+	@VisibleForTesting
+	public ImportOrdersRouteContext buildContext(
+			@NonNull final JsonExternalSystemRequest request,
+			@NonNull final ShopwareClient shopwareClient,
+			@NonNull final CurrencyInfoProvider currencyInfoProvider)
+	{
+		final String bpLocationCustomJsonPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID);
+
+		return ImportOrdersRouteContext.builder()
 				.orgCode(request.getOrgCode())
 				.externalSystemRequest(request)
 				.shopware6ConfigMappings(getSalesOrderMappingRules(request).orElse(null))
 				.shopwareClient(shopwareClient)
-				.bpLocationCustomJsonPath(bPartnerLocationIdJSONPath)
+				.bpLocationCustomJsonPath(bpLocationCustomJsonPath)
 				.currencyInfoProvider(currencyInfoProvider)
 				.taxProductIdProvider(getTaxProductIdProvider(request))
 				.build();
-
-		exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 	}
 
 	@NonNull

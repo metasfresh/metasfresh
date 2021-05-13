@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.shopware6.order;
 
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonShippingCost;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
@@ -49,12 +50,19 @@ import java.util.Set;
 public class ImportOrdersRouteContext
 {
 	@NonNull
+	@Setter(AccessLevel.NONE)
 	private final String orgCode;
+
 	@NonNull
+	@Setter(AccessLevel.NONE)
 	private ShopwareClient shopwareClient;
+
 	@NonNull
+	@Setter(AccessLevel.NONE)
 	private CurrencyInfoProvider currencyInfoProvider;
+
 	@NonNull
+	@Setter(AccessLevel.NONE)
 	private JsonExternalSystemRequest externalSystemRequest;
 
 	@NonNull
@@ -63,13 +71,25 @@ public class ImportOrdersRouteContext
 	private Set<String> importedExternalHeaderIds = new HashSet<>();
 
 	@Nullable
+	@Setter(AccessLevel.NONE)
+	@Getter(AccessLevel.NONE)
+	private DateAndImportStatus nextImportStartingTimestamp;
+
+	@Nullable
+	@Setter(AccessLevel.NONE)
 	private JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings;
 
 	@Nullable
+	@Setter(AccessLevel.NONE)
+	private TaxProductIdProvider taxProductIdProvider;
+
+	@Nullable
+	@Setter(AccessLevel.NONE)
 	@Getter(AccessLevel.NONE)
 	private OrderCompositeInfo order;
 
 	@Nullable
+	@Setter(AccessLevel.NONE)
 	private String bpLocationCustomJsonPath;
 
 	@Nullable
@@ -86,11 +106,6 @@ public class ImportOrdersRouteContext
 	private boolean isMultipleShippingAddresses;
 
 	@Nullable
-	@Setter(AccessLevel.NONE)
-	@Getter(AccessLevel.NONE)
-	private DateAndImportStatus nextImportStartingTimestamp;
-
-	@Nullable
 	@Getter(AccessLevel.NONE)
 	private JsonShippingCost shippingCost;
 
@@ -98,7 +113,7 @@ public class ImportOrdersRouteContext
 	private String shippingMethodId;
 
 	@Nullable
-	private TaxProductIdProvider taxProductIdProvider;
+	private JsonCustomerGroup bPartnerCustomerGroup;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()
