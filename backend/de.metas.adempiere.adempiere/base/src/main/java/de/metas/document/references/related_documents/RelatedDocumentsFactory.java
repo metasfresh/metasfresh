@@ -45,7 +45,7 @@ public class RelatedDocumentsFactory
 	{
 		this.providers = ImmutableList.copyOf(providers);
 
-		logger.info("Providers: {}", providers);
+		logger.info("Providers: {}", this.providers);
 	}
 
 	public List<RelatedDocuments> retrieveRelatedDocuments(
