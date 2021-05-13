@@ -25,6 +25,7 @@ package de.metas.common.externalsystem;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -85,6 +86,8 @@ class JsonExternalSystemRequestTest
 						.paymentRule("testPaymentRule")
 						.docTypeOrder("testDocTypeOrder")
 						.description("testDescription")
+						.bPartnerLocationSyncAdvice(SyncAdvise.CREATE_OR_MERGE)
+						.bPartnerSyncAdvice(SyncAdvise.READ_ONLY)
 						.seqNo(10)
 						.build();
 
