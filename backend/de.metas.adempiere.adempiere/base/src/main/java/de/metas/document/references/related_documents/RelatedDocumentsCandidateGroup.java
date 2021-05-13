@@ -41,7 +41,6 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.MQuery;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -75,7 +74,7 @@ public class RelatedDocumentsCandidateGroup
 		return candidates.stream().anyMatch(candidate -> candidate.isMatching(relatedDocumentsId));
 	}
 
-	public Stream<RelatedDocuments> evaluateAndStream(@Nullable final RelatedDocumentsEvaluationContext context)
+	public Stream<RelatedDocuments> evaluateAndStream(@NonNull final RelatedDocumentsEvaluationContext context)
 	{
 		final ImmutableList<RelatedDocumentsCandidateWithRecordsCount> candidatesWithRecordCount = candidates
 				.stream()
@@ -102,19 +101,17 @@ public class RelatedDocumentsCandidateGroup
 
 	private RelatedDocumentsCandidateWithRecordsCount evaluateOrNull(
 			@NonNull final RelatedDocumentsCandidate candidate,
-			@Nullable final RelatedDocumentsEvaluationContext context)
+			@NonNull final RelatedDocumentsEvaluationContext context)
 	{
 		// Apply onlyRelatedDocumentsId
-		if (context != null && context.getOnlyRelatedDocumentsId() != null && !RelatedDocumentsId.equals(context.getOnlyRelatedDocumentsId(), candidate.getId()))
+		if (context.getOnlyRelatedDocumentsId() != null && !RelatedDocumentsId.equals(context.getOnlyRelatedDocumentsId(), candidate.getId()))
 		{
 			return null;
 		}
 
 		//
 		// Only consider a window already seen if it actually has record count > 0 (task #1062)
-		final Priority alreadySeenRelatedDocumentsPriority = context != null
-				? context.getPriorityOrNull(candidate.getTargetWindow())
-				: null;
+		final Priority alreadySeenRelatedDocumentsPriority = context.getPriorityOrNull(candidate.getTargetWindow());
 		if (alreadySeenRelatedDocumentsPriority != null
 				&& alreadySeenRelatedDocumentsPriority.isHigherThan(candidate.getPriority()))
 		{
@@ -125,7 +122,7 @@ public class RelatedDocumentsCandidateGroup
 		//
 		// Compute records count
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final int recordsCount = candidate.getDocumentsCountSupplier().getRecordsCount();
+		final int recordsCount = candidate.getDocumentsCountSupplier().getRecordsCount(context.getPermissions());
 		stopwatch.stop();
 		logger.debug("Computed records count for {} in {}", this, stopwatch);
 		if (recordsCount <= 0)
@@ -135,10 +132,7 @@ public class RelatedDocumentsCandidateGroup
 		}
 		final Duration recordsCountDuration = Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
 
-		if (context != null)
-		{
-			context.putWindow(candidate.getTargetWindow(), candidate.getPriority());
-		}
+		context.putAlreadySeenWindow(candidate.getTargetWindow(), candidate.getPriority());
 
 		return RelatedDocumentsCandidateWithRecordsCount.builder()
 				.candidate(candidate)

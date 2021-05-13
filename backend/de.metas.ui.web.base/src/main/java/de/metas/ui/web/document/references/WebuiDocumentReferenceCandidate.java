@@ -2,6 +2,7 @@ package de.metas.ui.web.document.references;
 
 import de.metas.document.references.related_documents.RelatedDocuments;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
+import de.metas.document.references.related_documents.RelatedDocumentsEvaluationContext;
 import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.provider.userQuery.MQueryDocumentFilterHelper;
@@ -47,9 +48,9 @@ public class WebuiDocumentReferenceCandidate
 		this.filterCaption = filterCaption;
 	}
 
-	public Stream<WebuiDocumentReference> evaluateAndStream()
+	public Stream<WebuiDocumentReference> evaluateAndStream(@NonNull final RelatedDocumentsEvaluationContext context)
 	{
-		return relatedDocumentsCandidateGroup.evaluateAndStream(null)
+		return relatedDocumentsCandidateGroup.evaluateAndStream(context)
 				.map(relatedDocuments -> toDocumentReference(relatedDocuments, filterCaption));
 	}
 

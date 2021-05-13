@@ -27,15 +27,14 @@ import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
 import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
-import de.metas.document.references.related_documents.RelatedDocumentsId;
 import de.metas.document.references.related_documents.RelatedDocumentsCountSupplier;
+import de.metas.document.references.related_documents.RelatedDocumentsId;
 import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import de.metas.util.lang.Priority;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_Fact_Acct;
@@ -94,7 +93,7 @@ public class FactAcctRelatedDocumentsProvider implements IRelatedDocumentsProvid
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 		final ITranslatableString windowCaption = adWindowDAO.retrieveWindowName(factAcctWindowId);
 
-		final RelatedDocumentsCountSupplier recordsCountSupplier = createRecordsCountSupplier(fromDocument);
+		final RelatedDocumentsCountSupplier recordsCountSupplier = new FactAcctRelatedDocumentsCountSupplier(fromDocument.getAD_Table_ID(), fromDocument.getRecord_ID());
 
 		return ImmutableList.of(
 				RelatedDocumentsCandidateGroup.of(
@@ -108,17 +107,4 @@ public class FactAcctRelatedDocumentsProvider implements IRelatedDocumentsProvid
 								.documentsCountSupplier(recordsCountSupplier)
 								.build()));
 	}
-
-	private static RelatedDocumentsCountSupplier createRecordsCountSupplier(final IZoomSource source)
-	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final int adTableId = source.getAD_Table_ID();
-		final int recordId = source.getRecord_ID();
-		return () -> queryBL.createQueryBuilder(I_Fact_Acct.class)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId)
-				.create()
-				.count();
-	}
-
 }

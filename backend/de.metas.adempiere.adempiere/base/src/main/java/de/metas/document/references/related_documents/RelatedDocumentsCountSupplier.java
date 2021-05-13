@@ -25,5 +25,5 @@ package de.metas.document.references.related_documents;
 @FunctionalInterface
 public interface RelatedDocumentsCountSupplier
 {
-	int getRecordsCount();
+	int getRecordsCount(RelatedDocumentsPermissions permissions);
 }

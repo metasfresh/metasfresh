@@ -22,12 +22,12 @@
 
 package de.metas.document.references.related_documents;
 
-import org.adempiere.ad.element.api.AdWindowId;
-
 import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.element.api.AdWindowId;
 
 @UtilityClass
 public class RelatedDocumentsPermissionsFactory
@@ -53,9 +53,15 @@ public class RelatedDocumentsPermissionsFactory
 		private static final AllowAllRelatedDocumentsPermissions instance = new AllowAllRelatedDocumentsPermissions();
 
 		@Override
-		public boolean hasReadAccess(AdWindowId adWindowId)
+		public boolean hasReadAccess(final AdWindowId adWindowId)
 		{
 			return true;
+		}
+
+		@Override
+		public String addAccessSQL(final String sql, final String tableNameFQ)
+		{
+			return sql;
 		}
 	}
 
@@ -73,6 +79,12 @@ public class RelatedDocumentsPermissionsFactory
 		public boolean hasReadAccess(final AdWindowId adWindowId)
 		{
 			return rolePermissions.checkWindowPermission(adWindowId).hasReadAccess();
+		}
+
+		@Override
+		public String addAccessSQL(final String sql, final String tableNameFQ)
+		{
+			return rolePermissions.addAccessSQL(sql, tableNameFQ, true, Access.READ);
 		}
 	}
 }

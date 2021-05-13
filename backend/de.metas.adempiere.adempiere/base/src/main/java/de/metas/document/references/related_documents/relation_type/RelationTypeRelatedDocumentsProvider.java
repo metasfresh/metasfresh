@@ -185,7 +185,7 @@ public class RelationTypeRelatedDocumentsProvider implements IRelatedDocumentsPr
 								.priority(relatedDocumentsPriority)
 								.query(query)
 								.windowCaption(display)
-								.documentsCountSupplier(createRecordsCountSupplier(query))
+								.documentsCountSupplier(new RelationTypeRelatedDocumentsCountSupplier(query))
 								.build()));
 	}
 
@@ -385,28 +385,6 @@ public class RelationTypeRelatedDocumentsProvider implements IRelatedDocumentsPr
 		}
 
 		return whereParsed;
-	}
-
-	private static RelatedDocumentsCountSupplier createRecordsCountSupplier(final MQuery query)
-	{
-		final String sqlCommon = " FROM " + query.getZoomTableName()
-				+ " WHERE " + query.getWhereClause(false)
-				+ " AND AD_Client_ID IN (" + ClientId.SYSTEM.getRepoId() + ", " + ClientId.METASFRESH.getRepoId() + ")";
-		final String sqlCount = "SELECT COUNT(1) " + sqlCommon;
-
-		return () -> {
-			final int recordsCount = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlCount);
-
-			// FIXME: side effect to set MQuery.zoomValue, needed only in Swing
-			if (recordsCount > 0)
-			{
-				final String sqlFirstKey = "SELECT " + query.getZoomColumnName() + sqlCommon;
-				final int firstKey = DB.getSQLValueEx(ITrx.TRXNAME_None, sqlFirstKey);
-				query.setZoomValue(firstKey);
-			}
-
-			return recordsCount;
-		};
 	}
 
 	/**

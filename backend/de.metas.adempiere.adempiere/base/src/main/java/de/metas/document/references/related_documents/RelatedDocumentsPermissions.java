@@ -30,4 +30,6 @@ import org.adempiere.ad.element.api.AdWindowId;
 public interface RelatedDocumentsPermissions
 {
 	boolean hasReadAccess(AdWindowId adWindowId);
+
+	String addAccessSQL(String sql, String tableNameFQ);
 }

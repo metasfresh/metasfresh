@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.document.references.related_documents.fact_acct.FactAcctRelatedDocumentsProvider;
 import de.metas.document.references.related_documents.generic.GenericRelatedDocumentsProvider;
 import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvidersFactory;
-import de.metas.error.AdIssueRelatedDocumentsProvider;
+import de.metas.error.related_documents.AdIssueRelatedDocumentsProvider;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -60,7 +60,9 @@ public class RelatedDocumentsFactory
 			@NonNull final IZoomSource fromDocument,
 			@NonNull final RelatedDocumentsPermissions permissions)
 	{
-		final RelatedDocumentsEvaluationContext context = new RelatedDocumentsEvaluationContext();
+		final RelatedDocumentsEvaluationContext context = RelatedDocumentsEvaluationContext.builder()
+				.permissions(permissions)
+				.build();
 
 		return getRelatedDocumentsCandidates(fromDocument, null, permissions)
 				.stream()
@@ -147,8 +149,10 @@ public class RelatedDocumentsFactory
 		// NOTE: we need to check the records count because in case there are multiple RelatedDocuments for the same targetWindowId,
 		// we shall pick the one which actually has some data. Usually there would be only one (see #1808)
 
-		final RelatedDocumentsEvaluationContext context = new RelatedDocumentsEvaluationContext();
-		context.setOnlyRelatedDocumentsId(relatedDocumentsId);
+		final RelatedDocumentsEvaluationContext context = RelatedDocumentsEvaluationContext.builder()
+				.permissions(permissions)
+				.onlyRelatedDocumentsId(relatedDocumentsId)
+				.build();
 
 		return getRelatedDocumentsCandidates(fromDocument, targetWindowId, permissions)
 				.stream()

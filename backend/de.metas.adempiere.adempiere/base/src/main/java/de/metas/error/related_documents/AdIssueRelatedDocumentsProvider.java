@@ -1,35 +1,8 @@
-package de.metas.error;
-
-import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
-import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
-import de.metas.document.references.related_documents.IZoomSource;
-import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
-import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
-import de.metas.document.references.related_documents.RelatedDocumentsId;
-import de.metas.document.references.related_documents.RelatedDocumentsCountSupplier;
-import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
-import de.metas.document.references.zoom_into.RecordWindowFinder;
-import de.metas.i18n.ITranslatableString;
-import de.metas.util.Services;
-import de.metas.util.lang.Priority;
-import lombok.NonNull;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Issue;
-import org.compiere.model.MQuery;
-import org.compiere.model.MQuery.Operator;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.function.Supplier;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -46,6 +19,35 @@ import java.util.function.Supplier;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.error.related_documents;
+
+import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
+import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
+import de.metas.document.references.related_documents.IZoomSource;
+import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
+import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
+import de.metas.document.references.related_documents.RelatedDocumentsId;
+import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
+import de.metas.error.IErrorManager;
+import de.metas.error.IssueCategory;
+import de.metas.error.IssueCountersByCategory;
+import de.metas.i18n.ITranslatableString;
+import de.metas.util.Services;
+import de.metas.util.lang.Priority;
+import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Issue;
+import org.compiere.model.MQuery;
+import org.compiere.model.MQuery.Operator;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.function.Supplier;
 
 public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
@@ -83,7 +85,6 @@ public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvide
 		{
 			final RelatedDocumentsId id = RelatedDocumentsId.ofString("issues-" + issueCategory.getCode());
 			final ITranslatableString issueCategoryDisplayName = adReferenceDAO.retrieveListNameTranslatableString(IssueCategory.AD_REFERENCE_ID, issueCategory.getCode());
-			final RelatedDocumentsCountSupplier recordsCountSupplier = () -> issueCountersSupplier.get().getCountOrZero(issueCategory);
 
 			groupBuilder.candidate(
 					RelatedDocumentsCandidate.builder()
@@ -94,7 +95,7 @@ public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvide
 							.query(createMQuery(recordRef, issueCategory))
 							.windowCaption(issueCategoryDisplayName)
 							.filterByFieldCaption(issueCategoryDisplayName)
-							.documentsCountSupplier(recordsCountSupplier)
+							.documentsCountSupplier(new AdIssueRelatedDocumentsCountSupplier(issueCountersSupplier, issueCategory))
 							.build());
 		}
 

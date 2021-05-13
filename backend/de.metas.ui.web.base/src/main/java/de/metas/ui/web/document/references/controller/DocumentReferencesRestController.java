@@ -1,22 +1,7 @@
 package de.metas.ui.web.document.references.controller;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 import com.google.common.collect.ImmutableList;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.concurrent.CustomizableThreadFactory;
-import org.slf4j.Logger;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
+import de.metas.document.references.related_documents.RelatedDocumentsEvaluationContext;
 import de.metas.document.references.related_documents.RelatedDocumentsPermissions;
 import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.i18n.IMsgBL;
@@ -36,6 +21,21 @@ import io.swagger.annotations.Api;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.concurrent.CustomizableThreadFactory;
+import org.slf4j.Logger;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L
@@ -47,12 +47,12 @@ import lombok.Value;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -160,6 +160,7 @@ public class DocumentReferencesRestController
 					jsonOpts.getAdLanguage());
 
 			final AsyncRunContext context = AsyncRunContext.builder()
+					.permissions(RelatedDocumentsPermissionsFactory.ofRolePermissions(userSession.getUserRolePermissions()))
 					.jsonOpts(jsonOpts)
 					.menuTree(menuTree)
 					.publisher(publisher)
@@ -212,8 +213,13 @@ public class DocumentReferencesRestController
 			@NonNull final WebuiDocumentReferenceCandidate documentReferenceCandidate,
 			@NonNull final AsyncRunContext context)
 	{
+
 		final ImmutableList<WebuiDocumentReference> documentReferences = documentReferenceCandidate
-				.evaluateAndStream()
+				.evaluateAndStream(
+						RelatedDocumentsEvaluationContext.builder()
+								.permissions(context.getPermissions())
+								.doNotTrackSeenWindows(true)
+								.build())
 				.collect(ImmutableList.toImmutableList());
 		if (!documentReferences.isEmpty())
 		{
@@ -231,6 +237,9 @@ public class DocumentReferencesRestController
 	@Builder
 	private static class AsyncRunContext
 	{
+		@NonNull
+		RelatedDocumentsPermissions permissions;
+
 		@NonNull
 		JSONOptions jsonOpts;
 

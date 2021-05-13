@@ -23,28 +23,46 @@
 package de.metas.document.references.related_documents;
 
 import de.metas.util.lang.Priority;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 
 @ToString
 public class RelatedDocumentsEvaluationContext
 {
-	@Setter
 	@Getter
-	private RelatedDocumentsId onlyRelatedDocumentsId;
-	private final HashMap<RelatedDocumentsTargetWindow, Priority> alreadySeenWindows = new HashMap<>();
+	private final RelatedDocumentsPermissions permissions;
+	@Getter
+	private final RelatedDocumentsId onlyRelatedDocumentsId;
+
+	@Nullable
+	private final HashMap<RelatedDocumentsTargetWindow, Priority> alreadySeenWindows;
+
+	@Builder
+	private RelatedDocumentsEvaluationContext(
+			@NonNull final RelatedDocumentsPermissions permissions,
+			@Nullable final RelatedDocumentsId onlyRelatedDocumentsId,
+			final boolean doNotTrackSeenWindows)
+	{
+		this.permissions = permissions;
+		this.onlyRelatedDocumentsId = onlyRelatedDocumentsId;
+		this.alreadySeenWindows = doNotTrackSeenWindows ? null : new HashMap<>();
+	}
 
 	public Priority getPriorityOrNull(final RelatedDocumentsTargetWindow window)
 	{
-		return alreadySeenWindows.get(window);
+		return alreadySeenWindows != null ? alreadySeenWindows.get(window) : null;
 	}
 
-	public void putWindow(@NonNull final RelatedDocumentsTargetWindow targetWindow, @NonNull final Priority priority)
+	public void putAlreadySeenWindow(@NonNull final RelatedDocumentsTargetWindow targetWindow, @NonNull final Priority priority)
 	{
-		alreadySeenWindows.put(targetWindow, priority);
+		if (alreadySeenWindows != null)
+		{
+			alreadySeenWindows.put(targetWindow, priority);
+		}
 	}
 }
