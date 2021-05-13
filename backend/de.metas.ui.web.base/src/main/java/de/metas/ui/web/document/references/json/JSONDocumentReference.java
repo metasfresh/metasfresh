@@ -5,11 +5,10 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
-import de.metas.ui.web.document.references.DocumentReference;
+import de.metas.ui.web.document.references.WebuiDocumentReference;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.NonNull;
@@ -50,7 +49,7 @@ import java.util.Objects;
 public final class JSONDocumentReference
 {
 	@Nullable
-	public static JSONDocumentReference of(final DocumentReference documentReference, final JSONOptions jsonOpts)
+	public static JSONDocumentReference of(final WebuiDocumentReference documentReference, final JSONOptions jsonOpts)
 	{
 		try
 		{
@@ -63,7 +62,7 @@ public final class JSONDocumentReference
 		}
 	}
 
-	public static List<JSONDocumentReference> ofList(final Collection<DocumentReference> documentReferences, final JSONOptions jsonOpts)
+	public static List<JSONDocumentReference> ofList(final Collection<WebuiDocumentReference> documentReferences, final JSONOptions jsonOpts)
 	{
 		if (documentReferences.isEmpty())
 		{
@@ -106,7 +105,7 @@ public final class JSONDocumentReference
 	private final String loadDuration;
 
 	private JSONDocumentReference(
-			@NonNull final DocumentReference documentReference,
+			@NonNull final WebuiDocumentReference documentReference,
 			@NonNull final JSONOptions jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();

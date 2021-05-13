@@ -33,7 +33,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import javax.annotation.Nullable;
 
 @Value
-public class TargetWindowInfo
+public class GenericTargetWindowInfo
 {
 	@NonNull ImmutableTranslatableString name;
 	@NonNull AdWindowId targetWindowId;
@@ -46,7 +46,7 @@ public class TargetWindowInfo
 	@Nullable String tabSqlWhereClause;
 
 	@Builder(toBuilder = true)
-	private TargetWindowInfo(
+	private GenericTargetWindowInfo(
 			@NonNull final ImmutableTranslatableString name,
 			@NonNull final AdWindowId targetWindowId,
 			@NonNull final String targetWindowInternalName,

@@ -20,9 +20,16 @@
  * #L%
  */
 
-package de.metas.document.references.related_documents;
+package de.metas.document.references.related_documents.fact_acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
+import de.metas.document.references.related_documents.IZoomSource;
+import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
+import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
+import de.metas.document.references.related_documents.RelatedDocumentsId;
+import de.metas.document.references.related_documents.RelatedDocumentsCountSupplier;
+import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
@@ -38,20 +45,20 @@ import org.compiere.model.MQuery.Operator;
 import javax.annotation.Nullable;
 import java.util.List;
 
-class FactAcctZoomProvider implements IZoomProvider
+public class FactAcctRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
-	public static final transient FactAcctZoomProvider instance = new FactAcctZoomProvider();
+	public static final transient FactAcctRelatedDocumentsProvider instance = new FactAcctRelatedDocumentsProvider();
 	private static final String COLUMNNAME_Posted = "Posted";
 
-	private final Priority zoomInfoPriority = Priority.HIGHEST;
+	private final Priority relatedDocumentsPriority = Priority.HIGHEST;
 
-	private FactAcctZoomProvider()
+	private FactAcctRelatedDocumentsProvider()
 	{
 	}
 
 	@Override
-	public List<ZoomInfoCandidateGroup> retrieveZoomInfos(
-			@NonNull final IZoomSource source,
+	public List<RelatedDocumentsCandidateGroup> retrieveRelatedDocumentsCandidates(
+			@NonNull final IZoomSource fromDocument,
 			@Nullable final AdWindowId targetWindowId)
 	{
 		//
@@ -69,9 +76,9 @@ class FactAcctZoomProvider implements IZoomProvider
 		}
 
 		// Return nothing if source is not Posted
-		if (source.hasField(COLUMNNAME_Posted))
+		if (fromDocument.hasField(COLUMNNAME_Posted))
 		{
-			final boolean posted = source.getFieldValueAsBoolean(COLUMNNAME_Posted);
+			final boolean posted = fromDocument.getFieldValueAsBoolean(COLUMNNAME_Posted);
 			if (!posted)
 			{
 				return ImmutableList.of();
@@ -81,28 +88,28 @@ class FactAcctZoomProvider implements IZoomProvider
 		//
 		// Build query and check count if needed
 		final MQuery query = new MQuery(I_Fact_Acct.Table_Name);
-		query.addRestriction(I_Fact_Acct.COLUMNNAME_AD_Table_ID, Operator.EQUAL, source.getAD_Table_ID());
-		query.addRestriction(I_Fact_Acct.COLUMNNAME_Record_ID, Operator.EQUAL, source.getRecord_ID());
+		query.addRestriction(I_Fact_Acct.COLUMNNAME_AD_Table_ID, Operator.EQUAL, fromDocument.getAD_Table_ID());
+		query.addRestriction(I_Fact_Acct.COLUMNNAME_Record_ID, Operator.EQUAL, fromDocument.getRecord_ID());
 
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 		final ITranslatableString windowCaption = adWindowDAO.retrieveWindowName(factAcctWindowId);
 
-		final ZoomInfoRecordsCountSupplier recordsCountSupplier = createRecordsCountSupplier(source);
+		final RelatedDocumentsCountSupplier recordsCountSupplier = createRecordsCountSupplier(fromDocument);
 
 		return ImmutableList.of(
-				ZoomInfoCandidateGroup.of(
-						ZoomInfoCandidate.builder()
-								.id(ZoomInfoId.ofString(I_Fact_Acct.Table_Name))
+				RelatedDocumentsCandidateGroup.of(
+						RelatedDocumentsCandidate.builder()
+								.id(RelatedDocumentsId.ofString(I_Fact_Acct.Table_Name))
 								.internalName(I_Fact_Acct.Table_Name)
-								.targetWindow(ZoomTargetWindow.ofAdWindowId(factAcctWindowId))
-								.priority(zoomInfoPriority)
+								.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowId(factAcctWindowId))
+								.priority(relatedDocumentsPriority)
 								.query(query)
 								.windowCaption(windowCaption)
-								.recordsCountSupplier(recordsCountSupplier)
+								.documentsCountSupplier(recordsCountSupplier)
 								.build()));
 	}
 
-	private static ZoomInfoRecordsCountSupplier createRecordsCountSupplier(final IZoomSource source)
+	private static RelatedDocumentsCountSupplier createRecordsCountSupplier(final IZoomSource source)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final int adTableId = source.getAD_Table_ID();

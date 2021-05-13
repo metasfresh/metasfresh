@@ -48,36 +48,36 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 @Value
-public class ZoomInfoCandidateGroup
+public class RelatedDocumentsCandidateGroup
 {
-	private static final Logger logger = LogManager.getLogger(ZoomInfoCandidateGroup.class);
+	private static final Logger logger = LogManager.getLogger(RelatedDocumentsCandidateGroup.class);
 
-	ImmutableList<ZoomInfoCandidate> candidates;
+	ImmutableList<RelatedDocumentsCandidate> candidates;
 	AdWindowId targetWindowId;
 
 	@Builder
-	private ZoomInfoCandidateGroup(
-			@NonNull @Singular final ImmutableList<ZoomInfoCandidate> candidates)
+	private RelatedDocumentsCandidateGroup(
+			@NonNull @Singular final ImmutableList<RelatedDocumentsCandidate> candidates)
 	{
 		Check.assumeNotEmpty(candidates, "candidates");
 		this.candidates = candidates;
 
-		targetWindowId = CollectionUtils.extractSingleElement(candidates, ZoomInfoCandidate::getTargetWindowId);
+		targetWindowId = CollectionUtils.extractSingleElement(candidates, RelatedDocumentsCandidate::getTargetWindowId);
 	}
 
-	public static ZoomInfoCandidateGroup of(@NonNull ZoomInfoCandidate candidate)
+	public static RelatedDocumentsCandidateGroup of(@NonNull RelatedDocumentsCandidate candidate)
 	{
 		return builder().candidate(candidate).build();
 	}
 
-	public boolean isZoomInfoIdMatching(@NonNull final ZoomInfoId zoomInfoId)
+	public boolean isMatching(@NonNull final RelatedDocumentsId relatedDocumentsId)
 	{
-		return candidates.stream().anyMatch(candidate -> candidate.isZoomInfoIdMatching(zoomInfoId));
+		return candidates.stream().anyMatch(candidate -> candidate.isMatching(relatedDocumentsId));
 	}
 
-	public Stream<ZoomInfo> evaluateAndStream(@Nullable final ZoomTargetWindowEvaluationContext context)
+	public Stream<RelatedDocuments> evaluateAndStream(@Nullable final RelatedDocumentsEvaluationContext context)
 	{
-		final ImmutableList<ZoomInfoCandidateWithRecordsCount> candidatesWithRecordCount = candidates
+		final ImmutableList<RelatedDocumentsCandidateWithRecordsCount> candidatesWithRecordCount = candidates
 				.stream()
 				.map(candidate -> evaluateOrNull(candidate, context))
 				.filter(Objects::nonNull)
@@ -89,43 +89,43 @@ public class ZoomInfoCandidateGroup
 		}
 		else if (candidatesWithRecordCount.size() == 1)
 		{
-			final ZoomInfo zoomInfo = toZoomInfo(candidatesWithRecordCount.get(0).withAppendFilterByFieldCaption(false));
-			return Stream.of(zoomInfo);
+			final RelatedDocuments relatedDocuments = toRelatedDocuments(candidatesWithRecordCount.get(0).withAppendFilterByFieldCaption(false));
+			return Stream.of(relatedDocuments);
 		}
 		else
 		{
 			return candidatesWithRecordCount.stream()
 					.map(candidateWithRecordsCount -> candidateWithRecordsCount.withAppendFilterByFieldCaption(true))
-					.map(this::toZoomInfo);
+					.map(this::toRelatedDocuments);
 		}
 	}
 
-	private ZoomInfoCandidateWithRecordsCount evaluateOrNull(
-			@NonNull final ZoomInfoCandidate candidate,
-			@Nullable final ZoomTargetWindowEvaluationContext context)
+	private RelatedDocumentsCandidateWithRecordsCount evaluateOrNull(
+			@NonNull final RelatedDocumentsCandidate candidate,
+			@Nullable final RelatedDocumentsEvaluationContext context)
 	{
-		// Apply onlyZoomInfoId
-		if (context != null && context.getOnlyZoomInfoId() != null && !ZoomInfoId.equals(context.getOnlyZoomInfoId(), candidate.getId()))
+		// Apply onlyRelatedDocumentsId
+		if (context != null && context.getOnlyRelatedDocumentsId() != null && !RelatedDocumentsId.equals(context.getOnlyRelatedDocumentsId(), candidate.getId()))
 		{
 			return null;
 		}
 
 		//
 		// Only consider a window already seen if it actually has record count > 0 (task #1062)
-		final Priority alreadySeenZoomInfoPriority = context != null
+		final Priority alreadySeenRelatedDocumentsPriority = context != null
 				? context.getPriorityOrNull(candidate.getTargetWindow())
 				: null;
-		if (alreadySeenZoomInfoPriority != null
-				&& alreadySeenZoomInfoPriority.isHigherThan(candidate.getPriority()))
+		if (alreadySeenRelatedDocumentsPriority != null
+				&& alreadySeenRelatedDocumentsPriority.isHigherThan(candidate.getPriority()))
 		{
-			logger.debug("Skipping zoomInfo {} because there is already one for destination '{}'", this, candidate.getTargetWindow());
+			logger.debug("Skipping related documents {} because there is already one for destination '{}'", this, candidate.getTargetWindow());
 			return null;
 		}
 
 		//
 		// Compute records count
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final int recordsCount = candidate.getRecordsCountSupplier().getRecordsCount();
+		final int recordsCount = candidate.getDocumentsCountSupplier().getRecordsCount();
 		stopwatch.stop();
 		logger.debug("Computed records count for {} in {}", this, stopwatch);
 		if (recordsCount <= 0)
@@ -140,16 +140,16 @@ public class ZoomInfoCandidateGroup
 			context.putWindow(candidate.getTargetWindow(), candidate.getPriority());
 		}
 
-		return ZoomInfoCandidateWithRecordsCount.builder()
+		return RelatedDocumentsCandidateWithRecordsCount.builder()
 				.candidate(candidate)
 				.recordsCount(recordsCount)
 				.recordsCountDuration(recordsCountDuration)
 				.build();
 	}
 
-	private ZoomInfo toZoomInfo(@NonNull final ZoomInfoCandidateWithRecordsCount candidateWithRecordsCount)
+	private RelatedDocuments toRelatedDocuments(@NonNull final RelatedDocumentsCandidateGroup.RelatedDocumentsCandidateWithRecordsCount candidateWithRecordsCount)
 	{
-		final ZoomInfoCandidate candidate = candidateWithRecordsCount.getCandidate();
+		final RelatedDocumentsCandidate candidate = candidateWithRecordsCount.getCandidate();
 		final int recordsCount = candidateWithRecordsCount.getRecordsCount();
 		final Duration recordsCountDuration = candidateWithRecordsCount.getRecordsCountDuration();
 
@@ -169,7 +169,7 @@ public class ZoomInfoCandidateGroup
 		final MQuery queryCopy = candidate.getQuery().deepCopy();
 		queryCopy.setRecordCount(recordsCount, recordsCountDuration);
 
-		return ZoomInfo.builder()
+		return RelatedDocuments.builder()
 				.id(candidate.getId())
 				.internalName(candidate.getInternalName())
 				.targetWindow(candidate.getTargetWindow())
@@ -182,10 +182,10 @@ public class ZoomInfoCandidateGroup
 
 	@Value
 	@Builder
-	private static class ZoomInfoCandidateWithRecordsCount
+	private static class RelatedDocumentsCandidateWithRecordsCount
 	{
 		@Delegate
-		@NonNull ZoomInfoCandidate candidate;
+		@NonNull RelatedDocumentsCandidate candidate;
 
 		int recordsCount;
 		Duration recordsCountDuration;

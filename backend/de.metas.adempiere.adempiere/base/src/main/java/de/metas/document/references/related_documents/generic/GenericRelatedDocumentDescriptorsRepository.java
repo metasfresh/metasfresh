@@ -20,31 +20,13 @@
  * #L%
  */
 
-package de.metas.document.references.related_documents;
+package de.metas.document.references.related_documents.generic;
 
-import de.metas.util.lang.Priority;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
-import lombok.ToString;
 
-import java.util.HashMap;
+import java.util.List;
 
-@ToString
-public class ZoomTargetWindowEvaluationContext
+public interface GenericRelatedDocumentDescriptorsRepository
 {
-	@Setter
-	@Getter
-	private ZoomInfoId onlyZoomInfoId;
-	private final HashMap<ZoomTargetWindow, Priority> alreadySeenWindows = new HashMap<>();
-
-	public Priority getPriorityOrNull(final ZoomTargetWindow window)
-	{
-		return alreadySeenWindows.get(window);
-	}
-
-	public void putWindow(@NonNull final ZoomTargetWindow targetWindow, @NonNull final Priority priority)
-	{
-		alreadySeenWindows.put(targetWindow, priority);
-	}
+	List<GenericRelatedDocumentDescriptor> getRelatedDocumentDescriptors(@NonNull String sourceKeyColumnName);
 }

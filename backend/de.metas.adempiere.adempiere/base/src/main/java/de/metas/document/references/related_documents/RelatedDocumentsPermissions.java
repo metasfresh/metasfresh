@@ -20,13 +20,14 @@
  * #L%
  */
 
-package de.metas.document.references.related_documents.generic;
+package de.metas.document.references.related_documents;
 
-import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 
-import java.util.List;
-
-public interface GenericZoomInfoDescriptorsRepository
+/**
+ * To create a new instance use {@link RelatedDocumentsPermissionsFactory}.
+ */
+public interface RelatedDocumentsPermissions
 {
-	List<GenericZoomInfoDescriptor> getZoomInfoDescriptors(@NonNull String sourceKeyColumnName);
+	boolean hasReadAccess(AdWindowId adWindowId);
 }

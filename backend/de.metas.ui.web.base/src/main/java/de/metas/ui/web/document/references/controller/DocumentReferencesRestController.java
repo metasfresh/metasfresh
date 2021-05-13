@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import de.metas.document.references.related_documents.ZoomInfoPermissions;
-import de.metas.document.references.related_documents.ZoomInfoPermissionsFactory;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissions;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
-import de.metas.ui.web.document.references.DocumentReference;
-import de.metas.ui.web.document.references.DocumentReferenceCandidate;
-import de.metas.ui.web.document.references.service.DocumentReferencesService;
+import de.metas.ui.web.document.references.WebuiDocumentReference;
+import de.metas.ui.web.document.references.WebuiDocumentReferenceCandidate;
+import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
 import de.metas.ui.web.menu.MenuTree;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.session.UserSession;
@@ -69,7 +69,7 @@ public class DocumentReferencesRestController
 	private static final Logger logger = LogManager.getLogger(DocumentReferencesRestController.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final UserSession userSession;
-	private final DocumentReferencesService documentReferencesService;
+	private final WebuiDocumentReferencesService webuiDocumentReferencesService;
 	private final MenuTreeRepository menuTreeRepository;
 
 	private static final String SYSCONFIG_SSE_EXECUTOR_MAX_POOL_SIZE = "webui.documentReferencesRestController.sseExecutor.maxPoolSize";
@@ -77,11 +77,11 @@ public class DocumentReferencesRestController
 
 	public DocumentReferencesRestController(
 			@NonNull final UserSession userSession,
-			@NonNull final DocumentReferencesService documentReferencesService,
+			@NonNull final WebuiDocumentReferencesService webuiDocumentReferencesService,
 			@NonNull final MenuTreeRepository menuTreeRepository)
 	{
 		this.userSession = userSession;
-		this.documentReferencesService = documentReferencesService;
+		this.webuiDocumentReferencesService = webuiDocumentReferencesService;
 		this.menuTreeRepository = menuTreeRepository;
 
 		this.sseExecutor = createSseExecutor();
@@ -146,8 +146,8 @@ public class DocumentReferencesRestController
 		{
 			userSession.assertLoggedIn();
 
-			final ZoomInfoPermissions permissions = ZoomInfoPermissionsFactory.ofRolePermissions(userSession.getUserRolePermissions());
-			final List<DocumentReferenceCandidate> documentReferenceCandidates = documentReferencesService.getDocumentReferenceCandidates(documentPath, permissions);
+			final RelatedDocumentsPermissions permissions = RelatedDocumentsPermissionsFactory.ofRolePermissions(userSession.getUserRolePermissions());
+			final List<WebuiDocumentReferenceCandidate> documentReferenceCandidates = webuiDocumentReferencesService.getDocumentReferenceCandidates(documentPath, permissions);
 			if (documentReferenceCandidates.isEmpty())
 			{
 				publisher.publishCompleted();
@@ -176,7 +176,7 @@ public class DocumentReferencesRestController
 	}
 
 	private void evaluateAndPublishAll(
-			@NonNull final List<DocumentReferenceCandidate> documentReferenceCandidates,
+			@NonNull final List<WebuiDocumentReferenceCandidate> documentReferenceCandidates,
 			@NonNull final AsyncRunContext context)
 	{
 		final CompletableFuture<?>[] futures = documentReferenceCandidates.stream()
@@ -200,7 +200,7 @@ public class DocumentReferencesRestController
 	}
 
 	private CompletableFuture<Void> evaluateAndPublish(
-			@NonNull final DocumentReferenceCandidate documentReferenceCandidate,
+			@NonNull final WebuiDocumentReferenceCandidate documentReferenceCandidate,
 			@NonNull final AsyncRunContext context)
 	{
 		return CompletableFuture.runAsync(
@@ -209,10 +209,10 @@ public class DocumentReferencesRestController
 	}
 
 	private void evaluateAndPublishNow(
-			@NonNull final DocumentReferenceCandidate documentReferenceCandidate,
+			@NonNull final WebuiDocumentReferenceCandidate documentReferenceCandidate,
 			@NonNull final AsyncRunContext context)
 	{
-		final ImmutableList<DocumentReference> documentReferences = documentReferenceCandidate
+		final ImmutableList<WebuiDocumentReference> documentReferences = documentReferenceCandidate
 				.evaluateAndStream()
 				.collect(ImmutableList.toImmutableList());
 		if (!documentReferences.isEmpty())

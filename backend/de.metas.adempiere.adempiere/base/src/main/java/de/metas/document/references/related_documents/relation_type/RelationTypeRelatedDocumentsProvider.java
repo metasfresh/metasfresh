@@ -20,11 +20,19 @@
  * #L%
  */
 
-package de.metas.document.references.related_documents;
+package de.metas.document.references.related_documents.relation_type;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
+import de.metas.document.references.related_documents.IZoomSource;
+import de.metas.document.references.related_documents.POZoomSource;
+import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
+import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
+import de.metas.document.references.related_documents.RelatedDocumentsId;
+import de.metas.document.references.related_documents.RelatedDocumentsCountSupplier;
+import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.CustomizedWindowInfo;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
 import de.metas.i18n.ITranslatableString;
@@ -60,29 +68,29 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Properties;
 
-public class RelationTypeZoomProvider implements IZoomProvider
+public class RelationTypeRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
 	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	private static final Logger logger = LogManager.getLogger(RelationTypeZoomProvider.class);
+	private static final Logger logger = LogManager.getLogger(RelationTypeRelatedDocumentsProvider.class);
 
 	private final boolean directed;
-	private final ZoomInfoId zoomInfoId;
+	private final RelatedDocumentsId relatedDocumentsId;
 	private final String internalName;
 	private final boolean isTableRecordIdTarget;
 
 	private final ZoomProviderDestination source;
 	private final ZoomProviderDestination target;
 
-	private final Priority zoomInfoPriority = Priority.MEDIUM;
+	private final Priority relatedDocumentsPriority = Priority.MEDIUM;
 
-	private RelationTypeZoomProvider(@NonNull final Builder builder)
+	private RelationTypeRelatedDocumentsProvider(@NonNull final Builder builder)
 	{
 		directed = builder.isDirected();
-		zoomInfoId = builder.getZoomInfoId();
+		relatedDocumentsId = builder.getRelatedDocumentsId();
 		internalName = builder.getInternalName();
 
 		isTableRecordIdTarget = builder.isTableRecordIdTarget();
@@ -110,7 +118,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	{
 		return MoreObjects.toStringHelper(this)
 				.omitNullValues()
-				.add("zoomInfoId", zoomInfoId)
+				.add("relatedDocumentsId", relatedDocumentsId)
 				.add("internalName", internalName)
 				.add("directed", directed)
 				.add("source", source)
@@ -120,60 +128,60 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	}
 
 	@Override
-	public List<ZoomInfoCandidateGroup> retrieveZoomInfos(
-			@NonNull final IZoomSource zoomOrigin,
-			@Nullable final AdWindowId targetAdWindowId)
+	public List<RelatedDocumentsCandidateGroup> retrieveRelatedDocumentsCandidates(
+			@NonNull final IZoomSource fromDocument,
+			@Nullable final AdWindowId targetWindowId)
 	{
 		final AdWindowId adWindowId;
 		final ITranslatableString display;
 
 		// #2340 Reference Target relation type: There is no source, only a target that contains the table and
-		// the reference target column to be linked with the zoomSource
+		// the reference target column to be linked with the "fromDocument"
 		if (isTableRecordIdTarget)
 		{
 			final ZoomProviderDestination referenceTarget = getTarget();
 
-			adWindowId = getRefTableAD_Window_ID(referenceTarget.getTableRefInfo(), zoomOrigin.isSOTrx());
+			adWindowId = getRefTableAD_Window_ID(referenceTarget.getTableRefInfo(), fromDocument.isSOTrx());
 
 			display = referenceTarget.getRoleDisplayName(adWindowId);
 		}
 		else
 		{
-			final IPair<ZoomProviderDestination, ZoomProviderDestination> sourceAndTarget = findSourceAndTargetEffective(zoomOrigin);
+			final IPair<ZoomProviderDestination, ZoomProviderDestination> sourceAndTarget = findSourceAndTargetEffective(fromDocument);
 
 			final ZoomProviderDestination source = sourceAndTarget.getLeft();
 			Check.assumeNotNull(source, "Source cannot be left empty");
 
 			final ZoomProviderDestination target = sourceAndTarget.getRight();
 
-			if (!source.matchesAsSource(zoomOrigin))
+			if (!source.matchesAsSource(fromDocument))
 			{
-				logger.debug("Skip {} because {} is not matching source={}", this, zoomOrigin, source);
+				logger.debug("Skip {} because {} is not matching source={}", this, fromDocument, source);
 				return ImmutableList.of();
 			}
 
-			adWindowId = getRefTableAD_Window_ID(target.getTableRefInfo(), zoomOrigin.isSOTrx());
+			adWindowId = getRefTableAD_Window_ID(target.getTableRefInfo(), fromDocument.isSOTrx());
 
 			display = target.getRoleDisplayName(adWindowId);
 		}
 
-		if (targetAdWindowId != null && !AdWindowId.equals(targetAdWindowId, adWindowId))
+		if (targetWindowId != null && !AdWindowId.equals(targetWindowId, adWindowId))
 		{
 			return ImmutableList.of();
 		}
 
-		final MQuery query = mkZoomOriginQuery(zoomOrigin);
+		final MQuery query = mkZoomOriginQuery(fromDocument);
 
 		return ImmutableList.of(
-				ZoomInfoCandidateGroup.of(
-						ZoomInfoCandidate.builder()
-								.id(getZoomInfoId())
+				RelatedDocumentsCandidateGroup.of(
+						RelatedDocumentsCandidate.builder()
+								.id(getRelatedDocumentsId())
 								.internalName(getInternalName())
-								.targetWindow(ZoomTargetWindow.ofAdWindowIdAndCategory(adWindowId, getTarget().getTableRefInfo().getKeyColumn()))
-								.priority(zoomInfoPriority)
+								.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowIdAndCategory(adWindowId, getTarget().getTableRefInfo().getKeyColumn()))
+								.priority(relatedDocumentsPriority)
 								.query(query)
 								.windowCaption(display)
-								.recordsCountSupplier(createRecordsCountSupplier(query))
+								.documentsCountSupplier(createRecordsCountSupplier(query))
 								.build()));
 	}
 
@@ -187,9 +195,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return isTableRecordIdTarget;
 	}
 
-	private ZoomInfoId getZoomInfoId()
+	private RelatedDocumentsId getRelatedDocumentsId()
 	{
-		return zoomInfoId;
+		return relatedDocumentsId;
 	}
 
 	String getInternalName()
@@ -210,7 +218,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	/**
 	 * @return effective source and target pair
 	 */
-	private IPair<ZoomProviderDestination, ZoomProviderDestination> findSourceAndTargetEffective(final IZoomSource zoomSource)
+	private IPair<ZoomProviderDestination, ZoomProviderDestination> findSourceAndTargetEffective(final IZoomSource fromDocument)
 	{
 		final ZoomProviderDestination target = getTarget();
 		final ZoomProviderDestination source = getSource();
@@ -226,7 +234,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 			// this relation type is from one table to the same table
 			// use the window-id to distinguish
-			if (AdWindowId.equals(zoomSource.getAD_Window_ID(), getRefTableAD_Window_ID(source.getTableRefInfo(), zoomSource.isSOTrx())))
+			if (AdWindowId.equals(fromDocument.getAD_Window_ID(), getRefTableAD_Window_ID(source.getTableRefInfo(), fromDocument.isSOTrx())))
 			{
 				return ImmutablePair.of(source, target);
 			}
@@ -237,7 +245,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		}
 		else
 		{
-			if (zoomSource.getTableName().equals(source.getTableName()))
+			if (fromDocument.getTableName().equals(source.getTableName()))
 			{
 				return ImmutablePair.of(source, target);
 			}
@@ -249,9 +257,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 	}
 
-	private MQuery mkZoomOriginQuery(final IZoomSource zoomOrigin)
+	private MQuery mkZoomOriginQuery(final IZoomSource fromDocument)
 	{
-		final String queryWhereClause = createZoomOriginQueryWhereClause(zoomOrigin);
+		final String queryWhereClause = createZoomOriginQueryWhereClause(fromDocument);
 
 		final TableRefInfo refTable = getTarget().getTableRefInfo();
 
@@ -266,7 +274,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		return query;
 	}
 
-	private String createZoomOriginQueryWhereClause(final IZoomSource zoomOrigin)
+	private String createZoomOriginQueryWhereClause(final IZoomSource fromDocument)
 	{
 		// services
 		final ITableRecordIdDAO tableRecordIdDAO = Services.get(ITableRecordIdDAO.class);
@@ -275,7 +283,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		final TableRefInfo refTable = getTarget().getTableRefInfo();
 
-		final String targetTableName = zoomOrigin.getTableName();
+		final String targetTableName = fromDocument.getTableName();
 		final String originTableName = refTable.getTableName();
 
 		final String whereClause = refTable.getWhereClause();
@@ -302,13 +310,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 				queryWhereClause
 
-						.append(zoomOrigin.getAD_Table_ID())
+						.append(fromDocument.getAD_Table_ID())
 						.append(" = ")
 						.append(originTableName)
 						.append(".")
 						.append(tableIdColumnName)
 						.append(" AND ")
-						.append(zoomOrigin.getRecord_ID())
+						.append(fromDocument.getRecord_ID())
 						.append(" = ")
 						.append(originTableName)
 						.append(".")
@@ -331,7 +339,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			final String refTableWhereClause = whereClause;
 			if (!Check.isEmpty(refTableWhereClause))
 			{
-				queryWhereClause.append(parseWhereClause(zoomOrigin, refTableWhereClause, true));
+				queryWhereClause.append(parseWhereClause(fromDocument, refTableWhereClause, true));
 			}
 			else
 			{
@@ -345,12 +353,12 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	/**
 	 * Parses given <code>where</code>
 	 *
-	 * @param zoomOrigin zoom source
+	 * @param fromDocument zoom source
 	 * @param where      where clause to be parsed
 	 * @param throwEx    true if an exception shall be thrown in case the parsing failed.
 	 * @return parsed where clause or empty string in case parsing failed and throwEx is <code>false</code>
 	 */
-	private static String parseWhereClause(@NonNull final IZoomSource zoomOrigin, final String where, final boolean throwEx)
+	private static String parseWhereClause(@NonNull final IZoomSource fromDocument, final String where, final boolean throwEx)
 	{
 		final IStringExpression whereExpr = IStringExpression.compileOrDefault(where, IStringExpression.NULL);
 		if (whereExpr.isNullExpression())
@@ -358,7 +366,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return "";
 		}
 
-		final Evaluatee evalCtx = zoomOrigin.createEvaluationContext();
+		final Evaluatee evalCtx = fromDocument.createEvaluationContext();
 		final OnVariableNotFound onVariableNotFound = throwEx ? OnVariableNotFound.Fail : OnVariableNotFound.ReturnNoResult;
 		final String whereParsed = whereExpr.evaluate(evalCtx, onVariableNotFound);
 		if (whereExpr.isNoResult(whereParsed))
@@ -368,14 +376,14 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			// and if we reached this point it means one of the context variables were not present and it has no default value.
 			// This is perfectly normal, a default value is really not needed because we don't want to execute an SQL command
 			// which would return no result. It's much more efficient to stop here.
-			logger.debug("Could not parse where clause:\n{} \n EvalCtx: {} \n ZoomSource: {}", where, evalCtx, zoomOrigin);
+			logger.debug("Could not parse where clause:\n{} \n EvalCtx: {} \n ZoomSource: {}", where, evalCtx, fromDocument);
 			return "";
 		}
 
 		return whereParsed;
 	}
 
-	private static ZoomInfoRecordsCountSupplier createRecordsCountSupplier(final MQuery query)
+	private static RelatedDocumentsCountSupplier createRecordsCountSupplier(final MQuery query)
 	{
 		final String sqlCommon = " FROM " + query.getZoomTableName()
 				+ " WHERE " + query.getWhereClause(false)
@@ -401,11 +409,11 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	 * Retrieve destinations for the zoom origin given as parameter.
 	 * NOTE: This is not suitable for TableRecordIdTarget relation types, only for the default kind!
 	 */
-	public <T> List<T> retrieveDestinations(final Properties ctx, final PO zoomOriginPO, final Class<T> clazz, final String trxName)
+	public <T> List<T> retrieveDestinations(final Properties ctx, final PO fromDocumentPO, final Class<T> clazz, final String trxName)
 	{
-		final IZoomSource zoomOrigin = POZoomSource.of(zoomOriginPO);
+		final IZoomSource fromDocument = POZoomSource.of(fromDocumentPO);
 
-		final MQuery query = mkZoomOriginQuery(zoomOrigin);
+		final MQuery query = mkZoomOriginQuery(fromDocument);
 
 		return new Query(ctx, query.getZoomTableName(), query.getWhereClause(false), trxName)
 				.setClient_ID()
@@ -560,7 +568,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		}
 
 		@Nullable
-		public RelationTypeZoomProvider buildOrNull()
+		public RelationTypeRelatedDocumentsProvider buildOrNull()
 		{
 			if (!isTableRecordIdTarget() && getSourceTableRefInfoOrNull() == null)
 			{
@@ -575,7 +583,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 				return null;
 			}
 
-			return new RelationTypeZoomProvider(this);
+			return new RelationTypeRelatedDocumentsProvider(this);
 		}
 
 		public Builder setCustomizedWindowInfoMap(final CustomizedWindowInfoMap customizedWindowInfoMap)
@@ -597,9 +605,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 			return Check.assumeGreaterThanZero(adRelationTypeId, "adRelationTypeId");
 		}
 
-		private ZoomInfoId getZoomInfoId()
+		private RelatedDocumentsId getRelatedDocumentsId()
 		{
-			return ZoomInfoId.ofString("AD_RelationType_ID-" + getAD_RelationType_ID());
+			return RelatedDocumentsId.ofString("AD_RelationType_ID-" + getAD_RelationType_ID());
 		}
 
 		public Builder setInternalName(final String internalName)
@@ -612,7 +620,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		{
 			if (Check.isEmpty(internalName, true))
 			{
-				return getZoomInfoId().toJson();
+				return getRelatedDocumentsId().toJson();
 			}
 			return internalName;
 		}

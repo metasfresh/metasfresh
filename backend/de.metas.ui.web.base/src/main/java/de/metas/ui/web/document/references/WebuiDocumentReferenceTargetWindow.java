@@ -31,26 +31,26 @@ import lombok.Value;
  */
 
 @Value
-public class DocumentReferenceTargetWindow
+public class WebuiDocumentReferenceTargetWindow
 {
-	public static DocumentReferenceTargetWindow ofWindowId(@NonNull final WindowId windowId)
+	public static WebuiDocumentReferenceTargetWindow ofWindowId(@NonNull final WindowId windowId)
 	{
 		final String category = null;
-		return new DocumentReferenceTargetWindow(windowId, category);
+		return new WebuiDocumentReferenceTargetWindow(windowId, category);
 	}
 
-	public static DocumentReferenceTargetWindow ofWindowIdAndCategory(
+	public static WebuiDocumentReferenceTargetWindow ofWindowIdAndCategory(
 			@NonNull final WindowId windowId,
 			@NonNull final String category)
 	{
 		Check.assumeNotEmpty(category, "category is not empty");
-		return new DocumentReferenceTargetWindow(windowId, category);
+		return new WebuiDocumentReferenceTargetWindow(windowId, category);
 	}
 
 	WindowId windowId;
 	String category;
 
-	private DocumentReferenceTargetWindow(
+	private WebuiDocumentReferenceTargetWindow(
 			@NonNull final WindowId windowId,
 			@Nullable final String category)
 	{

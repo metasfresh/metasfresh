@@ -20,9 +20,11 @@
  * #L%
  */
 
-package de.metas.document.references.related_documents;
+package de.metas.document.references.related_documents.relation_type;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvider;
+import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvidersFactory;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -49,7 +51,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class RelationTypeZoomProviderFactoryTest
+public class RelationTypeRelatedDocumentsProvidersFactoryTest
 {
 	@BeforeEach
 	public void init()
@@ -58,7 +60,7 @@ public class RelationTypeZoomProviderFactoryTest
 	}
 
 	@Test
-	public void findZoomProvider_IsTableRecordIdTarget_NoSource()
+	public void findRelatedDocumentsProvider_IsTableRecordIdTarget_NoSource()
 	{
 		final String refTargetName = "RefTargetName1";
 		final String validationType = X_AD_Reference.VALIDATIONTYPE_TableValidation;
@@ -96,14 +98,14 @@ public class RelationTypeZoomProviderFactoryTest
 		setupLookupDAOMock(ImmutableMap.of(
 				referenceTarget.getAD_Reference_ID(), targetTableRefInfo));
 
-		final RelationTypeZoomProvidersFactory relationTypeZoomProvidersFactory = new RelationTypeZoomProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
-		final RelationTypeZoomProvider zoomProvider = relationTypeZoomProvidersFactory.findZoomProvider(relationType);
+		final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory = new RelationTypeRelatedDocumentsProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
+		final RelationTypeRelatedDocumentsProvider provider = relationTypeRelatedDocumentsProvidersFactory.findRelatedDocumentsProvider(relationType);
 
-		assertThat(zoomProvider.isTableRecordIdTarget()).isTrue();
+		assertThat(provider.isTableRecordIdTarget()).isTrue();
 	}
 
 	@Test
-	public void findZoomProvider_Is_Not_TableRecordIdTarget_WithSource()
+	public void findRelatedDocumentsProvider_Is_Not_TableRecordIdTarget_WithSource()
 	{
 		final String refTargetName = "RefTargetName1";
 		final String validationType = X_AD_Reference.VALIDATIONTYPE_TableValidation;
@@ -161,10 +163,10 @@ public class RelationTypeZoomProviderFactoryTest
 				referenceTarget.getAD_Reference_ID(), targetTableRefInfo,
 				referenceSource.getAD_Reference_ID(), sourceTableRefInfo));
 
-		final RelationTypeZoomProvidersFactory relationTypeZoomProvidersFactory = new RelationTypeZoomProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
-		final RelationTypeZoomProvider zoomProvider = relationTypeZoomProvidersFactory.findZoomProvider(relationType);
+		final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory = new RelationTypeRelatedDocumentsProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
+		final RelationTypeRelatedDocumentsProvider provider = relationTypeRelatedDocumentsProvidersFactory.findRelatedDocumentsProvider(relationType);
 
-		assertThat(zoomProvider.isTableRecordIdTarget()).isFalse();
+		assertThat(provider.isTableRecordIdTarget()).isFalse();
 	}
 
 	private void setupLookupDAOMock(final Map<Integer, TableRefInfo> idToRefInfo)
@@ -179,7 +181,7 @@ public class RelationTypeZoomProviderFactoryTest
 	}
 
 	@Test
-	public void findZoomProvider_DefaultRelType_NoSource()
+	public void findRelatedDocumentsProvider_DefaultRelType_NoSource()
 	{
 		final String refTargetName = "RefTargetName1";
 		final String validationType = X_AD_Reference.VALIDATIONTYPE_TableValidation;
@@ -196,8 +198,8 @@ public class RelationTypeZoomProviderFactoryTest
 		final boolean isTableRecordIdTarget = false;
 		final I_AD_RelationType relationType = createRelationType(isTableRecordIdTarget, null, referenceTarget);
 
-		final RelationTypeZoomProvidersFactory relationTypeZoomProvidersFactory = new RelationTypeZoomProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
-		assertThatThrownBy(() -> relationTypeZoomProvidersFactory.findZoomProvider(relationType))
+		final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory = new RelationTypeRelatedDocumentsProvidersFactory(NullCustomizedWindowInfoMapRepository.instance);
+		assertThatThrownBy(() -> relationTypeRelatedDocumentsProvidersFactory.findRelatedDocumentsProvider(relationType))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessage("Assumption failure: sourceReferenceId > 0");
 	}

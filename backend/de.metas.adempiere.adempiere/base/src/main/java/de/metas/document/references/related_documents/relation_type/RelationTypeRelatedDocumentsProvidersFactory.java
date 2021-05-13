@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.document.references.related_documents;
+package de.metas.document.references.related_documents.relation_type;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -62,13 +62,13 @@ import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_OrderByClause;
 import static org.compiere.model.I_AD_Ref_Table.COLUMNNAME_WhereClause;
 
 @Component
-public final class RelationTypeZoomProvidersFactory
+public final class RelationTypeRelatedDocumentsProvidersFactory
 {
-	private static final Logger logger = LogManager.getLogger(RelationTypeZoomProvidersFactory.class);
+	private static final Logger logger = LogManager.getLogger(RelationTypeRelatedDocumentsProvidersFactory.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
-	private final CCache<String, ImmutableList<RelationTypeZoomProvider>> sourceTableName2zoomProviders = CCache.newLRUCache(I_AD_RelationType.Table_Name + "#ZoomProvidersBySourceTableName", 100, 0);
+	private final CCache<String, ImmutableList<RelationTypeRelatedDocumentsProvider>> sourceTableName2zoomProviders = CCache.newLRUCache(I_AD_RelationType.Table_Name + "#ZoomProvidersBySourceTableName", 100, 0);
 
 	private final static String SQL_Default_RelationType = createSelectFrom()
 			+ createSharedWhereClause()
@@ -80,7 +80,7 @@ public final class RelationTypeZoomProvidersFactory
 			+ createTableRecordIDReferenceRelationTypeSpecificWhereClause()
 			+ createOrderBy();
 
-	public RelationTypeZoomProvidersFactory(
+	public RelationTypeRelatedDocumentsProvidersFactory(
 			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
 		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
@@ -138,12 +138,12 @@ public final class RelationTypeZoomProvidersFactory
 		return "  ORDER BY rt.Name ";
 	}
 
-	public ImmutableList<RelationTypeZoomProvider> getZoomProvidersByZoomOriginTableName(final String zoomOriginTableName)
+	public ImmutableList<RelationTypeRelatedDocumentsProvider> getRelatedDocumentsProvidersBySourceDocumentTableName(final String zoomOriginTableName)
 	{
-		return sourceTableName2zoomProviders.getOrLoad(zoomOriginTableName, this::retrieveZoomProvidersBySourceTableName);
+		return sourceTableName2zoomProviders.getOrLoad(zoomOriginTableName, this::retrieveRelatedDocumentsProvidersBySourceTableName);
 	}
 
-	public ImmutableList<RelationTypeZoomProvider> retrieveZoomProvidersBySourceTableName(final String zoomOriginTableName)
+	public ImmutableList<RelationTypeRelatedDocumentsProvider> retrieveRelatedDocumentsProvidersBySourceTableName(final String zoomOriginTableName)
 	{
 		Check.assumeNotEmpty(zoomOriginTableName, "tableName is not empty");
 
@@ -161,16 +161,16 @@ public final class RelationTypeZoomProvidersFactory
 
 		final Object[] sqlParamsDefaultRelationType = new Object[] { adTableId, keyColumnId };
 
-		final List<RelationTypeZoomProvider> relationTypeZoomProviders = new ArrayList<>();
-		relationTypeZoomProviders.addAll(runRelationTypeSQLQuery(SQL_Default_RelationType, sqlParamsDefaultRelationType));
-		relationTypeZoomProviders.addAll(runRelationTypeSQLQuery(SQL_TableRecordIDReference_RelationType, null));
+		final ArrayList<RelationTypeRelatedDocumentsProvider> providers = new ArrayList<>();
+		providers.addAll(runRelationTypeSQLQuery(SQL_Default_RelationType, sqlParamsDefaultRelationType));
+		providers.addAll(runRelationTypeSQLQuery(SQL_TableRecordIDReference_RelationType, null));
 
-		logger.debug("There are {} matching types for {}", relationTypeZoomProviders.size(), zoomOriginTableName);
+		logger.debug("There are {} matching types for {}", providers.size(), zoomOriginTableName);
 
-		return ImmutableList.copyOf(relationTypeZoomProviders);
+		return ImmutableList.copyOf(providers);
 	}
 
-	private List<RelationTypeZoomProvider> runRelationTypeSQLQuery(final String sqlQuery, @Nullable final Object[] sqlParams)
+	private List<RelationTypeRelatedDocumentsProvider> runRelationTypeSQLQuery(final String sqlQuery, @Nullable final Object[] sqlParams)
 	{
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -180,7 +180,7 @@ public final class RelationTypeZoomProvidersFactory
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 
-			return retrieveZoomProviders(rs);
+			return retrieveRelatedDocumentsProviders(rs);
 		}
 		catch (final SQLException e)
 		{
@@ -192,9 +192,9 @@ public final class RelationTypeZoomProvidersFactory
 		}
 	}
 
-	private List<RelationTypeZoomProvider> retrieveZoomProviders(final ResultSet rs) throws SQLException
+	private List<RelationTypeRelatedDocumentsProvider> retrieveRelatedDocumentsProviders(final ResultSet rs) throws SQLException
 	{
-		final ArrayList<RelationTypeZoomProvider> result = new ArrayList<>();
+		final ArrayList<RelationTypeRelatedDocumentsProvider> result = new ArrayList<>();
 		final Set<Integer> alreadySeen = new HashSet<>();
 
 		while (rs.next())
@@ -209,17 +209,17 @@ public final class RelationTypeZoomProvidersFactory
 
 			try
 			{
-				final RelationTypeZoomProvider zoomProviderForRelType = findZoomProvider(relationType);
-				if (zoomProviderForRelType == null)
+				final RelationTypeRelatedDocumentsProvider providerForRelType = findRelatedDocumentsProvider(relationType);
+				if (providerForRelType == null)
 				{
 					continue;
 				}
 
-				result.add(zoomProviderForRelType);
+				result.add(providerForRelType);
 			}
 			catch (final Exception ex)
 			{
-				logger.warn("Failed creating zoom provider for {}. Skipped.", relationType, ex);
+				logger.warn("Failed creating related documents provider for {}. Skipped.", relationType, ex);
 			}
 		}
 
@@ -228,7 +228,7 @@ public final class RelationTypeZoomProvidersFactory
 
 	@VisibleForTesting
 	@Nullable
-	protected RelationTypeZoomProvider findZoomProvider(@NonNull final I_AD_RelationType relationType)
+	protected RelationTypeRelatedDocumentsProvider findRelatedDocumentsProvider(@NonNull final I_AD_RelationType relationType)
 	{
 		final ADRefListItem roleSourceItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_SOURCE_AD_Reference_ID, relationType.getRole_Source());
 		final ITranslatableString roleSourceDisplayName = roleSourceItem == null ? null : roleSourceItem.getName();
@@ -236,7 +236,7 @@ public final class RelationTypeZoomProvidersFactory
 		final ADRefListItem roleTargetItem = adReferenceDAO.retrieveListItemOrNull(X_AD_RelationType.ROLE_TARGET_AD_Reference_ID, relationType.getRole_Target());
 		final ITranslatableString roleTargetDisplayName = roleTargetItem == null ? null : roleTargetItem.getName();
 
-		return RelationTypeZoomProvider.builder()
+		return RelationTypeRelatedDocumentsProvider.builder()
 				.setCustomizedWindowInfoMap(customizedWindowInfoMapRepository.get())
 				.setDirected(relationType.isDirected())
 				.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
@@ -253,12 +253,12 @@ public final class RelationTypeZoomProvidersFactory
 				.buildOrNull();
 	}
 
-	public RelationTypeZoomProvider getZoomProviderBySourceTableNameAndInternalName(final String zoomOriginTableName, final String internalName)
+	public RelationTypeRelatedDocumentsProvider getRelatedDocumentsProviderBySourceTableNameAndInternalName(final String zoomOriginTableName, final String internalName)
 	{
-		return getZoomProvidersByZoomOriginTableName(zoomOriginTableName)
+		return getRelatedDocumentsProvidersBySourceDocumentTableName(zoomOriginTableName)
 				.stream()
-				.filter(zoomProvider -> Objects.equals(internalName, zoomProvider.getInternalName()))
+				.filter(provider -> Objects.equals(internalName, provider.getInternalName()))
 				.findFirst()
-				.orElseThrow(() -> new IllegalArgumentException("No zoom provider found for sourceTableName=" + zoomOriginTableName + ", internalName=" + internalName));
+				.orElseThrow(() -> new IllegalArgumentException("No related documents provider found for sourceTableName=" + zoomOriginTableName + ", internalName=" + internalName));
 	}
 }

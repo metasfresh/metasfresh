@@ -31,31 +31,31 @@ import org.adempiere.ad.element.api.AdWindowId;
 import javax.annotation.Nullable;
 
 @Value
-public class ZoomTargetWindow
+public class RelatedDocumentsTargetWindow
 {
-	public static ZoomTargetWindow ofAdWindowId(@NonNull final AdWindowId adWindowId)
+	public static RelatedDocumentsTargetWindow ofAdWindowId(@NonNull final AdWindowId adWindowId)
 	{
-		return new ZoomTargetWindow(adWindowId, null);
+		return new RelatedDocumentsTargetWindow(adWindowId, null);
 	}
 
-	public static ZoomTargetWindow ofAdWindowIdAndCategory(
+	public static RelatedDocumentsTargetWindow ofAdWindowIdAndCategory(
 			@NonNull final AdWindowId adWindowId,
 			@NonNull final ReferenceListAwareEnum category)
 	{
-		return new ZoomTargetWindow(adWindowId, category.getCode());
+		return new RelatedDocumentsTargetWindow(adWindowId, category.getCode());
 	}
 
-	public static ZoomTargetWindow ofAdWindowIdAndCategory(
+	public static RelatedDocumentsTargetWindow ofAdWindowIdAndCategory(
 			@NonNull final AdWindowId adWindowId,
-			@NonNull final String category)
+			@Nullable final String category)
 	{
-		return new ZoomTargetWindow(adWindowId, category);
+		return new RelatedDocumentsTargetWindow(adWindowId, category);
 	}
 
 	AdWindowId adWindowId;
 	String category;
 
-	private ZoomTargetWindow(
+	private RelatedDocumentsTargetWindow(
 			@NonNull final AdWindowId adWindowId,
 			@Nullable final String category)
 	{

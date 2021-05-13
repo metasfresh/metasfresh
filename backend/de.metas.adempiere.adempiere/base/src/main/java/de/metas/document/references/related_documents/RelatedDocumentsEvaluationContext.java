@@ -22,12 +22,29 @@
 
 package de.metas.document.references.related_documents;
 
-import org.adempiere.ad.element.api.AdWindowId;
+import de.metas.util.lang.Priority;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
 
-/**
- * To create a new instance use {@link ZoomInfoPermissionsFactory}.
- */
-public interface ZoomInfoPermissions
+import java.util.HashMap;
+
+@ToString
+public class RelatedDocumentsEvaluationContext
 {
-	boolean hasReadAccess(AdWindowId adWindowId);
+	@Setter
+	@Getter
+	private RelatedDocumentsId onlyRelatedDocumentsId;
+	private final HashMap<RelatedDocumentsTargetWindow, Priority> alreadySeenWindows = new HashMap<>();
+
+	public Priority getPriorityOrNull(final RelatedDocumentsTargetWindow window)
+	{
+		return alreadySeenWindows.get(window);
+	}
+
+	public void putWindow(@NonNull final RelatedDocumentsTargetWindow targetWindow, @NonNull final Priority priority)
+	{
+		alreadySeenWindows.put(targetWindow, priority);
+	}
 }

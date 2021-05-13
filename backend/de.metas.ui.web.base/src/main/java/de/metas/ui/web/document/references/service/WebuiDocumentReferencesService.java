@@ -4,17 +4,17 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.references.related_documents.IZoomSource;
-import de.metas.document.references.related_documents.ZoomInfo;
-import de.metas.document.references.related_documents.ZoomInfoFactory;
-import de.metas.document.references.related_documents.ZoomInfoPermissions;
+import de.metas.document.references.related_documents.RelatedDocuments;
+import de.metas.document.references.related_documents.RelatedDocumentsFactory;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissions;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.document.references.DocumentReference;
-import de.metas.ui.web.document.references.DocumentReferenceCandidate;
-import de.metas.ui.web.document.references.DocumentReferenceId;
+import de.metas.ui.web.document.references.WebuiDocumentReference;
+import de.metas.ui.web.document.references.WebuiDocumentReferenceCandidate;
+import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -61,23 +61,23 @@ import java.util.Properties;
  */
 
 @Service
-public class DocumentReferencesService
+public class WebuiDocumentReferencesService
 {
-	private static final Logger logger = LogManager.getLogger(DocumentReferencesService.class);
+	private static final Logger logger = LogManager.getLogger(WebuiDocumentReferencesService.class);
 	private final DocumentCollection documentCollection;
-	private final ZoomInfoFactory zoomInfoFactory;
+	private final RelatedDocumentsFactory relatedDocumentsFactory;
 
-	public DocumentReferencesService(
+	public WebuiDocumentReferencesService(
 			@NonNull final DocumentCollection documentCollection,
-			@NonNull final ZoomInfoFactory zoomInfoFactory)
+			@NonNull final RelatedDocumentsFactory relatedDocumentsFactory)
 	{
 		this.documentCollection = documentCollection;
-		this.zoomInfoFactory = zoomInfoFactory;
+		this.relatedDocumentsFactory = relatedDocumentsFactory;
 	}
 
-	public ImmutableList<DocumentReferenceCandidate> getDocumentReferenceCandidates(
+	public ImmutableList<WebuiDocumentReferenceCandidate> getDocumentReferenceCandidates(
 			@NonNull final DocumentPath documentPath,
-			@NonNull final ZoomInfoPermissions permissions)
+			@NonNull final RelatedDocumentsPermissions permissions)
 	{
 		// Document with composed keys does not support references
 		if (documentPath.isComposedKey())
@@ -86,7 +86,7 @@ public class DocumentReferencesService
 		}
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final ImmutableList<DocumentReferenceCandidate> documentReferences = documentCollection.forDocumentReadonly(
+		final ImmutableList<WebuiDocumentReferenceCandidate> documentReferences = documentCollection.forDocumentReadonly(
 				documentPath,
 				document -> {
 					if (document.isNew())
@@ -97,10 +97,10 @@ public class DocumentReferencesService
 					final ITranslatableString filterCaption = extractFilterCaption(document, null);
 
 					final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(document);
-					return zoomInfoFactory
-							.getZoomInfoCandidates(zoomSource, permissions)
+					return relatedDocumentsFactory
+							.getRelatedDocumentsCandidates(zoomSource, permissions)
 							.stream()
-							.map(candidateGroup -> new DocumentReferenceCandidate(candidateGroup, filterCaption))
+							.map(candidateGroup -> new WebuiDocumentReferenceCandidate(candidateGroup, filterCaption))
 							.collect(ImmutableList.toImmutableList());
 				});
 		stopwatch.stop();
@@ -113,18 +113,18 @@ public class DocumentReferencesService
 	public DocumentFilter getDocumentReferenceFilter(
 			@NonNull final DocumentPath sourceDocumentPath,
 			@NonNull final WindowId targetWindowId,
-			@Nullable final DocumentReferenceId documentReferenceId,
-			@NonNull final ZoomInfoPermissions permissions)
+			@Nullable final WebuiDocumentReferenceId documentReferenceId,
+			@NonNull final RelatedDocumentsPermissions permissions)
 	{
-		final DocumentReference documentReference = getDocumentReference(sourceDocumentPath, targetWindowId, documentReferenceId, permissions);
+		final WebuiDocumentReference documentReference = getDocumentReference(sourceDocumentPath, targetWindowId, documentReferenceId, permissions);
 		return documentReference.getFilter();
 	}
 
-	private DocumentReference getDocumentReference(
+	private WebuiDocumentReference getDocumentReference(
 			@NonNull final DocumentPath sourceDocumentPath,
 			@NonNull final WindowId targetWindowId,
-			@Nullable final DocumentReferenceId documentReferenceId,
-			@NonNull final ZoomInfoPermissions permissions)
+			@Nullable final WebuiDocumentReferenceId documentReferenceId,
+			@NonNull final RelatedDocumentsPermissions permissions)
 	{
 		return documentCollection.forDocumentReadonly(sourceDocumentPath, sourceDocument -> {
 			if (sourceDocument.isNew())
@@ -133,30 +133,30 @@ public class DocumentReferencesService
 			}
 
 			final DocumentAsZoomSource zoomSource = new DocumentAsZoomSource(sourceDocument);
-			final ZoomInfo zoomInfo = zoomInfoFactory.retrieveZoomInfo(
+			final RelatedDocuments relatedDocuments = relatedDocumentsFactory.retrieveRelatedDocuments(
 					zoomSource,
 					targetWindowId.toAdWindowId(),
-					documentReferenceId != null ? documentReferenceId.toZoomInfoId() : null,
+					documentReferenceId != null ? documentReferenceId.toRelatedDocumentsId() : null,
 					permissions);
 
-			final ITranslatableString filterCaption = extractFilterCaption(sourceDocument, zoomInfo);
+			final ITranslatableString filterCaption = extractFilterCaption(sourceDocument, relatedDocuments);
 
-			return DocumentReferenceCandidate.toDocumentReference(zoomInfo, filterCaption);
+			return WebuiDocumentReferenceCandidate.toDocumentReference(relatedDocuments, filterCaption);
 		});
 	}
 
 	private ITranslatableString extractFilterCaption(
 			@NonNull final Document sourceDocument,
-			@Nullable final ZoomInfo zoomInfo)
+			@Nullable final RelatedDocuments relatedDocuments)
 	{
 		final TranslatableStringBuilder result = TranslatableStrings.builder();
 
 		//
 		// Filter by Field Name / fallback to source window name
-		if (zoomInfo != null
-				&& !TranslatableStrings.isBlank(zoomInfo.getFilterByFieldCaption()))
+		if (relatedDocuments != null
+				&& !TranslatableStrings.isBlank(relatedDocuments.getFilterByFieldCaption()))
 		{
-			result.append(zoomInfo.getFilterByFieldCaption());
+			result.append(relatedDocuments.getFilterByFieldCaption());
 		}
 		else
 		{

@@ -38,30 +38,30 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 
 @Getter(AccessLevel.PACKAGE)
-public final class ZoomInfoCandidate
+public final class RelatedDocumentsCandidate
 {
-	private static final Logger logger = LogManager.getLogger(ZoomInfoCandidate.class);
+	private static final Logger logger = LogManager.getLogger(RelatedDocumentsCandidate.class);
 
-	private final ZoomInfoId id;
+	private final RelatedDocumentsId id;
 	private final String internalName;
 	private final ITranslatableString windowCaption;
 	private final ITranslatableString filterByFieldCaption;
-	private final ZoomTargetWindow targetWindow;
+	private final RelatedDocumentsTargetWindow targetWindow;
 	private final Priority priority;
 
 	private final MQuery query;
-	private final ZoomInfoRecordsCountSupplier recordsCountSupplier;
+	private final RelatedDocumentsCountSupplier documentsCountSupplier;
 
 	@Builder
-	private ZoomInfoCandidate(
-			@NonNull final ZoomInfoId id,
+	private RelatedDocumentsCandidate(
+			@NonNull final RelatedDocumentsId id,
 			@NonNull final String internalName,
-			@NonNull final ZoomTargetWindow targetWindow,
+			@NonNull final RelatedDocumentsTargetWindow targetWindow,
 			@NonNull final Priority priority,
 			@NonNull final MQuery query,
 			@NonNull final ITranslatableString windowCaption,
 			@Nullable final ITranslatableString filterByFieldCaption,
-			@NonNull final ZoomInfoRecordsCountSupplier recordsCountSupplier)
+			@NonNull final RelatedDocumentsCountSupplier documentsCountSupplier)
 	{
 		Check.assumeNotEmpty(internalName, "internalName is not empty");
 
@@ -74,7 +74,7 @@ public final class ZoomInfoCandidate
 		this.filterByFieldCaption = filterByFieldCaption;
 
 		this.query = query;
-		this.recordsCountSupplier = recordsCountSupplier;
+		this.documentsCountSupplier = documentsCountSupplier;
 	}
 
 	@Override
@@ -95,8 +95,8 @@ public final class ZoomInfoCandidate
 		return targetWindow.getAdWindowId();
 	}
 
-	public boolean isZoomInfoIdMatching(@NonNull final ZoomInfoId id)
+	public boolean isMatching(@NonNull final RelatedDocumentsId id)
 	{
-		return ZoomInfoId.equals(this.id, id);
+		return RelatedDocumentsId.equals(this.id, id);
 	}
 }

@@ -2,13 +2,13 @@ package de.metas.error;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
-import de.metas.document.references.related_documents.IZoomProvider;
+import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
 import de.metas.document.references.related_documents.IZoomSource;
-import de.metas.document.references.related_documents.ZoomInfoCandidate;
-import de.metas.document.references.related_documents.ZoomInfoCandidateGroup;
-import de.metas.document.references.related_documents.ZoomInfoId;
-import de.metas.document.references.related_documents.ZoomInfoRecordsCountSupplier;
-import de.metas.document.references.related_documents.ZoomTargetWindow;
+import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
+import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
+import de.metas.document.references.related_documents.RelatedDocumentsId;
+import de.metas.document.references.related_documents.RelatedDocumentsCountSupplier;
+import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
@@ -47,17 +47,17 @@ import java.util.function.Supplier;
  * #L%
  */
 
-public class AdIssueZoomProvider implements IZoomProvider
+public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
-	private final Priority zoomInfoPriority = Priority.HIGHEST;
+	private final Priority relatedDocumentsPriority = Priority.HIGHEST;
 	private final boolean onlyNotAcknowledged = true;
 
 	@Override
-	public List<ZoomInfoCandidateGroup> retrieveZoomInfos(
-			@NonNull final IZoomSource source,
+	public List<RelatedDocumentsCandidateGroup> retrieveRelatedDocumentsCandidates(
+			@NonNull final IZoomSource fromDocument,
 			@Nullable final AdWindowId targetWindowId)
 	{
 		//
@@ -74,27 +74,27 @@ public class AdIssueZoomProvider implements IZoomProvider
 			return ImmutableList.of();
 		}
 
-		final TableRecordReference recordRef = TableRecordReference.of(source.getAD_Table_ID(), source.getRecord_ID());
+		final TableRecordReference recordRef = TableRecordReference.of(fromDocument.getAD_Table_ID(), fromDocument.getRecord_ID());
 
 		final Supplier<IssueCountersByCategory> issueCountersSupplier = getIssueCountersByCategorySupplier(recordRef);
 
-		final ZoomInfoCandidateGroup.ZoomInfoCandidateGroupBuilder groupBuilder = ZoomInfoCandidateGroup.builder();
+		final RelatedDocumentsCandidateGroup.RelatedDocumentsCandidateGroupBuilder groupBuilder = RelatedDocumentsCandidateGroup.builder();
 		for (final IssueCategory issueCategory : IssueCategory.values())
 		{
-			final ZoomInfoId id = ZoomInfoId.ofString("issues-" + issueCategory.getCode());
+			final RelatedDocumentsId id = RelatedDocumentsId.ofString("issues-" + issueCategory.getCode());
 			final ITranslatableString issueCategoryDisplayName = adReferenceDAO.retrieveListNameTranslatableString(IssueCategory.AD_REFERENCE_ID, issueCategory.getCode());
-			final ZoomInfoRecordsCountSupplier recordsCountSupplier = () -> issueCountersSupplier.get().getCountOrZero(issueCategory);
+			final RelatedDocumentsCountSupplier recordsCountSupplier = () -> issueCountersSupplier.get().getCountOrZero(issueCategory);
 
 			groupBuilder.candidate(
-					ZoomInfoCandidate.builder()
+					RelatedDocumentsCandidate.builder()
 							.id(id)
 							.internalName(id.toJson())
-							.targetWindow(ZoomTargetWindow.ofAdWindowIdAndCategory(issuesWindowId, issueCategory))
-							.priority(zoomInfoPriority)
+							.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowIdAndCategory(issuesWindowId, issueCategory))
+							.priority(relatedDocumentsPriority)
 							.query(createMQuery(recordRef, issueCategory))
 							.windowCaption(issueCategoryDisplayName)
 							.filterByFieldCaption(issueCategoryDisplayName)
-							.recordsCountSupplier(recordsCountSupplier)
+							.documentsCountSupplier(recordsCountSupplier)
 							.build());
 		}
 

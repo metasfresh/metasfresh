@@ -31,9 +31,11 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-public class TargetColumnInfo
+public class GenericTargetColumnInfo
 {
+	@Nullable
 	ITranslatableString caption;
+	@Nullable
 	String columnName;
 
 	boolean isDynamic;
@@ -42,7 +44,7 @@ public class TargetColumnInfo
 	String virtualColumnSql;
 
 	@Builder
-	private TargetColumnInfo(
+	private GenericTargetColumnInfo(
 			@Nullable final ITranslatableString caption,
 			@Nullable final String columnName,
 			final boolean isDynamic,

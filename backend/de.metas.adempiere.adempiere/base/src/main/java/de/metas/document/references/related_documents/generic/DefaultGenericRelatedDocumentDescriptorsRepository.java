@@ -41,16 +41,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultGenericZoomInfoDescriptorsRepository implements GenericZoomInfoDescriptorsRepository
+public class DefaultGenericRelatedDocumentDescriptorsRepository implements GenericRelatedDocumentDescriptorsRepository
 {
-	private static final Logger logger = LogManager.getLogger(DefaultGenericZoomInfoDescriptorsRepository.class);
+	private static final Logger logger = LogManager.getLogger(DefaultGenericRelatedDocumentDescriptorsRepository.class);
 
 	@Override
-	public List<GenericZoomInfoDescriptor> getZoomInfoDescriptors(@NonNull final String sourceKeyColumnName)
+	public List<GenericRelatedDocumentDescriptor> getRelatedDocumentDescriptors(@NonNull final String sourceKeyColumnName)
 	{
 		final String sourceTableName = MQuery.getZoomTableName(sourceKeyColumnName);
 
-		final ImmutableListMultimap<TargetWindowInfo, TargetColumnInfo> windowAndColumns = DB.retrieveRows(
+		final ImmutableListMultimap<GenericTargetWindowInfo, GenericTargetColumnInfo> windowAndColumns = DB.retrieveRows(
 				"SELECT * FROM ad_table_related_windows_v WHERE source_tableName=?",
 				ImmutableList.of(sourceTableName),
 				this::retrieveRows)
@@ -62,8 +62,8 @@ public class DefaultGenericZoomInfoDescriptorsRepository implements GenericZoomI
 
 		return windowAndColumns.keySet()
 				.stream()
-				.map(window -> GenericZoomInfoDescriptor.builder()
-						.targetWindowInfo(window)
+				.map(window -> GenericRelatedDocumentDescriptor.builder()
+						.targetWindow(window)
 						.targetColumns(windowAndColumns.get(window))
 						.build())
 				.collect(ImmutableList.toImmutableList());
@@ -93,13 +93,13 @@ public class DefaultGenericZoomInfoDescriptorsRepository implements GenericZoomI
 			}
 		}
 
-		final TargetColumnInfo targetColumn = TargetColumnInfo.builder()
+		final GenericTargetColumnInfo targetColumn = GenericTargetColumnInfo.builder()
 				.caption(retrieveTranslatableString(rs, "target_columnDisplayName", "target_columnDisplayName_trls"))
 				.columnName(rs.getString("target_columnname"))
 				.virtualColumnSql(rs.getString("target_columnsql"))
 				.build();
 
-		final TargetWindowInfo.TargetWindowInfoBuilder windowInfoBuilder = TargetWindowInfo.builder()
+		final GenericTargetWindowInfo.GenericTargetWindowInfoBuilder windowInfoBuilder = GenericTargetWindowInfo.builder()
 				.name(name)
 				.targetTableName(rs.getString("target_tablename"))
 				.targetWindowId(targetWindowId)
@@ -155,7 +155,7 @@ public class DefaultGenericZoomInfoDescriptorsRepository implements GenericZoomI
 	@Value(staticConstructor = "of")
 	private static class TargetWindowAndColumn
 	{
-		@NonNull TargetWindowInfo window;
-		@NonNull TargetColumnInfo column;
+		@NonNull GenericTargetWindowInfo window;
+		@NonNull GenericTargetColumnInfo column;
 	}
 }

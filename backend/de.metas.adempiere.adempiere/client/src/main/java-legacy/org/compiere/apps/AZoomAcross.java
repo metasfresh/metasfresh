@@ -35,10 +35,10 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.POZoomSource;
-import de.metas.document.references.related_documents.ZoomInfo;
-import de.metas.document.references.related_documents.ZoomInfoFactory;
-import de.metas.document.references.related_documents.ZoomInfoPermissions;
-import de.metas.document.references.related_documents.ZoomInfoPermissionsFactory;
+import de.metas.document.references.related_documents.RelatedDocuments;
+import de.metas.document.references.related_documents.RelatedDocumentsFactory;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissions;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
@@ -81,18 +81,17 @@ public class AZoomAcross
 
 	private AZoomAcross(final JComponent invoker, IZoomSource source)
 	{
-		super();
 		logger.info("source={}", source);
 		final String adLanguage = Env.getAD_Language(Env.getCtx());
 
-		final List<ZoomInfo> zoomInfos = retrieveZoomTargets(source);
-		for (final ZoomInfo zoomInfo : zoomInfos)
+		final List<RelatedDocuments> relatedDocumentsList = retrieveZoomTargets(source);
+		for (final RelatedDocuments relatedDocuments : relatedDocumentsList)
 		{
-			final String caption = zoomInfo.getCaption().translate(adLanguage);
-			m_popup.add(caption).addActionListener(event -> launch(zoomInfo));
+			final String caption = relatedDocuments.getCaption().translate(adLanguage);
+			m_popup.add(caption).addActionListener(event -> launch(relatedDocuments));
 		}
 
-		if (zoomInfos.isEmpty())
+		if (relatedDocumentsList.isEmpty())
 		{
 			m_popup.add(Services.get(IMsgBL.class).getMsg(Env.getCtx(), "NoZoomTarget")); // Added
 		}
@@ -106,29 +105,29 @@ public class AZoomAcross
 
 	private static final Logger logger = LogManager.getLogger(AZoomAcross.class);
 
-	private List<ZoomInfo> retrieveZoomTargets(final IZoomSource source)
+	private List<RelatedDocuments> retrieveZoomTargets(final IZoomSource source)
 	{
 		if (source == null)
 		{
 			return ImmutableList.of(); // guard against NPE
 		}
 
-		final List<ZoomInfo> zoomInfos = new ArrayList<>();
-		final ZoomInfoFactory zoomProvider = SpringContextHolder.instance.getBean(ZoomInfoFactory.class);
-		zoomProvider.disableFactAcctZoomProvider(); // in Swing this is not needed because we have the Posted button
-		final ZoomInfoPermissions permissions = ZoomInfoPermissionsFactory.ofRolePermissions(Env.getUserRolePermissions());
-		for (final ZoomInfo zoomInfo : zoomProvider.retrieveZoomInfos(source, permissions))
+		final ArrayList<RelatedDocuments> result = new ArrayList<>();
+		final RelatedDocumentsFactory zoomProvider = SpringContextHolder.instance.getBean(RelatedDocumentsFactory.class);
+		zoomProvider.disableFactAcctRelatedDocumentsProvider(); // in Swing this is not needed because we have the Posted button
+		final RelatedDocumentsPermissions permissions = RelatedDocumentsPermissionsFactory.ofRolePermissions(Env.getUserRolePermissions());
+		for (final RelatedDocuments relatedDocuments : zoomProvider.retrieveRelatedDocuments(source, permissions))
 		{
-			zoomInfos.add(zoomInfo);
+			result.add(relatedDocuments);
 		}
 
-		return ImmutableList.copyOf(zoomInfos);
+		return ImmutableList.copyOf(result);
 	}
 
-	private void launch(final ZoomInfo zoomInfo)
+	private void launch(final RelatedDocuments relatedDocuments)
 	{
-		final AdWindowId adWindowId = zoomInfo.getAdWindowId();
-		final MQuery query = zoomInfo.getQuery();
+		final AdWindowId adWindowId = relatedDocuments.getAdWindowId();
+		final MQuery query = relatedDocuments.getQuery();
 
 		logger.info("AD_Window_ID={} - {}", adWindowId, query);
 

@@ -1,18 +1,8 @@
-package de.metas.ui.web.document.references;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.document.references.related_documents.ZoomInfoId;
-import de.metas.util.Check;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,24 +20,29 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.document.references.related_documents;
+
+import java.util.Objects;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+
 @EqualsAndHashCode
-public final class DocumentReferenceId
+public class RelatedDocumentsId
 {
 	@JsonCreator
-	public static DocumentReferenceId ofString(@NonNull final String value)
+	public static RelatedDocumentsId ofString(@NonNull final String value)
 	{
-		return new DocumentReferenceId(value);
-	}
-
-	@JsonCreator
-	public static DocumentReferenceId ofZoomInfoId(@NonNull final ZoomInfoId zoomInfoId)
-	{
-		return new DocumentReferenceId(zoomInfoId.toJson());
+		return new RelatedDocumentsId(value);
 	}
 
 	private final String value;
 
-	private DocumentReferenceId(@NonNull final String value)
+	private RelatedDocumentsId(@NonNull final String value)
 	{
 		Check.assumeNotEmpty(value, "value is not empty");
 		this.value = value;
@@ -66,8 +61,8 @@ public final class DocumentReferenceId
 		return value;
 	}
 
-	public ZoomInfoId toZoomInfoId()
+	public static boolean equals(final RelatedDocumentsId id1, final RelatedDocumentsId id2)
 	{
-		return ZoomInfoId.ofString(value);
+		return Objects.equals(id1, id2);
 	}
 }

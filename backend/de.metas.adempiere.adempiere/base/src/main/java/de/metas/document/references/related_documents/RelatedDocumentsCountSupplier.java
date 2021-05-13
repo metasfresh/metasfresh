@@ -23,7 +23,7 @@
 package de.metas.document.references.related_documents;
 
 @FunctionalInterface
-public interface ZoomInfoRecordsCountSupplier
+public interface RelatedDocumentsCountSupplier
 {
 	int getRecordsCount();
 }

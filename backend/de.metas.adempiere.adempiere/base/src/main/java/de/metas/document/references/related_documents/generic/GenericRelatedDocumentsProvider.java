@@ -20,15 +20,18 @@
  * #L%
  */
 
-package de.metas.document.references.related_documents;
+package de.metas.document.references.related_documents.generic;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
-import de.metas.document.references.related_documents.generic.DefaultGenericZoomInfoDescriptorsRepository;
-import de.metas.document.references.related_documents.generic.GenericZoomInfoDescriptor;
-import de.metas.document.references.related_documents.generic.GenericZoomInfoDescriptorsRepository;
-import de.metas.document.references.related_documents.generic.TargetColumnInfo;
+import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
+import de.metas.document.references.related_documents.IZoomSource;
+import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
+import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
+import de.metas.document.references.related_documents.RelatedDocumentsId;
+import de.metas.document.references.related_documents.RelatedDocumentsCountSupplier;
+import de.metas.document.references.related_documents.RelatedDocumentsTargetWindow;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.lang.SOTrx;
@@ -58,13 +61,13 @@ import java.util.List;
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
  */
 @Component
-		/* package */ class GenericZoomProvider implements IZoomProvider
+public class GenericRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
-	private static final Logger logger = LogManager.getLogger(GenericZoomProvider.class);
+	private static final Logger logger = LogManager.getLogger(GenericRelatedDocumentsProvider.class);
 
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
-	private final CCache<String, ImmutableList<GenericZoomInfoDescriptor>> descriptorsBySourceKeyColumnName = CCache.<String, ImmutableList<GenericZoomInfoDescriptor>>builder()
+	private final CCache<String, ImmutableList<GenericRelatedDocumentDescriptor>> descriptorsBySourceKeyColumnName = CCache.<String, ImmutableList<GenericRelatedDocumentDescriptor>>builder()
 			.cacheMapType(CCache.CacheMapType.LRU)
 			.initialCapacity(1000) // NOTE this is confusing BUT in case of LRU, initialCapacity is used as maxSize
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
@@ -73,54 +76,54 @@ import java.util.List;
 			.additionalTableNameToResetFor(I_AD_Column.Table_Name)
 			.build();
 
-	private final GenericZoomInfoDescriptorsRepository genericZoomInfoDescriptorsRepository = new DefaultGenericZoomInfoDescriptorsRepository();
+	private final GenericRelatedDocumentDescriptorsRepository genericRelatedDocumentDescriptorsRepository = new DefaultGenericRelatedDocumentDescriptorsRepository();
 
-	private final Priority zoomInfoPriority = Priority.LOWEST;
+	private final Priority relatedDocumentsPriority = Priority.LOWEST;
 
-	GenericZoomProvider(
+	GenericRelatedDocumentsProvider(
 			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
 		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
 	}
 
 	@Override
-	public ImmutableList<ZoomInfoCandidateGroup> retrieveZoomInfos(
-			@NonNull final IZoomSource source,
+	public ImmutableList<RelatedDocumentsCandidateGroup> retrieveRelatedDocumentsCandidates(
+			@NonNull final IZoomSource fromDocument,
 			@Nullable final AdWindowId targetWindowId)
 	{
-		final List<GenericZoomInfoDescriptor> zoomInfoDescriptors = getZoomInfoDescriptors(source.getKeyColumnNameOrNull());
-		if (zoomInfoDescriptors.isEmpty())
+		final List<GenericRelatedDocumentDescriptor> descriptors = getDescriptors(fromDocument.getKeyColumnNameOrNull());
+		if (descriptors.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		final ImmutableList.Builder<ZoomInfoCandidateGroup> result = ImmutableList.builder();
-		for (final GenericZoomInfoDescriptor zoomInfoDescriptor : zoomInfoDescriptors)
+		final ImmutableList.Builder<RelatedDocumentsCandidateGroup> result = ImmutableList.builder();
+		for (final GenericRelatedDocumentDescriptor descriptor : descriptors)
 		{
-			final AdWindowId windowId = zoomInfoDescriptor.getTargetWindowId();
+			final AdWindowId windowId = descriptor.getTargetWindowId();
 			if (targetWindowId != null && !AdWindowId.equals(targetWindowId, windowId))
 			{
 				continue;
 			}
 
-			final ZoomInfoCandidateGroup.ZoomInfoCandidateGroupBuilder groupBuilder = ZoomInfoCandidateGroup.builder();
-			for (final TargetColumnInfo columnInfo : zoomInfoDescriptor.getTargetColumns())
+			final RelatedDocumentsCandidateGroup.RelatedDocumentsCandidateGroupBuilder groupBuilder = RelatedDocumentsCandidateGroup.builder();
+			for (final GenericTargetColumnInfo columnInfo : descriptor.getTargetColumns())
 			{
-				final MQuery query = buildMQuery(zoomInfoDescriptor, columnInfo, source);
-				final ZoomInfoRecordsCountSupplier recordsCountSupplier = createRecordsCountSupplier(query, zoomInfoDescriptor, source.getTableName());
+				final MQuery query = buildMQuery(descriptor, columnInfo, fromDocument);
+				final RelatedDocumentsCountSupplier recordsCountSupplier = createRecordsCountSupplier(query, descriptor, fromDocument.getTableName());
 
 				groupBuilder.candidate(
-						ZoomInfoCandidate.builder()
-								.id(ZoomInfoId.ofString(Joiner.on("-")
+						RelatedDocumentsCandidate.builder()
+								.id(RelatedDocumentsId.ofString(Joiner.on("-")
 																.skipNulls()
 																.join("generic", windowId.getRepoId(), columnInfo.getColumnName())))
-								.internalName(zoomInfoDescriptor.getTargetWindowInternalName())
-								.targetWindow(ZoomTargetWindow.ofAdWindowIdAndCategory(windowId, columnInfo.getColumnName()))
-								.priority(zoomInfoPriority)
+								.internalName(descriptor.getTargetWindowInternalName())
+								.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowIdAndCategory(windowId, columnInfo.getColumnName()))
+								.priority(relatedDocumentsPriority)
 								.query(query)
-								.windowCaption(zoomInfoDescriptor.getName())
+								.windowCaption(descriptor.getName())
 								.filterByFieldCaption(columnInfo.getCaption())
-								.recordsCountSupplier(recordsCountSupplier)
+								.documentsCountSupplier(recordsCountSupplier)
 								.build());
 			}
 
@@ -130,21 +133,21 @@ import java.util.List;
 		return result.build();
 	}
 
-	private List<GenericZoomInfoDescriptor> getZoomInfoDescriptors(final String sourceKeyColumnName)
+	private List<GenericRelatedDocumentDescriptor> getDescriptors(@Nullable final String sourceKeyColumnName)
 	{
 		if (sourceKeyColumnName == null)
 		{
 			return ImmutableList.of();
 		}
 
-		return descriptorsBySourceKeyColumnName.getOrLoad(sourceKeyColumnName, this::retrieveZoomInfoDescriptors);
+		return descriptorsBySourceKeyColumnName.getOrLoad(sourceKeyColumnName, this::retrieveDescriptors);
 	}
 
-	private ImmutableList<GenericZoomInfoDescriptor> retrieveZoomInfoDescriptors(@NonNull final String sourceKeyColumnName)
+	private ImmutableList<GenericRelatedDocumentDescriptor> retrieveDescriptors(@NonNull final String sourceKeyColumnName)
 	{
 		final CustomizedWindowInfoMap customizedWindowInfoMap = customizedWindowInfoMapRepository.get();
-		return genericZoomInfoDescriptorsRepository
-				.getZoomInfoDescriptors(sourceKeyColumnName)
+		return genericRelatedDocumentDescriptorsRepository
+				.getRelatedDocumentDescriptors(sourceKeyColumnName)
 				.stream()
 				.filter(descriptor -> customizedWindowInfoMap.isTopLevelCustomizedWindow(descriptor.getTargetWindowId()))
 				.distinct()
@@ -152,11 +155,11 @@ import java.util.List;
 	}
 
 	private static MQuery buildMQuery(
-			final GenericZoomInfoDescriptor zoomInfoDescriptor,
-			final TargetColumnInfo targetColumn,
-			final IZoomSource source)
+			final GenericRelatedDocumentDescriptor descriptor,
+			final GenericTargetColumnInfo targetColumn,
+			final IZoomSource fromDocument)
 	{
-		final String targetTableName = zoomInfoDescriptor.getTargetTableName();
+		final String targetTableName = descriptor.getTargetTableName();
 		final String targetColumnName = targetColumn.getColumnName();
 
 		//
@@ -165,11 +168,11 @@ import java.util.List;
 		if (targetColumn.isDynamic())
 		{
 			final MQuery query = new MQuery(targetTableName);
-			query.addRestriction("AD_Table_ID", Operator.EQUAL, source.getAD_Table_ID());
-			query.addRestriction("Record_ID", Operator.EQUAL, source.getRecord_ID());
+			query.addRestriction("AD_Table_ID", Operator.EQUAL, fromDocument.getAD_Table_ID());
+			query.addRestriction("Record_ID", Operator.EQUAL, fromDocument.getRecord_ID());
 			query.setZoomTableName(targetTableName);
 			// query.setZoomColumnName(po.get_KeyColumns()[0]);
-			query.setZoomValue(source.getRecord_ID());
+			query.setZoomValue(fromDocument.getRecord_ID());
 
 			return query;
 		}
@@ -180,32 +183,32 @@ import java.util.List;
 			{
 				// TODO: find a way to specify restriction's ColumnName and ColumnSql
 				final String columnSql = targetColumn.getVirtualColumnSql();
-				query.addRestriction("(" + columnSql + ") = " + source.getRecord_ID());
+				query.addRestriction("(" + columnSql + ") = " + fromDocument.getRecord_ID());
 			}
 			else
 			{
-				query.addRestriction(targetColumnName, Operator.EQUAL, source.getRecord_ID());
+				query.addRestriction(targetColumnName, Operator.EQUAL, fromDocument.getRecord_ID());
 			}
 
-			if (!Check.isBlank(zoomInfoDescriptor.getTabSqlWhereClause()))
+			if (!Check.isBlank(descriptor.getTabSqlWhereClause()))
 			{
-				query.addRestriction(zoomInfoDescriptor.getTabSqlWhereClause());
+				query.addRestriction(descriptor.getTabSqlWhereClause());
 			}
 
 			query.setZoomTableName(targetTableName);
-			query.setZoomColumnName(source.getKeyColumnNameOrNull());
-			query.setZoomValue(source.getRecord_ID());
+			query.setZoomColumnName(fromDocument.getKeyColumnNameOrNull());
+			query.setZoomValue(fromDocument.getRecord_ID());
 
 			return query;
 		}
 	}
 
-	private static ZoomInfoRecordsCountSupplier createRecordsCountSupplier(
+	private static RelatedDocumentsCountSupplier createRecordsCountSupplier(
 			final MQuery query,
-			final GenericZoomInfoDescriptor zoomInfoDescriptor,
+			final GenericRelatedDocumentDescriptor descriptor,
 			final String sourceTableName)
 	{
-		final String sql = buildCountSQL(query, zoomInfoDescriptor, sourceTableName);
+		final String sql = buildCountSQL(query, descriptor, sourceTableName);
 		return () -> {
 			try
 			{
@@ -213,7 +216,7 @@ import java.util.List;
 			}
 			catch (final Exception ex)
 			{
-				logger.warn("Failed counting records in {} for {} using SQL: {}", sourceTableName, zoomInfoDescriptor, sql, ex);
+				logger.warn("Failed counting records in {} for {} using SQL: {}", sourceTableName, descriptor, sql, ex);
 				return 0;
 			}
 		};
@@ -221,21 +224,21 @@ import java.util.List;
 
 	private static String buildCountSQL(
 			final MQuery query,
-			final GenericZoomInfoDescriptor zoomInfoDescriptor,
+			final GenericRelatedDocumentDescriptor descriptor,
 			final String sourceTableName)
 	{
 		String sqlCount = "SELECT COUNT(1) FROM " + query.getTableName()
 				+ " WHERE " + query.getWhereClause(false)
 				+ " AND AD_Client_ID IN (" + ClientId.SYSTEM.getRepoId() + ", " + ClientId.METASFRESH.getRepoId() + ")";
 
-		SOTrx soTrx = zoomInfoDescriptor.getSoTrx();
-		if (soTrx != null && zoomInfoDescriptor.isTargetHasIsSOTrxColumn())
+		SOTrx soTrx = descriptor.getSoTrx();
+		if (soTrx != null && descriptor.isTargetHasIsSOTrxColumn())
 		{
 			//
 			// For RMA, Material Receipt window should be loaded for
 			// IsSOTrx=true and Shipment for IsSOTrx=false
 			// TODO: fetch the additional SQL from window's first tab where clause
-			final AdWindowId AD_Window_ID = zoomInfoDescriptor.getTargetWindowId();
+			final AdWindowId AD_Window_ID = descriptor.getTargetWindowId();
 			if (I_M_RMA.Table_Name.equals(sourceTableName) && (AD_Window_ID.getRepoId() == 169 || AD_Window_ID.getRepoId() == 184))
 			{
 				soTrx = soTrx.invert();

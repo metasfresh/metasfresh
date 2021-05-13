@@ -30,16 +30,16 @@ import lombok.ToString;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-public class ZoomInfoPermissionsFactory
+public class RelatedDocumentsPermissionsFactory
 {
-	public static ZoomInfoPermissions ofRolePermissions(@NonNull final IUserRolePermissions rolePermissions)
+	public static RelatedDocumentsPermissions ofRolePermissions(@NonNull final IUserRolePermissions rolePermissions)
 	{
-		return new RoleBasedZoomInfoPermissions(rolePermissions);
+		return new RoleBasedRelatedDocumentsPermissions(rolePermissions);
 	}
 
-	public static ZoomInfoPermissions allowAll()
+	public static RelatedDocumentsPermissions allowAll()
 	{
-		return AllowAllZoomInfoPermissions.instance;
+		return AllowAllRelatedDocumentsPermissions.instance;
 	}
 
 	//
@@ -48,9 +48,9 @@ public class ZoomInfoPermissionsFactory
 	//
 	//
 
-	private static class AllowAllZoomInfoPermissions implements ZoomInfoPermissions
+	private static class AllowAllRelatedDocumentsPermissions implements RelatedDocumentsPermissions
 	{
-		private static final AllowAllZoomInfoPermissions instance = new AllowAllZoomInfoPermissions();
+		private static final AllowAllRelatedDocumentsPermissions instance = new AllowAllRelatedDocumentsPermissions();
 
 		@Override
 		public boolean hasReadAccess(AdWindowId adWindowId)
@@ -60,11 +60,11 @@ public class ZoomInfoPermissionsFactory
 	}
 
 	@ToString
-	private static class RoleBasedZoomInfoPermissions implements ZoomInfoPermissions
+	private static class RoleBasedRelatedDocumentsPermissions implements RelatedDocumentsPermissions
 	{
 		private final IUserRolePermissions rolePermissions;
 
-		private RoleBasedZoomInfoPermissions(@NonNull final IUserRolePermissions rolePermissions)
+		private RoleBasedRelatedDocumentsPermissions(@NonNull final IUserRolePermissions rolePermissions)
 		{
 			this.rolePermissions = rolePermissions;
 		}

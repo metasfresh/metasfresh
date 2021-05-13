@@ -22,22 +22,19 @@
 
 package de.metas.document.references.related_documents;
 
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 
 import javax.annotation.Nullable;
 import java.util.List;
 
-/**
- *
- * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
- */
-public interface IZoomProvider
+public interface IRelatedDocumentsProvider
 {
 	/**
-	 *
-	 * @param source the source we need zoom targets for
-	 * @param targetAD_Window_ID optional target window ID; if specified, only those {@link ZoomInfo}s will be returned which have this targetAD_Window_ID.
-	 * @return a list of zoom targets. The {@link ZoomInfo#getRecordCount()} of the ZoomInfo's query member might be zero.
+	 * @param fromDocument         the fromDocument we need zoom targets for
+	 * @param targetWindowId optional target window ID; if specified, only those {@link RelatedDocuments}s will be returned which have this targetWindowId.
 	 */
-	List<ZoomInfoCandidateGroup> retrieveZoomInfos(IZoomSource source, @Nullable final AdWindowId targetAD_Window_ID);
+	List<RelatedDocumentsCandidateGroup> retrieveRelatedDocumentsCandidates(
+			@NonNull IZoomSource fromDocument,
+			@Nullable AdWindowId targetWindowId);
 }

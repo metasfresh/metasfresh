@@ -36,22 +36,22 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 
 @Value
-public class ZoomInfo
+public class RelatedDocuments
 {
-	@NonNull ZoomInfoId id;
+	@NonNull RelatedDocumentsId id;
 	@NonNull String internalName;
 	@NonNull ITranslatableString caption;
 	@Nullable
 	ITranslatableString filterByFieldCaption;
 	@NonNull MQuery query;
-	@NonNull ZoomTargetWindow targetWindow;
+	@NonNull RelatedDocumentsTargetWindow targetWindow;
 	@NonNull Priority priority;
 
 	@Builder
-	private ZoomInfo(
-			@NonNull final ZoomInfoId id,
+	private RelatedDocuments(
+			@NonNull final RelatedDocumentsId id,
 			@NonNull final String internalName,
-			@NonNull final ZoomTargetWindow targetWindow,
+			@NonNull final RelatedDocumentsTargetWindow targetWindow,
 			@NonNull final Priority priority,
 			@NonNull final ITranslatableString caption,
 			@Nullable final ITranslatableString filterByFieldCaption,

@@ -36,26 +36,26 @@ import lombok.Value;
 import lombok.experimental.Delegate;
 
 @Value
-public class GenericZoomInfoDescriptor
+public class GenericRelatedDocumentDescriptor
 {
 	@Delegate
-	@NonNull TargetWindowInfo targetWindowInfo;
+	@NonNull GenericTargetWindowInfo genericTargetWindowInfo;
 
 	@Getter(AccessLevel.NONE)
-	ImmutableMap<String, TargetColumnInfo> targetColumnsByColumnName;
+	ImmutableMap<String, GenericTargetColumnInfo> targetColumnsByColumnName;
 
 	@Builder
-	private GenericZoomInfoDescriptor(
-			@NonNull final TargetWindowInfo targetWindowInfo,
-			@NonNull @Singular final ImmutableList<TargetColumnInfo> targetColumns)
+	private GenericRelatedDocumentDescriptor(
+			@NonNull final GenericTargetWindowInfo targetWindow,
+			@NonNull @Singular final ImmutableList<GenericTargetColumnInfo> targetColumns)
 	{
 		Check.assumeNotEmpty(targetColumns, "targetColumns is not empty");
 
-		this.targetWindowInfo = targetWindowInfo;
-		this.targetColumnsByColumnName = Maps.uniqueIndex(targetColumns, TargetColumnInfo::getColumnName);
+		this.genericTargetWindowInfo = targetWindow;
+		this.targetColumnsByColumnName = Maps.uniqueIndex(targetColumns, GenericTargetColumnInfo::getColumnName);
 	}
 
-	public ImmutableCollection<TargetColumnInfo> getTargetColumns()
+	public ImmutableCollection<GenericTargetColumnInfo> getTargetColumns()
 	{
 		return targetColumnsByColumnName.values();
 	}

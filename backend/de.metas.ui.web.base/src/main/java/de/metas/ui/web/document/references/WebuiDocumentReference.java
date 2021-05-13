@@ -33,23 +33,23 @@ import java.time.Duration;
  */
 
 @Value
-public class DocumentReference
+public class WebuiDocumentReference
 {
-	DocumentReferenceId id;
+	WebuiDocumentReferenceId id;
 	String internalName;
 	ITranslatableString caption;
-	DocumentReferenceTargetWindow targetWindow;
+	WebuiDocumentReferenceTargetWindow targetWindow;
 	Priority priority;
 	int documentsCount;
 	DocumentFilter filter;
 	Duration loadDuration;
 
 	@Builder
-	private DocumentReference(
-			@NonNull final DocumentReferenceId id,
+	private WebuiDocumentReference(
+			@NonNull final WebuiDocumentReferenceId id,
 			@Nullable final String internalName,
 			@NonNull final ITranslatableString caption,
-			@NonNull final DocumentReferenceTargetWindow targetWindow,
+			@NonNull final WebuiDocumentReferenceTargetWindow targetWindow,
 			@NonNull final Priority priority,
 			final int documentsCount,
 			@NonNull final DocumentFilter filter,
