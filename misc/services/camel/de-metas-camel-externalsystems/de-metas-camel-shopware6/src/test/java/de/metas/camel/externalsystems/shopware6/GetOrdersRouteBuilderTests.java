@@ -83,10 +83,6 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_ORG_CODE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_REDUCED_VAT_PRODUCT_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_REDUCED_VAT_RATES;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.SYNC_ADVISE_IFEXISTS_DONT_UPDATE;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.SYNC_ADVISE_IFEXISTS_UPDATE_MERGE;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.SYNC_ADVISE_IFNOTEXISTS_CREATE;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.SYNC_ADVISE_IFNOTEXISTS_FAIL;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CLEAR_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID;
@@ -94,10 +90,6 @@ import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuild
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.OLCAND_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFEXISTS;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFNOTEXISTS;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_IFEXISTS;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_IFNOTEXISTS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_VAT_RATES;
@@ -328,10 +320,6 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 			parameters.put(PARAM_FREIGHT_COST_REDUCED_VAT_RATES, MOCK_REDUCED_VAT_RATES);
 			parameters.put(PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID, String.valueOf(MOCK_REDUCED_VAT_PRODUCT_ID));
 			parameters.put(PARAM_CONFIG_MAPPINGS, mapper.writeValueAsString(shopware6ConfigMappings));
-			parameters.put(PARAM_BPARTNER_IFEXISTS, SYNC_ADVISE_IFEXISTS_UPDATE_MERGE);
-			parameters.put(PARAM_BPARTNER_IFNOTEXISTS, SYNC_ADVISE_IFNOTEXISTS_CREATE);
-			parameters.put(PARAM_BPARTNERLOCATION_IFEXISTS, SYNC_ADVISE_IFEXISTS_DONT_UPDATE);
-			parameters.put(PARAM_BPARTNERLOCATION_IFNOTEXISTS, SYNC_ADVISE_IFNOTEXISTS_FAIL);
 
 			final JsonExternalSystemRequest externalSystemRequest = JsonExternalSystemRequest
 					.builder()

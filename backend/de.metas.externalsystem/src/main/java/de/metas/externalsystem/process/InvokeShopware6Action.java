@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -51,10 +52,6 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BASE_PATH;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFEXISTS;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFNOTEXISTS;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_IFEXISTS;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_IFNOTEXISTS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_SECRET;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
@@ -103,10 +100,6 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID, shopware6Config.getBPartnerLocationIdJSONPath());
 		parameters.put(PARAM_JSON_PATH_SALES_REP_ID, shopware6Config.getSalesRepJSONPath());
 		parameters.put(PARAM_CONFIG_MAPPINGS, getConfigMappings(shopware6Config));
-		parameters.put(PARAM_BPARTNER_IFEXISTS, shopware6Config.getBpartnerIfExists());
-		parameters.put(PARAM_BPARTNER_IFNOTEXISTS, shopware6Config.getBpartnerIfNotExists());
-		parameters.put(PARAM_BPARTNERLOCATION_IFEXISTS, shopware6Config.getBpartnerLocationIfExists());
-		parameters.put(PARAM_BPARTNERLOCATION_IFNOTEXISTS, shopware6Config.getBpartnerLocationIfNotExists());
 
 		if (shopware6Config.getFreightCostNormalVatConfig() != null)
 		{
@@ -175,13 +168,25 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	private JsonExternalSystemShopware6ConfigMapping toJsonExternalSystemShopware6ConfigMapping(
 			@NonNull final ExternalSystemShopware6ConfigMapping externalSystemShopware6ConfigMapping)
 	{
+		final SyncAdvise bPartnerSyncAdvice = SyncAdvise.builder()
+				.ifExists(SyncAdvise.IfExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerIfExists()))
+				.ifNotExists(SyncAdvise.IfNotExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerIfNotExists()))
+				.build();
+
+		final SyncAdvise bpartnerLocationSyncAdvice = SyncAdvise.builder()
+				.ifExists(SyncAdvise.IfExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerLocationIfExists()))
+				.ifNotExists(SyncAdvise.IfNotExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerLocationIfNotExists()))
+				.build();
+
 		final JsonExternalSystemShopware6ConfigMapping.JsonExternalSystemShopware6ConfigMappingBuilder builder =
 				JsonExternalSystemShopware6ConfigMapping.builder()
 						.paymentRule(externalSystemShopware6ConfigMapping.getPaymentRule())
 						.sw6PaymentMethod(externalSystemShopware6ConfigMapping.getSw6PaymentMethod())
 						.sw6CustomerGroup(externalSystemShopware6ConfigMapping.getSw6CustomerGroup())
 						.description(externalSystemShopware6ConfigMapping.getDescription())
-						.seqNo(externalSystemShopware6ConfigMapping.getSeqNo());
+						.seqNo(externalSystemShopware6ConfigMapping.getSeqNo())
+						.bPartnerSyncAdvice(bPartnerSyncAdvice)
+						.bPartnerLocationSyncAdvice(bpartnerLocationSyncAdvice);
 
 		final JsonOrderDocType orderDocType = docTypeService
 				.getOrderDocType(externalSystemShopware6ConfigMapping.getDocTypeOrderId())

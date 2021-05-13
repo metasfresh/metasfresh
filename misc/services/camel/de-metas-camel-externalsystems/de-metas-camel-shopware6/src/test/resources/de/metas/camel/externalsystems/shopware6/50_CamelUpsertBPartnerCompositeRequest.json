@@ -13,7 +13,7 @@
             "customer": true,
             "syncAdvise": {
               "ifNotExists": "CREATE",
-              "ifExists": "UPDATE_MERGE"
+              "ifExists": "DONT_UPDATE"
             }
           },
           "locations": {
@@ -63,7 +63,7 @@
             ],
             "syncAdvise": {
               "ifNotExists": "CREATE",
-              "ifExists": "UPDATE_MERGE"
+              "ifExists": "DONT_UPDATE"
             }
           }
         }

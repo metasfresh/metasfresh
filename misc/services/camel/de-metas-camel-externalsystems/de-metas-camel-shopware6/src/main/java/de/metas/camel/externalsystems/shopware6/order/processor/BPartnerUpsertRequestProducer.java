@@ -37,6 +37,7 @@ import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import lombok.Builder;
 import lombok.NonNull;
@@ -81,13 +82,10 @@ public class BPartnerUpsertRequestProducer
 	String bPartnerLocationIdentifierCustomPath;
 
 	@NonNull
-	SyncAdvise bpartnerSyncAdvise;
-
-	@NonNull
-	SyncAdvise bpartnerLocationSyncAdvise;
-
-	@NonNull
 	BPartnerRequestProducerResult.BPartnerRequestProducerResultBuilder resultBuilder;
+
+	@Nullable
+	JsonExternalSystemShopware6ConfigMapping matchingShopware6Mapping;
 
 	@Builder
 	public BPartnerUpsertRequestProducer(
@@ -98,8 +96,7 @@ public class BPartnerUpsertRequestProducer
 			@NonNull final String billingAddressId,
 			@Nullable final String bPartnerLocationIdentifierCustomPath,
 			@NonNull final String externalBPartnerId,
-			@NonNull final SyncAdvise bpartnerSyncAdvise,
-			@NonNull final SyncAdvise bpartnerLocationSyncAdvise)
+			@Nullable final JsonExternalSystemShopware6ConfigMapping matchingShopware6Mapping)
 	{
 		this.orgCode = orgCode;
 		this.shopwareClient = shopwareClient;
@@ -108,8 +105,7 @@ public class BPartnerUpsertRequestProducer
 		this.billingAddressId = billingAddressId;
 		this.bPartnerLocationIdentifierCustomPath = bPartnerLocationIdentifierCustomPath;
 		this.externalBPartnerId = externalBPartnerId;
-		this.bpartnerSyncAdvise = bpartnerSyncAdvise;
-		this.bpartnerLocationSyncAdvise = bpartnerLocationSyncAdvise;
+		this.matchingShopware6Mapping = matchingShopware6Mapping;
 		this.countryIdToISOCode = new HashMap<>();
 		this.resultBuilder = BPartnerRequestProducerResult.builder();
 	}
@@ -145,7 +141,12 @@ public class BPartnerUpsertRequestProducer
 		jsonRequestBPartner.setCompanyName(orderCustomer.getCompany());
 		jsonRequestBPartner.setCode(asExternalIdentifier(orderCustomer.getCustomerNumber()));
 		jsonRequestBPartner.setCustomer(true);
-		jsonRequestBPartner.setSyncAdvise(bpartnerSyncAdvise);
+
+		if (matchingShopware6Mapping != null)
+		{
+			jsonRequestBPartner.setSyncAdvise(matchingShopware6Mapping.getBPartnerSyncAdvice());
+		}
+
 		// jsonRequestBPartner.setEmail(orderCustomer.getEmail()) todo
 
 		return jsonRequestBPartner;
@@ -159,12 +160,16 @@ public class BPartnerUpsertRequestProducer
 		contactRequest.setLastName(orderCustomer.getLastName());
 		contactRequest.setEmail(orderCustomer.getEmail());
 
+		final SyncAdvise customBPartnerSyncAdvice = matchingShopware6Mapping != null
+				? matchingShopware6Mapping.getBPartnerSyncAdvice()
+				: null;
+
 		return JsonRequestContactUpsert.builder()
 				.requestItem(JsonRequestContactUpsertItem.builder()
 									 .contactIdentifier(asExternalIdentifier(externalBPartnerId))
 									 .contact(contactRequest)
 									 .build())
-				.syncAdvise(bpartnerSyncAdvise)
+				.syncAdvise(customBPartnerSyncAdvice)
 				.build();
 	}
 
@@ -178,7 +183,11 @@ public class BPartnerUpsertRequestProducer
 		{
 			upsertLocationsRequestBuilder.requestItem(getUpsertLocationItemRequest(shippingAddress, false, true));
 		}
-		upsertLocationsRequestBuilder.syncAdvise(bpartnerLocationSyncAdvise);
+
+		if (matchingShopware6Mapping != null)
+		{
+			upsertLocationsRequestBuilder.syncAdvise(matchingShopware6Mapping.getBPartnerLocationSyncAdvice());
+		}
 
 		return upsertLocationsRequestBuilder.build();
 	}

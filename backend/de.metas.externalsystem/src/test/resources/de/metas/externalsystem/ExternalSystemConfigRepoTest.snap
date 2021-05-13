@@ -61,11 +61,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "externalSystemShopware6ConfigMappingList" : [ ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
-      "salesRepJSONPath" : "/test/salesrep",
-      "bpartnerIfExists" : "UPDATE_MERGE",
-      "bpartnerIfNotExists" : "FAIL",
-      "bpartnerLocationIfExists" : "DONT_UPDATE",
-      "bpartnerLocationIfNotExists" : "CREATE"
+      "salesRepJSONPath" : "/test/salesrep"
     }
   }
 ]
@@ -83,6 +79,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "seqNo" : 10,
         "docTypeOrderId" : 10000,
         "paymentRule" : "K",
+        "bpartnerIfExists" : "UPDATE_MERGE",
+        "bpartnerIfNotExists" : "FAIL",
+        "bpartnerLocationIfExists" : "DONT_UPDATE",
+        "bpartnerLocationIfNotExists" : "CREATE",
         "paymentTermId" : 10000,
         "sw6CustomerGroup" : "testWithAnä",
         "sw6PaymentMethod" : "test",
@@ -91,11 +91,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     ],
     "bPartnerIdJSONPath" : "/test/bp",
     "bPartnerLocationIdJSONPath" : "/test/bpl",
-    "salesRepJSONPath" : "/test/salesrep",
-    "bpartnerIfExists" : "UPDATE_MERGE",
-    "bpartnerIfNotExists" : "FAIL",
-    "bpartnerLocationIfExists" : "DONT_UPDATE",
-    "bpartnerLocationIfNotExists" : "CREATE"
+    "salesRepJSONPath" : "/test/salesrep"
   }
 ]
 
@@ -115,11 +111,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "externalSystemShopware6ConfigMappingList" : [ ],
       "bPartnerIdJSONPath" : "/test/bp",
       "bPartnerLocationIdJSONPath" : "/test/bpl",
-      "salesRepJSONPath" : "/test/salesrep",
-      "bpartnerIfExists" : "UPDATE_MERGE",
-      "bpartnerIfNotExists" : "FAIL",
-      "bpartnerLocationIfExists" : "DONT_UPDATE",
-      "bpartnerLocationIfNotExists" : "CREATE"
+      "salesRepJSONPath" : "/test/salesrep"
     }
   }
 ]

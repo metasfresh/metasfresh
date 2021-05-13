@@ -39,7 +39,6 @@ import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.NumberUtils;
@@ -132,8 +131,6 @@ public class GetOrdersProcessor implements Processor
 				.bpLocationCustomJsonPath(bpLocationCustomJsonPath)
 				.currencyInfoProvider(currencyInfoProvider)
 				.taxProductIdProvider(getTaxProductIdProvider(request))
-				.bpartnerSyncAdvise(getBPartnerSyncAdvice(request.getParameters()))
-				.bPartnerLocationSynAdvise(getBPartnerLocationSyncAdvice(request.getParameters()))
 				.build();
 	}
 
@@ -216,37 +213,5 @@ public class GetOrdersProcessor implements Processor
 		}
 
 		return TaxProductIdProvider.of(productId2VatRates);
-	}
-
-	@NonNull
-	private SyncAdvise getBPartnerLocationSyncAdvice(@NonNull final Map<String, String> requestParameters)
-	{
-		final String locationIfExists = requestParameters.get(ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFEXISTS);
-		final String locationIfNotExists = requestParameters.get(ExternalSystemConstants.PARAM_BPARTNERLOCATION_IFNOTEXISTS);
-
-		return getSyncAdviceFromString(locationIfExists, locationIfNotExists);
-	}
-
-	@NonNull
-	private SyncAdvise getBPartnerSyncAdvice(@NonNull final Map<String, String> requestParameters)
-	{
-		final String bpartnerIfExists = requestParameters.get(ExternalSystemConstants.PARAM_BPARTNER_IFEXISTS);
-		final String bpartnerIfNotExists = requestParameters.get(ExternalSystemConstants.PARAM_BPARTNER_IFNOTEXISTS);
-
-		return getSyncAdviceFromString(bpartnerIfExists, bpartnerIfNotExists);
-	}
-
-	@NonNull
-	private SyncAdvise getSyncAdviceFromString(@Nullable final String ifExists, @Nullable final String ifNotExists)
-	{
-		if (Check.isBlank(ifExists) || Check.isBlank(ifNotExists))
-		{
-			throw new RuntimeException("Missing sync advice information!");
-		}
-
-		return SyncAdvise.builder()
-				.ifExists(SyncAdvise.IfExists.valueOf(ifExists))
-				.ifNotExists(SyncAdvise.IfNotExists.valueOf(ifNotExists))
-				.build();
 	}
 }

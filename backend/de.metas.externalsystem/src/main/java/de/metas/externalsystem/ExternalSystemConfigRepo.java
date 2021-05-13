@@ -225,10 +225,6 @@ public class ExternalSystemConfigRepo
 				.bPartnerIdJSONPath(config.getJSONPathConstantBPartnerID())
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
 				.salesRepJSONPath(config.getJSONPathSalesRepID())
-				// .bpartnerIfExists(config.getBPartner_IfExists())
-				// .bpartnerIfNotExists(config.getBPartner_IfNotExists())
-				// .bpartnerLocationIfExists(config.getBPartnerLocation_IfExists())
-				// .bpartnerLocationIfNotExists(config.getBPartnerLocation_IfNotExists())
 				.build();
 	}
 
@@ -259,6 +255,10 @@ public class ExternalSystemConfigRepo
 				.sw6PaymentMethod(record.getSW6_Payment_Method())
 				.description(record.getDescription())
 				.seqNo(record.getSeqNo())
+				.bpartnerIfExists(record.getBPartner_IfExists())
+				.bpartnerIfNotExists(record.getBPartner_IfNotExists())
+				.bpartnerLocationIfExists(record.getBPartnerLocation_IfExists())
+				.bpartnerLocationIfNotExists(record.getBPartnerLocation_IfNotExists())
 				.build();
 	}
 
