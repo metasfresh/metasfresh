@@ -50,7 +50,7 @@ class FactAcctZoomProvider implements IZoomProvider
 	}
 
 	@Override
-	public List<ZoomInfoCandidate> retrieveZoomInfos(
+	public List<ZoomInfoCandidateGroup> retrieveZoomInfos(
 			@NonNull final IZoomSource source,
 			@Nullable final AdWindowId targetWindowId)
 	{
@@ -85,20 +85,21 @@ class FactAcctZoomProvider implements IZoomProvider
 		query.addRestriction(I_Fact_Acct.COLUMNNAME_Record_ID, Operator.EQUAL, source.getRecord_ID());
 
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
-		final ITranslatableString destinationDisplay = adWindowDAO.retrieveWindowName(factAcctWindowId);
+		final ITranslatableString windowCaption = adWindowDAO.retrieveWindowName(factAcctWindowId);
 
 		final ZoomInfoRecordsCountSupplier recordsCountSupplier = createRecordsCountSupplier(source);
 
 		return ImmutableList.of(
-				ZoomInfoCandidate.builder()
-						.id(ZoomInfoId.ofString(I_Fact_Acct.Table_Name))
-						.internalName(I_Fact_Acct.Table_Name)
-						.targetWindow(ZoomTargetWindow.ofAdWindowId(factAcctWindowId))
-						.priority(zoomInfoPriority)
-						.query(query)
-						.destinationDisplay(destinationDisplay)
-						.recordsCountSupplier(recordsCountSupplier)
-						.build());
+				ZoomInfoCandidateGroup.of(
+						ZoomInfoCandidate.builder()
+								.id(ZoomInfoId.ofString(I_Fact_Acct.Table_Name))
+								.internalName(I_Fact_Acct.Table_Name)
+								.targetWindow(ZoomTargetWindow.ofAdWindowId(factAcctWindowId))
+								.priority(zoomInfoPriority)
+								.query(query)
+								.windowCaption(windowCaption)
+								.recordsCountSupplier(recordsCountSupplier)
+								.build()));
 	}
 
 	private static ZoomInfoRecordsCountSupplier createRecordsCountSupplier(final IZoomSource source)

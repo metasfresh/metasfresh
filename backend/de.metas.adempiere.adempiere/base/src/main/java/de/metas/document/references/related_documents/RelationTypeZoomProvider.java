@@ -46,6 +46,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.PORelationException;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.MQuery;
@@ -89,11 +90,11 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		source = isTableRecordIdTarget
 				? null
 				: ZoomProviderDestination.builder()
-						.adReferenceId(builder.getSource_Reference_ID())
-						.tableRefInfo(builder.getSourceTableRefInfoOrNull())
-						.roleDisplayName(builder.getTargetRoleDisplayName())
-						.tableRecordIdTarget(isTableRecordIdTarget)
-						.build();
+				.adReferenceId(builder.getSource_Reference_ID())
+				.tableRefInfo(builder.getSourceTableRefInfoOrNull())
+				.roleDisplayName(builder.getTargetRoleDisplayName())
+				.tableRecordIdTarget(isTableRecordIdTarget)
+				.build();
 
 		target = ZoomProviderDestination.builder()
 				.adReferenceId(builder.getTarget_Reference_ID())
@@ -119,7 +120,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 	}
 
 	@Override
-	public List<ZoomInfoCandidate> retrieveZoomInfos(
+	public List<ZoomInfoCandidateGroup> retrieveZoomInfos(
 			@NonNull final IZoomSource zoomOrigin,
 			@Nullable final AdWindowId targetAdWindowId)
 	{
@@ -164,15 +165,16 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		final MQuery query = mkZoomOriginQuery(zoomOrigin);
 
 		return ImmutableList.of(
-				ZoomInfoCandidate.builder()
-						.id(getZoomInfoId())
-						.internalName(getInternalName())
-						.targetWindow(ZoomTargetWindow.ofAdWindowId(adWindowId))
-						.priority(zoomInfoPriority)
-						.query(query)
-						.destinationDisplay(display)
-						.recordsCountSupplier(createRecordsCountSupplier(query))
-						.build());
+				ZoomInfoCandidateGroup.of(
+						ZoomInfoCandidate.builder()
+								.id(getZoomInfoId())
+								.internalName(getInternalName())
+								.targetWindow(ZoomTargetWindow.ofAdWindowIdAndCategory(adWindowId, getTarget().getTableRefInfo().getKeyColumn()))
+								.priority(zoomInfoPriority)
+								.query(query)
+								.windowCaption(display)
+								.recordsCountSupplier(createRecordsCountSupplier(query))
+								.build()));
 	}
 
 	public boolean isDirected()
@@ -375,7 +377,9 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 	private static ZoomInfoRecordsCountSupplier createRecordsCountSupplier(final MQuery query)
 	{
-		final String sqlCommon = " FROM " + query.getZoomTableName() + " WHERE " + query.getWhereClause(false);
+		final String sqlCommon = " FROM " + query.getZoomTableName()
+				+ " WHERE " + query.getWhereClause(false)
+				+ " AND AD_Client_ID IN (" + ClientId.SYSTEM.getRepoId() + ", " + ClientId.METASFRESH.getRepoId() + ")";
 		final String sqlCount = "SELECT COUNT(1) " + sqlCommon;
 
 		return () -> {
@@ -543,11 +547,13 @@ public class RelationTypeZoomProvider implements IZoomProvider
 
 		private int sourceReferenceId = -1;
 		private ITranslatableString sourceRoleDisplayName;
-		@Nullable private TableRefInfo sourceTableRefInfo = null; // lazy
+		@Nullable
+		private TableRefInfo sourceTableRefInfo = null; // lazy
 
 		private int targetReferenceId = -1;
 		private ITranslatableString targetRoleDisplayName;
-		@Nullable private TableRefInfo targetTableRefInfo = null; // lazy
+		@Nullable
+		private TableRefInfo targetTableRefInfo = null; // lazy
 
 		private Builder()
 		{
@@ -649,7 +655,7 @@ public class RelationTypeZoomProvider implements IZoomProvider
 		private TableRefInfo retrieveTableRefInfo(final int adReferenceId)
 		{
 			final TableRefInfo tableRefInfo = lookupDAO.retrieveTableRefInfo(adReferenceId);
-			if(tableRefInfo == null)
+			if (tableRefInfo == null)
 			{
 				return null;
 			}

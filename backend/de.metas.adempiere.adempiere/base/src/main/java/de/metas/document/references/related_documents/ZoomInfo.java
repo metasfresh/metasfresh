@@ -22,36 +22,30 @@
 
 package de.metas.document.references.related_documents;
 
-import java.time.Duration;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.compiere.model.MQuery;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Check;
 import de.metas.util.lang.Priority;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.compiere.model.MQuery;
 
-public final class ZoomInfo
+import javax.annotation.Nullable;
+import java.time.Duration;
+
+@Value
+public class ZoomInfo
 {
-	@Getter
-	private final ZoomInfoId id;
-	@Getter
-	private final String internalName;
-	@Getter
-	private final ITranslatableString caption;
-	@Getter
-	private final MQuery query;
-	@Getter
-	private final ZoomTargetWindow targetWindow;
-	@Getter
-	private final Priority priority;
+	@NonNull ZoomInfoId id;
+	@NonNull String internalName;
+	@NonNull ITranslatableString caption;
+	@Nullable
+	ITranslatableString filterByFieldCaption;
+	@NonNull MQuery query;
+	@NonNull ZoomTargetWindow targetWindow;
+	@NonNull Priority priority;
 
 	@Builder
 	private ZoomInfo(
@@ -60,6 +54,7 @@ public final class ZoomInfo
 			@NonNull final ZoomTargetWindow targetWindow,
 			@NonNull final Priority priority,
 			@NonNull final ITranslatableString caption,
+			@Nullable final ITranslatableString filterByFieldCaption,
 			@NonNull final MQuery query)
 	{
 		this.id = id;
@@ -69,6 +64,7 @@ public final class ZoomInfo
 		this.priority = priority;
 
 		this.caption = caption;
+		this.filterByFieldCaption = filterByFieldCaption;
 
 		this.query = query;
 	}
@@ -77,9 +73,11 @@ public final class ZoomInfo
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("id", id)
 				.add("internalName", internalName)
 				.add("caption", caption.getDefaultValue())
+				.add("filterByFieldCaption", filterByFieldCaption != null ? filterByFieldCaption.getDefaultValue() : null)
 				.add("targetWindow", targetWindow)
 				.add("RecordCount", query.getRecordCount())
 				.toString();

@@ -7,6 +7,10 @@ SELECT fk.ref_tablename                                                         
        fk.tablename                                                                                    AS target_tableName,
        fk.columnname                                                                                   AS target_columnName,
        c.columnsql                                                                                     AS target_columnSql,
+       f.name                                                                                          AS target_columnDisplayName,
+       (SELECT ARRAY_AGG(ARRAY [ftrl.ad_language, ftrl.name])
+        FROM ad_field_trl ftrl
+        WHERE ftrl.ad_field_id = f.ad_field_id)                                                        AS target_columnDisplayName_trls,
        (CASE
             WHEN EXISTS(SELECT 1
                         FROM ad_column zz
@@ -20,8 +24,6 @@ SELECT fk.ref_tablename                                                         
        --
        tt.whereclause                                                                                  AS tab_whereClause,
        w.ad_window_id                                                                                  AS target_window_id,
-       -- s_t.ad_window_id                                                                                AS default_so_window_id,
-       -- COALESCE(s_t.po_window_id, s_t.ad_window_id)                                                    AS default_po_window_id,
        (CASE WHEN w.ad_window_id = s_t.ad_window_id THEN 'Y' ELSE 'N' END)                             AS IsDefaultSOWindow,
        (CASE WHEN w.ad_window_id = COALESCE(s_t.po_window_id, s_t.ad_window_id) THEN 'Y' ELSE 'N' END) AS IsDefaultPOWindow,
        w.name                                                                                          AS target_window_name,

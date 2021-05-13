@@ -7,6 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.collect.ImmutableList;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.slf4j.Logger;
@@ -102,7 +103,7 @@ public class DocumentReferencesRestController
 				maxPoolSize,
 				60L, // keepAliveTime
 				TimeUnit.SECONDS, // keepAliveTime unit
-				new LinkedBlockingQueue<Runnable>(), // workQueue
+				new LinkedBlockingQueue<>(), // workQueue
 				threadFactory);
 
 	}
@@ -180,7 +181,7 @@ public class DocumentReferencesRestController
 	{
 		final CompletableFuture<?>[] futures = documentReferenceCandidates.stream()
 				.map(documentReferenceCandidate -> evaluateAndPublish(documentReferenceCandidate, context))
-				.toArray(size -> new CompletableFuture[size]);
+				.toArray(CompletableFuture[]::new);
 
 		if (futures.length == 0)
 		{
@@ -211,8 +212,10 @@ public class DocumentReferencesRestController
 			@NonNull final DocumentReferenceCandidate documentReferenceCandidate,
 			@NonNull final AsyncRunContext context)
 	{
-		final DocumentReference documentReference = documentReferenceCandidate.evaluate().orElse(null);
-		if (documentReference != null)
+		final ImmutableList<DocumentReference> documentReferences = documentReferenceCandidate
+				.evaluateAndStream()
+				.collect(ImmutableList.toImmutableList());
+		if (!documentReferences.isEmpty())
 		{
 			final JSONDocumentReferencesGroupsAggregator aggregator = JSONDocumentReferencesGroupsAggregator.builder()
 					.menuTree(context.getMenuTree())
@@ -220,7 +223,7 @@ public class DocumentReferencesRestController
 					.jsonOpts(context.getJsonOpts())
 					.build();
 
-			aggregator.addAndFlush(documentReference, context.getPublisher());
+			aggregator.addAndPublish(documentReferences, context.getPublisher());
 		}
 	}
 

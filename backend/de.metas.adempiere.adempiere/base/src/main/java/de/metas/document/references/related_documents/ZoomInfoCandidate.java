@@ -23,35 +23,33 @@
 package de.metas.document.references.related_documents;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Stopwatch;
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.lang.Priority;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.MQuery;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
+@Getter(AccessLevel.PACKAGE)
 public final class ZoomInfoCandidate
 {
 	private static final Logger logger = LogManager.getLogger(ZoomInfoCandidate.class);
 
-	@Getter
 	private final ZoomInfoId id;
 	private final String internalName;
-	private final ITranslatableString destinationDisplay;
-	private final MQuery query;
-	@Getter
+	private final ITranslatableString windowCaption;
+	private final ITranslatableString filterByFieldCaption;
 	private final ZoomTargetWindow targetWindow;
 	private final Priority priority;
+
+	private final MQuery query;
 	private final ZoomInfoRecordsCountSupplier recordsCountSupplier;
 
 	@Builder
@@ -61,18 +59,21 @@ public final class ZoomInfoCandidate
 			@NonNull final ZoomTargetWindow targetWindow,
 			@NonNull final Priority priority,
 			@NonNull final MQuery query,
-			@NonNull final ITranslatableString destinationDisplay,
+			@NonNull final ITranslatableString windowCaption,
+			@Nullable final ITranslatableString filterByFieldCaption,
 			@NonNull final ZoomInfoRecordsCountSupplier recordsCountSupplier)
 	{
-		this.id = id;
-		this.internalName = Check.assumeNotEmpty(internalName, "internalName is not empty");
+		Check.assumeNotEmpty(internalName, "internalName is not empty");
 
+		this.id = id;
+		this.internalName = internalName;
 		this.targetWindow = targetWindow;
 		this.priority = priority;
 
-		this.query = query;
-		this.destinationDisplay = destinationDisplay;
+		this.windowCaption = windowCaption;
+		this.filterByFieldCaption = filterByFieldCaption;
 
+		this.query = query;
 		this.recordsCountSupplier = recordsCountSupplier;
 	}
 
@@ -80,69 +81,22 @@ public final class ZoomInfoCandidate
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
+				.omitNullValues()
 				.add("id", id)
 				.add("internalName", internalName)
-				.add("display", destinationDisplay.getDefaultValue())
+				.add("windowCaption", windowCaption.getDefaultValue())
+				.add("additionalCaption", filterByFieldCaption != null ? filterByFieldCaption.getDefaultValue() : null)
 				.add("adWindowId", targetWindow)
 				.toString();
 	}
 
-	public Optional<ZoomInfo> evaluate()
+	public AdWindowId getTargetWindowId()
 	{
-		return evaluate(null);
+		return targetWindow.getAdWindowId();
 	}
 
-	public Optional<ZoomInfo> evaluate(@Nullable final ZoomTargetWindowEvaluationContext context)
+	public boolean isZoomInfoIdMatching(@NonNull final ZoomInfoId id)
 	{
-		//
-		// Only consider a window already seen if it actually has record count > 0 (task #1062)
-		final Priority alreadySeenZoomInfoPriority = context != null
-				? context.getPriorityOrNull(targetWindow)
-				: null;
-		if (alreadySeenZoomInfoPriority != null
-				&& alreadySeenZoomInfoPriority.isHigherThan(priority))
-		{
-			logger.debug("Skipping zoomInfo {} because there is already one for destination '{}'", this, targetWindow);
-			return Optional.empty();
-		}
-
-		//
-		// Compute records count
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		final int recordsCount = recordsCountSupplier.getRecordsCount();
-		stopwatch.stop();
-		logger.debug("Computed records count for {} in {}", this, stopwatch);
-
-		if (recordsCount <= 0)
-		{
-			logger.debug("No records found for {}", this);
-			return Optional.empty();
-		}
-
-		//
-		// We got a valid zoom info
-		// => accept it
-		if (context != null)
-		{
-			context.putWindow(targetWindow, priority);
-		}
-
-		final ITranslatableString caption = TranslatableStrings.builder()
-				.append(destinationDisplay)
-				.append(" (#" + recordsCount + ")")
-				.build();
-
-		final Duration recordsCountDuration = Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
-		final MQuery queryCopy = query.deepCopy();
-		queryCopy.setRecordCount(recordsCount, recordsCountDuration);
-
-		return Optional.of(ZoomInfo.builder()
-				.id(id)
-				.internalName(internalName)
-				.targetWindow(targetWindow)
-				.priority(priority)
-				.caption(caption)
-				.query(queryCopy)
-				.build());
+		return ZoomInfoId.equals(this.id, id);
 	}
 }

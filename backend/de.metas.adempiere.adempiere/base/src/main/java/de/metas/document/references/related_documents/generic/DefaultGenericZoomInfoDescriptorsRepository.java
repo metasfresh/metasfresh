@@ -23,10 +23,13 @@
 package de.metas.document.references.related_documents.generic;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.MQuery;
 import org.compiere.util.DB;
@@ -47,15 +50,28 @@ public class DefaultGenericZoomInfoDescriptorsRepository implements GenericZoomI
 	{
 		final String sourceTableName = MQuery.getZoomTableName(sourceKeyColumnName);
 
-		return DB.retrieveRows("SELECT * FROM ad_table_related_windows_v WHERE source_tableName=?", ImmutableList.of(sourceTableName), this::retrieveRows)
+		final ImmutableListMultimap<TargetWindowInfo, TargetColumnInfo> windowAndColumns = DB.retrieveRows(
+				"SELECT * FROM ad_table_related_windows_v WHERE source_tableName=?",
+				ImmutableList.of(sourceTableName),
+				this::retrieveRows)
 				.stream()
 				.flatMap(List::stream)
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						TargetWindowAndColumn::getWindow,
+						TargetWindowAndColumn::getColumn));
+
+		return windowAndColumns.keySet()
+				.stream()
+				.map(window -> GenericZoomInfoDescriptor.builder()
+						.targetWindowInfo(window)
+						.targetColumns(windowAndColumns.get(window))
+						.build())
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private List<GenericZoomInfoDescriptor> retrieveRows(final ResultSet rs) throws SQLException
+	private List<TargetWindowAndColumn> retrieveRows(final ResultSet rs) throws SQLException
 	{
-		final ImmutableTranslatableString name = retrieveName(rs);
+		final ImmutableTranslatableString name = retrieveTranslatableString(rs, "target_window_name", "target_window_name_trls");
 		final AdWindowId targetWindowId = AdWindowId.ofRepoId(rs.getInt("target_window_id"));
 		final boolean targetHasIsSOTrxColumn = StringUtils.toBoolean(rs.getString("target_has_issotrx_column"));
 		final boolean isDefaultSOWindow = StringUtils.toBoolean(rs.getString("IsDefaultSOWindow"));
@@ -77,44 +93,50 @@ public class DefaultGenericZoomInfoDescriptorsRepository implements GenericZoomI
 			}
 		}
 
-		final GenericZoomInfoDescriptor.GenericZoomInfoDescriptorBuilder infoBuilder = GenericZoomInfoDescriptor.builder()
+		final TargetColumnInfo targetColumn = TargetColumnInfo.builder()
+				.caption(retrieveTranslatableString(rs, "target_columnDisplayName", "target_columnDisplayName_trls"))
+				.columnName(rs.getString("target_columnname"))
+				.virtualColumnSql(rs.getString("target_columnsql"))
+				.build();
+
+		final TargetWindowInfo.TargetWindowInfoBuilder windowInfoBuilder = TargetWindowInfo.builder()
 				.name(name)
 				.targetTableName(rs.getString("target_tablename"))
-				.targetColumnName(rs.getString("target_columnname"))
-				.virtualTargetColumnSql(rs.getString("target_columnsql"))
-				.dynamicTargetColumnName(false)
 				.targetWindowId(targetWindowId)
 				.targetWindowInternalName(rs.getString("target_window_internalname"))
-				//.isSOTrx(...)
+				//.soTrx(...) // see below
 				.targetHasIsSOTrxColumn(targetHasIsSOTrxColumn)
 				.tabSqlWhereClause(tabSqlWhereClause);
 
-		final ArrayList<GenericZoomInfoDescriptor> result = new ArrayList<>();
+		final ArrayList<TargetWindowAndColumn> result = new ArrayList<>();
 		if (targetHasIsSOTrxColumn && (isDefaultSOWindow || isDefaultPOWindow))
 		{
 			if (isDefaultSOWindow)
 			{
-				result.add(infoBuilder.isSOTrx(Boolean.TRUE).build());
+				result.add(TargetWindowAndColumn.of(windowInfoBuilder.soTrx(SOTrx.SALES).build(), targetColumn));
 			}
 			if (isDefaultPOWindow)
 			{
-				result.add(infoBuilder.isSOTrx(Boolean.FALSE).build());
+				result.add(TargetWindowAndColumn.of(windowInfoBuilder.soTrx(SOTrx.PURCHASE).build(), targetColumn));
 			}
 		}
 		else
 		{
-			result.add(infoBuilder.isSOTrx(null).build());
+			result.add(TargetWindowAndColumn.of(windowInfoBuilder.soTrx(null).build(), targetColumn));
 		}
 
 		return result;
 	}
 
-	private static ImmutableTranslatableString retrieveName(final ResultSet rs) throws SQLException
+	private static ImmutableTranslatableString retrieveTranslatableString(
+			final ResultSet rs,
+			final String nameColumn,
+			final String trlColumn) throws SQLException
 	{
 		final ImmutableTranslatableString.ImmutableTranslatableStringBuilder result = ImmutableTranslatableString.builder()
-				.defaultValue(rs.getString("target_window_name"));
+				.defaultValue(rs.getString(nameColumn));
 
-		final Array sqlArray = rs.getArray("target_window_name_trls");
+		final Array sqlArray = rs.getArray(trlColumn);
 		if (sqlArray != null)
 		{
 			final String[][] trls = (String[][])sqlArray.getArray();
@@ -128,5 +150,12 @@ public class DefaultGenericZoomInfoDescriptorsRepository implements GenericZoomI
 		}
 
 		return result.build();
+	}
+
+	@Value(staticConstructor = "of")
+	private static class TargetWindowAndColumn
+	{
+		@NonNull TargetWindowInfo window;
+		@NonNull TargetColumnInfo column;
 	}
 }

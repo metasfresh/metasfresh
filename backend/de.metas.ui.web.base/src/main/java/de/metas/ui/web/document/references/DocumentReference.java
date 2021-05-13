@@ -1,15 +1,14 @@
 package de.metas.ui.web.document.references;
 
-import java.time.Duration;
-
-import javax.annotation.Nullable;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.util.lang.Priority;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
 
 /*
  * #%L
@@ -34,16 +33,16 @@ import lombok.Value;
  */
 
 @Value
-public final class DocumentReference
+public class DocumentReference
 {
-	private final DocumentReferenceId id;
-	private final String internalName;
-	private final ITranslatableString caption;
-	private final DocumentReferenceTargetWindow targetWindow;
-	private final Priority priority;
-	private final int documentsCount;
-	private final DocumentFilter filter;
-	private final Duration loadDuration;
+	DocumentReferenceId id;
+	String internalName;
+	ITranslatableString caption;
+	DocumentReferenceTargetWindow targetWindow;
+	Priority priority;
+	int documentsCount;
+	DocumentFilter filter;
+	Duration loadDuration;
 
 	@Builder
 	private DocumentReference(

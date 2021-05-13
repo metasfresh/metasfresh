@@ -18,6 +18,7 @@ import lombok.NonNull;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 /*
  * #%L
@@ -122,11 +123,16 @@ final class JSONDocumentReferencesGroupsAggregator
 		return groups;
 	}
 
-	public void addAndFlush(
-			@NonNull final DocumentReference documentReference,
+	public void addAndPublish(
+			@NonNull final List<DocumentReference> documentReferences,
 			@NonNull final JSONDocumentReferencesEventPublisher publisher)
 	{
-		add(documentReference);
+		addAll(documentReferences);
+		publish(publisher);
+	}
+
+	private void publish(final @NonNull JSONDocumentReferencesEventPublisher publisher)
+	{
 		final ImmutableList<JSONDocumentReferencesGroup> groups = flushGroups();
 		publisher.publishPartialResults(groups);
 	}

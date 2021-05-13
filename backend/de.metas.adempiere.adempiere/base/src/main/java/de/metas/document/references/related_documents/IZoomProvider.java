@@ -39,5 +39,5 @@ public interface IZoomProvider
 	 * @param targetAD_Window_ID optional target window ID; if specified, only those {@link ZoomInfo}s will be returned which have this targetAD_Window_ID.
 	 * @return a list of zoom targets. The {@link ZoomInfo#getRecordCount()} of the ZoomInfo's query member might be zero.
 	 */
-	List<ZoomInfoCandidate> retrieveZoomInfos(IZoomSource source, @Nullable final AdWindowId targetAD_Window_ID);
+	List<ZoomInfoCandidateGroup> retrieveZoomInfos(IZoomSource source, @Nullable final AdWindowId targetAD_Window_ID);
 }

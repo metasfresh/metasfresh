@@ -22,7 +22,6 @@
 
 package de.metas.document.references.related_documents;
 
-import de.metas.i18n.ITranslatableString;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
@@ -36,36 +35,31 @@ public class ZoomTargetWindow
 {
 	public static ZoomTargetWindow ofAdWindowId(@NonNull final AdWindowId adWindowId)
 	{
-		return new ZoomTargetWindow(adWindowId, null, null);
+		return new ZoomTargetWindow(adWindowId, null);
 	}
 
 	public static ZoomTargetWindow ofAdWindowIdAndCategory(
 			@NonNull final AdWindowId adWindowId,
-			@NonNull final ReferenceListAwareEnum category,
-			@NonNull final ITranslatableString categoryDisplayName)
+			@NonNull final ReferenceListAwareEnum category)
 	{
-		return new ZoomTargetWindow(adWindowId, category.getCode(), categoryDisplayName);
+		return new ZoomTargetWindow(adWindowId, category.getCode());
 	}
 
 	public static ZoomTargetWindow ofAdWindowIdAndCategory(
 			@NonNull final AdWindowId adWindowId,
-			@NonNull final String categoryCode,
-			@NonNull final ITranslatableString categoryDisplayName)
+			@NonNull final String category)
 	{
-		return new ZoomTargetWindow(adWindowId, categoryCode, categoryDisplayName);
+		return new ZoomTargetWindow(adWindowId, category);
 	}
 
 	AdWindowId adWindowId;
 	String category;
-	ITranslatableString categoryDisplayName;
 
 	private ZoomTargetWindow(
 			@NonNull final AdWindowId adWindowId,
-			@Nullable final String category,
-			@Nullable final ITranslatableString categoryDisplayName)
+			@Nullable final String category)
 	{
 		this.adWindowId = adWindowId;
 		this.category = StringUtils.trimBlankToNull(category);
-		this.categoryDisplayName = categoryDisplayName;
 	}
 }

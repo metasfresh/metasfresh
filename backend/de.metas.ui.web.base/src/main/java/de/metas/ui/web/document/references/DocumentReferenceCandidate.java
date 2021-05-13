@@ -1,13 +1,7 @@
 package de.metas.ui.web.document.references;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-
-import com.google.common.collect.ImmutableList;
-
 import de.metas.document.references.related_documents.ZoomInfo;
-import de.metas.document.references.related_documents.ZoomInfoCandidate;
+import de.metas.document.references.related_documents.ZoomInfoCandidateGroup;
 import de.metas.document.references.related_documents.ZoomTargetWindow;
 import de.metas.document.references.related_documents.ZoomTargetWindowEvaluationContext;
 import de.metas.i18n.ITranslatableString;
@@ -15,6 +9,8 @@ import de.metas.ui.web.document.filter.provider.userQuery.MQueryDocumentFilterHe
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 import lombok.ToString;
+
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -26,12 +22,12 @@ import lombok.ToString;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -41,41 +37,20 @@ import lombok.ToString;
 @ToString
 public class DocumentReferenceCandidate
 {
-	public static ImmutableList<DocumentReference> evaluateAll(final Collection<DocumentReferenceCandidate> candidates)
-	{
-		if (candidates.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		final ZoomTargetWindowEvaluationContext context = new ZoomTargetWindowEvaluationContext();
-
-		return candidates.stream()
-				.map(candidate -> candidate.evaluate(context).orElse(null))
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private final ZoomInfoCandidate zoomInfoCandidate;
+	private final ZoomInfoCandidateGroup zoomInfoCandidateGroup;
 	private final ITranslatableString filterCaption;
 
 	public DocumentReferenceCandidate(
-			@NonNull final ZoomInfoCandidate zoomInfoCandidate,
+			@NonNull final ZoomInfoCandidateGroup zoomInfoCandidateGroup,
 			@NonNull final ITranslatableString filterCaption)
 	{
-		this.zoomInfoCandidate = zoomInfoCandidate;
+		this.zoomInfoCandidateGroup = zoomInfoCandidateGroup;
 		this.filterCaption = filterCaption;
 	}
 
-	public Optional<DocumentReference> evaluate()
+	public Stream<DocumentReference> evaluateAndStream()
 	{
-		return zoomInfoCandidate.evaluate()
-				.map(zoomInfo -> toDocumentReference(zoomInfo, filterCaption));
-	}
-
-	private Optional<DocumentReference> evaluate(@NonNull final ZoomTargetWindowEvaluationContext context)
-	{
-		return zoomInfoCandidate.evaluate(context)
+		return zoomInfoCandidateGroup.evaluateAndStream(null)
 				.map(zoomInfo -> toDocumentReference(zoomInfo, filterCaption));
 	}
 

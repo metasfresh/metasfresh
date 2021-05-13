@@ -1,20 +1,11 @@
 package de.metas.ui.web.document.references.json;
 
-import java.time.Duration;
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
@@ -22,6 +13,15 @@ import de.metas.ui.web.document.references.DocumentReference;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.NonNull;
+import lombok.ToString;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -46,6 +46,7 @@ import lombok.NonNull;
  */
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@ToString(of = { "id", "caption", "targetCategory", "targetWindowId" })
 public final class JSONDocumentReference
 {
 	@Nullable
@@ -57,7 +58,7 @@ public final class JSONDocumentReference
 		}
 		catch (Exception ex)
 		{
-			logger.warn("Failed convering {} to {}. Skipped", documentReference, JSONDocumentReference.class, ex);
+			logger.warn("Failed converting {} to {}. Skipped", documentReference, JSONDocumentReference.class, ex);
 			return null;
 		}
 	}
@@ -71,7 +72,7 @@ public final class JSONDocumentReference
 
 		return documentReferences.stream()
 				.map(documentReference -> of(documentReference, jsonOpts))
-				.filter(jsonDocumentReference -> jsonDocumentReference != null)
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 

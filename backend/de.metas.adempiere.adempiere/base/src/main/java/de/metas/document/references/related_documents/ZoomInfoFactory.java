@@ -35,7 +35,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Tobias Schoeneberg, www.metas.de - FR [ 2897194 ] Advanced Zoom and RelationTypes
@@ -71,20 +70,18 @@ public class ZoomInfoFactory
 		return getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId, permissions)
 				.stream()
 				.sequential()
-				.map(candidate -> candidate.evaluate(context).orElse(null))
-				.filter(Objects::nonNull)
+				.flatMap(candidate -> candidate.evaluateAndStream(context))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public ImmutableList<ZoomInfoCandidate> getZoomInfoCandidates(
+	public ImmutableList<ZoomInfoCandidateGroup> getZoomInfoCandidates(
 			@NonNull final IZoomSource zoomOrigin,
 			@NonNull final ZoomInfoPermissions permissions)
 	{
-		final AdWindowId onlyTargetWindowId = null;
-		return getZoomInfoCandidates(zoomOrigin, onlyTargetWindowId, permissions);
+		return getZoomInfoCandidates(zoomOrigin, null, permissions);
 	}
 
-	private ImmutableList<ZoomInfoCandidate> getZoomInfoCandidates(
+	private ImmutableList<ZoomInfoCandidateGroup> getZoomInfoCandidates(
 			@NonNull final IZoomSource zoomSource,
 			@Nullable final AdWindowId onlyTargetWindowId,
 			@NonNull final ZoomInfoPermissions permissions)
@@ -94,25 +91,25 @@ public class ZoomInfoFactory
 		final String tableName = zoomSource.getTableName();
 		final List<IZoomProvider> zoomProviders = retrieveZoomProviders(tableName);
 
-		final ImmutableList.Builder<ZoomInfoCandidate> zoomInfoCandidates = ImmutableList.builder();
+		final ImmutableList.Builder<ZoomInfoCandidateGroup> result = ImmutableList.builder();
 		for (final IZoomProvider zoomProvider : zoomProviders)
 		{
 			try
 			{
-				for (final ZoomInfoCandidate zoomInfoCandidate : zoomProvider.retrieveZoomInfos(zoomSource, onlyTargetWindowId))
+				for (final ZoomInfoCandidateGroup zoomInfoCandidatesGroup : zoomProvider.retrieveZoomInfos(zoomSource, onlyTargetWindowId))
 				{
 					// If not our target window ID, skip it
 					// This shall not happen because we asked the zoomProvider to return only those for our target window,
 					// but if is happening (because of a bug zoom provider) we shall not be so fragile.
-					final AdWindowId targetWindowId = zoomInfoCandidate.getTargetWindow().getAdWindowId();
+					final AdWindowId targetWindowId = zoomInfoCandidatesGroup.getTargetWindowId();
 					if (onlyTargetWindowId != null && !AdWindowId.equals(onlyTargetWindowId, targetWindowId))
 					{
 						//noinspection ThrowableNotThrown
 						new AdempiereException("Got a ZoomInfo which is not for our target window. Skipping it."
-								+ "\n zoomInfo: " + zoomInfoCandidate
-								+ "\n zoomProvider: " + zoomProvider
-								+ "\n targetAD_Window_ID: " + onlyTargetWindowId
-								+ "\n source: " + zoomSource)
+													   + "\n zoomInfoCandidatesGroup: " + zoomInfoCandidatesGroup
+													   + "\n zoomProvider: " + zoomProvider
+													   + "\n targetAD_Window_ID: " + onlyTargetWindowId
+													   + "\n source: " + zoomSource)
 								.throwIfDeveloperModeOrLogWarningElse(logger);
 						continue;
 					}
@@ -126,7 +123,7 @@ public class ZoomInfoFactory
 
 					//
 					// Collect eligible zoom info candidate
-					zoomInfoCandidates.add(zoomInfoCandidate);
+					result.add(zoomInfoCandidatesGroup);
 				}
 			}
 			catch (final Exception ex)
@@ -138,7 +135,7 @@ public class ZoomInfoFactory
 		stopwatch.stop();
 		logger.debug("Fetched zoom candidates for source={} in {}", zoomSource, stopwatch);
 
-		return zoomInfoCandidates.build();
+		return result.build();
 	}
 
 	/**
@@ -156,12 +153,12 @@ public class ZoomInfoFactory
 		// we shall pick the one which actually has some data. Usually there would be only one (see #1808)
 
 		final ZoomTargetWindowEvaluationContext context = new ZoomTargetWindowEvaluationContext();
+		context.setOnlyZoomInfoId(zoomInfoId);
 
 		return getZoomInfoCandidates(zoomSource, targetWindowId, permissions)
 				.stream()
-				.filter(candidate -> zoomInfoId == null || ZoomInfoId.equals(zoomInfoId, candidate.getId()))
-				.map(candidate -> candidate.evaluate(context).orElse(null))
-				.filter(Objects::nonNull)
+				.filter(candidatesGroup -> zoomInfoId == null || candidatesGroup.isZoomInfoIdMatching(zoomInfoId))
+				.flatMap(candidatesGroup -> candidatesGroup.evaluateAndStream(context))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No zoomInfo found for source=" + zoomSource + ", targetWindowId=" + targetWindowId));
 	}

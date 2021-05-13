@@ -22,88 +22,41 @@
 
 package de.metas.document.references.related_documents.generic;
 
-import de.metas.document.references.zoom_into.CustomizedWindowInfo;
-import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
-import de.metas.i18n.ImmutableTranslatableString;
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.util.Check;
-import de.metas.util.StringUtils;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
-import org.adempiere.ad.element.api.AdWindowId;
-
-import javax.annotation.Nullable;
+import lombok.experimental.Delegate;
 
 @Value
 public class GenericZoomInfoDescriptor
 {
-	@NonNull ImmutableTranslatableString name;
-	@NonNull AdWindowId targetWindowId;
+	@Delegate
+	@NonNull TargetWindowInfo targetWindowInfo;
 
-	@NonNull String targetWindowInternalName;
+	@Getter(AccessLevel.NONE)
+	ImmutableMap<String, TargetColumnInfo> targetColumnsByColumnName;
 
-	@NonNull String targetTableName;
-	@NonNull String targetColumnName;
-	boolean dynamicTargetColumnName;
-	@Nullable String virtualTargetColumnSql;
-
-	@Nullable Boolean isSOTrx;
-	boolean targetHasIsSOTrxColumn;
-
-	@Nullable String tabSqlWhereClause;
-
-	@Builder(toBuilder = true)
+	@Builder
 	private GenericZoomInfoDescriptor(
-			@NonNull final ImmutableTranslatableString name,
-			@NonNull final String targetTableName,
-			@Nullable final String targetColumnName,
-			@Nullable final String virtualTargetColumnSql,
-			final boolean dynamicTargetColumnName,
-			@NonNull final AdWindowId targetWindowId,
-			@NonNull final String targetWindowInternalName,
-			@Nullable final Boolean isSOTrx,
-			final boolean targetHasIsSOTrxColumn,
-			@Nullable final String tabSqlWhereClause)
+			@NonNull final TargetWindowInfo targetWindowInfo,
+			@NonNull @Singular final ImmutableList<TargetColumnInfo> targetColumns)
 	{
-		Check.assumeNotEmpty(targetTableName, "targetTableName is not empty");
-		if (!dynamicTargetColumnName && Check.isEmpty(targetColumnName, true))
-		{
-			throw new IllegalArgumentException("targetColumnName must be set when it's not dynamic");
-		}
+		Check.assumeNotEmpty(targetColumns, "targetColumns is not empty");
 
-		this.name = name;
-
-		this.targetTableName = targetTableName;
-		this.targetColumnName = targetColumnName;
-		this.virtualTargetColumnSql = StringUtils.trimBlankToNull(virtualTargetColumnSql);
-		this.dynamicTargetColumnName = dynamicTargetColumnName;
-
-		this.targetWindowId = targetWindowId;
-
-		this.targetWindowInternalName = targetWindowInternalName;
-
-		this.isSOTrx = isSOTrx; // null is also accepted
-		this.targetHasIsSOTrxColumn = targetHasIsSOTrxColumn;
-
-		this.tabSqlWhereClause = StringUtils.trimBlankToNull(tabSqlWhereClause);
+		this.targetWindowInfo = targetWindowInfo;
+		this.targetColumnsByColumnName = Maps.uniqueIndex(targetColumns, TargetColumnInfo::getColumnName);
 	}
 
-	public boolean isVirtualTargetColumnName()
+	public ImmutableCollection<TargetColumnInfo> getTargetColumns()
 	{
-		return getVirtualTargetColumnSql() != null;
-	}
-
-	public GenericZoomInfoDescriptor withCustomizedWindows(@NonNull final CustomizedWindowInfoMap customizedWindowInfoMap)
-	{
-		final CustomizedWindowInfo customizedWindow = customizedWindowInfoMap.getCustomizedWindowInfo(this.targetWindowId).orElse(null);
-		if (customizedWindow == null)
-		{
-			return this;
-		}
-
-		return toBuilder()
-				.targetWindowId(customizedWindow.getCustomizationWindowId())
-				.name(customizedWindow.getCustomizationWindowCaption())
-				.build();
+		return targetColumnsByColumnName.values();
 	}
 }

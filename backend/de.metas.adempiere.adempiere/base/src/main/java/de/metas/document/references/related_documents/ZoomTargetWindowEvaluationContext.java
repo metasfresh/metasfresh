@@ -22,15 +22,20 @@
 
 package de.metas.document.references.related_documents;
 
-import java.util.HashMap;
-
 import de.metas.util.lang.Priority;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
+
+import java.util.HashMap;
 
 @ToString
 public class ZoomTargetWindowEvaluationContext
 {
+	@Setter
+	@Getter
+	private ZoomInfoId onlyZoomInfoId;
 	private final HashMap<ZoomTargetWindow, Priority> alreadySeenWindows = new HashMap<>();
 
 	public Priority getPriorityOrNull(final ZoomTargetWindow window)

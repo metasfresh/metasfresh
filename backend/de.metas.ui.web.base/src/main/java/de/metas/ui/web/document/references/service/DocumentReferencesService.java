@@ -100,7 +100,7 @@ public class DocumentReferencesService
 					return zoomInfoFactory
 							.getZoomInfoCandidates(zoomSource, permissions)
 							.stream()
-							.map(zoomInfoCandidate -> new DocumentReferenceCandidate(zoomInfoCandidate, filterCaption))
+							.map(candidateGroup -> new DocumentReferenceCandidate(candidateGroup, filterCaption))
 							.collect(ImmutableList.toImmutableList());
 				});
 		stopwatch.stop();
@@ -152,8 +152,18 @@ public class DocumentReferencesService
 		final TranslatableStringBuilder result = TranslatableStrings.builder();
 
 		//
-		// Window caption
-		result.append(sourceDocument.getEntityDescriptor().getCaption());
+		// Filter by Field Name / fallback to source window name
+		if (zoomInfo != null
+				&& !TranslatableStrings.isBlank(zoomInfo.getFilterByFieldCaption()))
+		{
+			result.append(zoomInfo.getFilterByFieldCaption());
+		}
+		else
+		{
+			result.append(sourceDocument.getEntityDescriptor().getCaption());
+		}
+
+		result.append(": ");
 
 		//
 		// Document info
@@ -177,17 +187,6 @@ public class DocumentReferencesService
 		else
 		{
 			result.append(" ").append(sourceDocument.getDocumentId().toString());
-		}
-
-		//
-		// Category
-		if (zoomInfo != null)
-		{
-			final ITranslatableString categoryDisplayName = zoomInfo.getTargetWindow().getCategoryDisplayName();
-			if (!TranslatableStrings.isBlank(categoryDisplayName))
-			{
-				result.append(" / ").append(categoryDisplayName);
-			}
 		}
 
 		return result.build();

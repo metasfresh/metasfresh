@@ -4,11 +4,12 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.references.related_documents.IZoomProvider;
 import de.metas.document.references.related_documents.IZoomSource;
-import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.document.references.related_documents.ZoomInfoCandidate;
+import de.metas.document.references.related_documents.ZoomInfoCandidateGroup;
 import de.metas.document.references.related_documents.ZoomInfoId;
 import de.metas.document.references.related_documents.ZoomInfoRecordsCountSupplier;
 import de.metas.document.references.related_documents.ZoomTargetWindow;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import de.metas.util.lang.Priority;
@@ -55,7 +56,7 @@ public class AdIssueZoomProvider implements IZoomProvider
 	private final boolean onlyNotAcknowledged = true;
 
 	@Override
-	public List<ZoomInfoCandidate> retrieveZoomInfos(
+	public List<ZoomInfoCandidateGroup> retrieveZoomInfos(
 			@NonNull final IZoomSource source,
 			@Nullable final AdWindowId targetWindowId)
 	{
@@ -77,25 +78,27 @@ public class AdIssueZoomProvider implements IZoomProvider
 
 		final Supplier<IssueCountersByCategory> issueCountersSupplier = getIssueCountersByCategorySupplier(recordRef);
 
-		final ImmutableList.Builder<ZoomInfoCandidate> result = ImmutableList.builder();
+		final ZoomInfoCandidateGroup.ZoomInfoCandidateGroupBuilder groupBuilder = ZoomInfoCandidateGroup.builder();
 		for (final IssueCategory issueCategory : IssueCategory.values())
 		{
 			final ZoomInfoId id = ZoomInfoId.ofString("issues-" + issueCategory.getCode());
 			final ITranslatableString issueCategoryDisplayName = adReferenceDAO.retrieveListNameTranslatableString(IssueCategory.AD_REFERENCE_ID, issueCategory.getCode());
 			final ZoomInfoRecordsCountSupplier recordsCountSupplier = () -> issueCountersSupplier.get().getCountOrZero(issueCategory);
 
-			result.add(ZoomInfoCandidate.builder()
-					.id(id)
-					.internalName(id.toJson())
-					.targetWindow(ZoomTargetWindow.ofAdWindowIdAndCategory(issuesWindowId, issueCategory, issueCategoryDisplayName))
-					.priority(zoomInfoPriority)
-					.query(createMQuery(recordRef, issueCategory))
-					.destinationDisplay(issueCategoryDisplayName)
-					.recordsCountSupplier(recordsCountSupplier)
-					.build());
+			groupBuilder.candidate(
+					ZoomInfoCandidate.builder()
+							.id(id)
+							.internalName(id.toJson())
+							.targetWindow(ZoomTargetWindow.ofAdWindowIdAndCategory(issuesWindowId, issueCategory))
+							.priority(zoomInfoPriority)
+							.query(createMQuery(recordRef, issueCategory))
+							.windowCaption(issueCategoryDisplayName)
+							.filterByFieldCaption(issueCategoryDisplayName)
+							.recordsCountSupplier(recordsCountSupplier)
+							.build());
 		}
 
-		return result.build();
+		return ImmutableList.of(groupBuilder.build());
 	}
 
 	private Supplier<IssueCountersByCategory> getIssueCountersByCategorySupplier(@NonNull final TableRecordReference recordRef)
