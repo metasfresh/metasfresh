@@ -19,9 +19,12 @@ Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
       | bpartner_1               | user1_2_name | user1_2@email | password1_2  | de_DE           | Y                       | procurementPW1_2        |
       | bpartner_2               | user2_1_name | user2_1@email | password2_1  | de_DE           | Y                       | procurementPW2_1        |
       | bpartner_3               | user3_1_name | user3_1@email | password3_1  | de_DE           | Y                       | procurementPW3_1        |
-    And metasfresh contains procurement C_Flatrate_Terms:
-      | Identifier | Bill_BPartner_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.PMM_Product_ID.Identifier | StartDate  | EndDate    |
-      | c1         | bpartner_1                  | bpartner_1                          | p_1                         | pmp_1                         | 2020-01-01 | 2021-01-31 |
+    And metasfresh contains C_Flatrate_Conditions:
+      | Identifier    | Name             | Type_Conditions |
+      | procurement_1 | Procurement-Test | Procuremnt     |
+    And metasfresh contains C_Flatrate_Terms:
+      | Identifier | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.PMM_Product_ID.Identifier | StartDate  | EndDate    |
+      | c1         | procurement_1                       | bpartner_1                  | bpartner_1                          | p_1                         | pmp_1                         | 2020-01-01 | 2021-01-31 |
     When metasfresh receives a GetAllBPartnersRequest via RabbitMQ
     Then metasfresh responds with a PutBPartnersRequest that contains these BPartners:
       | Identifier | Name                   | Deleted |
@@ -37,5 +40,5 @@ Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
       | Identifier | BPartner.Identifier | DateFrom   | DateTo     | Deleted |
       | c_1        | bpartner_1          | 2020-01-01 | 2021-01-31 | false   |
     And the PutBPartnersRequest contains these ContractLines:
-      | Contract.Identifier | Product.Name |
-      | c_1                 | contractProduct1  |
+      | Contract.Identifier | Product.Name     |
+      | c_1                 | contractProduct1 |

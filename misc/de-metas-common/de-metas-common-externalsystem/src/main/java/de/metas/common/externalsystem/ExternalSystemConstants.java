@@ -40,6 +40,12 @@ public class ExternalSystemConstants
 	public static final String PARAM_JSON_PATH_SALES_REP_ID = "JSONPathConstantSalesRepID";
 	public static final String PARAM_CONFIG_MAPPINGS = "ConfigMappings";
 
+	public static final String PARAM_FREIGHT_COST_NORMAL_VAT_RATES = "FreightCost_NormalVAT_Rates";
+	public static final String PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID = "M_FreightCost_NormalVAT_Product_ID";
+
+	public static final String PARAM_FREIGHT_COST_REDUCED_VAT_RATES = "FreightCost_Reduced_VAT_Rates";
+	public static final String PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID = "M_FreightCost_ReducedVAT_Product_ID";
+
 	public static final String PARAM_UPDATED_AFTER_OVERRIDE = "UpdatedAfterOverride";
 
 }
