@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useAuth } from '../hooks/useAuth';
 import history from '../services/History';
-import { loginWithToken } from '../api';
+// import { loginWithToken } from '../api';
 
 /**
  * @file Function component.
@@ -14,15 +14,25 @@ import { loginWithToken } from '../api';
 const TokenRoute = ({ match }) => {
   const { tokenId } = match.params;
   const auth = useAuth();
+  // const { loginRequest } = auth;
 
-  loginWithToken(tokenId)
-    .then(() => {
-      auth.loginSuccess();
-      history.push('/');
-    })
-    .catch(() => {
-      history.push('/login?redirect=true');
-    });
+  // if (loginRequest) {
+  //   return null;
+  //   }
+
+  auth
+    .tokenLogin(tokenId)
+    .then(() => history.push('/'))
+    .catch(() => history.push('/login?redirect=true'));
+
+  // loginWithToken(tokenId)
+  //   .then(() => {
+  //     auth.loginSuccess();
+  //     history.push('/');
+  //   })
+  //   .catch(() => {
+  //     history.push('/login?redirect=true');
+  //   });
 };
 
 export default React.memo(TokenRoute);

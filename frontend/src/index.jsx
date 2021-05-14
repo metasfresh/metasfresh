@@ -12,14 +12,14 @@ if (window.Cypress) {
   window.store = store;
 }
 
-// if (process.env.NODE_ENV !== 'production') {
-//   const whyDidYouRender = require('@welldone-software/why-did-you-render');
-//   whyDidYouRender(React, { include: [/Routes/] });
-// }
+if (process.env.NODE_ENV !== 'production') {
+  const whyDidYouRender = require('@welldone-software/why-did-you-render');
+  whyDidYouRender(React, { include: [/^Routes/], collapseGroups: true });
+}
 
 // const { whyDidYouUpdate } = require('why-did-you-update')
 // // whyDidYouUpdate(React);
-// whyDidYouUpdate(React, { include: [/Routes/] });
+// whyDidYouUpdate(React, { include: [/PrivateRoute/] });
 
 /* eslint-disable */
 console.info(`%c

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, createContext } from 'react';
 import { useDispatch } from 'react-redux';
 
+import { loginWithToken, localLoginRequest } from '../api';
 import Auth from '../services/Auth';
 import { loginSuccess as loginAction } from '../actions/AppActions';
 
@@ -23,90 +24,93 @@ export const useAuth = () => {
 function useProvideAuth() {
   const auth = new Auth();
   const dispatch = useDispatch();
-  const isLoggedIn = () => localStorage.isLogged;
+  const [isLoggedIn, setLoggedIn] = useState(localStorage.isLogged);
+  const [authRequestPending, setAuthRequestPending] = useState(false);
 
-  // const [user, setUser] = useState(null);
+  // in case we still have `isLoggedIn`
+  // useEffect(() => {
+  //   if (isLoggedIn) {
+  //     checkAuthentication();
+  //   }
+  // }, []);
 
-  // // Wrap any Firebase methods we want to use making sure ...
-  // // ... to save the user to state.
-  // const signin = (email, password) => {
-  //   return firebase
-  //     .auth()
-  //     .signInWithEmailAndPassword(email, password)
-  //     .then((response) => {
-  //       setUser(response.user);
-  //       return response.user;
-  //     });
-  // };
+  /*
+  if (!isLoggedIn) { //&& !authRequest) {
+  } else {
+    // if (!authRequest) {
+      // if (hasTutorial) {
+      //   dispatch(enableTutorial());
+      // }
+      console.log('PrivateRoute logged: ', props.location, pathname, loggedIn, authRequest)
 
-  // const signup = (email, password) => {
-  //   return firebase
-  //     .auth()
-  //     .createUserWithEmailAndPassword(email, password)
-  //     .then((response) => {
-  //       setUser(response.user);
-  //       return response.user;
-  //     });
-  // };
+      if (props.location.pathname !== '/logout') {
+        console.log('PrivateRoute clearNotifications')
+        // dispatch(clearNotifications());
+        // auth.loginSuccess();
+      } else {
+        console.log('PrivateRoute pathname equal logout: ', props.location.pathname, pathname)
+      }
+    // }
+  }
+  */
+  const checkAuthentication = () => {
+    // if (!authRequestPending) {
+      setAuthRequestPending(true);
 
-  // const signout = () => {
-  //   return firebase
-  //     .auth()
-  //     .signOut()
-  //     .then(() => {
-  //       setUser(false);
-  //     });
-  // };
+      return localLoginRequest().then((resp) => {
+        console.log('auth.checkAuthentication: ', resp.data)
+        setAuthRequestPending(false);
 
-  // const sendPasswordResetEmail = (email) => {
-  //   return firebase
-  //     .auth()
-  //     .sendPasswordResetEmail(email)
-  //     .then(() => {
-  //       return true;
-  //     });
-  // };
+        if (resp.data) {
+          _loginSuccess();
+        } else {
+          _logoutSuccess();
+        }
+      });
+    // }
 
-  // const confirmPasswordReset = (code, password) => {
-  //   return firebase
-  //     .auth()
-  //     .confirmPasswordReset(code, password)
-  //     .then(() => {
-  //       return true;
-  //     });
-  // };
-
-  const loginSuccess = () => {
-    dispatch(loginAction(auth));
+    // return Promise.resolve(false);
   };
 
-  const logoutSuccess = () => {
-    auth.close();
+  const tokenLogin = (token) => {
+    setAuthRequestPending(true);
+
+    return loginWithToken(token).then(() => login());
+  };
+
+  const _loginSuccess = () => {
+    localStorage.setItem('isLogged', true);
+    setLoggedIn(true);
+  };
+
+  const login = () => {
+    setAuthRequestPending(true);
+
+    return dispatch(loginAction(auth))
+      .then(() => {
+        setAuthRequestPending(false);
+        _loginSuccess();
+      })
+      .catch(() => setAuthRequestPending(false));
+  };
+
+  const _logoutSuccess = () => {
+    setLoggedIn(false);
     localStorage.removeItem('isLogged');
   };
 
-  // Subscribe to user on mount
-  // Because this sets state in the callback it will cause any ...
-  // ... component that utilizes this hook to re-render with the ...
-  // ... latest auth object.
-  // useEffect(() => {
-    // const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
-    //   if (user) {
-    //     setUser(user);
-    //   } else {
-    //     setUser(false);
-    //   }
-    // });
+  const logout = () => {
+    auth.close();
+    _logoutSuccess();
+  };
 
-    // Cleanup subscription on unmount
-    // return () => unsubscribe();
-  // }, []);
-
-  // Return the user object and auth methods
   return {
     isLoggedIn,
     auth,
-    loginSuccess,
-    logoutSuccess,
+    login,
+    logout,
+    tokenLogin,
+    checkAuthentication,
+    authRequestPending,
   };
 }

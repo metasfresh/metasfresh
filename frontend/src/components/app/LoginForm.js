@@ -92,8 +92,11 @@ class LoginForm extends Component {
       //GET language shall always return a result
       Moment.locale(response.data['key']);
 
+      console.log('LoginForm: ', redirect, history.get);
+
       if (redirect) {
-        history.goBack();
+        // history.goBack();
+        history.go(-2);
       } else {
         history.push('/');
       }
@@ -106,8 +109,10 @@ class LoginForm extends Component {
    * @param {*} err
    */
   checkIfAlreadyLogged(err) {
+    console.log('LoginForm.checkIfAlreadyLogged')
     return localLoginRequest().then((response) => {
       if (response.data) {
+        console.log('LoginForm.checkIfAlreadyLogged...response: ', response.data)
         return history.push('/');
       }
 
@@ -168,6 +173,7 @@ class LoginForm extends Component {
         });
       })
       .catch((err) => {
+        console.log('handleLoginRequest error: ', err)
         return this.checkIfAlreadyLogged(err);
       })
       .catch((err) => {
@@ -196,7 +202,7 @@ class LoginForm extends Component {
         if (roleSelect) {
           return loginCompletionRequest(role)
             .then(() => {
-              auth.loginSuccess();
+              auth.login();
               this.handleSuccess();
             })
             .catch((err) => {
@@ -394,6 +400,7 @@ LoginForm.propTypes = {
   token: PropTypes.string,
   redirect: PropTypes.any,
   auth: PropTypes.object,
+  history: PropTypes.object.isRequired,
 };
 
 export default withRouter(LoginForm);

@@ -1,21 +1,24 @@
 import React from 'react';
 
-import { Route, Switch, Redirect } from 'react-router-dom';
+import { Route, Switch, Redirect, useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 
 import { logoutRequest } from '../api';
 import { useAuth } from '../hooks/useAuth';
-import history from '../services/History';
+// import history from '../services/History';
 
 import { MasterWindowRoute, BoardRoute, DocListRoute } from './KeyRoutes';
 
+// import BlankPage from '../components/BlankPage';
+import Board from '../containers/Board.js';
 import Dashboard from '../containers/Dashboard.js';
 import InboxAll from '../containers/InboxAll.js';
 import NavigationTree from '../containers/NavigationTree.js';
 
 const ChildRoutes = () => {
   const auth = useAuth();
-  const loggedIn = auth.isLoggedIn();
+  const history = useHistory();
+  const loggedIn = auth.isLoggedIn;
   const dispatch = useDispatch();
 
   return (
@@ -32,22 +35,25 @@ const ChildRoutes = () => {
         <Route path="/sitemap" component={NavigationTree} />
         <Route path="/board/:boardId" component={BoardRoute} />
         <Route path="/inbox" component={InboxAll} />
-
         <Route
           path="/logout"
           render={() => {
             if (loggedIn) {
               logoutRequest()
-                .then(() => auth.logoutSuccess())
+                .then(() => auth.logout())
                 .then(() => {
+                  console.log('Logout -> history push');
                   history.push('/login');
                   return null;
+                  // return <Redirect to="/login" />;
                 });
             } else {
+              console.log('Logout -> Redirect');
               return <Redirect to="/login" />;
             }
           }}
         />
+        <Route path="*" render={(props) => <Board board="404" {...props} />} />
       </Switch>
     </>
   );

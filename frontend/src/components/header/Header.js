@@ -2,9 +2,9 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-// import { push } from 'connected-react-router';
 import { withRouter } from 'react-router';
 import classnames from 'classnames';
+
 import { getPrintingOptions } from '../../api/window';
 import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
@@ -86,6 +86,7 @@ class Header extends PureComponent {
     ) {
       // Need to reload page completely when current locale gets changed
       window.location.reload(false);
+      console.log('1')
     } else if (
       this.state.isUDOpen &&
       !prevState.isUDOpen &&
@@ -222,8 +223,8 @@ class Header extends PureComponent {
    */
   handleDashboardLink = () => {
     const { dispatch, history } = this.props;
+
     dispatch(setBreadcrumb([]));
-    // dispatch(push('/'));
     history.push('/');
   };
 
@@ -557,13 +558,10 @@ class Header extends PureComponent {
    * @param {*} where
    */
   redirect = (where) => {
-    // const { dispatch } = this.props;
     const { history } = this.props;
 
     console.log('HEADER REHIRECGT: ', history, where);
 
-
-    // dispatch(push(where));
     history.push(where);
   };
 

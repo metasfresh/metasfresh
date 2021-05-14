@@ -31,6 +31,7 @@ class Breadcrumb extends Component {
    */
   linkToPage = (page) => {
     window.location = '/window/' + page;
+    console.log('2')
   };
 
   /**

@@ -36,6 +36,7 @@ class MenuOverlayItem extends Component {
     } else if (type === 'window' || type === 'board') {
       if (breadcrumb[1] && breadcrumb[1].nodeId === nodeId) {
         window.location.reload();
+        console.log('3')
       } else {
         this.handleClick(elementId, type);
       }

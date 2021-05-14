@@ -400,6 +400,7 @@ class SubHeader extends Component {
             className="subheader-item js-subheader-item"
             tabIndex={0}
             onClick={() => {
+              console.log('subheader redirect');
               redirect('/window/' + windowId + '/new');
               closeSubheader();
             }}

@@ -1,13 +1,7 @@
 import axios from 'axios';
 import MomentTZ from 'moment-timezone';
 import numeral from 'numeral';
-// <<<<<<< HEAD
-// import { push, replace } from 'react-router-redux';
 import queryString from 'query-string';
-// =======
-// import { push, replace } from 'connected-react-router';
-// import { useHistory } from 'react-router-dom';
-// >>>>>>> 76ce88db54... - tmp move to react-router v5
 
 import history from '../services/History';
 import * as types from '../constants/ActionTypes';
@@ -93,32 +87,16 @@ function initNumeralLocales(lang, locale) {
 // }
 
 // TODO: This should either be some utility or return an action
-export function logoutSuccess(auth) {
-  auth.close();
-  localStorage.removeItem('isLogged');
-}
+// export function logoutSuccess(auth) {
+//   auth.close();
+//   localStorage.removeItem('isLogged');
+// }
 
 /**
  * @method updateUri
  * @summary Prepends viewId/page/sorting to the url
  * TODO: Move outside of action as it's not an action anymore
  */
-// export function updateUri(pathname, query, prop, value) {
-//   return (dispatch) => {
-//     let url = `${pathname}?`;
-
-//     // add new prop or overwrite existing
-//     query[prop] = value;
-
-//     const queryKeys = Object.keys(query);
-
-//     queryKeys.forEach((key, idx) => {
-//       url += `${key}=${query[key]}${queryKeys.length - 1 !== idx ? '&' : ''}`;
-//     });
-
-//     dispatch(replace(url));
-//   };
-// }
 export function updateUri(pathname, query, updatedQuery) {
   const fullPath = window.location.href;
   const queryObject = {
@@ -128,6 +106,8 @@ export function updateUri(pathname, query, updatedQuery) {
   const queryUrl = queryString.stringify(queryObject);
   const url = `${pathname}?${queryUrl}`;
 
+  console.log('updateUri')
+
   !fullPath.includes('viewId') ? history.replace(url) : history.push(url);
 }
 
@@ -135,7 +115,7 @@ export function updateUri(pathname, query, updatedQuery) {
 
 export function loginSuccess(auth) {
   return async (dispatch) => {
-    localStorage.setItem('isLogged', true);
+    // localStorage.setItem('isLogged', true);
 
     const requests = [];
 
@@ -215,7 +195,7 @@ export function loginSuccess(auth) {
           if (e.response) {
             let { status } = e.response;
             if (status === 401) {
-              console.log('redirect to main ?')
+              console.log('redirect to main ?: ', e)
               // window.location.href = '/';
               history.push('/');
             }
