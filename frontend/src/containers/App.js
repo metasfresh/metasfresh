@@ -1,6 +1,6 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 // import { useLocation } from 'react-router-dom';
 
@@ -20,6 +20,8 @@ import { getAvailableLang } from '../api';
 import { noConnection } from '../actions/WindowActions';
 import PluginsRegistry from '../services/PluginsRegistry';
 import { useAuth } from '../hooks/useAuth';
+import useConstructor from '../hooks/useConstructor';
+import useWhyDidYouUpdate from '../hooks/useWhyDidYouUpdate';
 import history from '../services/History';
 import Routes from '../routes.js';
 
@@ -39,189 +41,202 @@ if (window.Cypress) {
   window.store = store;
 }
 
-const App = () => {
-  // this.state = {
-  //   pluginsLoading: !!APP_PLUGINS.length,
-  // };
+const App = (props) => {
   const [pluginsLoading, setPluginsLoading] = useState(!!APP_PLUGINS.length);
   const auth = useAuth();
   const dispatch = useDispatch();
-  // const location = useLocation();
 
-  // console.log('THIS: ', this, useLocation())
+  useWhyDidYouUpdate('App', props);
 
-  // this.pluginsRegistry = new PluginsRegistry(this);
-  // const pluginsRegistry = new PluginsRegistry(this);
-  // window.META_HOST_APP = this;
+  useConstructor(() => {
+    console.log('App.THIS: ', this);
 
-  axios.defaults.withCredentials = true;
-  axios.defaults.headers.common['Content-Type'] = 'application/json';
+    // auth.checkAuthentication();
 
-  initCurrentActiveLocale();
+    // this.pluginsRegistry = new PluginsRegistry(this);
+    // const pluginsRegistry = new PluginsRegistry(this);
+    // window.META_HOST_APP = this;
 
-  axios.interceptors.response.use(
-    function(response) {
-      return response;
-    },
-    function(error) {
-      const errorPrototype = Object.getPrototypeOf(error);
+    axios.defaults.withCredentials = true;
+    axios.defaults.headers.common['Content-Type'] = 'application/json';
 
-      // This is a canceled request error
-      if (
-        !error ||
-        !error.response ||
-        !error.response.status ||
-        (errorPrototype && errorPrototype.__CANCEL__)
-      ) {
-        return Promise.reject(error);
-      }
+    initCurrentActiveLocale();
 
-      if (!error || !error.response || !error.response.status) {
-        dispatch(noConnection(true));
-      }
+    axios.interceptors.response.use(
+      function(response) {
+        return response;
+      },
+      function(error) {
+        const errorPrototype = Object.getPrototypeOf(error);
 
-      /*
-       * Authorization error
-       */
-      if (error.response.status == 401) {
-        dispatch(setProcessSaved());
+        console.log('ERROR');
 
-        if (!location.pathname.includes('login')) {
-          auth.logout();
-          console.log('App.js error 401 logout i redirect: ', location.pathname, auth.authRequestPending)
-          // store.dispatch(push('/login?redirect=true'));
-          history.push('/login?redirect=true');
+        // This is a canceled request error
+        if (
+          !error ||
+          !error.response ||
+          !error.response.status ||
+          (errorPrototype && errorPrototype.__CANCEL__)
+        ) {
+          return Promise.reject(error);
         }
-      } else if (error.response.status == 503) {
-        dispatch(noConnection(true));
-      } else if (error.response.status != 404) {
-        if (auth.isLoggedIn) {
-          const errorMessenger = (code) => {
-            switch (code) {
-              case 500:
-                return 'Server error';
-              case 400:
-                return 'Client error';
-            }
-          };
-          const { data, status } = error.response;
-          const errorTitle = errorMessenger(status);
-          const message = data.message ? data.message : '';
 
-          // eslint-disable-next-line no-console
-          data.message && console.error(data.message);
+        if (!error || !error.response || !error.response.status) {
+          dispatch(noConnection(true));
+        }
 
-          // Chart disabled notifications
-          if (error.response.request.responseURL.includes('silentError=true')) {
-            return;
+        /*
+         * Authorization error
+         */
+        if (error.response.status == 401) {
+          dispatch(setProcessSaved());
+
+          console.log('401')
+
+          if (
+            !location.pathname.includes('login') &&
+            !auth.authRequestPending
+          ) {
+            console.log('App.js error 401 logout i redirect: ', location.pathname, auth.authRequestPending);
+
+            auth.logout();
+
+            history.push('/login?redirect=true');
           }
+        } else if (error.response.status == 503) {
+          dispatch(noConnection(true));
+        } else if (error.response.status != 404) {
+          if (auth.isLoggedIn) {
+            const errorMessenger = (code) => {
+              switch (code) {
+                case 500:
+                  return 'Server error';
+                case 400:
+                  return 'Client error';
+              }
+            };
+            const { data, status } = error.response;
+            const errorTitle = errorMessenger(status);
+            const message = data.message ? data.message : '';
+
+            // eslint-disable-next-line no-console
+            data.message && console.error(data.message);
+
+            // Chart disabled notifications
+            if (
+              error.response.request.responseURL.includes('silentError=true')
+            ) {
+              return;
+            }
+
+            dispatch(
+              addNotification(
+                'Error: ' + message.split(' ', 4).join(' ') + '...',
+                data.message,
+                5000,
+                'error',
+                errorTitle
+              )
+            );
+          }
+        }
+
+        //reset password errors
+        if (error.response.request.responseURL.includes('resetPassword')) {
+          return Promise.reject(error.response);
+        }
+
+        if (error.response.request.responseURL.includes('showError=true')) {
+          const { data } = error.response;
 
           dispatch(
             addNotification(
-              'Error: ' + message.split(' ', 4).join(' ') + '...',
+              'Error: ' + data.message.split(' ', 4).join(' ') + '...',
               data.message,
               5000,
               'error',
-              errorTitle
+              ''
             )
           );
+        } else {
+          return Promise.reject(error);
         }
       }
+    );
 
-      //reset password errors
-      if (error.response.request.responseURL.includes('resetPassword')) {
-        return Promise.reject(error.response);
+    getAvailableLang().then((response) => {
+      const { defaultValue, values } = response.data;
+      const valuesFlatten = values.map((item) => Object.keys(item)[0]);
+      if (!store.getState().appHandler.me.language) {
+        dispatch(setLanguages(values));
       }
+      const lang =
+        valuesFlatten.indexOf(navigator.language) > -1
+          ? navigator.language
+          : defaultValue;
 
-      if (error.response.request.responseURL.includes('showError=true')) {
-        const { data } = error.response;
+      setCurrentActiveLocale(lang);
+    });
 
-        dispatch(
-          addNotification(
-            'Error: ' + data.message.split(' ', 4).join(' ') + '...',
-            data.message,
-            5000,
-            'error',
-            ''
-          )
-        );
-      } else {
-        return Promise.reject(error);
-      }
-    }
-  );
+    counterpart.setMissingEntryGenerator(() => '');
 
-  getAvailableLang().then((response) => {
-    const { defaultValue, values } = response.data;
-    const valuesFlatten = values.map((item) => Object.keys(item)[0]);
-    if (!store.getState().appHandler.me.language) {
-      dispatch(setLanguages(values));
-    }
-    const lang =
-      valuesFlatten.indexOf(navigator.language) > -1
-        ? navigator.language
-        : defaultValue;
+    dispatch(initKeymap(keymap));
+    dispatch(initHotkeys(hotkeys));
 
-    setCurrentActiveLocale(lang);
-  });
+    /**
+     * this is the part of the application that activates the plugins from the plugins array found in - plugins.js
+     * Currently we aren't using any. Due to this we deactivated the code below. (March, 2021). If this is going to
+     * change in the future pls kindly activate this part and change the way the imports are made.
+     */
+    // if (APP_PLUGINS.length) {
+    //   const plugins = APP_PLUGINS.map((plugin) => {
+    //     const waitForChunk = () =>
+    //       import(`@plugins/${plugin}/index.js`)
+    //         .then((module) => module)
+    //         .catch(() => {
+    //           // eslint-disable-next-line no-console
+    //           console.error(`Error loading plugin ${plugin}`);
+    //         });
 
-  counterpart.setMissingEntryGenerator(() => '');
+    //     return new Promise((resolve) =>
+    //       waitForChunk().then((file) => {
+    //         this.pluginsRegistry.addEntry(plugin, file);
+    //         resolve({ name: plugin, file });
+    //       })
+    //     );
+    //   });
 
-  dispatch(initKeymap(keymap));
-  dispatch(initHotkeys(hotkeys));
+    //   Promise.all(plugins).then((res) => {
+    //     const plugins = res.reduce((prev, current) => prev.concat(current), []);
 
-  /**
-   * this is the part of the application that activates the plugins from the plugins array found in - plugins.js
-   * Currently we aren't using any. Due to this we deactivated the code below. (March, 2021). If this is going to
-   * change in the future pls kindly activate this part and change the way the imports are made.
-   */
-  // if (APP_PLUGINS.length) {
-  //   const plugins = APP_PLUGINS.map((plugin) => {
-  //     const waitForChunk = () =>
-  //       import(`@plugins/${plugin}/index.js`)
-  //         .then((module) => module)
-  //         .catch(() => {
-  //           // eslint-disable-next-line no-console
-  //           console.error(`Error loading plugin ${plugin}`);
-  //         });
+    //     if (plugins.length) {
+    //       store.dispatch(addPlugins(plugins));
+    //     }
 
-  //     return new Promise((resolve) =>
-  //       waitForChunk().then((file) => {
-  //         this.pluginsRegistry.addEntry(plugin, file);
-  //         resolve({ name: plugin, file });
-  //       })
-  //     );
-  //   });
+    //     plugins.forEach(({ file }) => {
+    //       if (file.reducers && file.reducers.name) {
+    //         store.attachReducers({
+    //           plugins: {
+    //             [`${file.reducers.name}`]: file.reducers.reducer,
+    //           },
+    //         });
+    //       }
+    //     });
 
-  //   Promise.all(plugins).then((res) => {
-  //     const plugins = res.reduce((prev, current) => prev.concat(current), []);
+    //     this.setState({
+    //       pluginsLoading: false,
+    //     });
+    //   });
+    // }
+  }, []);
 
-  //     if (plugins.length) {
-  //       store.dispatch(addPlugins(plugins));
-  //     }
+  // dispatch(initKeymap(keymap));
+  // dispatch(initHotkeys(hotkeys));
 
-  //     plugins.forEach(({ file }) => {
-  //       if (file.reducers && file.reducers.name) {
-  //         store.attachReducers({
-  //           plugins: {
-  //             [`${file.reducers.name}`]: file.reducers.reducer,
-  //           },
-  //         });
-  //       }
-  //     });
-
-  //     this.setState({
-  //       pluginsLoading: false,
-  //     });
-  //   });
+  // const getRegistry = () => {
+  //   return pluginsRegistry;
   // }
-// }
 
-// const getRegistry = () => {
-//   return pluginsRegistry;
-// }
-
-// render() {
   if (APP_PLUGINS.length && pluginsLoading) {
     return null;
   }

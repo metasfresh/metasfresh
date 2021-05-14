@@ -3,7 +3,6 @@ import { Route, Switch, Redirect, Router } from 'react-router-dom';
 import qs from 'qs';
 import _ from 'lodash';
 
-import useWhyDidYouUpdate from './hooks/useWhyDidYouUpdate';
 import { useAuth } from './hooks/useAuth';
 import history from './services/History';
 import { getResetPasswordInfo } from './api';
@@ -28,15 +27,13 @@ const RawLoginRoute = (props) => {
   if (isLoggedIn) {
     return <Redirect to="/" />;
   }
-  // <Route component={LoginRoute} />
+
   return <Login redirect={query.redirect} {...{ auth, splat, token }} />;
 };
 
 function propsAreEqual(prevProps, nextProps) {
   const { match, location } = prevProps;
   const { match: nextMatch, location: nextLocation } = nextProps;
-
-  // console.log('prevProps: ', prevProps)
 
   if (_.isEqual(match, nextMatch) && _.isEqual(location, nextLocation)) {
     return true;
@@ -64,11 +61,7 @@ const LoginRoute = React.memo(RawLoginRoute, propsAreEqual);
 //   });
 // }
 
-const Routes = (props) => {
-  useWhyDidYouUpdate('Route', props);
-
-  console.log('<Routes> render: ');
-
+const Routes = () => {
   return (
     <Router history={history}>
       <>

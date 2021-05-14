@@ -112,6 +112,7 @@ class LoginForm extends Component {
     console.log('LoginForm.checkIfAlreadyLogged')
     return localLoginRequest().then((response) => {
       if (response.data) {
+        // debugger;
         console.log('LoginForm.checkIfAlreadyLogged...response: ', response.data)
         return history.push('/');
       }
@@ -173,7 +174,6 @@ class LoginForm extends Component {
         });
       })
       .catch((err) => {
-        console.log('handleLoginRequest error: ', err)
         return this.checkIfAlreadyLogged(err);
       })
       .catch((err) => {

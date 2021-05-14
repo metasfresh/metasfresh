@@ -14,7 +14,7 @@ const BROWSER = detect();
 class Login extends Component {
   /**
    * @method browserSupport
-   * @summary ToDo: Describe the method.
+   * @summary Method checking if user is using a supported browser
    */
   browserSupport = (...supportedBrowsers) => {
     const userBrowser = BROWSER !== null ? BROWSER.name : 'chrome';

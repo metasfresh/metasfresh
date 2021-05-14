@@ -3,13 +3,9 @@ import React from 'react';
 import { Route, Switch, Redirect, useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 
-import { logoutRequest } from '../api';
 import { useAuth } from '../hooks/useAuth';
-// import history from '../services/History';
-
 import { MasterWindowRoute, BoardRoute, DocListRoute } from './KeyRoutes';
 
-// import BlankPage from '../components/BlankPage';
 import Board from '../containers/Board.js';
 import Dashboard from '../containers/Dashboard.js';
 import InboxAll from '../containers/InboxAll.js';
@@ -39,16 +35,11 @@ const ChildRoutes = () => {
           path="/logout"
           render={() => {
             if (loggedIn) {
-              logoutRequest()
-                .then(() => auth.logout())
-                .then(() => {
-                  console.log('Logout -> history push');
-                  history.push('/login');
-                  return null;
-                  // return <Redirect to="/login" />;
-                });
+              auth.logout().finally(() => {
+                history.push('/login');
+                return null;
+              });
             } else {
-              console.log('Logout -> Redirect');
               return <Redirect to="/login" />;
             }
           }}

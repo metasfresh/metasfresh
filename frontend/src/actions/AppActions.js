@@ -77,21 +77,6 @@ function initNumeralLocales(lang, locale) {
   }
 }
 
-// TODO: This should either be some utility or return an action
-// TODO: Apparently we don't use this anymore
-// export function languageSuccess(lang) {
-//   localStorage.setItem(LOCAL_LANG, lang);
-//   Moment.locale(lang);
-
-//   axios.defaults.headers.common['Accept-Language'] = lang;
-// }
-
-// TODO: This should either be some utility or return an action
-// export function logoutSuccess(auth) {
-//   auth.close();
-//   localStorage.removeItem('isLogged');
-// }
-
 /**
  * @method updateUri
  * @summary Prepends viewId/page/sorting to the url
@@ -106,8 +91,6 @@ export function updateUri(pathname, query, updatedQuery) {
   const queryUrl = queryString.stringify(queryObject);
   const url = `${pathname}?${queryUrl}`;
 
-  console.log('updateUri')
-
   !fullPath.includes('viewId') ? history.replace(url) : history.push(url);
 }
 
@@ -115,8 +98,6 @@ export function updateUri(pathname, query, updatedQuery) {
 
 export function loginSuccess(auth) {
   return async (dispatch) => {
-    // localStorage.setItem('isLogged', true);
-
     const requests = [];
 
     requests.push(
