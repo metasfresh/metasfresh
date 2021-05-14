@@ -25,11 +25,11 @@ package de.metas.rest_api.v2.product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
-import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
@@ -165,12 +165,14 @@ public class ProductRestService
 			final CreateProductRequest createProductRequest = getCreateProductRequest(jsonRequestProduct, org);
 			productId = productRepository.createProduct(createProductRequest).getId();
 
-			handleNewProductExternalReference(org, jsonRequestProductUpsertItem.getProductIdentifier(), JsonMetasfreshId.of(productId.getRepoId()));
 
 			createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, productId, org);
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
 		}
+
+		handleNewProductExternalReference(org, jsonRequestProductUpsertItem.getProductIdentifier(),
+										  JsonMetasfreshId.of(productId.getRepoId()), jsonRequestProductUpsertItem.getExternalVersion());
 
 		return JsonResponseUpsertItem.builder()
 				.syncOutcome(syncOutcome)
@@ -179,27 +181,37 @@ public class ProductRestService
 				.build();
 	}
 
-	private void handleNewProductExternalReference(@NonNull final I_AD_Org org, @NonNull final String identifier, @NonNull final JsonMetasfreshId metasfreshId)
+	private void handleNewProductExternalReference(
+			@NonNull final I_AD_Org org,
+			@NonNull final String identifier,
+			@NonNull final JsonMetasfreshId metasfreshId,
+			@Nullable final String externalVersion)
 	{
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(identifier);
-		Check.assume(externalIdentifier.getType().equals(ExternalIdentifier.Type.EXTERNAL_REFERENCE), "ExternalId is not of type external reference.");
 
-		final ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalIdentifier.asExternalValueAndSystem();
+		if(ExternalIdentifier.Type.EXTERNAL_REFERENCE.equals(externalIdentifier.getType()))
+		{
+			final ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalIdentifier.asExternalValueAndSystem();
 
-		final JsonExternalSystemName systemName = JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem());
-		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-				.id(externalReferenceValueAndSystem.getValue())
-				.type(ProductExternalReferenceType.PRODUCT.getCode())
-				.build();
+			final JsonExternalSystemName systemName = JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem());
+			final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
+					.id(externalReferenceValueAndSystem.getValue())
+					.type(ProductExternalReferenceType.PRODUCT.getCode())
+					.build();
 
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.of(externalReferenceLookupItem, metasfreshId);
+			final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.builder()
+					.lookupItem(externalReferenceLookupItem)
+					.metasfreshId(metasfreshId)
+					.version(externalVersion)
+					.build();
 
-		final JsonExternalReferenceCreateRequest externalReferenceCreateRequest = JsonExternalReferenceCreateRequest.builder()
-				.systemName(systemName)
-				.item(externalReferenceItem)
-				.build();
+			final JsonRequestExternalReferenceUpsert externalReferenceCreateRequest = JsonRequestExternalReferenceUpsert.builder()
+					.systemName(systemName)
+					.externalReferenceItem(externalReferenceItem)
+					.build();
 
-		externalReferenceRestControllerService.performInsert(org.getValue(), externalReferenceCreateRequest);
+			externalReferenceRestControllerService.performUpsert(externalReferenceCreateRequest, org.getValue());
+		}
 	}
 
 	private void validateCreateSyncAdvise(
