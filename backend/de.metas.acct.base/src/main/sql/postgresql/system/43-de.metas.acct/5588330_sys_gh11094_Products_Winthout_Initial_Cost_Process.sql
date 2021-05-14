@@ -832,6 +832,21 @@ UPDATE AD_Process_Para SET DefaultValue='@SQL=SELECT ce.M_CostElement_ID AS Defa
 UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-05-13 20:19:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541978
 ;
 
+-- 2021-05-13T20:02:27.493Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=541975
+;
+
+-- 2021-05-13T20:02:27.522Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=541975
+;
+
+-- 2021-05-13T20:02:36.122Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process SET SQLStatement='SELECT * FROM "de_metas_acct".report_ProductsWithoutInitialCost(@#AD_Client_ID/-1@, @M_CostElement_ID/-1@)',Updated=TO_TIMESTAMP('2021-05-13 23:02:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584828
+;
+
 
 
 

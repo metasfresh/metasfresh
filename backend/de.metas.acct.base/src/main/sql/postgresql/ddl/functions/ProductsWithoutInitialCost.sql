@@ -1,17 +1,12 @@
 DROP FUNCTION IF EXISTS "de_metas_acct".report_ProductsWithoutInitialCost
 (p_D_Client_ID NUMERIC,
- p_ad_org_id NUMERIC,
  p_M_CostElement_ID NUMERIC);
 
 CREATE OR REPLACE FUNCTION "de_metas_acct".report_ProductsWithoutInitialCost(
     p_AD_Client_Id NUMERIC,
-    p_AD_Org_Id NUMERIC,
     p_M_CostElement_ID NUMERIC)
     RETURNS table
             (
-                AD_Org_ID    numeric,
-                OrgValue     text,
-                OrgName      text,
                 M_Product_ID numeric,
                 ProductValue text,
                 ProductName  text
@@ -29,45 +24,36 @@ WITH sch AS
      firstCostDetails AS
          (
              SELECT cd.M_Product_ID,
-                    cd.ad_org_id,
                     min(M_CostDetail_ID) as firstCostDetail
-
              from M_costDetail cd
                       JOIN sch on
-                 cd.c_acctschema_id = sch.c_acctschema_id
+                     cd.c_acctschema_id = sch.c_acctschema_id
+                     AND cd.m_costelement_id = p_M_CostElement_ID
 
-             where (case when p_AD_Org_Id < 0 or p_ad_org_ID IS NULL then 1 = 1 else cd.ad_org_id = p_AD_Org_Id end)
-               AND  cd.m_costelement_id = p_M_CostElement_ID
-
-             group by cd.M_Product_ID, cd.AD_Org_ID
+             group by cd.M_Product_ID
          )
         ,
      firstPrices as
          (
              SELECT p.m_product_id,
-                    coalesce(fcd.ad_org_id, p.ad_org_id) as ad_org_ID,
                     cd.isSOTrx,
                     (CASE
                          WHEN (cd.Qty = 0 or cd.QTY IS NULL) THEN COALESCE(cd.Amt, 0)
-                         ELSE cd.Amt / cd.Qty END)       as price
+                         ELSE cd.Amt / cd.Qty END) as price
              FROM M_Product p
                       LEFT JOIN firstCostDetails fcd on p.m_product_id = fcd.m_product_id
                       LEFT JOIN m_costdetail cd on fcd.firstCostDetail = cd.m_costdetail_id
              WHERE cd.m_costdetail_id IS NULL
-                OR cd.issotrx = 'N'
+                OR cd.issotrx = 'Y'
          )
-SELECT fp.AD_Org_ID,
-       o.value as OrgValue,
-       o.name  as OrgName,
-       p.M_Product_ID,
+SELECT p.M_Product_ID,
        p.value as ProductValue,
        p.name  as ProductName
 from m_product p
          JOIN firstPrices fp on p.m_product_id = fp.m_product_id
-         JOIN AD_Org o on fp.ad_org_ID = o.ad_org_ID
 where fp.price = 0
-  AND ((p_AD_Org_Id < 0 or p_ad_org_ID IS NULL) OR o.ad_org_ID = p_AD_Org_ID)
-order by o.value, p.value
+
+order by p.value
     ;
 
 
@@ -79,7 +65,7 @@ $$
 How to run:
 
 SELECT *
-FROM "de_metas_acct".report_ProductsWithoutInitialCost(1000000, 1000000, 1000002)
+FROM "de_metas_acct".report_ProductsWithoutInitialCost(1000000,  1000002)
 ;
  */
 
