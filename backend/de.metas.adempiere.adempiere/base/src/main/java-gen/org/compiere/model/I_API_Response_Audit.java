@@ -54,7 +54,7 @@ public interface I_API_Response_Audit
 	/**
 	 * Set API Request Audit.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -63,7 +63,7 @@ public interface I_API_Response_Audit
 	/**
 	 * Get API Request Audit.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_Audit_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1496305419L;
+	private static final long serialVersionUID = -1499652601L;
 
     /** Standard Constructor */
     public X_API_Audit_Config (final Properties ctx, final int API_Audit_Config_ID, @Nullable final String trxName)
@@ -135,16 +135,16 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	}
 
 	/** 
-	 * NotifyUserInCharge AD_Reference_ID=541313
-	 * Reference name: Notify_List
+	 * NotifyUserInCharge AD_Reference_ID=541315
+	 * Reference name: NotifyItems
 	 */
-	public static final int NOTIFYUSERINCHARGE_AD_Reference_ID=541313;
-	/** Never = NEVER */
-	public static final String NOTIFYUSERINCHARGE_Never = "NEVER";
-	/** Invocations with error = ONLY_ON_ERROR */
-	public static final String NOTIFYUSERINCHARGE_InvocationsWithError = "ONLY_ON_ERROR";
-	/** All invocations = ALWAYS */
-	public static final String NOTIFYUSERINCHARGE_AllInvocations = "ALWAYS";
+	public static final int NOTIFYUSERINCHARGE_AD_Reference_ID=541315;
+	/** Niemals = NEVER  */
+	public static final String NOTIFYUSERINCHARGE_Niemals = "NEVER ";
+	/** Aufrufen mit Fehler = ONLY_ON_ERROR  */
+	public static final String NOTIFYUSERINCHARGE_AufrufenMitFehler = "ONLY_ON_ERROR ";
+	/** Allen Aufrufen = ALWAYS  */
+	public static final String NOTIFYUSERINCHARGE_AllenAufrufen = "ALWAYS ";
 	@Override
 	public void setNotifyUserInCharge (final @Nullable java.lang.String NotifyUserInCharge)
 	{
@@ -170,7 +170,7 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	}
 
 	@Override
-	public void setSeqNo (final @Nullable java.lang.String SeqNo)
+	public void setSeqNo (final java.lang.String SeqNo)
 	{
 		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}

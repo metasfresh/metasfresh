@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for API_Request_Audit
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_API_Request_Audit extends org.compiere.model.PO implements I_API_Request_Audit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1829388961L;
+	private static final long serialVersionUID = -2070842593L;
 
     /** Standard Constructor */
     public X_API_Request_Audit (final Properties ctx, final int API_Request_Audit_ID, @Nullable final String trxName)
@@ -204,16 +204,16 @@ public class X_API_Request_Audit extends org.compiere.model.PO implements I_API_
 	}
 
 	/** 
-	 * Status AD_Reference_ID=541307
-	 * Reference name: Status
+	 * Status AD_Reference_ID=541316
+	 * Reference name: StatusList
 	 */
-	public static final int STATUS_AD_Reference_ID=541307;
-	/** Received = Received */
-	public static final String STATUS_Received = "Received";
-	/** Processed = Processed */
-	public static final String STATUS_Processed = "Processed";
-	/** Error = Error */
-	public static final String STATUS_Error = "Error";
+	public static final int STATUS_AD_Reference_ID=541316;
+	/** Empfangen = Empfangen */
+	public static final String STATUS_Empfangen = "Empfangen";
+	/** Verarbeitet = Verarbeitet */
+	public static final String STATUS_Verarbeitet = "Verarbeitet";
+	/** Fehler = Fehler */
+	public static final String STATUS_Fehler = "Fehler";
 	@Override
 	public void setStatus (final java.lang.String Status)
 	{

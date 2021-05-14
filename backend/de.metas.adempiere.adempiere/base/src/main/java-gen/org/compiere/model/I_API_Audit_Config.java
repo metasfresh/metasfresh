@@ -304,10 +304,10 @@ public interface I_API_Audit_Config
  lowest number comes first
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setSeqNo (@Nullable java.lang.String SeqNo);
+	void setSeqNo (java.lang.String SeqNo);
 
 	/**
 	 * Get SeqNo.
@@ -315,10 +315,10 @@ public interface I_API_Audit_Config
  lowest number comes first
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getSeqNo();
+	java.lang.String getSeqNo();
 
 	ModelColumn<I_API_Audit_Config, Object> COLUMN_SeqNo = new ModelColumn<>(I_API_Audit_Config.class, "SeqNo", null);
 	String COLUMNNAME_SeqNo = "SeqNo";
