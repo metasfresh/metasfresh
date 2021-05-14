@@ -31,6 +31,7 @@ import de.metas.handlingunits.inout.returns.customer.CustomerReturnLineHUGenerat
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnsWithoutHUsProducer;
 import de.metas.handlingunits.inout.returns.customer.ManualCustomerReturnInOutProducer;
 import de.metas.handlingunits.inout.returns.customer.MultiCustomerHUReturnsInOutProducer;
+import de.metas.handlingunits.inout.returns.vendor.MultiVendorHUReturnsInOutProducer;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_InOutLine;
@@ -120,7 +121,7 @@ public class ReturnsServiceFacade
 
 	public void createVendorReturnInOutForHUs(final List<I_M_HU> hus, final Timestamp movementDate)
 	{
-		MultiCustomerHUReturnsInOutProducer.newInstance()
+		MultiVendorHUReturnsInOutProducer.newInstance()
 				.setMovementDate(movementDate)
 				.addHUsToReturn(hus)
 				.create();
