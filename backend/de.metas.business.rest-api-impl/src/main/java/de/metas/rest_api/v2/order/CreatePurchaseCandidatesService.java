@@ -32,8 +32,8 @@ import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateItem;
-import de.metas.common.rest_api.v2.JsonRequestAttributeInstance;
-import de.metas.common.rest_api.v2.JsonRequestAttributeSetInstance;
+import de.metas.common.rest_api.v2.JsonAttributeInstance;
+import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v2.JsonVendor;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
@@ -164,14 +164,14 @@ public class CreatePurchaseCandidatesService
 		return purchaseCandidate;
 	}
 
-	private AttributeSetInstanceId getAttributeSetInstanceId(final @Nullable JsonRequestAttributeSetInstance attributeSetInstance)
+	private AttributeSetInstanceId getAttributeSetInstanceId(final @Nullable JsonAttributeSetInstance attributeSetInstance)
 	{
 		if (attributeSetInstance == null || Check.isEmpty(attributeSetInstance.getAttributeInstances()))
 		{
 			return AttributeSetInstanceId.NONE;
 		}
 		final ImmutableAttributeSet.Builder attributeSetBuilder = ImmutableAttributeSet.builder();
-		for (final JsonRequestAttributeInstance attributeValue : attributeSetInstance.getAttributeInstances())
+		for (final JsonAttributeInstance attributeValue : attributeSetInstance.getAttributeInstances())
 		{
 			attributeSetBuilder.attributeValue(
 					AttributeCode.ofString(attributeValue.getAttributeCode()),

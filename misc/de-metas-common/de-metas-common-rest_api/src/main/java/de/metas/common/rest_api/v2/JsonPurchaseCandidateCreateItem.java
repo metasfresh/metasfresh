@@ -87,7 +87,7 @@ public class JsonPurchaseCandidateCreateItem
 
 	@Nullable
 	@JsonProperty("attributeSetInstance")
-	JsonRequestAttributeSetInstance attributeSetInstance;
+	JsonAttributeSetInstance attributeSetInstance;
 
 	@NonNull
 	@JsonProperty("qty")
@@ -108,7 +108,7 @@ public class JsonPurchaseCandidateCreateItem
 			@JsonProperty("vendor") final @NonNull JsonVendor vendor,
 			@JsonProperty("warehouseIdentifier") final @NonNull String warehouseIdentifier,
 			@JsonProperty("productIdentifier") final @NonNull String productIdentifier,
-			@JsonProperty("attributeSetInstance") @Nullable final JsonRequestAttributeSetInstance attributeSetInstance,
+			@JsonProperty("attributeSetInstance") @Nullable final JsonAttributeSetInstance attributeSetInstance,
 			@JsonProperty("qty") final @NonNull JsonQuantity qty)
 	{
 
