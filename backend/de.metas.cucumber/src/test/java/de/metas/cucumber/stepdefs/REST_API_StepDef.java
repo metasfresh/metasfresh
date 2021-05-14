@@ -51,6 +51,19 @@ public class REST_API_StepDef
 		userAuthToken = RESTUtil.getAuthToken(userLogin,roleName);
 	}
 
+	@When("a {string} request with the below payload is sent to the metasfresh REST-API {string} and fulfills with {string} status code")
+	public void metasfresh_rest_api_endpoint_receives_a_request_responds_with_code_for_payload(
+			final String verb,
+			final String endpointPath,
+			final String statusCode,
+			final String payload) throws IOException
+	{
+		testContext.setRequestPayload(payload);
+
+		apiResponse = RESTUtil.performHTTPRequest(endpointPath, verb, payload, userAuthToken, Integer.parseInt(statusCode));
+		testContext.setApiResponse(apiResponse);
+	}
+
 	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the payload")
 	public void metasfresh_rest_api_endpoint_api_external_ref_receives_get_request_with_the_payload(
 			final String endpointPath,

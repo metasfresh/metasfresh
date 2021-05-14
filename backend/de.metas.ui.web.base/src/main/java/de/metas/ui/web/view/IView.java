@@ -6,7 +6,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
-import de.metas.ui.web.document.references.DocumentReferenceId;
+import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
@@ -74,7 +74,7 @@ public interface IView
 	Set<DocumentPath> getReferencingDocumentPaths();
 
 	@Nullable
-	default DocumentReferenceId getDocumentReferenceId()
+	default WebuiDocumentReferenceId getDocumentReferenceId()
 	{
 		return null;
 	}

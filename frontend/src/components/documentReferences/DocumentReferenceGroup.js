@@ -20,6 +20,7 @@ export default class DocumentReferenceGroup extends Component {
             referenceId={reference.id}
             caption={reference.caption}
             targetWindowId={reference.targetWindowId}
+            targetCategory={reference.targetCategory}
             filter={reference.filter}
             onClick={onReferenceItemClick}
             internalName={reference.internalName}
