@@ -195,6 +195,27 @@ public interface I_API_Request_Audit
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Http headers.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHttpHeaders (@Nullable java.lang.String HttpHeaders);
+
+	/**
+	 * Get Http headers.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHttpHeaders();
+
+	ModelColumn<I_API_Request_Audit, Object> COLUMN_HttpHeaders = new ModelColumn<>(I_API_Request_Audit.class, "HttpHeaders", null);
+	String COLUMNNAME_HttpHeaders = "HttpHeaders";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -218,25 +239,25 @@ public interface I_API_Request_Audit
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Error acknowleged.
+	 * Set Fehler zur Kentnis genommen.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsErrorAcknowleged (boolean IsErrorAcknowleged);
+	void setIsErrorAcknowledged (boolean IsErrorAcknowledged);
 
 	/**
-	 * Get Error acknowleged.
+	 * Get Fehler zur Kentnis genommen.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isErrorAcknowleged();
+	boolean isErrorAcknowledged();
 
-	ModelColumn<I_API_Request_Audit, Object> COLUMN_IsErrorAcknowleged = new ModelColumn<>(I_API_Request_Audit.class, "IsErrorAcknowleged", null);
-	String COLUMNNAME_IsErrorAcknowleged = "IsErrorAcknowleged";
+	ModelColumn<I_API_Request_Audit, Object> COLUMN_IsErrorAcknowledged = new ModelColumn<>(I_API_Request_Audit.class, "IsErrorAcknowledged", null);
+	String COLUMNNAME_IsErrorAcknowledged = "IsErrorAcknowledged";
 
 	/**
 	 * Set Method.

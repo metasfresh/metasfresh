@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_API_Request_Audit extends org.compiere.model.PO implements I_API_Request_Audit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2070842593L;
+	private static final long serialVersionUID = -1252483475L;
 
     /** Standard Constructor */
     public X_API_Request_Audit (final Properties ctx, final int API_Request_Audit_ID, @Nullable final String trxName)
@@ -131,15 +131,27 @@ public class X_API_Request_Audit extends org.compiere.model.PO implements I_API_
 	}
 
 	@Override
-	public void setIsErrorAcknowleged (final boolean IsErrorAcknowleged)
+	public void setHttpHeaders (final @Nullable java.lang.String HttpHeaders)
 	{
-		set_Value (COLUMNNAME_IsErrorAcknowleged, IsErrorAcknowleged);
+		set_Value (COLUMNNAME_HttpHeaders, HttpHeaders);
 	}
 
 	@Override
-	public boolean isErrorAcknowleged() 
+	public java.lang.String getHttpHeaders() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsErrorAcknowleged);
+		return get_ValueAsString(COLUMNNAME_HttpHeaders);
+	}
+
+	@Override
+	public void setIsErrorAcknowledged (final boolean IsErrorAcknowledged)
+	{
+		set_Value (COLUMNNAME_IsErrorAcknowledged, IsErrorAcknowledged);
+	}
+
+	@Override
+	public boolean isErrorAcknowledged() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsErrorAcknowledged);
 	}
 
 	/** 

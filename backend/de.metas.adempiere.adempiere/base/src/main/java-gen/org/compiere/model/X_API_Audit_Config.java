@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_Audit_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1499652601L;
+	private static final long serialVersionUID = -1055114115L;
 
     /** Standard Constructor */
     public X_API_Audit_Config (final Properties ctx, final int API_Audit_Config_ID, @Nullable final String trxName)
@@ -32,6 +32,21 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_User_InCharge_ID (final int AD_User_InCharge_ID)
+	{
+		if (AD_User_InCharge_ID < 1) 
+			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_InCharge_ID, AD_User_InCharge_ID);
+	}
+
+	@Override
+	public int getAD_User_InCharge_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_User_InCharge_ID);
 	}
 
 	@Override
@@ -170,14 +185,14 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	}
 
 	@Override
-	public void setSeqNo (final java.lang.String SeqNo)
+	public void setSeqNo (final int SeqNo)
 	{
 		set_Value (COLUMNNAME_SeqNo, SeqNo);
 	}
 
 	@Override
-	public java.lang.String getSeqNo() 
+	public int getSeqNo() 
 	{
-		return get_ValueAsString(COLUMNNAME_SeqNo);
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }

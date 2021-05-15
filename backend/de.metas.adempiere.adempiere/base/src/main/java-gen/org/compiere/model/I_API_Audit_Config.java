@@ -52,6 +52,26 @@ public interface I_API_Audit_Config
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Responsible.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
+
+	/**
+	 * Get Responsible.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_User_InCharge_ID();
+
+	String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
+
+	/**
 	 * Set API Audit Config.
 	 * API audit config that matched the request and lead to the creation of this audit record
 	 *
@@ -303,22 +323,22 @@ public interface I_API_Audit_Config
 	 * Method of ordering records;
  lowest number comes first
 	 *
-	 * <br>Type: String
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setSeqNo (java.lang.String SeqNo);
+	void setSeqNo (int SeqNo);
 
 	/**
 	 * Get SeqNo.
 	 * Method of ordering records;
  lowest number comes first
 	 *
-	 * <br>Type: String
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getSeqNo();
+	int getSeqNo();
 
 	ModelColumn<I_API_Audit_Config, Object> COLUMN_SeqNo = new ModelColumn<>(I_API_Audit_Config.class, "SeqNo", null);
 	String COLUMNNAME_SeqNo = "SeqNo";
