@@ -19,7 +19,7 @@ Feature: sales order
       | 20                | 20                     | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
       | Identifier    | Name        | OPT.IsVendor | OPT.IsCustomer | OPT.M_PricingSystem_ID |
-      | endcustomer_1 | Endcustomer | N            | Y              | 1                      |
+      | endcustomer_1 | Endcustomer | N            | Y              | 20                     |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | endcustomer_1            | 2021-04-17  |
