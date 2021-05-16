@@ -42,6 +42,9 @@ public class SwaggerDocConstants
 			+ "* or something like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n"
 			+ "* or something like `gln-<C_BPartner_Location_ID.GLN>`\n";
 
+	public static final String EXTERNAL_VERSION_DOC = "It is used to decide if the instance is newer than the currently stored one."
+			+ "It is optional and used only when the identifier is an external reference.";
+
 	public static final String NEXT_DOC = "Optional identifier for the next page that was provided to the client in the previous page.\n"
 			+ "If provided, any `since` value is ignored";
 

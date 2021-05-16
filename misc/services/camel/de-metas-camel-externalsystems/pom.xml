@@ -24,4 +24,12 @@
         <module>amazon</module>
     </modules>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <!-- we include lombok in the actual build, as a curtesty to 3rd-parties who want to compile against this build's image -->
+        </dependency>
+    </dependencies>
+    
 </project>

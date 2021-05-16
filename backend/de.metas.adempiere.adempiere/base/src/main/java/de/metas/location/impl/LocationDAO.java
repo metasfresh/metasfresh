@@ -2,6 +2,7 @@ package de.metas.location.impl;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 import java.math.BigDecimal;
@@ -12,9 +13,11 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.location.PostalId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Process;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.model.X_C_Location;
@@ -68,6 +71,12 @@ public class LocationDAO implements ILocationDAO
 		// * this method is (also) called as part of a full bpartner-creation workflow and we need to be able to roll it back, without leaving back this dangling C_Location.
 		// * since the c_location is created in-trx, we also need to (re-)load it in-trx later when we try to create its product-price
 		return load(id, I_C_Location.class);
+	}
+
+	@Override
+	public I_C_Postal getPostalById(@NonNull final PostalId postalId)
+	{
+		return loadOutOfTrx(postalId, I_C_Postal.class);
 	}
 
 	@Override
