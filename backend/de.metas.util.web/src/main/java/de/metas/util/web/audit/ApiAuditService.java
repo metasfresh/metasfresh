@@ -40,12 +40,10 @@ import de.metas.audit.request.log.ApiAuditRequestLogDAO;
 import de.metas.audit.response.ApiResponseAudit;
 import de.metas.audit.response.ApiResponseAuditRepository;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.error.IErrorManager;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -55,20 +53,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Nullable;
 import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URI;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 @Service
@@ -84,7 +84,6 @@ public class ApiAuditService
 	private final WebClient webClient;
 	private final ConcurrentHashMap<UserId, HttpCallScheduler> callerId2Scheduler;
 	private final ObjectMapper objectMapper;
-	private final IErrorManager errorManager;
 
 	public ApiAuditService(
 			@NonNull final ApiAuditConfigRepository apiAuditConfigRepository,
@@ -99,12 +98,11 @@ public class ApiAuditService
 		this.webClient = WebClient.create();
 		this.callerId2Scheduler = new ConcurrentHashMap<>();
 		this.objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
-		this.errorManager = Services.get(IErrorManager.class);
 	}
 
-	public boolean wasAlreadyFiltered(@NonNull final ContentCachingRequestWrapper contentCachingRequestWrapper)
+	public boolean wasAlreadyFiltered(@NonNull final HttpServletRequest httpServletRequest)
 	{
-		return contentCachingRequestWrapper.getHeader(API_FILTER_REQUEST_ID_HEADER) != null;
+		return httpServletRequest.getHeader(API_FILTER_REQUEST_ID_HEADER) != null;
 	}
 
 	@NonNull
@@ -125,42 +123,27 @@ public class ApiAuditService
 				.min(Comparator.comparingInt(ApiAuditConfig::getSeqNo));
 	}
 
-	public void handleRequest(@NonNull final ServletRequest request,
-			@NonNull final ServletResponse response,
-			@NonNull final ApiAuditConfig apiAuditConfig)
-	{
-		try
-		{
-			processHttpCall(request, response, apiAuditConfig);
-		}
-		catch (final Exception exception)
-		{
-			errorManager.createIssue(exception);
-			throw exception;
-		}
-	}
-
-	private void processHttpCall(
-			@NonNull final ServletRequest request,
-			@NonNull final ServletResponse response,
+	public void processHttpCall(
+			@NonNull final HttpServletRequest request,
+			@NonNull final HttpServletResponse response,
 			@NonNull final ApiAuditConfig apiAuditConfig)
 	{
 		final OrgId orgId = apiAuditConfig.getOrgId();
 
-		final CustomHttpRequestWrapper httpRequest = new CustomHttpRequestWrapper((HttpServletRequest)request, objectMapper);
+		final CustomHttpRequestWrapper httpRequest = new CustomHttpRequestWrapper(request, objectMapper);
 
-		final ApiRequestAuditId requestAuditId = logRequest(httpRequest, apiAuditConfig.getApiAuditConfigId(), orgId);
+		final ApiRequestAudit requestAudit = logRequest(httpRequest, apiAuditConfig.getApiAuditConfigId(), orgId);
 
-		final ApiAuditLoggable apiAuditLoggable = createLogger(requestAuditId);
+		final ApiAuditLoggable apiAuditLoggable = createLogger(requestAudit.getIdNotNull());
 
 		try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(apiAuditLoggable))
 		{
 			final CompletableFuture<ApiResponse> actualRestApiResponseCF = new CompletableFuture<>();
 
 			actualRestApiResponseCF
-					.whenComplete((apiResponse, throwable) -> handleFutureCompletion(apiResponse, throwable, apiAuditLoggable, requestAuditId, orgId));
+					.whenComplete((apiResponse, throwable) -> handleFutureCompletion(apiResponse, throwable, apiAuditLoggable, requestAudit.getIdNotNull(), orgId));
 
-			final Supplier<ApiResponse> callEndpointSupplier = () -> executeHttpCall(httpRequest, requestAuditId);
+			final Supplier<ApiResponse> callEndpointSupplier = () -> executeHttpCall(requestAudit);
 
 			final ScheduleRequest scheduleRequest = new ScheduleRequest(actualRestApiResponseCF, callEndpointSupplier);
 
@@ -170,53 +153,50 @@ public class ApiAuditService
 
 			httpCallScheduler.schedule(scheduleRequest);
 
-			final Object actualRestApiResponseBody;
-			final int httpStatus;
-			if (apiAuditConfig.isInvokerWaitsForResponse())
-			{
-				final ApiResponse actualRestApiResponse = actualRestApiResponseCF.get(120, TimeUnit.SECONDS); // todo establish a value
-				actualRestApiResponseBody = actualRestApiResponse.getBody();
-				httpStatus = Integer.parseInt(actualRestApiResponse.getStatusCode());
-			}
-			else
-			{
-				actualRestApiResponseBody = null;
-				httpStatus = HttpStatus.ACCEPTED.value();
-			}
-
-			final JsonApiResponse apiResponse = JsonApiResponse.builder()
-					.requestId(JsonMetasfreshId.of(requestAuditId.getRepoId()))
-					.endpointResponse(actualRestApiResponseBody)
-					.build();
-
-			response.resetBuffer();
-			((HttpServletResponse)response).setStatus(httpStatus);
-			response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
-			response.flushBuffer();
-
+			handleSuccessfulResponse(apiAuditConfig, requestAudit, actualRestApiResponseCF, response);
 		}
 		catch (final Exception e)
 		{
-			Loggables.addLog(e.getMessage(), e);
+			apiAuditLoggable.addLog(e.getMessage(), e);
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+		finally
+		{
+			apiAuditLoggable.flush();
 		}
 	}
 
 	@Nullable
-	private ApiResponse executeHttpCall(final CustomHttpRequestWrapper httpRequest, @NonNull final ApiRequestAuditId apiRequestAuditId)
+	private ApiResponse executeHttpCall(@NonNull final ApiRequestAudit apiRequestAudit)
 	{
-		final WebClient.RequestBodyUriSpec uriSpec = webClient.method(httpRequest.getHttpMethod());
+		if (apiRequestAudit.getMethod() == null || apiRequestAudit.getPath() == null)
+		{
+			throw new AdempiereException("Missing essential data from the given ApiRequestAudit!")
+					.setParameter("Method", apiRequestAudit.getMethod())
+					.setParameter("Path", apiRequestAudit.getPath());
+		}
 
-		final HttpHeaders httpHeaders = httpRequest.getHttpHeaders();
-		httpHeaders.add(API_FILTER_REQUEST_ID_HEADER, String.valueOf(apiRequestAuditId.getRepoId()));
+		final org.springframework.http.HttpMethod httpMethod = org.springframework.http.HttpMethod.resolve(apiRequestAudit.getMethod().getCode());
+
+		final WebClient.RequestBodyUriSpec uriSpec = webClient.method(httpMethod);
+
+		final HttpHeaders httpHeaders = new HttpHeaders();
+		apiRequestAudit.getRequestHeaders(objectMapper)
+				.map(RequestHeaders::getKeyValueHeaders)
+				.ifPresent(httpHeaders::addAll);
+
+		httpHeaders.add(API_FILTER_REQUEST_ID_HEADER, String.valueOf(apiRequestAudit.getIdNotNull().getRepoId()));
 
 		httpHeaders
 				.forEach((key, value) -> uriSpec.header(key, value.toArray(new String[0])));
 
-		final WebClient.RequestBodySpec bodySpec = uriSpec.uri(httpRequest.getURI());
+		final URI uri = URI.create(apiRequestAudit.getPath());
 
-		if (httpRequest.getRequestBody() != null)
+		final WebClient.RequestBodySpec bodySpec = uriSpec.uri(uri);
+
+		if (Check.isNotBlank(apiRequestAudit.getBody()))
 		{
-			bodySpec.body(Mono.just(httpRequest.getRequestBody()), Object.class);
+			bodySpec.body(Mono.just(apiRequestAudit.getRequestBody(objectMapper)), Object.class);
 		}
 
 		return bodySpec.exchangeToMono(cr -> cr
@@ -228,7 +208,7 @@ public class ApiAuditService
 				.block();
 	}
 
-	private ApiRequestAuditId logRequest(
+	private ApiRequestAudit logRequest(
 			@NonNull final CustomHttpRequestWrapper customHttpRequest,
 			@NonNull final ApiAuditConfigId apiAuditConfigId,
 			@NonNull final OrgId orgId)
@@ -236,11 +216,11 @@ public class ApiAuditService
 		try
 		{
 			final LinkedMultiValueMap<String, String> requestHeadersMultiValueMap = new LinkedMultiValueMap<>();
-			customHttpRequest.getHttpHeaders().forEach(requestHeadersMultiValueMap::addAll);
+			customHttpRequest.getAllHeaders().forEach(requestHeadersMultiValueMap::addAll);
 
 			final String requestHeaders = requestHeadersMultiValueMap.isEmpty()
 					? null
-					: objectMapper.writeValueAsString(new RequestHeaders(requestHeadersMultiValueMap));
+					: objectMapper.writeValueAsString(RequestHeaders.of(requestHeadersMultiValueMap));
 
 			final ApiRequestAudit apiRequestAudit = ApiRequestAudit.builder()
 					.apiAuditConfigId(apiAuditConfigId)
@@ -257,17 +237,14 @@ public class ApiAuditService
 					.httpHeaders(requestHeaders)
 					.build();
 
-			final ApiRequestAudit persistedApiRequestAudit = apiRequestAudiRepository.save(apiRequestAudit);
-
-			return persistedApiRequestAudit.getIdNotNull();
+			return apiRequestAudiRepository.save(apiRequestAudit);
 		}
 		catch (final JsonProcessingException e)
 		{
 			throw new AdempiereException("Failed to create ApiRequestAudit!")
 					.appendParametersToMessage()
 					.setParameter("Path", customHttpRequest.getFullPath())
-					.setParameter("Method", customHttpRequest.getHttpMethodString())
-					.setParameter("Body", customHttpRequest.getRequestBody());
+					.setParameter("Method", customHttpRequest.getHttpMethodString());
 
 		}
 	}
@@ -333,5 +310,36 @@ public class ApiAuditService
 				Loggables.addLog("ERROR encounter inside completable future!", throwable);
 			}
 		}
+	}
+
+	private void handleSuccessfulResponse(
+			@NonNull final ApiAuditConfig apiAuditConfig,
+			@NonNull final ApiRequestAudit apiRequestAudit,
+			@NonNull final CompletableFuture<ApiResponse> actualRestApiResponseCF,
+			@NonNull final HttpServletResponse httpServletResponse) throws IOException, InterruptedException, ExecutionException, TimeoutException
+	{
+		final Object actualRestApiResponseBody;
+		final int httpStatus;
+		if (apiAuditConfig.isInvokerWaitsForResponse())
+		{
+			final ApiResponse actualRestApiResponse = actualRestApiResponseCF.get(120, TimeUnit.SECONDS); // todo establish a reasonable value
+			actualRestApiResponseBody = actualRestApiResponse.getBody();
+			httpStatus = Integer.parseInt(actualRestApiResponse.getStatusCode());
+		}
+		else
+		{
+			actualRestApiResponseBody = null;
+			httpStatus = HttpStatus.ACCEPTED.value();
+		}
+
+		final JsonApiResponse apiResponse = JsonApiResponse.builder()
+				.requestId(JsonMetasfreshId.of(apiRequestAudit.getIdNotNull().getRepoId()))
+				.endpointResponse(actualRestApiResponseBody)
+				.build();
+
+		httpServletResponse.resetBuffer();
+		httpServletResponse.setStatus(httpStatus);
+		httpServletResponse.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+		httpServletResponse.flushBuffer();
 	}
 }

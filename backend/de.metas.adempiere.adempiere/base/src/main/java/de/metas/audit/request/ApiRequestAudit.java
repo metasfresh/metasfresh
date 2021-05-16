@@ -22,11 +22,14 @@
 
 package de.metas.audit.request;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.audit.HttpMethod;
 import de.metas.audit.config.ApiAuditConfigId;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,6 +37,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Optional;
 
 @Value
 @Builder
@@ -91,5 +95,45 @@ public class ApiRequestAudit
 		}
 
 		return apiRequestAuditId;
+	}
+
+	@NonNull
+	public Optional<RequestHeaders> getRequestHeaders(@NonNull final ObjectMapper objectMapper)
+	{
+		if (Check.isBlank(httpHeaders))
+		{
+			return Optional.empty();
+		}
+
+		try
+		{
+			return Optional.of(objectMapper.readValue(httpHeaders, RequestHeaders.class));
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new AdempiereException("Failed to parse httpHeaders!")
+					.appendParametersToMessage()
+					.setParameter("ApiAuditRequest", this);
+		}
+	}
+
+	@NonNull
+	public Optional<Object> getRequestBody(@NonNull final ObjectMapper objectMapper)
+	{
+		if (Check.isBlank(body))
+		{
+			return Optional.empty();
+		}
+
+		try
+		{
+			return Optional.of(objectMapper.readValue(body, Object.class));
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new AdempiereException("Failed to parse body!")
+					.appendParametersToMessage()
+					.setParameter("ApiAuditRequest", this);
+		}
 	}
 }

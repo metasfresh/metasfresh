@@ -22,11 +22,24 @@
 
 package de.metas.audit.request;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.springframework.util.LinkedMultiValueMap;
 
 @Value
+@Builder
+@JsonDeserialize(builder = RequestHeaders.RequestHeadersBuilder.class)
 public class RequestHeaders
 {
+	@NonNull
+	public static RequestHeaders of(final @NonNull LinkedMultiValueMap<String, String> keyValueHeaders)
+	{
+		return new RequestHeaders(keyValueHeaders);
+	}
+
+	@JsonProperty("keyValueHeaders")
 	LinkedMultiValueMap<String, String> keyValueHeaders;
 }

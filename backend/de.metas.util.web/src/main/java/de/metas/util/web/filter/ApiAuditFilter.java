@@ -24,7 +24,6 @@ package de.metas.util.web.filter;
 
 import de.metas.audit.config.ApiAuditConfig;
 import de.metas.util.web.audit.ApiAuditService;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -33,6 +32,7 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
@@ -51,20 +51,28 @@ public class ApiAuditFilter implements Filter
 	}
 
 	@Override
-	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException
+	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException
 	{
-		final ContentCachingRequestWrapper contentCachingRequestWrapper = new ContentCachingRequestWrapper((HttpServletRequest)request);
+		final HttpServletRequest httpServletRequest = (HttpServletRequest) request;
+		final HttpServletResponse httpServletResponse = (HttpServletResponse) response;
 
-		final Optional<ApiAuditConfig> matchingAuditConfig = apiAuditService.getMatchingAuditConfig(contentCachingRequestWrapper);
-
-		if (!matchingAuditConfig.isPresent()
-				|| apiAuditService.wasAlreadyFiltered(contentCachingRequestWrapper))
+		try
 		{
-			chain.doFilter(request, response);
-			return;
-		}
+			final Optional<ApiAuditConfig> matchingAuditConfig = apiAuditService.getMatchingAuditConfig(httpServletRequest);
 
-		apiAuditService.handleRequest(request, response, matchingAuditConfig.get());
+			if (apiAuditService.wasAlreadyFiltered(httpServletRequest)
+					|| !matchingAuditConfig.isPresent())
+			{
+				chain.doFilter(request, response);
+				return;
+			}
+
+			apiAuditService.processHttpCall(httpServletRequest, httpServletResponse, matchingAuditConfig.get());
+		}
+		catch (final Throwable t)
+		{
+			httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getLocalizedMessage());
+		}
 	}
 
 	@Override

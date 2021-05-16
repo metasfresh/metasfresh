@@ -27,63 +27,60 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.NonNull;
 import lombok.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Enumeration;
 
 @Value
 public class CustomHttpRequestWrapper
 {
 	@NonNull
-	String fullPath;
-
-	@NonNull
-	String httpMethod;
-
-	@NonNull
-	HttpHeaders httpHeaders;
-
-	@Nullable
-	Object requestBody;
-
-	@Nullable
-	String remoteAddr;
-
-	@Nullable
-	String remoteHost;
+	ContentCachingRequestWrapper requestWrapper;
 
 	@NonNull
 	ObjectMapper objectMapper;
 
 	public CustomHttpRequestWrapper(@NonNull final HttpServletRequest request, @NonNull final ObjectMapper objectMapper)
 	{
-		final ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request);
+		this.requestWrapper = new ContentCachingRequestWrapper(request);
 		this.objectMapper = objectMapper;
-
-		this.fullPath = extractFullPath(requestWrapper);
-		this.requestBody = extractRequestBody(requestWrapper);
-		this.httpHeaders = extractHttHeaders(requestWrapper);
-		this.httpMethod = requestWrapper.getMethod();
-		this.remoteAddr = requestWrapper.getRemoteAddr();
-		this.remoteHost = requestWrapper.getRemoteHost();
 	}
 
 	@NonNull
-	public HttpMethod getHttpMethod()
+	public String getFullPath()
 	{
-		return HttpMethod.resolve(this.httpMethod);
+		String fullPath = requestWrapper.getRequestURL().toString();
+
+		if (requestWrapper.getQueryString() != null)
+		{
+			fullPath += "?" + requestWrapper.getQueryString();
+		}
+
+		return fullPath;
 	}
 
 	@NonNull
 	public String getHttpMethodString()
 	{
-		return httpMethod;
+		return requestWrapper.getMethod();
+	}
+
+	@NonNull
+	public HttpHeaders getAllHeaders()
+	{
+		final HttpHeaders allHeaders = new HttpHeaders();
+		final Enumeration<String> allHeaderNames = requestWrapper.getHeaderNames();
+
+		while (allHeaderNames != null && allHeaderNames.hasMoreElements())
+		{
+			final String currentHeaderName = allHeaderNames.nextElement();
+			allHeaders.add(currentHeaderName, requestWrapper.getHeader(currentHeaderName));
+		}
+
+		return allHeaders;
 	}
 
 	@Nullable
@@ -106,56 +103,38 @@ public class CustomHttpRequestWrapper
 		}
 	}
 
-	@NonNull
-	public URI getURI()
+	@Nullable
+	public String getRemoteAddr()
 	{
-		final UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromHttpUrl(getFullPath());
-		return uriBuilder.build().toUri();
-	}
-
-	@NonNull
-	private String extractFullPath(final ContentCachingRequestWrapper requestWrapper)
-	{
-		String fullPath = requestWrapper.getRequestURL().toString();
-
-		if (requestWrapper.getQueryString() != null)
-		{
-			fullPath += "?" + requestWrapper.getQueryString();
-		}
-
-		return fullPath;
+		return requestWrapper.getRemoteAddr();
 	}
 
 	@Nullable
-	private Object extractRequestBody(final ContentCachingRequestWrapper requestWrapper)
+	public String getRemoteHost()
 	{
-		if (requestWrapper.getContentAsByteArray().length == 0)
-		{
-			return null;
-		}
+		return requestWrapper.getRemoteHost();
+	}
 
+	@Nullable
+	private Object getRequestBody()
+	{
 		try
 		{
-			return objectMapper.readValue(requestWrapper.getContentAsByteArray(), Object.class);
+			if (requestWrapper.getContentLength() <= 0)
+			{
+				return null;
+			}
+
+			if (requestWrapper.getContentAsByteArray().length > 0)
+			{
+				return objectMapper.readValue(requestWrapper.getContentAsByteArray(), Object.class);
+			}
+
+			return objectMapper.readValue(requestWrapper.getReader(), Object.class);
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException("Failed to parse request body!", e);
 		}
-	}
-
-	@NonNull
-	private HttpHeaders extractHttHeaders(final ContentCachingRequestWrapper requestWrapper)
-	{
-		final HttpHeaders allHeaders = new HttpHeaders();
-		final Enumeration<String> allHeaderNames = requestWrapper.getHeaderNames();
-
-		while (allHeaderNames != null && allHeaderNames.hasMoreElements())
-		{
-			final String currentHeaderName = allHeaderNames.nextElement();
-			allHeaders.add(currentHeaderName, requestWrapper.getHeader(currentHeaderName));
-		}
-
-		return allHeaders;
 	}
 }
