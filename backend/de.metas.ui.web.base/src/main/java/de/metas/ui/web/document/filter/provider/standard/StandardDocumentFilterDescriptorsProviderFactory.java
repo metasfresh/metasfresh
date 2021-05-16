@@ -231,6 +231,11 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 			// frontend cannot handle Timestamp filter params
 			return DocumentFieldWidgetType.LocalDate;
 		}
+		if (widgetType == DocumentFieldWidgetType.Switch)
+		{
+			// to filter we can't work with the Y/N switch widget, but need the Y/N/empty tickbox instead 
+			return DocumentFieldWidgetType.YesNo;
+		}
 		else
 		{
 			return widgetType;
