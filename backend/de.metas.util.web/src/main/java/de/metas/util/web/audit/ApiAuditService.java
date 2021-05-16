@@ -206,7 +206,7 @@ public class ApiAuditService
 	{
 		final WebClient.RequestBodyUriSpec uriSpec = webClient.method(httpRequest.getHttpMethod());
 
-		final HttpHeaders httpHeaders = httpRequest.getAllHeaders();
+		final HttpHeaders httpHeaders = httpRequest.getHttpHeaders();
 		httpHeaders.add(API_FILTER_REQUEST_ID_HEADER, String.valueOf(apiRequestAuditId.getRepoId()));
 
 		httpHeaders
@@ -236,7 +236,7 @@ public class ApiAuditService
 		try
 		{
 			final LinkedMultiValueMap<String, String> requestHeadersMultiValueMap = new LinkedMultiValueMap<>();
-			customHttpRequest.getAllHeaders().forEach(requestHeadersMultiValueMap::addAll);
+			customHttpRequest.getHttpHeaders().forEach(requestHeadersMultiValueMap::addAll);
 
 			final String requestHeaders = requestHeadersMultiValueMap.isEmpty()
 					? null
