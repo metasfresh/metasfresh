@@ -577,8 +577,6 @@ class FiltersItem extends PureComponent {
                           onHide,
                           isFilterActive: isActive,
                           updateItems: this.updateItems,
-                          isFilterActive: isActive,
-                          updateItems: this.updateItems,
                         }}
                       />
                     );
