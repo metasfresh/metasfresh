@@ -31,9 +31,7 @@ import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -44,11 +42,11 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
 
 public class C_BPartner_StepDef
 {
@@ -84,6 +82,8 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setIsCustomer(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsCustomer), false));
 			bPartnerRecord.setIsSalesRep(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsSalesRep), false));
 
+			bPartnerRecord.setM_PricingSystem_ID(DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID));
+
 			bPartnerRecord.setAD_Language(tableRow.get("OPT." + COLUMNNAME_AD_Language));
 
 			final String salesRepIdentifier = tableRow.get("OPT." + COLUMNNAME_C_BPartner_SalesRep_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
@@ -91,14 +91,14 @@ public class C_BPartner_StepDef
 			{
 				final I_C_BPartner salesRep = bPartnerTable.get(salesRepIdentifier);
 				assertThat(salesRep).as("Missing salesrep C_BPartner record for identifier=" + salesRepIdentifier).isNotNull();
-				
+
 				bPartnerRecord.setC_BPartner_SalesRep_ID(salesRep.getC_BPartner_ID());
 			}
 
-			final boolean alsoCreateLoction = InterfaceWrapperHelper.isNew(bPartnerRecord);
+			final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord);
 			InterfaceWrapperHelper.saveRecord(bPartnerRecord);
 
-			if (alsoCreateLoction)
+			if (alsoCreateLocation)
 			{
 				final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 				locationRecord.setC_Country_ID(StepDefConstants.COUNTRY_ID.getRepoId());

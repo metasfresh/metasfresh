@@ -30,12 +30,15 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.location.ICountryDAO;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_PricingSystem;
@@ -46,14 +49,18 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 public class M_PriceList_StepDef
 {
 	private final OrgId defaultOrgId = StepDefConstants.ORG_ID;
 	private final CurrencyRepository currencyRepository;
 	private final StepDefData<I_M_Product> productTable;
+
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 	public M_PriceList_StepDef(
 			@NonNull final CurrencyRepository currencyRepository,
@@ -164,7 +171,7 @@ public class M_PriceList_StepDef
 		final int priceListId = DataTableUtil.extractIntForColumnName(row, I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID);
 		final Timestamp validFrom = DataTableUtil.extractDateTimestampForColumnName(row, I_M_PriceList_Version.COLUMNNAME_ValidFrom);
 		final String name = DataTableUtil.extractStringForColumnName(row, I_M_PriceList_Version.COLUMNNAME_Name);
-		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_PriceList_Version.COLUMNNAME_Name);
+		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_PriceList_Version.COLUMNNAME_Description);
 
 		final I_M_PriceList_Version m_priceList_Version = InterfaceWrapperHelper.newInstance(I_M_PriceList_Version.class);
 		m_priceList_Version.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
@@ -189,10 +196,14 @@ public class M_PriceList_StepDef
 
 	private void createM_ProductPrice(@NonNull final Map<String, String> tableRow)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_Product_ID + ".Identifier");
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product product = productTable.get(productIdentifier);
 		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
 		final int priceListVersionId = DataTableUtil.extractIntForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID);
+
+		final String taxCategoryInternalName = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMN_C_TaxCategory_ID.getColumnName() + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
+		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
+		assertThat(taxCategoryId).as("Missing taxCagegory for internalName=%s", taxCategoryInternalName).isPresent();
 
 		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class);
 
@@ -200,6 +211,7 @@ public class M_PriceList_StepDef
 		productPrice.setM_Product_ID(product.getM_Product_ID());
 		productPrice.setC_UOM_ID(product.getC_UOM_ID());
 		productPrice.setPriceStd(priceStd);
+		productPrice.setC_TaxCategory_ID(taxCategoryId.get().getRepoId());
 
 		saveRecord(productPrice);
 	}

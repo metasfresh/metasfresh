@@ -86,7 +86,7 @@ public class DataTableUtil
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
 	{
-		final String string = extractStringForColumnName(dataTableRow, columnName);
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
 		if (EmptyUtil.isBlank(string))
 		{
 			return -1;
