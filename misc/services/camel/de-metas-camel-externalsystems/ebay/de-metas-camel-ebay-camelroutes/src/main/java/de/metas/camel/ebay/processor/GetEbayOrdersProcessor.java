@@ -13,7 +13,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ebay.api.client.auth.oauth2.OAuth2Api;
 import com.ebay.api.client.auth.oauth2.model.Environment;
@@ -33,6 +32,7 @@ public class GetEbayOrdersProcessor implements Processor {
 	
 	protected Logger log = LoggerFactory.getLogger(getClass());
 	
+
 	@Override
 	public void process(Exchange exchange) throws Exception {
 		
@@ -53,6 +53,7 @@ public class GetEbayOrdersProcessor implements Processor {
 		final String authCode = request.getParameters().get(EbayConstants.PARAM_API_AUTH_CODE);
 		final String apiMode = request.getParameters().get(EbayConstants.PARAM_API_MODE);
 
+		// env default to sandbox.
 		Environment EXECUTION_ENV;
 		if (Environment.PRODUCTION.toString().equalsIgnoreCase(apiMode)) {
 			EXECUTION_ENV = Environment.PRODUCTION;
@@ -64,29 +65,40 @@ public class GetEbayOrdersProcessor implements Processor {
 		OAuthResponse oauth2Response = auth2Api.exchangeCodeForAccessToken(EXECUTION_ENV, authCode);
 
 		if (oauth2Response.getAccessToken().isPresent()) {
+			
+			// construct api client or use provided one.
+			final OrderApi orderApi;
+			if( exchange.getProperty(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT) == null) {
+				log.debug("Constructing ebay api client");
+				
+				ApiClient defaultClient = Configuration.getDefaultApiClient();
+				defaultClient.setBasePath("https://api.sandbox.ebay.com/sell/fulfillment/v1");
 
-			ApiClient defaultClient = Configuration.getDefaultApiClient();
-
-			defaultClient.setBasePath("https://api.sandbox.ebay.com/sell/fulfillment/v1");
-
-			// Configure OAuth2 access token for authorization: api_auth
-			OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
-			api_auth.setAccessToken(oauth2Response.getAccessToken().get().getToken());
-
-			final OrderApi api = new OrderApi(defaultClient);
-
+				// Configure OAuth2 access token for authorization: api_auth
+				OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
+				api_auth.setAccessToken(oauth2Response.getAccessToken().get().getToken());
+				
+				orderApi = new OrderApi(defaultClient);
+				
+			} else {
+				
+				log.debug("Using preconstructed ebay api client");
+				orderApi = (OrderApi) exchange.getProperty(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT);
+			}
+			
+			//prepare call TODO: configureable? 
 			String fieldGroups = null;
 			String filter = "lastmodifieddate:".concat(updatedAfter);
 			String limit = "50";
 			String offset = null;
 			String orderIds = null;
-			OrderSearchPagedCollection response = api.getOrders(fieldGroups, filter, limit, offset, orderIds);
+			OrderSearchPagedCollection response = orderApi.getOrders(fieldGroups, filter, limit, offset, orderIds);
 
 			List<Order> orders = response.getOrders();
 
 			exchange.getIn().setBody(orders);
 			exchange.setProperty(ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
-			exchange.setProperty(ROUTE_PROPERTY_EBAY_CLIENT, api);
+			exchange.setProperty(ROUTE_PROPERTY_EBAY_CLIENT, orderApi);
 		} else {
 
 			ProcessorHelper.logProcessMessage(exchange, "Ebay:Failed to aquire access token!" + Instant.now(), request.getAdPInstanceId().getValue());

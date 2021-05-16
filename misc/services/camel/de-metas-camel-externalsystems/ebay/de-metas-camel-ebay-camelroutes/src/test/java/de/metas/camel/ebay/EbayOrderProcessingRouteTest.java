@@ -12,16 +12,20 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.spring.javaconfig.SingleRouteCamelConfiguration;
 import org.apache.camel.test.spring.junit5.CamelSpringTest;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 
+import de.metas.camel.externalsystems.ebay.api.OrderApi;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+
+import static org.mockito.Mockito.when;
 
 @CamelSpringTest
 @ContextConfiguration(classes = EbayOrderProcessingRouteTest.ContextConfig.class)
@@ -36,14 +40,14 @@ public class EbayOrderProcessingRouteTest {
 	
 	@Produce("direct:start")
     protected ProducerTemplate template;
+	
+	@Mock
+	public OrderApi orderApi;
 
 	@Test
 	@DirtiesContext
 	public void testRouteSetup() throws Exception {
 		
-
-        //template.sendBodyAndHeader(expectedBody, "foo", "bar");
-        
         Map<String,String> parameters = new HashMap<>();
         parameters.put(ExternalSystemConstants.PARAM_API_KEY, "key");
         parameters.put(ExternalSystemConstants.PARAM_TENANT, "tenant");
@@ -63,9 +67,15 @@ public class EbayOrderProcessingRouteTest {
         		parameters);						//params
         
         
-        //template.sendBody("direct:" + GetEbayOrdersRouteBuilder.GET_ORDERS_ROUTE_ID);
-
-        template.sendBody("direct:" + GetEbayOrdersRouteBuilder.GET_ORDERS_ROUTE_ID, jesr);
+        
+        Map<String,Object> body = new HashMap<>();
+        body.put(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT, orderApi);
+        
+        //TODO: prepare mocked result.
+        when(orderApi.getOrders(null, null, null, null, null)).thenReturn(null);
+        
+        template.sendBodyAndHeaders("direct:" + GetEbayOrdersRouteBuilder.GET_ORDERS_ROUTE_ID, jesr, body);
+        
         
         Thread.sleep(2000);
         
