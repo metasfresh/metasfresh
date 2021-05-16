@@ -67,7 +67,7 @@ public class C_Order_StepDef
 
 			final I_C_Order order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			order.setBill_BPartner_ID(bpartner.getC_BPartner_ID());
+			order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
@@ -82,6 +82,7 @@ public class C_Order_StepDef
 	public void order_is_completed(@NonNull final String orderIdentifier)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
+		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 		documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 	}
 }

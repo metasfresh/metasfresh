@@ -57,11 +57,11 @@ public class C_OrderLine_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+			orderLine.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
 			final I_M_Product product = productTable.get(productIdentifier);
 			orderLine.setM_Product_ID(product.getM_Product_ID());
-
 			orderLine.setQtyOrdered(DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyOrdered));
 
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + ".Identifier");
