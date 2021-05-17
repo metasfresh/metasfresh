@@ -36,7 +36,7 @@ import org.springframework.stereotype.Repository;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-public class ApiRequestAudiRepository
+public class ApiRequestAuditRepository
 {
 	@NonNull
 	public ApiRequestAudit save(@NonNull final ApiRequestAudit apiRequestAudit)

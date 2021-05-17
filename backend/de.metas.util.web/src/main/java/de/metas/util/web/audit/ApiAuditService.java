@@ -31,9 +31,9 @@ import de.metas.audit.HttpMethod;
 import de.metas.audit.config.ApiAuditConfig;
 import de.metas.audit.config.ApiAuditConfigId;
 import de.metas.audit.config.ApiAuditConfigRepository;
-import de.metas.audit.request.ApiRequestAudiRepository;
 import de.metas.audit.request.ApiRequestAudit;
 import de.metas.audit.request.ApiRequestAuditId;
+import de.metas.audit.request.ApiRequestAuditRepository;
 import de.metas.audit.request.RequestHeaders;
 import de.metas.audit.request.Status;
 import de.metas.audit.request.log.ApiAuditRequestLogDAO;
@@ -77,7 +77,7 @@ public class ApiAuditService
 	public static final String API_FILTER_REQUEST_ID_HEADER = "X-ApiFilter-Request-ID";
 
 	private final ApiAuditConfigRepository apiAuditConfigRepository;
-	private final ApiRequestAudiRepository apiRequestAudiRepository;
+	private final ApiRequestAuditRepository apiRequestAuditRepository;
 	private final ApiResponseAuditRepository apiResponseAuditRepository;
 	private final ApiAuditRequestLogDAO apiAuditRequestLogDAO;
 
@@ -87,12 +87,12 @@ public class ApiAuditService
 
 	public ApiAuditService(
 			@NonNull final ApiAuditConfigRepository apiAuditConfigRepository,
-			@NonNull final ApiRequestAudiRepository apiRequestAudiRepository,
+			@NonNull final ApiRequestAuditRepository apiRequestAuditRepository,
 			@NonNull final ApiResponseAuditRepository apiResponseAuditRepository,
 			@NonNull final ApiAuditRequestLogDAO apiAuditRequestLogDAO)
 	{
 		this.apiAuditConfigRepository = apiAuditConfigRepository;
-		this.apiRequestAudiRepository = apiRequestAudiRepository;
+		this.apiRequestAuditRepository = apiRequestAuditRepository;
 		this.apiResponseAuditRepository = apiResponseAuditRepository;
 		this.apiAuditRequestLogDAO = apiAuditRequestLogDAO;
 		this.webClient = WebClient.create();
@@ -237,7 +237,7 @@ public class ApiAuditService
 					.httpHeaders(requestHeaders)
 					.build();
 
-			return apiRequestAudiRepository.save(apiRequestAudit);
+			return apiRequestAuditRepository.save(apiRequestAudit);
 		}
 		catch (final JsonProcessingException e)
 		{
