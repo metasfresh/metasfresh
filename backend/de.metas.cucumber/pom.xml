@@ -74,7 +74,6 @@
             <artifactId>de.metas.util.web</artifactId>
             <version>${metasfresh.version}</version>
             <scope>test</scope>
-            <classifier>tests</classifier>
         </dependency>
         
         <dependency>
