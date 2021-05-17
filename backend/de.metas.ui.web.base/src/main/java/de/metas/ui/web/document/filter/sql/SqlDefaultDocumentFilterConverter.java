@@ -101,7 +101,7 @@ import java.util.List;
 		final StringBuilder sql = new StringBuilder();
 		for (final DocumentFilterParam filterParam : filter.getParameters())
 		{
-			if (filterParam.getValue() == null)
+			if (filterParam.getValue() == null && filterParam.getSqlWhereClause() == null)
 			{
 				// don't include "null" parameters; The frontend might send them e.g. if a string field was cleared. 
 				// we assume that the user never filters for value = "NULL"
