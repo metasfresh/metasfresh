@@ -28,6 +28,8 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiQuery;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesQuery;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -120,12 +122,13 @@ public class AFSProductLookupEnricher
 				.productId(productId)
 				.dateOfInterest(dateOfInterest)
 				.salesOrderLookBehindHours(salesOrderLookBehindHours)
+				.warehouseId(warehouseId)
 				.shipmentDateLookAheadHours(shipmentDateLookAheadHours);
 
 		boolean containsAll = false;
-		for (final AttributesKey attributesKey : retrieveAttributesKeys(warehouseId, productId))
+		for (final AttributesKeyPattern attributesKey : availableForSaleAdapter.getPredefinedStorageAttributeKeys())
 		{
-			final AvailableForSalesQuery query = queryBuilder.storageAttributesKey(attributesKey).build();
+			final AvailableForSalesQuery query = queryBuilder.storageAttributesKeyPattern(attributesKey).build();
 			result.availableForSalesQuery(query);
 			if (attributesKey.isAll())
 			{
@@ -136,7 +139,7 @@ public class AFSProductLookupEnricher
 		if (!containsAll)
 		{
 			// we don't just want the different attributes' quantities, but also the "sum"
-			final AvailableForSalesQuery query = queryBuilder.storageAttributesKey(AttributesKey.ALL).build();
+			final AvailableForSalesQuery query = queryBuilder.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(AttributesKey.ALL)).build();
 			result.availableForSalesQuery(query);
 		}
 		return result.build();

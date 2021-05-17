@@ -1,0 +1,131 @@
+/*
+ * #%L
+ * metasfresh-material-cockpit
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.material.cockpit.availableforsales;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+public class AvailableForSaleResultTest
+{
+	private static final String delim = AttributesKey.ATTRIBUTES_KEY_DELIMITER;
+
+	@Test
+	public void two_buckets()
+	{
+		final AvailableForSaleResultBuilder resultBuilder;
+		{
+			final AvailableForSaleResultBucket emptyBucket1 = AvailableForSaleResultBucket.builder()
+					.product(ProductClassifier.specific(100001))
+					.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(AttributesKey.ofString("1")))
+					.build();
+
+			final AvailableForSaleResultBucket emptyBucket2 = AvailableForSaleResultBucket.builder()
+					.product(ProductClassifier.specific(100001))
+					.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(AttributesKey.ofString("2")))
+					.build();
+
+			resultBuilder = new AvailableForSaleResultBuilder(ImmutableList.of(emptyBucket1, emptyBucket2));
+		}
+
+		final AddToResultGroupRequest.AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
+				.productId(ProductId.ofRepoId(100001))
+				.qtyOnHandStock(BigDecimal.valueOf(2))
+				.qtyToBeShipped(BigDecimal.valueOf(1));
+
+		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1" + delim + "2")).build());
+		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1" + delim + "2")).build());
+		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("2")).build());
+
+		final List<AvailableForSalesLookupBucketResult> groups = resultBuilder.build().getAvailableForSalesResults();
+		assertThat(groups).hasSize(2);
+
+		assertThat(groups.get(0).getProductId().getRepoId()).isEqualTo(100001);
+		assertThat(groups.get(0).getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1"));
+		assertThat(groups.get(0).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("4");
+		assertThat(groups.get(0).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("2");
+
+		assertThat(groups.get(1).getProductId().getRepoId()).isEqualTo(100001);
+		assertThat(groups.get(1).getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("2"));
+		assertThat(groups.get(1).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("6");
+		assertThat(groups.get(1).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("3");
+	}
+
+	@Test
+	public void addThreeTimes_expect_TwoGroups()
+	{
+		final AvailableForSaleResultBuilder result = AvailableForSaleResultBuilder.createEmpty();
+
+		final AddToResultGroupRequest.AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
+				.productId(ProductId.ofRepoId(10));
+
+		result.addToNewGroupIfFeasible(requestBuilder
+				.qtyOnHandStock(new BigDecimal("100"))
+				.qtyToBeShipped(new BigDecimal("50"))
+				.storageAttributesKey(AttributesKey.ofString("111=1"))
+				.build());
+		result.addToNewGroupIfFeasible(requestBuilder
+				.qtyOnHandStock(new BigDecimal("40"))
+				.qtyToBeShipped(new BigDecimal("20"))
+				.storageAttributesKey(AttributesKey.ofString("111=2"))
+				.build());
+		result.addToNewGroupIfFeasible(requestBuilder
+				.qtyOnHandStock(new BigDecimal("1"))
+				.qtyToBeShipped(new BigDecimal("2"))
+				.storageAttributesKey(AttributesKey.ofString("111=1"))
+				.build());
+
+		{
+			final ImmutableList<AvailableForSalesLookupBucketResult> groups = result.build().getAvailableForSalesResults();
+			assertThat(groups).hasSize(2);
+
+			/* group 1 */
+			{
+				final AvailableForSalesLookupBucketResult group = groups.get(0);
+				assertThat(group.getProductId().getRepoId()).isEqualTo(10);
+				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("111=1"));
+				assertThat(group.getQuantities().getQtyOnHandStock()).isEqualByComparingTo("101");
+				assertThat(group.getQuantities().getQtyToBeShipped()).isEqualByComparingTo("52");
+			}
+
+			/* group 2 */
+			{
+				final AvailableForSalesLookupBucketResult group = groups.get(1);
+				assertThat(group.getProductId().getRepoId()).isEqualTo(10);
+				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("111=2"));
+				assertThat(group.getQuantities().getQtyOnHandStock()).isEqualByComparingTo("40");
+				assertThat(group.getQuantities().getQtyToBeShipped()).isEqualByComparingTo("20");
+			}
+
+		}
+	}
+
+}

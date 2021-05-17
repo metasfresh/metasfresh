@@ -3,8 +3,12 @@ package de.metas.material.dispo.commons.repository.atp;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.material.commons.attributes.AttributesKeyMatcher;
 import de.metas.material.commons.attributes.AttributesKeyPattern;
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
+import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
+import de.metas.material.commons.attributes.clasifiers.WarehouseClassifier;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -76,7 +80,7 @@ final class AvailableToPromiseResultBucket
 		this.product = product != null ? product : ProductClassifier.any();
 		this.storageAttributesKeyMatcher = storageAttributesKeyMatcher != null
 				? storageAttributesKeyMatcher
-				: AttributesKeyPatterns.matchingAll();
+				: AttributesKeyPatternsUtil.matchingAll();
 	}
 
 	Stream<AvailableToPromiseResultGroup> buildAndStreamGroups()
@@ -169,7 +173,7 @@ final class AvailableToPromiseResultBucket
 	@VisibleForTesting
 	boolean isMatching(final AddToResultGroupRequest request)
 	{
-		if (!product.isMatching(request.getProductId()))
+		if (!product.isMatching(request.getProductId().getRepoId()))
 		{
 			return false;
 		}
@@ -240,7 +244,7 @@ final class AvailableToPromiseResultBucket
 		}
 		else
 		{
-			final AttributesKeyPattern groupAttributePattern = AttributesKeyPatterns.ofAttributeKey(groupAttributesKey);
+			final AttributesKeyPattern groupAttributePattern = AttributesKeyPatternsUtil.ofAttributeKey(groupAttributesKey);
 
 			return groupAttributePattern.matches(requestStorageAttributesKey);
 		}
@@ -278,7 +282,7 @@ final class AvailableToPromiseResultBucket
 		final AvailableToPromiseResultGroupBuilder group = AvailableToPromiseResultGroupBuilder.builder()
 				.bpartner(bpartner)
 				.warehouse(warehouse)
-				.productId(product.getProductId())
+				.productId(ProductId.ofRepoId(product.getProductId()))
 				.storageAttributesKey(defaultAttributesKey)
 				.build();
 

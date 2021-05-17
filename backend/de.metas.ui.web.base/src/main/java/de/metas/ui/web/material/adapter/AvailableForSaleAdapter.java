@@ -23,12 +23,12 @@
 package de.metas.ui.web.material.adapter;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.material.cockpit.availableforsales.AvailableForSalesLookupBucketResult;
+import de.metas.material.cockpit.availableforsales.AvailableForSalesLookupResult;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiQuery;
-import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiResult;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesRepository;
-import de.metas.material.cockpit.availableforsales.AvailableForSalesResult;
 import de.metas.material.commons.attributes.AttributesKeyPattern;
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.adapter.AvailabilityInfoResultForWebui.AvailabilityInfoResultForWebuiBuilder;
@@ -41,7 +41,6 @@ import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -56,13 +55,13 @@ public class AvailableForSaleAdapter
 	}
 
 	@VisibleForTesting
-	static AvailabilityInfoResultForWebui.Group.Type extractGroupType(@NonNull final AttributesKey attributesKey)
+	static AvailabilityInfoResultForWebui.Group.Type extractGroupType(@NonNull final AttributesKeyPattern attributesKey)
 	{
-		if (AttributesKey.ALL.equals(attributesKey))
+		if (AttributesKeyPattern.ALL.equals(attributesKey))
 		{
 			return AvailabilityInfoResultForWebui.Group.Type.ALL_STORAGE_KEYS;
 		}
-		else if (AttributesKey.OTHER.equals(attributesKey))
+		else if (AttributesKeyPattern.OTHER.equals(attributesKey))
 		{
 			return AvailabilityInfoResultForWebui.Group.Type.OTHER_STORAGE_KEYS;
 		}
@@ -75,12 +74,11 @@ public class AvailableForSaleAdapter
 	@NonNull
 	public AvailabilityInfoResultForWebui retrieveAvailableStock(@NonNull final AvailableForSalesMultiQuery query)
 	{
-		final AvailableForSalesMultiResult commonsAvailableStock = availableForSalesRepository.getBy(query);
+		final AvailableForSalesLookupResult commonsAvailableStock = availableForSalesRepository.getBucket(query);
 
 		final AvailabilityInfoResultForWebuiBuilder clientResultBuilder = AvailabilityInfoResultForWebui.builder();
 
-		final List<AvailableForSalesResult> commonsResultGroups = commonsAvailableStock.getAvailableForSalesResults();
-		for (final AvailableForSalesResult commonsResultGroup : commonsResultGroups)
+		for (final AvailableForSalesLookupBucketResult commonsResultGroup : commonsAvailableStock.getAvailableForSalesResults())
 		{
 			final AvailabilityInfoResultForWebui.Group clientResultGroup = createClientResultGroup(commonsResultGroup);
 			clientResultBuilder.group(clientResultGroup);
@@ -88,7 +86,7 @@ public class AvailableForSaleAdapter
 		return clientResultBuilder.build();
 	}
 
-	private AvailabilityInfoResultForWebui.Group createClientResultGroup(@NonNull final AvailableForSalesResult commonsResultGroup)
+	private AvailabilityInfoResultForWebui.Group createClientResultGroup(@NonNull final AvailableForSalesLookupBucketResult commonsResultGroup)
 	{
 		try
 		{
@@ -101,14 +99,14 @@ public class AvailableForSaleAdapter
 		}
 	}
 
-	private AvailabilityInfoResultForWebui.Group createClientResultGroup0(final AvailableForSalesResult commonsResultGroup)
+	private AvailabilityInfoResultForWebui.Group createClientResultGroup0(final AvailableForSalesLookupBucketResult commonsResultGroup)
 	{
 		final Quantity quantity = extractQuantity(commonsResultGroup);
-		final AttributesKey attributesKey = commonsResultGroup.getStorageAttributesKey();
+		final AttributesKeyPattern attributesKey = AttributesKeyPatternsUtil.ofAttributeKey(commonsResultGroup.getStorageAttributesKey());
 		final AvailabilityInfoResultForWebui.Group.Type type = extractGroupType(attributesKey);
 
 		final ImmutableAttributeSet attributes = AvailabilityInfoResultForWebui.Group.Type.ATTRIBUTE_SET.equals(type)
-				? AttributesKeys.toImmutableAttributeSet(attributesKey)
+				? AttributesKeys.toImmutableAttributeSet(commonsResultGroup.getStorageAttributesKey())
 				: ImmutableAttributeSet.EMPTY;
 
 		return AvailabilityInfoResultForWebui.Group.builder()
@@ -119,9 +117,9 @@ public class AvailableForSaleAdapter
 				.build();
 	}
 
-	private Quantity extractQuantity(final AvailableForSalesResult commonsResultGroup)
+	private Quantity extractQuantity(final AvailableForSalesLookupBucketResult commonsResultGroup)
 	{
-		final AvailableForSalesResult.Quantities quantities = commonsResultGroup.getQuantities();
+		final AvailableForSalesLookupBucketResult.Quantities quantities = commonsResultGroup.getQuantities();
 		final BigDecimal qty = quantities.getQtyOnHandStock().subtract(quantities.getQtyToBeShipped());
 		final I_C_UOM uom = productsService.getStockUOM(commonsResultGroup.getProductId());
 		return Quantity.of(qty, uom);

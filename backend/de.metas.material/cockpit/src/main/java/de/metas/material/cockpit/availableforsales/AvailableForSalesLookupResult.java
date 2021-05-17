@@ -29,8 +29,8 @@ import lombok.Value;
 
 @Value
 @Builder
-public class AvailableForSalesMultiResult
+public class AvailableForSalesLookupResult
 {
 	@Singular
-	ImmutableList<AvailableForSalesResult> availableForSalesResults;
+	ImmutableList<AvailableForSalesLookupBucketResult> availableForSalesResults;
 }
