@@ -98,7 +98,7 @@ public class ADProcessService
 				final boolean isTargetWindow = AdWindowId.equals(currentWindowId, adWindowId);
 				final AdTabId currentTabId = isTargetWindow ? adTabId : null;
 
-				for (RelatedProcessDescriptor descriptor : adProcessDAO.retrieveRelatedProcessDescriptors(adTableId, currentWindowId, currentTabId))
+				for (final RelatedProcessDescriptor descriptor : adProcessDAO.retrieveRelatedProcessDescriptors(adTableId, currentWindowId, currentTabId))
 				{
 					result.put(descriptor.getProcessId(), descriptor);
 				}
