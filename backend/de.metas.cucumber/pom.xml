@@ -70,6 +70,14 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util.web</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>test</scope>
+            <classifier>tests</classifier>
+        </dependency>
+        
+        <dependency>
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
             <version>${amqp-client.version}</version>
