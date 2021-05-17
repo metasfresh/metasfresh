@@ -54,6 +54,13 @@
             <artifactId>metasfresh-dist-serverRoot</artifactId>
             <version>${metasfresh.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <!-- spring-boot-starter-data-elasticsearch hauls in netty-transport:4.1.49 which lacks the class Duplex ChannelConfig -->
+                <exclusion>
+                    <artifactId>netty-transport</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>de.metas.migration</groupId>
