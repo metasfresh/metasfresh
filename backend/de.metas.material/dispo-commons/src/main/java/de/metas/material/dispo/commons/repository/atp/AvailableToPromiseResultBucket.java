@@ -88,14 +88,11 @@ final class AvailableToPromiseResultBucket
 		return groups.stream().map(AvailableToPromiseResultGroupBuilder::build);
 	}
 
-	/**
-	 * @return true if the request was added now (or in the past) to one of the bucket groups
-	 */
-	public boolean addQtyToAllMatchingGroups(@NonNull final AddToResultGroupRequest request)
+	public void addQtyToAllMatchingGroups(@NonNull final AddToResultGroupRequest request)
 	{
 		if (!isMatching(request))
 		{
-			return false;
+			return;
 		}
 
 		boolean addedToAtLeastOneGroup = false;
@@ -123,10 +120,7 @@ final class AvailableToPromiseResultBucket
 			final AttributesKey storageAttributesKey = storageAttributesKeyMatcher.toAttributeKeys(request.getStorageAttributesKey());
 			final AvailableToPromiseResultGroupBuilder group = newGroup(request, storageAttributesKey);
 			group.addQty(request);
-			addedToAtLeastOneGroup = true;
 		}
-
-		return addedToAtLeastOneGroup;
 	}
 
 	public boolean addToNewGroupIfFeasible(@NonNull final AddToResultGroupRequest request)
@@ -147,15 +141,11 @@ final class AvailableToPromiseResultBucket
 					continue;
 				}
 
-				if (group.isAlreadyIncluded(request))
-				{
-					alreadyIncludedInMatchingGroup = true;
-				}
-				else
+				if (!group.isAlreadyIncluded(request))
 				{
 					group.addQty(request);
-					alreadyIncludedInMatchingGroup = true;
 				}
+				alreadyIncludedInMatchingGroup = true;
 			}
 		}
 
@@ -164,10 +154,9 @@ final class AvailableToPromiseResultBucket
 			final AttributesKey storageAttributesKey = request.getStorageAttributesKey();
 			final AvailableToPromiseResultGroupBuilder group = newGroup(request, storageAttributesKey);
 			group.addQty(request);
-			alreadyIncludedInMatchingGroup = true;
 		}
 
-		return alreadyIncludedInMatchingGroup;
+		return true;
 	}
 
 	@VisibleForTesting

@@ -29,7 +29,6 @@ import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
 import de.metas.product.ProductId;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +46,8 @@ final class AvailableForSaleResultBuilder
 	{
 		final ImmutableList.Builder<AvailableForSaleResultBucket> buckets = ImmutableList.builder();
 
-		for (final AvailableForSalesQuery query : multiQuery.getAvailableForSalesQueries())
+		final List<AvailableForSalesQuery> availableForSalesQueries = multiQuery.getAvailableForSalesQueries();
+		for (final AvailableForSalesQuery query : availableForSalesQueries)
 		{
 			final List<AttributesKeyMatcher> storageAttributesKeyMatchers = AttributesKeyPatternsUtil.extractAttributesKeyMatchers(Collections.singletonList(query.getStorageAttributesKeyPattern()));
 
@@ -60,7 +60,7 @@ final class AvailableForSaleResultBuilder
 						.storageAttributesKeyMatcher(storageAttributesKeyMatcher)
 						.build();
 
-				bucket.addDefaultEmptyGroupIfPossible();
+				bucket.addDefaultEmptyGroupIfPossible(availableForSalesQueries.indexOf(availableForSalesQueries));
 
 				buckets.add(bucket);
 			}
@@ -86,45 +86,11 @@ final class AvailableForSaleResultBuilder
 		return AvailableForSalesLookupResult.builder().availableForSalesResults(groups).build();
 	}
 
-	public void addToNewGroupIfFeasible(@NonNull final AddToResultGroupRequest request)
-	{
-		boolean addedToAtLeastOneGroup = false;
-		for (final AvailableForSaleResultBucket bucket : buckets)
-		{
-			if (bucket.addToNewGroupIfFeasible(request))
-			{
-				addedToAtLeastOneGroup = true;
-				break;
-			}
-		}
-
-		if (!addedToAtLeastOneGroup)
-		{
-			final AvailableForSaleResultBucket bucket = newBucket(request);
-			if (!bucket.addToNewGroupIfFeasible(request))
-			{
-				throw new AdempiereException("Internal error: cannot add " + request + " to newly created bucket: " + bucket);
-			}
-		}
-	}
-
 	public void addQtyToAllMatchingGroups(@NonNull final AddToResultGroupRequest request)
 	{
 		// note that we might select more quantities than we actually wanted (bc of the way we match attributes in the query using LIKE)
 		// for that reason, we need to be lenient in case not all quantities can be added to a bucked
 		buckets.forEach(bucket -> bucket.addQtyToAllMatchingGroups(request));
-	}
-
-	private AvailableForSaleResultBucket newBucket(final AddToResultGroupRequest request)
-	{
-		final AvailableForSaleResultBucket bucket = AvailableForSaleResultBucket.builder()
-				.product(ProductClassifier.specific(request.getProductId().getRepoId()))
-				.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(request.getStorageAttributesKey()))
-				.build();
-
-		buckets.add(bucket);
-
-		return bucket;
 	}
 
 	@VisibleForTesting

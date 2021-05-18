@@ -74,31 +74,20 @@ final class AvailableForSaleResultBucket
 		return groups.stream().map(AvailableForSaleResultGroupBuilder::build);
 	}
 
-	public void addQtyToAllMatchingGroups(@NonNull final AddToResultGroupRequest request)
+	private static boolean isGroupMatching(
+			@NonNull final AvailableForSaleResultGroupBuilder group,
+			@NonNull final AddToResultGroupRequest request)
 	{
-		if (!isMatching(request))
+		if (!Objects.equals(group.getProductId(), request.getProductId()))
 		{
-			return;
+			return false;
+		}
+		if (group.getQueryNo() != request.getQueryNo())
+		{
+			return false;
 		}
 
-		boolean addedToAtLeastOneGroup = false;
-		for (final AvailableForSaleResultGroupBuilder group : groups)
-		{
-			if (!isGroupMatching(group, request))
-			{
-				continue;
-			}
-
-			group.addQty(request);
-			addedToAtLeastOneGroup = true;
-		}
-
-		if (!addedToAtLeastOneGroup)
-		{
-			final AttributesKey storageAttributesKey = storageAttributesKeyMatcher.toAttributeKeys(request.getStorageAttributesKey());
-			final AvailableForSaleResultGroupBuilder group = newGroup(request, storageAttributesKey);
-			group.addQty(request);
-		}
+		return isGroupAttributesKeyMatching(group, request.getStorageAttributesKey());
 	}
 
 	public boolean addToNewGroupIfFeasible(@NonNull final AddToResultGroupRequest request)
@@ -145,16 +134,36 @@ final class AvailableForSaleResultBucket
 		return storageAttributesKeyMatcher.matches(request.getStorageAttributesKey());
 	}
 
-	private static boolean isGroupMatching(
-			@NonNull final AvailableForSaleResultGroupBuilder group,
-			@NonNull final AddToResultGroupRequest request)
+	public void addQtyToAllMatchingGroups(@NonNull final AddToResultGroupRequest request)
 	{
-		if (!Objects.equals(group.getProductId(), request.getProductId()))
+		if (!isMatching(request))
 		{
-			return false;
+			return;
 		}
 
-		return isGroupAttributesKeyMatching(group, request.getStorageAttributesKey());
+		boolean addedToAtLeastOneGroup = false;
+		for (final AvailableForSaleResultGroupBuilder group : groups)
+		{
+			if (!isGroupMatching(group, request))
+			{
+				continue;
+			}
+
+			if (!group.isAlreadyIncluded(request))
+			{
+				group.addQty(request);
+			}
+
+			group.addQty(request);
+			addedToAtLeastOneGroup = true;
+		}
+
+		if (!addedToAtLeastOneGroup)
+		{
+			final AttributesKey storageAttributesKey = storageAttributesKeyMatcher.toAttributeKeys(request.getStorageAttributesKey());
+			final AvailableForSaleResultGroupBuilder group = newGroup(request, storageAttributesKey);
+			group.addQty(request);
+		}
 	}
 
 	private static boolean isGroupAttributesKeyMatching(
@@ -191,6 +200,7 @@ final class AvailableForSaleResultBucket
 		final AvailableForSaleResultGroupBuilder group = AvailableForSaleResultGroupBuilder.builder()
 				.productId(request.getProductId())
 				.storageAttributesKey(storageAttributesKey)
+				.queryNo(request.getQueryNo())
 				.build();
 
 		groups.add(group);
@@ -198,7 +208,7 @@ final class AvailableForSaleResultBucket
 		return group;
 	}
 
-	void addDefaultEmptyGroupIfPossible()
+	public void addDefaultEmptyGroupIfPossible(final int queryNo)
 	{
 		if (product.isAny())
 		{
@@ -214,6 +224,7 @@ final class AvailableForSaleResultBucket
 		final AvailableForSaleResultGroupBuilder group = AvailableForSaleResultGroupBuilder.builder()
 				.productId(ProductId.ofRepoId(product.getProductId()))
 				.storageAttributesKey(defaultAttributesKey)
+				.queryNo(queryNo)
 				.build();
 
 		groups.add(group);

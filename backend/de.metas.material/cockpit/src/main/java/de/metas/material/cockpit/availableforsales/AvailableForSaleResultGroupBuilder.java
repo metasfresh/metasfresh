@@ -40,6 +40,7 @@ import static java.math.BigDecimal.ZERO;
 @ToString
 final class AvailableForSaleResultGroupBuilder
 {
+	@Getter
 	private final int queryNo;
 	@Getter
 	private final ProductId productId;
@@ -89,6 +90,7 @@ final class AvailableForSaleResultGroupBuilder
 	{
 		qtyOnHandStock = qtyOnHandStock.add(CoalesceUtil.coalesce(request.getQtyOnHandStock(), ZERO));
 		qtyToBeShipped = qtyToBeShipped.add(CoalesceUtil.coalesce(request.getQtyToBeShipped(), ZERO));
+		includedRequestKeys.add(request.computeKey());
 	}
 
 	boolean isAlreadyIncluded(@NonNull final AddToResultGroupRequest request)
