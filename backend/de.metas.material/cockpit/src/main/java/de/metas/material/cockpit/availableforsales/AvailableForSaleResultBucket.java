@@ -74,7 +74,7 @@ final class AvailableForSaleResultBucket
 		return groups.stream().map(AvailableForSaleResultGroupBuilder::build);
 	}
 
-	private static boolean isGroupMatching(
+	private boolean isGroupMatching(
 			@NonNull final AvailableForSaleResultGroupBuilder group,
 			@NonNull final AddToResultGroupRequest request)
 	{
@@ -90,6 +90,12 @@ final class AvailableForSaleResultBucket
 	boolean isMatching(final AddToResultGroupRequest request)
 	{
 		if (!product.isMatching(request.getProductId().getRepoId()))
+		{
+			return false;
+		}
+
+		//explicitly filter out
+		if (request.getStorageAttributesKey().isAll() && !Objects.equals(storageAttributesKeyMatcher, AttributesKeyPatternsUtil.matchingAll()))
 		{
 			return false;
 		}
@@ -128,7 +134,7 @@ final class AvailableForSaleResultBucket
 		}
 	}
 
-	private static boolean isGroupAttributesKeyMatching(
+	private boolean isGroupAttributesKeyMatching(
 			@NonNull final AvailableForSaleResultGroupBuilder group,
 			@NonNull final AttributesKey requestStorageAttributesKey)
 	{

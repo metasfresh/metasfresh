@@ -90,6 +90,12 @@ final class AvailableForSaleResultBuilder
 	{
 		// note that we might select more quantities than we actually wanted (bc of the way we match attributes in the query using LIKE)
 		// for that reason, we need to be lenient in case not all quantities can be added to a bucked
-		buckets.get(request.getQueryNo()).addQtyToAllMatchingGroups(request);
+		buckets.forEach(bucket -> bucket.addQtyToAllMatchingGroups(request));
+	}
+
+	@VisibleForTesting
+	ImmutableList<AvailableForSaleResultBucket> getBuckets()
+	{
+		return ImmutableList.copyOf(buckets);
 	}
 }
