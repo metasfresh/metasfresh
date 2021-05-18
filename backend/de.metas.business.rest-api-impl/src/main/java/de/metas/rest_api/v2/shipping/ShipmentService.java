@@ -230,7 +230,6 @@ public class ShipmentService
 	{
 		return ApplyShipmentScheduleChangesRequest.builder()
 				.shipmentScheduleId(request.getShipmentScheduleId())
-				.qtyToDeliverStockingUOM(request.getQtyToDeliverInStockingUOM())
 				.deliveryDate(request.getDeliveryDate())
 				.deliveryRule(request.getDeliveryRule())
 				.attributes(request.getAttributes())
@@ -265,7 +264,6 @@ public class ShipmentService
 			@NonNull final ShipmentService.ShippingInfoCache cache)
 	{
 		final LocalDateTime deliveryDate = createShipmentInfo.getMovementDate();
-		final BigDecimal qtyToDeliverInStockingUOM = createShipmentInfo.getMovementQuantity();
 		final LocationBasicInfo bPartnerLocation = LocationBasicInfo.ofNullable(createShipmentInfo.getShipToLocation(), countryCodeFactory)
 				.orElse(null);
 		final String bpartnerCode = createShipmentInfo.getBusinessPartnerSearchKey();
@@ -274,7 +272,6 @@ public class ShipmentService
 		final ShipperId shipperId = cache.getShipperId(createShipmentInfo.getShipperInternalName());
 
 		if (deliveryDate == null
-				&& qtyToDeliverInStockingUOM == null
 				&& bPartnerLocation == null
 				&& Check.isBlank(bpartnerCode)
 				&& Check.isEmpty(attributes)
@@ -298,7 +295,6 @@ public class ShipmentService
 				.bPartnerLocation(bPartnerLocation)
 				.attributes(attributeInstanceRequestList)
 				.deliveryDate(TimeUtil.asZonedDateTime(deliveryDate, timeZoneId))
-				.qtyToDeliverInStockingUOM(qtyToDeliverInStockingUOM)
 				.deliveryRule(deliveryRule)
 				.shipperId(shipperId)
 				.build();
