@@ -106,7 +106,7 @@ public class AvailableForSalesRepository
 				.build();
 	}
 
-	public AvailableForSalesLookupResult getBucket(@NonNull final AvailableForSalesMultiQuery availableForSalesMultiQuery)
+	public AvailableForSalesLookupResult retrieveAvailableStock(@NonNull final AvailableForSalesMultiQuery availableForSalesMultiQuery)
 	{
 		final AvailableForSaleResultBuilder result = AvailableForSaleResultBuilder.createEmptyWithPredefinedBuckets(availableForSalesMultiQuery);
 		if (availableForSalesMultiQuery.getAvailableForSalesQueries().isEmpty())
@@ -120,6 +120,7 @@ public class AvailableForSalesRepository
 
 		final ImmutableList<AddToResultGroupRequest> requests = records
 				.stream()
+				.filter(req -> ZERO.compareTo(req.getQtyOnHandStock()) < 0 || ZERO.compareTo(req.getQtyToBeShipped()) < 0)
 				.map(AvailableForSalesRepository::createAddToResultGroupRequest)
 				.collect(ImmutableList.toImmutableList());
 		requests.forEach(result::addQtyToAllMatchingGroups);

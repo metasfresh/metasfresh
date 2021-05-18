@@ -35,6 +35,7 @@ import java.math.BigDecimal;
 @Value
 public final class AddToResultGroupRequest
 {
+
 	ProductId productId;
 	AttributesKey storageAttributesKey;
 

@@ -74,7 +74,7 @@ public class AvailableForSaleAdapter
 	@NonNull
 	public AvailabilityInfoResultForWebui retrieveAvailableStock(@NonNull final AvailableForSalesMultiQuery query)
 	{
-		final AvailableForSalesLookupResult commonsAvailableStock = availableForSalesRepository.getBucket(query);
+		final AvailableForSalesLookupResult commonsAvailableStock = availableForSalesRepository.retrieveAvailableStock(query);
 
 		final AvailabilityInfoResultForWebuiBuilder clientResultBuilder = AvailabilityInfoResultForWebui.builder();
 

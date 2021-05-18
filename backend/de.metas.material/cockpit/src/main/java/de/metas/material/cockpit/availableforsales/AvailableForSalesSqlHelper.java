@@ -52,7 +52,7 @@ public class AvailableForSalesSqlHelper
 		final IQuery<I_MD_Available_For_Sales_QueryResult> dbQuery = createDBQueryForAvailableForSalesQuery(0, availableForSalesQueries.get(0));
 		for (int i = 1; i < availableForSalesQueries.size(); i++)
 		{
-			dbQuery.addUnion(createDBQueryForAvailableForSalesQuery(i, availableForSalesQueries.get(i)), false/* distinct */);
+			dbQuery.addUnion(createDBQueryForAvailableForSalesQuery(i, availableForSalesQueries.get(i)), true/* distinct */);
 		}
 
 		return dbQuery;
