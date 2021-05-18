@@ -25,6 +25,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.printing.esb.base.util.Check;
+import de.metas.process.ADProcessService;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.JavaProcess;
@@ -60,6 +61,21 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Process;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -93,20 +109,29 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 {
 	//
 	// Services
-	@Autowired
-	private UserSession userSession;
-	@Autowired
-	private DocumentDescriptorFactory documentDescriptorFactory;
-	@Autowired
-	private IViewsRepository viewsRepo;
-	@Autowired
-	private DocumentCollection documentsCollection;
-	//
-	private final ADProcessDescriptorsFactory processDescriptorFactory = new ADProcessDescriptorsFactory();
+	private final UserSession userSession;
+	private final DocumentDescriptorFactory documentDescriptorFactory;
+	private final IViewsRepository viewsRepo;
+	private final DocumentCollection documentsCollection;
+	private final ADProcessDescriptorsFactory processDescriptorFactory;
 
 	private final Cache<DocumentId, ADProcessInstanceController> processInstances = CacheBuilder.newBuilder()
 			.expireAfterAccess(10, TimeUnit.MINUTES)
 			.build();
+
+	public ADProcessInstancesRepository(
+			@NonNull final UserSession userSession,
+			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
+			@NonNull final IViewsRepository viewsRepo,
+			@NonNull final DocumentCollection documentsCollection,
+			@NonNull final ADProcessService adProcessService)
+	{
+		this.userSession = userSession;
+		this.documentDescriptorFactory = documentDescriptorFactory;
+		this.viewsRepo = viewsRepo;
+		this.documentsCollection = documentsCollection;
+		this.processDescriptorFactory = new ADProcessDescriptorsFactory(adProcessService);
+	}
 
 	@Override
 	public String getProcessHandlerType()
@@ -145,8 +170,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		}
 		else
 		{
-			final IDocumentEvaluatee shadowParentDocumentEvaluatee = null; // N/A
-			return createNewProcessInstance0(request, shadowParentDocumentEvaluatee);
+			return createNewProcessInstance0(request, null);
 		}
 	}
 
@@ -171,7 +195,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			final Document parametersDoc = ADProcessParametersRepository.instance.createNewParametersDocument(parametersDescriptor, adPInstanceId, evalCtx);
 			final int windowNo = parametersDoc.getWindowNo();
 
-			// Set parameters's default values
+			// Set parameter's default values
 			ProcessDefaultParametersUpdater.newInstance()
 					.addDefaultParametersProvider(processClassInstance instanceof IProcessDefaultParametersProvider ? (IProcessDefaultParametersProvider)processClassInstance : null)
 					.onDefaultValue((parameter, value) -> parametersDoc.processValueChange(
@@ -316,8 +340,9 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	}
 
 	@VisibleForTesting
-	protected void addViewInternalParameters(final CreateProcessInstanceRequest request,
-			final ProcessInfoBuilder processInfoBuilder)
+	protected static void addViewInternalParameters(
+			@NonNull final CreateProcessInstanceRequest request,
+			@NonNull final ProcessInfoBuilder processInfoBuilder)
 	{
 		if (request.getViewRowIdsSelection() != null)
 		{
@@ -360,6 +385,11 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				.build();
 
 		final Object processClassInstance = processInfo.newProcessClassInstanceOrNull();
+		if (processClassInstance == null)
+		{
+			throw new AdempiereException("No processClassInstance found: " + processInfo);
+		}
+
 		try (final IAutoCloseable c = JavaProcess.temporaryChangeCurrentInstance(processClassInstance))
 		{
 			//
@@ -379,7 +409,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			// In that case we need to load the result and provide it to ProcessInstance constructor
 
 			//
-			// View informations
+			// View information
 			final IRangeAwareParams processInfoParams = processInfo.getParameterAsIParams();
 			final String viewIdStr = processInfoParams.getParameterAsString(ViewBasedProcessTemplate.PARAM_ViewId);
 			final ViewId viewId = Strings.isNullOrEmpty(viewIdStr) ? null : ViewId.ofViewIdString(viewIdStr);

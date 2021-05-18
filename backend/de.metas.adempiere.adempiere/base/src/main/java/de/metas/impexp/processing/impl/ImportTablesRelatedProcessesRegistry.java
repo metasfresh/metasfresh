@@ -3,6 +3,7 @@ package de.metas.impexp.processing.impl;
 import java.util.HashSet;
 import java.util.Objects;
 
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
@@ -108,7 +109,7 @@ final class ImportTablesRelatedProcessesRegistry
 		{
 			final IADTableDAO tablesRepo = Services.get(IADTableDAO.class);
 
-			final int importTableId = tablesRepo.retrieveTableId(importTableName);
+			final AdTableId importTableId = AdTableId.ofRepoId(tablesRepo.retrieveTableId(importTableName));
 			adProcessesRepo.registerTableProcess(RelatedProcessDescriptor.builder()
 					.processId(processId)
 					.tableId(importTableId)
