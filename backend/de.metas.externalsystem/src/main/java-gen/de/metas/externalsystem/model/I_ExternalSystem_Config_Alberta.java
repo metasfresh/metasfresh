@@ -207,25 +207,24 @@ public interface I_ExternalSystem_Config_Alberta
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Name.
+	 * Set Pharmacy price list.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	void setPharmacy_PriceList_ID (int Pharmacy_PriceList_ID);
 
 	/**
-	 * Get Name.
+	 * Get Pharmacy price list.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	int getPharmacy_PriceList_ID();
 
-	ModelColumn<I_ExternalSystem_Config_Alberta, Object> COLUMN_Name = new ModelColumn<>(I_ExternalSystem_Config_Alberta.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
+	String COLUMNNAME_Pharmacy_PriceList_ID = "Pharmacy_PriceList_ID";
 
 	/**
 	 * Set Tenant.

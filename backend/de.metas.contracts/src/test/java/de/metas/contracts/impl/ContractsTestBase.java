@@ -30,12 +30,14 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.TimeSource;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
+import de.metas.organization.OrgId;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -80,7 +82,10 @@ public class ContractsTestBase
 		final Properties ctx = Env.getCtx();
 		ctx.clear();
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, client.getAD_Client_ID());
-		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, 1);
+
+		final OrgId orgId = AdempiereTestHelper.createOrgWithTimeZone();
+		
+		Env.setContext(ctx, Env.CTXNAME_AD_Org_ID, orgId.getRepoId());
 		Env.setContext(ctx, Env.CTXNAME_AD_Role_ID, 1);
 		Env.setContext(ctx, Env.CTXNAME_AD_User_ID, 1);
 
@@ -91,6 +96,7 @@ public class ContractsTestBase
 		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
+		
 		init();
 	}
 

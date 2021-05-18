@@ -1,8 +1,9 @@
 package de.metas.vertical.healthcare.alberta.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Product_AlbertaArticle
  *  @author metasfresh (generated) 
@@ -30,27 +31,6 @@ public interface I_M_Product_AlbertaArticle
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Additional description.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAdditionalDescription (@Nullable java.lang.String AdditionalDescription);
-
-	/**
-	 * Get Additional description.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getAdditionalDescription();
-
-	ModelColumn<I_M_Product_AlbertaArticle, Object> COLUMN_AdditionalDescription = new ModelColumn<>(I_M_Product_AlbertaArticle.class, "AdditionalDescription", null);
-	String COLUMNNAME_AdditionalDescription = "AdditionalDescription";
-
-	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -73,13 +53,34 @@ public interface I_M_Product_AlbertaArticle
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Additional description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAdditionalDescription (@Nullable String AdditionalDescription);
+
+	/**
+	 * Get Additional description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getAdditionalDescription();
+
+	ModelColumn<I_M_Product_AlbertaArticle, Object> COLUMN_AdditionalDescription = new ModelColumn<>(I_M_Product_AlbertaArticle.class, "AdditionalDescription", null);
+	String COLUMNNAME_AdditionalDescription = "AdditionalDescription";
+
+	/**
 	 * Set Inventory type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setArticleInventoryType (java.lang.String ArticleInventoryType);
+	void setArticleInventoryType (String ArticleInventoryType);
 
 	/**
 	 * Get Inventory type.
@@ -88,7 +89,7 @@ public interface I_M_Product_AlbertaArticle
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getArticleInventoryType();
+	String getArticleInventoryType();
 
 	ModelColumn<I_M_Product_AlbertaArticle, Object> COLUMN_ArticleInventoryType = new ModelColumn<>(I_M_Product_AlbertaArticle.class, "ArticleInventoryType", null);
 	String COLUMNNAME_ArticleInventoryType = "ArticleInventoryType";
@@ -123,7 +124,7 @@ public interface I_M_Product_AlbertaArticle
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setArticleStatus (java.lang.String ArticleStatus);
+	void setArticleStatus (String ArticleStatus);
 
 	/**
 	 * Get Article status.
@@ -132,7 +133,7 @@ public interface I_M_Product_AlbertaArticle
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getArticleStatus();
+	String getArticleStatus();
 
 	ModelColumn<I_M_Product_AlbertaArticle, Object> COLUMN_ArticleStatus = new ModelColumn<>(I_M_Product_AlbertaArticle.class, "ArticleStatus", null);
 	String COLUMNNAME_ArticleStatus = "ArticleStatus";
@@ -144,7 +145,7 @@ public interface I_M_Product_AlbertaArticle
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAssortmentType (java.lang.String AssortmentType);
+	void setAssortmentType (String AssortmentType);
 
 	/**
 	 * Get Assortment type.
@@ -153,7 +154,7 @@ public interface I_M_Product_AlbertaArticle
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getAssortmentType();
+	String getAssortmentType();
 
 	ModelColumn<I_M_Product_AlbertaArticle, Object> COLUMN_AssortmentType = new ModelColumn<>(I_M_Product_AlbertaArticle.class, "AssortmentType", null);
 	String COLUMNNAME_AssortmentType = "AssortmentType";
@@ -207,28 +208,7 @@ public interface I_M_Product_AlbertaArticle
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Medical aid position number.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMedicalAidPositionNumber (@Nullable java.lang.String MedicalAidPositionNumber);
-
-	/**
-	 * Get Medical aid position number.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMedicalAidPositionNumber();
-
-	ModelColumn<I_M_Product_AlbertaArticle, Object> COLUMN_MedicalAidPositionNumber = new ModelColumn<>(I_M_Product_AlbertaArticle.class, "MedicalAidPositionNumber", null);
-	String COLUMNNAME_MedicalAidPositionNumber = "MedicalAidPositionNumber";
-
-	/**
-	 * Set M_Product_AlbertaArticle.
+	 * Set Alberta article data.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -237,7 +217,7 @@ public interface I_M_Product_AlbertaArticle
 	void setM_Product_AlbertaArticle_ID (int M_Product_AlbertaArticle_ID);
 
 	/**
-	 * Get M_Product_AlbertaArticle.
+	 * Get Alberta article data.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -253,7 +233,7 @@ public interface I_M_Product_AlbertaArticle
 	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setM_Product_ID (int M_Product_ID);
@@ -263,12 +243,33 @@ public interface I_M_Product_AlbertaArticle
 	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getM_Product_ID();
 
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
+
+	/**
+	 * Set Medical aid position number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMedicalAidPositionNumber (@Nullable String MedicalAidPositionNumber);
+
+	/**
+	 * Get Medical aid position number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getMedicalAidPositionNumber();
+
+	ModelColumn<I_M_Product_AlbertaArticle, Object> COLUMN_MedicalAidPositionNumber = new ModelColumn<>(I_M_Product_AlbertaArticle.class, "MedicalAidPositionNumber", null);
+	String COLUMNNAME_MedicalAidPositionNumber = "MedicalAidPositionNumber";
 
 	/**
 	 * Set Purchase rating.
@@ -278,7 +279,7 @@ public interface I_M_Product_AlbertaArticle
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPurchaseRating (@Nullable java.lang.String PurchaseRating);
+	void setPurchaseRating (@Nullable String PurchaseRating);
 
 	/**
 	 * Get Purchase rating.
@@ -288,7 +289,7 @@ public interface I_M_Product_AlbertaArticle
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPurchaseRating();
+	@Nullable String getPurchaseRating();
 
 	ModelColumn<I_M_Product_AlbertaArticle, Object> COLUMN_PurchaseRating = new ModelColumn<>(I_M_Product_AlbertaArticle.class, "PurchaseRating", null);
 	String COLUMNNAME_PurchaseRating = "PurchaseRating";
@@ -300,7 +301,7 @@ public interface I_M_Product_AlbertaArticle
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSize (@Nullable java.lang.String Size);
+	void setSize (@Nullable String Size);
 
 	/**
 	 * Get Size.
@@ -309,7 +310,7 @@ public interface I_M_Product_AlbertaArticle
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getSize();
+	@Nullable String getSize();
 
 	ModelColumn<I_M_Product_AlbertaArticle, Object> COLUMN_Size = new ModelColumn<>(I_M_Product_AlbertaArticle.class, "Size", null);
 	String COLUMNNAME_Size = "Size";

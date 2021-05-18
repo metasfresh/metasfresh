@@ -72,6 +72,7 @@ public class CommissionInstanceRequestFactory
 		final Hierarchy hierarchy = commissionHierarchyFactory.createFor(customerBPartnerId);
 
 		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.orgId(commissionTriggerDocument.getOrgId())
 				.commissionHierarchy(hierarchy)
 				.customerBPartnerId(customerBPartnerId)
 				.salesRepBPartnerId(salesRepBPartnerId)

@@ -2,9 +2,8 @@ package de.metas.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.Test;
-
 import com.google.common.collect.ImmutableSet;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -60,7 +59,11 @@ public class OptionalBooleanTest
 	{
 		assertThat(OptionalBoolean.UNKNOWN.isPresent()).isFalse();
 		assertThat(OptionalBoolean.UNKNOWN.isUnknown()).isTrue();
+
+		//noinspection ConstantConditions
 		assertThat(OptionalBoolean.UNKNOWN.isPresent()).isFalse();
+
+		//noinspection ConstantConditions
 		assertThat(OptionalBoolean.UNKNOWN.isPresent()).isFalse();
 	}
 
@@ -87,5 +90,18 @@ public class OptionalBooleanTest
 		assertThat(OptionalBoolean.ofNullableString(null)).isSameAs(OptionalBoolean.UNKNOWN);
 		assertThat(OptionalBoolean.ofNullableString("")).isSameAs(OptionalBoolean.UNKNOWN);
 		assertThat(OptionalBoolean.ofNullableString("      ")).isSameAs(OptionalBoolean.UNKNOWN);
+	}
+
+	@Test
+	public void test_orElse()
+	{
+		assertThat(OptionalBoolean.TRUE.orElseTrue()).isTrue();
+		assertThat(OptionalBoolean.TRUE.orElseFalse()).isTrue();
+
+		assertThat(OptionalBoolean.FALSE.orElseTrue()).isFalse();
+		assertThat(OptionalBoolean.FALSE.orElseFalse()).isFalse();
+
+		assertThat(OptionalBoolean.UNKNOWN.orElseTrue()).isTrue();
+		assertThat(OptionalBoolean.UNKNOWN.orElseFalse()).isFalse();
 	}
 }

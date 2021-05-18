@@ -12,6 +12,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -137,7 +138,7 @@ public interface IProductDAO extends ISingletonService
 		}
 	}
 
-	Stream<I_M_Product> streamAllProducts();
+	Stream<I_M_Product> streamAllProducts(@Nullable Instant since);
 
 	/**
 	 * @return product category or null if the productId is null

@@ -40,14 +40,9 @@ public class JsonOrderCustomer
 	String id;
 
 	@NonNull
-	@JsonProperty("versionId")
-	String versionId;
-
-	@NonNull
 	@JsonProperty("orderId")
 	String orderId;
 
-	@NonNull
 	@JsonProperty("customerId")
 	String customerId;
 

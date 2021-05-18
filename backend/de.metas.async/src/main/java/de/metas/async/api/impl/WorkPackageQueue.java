@@ -738,7 +738,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	@Override
 	public void markReadyForProcessing(@NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final IQueueProcessorListener callback)
 	{
-		try (final MDCCloseable workPackageMDC = TableRecordMDC.putTableRecordReference(workPackage))
+		try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(workPackage))
 		{
 			final IQueueProcessorEventDispatcher queueProcessorEventDispatcher = Services.get(IQueueProcessorFactory.class).getQueueProcessorEventDispatcher();
 

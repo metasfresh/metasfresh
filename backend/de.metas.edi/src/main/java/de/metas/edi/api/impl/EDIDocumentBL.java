@@ -128,7 +128,7 @@ public class EDIDocumentBL implements IEDIDocumentBL
 		feedback.addAll(isValidPartner(invoice.getC_BPartner(), true/* isPartOfInvoiceValidation */));
 
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final org.compiere.model.I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+		final org.compiere.model.I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
 		feedback.addAll(isValidBPLocation(bPartnerLocationRecord));
 
 		// task 09182: for return material credit memos, we don't have or need an (imported) EDI ORDERS PoReference

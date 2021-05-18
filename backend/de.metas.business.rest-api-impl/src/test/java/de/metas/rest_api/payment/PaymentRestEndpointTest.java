@@ -23,7 +23,9 @@
 package de.metas.rest_api.payment;
 
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.common.rest_api.payment.JsonInboundPaymentInfo;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.common.rest_api.v1.payment.JsonInboundPaymentInfo;
 import de.metas.currency.CurrencyCode;
 import de.metas.money.CurrencyId;
 import de.metas.order.impl.OrderLineDetailRepository;
@@ -33,6 +35,7 @@ import de.metas.payment.api.IPaymentDAO;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
@@ -47,8 +50,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
@@ -122,7 +123,7 @@ class PaymentRestEndpointTest
 
 		// enable auto linking SO <-> Payment
 		Services.get(ISysConfigBL.class).setValue(C_Order.AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, true, ClientId.SYSTEM, OrgId.ANY);
-
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		// run the "before_complete" interceptor
 		new C_Order(new OrderLineDetailRepository()).linkWithPaymentByExternalOrderId(salesOrder);
 

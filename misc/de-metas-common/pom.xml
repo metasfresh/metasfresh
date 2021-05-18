@@ -53,8 +53,20 @@
         <module>de-metas-common-rest_api</module>
         <module>de-metas-common-shipping</module>
         <module>de-metas-common-util</module>
+        <module>de-metas-common-product</module>
+        <module>de-metas-common-pricing</module>
+        <module>de-metas-common-ordercandidates</module>
     </modules>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+    
     <build>
         <plugins>
             <plugin>

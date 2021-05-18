@@ -87,12 +87,18 @@ class Filters extends PureComponent {
    * @method clearFilters
    * @summary Clears all the filters for a specified filter group
    * @param {object} filterToClear - object containing the filters
+   * @param {boolean} noUpdate - flag defining if filters should be re-fetched on clearing.
+   *                             Used when clearing happens through `apply`
    */
-  clearFilters = (filterToClear) => {
+  clearFilters = (filterToClear, noUpdate) => {
     const { filterId, clearAllFilters, filters, updateDocList } = this.props;
+
     clearAllFilters({ filterId, data: filterToClear });
+
     // fetch again the doc content after filters were updated into the store
-    updateDocList(filters.filtersActive);
+    if (!noUpdate) {
+      updateDocList(filters.filtersActive);
+    }
   };
 
   /**

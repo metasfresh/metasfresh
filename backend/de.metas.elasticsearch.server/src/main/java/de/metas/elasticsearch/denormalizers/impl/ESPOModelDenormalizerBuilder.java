@@ -1,24 +1,24 @@
 package de.metas.elasticsearch.denormalizers.impl;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.elasticsearch.config.ESModelIndexerProfile;
+import de.metas.elasticsearch.config.ESTextAnalyzer;
+import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
+import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.POInfo;
+import org.compiere.util.DisplayType;
+
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-
-import org.compiere.model.POInfo;
-import org.compiere.util.DisplayType;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.elasticsearch.config.ESModelIndexerProfile;
-import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
-import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
-import de.metas.elasticsearch.types.ESDataType;
-import de.metas.elasticsearch.types.ESIndexType;
-import de.metas.util.Check;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -30,12 +30,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,8 +56,7 @@ final class ESPOModelDenormalizerBuilder
 	private final Set<String> columnsToAlwaysInclude = new HashSet<>();
 	private final Set<String> columnsToInclude = new HashSet<>();
 	private final Set<String> columnsToExclude = new HashSet<>();
-	private final Map<String, ESPOModelDenormalizerColumn> columnDenormalizersByColumnName = new HashMap<>();
-	private final Map<String, ESIndexType> columnsIndexType = new HashMap<>();
+	private final HashMap<String, ESDataType> columnsType = new HashMap<>();
 
 	private String currentColumnName;
 
@@ -73,6 +72,11 @@ final class ESPOModelDenormalizerBuilder
 		this.modelTableName = modelTableName;
 
 		poInfo = POInfo.getPOInfo(modelTableName);
+		if (poInfo == null)
+		{
+			throw new AdempiereException("No POInfo found for " + modelTableName);
+		}
+
 		keyColumnName = poInfo.getKeyColumnName();
 		columnsToAlwaysInclude.add(keyColumnName);
 
@@ -85,34 +89,10 @@ final class ESPOModelDenormalizerBuilder
 		final Set<String> fullTextSearchFieldNames = new LinkedHashSet<>();
 
 		//
-		// Add registered denormalizers
-		for (final Map.Entry<String, ESPOModelDenormalizerColumn> entry : columnDenormalizersByColumnName.entrySet())
-		{
-			final String columnName = entry.getKey();
-			if (!isIncludeColumn(columnName))
-			{
-				continue;
-			}
-
-			final ESPOModelDenormalizerColumn valueExtractorAndDenormalizer = entry.getValue();
-			if (valueExtractorAndDenormalizer == null)
-			{
-				continue;
-			}
-
-			columnDenormalizersEffective.put(columnName, valueExtractorAndDenormalizer);
-
-			if (isFullTextSearchField(columnName))
-			{
-				fullTextSearchFieldNames.add(columnName);
-			}
-		}
-
-		//
 		// Autodetect column normalizers
 		for (int columnIndex = 0, columnsCount = poInfo.getColumnCount(); columnIndex < columnsCount; columnIndex++)
 		{
-			final String columnName = poInfo.getColumnName(columnIndex);
+			final String columnName = Objects.requireNonNull(poInfo.getColumnName(columnIndex));
 
 			// skip if it was explicitly banned
 			if (!isIncludeColumn(columnName))
@@ -140,7 +120,7 @@ final class ESPOModelDenormalizerBuilder
 			}
 			columnDenormalizersEffective.put(columnName, valueExtractorAndDenormalizer);
 
-			if (isFullTextSearchField(columnName))
+			if (hasFullTextSearchSupport(columnName))
 			{
 				fullTextSearchFieldNames.add(columnName);
 			}
@@ -149,98 +129,111 @@ final class ESPOModelDenormalizerBuilder
 		return new ESPOModelDenormalizer(profile, modelTableName, keyColumnName, columnDenormalizersEffective, fullTextSearchFieldNames);
 	}
 
-	private boolean isFullTextSearchField(String columnName)
+	private boolean hasFullTextSearchSupport(@NonNull final String columnName)
 	{
 		final int displayType = poInfo.getColumnDisplayType(columnName);
+		return hasFullTextSearchSupport(columnName, displayType);
+	}
 
+	private static boolean hasFullTextSearchSupport(@NonNull final String columnName, final int displayType)
+	{
 		// Exclude passwords
 		if (DisplayType.isPassword(columnName, displayType))
 		{
 			return false;
 		}
 
-		if (DisplayType.isText(displayType))
-		{
-			return true;
-		}
-		else if (displayType == DisplayType.Location)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return DisplayType.isText(displayType)
+				|| displayType == DisplayType.Location;
 	}
 
-	private final ESPOModelDenormalizerColumn generateColumn(final String columnName)
+	@Nullable
+	private ESPOModelDenormalizerColumn generateColumn(final String columnName)
 	{
 		final int displayType = poInfo.getColumnDisplayType(columnName);
-		final ESIndexType indexType = getIndexType(columnName, displayType);
+		final int AD_Reference_ID = poInfo.getColumnReferenceValueId(columnName);
+		//final ESIndexType indexType = getIndexType(columnName, displayType);
+		final ESDataType dataTypeOverride = columnsType.get(columnName);
 
 		//
 		// ID column
 		if (DisplayType.ID == displayType)
 		{
-			return ESPOModelDenormalizerColumn.passThrough(ESDataType.String, indexType);
+			return ESPOModelDenormalizerColumn.passThrough(dataTypeOverride != null ? dataTypeOverride : ESDataType.Keyword);
 		}
 
 		//
 		// Parent link column
 		// NOTE: don't skip parent columns because it might be that we have a value deserializer registered for it
-		// if (poInfo.isColumnParent(columnName))
+		// else if (poInfo.isColumnParent(columnName))
 		// {
 		// return ESModelDenormalizerColumn.passThrough(ESDataType.String, indexType);
 		// }
 
 		//
 		// Text
-		if (DisplayType.isText(displayType))
+		else if (DisplayType.isText(displayType))
 		{
-			final String analyzer = getAnalyzer(columnName);
-			return ESPOModelDenormalizerColumn.passThrough(ESDataType.String, indexType, analyzer);
+			final ESTextAnalyzer textAnalyzer = profile.getTextAnalyzer();
+			ESDataType dataType = dataTypeOverride;
+			if (dataType == null)
+			{
+				dataType = textAnalyzer == ESTextAnalyzer.FULL_TEXT_SEARCH && hasFullTextSearchSupport(columnName, displayType)
+						? ESDataType.Text
+						: ESDataType.Keyword;
+			}
+			return ESPOModelDenormalizerColumn.passThrough(dataType, textAnalyzer);
 		}
 
 		//
 		// Numeric
-		if (DisplayType.isNumeric(displayType))
+		else if (DisplayType.isNumeric(displayType))
 		{
-			final ESDataType dataType = DisplayType.Integer == displayType ? ESDataType.Integer : ESDataType.Double;
-			return ESPOModelDenormalizerColumn.passThrough(dataType, indexType);
+			ESDataType dataType = dataTypeOverride;
+			if (dataType == null)
+			{
+				dataType = DisplayType.Integer == displayType ? ESDataType.Integer : ESDataType.Double;
+			}
+			return ESPOModelDenormalizerColumn.passThrough(dataType);
 		}
 
 		//
 		// Date
-		if (DisplayType.isDate(displayType))
+		else if (DisplayType.isDate(displayType))
 		{
-			return ESPOModelDenormalizerColumn.rawValue(DateDenormalizer.of(displayType, indexType));
+			Check.assumeNull(dataTypeOverride, "overriding type for {} is not allowed", columnName);
+			return ESPOModelDenormalizerColumn.rawValue(DateDenormalizer.of(displayType));
 		}
 
 		//
 		// Boolean
-		if (DisplayType.YesNo == displayType)
+		else if (DisplayType.YesNo == displayType)
 		{
-			return ESPOModelDenormalizerColumn.passThrough(ESDataType.Boolean, indexType);
+			Check.assumeNull(dataTypeOverride, "overriding type for {} is not allowed", columnName);
+			return ESPOModelDenormalizerColumn.passThrough(ESDataType.Boolean);
 		}
 
 		//
 		// List/Button list
-		final int AD_Reference_ID = poInfo.getColumnReferenceValueId(columnName);
-		if (DisplayType.Button == displayType && AD_Reference_ID <= 0)
+		else if (DisplayType.Button == displayType && AD_Reference_ID <= 0)
 		{
+			Check.assumeNull(dataTypeOverride, "overriding type for {} is not allowed", columnName);
 			return null;
 		}
-		if ((DisplayType.List == displayType || DisplayType.Button == displayType) && AD_Reference_ID > 0)
+		else if ((DisplayType.List == displayType || DisplayType.Button == displayType) && AD_Reference_ID > 0)
 		{
-			return ESPOModelDenormalizerColumn.of(PORawValueExtractor.instance, AD_Ref_List_Denormalizer.of(AD_Reference_ID));
+			Check.assumeNull(dataTypeOverride, "overriding type for {} is not allowed", columnName);
+			return ESPOModelDenormalizerColumn.of(PORawValueExtractor.instance, AD_Ref_List_Denormalizer.instance);
 		}
 
 		//
 		// Lookups:
 		// * generic: TableDir, Table, Search
 		// * special: ASI, Location, Locator, Color etc
-		if (DisplayType.isAnyLookup(displayType))
+		else if (DisplayType.isAnyLookup(displayType))
 		{
+			Check.assumeNull(dataTypeOverride, "overriding type for {} is not allowed", columnName);
+
 			final String refTableName = poInfo.getReferencedTableNameOrNull(columnName);
 			if (refTableName == null)
 			{
@@ -256,7 +249,14 @@ final class ESPOModelDenormalizerBuilder
 			return ESPOModelDenormalizerColumn.of(valueModelDenormalizer);
 		}
 
-		return null;
+		//
+		//
+		else
+		{
+			Check.assumeNull(dataTypeOverride, "overriding type for {} is not allowed", columnName);
+
+			return null;
+		}
 	}
 
 	private boolean isEligibleForColumnAutoGeneration(final String columnName)
@@ -289,12 +289,7 @@ final class ESPOModelDenormalizerBuilder
 			return false;
 		}
 
-		if (columnsToExclude.contains(columnName))
-		{
-			return false;
-		}
-
-		return true;
+		return !columnsToExclude.contains(columnName);
 	}
 
 	public ESPOModelDenormalizerBuilder includeColumn(final String columnName)
@@ -317,38 +312,10 @@ final class ESPOModelDenormalizerBuilder
 		return this;
 	}
 
-	public ESPOModelDenormalizerBuilder index(final ESIndexType esIndexType)
+	public ESPOModelDenormalizerBuilder type(@NonNull final ESDataType esDataType)
 	{
 		Check.assumeNotEmpty(currentColumnName, "lastIncludedColumn is not empty");
-		Check.assumeNotNull(esIndexType, "Parameter esIndexType is not null");
-
-		columnsIndexType.put(currentColumnName, esIndexType);
-
+		columnsType.put(currentColumnName, esDataType);
 		return this;
-	}
-
-	private ESIndexType getIndexType(final String columnName, final int displayType)
-	{
-		final ESIndexType esIndexType = columnsIndexType.get(columnName);
-		return esIndexType != null ? esIndexType : getDefaultIndexType(displayType);
-	}
-
-	private ESIndexType getDefaultIndexType(final int displayType)
-	{
-		if (profile == ESModelIndexerProfile.FULL_TEXT_SEARCH)
-		{
-			if (DisplayType.isText(displayType))
-			{
-				return ESIndexType.Analyzed;
-			}
-		}
-
-		// fallback
-		return ESIndexType.NotAnalyzed;
-	}
-
-	private String getAnalyzer(final String columnName)
-	{
-		return profile.getDefaultAnalyzer();
 	}
 }

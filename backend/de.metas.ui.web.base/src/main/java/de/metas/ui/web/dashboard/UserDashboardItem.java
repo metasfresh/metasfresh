@@ -1,15 +1,15 @@
 package de.metas.ui.web.dashboard;
 
-import java.util.function.Supplier;
-
-import javax.annotation.concurrent.Immutable;
-
-import com.google.common.base.MoreObjects;
-
 import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.util.Check;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 
 /*
  * #%L
@@ -33,51 +33,34 @@ import de.metas.util.Check;
  * #L%
  */
 
-@Immutable
-public final class UserDashboardItem
+@Value
+public class UserDashboardItem
 {
+	@NonNull UserDashboardItemId id;
+	@NonNull ITranslatableString caption;
+	String url;
+	int seqNo;
+	DashboardWidgetType widgetType;
+	@Nullable KPISupplier kpiSupplier;
+	@NonNull KPITimeRangeDefaults timeRangeDefaults;
 
-	public static Builder builder()
+	@Builder
+	private UserDashboardItem(
+			@NonNull final UserDashboardItemId id,
+			@NonNull final ITranslatableString caption,
+			final String url,
+			final int seqNo,
+			final DashboardWidgetType widgetType,
+			@Nullable final KPISupplier kpiSupplier,
+			@Nullable final KPITimeRangeDefaults timeRangeDefaults)
 	{
-		return new Builder();
-	}
-
-	private final int id;
-	private final ITranslatableString caption;
-	private final String url;
-	private final int seqNo;
-	private final DashboardWidgetType widgetType;
-	private final Supplier<KPI> kpiSupplier;
-
-	private final KPITimeRangeDefaults timeRangeDefaults;
-
-	private UserDashboardItem(final Builder builder)
-	{
-		super();
-		id = builder.id;
-		caption = builder.caption;
-		url = builder.url;
-		seqNo = builder.seqNo;
-		widgetType = builder.widgetType;
-		kpiSupplier = builder.kpiSupplier;
-
-		timeRangeDefaults = builder.timeRangeDefaults;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add("id", id)
-				.add("caption", caption)
-				.add("seqNo", seqNo)
-				.add("widgetType", widgetType)
-				.toString();
-	}
-
-	public int getId()
-	{
-		return id;
+		this.id = id;
+		this.caption = caption;
+		this.url = url;
+		this.seqNo = seqNo;
+		this.widgetType = widgetType;
+		this.kpiSupplier = kpiSupplier;
+		this.timeRangeDefaults = timeRangeDefaults != null ? timeRangeDefaults : KPITimeRangeDefaults.DEFAULT;
 	}
 
 	public String getCaption(final String adLanguage)
@@ -85,19 +68,16 @@ public final class UserDashboardItem
 		return caption.translate(adLanguage);
 	}
 
-	public String getUrl()
+	public KPIId getKPIId()
 	{
-		return url;
-	}
-
-	public int getSeqNo()
-	{
-		return seqNo;
-	}
-
-	public DashboardWidgetType getWidgetType()
-	{
-		return widgetType;
+		if(kpiSupplier == null)
+		{
+			throw new EntityNotFoundException("No KPI defined for " + this);
+		}
+		else
+		{
+			return kpiSupplier.getKpiId();
+		}
 	}
 
 	public KPI getKPI()
@@ -105,87 +85,14 @@ public final class UserDashboardItem
 		final KPI kpi = kpiSupplier == null ? null : kpiSupplier.get();
 		if (kpi == null)
 		{
-			throw new EntityNotFoundException("No KPI defiend for " + this);
+			throw new EntityNotFoundException("No KPI defined for " + this);
 		}
 		return kpi;
 	}
-	
+
 	public KPITimeRangeDefaults getTimeRangeDefaults()
 	{
 		final KPI kpi = getKPI();
 		return timeRangeDefaults.compose(kpi.getTimeRangeDefaults());
 	}
-
-	public static final class Builder
-	{
-		private Integer id;
-		private ITranslatableString caption = TranslatableStrings.empty();
-		private String url;
-		private int seqNo;
-		private DashboardWidgetType widgetType;
-		private Supplier<KPI> kpiSupplier;
-
-		private KPITimeRangeDefaults timeRangeDefaults = KPITimeRangeDefaults.DEFAULT;
-
-		private Builder()
-		{
-			super();
-		}
-
-		public UserDashboardItem build()
-		{
-			Check.assumeNotNull(id, "Parameter id is not null");
-			return new UserDashboardItem(this);
-		}
-
-		public Builder setId(final int id)
-		{
-			this.id = id;
-			return this;
-		}
-
-		public Builder setCaption(final ITranslatableString caption)
-		{
-			Check.assumeNotNull(caption, "Parameter caption is not null");
-			this.caption = caption;
-			return this;
-		}
-
-		public Builder setCaption(final String caption)
-		{
-			this.caption = TranslatableStrings.constant(caption);
-			return this;
-		}
-
-		public Builder setUrl(final String url)
-		{
-			this.url = url;
-			return this;
-		}
-
-		public Builder setSeqNo(final int seqNo)
-		{
-			this.seqNo = seqNo;
-			return this;
-		}
-
-		public Builder setWidgetType(final DashboardWidgetType widgetType)
-		{
-			this.widgetType = widgetType;
-			return this;
-		}
-
-		public Builder setKPI(final Supplier<KPI> kpiSupplier)
-		{
-			this.kpiSupplier = kpiSupplier;
-			return this;
-		}
-		
-		public Builder setTimeRangeDefaults(KPITimeRangeDefaults timeRangeDefaults)
-		{
-			this.timeRangeDefaults = timeRangeDefaults != null ? timeRangeDefaults : KPITimeRangeDefaults.DEFAULT;
-			return this;
-		}
-	}
-
 }

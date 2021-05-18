@@ -1,7 +1,7 @@
 package de.metas.rest_api.utils;
 
 import de.metas.bpartner.GLN;
-import de.metas.common.rest_api.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -32,7 +32,9 @@ import static de.metas.util.Check.assumeNotEmpty;
  * #L%
  */
 
-/** Key used in conjunction with an orgId to do caching. */
+/**
+ * Key used in conjunction with an orgId to do caching.
+ */
 @Value
 public class BPartnerCompositeLookupKey
 {
@@ -90,10 +92,10 @@ public class BPartnerCompositeLookupKey
 	GLN gln;
 
 	private BPartnerCompositeLookupKey(
-			MetasfreshId metasfreshId,
-			JsonExternalId jsonExternalId,
-			String code,
-			GLN gln)
+			final MetasfreshId metasfreshId,
+			final JsonExternalId jsonExternalId,
+			final String code,
+			final GLN gln)
 	{
 		this.metasfreshId = metasfreshId;
 		this.jsonExternalId = jsonExternalId;

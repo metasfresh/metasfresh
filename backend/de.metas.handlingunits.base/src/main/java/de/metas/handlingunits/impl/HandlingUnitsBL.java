@@ -958,11 +958,15 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public AttributeSetInstanceId createASIFromHUAttributes(@NonNull final ProductId productId, @NonNull final I_M_HU hu)
 	{
-		final ImmutableAttributeSet attributes = attributeStorageFactoryService.createHUAttributeStorageFactory()
-				.getImmutableAttributeSet(hu);
+		final ImmutableAttributeSet attributes = getImmutableAttributeSet(hu);
 
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASIWithASFromProductAndInsertAttributeSet(productId, attributes);
 		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
 	}
 
+	@Override
+	public ImmutableAttributeSet getImmutableAttributeSet(@NonNull final I_M_HU hu)
+	{
+		return attributeStorageFactoryService.createHUAttributeStorageFactory().getImmutableAttributeSet(hu);
+	}
 }

@@ -15,7 +15,7 @@ import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.rest_api.utils.RestApiUtils;
+import de.metas.rest_api.utils.RestApiUtilsV1;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
@@ -109,6 +109,6 @@ public class BpartnerProductRestController
 	private String trl(final String message)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		return msgBL.parseTranslation(RestApiUtils.getAdLanguage(), message);
+		return msgBL.parseTranslation(RestApiUtilsV1.getAdLanguage(), message);
 	}
 }

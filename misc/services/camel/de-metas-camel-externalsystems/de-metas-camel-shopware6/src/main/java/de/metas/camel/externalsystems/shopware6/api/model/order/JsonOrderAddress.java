@@ -40,10 +40,6 @@ public class JsonOrderAddress
 	String id;
 
 	@NonNull
-	@JsonProperty("versionId")
-	String versionId;
-
-	@NonNull
 	@JsonProperty("countryId")
 	String countryId;
 

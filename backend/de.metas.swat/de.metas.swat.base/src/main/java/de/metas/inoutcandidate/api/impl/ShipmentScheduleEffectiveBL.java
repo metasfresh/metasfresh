@@ -38,7 +38,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	public I_C_BPartner_Location getBPartnerLocation(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final BPartnerLocationId locationId = getBPartnerLocationId(sched);
-		return Services.get(IBPartnerDAO.class).getBPartnerLocationById(locationId);
+		return Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(locationId);
 	}
 
 	@Override

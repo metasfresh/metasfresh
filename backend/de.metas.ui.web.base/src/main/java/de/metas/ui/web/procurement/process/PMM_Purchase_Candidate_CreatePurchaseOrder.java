@@ -73,12 +73,12 @@ public class PMM_Purchase_Candidate_CreatePurchaseOrder
 		final SqlOptions sqlOptions = SqlOptions.usingTableName(I_PMM_PurchaseCandidate.Table_Name);
 		final SqlViewRowsWhereClause sqlWhereClause = getView().getSqlWhereClause(DocumentIdsSelection.ALL, sqlOptions);
 
-		final ICompositeQueryFilter<I_PMM_PurchaseCandidate> i_pmm_purchaseCandidateICompositeQueryFilter = queryBL.createCompositeQueryFilter(I_PMM_PurchaseCandidate.class)
-				.addCompareFilter(I_PMM_PurchaseCandidate.COLUMNNAME_QtyOrdered, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
+		final ICompositeQueryFilter<I_PMM_PurchaseCandidate> procurementPurchaseCandidateQueryFilter = queryBL.createCompositeQueryFilter(I_PMM_PurchaseCandidate.class)
+				.addCompareFilter(I_PMM_PurchaseCandidate.COLUMNNAME_QtyToOrder, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
 				.addFilter(sqlWhereClause.toQueryFilter());
 
 		recordsEnqueued = PMM_GenerateOrders.prepareEnqueuing()
-				.filter(i_pmm_purchaseCandidateICompositeQueryFilter)
+				.filter(procurementPurchaseCandidateQueryFilter)
 				.enqueue();
 		return MSG_OK;
 	}

@@ -1,0 +1,29 @@
+{
+  "systemName": "ALBERTA",
+  "items": [
+    {
+      "id": "fcf48850-c52c-4263-92b2-e889bfffeaf0",
+      "type": "BPartner"
+    },
+    {
+      "id": "5ab23eb59d69c74b68d0eded",
+      "type": "BPartner"
+    },
+    {
+      "id": "5ab2383d9d69c74b68cf19dc",
+      "type": "BPartner"
+    },
+    {
+      "id": "5ab2390e9d69c74b68cf4f2d",
+      "type": "BPartner"
+    },
+    {
+      "id": "5ab233bc9d69c74b68cec23a",
+      "type": "BPartner"
+    },
+    {
+      "id": "5ada01a2c3918e1bdcb5460e",
+      "type": "BPartner"
+    }
+  ]
+}

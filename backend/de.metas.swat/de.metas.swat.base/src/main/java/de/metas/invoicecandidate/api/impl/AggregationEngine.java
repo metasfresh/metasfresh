@@ -1,57 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.time.LocalDate;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import ch.qos.logback.classic.Level;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderId;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
@@ -86,6 +35,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -422,14 +373,13 @@ public final class AggregationEngine
 			invoiceHeader.setBill_Location_ID(billBPLocationId.getRepoId());
 			invoiceHeader.setBill_User_ID(BPartnerContactId.toRepoId(billContactId));
 			invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
-			invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
 			invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
-		final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
-		if (orderId != null)
-		{
-			invoiceHeader.setExternalId(orderDAO.getById(orderId).getExternalId());
-		}
+			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
+			if (orderId != null)
+			{
+				invoiceHeader.setExternalId(orderDAO.getById(orderId).getExternalId());
+			}
 
 			// why not using DateToInvoice[_Override] if available?
 			// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this icRecord may be invoiced

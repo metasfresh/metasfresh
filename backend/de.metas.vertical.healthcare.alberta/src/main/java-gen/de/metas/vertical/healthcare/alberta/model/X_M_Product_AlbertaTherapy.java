@@ -1,18 +1,18 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.vertical.healthcare.alberta.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Product_AlbertaTherapy
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_M_Product_AlbertaTherapy extends org.compiere.model.PO implements I_M_Product_AlbertaTherapy, org.compiere.model.I_Persistent 
+public class X_M_Product_AlbertaTherapy extends org.compiere.model.PO implements I_M_Product_AlbertaTherapy, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 2083171881L;
+	private static final long serialVersionUID = -1869959292L;
 
     /** Standard Constructor */
     public X_M_Product_AlbertaTherapy (final Properties ctx, final int M_Product_AlbertaTherapy_ID, @Nullable final String trxName)
@@ -106,25 +106,25 @@ public class X_M_Product_AlbertaTherapy extends org.compiere.model.PO implements
 	/** Schmerztherapie = 17 */
 	public static final String THERAPY_Schmerztherapie = "17";
 	@Override
-	public void setTherapy (final java.lang.String Therapy)
+	public void setTherapy (final String Therapy)
 	{
 		set_Value (COLUMNNAME_Therapy, Therapy);
 	}
 
 	@Override
-	public java.lang.String getTherapy() 
+	public String getTherapy()
 	{
 		return get_ValueAsString(COLUMNNAME_Therapy);
 	}
 
 	@Override
-	public void setValue (final @Nullable java.lang.String Value)
+	public void setValue (final @Nullable String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
 	@Override
-	public java.lang.String getValue() 
+	public String getValue()
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}

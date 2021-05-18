@@ -23,7 +23,7 @@
 package de.metas.rest_api.payment;
 
 import de.metas.Profiles;
-import de.metas.common.rest_api.payment.JsonInboundPaymentInfo;
+import de.metas.common.rest_api.v1.payment.JsonInboundPaymentInfo;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;

@@ -11,6 +11,7 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.I_PP_Order_BOMLine;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
@@ -203,7 +204,10 @@ class PPOrderLinesViewDataLoader
 		for (final HuId sourceHUId : SourceHUsService.get().retrieveMatchingSourceHUIds(sourceHusQuery))
 		{
 			final HUEditorRow huEditorRow = huEditorRepo.retrieveForHUId(sourceHUId);
-			result.add(createRowForSourceHU(huEditorRow));
+			if(X_M_HU.HUSTATUS_Active.equals(huEditorRow.getHUStatus()))
+			{
+				result.add(createRowForSourceHU(huEditorRow));
+			}
 		}
 
 		return result.build();

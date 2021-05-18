@@ -4,10 +4,12 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -103,7 +105,9 @@ public class ProductBOMDAO implements IProductBOMDAO
 	@Override
 	public Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull final I_M_Product product)
 	{
-		return getDefaultBOM(product, BOMType.CurrentActive);
+		return Optionals.firstPresentOfSuppliers(
+				()->getDefaultBOM(product, BOMType.CurrentActive),
+				()->getDefaultBOM(product, BOMType.MakeToOrder));
 	}
 
 	@Override

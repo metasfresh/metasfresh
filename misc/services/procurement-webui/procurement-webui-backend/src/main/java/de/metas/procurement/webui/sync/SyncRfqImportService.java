@@ -108,7 +108,7 @@ class SyncRfqImportService extends AbstractSyncImportService
 
 		//
 		// Product
-		final SyncProduct syncProduct = syncRfQ.getProduct();
+		final SyncProduct syncProduct = assertNotDeleteRequest_WarnAndFix(syncRfQ.getProduct(), "importing RfQs");
 		final Product product = productImportService.importProduct(syncProduct)
 				.orElseThrow(() -> new RuntimeException("Deleted product cannot be used in " + syncRfQ));
 		rfq.setProduct_id(product.getId());

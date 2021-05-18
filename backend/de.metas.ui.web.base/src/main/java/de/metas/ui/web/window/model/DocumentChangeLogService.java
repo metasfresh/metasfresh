@@ -62,8 +62,8 @@ public class DocumentChangeLogService
 	private JSONDocumentChangeLog toJson(RecordChangeLog changeLog, final String adLanguage)
 	{
 		final JSONDocumentChangeLog json = new JSONDocumentChangeLog();
-		json.setCreatedByUsername(usersRepo.retrieveUserFullname(changeLog.getCreatedByUserId()));
-		json.setLastChangedByUsername(usersRepo.retrieveUserFullname(changeLog.getLastChangedByUserId()));
+		json.setCreatedByUsername(usersRepo.retrieveUserFullName(changeLog.getCreatedByUserId()));
+		json.setLastChangedByUsername(usersRepo.retrieveUserFullName(changeLog.getLastChangedByUserId()));
 
 		final ZonedDateTime created = TimeUtil.asZonedDateTime(changeLog.getCreatedTimestamp());
 		json.setCreatedTimestamp(formatTimestamp(created, adLanguage));

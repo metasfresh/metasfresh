@@ -74,6 +74,31 @@ public interface I_AD_User
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Org Mapping.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_Mapping_ID (int AD_Org_Mapping_ID);
+
+	/**
+	 * Get Org Mapping.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_Mapping_ID();
+
+	@Nullable org.compiere.model.I_AD_Org_Mapping getAD_Org_Mapping();
+
+	void setAD_Org_Mapping(@Nullable org.compiere.model.I_AD_Org_Mapping AD_Org_Mapping);
+
+	ModelColumn<I_AD_User, org.compiere.model.I_AD_Org_Mapping> COLUMN_AD_Org_Mapping_ID = new ModelColumn<>(I_AD_User.class, "AD_Org_Mapping_ID", org.compiere.model.I_AD_Org_Mapping.class);
+	String COLUMNNAME_AD_Org_Mapping_ID = "AD_Org_Mapping_ID";
+
+	/**
 	 * Set Trx Organization.
 	 * Performing or initiating organization
 	 *
@@ -303,31 +328,6 @@ public interface I_AD_User
 	String COLUMNNAME_C_Job_ID = "C_Job_ID";
 
 	/**
-	 * Set Titel.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Title_ID (int C_Title_ID);
-
-	/**
-	 * Get Titel.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Title_ID();
-
-	@Nullable org.compiere.model.I_C_Title getC_Title();
-
-	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
-
-	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
-	String COLUMNNAME_C_Title_ID = "C_Title_ID";
-
-	/**
 	 * Set Comments.
 	 * Comments or additional information
 	 *
@@ -464,6 +464,31 @@ public interface I_AD_User
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Title_ID (int C_Title_ID);
+
+	/**
+	 * Get Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Title_ID();
+
+	@Nullable org.compiere.model.I_C_Title getC_Title();
+
+	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
+
+	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
+	String COLUMNNAME_C_Title_ID = "C_Title_ID";
 
 	/**
 	 * Set Löschdatum.

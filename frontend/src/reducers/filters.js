@@ -84,6 +84,9 @@ const reducer = produce((draftState, action) => {
     }
     case types.CLEAR_ALL_FILTERS: {
       const { id, data } = action.payload;
+
+      if (!id) return;
+
       const currentFilters = original(draftState[id]);
       if (currentFilters) {
         const filtersAfterClearing = currentFilters.filtersActive

@@ -44,14 +44,12 @@ search:
       hard: 65536
   cap_add:
     - IPC_LOCK
-# to access the search api directly
-# (e.g. if you did docker-compose up search to have the dashboard with your locally running metasfresh services)
-# uncomment following ports:
   ports:
-   - "9201:9200"
-   - "9301:9300"
+   - "9200:9200"
+   - "9300:9300"
   volumes:
     - metasfresh_elasticsearch:/usr/share/elasticsearch/data
+#    - ./myvolumefolder:/usr/share/elasticsearch/data
   environment:
     - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
   restart: always

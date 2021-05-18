@@ -33,15 +33,16 @@
         <!-- this is our default; individual projects might need to specify their own settings -->
         <metasfresh.java.version>1.8</metasfresh.java.version>
 
-        <!-- please keep in sync with spring-boot's jackson-version-->
-        <jackson.version>2.9.9</jackson.version>
-
+        <!-- please keep in sync with spring-boot's versions - https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
+        <jackson.version>2.11.4</jackson.version>
+        <amqp-client.version>5.10.0</amqp-client.version>
+        
         <jasperreports.version>6.7.0</jasperreports.version>
 
         <itext.version>2.1.7.js6</itext.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
-        <spring-boot-admin.version>1.5.0</spring-boot-admin.version>
+        <spring-boot-admin.version>2.3.1</spring-boot-admin.version>
 
         <logstash-logback-encoder.version>6.3</logstash-logback-encoder.version>
 
@@ -59,7 +60,7 @@
             3.15.0 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
         -->
-        <assertj.version>3.15.0</assertj.version>
+        <assertj.version>3.19.0</assertj.version>
         <xmlunit.version>2.6.4</xmlunit.version>
 
         <mockito.version>2.7.22</mockito.version>
@@ -89,7 +90,7 @@
         <dependency>
             <groupId>io.github.json-snapshot</groupId>
             <artifactId>json-snapshot-PR</artifactId>
-            <version>1.0.20</version>
+            <version>1.0.22</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -143,7 +144,24 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
+        
+        <!-- 
+        dependency of org.skyscreamer:jsonassert which is a dependency of json-snapshot
+        I get a ClassNotFoundException JSONException, despite ofc it *should* be there transitively 
+        -->
+        <dependency>
+            <groupId>org.skyscreamer</groupId>
+            <artifactId>jsonassert</artifactId>
+            <version>1.5.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin.external.google</groupId>
+            <artifactId>android-json</artifactId>
+            <version>0.0.20131108.vaadin1</version>
+            <scope>test</scope>
+        </dependency>
+        
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -186,6 +204,7 @@
             <version>1.6.2</version>
             <scope>test</scope>
         </dependency>
+        
     </dependencies>
 
     <dependencyManagement>
@@ -234,13 +253,18 @@
             <dependency>
                 <groupId>com.google.code.findbugs</groupId>
                 <artifactId>annotations</artifactId>
-                <version>2.0.1</version>
+                <version>3.0.1</version>
             </dependency>
-
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>3.0.2</version>
+            </dependency>
+            
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>21.0</version>
+                <version>30.1.1-jre</version>
             </dependency>
 
             <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
@@ -254,7 +278,7 @@
                 <artifactId>jp.osdn.ocrb</artifactId>
                 <version>0.2.1</version>
             </dependency>
-
+            
             <dependency>
                 <groupId>net.logstash.logback</groupId>
                 <artifactId>logstash-logback-encoder</artifactId>
@@ -342,6 +366,12 @@
                     <groupId>org.jvnet.jaxb2.maven2</groupId>
                     <artifactId>maven-jaxb2-plugin</artifactId>
                     <version>0.14.0</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>com.google.cloud.tools</groupId>
+                    <artifactId>jib-maven-plugin</artifactId>
+                    <version>2.8.0</version>
                 </plugin>
 
                 <plugin>
@@ -457,7 +487,7 @@
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <!-- 3.0.0-M2 gives me "Some plugins are missing valid versions"
                          when building downstream projects (i.e. metasfresh),
-                         although I set the version here in build/pluginManagenemt management.
+                         although I set the version here in build/pluginManagenemt management.<id>enforcer-profile</id>
                         Example:
                         org.apache.maven.plugins:maven-clean-plugin.    The version currently in use is 3.0.0
 
@@ -476,7 +506,7 @@
                 <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.6 </version>
+                    <version>0.8.6</version>
                 </plugin>
 
                 <!--This plugin's configuration is used to store Eclipse m2e settings
@@ -569,7 +599,9 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                     That version didn't support the way, we configured it and failed with an
                                     error message. This shall not happen again. -->
                                 <requirePluginVersions>
-                                    <message>!! We need to have the plugin version under control to avoid build failures due to maven releasing a new plugin version !!</message>
+                                    <message>!! We need to have the plugin version under control to avoid build failures due to maven releasing a new plugin
+                                        version !!
+                                    </message>
                                     <banLatest>true</banLatest>
                                     <banRelease>true</banRelease>
                                     <banSnapshots>true</banSnapshots>
@@ -577,11 +609,12 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                     <additionalPlugins>
                                         <additionalPlugin>org.apache.maven.plugins:maven-reactor-plugin</additionalPlugin>
                                     </additionalPlugins>
-                                    <unCheckedPluginList>org.apache.maven.plugins:maven-enforcer-plugin,org.apache.maven.plugins:maven-eclipse-plugin</unCheckedPluginList>
+                                    <unCheckedPluginList>org.apache.maven.plugins:maven-enforcer-plugin,org.apache.maven.plugins:maven-eclipse-plugin
+                                    </unCheckedPluginList>
                                 </requirePluginVersions>
 
                                 <!-- See http://maven.apache.org/enforcer/enforcer-rules/dependencyConvergence.html -->
-                                <dependencyConvergence/>
+                                <!--                                <dependencyConvergence/>-->
 
                                 <!--
                                     metas 10.x.x dependencies are only for local use (i.e. just in your local workspace).
@@ -604,12 +637,13 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                         <!-- itext-2.1.7 has two different versions as dependences -->
                                         <ignoreClass>org.bouncycastle.*</ignoreClass>
 
-                                        <!-- org.jboss.client:jbossall-client and partially geronimo specs -->
+                                        <ignoreClass>javax.activation.*</ignoreClass>
                                         <ignoreClass>javax.annotation.*</ignoreClass>
                                         <ignoreClass>javax.ejb.*</ignoreClass>
+                                        <ignoreClass>javax.el.*</ignoreClass>
                                         <ignoreClass>javax.management.j2ee.*</ignoreClass>
-                                        <ignoreClass>javax.xml.*</ignoreClass>
                                         <ignoreClass>javax.transaction.*</ignoreClass>
+                                        <ignoreClass>javax.xml.*</ignoreClass>
 
                                         <ignoreClass>org.apache.*</ignoreClass>
                                         <ignoreClass>org.codehaus.*</ignoreClass>
@@ -617,9 +651,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                         <ignoreClass>org.junit.*</ignoreClass>
                                         <ignoreClass>org.w3c.*</ignoreClass>
                                         <ignoreClass>org.xml.*</ignoreClass>
-
-                                        <!-- this class originates from org.zkoss.calendar:calendar:jar:1.0.0-RC -->
-                                        <ignoreClass>org.zkoss.calendar.render.CalendarsDefault</ignoreClass>
 
                                         <!-- the following are camel/servicemix related dependencies -->
                                         <!-- Found in, both are dependencies of mylin-smooks-all org.ow2.bundles:ow2-bundles-externals-opencsv:jar:1.0.23:compile
@@ -645,6 +676,10 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                         <ignoreClass>javax.servlet.*</ignoreClass>
                                         <ignoreClass>org.milyn.*</ignoreClass>
                                         <ignoreClass>com.sun.xml.bind.*</ignoreClass>
+
+                                        <!--  Found in: net.jcip:jcip-annotations:jar:1.0:compile
+                                             com.google.code.findbugs:annotations:jar:3.0.1:compile -->
+                                        <ignoreClass>net.jcip.annotations.*</ignoreClass>
                                     </ignoreClasses>
 
                                     <dependencies>

@@ -1,5 +1,12 @@
 package org.adempiere.ad.column.model.interceptor;
 
+import de.metas.i18n.po.POTrlRepository;
+import de.metas.logging.LogManager;
+import de.metas.security.impl.ParsedSql;
+import de.metas.translation.api.IElementTranslationBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -7,15 +14,16 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Field;
+import org.compiere.model.MLookupFactory;
+import org.compiere.model.MLookupInfo;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
-import de.metas.i18n.po.POTrlRepository;
-import de.metas.security.impl.ParsedSql;
-import de.metas.translation.api.IElementTranslationBL;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -40,12 +48,15 @@ import de.metas.util.Services;
  */
 
 @Interceptor(I_AD_Column.class)
+@Component
 public class AD_Column
 {
-	public static final transient AD_Column instance = new AD_Column();
+	private static final Logger logger = LogManager.getLogger(AD_Column.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_AD_Column.COLUMNNAME_ColumnSQL)
-	public void lowerCaseWhereClause(final I_AD_Column column)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = I_AD_Column.COLUMNNAME_ColumnSQL)
+	public void onBeforeSave_lowerCaseWhereClause(final I_AD_Column column)
 	{
 		final String columnSQL = column.getColumnSQL();
 		if (Check.isEmpty(columnSQL, true))
@@ -61,7 +72,7 @@ public class AD_Column
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_AD_Column.COLUMNNAME_MandatoryLogic, I_AD_Column.COLUMNNAME_ReadOnlyLogic })
-	public void validateLogicExpressions(final I_AD_Column column)
+	public void onBeforeSave_ValidateLogicExpressions(final I_AD_Column column)
 	{
 		if (!Check.isEmpty(column.getReadOnlyLogic(), true))
 		{
@@ -72,6 +83,56 @@ public class AD_Column
 		{
 			LogicExpressionCompiler.instance.compile(column.getMandatoryLogic());
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = {
+					I_AD_Field.COLUMNNAME_AD_Column_ID,
+					I_AD_Field.COLUMNNAME_AD_Reference_ID,
+					I_AD_Field.COLUMNNAME_AD_Reference_Value_ID })
+	public void onBeforeSave_ValidateReference(final I_AD_Column column)
+	{
+		final int adReferenceId = column.getAD_Reference_ID();
+		if (DisplayType.isAnyLookup(adReferenceId))
+		{
+			final MLookupInfo lookupInfo;
+			try
+			{
+				final String ctxTableName = tableDAO.retrieveTableName(column.getAD_Table_ID());
+				lookupInfo = MLookupFactory.getLookupInfo(
+						Integer.MAX_VALUE, // WindowNo
+						adReferenceId,
+						ctxTableName, // ctxTableName
+						column.getColumnName(), // ctxColumnName
+						column.getAD_Reference_Value_ID(),
+						column.isParent(), // IsParent,
+						column.getAD_Val_Rule_ID() //AD_Val_Rule_ID
+				);
+			}
+			catch (final Exception ex)
+			{
+				//noinspection ThrowableNotThrown
+				fireExceptionInvalidLookup(logger, ex);
+				return;
+			}
+
+			if (lookupInfo == null)
+			{
+				fireExceptionInvalidLookup(logger, null);
+			}
+		}
+	}
+
+	public static void fireExceptionInvalidLookup(@NonNull final Logger logger, @Nullable final Exception cause)
+	{
+		final String message = "Invalid AD_Reference_ID/AD_Reference_Value_ID values."
+				+ "\n To avoid this issue you could:"
+				+ "\n 1. Fix the underlying error. Check the console for more info."
+				+ "\n 2. If you consider this is not an error then report the issue and comment this method to continue your work";
+
+		//noinspection ThrowableNotThrown
+		new AdempiereException(message, cause)
+				.throwIfDeveloperModeOrLogWarningElse(logger);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, //
@@ -95,7 +156,7 @@ public class AD_Column
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_AD_Column.COLUMNNAME_IsTranslated })
-	public void assertTrlColumnExists(final I_AD_Column adColumn)
+	public void onBeforeSave_assertTrlColumnExists(final I_AD_Column adColumn)
 	{
 		if (!adColumn.isTranslated())
 		{
@@ -120,7 +181,7 @@ public class AD_Column
 		if (!DB.isDBColumnPresent(trlTableName, columnName))
 		{
 			throw new AdempiereException("Before marking the column as translatable make sure " + trlTableName + "." + columnName + " exists."
-					+"\n If not, please manually create the table and/or column.");
+					+ "\n If not, please manually create the table and/or column.");
 		}
 	}
 }
