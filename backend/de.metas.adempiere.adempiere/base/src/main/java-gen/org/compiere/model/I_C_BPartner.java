@@ -53,33 +53,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Straße und Nr..
-	 * Adresszeile 1 für diesen Standort
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setAddress1 (@Nullable java.lang.String Address1);
-
-	/**
-	 * Get Straße und Nr..
-	 * Adresszeile 1 für diesen Standort
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	@Nullable java.lang.String getAddress1();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_Address1 = new ModelColumn<>(I_C_BPartner.class, "Address1", null);
-	String COLUMNNAME_Address1 = "Address1";
-
-	/**
 	 * Set Language.
 	 * Language for this entity
 	 *
@@ -101,28 +74,6 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_AD_Language = new ModelColumn<>(I_C_BPartner.class, "AD_Language", null);
 	String COLUMNNAME_AD_Language = "AD_Language";
-
-	/**
-	 * Set Linked Organization.
-	 * The Business Partner is another Organization for explicit Inter-Org transactions
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_OrgBP_ID (int AD_OrgBP_ID);
-
-	/**
-	 * Get Linked Organization.
-	 * The Business Partner is another Organization for explicit Inter-Org transactions
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_OrgBP_ID();
-
-	String COLUMNNAME_AD_OrgBP_ID = "AD_OrgBP_ID";
 
 	/**
 	 * Set Organisation.
@@ -172,6 +123,55 @@ public interface I_C_BPartner
 	String COLUMNNAME_AD_Org_Mapping_ID = "AD_Org_Mapping_ID";
 
 	/**
+	 * Set Linked Organization.
+	 * The Business Partner is another Organization for explicit Inter-Org transactions
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_OrgBP_ID (int AD_OrgBP_ID);
+
+	/**
+	 * Get Linked Organization.
+	 * The Business Partner is another Organization for explicit Inter-Org transactions
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_OrgBP_ID();
+
+	String COLUMNNAME_AD_OrgBP_ID = "AD_OrgBP_ID";
+
+	/**
+	 * Set Straße und Nr..
+	 * Adresszeile 1 für diesen Standort
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setAddress1 (@Nullable java.lang.String Address1);
+
+	/**
+	 * Get Straße und Nr..
+	 * Adresszeile 1 für diesen Standort
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getAddress1();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Address1 = new ModelColumn<>(I_C_BPartner.class, "Address1", null);
+	String COLUMNNAME_Address1 = "Address1";
+
+	/**
 	 * Set Consolidate Shipments allowed.
 	 *
 	 * <br>Type: YesNo
@@ -211,6 +211,33 @@ public interface I_C_BPartner
 	int getBPartner_Parent_ID();
 
 	String COLUMNNAME_BPartner_Parent_ID = "BPartner_Parent_ID";
+
+	/**
+	 * Set Business Partner Group.
+	 * Business Partner Group
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Group_ID (int C_BP_Group_ID);
+
+	/**
+	 * Get Business Partner Group.
+	 * Business Partner Group
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Group_ID();
+
+	org.compiere.model.I_C_BP_Group getC_BP_Group();
+
+	void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group);
+
+	ModelColumn<I_C_BPartner, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new ModelColumn<>(I_C_BPartner.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
+	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
 	 * Set Business Partner.
@@ -254,33 +281,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_C_BPartner_SalesRep_ID = "C_BPartner_SalesRep_ID";
 
 	/**
-	 * Set Business Partner Group.
-	 * Business Partner Group
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_Group_ID (int C_BP_Group_ID);
-
-	/**
-	 * Get Business Partner Group.
-	 * Business Partner Group
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_Group_ID();
-
-	org.compiere.model.I_C_BP_Group getC_BP_Group();
-
-	void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group);
-
-	ModelColumn<I_C_BPartner, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new ModelColumn<>(I_C_BPartner.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
-	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
-
-	/**
 	 * Set Mahnung.
 	 * Dunning Rules for overdue invoices
 	 *
@@ -306,48 +306,6 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, org.compiere.model.I_C_Dunning> COLUMN_C_Dunning_ID = new ModelColumn<>(I_C_BPartner.class, "C_Dunning_ID", org.compiere.model.I_C_Dunning.class);
 	String COLUMNNAME_C_Dunning_ID = "C_Dunning_ID";
-
-	/**
-	 * Set Certificate of Registration.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCertificateOfRegistrationCustomer (boolean CertificateOfRegistrationCustomer);
-
-	/**
-	 * Get Certificate of Registration.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isCertificateOfRegistrationCustomer();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_CertificateOfRegistrationCustomer = new ModelColumn<>(I_C_BPartner.class, "CertificateOfRegistrationCustomer", null);
-	String COLUMNNAME_CertificateOfRegistrationCustomer = "CertificateOfRegistrationCustomer";
-
-	/**
-	 * Set Certificate of Registration.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCertificateOfRegistrationVendor (boolean CertificateOfRegistrationVendor);
-
-	/**
-	 * Get Certificate of Registration.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isCertificateOfRegistrationVendor();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_CertificateOfRegistrationVendor = new ModelColumn<>(I_C_BPartner.class, "CertificateOfRegistrationVendor", null);
-	String COLUMNNAME_CertificateOfRegistrationVendor = "CertificateOfRegistrationVendor";
 
 	/**
 	 * Set Greeting (ID).
@@ -402,6 +360,95 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, org.compiere.model.I_C_InvoiceSchedule> COLUMN_C_InvoiceSchedule_ID = new ModelColumn<>(I_C_BPartner.class, "C_InvoiceSchedule_ID", org.compiere.model.I_C_InvoiceSchedule.class);
 	String COLUMNNAME_C_InvoiceSchedule_ID = "C_InvoiceSchedule_ID";
+
+	/**
+	 * Set Payment Term.
+	 * The terms of Payment (timing, discount)
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
+
+	/**
+	 * Get Payment Term.
+	 * The terms of Payment (timing, discount)
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_PaymentTerm_ID();
+
+	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
+
+	/**
+	 * Set Tax Group.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_TaxGroup_ID (int C_TaxGroup_ID);
+
+	/**
+	 * Get Tax Group.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_TaxGroup_ID();
+
+	@Nullable org.eevolution.model.I_C_TaxGroup getC_TaxGroup();
+
+	void setC_TaxGroup(@Nullable org.eevolution.model.I_C_TaxGroup C_TaxGroup);
+
+	ModelColumn<I_C_BPartner, org.eevolution.model.I_C_TaxGroup> COLUMN_C_TaxGroup_ID = new ModelColumn<>(I_C_BPartner.class, "C_TaxGroup_ID", org.eevolution.model.I_C_TaxGroup.class);
+	String COLUMNNAME_C_TaxGroup_ID = "C_TaxGroup_ID";
+
+	/**
+	 * Set Certificate of Registration.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCertificateOfRegistrationCustomer (boolean CertificateOfRegistrationCustomer);
+
+	/**
+	 * Get Certificate of Registration.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isCertificateOfRegistrationCustomer();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_CertificateOfRegistrationCustomer = new ModelColumn<>(I_C_BPartner.class, "CertificateOfRegistrationCustomer", null);
+	String COLUMNNAME_CertificateOfRegistrationCustomer = "CertificateOfRegistrationCustomer";
+
+	/**
+	 * Set Certificate of Registration.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCertificateOfRegistrationVendor (boolean CertificateOfRegistrationVendor);
+
+	/**
+	 * Get Certificate of Registration.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isCertificateOfRegistrationVendor();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_CertificateOfRegistrationVendor = new ModelColumn<>(I_C_BPartner.class, "CertificateOfRegistrationVendor", null);
+	String COLUMNNAME_CertificateOfRegistrationVendor = "CertificateOfRegistrationVendor";
 
 	/**
 	 * Set City Name.
@@ -490,28 +537,6 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_ContactStatusInfoVendor = new ModelColumn<>(I_C_BPartner.class, "ContactStatusInfoVendor", null);
 	String COLUMNNAME_ContactStatusInfoVendor = "ContactStatusInfoVendor";
-
-	/**
-	 * Set Payment Term.
-	 * The terms of Payment (timing, discount)
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
-
-	/**
-	 * Get Payment Term.
-	 * The terms of Payment (timing, discount)
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_PaymentTerm_ID();
-
-	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
 	/**
 	 * Get Created.
@@ -606,31 +631,6 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_CreditorId = new ModelColumn<>(I_C_BPartner.class, "CreditorId", null);
 	String COLUMNNAME_CreditorId = "CreditorId";
-
-	/**
-	 * Set Tax Group.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_TaxGroup_ID (int C_TaxGroup_ID);
-
-	/**
-	 * Get Tax Group.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_TaxGroup_ID();
-
-	@Nullable org.eevolution.model.I_C_TaxGroup getC_TaxGroup();
-
-	void setC_TaxGroup(@Nullable org.eevolution.model.I_C_TaxGroup C_TaxGroup);
-
-	ModelColumn<I_C_BPartner, org.eevolution.model.I_C_TaxGroup> COLUMN_C_TaxGroup_ID = new ModelColumn<>(I_C_BPartner.class, "C_TaxGroup_ID", org.eevolution.model.I_C_TaxGroup.class);
-	String COLUMNNAME_C_TaxGroup_ID = "C_TaxGroup_ID";
 
 	/**
 	 * Set Eigene-Kd. Nr. .
@@ -1330,6 +1330,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsDiscountPrinted = "IsDiscountPrinted";
 
 	/**
+	 * Set EDI DESADV Receipient.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEdiDesadvRecipient (boolean IsEdiDesadvRecipient);
+
+	/**
+	 * Get EDI DESADV Receipient.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEdiDesadvRecipient();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsEdiDesadvRecipient = new ModelColumn<>(I_C_BPartner.class, "IsEdiDesadvRecipient", null);
+	String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
+
+	/**
 	 * Set Mitarbeiter.
 	 * Indicates if  this Business Partner is an employee
 	 *
@@ -1757,6 +1778,118 @@ public interface I_C_BPartner
 	String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
 
 	/**
+	 * Set Frachtkostenpauschale.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_FreightCost_ID (int M_FreightCost_ID);
+
+	/**
+	 * Get Frachtkostenpauschale.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_FreightCost_ID();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_M_FreightCost_ID = new ModelColumn<>(I_C_BPartner.class, "M_FreightCost_ID", null);
+	String COLUMNNAME_M_FreightCost_ID = "M_FreightCost_ID";
+
+	/**
+	 * Set Preisliste.
+	 * Unique identifier of a Price List
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_PriceList_ID (int M_PriceList_ID);
+
+	/**
+	 * Get Preisliste.
+	 * Unique identifier of a Price List
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_PriceList_ID();
+
+	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+
+	/**
+	 * Set Pricing System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_PricingSystem_ID (int M_PricingSystem_ID);
+
+	/**
+	 * Get Pricing System.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_PricingSystem_ID();
+
+	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
+
+	/**
+	 * Set Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Shipper_ID (int M_Shipper_ID);
+
+	/**
+	 * Get Shipper.
+	 * Method or manner of product delivery
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Shipper_ID();
+
+	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
+
+	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
+
+	ModelColumn<I_C_BPartner, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_C_BPartner.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+
+	/**
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/**
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Warehouse_ID();
+
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
 	 * Set Memo.
 	 * Memo Text
 	 *
@@ -1826,69 +1959,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_Memo_Invoicing = "Memo_Invoicing";
 
 	/**
-	 * Set Frachtkostenpauschale.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_FreightCost_ID (int M_FreightCost_ID);
-
-	/**
-	 * Get Frachtkostenpauschale.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_FreightCost_ID();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_M_FreightCost_ID = new ModelColumn<>(I_C_BPartner.class, "M_FreightCost_ID", null);
-	String COLUMNNAME_M_FreightCost_ID = "M_FreightCost_ID";
-
-	/**
-	 * Set Preisliste.
-	 * Unique identifier of a Price List
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_PriceList_ID (int M_PriceList_ID);
-
-	/**
-	 * Get Preisliste.
-	 * Unique identifier of a Price List
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_PriceList_ID();
-
-	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
-
-	/**
-	 * Set Pricing System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_PricingSystem_ID (int M_PricingSystem_ID);
-
-	/**
-	 * Get Pricing System.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_PricingSystem_ID();
-
-	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
-
-	/**
 	 * Set Exclude from MRP.
 	 *
 	 * <br>Type: List
@@ -1908,55 +1978,6 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_MRP_Exclude = new ModelColumn<>(I_C_BPartner.class, "MRP_Exclude", null);
 	String COLUMNNAME_MRP_Exclude = "MRP_Exclude";
-
-	/**
-	 * Set Shipper.
-	 * Method or manner of product delivery
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Shipper_ID (int M_Shipper_ID);
-
-	/**
-	 * Get Shipper.
-	 * Method or manner of product delivery
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Shipper_ID();
-
-	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
-
-	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
-
-	ModelColumn<I_C_BPartner, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_C_BPartner.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
-	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
-
-	/**
-	 * Set Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setM_Warehouse_ID (int M_Warehouse_ID);
-
-	/**
-	 * Get Warehouse.
-	 * Storage Warehouse and Service Point
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getM_Warehouse_ID();
-
-	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set NAICS/SIC.
@@ -2187,6 +2208,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, org.compiere.model.I_M_DiscountSchema> COLUMN_PO_DiscountSchema_ID = new ModelColumn<>(I_C_BPartner.class, "PO_DiscountSchema_ID", org.compiere.model.I_M_DiscountSchema.class);
 	String COLUMNNAME_PO_DiscountSchema_ID = "PO_DiscountSchema_ID";
+
+	/**
+	 * Set PO_Incoterm.
+	 * Internationale Handelsklauseln (engl. International Commercial Terms)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_Incoterm (@Nullable java.lang.String PO_Incoterm);
+
+	/**
+	 * Get PO_Incoterm.
+	 * Internationale Handelsklauseln (engl. International Commercial Terms)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPO_Incoterm();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PO_Incoterm = new ModelColumn<>(I_C_BPartner.class, "PO_Incoterm", null);
+	String COLUMNNAME_PO_Incoterm = "PO_Incoterm";
 
 	/**
 	 * Set Zahlungskondition.
@@ -2824,7 +2868,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_SO_TargetDocTypeReason = "SO_TargetDocTypeReason";
 
 	/**
-	 * Set Steuer-ID.
+	 * Set Tax ID.
 	 * Tax Identification
 	 *
 	 * <br>Type: String
@@ -2834,7 +2878,7 @@ public interface I_C_BPartner
 	void setTaxID (@Nullable java.lang.String TaxID);
 
 	/**
-	 * Get Steuer-ID.
+	 * Get Tax ID.
 	 * Tax Identification
 	 *
 	 * <br>Type: String
