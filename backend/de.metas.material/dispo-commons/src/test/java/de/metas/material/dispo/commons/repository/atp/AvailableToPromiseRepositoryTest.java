@@ -204,7 +204,7 @@ public class AvailableToPromiseRepositoryTest
 		assertThat(resultGroups).hasSize(2);
 
 		assertThat(resultGroups)
-				.allSatisfy(group -> assertThat(group.getProductId()).isEqualTo(PRODUCT_ID));
+				.allSatisfy(group -> assertThat(group.getProductId().getRepoId()).isEqualTo(PRODUCT_ID));
 
 		assertThat(resultGroups)
 				.filteredOn(group -> group.getBpartner().equals(BPartnerClassifier.specific(BPARTNER_ID_1)))
