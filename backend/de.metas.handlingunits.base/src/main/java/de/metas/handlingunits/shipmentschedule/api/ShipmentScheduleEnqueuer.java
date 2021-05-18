@@ -73,6 +73,7 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -80,6 +81,8 @@ import java.util.Objects;
 import java.util.Properties;
 
 import static de.metas.async.Async_Constants.WORKPACKAGE_LIFECYCLE_TOPIC;
+import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo;
+import static de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override;
 
 /**
  * Locks all the given shipments schedules into one big lock, then creates and enqueues workpackages, splitting off locks.
@@ -265,20 +268,25 @@ public class ShipmentScheduleEnqueuer
 			@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		final ImmutableMap<ShipmentScheduleId, String> advisedShipmentDocumentNos = workPackageParameters.getAdvisedShipmentDocumentNos();
-		if (advisedShipmentDocumentNos == null)
+		if (advisedShipmentDocumentNos != null)
 		{
-			return;
+			final String advisedShipmentDocumentNo = advisedShipmentDocumentNos.get(shipmentScheduleId);
+			if (EmptyUtil.isNotBlank(advisedShipmentDocumentNo))
+			{
+				workpackageBuilder.parameters()
+						.setParameter(PARAM_PREFIX_AdvisedShipmentDocumentNo + shipmentScheduleId.getRepoId(), advisedShipmentDocumentNo);
+			}
 		}
 
-		final String advisedShipmentDocumentNo = advisedShipmentDocumentNos
-				.get(shipmentScheduleId);
-		if (EmptyUtil.isNotBlank(advisedShipmentDocumentNo))
+		final ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride = workPackageParameters.getQtysToDeliverOverride();
+		if (qtysToDeliverOverride != null)
 		{
-			workpackageBuilder
-					.parameters()
-					.setParameter(
-							ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_AdvisedShipmentDocumentNo + shipmentScheduleId.getRepoId(),
-							advisedShipmentDocumentNo);
+			final BigDecimal qtyToDeliverOverride = qtysToDeliverOverride.get(shipmentScheduleId);
+			if(qtyToDeliverOverride!=null)
+			{
+				workpackageBuilder.parameters()
+						.setParameter(PARAM_PREFIX_QtyToDeliver_Override + shipmentScheduleId.getRepoId(), qtyToDeliverOverride);
+			}
 		}
 	}
 
@@ -391,6 +399,7 @@ public class ShipmentScheduleEnqueuer
 		public static final String PARAM_IsCompleteShipments = "IsCompleteShipments";
 		public static final String PARAM_IsShipmentDateToday = "IsShipToday";
 		public static final String PARAM_PREFIX_AdvisedShipmentDocumentNo = "Advised_ShipmentDocumentNo_For_M_ShipmentSchedule_ID_"; // (param name can have 255 chars)
+		public static final String PARAM_PREFIX_QtyToDeliver_Override = "QtyToDeliver_Override_For_M_ShipmentSchedule_ID_"; // 
 		/**
 		 * Mandatory, even if there is not really an AD_PInstance record. Needed for locking.
 		 */
@@ -412,7 +421,11 @@ public class ShipmentScheduleEnqueuer
 		 * Can be used if the caller thinks that the shipping in which the respective shipment-schedules end up shall have the given documentNos.
 		 * ShipmentScheduleIds that are not matched by {@link #getQueryFilters()} are ignored.
 		 */
+		@Nullable
 		ImmutableMap<ShipmentScheduleId, String> advisedShipmentDocumentNos;
+
+		@Nullable
+		ImmutableMap<ShipmentScheduleId, BigDecimal> qtysToDeliverOverride;
 	}
 
 }

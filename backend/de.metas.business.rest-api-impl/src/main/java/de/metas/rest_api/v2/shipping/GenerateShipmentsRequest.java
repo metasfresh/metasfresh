@@ -32,6 +32,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.math.BigDecimal;
 import java.util.Map.Entry;
 
 @Value
@@ -44,6 +45,9 @@ class GenerateShipmentsRequest
 	@NonNull
 	ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleToExternalInfo;
 
+	@NonNull
+	ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleToQuantityToDeliverOverride;
+	
 	@NonNull
 	M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
 
