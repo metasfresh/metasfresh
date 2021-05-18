@@ -65,6 +65,6 @@ public final class AddToResultGroupRequest
 
 	public ArrayKey computeKey()
 	{
-		return ArrayKey.of(queryNo, productId, storageAttributesKey);
+		return ArrayKey.of(productId, storageAttributesKey);
 	}
 }

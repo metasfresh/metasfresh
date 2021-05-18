@@ -154,7 +154,6 @@ final class AvailableForSaleResultBucket
 				group.addQty(request);
 			}
 
-			group.addQty(request);
 			addedToAtLeastOneGroup = true;
 		}
 
