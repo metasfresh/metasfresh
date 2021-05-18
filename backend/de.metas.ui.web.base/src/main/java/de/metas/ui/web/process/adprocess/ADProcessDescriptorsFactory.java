@@ -4,8 +4,8 @@ import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
+import de.metas.process.ADProcessService;
 import de.metas.process.BarcodeScannerType;
-import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessParams;
@@ -48,6 +48,7 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
@@ -97,16 +98,21 @@ import java.util.stream.Stream;
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 	private final transient DefaultValueExpressionsFactory defaultValueExpressions = DefaultValueExpressionsFactory.newInstance();
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final transient ADProcessService adProcessService;
 
 	private final CCache<ProcessId, ProcessDescriptor> processDescriptorsByProcessId = CCache.newLRUCache(I_AD_Process.Table_Name + "#Descriptors#by#AD_Process_ID", 200, 0);
+
+	ADProcessDescriptorsFactory(@NonNull final ADProcessService adProcessService)
+	{
+		this.adProcessService = adProcessService;
+	}
 
 	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(
 			@NonNull final WebuiPreconditionsContext preconditionsContext,
 			@NonNull final IUserRolePermissions userRolePermissions)
 	{
 		final String tableName = preconditionsContext.getTableName();
-		final int adTableId = !Check.isEmpty(tableName) ? adTableDAO.retrieveTableId(tableName) : -1;
+		final AdTableId adTableId = !Check.isEmpty(tableName) ? AdTableId.ofRepoId(adTableDAO.retrieveTableId(tableName)) : null;
 
 		final AdWindowId adWindowId = preconditionsContext.getAdWindowId();
 		final AdTabId adTabId = preconditionsContext.getAdTabId();
@@ -115,7 +121,7 @@ import java.util.stream.Stream;
 
 		if (preconditionsContext.isConsiderTableRelatedProcessDescriptors())
 		{
-			final Stream<RelatedProcessDescriptor> tableRelatedProcessDescriptors = adProcessDAO.retrieveRelatedProcessDescriptors(adTableId, adWindowId, adTabId)
+			final Stream<RelatedProcessDescriptor> tableRelatedProcessDescriptors = adProcessService.getRelatedProcessDescriptors(adTableId, adWindowId, adTabId)
 					.stream();
 			relatedProcessDescriptors = Stream.concat(relatedProcessDescriptors, tableRelatedProcessDescriptors);
 		}
@@ -184,8 +190,7 @@ import java.util.stream.Stream;
 
 	private ProcessDescriptor retrieveProcessDescriptor(final ProcessId processId)
 	{
-		final IADProcessDAO adProcessesRepo = Services.get(IADProcessDAO.class);
-		final I_AD_Process adProcess = adProcessesRepo.getById(processId.toAdProcessId());
+		final I_AD_Process adProcess = adProcessService.getById(processId.toAdProcessId());
 		if (adProcess == null)
 		{
 			throw new EntityNotFoundException("@NotFound@ @AD_Process_ID@ (" + processId + ")");
@@ -207,7 +212,7 @@ import java.util.stream.Stream;
 					.disableDefaultTableCallouts();
 
 			// Get AD_Process_Para(s) and populate the entity descriptor
-			adProcessDAO.retrieveProcessParameters(processId.toAdProcessId())
+			adProcessService.retrieveProcessParameters(processId.toAdProcessId())
 					.stream()
 					.map(adProcessParam -> createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam))
 					.forEach(parametersDescriptorBuilder::addField);
