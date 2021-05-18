@@ -60,7 +60,7 @@ final class AvailableForSaleResultBuilder
 						.storageAttributesKeyMatcher(storageAttributesKeyMatcher)
 						.build();
 
-				bucket.addDefaultEmptyGroupIfPossible(availableForSalesQueries.indexOf(availableForSalesQueries));
+				bucket.addDefaultEmptyGroupIfPossible();
 
 				buckets.add(bucket);
 			}
