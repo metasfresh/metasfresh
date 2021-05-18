@@ -59,7 +59,8 @@ public class AvailableForSaleResultTest
 		final AddToResultGroupRequest.AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 				.productId(ProductId.ofRepoId(100001))
 				.qtyOnHandStock(BigDecimal.valueOf(2))
-				.qtyToBeShipped(BigDecimal.valueOf(1));
+				.qtyToBeShipped(BigDecimal.valueOf(1))
+				.queryNo(0);
 
 		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1" + delim + "2")).build());
 		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1" + delim + "2")).build());
@@ -85,7 +86,8 @@ public class AvailableForSaleResultTest
 		final AvailableForSaleResultBuilder result = AvailableForSaleResultBuilder.createEmpty();
 
 		final AddToResultGroupRequest.AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
-				.productId(ProductId.ofRepoId(10));
+				.productId(ProductId.ofRepoId(10))
+				.queryNo(0);
 
 		result.addToNewGroupIfFeasible(requestBuilder
 				.qtyOnHandStock(new BigDecimal("100"))

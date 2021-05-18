@@ -35,8 +35,10 @@ import java.math.BigDecimal;
 @Value
 public final class AddToResultGroupRequest
 {
+	int queryNo;
 
 	ProductId productId;
+
 	AttributesKey storageAttributesKey;
 
 	@Nullable
@@ -47,11 +49,13 @@ public final class AddToResultGroupRequest
 
 	@Builder
 	public AddToResultGroupRequest(
+			final int queryNo,
 			@NonNull final ProductId productId,
 			@NonNull final AttributesKey storageAttributesKey,
 			@Nullable final BigDecimal qtyOnHandStock,
 			@Nullable final BigDecimal qtyToBeShipped)
 	{
+		this.queryNo = queryNo;
 		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey;
 
@@ -61,6 +65,6 @@ public final class AddToResultGroupRequest
 
 	public ArrayKey computeKey()
 	{
-		return ArrayKey.of(productId, storageAttributesKey);
+		return ArrayKey.of(queryNo, productId, storageAttributesKey);
 	}
 }

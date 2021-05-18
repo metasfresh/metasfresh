@@ -134,6 +134,7 @@ public class AvailableForSalesRepository
 				.storageAttributesKey(AttributesKey.ofString(result.getStorageAttributesKey()))
 				.qtyToBeShipped(result.getQtyToBeShipped())
 				.qtyOnHandStock(result.getQtyOnHandStock())
+				.queryNo(result.getQueryNo())
 				.build();
 	}
 

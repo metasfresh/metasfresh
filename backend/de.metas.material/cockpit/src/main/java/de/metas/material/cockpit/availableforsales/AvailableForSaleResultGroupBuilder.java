@@ -40,6 +40,7 @@ import static java.math.BigDecimal.ZERO;
 @ToString
 final class AvailableForSaleResultGroupBuilder
 {
+	private final int queryNo;
 	@Getter
 	private final ProductId productId;
 
@@ -47,10 +48,10 @@ final class AvailableForSaleResultGroupBuilder
 	private final AttributesKey storageAttributesKey;
 
 	@NonNull
-	BigDecimal qtyOnHandStock;
+	private BigDecimal qtyOnHandStock;
 
 	@NonNull
-	BigDecimal qtyToBeShipped;
+	private BigDecimal qtyToBeShipped;
 
 	final HashSet<Util.ArrayKey> includedRequestKeys = new HashSet<>();
 
@@ -59,13 +60,16 @@ final class AvailableForSaleResultGroupBuilder
 			@NonNull final ProductId productId,
 			@NonNull final AttributesKey storageAttributesKey,
 			@Nullable final BigDecimal qtyOnHandStock,
-			@Nullable final BigDecimal qtyToBeShipped)
+			@Nullable final BigDecimal qtyToBeShipped,
+			final int queryNo)
 	{
+
 		this.productId = productId;
 		this.storageAttributesKey = storageAttributesKey;
 
 		this.qtyOnHandStock = CoalesceUtil.coalesce(qtyOnHandStock, ZERO);
 		this.qtyToBeShipped = CoalesceUtil.coalesce(qtyToBeShipped, ZERO);
+		this.queryNo = queryNo;
 	}
 
 	public AvailableForSalesLookupBucketResult build()
@@ -73,6 +77,7 @@ final class AvailableForSaleResultGroupBuilder
 		return AvailableForSalesLookupBucketResult.builder()
 				.productId(productId)
 				.storageAttributesKey(storageAttributesKey)
+				.queryNo(queryNo)
 				.quantities(AvailableForSalesLookupBucketResult.Quantities.builder()
 						.qtyOnHandStock(qtyOnHandStock)
 						.qtyToBeShipped(qtyToBeShipped)
@@ -84,11 +89,6 @@ final class AvailableForSaleResultGroupBuilder
 	{
 		qtyOnHandStock = qtyOnHandStock.add(CoalesceUtil.coalesce(request.getQtyOnHandStock(), ZERO));
 		qtyToBeShipped = qtyToBeShipped.add(CoalesceUtil.coalesce(request.getQtyToBeShipped(), ZERO));
-	}
-
-	boolean isZeroQty()
-	{
-		return qtyOnHandStock.subtract(qtyToBeShipped).signum() == 0;
 	}
 
 	boolean isAlreadyIncluded(@NonNull final AddToResultGroupRequest request)

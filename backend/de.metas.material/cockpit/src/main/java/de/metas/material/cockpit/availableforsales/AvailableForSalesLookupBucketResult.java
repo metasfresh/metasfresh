@@ -37,6 +37,8 @@ import java.math.BigDecimal;
  */
 public class AvailableForSalesLookupBucketResult
 {
+	int queryNo;
+
 	ProductId productId;
 
 	@NonNull
