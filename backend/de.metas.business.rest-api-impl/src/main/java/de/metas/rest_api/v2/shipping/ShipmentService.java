@@ -300,18 +300,16 @@ public class ShipmentService
 				.build();
 	}
 
-	private GenerateShipmentsRequest toGenerateShipmentsRequest(
-			@NonNull final JsonCreateShipmentRequest request)
+	private GenerateShipmentsRequest toGenerateShipmentsRequest(@NonNull final JsonCreateShipmentRequest request)
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new ImmutableMap.Builder<>();
 		final ImmutableMap.Builder<ShipmentScheduleId, BigDecimal> scheduleToQuantityToDeliver = new ImmutableMap.Builder<>();
-		
+
 		final ImmutableSet.Builder<ShipmentScheduleId> shipmentScheduleIdsBuilder = new ImmutableSet.Builder<>();
 
 		for (final JsonCreateShipmentInfo createShipmentInfo : request.getCreateShipmentInfoList())
 		{
 			final ShipmentScheduleId shipmentScheduleId = extractShipmentScheduleId(createShipmentInfo);
-
 			shipmentScheduleIdsBuilder.add(shipmentScheduleId);
 
 			if (Check.isNotBlank(createShipmentInfo.getDocumentNo()))
@@ -320,12 +318,11 @@ public class ShipmentService
 						.builder()
 						.documentNo(createShipmentInfo.getDocumentNo())
 						.build();
-
 				scheduleId2ExternalInfo.put(shipmentScheduleId, externalInfo);
 			}
 
 			final BigDecimal qtyToDeliverInStockingUOM = createShipmentInfo.getMovementQuantity();
-			if(qtyToDeliverInStockingUOM!=null)
+			if (qtyToDeliverInStockingUOM != null)
 			{
 				scheduleToQuantityToDeliver.put(shipmentScheduleId, qtyToDeliverInStockingUOM);
 			}

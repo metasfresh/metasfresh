@@ -190,15 +190,8 @@ public class ShipmentScheduleWithHUService
 
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
-			final BigDecimal qtyToDeliverOverride = scheduleId2QtyToDeliverOverride.get(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()));
-			if (qtyToDeliverOverride != null)
-			{
-				requestBuilder.quantityToDeliverOverride(Quantitys.create(qtyToDeliverOverride, ProductId.ofRepoId(shipmentSchedule.getM_Product_ID())));
-			}
-			else
-			{
-				requestBuilder.quantityToDeliverOverride(null);
-			}
+			final Quantity quantityToDeliverOverride = extractQuantityToDeliverOverrideOrNull(scheduleId2QtyToDeliverOverride, shipmentSchedule);
+			requestBuilder.quantityToDeliverOverride(quantityToDeliverOverride);
 			
 			final ImmutableList<ShipmentScheduleWithHU> candidatesForSched = createCandidatesForSched(requestBuilder, shipmentSchedule);
 			candidates.addAll(candidatesForSched);
@@ -208,6 +201,24 @@ public class ShipmentScheduleWithHUService
 		candidates.sort(new ShipmentScheduleWithHUComparator());
 
 		return ImmutableList.copyOf(candidates);
+	}
+
+	private Quantity extractQuantityToDeliverOverrideOrNull(
+			@NonNull final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride,
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final Quantity quantityToDeliverOverride;
+		final BigDecimal qtyToDeliverOverride = scheduleId2QtyToDeliverOverride.get(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()));
+		if (qtyToDeliverOverride != null)
+		{
+			quantityToDeliverOverride = Quantitys.create(qtyToDeliverOverride, ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()));
+			
+		}
+		else
+		{
+			quantityToDeliverOverride = null;
+		}
+		return quantityToDeliverOverride;
 	}
 
 	private List<ShipmentScheduleWithHU> createShipmentSchedulesWithHUForQtyToDeliver(

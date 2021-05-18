@@ -282,7 +282,7 @@ public class ShipmentScheduleEnqueuer
 		if (qtysToDeliverOverride != null)
 		{
 			final BigDecimal qtyToDeliverOverride = qtysToDeliverOverride.get(shipmentScheduleId);
-			if(qtyToDeliverOverride!=null)
+			if (qtyToDeliverOverride != null)
 			{
 				workpackageBuilder.parameters()
 						.setParameter(PARAM_PREFIX_QtyToDeliver_Override + shipmentScheduleId.getRepoId(), qtyToDeliverOverride);
