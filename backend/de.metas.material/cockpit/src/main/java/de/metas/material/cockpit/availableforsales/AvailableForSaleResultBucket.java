@@ -94,12 +94,6 @@ final class AvailableForSaleResultBucket
 			return false;
 		}
 
-		//explicitly filter out
-		if (request.getStorageAttributesKey().isAll() && !Objects.equals(storageAttributesKeyMatcher, AttributesKeyPatternsUtil.matchingAll()))
-		{
-			return false;
-		}
-
 		return storageAttributesKeyMatcher.matches(request.getStorageAttributesKey());
 	}
 
