@@ -71,13 +71,13 @@ public class AvailableForSaleResultTest
 
 		assertThat(groups.get(0).getProductId().getRepoId()).isEqualTo(100001);
 		assertThat(groups.get(0).getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1"));
-		assertThat(groups.get(0).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("4");
-		assertThat(groups.get(0).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("2");
+		assertThat(groups.get(0).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("2");
+		assertThat(groups.get(0).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("1");
 
 		assertThat(groups.get(1).getProductId().getRepoId()).isEqualTo(100001);
 		assertThat(groups.get(1).getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("2"));
-		assertThat(groups.get(1).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("6");
-		assertThat(groups.get(1).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("3");
+		assertThat(groups.get(1).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("4");
+		assertThat(groups.get(1).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("2");
 	}
 
 }
