@@ -36,12 +36,12 @@ CREATE UNIQUE INDEX ON tmp_column_isexcludefromzoomtargets (target_column_id)
 
 INSERT INTO tmp_column_isexcludefromzoomtargets
 SELECT (CASE
-            WHEN fk.tablename = 'C_Invoice_Candidate' AND fk.columnname = 'C_OrderLine_ID'   THEN 'Y' -- preserve already excluded
-            WHEN fk.tablename = 'C_Order' AND fk.columnname = 'Bill_BPartner_ID'             THEN 'Y' -- preserve already excluded
-            WHEN c.ad_reference_id = 19/*table dir*/                                         THEN 'N'
-            WHEN c.ad_reference_id = 30/*search*/ AND c.ad_reference_value_id IS NULL        THEN 'N'
-            WHEN c.ad_reference_id IN (19, 30) AND fk.columnname = fk.ref_tablename || '_ID' THEN 'N'
-                                                                                             ELSE 'Y'
+            WHEN fk.tablename = 'C_Invoice_Candidate' AND fk.columnname = 'C_OrderLine_ID'       THEN 'Y' -- preserve already excluded
+            WHEN fk.tablename = 'C_Order' AND fk.columnname = 'Bill_BPartner_ID'                 THEN 'Y' -- preserve already excluded
+            WHEN c.ad_reference_id = 19/*table dir*/                                             THEN 'N'
+            WHEN c.ad_reference_id = 30/*search*/ AND c.ad_reference_value_id IS NULL            THEN 'N'
+            WHEN c.ad_reference_id IN (18, 19, 30) AND fk.columnname = fk.ref_tablename || '_ID' THEN 'N'
+                                                                                                 ELSE 'Y'
         END)            AS isexcludefromzoomtargets,
        fk.ref_tablename AS source_tablename,
        fk.tablename     AS target_tablename,
@@ -65,6 +65,21 @@ select * from tmp_column_isexcludefromzoomtargets
    ;
  */
 
+
+/*
+SELECT t.tablename,
+       c.columnname,
+       c.ad_reference_id,
+       c.ad_reference_value_id,
+       c.isexcludefromzoomtargets,
+       z.isexcludefromzoomtargets AS isexcludefromzoomtargets_new
+FROM ad_column c
+         INNER JOIN ad_table t ON t.ad_table_id = c.ad_table_id
+         INNER JOIN tmp_column_isexcludefromzoomtargets z ON z.target_column_id = c.ad_column_id
+WHERE z.isexcludefromzoomtargets != c.isexcludefromzoomtargets
+ORDER BY t.tablename, c.columnname
+;
+ */
 
 --
 --
