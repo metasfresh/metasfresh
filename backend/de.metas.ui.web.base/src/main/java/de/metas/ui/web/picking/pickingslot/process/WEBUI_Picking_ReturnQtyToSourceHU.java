@@ -1,6 +1,6 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -10,20 +10,28 @@ import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Product;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
@@ -54,7 +62,7 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
 
 public class WEBUI_Picking_ReturnQtyToSourceHU
 		extends WEBUI_Picking_With_M_Source_HU_Base
-		implements IProcessPrecondition
+		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 	private final HuId2SourceHUsService sourceHUsRepository = SpringContextHolder.instance.getBean(HuId2SourceHUsService.class);
@@ -63,6 +71,10 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 	private static final String PARAM_QTY_CU = "QtyCU";
 	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
 	private BigDecimal qtyCU;
+
+	private static final String PARAM_M_Product_ID = "M_Product_ID";
+	@Param(parameterName = PARAM_M_Product_ID, mandatory = true)
+	private ProductId productId;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -93,21 +105,51 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 		return ProcessPreconditionsResolution.accept();
 	}
 
+	@Nullable
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if (PARAM_M_Product_ID.equals(parameter.getColumnName()))
+		{
+			final List<ProductId> productIds = getProductIds(getSelectedHUId());
+			return !productIds.isEmpty() ? productIds.get(0) : null;
+		}
+		else
+		{
+			return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+		}
+	}
+
+	@ProcessParamLookupValuesProvider(
+			parameterName = PARAM_M_Product_ID,
+			numericKey = true,
+			lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.list,
+			lookupTableName = I_M_Product.Table_Name)
+	@NonNull
+	public LookupValuesList getAvailableProducts()
+	{
+		final List<ProductId> productIds = getProductIds(getSelectedHUId());
+		return LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name).findByIdsOrdered(productIds);
+	}
+
 	@Override
 	protected String doIt()
 	{
+		if (productId == null)
+		{
+			throw new FillMandatoryException(PARAM_M_Product_ID);
+		}
 		if (qtyCU == null || qtyCU.signum() <= 0)
 		{
-			throw new FillMandatoryException("QtyCU");
+			throw new FillMandatoryException(PARAM_QTY_CU);
 		}
 
-		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
-		final HuId huId = pickingSlotRow.getHuId();
+		final HuId huId = getSelectedHUId();
 
 		pickingCandidateService.removeQtyFromHU(RemoveQtyFromHURequest.builder()
 				.qtyCU(qtyCU)
 				.huId(huId)
-				.productId(getProductId(huId))
+				.productId(productId)
 				.build());
 
 		invalidateView();
@@ -116,34 +158,29 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 		return MSG_OK;
 	}
 
+	private HuId getSelectedHUId()
+	{
+		return getSingleSelectedRow().getHuId();
+	}
+
 	private boolean checkSourceHuPreconditionIncludingEmptyHUs()
 	{
-		final HuId huId = getSingleSelectedRow().getHuId();
+		final HuId huId = getSelectedHUId();
 		final Collection<HuId> sourceHUs = sourceHUsRepository.retrieveMatchingSourceHUIds(huId);
 		return !sourceHUs.isEmpty();
 	}
 
-	private ProductId getProductId(@NonNull final HuId huId)
+	private List<ProductId> getProductIds(@NonNull final HuId huId)
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 		final IHUStorage storage = storageFactory.getStorage(hu);
 
-		final ImmutableSet<ProductId> productIds = storage.getProductStorages().stream()
+		return storage.getProductStorages()
+				.stream()
+				.filter(productStorage -> !productStorage.isEmpty())
 				.map(IProductStorage::getProductId)
-				.collect(ImmutableSet.toImmutableSet());
-
-		if (productIds.isEmpty())
-		{
-			throw new AdempiereException("Selected HU is empty");
-		}
-		else if (productIds.size() == 1)
-		{
-			return productIds.iterator().next();
-		}
-		else
-		{
-			throw new AdempiereException("Selected HU has more than one product");
-		}
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
 	}
 }
