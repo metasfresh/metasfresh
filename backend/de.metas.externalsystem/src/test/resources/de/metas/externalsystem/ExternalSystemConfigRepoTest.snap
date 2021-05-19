@@ -1,16 +1,17 @@
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getById=[
   {
-    "id": 100001,
-    "type": "Alberta",
-    "camelUrl": "camelUrl",
-    "name": "name",
-    "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
+    "id" : 100001,
+    "type" : "Alberta",
+    "camelUrl" : "camelUrl",
+    "name" : "name",
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
       "value": "testAlbertaValue",
-      "apiKey": "apiKey",
-      "baseUrl": "baseUrl",
-      "tenant": "tenant"
+      "apiKey" : "apiKey",
+      "baseUrl" : "baseUrl",
+      "tenant" : "tenant",
+      "value" : "testAlbertaValue"
     }
   }
 ]
@@ -18,29 +19,31 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndParent=[
   {
-    "id": 100002,
-    "parentId": 100001,
+      "id" : 100002,
+      "parentId" : 100001,
     "value": "testAlbertaValue",
-    "apiKey": "apiKey",
-    "baseUrl": "baseUrl",
-    "tenant": "tenant"
+      "apiKey" : "apiKey",
+      "baseUrl" : "baseUrl",
+    "tenant": "tenant",
+    "value":"testAlbertaValue"
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndValue=[
   {
-    "id": 100001,
-    "type": "Alberta",
-    "camelUrl": "camelUrl",
-    "name": "name",
-    "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
+    "id" : 100001,
+    "type" : "Alberta",
+    "camelUrl" : "camelUrl",
+    "name" : "name",
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
       "value": "testAlbertaValue",
-      "apiKey": "apiKey",
-      "baseUrl": "baseUrl",
-      "tenant": "tenant"
+      "apiKey" : "apiKey",
+      "baseUrl" : "baseUrl",
+      "tenant": "tenant",
+      "value":"testAlbertaValue"
     }
   }
 ]
@@ -48,15 +51,15 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getById=[
   {
-    "id": 100001,
-    "type": "Shopware6",
-    "camelUrl": "camelUrl",
-    "name": "name",
-    "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
-      "baseUrl": "baseUrl",
-      "clientId": "id",
+    "id" : 100001,
+    "type" : "Shopware6",
+    "camelUrl" : "camelUrl",
+    "name" : "name",
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "baseUrl" : "baseUrl",
+      "clientId" : "id",
       "clientSecret": "secret"
     }
   }
@@ -65,27 +68,27 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByTypeAndParent=[
   {
-    "id": 100002,
-    "parentId": 100001,
-    "baseUrl": "baseUrl",
-    "clientId": "id",
-    "clientSecret": "secret"
-  }
+      "id" : 100002,
+      "parentId" : 100001,
+      "baseUrl" : "baseUrl",
+      "clientId" : "id",
+      "clientSecret" : "secret"
+    }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getTypeAndValue=[
   {
-    "id": 100001,
-    "type": "Shopware6",
-    "camelUrl": "camelUrl",
-    "name": "name",
-    "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
-      "baseUrl": "baseUrl",
-      "clientId": "id",
-      "clientSecret": "secret"
+    "id" : 100001,
+    "type" : "Shopware6",
+    "camelUrl" : "camelUrl",
+    "name" : "name",
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "baseUrl" : "baseUrl",
+      "clientId" : "id",
+      "clientSecret" : "secret"
     }
   }
 ]

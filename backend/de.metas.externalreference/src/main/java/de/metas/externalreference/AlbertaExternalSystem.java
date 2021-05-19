@@ -26,11 +26,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.adempiere.exceptions.AdempiereException;
 
+import static de.metas.externalreference.model.X_S_ExternalReference.EXTERNALSYSTEM_ALBERTA;
+
 @AllArgsConstructor
 @Getter
 public enum AlbertaExternalSystem implements IExternalSystem
 {
-	ALBERTA("ALBERTA");
+	ALBERTA(EXTERNALSYSTEM_ALBERTA);
 
 	public String code;
 

@@ -6,6 +6,7 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.core.ReceiveAndReplyCallback;
 import org.springframework.amqp.core.ReplyToAddressCallback;
+import org.springframework.core.ParameterizedTypeReference;
 
 /*
  * #%L
@@ -32,207 +33,255 @@ import org.springframework.amqp.core.ReplyToAddressCallback;
 public class MockedAmqpTemplate implements AmqpTemplate
 {
 
-	@Override
+	@java.lang.Override
 	public void send(final Message message) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		
 	}
 
-	@Override
-	public void send(final String routingKey, final Message message) throws AmqpException
+	@java.lang.Override
+	public void send(final java.lang.String routingKey, final Message message) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
 
 	}
 
-	@Override
-	public void send(final String exchange, final String routingKey, final Message message) throws AmqpException
+	@java.lang.Override
+	public void send(final java.lang.String exchange, final java.lang.String routingKey, final Message message) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
 
 	}
 
-	@Override
-	public void convertAndSend(final Object message) throws AmqpException
+	@java.lang.Override
+	public void convertAndSend(final java.lang.Object message) throws AmqpException
 	{
-		System.out.println("convertAndSend: message=" + message);
+
 	}
 
-	@Override
-	public void convertAndSend(final String routingKey, final Object message) throws AmqpException
+	@java.lang.Override
+	public void convertAndSend(final java.lang.String routingKey, final java.lang.Object message) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
 
 	}
 
-	@Override
-	public void convertAndSend(final String exchange, final String routingKey, final Object message) throws AmqpException
+	@java.lang.Override
+	public void convertAndSend(final java.lang.String exchange, final java.lang.String routingKey, final java.lang.Object message) throws AmqpException
 	{
-		System.out.println("convertAndSend: exchange=" + exchange + ", routingKey=" + routingKey + ", message=" + message);
+
 	}
 
-	@Override
-	public void convertAndSend(final Object message, final MessagePostProcessor messagePostProcessor) throws AmqpException
+	@java.lang.Override
+	public void convertAndSend(final java.lang.Object message, final MessagePostProcessor messagePostProcessor) throws AmqpException
 	{
-		System.out.println("convertAndSend: message=" + message);
+
 	}
 
-	@Override
-	public void convertAndSend(final String routingKey, final Object message, final MessagePostProcessor messagePostProcessor) throws AmqpException
+	@java.lang.Override
+	public void convertAndSend(final java.lang.String routingKey, final java.lang.Object message, final MessagePostProcessor messagePostProcessor) throws AmqpException
 	{
-		System.out.println("convertAndSend: routingKey=" + routingKey + ", message=" + message);
+
 	}
 
-	@Override
-	public void convertAndSend(final String exchange, final String routingKey, final Object message, final MessagePostProcessor messagePostProcessor) throws AmqpException
+	@java.lang.Override
+	public void convertAndSend(final java.lang.String exchange, final java.lang.String routingKey, final java.lang.Object message, final MessagePostProcessor messagePostProcessor) throws AmqpException
 	{
-		System.out.println("convertAndSend: exchange=" + exchange + ", routingKey=" + routingKey + ", message=" + message);
+
 	}
 
-	@Override
+	@java.lang.Override
 	public Message receive() throws AmqpException
 	{
-		throw new UnsupportedOperationException();
-
+		return null;
 	}
 
-	@Override
-	public Message receive(final String queueName) throws AmqpException
+	@java.lang.Override
+	public Message receive(final java.lang.String queueName) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
-
+		return null;
 	}
 
-	@Override
+	@java.lang.Override
 	public Message receive(final long timeoutMillis) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
-
+		return null;
 	}
 
-	@Override
-	public Message receive(final String queueName, final long timeoutMillis) throws AmqpException
+	@java.lang.Override
+	public Message receive(final java.lang.String queueName, final long timeoutMillis) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
-
+		return null;
 	}
 
-	@Override
-	public Object receiveAndConvert() throws AmqpException
+	@java.lang.Override
+	public java.lang.Object receiveAndConvert() throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
-	@Override
-	public Object receiveAndConvert(final String queueName) throws AmqpException
+	@java.lang.Override
+	public java.lang.Object receiveAndConvert(final java.lang.String queueName) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
-	@Override
-	public Object receiveAndConvert(final long timeoutMillis) throws AmqpException
+	@java.lang.Override
+	public java.lang.Object receiveAndConvert(final long timeoutMillis) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
-
+		return null;
 	}
 
-	@Override
-	public Object receiveAndConvert(final String queueName, final long timeoutMillis) throws AmqpException
+	@java.lang.Override
+	public java.lang.Object receiveAndConvert(final java.lang.String queueName, final long timeoutMillis) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
-
+		return null;
 	}
 
-	@Override
+	@java.lang.Override
+	public <T> T receiveAndConvert(final ParameterizedTypeReference<T> type) throws AmqpException
+	{
+		return null;
+	}
+
+	@java.lang.Override
+	public <T> T receiveAndConvert(final java.lang.String queueName, final ParameterizedTypeReference<T> type) throws AmqpException
+	{
+		return null;
+	}
+
+	@java.lang.Override
+	public <T> T receiveAndConvert(final long timeoutMillis, final ParameterizedTypeReference<T> type) throws AmqpException
+	{
+		return null;
+	}
+
+	@java.lang.Override
+	public <T> T receiveAndConvert(final java.lang.String queueName, final long timeoutMillis, final ParameterizedTypeReference<T> type) throws AmqpException
+	{
+		return null;
+	}
+
+	@java.lang.Override
 	public <R, S> boolean receiveAndReply(final ReceiveAndReplyCallback<R, S> callback) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return false;
 	}
 
-	@Override
-	public <R, S> boolean receiveAndReply(final String queueName, final ReceiveAndReplyCallback<R, S> callback) throws AmqpException
+	@java.lang.Override
+	public <R, S> boolean receiveAndReply(final java.lang.String queueName, final ReceiveAndReplyCallback<R, S> callback) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return false;
 	}
 
-	@Override
-	public <R, S> boolean receiveAndReply(final ReceiveAndReplyCallback<R, S> callback, final String replyExchange, final String replyRoutingKey) throws AmqpException
+	@java.lang.Override
+	public <R, S> boolean receiveAndReply(final ReceiveAndReplyCallback<R, S> callback, final java.lang.String replyExchange, final java.lang.String replyRoutingKey) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return false;
 	}
 
-	@Override
-	public <R, S> boolean receiveAndReply(final String queueName, final ReceiveAndReplyCallback<R, S> callback, final String replyExchange, final String replyRoutingKey) throws AmqpException
+	@java.lang.Override
+	public <R, S> boolean receiveAndReply(final java.lang.String queueName, final ReceiveAndReplyCallback<R, S> callback, final java.lang.String replyExchange, final java.lang.String replyRoutingKey) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return false;
 	}
 
-	@Override
+	@java.lang.Override
 	public <R, S> boolean receiveAndReply(final ReceiveAndReplyCallback<R, S> callback, final ReplyToAddressCallback<S> replyToAddressCallback) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return false;
 	}
 
-	@Override
-	public <R, S> boolean receiveAndReply(final String queueName, final ReceiveAndReplyCallback<R, S> callback, final ReplyToAddressCallback<S> replyToAddressCallback) throws AmqpException
+	@java.lang.Override
+	public <R, S> boolean receiveAndReply(final java.lang.String queueName, final ReceiveAndReplyCallback<R, S> callback, final ReplyToAddressCallback<S> replyToAddressCallback) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return false;
 	}
 
-	@Override
+	@java.lang.Override
 	public Message sendAndReceive(final Message message) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
-	@Override
-	public Message sendAndReceive(final String routingKey, final Message message) throws AmqpException
+	@java.lang.Override
+	public Message sendAndReceive(final java.lang.String routingKey, final Message message) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
-
+		return null;
 	}
 
-	@Override
-	public Message sendAndReceive(final String exchange, final String routingKey, final Message message) throws AmqpException
+	@java.lang.Override
+	public Message sendAndReceive(final java.lang.String exchange, final java.lang.String routingKey, final Message message) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
-
+		return null;
 	}
 
-	@Override
-	public Object convertSendAndReceive(final Object message) throws AmqpException
+	@java.lang.Override
+	public java.lang.Object convertSendAndReceive(final java.lang.Object message) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
-	@Override
-	public Object convertSendAndReceive(final String routingKey, final Object message) throws AmqpException
+	@java.lang.Override
+	public java.lang.Object convertSendAndReceive(final java.lang.String routingKey, final java.lang.Object message) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
-	@Override
-	public Object convertSendAndReceive(final String exchange, final String routingKey, final Object message) throws AmqpException
+	@java.lang.Override
+	public java.lang.Object convertSendAndReceive(final java.lang.String exchange, final java.lang.String routingKey, final java.lang.Object message) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
-	@Override
-	public Object convertSendAndReceive(final Object message, final MessagePostProcessor messagePostProcessor) throws AmqpException
+	@java.lang.Override
+	public java.lang.Object convertSendAndReceive(final java.lang.Object message, final MessagePostProcessor messagePostProcessor) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
-	@Override
-	public Object convertSendAndReceive(final String routingKey, final Object message, final MessagePostProcessor messagePostProcessor) throws AmqpException
+	@java.lang.Override
+	public java.lang.Object convertSendAndReceive(final java.lang.String routingKey, final java.lang.Object message, final MessagePostProcessor messagePostProcessor) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
-	@Override
-	public Object convertSendAndReceive(final String exchange, final String routingKey, final Object message, final MessagePostProcessor messagePostProcessor) throws AmqpException
+	@java.lang.Override
+	public java.lang.Object convertSendAndReceive(final java.lang.String exchange, final java.lang.String routingKey, final java.lang.Object message, final MessagePostProcessor messagePostProcessor) throws AmqpException
 	{
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
+	@java.lang.Override
+	public <T> T convertSendAndReceiveAsType(final java.lang.Object message, final ParameterizedTypeReference<T> responseType) throws AmqpException
+	{
+		return null;
+	}
+
+	@java.lang.Override
+	public <T> T convertSendAndReceiveAsType(final java.lang.String routingKey, final java.lang.Object message, final ParameterizedTypeReference<T> responseType) throws AmqpException
+	{
+		return null;
+	}
+
+	@java.lang.Override
+	public <T> T convertSendAndReceiveAsType(final java.lang.String exchange, final java.lang.String routingKey, final java.lang.Object message, final ParameterizedTypeReference<T> responseType) throws AmqpException
+	{
+		return null;
+	}
+
+	@java.lang.Override
+	public <T> T convertSendAndReceiveAsType(final java.lang.Object message, final MessagePostProcessor messagePostProcessor, final ParameterizedTypeReference<T> responseType) throws AmqpException
+	{
+		return null;
+	}
+
+	@java.lang.Override
+	public <T> T convertSendAndReceiveAsType(final java.lang.String routingKey, final java.lang.Object message, final MessagePostProcessor messagePostProcessor, final ParameterizedTypeReference<T> responseType) throws AmqpException
+	{
+		return null;
+	}
+
+	@java.lang.Override
+	public <T> T convertSendAndReceiveAsType(final java.lang.String exchange, final java.lang.String routingKey, final java.lang.Object message, final MessagePostProcessor messagePostProcessor, final ParameterizedTypeReference<T> responseType) throws AmqpException
+	{
+		return null;
+	}
 }

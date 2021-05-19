@@ -28,6 +28,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.servicerepair.customerreturns.WarrantyCase;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,6 +44,7 @@ public class CreateRepairProjectTaskRequest
 
 	@NonNull ProductId productId;
 	@NonNull @Builder.Default AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
+	@NonNull WarrantyCase warrantyCase;
 	@NonNull Quantity qtyRequired;
 
 	@NonNull HuId repairVhuId;

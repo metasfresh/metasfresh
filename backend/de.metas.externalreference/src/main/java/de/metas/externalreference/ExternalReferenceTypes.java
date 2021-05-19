@@ -24,6 +24,11 @@ package de.metas.externalreference;
 
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
+import de.metas.externalreference.pricelist.PriceListExternalReferenceType;
+import de.metas.externalreference.pricelist.PriceListVersionExternalReferenceType;
+import de.metas.externalreference.product.ProductExternalReferenceType;
+import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
+import de.metas.externalreference.productprice.ProductPriceExternalReferenceType;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +46,13 @@ public class ExternalReferenceTypes
 		registerType(NullExternalReferenceType.NULL);
 		registerType(BPartnerExternalReferenceType.BPARTNER);
 		registerType(BPLocationExternalReferenceType.BPARTNER_LOCATION);
+		registerType(BPartnerExternalReferenceType.BPARTNER_VALUE);
+		registerType(ProductExternalReferenceType.PRODUCT);
+		registerType(ProductCategoryExternalReferenceType.PRODUCT_CATEGORY);
+		registerType(ExternalUserReferenceType.USER_ID);
+		registerType(PriceListExternalReferenceType.PRICE_LIST);
+		registerType(PriceListVersionExternalReferenceType.PRICE_LIST_VERSION);
+		registerType(ProductPriceExternalReferenceType.PRODUCT_PRICE);
 	}
 
 	public void registerType(@NonNull final IExternalReferenceType type)

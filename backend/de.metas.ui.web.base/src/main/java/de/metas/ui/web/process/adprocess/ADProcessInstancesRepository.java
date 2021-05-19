@@ -1,29 +1,10 @@
 package de.metas.ui.web.process.adprocess;
 
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.api.IRangeAwareParams;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Process;
-import org.compiere.util.Env;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.printing.esb.base.util.Check;
 import de.metas.process.ADProcessService;
 import de.metas.process.IADPInstanceDAO;
@@ -318,10 +299,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		}
 
 		//
-		final Set<TableRecordReference> selectedIncludedRecords = request.getSelectedIncludedDocumentPaths()
-				.stream()
-				.map(documentDescriptorFactory::getTableRecordReference)
-				.collect(ImmutableSet.toImmutableSet());
+		final Set<TableRecordReference> selectedIncludedRecords = extractSelectedIncludedRecords(request);
 
 		final ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder()
 				.setCtx(Env.getCtx())
@@ -337,6 +315,15 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 		addViewInternalParameters(request, processInfoBuilder);
 
 		return processInfoBuilder.build();
+	}
+
+	private ImmutableSet<TableRecordReference> extractSelectedIncludedRecords(final @NonNull CreateProcessInstanceRequest request)
+	{
+		return request.getSelectedIncludedDocumentPaths()
+				.stream()
+				.filter(documentPath -> documentPath.getSingleRowId().isInt()) // only Int rowIds are convertible to TableRecordReference
+				.map(documentDescriptorFactory::getTableRecordReference)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@VisibleForTesting
@@ -390,7 +377,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			throw new AdempiereException("No processClassInstance found: " + processInfo);
 		}
 
-		try (final IAutoCloseable c = JavaProcess.temporaryChangeCurrentInstance(processClassInstance))
+		try (final IAutoCloseable ignored = JavaProcess.temporaryChangeCurrentInstance(processClassInstance))
 		{
 			//
 			// Build the parameters document
@@ -429,20 +416,20 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	@Override
 	public <R> R forProcessInstanceReadonly(final DocumentId pinstanceId, final Function<IProcessInstanceController, R> processor)
 	{
-		try (final IAutoCloseable readLock = getOrLoad(pinstanceId).lockForReading())
+		try (final IAutoCloseable ignored = getOrLoad(pinstanceId).lockForReading())
 		{
 			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId)
 					.copyReadonly()
 					.bindContextSingleDocumentIfPossible(documentsCollection);
 
-			try (final IAutoCloseable c = processInstance.activate())
+			try (final IAutoCloseable ignored1 = processInstance.activate())
 			{
 				return processor.apply(processInstance);
 			}
 		}
 	}
 
-	private final ADProcessInstanceController getOrLoad(final DocumentId pinstanceId)
+	private ADProcessInstanceController getOrLoad(final DocumentId pinstanceId)
 	{
 		try
 		{
@@ -457,7 +444,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	@Override
 	public <R> R forProcessInstanceWritable(final DocumentId pinstanceId, final IDocumentChangesCollector changesCollector, final Function<IProcessInstanceController, R> processor)
 	{
-		try (final IAutoCloseable writeLock = getOrLoad(pinstanceId).lockForWriting())
+		try (final IAutoCloseable ignored = getOrLoad(pinstanceId).lockForWriting())
 		{
 			final ADProcessInstanceController processInstance = getOrLoad(pinstanceId)
 					.copyReadWrite(changesCollector)
@@ -467,7 +454,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 			// If it was executed we are not allowed to change it.
 			processInstance.assertNotExecuted();
 
-			try (final IAutoCloseable c = processInstance.activate())
+			try (final IAutoCloseable ignored1 = processInstance.activate())
 			{
 				// Call the given processor to apply changes to this process instance.
 				final R result = processor.apply(processInstance);

@@ -1,19 +1,19 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.vertical.healthcare.alberta.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Product_AlbertaPackagingUnit
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_M_Product_AlbertaPackagingUnit extends org.compiere.model.PO implements I_M_Product_AlbertaPackagingUnit, org.compiere.model.I_Persistent 
+public class X_M_Product_AlbertaPackagingUnit extends org.compiere.model.PO implements I_M_Product_AlbertaPackagingUnit, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 544182563L;
+	private static final long serialVersionUID = -1129871042L;
 
     /** Standard Constructor */
     public X_M_Product_AlbertaPackagingUnit (final Properties ctx, final int M_Product_AlbertaPackagingUnit_ID, @Nullable final String trxName)
@@ -45,13 +45,13 @@ public class X_M_Product_AlbertaPackagingUnit extends org.compiere.model.PO impl
 	/** BOX = Ktn */
 	public static final String ARTICLEUNIT_BOX = "Ktn";
 	@Override
-	public void setArticleUnit (final java.lang.String ArticleUnit)
+	public void setArticleUnit (final String ArticleUnit)
 	{
 		set_Value (COLUMNNAME_ArticleUnit, ArticleUnit);
 	}
 
 	@Override
-	public java.lang.String getArticleUnit() 
+	public String getArticleUnit()
 	{
 		return get_ValueAsString(COLUMNNAME_ArticleUnit);
 	}

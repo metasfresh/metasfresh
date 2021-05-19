@@ -71,7 +71,9 @@ public class All_RepoIdAware_Classes_Test
 			.skip(de.metas.shipment.ShipmentDeclarationLineId.class)
 			//
 			.skip(org.eevolution.api.PPOrderRoutingActivityId.class)
+			.skip(org.eevolution.api.PPOrderRoutingProductId.class)
 			.skip(de.metas.material.planning.pporder.PPRoutingActivityId.class)
+			.skip(de.metas.material.planning.pporder.PPRoutingProductId.class)
 			//
 			.skip(de.metas.printing.HardwareTrayId.class)
 			//

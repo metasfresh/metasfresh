@@ -9,6 +9,7 @@ import de.metas.order.BPartnerOrderParams;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.payment.PaymentRule;
@@ -95,7 +96,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
 				.retrieveDestinations(Env.getCtx(), processorPO, I_C_OLCand.class, ITrx.TRXNAME_ThreadInherited)
 				.stream()
-				.map(record -> toOLCand(record));
+				.map(this::toOLCand);
 	}
 
 	private OLCand toOLCand(@NonNull final I_C_OLCand olCandRecord)
@@ -113,6 +114,11 @@ final class RelationTypeOLCandSource implements OLCandSource
 		final DocTypeId orderDocTypeId = olCandBL.getOrderDocTypeId(orderDefaults, olCandRecord);
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
 
+		final OrderLineGroup orderLineGroup = OrderLineGroup.ofOrNull(
+				olCandRecord.getCompensationGroupKey(),
+				olCandRecord.isGroupCompensationLine(),
+				olCandRecord.isGroupingError(),
+				olCandRecord.getGroupingErrorMessage());
 		return OLCand.builder()
 				.olCandEffectiveValuesBL(olCandEffectiveValuesBL)
 				.olCandRecord(olCandRecord)
@@ -127,6 +133,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.shipperId(shipperId)
 				.orderDocTypeId(orderDocTypeId)
 				.salesRepId(salesRepId)
+				.orderLineGroup(orderLineGroup)
 				.build();
 	}
 }

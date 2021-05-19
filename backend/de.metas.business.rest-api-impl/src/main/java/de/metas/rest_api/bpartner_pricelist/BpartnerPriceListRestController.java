@@ -1,6 +1,6 @@
 package de.metas.rest_api.bpartner_pricelist;
 
-import static de.metas.common.rest_api.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 
 import java.time.LocalDate;
 
@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
 import de.metas.lang.SOTrx;
-import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner_pricelist.command.GetPriceListCommand;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePriceList;
 import de.metas.rest_api.utils.IdentifierString;

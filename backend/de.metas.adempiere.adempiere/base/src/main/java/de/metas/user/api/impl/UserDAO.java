@@ -147,18 +147,18 @@ public class UserDAO implements IUserDAO
 	}
 
 	@Override
-	public String retrieveUserFullname(final int userRepoId)
+	public String retrieveUserFullName(final int userRepoId)
 	{
 		final UserId userId = UserId.ofRepoIdOrNull(userRepoId);
 		if (userId == null)
 		{
 			return "?";
 		}
-		return retrieveUserFullname(userId);
+		return retrieveUserFullName(userId);
 	}
 
 	@Override
-	public String retrieveUserFullname(final UserId userId)
+	public String retrieveUserFullName(final UserId userId)
 	{
 		if (userId == null)
 		{

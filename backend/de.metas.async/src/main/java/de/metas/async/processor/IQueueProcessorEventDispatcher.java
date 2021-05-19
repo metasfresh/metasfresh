@@ -36,33 +36,21 @@ public interface IQueueProcessorEventDispatcher
 {
 	/**
 	 * Register given <code>listener</code> for given workpackage
-	 * 
-	 * @param listener
-	 * @param workpackageId
 	 */
 	void registerListener(IQueueProcessorListener listener, int workpackageId);
 
 	/**
 	 * Unregister given <code>listener</code> for given workpackage
-	 * 
-	 * @param listener
-	 * @param workpackageId
 	 */
 	boolean unregisterListener(IQueueProcessorListener listener, int workpackageId);
 
 	/**
 	 * Unregister all listeners for given workpackage
-	 * 
-	 * @param workpackageId
-	 * @return
 	 */
 	boolean unregisterListeners(int workpackageId);
 
 	/**
 	 * Notify all listeners that given workpackage was processed
-	 * 
-	 * @param workPackage
-	 * @param workPackageProcessor
 	 */
 	void fireWorkpackageProcessed(I_C_Queue_WorkPackage workPackage, IWorkpackageProcessor workPackageProcessor);
 }

@@ -147,6 +147,7 @@ public class SparePartsReturnCalculation
 		@NonNull Quantity qty;
 		@NonNull QtyCalculationsBOM sparePartsBOM;
 		@NonNull @Builder.Default AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
+		@NonNull WarrantyCase warrantyCase;
 		@NonNull HuId repairVhuId;
 		@NonNull InOutAndLineId customerReturnLineId;
 

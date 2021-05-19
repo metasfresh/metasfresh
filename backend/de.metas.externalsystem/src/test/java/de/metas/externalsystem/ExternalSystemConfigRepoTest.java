@@ -83,7 +83,6 @@ class ExternalSystemConfigRepoTest
 		childRecord.setApiKey("apiKey");
 		childRecord.setBaseURL("baseUrl");
 		childRecord.setTenant("tenant");
-		childRecord.setName("name");
 		childRecord.setExternalSystemValue("testAlbertaValue");
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		saveRecord(childRecord);
@@ -169,7 +168,6 @@ class ExternalSystemConfigRepoTest
 		childRecord.setApiKey("apiKey");
 		childRecord.setBaseURL("baseUrl");
 		childRecord.setTenant("tenant");
-		childRecord.setName("name");
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		saveRecord(childRecord);
@@ -199,7 +197,6 @@ class ExternalSystemConfigRepoTest
 		childRecord.setApiKey("apiKey");
 		childRecord.setBaseURL("baseUrl");
 		childRecord.setTenant("tenant");
-		childRecord.setName("name");
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		saveRecord(childRecord);
@@ -226,7 +223,6 @@ class ExternalSystemConfigRepoTest
 		childRecord.setApiKey("apiKey");
 		childRecord.setBaseURL("baseUrl");
 		childRecord.setTenant("tenant");
-		childRecord.setName("name");
 		childRecord.setExternalSystemValue(value);
 		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		saveRecord(childRecord);

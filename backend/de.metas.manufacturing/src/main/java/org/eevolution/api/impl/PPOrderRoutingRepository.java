@@ -12,13 +12,14 @@ import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import de.metas.util.time.DurationUtils;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -40,14 +41,16 @@ import org.eevolution.api.PPOrderRoutingActivityCode;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.api.PPOrderRoutingActivitySchedule;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
+import org.eevolution.api.PPOrderRoutingProduct;
+import org.eevolution.api.PPOrderRoutingProductId;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.I_PP_Order_NodeNext;
+import org.eevolution.model.I_PP_Order_Node_Product;
 import org.eevolution.model.I_PP_Order_Workflow;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +61,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 {
+	public final IProductBL productBL = Services.get(IProductBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -77,11 +81,16 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.map(orderActivityRecord -> toPPOrderRoutingActivity(orderActivityRecord, durationUnit, unitsPerCycle))
 				.collect(ImmutableList.toImmutableList());
 
+		final ImmutableList<PPOrderRoutingProduct> orderProducts = retrieveOrderNodeProducts(orderId)
+				.stream()
+				.map(this::toPPOrderRoutingProduct)
+				.collect(ImmutableList.toImmutableList());
+
 		final ImmutableMap<Integer, PPOrderRoutingActivityCode> activityCodesByRepoId = orderActivities
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						orderActivity -> orderActivity.getId().getRepoId(),
-						orderActivity -> orderActivity.getCode()));
+						PPOrderRoutingActivity::getCode));
 
 		//
 		// First Activity Code
@@ -103,8 +112,24 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				//
 				.firstActivityCode(firstActivityCode)
 				.activities(orderActivities)
+				.products(orderProducts)
 				.codeToNextCodeMap(codeToNextCodeMap)
 				//
+				.build();
+	}
+
+	private PPOrderRoutingProduct toPPOrderRoutingProduct(final I_PP_Order_Node_Product product)
+	{
+		final PPOrderId orderId = PPOrderId.ofRepoId(product.getPP_Order_ID());
+		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, product.getPP_Order_Node_ID());
+		final PPOrderRoutingProductId id = PPOrderRoutingProductId.ofRepoId(activityId, product.getPP_Order_Node_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		return PPOrderRoutingProduct.builder()
+				.id(id)
+				.productId(productId)
+				.qty(Quantity.of(product.getQty(), productBL.getStockUOM(productId)))
+				.subcontracting(product.isSubcontracting())
+				.seqNo(product.getSeqNo())
 				.build();
 	}
 
@@ -179,6 +204,15 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_Node.class)
 				.addEqualsFilter(I_PP_Order_Node.COLUMNNAME_PP_Order_ID, orderId)
+				.create()
+				.list();
+	}
+
+	private List<I_PP_Order_Node_Product> retrieveOrderNodeProducts(final PPOrderId orderId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Order_Node_Product.class)
+				.addEqualsFilter(I_PP_Order_Node_Product.COLUMNNAME_PP_Order_ID, orderId)
 				.create()
 				.list();
 	}
@@ -390,6 +424,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		//
 		// Order Activities
 		final Collection<I_PP_Order_Node> activityRecordsToDelete;
+		final Map<Integer, PPOrderRoutingActivityId> wfNodeToActivityId = new HashMap<>();
 		{
 			final HashMap<PPOrderRoutingActivityId, I_PP_Order_Node> existingActivityRecords = retrieveOrderNodes(orderId)
 					.stream()
@@ -409,11 +444,39 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				}
 
 				saveRecord(activityRecord);
-				activity.setId(extractPPOrderRoutingActivityId(activityRecord));
+				final PPOrderRoutingActivityId id = extractPPOrderRoutingActivityId(activityRecord);
+				wfNodeToActivityId.put(activity.getRoutingActivityId().getRepoId(), id);
+				activity.setId(id);
 			}
 
 			//
 			activityRecordsToDelete = existingActivityRecords.values();
+		}
+
+		final Collection<I_PP_Order_Node_Product> productRecordsToDelete;
+		{
+			final HashMap<PPOrderRoutingProductId, I_PP_Order_Node_Product> existingProductRecords = retrieveOrderNodeProducts(orderId)
+					.stream()
+					.collect(GuavaCollectors.toHashMapByKey(this::extractPPOrderRoutingProductId));
+
+			// Create/Update
+			for (final PPOrderRoutingProduct product : orderRouting.getProducts())
+			{
+				I_PP_Order_Node_Product productRecord = existingProductRecords.remove(product.getId());
+				if (productRecord == null)
+				{
+					productRecord = toNewOrderNodeProductRecord(product, orderId, ppOrderWorkflowId, wfNodeToActivityId);
+				}
+				else
+				{
+					updateOrderNodeProductRecord(productRecord, product);
+				}
+
+				saveRecord(productRecord);
+			}
+
+			//
+			productRecordsToDelete = existingProductRecords.values();
 		}
 
 		//
@@ -455,7 +518,32 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 		//
 		// Delete remaining nodes if any
+		InterfaceWrapperHelper.deleteAll(productRecordsToDelete);
 		InterfaceWrapperHelper.deleteAll(activityRecordsToDelete);
+	}
+
+	private void updateOrderNodeProductRecord(final I_PP_Order_Node_Product record, final PPOrderRoutingProduct product)
+	{
+		record.setM_Product_ID(product.getProductId().getRepoId());
+		if (product.getQty() != null)
+		{
+			record.setQty(product.getQty().toBigDecimal());
+		}
+		record.setSeqNo(product.getSeqNo());
+		record.setIsSubcontracting(product.isSubcontracting());
+		record.setSpecification(product.getSpecification());
+	}
+
+	private I_PP_Order_Node_Product toNewOrderNodeProductRecord(final PPOrderRoutingProduct product, final PPOrderId orderId, final int ppOrderWorkflowId, final Map<Integer, PPOrderRoutingActivityId> wfNodeToActivityId)
+	{
+		final I_PP_Order_Node_Product record = InterfaceWrapperHelper.newInstance(I_PP_Order_Node_Product.class);
+		record.setPP_Order_ID(orderId.getRepoId());
+		record.setPP_Order_Workflow_ID(ppOrderWorkflowId);
+		record.setPP_Order_Node_ID(wfNodeToActivityId.get(product.getId().getActivityId().getRepoId()).getRepoId());
+
+		updateOrderNodeProductRecord(record, product);
+
+		return record;
 	}
 
 	private ImmutablePair<PPOrderRoutingActivityId, PPOrderRoutingActivityId> extractCurrentAndNextActivityIdPair(final I_PP_Order_NodeNext record)
@@ -470,6 +558,13 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	{
 		final PPOrderId orderId = PPOrderId.ofRepoId(record.getPP_Order_ID());
 		return PPOrderRoutingActivityId.ofRepoId(orderId, record.getPP_Order_Node_ID());
+	}
+
+	private PPOrderRoutingProductId extractPPOrderRoutingProductId(final I_PP_Order_Node_Product record)
+	{
+		final PPOrderId orderId = PPOrderId.ofRepoId(record.getPP_Order_ID());
+		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, record.getPP_Order_Node_ID());
+		return PPOrderRoutingProductId.ofRepoId(activityId, record.getPP_Order_Node_Product_ID());
 	}
 
 	private I_PP_Order_Workflow toNewOrderWorkflowRecord(final PPOrderRouting from)

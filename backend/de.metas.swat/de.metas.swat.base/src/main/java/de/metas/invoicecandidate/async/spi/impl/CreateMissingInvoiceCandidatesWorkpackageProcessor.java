@@ -60,10 +60,8 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 	 * Schedule given model (document or table record) to be evaluated and {@link I_C_Invoice_Candidate}s records to be generated for it, asynchronously.
 	 *
 	 * NOTE: the workpackages are not created right away, but the models are collected per database transaction and a workpackage is enqueued when the transaction is committed.
-	 *
-	 * @param model
 	 */
-	public static final void schedule(final Object model)
+	public static void schedule(final Object model)
 	{
 		SCHEDULER.schedule(model);
 	}
@@ -130,7 +128,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
+		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{
 			final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
 			for (final Object model : models)

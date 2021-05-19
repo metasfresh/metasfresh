@@ -107,7 +107,14 @@ export function patchRequest({
       (isAdvanced ? '?advanced=true' : '') +
       (isEdit ? '/edit' : ''),
     payload
-  );
+  ).then((rawResponse) => {
+    // this is fixed on the FE because the BE is not consistent in sending the `documents` key with every PATCH request
+    // this differs when patch is done within processes for example
+    if (!rawResponse.data.documents) {
+      rawResponse.data.documents = rawResponse.data;
+    }
+    return Promise.resolve(rawResponse);
+  });
 }
 
 export function browseViewRequest({

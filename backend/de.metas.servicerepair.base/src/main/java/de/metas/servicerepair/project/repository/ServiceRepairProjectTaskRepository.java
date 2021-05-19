@@ -30,6 +30,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantitys;
+import de.metas.servicerepair.customerreturns.WarrantyCase;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskStatus;
@@ -75,6 +76,7 @@ class ServiceRepairProjectTaskRepository
 
 		record.setM_Product_ID(request.getProductId().getRepoId());
 		record.setM_AttributeSetInstance_ID(request.getAsiId().getRepoId());
+		record.setIsWarrantyCase(request.getWarrantyCase().toBoolean());
 		record.setC_UOM_ID(request.getQtyRequired().getUomId().getRepoId());
 		record.setQtyRequired(request.getQtyRequired().toBigDecimal());
 		record.setQtyReserved(BigDecimal.ZERO);
@@ -148,6 +150,7 @@ class ServiceRepairProjectTaskRepository
 				//
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.asiId(AttributeSetInstanceId.ofRepoIdOrNone(record.getM_AttributeSetInstance_ID()))
+				.warrantyCase(WarrantyCase.ofBoolean(record.isWarrantyCase()))
 				.qtyRequired(Quantitys.create(record.getQtyRequired(), uomId))
 				.qtyReserved(Quantitys.create(record.getQtyReserved(), uomId))
 				.qtyConsumed(Quantitys.create(record.getQtyConsumed(), uomId))
@@ -232,7 +235,14 @@ class ServiceRepairProjectTaskRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public Optional<ServiceRepairProjectTaskId> getTaskByRepairOrderId(
+	public Optional<ServiceRepairProjectTask> getTaskByRepairOrderId(
+			@NonNull final ProjectId projectId,
+			@NonNull final PPOrderId repairOrderId)
+	{
+		return getTaskIdByRepairOrderId(projectId, repairOrderId).map(this::getById);
+	}
+
+	public Optional<ServiceRepairProjectTaskId> getTaskIdByRepairOrderId(
 			@NonNull final ProjectId projectId,
 			@NonNull final PPOrderId repairOrderId)
 	{

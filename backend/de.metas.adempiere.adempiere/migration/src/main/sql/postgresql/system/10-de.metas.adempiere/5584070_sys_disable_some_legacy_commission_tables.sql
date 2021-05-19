@@ -1,0 +1,40 @@
+-- 2021-03-26T16:33:51.812Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET IsActive='N',Updated=TO_TIMESTAMP('2021-03-26 18:33:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540251
+;
+
+-- 2021-03-26T16:35:30.431Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET IsActive='N',Updated=TO_TIMESTAMP('2021-03-26 18:35:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540249
+;
+
+-- 2021-03-26T16:36:06.059Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET IsActive='N',Updated=TO_TIMESTAMP('2021-03-26 18:36:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540289
+;
+
+-- 2021-03-26T16:36:14.696Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET IsActive='N',Updated=TO_TIMESTAMP('2021-03-26 18:36:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=504620
+;
+
+-- 2021-03-26T16:36:16.095Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET IsActive='N',Updated=TO_TIMESTAMP('2021-03-26 18:36:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=504621
+;
+
+-- 2021-03-26T16:36:52.781Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET IsActive='N',Updated=TO_TIMESTAMP('2021-03-26 18:36:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540248
+;
+
+-- 2021-03-26T16:37:14.625Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET IsActive='N',Updated=TO_TIMESTAMP('2021-03-26 18:37:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540250
+;
+
+-- 2021-03-26T16:45:05.973Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Table SET IsActive='N',Updated=TO_TIMESTAMP('2021-03-26 18:45:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=540166
+;
+

@@ -5,11 +5,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import java.time.Duration;
+
 import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.session.ExpiringSession;
 import org.springframework.session.MapSession;
 import org.springframework.session.MapSessionRepository;
 import org.springframework.session.SessionRepository;
@@ -53,34 +54,34 @@ import lombok.ToString;
  *
  */
 @ToString(of = { "defaultMaxInactiveInterval" })
-/* package */class FixedMapSessionRepository implements SessionRepository<ExpiringSession>
+/* package */class FixedMapSessionRepository implements SessionRepository<MapSession>
 {
 	private static final Logger logger = LogManager.getLogger(FixedMapSessionRepository.class);
 
-	private final Map<String, ExpiringSession> sessions = new ConcurrentHashMap<>();
+	private final Map<String, MapSession> sessions = new ConcurrentHashMap<>();
 
 	private final ApplicationEventPublisher applicationEventPublisher;
-	private final Integer defaultMaxInactiveInterval;
+	private final Duration defaultMaxInactiveInterval;
 
 	@Builder
 	private FixedMapSessionRepository(
 			@NonNull final ApplicationEventPublisher applicationEventPublisher,
-			@Nullable final Integer defaultMaxInactiveInterval)
+			@Nullable final Duration defaultMaxInactiveInterval)
 	{
 		this.applicationEventPublisher = applicationEventPublisher;
 		this.defaultMaxInactiveInterval = defaultMaxInactiveInterval;
 	}
 
 	@Override
-	public void save(final ExpiringSession session)
+	public void save(final MapSession session)
 	{
 		sessions.put(session.getId(), new MapSession(session));
 	}
 
 	@Override
-	public ExpiringSession getSession(final String id)
+	public MapSession findById(final String id)
 	{
-		final ExpiringSession saved = sessions.get(id);
+		final MapSession saved = sessions.get(id);
 		if (saved == null)
 		{
 			return null;
@@ -96,7 +97,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public void delete(final String id)
+	public void deleteById(final String id)
 	{
 		final boolean expired = false;
 		deleteAndFireEvent(id, expired);
@@ -104,33 +105,33 @@ import lombok.ToString;
 
 	private void deleteAndFireEvent(final String id, boolean expired)
 	{
-		final ExpiringSession deletedSession = sessions.remove(id);
+		final MapSession deletedSession = sessions.remove(id);
 
 		// Fire event
 		if (deletedSession != null)
 		{
 			if (expired)
 			{
-				applicationEventPublisher.publishEvent(new SessionExpiredEvent(this, id));
+				applicationEventPublisher.publishEvent(new SessionExpiredEvent(this, deletedSession));
 			}
 			else
 			{
-				applicationEventPublisher.publishEvent(new SessionDeletedEvent(this, id));
+				applicationEventPublisher.publishEvent(new SessionDeletedEvent(this, deletedSession));
 			}
 		}
 	}
 
 	@Override
-	public ExpiringSession createSession()
+	public MapSession createSession()
 	{
-		final ExpiringSession result = new MapSession();
+		final MapSession result = new MapSession();
 		if (defaultMaxInactiveInterval != null)
 		{
-			result.setMaxInactiveIntervalInSeconds(defaultMaxInactiveInterval);
+			result.setMaxInactiveInterval(defaultMaxInactiveInterval);
 		}
 
 		// Fire event
-		applicationEventPublisher.publishEvent(new SessionCreatedEvent(this, result.getId()));
+		applicationEventPublisher.publishEvent(new SessionCreatedEvent(this, result));
 
 		return result;
 	}
@@ -152,8 +153,8 @@ import lombok.ToString;
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		int countExpiredSessions = 0;
 
-		final List<ExpiringSession> sessionsToCheck = new ArrayList<>(sessions.values());
-		for (final ExpiringSession session : sessionsToCheck)
+		final List<MapSession> sessionsToCheck = new ArrayList<>(sessions.values());
+		for (final MapSession session : sessionsToCheck)
 		{
 			if (session.isExpired())
 			{

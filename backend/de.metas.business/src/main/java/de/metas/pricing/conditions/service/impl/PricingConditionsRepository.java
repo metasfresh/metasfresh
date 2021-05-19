@@ -624,6 +624,7 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				discountSchemaBreaksToCopy.add(discountSchemaBreak);
 			}
 		}
+
 		
 		// copy breaks
 		for (final PricingConditionsBreak schemaBreak : discountSchemaBreaksToCopy)
@@ -658,6 +659,36 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 				updateDiscountSchemaBreakRecords(schemaBreakKey, schemaBreak);
 			}
 		}
+		
+		// gather breaks that could be inactivated
+		if (request.getMakeTargetAsSource())
+		{
+			final Set<PricingConditionsBreak> discountSchemaBreaksToInactivate = fetchBreaksToInactivate(targetDiscountSchemaBreaks, discountSchemaBreaksToUpdate);
+			for (final PricingConditionsBreak schemaBreak : discountSchemaBreaksToInactivate)
+			{
+				inactivateDiscountSchemaBreakRecords(schemaBreak);
+			}
+		}
+				
+	}
+
+	private Set<PricingConditionsBreak> fetchBreaksToInactivate(final List<PricingConditionsBreak> targetDiscountSchemaBreaks, final Map<PricingConditionsBreak, List<PricingConditionsBreak>> discountSchemaBreaksToUpdate)
+	{
+		final Set<PricingConditionsBreak> discountSchemaBreaksToInactivate = new HashSet<PricingConditionsBreak>();
+		final List<PricingConditionsBreak> breaks = discountSchemaBreaksToUpdate
+				.values()
+				.stream()
+				.flatMap(db -> db.stream())
+				.collect(Collectors.toList());
+		for (final PricingConditionsBreak discountSchemaBreak : targetDiscountSchemaBreaks)
+		{
+			if (!breaks.contains(discountSchemaBreak))
+			{
+				discountSchemaBreaksToInactivate.add(discountSchemaBreak);
+			}
+		}
+		
+		return discountSchemaBreaksToInactivate;
 	}
 
 	private void copyOrUpdateFromSelectionToGivenSchemaAndProduct(@NonNull CopyDiscountSchemaBreaksRequest request)
@@ -793,6 +824,14 @@ public class PricingConditionsRepository implements IPricingConditionsRepository
 		final I_M_DiscountSchemaBreak to = getPricingConditionsBreakbyId(toBreak.getId());
 		to.setPricingSystemSurchargeAmt(fromBreak.getPricingSystemSurchargeAmt());
 		saveRecord(to);
+	}
+	
+	private void inactivateDiscountSchemaBreakRecords(@NonNull final PricingConditionsBreak db)
+	{
+		
+		final I_M_DiscountSchemaBreak record = getPricingConditionsBreakbyId(db.getId());
+		record.setIsActive(false);
+		saveRecord(record);
 	}
 
 	@Override

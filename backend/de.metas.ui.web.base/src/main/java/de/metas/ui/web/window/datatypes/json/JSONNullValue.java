@@ -38,12 +38,12 @@ import io.swagger.annotations.ApiModel;
 @JsonSerialize(using = JSONNullValueSerializer.class)
 public final class JSONNullValue
 {
-	public static final Object wrapIfNull(final Object value)
+	public static Object wrapIfNull(@Nullable final Object value)
 	{
 		return value == null ? instance : value;
 	}
 
-	public static boolean isNull(final Object value)
+	public static boolean isNull(@Nullable final Object value)
 	{
 		return value == null || value instanceof JSONNullValue;
 	}
@@ -60,6 +60,7 @@ public final class JSONNullValue
 		return "null";
 	}
 
+	@Nullable
 	public static Object toNullIfInstance(@Nullable final Object jsonValueObj)
 	{
 		if (jsonValueObj instanceof JSONNullValue)

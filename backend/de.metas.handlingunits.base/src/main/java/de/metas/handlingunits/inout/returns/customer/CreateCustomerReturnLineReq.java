@@ -47,6 +47,8 @@ public class CreateCustomerReturnLineReq
 	@Nullable
 	AttributeSetInstanceId attributeSetInstanceId;
 
+	boolean warrantyCase;
+
 	@NonNull
 	Quantity qtyReturned;
 
@@ -65,6 +67,7 @@ public class CreateCustomerReturnLineReq
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyReturned,
 			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
+			final boolean warrantyCase,
 			@Nullable final InOutLineId originShipmentLineId,
 			@Nullable final HUPIItemProductId hupiItemProductId,
 			@Nullable final QtyTU qtyTU)
@@ -73,6 +76,7 @@ public class CreateCustomerReturnLineReq
 		this.productId = productId;
 		this.qtyReturned = qtyReturned;
 		this.attributeSetInstanceId = attributeSetInstanceId;
+		this.warrantyCase = warrantyCase;
 		this.originShipmentLineId = originShipmentLineId;
 		this.hupiItemProductId = hupiItemProductId;
 		this.qtyTU = qtyTU;

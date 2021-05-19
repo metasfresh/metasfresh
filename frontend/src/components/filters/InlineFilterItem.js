@@ -35,7 +35,7 @@ class InlineFilterItem extends Component {
       updateInlineFilter,
       parentFilter: { filterId: parentFilterId },
     } = this.props;
-    updateInlineFilter({ filterId, parentFilterId, value });
+    updateInlineFilter({ filterId, parentFilterId, data: value });
 
     this.setState({ searchString: value });
     //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
@@ -74,10 +74,8 @@ class InlineFilterItem extends Component {
   handleApply = () => {
     const { applyFilters, clearFilters } = this.props;
     const { filter } = this.state;
-    clearFilters(filter);
-    if (filter && !filter.parameters[0].value) {
-      return this.handleClear();
-    }
+
+    clearFilters(filter, true);
     applyFilters(filter);
   };
 

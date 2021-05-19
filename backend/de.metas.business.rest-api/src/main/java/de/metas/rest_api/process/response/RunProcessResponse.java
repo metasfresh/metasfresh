@@ -25,7 +25,7 @@ package de.metas.rest_api.process.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.v1.JsonError;
 import lombok.Builder;
 import lombok.Value;
 

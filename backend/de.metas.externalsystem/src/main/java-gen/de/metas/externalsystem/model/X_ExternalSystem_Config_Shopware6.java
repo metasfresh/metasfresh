@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO implements I_ExternalSystem_Config_Shopware6, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 1990405587L;
+	private static final long serialVersionUID = -96827426L;
 
 	/** Standard Constructor */
 	public X_ExternalSystem_Config_Shopware6 (final Properties ctx, final int ExternalSystem_Config_Shopware6_ID, @Nullable final String trxName)
@@ -122,5 +122,29 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	public java.lang.String getExternalSystemValue()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
+	}
+
+	@Override
+	public void setJSONPathConstantBPartnerID (final @Nullable java.lang.String JSONPathConstantBPartnerID)
+	{
+		set_Value (COLUMNNAME_JSONPathConstantBPartnerID, JSONPathConstantBPartnerID);
+	}
+
+	@Override
+	public java.lang.String getJSONPathConstantBPartnerID()
+	{
+		return get_ValueAsString(COLUMNNAME_JSONPathConstantBPartnerID);
+	}
+
+	@Override
+	public void setJSONPathConstantBPartnerLocationID (final @Nullable java.lang.String JSONPathConstantBPartnerLocationID)
+	{
+		set_Value (COLUMNNAME_JSONPathConstantBPartnerLocationID, JSONPathConstantBPartnerLocationID);
+	}
+
+	@Override
+	public java.lang.String getJSONPathConstantBPartnerLocationID()
+	{
+		return get_ValueAsString(COLUMNNAME_JSONPathConstantBPartnerLocationID);
 	}
 }

@@ -283,6 +283,18 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
+	public void setIsWarrantyCase (final boolean IsWarrantyCase)
+	{
+		set_Value (COLUMNNAME_IsWarrantyCase, IsWarrantyCase);
+	}
+
+	@Override
+	public boolean isWarrantyCase() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsWarrantyCase);
+	}
+
+	@Override
 	public void setLine (final int Line)
 	{
 		set_Value (COLUMNNAME_Line, Line);

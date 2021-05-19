@@ -1,25 +1,24 @@
 package de.metas.order.compensationGroup;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+import de.metas.cache.CCache;
+import de.metas.order.model.I_C_CompensationGroup_Schema;
+import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Component;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-
-import de.metas.cache.CCache;
-import de.metas.order.model.I_C_CompensationGroup_Schema;
-import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /*
  * #%L
@@ -77,7 +76,7 @@ public class GroupTemplateRepository
 		final List<GroupTemplateLine> lines = schemaLinePOs.stream()
 				.map(schemaLinePO -> toGroupTemplateLine(schemaLinePO, schemaLinePOs))
 				.collect(ImmutableList.toImmutableList());
-
+		Check.assumeNotEmpty(lines, "lines is not empty");
 		return GroupTemplate.builder()
 				.id(GroupTemplateId.ofRepoId(schemaPO.getC_CompensationGroup_Schema_ID()))
 				.name(schemaPO.getName())

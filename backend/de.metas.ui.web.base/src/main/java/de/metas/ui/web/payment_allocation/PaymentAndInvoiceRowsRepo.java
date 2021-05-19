@@ -45,9 +45,11 @@ import de.metas.payment.PaymentId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Repository;
@@ -147,15 +149,37 @@ public class PaymentAndInvoiceRowsRepo
 			@NonNull final List<InvoiceToAllocate> invoicesToAllocate,
 			@NonNull final ZonedDateTime evaluationDate)
 	{
-		final ImmutableList<InvoiceRow> rows = invoicesToAllocate.stream()
-				.map(it -> toInvoiceRow(it, evaluationDate))
-				.collect(GuavaCollectors.toImmutableList());
-
 		return InvoiceRows.builder()
 				.repository(this)
 				.evaluationDate(evaluationDate)
-				.initialRows(rows)
+				.initialRows(toInvoiceRowsList(invoicesToAllocate, evaluationDate))
 				.build();
+	}
+
+	private ImmutableList<InvoiceRow> toInvoiceRowsList(final @NonNull List<InvoiceToAllocate> invoicesToAllocate, final @NonNull ZonedDateTime evaluationDate)
+	{
+		if(invoicesToAllocate.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final InvoiceRowLoadingContext loadingContext = InvoiceRowLoadingContext.builder()
+				.evaluationDate(evaluationDate)
+				.invoiceIdsWithServiceInvoiceAlreadyGenetated(extractInvoiceIdsWithServiceInvoiceAlreadyGenerated(invoicesToAllocate))
+				.build();
+
+		return invoicesToAllocate.stream()
+				.map(invoiceToAllocate -> toInvoiceRow(invoiceToAllocate, loadingContext))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private ImmutableSet<InvoiceId> extractInvoiceIdsWithServiceInvoiceAlreadyGenerated(final @NonNull List<InvoiceToAllocate> invoicesToAllocate)
+	{
+		final ImmutableSet<InvoiceId> invoiceIds = invoicesToAllocate.stream()
+				.map(InvoiceToAllocate::getInvoiceId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return invoiceProcessorServiceCompanyService.retainIfServiceInvoiceWasAlreadyGenerated(invoiceIds);
 	}
 
 	private PaymentRow toPaymentRow(final PaymentToAllocate paymentToAllocate)
@@ -185,16 +209,8 @@ public class PaymentAndInvoiceRowsRepo
 						.build())
 				.collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableList<InvoiceRow> rows = paymentAllocationRepo.retrieveInvoicesToAllocate(queries)
-				.stream()
-				.map(invoiceToAllocate -> toInvoiceRow(invoiceToAllocate, evaluationDate))
-				.collect(ImmutableList.toImmutableList());
-
-		return InvoiceRows.builder()
-				.repository(this)
-				.evaluationDate(evaluationDate)
-				.initialRows(rows)
-				.build();
+		final List<InvoiceToAllocate> invoiceToAllocates = paymentAllocationRepo.retrieveInvoicesToAllocate(queries);
+		return toInvoiceRows(invoiceToAllocates, evaluationDate);
 	}
 
 	private InvoiceToAllocateQueryBuilder prepareInvoiceToAllocateQuery(final PaymentToAllocate paymentToAllocate)
@@ -210,9 +226,9 @@ public class PaymentAndInvoiceRowsRepo
 
 	private InvoiceRow toInvoiceRow(
 			@NonNull final InvoiceToAllocate invoiceToAllocate,
-			@NonNull final ZonedDateTime evaluationDate)
+			@NonNull final InvoiceRowLoadingContext loadingContext)
 	{
-		final Optional<Amount> serviceFeeAmount = computeServiceFee(invoiceToAllocate, evaluationDate).map(InvoiceProcessingFeeCalculation::getFeeAmountIncludingTax);
+		final Optional<Amount> serviceFeeAmount = computeServiceFee(invoiceToAllocate, loadingContext).map(InvoiceProcessingFeeCalculation::getFeeAmountIncludingTax);
 
 		return InvoiceRow.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
@@ -230,16 +246,21 @@ public class PaymentAndInvoiceRowsRepo
 				.build();
 	}
 
-	private Optional<InvoiceProcessingFeeCalculation> computeServiceFee(final InvoiceToAllocate invoiceToAllocate, final ZonedDateTime evaluationDate)
+	private Optional<InvoiceProcessingFeeCalculation> computeServiceFee(
+			@NonNull final InvoiceToAllocate invoiceToAllocate,
+			@NonNull final InvoiceRowLoadingContext loadingContext)
 	{
 		if (invoiceToAllocate.getDocBaseType().isSales())
 		{
+			final InvoiceId invoiceId = invoiceToAllocate.getInvoiceId();
+			final boolean serviceInvoiceAlreadyGenerated = loadingContext.isServiceInvoiceAlreadyGenerated(invoiceId);
 			return invoiceProcessorServiceCompanyService.computeFee(InvoiceProcessingFeeComputeRequest.builder()
 					.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
-					.evaluationDate(evaluationDate)
+					.evaluationDate(loadingContext.getEvaluationDate())
 					.customerId(invoiceToAllocate.getBpartnerId())
-					.invoiceId(invoiceToAllocate.getInvoiceId())
+					.invoiceId(invoiceId)
 					.invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
+					.serviceInvoiceWasAlreadyGenerated(OptionalBoolean.ofBoolean(serviceInvoiceAlreadyGenerated))
 					.build());
 		}
 		else
@@ -259,13 +280,11 @@ public class PaymentAndInvoiceRowsRepo
 
 		final InvoiceToAllocateQuery query = InvoiceToAllocateQuery.builder()
 				.evaluationDate(evaluationDate)
-				.additionalInvoiceIdsToInclude(invoiceIds)
+				.onlyInvoiceIds(invoiceIds)
 				.build();
 
-		return paymentAllocationRepo.retrieveInvoicesToAllocate(query)
-				.stream()
-				.map(invoiceToAllocate -> toInvoiceRow(invoiceToAllocate, evaluationDate))
-				.collect(ImmutableList.toImmutableList());
+		final List<InvoiceToAllocate> invoiceToAllocates = paymentAllocationRepo.retrieveInvoicesToAllocate(query);
+		return toInvoiceRowsList(invoiceToAllocates, evaluationDate);
 	}
 
 	public Optional<InvoiceRow> getInvoiceRowByInvoiceId(
@@ -350,4 +369,16 @@ public class PaymentAndInvoiceRowsRepo
 		}
 	}
 
+	@Value
+	@Builder
+	private static class InvoiceRowLoadingContext
+	{
+		@NonNull ZonedDateTime evaluationDate;
+		@NonNull ImmutableSet<InvoiceId> invoiceIdsWithServiceInvoiceAlreadyGenetated;
+
+		public boolean isServiceInvoiceAlreadyGenerated(@NonNull final InvoiceId invoiceId)
+		{
+			return invoiceIdsWithServiceInvoiceAlreadyGenetated.contains(invoiceId);
+		}
+	}
 }

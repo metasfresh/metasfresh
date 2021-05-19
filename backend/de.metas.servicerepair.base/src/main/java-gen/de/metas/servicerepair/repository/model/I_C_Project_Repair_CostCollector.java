@@ -74,7 +74,7 @@ public interface I_C_Project_Repair_CostCollector
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
-	 * Set Repair Project Cost Collector.
+	 * Set Service/Repair Project Expenses.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -83,7 +83,7 @@ public interface I_C_Project_Repair_CostCollector
 	void setC_Project_Repair_CostCollector_ID (int C_Project_Repair_CostCollector_ID);
 
 	/**
-	 * Get Repair Project Cost Collector.
+	 * Get Service/Repair Project Expenses.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -238,6 +238,27 @@ public interface I_C_Project_Repair_CostCollector
 
 	ModelColumn<I_C_Project_Repair_CostCollector, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Project_Repair_CostCollector.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Warranty Case.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWarrantyCase (boolean IsWarrantyCase);
+
+	/**
+	 * Get Warranty Case.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWarrantyCase();
+
+	ModelColumn<I_C_Project_Repair_CostCollector, Object> COLUMN_IsWarrantyCase = new ModelColumn<>(I_C_Project_Repair_CostCollector.class, "IsWarrantyCase", null);
+	String COLUMNNAME_IsWarrantyCase = "IsWarrantyCase";
 
 	/**
 	 * Set Attributes.

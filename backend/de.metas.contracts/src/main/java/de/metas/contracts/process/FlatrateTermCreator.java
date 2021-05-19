@@ -25,9 +25,9 @@ package de.metas.contracts.process;
 import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -54,7 +54,6 @@ import java.util.Properties;
 @Value
 public class FlatrateTermCreator
 {
-
 	private static final Logger logger = LogManager.getLogger(FlatrateTermCreator.class);
 
 	Properties ctx;
@@ -119,6 +118,7 @@ public class FlatrateTermCreator
 		for (final I_M_Product product : products)
 		{
 			final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
+					.orgId(OrgId.ofRepoId(conditions.getAD_Org_ID()))
 					.context(context)
 					.bPartner(partner)
 					.conditions(conditions)

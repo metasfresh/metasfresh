@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 mvn --file ../../parent-pom/pom.xml -DskipTests --settings ../maven/settings.xml clean install
 

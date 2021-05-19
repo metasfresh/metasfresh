@@ -17,10 +17,11 @@ import {
   getInlineTabLayoutAndData,
   setInlineTabItemProp,
 } from '../../actions/InlineTabActions';
+import { fieldValueToString } from '../../utils/tableHelpers';
 import { deleteRequest } from '../../api';
 import Prompt from '../app/Prompt';
 import counterpart from 'counterpart';
-
+import { isGermanLanguage } from '../../utils/locale';
 class InlineTab extends PureComponent {
   /**
    * @method toggleOpen
@@ -100,6 +101,17 @@ class InlineTab extends PureComponent {
     );
   };
 
+  /**
+   * @method formatHeaderDataUsingType
+   * @summary function responsible for converting properly the value of the field used further for concatenating the header caption
+   */
+  formatHeaderDataUsingType = ({ fieldValue, fieldType, precision }) => {
+    const { isGerman } = this.props;
+
+    if (fieldValue === null) return;
+    return fieldValueToString({ fieldValue, fieldType, precision, isGerman });
+  };
+
   render() {
     const {
       id: docId,
@@ -135,7 +147,13 @@ class InlineTab extends PureComponent {
               if (fieldsByName[fieldKey]) {
                 return (
                   <Fragment key={`${fieldKey}_${index}`}>
-                    <span>{fieldsByName[fieldKey].value}</span>
+                    <span>
+                      {this.formatHeaderDataUsingType({
+                        fieldValue: fieldsByName[fieldKey].value,
+                        fieldType: fieldsByName[fieldKey].widgetType,
+                        precision: fieldsByName[fieldKey].precision,
+                      })}
+                    </span>
                     <span>&nbsp;&nbsp;</span>
                   </Fragment>
                 );
@@ -213,6 +231,7 @@ InlineTab.propTypes = {
   updateDataValidStatus: PropTypes.func.isRequired,
   setInlineTabItemProp: PropTypes.func.isRequired,
   isOpen: PropTypes.bool,
+  isGerman: PropTypes.bool,
 };
 
 /**
@@ -233,12 +252,14 @@ const mapStateToProps = (state, props) => {
     ? inlineTab[selector].promptOpen
     : false;
   const isOpen = inlineTab[selector] ? inlineTab[selector].isOpen : false;
+  const isGerman = isGermanLanguage(state.appHandler.me.language);
 
   return {
     layout,
     data,
     promptOpen,
     isOpen,
+    isGerman,
   };
 };
 

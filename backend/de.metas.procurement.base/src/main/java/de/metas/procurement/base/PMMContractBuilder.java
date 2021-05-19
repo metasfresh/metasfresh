@@ -12,6 +12,7 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import de.metas.organization.OrgId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -231,6 +232,7 @@ public class PMMContractBuilder
 		try
 		{
 			final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
+					.orgId(OrgId.ofRepoId(flatrateConditions.getAD_Org_ID()))
 					.context(context)
 					.bPartner(bpartner)
 					.conditions(flatrateConditions)

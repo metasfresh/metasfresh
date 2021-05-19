@@ -405,6 +405,7 @@
             <xsd:element minOccurs="0" name="Value" type="xsd:string"/>
             <xsd:element minOccurs="0" name="VATaxID" type="xsd:string"/>
             <xsd:element minOccurs="0" name="ReferenceNo" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="Setup_Place_No" type="xsd:string"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="EDI_cctop_120_vType">
