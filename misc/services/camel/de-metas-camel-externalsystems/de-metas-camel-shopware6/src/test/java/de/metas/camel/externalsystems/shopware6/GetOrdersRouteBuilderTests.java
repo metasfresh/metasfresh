@@ -332,7 +332,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.parameters(parameters)
 					.build();
 
-			final ImportOrdersRouteContext ordersContext = new GetOrdersProcessor()
+			final ImportOrdersRouteContext ordersContext = new GetOrdersProcessor(Mockito.mock(ProcessLogger.class))
 					.buildContext(externalSystemRequest, shopwareClient, currencyInfoProvider);
 
 			exchange.getIn().setBody(orderCandidates);
