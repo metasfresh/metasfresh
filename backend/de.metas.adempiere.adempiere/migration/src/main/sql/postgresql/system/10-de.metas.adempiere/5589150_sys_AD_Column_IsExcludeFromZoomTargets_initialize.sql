@@ -36,11 +36,12 @@ CREATE UNIQUE INDEX ON tmp_column_isexcludefromzoomtargets (target_column_id)
 
 INSERT INTO tmp_column_isexcludefromzoomtargets
 SELECT (CASE
-            WHEN fk.tablename = 'C_Invoice_Candidate' AND fk.columnname = 'C_OrderLine_ID' THEN 'Y' -- preserve already excluded
-            WHEN fk.tablename = 'C_Order' AND fk.columnname = 'Bill_BPartner_ID'           THEN 'Y' -- preserve already excluded
-            WHEN c.ad_reference_id = 19/*table dir*/                                       THEN 'N'
-            WHEN c.ad_reference_id = 30/*search*/ AND c.ad_reference_value_id IS NULL      THEN 'N'
-                                                                                           ELSE 'Y'
+            WHEN fk.tablename = 'C_Invoice_Candidate' AND fk.columnname = 'C_OrderLine_ID'   THEN 'Y' -- preserve already excluded
+            WHEN fk.tablename = 'C_Order' AND fk.columnname = 'Bill_BPartner_ID'             THEN 'Y' -- preserve already excluded
+            WHEN c.ad_reference_id = 19/*table dir*/                                         THEN 'N'
+            WHEN c.ad_reference_id = 30/*search*/ AND c.ad_reference_value_id IS NULL        THEN 'N'
+            WHEN c.ad_reference_id IN (19, 30) AND fk.columnname = fk.ref_tablename || '_ID' THEN 'N'
+                                                                                             ELSE 'Y'
         END)            AS isexcludefromzoomtargets,
        fk.ref_tablename AS source_tablename,
        fk.tablename     AS target_tablename,
@@ -81,6 +82,7 @@ UPDATE ad_column c
 SET isexcludefromzoomtargets=t.isexcludefromzoomtargets
 FROM tmp_column_isexcludefromzoomtargets t
 WHERE c.ad_column_id = t.target_column_id
+  AND c.isexcludefromzoomtargets != t.isexcludefromzoomtargets
 ;
 
 
