@@ -94,7 +94,7 @@
     "jsdoc": "3.6.7",
     "jsdom": "16.4.0",
     "json-loader": "0.5.7",
-    "merge": "1.2.1",
+    "merge": "2.1.1",
     "moment-locales-webpack-plugin": "1.1.2",
     "moment-timezone-data-webpack-plugin": "1.1.0",
     "nock": "11.7.2",
