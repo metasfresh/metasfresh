@@ -64,15 +64,10 @@ public class AD_User_StepDef
 	@Given("metasfresh contains AD_Users:")
 	public void metasfresh_contains_ad_users(@NonNull final DataTable dataTable)
 	{
-		final IWebuiPush webuiPush = Services.get(IWebuiPush.class);
-
-		try (final IAutoCloseable ignore = webuiPush.disable()) // don't fire a message towards the procurement webui, because we don't want the queue be messed up with and unexpected message
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
 		{
-			final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-			for (final Map<String, String> tableRow : tableRows)
-			{
-				createUser(tableRow);
-			}
+			createUser(tableRow);
 		}
 	}
 

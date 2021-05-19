@@ -99,7 +99,7 @@ public class HUsReservationViewFactory extends HUEditorViewFactoryTemplate
 		return RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retrieveProcessIdByClassIfUnique(processClass))
 				.displayPlace(DisplayPlace.ViewQuickActions)
-				.webuiDefaultQuickAction()
+				.webuiDefaultQuickAction(true)
 				.build();
 	}
 }

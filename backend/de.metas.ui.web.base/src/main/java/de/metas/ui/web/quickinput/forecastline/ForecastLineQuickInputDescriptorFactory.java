@@ -5,6 +5,7 @@ import de.metas.handlingunits.model.I_M_ForecastLine;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
+import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.product.ProductId;
 import de.metas.ui.web.material.adapter.AvailableForSaleAdapter;
 import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
@@ -67,6 +68,8 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 	private AvailableToPromiseAdapter availableToPromiseAdapter;
 	@Autowired
 	private AvailableForSaleAdapter availableForSaleAdapter;
+	@Autowired
+	private AvailableForSalesConfigRepo availableForSalesConfigRepo;
 
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
@@ -176,6 +179,7 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 						.availableStockDateParamName(I_M_Forecast.COLUMNNAME_DatePromised)
 						.availableToPromiseAdapter(availableToPromiseAdapter)
 						.availableForSaleAdapter(availableForSaleAdapter)
+						.availableForSalesConfigRepo(availableForSalesConfigRepo)
 						.build())
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)

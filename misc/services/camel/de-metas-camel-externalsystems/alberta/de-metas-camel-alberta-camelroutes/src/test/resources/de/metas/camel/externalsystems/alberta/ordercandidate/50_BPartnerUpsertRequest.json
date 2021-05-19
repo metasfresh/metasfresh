@@ -86,9 +86,7 @@
                   "billTo": true,
                   "billToSet": true,
                   "billToDefault": true,
-                  "billToDefaultSet": true,
-                  "syncAdvise": null,
-                  "syncAdviseSet": false
+                  "billToDefaultSet": true
                 }
               }
             ],
@@ -138,9 +136,7 @@
                   "purchaseDefault": null,
                   "purchaseDefaultSet": false,
                   "subjectMatter": null,
-                  "subjectMatterSet": false,
-                  "syncAdvise": null,
-                  "syncAdviseSet": false
+                  "subjectMatterSet": false
                 }
               }
             ],
@@ -235,9 +231,7 @@
                   "billTo": true,
                   "billToSet": true,
                   "billToDefault": true,
-                  "billToDefaultSet": true,
-                  "syncAdvise": null,
-                  "syncAdviseSet": false
+                  "billToDefaultSet": true
                 }
               }
             ],

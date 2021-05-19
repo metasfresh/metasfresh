@@ -89,7 +89,6 @@ public class TestPOJOs
 													  .build()
 								)
 								.orderCustomer(JsonOrderCustomer.builder()
-													   .id("orderCustomerId")
 													   .orderId("orderId")
 													   .customerId("customerId")
 													   .firstName("firstName")

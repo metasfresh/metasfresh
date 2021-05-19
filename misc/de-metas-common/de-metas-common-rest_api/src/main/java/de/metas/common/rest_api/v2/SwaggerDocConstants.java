@@ -66,4 +66,9 @@ public class SwaggerDocConstants
 			+ "* a plain `<M_Product_ID>`\n"
 			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference> where <ExternalReference> translates to an identifier of the product within the given <ExternalSystem>";
 
+	public static final String SHIPPER_IDENTIFIER_DOC = "Identifier of the M_Shipper in question. Can be\n"
+			+ "* a plain `<M_Shipper_ID>`\n"
+			+ "* or something like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n"
+			+ "* or something like `val-<M_Shipper.value>`\n";
+
 }
