@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-alberta-camelroutes
+ * de-metas-camel-externalsystems-core
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,21 +20,26 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.alberta;
+package de.metas.camel.externalsystems.core;
 
-import lombok.NonNull;
-import org.apache.camel.Exchange;
+import org.apache.camel.CamelContext;
+import org.apache.camel.ProducerTemplate;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-public class ProcessorHelper
+@Configuration
+public class AppConfiguration
 {
-	public static  <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
-	{
-		final T property = exchange.getProperty(propertyName, propertyClass);
-		if (property == null)
-		{
-			throw new RuntimeException("Missing route property: " + propertyName + " !");
-		}
+	private final CamelContext camelContext;
 
-		return property;
+	public AppConfiguration(final CamelContext camelContext)
+	{
+		this.camelContext = camelContext;
+	}
+
+	@Bean
+	public ProducerTemplate producerTemplate()
+	{
+		return camelContext.createProducerTemplate();
 	}
 }

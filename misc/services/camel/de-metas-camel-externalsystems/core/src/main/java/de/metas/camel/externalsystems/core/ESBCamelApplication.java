@@ -28,7 +28,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication(scanBasePackages = { "de.metas.camel.externalsystems" })
 public class ESBCamelApplication
 {
-
 	/**
 	 * Main method to start this application.
 	 */

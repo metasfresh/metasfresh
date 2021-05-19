@@ -23,8 +23,8 @@
 package de.metas.camel.externalsystems.shopware6.order;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.CamelRouteUtil;
-import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.order.processor.ClearOrdersProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.CreateBPartnerUpsertReqProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcessor;
@@ -59,6 +59,13 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 	public static final String PAYMENT_REQUEST_PROCESSOR_ID = "SW6Orders-PaymentRequestProcessorId";
 	public static final String RUNTIME_PARAMS_PROCESSOR_ID = "SW6Orders-RuntimeParamsProcessorId";
 
+	private final ProcessLogger processLogger;
+
+	public GetOrdersRouteBuilder(final ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
+
 	@Override
 	public void configure()
 	{
@@ -71,13 +78,13 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 				.routeId(GET_ORDERS_ROUTE_ID)
 				.log("Route invoked")
 				.streamCaching()
-				.process(new GetOrdersProcessor()).id(GET_ORDERS_PROCESSOR_ID)
+				.process(new GetOrdersProcessor(processLogger)).id(GET_ORDERS_PROCESSOR_ID)
 				.split(body())
 				.to(direct(PROCESS_ORDER_ROUTE_ID))
 				.end()
 				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
 				.to(direct(CLEAR_ORDERS_ROUTE_ID))
-				.process((exchange) -> ProcessorHelper.logProcessMessage(exchange, "Shopware6:GetOrders process ended!" + Instant.now(),
+				.process((exchange) -> processLogger.logMessage("Shopware6:GetOrders process ended!" + Instant.now(),
 						exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class)));
 
 		from(direct(PROCESS_ORDER_ROUTE_ID))

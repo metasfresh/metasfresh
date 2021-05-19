@@ -26,17 +26,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
-import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrders;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
@@ -134,7 +135,8 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new GetOrdersRouteBuilder();
+		final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
+		return new GetOrdersRouteBuilder(processLogger);
 	}
 
 	@Override

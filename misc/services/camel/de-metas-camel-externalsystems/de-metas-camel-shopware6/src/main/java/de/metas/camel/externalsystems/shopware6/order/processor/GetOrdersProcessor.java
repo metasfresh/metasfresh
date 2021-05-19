@@ -24,7 +24,7 @@ package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
@@ -58,6 +58,13 @@ import static de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRou
 
 public class GetOrdersProcessor implements Processor
 {
+	private final ProcessLogger processLogger;
+
+	public GetOrdersProcessor(final ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
+
 	@Override
 	public void process(final Exchange exchange)
 	{
@@ -68,7 +75,7 @@ public class GetOrdersProcessor implements Processor
 		{
 			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
 
-			ProcessorHelper.logProcessMessage(exchange, "Shopware6:GetOrders process started!" + Instant.now(), request.getAdPInstanceId().getValue());
+			processLogger.logMessage("Shopware6:GetOrders process started!" + Instant.now(), request.getAdPInstanceId().getValue());
 		}
 
 		final String clientId = request.getParameters().get(ExternalSystemConstants.PARAM_CLIENT_ID);
