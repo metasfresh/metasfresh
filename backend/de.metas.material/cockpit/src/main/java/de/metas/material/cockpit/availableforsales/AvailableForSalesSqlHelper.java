@@ -1,7 +1,7 @@
 package de.metas.material.cockpit.availableforsales;
 
 import de.metas.material.cockpit.model.I_MD_Available_For_Sales_QueryResult;
-import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -82,12 +82,12 @@ public class AvailableForSalesSqlHelper
 
 		final String dateString = Database.TO_DATE(TimeUtil.asTimestamp(availableForSalesQuery.getDateOfInterest()), false/* dayOnly */);
 
-		final AttributesKey storageAttributesKey = availableForSalesQuery.getStorageAttributesKey();
+		final AttributesKeyPattern storageAttributesKey = availableForSalesQuery.getStorageAttributesKeyPattern();
 
 		final String sqlFrom = "de_metas_material.retrieve_available_for_sales("
 				+ "p_QueryNo => " + queryNo
 				+ ", p_M_Product_ID => " + availableForSalesQuery.getProductId().getRepoId()
-				+ ", p_StorageAttributesKey => '" + storageAttributesKey.getAsString() + "'"
+				+ ", p_StorageAttributesKey => '" + storageAttributesKey.getSqlLikeString() + "'"
 				+ ", p_PreparationDate => " + dateString
 				+ ", p_shipmentDateLookAheadHours => " + availableForSalesQuery.getShipmentDateLookAheadHours()
 				+ ", p_salesOrderLookBehindHours => " + availableForSalesQuery.getSalesOrderLookBehindHours()

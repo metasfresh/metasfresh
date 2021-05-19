@@ -4,9 +4,11 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.commons.attributes.AttributesKeyPattern;
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
@@ -137,7 +139,7 @@ public class AvailableToPromiseRepository
 		final BPartnerId customerId = BPartnerId.ofRepoIdOrNull(stockRecord.getC_BPartner_Customer_ID());
 
 		return AddToResultGroupRequest.builder()
-				.productId(stockRecord.getM_Product_ID())
+				.productId(ProductId.ofRepoId(stockRecord.getM_Product_ID()))
 				.bpartner(BPartnerClassifier.specificOrAny(customerId)) // records that have no bPartner-ID are applicable to any bpartner
 				.warehouseId(WarehouseId.ofRepoId(stockRecord.getM_Warehouse_ID()))
 				.storageAttributesKey(AttributesKey.ofString(stockRecord.getStorageAttributesKey()))
@@ -158,6 +160,6 @@ public class AvailableToPromiseRepository
 				AttributesKey.ALL.getAsString(),
 				clientId, orgId);
 
-		return AttributesKeyPatterns.parseCommaSeparatedString(storageAttributesKeys);
+		return AttributesKeyPatternsUtil.parseCommaSeparatedString(storageAttributesKeys);
 	}
 }
