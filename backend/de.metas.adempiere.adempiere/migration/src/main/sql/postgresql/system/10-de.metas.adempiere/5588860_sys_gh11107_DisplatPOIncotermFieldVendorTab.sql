@@ -96,3 +96,24 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2021-05-18 12:12:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546537
 ;
 
+-- 2021-05-20T06:16:57.922Z
+-- URL zum Konzept
+UPDATE AD_Field SET AD_Name_ID=501607, Description='Internationale Handelsklauseln (engl. International Commercial Terms)', Help='Incoterms (International Commercial Terms, deutsch: Internationale Handelsklauseln) sind eine Reihe internationaler Regeln zur Interpretation spezifizierter Handelsbedingungen im AuÃŸenhandelsgeschÃ¤ft.
+
+Die Incoterms wurden von der Internationalen Handelskammer (International Chamber of Commerce, ICC) erstmals 1936 aufgestellt, um eine gemeinsame Basis fÃ¼r den internationalen Handel zu schaffen. Sie regeln vor allem die Art und Weise der Lieferung von GÃ¼tern. Die Bestimmungen legen fest, welche Transportkosten der VerkÃ¤ufer, welche der KÃ¤ufer zu tragen hat und wer im Falle eines Verlustes der Ware das finanzielle Risiko trÃ¤gt. Die Incoterms geben jedoch keine Auskunft darÃ¼ber, wann und wo das Eigentum an der Ware von dem VerkÃ¤ufer auf den KÃ¤ufer Ã¼bergeht. Der Stand der Incoterms wird durch Angabe der Jahreszahl gekennzeichnet. Aktuell gelten die Incoterms 2000 (6. Revision).', Name='Incoterm',Updated=TO_TIMESTAMP('2021-05-20 08:16:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=645697
+;
+
+-- 2021-05-20T06:16:57.948Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(501607)
+;
+
+-- 2021-05-20T06:16:58.025Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=645697
+;
+
+-- 2021-05-20T06:16:58.044Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(645697)
+;
