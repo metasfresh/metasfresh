@@ -22,6 +22,7 @@ package de.metas.payment.esr.model.validator;
  * #L%
  */
 
+import de.metas.payment.spi.impl.QRCodeStringParser;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 
@@ -75,8 +76,10 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 
 		//
 		// Register ESR Payment Parsers
-		Services.get(IPaymentStringParserFactory.class).registerParser(ESRRegularLineParser.TYPE, ESRRegularLineParser.instance);
-		Services.get(IPaymentStringParserFactory.class).registerParser(ESRCreaLogixStringParser.TYPE, ESRCreaLogixStringParser.instance);
+		final IPaymentStringParserFactory paymentStringParserFactory = Services.get(IPaymentStringParserFactory.class);
+		paymentStringParserFactory.registerParser(ESRRegularLineParser.TYPE, ESRRegularLineParser.instance);
+		paymentStringParserFactory.registerParser(ESRCreaLogixStringParser.TYPE, ESRCreaLogixStringParser.instance);
+		paymentStringParserFactory.registerParser(QRCodeStringParser.TYPE, new QRCodeStringParser());
 
 		//
 		// Payment batch provider for Bank Statement matching
