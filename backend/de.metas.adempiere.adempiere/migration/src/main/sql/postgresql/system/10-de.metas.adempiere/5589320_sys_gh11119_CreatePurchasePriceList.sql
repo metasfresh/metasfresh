@@ -103,3 +103,9 @@ UPDATE AD_Process_Para SET DefaultValue='@Default_Bill_Location_ID@',Updated=TO_
 UPDATE AD_Process_Para SET AD_Reference_Value_ID=541097,Updated=TO_TIMESTAMP('2021-05-20 09:01:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541990
 ;
 
+-- Disable the Preisliste process
+-- 2021-05-20T11:22:19.998Z
+-- URL zum Konzept
+UPDATE AD_Table_Process SET IsActive='N',Updated=TO_TIMESTAMP('2021-05-20 13:22:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_Process_ID=540426
+;
+
