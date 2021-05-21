@@ -33,7 +33,6 @@ class TableQuickInput extends Component {
   componentDidUpdate() {
     const { data, layout } = this.props;
     const { editedField } = this.state;
-
     if (data && layout) {
       for (let i = 0; i < layout.length; i++) {
         const item = layout[i].fields.map((elem) => data[elem.field] || -1);
@@ -47,8 +46,12 @@ class TableQuickInput extends Component {
               () => {
                 if (this.rawWidgets) {
                   let curWidget = this.rawWidgets[i];
-                  if (curWidget && curWidget.focus) {
-                    curWidget.focus();
+                  if (
+                    curWidget.rawWidget &&
+                    curWidget.rawWidget.current &&
+                    curWidget.rawWidget.current.focus
+                  ) {
+                    curWidget.rawWidget.current.focus();
                   }
                 }
               }
@@ -177,7 +180,7 @@ class TableQuickInput extends Component {
 
         return (
           <WidgetWrapper
-            ref={this.setWidgetsRef}
+            ref={(node) => this.setWidgetsRef(node)}
             dataSource="quick-input"
             fieldFormGroupClass={stylingLayout[idx].formGroup}
             fieldLabelClass={stylingLayout[idx].label}
@@ -251,7 +254,10 @@ class TableQuickInput extends Component {
   };
 
   setWidgetsRef = (ref) => {
-    this.rawWidgets.push(ref);
+    ref &&
+      ref.childRef &&
+      ref.childRef.current &&
+      this.rawWidgets.push(ref.childRef.current);
   };
 
   render() {

@@ -39,17 +39,22 @@ import InlineTabWrapper from '../components/widget/InlineTabWrapper';
  * wrap them in `WidgetWrapper` and if needed add another data selector.
  */
 class WidgetWrapper extends PureComponent {
+  constructor(props) {
+    super(props);
+    this.childRef = React.createRef();
+  }
+
   render() {
     const { renderMaster, widgetType } = this.props;
 
     if (widgetType === 'InlineTab') {
-      return <InlineTabWrapper {...this.props} />;
+      return <InlineTabWrapper ref={this.childRef} {...this.props} />;
     }
 
     if (renderMaster) {
-      return <MasterWidget {...this.props} />;
+      return <MasterWidget ref={this.childRef} {...this.props} />;
     } else {
-      return <RawWidget {...this.props} />;
+      return <RawWidget ref={this.childRef} {...this.props} />;
     }
   }
 }
