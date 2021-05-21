@@ -25,7 +25,7 @@
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM report.fresh_product_statistics_report(
+		<![CDATA[SELECT * FROM report.fresh_product_statistics_non0_report(
 	$P{C_Period_ID},
 	$P{IsSOTrx},
 	$P{C_BPartner_ID},
