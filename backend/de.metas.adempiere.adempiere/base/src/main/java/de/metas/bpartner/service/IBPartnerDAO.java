@@ -59,6 +59,7 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_C_BPartner_Stats;
 
 public interface IBPartnerDAO extends ISingletonService
 {
@@ -227,6 +228,8 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @return {@link I_C_BP_Relation} first encountered which is used for billing
 	 */
 	I_C_BP_Relation retrieveBillBPartnerRelationFirstEncountered(Object contextProvider, I_C_BPartner partner, I_C_BPartner_Location location);
+
+	I_C_BPartner_Stats retrieveBPartnerStats(I_C_BPartner partner);
 
 	/**
 	 * Retrieve default/first ship to location.

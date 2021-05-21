@@ -90,6 +90,7 @@ import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
@@ -913,6 +914,17 @@ public class BPartnerDAO implements IBPartnerDAO
 		query.setOrderBy(orderBy);
 
 		return query.first(I_C_BP_Relation.class);
+	}
+
+	@Override
+	public I_C_BPartner_Stats retrieveBPartnerStats(I_C_BPartner partner) {
+		final IQueryBuilder<I_C_BPartner_Stats> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_Stats.class);
+		queryBuilder.addEqualsFilter(org.compiere.model.I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID());
+		final IQuery<I_C_BPartner_Stats> query = queryBuilder
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		return query.first(I_C_BPartner_Stats.class);
 	}
 
 	@Nullable
