@@ -1,5 +1,8 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
+import de.metas.common.util.CoalesceUtil;
+import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,8 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -120,8 +125,12 @@ public class InventoryLineAggregatorFactory
 		@Override
 		public InventoryLineAggregationKey createAggregationKey(@NonNull final HuForInventoryLine huForInventoryLine)
 		{
+			final Quantity qty = CoalesceUtil.coalesce(huForInventoryLine.getQuantityCount(), huForInventoryLine.getQuantityBooked());
+
+			final UomId uomId = qty == null ? null : qty.getUomId();
 			return new MultipleHUInventoryLineInventoryLineAggregationKey(
 					huForInventoryLine.getProductId(),
+					uomId,
 					huForInventoryLine.getStorageAttributesKey(),
 					huForInventoryLine.getLocatorId());
 		}
@@ -129,8 +138,13 @@ public class InventoryLineAggregatorFactory
 		@Override
 		public InventoryLineAggregationKey createAggregationKey(@NonNull final InventoryLine inventoryLine)
 		{
+			final Quantity qty = CoalesceUtil.coalesce(inventoryLine.getQtyCount(), inventoryLine.getQtyBook());
+
+			final UomId uomId = qty == null ? null : qty.getUomId();
+
 			return new MultipleHUInventoryLineInventoryLineAggregationKey(
 					inventoryLine.getProductId(),
+					uomId,
 					inventoryLine.getStorageAttributesKey(),
 					inventoryLine.getLocatorId());
 		}
@@ -146,6 +160,9 @@ public class InventoryLineAggregatorFactory
 		{
 			@NonNull
 			ProductId productId;
+
+			@Nullable
+			UomId uomId;
 
 			@NonNull
 			AttributesKey storageAttributesKey;
