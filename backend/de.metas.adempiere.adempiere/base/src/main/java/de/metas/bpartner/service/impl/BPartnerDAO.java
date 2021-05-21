@@ -917,7 +917,8 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public I_C_BPartner_Stats retrieveBPartnerStats(I_C_BPartner partner) {
+	public I_C_BPartner_Stats retrieveBPartnerStats(I_C_BPartner partner)
+	{
 		final IQueryBuilder<I_C_BPartner_Stats> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_Stats.class);
 		queryBuilder.addEqualsFilter(org.compiere.model.I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID());
 		final IQuery<I_C_BPartner_Stats> query = queryBuilder
