@@ -345,7 +345,7 @@ public class BusinessTestHelper
 
 		final I_C_Tax noTaxFound = newInstanceOutOfTrx(I_C_Tax.class);
 		noTaxFound.setC_Tax_ID(ITaxDAO.C_TAX_ID_NO_TAX_FOUND);
-		noTaxFound.setC_TaxCategory(noTaxCategoryFound);
+		noTaxFound.setC_TaxCategory_ID(TaxCategoryId.NOT_FOUND.getRepoId());
 		saveRecord(noTaxFound);
 	}
 

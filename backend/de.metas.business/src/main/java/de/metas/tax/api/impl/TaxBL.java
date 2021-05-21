@@ -195,11 +195,12 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		if (toSameCountry)
 		{
 			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_To_Country_ID, countryToId);
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, X_C_Tax.TYPEOFDESTCOUNTRY_Domestic);
 		}
 		else if (toEULocation)
 		{
 			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, countryToId, null);
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_IsToEULocation, true);
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, X_C_Tax.TYPEOFDESTCOUNTRY_EU_foreign);
 
 			if (hasTaxCertificate)
 			{
@@ -213,7 +214,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		else
 		{
 			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, countryToId, null);
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_IsToEULocation, false);
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, X_C_Tax.TYPEOFDESTCOUNTRY_Non_EU_country);
 		}
 
 		if (isSOTrx)
