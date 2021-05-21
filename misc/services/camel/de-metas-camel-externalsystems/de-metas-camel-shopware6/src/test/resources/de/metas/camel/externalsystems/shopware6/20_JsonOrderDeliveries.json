@@ -19,10 +19,19 @@
         "updatedAt": "2021-02-26T15:27:34.518+00:00",
         "id": "the"
       },
+      "shippingCosts": {
+        "calculatedTaxes": [
+          {
+            "taxRate": 7.7,
+            "price": 5.75
+          }
+        ]
+      },
       "stateId": "last",
       "id": "address"
     },
     {
+      "shippingMethodId": "shippingMethodId",
       "shippingDateLatest": "2021-03-03T00:00:00.000+00:00",
       "shippingOrderAddress": {
         "countryId": "countryId",
@@ -39,6 +48,18 @@
         "createdAt": "2021-02-25T15:27:34.518+00:00",
         "updatedAt": "2021-02-26T15:27:34.518+00:00",
         "id": "shippingAddressId"
+      },
+      "shippingCosts": {
+        "calculatedTaxes": [
+          {
+            "taxRate": 19,
+            "price": 10
+          },
+          {
+            "taxRate": 5.5,
+            "price": 7
+          }
+        ]
       },
       "stateId": "notImportant",
       "id": "deliveryId"

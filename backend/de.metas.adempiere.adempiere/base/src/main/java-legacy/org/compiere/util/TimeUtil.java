@@ -1746,7 +1746,11 @@ public class TimeUtil
 		return instant != null ? instant.atZone(SystemTime.zoneId()) : null;
 	}
 
+	/**
+	 * @deprecated please use {@link #asZonedDateTime(Object, ZoneId)}. The server's timezone might not be the one you need.
+	 */
 	@Nullable
+	@Deprecated
 	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj)
 	{
 		if (obj == null)

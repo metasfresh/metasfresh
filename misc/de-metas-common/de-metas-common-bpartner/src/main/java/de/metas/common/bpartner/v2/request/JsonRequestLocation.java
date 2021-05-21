@@ -164,14 +164,6 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean billToDefaultSet;
 
-	@ApiModelProperty(position = 200, // shall be last
-			value = "Sync advise about this location's individual properties.\n"
-					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
-	private SyncAdvise syncAdvise;
-
-	@ApiModelProperty(hidden = true)
-	private boolean syncAdviseSet;
-
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -279,11 +271,4 @@ public class JsonRequestLocation
 		this.billToDefault = billToDefault;
 		this.billToDefaultSet = true;
 	}
-
-	public void setSyncAdvise(final SyncAdvise syncAdvise)
-	{
-		this.syncAdvise = syncAdvise;
-		this.syncAdviseSet = true;
-	}
-
 }

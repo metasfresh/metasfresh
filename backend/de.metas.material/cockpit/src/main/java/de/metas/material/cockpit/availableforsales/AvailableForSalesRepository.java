@@ -1,20 +1,25 @@
 package de.metas.material.cockpit.availableforsales;
 
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.compiere.model.IQuery;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
-
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiResult.AvailableForSalesMultiResultBuilder;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesResult.Quantities;
 import de.metas.material.cockpit.model.I_MD_Available_For_Sales_QueryResult;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.IQuery;
+import org.compiere.util.Env;
+import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
+
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -41,23 +46,25 @@ import lombok.NonNull;
 @Repository
 public class AvailableForSalesRepository
 {
+	private static final String SYSCONFIG_AVAILABILITY_INFO_ATTRIBUTES_KEYS = "de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.AvailabilityInfo.AttributesKeys";
+
 	public AvailableForSalesMultiResult getBy(@NonNull final AvailableForSalesMultiQuery availableForSalesMultiQuery)
 	{
 		final AvailableForSalesMultiResultBuilder multiResult = AvailableForSalesMultiResult.builder();
-		if(availableForSalesMultiQuery.getAvailableForSalesQueries().isEmpty())
+		if (availableForSalesMultiQuery.getAvailableForSalesQueries().isEmpty())
 		{
 			return multiResult.build(); // empty query => empty result
 		}
 
 		final IQuery<I_MD_Available_For_Sales_QueryResult> //
-		dbQuery = AvailableForSalesSqlHelper.createDBQueryForAvailableForSalesMultiQuery(availableForSalesMultiQuery);
+				dbQuery = AvailableForSalesSqlHelper.createDBQueryForAvailableForSalesMultiQuery(availableForSalesMultiQuery);
 
 		final List<I_MD_Available_For_Sales_QueryResult> records = dbQuery.list();
 
 		final List<AvailableForSalesQuery> singleQueries = availableForSalesMultiQuery.getAvailableForSalesQueries();
 
 		final ImmutableListMultimap<Integer, I_MD_Available_For_Sales_QueryResult> //
-		queryNo2records = Multimaps.index(records, I_MD_Available_For_Sales_QueryResult::getQueryNo);
+				queryNo2records = Multimaps.index(records, I_MD_Available_For_Sales_QueryResult::getQueryNo);
 
 		for (int queryNo = 0; queryNo < singleQueries.size(); queryNo++)
 		{
@@ -83,7 +90,7 @@ public class AvailableForSalesRepository
 			@NonNull final BigDecimal qtyToBeShipped,
 			@NonNull final AvailableForSalesQuery singleQuery)
 	{
-		final AvailableForSalesResult result = AvailableForSalesResult
+		return AvailableForSalesResult
 				.builder()
 				.availableForSalesQuery(singleQuery)
 				.productId(singleQuery.getProductId())
@@ -92,6 +99,20 @@ public class AvailableForSalesRepository
 						.qtyOnHandStock(qtyOnHandStock)
 						.qtyToBeShipped(qtyToBeShipped).build())
 				.build();
-		return result;
 	}
+
+	public Set<AttributesKeyPattern> getPredefinedStorageAttributeKeys()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		final int clientId = Env.getAD_Client_ID(Env.getCtx());
+		final int orgId = Env.getAD_Org_ID(Env.getCtx());
+
+		final String storageAttributesKeys = sysConfigBL.getValue(
+				SYSCONFIG_AVAILABILITY_INFO_ATTRIBUTES_KEYS,
+				AttributesKey.ALL.getAsString(),
+				clientId, orgId);
+
+		return AttributesKeyPatterns.parseCommaSeparatedString(storageAttributesKeys);
+	}
+
 }

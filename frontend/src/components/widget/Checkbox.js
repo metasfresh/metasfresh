@@ -18,17 +18,21 @@ const Checkbox = (props) => {
     id,
     filterWidget,
     isFilterActive,
+    updateItems,
   } = props;
   let { value, defaultValue } = props.widgetData[0];
 
-  value =
-    typeof value === 'string' || typeof value === 'undefined' ? false : value;
-  const initialChecked = defaultValue && !isFilterActive ? defaultValue : value;
-  const [checkedState, setCheckedState] = useState(initialChecked);
+  const [isChanged, setChanged] = useState(false);
+
+  let initialValue =
+    updateItems && !isFilterActive && !isChanged ? defaultValue : value;
+  initialValue = typeof initialValue === 'undefined' ? null : initialValue;
+  const [checkedState, setCheckedState] = useState(initialValue);
 
   useEffect(() => {
     defaultValue &&
       !isFilterActive &&
+      !isChanged &&
       handlePatch(widgetField, defaultValue, id);
   }, []);
 
@@ -38,8 +42,11 @@ const Checkbox = (props) => {
    */
   const handleClear = () => {
     const { handlePatch, widgetField, id } = props;
-    setCheckedState(false);
+    setCheckedState(null);
+    setChanged(true);
     handlePatch(widgetField, '', id);
+    // here we should call a method that would clear the filter item for the case when there is no active filter
+    !isFilterActive && updateItems && updateItems({ widgetField, value: '' });
   };
 
   /**
@@ -50,8 +57,14 @@ const Checkbox = (props) => {
    */
   const updateCheckedState = (e) => {
     setCheckedState(!checkedState);
+    !isFilterActive &&
+      updateItems &&
+      updateItems({ widgetField, value: !checkedState });
+    setChanged(true);
     handlePatch(widgetField, e.target.checked, id);
   };
+
+  initialValue = updateItems ? checkedState : initialValue;
 
   return (
     <div>
@@ -71,22 +84,23 @@ const Checkbox = (props) => {
         <input
           ref={rawWidget}
           type="checkbox"
-          checked={checkedState}
+          className={initialValue ? 'is-checked' : ''}
+          checked={isChanged && value === '' ? false : initialValue}
           disabled={widgetData[0].readonly || disabled}
           onChange={updateCheckedState}
           tabIndex="-1"
         />
         <div
           className={classnames('input-checkbox-tick', {
-            'input-state-false': widgetData[0].value === false && filterWidget,
-            checked: widgetData[0].value,
+            'input-state-false': checkedState === false && filterWidget,
+            checked: checkedState,
           })}
         />
       </label>
       {filterWidget &&
       !disabled &&
       !widgetData[0].readonly &&
-      (widgetData[0].value != null && widgetData[0].value !== '') ? (
+      (checkedState === false || checkedState === true) ? (
         <small className="input-side" onClick={handleClear}>
           (clear)
         </small>
@@ -119,6 +133,7 @@ Checkbox.propTypes = {
   widgetField: PropTypes.string,
   isFilterActive: PropTypes.bool,
   id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  updateItems: PropTypes.func, // function used for updating the filter items before having an active filter
 };
 
 export default Checkbox;

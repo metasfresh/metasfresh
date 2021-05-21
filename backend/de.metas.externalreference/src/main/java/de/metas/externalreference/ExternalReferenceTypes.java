@@ -29,6 +29,7 @@ import de.metas.externalreference.pricelist.PriceListVersionExternalReferenceTyp
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.externalreference.productprice.ProductPriceExternalReferenceType;
+import de.metas.externalreference.shipper.ShipperExternalReferenceType;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -53,6 +54,7 @@ public class ExternalReferenceTypes
 		registerType(PriceListExternalReferenceType.PRICE_LIST);
 		registerType(PriceListVersionExternalReferenceType.PRICE_LIST_VERSION);
 		registerType(ProductPriceExternalReferenceType.PRODUCT_PRICE);
+		registerType(ShipperExternalReferenceType.SHIPPER);
 	}
 
 	public void registerType(@NonNull final IExternalReferenceType type)

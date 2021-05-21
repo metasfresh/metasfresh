@@ -20,6 +20,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -207,6 +208,8 @@ public class LUTUProducerDestinationTestSupport
 		locator.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		saveRecord(locator);
 
+		helper.addEmptiesNetworkLine(warehouse);
+
 		return LocatorId.ofRecord(locator);
 	}
 
@@ -266,11 +269,16 @@ public class LUTUProducerDestinationTestSupport
 		final I_M_HU cuToSplit = createdCUs.get(0);
 		huStatusBL.setHUStatus(helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
 		save(cuToSplit);
-		
+
 		return cuToSplit;
 	}
 
-	public I_M_HU mkRealCUWithTUandQtyCU(final String strCuQty)
+	public I_M_HU mkRealCUWithTUandQtyCU(@NonNull final String strCuQty)
+	{
+		return mkRealCUWithTUandQtyCU(Quantity.of(strCuQty, helper.uomKg));
+	}
+
+	public I_M_HU mkRealCUWithTUandQtyCU(@NonNull final Quantity cuQty)
 	{
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -280,8 +288,7 @@ public class LUTUProducerDestinationTestSupport
 		lutuProducer.setNoLU();
 		lutuProducer.setTUPI(piTU_IFCO);
 
-		final BigDecimal cuQty = new BigDecimal(strCuQty);
-		helper.load(lutuProducer, helper.pTomatoProductId, cuQty, helper.uomKg);
+		helper.load(lutuProducer, helper.pTomatoProductId, cuQty.toBigDecimal(), cuQty.getUOM());
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 		assertThat(createdTUs.size(), is(1));
 

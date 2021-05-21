@@ -26,7 +26,6 @@ import de.metas.bpartner.GLN;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
@@ -104,6 +103,12 @@ public class ExternalIdentifier
 			return new ExternalIdentifier(Type.GLN, identifier, null);
 		}
 
+		final Matcher valMatcher = Type.VALUE.pattern.matcher(identifier);
+		if (valMatcher.matches())
+		{
+			return new ExternalIdentifier(Type.VALUE, identifier, null);
+		}
+
 		throw new AdempiereException("Unknown externalId type!")
 				.appendParametersToMessage()
 				.setParameter("externalId", identifier);
@@ -146,13 +151,30 @@ public class ExternalIdentifier
 
 	}
 
+	@NonNull
+	public String asValue()
+	{
+		Check.assume(Type.VALUE.equals(type),
+					 "The type of this instance needs to be {}; this={}", Type.VALUE, this);
+
+		final Matcher valueMatcher = Type.VALUE.pattern.matcher(rawValue);
+
+		if (!valueMatcher.matches())
+		{
+			throw new AdempiereException("External identifier of Value parsing failed. External Identifier:" + rawValue);
+		}
+
+		return valueMatcher.group(1);
+	}
+
 	@AllArgsConstructor
 	@Getter
 	public enum Type
 	{
 		METASFRESH_ID(Pattern.compile("^\\d+$")),
 		EXTERNAL_REFERENCE(Pattern.compile("(?:^ext-)([a-zA-Z0-9]+)-(.+)")),
-		GLN(Pattern.compile("(?:^gln)-(.+)"));
+		GLN(Pattern.compile("(?:^gln)-(.+)")),
+		VALUE(Pattern.compile("(?:^val)-(.+)"));
 
 		private final Pattern pattern;
 	}

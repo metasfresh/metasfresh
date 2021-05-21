@@ -355,12 +355,35 @@ class FiltersItem extends PureComponent {
   };
 
   /**
+   * updates the items for the case when there is no active filters, does this update within the existing default values
+   * @param {array} toChange
+   */
+  updateItems = (toChange) => {
+    const { filter } = this.state;
+    if (filter.parameters) {
+      filter.parameters.map((filterItem) => {
+        if (filterItem.parameterName === toChange.widgetField) {
+          filterItem.defaultValue = toChange.value;
+          filterItem.value = toChange.value;
+        }
+        return filterItem;
+      });
+    }
+    this.setState({ filter });
+  };
+
+  /**
    * @method handleApply
    * @summary ToDo: Describe the method
    * @todo Write the documentation
    */
   handleApply = () => {
-    const { applyFilters, closeFilterMenu, returnBackToDropdown } = this.props;
+    const {
+      applyFilters,
+      closeFilterMenu,
+      returnBackToDropdown,
+      isActive,
+    } = this.props;
     const { filter, activeFilter } = this.state;
 
     if (
@@ -386,21 +409,18 @@ class FiltersItem extends PureComponent {
       );
     } else {
       // update the active filter with the defaultValue if value from active filter is empty
-      const activeFilterClone = _.cloneDeep(activeFilter);
-      // - DISABLED setting the value to the defaultValue - we need to see the impact and if all the filters functionality works as expected
-      // TODO: do some cleaning in here once the filters are tested
-      // activeFilterClone.parameters.map((afcItem, index) => {
-      //   let filterType = this.checkFilterTypeByName(afcItem);
-      //   if (filterType === 'YesNo') {
-      //     // YesNo filters (checkboxes) can be either null, true or false
-      //     afcItem.value =
-      //       !afcItem.value && afcItem.value !== false
-      //         ? filter.parameters[index].defaultValue
-      //         : afcItem.value;
-      //   }
-      //   return afcItem;
-      // });
-
+      let activeFilterClone = _.cloneDeep(activeFilter);
+      if (!isActive) {
+        activeFilterClone = filter;
+        activeFilterClone.parameters.map((afcItem) => {
+          let filterType = this.checkFilterTypeByName(afcItem);
+          if (filterType === 'YesNo') {
+            // YesNo filters (checkboxes) can be either null, true or false
+            afcItem.value = afcItem.defaultValue;
+          }
+          return afcItem;
+        });
+      }
       applyFilters(activeFilterClone, () => {
         closeFilterMenu();
         returnBackToDropdown && returnBackToDropdown();
@@ -560,6 +580,7 @@ class FiltersItem extends PureComponent {
                           onShow,
                           onHide,
                           isFilterActive: isActive,
+                          updateItems: this.updateItems,
                         }}
                       />
                     );

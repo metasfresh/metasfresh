@@ -165,11 +165,9 @@ public class UpsertPricingAPI_StefDef
 		final String identifier = DataTableUtil.extractStringForColumnName(row, "Identifier");
 		final String orgCode = DataTableUtil.extractStringOrNullForColumnName(row, "OrgCode");
 		final String priceListIdentifier = DataTableUtil.extractStringForColumnName(row, "M_PriceList_ID");
-		final String description = DataTableUtil.extractStringForColumnName(row, "Description");
+		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.Description");
 		final Instant validFrom = DataTableUtil.extractInstantForColumnName(row, "ValidFrom");
-		final String isActiveValue = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.IsActive");
-
-		final boolean isActive = !isActiveValue.equals("false");
+		final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsActive", true);
 
 		final JsonRequestPriceListVersion jsonRequestPriceListVersion = new JsonRequestPriceListVersion();
 		jsonRequestPriceListVersion.setPriceListIdentifier(priceListIdentifier);

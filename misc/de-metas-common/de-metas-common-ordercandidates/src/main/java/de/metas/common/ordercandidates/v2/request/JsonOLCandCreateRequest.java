@@ -32,10 +32,8 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.rest_api.v2.SwaggerDocConstants;
 import de.metas.common.util.Check;
-import de.pentabyte.springfox.ApiEnum;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -44,6 +42,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.SHIPPER_IDENTIFIER_DOC;
 
 /**
  * Specifies a single order line candidate for be created by the system
@@ -157,7 +156,8 @@ public class JsonOLCandCreateRequest
 	String pricingSystemCode;
 
 	@ApiModelProperty( //
-			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) price.")
+			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) price.\n"
+					+ "If the price has too many digits, it is rounded according to the price list's price precision.")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal price;
 
@@ -209,7 +209,7 @@ public class JsonOLCandCreateRequest
 
 	@ApiModelProperty(value = "Specifies if the created order will be a normal Sales Order or a Prepaid Sales Order")
 	@JsonInclude(Include.NON_NULL)
-	OrderDocType orderDocType;
+	JsonOrderDocType orderDocType;
 
 	@ApiModelProperty(value = "Specifies the payment rule that will propagate to the created order")
 	@JsonInclude(Include.NON_NULL)
@@ -217,9 +217,9 @@ public class JsonOLCandCreateRequest
 
 	@ApiModelProperty(value = "Specifies the SalesPartnerCode for the partner that will propagate as sales rep to the created order")
 	@JsonInclude(Include.NON_NULL)
-	String salesPartnerCode;
+	JsonSalesPartner salesPartner;
 
-	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order")
+	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order. \n " + SHIPPER_IDENTIFIER_DOC)
 	@JsonInclude(Include.NON_NULL)
 	String shipper;
 
@@ -294,9 +294,9 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("invoiceDocType") final @Nullable JsonDocTypeInfo invoiceDocType,
 			@JsonProperty("presetDateInvoiced") final @Nullable LocalDate presetDateInvoiced,
 			@JsonProperty("presetDateShipped") final @Nullable LocalDate presetDateShipped,
-			@JsonProperty("orderDocType") final @Nullable OrderDocType orderDocType,
+			@JsonProperty("orderDocType") final @Nullable JsonOrderDocType orderDocType,
 			@JsonProperty("paymentRule") final @Nullable JSONPaymentRule paymentRule,
-			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
+			@JsonProperty("salesPartner") final @Nullable JsonSalesPartner salesPartner,
 			@JsonProperty("shipper") final @Nullable String shipper,
 			@JsonProperty("paymentTerm") final @Nullable String paymentTerm,
 			@JsonProperty("albertaOrderInfo") final @Nullable JsonAlbertaOrderInfo albertaOrderInfo,
@@ -341,7 +341,7 @@ public class JsonOLCandCreateRequest
 
 		this.orderDocType = orderDocType;
 		this.paymentRule = paymentRule;
-		this.salesPartnerCode = salesPartnerCode;
+		this.salesPartner = salesPartner;
 		this.shipper = shipper;
 
 		this.paymentTerm = paymentTerm;
@@ -375,22 +375,5 @@ public class JsonOLCandCreateRequest
 								this);
 		}
 		return this;
-	}
-
-	public enum OrderDocType
-	{
-		@ApiEnum("Specifies if the order will be a standard one. A standard order will be created if no DocTYpe is specified.")
-		SalesOrder("SalesOrder"),
-
-		@ApiEnum("Specifies if the order will be prepaid")
-		PrepayOrder("PrepayOrder");
-
-		@Getter
-		private final String code;
-
-		OrderDocType(final String code)
-		{
-			this.code = code;
-		}
 	}
 }
