@@ -609,4 +609,19 @@ UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-05-21 15:4
 ;
 
 
+-- 2021-05-21T14:02:01.072Z
+-- URL zum Konzept
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=542001
+;
+
+-- 2021-05-21T14:02:01.277Z
+-- URL zum Konzept
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=542001
+;
+
+-- 2021-05-21T16:41:07.190Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET DefaultValue='@#AD_Org_ID@', ReadOnlyLogic='',Updated=TO_TIMESTAMP('2021-05-21 19:41:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541106
+;
+
 
