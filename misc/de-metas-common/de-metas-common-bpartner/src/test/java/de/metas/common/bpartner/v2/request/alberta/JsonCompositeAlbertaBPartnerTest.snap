@@ -1,0 +1,81 @@
+de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartnerTest.serializeDeserialize=[
+  {
+    "jsonAlbertaBPartner" : {
+      "isArchived" : true,
+      "archivedSet" : true,
+      "title" : "title",
+      "titleSet" : true,
+      "titleShort" : "titleShort",
+      "titleShortSet" : true,
+      "timestamp" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "timestampSet" : true
+    },
+    "role" : "role",
+    "jsonAlbertaPatient" : {
+      "hospitalIdentifier" : "1111111",
+      "hospitalIdentifierSet" : true,
+      "dischargeDate" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "dischargeDateSet" : true,
+      "payerIdentifier" : "2222222",
+      "payerIdentifierSet" : true,
+      "payerType" : "payerType",
+      "payerTypeSet" : true,
+      "numberOfInsured" : "333333",
+      "numberOfInsuredSet" : true,
+      "copaymentFrom" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "copaymentFromSet" : true,
+      "copaymentTo" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "copaymentToSet" : true,
+      "isTransferPatient" : true,
+      "transferPatientSet" : true,
+      "isIVTherapy" : true,
+      "ivTherapySet" : true,
+      "fieldNurseIdentifier" : "4444444",
+      "fieldNurseIdentifierSet" : true,
+      "deactivationReason" : "reason",
+      "deactivationReasonSet" : true,
+      "deactivationDate" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "deactivationDateSet" : true,
+      "deactivationComment" : "comment",
+      "deactivationCommentSet" : true,
+      "createdAt" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "createdAtSet" : true,
+      "createdByIdentifier" : "6666666",
+      "createdByIdentifierSet" : true,
+      "updatedAt" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "updatedAtSet" : true,
+      "updateByIdentifierSet" : false
+    },
+    "jsonAlbertaCareGivers" : [
+      {
+        "caregiverIdentifier" : "11111",
+        "caregiverIdentifierSet" : true,
+        "type" : "type",
+        "typeSet" : true,
+        "isLegalCarer" : true,
+        "legalCarerSet" : true
+      }
+    ]
+  }
+]

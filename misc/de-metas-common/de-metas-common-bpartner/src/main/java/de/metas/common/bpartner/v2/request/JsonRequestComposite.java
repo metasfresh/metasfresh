@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartner;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
 import io.swagger.annotations.ApiModel;
@@ -72,6 +73,11 @@ public class JsonRequestComposite
 	@Getter(AccessLevel.PRIVATE)
 	JsonRequestBankAccountsUpsert bankAccounts;
 
+	@ApiModelProperty(position = 60)
+	@JsonInclude(Include.NON_EMPTY)
+	@JsonProperty("jsonCompositeAlbertaBPartner")
+	JsonCompositeAlbertaBPartner jsonCompositeAlbertaBPartner;
+
 	@ApiModelProperty(value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
 			+ READ_ONLY_SYNC_ADVISE_DOC, position = 70)
 	@JsonInclude(Include.NON_NULL)
@@ -85,6 +91,7 @@ public class JsonRequestComposite
 			@JsonProperty("locations") @Nullable final JsonRequestLocationUpsert locations,
 			@JsonProperty("contacts") @Nullable final JsonRequestContactUpsert contacts,
 			@JsonProperty("bankAccounts") @Nullable final JsonRequestBankAccountsUpsert bankAccounts,
+			@JsonProperty("jsonCompositeAlbertaBPartner") @Nullable final JsonCompositeAlbertaBPartner jsonCompositeAlbertaBPartner,
 			@JsonProperty("syncAdvise") final SyncAdvise syncAdvise)
 	{
 		this.orgCode = orgCode;
@@ -92,6 +99,7 @@ public class JsonRequestComposite
 		this.locations = locations;
 		this.contacts = contacts;
 		this.bankAccounts = bankAccounts;
+		this.jsonCompositeAlbertaBPartner = jsonCompositeAlbertaBPartner;
 		this.syncAdvise = syncAdvise;
 	}
 
@@ -111,5 +119,11 @@ public class JsonRequestComposite
 	public JsonRequestBankAccountsUpsert getBankAccountsNotNull()
 	{
 		return CoalesceUtil.coalesce(bankAccounts, JsonRequestBankAccountsUpsert.NONE);
+	}
+
+	@JsonIgnore
+	public JsonCompositeAlbertaBPartner getJsonCompositeAlbertaBPartner()
+	{
+		return coalesce(jsonCompositeAlbertaBPartner, JsonCompositeAlbertaBPartner.builder().build());
 	}
 }

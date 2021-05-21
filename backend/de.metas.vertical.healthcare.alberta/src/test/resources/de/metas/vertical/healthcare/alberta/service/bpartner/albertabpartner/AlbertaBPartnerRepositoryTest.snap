@@ -1,0 +1,33 @@
+de.metas.vertical.healthcare.alberta.service.bpartner.albertabpartner.AlbertaBPartnerRepositoryTest.save=[
+  {
+    "bPartnerAlbertaId" : 100001,
+    "bPartnerId" : 111111,
+    "title" : "title",
+    "titleShort" : "titleShort",
+    "isArchived" : true,
+    "timestamp" : {
+      "seconds" : 1574380800,
+      "nanos" : 0
+    },
+    "archived" : true
+  }
+]
+
+
+de.metas.vertical.healthcare.alberta.service.bpartner.albertabpartner.save=[
+  {
+    "value" : {
+      "bPartnerAlbertaId" : 100001,
+      "bPartnerId" : 111111,
+      "title" : "title",
+      "titleShort" : "titleShort",
+      "isArchived" : true,
+      "timestamp" : {
+        "seconds" : 1574380800,
+        "nanos" : 0
+      },
+      "archived" : true
+    },
+    "present" : true
+  }
+]

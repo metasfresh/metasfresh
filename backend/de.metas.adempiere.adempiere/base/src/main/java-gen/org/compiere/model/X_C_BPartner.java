@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -122490736L;
+	private static final long serialVersionUID = -1002168590L;
 
     /** Standard Constructor */
     public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -48,17 +48,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	@Override
-	public void setAddress1 (final @Nullable java.lang.String Address1)
-	{
-		throw new IllegalArgumentException ("Address1 is virtual column");	}
-
-	@Override
-	public java.lang.String getAddress1() 
-	{
-		return get_ValueAsString(COLUMNNAME_Address1);
-	}
-
 	/** 
 	 * AD_Language AD_Reference_ID=327
 	 * Reference name: AD_Language System
@@ -74,21 +63,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getAD_Language() 
 	{
 		return get_ValueAsString(COLUMNNAME_AD_Language);
-	}
-
-	@Override
-	public void setAD_OrgBP_ID (final int AD_OrgBP_ID)
-	{
-		if (AD_OrgBP_ID < 1) 
-			set_Value (COLUMNNAME_AD_OrgBP_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_OrgBP_ID, AD_OrgBP_ID);
-	}
-
-	@Override
-	public int getAD_OrgBP_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_OrgBP_ID);
 	}
 
 	@Override
@@ -119,6 +93,86 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setAD_OrgBP_ID (final int AD_OrgBP_ID)
+	{
+		if (AD_OrgBP_ID < 1) 
+			set_Value (COLUMNNAME_AD_OrgBP_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_OrgBP_ID, AD_OrgBP_ID);
+	}
+
+	@Override
+	public int getAD_OrgBP_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_OrgBP_ID);
+	}
+
+	@Override
+	public void setAddress1 (final @Nullable java.lang.String Address1)
+	{
+		throw new IllegalArgumentException ("Address1 is virtual column");	}
+
+	@Override
+	public java.lang.String getAddress1() 
+	{
+		return get_ValueAsString(COLUMNNAME_Address1);
+	}
+
+	/** 
+	 * AlbertaRole AD_Reference_ID=541322
+	 * Reference name: AlbertaRole
+	 */
+	public static final int ALBERTAROLE_AD_Reference_ID=541322;
+	/** Caregiver = CG */
+	public static final String ALBERTAROLE_Caregiver = "CG";
+	/** Caretaker = CT */
+	public static final String ALBERTAROLE_Caretaker = "CT";
+	/** General Practitioner = GP */
+	public static final String ALBERTAROLE_GeneralPractitioner = "GP";
+	/** Health Insurance = HI */
+	public static final String ALBERTAROLE_HealthInsurance = "HI";
+	/** Hostpital = HO */
+	public static final String ALBERTAROLE_Hostpital = "HO";
+	/** Main Producer = MP */
+	public static final String ALBERTAROLE_MainProducer = "MP";
+	/** Nursing Home = NH */
+	public static final String ALBERTAROLE_NursingHome = "NH";
+	/** Nursing Service = NS */
+	public static final String ALBERTAROLE_NursingService = "NS";
+	/** Payer = PA */
+	public static final String ALBERTAROLE_Payer = "PA";
+	/** Doctor = PD */
+	public static final String ALBERTAROLE_Doctor = "PD";
+	/** Pharmacy = PH */
+	public static final String ALBERTAROLE_Pharmacy = "PH";
+	/** Preferred Pharmacy = PP */
+	public static final String ALBERTAROLE_PreferredPharmacy = "PP";
+	/** Pacient = PT */
+	public static final String ALBERTAROLE_Pacient = "PT";
+	@Override
+	public void setAlbertaRole (final @Nullable java.lang.String AlbertaRole)
+	{
+		set_Value (COLUMNNAME_AlbertaRole, AlbertaRole);
+	}
+
+	@Override
+	public java.lang.String getAlbertaRole() 
+	{
+		return get_ValueAsString(COLUMNNAME_AlbertaRole);
+	}
+
+	@Override
+	public void setAlbertaTitle (final @Nullable java.lang.String AlbertaTitle)
+	{
+		throw new IllegalArgumentException ("AlbertaTitle is virtual column");	}
+
+	@Override
+	public java.lang.String getAlbertaTitle() 
+	{
+		return get_ValueAsString(COLUMNNAME_AlbertaTitle);
+	}
+
+	@Override
 	public void setAllowConsolidateInOut (final boolean AllowConsolidateInOut)
 	{
 		set_Value (COLUMNNAME_AllowConsolidateInOut, AllowConsolidateInOut);
@@ -143,6 +197,33 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getBPartner_Parent_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_BPartner_Parent_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_BP_Group getC_BP_Group()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
+	}
+
+	@Override
+	public void setC_BP_Group(final org.compiere.model.I_C_BP_Group C_BP_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class, C_BP_Group);
+	}
+
+	@Override
+	public void setC_BP_Group_ID (final int C_BP_Group_ID)
+	{
+		if (C_BP_Group_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Group_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Group_ID, C_BP_Group_ID);
+	}
+
+	@Override
+	public int getC_BP_Group_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_Group_ID);
 	}
 
 	@Override
@@ -176,33 +257,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public org.compiere.model.I_C_BP_Group getC_BP_Group()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
-	}
-
-	@Override
-	public void setC_BP_Group(final org.compiere.model.I_C_BP_Group C_BP_Group)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class, C_BP_Group);
-	}
-
-	@Override
-	public void setC_BP_Group_ID (final int C_BP_Group_ID)
-	{
-		if (C_BP_Group_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Group_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_Group_ID, C_BP_Group_ID);
-	}
-
-	@Override
-	public int getC_BP_Group_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_Group_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_C_Dunning getC_Dunning()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Dunning_ID, org.compiere.model.I_C_Dunning.class);
@@ -227,30 +281,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getC_Dunning_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Dunning_ID);
-	}
-
-	@Override
-	public void setCertificateOfRegistrationCustomer (final boolean CertificateOfRegistrationCustomer)
-	{
-		set_Value (COLUMNNAME_CertificateOfRegistrationCustomer, CertificateOfRegistrationCustomer);
-	}
-
-	@Override
-	public boolean isCertificateOfRegistrationCustomer() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_CertificateOfRegistrationCustomer);
-	}
-
-	@Override
-	public void setCertificateOfRegistrationVendor (final boolean CertificateOfRegistrationVendor)
-	{
-		set_Value (COLUMNNAME_CertificateOfRegistrationVendor, CertificateOfRegistrationVendor);
-	}
-
-	@Override
-	public boolean isCertificateOfRegistrationVendor() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_CertificateOfRegistrationVendor);
 	}
 
 	@Override
@@ -308,6 +338,72 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
+	{
+		if (C_PaymentTerm_ID < 1) 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PaymentTerm_ID, C_PaymentTerm_ID);
+	}
+
+	@Override
+	public int getC_PaymentTerm_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_C_TaxGroup getC_TaxGroup()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_TaxGroup_ID, org.eevolution.model.I_C_TaxGroup.class);
+	}
+
+	@Override
+	public void setC_TaxGroup(final org.eevolution.model.I_C_TaxGroup C_TaxGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_C_TaxGroup_ID, org.eevolution.model.I_C_TaxGroup.class, C_TaxGroup);
+	}
+
+	@Override
+	public void setC_TaxGroup_ID (final int C_TaxGroup_ID)
+	{
+		if (C_TaxGroup_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxGroup_ID, C_TaxGroup_ID);
+	}
+
+	@Override
+	public int getC_TaxGroup_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_TaxGroup_ID);
+	}
+
+	@Override
+	public void setCertificateOfRegistrationCustomer (final boolean CertificateOfRegistrationCustomer)
+	{
+		set_Value (COLUMNNAME_CertificateOfRegistrationCustomer, CertificateOfRegistrationCustomer);
+	}
+
+	@Override
+	public boolean isCertificateOfRegistrationCustomer() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_CertificateOfRegistrationCustomer);
+	}
+
+	@Override
+	public void setCertificateOfRegistrationVendor (final boolean CertificateOfRegistrationVendor)
+	{
+		set_Value (COLUMNNAME_CertificateOfRegistrationVendor, CertificateOfRegistrationVendor);
+	}
+
+	@Override
+	public boolean isCertificateOfRegistrationVendor() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_CertificateOfRegistrationVendor);
+	}
+
+	@Override
 	public void setCity (final @Nullable java.lang.String City)
 	{
 		throw new IllegalArgumentException ("City is virtual column");	}
@@ -355,21 +451,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
-	{
-		if (C_PaymentTerm_ID < 1) 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_PaymentTerm_ID, C_PaymentTerm_ID);
-	}
-
-	@Override
-	public int getC_PaymentTerm_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
-	}
-
-	@Override
 	public void setCreateSO (final @Nullable java.lang.String CreateSO)
 	{
 		set_Value (COLUMNNAME_CreateSO, CreateSO);
@@ -402,33 +483,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getCreditorId() 
 	{
 		return get_ValueAsInt(COLUMNNAME_CreditorId);
-	}
-
-	@Override
-	public org.eevolution.model.I_C_TaxGroup getC_TaxGroup()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_TaxGroup_ID, org.eevolution.model.I_C_TaxGroup.class);
-	}
-
-	@Override
-	public void setC_TaxGroup(final org.eevolution.model.I_C_TaxGroup C_TaxGroup)
-	{
-		set_ValueFromPO(COLUMNNAME_C_TaxGroup_ID, org.eevolution.model.I_C_TaxGroup.class, C_TaxGroup);
-	}
-
-	@Override
-	public void setC_TaxGroup_ID (final int C_TaxGroup_ID)
-	{
-		if (C_TaxGroup_ID < 1) 
-			set_Value (COLUMNNAME_C_TaxGroup_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_TaxGroup_ID, C_TaxGroup_ID);
-	}
-
-	@Override
-	public int getC_TaxGroup_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_TaxGroup_ID);
 	}
 
 	@Override
@@ -531,6 +585,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_Shipper = "S";
+	/** Normalpost = NP */
+	public static final String DELIVERYVIARULE_Normalpost = "NP";
+	/** Luftpost = LU */
+	public static final String DELIVERYVIARULE_Luftpost = "LU";
 	@Override
 	public void setDeliveryViaRule (final @Nullable java.lang.String DeliveryViaRule)
 	{
@@ -793,6 +851,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsAlbertaDoctor (final boolean IsAlbertaDoctor)
+	{
+		throw new IllegalArgumentException ("IsAlbertaDoctor is virtual column");	}
+
+	@Override
+	public boolean isAlbertaDoctor() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAlbertaDoctor);
+	}
+
+	@Override
 	public void setIsAllowActionPrice (final boolean IsAllowActionPrice)
 	{
 		set_Value (COLUMNNAME_IsAllowActionPrice, IsAllowActionPrice);
@@ -814,6 +883,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isAllowPriceMutation() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowPriceMutation);
+	}
+
+	@Override
+	public void setIsArchived (final boolean IsArchived)
+	{
+		throw new IllegalArgumentException ("IsArchived is virtual column");	}
+
+	@Override
+	public boolean isArchived() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsArchived);
 	}
 
 	@Override
@@ -862,6 +942,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isDiscountPrinted() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDiscountPrinted);
+	}
+
+	@Override
+	public void setIsEdiDesadvRecipient (final boolean IsEdiDesadvRecipient)
+	{
+		set_Value (COLUMNNAME_IsEdiDesadvRecipient, IsEdiDesadvRecipient);
+	}
+
+	@Override
+	public boolean isEdiDesadvRecipient() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsEdiDesadvRecipient);
 	}
 
 	@Override
@@ -1123,42 +1215,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
-	public void setMemo (final @Nullable java.lang.String Memo)
-	{
-		set_Value (COLUMNNAME_Memo, Memo);
-	}
-
-	@Override
-	public java.lang.String getMemo() 
-	{
-		return get_ValueAsString(COLUMNNAME_Memo);
-	}
-
-	@Override
-	public void setMemo_Delivery (final @Nullable java.lang.String Memo_Delivery)
-	{
-		set_Value (COLUMNNAME_Memo_Delivery, Memo_Delivery);
-	}
-
-	@Override
-	public java.lang.String getMemo_Delivery() 
-	{
-		return get_ValueAsString(COLUMNNAME_Memo_Delivery);
-	}
-
-	@Override
-	public void setMemo_Invoicing (final @Nullable java.lang.String Memo_Invoicing)
-	{
-		set_Value (COLUMNNAME_Memo_Invoicing, Memo_Invoicing);
-	}
-
-	@Override
-	public java.lang.String getMemo_Invoicing() 
-	{
-		return get_ValueAsString(COLUMNNAME_Memo_Invoicing);
-	}
-
-	@Override
 	public void setM_FreightCost_ID (final int M_FreightCost_ID)
 	{
 		if (M_FreightCost_ID < 1) 
@@ -1203,27 +1259,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsInt(COLUMNNAME_M_PricingSystem_ID);
 	}
 
-	/** 
-	 * MRP_Exclude AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int MRP_EXCLUDE_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String MRP_EXCLUDE_Yes = "Y";
-	/** No = N */
-	public static final String MRP_EXCLUDE_No = "N";
-	@Override
-	public void setMRP_Exclude (final @Nullable java.lang.String MRP_Exclude)
-	{
-		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
-	}
-
-	@Override
-	public java.lang.String getMRP_Exclude() 
-	{
-		return get_ValueAsString(COLUMNNAME_MRP_Exclude);
-	}
-
 	@Override
 	public org.compiere.model.I_M_Shipper getM_Shipper()
 	{
@@ -1264,6 +1299,63 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getM_Warehouse_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
+	}
+
+	@Override
+	public void setMemo (final @Nullable java.lang.String Memo)
+	{
+		set_Value (COLUMNNAME_Memo, Memo);
+	}
+
+	@Override
+	public java.lang.String getMemo() 
+	{
+		return get_ValueAsString(COLUMNNAME_Memo);
+	}
+
+	@Override
+	public void setMemo_Delivery (final @Nullable java.lang.String Memo_Delivery)
+	{
+		set_Value (COLUMNNAME_Memo_Delivery, Memo_Delivery);
+	}
+
+	@Override
+	public java.lang.String getMemo_Delivery() 
+	{
+		return get_ValueAsString(COLUMNNAME_Memo_Delivery);
+	}
+
+	@Override
+	public void setMemo_Invoicing (final @Nullable java.lang.String Memo_Invoicing)
+	{
+		set_Value (COLUMNNAME_Memo_Invoicing, Memo_Invoicing);
+	}
+
+	@Override
+	public java.lang.String getMemo_Invoicing() 
+	{
+		return get_ValueAsString(COLUMNNAME_Memo_Invoicing);
+	}
+
+	/** 
+	 * MRP_Exclude AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int MRP_EXCLUDE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String MRP_EXCLUDE_Yes = "Y";
+	/** No = N */
+	public static final String MRP_EXCLUDE_No = "N";
+	@Override
+	public void setMRP_Exclude (final @Nullable java.lang.String MRP_Exclude)
+	{
+		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
+	}
+
+	@Override
+	public java.lang.String getMRP_Exclude() 
+	{
+		return get_ValueAsString(COLUMNNAME_MRP_Exclude);
 	}
 
 	@Override
@@ -1415,6 +1507,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String PO_DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String PO_DELIVERYVIARULE_Shipper = "S";
+	/** Normalpost = NP */
+	public static final String PO_DELIVERYVIARULE_Normalpost = "NP";
+	/** Luftpost = LU */
+	public static final String PO_DELIVERYVIARULE_Luftpost = "LU";
 	@Override
 	public void setPO_DeliveryViaRule (final @Nullable java.lang.String PO_DeliveryViaRule)
 	{
@@ -1850,6 +1946,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getTaxID() 
 	{
 		return get_ValueAsString(COLUMNNAME_TaxID);
+	}
+
+	@Override
+	public void setTitleShort (final @Nullable java.lang.String TitleShort)
+	{
+		throw new IllegalArgumentException ("TitleShort is virtual column");	}
+
+	@Override
+	public java.lang.String getTitleShort() 
+	{
+		return get_ValueAsString(COLUMNNAME_TitleShort);
 	}
 
 	@Override

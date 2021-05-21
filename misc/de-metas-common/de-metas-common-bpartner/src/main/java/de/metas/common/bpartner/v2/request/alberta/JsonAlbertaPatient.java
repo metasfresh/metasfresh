@@ -1,0 +1,241 @@
+/*
+ * #%L
+ * de-metas-common-bpartner
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.common.bpartner.v2.request.alberta;
+
+import io.swagger.annotations.ApiModelProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
+import java.time.Instant;
+
+@Getter
+@ToString
+@EqualsAndHashCode
+public class JsonAlbertaPatient
+{
+	@ApiModelProperty(position = 10)
+	private String hospitalIdentifier;
+
+	@ApiModelProperty(hidden = true)
+	private boolean hospitalIdentifierSet;
+
+	@ApiModelProperty(position = 20)
+	private Instant dischargeDate;
+
+	@ApiModelProperty(hidden = true)
+	private boolean dischargeDateSet;
+
+	@ApiModelProperty(position = 30)
+	private String payerIdentifier;
+
+	@ApiModelProperty(hidden = true)
+	private boolean payerIdentifierSet;
+
+	@ApiModelProperty(position = 40)
+	private String payerType;
+
+	@ApiModelProperty(hidden = true)
+	private boolean payerTypeSet;
+
+	@ApiModelProperty(position = 50)
+	private String numberOfInsured;
+
+	@ApiModelProperty(hidden = true)
+	private boolean numberOfInsuredSet;
+
+	@ApiModelProperty(position = 60)
+	private Instant copaymentFrom;
+
+	@ApiModelProperty(hidden = true)
+	private boolean copaymentFromSet;
+
+	@ApiModelProperty(position = 70)
+	private Instant copaymentTo;
+
+	@ApiModelProperty(hidden = true)
+	private boolean copaymentToSet;
+
+	@ApiModelProperty(position = 80)
+	private Boolean isTransferPatient;
+
+	@ApiModelProperty(hidden = true)
+	private boolean transferPatientSet;
+
+	@ApiModelProperty(position = 90)
+	private Boolean isIVTherapy;
+
+	@ApiModelProperty(hidden = true)
+	private boolean ivTherapySet;
+
+	@ApiModelProperty(position = 100)
+	private String fieldNurseIdentifier;
+
+	@ApiModelProperty(hidden = true)
+	private boolean fieldNurseIdentifierSet;
+
+	@ApiModelProperty(position = 110)
+	private String deactivationReason;
+
+	@ApiModelProperty(hidden = true)
+	private boolean deactivationReasonSet;
+
+	@ApiModelProperty(position = 120)
+	private Instant deactivationDate;
+
+	@ApiModelProperty(hidden = true)
+	private boolean deactivationDateSet;
+
+	@ApiModelProperty(position = 130)
+	private String deactivationComment;
+
+	@ApiModelProperty(hidden = true)
+	private boolean deactivationCommentSet;
+
+	@ApiModelProperty(position = 140)
+	private Instant createdAt;
+
+	@ApiModelProperty(hidden = true)
+	private boolean createdAtSet;
+
+	@ApiModelProperty(position = 150)
+	private String createdByIdentifier;
+
+	@ApiModelProperty(hidden = true)
+	private boolean createdByIdentifierSet;
+
+	@ApiModelProperty(position = 160)
+	private Instant updatedAt;
+
+	@ApiModelProperty(hidden = true)
+	private boolean updatedAtSet;
+
+	@ApiModelProperty(position = 170)
+	private String updateByIdentifier;
+
+	@ApiModelProperty(hidden = true)
+	private boolean updateByIdentifierSet;
+
+	public void setHospitalIdentifier(final String hospitalIdentifier)
+	{
+		this.hospitalIdentifier = hospitalIdentifier;
+		this.hospitalIdentifierSet = true;
+	}
+
+	public void setDischargeDate(final Instant dischargeDate)
+	{
+		this.dischargeDate = dischargeDate;
+		this.dischargeDateSet = true;
+	}
+
+	public void setPayerIdentifier(final String payerIdentifier)
+	{
+		this.payerIdentifier = payerIdentifier;
+		this.payerIdentifierSet = true;
+	}
+
+	public void setPayerType(final String payerType)
+	{
+		this.payerType = payerType;
+		this.payerTypeSet = true;
+	}
+
+	public void setNumberOfInsured(final String numberOfInsured)
+	{
+		this.numberOfInsured = numberOfInsured;
+		this.numberOfInsuredSet = true;
+	}
+
+	public void setCopaymentFrom(final Instant copaymentFrom)
+	{
+		this.copaymentFrom = copaymentFrom;
+		this.copaymentFromSet = true;
+	}
+
+	public void setCopaymentTo(final Instant copaymentTo)
+	{
+		this.copaymentTo = copaymentTo;
+		this.copaymentToSet = true;
+	}
+
+	public void setIsTransferPatient(final Boolean isTransferPatient)
+	{
+		this.isTransferPatient = isTransferPatient;
+		this.transferPatientSet = true;
+	}
+
+	public void setIVTherapy(final Boolean IVTherapy)
+	{
+		this.isIVTherapy = IVTherapy;
+		this.ivTherapySet = true;
+	}
+
+	public void setFieldNurseIdentifier(final String fieldNurseIdentifier)
+	{
+		this.fieldNurseIdentifier = fieldNurseIdentifier;
+		this.fieldNurseIdentifierSet = true;
+	}
+
+	public void setDeactivationReason(final String deactivationReason)
+	{
+		this.deactivationReason = deactivationReason;
+		this.deactivationReasonSet = true;
+	}
+
+	public void setDeactivationDate(final Instant deactivationDate)
+	{
+		this.deactivationDate = deactivationDate;
+		this.deactivationDateSet = true;
+	}
+
+	public void setDeactivationComment(final String deactivationComment)
+	{
+		this.deactivationComment = deactivationComment;
+		this.deactivationCommentSet = true;
+	}
+
+	public void setCreatedAt(final Instant createdAt)
+	{
+		this.createdAt = createdAt;
+		this.createdAtSet = true;
+	}
+
+	public void setCreatedByIdentifier(final String createdByIdentifier)
+	{
+		this.createdByIdentifier = createdByIdentifier;
+		this.createdByIdentifierSet = true;
+	}
+
+	public void setUpdatedAt(final Instant updatedAt)
+	{
+		this.updatedAt = updatedAt;
+		this.updatedAtSet = true;
+	}
+
+	public void setUpdateByIdentifier(final String updateByIdentifier)
+	{
+		this.updateByIdentifier = updateByIdentifier;
+		this.updateByIdentifierSet = true;
+	}
+
+}
