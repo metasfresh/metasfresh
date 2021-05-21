@@ -60,6 +60,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -145,6 +146,19 @@ public class PurchaseCandidateRepository
 				.stream()
 				.map(PurchaseCandidateId::ofRepoId)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Optional<PurchaseCandidateId> getByExternalHeaderAndLineId(
+			@NonNull final String externalHeaderId,
+			@NonNull final String externalLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_ExternalHeaderId, externalHeaderId)
+				.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_ExternalLineId, externalLineId)
+				.create()
+				.firstIdOnlyOptional(PurchaseCandidateId::ofRepoIdOrNull);
 	}
 
 	public ImmutableMultimap<DemandGroupReference, PurchaseCandidate> getAllByDemandIds(

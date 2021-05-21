@@ -45,6 +45,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Optional;
+
 @RestController
 @RequestMapping(value = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/order/purchase")
 @Profile(Profiles.PROFILE_App)
@@ -82,7 +84,10 @@ public class PurchaseCandidateRestController
 		final ImmutableList<JsonPurchaseCandidate> candidates = request.getPurchaseCandidates()
 				.stream()
 				.map(createPurchaseCandidatesService::createCandidate)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.collect(ImmutableList.toImmutableList());
+
 		return JsonPurchaseCandidateResponse.builder()
 				.purchaseCandidates(candidates)
 				.build();

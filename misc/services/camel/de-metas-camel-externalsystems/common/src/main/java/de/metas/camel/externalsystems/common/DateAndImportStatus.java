@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.order.processor;
+package de.metas.camel.externalsystems.common;
 
 import lombok.Builder;
 import lombok.NonNull;
