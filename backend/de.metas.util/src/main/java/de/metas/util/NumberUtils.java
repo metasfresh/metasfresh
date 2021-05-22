@@ -144,11 +144,11 @@ public final class NumberUtils
 			@Nullable final BigDecimal defaultValue,
 			final boolean failIfUnparsable)
 	{
-		if (Check.isEmpty(value)) //note that a zero-BigDecimal is also "empty" according to Check.IsEmpty()!
+		if (value == null) //note that a zero-BigDecimal is also "empty" according to Check.IsEmpty()!
 		{
 			return defaultValue;
 		}
-		if (value instanceof BigDecimal)
+		else if (value instanceof BigDecimal)
 		{
 			return (BigDecimal)value;
 		}
