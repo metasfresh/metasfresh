@@ -32,7 +32,6 @@ import java.math.RoundingMode;
  * Number Utils
  *
  * @author tsa
- *
  */
 public final class NumberUtils
 {
@@ -43,7 +42,6 @@ public final class NumberUtils
 	/**
 	 * Remove trailing zeros after decimal separator
 	 *
-	 * @param bd
 	 * @return <code>bd</code> without trailing zeros after separator; if argument is NULL then NULL will be returned
 	 */
 	public static BigDecimal stripTrailingDecimalZeros(final BigDecimal bd)
@@ -77,11 +75,8 @@ public final class NumberUtils
 
 	/**
 	 * Converts given <code>bd</code> to a big decimal which has at least <code>minScale</code> decimals.
-	 *
+	 * <p>
 	 * If it has more decimals (and not trailing zeros) the value will not be changed.
-	 *
-	 * @param bd
-	 * @param minScale
 	 */
 	public static BigDecimal setMinimumScale(final BigDecimal bd, final int minScale)
 	{
@@ -102,7 +97,7 @@ public final class NumberUtils
 
 	/**
 	 * Creates the error margin absolute value for given scale.
-	 *
+	 * <p>
 	 * e.g.
 	 * <ul>
 	 * <li>for scale=0 it will return 0
@@ -112,7 +107,6 @@ public final class NumberUtils
 	 * <li>for scale=-2 it will return 100
 	 * </ul>
 	 *
-	 * @param scale
 	 * @return error mergin (absolute value)
 	 */
 	public static BigDecimal getErrorMarginForScale(final int scale)
@@ -127,13 +121,10 @@ public final class NumberUtils
 	/**
 	 * Converts given <code>value</code> to BigDecimal.
 	 *
-	 * @param value
-	 * @param defaultValue
-	 * @return
-	 *         <ul>
-	 *         <li>{@link BigDecimal} if the value is a BigDecimal or its string representation can be converted to BigDecimal
-	 *         <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to BigDecimal.
-	 *         </ul>
+	 * @return <ul>
+	 * <li>{@link BigDecimal} if the value is a BigDecimal or its string representation can be converted to BigDecimal
+	 * <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to BigDecimal.
+	 * </ul>
 	 */
 	public static BigDecimal asBigDecimal(@Nullable final Object value, @Nullable final BigDecimal defaultValue)
 	{
@@ -153,11 +144,11 @@ public final class NumberUtils
 			@Nullable final BigDecimal defaultValue,
 			final boolean failIfUnparsable)
 	{
-		if (Check.isEmpty(value))
+		if (Check.isEmpty(value)) //note that a zero-BigDecimal is also "empty" according to Check.IsEmpty()!
 		{
 			return defaultValue;
 		}
-		else if (value instanceof BigDecimal)
+		if (value instanceof BigDecimal)
 		{
 			return (BigDecimal)value;
 		}
@@ -172,6 +163,10 @@ public final class NumberUtils
 		else
 		{
 			final String valueStr = value.toString();
+			if (Check.isBlank(valueStr))
+			{
+				return defaultValue;
+			}
 			try
 			{
 				return new BigDecimal(valueStr);
@@ -204,13 +199,10 @@ public final class NumberUtils
 	/**
 	 * Converts given <code>value</code> to integer.
 	 *
-	 * @param value
-	 * @param defaultValue
-	 * @return
-	 *         <ul>
-	 *         <li>integer value if the value is a integer or its string representation can be converted to integer
-	 *         <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to integer.
-	 *         </ul>
+	 * @return <ul>
+	 * <li>integer value if the value is a integer or its string representation can be converted to integer
+	 * <li><code>defaultValue</code> if value is <code>null</code> or it's string representation cannot be converted to integer.
+	 * </ul>
 	 */
 	public static int asInt(final Object value, final int defaultValue)
 	{
