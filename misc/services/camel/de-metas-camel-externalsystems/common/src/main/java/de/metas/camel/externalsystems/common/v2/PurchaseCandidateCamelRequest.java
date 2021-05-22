@@ -36,7 +36,6 @@ import lombok.Value;
 @JsonDeserialize(builder = PurchaseCandidateCamelRequest.PurchaseCandidateCamelRequestBuilder.class)
 public class PurchaseCandidateCamelRequest
 {
-
 	@NonNull
 	@JsonProperty("jsonPurchaseCandidateCreateRequest")
 	JsonPurchaseCandidateCreateRequest jsonPurchaseCandidateCreateRequest;

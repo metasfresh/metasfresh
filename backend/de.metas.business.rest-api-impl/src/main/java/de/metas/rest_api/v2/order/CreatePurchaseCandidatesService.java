@@ -26,10 +26,10 @@ import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateItem;
 import de.metas.common.rest_api.v2.JsonAttributeInstance;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateItem;
 import de.metas.common.rest_api.v2.JsonVendor;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
@@ -37,6 +37,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
+import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.externalreference.warehouse.WarehouseExternalReferenceType;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -85,15 +86,18 @@ public class CreatePurchaseCandidatesService
 	private final PurchaseCandidateRepository purchaseCandidateRepo;
 	private final JsonRetrieverService jsonRetrieverService;
 	private final CurrencyRepository currencyRepository;
+	private final ExternalReferenceRestControllerService externalReferenceService;
 
 	public CreatePurchaseCandidatesService(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
-			@NonNull final CurrencyRepository currencyRepository)
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService)
 	{
 		this.purchaseCandidateRepo = purchaseCandidateRepo;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.currencyRepository = currencyRepository;
+		this.externalReferenceService = externalReferenceService;
 	}
 
 	public Optional<JsonPurchaseCandidate> createCandidate(@RequestBody final JsonPurchaseCandidateCreateItem request)
@@ -214,19 +218,18 @@ public class CreatePurchaseCandidatesService
 		final BPartnerId bPartnerId;
 		try
 		{
-			bPartnerId = jsonRetrieverService.resolveBPartnerExternalIdentifier(bpartnerIdentifier, orgId).orElseGet(() -> {
-				throw MissingResourceException.builder()
-						.resourceName("bpartnerIdentifier")
-						.resourceIdentifier(bpartnerIdentifier.getRawValue())
-						.parentResource(vendor)
-						.build();
-			});
+			bPartnerId = jsonRetrieverService.resolveBPartnerExternalIdentifier(bpartnerIdentifier, orgId)
+					.orElseThrow(() -> MissingResourceException.builder()
+							.resourceName("bpartnerIdentifier")
+							.resourceIdentifier(bpartnerIdentifier.getRawValue())
+							.parentResource(vendor)
+							.build());
 		}
 		catch (final AdempiereException e)
 		{
 			throw MissingResourceException.builder()
 					.resourceName("vendor.bpartnerIdentifier")
-					.resourceIdentifier(bpartnerIdentifier.toString())
+					.resourceIdentifier(bpartnerIdentifier.getRawValue())
 					.cause(e)
 					.build();
 		}
@@ -240,21 +243,20 @@ public class CreatePurchaseCandidatesService
 	{
 		final ExternalIdentifier productExternalIdentifier = ExternalIdentifier.of(productIdentifier);
 
-		if (productExternalIdentifier.getType().equals(ExternalIdentifier.Type.METASFRESH_ID))
+		switch (productExternalIdentifier.getType())
 		{
-			return ProductId.ofRepoId(productExternalIdentifier.asMetasfreshId().getValue());
+			case METASFRESH_ID:
+				return ProductId.ofRepoId(productExternalIdentifier.asMetasfreshId().getValue());
+			case EXTERNAL_REFERENCE:
+				return externalReferenceService.resolveExternalReference(orgId, productExternalIdentifier, ProductExternalReferenceType.PRODUCT)
+						.map(metasfreshId -> ProductId.ofRepoId(metasfreshId.getValue()))
+						.orElseThrow(() -> MissingResourceException.builder()
+								.resourceName("productIdentifier")
+								.resourceIdentifier(productExternalIdentifier.getRawValue())
+								.build());
+			default:
+				throw new InvalidIdentifierException(productExternalIdentifier.getRawValue());
 		}
-		else if (productExternalIdentifier.getType().equals(ExternalIdentifier.Type.EXTERNAL_REFERENCE))
-		{
-			return jsonRetrieverService.resolveExternalReference(orgId, productExternalIdentifier, ProductExternalReferenceType.PRODUCT)
-					.map(metasfreshId -> ProductId.ofRepoId(metasfreshId.getValue()))
-					.orElseThrow(() -> MissingResourceException.builder()
-							.resourceName("productIdentifier")
-							.resourceIdentifier(productExternalIdentifier.getRawValue())
-							.build());
-		}
-
-		throw new InvalidIdentifierException(productIdentifier);
 	}
 
 	@NonNull
@@ -263,21 +265,20 @@ public class CreatePurchaseCandidatesService
 	{
 		final ExternalIdentifier warehouseExternalIdentifier = ExternalIdentifier.of(warehouseIdentifier);
 
-		if (warehouseExternalIdentifier.getType().equals(ExternalIdentifier.Type.METASFRESH_ID))
+		switch (warehouseExternalIdentifier.getType())
 		{
-			return WarehouseId.ofRepoId(warehouseExternalIdentifier.asMetasfreshId().getValue());
+			case METASFRESH_ID:
+				return WarehouseId.ofRepoId(warehouseExternalIdentifier.asMetasfreshId().getValue());
+			case EXTERNAL_REFERENCE:
+				return externalReferenceService.resolveExternalReference(orgId, warehouseExternalIdentifier, WarehouseExternalReferenceType.WAREHOUSE)
+						.map(metasfreshId -> WarehouseId.ofRepoId(metasfreshId.getValue()))
+						.orElseThrow(() -> MissingResourceException.builder()
+								.resourceName("warehouseIdentifier")
+								.resourceIdentifier(warehouseExternalIdentifier.getRawValue())
+								.build());
+			default:
+				throw new InvalidIdentifierException(warehouseIdentifier);
 		}
-		else if (warehouseExternalIdentifier.getType().equals(ExternalIdentifier.Type.EXTERNAL_REFERENCE))
-		{
-			return jsonRetrieverService.resolveExternalReference(orgId, warehouseExternalIdentifier, WarehouseExternalReferenceType.WAREHOUSE)
-					.map(metasfreshId -> WarehouseId.ofRepoId(metasfreshId.getValue()))
-					.orElseThrow(() -> MissingResourceException.builder()
-							.resourceName("warehouseIdentifier")
-							.resourceIdentifier(warehouseExternalIdentifier.getRawValue())
-							.build());
-		}
-
-		throw new InvalidIdentifierException(warehouseIdentifier);
 	}
 
 }

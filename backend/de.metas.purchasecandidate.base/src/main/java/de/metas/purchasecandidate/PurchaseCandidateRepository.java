@@ -155,8 +155,8 @@ public class PurchaseCandidateRepository
 	{
 		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_ExternalHeaderId, externalHeaderId)
-				.addInArrayFilter(I_C_PurchaseCandidate.COLUMN_ExternalLineId, externalLineId)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_ExternalHeaderId, externalHeaderId)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMN_ExternalLineId, externalLineId)
 				.create()
 				.firstIdOnlyOptional(PurchaseCandidateId::ofRepoIdOrNull);
 	}

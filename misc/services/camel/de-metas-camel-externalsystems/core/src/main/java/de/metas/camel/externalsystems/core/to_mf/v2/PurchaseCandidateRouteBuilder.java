@@ -67,6 +67,6 @@ public class PurchaseCandidateRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("http://{{metasfresh.create-purchase-candidate-v2.api.uri}}");
+				.toD("{{metasfresh.create-purchase-candidate-v2.api.uri}}");
 	}
 }
