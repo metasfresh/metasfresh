@@ -50,6 +50,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -124,6 +125,11 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 				.build();
 
 		final HttpPut request = new HttpPut(config.getCamelUrl());
+
+		// attempt to encode the request body as UTF-8. Oftherwise camel might fail to deserialize the JSON
+		// by default http-client encodes the content as ISO-8859-1, https://hc.apache.org/httpclient-legacy/charencodings.html
+		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8");
+		
 		final String jsonExternalSystemRequestString = new ObjectMapper().writeValueAsString(jsonExternalSystemRequest);
 
 		request.setEntity(new StringEntity(jsonExternalSystemRequestString));

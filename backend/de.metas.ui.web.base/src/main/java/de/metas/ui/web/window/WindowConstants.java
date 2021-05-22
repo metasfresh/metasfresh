@@ -1,14 +1,12 @@
 package de.metas.ui.web.window;
 
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.WindowId;
+import org.slf4j.Logger;
+
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -68,7 +66,7 @@ public final class WindowConstants
 	public static final String FIELDNAME_Line = "Line";
 	public static final String FIELDNAME_C_Currency_ID = "C_Currency_ID";
 	public static final String FIELDNAME_TimeZone = "TimeZone";
-	
+	public static final String FIELDNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	public static final String FIELDNAME_AD_Client_ID = "AD_Client_ID";
 	public static final String FIELDNAME_AD_Org_ID = "AD_Org_ID";

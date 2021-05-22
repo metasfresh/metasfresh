@@ -23,8 +23,14 @@ $$
     DECLARE
 
         v_m_product_printformat_id int default 0;
+        v_m_product_id int default 0;
 
     BEGIN
+
+        select m_product_id
+        into v_m_product_id
+        from m_product
+        where m_product_id = 2005577;
 
         select m_product_printformat_id
         into v_m_product_printformat_id
@@ -32,9 +38,9 @@ $$
         where m_product_id = 2005577
           and ad_printformat_id = 540115;
 
-        IF v_m_product_printformat_id > 0 THEN
-			RAISE NOTICE 'm_product_printformat already exists for product 2005577 and print format %', 540115;
-		ELSE 
+        IF v_m_product_printformat_id > 0 OR v_m_product_id IS NULL THEN
+			RAISE NOTICE 'Product does not exists or m_product_printformat already exists for product 2005577 and print format %', 540115;
+		ELSE
             INSERT INTO m_product_printformat (ad_client_id, ad_org_id, ad_printformat_id, created, createdby,
                                                isactive,
                                                m_product_id, m_product_printformat_id, updated, updatedby)

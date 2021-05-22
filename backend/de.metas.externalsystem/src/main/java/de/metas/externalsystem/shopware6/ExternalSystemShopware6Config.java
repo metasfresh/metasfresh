@@ -24,6 +24,7 @@ package de.metas.externalsystem.shopware6;
 
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -50,6 +51,12 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	String bPartnerIdJSONPath;
 	@Nullable
 	String bPartnerLocationIdJSONPath;
+	@Nullable
+	String salesRepJSONPath;
+	@Nullable
+	FreightCostConfig freightCostNormalVatConfig;
+	@Nullable
+	FreightCostConfig freightCostReducedVatConfig;
 
 	@Builder
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
@@ -59,7 +66,10 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @NonNull String clientSecret,
 			final @NonNull List<ExternalSystemShopware6ConfigMapping> externalSystemShopware6ConfigMappingList,
 			final @Nullable String bPartnerIdJSONPath,
-			final @Nullable String bPartnerLocationIdJSONPath)
+			final @Nullable String bPartnerLocationIdJSONPath,
+			final @Nullable String salesRepJSONPath,
+			final @Nullable FreightCostConfig freightCostNormalVatConfig,
+			final @Nullable FreightCostConfig freightCostReducedVatConfig)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -69,10 +79,24 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 		this.baseUrl = baseUrl;
 		this.bPartnerIdJSONPath = bPartnerIdJSONPath;
 		this.bPartnerLocationIdJSONPath = bPartnerLocationIdJSONPath;
+		this.salesRepJSONPath = salesRepJSONPath;
+		this.freightCostNormalVatConfig = freightCostNormalVatConfig;
+		this.freightCostReducedVatConfig = freightCostReducedVatConfig;
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)
 	{
 		return (ExternalSystemShopware6Config)childConfig;
+	}
+
+	@Value
+	@Builder
+	public static class FreightCostConfig
+	{
+		@NonNull
+		ProductId productId;
+
+		@NonNull
+		String vatRates;
 	}
 }

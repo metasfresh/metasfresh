@@ -58,7 +58,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "baseUrl" : "baseUrl",
       "clientId" : "id",
       "clientSecret" : "secret",
-      "externalSystemShopware6ConfigMappingList" : [ ]
+      "externalSystemShopware6ConfigMappingList" : [ ],
+      "bPartnerIdJSONPath" : "/test/bp",
+      "bPartnerLocationIdJSONPath" : "/test/bpl",
+      "salesRepJSONPath" : "/test/salesrep"
     }
   }
 ]
@@ -76,12 +79,19 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "seqNo" : 10,
         "docTypeOrderId" : 10000,
         "paymentRule" : "K",
+        "bpartnerIfExists" : "UPDATE_MERGE",
+        "bpartnerIfNotExists" : "FAIL",
+        "bpartnerLocationIfExists" : "DONT_UPDATE",
+        "bpartnerLocationIfNotExists" : "CREATE",
         "paymentTermId" : 10000,
         "sw6CustomerGroup" : "testWithAnä",
         "sw6PaymentMethod" : "test",
         "description" : "test"
       }
-    ]
+    ],
+    "bPartnerIdJSONPath" : "/test/bp",
+    "bPartnerLocationIdJSONPath" : "/test/bpl",
+    "salesRepJSONPath" : "/test/salesrep"
   }
 ]
 
@@ -98,7 +108,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "baseUrl" : "baseUrl",
       "clientId" : "id",
       "clientSecret" : "secret",
-      "externalSystemShopware6ConfigMappingList" : [ ]
+      "externalSystemShopware6ConfigMappingList" : [ ],
+      "bPartnerIdJSONPath" : "/test/bp",
+      "bPartnerLocationIdJSONPath" : "/test/bpl",
+      "salesRepJSONPath" : "/test/salesrep"
     }
   }
 ]

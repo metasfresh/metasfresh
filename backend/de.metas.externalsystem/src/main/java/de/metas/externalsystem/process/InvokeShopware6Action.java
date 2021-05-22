@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -54,8 +55,13 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BASE_
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CLIENT_SECRET;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_VAT_RATES;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE;
 
 public class InvokeShopware6Action extends InvokeExternalSystemProcess
@@ -92,7 +98,20 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 		parameters.put(PARAM_CLIENT_ID, shopware6Config.getClientId());
 		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_ID, shopware6Config.getBPartnerIdJSONPath());
 		parameters.put(PARAM_JSON_PATH_CONSTANT_BPARTNER_LOCATION_ID, shopware6Config.getBPartnerLocationIdJSONPath());
+		parameters.put(PARAM_JSON_PATH_SALES_REP_ID, shopware6Config.getSalesRepJSONPath());
 		parameters.put(PARAM_CONFIG_MAPPINGS, getConfigMappings(shopware6Config));
+
+		if (shopware6Config.getFreightCostNormalVatConfig() != null)
+		{
+			parameters.put(PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID, String.valueOf(shopware6Config.getFreightCostNormalVatConfig().getProductId().getRepoId()));
+			parameters.put(PARAM_FREIGHT_COST_NORMAL_VAT_RATES, shopware6Config.getFreightCostNormalVatConfig().getVatRates());
+		}
+
+		if (shopware6Config.getFreightCostReducedVatConfig() != null)
+		{
+			parameters.put(PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID, String.valueOf(shopware6Config.getFreightCostReducedVatConfig().getProductId().getRepoId()));
+			parameters.put(PARAM_FREIGHT_COST_REDUCED_VAT_RATES, shopware6Config.getFreightCostReducedVatConfig().getVatRates());
+		}
 
 		if (getSinceParameterValue() != null)
 		{
@@ -149,13 +168,25 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	private JsonExternalSystemShopware6ConfigMapping toJsonExternalSystemShopware6ConfigMapping(
 			@NonNull final ExternalSystemShopware6ConfigMapping externalSystemShopware6ConfigMapping)
 	{
+		final SyncAdvise bPartnerSyncAdvice = SyncAdvise.builder()
+				.ifExists(SyncAdvise.IfExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerIfExists()))
+				.ifNotExists(SyncAdvise.IfNotExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerIfNotExists()))
+				.build();
+
+		final SyncAdvise bpartnerLocationSyncAdvice = SyncAdvise.builder()
+				.ifExists(SyncAdvise.IfExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerLocationIfExists()))
+				.ifNotExists(SyncAdvise.IfNotExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerLocationIfNotExists()))
+				.build();
+
 		final JsonExternalSystemShopware6ConfigMapping.JsonExternalSystemShopware6ConfigMappingBuilder builder =
 				JsonExternalSystemShopware6ConfigMapping.builder()
 						.paymentRule(externalSystemShopware6ConfigMapping.getPaymentRule())
 						.sw6PaymentMethod(externalSystemShopware6ConfigMapping.getSw6PaymentMethod())
 						.sw6CustomerGroup(externalSystemShopware6ConfigMapping.getSw6CustomerGroup())
 						.description(externalSystemShopware6ConfigMapping.getDescription())
-						.seqNo(externalSystemShopware6ConfigMapping.getSeqNo());
+						.seqNo(externalSystemShopware6ConfigMapping.getSeqNo())
+						.bPartnerSyncAdvice(bPartnerSyncAdvice)
+						.bPartnerLocationSyncAdvice(bpartnerLocationSyncAdvice);
 
 		final JsonOrderDocType orderDocType = docTypeService
 				.getOrderDocType(externalSystemShopware6ConfigMapping.getDocTypeOrderId())

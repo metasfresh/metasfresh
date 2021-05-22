@@ -41,9 +41,7 @@
           "billTo": null,
           "billToSet": false,
           "billToDefault": null,
-          "billToDefaultSet": false,
-          "syncAdvise": null,
-          "syncAdviseSet": false
+          "billToDefaultSet": false
         }
       }
     ],

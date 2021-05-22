@@ -4,10 +4,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.material.commons.attributes.AttributesKeyMatcher;
 import de.metas.material.commons.attributes.AttributesKeyPattern;
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.ExcludeAttributesKeyMatcher;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
+import de.metas.material.commons.attributes.clasifiers.ProductClassifier;
+import de.metas.material.commons.attributes.clasifiers.WarehouseClassifier;
 import de.metas.material.dispo.commons.repository.atp.AddToResultGroupRequest.AddToResultGroupRequestBuilder;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.Nested;
@@ -48,12 +52,12 @@ public class AvailableToPromiseResultTest
 
 	private static AttributesKeyPattern pattern(final String attributesKeyString)
 	{
-		return AttributesKeyPatterns.ofAttributeKey(AttributesKey.ofString(attributesKeyString));
+		return AttributesKeyPatternsUtil.ofAttributeKey(AttributesKey.ofString(attributesKeyString));
 	}
 
 	private static AttributesKeyMatcher matcher(final String attributesKeyString)
 	{
-		return AttributesKeyPatterns.matching(AttributesKey.ofString(attributesKeyString));
+		return AttributesKeyPatternsUtil.matching(AttributesKey.ofString(attributesKeyString));
 	}
 
 	@Nested
@@ -66,11 +70,11 @@ public class AvailableToPromiseResultTest
 					.product(ProductClassifier.specific(100001))
 					.warehouse(WarehouseClassifier.specific(WarehouseId.ofRepoId(100)))
 					.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
-					.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(AttributesKey.ofString("1")))
+					.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(AttributesKey.ofString("1")))
 					.build();
 
 			final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
-					.productId(100001)
+					.productId(ProductId.ofRepoId(100001))
 					.warehouseId(WarehouseId.ofRepoId(100))
 					.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 					.qty(BigDecimal.ONE)
@@ -94,11 +98,11 @@ public class AvailableToPromiseResultTest
 					.product(ProductClassifier.specific(100001))
 					.warehouse(WarehouseClassifier.specific(WarehouseId.ofRepoId(100)))
 					.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
-					.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(AttributesKey.ofString("1" + delim + "3")))
+					.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(AttributesKey.ofString("1" + delim + "3")))
 					.build();
 
 			final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
-					.productId(100001)
+					.productId(ProductId.ofRepoId(100001))
 					.warehouseId(WarehouseId.ofRepoId(100))
 					.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 					.qty(BigDecimal.ONE)
@@ -171,25 +175,25 @@ public class AvailableToPromiseResultTest
 			assertThat(emptyGroups).hasSize(4);
 			/* group 1 */ {
 				final AvailableToPromiseResultGroup group = emptyGroups.get(0);
-				assertThat(group.getProductId()).isEqualTo(20);
+				assertThat(group.getProductId().getRepoId()).isEqualTo(20);
 				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1" + delim + "2"));
 				assertThat(group.getQty()).isZero();
 			}
 			/* group 2 */ {
 				final AvailableToPromiseResultGroup group = emptyGroups.get(1);
-				assertThat(group.getProductId()).isEqualTo(20);
+				assertThat(group.getProductId().getRepoId()).isEqualTo(20);
 				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1" + delim + "2" + delim + "3"));
 				assertThat(group.getQty()).isZero();
 			}
 			/* group 3 */ {
 				final AvailableToPromiseResultGroup group = emptyGroups.get(2);
-				assertThat(group.getProductId()).isEqualTo(10);
+				assertThat(group.getProductId().getRepoId()).isEqualTo(10);
 				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1" + delim + "2"));
 				assertThat(group.getQty()).isZero();
 			}
 			/* group 4 */ {
 				final AvailableToPromiseResultGroup group = emptyGroups.get(3);
-				assertThat(group.getProductId()).isEqualTo(10);
+				assertThat(group.getProductId().getRepoId()).isEqualTo(10);
 				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1" + delim + "2" + delim + "3"));
 				assertThat(group.getQty()).isZero();
 			}
@@ -209,7 +213,7 @@ public class AvailableToPromiseResultTest
 			{
 				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(0);
 				assertThat(bucket.getProduct().getProductId()).isEqualTo(10);
-				assertThat(bucket.getStorageAttributesKeyMatcher()).isSameAs(AttributesKeyPatterns.matchingAll());
+				assertThat(bucket.getStorageAttributesKeyMatcher()).isSameAs(AttributesKeyPatternsUtil.matchingAll());
 				assertThat(bucket.isZeroQty()).isTrue();
 			}
 
@@ -219,7 +223,7 @@ public class AvailableToPromiseResultTest
 			assertThat(emptyGroups).hasSize(1);
 			{
 				final AvailableToPromiseResultGroup group = emptyGroups.get(0);
-				assertThat(group.getProductId()).isEqualTo(10);
+				assertThat(group.getProductId().getRepoId()).isEqualTo(10);
 				assertThat(group.getStorageAttributesKey()).isSameAs(AttributesKey.ALL);
 				assertThat(group.getQty()).isZero();
 			}
@@ -247,12 +251,12 @@ public class AvailableToPromiseResultTest
 			assertThat(emptyBuckets).hasSize(3);
 			/* bucket 1 */ {
 				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(0);
-				assertThat(bucket.getStorageAttributesKeyMatcher()).isSameAs(AttributesKeyPatterns.matchingAll());
+				assertThat(bucket.getStorageAttributesKeyMatcher()).isSameAs(AttributesKeyPatternsUtil.matchingAll());
 				assertThat(bucket.isZeroQty()).isTrue();
 			}
 			/* bucket 2 */ {
 				final AvailableToPromiseResultBucket bucket = emptyBuckets.get(1);
-				assertThat(bucket.getStorageAttributesKeyMatcher()).isEqualTo(AttributesKeyPatterns.matching(AttributesKeyPattern.attributeId(attributeId)));
+				assertThat(bucket.getStorageAttributesKeyMatcher()).isEqualTo(AttributesKeyPatternsUtil.matching(AttributesKeyPattern.attributeId(attributeId)));
 				assertThat(bucket.isZeroQty()).isTrue();
 			}
 			/* bucket 3 */ {
@@ -294,7 +298,7 @@ public class AvailableToPromiseResultTest
 				assertThat(bucket.getWarehouse()).isSameAs(WarehouseClassifier.any());
 				assertThat(bucket.getProduct()).isSameAs(ProductClassifier.any());
 				assertThat(bucket.getBpartner()).isSameAs(BPartnerClassifier.any());
-				assertThat(bucket.getStorageAttributesKeyMatcher()).isSameAs(AttributesKeyPatterns.matchingAll());
+				assertThat(bucket.getStorageAttributesKeyMatcher()).isSameAs(AttributesKeyPatternsUtil.matchingAll());
 				assertThat(bucket.isZeroQty()).isTrue();
 			}
 
@@ -317,13 +321,13 @@ public class AvailableToPromiseResultTest
 					AvailableToPromiseResultBucket.builder()
 							.bpartner(BPartnerClassifier.any())
 							.product(ProductClassifier.specific(100001))
-							.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(attributesKey))
+							.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(attributesKey))
 							.build()));
 
 			result.addQtyToAllMatchingGroups(AddToResultGroupRequest.builder()
 					.bpartner(BPartnerClassifier.any())
 					.warehouseId(WarehouseId.ofRepoId(1))
-					.productId(100001)
+					.productId(ProductId.ofRepoId(100001))
 					.storageAttributesKey(attributesKey)
 					.qty(new BigDecimal("10"))
 					.date(NOW.toInstant())
@@ -334,7 +338,7 @@ public class AvailableToPromiseResultTest
 			assertThat(groups).hasSize(1);
 
 			final AvailableToPromiseResultGroup group = groups.get(0);
-			assertThat(group.getProductId()).isEqualTo(100001);
+			assertThat(group.getProductId().getRepoId()).isEqualTo(100001);
 			assertThat(group.getQty()).isEqualByComparingTo("10");
 			assertThat(group.getStorageAttributesKey()).isEqualTo(attributesKey);
 		}
@@ -345,13 +349,13 @@ public class AvailableToPromiseResultTest
 			final AvailableToPromiseResultBuilder result = new AvailableToPromiseResultBuilder(ImmutableList.of(
 					AvailableToPromiseResultBucket.builder()
 							.product(ProductClassifier.specific(100001))
-							.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(AttributesKey.ofString("1" + delim + "2")))
+							.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(AttributesKey.ofString("1" + delim + "2")))
 							.build()));
 
 			final AddToResultGroupRequest request = AddToResultGroupRequest.builder()
 					.bpartner(BPartnerClassifier.any())
 					.warehouseId(WarehouseId.ofRepoId(1))
-					.productId(100001)
+					.productId(ProductId.ofRepoId(100001))
 					.storageAttributesKey(AttributesKey.ofString("1" + delim + "3"))
 					.qty(new BigDecimal("10"))
 					.date(NOW.toInstant())
@@ -372,14 +376,14 @@ public class AvailableToPromiseResultTest
 			{
 				final AvailableToPromiseResultBucket emptyBucket1 = AvailableToPromiseResultBucket.builder()
 						.product(ProductClassifier.specific(100001))
-						.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(AttributesKey.ofString("1")))
+						.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(AttributesKey.ofString("1")))
 						.warehouse(WarehouseClassifier.specific(WarehouseId.ofRepoId(100)))
 						.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 						.build();
 
 				final AvailableToPromiseResultBucket emptyBucket2 = AvailableToPromiseResultBucket.builder()
 						.product(ProductClassifier.specific(100001))
-						.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(AttributesKey.ofString("2")))
+						.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(AttributesKey.ofString("2")))
 						.warehouse(WarehouseClassifier.specific(WarehouseId.ofRepoId(100)))
 						.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 						.build();
@@ -388,7 +392,7 @@ public class AvailableToPromiseResultTest
 			}
 
 			final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
-					.productId(100001)
+					.productId(ProductId.ofRepoId(100001))
 					.warehouseId(WarehouseId.ofRepoId(100))
 					.bpartner(BPartnerClassifier.specific(BPartnerId.ofRepoId(200)))
 					.qty(BigDecimal.ONE)
@@ -427,7 +431,7 @@ public class AvailableToPromiseResultTest
 			final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 					.bpartner(BPartnerClassifier.any())
 					.warehouseId(WarehouseId.ofRepoId(1))
-					.productId(10)
+					.productId(ProductId.ofRepoId(10))
 					// .storageAttributesKey(attributesKey)
 					// .qty(qty)
 					.date(NOW.minusMinutes(10).toInstant())
@@ -484,7 +488,7 @@ public class AvailableToPromiseResultTest
 		public void oneGroup_withEmptyAttributeValues_forAllMatchingRequests()
 		{
 			final String emptyValueAttribute = "1=";
-			final int testProductId = 1;
+			final ProductId testProductId = ProductId.ofRepoId(1);
 
 			//the attributes key of the group
 			final AttributesKey emptyAttributesKey = AttributesKey.ofString("1=");
@@ -492,7 +496,7 @@ public class AvailableToPromiseResultTest
 			final AvailableToPromiseResultBucket testBucket = AvailableToPromiseResultBucket.builder()
 				.bpartner(BPartnerClassifier.any())
 				.product(ProductClassifier.specific(1))
-				.storageAttributesKeyMatcher(AttributesKeyPatterns.matching(emptyAttributesKey))
+				.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(emptyAttributesKey))
 				.build();
 
 			testBucket.addDefaultEmptyGroupIfPossible();
@@ -529,7 +533,7 @@ public class AvailableToPromiseResultTest
 			assertThat(groups).hasSize(1);
 
 			final AvailableToPromiseResultGroup group = groups.get(0);
-			assertThat(group.getProductId()).isEqualTo(testProductId);
+			assertThat(group.getProductId().getRepoId()).isEqualTo(testProductId);
 			assertThat(group.getQty()).isEqualByComparingTo("20");
 			assertThat(group.getStorageAttributesKey()).isEqualTo(emptyAttributesKey);
 		}
@@ -546,7 +550,7 @@ public class AvailableToPromiseResultTest
 			final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 					.bpartner(BPartnerClassifier.any())
 					.warehouseId(WarehouseId.ofRepoId(1))
-					.productId(10)
+					.productId(ProductId.ofRepoId(10))
 					.date(NOW.minusMinutes(10).toInstant())
 					.seqNo(1);
 
@@ -561,7 +565,7 @@ public class AvailableToPromiseResultTest
 				final AvailableToPromiseResultGroup group = groups.get(0);
 				assertThat(group.getBpartner()).isSameAs(BPartnerClassifier.any());
 				assertThat(group.getWarehouse()).isEqualTo(WarehouseClassifier.specific(WarehouseId.ofRepoId(1)));
-				assertThat(group.getProductId()).isEqualTo(10);
+				assertThat(group.getProductId().getRepoId()).isEqualTo(10);
 				assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("111=1"));
 				assertThat(group.getQty()).isEqualByComparingTo("100");
 			}
@@ -575,7 +579,7 @@ public class AvailableToPromiseResultTest
 			final AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
 					.bpartner(BPartnerClassifier.any())
 					.warehouseId(WarehouseId.ofRepoId(1))
-					.productId(10)
+					.productId(ProductId.ofRepoId(10))
 					.date(NOW.minusMinutes(10).toInstant())
 					.seqNo(1);
 
@@ -600,7 +604,7 @@ public class AvailableToPromiseResultTest
 					final AvailableToPromiseResultGroup group = groups.get(0);
 					assertThat(group.getBpartner()).isSameAs(BPartnerClassifier.any());
 					assertThat(group.getWarehouse()).isEqualTo(WarehouseClassifier.specific(WarehouseId.ofRepoId(1)));
-					assertThat(group.getProductId()).isEqualTo(10);
+					assertThat(group.getProductId().getRepoId()).isEqualTo(10);
 					assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("111=1"));
 					assertThat(group.getQty()).isEqualByComparingTo("101");
 				}
@@ -609,7 +613,7 @@ public class AvailableToPromiseResultTest
 					final AvailableToPromiseResultGroup group = groups.get(1);
 					assertThat(group.getBpartner()).isSameAs(BPartnerClassifier.any());
 					assertThat(group.getWarehouse()).isEqualTo(WarehouseClassifier.specific(WarehouseId.ofRepoId(1)));
-					assertThat(group.getProductId()).isEqualTo(10);
+					assertThat(group.getProductId().getRepoId()).isEqualTo(10);
 					assertThat(group.getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("111=2"));
 					assertThat(group.getQty()).isEqualByComparingTo("40");
 				}
