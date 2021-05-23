@@ -107,7 +107,7 @@ final class MasterdataProvider
 		this.bpartnerEndpointAdapter = new BPartnerEndpointAdapter(bpartnerRestController);
 		this.jsonRetrieverService = jsonRetrieverService;
 		this.externalReferenceService = externalReferenceRestControllerService;
-		this.productMasterDataProvider = new ProductMasterDataProvider(permissionService, externalReferenceRestControllerService);
+		this.productMasterDataProvider = new ProductMasterDataProvider(externalReferenceRestControllerService);
 	}
 
 	public void assertCanCreateNewOLCand(final OrgId orgId)

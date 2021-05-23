@@ -104,7 +104,7 @@ public class CreatePurchaseCandidatesService
 
 	public Optional<JsonPurchaseCandidate> createCandidate(@RequestBody final JsonPurchaseCandidateCreateItem request)
 	{
-		if(wasPurchaseCandAlreadyCreated(request))
+		if (wasPurchaseCandAlreadyCreated(request))
 		{
 			return Optional.empty();
 		}
@@ -113,11 +113,11 @@ public class CreatePurchaseCandidatesService
 
 		final PurchaseCandidateId save = purchaseCandidateRepo.save(purchaseCandidate);
 		return Optional.of(JsonPurchaseCandidate.builder()
-				.metasfreshId(JsonMetasfreshId.of(save.getRepoId()))
-				.externalHeaderId(JsonExternalId.of(purchaseCandidate.getExternalHeaderId().getValue()))
-				.externalLineId(JsonExternalId.of(purchaseCandidate.getExternalLineId().getValue()))
-				.processed(false)
-				.build());
+								   .metasfreshId(JsonMetasfreshId.of(save.getRepoId()))
+								   .externalHeaderId(JsonExternalId.of(purchaseCandidate.getExternalHeaderId().getValue()))
+								   .externalLineId(JsonExternalId.of(purchaseCandidate.getExternalLineId().getValue()))
+								   .processed(false)
+								   .build());
 	}
 
 	public PurchaseCandidate toPurchaseCandidate(final JsonPurchaseCandidateCreateItem request)
@@ -256,6 +256,19 @@ public class CreatePurchaseCandidatesService
 								.resourceName("productIdentifier")
 								.resourceIdentifier(productExternalIdentifier.getRawValue())
 								.build());
+			case VALUE:
+				final IProductDAO.ProductQuery query = IProductDAO.ProductQuery.builder()
+						.orgId(orgId)
+						.value(productExternalIdentifier.asValue()).build();
+				final ProductId productId = productDAO.retrieveProductIdBy(query);
+				if (productId == null)
+				{
+					throw MissingResourceException.builder()
+							.resourceName("productIdentifier")
+							.resourceIdentifier(productExternalIdentifier.getRawValue())
+							.build();
+				}
+				return productId;
 			default:
 				throw new InvalidIdentifierException(productExternalIdentifier.getRawValue());
 		}
@@ -286,6 +299,16 @@ public class CreatePurchaseCandidatesService
 								.resourceName("warehouseIdentifier")
 								.resourceIdentifier(warehouseExternalIdentifier.getRawValue())
 								.build());
+			case VALUE:
+				final WarehouseId warehouseId = Services.get(IWarehouseDAO.class).getWarehouseIdByValue(warehouseExternalIdentifier.asValue());
+				if (warehouseId == null)
+				{
+					throw MissingResourceException.builder()
+							.resourceName("warehouseIdentifier")
+							.resourceIdentifier(warehouseExternalIdentifier.getRawValue())
+							.build();
+				}
+				return warehouseId;
 			default:
 				throw new InvalidIdentifierException(warehouseIdentifier);
 		}

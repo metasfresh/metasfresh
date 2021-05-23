@@ -180,7 +180,7 @@ public class JsonOLCandCreateRequest
 			value = "Translates to `M_Warehouse.Value`. The looked up warehouse's ID is then set to `C_OLCand.M_Warehouse_ID`.")
 	String warehouseCode;
 
-	@ApiModelProperty(required = false, //
+	@ApiModelProperty( //
 			value = "Translates to `C_OLCand.M_Warehouse_Dest_ID`.")
 	String warehouseDestCode;
 

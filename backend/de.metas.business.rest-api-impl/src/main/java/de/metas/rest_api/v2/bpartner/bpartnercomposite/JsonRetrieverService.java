@@ -506,13 +506,18 @@ public class JsonRetrieverService
 				return externalReferenceService.getJsonMetasfreshIdFromExternalReference(orgId, bPartnerExternalIdentifier, BPartnerExternalReferenceType.BPARTNER)
 						.map(JsonMetasfreshId::getValue)
 						.map(BPartnerId::ofRepoId);
+			case VALUE:
+				final BPartnerQuery valQuery = BPartnerQuery.builder()
+						.onlyOrgId(orgId)
+						.bpartnerValue(bPartnerExternalIdentifier.asValue())
+						.build();
+				return bpartnersRepo.retrieveBPartnerIdBy(valQuery);
 			case GLN:
-				final BPartnerQuery bPartnerQuery = BPartnerQuery.builder()
+				final BPartnerQuery glnQuery = BPartnerQuery.builder()
 						.onlyOrgId(orgId)
 						.gln(bPartnerExternalIdentifier.asGLN())
 						.build();
-
-				return bpartnersRepo.retrieveBPartnerIdBy(bPartnerQuery);
+				return bpartnersRepo.retrieveBPartnerIdBy(glnQuery);
 			default:
 				throw new InvalidIdentifierException("Given external identifier type is not supported!")
 						.setParameter("externalIdentifierType", bPartnerExternalIdentifier.getType())
