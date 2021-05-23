@@ -50,6 +50,7 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.quantity.Quantity;
+import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.RestApiUtilsV2;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
@@ -67,6 +68,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -260,10 +262,18 @@ public class CreatePurchaseCandidatesService
 	}
 
 	@NonNull
-	private WarehouseId getWarehouseByIdentifier(final OrgId orgId,
+	private WarehouseId getWarehouseByIdentifier(
+			@NonNull final OrgId orgId,
 			@NonNull final String warehouseIdentifier)
 	{
-		final ExternalIdentifier warehouseExternalIdentifier = ExternalIdentifier.of(warehouseIdentifier);
+		final Optional<ExternalIdentifier> optionalExternalIdentifier = ExternalIdentifier.ofOptional(warehouseIdentifier);
+
+		if (!optionalExternalIdentifier.isPresent())
+		{
+			return getWarehouseByIdentifierString(orgId, warehouseIdentifier);
+		}
+
+		final ExternalIdentifier warehouseExternalIdentifier = optionalExternalIdentifier.get();
 
 		switch (warehouseExternalIdentifier.getType())
 		{
@@ -281,4 +291,41 @@ public class CreatePurchaseCandidatesService
 		}
 	}
 
+	@NonNull
+	private WarehouseId getWarehouseByIdentifierString(
+			@NonNull final OrgId orgId,
+			@NonNull final String warehouseIdentifier)
+	{
+		final IdentifierString warehouseString = IdentifierString.of(warehouseIdentifier);
+		final IWarehouseDAO.WarehouseQuery.WarehouseQueryBuilder builder = IWarehouseDAO.WarehouseQuery.builder().orgId(orgId);
+		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+
+		final WarehouseId result;
+		if (warehouseString.getType().equals(IdentifierString.Type.METASFRESH_ID))
+		{
+			result = WarehouseId.ofRepoId(warehouseString.asMetasfreshId().getValue());
+		}
+		else
+		{
+			if (warehouseString.getType().equals(IdentifierString.Type.EXTERNAL_ID))
+			{
+				builder.externalId(warehouseString.asExternalId());
+			}
+			else if (warehouseString.getType().equals(IdentifierString.Type.VALUE))
+			{
+				builder.value(warehouseString.asValue());
+			}
+			else
+			{
+				throw new InvalidIdentifierException(warehouseIdentifier);
+			}
+			result = warehouseDAO.retrieveWarehouseIdBy(builder.build());
+		}
+		if (result == null)
+		{
+			throw new InvalidIdentifierException(warehouseIdentifier);
+		}
+
+		return result;
+	}
 }
