@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-alberta-camelroutes
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,21 +20,9 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.alberta;
+package de.metas.camel.externalsystems.common;
 
-import lombok.NonNull;
-import org.apache.camel.Exchange;
-
-public class ProcessorHelper
+public interface ProcessLogger
 {
-	public static  <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
-	{
-		final T property = exchange.getProperty(propertyName, propertyClass);
-		if (property == null)
-		{
-			throw new RuntimeException("Missing route property: " + propertyName + " !");
-		}
-
-		return property;
-	}
+	void logMessage(String message, Integer adPInstanceId);
 }

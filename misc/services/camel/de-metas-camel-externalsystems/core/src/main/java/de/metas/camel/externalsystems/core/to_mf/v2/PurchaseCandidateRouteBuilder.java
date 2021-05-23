@@ -22,52 +22,51 @@
 
 package de.metas.camel.externalsystems.core.to_mf.v2;
 
-import com.google.common.annotations.VisibleForTesting;
-import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
+import de.metas.camel.externalsystems.common.v2.PurchaseCandidateCamelRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
-import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_CREATE_PURCHASE_CANDIDATE_V2_CAMEL_URI;
+import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
+/**
+ * This route invokes the metasfresh REST-API to retrieve product master data.
+ * It expects to have a {@link PurchaseCandidateCamelRequest} as exchange body.
+ */
 @Component
-public class BPartnerRouteBuilderV2 extends RouteBuilder
+public class PurchaseCandidateRouteBuilder extends RouteBuilder
 {
-	@VisibleForTesting
-	static final String ROUTE_ID = "To-MF_Upsert-BPartner_V2";
-
 	@Override
-	public void configure()
+	public void configure() throws Exception
 	{
 		errorHandler(noErrorHandler());
 
-		from("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
-				.routeId(ROUTE_ID)
+		from(direct(MF_CREATE_PURCHASE_CANDIDATE_V2_CAMEL_URI))
+				.routeId(MF_CREATE_PURCHASE_CANDIDATE_V2_CAMEL_URI)
 				.streamCaching()
 				.process(exchange -> {
 					final var lookupRequest = exchange.getIn().getBody();
-					if (!(lookupRequest instanceof BPUpsertCamelRequest))
+					if (!(lookupRequest instanceof PurchaseCandidateCamelRequest))
 					{
-						throw new RuntimeCamelException("The route " + ROUTE_ID + " requires the body to be instanceof BPUpsertCamelRequest V2."
+						throw new RuntimeCamelException("The route " + MF_CREATE_PURCHASE_CANDIDATE_V2_CAMEL_URI + " requires the body to be instanceof PurchaseCandidateCamelRequest V2."
 																+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
 					}
 
-					exchange.getIn().setHeader(HEADER_ORG_CODE, ((BPUpsertCamelRequest)lookupRequest).getOrgCode());
-					final var jsonRequestBPartnerUpsert = ((BPUpsertCamelRequest)lookupRequest).getJsonRequestBPartnerUpsert();
+					final var jsonPurchaseCandidateCreateRequest = ((PurchaseCandidateCamelRequest)lookupRequest).getJsonPurchaseCandidateCreateRequest();
 
-					log.info("BPartner upsert route invoked with " + jsonRequestBPartnerUpsert.getRequestItems().size() + " requestItems");
-					exchange.getIn().setBody(jsonRequestBPartnerUpsert);
+					log.info("Purchase candidates create route invoked with " + jsonPurchaseCandidateCreateRequest.getPurchaseCandidates().size() + " requestItems");
+					exchange.getIn().setBody(jsonPurchaseCandidateCreateRequest);
 				})
-				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestBPartnerUpsert.class))
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonPurchaseCandidateCreateRequest.class))
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("http://{{metasfresh.upsert-bpartner-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}");
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.toD("{{metasfresh.create-purchase-candidate-v2.api.uri}}");
 	}
 }

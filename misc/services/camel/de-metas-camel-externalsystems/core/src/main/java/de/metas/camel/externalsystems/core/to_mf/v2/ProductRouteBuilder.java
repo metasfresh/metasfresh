@@ -20,10 +20,13 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core.to_mf;
+package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.common.GetProductsCamelRequest;
+import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
+import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
+import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -32,7 +35,9 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_GET_PRODUCTS_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
 import static de.metas.common.product.v2.response.ProductsQueryParams.AD_PINSTANCE_ID;
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE;
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CONFIG_TYPE;
@@ -70,6 +75,29 @@ public class ProductRouteBuilder extends RouteBuilder
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
 				.toD("http://{{metasfresh.products.v2.api.uri}}?${header.queryParams}");
+
+		from(direct(MF_UPSERT_PRODUCT_V2_CAMEL_URI))
+				.routeId(MF_UPSERT_PRODUCT_V2_CAMEL_URI)
+				.streamCaching()
+				.process(exchange -> {
+					final var lookupRequest = exchange.getIn().getBody();
+					if (!(lookupRequest instanceof ProductUpsertCamelRequest))
+					{
+						throw new RuntimeCamelException("The route " + MF_UPSERT_PRODUCT_V2_CAMEL_URI + " requires the body to be instanceof ProductUpsertCamelRequest V2."
+																+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
+					}
+
+					exchange.getIn().setHeader(HEADER_ORG_CODE, ((ProductUpsertCamelRequest)lookupRequest).getOrgCode());
+					final var jsonRequestProductUpsert = ((ProductUpsertCamelRequest)lookupRequest).getJsonRequestProductUpsert();
+
+					log.info("Product upsert route invoked with " + jsonRequestProductUpsert.getRequestItems().size() + " requestItems");
+					exchange.getIn().setBody(jsonRequestProductUpsert);
+				})
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestProductUpsert.class))
+				.removeHeaders("CamelHttp*")
+				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
+				.toD("http://{{metasfresh.upsert-product-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}");
 	}
 
 	@NonNull
