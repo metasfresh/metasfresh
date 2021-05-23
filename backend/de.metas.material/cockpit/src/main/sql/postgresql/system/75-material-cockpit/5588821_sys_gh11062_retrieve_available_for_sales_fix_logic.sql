@@ -1,11 +1,18 @@
-DROP FUNCTION IF EXISTS de_metas_material.retrieve_available_for_sales(integer, numeric, character varying, timestamptz, integer, integer);
+DROP FUNCTION IF EXISTS de_metas_material.retrieve_available_for_sales(integer,
+                                                                       numeric,
+                                                                       character varying,
+                                                                       timestamptz,
+                                                                       integer,
+                                                                       integer)
+;
+
 CREATE FUNCTION de_metas_material.retrieve_available_for_sales(
-    IN p_QueryNo integer,
-    IN p_M_Product_ID numeric,
-    IN p_StorageAttributesKey character varying,
-    IN p_PreparationDate timestamptz,
+    IN p_QueryNo                    integer,
+    IN p_M_Product_ID               numeric,
+    IN p_StorageAttributesKey       character varying,
+    IN p_PreparationDate            timestamptz,
     IN p_shipmentDateLookAheadHours integer,
-    IN p_salesOrderLookBehindHours integer)
+    IN p_salesOrderLookBehindHours  integer)
     RETURNS TABLE
             (
                 QueryNo              integer,

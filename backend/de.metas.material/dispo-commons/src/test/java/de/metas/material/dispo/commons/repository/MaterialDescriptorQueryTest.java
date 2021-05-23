@@ -1,20 +1,19 @@
 package de.metas.material.dispo.commons.repository;
 
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.MaterialDescriptor;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
 import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import org.junit.jupiter.api.Test;
-
-import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.MaterialDescriptor;
 
 /*
  * #%L

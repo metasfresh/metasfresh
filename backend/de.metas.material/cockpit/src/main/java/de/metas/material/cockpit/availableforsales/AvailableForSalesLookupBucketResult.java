@@ -1,21 +1,18 @@
-package de.metas.material.dispo.commons.repository.atp;
+package de.metas.material.cockpit.availableforsales;
 
-import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
-import de.metas.material.commons.attributes.clasifiers.WarehouseClassifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.ToString;
 import lombok.Value;
 
 import java.math.BigDecimal;
 
 /*
  * #%L
- * metasfresh-material-dispo-commons
+ * metasfresh-available-for-sales
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -34,29 +31,30 @@ import java.math.BigDecimal;
  */
 
 @Value
-@ToString(exclude = "storageAttributesKey" /* because it's just gibberish most of the time */)
-public final class AvailableToPromiseResultGroup
+@Builder
+/** Similar to {@code AvailableForSalesResult}, but without a reference to the originating query
+ *
+ */
+public class AvailableForSalesLookupBucketResult
 {
-	BPartnerClassifier bpartner;
-	WarehouseClassifier warehouse;
+	int queryNo;
+
 	ProductId productId;
+
+	@NonNull
 	AttributesKey storageAttributesKey;
 
-	BigDecimal qty;
+	@NonNull
+	Quantities quantities;
 
+	@Value
 	@Builder
-	private AvailableToPromiseResultGroup(
-			@NonNull final BPartnerClassifier bpartner,
-			@NonNull final WarehouseClassifier warehouse,
-			@NonNull final ProductId productId,
-			@NonNull final AttributesKey storageAttributesKey,
-			@NonNull final BigDecimal qty)
+	public static class Quantities
 	{
+		@NonNull
+		BigDecimal qtyOnHandStock;
 
-		this.bpartner = bpartner;
-		this.warehouse = warehouse;
-		this.productId = productId;
-		this.storageAttributesKey = storageAttributesKey;
-		this.qty = qty;
+		@NonNull
+		BigDecimal qtyToBeShipped;
 	}
 }
