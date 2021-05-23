@@ -25,20 +25,20 @@ package de.metas.rest_api.v2.product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProduct;
 import de.metas.bpartner_product.CreateBPartnerProductRequest;
-import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReferenceValueAndSystem;
 import de.metas.externalreference.IExternalReferenceType;
@@ -132,7 +132,7 @@ public class ProductRestService
 			@Nullable final String orgCode)
 	{
 		final JsonResponseUpsertItem.SyncOutcome syncOutcome;
-		ProductId productId = null;
+
 		final JsonRequestProduct jsonRequestProduct = jsonRequestProductUpsertItem.getRequestProduct();
 
 		final I_AD_Org org = orgDAO.getById(retrieveOrgIdOrDefault(orgCode));
@@ -142,15 +142,17 @@ public class ProductRestService
 		final Optional<Product> existingProduct = getProductId(jsonRequestProductUpsertItem.getProductIdentifier(), org, jsonRequestProduct.getCode())
 				.flatMap(productRepository::getOptionalById);
 
+		final ProductId productId;
 		if (existingProduct.isPresent())
 		{
+			productId = existingProduct.get().getId();
+
 			if (effectiveSyncAdvise.getIfExists().isUpdate())
 			{
 				final Product product = syncProductWithJson(jsonRequestProduct, existingProduct.get(), org);
 				productRepository.updateProduct(product);
 				createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, product.getId(), org);
 
-				productId = product.getId();
 				syncOutcome = JsonResponseUpsertItem.SyncOutcome.UPDATED;
 			}
 			else
@@ -165,24 +167,36 @@ public class ProductRestService
 			final CreateProductRequest createProductRequest = getCreateProductRequest(jsonRequestProduct, org);
 			productId = productRepository.createProduct(createProductRequest).getId();
 
-			handleNewProductExternalReference(org, jsonRequestProductUpsertItem.getProductIdentifier(), JsonMetasfreshId.of(productId.getRepoId()));
 
 			createOrUpdateBpartnerProducts(jsonRequestProduct.getBpartnerProductItems(), effectiveSyncAdvise, productId, org);
 
 			syncOutcome = JsonResponseUpsertItem.SyncOutcome.CREATED;
 		}
 
+		handleProductExternalReference(org,
+									   jsonRequestProductUpsertItem.getProductIdentifier(),
+									   JsonMetasfreshId.of(productId.getRepoId()),
+									   jsonRequestProductUpsertItem.getExternalVersion());
+
 		return JsonResponseUpsertItem.builder()
 				.syncOutcome(syncOutcome)
 				.identifier(jsonRequestProductUpsertItem.getProductIdentifier())
-				.metasfreshId(productId != null ? JsonMetasfreshId.of(productId.getRepoId()) : null)
+				.metasfreshId(JsonMetasfreshId.of(productId.getRepoId()))
 				.build();
 	}
 
-	private void handleNewProductExternalReference(@NonNull final I_AD_Org org, @NonNull final String identifier, @NonNull final JsonMetasfreshId metasfreshId)
+	private void handleProductExternalReference(
+			@NonNull final I_AD_Org org,
+			@NonNull final String identifier,
+			@NonNull final JsonMetasfreshId metasfreshId,
+			@Nullable final String externalVersion)
 	{
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(identifier);
-		Check.assume(externalIdentifier.getType().equals(ExternalIdentifier.Type.EXTERNAL_REFERENCE), "ExternalId is not of type external reference.");
+
+		if (!ExternalIdentifier.Type.EXTERNAL_REFERENCE.equals(externalIdentifier.getType()))
+		{
+			return;
+		}
 
 		final ExternalReferenceValueAndSystem externalReferenceValueAndSystem = externalIdentifier.asExternalValueAndSystem();
 
@@ -192,14 +206,18 @@ public class ProductRestService
 				.type(ProductExternalReferenceType.PRODUCT.getCode())
 				.build();
 
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.of(externalReferenceLookupItem, metasfreshId);
-
-		final JsonExternalReferenceCreateRequest externalReferenceCreateRequest = JsonExternalReferenceCreateRequest.builder()
-				.systemName(systemName)
-				.item(externalReferenceItem)
+		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.builder()
+				.lookupItem(externalReferenceLookupItem)
+				.metasfreshId(metasfreshId)
+				.version(externalVersion)
 				.build();
 
-		externalReferenceRestControllerService.performInsert(org.getValue(), externalReferenceCreateRequest);
+		final JsonRequestExternalReferenceUpsert externalReferenceCreateRequest = JsonRequestExternalReferenceUpsert.builder()
+				.systemName(systemName)
+				.externalReferenceItem(externalReferenceItem)
+				.build();
+
+		externalReferenceRestControllerService.performUpsert(externalReferenceCreateRequest, org.getValue());
 	}
 
 	private void validateCreateSyncAdvise(
