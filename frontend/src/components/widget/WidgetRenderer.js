@@ -448,6 +448,7 @@ class WidgetRenderer extends PureComponent {
               widgetProperties,
               onPatch,
               isFilterActive: filterActiveState,
+              updateItems,
             }}
             getClassNames={this.getClassNames}
           />
