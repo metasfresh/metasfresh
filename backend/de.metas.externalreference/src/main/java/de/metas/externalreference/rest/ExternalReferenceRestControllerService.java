@@ -47,6 +47,7 @@ import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.IExternalSystem;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import lombok.NonNull;
@@ -306,6 +307,17 @@ public class ExternalReferenceRestControllerService
 				.orElse(externalReferenceCandidate);
 
 		externalReferenceRepository.save(externalReferenceToUpsert);
+	}
+
+	@NonNull
+	public Optional<MetasfreshId> resolveExternalReference(
+			@Nullable final OrgId orgId,
+			@NonNull final ExternalIdentifier externalIdentifier,
+			@NonNull final IExternalReferenceType externalReferenceType)
+	{
+		final Optional<JsonMetasfreshId> jsonMetasfreshId = getJsonMetasfreshIdFromExternalReference(orgId, externalIdentifier, externalReferenceType);
+
+		return jsonMetasfreshId.map(metasfreshId -> MetasfreshId.of(metasfreshId.getValue()));
 	}
 
 	@NonNull

@@ -1,14 +1,14 @@
 package de.metas.material.commons.attributes;
 
-import java.util.List;
-import java.util.Set;
-
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -31,8 +31,8 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-public class AttributesKeyPatterns
+@UtilityClass
+public class AttributesKeyPatternsUtil
 {
 	public static Set<AttributesKeyPattern> parseCommaSeparatedString(final String string)
 	{
@@ -96,14 +96,14 @@ public class AttributesKeyPatterns
 		else if (!patterns.contains(AttributesKeyPattern.OTHER))
 		{
 			return patterns.stream()
-					.map(AttributesKeyPatterns::matching)
+					.map(AttributesKeyPatternsUtil::matching)
 					.collect(ImmutableList.toImmutableList());
 		}
 		else
 		{
 			final ImmutableSet<AttributesKeyMatcher> otherMatchers = patterns.stream()
 					.filter(AttributesKeyPattern::isSpecific)
-					.map(AttributesKeyPatterns::matching)
+					.map(AttributesKeyPatternsUtil::matching)
 					.collect(ImmutableSet.toImmutableSet());
 
 			final AttributesKeyMatcher othersMatcher = ExcludeAttributesKeyMatcher.of(otherMatchers);

@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.util.CoalesceUtil;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,6 +35,8 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
@@ -54,6 +57,9 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("isManualPrice")
 	boolean isManualPrice;
 
+	@JsonProperty("isPrepared")
+	boolean isPrepared;
+
 	@Nullable
 	@JsonProperty("price")
 	JsonPrice price;
@@ -73,14 +79,24 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("purchaseDateOrdered")
 	ZonedDateTime purchaseDateOrdered;
 
+	@ApiModelProperty("The vendor (`C_BPartner`) in question. Can be\n"
+			+ "* a plain `<C_BPartner_ID>`\n"
+			+ "* a plain `gln-<C_BPartner_Location.GLN>`\n"
+			+ "* a plain `val-<C_BPartner.Value>`\n"
+			+ "* or an External Business Key with type `BPartner` such as `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n")
 	@NonNull
 	@JsonProperty("vendor")
 	JsonVendor vendor;
 
+	@ApiModelProperty("The warehouse (`M_Warehouse`) in question. Can be\n"
+			+ "* a plain `<M_Warehouse_ID>`\n"
+			+ "* a plain `val-<M_Warehouse.Value>`\n"
+			+ "* or an External Business Key with type `Warehouse` such as `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n")
 	@NonNull
 	@JsonProperty("warehouseIdentifier")
 	String warehouseIdentifier;
 
+	@ApiModelProperty(value = PRODUCT_IDENTIFIER_DOC)
 	@NonNull
 	@JsonProperty("productIdentifier")
 	String productIdentifier;
@@ -100,6 +116,7 @@ public class JsonPurchaseCandidateCreateItem
 			@JsonProperty("externalHeaderId") final @NonNull String externalHeaderId,
 			@JsonProperty("externalLineId") final @NonNull String externalLineId,
 			@JsonProperty("isManualPrice") @Nullable final Boolean isManualPrice,
+			@JsonProperty("isPrepared") final boolean isPrepared,
 			@JsonProperty("price") @Nullable final JsonPrice price,
 			@JsonProperty("isManualDiscount") @Nullable final Boolean isManualDiscount,
 			@JsonProperty("discount") @Nullable final BigDecimal discount,
@@ -116,6 +133,7 @@ public class JsonPurchaseCandidateCreateItem
 		this.externalHeaderId = externalHeaderId;
 		this.externalLineId = externalLineId;
 		this.isManualPrice = CoalesceUtil.coalesce(isManualPrice, false);
+		this.isPrepared = isPrepared;
 		this.price = price;
 		this.isManualDiscount = CoalesceUtil.coalesce(isManualDiscount, false);
 		this.discount = discount;

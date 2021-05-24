@@ -1,13 +1,13 @@
 package de.metas.material.dispo.commons.repository;
 
-import java.time.Instant;
-
-import javax.annotation.Nullable;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.repository.atp.AddToResultGroupRequest;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
 
 /*
  * #%L
@@ -54,6 +54,14 @@ public class DateAndSeqNo
 		return builder()
 				.date(candidate.getDate())
 				.seqNo(candidate.getSeqNo())
+				.build();
+	}
+
+	public static DateAndSeqNo ofAddToResultGroupRequest(@NonNull final AddToResultGroupRequest addToResultGroupRequest)
+	{
+		return builder()
+				.date(addToResultGroupRequest.getDate())
+				.seqNo(addToResultGroupRequest.getSeqNo())
 				.build();
 	}
 

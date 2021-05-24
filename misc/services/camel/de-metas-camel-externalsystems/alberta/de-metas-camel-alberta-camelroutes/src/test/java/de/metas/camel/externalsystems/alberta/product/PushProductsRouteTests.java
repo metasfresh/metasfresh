@@ -27,6 +27,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.alberta.product.processor.AlbertaProductApi;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.GetProductsCamelRequest;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import io.swagger.client.model.Article;
@@ -90,7 +91,8 @@ public class PushProductsRouteTests extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new PushProductsRoute();
+		final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
+		return new PushProductsRoute(processLogger);
 	}
 
 	@Override
@@ -103,9 +105,8 @@ public class PushProductsRouteTests extends CamelTestSupport
 	void happyFlow() throws Exception
 	{
 		final MockSuccessfullyCalledEndpoint sentExternalReferenceRequestEP = new MockSuccessfullyCalledEndpoint();
-		final MockSuccessfullyCalledEndpoint logMessageEndpoint = new MockSuccessfullyCalledEndpoint();
 
-		prepareRouteForTesting(sentExternalReferenceRequestEP, logMessageEndpoint);
+		prepareRouteForTesting(sentExternalReferenceRequestEP);
 
 		context.start();
 
@@ -137,13 +138,11 @@ public class PushProductsRouteTests extends CamelTestSupport
 		template.sendBody("direct:" + PUSH_PRODUCTS, invokeExternalSystemRequest);
 
 		assertThat(sentExternalReferenceRequestEP.called).isEqualTo(1);
-		assertThat(logMessageEndpoint.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
 	}
 
 	private void prepareRouteForTesting(
-			final MockSuccessfullyCalledEndpoint successfullySentExternalReferenceRequest,
-			final MockSuccessfullyCalledEndpoint successfullyCalledLogMessageEndpoint) throws Exception
+			final MockSuccessfullyCalledEndpoint successfullySentExternalReferenceRequest) throws Exception
 	{
 		AdviceWith.adviceWith(context, PUSH_PRODUCTS,
 										  advice -> {
@@ -169,10 +168,6 @@ public class PushProductsRouteTests extends CamelTestSupport
 											  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI + "}}")
 													  .skipSendToOriginalEndpoint()
 													  .process(successfullySentExternalReferenceRequest);
-
-											  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID)
-													  .skipSendToOriginalEndpoint()
-													  .process(successfullyCalledLogMessageEndpoint);
 										  });
 	}
 

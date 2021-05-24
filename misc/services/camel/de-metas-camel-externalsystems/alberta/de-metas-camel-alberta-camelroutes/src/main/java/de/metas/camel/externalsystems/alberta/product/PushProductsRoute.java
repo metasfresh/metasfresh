@@ -22,11 +22,11 @@
 
 package de.metas.camel.externalsystems.alberta.product;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.product.processor.PrepareAlbertaArticlesProcessor;
 import de.metas.camel.externalsystems.alberta.product.processor.PushArticlesProcessor;
 import de.metas.camel.externalsystems.alberta.product.processor.RetrieveProductsProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.product.v2.response.JsonProduct;
@@ -56,6 +56,13 @@ public class PushProductsRoute extends RouteBuilder
 	public static final String PREPARE_ARTICLE_PROCESSOR_ID = "PrepareArticleProcessor";
 	public static final String PUSH_ARTICLE_PROCESSOR_ID = "PushArticleProcessor";
 
+	private final ProcessLogger processLogger;
+
+	public PushProductsRoute(final ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
+
 	@Override
 	public void configure()
 	{
@@ -84,7 +91,7 @@ public class PushProductsRoute extends RouteBuilder
 						.end()
 				.endChoice()
 
-				.process((exchange) -> ProcessorHelper.logProcessMessage(exchange, PUSH_PRODUCTS + " route finalized work!" + Instant.now(),
+				.process((exchange) -> processLogger.logMessage( PUSH_PRODUCTS + " route finalized work!" + Instant.now(),
 																		 exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class)));
 
 		from(StaticEndpointBuilders.direct(PROCESS_PRODUCT_ROUTE_ID))

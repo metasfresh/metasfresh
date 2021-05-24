@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-camel-externalsystems-core
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,24 +20,26 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.order.processor;
+package de.metas.camel.externalsystems.core;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import org.apache.camel.CamelContext;
+import org.apache.camel.ProducerTemplate;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-import java.time.Instant;
-
-@Value
-@Builder
-public class DateAndImportStatus
+@Configuration
+public class AppConfiguration
 {
-	boolean okToImport;
+	private final CamelContext camelContext;
 
-	Instant timestamp;
-
-	public static DateAndImportStatus of(final boolean okToImport, @NonNull final Instant timestamp)
+	public AppConfiguration(final CamelContext camelContext)
 	{
-		return new DateAndImportStatus(okToImport, timestamp);
+		this.camelContext = camelContext;
+	}
+
+	@Bean
+	public ProducerTemplate producerTemplate()
+	{
+		return camelContext.createProducerTemplate();
 	}
 }

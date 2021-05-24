@@ -1,12 +1,12 @@
 package de.metas.material.dispo.commons.repository.repohelpers;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.TransactionDetail;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
-import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
@@ -204,7 +204,7 @@ public class RepositoryCommons
 			{
 				final IQueryFilter<I_MD_Candidate> filter = AttributesKeyQueryHelper
 						.createFor(I_MD_Candidate.COLUMN_StorageAttributesKey)
-						.createFilter(AttributesKeyPatterns.ofAttributeKey(attributesKey));
+						.createFilter(AttributesKeyPatternsUtil.ofAttributeKey(attributesKey));
 
 				builder.filter(filter);
 			}
