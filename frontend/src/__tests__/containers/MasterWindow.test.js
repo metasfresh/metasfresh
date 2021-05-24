@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 import { applyMiddleware, createStore, combineReducers } from 'redux';
 import { routerReducer as routing } from 'react-router-redux';
 import { createMemoryHistory } from 'react-router';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 import thunk from 'redux-thunk';
 import promiseMiddleware from 'redux-promise';
 import waitForExpect from 'wait-for-expect';
@@ -70,8 +70,7 @@ const rootReducer = combineReducers({
 });
 
 const createInitialState = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       appHandler: { ...appHandlerState },
       windowHandler: { ...windowHandlerState },

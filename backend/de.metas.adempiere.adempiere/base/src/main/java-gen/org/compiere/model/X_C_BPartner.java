@@ -1550,6 +1550,49 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsInt(COLUMNNAME_PO_DiscountSchema_ID);
 	}
 
+	/** 
+	 * PO_Incoterm AD_Reference_ID=501599
+	 * Reference name: Incoterms
+	 */
+	public static final int PO_INCOTERM_AD_Reference_ID=501599;
+	/** EXW_AbWerk = EXW */
+	public static final String PO_INCOTERM_EXW_AbWerk = "EXW";
+	/** FCA_FreiSpediteur = FCA */
+	public static final String PO_INCOTERM_FCA_FreiSpediteur = "FCA";
+	/** FAS_FreiLaengsseitsSchiff = FAS */
+	public static final String PO_INCOTERM_FAS_FreiLaengsseitsSchiff = "FAS";
+	/** FOB_FreiAnBord = FOB */
+	public static final String PO_INCOTERM_FOB_FreiAnBord = "FOB";
+	/** CFR_KostenUndFracht = CFR */
+	public static final String PO_INCOTERM_CFR_KostenUndFracht = "CFR";
+	/** CIF_KostenVersicherungUndFracht = CIF */
+	public static final String PO_INCOTERM_CIF_KostenVersicherungUndFracht = "CIF";
+	/** CPT_FrachtPortoBezahltBis = CPT */
+	public static final String PO_INCOTERM_CPT_FrachtPortoBezahltBis = "CPT";
+	/** CIP_FrachtPortoUndVersicherungBezahltBis = CIP */
+	public static final String PO_INCOTERM_CIP_FrachtPortoUndVersicherungBezahltBis = "CIP";
+	/** DAF_FreiGrenze = DAF */
+	public static final String PO_INCOTERM_DAF_FreiGrenze = "DAF";
+	/** DES_FreiAbSchiff = DES */
+	public static final String PO_INCOTERM_DES_FreiAbSchiff = "DES";
+	/** DEQ_FreiAbKai = DEQ */
+	public static final String PO_INCOTERM_DEQ_FreiAbKai = "DEQ";
+	/** DDU_FreiUnverzollt = DDU */
+	public static final String PO_INCOTERM_DDU_FreiUnverzollt = "DDU";
+	/** DDP_Verzollt = DDP */
+	public static final String PO_INCOTERM_DDP_Verzollt = "DDP";
+	@Override
+	public void setPO_Incoterm (final @Nullable java.lang.String PO_Incoterm)
+	{
+		set_Value (COLUMNNAME_PO_Incoterm, PO_Incoterm);
+	}
+
+	@Override
+	public java.lang.String getPO_Incoterm() 
+	{
+		return get_ValueAsString(COLUMNNAME_PO_Incoterm);
+	}
+
 	@Override
 	public void setPO_PaymentTerm_ID (final int PO_PaymentTerm_ID)
 	{

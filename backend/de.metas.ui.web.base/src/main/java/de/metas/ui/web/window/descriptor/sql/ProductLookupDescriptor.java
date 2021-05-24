@@ -74,6 +74,7 @@ import java.sql.SQLException;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -330,7 +331,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final ImmutableList<Group> availabilityInfoGroups,
 			final boolean displayAvailabilityInfoOnlyIfPositive)
 	{
-		final ArrayList<ProductWithAvailabilityInfo> result = new ArrayList<>();
+		final Set<ProductWithAvailabilityInfo> result = new LinkedHashSet<>();
 
 		ProductWithAvailabilityInfo productWithAvailabilityInfo_ALL = null;
 		ProductWithAvailabilityInfo productWithAvailabilityInfo_OTHERS = null;
@@ -383,7 +384,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 					.build());
 		}
 
-		return result;
+		return ImmutableList.copyOf(result);
 	}
 
 	private static StringBuilder appendFilterByIsActive(final StringBuilder sqlWhereClause, final SqlParamsCollector sqlWhereClauseParams)

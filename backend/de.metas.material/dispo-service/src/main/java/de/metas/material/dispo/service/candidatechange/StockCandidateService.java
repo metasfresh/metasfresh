@@ -1,6 +1,7 @@
 package de.metas.material.dispo.service.candidatechange;
 
 import de.metas.Profiles;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -9,7 +10,6 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteServic
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo.Operator;
-import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery.CustomerIdOperator;

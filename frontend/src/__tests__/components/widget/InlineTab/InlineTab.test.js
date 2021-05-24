@@ -2,7 +2,7 @@ import React from 'react';
 import nock from 'nock';
 import { shallow, mount } from 'enzyme';
 import configureStore from 'redux-mock-store';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 import viewHandler from '../../../../reducers/viewHandler';
 import InlineTab from '../../../../components/widget/InlineTab';
 import hotkeys from '../../../../../test_setup/fixtures/hotkeys.json';
@@ -23,8 +23,7 @@ const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
 const createStore = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       appHandler: {
         ...appHandlerState,

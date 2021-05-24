@@ -7,7 +7,7 @@ import { routerReducer as routing } from 'react-router-redux';
 import { createMemoryHistory } from 'react-router';
 import waitForExpect from 'wait-for-expect';
 import { waitFor } from '@testing-library/dom';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 import thunk from 'redux-thunk';
 
 import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
@@ -74,8 +74,7 @@ const rootReducer = combineReducers({
 });
 
 const createInitialState = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       appHandler: { ...appHandlerState },
       windowHandler: { ...windowHandlerState },

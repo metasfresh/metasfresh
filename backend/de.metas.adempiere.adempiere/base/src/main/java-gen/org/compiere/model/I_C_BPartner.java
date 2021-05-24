@@ -2301,6 +2301,29 @@ public interface I_C_BPartner
 	String COLUMNNAME_PO_DiscountSchema_ID = "PO_DiscountSchema_ID";
 
 	/**
+	 * Set PO_Incoterm.
+	 * Internationale Handelsklauseln (engl. International Commercial Terms)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_Incoterm (@Nullable java.lang.String PO_Incoterm);
+
+	/**
+	 * Get PO_Incoterm.
+	 * Internationale Handelsklauseln (engl. International Commercial Terms)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPO_Incoterm();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PO_Incoterm = new ModelColumn<>(I_C_BPartner.class, "PO_Incoterm", null);
+	String COLUMNNAME_PO_Incoterm = "PO_Incoterm";
+
+	/**
 	 * Set Zahlungskondition.
 	 * Payment rules for a purchase order
 	 *

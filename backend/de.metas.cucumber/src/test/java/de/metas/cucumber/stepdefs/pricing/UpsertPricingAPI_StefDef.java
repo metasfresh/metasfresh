@@ -263,7 +263,7 @@ public class UpsertPricingAPI_StefDef
 				.create()
 				.firstOnlyOptional(I_M_ProductPrice.class).orElse(null);
 
-		final Optional<TaxCategoryId> taxCategoryId = Services.get(ITaxBL.class).getTaxCategoryIdByInternalName(jsonRequestProductPrice.getTaxCategory().getValue());
+		final Optional<TaxCategoryId> taxCategoryId = Services.get(ITaxBL.class).getTaxCategoryIdByInternalName(jsonRequestProductPrice.getTaxCategory().getInternalName());
 
 		assertThat(persistedProductPrice).isNotNull();
 		assertThat(persistedProductPrice.getAD_Org_ID()).isEqualTo(defaultOrgId.getRepoId());

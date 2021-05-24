@@ -111,7 +111,7 @@ public class NumberUtilsTest
 					.isEqualTo(new BigDecimal(expectedValueStr));
 		}
 	}
-
+	
 	@Nested
 	public class randomBigDecimal
 	{
@@ -132,5 +132,11 @@ public class NumberUtilsTest
 			assertThat(value).isLessThanOrEqualTo(valueMax);
 			assertThat(value.scale()).isLessThanOrEqualTo(scale);
 		}
+	}
+	
+	@Test 
+	void asBigDecimal()
+	{
+		assertThat(NumberUtils.asBigDecimal(new BigDecimal("0"))).isEqualByComparingTo(BigDecimal.ZERO);
 	}
 }
