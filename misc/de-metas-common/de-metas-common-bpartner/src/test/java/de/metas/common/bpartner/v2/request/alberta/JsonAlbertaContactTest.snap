@@ -1,7 +1,5 @@
 de.metas.common.bpartner.v2.request.alberta.JsonAlbertaContactTest.serializeDeserialize=[
   {
-    "userId" : "11111",
-    "userIdSet" : true,
     "gender" : "gender",
     "genderSet" : true,
     "title" : "title",

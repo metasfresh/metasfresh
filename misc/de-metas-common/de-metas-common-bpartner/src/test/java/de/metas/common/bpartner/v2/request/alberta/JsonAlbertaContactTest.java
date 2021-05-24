@@ -54,6 +54,7 @@ public class JsonAlbertaContactTest
 	public void serializeDeserialize() throws IOException
 	{
 		final JsonAlbertaContact contact = new JsonAlbertaContact();
+		
 		contact.setTitle("title");
 		contact.setGender("gender");
 		contact.setTimestamp(Instant.parse("2019-11-22T00:00:00Z"));
