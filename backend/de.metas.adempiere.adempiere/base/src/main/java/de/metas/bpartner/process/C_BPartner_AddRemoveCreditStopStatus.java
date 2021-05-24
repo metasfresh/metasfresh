@@ -38,8 +38,8 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 	protected String doIt()
 	{
 		final I_C_BPartner bPartner = bpartnerDAO.getById(BPartnerId.ofRepoId(getRecord_ID()));
-		final I_C_BPartner_Stats bpStats = bpartnerDAO.retrieveBPartnerStats(bPartner);
 
+		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bPartner);
 		final String creditStatus;
 		if (isSetCreditStop)
 		{
@@ -47,7 +47,6 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 		}
 		else
 		{
-			final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bPartner);
 			final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
 					.stat(stats)
 					.forceCheckCreditStatus(true)
@@ -55,8 +54,8 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 					.build();
 			creditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
 		}
-		bpStats.setSOCreditStatus(creditStatus);
-		InterfaceWrapperHelper.save(bpStats);
+
+		bpartnerStatsDAO.setSOCreditStatus(stats, creditStatus);
 
 		return "@Success@";
 	}

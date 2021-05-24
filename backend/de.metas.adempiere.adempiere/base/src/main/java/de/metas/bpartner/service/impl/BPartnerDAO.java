@@ -916,18 +916,6 @@ public class BPartnerDAO implements IBPartnerDAO
 		return query.first(I_C_BP_Relation.class);
 	}
 
-	@Override
-	public I_C_BPartner_Stats retrieveBPartnerStats(I_C_BPartner partner)
-	{
-		final IQueryBuilder<I_C_BPartner_Stats> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_Stats.class);
-		queryBuilder.addEqualsFilter(org.compiere.model.I_C_BPartner_Stats.COLUMNNAME_C_BPartner_ID, partner.getC_BPartner_ID());
-		final IQuery<I_C_BPartner_Stats> query = queryBuilder
-				.addOnlyActiveRecordsFilter()
-				.create();
-
-		return query.first(I_C_BPartner_Stats.class);
-	}
-
 	@Nullable
 	@Override
 	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "#" + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault)
