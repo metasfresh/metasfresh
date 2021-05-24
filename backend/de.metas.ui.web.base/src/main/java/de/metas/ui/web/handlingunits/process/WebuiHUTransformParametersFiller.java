@@ -26,6 +26,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
@@ -207,10 +208,10 @@ public class WebuiHUTransformParametersFiller
 		if (isCheckExistingHUsInsideView())
 		{
 			existsTUs = getView().matchesAnyRowRecursive(HUEditorRowFilter.builder()
-					.select(Select.TU)
-					.excludeHUId(getParentHUIdOfSelectedRow())
-					.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
-					.build());
+																 .select(Select.TU)
+																 .excludeHUId(getParentHUIdOfSelectedRow())
+																 .excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
+																 .build());
 		}
 		else
 		{
@@ -237,10 +238,10 @@ public class WebuiHUTransformParametersFiller
 		if (isCheckExistingHUsInsideView())
 		{
 			existsLUs = getView().matchesAnyRowRecursive(HUEditorRowFilter.builder()
-					.select(Select.LU)
-					.excludeHUId(getParentHUIdOfSelectedRow())
-					.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
-					.build());
+																 .select(Select.LU)
+																 .excludeHUId(getParentHUIdOfSelectedRow())
+																 .excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
+																 .build());
 		}
 		else
 		{
@@ -303,7 +304,7 @@ public class WebuiHUTransformParametersFiller
 	 *
 	 * @return existing TUs that are available in the current HU editor context, sorted by ID.
 	 */
-	public LookupValuesList getTUsLookupValues(final LookupDataSourceContext context)
+	public LookupValuesPage getTUsLookupValues(final LookupDataSourceContext context)
 	{
 		if (isCheckExistingHUsInsideView())
 		{
@@ -315,27 +316,29 @@ public class WebuiHUTransformParametersFiller
 		}
 	}
 
-	private LookupValuesList getTUsLookupValues_InsideView(final LookupDataSourceContext context)
+	private LookupValuesPage getTUsLookupValues_InsideView(final LookupDataSourceContext context)
 	{
 		final ActionType actionType = getActionType();
 		if (actionType == ActionType.CU_To_ExistingTU)
 		{
-			return getView()
+			final LookupValuesList list = getView()
 					.streamAllRecursive(HUEditorRowFilter.builder()
-							.select(Select.TU) // ..needs to be a TU
-							.userInputFilter(context.getFilterOrIfAny(null))
-							.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one TU that 'cu' is already attached to
-							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
-							.build())
+												.select(Select.TU) // ..needs to be a TU
+												.userInputFilter(context.getFilterOrIfAny(null))
+												.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one TU that 'cu' is already attached to
+												.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
+												.build())
 					.sorted(Comparator.comparing(row -> row.getHuId().getRepoId()))
 					.map(HUEditorRow::toLookupValue)
 					.collect(LookupValuesList.collect());
+
+			return LookupValuesPage.allValues(list);
 		}
 
-		return LookupValuesList.EMPTY;
+		return LookupValuesPage.EMPTY;
 	}
 
-	private LookupValuesList getTUsLookupValues_All(final LookupDataSourceContext context)
+	private LookupValuesPage getTUsLookupValues_All(final LookupDataSourceContext context)
 	{
 		final ActionType actionType = getActionType();
 		if (actionType == ActionType.CU_To_ExistingTU)
@@ -348,17 +351,17 @@ public class WebuiHUTransformParametersFiller
 					.setCtxColumnName("M_HU_ID")
 					.setDisplayType(DisplayType.Search)
 					.buildForDefaultScope();
-			
+
 			return findEntries(lookupDescriptor, context);
 		}
 
-		return LookupValuesList.EMPTY;
+		return LookupValuesPage.EMPTY;
 	}
 
 	/**
 	 * @return existing LUs that are available in the current HU editor context, sorted by ID.
 	 */
-	public LookupValuesList getLUsLookupValues(final LookupDataSourceContext context)
+	public LookupValuesPage getLUsLookupValues(final LookupDataSourceContext context)
 	{
 		if (isCheckExistingHUsInsideView())
 		{
@@ -370,27 +373,29 @@ public class WebuiHUTransformParametersFiller
 		}
 	}
 
-	private LookupValuesList getLUsLookupValues_InsideView(final LookupDataSourceContext context)
+	private LookupValuesPage getLUsLookupValues_InsideView(final LookupDataSourceContext context)
 	{
 		final ActionType actionType = getActionType();
 		if (actionType == ActionType.TU_To_ExistingLU)
 		{
-			return getView()
+			final LookupValuesList list = getView()
 					.streamAllRecursive(HUEditorRowFilter.builder()
-							.select(Select.LU) // ..needs to be a LU
-							.userInputFilter(context.getFilterOrIfAny(null))
-							.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one LU that 'tu' is already attached to
-							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
-							.build())
+												.select(Select.LU) // ..needs to be a LU
+												.userInputFilter(context.getFilterOrIfAny(null))
+												.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one LU that 'tu' is already attached to
+												.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
+												.build())
 					.sorted(Comparator.comparing(row -> row.getHuId().getRepoId()))
 					.map(HUEditorRow::toLookupValue)
 					.collect(LookupValuesList.collect());
+
+			return LookupValuesPage.allValues(list);
 		}
 
-		return LookupValuesList.EMPTY;
+		return LookupValuesPage.EMPTY;
 	}
 
-	private LookupValuesList getLUsLookupValues_All(final LookupDataSourceContext context)
+	private LookupValuesPage getLUsLookupValues_All(final LookupDataSourceContext context)
 	{
 		final ActionType actionType = getActionType();
 		if (actionType == ActionType.TU_To_ExistingLU)
@@ -403,31 +408,34 @@ public class WebuiHUTransformParametersFiller
 					.setCtxColumnName("M_HU_ID")
 					.setDisplayType(DisplayType.Search)
 					.buildForDefaultScope();
-			
+
 			return findEntries(lookupDescriptor, context);
 		}
 		else
 		{
-			return LookupValuesList.EMPTY;
+			return LookupValuesPage.EMPTY;
 		}
 	}
-	
-	private LookupValuesList findEntries(
+
+	private LookupValuesPage findEntries(
 			final LookupDescriptor lookupDescriptor,
 			final LookupDataSourceContext context)
 	{
 		LookupDataSource dataSource = LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
 
-		if(context.getIdToFilter() != null)
+		if (context.getIdToFilter() != null)
 		{
 			final LookupValue result = dataSource.findById(context.getIdToFilter());
-			return LookupValuesList.fromNullable(result);
+			return LookupValuesPage.ofNullable(result);
 		}
 		else
 		{
 			return dataSource
-					.findEntities(context, context.getFilter(), context.getOffset(0), context.getLimit(10))
-					.getValues();
+					.findEntities(
+							context,
+							context.getFilter(),
+							context.getOffset(0),
+							context.getLimit(10));
 		}
 	}
 

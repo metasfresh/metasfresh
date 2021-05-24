@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 
@@ -212,7 +213,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
-				.get()
+				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
 				.findEntities(ctx)
 				.getValues();
 	}
@@ -223,7 +224,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
-				.get()
+				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
 				.findEntities(ctx, query);
 	}
 

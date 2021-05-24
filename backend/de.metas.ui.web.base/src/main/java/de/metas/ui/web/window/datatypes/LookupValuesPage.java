@@ -22,11 +22,14 @@
 
 package de.metas.ui.web.window.datatypes;
 
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.function.Function;
@@ -79,6 +82,16 @@ public class LookupValuesPage
 				.values(values)
 				.hasMoreResults(OptionalBoolean.FALSE)
 				.build();
+	}
+
+	public static LookupValuesPage ofNullable(@Nullable final LookupValue lookupValue)
+	{
+		if (lookupValue == null)
+		{
+			return EMPTY;
+		}
+
+		return allValues(LookupValuesList.fromNullable(lookupValue));
 	}
 
 	public <T> T transform(@NonNull final Function<LookupValuesPage, T> transformation)
