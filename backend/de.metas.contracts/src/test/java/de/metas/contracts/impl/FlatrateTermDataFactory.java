@@ -263,6 +263,7 @@ public class FlatrateTermDataFactory
 		final I_C_Tax tax = newInstance(I_C_Tax.class);
 		tax.setC_Country(country);
 		tax.setTo_Country(country);
+		tax.setTypeOfDestCountry(X_C_Tax.TYPEOFDESTCOUNTRY_Domestic);
 		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
 		tax.setIsDocumentLevel(true);
 		tax.setIsSalesTax(true);
