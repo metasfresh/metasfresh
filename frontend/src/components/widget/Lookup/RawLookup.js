@@ -149,6 +149,7 @@ export class RawLookup extends Component {
       setNextProperty,
       filterWidget,
       subentity,
+      updateItems,
     } = this.props;
     let selected = select;
     let mainProp = mainProperty[0];
@@ -177,6 +178,10 @@ export class RawLookup extends Component {
       } else {
         setNextProperty(mainProp.parameterName);
       }
+      updateItems({
+        widgetField: mainProp.parameterName,
+        value: selected,
+      });
     } else {
       if (subentity === 'quickInput') {
         onChange(mainProperty[0].field, selected, () =>
@@ -629,6 +634,7 @@ RawLookup.propTypes = {
   idValue: PropTypes.string,
   advSearchCaption: PropTypes.string,
   advSearchWindowId: PropTypes.string,
+  updateItems: PropTypes.func,
 };
 
 export default connect(mapStateToProps)(RawLookup);
