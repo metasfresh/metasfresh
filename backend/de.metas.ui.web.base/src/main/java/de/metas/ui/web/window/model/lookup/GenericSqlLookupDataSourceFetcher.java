@@ -35,6 +35,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookupById;
@@ -45,12 +46,15 @@ import lombok.NonNull;
 import org.adempiere.ad.service.impl.LookupDAO.SQLNamePairIterator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.INamePairPredicate;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DB;
+import org.compiere.util.NamePair;
 import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Optional;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 {
 	@NonNull
@@ -81,7 +85,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		final SqlLookupDescriptor sqlLookupDescriptor = lookupDescriptor.cast(SqlLookupDescriptor.class);
 
 		lookupTableNameAsOptional = sqlLookupDescriptor.getTableName();
-		lookupTableName = lookupTableNameAsOptional.get();
+		lookupTableName = lookupTableNameAsOptional.orElseThrow(() -> new AdempiereException("No table name defined for " + lookupDescriptor));
 		numericKey = sqlLookupDescriptor.isNumericKey();
 		entityTypeIndex = sqlLookupDescriptor.getEntityTypeIndex();
 		sqlForFetchingExpression = sqlLookupDescriptor.getSqlForFetchingExpression();
@@ -169,10 +173,16 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	 * @return lookup values list
 	 */
 	@Override
-	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtxParam)
 	{
-		final String sqlForFetching = sqlForFetchingExpression.evaluate(evalCtx);
-		final String adLanguage = isTranslatable ? evalCtx.getAD_Language() : null;
+		final int offset = evalCtxParam.getOffset(0);
+		final int pageLength = evalCtxParam.getLimit(1000);
+		final LookupDataSourceContext evalCtxEffective = evalCtxParam
+				.withOffset(offset)
+				.withLimit(pageLength + 1); // add 1 to pageLength to be able to recognize if there are more items
+
+		final String sqlForFetching = sqlForFetchingExpression.evaluate(evalCtxEffective);
+		final String adLanguage = isTranslatable ? evalCtxEffective.getAD_Language() : null;
 
 		try (final SQLNamePairIterator data = new SQLNamePairIterator(sqlForFetching, numericKey, entityTypeIndex))
 		{
@@ -181,22 +191,26 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 			{
 				debugProperties = DebugProperties.EMPTY
 						.withProperty("debug-sql", sqlForFetching)
-						.withProperty("debug-params", evalCtx.toString());
+						.withProperty("debug-params", evalCtxEffective.toString());
 			}
 
-			final LookupValuesList values = data.fetchAll()
+			final List<NamePair> valuesBeforePostFilter = data.fetchAll();
+			final boolean hasMoreResults = valuesBeforePostFilter.size() > pageLength;
+
+			final LookupValuesList values = valuesBeforePostFilter
 					.stream()
-					.filter(evalCtx::acceptItem)
+					.limit(pageLength)
+					.filter(evalCtxEffective::acceptItem)
 					.map(namePair -> LookupValue.fromNamePair(namePair, adLanguage, this.tooltipType))
 					.collect(LookupValuesList.collect(debugProperties));
 
 			logger.trace("Returning values={} (executed sql: {})", values, sqlForFetching);
-			return values;
+			return LookupValuesPage.ofValuesAndHasMoreFlag(values, hasMoreResults);
 		}
 	}
 
 	@Override
-	public final LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
+	public final LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
 		final Object id = evalCtx.getIdToFilter();
 		if (id == null)

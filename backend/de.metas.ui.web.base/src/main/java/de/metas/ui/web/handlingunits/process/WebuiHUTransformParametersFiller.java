@@ -328,7 +328,7 @@ public class WebuiHUTransformParametersFiller
 							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
 							.build())
 					.sorted(Comparator.comparing(row -> row.getHuId().getRepoId()))
-					.map(row -> row.toLookupValue())
+					.map(HUEditorRow::toLookupValue)
 					.collect(LookupValuesList.collect());
 		}
 
@@ -383,7 +383,7 @@ public class WebuiHUTransformParametersFiller
 							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
 							.build())
 					.sorted(Comparator.comparing(row -> row.getHuId().getRepoId()))
-					.map(row -> row.toLookupValue())
+					.map(HUEditorRow::toLookupValue)
 					.collect(LookupValuesList.collect());
 		}
 
@@ -425,7 +425,9 @@ public class WebuiHUTransformParametersFiller
 		}
 		else
 		{
-			return dataSource.findEntities(context, context.getFilter(), context.getOffset(0), context.getLimit(10));
+			return dataSource
+					.findEntities(context, context.getFilter(), context.getOffset(0), context.getLimit(10))
+					.getValues();
 		}
 	}
 
@@ -472,12 +474,10 @@ public class WebuiHUTransformParametersFiller
 		final I_M_HU_PI_Version effectivePIVersion = handlingUnitsBL.getEffectivePIVersion(tuHU);
 		Check.errorIf(effectivePIVersion == null, "tuHU is inconsistent; hu={}", tuHU);
 
-		final List<I_M_HU_PI_Item> luPIItems = handlingUnitsDAO.retrieveParentPIItemsForParentPI(
+		return handlingUnitsDAO.retrieveParentPIItemsForParentPI(
 				effectivePIVersion.getM_HU_PI(),
 				null,
 				IHandlingUnitsBL.extractBPartnerIdOrNull(tuHU));
-
-		return luPIItems;
 	}
 
 	public boolean getShowWarehouseFlag()

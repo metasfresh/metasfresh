@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model.lookup;
 import java.util.List;
 import java.util.Optional;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import org.compiere.util.Evaluatee;
 
 import com.google.common.collect.ImmutableList;
@@ -52,15 +53,15 @@ public final class NullLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public LookupValuesList findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
+	public LookupValuesPage findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
 	{
-		return LookupValuesList.EMPTY;
+		return LookupValuesPage.EMPTY;
 	}
 
 	@Override
-	public LookupValuesList findEntities(final Evaluatee ctx, final int pageLength)
+	public LookupValuesPage findEntities(final Evaluatee ctx, final int pageLength)
 	{
-		return LookupValuesList.EMPTY;
+		return LookupValuesPage.EMPTY;
 	}
 
 	@Override
