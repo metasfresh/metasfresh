@@ -22,8 +22,13 @@
 
 package de.metas.common.pricing.v2.productprice;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.pentabyte.springfox.ApiEnum;
 import lombok.Getter;
+import lombok.NonNull;
+
+import java.util.Arrays;
 
 public enum TaxCategory
 {
@@ -33,10 +38,22 @@ public enum TaxCategory
 	TAXFREE("TaxFree");
 
 	@Getter
-	private final String value;
+	private final String code;
 
-	TaxCategory(final String value)
+	TaxCategory(final String code)
 	{
-		this.value = value;
+		this.code = code;
+	}
+	
+	private static final ImmutableMap<String, TaxCategory> typesByValue = Maps.uniqueIndex(Arrays.asList(values()), TaxCategory::getCode);
+
+	public static TaxCategory ofCode(@NonNull final String code)
+	{
+		final TaxCategory type = typesByValue.get(code);
+		if (type == null)
+		{
+			throw new RuntimeException("No " + TaxCategory.class + " found for code: " + code);
+		}
+		return type;
 	}
 }
