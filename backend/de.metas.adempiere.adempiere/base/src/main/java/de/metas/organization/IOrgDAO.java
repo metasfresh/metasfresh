@@ -33,6 +33,7 @@ import javax.annotation.Nullable;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.util.Env;
 
 import de.metas.util.ISingletonService;
@@ -133,4 +134,6 @@ public interface IOrgDAO extends ISingletonService
 
 	/** @return organization's time zone or system time zone; never returns null */
 	ZoneId getTimeZone(OrgId orgId);
+	
+	public I_AD_OrgInfo retrieveOrgInfoRecordOrNull(final OrgId adOrgId, final String trxName);
 }

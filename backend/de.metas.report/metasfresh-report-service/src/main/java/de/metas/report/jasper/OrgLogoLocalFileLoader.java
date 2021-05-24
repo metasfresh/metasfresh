@@ -23,26 +23,32 @@ package de.metas.report.jasper;
  */
 
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MImage;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -80,9 +86,9 @@ final class OrgLogoLocalFileLoader
 	}
 
 	// @Override
-	public Optional<File> loadLogoForOrg(@NonNull final OrgId adOrgId)
+	public Optional<File> loadLogoForOrg(@NonNull final ResourceNameContext rsc)
 	{
-		final File logoFile = createAndGetLocalLogoFile(adOrgId);
+		final File logoFile = createAndGetLocalLogoFile(rsc);
 		if (logoFile != null)
 		{
 			return Optional.of(logoFile);
@@ -94,11 +100,11 @@ final class OrgLogoLocalFileLoader
 		}
 	}
 
-	private File createAndGetLocalLogoFile(@NonNull final OrgId adOrgId)
+	private File createAndGetLocalLogoFile(@NonNull final ResourceNameContext rsc)
 	{
 		//
 		// Retrieve the logo image
-		final I_AD_Image logo = retrieveLogoImage(adOrgId);
+		final I_AD_Image logo = retrieveImage(rsc);
 		if (logo == null || logo.getAD_Image_ID() <= 0)
 		{
 			return null;
@@ -110,30 +116,81 @@ final class OrgLogoLocalFileLoader
 		return logoFile;
 	}
 
-	private I_AD_Image retrieveLogoImage(@NonNull final OrgId adOrgId)
+	private I_AD_Image retrieveImage(@NonNull final ResourceNameContext rsc)
 	{
+		final OrgId adOrgId = rsc.getOrgId();
 		if (adOrgId.isAny())
 		{
 			return null;
 		}
 
-		final Properties ctx = Env.getCtx();
+		if (rsc.isLogo())
+		{
+			return retrieveLogoImage(adOrgId);
+		}
+		else
+		{
+			return retrieveOtherImage(rsc);
+		}
+	}
 
+	private I_AD_Image retrieveOtherImage(@NonNull final ResourceNameContext rsc)
+	{
+		final OrgId adOrgId = rsc.getOrgId();
+		final String resourceName = rsc.getResourceName();
+
+		final List<String> listResourceName = Splitter.on('/')
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(resourceName);
+
+		if (listResourceName.size() > 0)
+		{
+			final String resource = listResourceName.get(listResourceName.size() - 1);
+			final int indexOf = resource.indexOf(".");
+			if (indexOf < 0)
+			{
+				return null;
+			}
+
+			final String columnName = resource.substring(0, indexOf);
+
+			//
+			// Get image
+			final I_AD_OrgInfo orgInfo = orgsRepo.retrieveOrgInfoRecordOrNull(adOrgId, ITrx.TRXNAME_None);
+
+			final Object imageIdObj = InterfaceWrapperHelper.getValue(orgInfo, columnName).orElse(null);
+			if (imageIdObj == null)
+			{
+				return null;
+			}
+
+			final int imageIdObjInt = NumberUtils.asInt(imageIdObj, -1);
+			if (imageIdObjInt > 0)
+			{
+				return MImage.get(Env.getCtx(), imageIdObjInt);
+			}
+		}
+
+		return null;
+	}
+
+	private I_AD_Image retrieveLogoImage(@NonNull final OrgId adOrgId)
+	{
 		//
 		// Get Logo from Org's BPartner
 		// task FRESH-356: get logo also from org's bpartner if is set
+		final Properties ctx = Env.getCtx();
+		final I_AD_Org org = orgsRepo.getById(adOrgId);
+		if (org != null)
 		{
-			final I_AD_Org org = orgsRepo.getById(adOrgId);
-			if (org != null)
+			final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
+			if (orgBPartner != null)
 			{
-				final I_C_BPartner orgBPartner = bpartnerOrgBL.retrieveLinkedBPartner(org);
-				if (orgBPartner != null)
+				final I_AD_Image orgBPartnerLogo = orgBPartner.getLogo();
+				if (orgBPartnerLogo != null && orgBPartnerLogo.getAD_Image_ID() > 0)
 				{
-					final I_AD_Image orgBPartnerLogo = orgBPartner.getLogo();
-					if (orgBPartnerLogo != null && orgBPartnerLogo.getAD_Image_ID() > 0)
-					{
-						return orgBPartnerLogo;
-					}
+					return orgBPartnerLogo;
 				}
 			}
 		}
@@ -144,7 +201,7 @@ final class OrgLogoLocalFileLoader
 		final int logoImageId = orgInfo.getLogoImageId();
 		if (logoImageId > 0)
 		{
-			return MImage.get(Env.getCtx(), logoImageId);
+			return MImage.get(ctx, logoImageId);
 		}
 
 		//
@@ -161,6 +218,7 @@ final class OrgLogoLocalFileLoader
 			return null;
 		}
 		return clientLogo;
+
 	}
 
 	private static File createTempLogoFile(final I_AD_Image logo)

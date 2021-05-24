@@ -143,7 +143,8 @@ public class OrgDAO implements IOrgDAO
 		return toOrgInfo(record);
 	}
 
-	private I_AD_OrgInfo retrieveOrgInfoRecordOrNull(final OrgId adOrgId, final String trxName)
+	@Override
+	public I_AD_OrgInfo retrieveOrgInfoRecordOrNull(final OrgId adOrgId, final String trxName)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_OrgInfo.class, Env.getCtx(), trxName)

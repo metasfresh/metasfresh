@@ -65,13 +65,17 @@ final class OrgLogoClassLoaderHook
 	//
 	// Org Logo resource matchers
 	private static final String SYSCONFIG_ResourceNameEndsWith = "de.metas.adempiere.report.jasper.OrgLogoClassLoaderHook.ResourceNameEndsWith";
-	private static final String DEFAULT_ResourceNameEndsWith = "de/metas/generics/logo.png";
+	private static final String DEFAULT_ResourceNameEndsWith = "de/metas/generics/logo.png; de/metas/generics/ReportBottom_Logo_ID.png";
 	private final ImmutableSet<String> resourceNameEndsWithMatchers;
-
+	
+	private static final String otherResourceNameEndsWith = "de/metas/generics/ReportBottom_Logo_ID.png";
+	private final ImmutableSet<String> otherResourceNameEndsWithMatchers;
+	
+	final String resourceNameEndsWithStr = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ResourceNameEndsWith, DEFAULT_ResourceNameEndsWith);
 	//
 	// Caching (static)
-	private static final CCache<OrgId, Optional<File>> adOrgId2logoLocalFile = CCache.<OrgId, Optional<File>> builder()
-			.cacheName(I_AD_Image.Table_Name + "#LogoBy_AD_Org_ID")
+	private static final CCache<ResourceNameContext, Optional<File>> adOrgId2logoLocalFile = CCache.<ResourceNameContext, Optional<File>> builder()
+			.cacheName(I_AD_Image.Table_Name + "#LogoBy_AD_Org_ID_Logo")
 			.tableName(I_AD_Image.Table_Name)
 			.initialCapacity(10)
 			.additionalTableNameToResetFor(I_AD_ClientInfo.Table_Name) // FRESH-327
@@ -83,13 +87,13 @@ final class OrgLogoClassLoaderHook
 
 	private OrgLogoClassLoaderHook()
 	{
-		this.resourceNameEndsWithMatchers = buildResourceNameEndsWithMatchers();
+		this.resourceNameEndsWithMatchers = buildResourceNameEndsWithMatchers(resourceNameEndsWithStr);
+		this.otherResourceNameEndsWithMatchers = buildResourceNameEndsWithMatchers(otherResourceNameEndsWith);
 		this.orgLogoLocalFileLoader = OrgLogoLocalFileLoader.newInstance();
 	}
 
-	private static ImmutableSet<String> buildResourceNameEndsWithMatchers()
+	private static ImmutableSet<String> buildResourceNameEndsWithMatchers(final String resourceNameEndsWithStr)
 	{
-		final String resourceNameEndsWithStr = Services.get(ISysConfigBL.class).getValue(SYSCONFIG_ResourceNameEndsWith, DEFAULT_ResourceNameEndsWith);
 		if (Check.isEmpty(resourceNameEndsWithStr, true))
 		{
 			return ImmutableSet.of();
@@ -106,14 +110,22 @@ final class OrgLogoClassLoaderHook
 			@Nullable final String resourceName)
 	{
 		// Skip if it's not about our hooked logo resources
-		if (!isLogoResourceName(resourceName))
+		final boolean isLogo = isLogoResourceName(resourceName, resourceNameEndsWithMatchers);
+		final boolean isOtherImage = isLogoResourceName(resourceName, otherResourceNameEndsWithMatchers);
+		if (!isLogo	&& !isOtherImage)
 		{
 			return null;
 		}
 
+		final ResourceNameContext rsc = ResourceNameContext.builder()
+				.orgId(adOrgId)
+				.resourceName(resourceName)
+				.isLogo(isLogo)
+				.build();
+		
 		//
 		// Get the local logo file
-		final File logoFile = getLogoFile(adOrgId);
+		final File logoFile = getLogoFile(rsc);
 		if (logoFile == null)
 		{
 			return null;
@@ -132,18 +144,18 @@ final class OrgLogoClassLoaderHook
 		return null;
 	}
 
-	private File getLogoFile(@NonNull final OrgId adOrgId)
+	private File getLogoFile(@NonNull final ResourceNameContext rsc)
 	{
 		File logoFile = adOrgId2logoLocalFile
-				.getOrLoad(adOrgId, orgLogoLocalFileLoader::loadLogoForOrg)
+				.getOrLoad(rsc, orgLogoLocalFileLoader::loadLogoForOrg)
 				.orElse(null);
 
 		// If logo file does not exist or it's not readable, try recreating it
 		if (logoFile != null && !logoFile.canRead())
 		{
-			adOrgId2logoLocalFile.put(adOrgId, null); // invalidate current cached record
+			adOrgId2logoLocalFile.put(rsc, null); // invalidate current cached record
 			logoFile = adOrgId2logoLocalFile
-					.getOrLoad(adOrgId, orgLogoLocalFileLoader::loadLogoForOrg)
+					.getOrLoad(rsc, orgLogoLocalFileLoader::loadLogoForOrg)
 					.orElse(null);
 		}
 
@@ -151,9 +163,9 @@ final class OrgLogoClassLoaderHook
 	}
 
 	/**
-	 * @return true if given resourceName is a logo image
+	 * @return true if given resourceName is a supported image
 	 */
-	private boolean isLogoResourceName(final String resourceName)
+	private boolean isLogoResourceName(final String resourceName, final @NonNull ImmutableSet<String> matchers)
 	{
 		// Skip if no resourceName
 		if (resourceName == null || resourceName.isEmpty())
@@ -162,9 +174,9 @@ final class OrgLogoClassLoaderHook
 		}
 
 		// Check if our resource name ends with one of our predefined matchers
-		for (final String resourceNameEndsWithMatcher : resourceNameEndsWithMatchers)
+		for (final String resourceNameEndsWithMatcher : matchers)
 		{
-			if (resourceName.endsWith(resourceNameEndsWithMatcher))
+			if ( resourceName.endsWith(resourceNameEndsWithMatcher))
 			{
 				return true;
 			}
