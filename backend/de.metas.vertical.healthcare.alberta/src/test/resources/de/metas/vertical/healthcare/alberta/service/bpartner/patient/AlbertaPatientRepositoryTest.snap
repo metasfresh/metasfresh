@@ -4,8 +4,10 @@ de.metas.vertical.healthcare.alberta.service.bpartner.patient.AlbertaPatientRepo
     "bPartnerId" : 1,
     "hospitalId" : 2,
     "dischargeDate" : {
-      "seconds" : 1574380800,
-      "nanos" : 0
+      "year" : 2019,
+      "month" : 11,
+      "day" : 22,
+      "leapYear" : false
     },
     "payerId" : 3,
     "payerType" : "ProfessionalAssociation",
@@ -43,8 +45,8 @@ de.metas.vertical.healthcare.alberta.service.bpartner.patient.AlbertaPatientRepo
       "nanos" : 0
     },
     "updatedById" : 6,
-    "ivtherapy" : false,
-    "transferPatient" : true
+    "transferPatient" : true,
+    "ivtherapy" : false
   }
 ]
 
@@ -55,7 +57,7 @@ de.metas.vertical.healthcare.alberta.service.bpartner.patient.AlbertaPatientRepo
     "bPartnerId" : 1,
     "isTransferPatient" : false,
     "isIVTherapy" : false,
-    "ivtherapy" : false,
-    "transferPatient" : false
+    "transferPatient" : false,
+    "ivtherapy" : false
   }
 ]

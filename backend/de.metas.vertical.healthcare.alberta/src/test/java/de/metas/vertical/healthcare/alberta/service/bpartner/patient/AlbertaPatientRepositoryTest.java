@@ -71,7 +71,7 @@ public class AlbertaPatientRepositoryTest
 		final AlbertaPatient patient = AlbertaPatient.builder()
 				.bPartnerId(BPartnerId.ofRepoId(1))
 				.hospitalId(BPartnerId.ofRepoId(2))
-				.dischargeDate(LocalDate.parse("2019-11-22T00:00:00Z"))
+				.dischargeDate(LocalDate.parse("2019-11-22"))
 				.payerId(BPartnerId.ofRepoId(3))
 				.payerType(PayerType.ProfessionalAssociation)
 				.numberOfInsured("numberOfInsured")
