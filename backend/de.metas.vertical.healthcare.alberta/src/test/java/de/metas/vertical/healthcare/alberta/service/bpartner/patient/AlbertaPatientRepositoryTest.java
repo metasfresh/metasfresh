@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.vertical.healthcare.alberta.service.bpartner.albertabpartner;
+package de.metas.vertical.healthcare.alberta.service.bpartner.patient;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.user.UserId;
@@ -35,6 +35,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.time.LocalDate;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
@@ -64,28 +65,43 @@ public class AlbertaPatientRepositoryTest
 	}
 
 	@Test
-	public void save()
+	public void save_allFields()
 	{
 		//given
 		final AlbertaPatient patient = AlbertaPatient.builder()
-				.bPartnerId(BPartnerId.ofRepoId(111111))
-				.hospitalId(BPartnerId.ofRepoId(222222))
-				.dischargeDate(Instant.parse("2019-11-22T00:00:00Z"))
-				.payerId(BPartnerId.ofRepoId(33333333))
+				.bPartnerId(BPartnerId.ofRepoId(1))
+				.hospitalId(BPartnerId.ofRepoId(2))
+				.dischargeDate(LocalDate.parse("2019-11-22T00:00:00Z"))
+				.payerId(BPartnerId.ofRepoId(3))
 				.payerType(PayerType.ProfessionalAssociation)
 				.numberOfInsured("numberOfInsured")
-				.copaymentFrom(Instant.parse("2019-11-22T00:00:00Z"))
-				.copaymentTo(Instant.parse("2019-11-22T00:00:00Z"))
+				.copaymentFrom(LocalDate.parse("2019-11-23"))
+				.copaymentTo(LocalDate.parse("2019-11-24"))
 				.isTransferPatient(true)
 				.isIVTherapy(false)
-				.fieldNurseId(UserId.ofRepoId(4444))
+				.fieldNurseId(UserId.ofRepoId(4))
 				.deactivationReason(DeactivationReasonType.AllTherapiesEnded)
-				.deactivationDate(Instant.parse("2019-11-22T00:00:00Z"))
+				.deactivationDate(LocalDate.parse("2019-11-25"))
 				.deactivationComment("deactivationComment")
-				.createdAt(Instant.parse("2019-11-22T00:00:00Z"))
-				.createdById(UserId.ofRepoId(55555))
-				.updatedAt(Instant.parse("2019-11-22T00:00:00Z"))
-				.updatedById(UserId.ofRepoId(66666))
+				.createdAt(Instant.parse("2019-11-26T00:00:00Z"))
+				.createdById(UserId.ofRepoId(5))
+				.updatedAt(Instant.parse("2019-11-27T00:00:00Z"))
+				.updatedById(UserId.ofRepoId(6))
+				.build();
+
+		//when
+		final AlbertaPatient result = albertaPatientRepository.save(patient);
+
+		//then
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	public void save_onlyMandatory()
+	{
+		//given
+		final AlbertaPatient patient = AlbertaPatient.builder()
+				.bPartnerId(BPartnerId.ofRepoId(1))
 				.build();
 
 		//when

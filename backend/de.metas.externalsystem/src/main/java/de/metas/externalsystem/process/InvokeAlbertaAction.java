@@ -76,6 +76,11 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 		parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, extractEffectiveSinceTimestamp().toInstant().toString());
 		parameters.put(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE, albertaConfig.getValue());
 
+		if (albertaConfig.getRootBPartnerIdForUsers() != null)
+		{
+			parameters.put(ExternalSystemConstants.PARAM_ROOT_BPARTNER_ID_FOR_USERS, String.valueOf(albertaConfig.getRootBPartnerIdForUsers().getRepoId()));
+		}
+
 		return parameters;
 	}
 

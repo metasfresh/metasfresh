@@ -135,7 +135,7 @@ public class CreateMissingBPartnerProcessor implements Processor
 		{
 			final Doctor doctor = doctorApi.getDoctor(connectionDetails.getApiKey(), connectionDetails.getTenant(), doctorId);
 
-			return DataMapper.mapDoctorToUpsertRequest(doctor, null, orgCode);
+			return DataMapper.mapDoctorToUpsertRequest(doctor, orgCode);
 		}
 		catch (final ApiException e)
 		{
@@ -154,7 +154,7 @@ public class CreateMissingBPartnerProcessor implements Processor
 		{
 			final Pharmacy pharmacy = pharmacyApi.getPharmacy(connectionDetails.getApiKey(), connectionDetails.getTenant(), pharmacyId);
 
-			return DataMapper.mapPharmacyToUpsertRequest(pharmacy, null, orgCode);
+			return DataMapper.mapPharmacyToUpsertRequest(pharmacy, orgCode);
 		}
 		catch (final ApiException e)
 		{

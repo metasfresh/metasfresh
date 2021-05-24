@@ -44,17 +44,11 @@ public class AlbertaUserRepository
 		final I_AD_User_Alberta record = InterfaceWrapperHelper.loadOrNew(user.getUserAlbertaId(), I_AD_User_Alberta.class);
 
 		record.setAD_User_ID(user.getUserId().getRepoId());
+
 		record.setTimestamp(TimeUtil.asTimestamp(user.getTimestamp()));
 
-		if (user.getTitle() != null)
-		{
-			record.setTitle(user.getTitle().getCode());
-		}
-
-		if (user.getGender() != null)
-		{
-			record.setGender(user.getGender().getCode());
-		}
+		record.setTitle(user.getTitle() != null ? user.getTitle().getCode() : null);
+		record.setGender(user.getGender() != null ? user.getGender().getCode() : null);
 
 		InterfaceWrapperHelper.save(record);
 
@@ -81,8 +75,8 @@ public class AlbertaUserRepository
 		return AlbertaUser.builder()
 				.userAlbertaId(userAlbertaId)
 				.userId(userId)
-				.title(TitleType.ofCode(record.getTitle()))
-				.gender(GenderType.ofCode(record.getGender()))
+				.title(TitleType.ofCodeNullable(record.getTitle()))
+				.gender(GenderType.ofCodeNullable(record.getGender()))
 				.timestamp(TimeUtil.asInstant(record.getTimestamp()))
 				.build();
 	}

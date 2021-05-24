@@ -25,13 +25,17 @@ package de.metas.vertical.healthcare.alberta.bpartner.patient;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.vertical.healthcare.alberta.model.X_C_BPartner_AlbertaPatient;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 
+@AllArgsConstructor
 public enum DeactivationReasonType implements ReferenceListAwareEnum
 {
 	Unknown(X_C_BPartner_AlbertaPatient.DEACTIVATIONREASON_Unbekannt),
@@ -41,23 +45,31 @@ public enum DeactivationReasonType implements ReferenceListAwareEnum
 	Oher(X_C_BPartner_AlbertaPatient.DEACTIVATIONREASON_Sonstiges),
 	;
 
+	@NonNull
 	private final String code;
 
-	private DeactivationReasonType(final String code)
-	{
-		this.code = code;
-	}
-
 	@Override
+	@NonNull
 	public String getCode()
 	{
 		return code;
 	}
 
+	@Nullable
+	public static DeactivationReasonType ofCodeNullable(@Nullable final String code)
+	{
+		if (Check.isBlank(code))
+		{
+			return null;
+		}
+
+		return ofCode(code);
+	}
+
 	@JsonCreator
 	public static DeactivationReasonType ofCode(@NonNull final String code)
 	{
-		DeactivationReasonType type = typesByCode.get(code);
+		final DeactivationReasonType type = typesByCode.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + DeactivationReasonType.class + " found for code: " + code);

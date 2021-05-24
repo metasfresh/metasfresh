@@ -43,10 +43,13 @@ public class AlbertaBPartnerRepository
 		final I_C_BPartner_Alberta record = InterfaceWrapperHelper.loadOrNew(bPartner.getBPartnerAlbertaId(), I_C_BPartner_Alberta.class);
 
 		record.setC_BPartner_ID(bPartner.getBPartnerId().getRepoId());
+
+		record.setTimestamp(TimeUtil.asTimestamp(bPartner.getTimestamp()));
+
 		record.setTitle(bPartner.getTitle());
 		record.setTitleShort(bPartner.getTitleShort());
+
 		record.setIsArchived(bPartner.isArchived());
-		record.setTimestamp(TimeUtil.asTimestamp(bPartner.getTimestamp()));
 
 		InterfaceWrapperHelper.save(record);
 

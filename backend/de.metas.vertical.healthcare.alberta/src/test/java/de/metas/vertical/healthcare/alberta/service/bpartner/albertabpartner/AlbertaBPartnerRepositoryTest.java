@@ -61,15 +61,31 @@ public class AlbertaBPartnerRepositoryTest
 	}
 
 	@Test
-	public void save()
+	public void save_allFields()
 	{
 		//given
 		final AlbertaBPartner bPartner = AlbertaBPartner.builder()
-				.bPartnerId(BPartnerId.ofRepoId(111111))
+				.bPartnerId(BPartnerId.ofRepoId(1))
 				.isArchived(true)
 				.title("title")
 				.titleShort("titleShort")
 				.timestamp(Instant.parse("2019-11-22T00:00:00Z"))
+				.build();
+
+		//when
+		final AlbertaBPartner result = albertaBPartnerRepository.save(bPartner);
+
+		//then
+		expect(result).toMatchSnapshot();
+	}
+
+
+	@Test
+	public void save_onlyMandatory()
+	{
+		//given
+		final AlbertaBPartner bPartner = AlbertaBPartner.builder()
+				.bPartnerId(BPartnerId.ofRepoId(1))
 				.build();
 
 		//when

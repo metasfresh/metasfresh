@@ -22,35 +22,65 @@
 
 package de.metas.vertical.healthcare.alberta.bpartner.role;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.vertical.healthcare.alberta.model.X_C_BPartner_AlbertaRole;
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.Arrays;
+
+@AllArgsConstructor
 public enum AlbertaRoleType implements ReferenceListAwareEnum
 {
-	CAREGIVER(X_C_BPartner_AlbertaRole.ALBERTAROLE_Caregiver),
-	CARETAKER(X_C_BPartner_AlbertaRole.ALBERTAROLE_Caretaker),
-	GENERALPRACTITIONER(X_C_BPartner_AlbertaRole.ALBERTAROLE_GeneralPractitioner),
-	HEALTHINSURANCE(X_C_BPartner_AlbertaRole.ALBERTAROLE_HealthInsurance),
-	HOSTPITAL(X_C_BPartner_AlbertaRole.ALBERTAROLE_Hostpital),
-	MAINPRODUCER(X_C_BPartner_AlbertaRole.ALBERTAROLE_MainProducer),
-	NURSINGHOME(X_C_BPartner_AlbertaRole.ALBERTAROLE_NursingHome),
-	NURSINGSERVICE(X_C_BPartner_AlbertaRole.ALBERTAROLE_NursingService),
-	PAYER(X_C_BPartner_AlbertaRole.ALBERTAROLE_Payer),
-	DOCTOR(X_C_BPartner_AlbertaRole.ALBERTAROLE_Doctor),
-	PHARMACY(X_C_BPartner_AlbertaRole.ALBERTAROLE_Pharmacy),
-	PREFERREDPHARMACY(X_C_BPartner_AlbertaRole.ALBERTAROLE_PreferredPharmacy),
-	PACIENT(X_C_BPartner_AlbertaRole.ALBERTAROLE_Pacient);
+	Caregiver(X_C_BPartner_AlbertaRole.ALBERTAROLE_Caregiver),
+	CareTaker(X_C_BPartner_AlbertaRole.ALBERTAROLE_Caretaker),
+	GeneralPractitioner(X_C_BPartner_AlbertaRole.ALBERTAROLE_GeneralPractitioner),
+	HealthInsurance(X_C_BPartner_AlbertaRole.ALBERTAROLE_HealthInsurance),
+	Hospital(X_C_BPartner_AlbertaRole.ALBERTAROLE_Hostpital),
+	MainProducer(X_C_BPartner_AlbertaRole.ALBERTAROLE_MainProducer),
+	NursingHome(X_C_BPartner_AlbertaRole.ALBERTAROLE_NursingHome),
+	NursingService(X_C_BPartner_AlbertaRole.ALBERTAROLE_NursingService),
+	Payer(X_C_BPartner_AlbertaRole.ALBERTAROLE_Payer),
+	PhysicianDoctor(X_C_BPartner_AlbertaRole.ALBERTAROLE_Doctor),
+	Pharmacy(X_C_BPartner_AlbertaRole.ALBERTAROLE_Pharmacy),
+	PreferredPharmacy(X_C_BPartner_AlbertaRole.ALBERTAROLE_PreferredPharmacy),
+	Patient(X_C_BPartner_AlbertaRole.ALBERTAROLE_Pacient);
 
 	private final String code;
-
-	private AlbertaRoleType(final String code)
-	{
-		this.code = code;
-	}
 
 	@Override
 	public String getCode()
 	{
 		return code;
 	}
+
+	@Nullable
+	public static AlbertaRoleType ofCodeNullable(@Nullable final String code)
+	{
+		if (Check.isBlank(code))
+		{
+			return null;
+		}
+
+		return ofCode(code);
+	}
+
+	@JsonCreator
+	public static AlbertaRoleType ofCode(@NonNull final String code)
+	{
+		final AlbertaRoleType type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + AlbertaRoleType.class + " found for code: " + code);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, AlbertaRoleType> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), AlbertaRoleType::getCode);
 }

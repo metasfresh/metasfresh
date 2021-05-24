@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.vertical.healthcare.alberta
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.vertical.healthcare.alberta.model;
 
 import org.adempiere.model.ModelColumn;
@@ -98,7 +76,7 @@ public interface I_C_BPartner_AlbertaCareGiver
 	 * Set Caregiver.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_BPartner_Caregiver_ID (int C_BPartner_Caregiver_ID);
@@ -107,7 +85,7 @@ public interface I_C_BPartner_AlbertaCareGiver
 	 * Get Caregiver.
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_BPartner_Caregiver_ID();
@@ -210,7 +188,7 @@ public interface I_C_BPartner_AlbertaCareGiver
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setType_Contact (@Nullable java.lang.String Type_Contact);
+	void setType_Contact (@Nullable String Type_Contact);
 
 	/**
 	 * Get Type of contact.
@@ -219,7 +197,7 @@ public interface I_C_BPartner_AlbertaCareGiver
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getType_Contact();
+	@Nullable String getType_Contact();
 
 	ModelColumn<I_C_BPartner_AlbertaCareGiver, Object> COLUMN_Type_Contact = new ModelColumn<>(I_C_BPartner_AlbertaCareGiver.class, "Type_Contact", null);
 	String COLUMNNAME_Type_Contact = "Type_Contact";

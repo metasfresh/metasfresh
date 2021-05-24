@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class AlbertaUser
 {
 	@Nullable

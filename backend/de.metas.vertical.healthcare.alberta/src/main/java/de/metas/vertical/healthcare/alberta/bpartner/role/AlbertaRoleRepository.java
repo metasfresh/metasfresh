@@ -22,6 +22,7 @@
 
 package de.metas.vertical.healthcare.alberta.bpartner.role;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.model.I_C_BPartner_AlbertaRole;
@@ -30,7 +31,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.List;
 
 @Repository
 public class AlbertaRoleRepository
@@ -42,11 +43,7 @@ public class AlbertaRoleRepository
 		final I_C_BPartner_AlbertaRole record = InterfaceWrapperHelper.loadOrNew(role.getBPartnerAlbertaRoleId(), I_C_BPartner_AlbertaRole.class);
 
 		record.setC_BPartner_ID(role.getBPartnerId().getRepoId());
-
-		if (role.getRole() != null)
-		{
-			record.setAlbertaRole(role.getRole().getCode());
-		}
+		record.setAlbertaRole(role.getRole().getCode());
 
 		InterfaceWrapperHelper.save(record);
 
@@ -54,14 +51,16 @@ public class AlbertaRoleRepository
 	}
 
 	@NonNull
-	public Optional<AlbertaRole> getByPartnerId(final @NonNull BPartnerId bPartnerId)
+	public List<AlbertaRole> getByPartnerId(final @NonNull BPartnerId bPartnerId)
 	{
 		return queryBL.createQueryBuilder(I_C_BPartner_AlbertaRole.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner_AlbertaRole.COLUMNNAME_C_BPartner_ID, bPartnerId)
 				.create()
-				.firstOnlyOptional(I_C_BPartner_AlbertaRole.class)
-				.map(this::toAlbertaRole);
+				.list(I_C_BPartner_AlbertaRole.class)
+				.stream()
+				.map(this::toAlbertaRole)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -73,7 +72,7 @@ public class AlbertaRoleRepository
 		return AlbertaRole.builder()
 				.bPartnerAlbertaRoleId(bPartnerAlbertaRoleId)
 				.bPartnerId(bPartnerId)
-				.role(AlbertaRoleType.valueOf(record.getAlbertaRole()))
+				.role(AlbertaRoleType.ofCode(record.getAlbertaRole()))
 				.build();
 	}
 }

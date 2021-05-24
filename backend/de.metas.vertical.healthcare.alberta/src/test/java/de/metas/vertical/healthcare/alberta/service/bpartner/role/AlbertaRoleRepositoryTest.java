@@ -20,34 +20,31 @@
  * #L%
  */
 
-package de.metas.vertical.healthcare.alberta.service.bpartner.albertabpartner;
+package de.metas.vertical.healthcare.alberta.service.bpartner.role;
 
-import de.metas.user.UserId;
-import de.metas.vertical.healthcare.alberta.bpartner.user.AlbertaUser;
-import de.metas.vertical.healthcare.alberta.bpartner.user.AlbertaUserRepository;
-import de.metas.vertical.healthcare.alberta.bpartner.user.GenderType;
-import de.metas.vertical.healthcare.alberta.bpartner.user.TitleType;
+import de.metas.bpartner.BPartnerId;
+import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRole;
+import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleRepository;
+import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleType;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
-
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 
-public class AlbertaUserRepositoryTest
+public class AlbertaRoleRepositoryTest
 {
-	private AlbertaUserRepository albertaUserRepository;
+	private AlbertaRoleRepository albertaRoleRepository;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		albertaUserRepository =  new AlbertaUserRepository();
+		albertaRoleRepository =  new AlbertaRoleRepository();
 	}
 
 	@BeforeAll
@@ -66,15 +63,13 @@ public class AlbertaUserRepositoryTest
 	public void save()
 	{
 		//given
-		final AlbertaUser user = AlbertaUser.builder()
-				.userId(UserId.ofRepoId(111111))
-				.title(TitleType.DiplMed)
-				.gender(GenderType.MALE)
-				.timestamp(Instant.parse("2019-11-22T00:00:00Z"))
+		final AlbertaRole role = AlbertaRole.builder()
+				.bPartnerId(BPartnerId.ofRepoId(1))
+				.role(AlbertaRoleType.HealthInsurance)
 				.build();
 
 		//when
-		final AlbertaUser result = albertaUserRepository.save(user);
+		final AlbertaRole result = albertaRoleRepository.save(role);
 
 		//then
 		expect(result).toMatchSnapshot();

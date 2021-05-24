@@ -31,7 +31,7 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class AlbertaCaregiver
 {
 	@Nullable

@@ -56,6 +56,7 @@ import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
+import de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem.JsonResponseBPartnerCompositeUpsertItemBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
@@ -63,7 +64,6 @@ import de.metas.common.bpartner.v2.response.JsonResponseUpsert.JsonResponseUpser
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem.JsonResponseUpsertItemBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem.SyncOutcome;
-import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
@@ -93,11 +93,13 @@ import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
+import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
@@ -135,6 +137,7 @@ public class JsonPersisterService
 	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final transient BPGroupRepository bpGroupRepository;
 	private final transient CurrencyRepository currencyRepository;
+	private final transient AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
 
 	/**
 	 * A unique indentifier for this instance.
@@ -149,6 +152,7 @@ public class JsonPersisterService
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService,
 			@NonNull final String identifier)
 	{
 		this.jsonRetrieverService = jsonRetrieverService;
@@ -157,6 +161,7 @@ public class JsonPersisterService
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.currencyRepository = currencyRepository;
+		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
 
 		this.identifier = assumeNotEmpty(identifier, "Param Identifier may not be empty");
 	}
@@ -225,6 +230,8 @@ public class JsonPersisterService
 
 		final JsonResponseBPartnerCompositeUpsertItem result = resultBuilder.build();
 		handleExternalReferenceRecords(requestItem, result, orgCode);
+
+		handleAlbertaInfo(bpartnerComposite.getOrgId(), effectiveSyncAdvise, requestItem, result);
 
 		return result;
 	}
@@ -934,6 +941,12 @@ public class JsonPersisterService
 			bpartner.setVatId(StringUtils.trim(jsonBPartner.getVatId()));
 		}
 
+		//memo
+		if (jsonBPartner.isMemoIsSet())
+		{
+			bpartner.setMemo(jsonBPartner.getMemo());
+		}
+
 		return BooleanWithReason.TRUE;
 	}
 
@@ -1179,6 +1192,11 @@ public class JsonPersisterService
 			{
 				contact.setNewsletter(jsonBPartnerContact.getNewsletter());
 			}
+		}
+
+		if (jsonBPartnerContact.isBirthdaySet())
+		{
+			contact.setBirthday(jsonBPartnerContact.getBirthday());
 		}
 
 		final BPartnerContactType bpartnerContactType = syncJsonToContactType(jsonBPartnerContact);
@@ -1750,5 +1768,52 @@ public class JsonPersisterService
 
 		externalReferenceCreateReqs.forEach(externalReferenceCreateReq -> externalReferenceRestControllerService.performUpsert(externalReferenceCreateReq, orgCode));
 
+	}
+
+	private void handleAlbertaInfo(
+			@NonNull final OrgId orgId,
+			@NonNull final SyncAdvise syncAdvise,
+			@NonNull final JsonRequestBPartnerUpsertItem requestItem,
+			@NonNull final JsonResponseBPartnerCompositeUpsertItem result)
+	{
+		final JsonRequestComposite requestBPartnerComposite = requestItem.getBpartnerComposite();
+
+		final JsonCompositeAlbertaBPartner compositeAlbertaBPartner = requestBPartnerComposite.getCompositeAlbertaBPartner();
+
+		if (compositeAlbertaBPartner != null)
+		{
+			final BPartnerId bPartnerId = BPartnerId.ofRepoId(result.getResponseBPartnerItem().getMetasfreshId().getValue());
+			albertaBPartnerCompositeService.upsertAlbertaCompositeInfo(orgId, bPartnerId, compositeAlbertaBPartner, syncAdvise);
+		}
+
+		if (!requestBPartnerComposite.getContactsNotNull().getRequestItems().isEmpty()
+				&& !Check.isEmpty(result.getResponseContactItems()))
+		{
+			final Map<String,JsonMetasfreshId> contactIdentifierToMetasfreshId = result.getResponseContactItems()
+					.stream()
+					.collect(ImmutableMap.toImmutableMap(JsonResponseUpsertItem::getIdentifier, JsonResponseUpsertItem::getMetasfreshId));
+
+			final SyncAdvise effectiveSyncAdvise =  CoalesceUtil.coalesceNotNull(requestBPartnerComposite.getContactsNotNull().getSyncAdvise(), syncAdvise);
+
+			requestItem.getBpartnerComposite().getContactsNotNull().getRequestItems()
+					.stream()
+					.filter(contactRequestItem -> contactRequestItem.getJsonAlbertaContact() != null)
+					.forEach(contactRequestItem -> {
+						final JsonMetasfreshId contactMetasfreshId = contactIdentifierToMetasfreshId.get(contactRequestItem.getContactIdentifier());
+
+						if (contactMetasfreshId == null)
+						{
+							throw MissingResourceException.builder()
+									.resourceName("BPartnerContact")
+									.resourceIdentifier(contactRequestItem.getContactIdentifier())
+									.parentResource(requestBPartnerComposite)
+									.build();
+						}
+
+						albertaBPartnerCompositeService.upsertAlbertaContact(UserId.ofRepoId(contactMetasfreshId.getValue()),
+																			 contactRequestItem.getJsonAlbertaContact(),
+																			 effectiveSyncAdvise);
+					});
+		}
 	}
 }

@@ -27,6 +27,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Getter
@@ -34,49 +35,40 @@ import java.time.Instant;
 @EqualsAndHashCode
 public class JsonAlbertaContact
 {
-	@ApiModelProperty(position = 5)
-	private String userId;
-
-	@ApiModelProperty(hidden = true)
-	private boolean userIdSet;
-
 	@ApiModelProperty(position = 10)
+	@Nullable
 	private String gender;
 
 	@ApiModelProperty(hidden = true)
 	private boolean genderSet;
 
 	@ApiModelProperty(position = 10)
+	@Nullable
 	private String title;
 
 	@ApiModelProperty(hidden = true)
 	private boolean titleSet;
 
 	@ApiModelProperty(position = 10)
+	@Nullable
 	private Instant timestamp;
 
 	@ApiModelProperty(hidden = true)
 	private boolean timestampSet;
 
-	public void setUserId(final String userId)
-	{
-		this.userId = userId;
-		this.userIdSet = true;
-	}
-
-	public void setGender(final String gender)
+	public void setGender(@Nullable final String gender)
 	{
 		this.gender = gender;
 		this.genderSet = true;
 	}
 
-	public void setTitle(final String title)
+	public void setTitle(@Nullable final String title)
 	{
 		this.title = title;
 		this.titleSet = true;
 	}
 
-	public void setTimestamp(final Instant timestamp)
+	public void setTimestamp(@Nullable final Instant timestamp)
 	{
 		this.timestamp = timestamp;
 		this.timestampSet = true;

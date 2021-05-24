@@ -43,12 +43,10 @@ public class AlbertaCaregiverRepository
 
 		record.setC_BPartner_ID(caregiver.getBPartnerId().getRepoId());
 		record.setC_BPartner_Caregiver_ID(caregiver.getCaregiverId().getRepoId());
+
 		record.setIsLegalCarer(caregiver.isLegalCarer());
 
-		if (caregiver.getType() != null)
-		{
-			record.setType_Contact(caregiver.getType().getCode());
-		}
+		record.setType_Contact(caregiver.getType() != null ? caregiver.getType().getCode() : null);
 
 		InterfaceWrapperHelper.save(record);
 
@@ -80,7 +78,7 @@ public class AlbertaCaregiverRepository
 				.bPartnerAlbertaCaregiverId(bPartnerAlbertaCaregiverId)
 				.bPartnerId(bPartnerId)
 				.caregiverId(caregiverId)
-				.type(CaregiverType.ofCode(record.getType_Contact()))
+				.type(CaregiverType.ofCodeNullable(record.getType_Contact()))
 				.isLegalCarer(record.isLegalCarer())
 				.build();
 	}

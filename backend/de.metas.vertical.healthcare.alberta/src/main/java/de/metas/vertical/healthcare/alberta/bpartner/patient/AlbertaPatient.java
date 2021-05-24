@@ -31,9 +31,10 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class AlbertaPatient
 {
 	@Nullable
@@ -46,7 +47,7 @@ public class AlbertaPatient
 	BPartnerId hospitalId;
 
 	@Nullable
-	Instant dischargeDate;
+	LocalDate dischargeDate;
 
 	@Nullable
 	BPartnerId payerId;
@@ -58,10 +59,10 @@ public class AlbertaPatient
 	String numberOfInsured;
 
 	@Nullable
-	Instant copaymentFrom;
+	LocalDate copaymentFrom;
 
 	@Nullable
-	Instant copaymentTo;
+	LocalDate copaymentTo;
 
 	boolean isTransferPatient;
 
@@ -74,7 +75,7 @@ public class AlbertaPatient
 	DeactivationReasonType deactivationReason;
 
 	@Nullable
-	Instant deactivationDate;
+	LocalDate deactivationDate;
 
 	@Nullable
 	String deactivationComment;

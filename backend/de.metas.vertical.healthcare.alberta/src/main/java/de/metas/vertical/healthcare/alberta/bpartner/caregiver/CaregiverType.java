@@ -25,13 +25,17 @@ package de.metas.vertical.healthcare.alberta.bpartner.caregiver;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.vertical.healthcare.alberta.model.X_C_BPartner_AlbertaCareGiver;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 
+@AllArgsConstructor
 public enum CaregiverType implements ReferenceListAwareEnum
 {
 	Unknown(X_C_BPartner_AlbertaCareGiver.TYPE_CONTACT_Unknown),
@@ -97,21 +101,27 @@ public enum CaregiverType implements ReferenceListAwareEnum
 
 	private final String code;
 
-	private CaregiverType(final String code)
-	{
-		this.code = code;
-	}
-
 	@Override
 	public String getCode()
 	{
 		return code;
 	}
 
+	@Nullable
+	public static CaregiverType ofCodeNullable(@Nullable final String code)
+	{
+		if (Check.isBlank(code))
+		{
+			return null;
+		}
+
+		return ofCode(code);
+	}
+
 	@JsonCreator
 	public static CaregiverType ofCode(@NonNull final String code)
 	{
-		CaregiverType type = typesByCode.get(code);
+		final CaregiverType type = typesByCode.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + CaregiverType.class + " found for code: " + code);

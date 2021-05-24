@@ -40,7 +40,7 @@ public class AlbertaRole
 	@NonNull
 	BPartnerId bPartnerId;
 
-	@Nullable
+	@NonNull
 	AlbertaRoleType role;
 
 	public BPartnerAlbertaRoleId getIdNotNull()

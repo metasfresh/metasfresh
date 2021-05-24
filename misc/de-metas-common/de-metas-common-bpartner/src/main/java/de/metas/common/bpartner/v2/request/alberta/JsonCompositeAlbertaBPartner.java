@@ -40,7 +40,7 @@ public class JsonCompositeAlbertaBPartner
 	JsonAlbertaBPartner jsonAlbertaBPartner;
 
 	@ApiModelProperty(position = 20)
-	String role;
+	JsonBPartnerRole role;
 
 	@ApiModelProperty(position = 30)
 	JsonAlbertaPatient jsonAlbertaPatient;
@@ -50,7 +50,7 @@ public class JsonCompositeAlbertaBPartner
 
 	private JsonCompositeAlbertaBPartner(
 			final @Nullable @JsonProperty("jsonAlbertaBPartner") JsonAlbertaBPartner jsonAlbertaBPartner,
-			final @Nullable @JsonProperty("role") String role,
+			final @Nullable @JsonProperty("role") JsonBPartnerRole role,
 			final @Nullable @JsonProperty("jsonAlbertaPatient") JsonAlbertaPatient jsonAlbertaPatient,
 			final @Nullable @JsonProperty("jsonAlbertaCareGivers") List<JsonAlbertaCareGiver> jsonAlbertaCareGivers)
 	{

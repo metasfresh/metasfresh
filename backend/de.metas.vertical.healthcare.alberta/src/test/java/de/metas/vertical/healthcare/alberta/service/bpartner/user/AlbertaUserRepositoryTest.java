@@ -20,31 +20,34 @@
  * #L%
  */
 
-package de.metas.vertical.healthcare.alberta.service.bpartner.albertabpartner;
+package de.metas.vertical.healthcare.alberta.service.bpartner.user;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRole;
-import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleRepository;
-import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleType;
+import de.metas.user.UserId;
+import de.metas.vertical.healthcare.alberta.bpartner.user.AlbertaUser;
+import de.metas.vertical.healthcare.alberta.bpartner.user.AlbertaUserRepository;
+import de.metas.vertical.healthcare.alberta.bpartner.user.GenderType;
+import de.metas.vertical.healthcare.alberta.bpartner.user.TitleType;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 
-public class AlbertaRoleRepositoryTest
+public class AlbertaUserRepositoryTest
 {
-	private AlbertaRoleRepository albertaRoleRepository;
+	private AlbertaUserRepository albertaUserRepository;
 
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		albertaRoleRepository =  new AlbertaRoleRepository();
+		albertaUserRepository =  new AlbertaUserRepository();
 	}
 
 	@BeforeAll
@@ -60,16 +63,33 @@ public class AlbertaRoleRepositoryTest
 	}
 
 	@Test
-	public void save()
+	public void save_allFields()
 	{
 		//given
-		final AlbertaRole role = AlbertaRole.builder()
-				.bPartnerId(BPartnerId.ofRepoId(111111))
-				.role(AlbertaRoleType.HEALTHINSURANCE)
+		final AlbertaUser user = AlbertaUser.builder()
+				.userId(UserId.ofRepoId(1))
+				.title(TitleType.DiplMed)
+				.gender(GenderType.MALE)
+				.timestamp(Instant.parse("2019-11-22T00:00:00Z"))
 				.build();
 
 		//when
-		final AlbertaRole result = albertaRoleRepository.save(role);
+		final AlbertaUser result = albertaUserRepository.save(user);
+
+		//then
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	public void save_onlyMandatory()
+	{
+		//given
+		final AlbertaUser user = AlbertaUser.builder()
+				.userId(UserId.ofRepoId(1))
+				.build();
+
+		//when
+		final AlbertaUser result = albertaUserRepository.save(user);
 
 		//then
 		expect(result).toMatchSnapshot();

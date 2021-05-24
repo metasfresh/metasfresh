@@ -25,13 +25,17 @@ package de.metas.vertical.healthcare.alberta.bpartner.user;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.vertical.healthcare.alberta.model.X_AD_User_Alberta;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 
+@AllArgsConstructor
 public enum TitleType implements ReferenceListAwareEnum
 {
 	Unbekannt(X_AD_User_Alberta.TITLE_Unbekannt),
@@ -51,21 +55,27 @@ public enum TitleType implements ReferenceListAwareEnum
 	;
 	private final String code;
 
-	private TitleType(final String code)
-	{
-		this.code = code;
-	}
-
 	@Override
 	public String getCode()
 	{
 		return code;
 	}
 
+	@Nullable
+	public static TitleType ofCodeNullable(@Nullable final String code)
+	{
+		if (Check.isBlank(code))
+		{
+			return null;
+		}
+
+		return ofCode(code);
+	}
+
 	@JsonCreator
 	public static TitleType ofCode(@NonNull final String code)
 	{
-		TitleType type = typesByCode.get(code);
+		final TitleType type = typesByCode.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + TitleType.class + " found for code: " + code);

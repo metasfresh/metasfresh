@@ -27,6 +27,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Getter
@@ -35,48 +36,52 @@ import java.time.Instant;
 public class JsonAlbertaBPartner
 {
 	@ApiModelProperty(position = 20)
+	@Nullable
 	private Boolean isArchived;
 
 	@ApiModelProperty(hidden = true)
 	private boolean archivedSet;
 
 	@ApiModelProperty(position = 30)
+	@Nullable
 	private String title;
 
 	@ApiModelProperty(hidden = true)
 	private boolean titleSet;
 
 	@ApiModelProperty(position = 40)
+	@Nullable
 	private String titleShort;
 
 	@ApiModelProperty(hidden = true)
 	private boolean titleShortSet;
 
 	@ApiModelProperty(position = 50)
+	@Nullable
 	private Instant timestamp;
 
 	@ApiModelProperty(hidden = true)
 	private boolean timestampSet;
 
-	public void setIsArchived(final Boolean isArchived)
+	public void setIsArchived(@Nullable final Boolean isArchived)
 	{
 		this.isArchived = isArchived;
 		this.archivedSet = true;
 	}
 
-	public void setTitle(final String title)
+	public void setTitle(@Nullable final String title)
 	{
 		this.title = title;
 		this.titleSet = true;
 	}
 
-	public void setTitleShort(final String titleShort)
+	public void setTitleShort(@Nullable final String titleShort)
 	{
 		this.titleShort = titleShort;
 		this.titleShortSet = true;
 	}
 
-	public void setTimestamp(final Instant timestamp)
+	public void setTimestamp(@Nullable final Instant timestamp)
 	{
 		this.timestamp = timestamp;
 		this.timestampSet = true;

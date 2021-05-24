@@ -25,7 +25,10 @@ package de.metas.common.bpartner.v2.request.alberta;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 @Getter
 @ToString
@@ -35,34 +38,32 @@ public class JsonAlbertaCareGiver
 	@ApiModelProperty(position = 10)
 	private String caregiverIdentifier;
 
-	@ApiModelProperty(hidden = true)
-	private boolean caregiverIdentifierSet;
-
 	@ApiModelProperty(position = 20)
+	@Nullable
 	private String type;
 
 	@ApiModelProperty(hidden = true)
 	private boolean typeSet;
 
 	@ApiModelProperty(position = 30)
+	@Nullable
 	private Boolean isLegalCarer;
 
 	@ApiModelProperty(hidden = true)
 	private boolean legalCarerSet;
 
-	public void setCaregiverIdentifier(final String caregiverIdentifier)
+	public void setCaregiverIdentifier(@NonNull final String caregiverIdentifier)
 	{
 		this.caregiverIdentifier = caregiverIdentifier;
-		this.caregiverIdentifierSet = true;
 	}
 
-	public void setType(final String type)
+	public void setType(@Nullable final String type)
 	{
 		this.type = type;
 		this.typeSet = true;
 	}
 
-	public void setIsLegalCarer(final Boolean isLegalCarer)
+	public void setIsLegalCarer(@Nullable final Boolean isLegalCarer)
 	{
 		this.isLegalCarer = isLegalCarer;
 		this.legalCarerSet = true;

@@ -32,6 +32,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDate;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
@@ -62,17 +63,17 @@ public class JsonCompositeAlbertaBPartnerTest
 
 		final JsonAlbertaPatient patient = new JsonAlbertaPatient();
 		patient.setHospitalIdentifier("1111111");
-		patient.setDischargeDate(Instant.parse("2019-11-22T00:00:00Z"));
+		patient.setDischargeDate(LocalDate.parse("2019-11-22"));
 		patient.setPayerIdentifier("2222222");
 		patient.setPayerType("payerType");
 		patient.setNumberOfInsured("333333");
-		patient.setCopaymentFrom(Instant.parse("2019-11-22T00:00:00Z"));
-		patient.setCopaymentTo(Instant.parse("2019-11-22T00:00:00Z"));
+		patient.setCopaymentFrom(LocalDate.now());
+		patient.setCopaymentTo(LocalDate.now());
 		patient.setIsTransferPatient(true);
 		patient.setIVTherapy(true);
 		patient.setFieldNurseIdentifier("4444444");
 		patient.setDeactivationReason("reason");
-		patient.setDeactivationDate(Instant.parse("2019-11-22T00:00:00Z"));
+		patient.setDeactivationDate(LocalDate.now());
 		patient.setDeactivationComment("comment");
 		patient.setCreatedAt(Instant.parse("2019-11-22T00:00:00Z"));
 		patient.setCreatedByIdentifier("5555555");
@@ -89,7 +90,7 @@ public class JsonCompositeAlbertaBPartnerTest
 
 		final JsonCompositeAlbertaBPartner compositeAlbertaBPartner = JsonCompositeAlbertaBPartner.builder()
 				.jsonAlbertaBPartner(bPartner)
-				.role("role")
+				.role(JsonBPartnerRole.Patient)
 				.jsonAlbertaPatient(patient)
 				.jsonAlbertaCareGivers(careGivers.build())
 				.build();

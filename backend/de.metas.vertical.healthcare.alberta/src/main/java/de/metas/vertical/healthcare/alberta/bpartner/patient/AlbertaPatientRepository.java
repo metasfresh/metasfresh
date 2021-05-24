@@ -23,8 +23,10 @@
 package de.metas.vertical.healthcare.alberta.bpartner.patient;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import de.metas.vertical.healthcare.alberta.model.I_C_BPartner_AlbertaPatient;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -32,6 +34,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Repository
@@ -44,31 +47,33 @@ public class AlbertaPatientRepository
 		final I_C_BPartner_AlbertaPatient record = InterfaceWrapperHelper.loadOrNew(patient.getBPartnerAlbertaPatientId(), I_C_BPartner_AlbertaPatient.class);
 
 		record.setC_BPartner_ID(patient.getBPartnerId().getRepoId());
-		record.setC_BPartner_Hospital_ID(patient.getHospitalId().getRepoId());
+
+		record.setC_BPartner_Hospital_ID(repoIdFromNullable(patient.getHospitalId()));
+
+		record.setC_BPartner_Payer_ID(repoIdFromNullable(patient.getPayerId()));
+
+		record.setAD_User_FieldNurse_ID(repoIdFromNullable(patient.getFieldNurseId()));
+
+		record.setAD_User_CreatedBy_ID(repoIdFromNullable(patient.getCreatedById()));
+
+		record.setAD_User_UpdatedBy_ID(repoIdFromNullable(patient.getUpdatedById()));
+
 		record.setDischargeDate(TimeUtil.asTimestamp(patient.getDischargeDate()));
-		record.setC_BPartner_Payer_ID(patient.getPayerId().getRepoId());
-		record.setNumberOfInsured(patient.getNumberOfInsured());
-		record.setCopaymentFrom(TimeUtil.asTimestamp(patient.getCopaymentFrom()));
 		record.setCopaymentTo(TimeUtil.asTimestamp(patient.getCopaymentTo()));
+		record.setCopaymentFrom(TimeUtil.asTimestamp(patient.getCopaymentFrom()));
+		record.setDeactivationDate(TimeUtil.asTimestamp(patient.getDeactivationDate()));
+		record.setCreatedAt(TimeUtil.asTimestamp(patient.getCreatedAt()));
+		record.setUpdatedAt(TimeUtil.asTimestamp(patient.getUpdatedAt()));
+
 		record.setIsTransferPatient(patient.isTransferPatient());
 		record.setIsIVTherapy(patient.isIVTherapy());
-		record.setAD_User_FieldNurse_ID(patient.getFieldNurseId().getRepoId());
-		record.setDeactivationDate(TimeUtil.asTimestamp(patient.getDeactivationDate()));
+
+		record.setPayerType(patient.getPayerType() != null ? patient.getPayerType().getCode() : null);
+		record.setDeactivationReason(patient.getDeactivationReason() != null ? patient.getDeactivationReason().getCode() : null);
+
+		record.setNumberOfInsured(patient.getNumberOfInsured());
+
 		record.setDeactivationComment(patient.getDeactivationComment());
-		record.setCreatedAt(TimeUtil.asTimestamp(patient.getCreatedAt()));
-		record.setAD_User_CreatedBy_ID(patient.getCreatedById().getRepoId());
-		record.setUpdatedAt(TimeUtil.asTimestamp(patient.getUpdatedAt()));
-		record.setAD_User_UpdatedBy_ID(patient.getUpdatedById().getRepoId());
-
-		if (patient.getPayerType() != null)
-		{
-			record.setPayerType(patient.getPayerType().getCode());
-		}
-
-		if (patient.getDeactivationReason() != null)
-		{
-			record.setDeactivationReason(patient.getDeactivationReason().getCode());
-		}
 
 		InterfaceWrapperHelper.save(record);
 
@@ -91,32 +96,42 @@ public class AlbertaPatientRepository
 	{
 		final BPartnerAlbertaPatientId bPartnerAlbertaPatientId = BPartnerAlbertaPatientId.ofRepoId(record.getC_BPartner_AlbertaPatient_ID());
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(record.getC_BPartner_ID());
-		final BPartnerId hospitalId = BPartnerId.ofRepoId(record.getC_BPartner_Hospital_ID());
-		final BPartnerId payerId = BPartnerId.ofRepoId(record.getC_BPartner_Payer_ID());
-		final UserId fieldNurseId = UserId.ofRepoId(record.getAD_User_FieldNurse_ID());
-		final UserId createdById = UserId.ofRepoId(record.getAD_User_CreatedBy_ID());
-		final UserId updatedById = UserId.ofRepoId(record.getAD_User_UpdatedBy_ID());
+		final BPartnerId hospitalId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_Hospital_ID());
+		final BPartnerId payerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_Payer_ID());
+		final UserId fieldNurseId = UserId.ofRepoIdOrNull(record.getAD_User_FieldNurse_ID());
+		final UserId createdById = UserId.ofRepoIdOrNull(record.getAD_User_CreatedBy_ID());
+		final UserId updatedById = UserId.ofRepoIdOrNull(record.getAD_User_UpdatedBy_ID());
 
 		return AlbertaPatient.builder()
 				.bPartnerAlbertaPatientId(bPartnerAlbertaPatientId)
 				.bPartnerId(bPartnerId)
 				.hospitalId(hospitalId)
-				.dischargeDate(TimeUtil.asInstant(record.getDischargeDate()))
+				.dischargeDate(TimeUtil.asLocalDate(record.getDischargeDate(), SystemTime.zoneId()))
 				.payerId(payerId)
-				.payerType(PayerType.ofCode(record.getPayerType()))
+				.payerType(PayerType.ofCodeNullable(record.getPayerType()))
 				.numberOfInsured(record.getNumberOfInsured())
-				.copaymentFrom(TimeUtil.asInstant(record.getCopaymentFrom()))
-				.copaymentTo(TimeUtil.asInstant(record.getCopaymentTo()))
+				.copaymentFrom(TimeUtil.asLocalDate(record.getCopaymentFrom(), SystemTime.zoneId()))
+				.copaymentTo(TimeUtil.asLocalDate(record.getCopaymentTo(), SystemTime.zoneId()))
 				.isTransferPatient(record.isTransferPatient())
 				.isIVTherapy(record.isIVTherapy())
 				.fieldNurseId(fieldNurseId)
-				.deactivationReason(DeactivationReasonType.ofCode(record.getDeactivationReason()))
-				.deactivationDate(TimeUtil.asInstant(record.getDeactivationDate()))
+				.deactivationReason(DeactivationReasonType.ofCodeNullable(record.getDeactivationReason()))
+				.deactivationDate(TimeUtil.asLocalDate(record.getDeactivationDate(), SystemTime.zoneId()))
 				.deactivationComment(record.getDeactivationComment())
 				.createdAt(TimeUtil.asInstant(record.getCreatedAt()))
 				.createdById(createdById)
 				.updatedAt(TimeUtil.asInstant(record.getUpdatedAt()))
 				.updatedById(updatedById)
 				.build();
+	}
+
+	private int repoIdFromNullable(@Nullable final RepoIdAware repoIdAware)
+	{
+		if (repoIdAware == null)
+		{
+			return -1;
+		}
+
+		return repoIdAware.getRepoId();
 	}
 }

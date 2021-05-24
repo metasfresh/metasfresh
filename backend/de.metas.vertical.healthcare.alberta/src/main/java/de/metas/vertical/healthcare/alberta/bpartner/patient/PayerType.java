@@ -25,13 +25,17 @@ package de.metas.vertical.healthcare.alberta.bpartner.patient;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.vertical.healthcare.alberta.model.X_C_BPartner_AlbertaPatient;
+import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 
+@AllArgsConstructor
 public enum PayerType implements ReferenceListAwareEnum
 {
 	Unknown(X_C_BPartner_AlbertaPatient.PAYERTYPE_Unbekannt),
@@ -44,21 +48,27 @@ public enum PayerType implements ReferenceListAwareEnum
 
 	public final String code;
 
-	private PayerType(final String code)
-	{
-		this.code = code;
-	}
-
 	@Override
 	public String getCode()
 	{
 		return code;
 	}
 
+	@Nullable
+	public static PayerType ofCodeNullable(@Nullable final String code)
+	{
+		if (Check.isBlank(code))
+		{
+			return null;
+		}
+
+		return ofCode(code);
+	}
+
 	@JsonCreator
 	public static PayerType ofCode(@NonNull final String code)
 	{
-		PayerType type = typesByCode.get(code);
+		final PayerType type = typesByCode.get(code);
 		if (type == null)
 		{
 			throw new AdempiereException("No " + PayerType.class + " found for code: " + code);

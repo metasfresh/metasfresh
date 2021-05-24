@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.vertical.healthcare.alberta.service.bpartner.albertabpartner;
+package de.metas.vertical.healthcare.alberta.service.bpartner.caregiver;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.vertical.healthcare.alberta.bpartner.caregiver.AlbertaCaregiver;
@@ -60,12 +60,12 @@ public class AlbertaCaregiverRepositoryTest
 	}
 
 	@Test
-	public void save()
+	public void save_allFields()
 	{
 		//given
 		final AlbertaCaregiver caregiver = AlbertaCaregiver.builder()
-				.bPartnerId(BPartnerId.ofRepoId(111111))
-				.caregiverId(BPartnerId.ofRepoId(2222222))
+				.bPartnerId(BPartnerId.ofRepoId(1))
+				.caregiverId(BPartnerId.ofRepoId(2))
 				.type(CaregiverType.Enkel)
 				.isLegalCarer(true)
 				.build();
@@ -77,4 +77,19 @@ public class AlbertaCaregiverRepositoryTest
 		expect(result).toMatchSnapshot();
 	}
 
+	@Test
+	public void save_onlyMandatory()
+	{
+		//given
+		final AlbertaCaregiver caregiver = AlbertaCaregiver.builder()
+				.bPartnerId(BPartnerId.ofRepoId(1))
+				.caregiverId(BPartnerId.ofRepoId(2))
+				.build();
+
+		//when
+		final AlbertaCaregiver result = albertaCaregiverRepository.save(caregiver);
+
+		//then
+		expect(result).toMatchSnapshot();
+	}
 }

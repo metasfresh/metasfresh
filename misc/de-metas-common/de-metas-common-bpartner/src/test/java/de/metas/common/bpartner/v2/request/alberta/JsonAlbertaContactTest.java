@@ -42,7 +42,7 @@ public class JsonAlbertaContactTest
 			.findAndRegisterModules()
 			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 			.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-			.enable(MapperFeature.USE_ANNOTATIONS);;
+			.enable(MapperFeature.USE_ANNOTATIONS);
 
 	@BeforeClass
 	public static void beforeAll()
@@ -54,7 +54,6 @@ public class JsonAlbertaContactTest
 	public void serializeDeserialize() throws IOException
 	{
 		final JsonAlbertaContact contact = new JsonAlbertaContact();
-		contact.setUserId("11111");
 		contact.setTitle("title");
 		contact.setGender("gender");
 		contact.setTimestamp(Instant.parse("2019-11-22T00:00:00Z"));
