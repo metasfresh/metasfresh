@@ -432,7 +432,10 @@ class Lookup extends Component {
                 defaultValue = { caption: codeSelected };
               }
 
-              defaultValue = !isFilterActive ? item.defaultValue : defaultValue;
+              defaultValue =
+                !isFilterActive && updateItems
+                  ? item.defaultValue
+                  : defaultValue;
 
               let width = null;
               // for multiple lookup widget we want the dropdown
