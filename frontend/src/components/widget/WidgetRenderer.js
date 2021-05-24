@@ -168,6 +168,9 @@ class WidgetRenderer extends PureComponent {
         disabled: readonly,
         tabIndex: tabIndex,
       },
+      isFilterActive: filterActiveState,
+      updateItems,
+      defaultValue: widgetData[0].defaultValue,
       onChange: this.handleDateChange,
     };
     const dateRangeProps = {
