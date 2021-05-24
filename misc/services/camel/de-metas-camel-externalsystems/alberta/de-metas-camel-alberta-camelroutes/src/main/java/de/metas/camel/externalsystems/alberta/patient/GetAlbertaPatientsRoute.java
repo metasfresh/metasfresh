@@ -80,6 +80,11 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 				.routeId(PROCESS_PATIENT_ROUTE_ID)
 				.process(new CreateBPartnerReqProcessor()).id(CREATE_UPSERT_BPARTNER_REQUEST_PROCESSOR_ID)
 
+				.process((exchange -> { //for testing purposes
+					final JsonRequestBPartnerUpsert requestBPartnerUpsert = exchange.getIn().getBody(JsonRequestBPartnerUpsert.class);
+					exchange.getIn().setBody(requestBPartnerUpsert.getRequestItems());
+				}))
+
 				.split(body())
 					.to(direct(IMPORT_BPARTNER_ROUTE_ID))
 				.end()

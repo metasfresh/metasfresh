@@ -28,7 +28,6 @@ import de.metas.camel.externalsystems.alberta.patient.BPartnerUpsertRequestProdu
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
 import de.metas.common.util.EmptyUtil;
 import io.swagger.client.ApiException;
@@ -54,7 +53,6 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * Takes a {@link JsonExternalReferenceLookupResponse} and the current {@link Patient} and transformes them into a {@link BPUpsertCamelRequest}.
@@ -109,9 +107,7 @@ public class CreateBPartnerReqProcessor implements Processor
 				.sourceBPartnerLocationIdentifier(result.getPatientMainAddressIdentifier())
 				.build();
 
-		final List<JsonRequestBPartnerUpsertItem> upsertItems = result.getJsonRequestBPartnerUpsert().getRequestItems();
-
-		exchange.getIn().setBody(upsertItems);
+		exchange.getIn().setBody(result.getJsonRequestBPartnerUpsert());
 		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_BP_IDENTIFIER_TO_ROLE, bPartnerRoleInfoProvider);
 	}
 

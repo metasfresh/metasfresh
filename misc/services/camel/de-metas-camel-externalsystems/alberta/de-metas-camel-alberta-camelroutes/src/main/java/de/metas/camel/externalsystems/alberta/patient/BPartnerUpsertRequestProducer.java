@@ -643,7 +643,7 @@ public class BPartnerUpsertRequestProducer
 
 		final JsonRequestContact contact = new JsonRequestContact();
 		contact.setFirstName(users.getFirstName());
-		contact.setPhone(users.getLastName());
+		contact.setLastName(users.getLastName());
 		contact.setEmail(users.getEmail());
 
 		final JsonAlbertaContact albertaContact = new JsonAlbertaContact();
