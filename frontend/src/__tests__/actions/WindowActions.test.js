@@ -2,7 +2,7 @@ import thunk from 'redux-thunk';
 import nock from 'nock';
 import configureStore from 'redux-mock-store';
 import { Set } from 'immutable';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 
 import { initialState as appInitialState } from '../../reducers/appHandler';
 import { initialState } from '../../reducers/viewHandler';
@@ -33,8 +33,7 @@ import {
 } from '../../actions/WindowActions';
 
 const createState = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       viewHandler: initialState,
       windowHandler: windowState,

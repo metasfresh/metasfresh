@@ -2,7 +2,7 @@ import update from 'immutability-helper';
 import { Set as iSet } from 'immutable';
 import { createSelector } from 'reselect';
 import { createCachedSelector } from 're-reselect';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 import { get } from 'lodash';
 
 import {
@@ -568,7 +568,7 @@ export default function windowHandler(state = initialState, action) {
       } else {
         const currentVal = state[scope] ? state[scope][property] : {};
 
-        newValue = merge.recursive(true, currentVal, value);
+        newValue = merge(currentVal, value);
       }
 
       return update(state, {
