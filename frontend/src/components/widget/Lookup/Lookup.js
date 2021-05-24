@@ -100,6 +100,7 @@ class Lookup extends Component {
 
     if (widgetData) {
       !isFilterActive &&
+        updateItems &&
         updateItems({
           widgetField: widgetData[0].field,
           value: widgetData[0].defaultValue,
@@ -226,10 +227,11 @@ class Lookup extends Component {
         if (resp) {
           onSelectBarcode && onSelectBarcode(null);
 
-          updateItems({
-            widgetField: widgetData[0].field,
-            value: '',
-          });
+          updateItems &&
+            updateItems({
+              widgetField: widgetData[0].field,
+              value: '',
+            });
 
           this.setState({
             isInputEmpty: true,

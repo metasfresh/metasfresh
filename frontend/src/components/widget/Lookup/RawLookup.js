@@ -178,10 +178,11 @@ export class RawLookup extends Component {
       } else {
         setNextProperty(mainProp.parameterName);
       }
-      updateItems({
-        widgetField: mainProp.parameterName,
-        value: selected,
-      });
+      updateItems &&
+        updateItems({
+          widgetField: mainProp.parameterName,
+          value: selected,
+        });
     } else {
       if (subentity === 'quickInput') {
         onChange(mainProperty[0].field, selected, () =>
