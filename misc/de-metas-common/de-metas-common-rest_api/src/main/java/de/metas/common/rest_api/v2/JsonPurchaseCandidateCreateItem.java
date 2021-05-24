@@ -57,6 +57,9 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("isManualPrice")
 	boolean isManualPrice;
 
+	@JsonProperty("isPrepared")
+	boolean isPrepared;
+
 	@Nullable
 	@JsonProperty("price")
 	JsonPrice price;
@@ -113,6 +116,7 @@ public class JsonPurchaseCandidateCreateItem
 			@JsonProperty("externalHeaderId") final @NonNull String externalHeaderId,
 			@JsonProperty("externalLineId") final @NonNull String externalLineId,
 			@JsonProperty("isManualPrice") @Nullable final Boolean isManualPrice,
+			@JsonProperty("isPrepared") final boolean isPrepared,
 			@JsonProperty("price") @Nullable final JsonPrice price,
 			@JsonProperty("isManualDiscount") @Nullable final Boolean isManualDiscount,
 			@JsonProperty("discount") @Nullable final BigDecimal discount,
@@ -129,6 +133,7 @@ public class JsonPurchaseCandidateCreateItem
 		this.externalHeaderId = externalHeaderId;
 		this.externalLineId = externalLineId;
 		this.isManualPrice = CoalesceUtil.coalesce(isManualPrice, false);
+		this.isPrepared = isPrepared;
 		this.price = price;
 		this.isManualDiscount = CoalesceUtil.coalesce(isManualDiscount, false);
 		this.discount = discount;
