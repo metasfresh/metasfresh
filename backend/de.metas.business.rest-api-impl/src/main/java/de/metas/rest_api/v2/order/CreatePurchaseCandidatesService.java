@@ -158,6 +158,7 @@ public class CreatePurchaseCandidatesService
 				.discount(discountPercent)
 				.isManualDiscount(request.isManualDiscount())
 				.isManualPrice(manualPrice)
+				.prepared(request.isPrepared())
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.source(PurchaseCandidateSource.Api)
 				.build();
