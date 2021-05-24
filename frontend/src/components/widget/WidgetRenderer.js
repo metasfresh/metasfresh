@@ -179,7 +179,12 @@ class WidgetRenderer extends PureComponent {
       onShow,
       onHide,
       isFilterActive: filterActiveState,
+      defaultValue: widgetData[0].defaultValue,
+      defaultValueTo: widgetData[0].defaultValueTo,
+      updateItems,
+      field: widgetData[0].field,
     };
+
     const attributesProps = {
       entity,
       fields,
