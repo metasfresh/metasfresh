@@ -161,6 +161,7 @@ public class InventoryLineAggregatorFactory
 			@NonNull
 			ProductId productId;
 
+			// needed for the case that stocking UOM has changed and there are still HUs with an old UOM
 			@Nullable
 			UomId uomId;
 
