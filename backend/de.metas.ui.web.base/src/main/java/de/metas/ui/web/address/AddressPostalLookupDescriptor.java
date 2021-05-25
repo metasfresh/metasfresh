@@ -196,7 +196,7 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 			pageLength = evalCtx.getLimit(100);
 		}
 
-		final int sqlQueryLimit = pageLength + 1; // retrieving one more to recognize when we have more records
+		final int sqlQueryLimit = pageLength < Integer.MAX_VALUE ? pageLength + 1 : pageLength; // retrieving one more to recognize when we have more records
 		final String sql = "SELECT "
 				+ "\n " + I_C_Postal.COLUMNNAME_C_Postal_ID
 				+ "\n, " + I_C_Postal.COLUMNNAME_Postal

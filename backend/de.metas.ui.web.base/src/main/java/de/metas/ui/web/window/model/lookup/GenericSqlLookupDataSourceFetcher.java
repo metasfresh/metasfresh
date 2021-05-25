@@ -179,7 +179,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 		final int pageLength = evalCtxParam.getLimit(1000);
 		final LookupDataSourceContext evalCtxEffective = evalCtxParam
 				.withOffset(offset)
-				.withLimit(pageLength + 1); // add 1 to pageLength to be able to recognize if there are more items
+				.withLimit(pageLength < Integer.MAX_VALUE ? pageLength + 1 : pageLength); // add 1 to pageLength to be able to recognize if there are more items
 
 		final String sqlForFetching = sqlForFetchingExpression.evaluate(evalCtxEffective);
 		final String adLanguage = isTranslatable ? evalCtxEffective.getAD_Language() : null;
