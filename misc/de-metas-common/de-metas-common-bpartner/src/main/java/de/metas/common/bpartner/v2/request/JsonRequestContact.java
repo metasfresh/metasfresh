@@ -182,7 +182,7 @@ public class JsonRequestContact
 
 
 	@ApiModelProperty(position = 220,  //
-			value = "This translates to `AD_User.Value`.")
+			value = "This translates to `AD_User.Birthday`.")
 	private LocalDate birthday;
 
 	@ApiModelProperty(hidden = true)

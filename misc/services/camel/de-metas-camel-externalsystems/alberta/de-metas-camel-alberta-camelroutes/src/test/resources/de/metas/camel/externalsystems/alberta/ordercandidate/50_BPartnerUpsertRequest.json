@@ -169,10 +169,7 @@
               "titleSet": true,
               "titleShort": "Dr.",
               "titleShortSet": true,
-              "timestamp": {
-                "nano": 0,
-                "epochSecond": 1574086107
-              },
+              "timestamp": 1574086107.000000000,
               "timestampSet": true
             },
             "role": "PhysicianDoctor",
@@ -341,10 +338,7 @@
               "titleSet": false,
               "titleShort": null,
               "titleShortSet": false,
-              "timestamp": {
-                "nano": 0,
-                "epochSecond": 1531302775
-              },
+              "timestamp": 1531302775.000000000,
               "timestampSet": true
             },
             "role": "Pharmacy",
