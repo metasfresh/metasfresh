@@ -24,6 +24,7 @@ class TableQuickInput extends Component {
     this.state = {
       editedField: 0,
     };
+    this.rawWidgets = [];
   }
 
   componentDidMount() {
@@ -31,38 +32,34 @@ class TableQuickInput extends Component {
   }
 
   componentDidUpdate() {
-    const { data, layout } = this.props;
+    const { data, layout, inProgress } = this.props;
     const { editedField } = this.state;
-    if (data && layout) {
-      for (let i = 0; i < layout.length; i++) {
-        const item = layout[i].fields.map((elem) => data[elem.field] || -1);
 
-        if (!item[0].value) {
-          if (editedField !== i) {
-            this.setState(
-              {
-                editedField: i,
-              },
-              () => {
-                if (this.rawWidgets) {
-                  let curWidget = this.rawWidgets[i];
-                  if (
-                    curWidget.rawWidget &&
-                    curWidget.rawWidget.current &&
-                    curWidget.rawWidget.current.focus
-                  ) {
-                    curWidget.rawWidget.current.focus();
-                  }
-                }
-              }
-            );
-          }
+    if (data && layout && !inProgress && editedField === 0) {
+      const i = 0;
+      const item = layout[i].fields.map((elem) => data[elem.field] || -1);
 
-          break;
+      if (!item[0].value) {
+        if (this.rawWidgets) {
+          this.focusWidgetField();
         }
       }
     }
   }
+
+  focusWidgetField = (fieldNo) => {
+    fieldNo = fieldNo || 0;
+    let curWidget = this.rawWidgets[fieldNo];
+
+    if (
+      curWidget &&
+      curWidget.rawWidget &&
+      curWidget.rawWidget.current &&
+      curWidget.rawWidget.current.focus
+    ) {
+      curWidget.rawWidget.current.focus();
+    }
+  };
 
   initQuickInput = async () => {
     const {
@@ -102,6 +99,8 @@ class TableQuickInput extends Component {
       console.error(error);
       this.closeBatchEntry();
     });
+
+    this.setState({ editedField: 0 });
   };
 
   handleChange = (field, value) => {
@@ -113,11 +112,22 @@ class TableQuickInput extends Component {
   };
 
   handlePatch = (prop, value, callback) => {
-    const { docType, docId, tabId, patchQuickInput } = this.props;
+    const { docType, docId, tabId, patchQuickInput, layout } = this.props;
+    const { editedField } = this.state;
+    let newEditedField = null;
+
+    if (editedField < layout.length) {
+      newEditedField = editedField + 1;
+    }
+    this.setState({ editedField: newEditedField });
 
     this.patchPromise = new Promise((resolve) => {
       patchQuickInput({ windowId: docType, docId, tabId, prop, value }).then(
         () => {
+          if (newEditedField !== null) {
+            this.focusWidgetField(newEditedField);
+          }
+
           if (callback) {
             callback();
           }
@@ -125,6 +135,45 @@ class TableQuickInput extends Component {
         }
       );
     });
+  };
+
+  onSubmit = (e) => {
+    const { addNotification, docType, docId, tabId, data, id } = this.props;
+
+    e.preventDefault();
+
+    document.activeElement.blur();
+
+    if (!this.validateForm(data)) {
+      return addNotification(
+        'Error',
+        'Mandatory fields are not filled!',
+        5000,
+        'error'
+      );
+    }
+
+    this.setState({ editedField: null });
+
+    return this.patchPromise
+      .then(() => {
+        return completeRequest(
+          'window',
+          docType,
+          docId,
+          tabId,
+          null,
+          'quickInput',
+          id
+        );
+      })
+      .then(this.initQuickInput);
+  };
+
+  validateForm = (data) => {
+    return !Object.keys(data).filter(
+      (key) => data[key].mandatory && !data[key].value
+    ).length;
   };
 
   closeBatchEntry() {
@@ -135,6 +184,17 @@ class TableQuickInput extends Component {
       closeBatchEntry();
     }
   }
+
+  setRef = (ref) => {
+    this.form = ref;
+  };
+
+  setWidgetsRef = (c) => {
+    c &&
+      c.childRef &&
+      c.childRef.current &&
+      this.rawWidgets.push(c.childRef.current);
+  };
 
   renderFields = () => {
     const {
@@ -147,7 +207,6 @@ class TableQuickInput extends Component {
       inProgress,
       docId,
     } = this.props;
-    this.rawWidgets = [];
 
     const layoutFieldsAmt = layout ? layout.length : 2;
     const stylingLayout = [
@@ -180,7 +239,7 @@ class TableQuickInput extends Component {
 
         return (
           <WidgetWrapper
-            ref={(node) => this.setWidgetsRef(node)}
+            ref={this.setWidgetsRef}
             dataSource="quick-input"
             fieldFormGroupClass={stylingLayout[idx].formGroup}
             fieldLabelClass={stylingLayout[idx].label}
@@ -210,54 +269,6 @@ class TableQuickInput extends Component {
         );
       });
     }
-  };
-
-  onSubmit = (e) => {
-    const { addNotification, docType, docId, tabId, data, id } = this.props;
-
-    e.preventDefault();
-
-    document.activeElement.blur();
-
-    if (!this.validateForm(data)) {
-      return addNotification(
-        'Error',
-        'Mandatory fields are not filled!',
-        5000,
-        'error'
-      );
-    }
-
-    return this.patchPromise
-      .then(() => {
-        return completeRequest(
-          'window',
-          docType,
-          docId,
-          tabId,
-          null,
-          'quickInput',
-          id
-        );
-      })
-      .then(this.initQuickInput);
-  };
-
-  validateForm = (data) => {
-    return !Object.keys(data).filter(
-      (key) => data[key].mandatory && !data[key].value
-    ).length;
-  };
-
-  setRef = (ref) => {
-    this.form = ref;
-  };
-
-  setWidgetsRef = (ref) => {
-    ref &&
-      ref.childRef &&
-      ref.childRef.current &&
-      this.rawWidgets.push(ref.childRef.current);
   };
 
   render() {

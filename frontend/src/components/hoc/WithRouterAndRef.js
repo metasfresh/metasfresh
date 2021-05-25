@@ -17,8 +17,8 @@ const withRouterAndRef = (Wrapped) => {
 };
 
 const withForwardedRef = (Wrapped) => {
-  const handle = (props, ref) => {
-    return <Wrapped {...props} forwardedRef={ref} />;
+  const handle = (props, forwardedRef) => {
+    return <Wrapped {...props} forwardedRef={forwardedRef} />;
   };
 
   const name = Wrapped.displayName || Wrapped.name;

@@ -482,6 +482,10 @@ export class RawLookup extends Component {
     this.setState({ selected });
   };
 
+  focus = () => {
+    this.inputSearch && this.inputSearch.focus();
+  };
+
   render() {
     const { align, readonly, disabled, tabIndex, isOpen, idValue } = this.props;
     const {
@@ -631,4 +635,4 @@ RawLookup.propTypes = {
   advSearchWindowId: PropTypes.string,
 };
 
-export default connect(mapStateToProps)(RawLookup);
+export default connect(mapStateToProps, null, null, { forwardRef: true })(RawLookup);

@@ -151,6 +151,7 @@ class WidgetRenderer extends PureComponent {
       parameterName: fields[0].parameterName,
       validStatus: widgetData[0].validStatus,
       onChange: onPatch,
+      ref: forwardedRef,
     };
     const dateProps = {
       field: widgetField,
