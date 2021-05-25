@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_User
  *  @author metasfresh (generated) 
@@ -166,6 +167,29 @@ public interface I_AD_User
 	String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
 
 	/**
+	 * Set Title.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setAlbertaTitle (@Nullable java.lang.String AlbertaTitle);
+
+	/**
+	 * Get Title.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getAlbertaTitle();
+
+	ModelColumn<I_AD_User, Object> COLUMN_AlbertaTitle = new ModelColumn<>(I_AD_User.class, "AlbertaTitle", null);
+	String COLUMNNAME_AlbertaTitle = "AlbertaTitle";
+
+	/**
 	 * Set Avatar.
 	 *
 	 * <br>Type: Image
@@ -328,6 +352,31 @@ public interface I_AD_User
 	String COLUMNNAME_C_Job_ID = "C_Job_ID";
 
 	/**
+	 * Set Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Title_ID (int C_Title_ID);
+
+	/**
+	 * Get Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Title_ID();
+
+	@Nullable org.compiere.model.I_C_Title getC_Title();
+
+	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
+
+	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
+	String COLUMNNAME_C_Title_ID = "C_Title_ID";
+
+	/**
 	 * Set Comments.
 	 * Comments or additional information
 	 *
@@ -464,31 +513,6 @@ public interface I_AD_User
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Titel.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Title_ID (int C_Title_ID);
-
-	/**
-	 * Get Titel.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Title_ID();
-
-	@Nullable org.compiere.model.I_C_Title getC_Title();
-
-	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
-
-	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
-	String COLUMNNAME_C_Title_ID = "C_Title_ID";
 
 	/**
 	 * Set Löschdatum.
@@ -732,6 +756,29 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Fresh_xmas_Gift = new ModelColumn<>(I_AD_User.class, "Fresh_xmas_Gift", null);
 	String COLUMNNAME_Fresh_xmas_Gift = "Fresh_xmas_Gift";
+
+	/**
+	 * Set Gender.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setGender (@Nullable java.lang.String Gender);
+
+	/**
+	 * Get Gender.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getGender();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Gender = new ModelColumn<>(I_AD_User.class, "Gender", null);
+	String COLUMNNAME_Gender = "Gender";
 
 	/**
 	 * Set Included Tab.
@@ -1508,7 +1555,30 @@ public interface I_AD_User
 	String COLUMNNAME_Supervisor_ID = "Supervisor_ID";
 
 	/**
-	 * Set Titel.
+	 * Set Timestamp.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setTimestamp (@Nullable java.sql.Timestamp Timestamp);
+
+	/**
+	 * Get Timestamp.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.sql.Timestamp getTimestamp();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Timestamp = new ModelColumn<>(I_AD_User.class, "Timestamp", null);
+	String COLUMNNAME_Timestamp = "Timestamp";
+
+	/**
+	 * Set Title.
 	 * Name this entity is referred to as
 	 *
 	 * <br>Type: String
@@ -1518,7 +1588,7 @@ public interface I_AD_User
 	void setTitle (@Nullable java.lang.String Title);
 
 	/**
-	 * Get Titel.
+	 * Get Title.
 	 * Name this entity is referred to as
 	 *
 	 * <br>Type: String

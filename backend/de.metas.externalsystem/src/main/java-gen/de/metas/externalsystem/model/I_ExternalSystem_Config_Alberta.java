@@ -6,13 +6,13 @@ import org.adempiere.model.ModelColumn;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_Alberta
+public interface I_ExternalSystem_Config_Alberta 
 {
 
 	String Table_Name = "ExternalSystem_Config_Alberta";
 
-	//	/** AD_Table_ID=541577 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541577 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -56,7 +56,7 @@ public interface I_ExternalSystem_Config_Alberta
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setApiKey (java.lang.String ApiKey);
+	void setApiKey (String ApiKey);
 
 	/**
 	 * Get API-Key.
@@ -65,7 +65,7 @@ public interface I_ExternalSystem_Config_Alberta
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getApiKey();
+	String getApiKey();
 
 	ModelColumn<I_ExternalSystem_Config_Alberta, Object> COLUMN_ApiKey = new ModelColumn<>(I_ExternalSystem_Config_Alberta.class, "ApiKey", null);
 	String COLUMNNAME_ApiKey = "ApiKey";
@@ -77,7 +77,7 @@ public interface I_ExternalSystem_Config_Alberta
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setBaseURL (java.lang.String BaseURL);
+	void setBaseURL (String BaseURL);
 
 	/**
 	 * Get Base-URL.
@@ -86,10 +86,30 @@ public interface I_ExternalSystem_Config_Alberta
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getBaseURL();
+	String getBaseURL();
 
 	ModelColumn<I_ExternalSystem_Config_Alberta, Object> COLUMN_BaseURL = new ModelColumn<>(I_ExternalSystem_Config_Alberta.class, "BaseURL", null);
 	String COLUMNNAME_BaseURL = "BaseURL";
+
+	/**
+	 * Set Root BPartner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Root_BPartner_ID (int C_Root_BPartner_ID);
+
+	/**
+	 * Get Root BPartner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Root_BPartner_ID();
+
+	String COLUMNNAME_C_Root_BPartner_ID = "C_Root_BPartner_ID";
 
 	/**
 	 * Get Created.
@@ -155,11 +175,11 @@ public interface I_ExternalSystem_Config_Alberta
 	 */
 	int getExternalSystem_Config_ID();
 
-	de.metas.externalsystem.model.I_ExternalSystem_Config getExternalSystem_Config();
+	I_ExternalSystem_Config getExternalSystem_Config();
 
-	void setExternalSystem_Config(de.metas.externalsystem.model.I_ExternalSystem_Config ExternalSystem_Config);
+	void setExternalSystem_Config(I_ExternalSystem_Config ExternalSystem_Config);
 
-	ModelColumn<I_ExternalSystem_Config_Alberta, de.metas.externalsystem.model.I_ExternalSystem_Config> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config_Alberta.class, "ExternalSystem_Config_ID", de.metas.externalsystem.model.I_ExternalSystem_Config.class);
+	ModelColumn<I_ExternalSystem_Config_Alberta, I_ExternalSystem_Config> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config_Alberta.class, "ExternalSystem_Config_ID", I_ExternalSystem_Config.class);
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
@@ -169,7 +189,7 @@ public interface I_ExternalSystem_Config_Alberta
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystemValue (java.lang.String ExternalSystemValue);
+	void setExternalSystemValue (String ExternalSystemValue);
 
 	/**
 	 * Get Value.
@@ -178,7 +198,7 @@ public interface I_ExternalSystem_Config_Alberta
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getExternalSystemValue();
+	String getExternalSystemValue();
 
 	ModelColumn<I_ExternalSystem_Config_Alberta, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Config_Alberta.class, "ExternalSystemValue", null);
 	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
@@ -233,7 +253,7 @@ public interface I_ExternalSystem_Config_Alberta
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setTenant (java.lang.String Tenant);
+	void setTenant (String Tenant);
 
 	/**
 	 * Get Tenant.
@@ -242,7 +262,7 @@ public interface I_ExternalSystem_Config_Alberta
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getTenant();
+	String getTenant();
 
 	ModelColumn<I_ExternalSystem_Config_Alberta, Object> COLUMN_Tenant = new ModelColumn<>(I_ExternalSystem_Config_Alberta.class, "Tenant", null);
 	String COLUMNNAME_Tenant = "Tenant";

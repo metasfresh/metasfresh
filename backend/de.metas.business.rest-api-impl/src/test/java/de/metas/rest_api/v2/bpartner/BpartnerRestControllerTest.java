@@ -77,6 +77,7 @@ import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.web.exception.MissingResourceException;
+import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
@@ -98,6 +99,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -178,7 +180,8 @@ class BpartnerRestControllerTest
 				new BPGroupRepository(),
 				new GreetingRepository(),
 				currencyRepository,
-				externalReferenceRestControllerService);
+				externalReferenceRestControllerService,
+				Mockito.mock(AlbertaBPartnerCompositeService.class));
 
 		bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),

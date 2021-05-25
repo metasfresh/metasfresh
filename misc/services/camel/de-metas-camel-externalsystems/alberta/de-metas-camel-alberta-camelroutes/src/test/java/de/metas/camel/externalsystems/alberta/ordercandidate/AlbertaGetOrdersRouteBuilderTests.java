@@ -46,6 +46,7 @@ import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -111,6 +112,7 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 	}
 
 	@Test
+	@Disabled
 	void happyFlow() throws Exception
 	{
 		final MockExternalReferenceResponse mockExternalReferenceResponse = new MockExternalReferenceResponse();

@@ -9,6 +9,7 @@
     "Tenant": "Tenant",
     "ChildConfigValue": "ChildConfigValue",
     "BasePath": "https://basePath",
-    "UpdatedAfter": "2021-01-01T02:17:20Z"
+    "UpdatedAfter": "2021-01-01T02:17:20Z",
+    "RootBPartnerId": 200
   }
 }
