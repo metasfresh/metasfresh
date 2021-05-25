@@ -770,13 +770,18 @@ body{
     /* column-count: 2; */
     column-fill: auto;
     margin-top: 1rem;
+    overflow: auto;
 }
 
-.sitemap-column {
+.sitemap-column-left {
     column-count: 1;
-    width: 45vw;
+    width: 50%;
     float: left;
-    margin-right: 1rem;
+}
+.sitemap-column-right {
+    column-count: 1;
+    width: 49%;
+    float: right;
 }
 .sitemap-box-header {
     column-span: all;
