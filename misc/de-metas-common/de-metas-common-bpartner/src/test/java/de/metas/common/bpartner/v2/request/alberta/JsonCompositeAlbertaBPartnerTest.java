@@ -67,13 +67,13 @@ public class JsonCompositeAlbertaBPartnerTest
 		patient.setPayerIdentifier("2222222");
 		patient.setPayerType("payerType");
 		patient.setNumberOfInsured("333333");
-		patient.setCopaymentFrom(LocalDate.now());
-		patient.setCopaymentTo(LocalDate.now());
+		patient.setCopaymentFrom(LocalDate.parse("2021-05-24"));
+		patient.setCopaymentTo(LocalDate.parse("2021-05-24"));
 		patient.setIsTransferPatient(true);
 		patient.setIVTherapy(true);
 		patient.setFieldNurseIdentifier("4444444");
 		patient.setDeactivationReason("reason");
-		patient.setDeactivationDate(LocalDate.now());
+		patient.setDeactivationDate(LocalDate.parse("2021-05-24"));
 		patient.setDeactivationComment("comment");
 		patient.setCreatedAt(Instant.parse("2019-11-22T00:00:00Z"));
 		patient.setCreatedByIdentifier("5555555");
