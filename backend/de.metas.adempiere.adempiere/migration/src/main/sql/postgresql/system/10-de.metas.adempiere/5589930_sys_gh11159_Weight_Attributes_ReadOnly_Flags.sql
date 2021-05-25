@@ -1,5 +1,5 @@
 
-CREATE table backup.BKP_M_HU_PI_Attribute_gh1125_25052021
+CREATE table backup.BKP_M_HU_PI_Attribute_gh11159_25052021
 AS
     SELECT * FROM M_HU_PI_Attribute;
 	
