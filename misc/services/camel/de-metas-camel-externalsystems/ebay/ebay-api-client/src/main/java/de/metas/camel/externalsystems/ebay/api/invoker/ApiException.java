@@ -13,8 +13,8 @@
 
 package de.metas.camel.externalsystems.ebay.api.invoker;
 
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
 public class ApiException extends Exception {

@@ -13,26 +13,14 @@
 
 package de.metas.camel.externalsystems.ebay.api.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import de.metas.camel.externalsystems.ebay.api.model.Amount;
-import de.metas.camel.externalsystems.ebay.api.model.Buyer;
-import de.metas.camel.externalsystems.ebay.api.model.CancelStatus;
-import de.metas.camel.externalsystems.ebay.api.model.FulfillmentStartInstruction;
-import de.metas.camel.externalsystems.ebay.api.model.LineItem;
-import de.metas.camel.externalsystems.ebay.api.model.PaymentSummary;
-import de.metas.camel.externalsystems.ebay.api.model.PricingSummary;
-import de.metas.camel.externalsystems.ebay.api.model.Program;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import com.google.gson.annotations.SerializedName;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * This type contains the details of an order, including information about the buyer, order history, shipping fulfillments, line items, costs, payments, and order fulfillment status.

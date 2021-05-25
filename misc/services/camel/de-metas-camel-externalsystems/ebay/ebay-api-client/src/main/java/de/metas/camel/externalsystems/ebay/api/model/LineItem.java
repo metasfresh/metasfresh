@@ -13,27 +13,14 @@
 
 package de.metas.camel.externalsystems.ebay.api.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import de.metas.camel.externalsystems.ebay.api.model.Amount;
-import de.metas.camel.externalsystems.ebay.api.model.AppliedPromotion;
-import de.metas.camel.externalsystems.ebay.api.model.DeliveryCost;
-import de.metas.camel.externalsystems.ebay.api.model.EbayCollectAndRemitTax;
-import de.metas.camel.externalsystems.ebay.api.model.GiftDetails;
-import de.metas.camel.externalsystems.ebay.api.model.LineItemFulfillmentInstructions;
-import de.metas.camel.externalsystems.ebay.api.model.LineItemProperties;
-import de.metas.camel.externalsystems.ebay.api.model.LineItemRefund;
-import de.metas.camel.externalsystems.ebay.api.model.Tax;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import com.google.gson.annotations.SerializedName;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * This type contains the details of each line item in an order.

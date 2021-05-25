@@ -13,10 +13,10 @@
 
 package de.metas.camel.externalsystems.ebay.api.invoker.auth;
 
-import de.metas.camel.externalsystems.ebay.api.invoker.Pair;
-
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
+
+import de.metas.camel.externalsystems.ebay.api.invoker.Pair;
 
 public interface Authentication {
     /**

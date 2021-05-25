@@ -13,26 +13,14 @@
 
 package de.metas.camel.externalsystems.ebay.api.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
-import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
-import de.metas.camel.externalsystems.ebay.api.model.DisputeEvidence;
-import de.metas.camel.externalsystems.ebay.api.model.EvidenceRequest;
-import de.metas.camel.externalsystems.ebay.api.model.InfoFromBuyer;
-import de.metas.camel.externalsystems.ebay.api.model.MonetaryTransaction;
-import de.metas.camel.externalsystems.ebay.api.model.OrderLineItems;
-import de.metas.camel.externalsystems.ebay.api.model.PaymentDisputeOutcomeDetail;
-import de.metas.camel.externalsystems.ebay.api.model.ReturnAddress;
-import de.metas.camel.externalsystems.ebay.api.model.SimpleAmount;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import com.google.gson.annotations.SerializedName;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 /**
  * This type is used by the base response of the getPaymentDispute method. The getPaymentDispute method retrieves detailed information on a specific payment dispute.

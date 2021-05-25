@@ -13,14 +13,11 @@
 
 package de.metas.camel.externalsystems.ebay.api.invoker.auth;
 
-import de.metas.camel.externalsystems.ebay.api.invoker.Pair;
-
-import okhttp3.Credentials;
-
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
-import java.io.UnsupportedEncodingException;
+import de.metas.camel.externalsystems.ebay.api.invoker.Pair;
+import okhttp3.Credentials;
 
 public class HttpBasicAuth implements Authentication {
     private String username;

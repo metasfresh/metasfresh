@@ -13,11 +13,10 @@
 
 package de.metas.camel.externalsystems.ebay.api.invoker;
 
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
-
 import java.io.IOException;
 
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import okio.Buffer;
 import okio.BufferedSink;
 import okio.ForwardingSink;

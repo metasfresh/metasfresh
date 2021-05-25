@@ -13,30 +13,24 @@
 
 package de.metas.camel.externalsystems.ebay.api;
 
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import com.google.gson.reflect.TypeToken;
+
 import de.metas.camel.externalsystems.ebay.api.invoker.ApiCallback;
 import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
 import de.metas.camel.externalsystems.ebay.api.invoker.ApiException;
 import de.metas.camel.externalsystems.ebay.api.invoker.ApiResponse;
 import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
 import de.metas.camel.externalsystems.ebay.api.invoker.Pair;
-import de.metas.camel.externalsystems.ebay.api.invoker.ProgressRequestBody;
-import de.metas.camel.externalsystems.ebay.api.invoker.ProgressResponseBody;
-
-import com.google.gson.reflect.TypeToken;
-
-import java.io.IOException;
-
-
 import de.metas.camel.externalsystems.ebay.api.model.IssueRefundRequest;
 import de.metas.camel.externalsystems.ebay.api.model.Order;
 import de.metas.camel.externalsystems.ebay.api.model.OrderSearchPagedCollection;
 import de.metas.camel.externalsystems.ebay.api.model.Refund;
-
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class OrderApi {
     private ApiClient localVarApiClient;
