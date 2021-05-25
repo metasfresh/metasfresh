@@ -5,6 +5,7 @@ import TetherComponent from 'react-tether';
 import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import { debounce } from 'throttle-debounce';
+import counterpart from 'counterpart';
 
 import {
   autocompleteRequest,
@@ -351,6 +352,7 @@ export class RawLookup extends Component {
 
     typeaheadRequest.then((response) => {
       let values = response.data.values || [];
+      const hasMoreResults = response.data.hasMoreResults ? true : false;
       let list = null;
       const newState = {
         loading: false,
@@ -380,6 +382,7 @@ export class RawLookup extends Component {
         });
       }
       newState.list = [...list];
+      newState.hasMoreResults = hasMoreResults;
 
       this.setState({ ...newState });
     });
@@ -493,6 +496,7 @@ export class RawLookup extends Component {
       isFocused,
       parentElement,
       query,
+      hasMoreResults,
     } = this.state;
     const tetherProps = {};
     let showDropdown = false;
@@ -552,26 +556,40 @@ export class RawLookup extends Component {
             </div>
           </div>
           {showDropdown && isOpen && !isInputEmpty && (
-            <SelectionDropdown
-              loading={loading}
-              options={list}
-              empty="No results found"
-              forceEmpty={forceEmpty}
-              selected={selected}
-              width={
-                this.props.forcedWidth
-                  ? this.props.forcedWidth
-                  : this.wrapper && this.wrapper.offsetWidth
-              }
-              height={
-                this.props.forceHeight
-                  ? this.props.forceHeight - this.wrapper.offsetHeight
-                  : undefined
-              }
-              onChange={this.handleTemporarySelection}
-              onSelect={this.handleSelect}
-              onCancel={this.handleBlur}
-            />
+            <div>
+              <SelectionDropdown
+                loading={loading}
+                options={list}
+                empty="No results found"
+                forceEmpty={forceEmpty}
+                selected={selected}
+                width={
+                  this.props.forcedWidth
+                    ? this.props.forcedWidth
+                    : this.wrapper && this.wrapper.offsetWidth
+                }
+                height={
+                  this.props.forceHeight
+                    ? this.props.forceHeight - this.wrapper.offsetHeight
+                    : undefined
+                }
+                onChange={this.handleTemporarySelection}
+                onSelect={this.handleSelect}
+                onCancel={this.handleBlur}
+              />
+              {hasMoreResults && (
+                <div
+                  className="input-dropdown-hasmore"
+                  style={{
+                    width: this.props.forcedWidth
+                      ? this.props.forcedWidth
+                      : this.wrapper && this.wrapper.offsetWidth,
+                  }}
+                >
+                  {` ${counterpart.translate('widget.lookup.hasMoreResults')}`}
+                </div>
+              )}
+            </div>
           )}
         </div>
       </TetherComponent>

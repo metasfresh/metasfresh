@@ -1003,4 +1003,13 @@ table {
   transition: opacity 200ms, transform 200ms;
 }
 
-
+.input-dropdown-hasmore {
+  position:absolute;
+  top: calc(100% + 197px);
+  left: 0;
+  border: 1px solid #C9D5DC;
+  background: #f8fafb;
+  padding: 6px 0px 4px 8px;
+  border-radius: 5px;
+  text-align: center;
+}
