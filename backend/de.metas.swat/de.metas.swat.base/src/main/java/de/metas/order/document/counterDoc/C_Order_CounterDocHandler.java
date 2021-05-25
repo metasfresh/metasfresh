@@ -1,9 +1,14 @@
 package de.metas.order.document.counterDoc;
 
-import java.util.List;
-
-import javax.annotation.concurrent.Immutable;
-
+import de.metas.document.DocTypeId;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.document.spi.CounterDocumentHandlerAdapter;
+import de.metas.document.spi.ICounterDocHandler;
+import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.adempiere.warehouse.WarehouseId;
@@ -18,15 +23,8 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.slf4j.Logger;
 
-import de.metas.document.DocTypeId;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.document.spi.CounterDocumentHandlerAdapter;
-import de.metas.document.spi.ICounterDocHandler;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderBL;
-import de.metas.order.IOrderLineBL;
-import de.metas.util.Services;
+import javax.annotation.concurrent.Immutable;
+import java.util.List;
 
 /*
  * #%L
@@ -118,6 +116,9 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 		// References (should not be required)
 		counterOrder.setSalesRep_ID(order.getSalesRep_ID());
 		InterfaceWrapperHelper.save(counterOrder);
+
+		order.setRef_Order_ID(counterOrder.getC_Order_ID());
+		InterfaceWrapperHelper.save(order);
 
 		// copy the order lines
 		final boolean counter = true;
