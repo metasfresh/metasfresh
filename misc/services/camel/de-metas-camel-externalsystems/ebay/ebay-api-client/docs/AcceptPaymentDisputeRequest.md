@@ -3,6 +3,7 @@
 # AcceptPaymentDisputeRequest
 
 This type is used by base request of the acceptPaymentDispute method.
+
 ## Properties
 
 Name | Type | Description | Notes

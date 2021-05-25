@@ -3,6 +3,7 @@
 # ContestPaymentDisputeRequest
 
 This type is used by the request payload of the contestPaymentDispute method.
+
 ## Properties
 
 Name | Type | Description | Notes

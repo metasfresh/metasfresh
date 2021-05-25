@@ -3,6 +3,7 @@
 # PaymentDispute
 
 This type is used by the base response of the getPaymentDispute method. The getPaymentDispute method retrieves detailed information on a specific payment dispute.
+
 ## Properties
 
 Name | Type | Description | Notes

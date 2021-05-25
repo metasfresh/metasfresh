@@ -3,6 +3,7 @@
 # PaymentDisputeActivity
 
 This type is used by each recorded activity on a payment dispute, from creation to resolution.
+
 ## Properties
 
 Name | Type | Description | Notes

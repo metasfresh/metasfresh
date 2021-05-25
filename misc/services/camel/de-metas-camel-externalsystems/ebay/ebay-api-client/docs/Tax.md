@@ -3,6 +3,7 @@
 # Tax
 
 This type contains information about any sales tax applied to a line item.
+
 ## Properties
 
 Name | Type | Description | Notes

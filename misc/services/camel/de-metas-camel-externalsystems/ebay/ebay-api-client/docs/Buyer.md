@@ -3,6 +3,7 @@
 # Buyer
 
 This type contains information about the order's buyer.
+
 ## Properties
 
 Name | Type | Description | Notes

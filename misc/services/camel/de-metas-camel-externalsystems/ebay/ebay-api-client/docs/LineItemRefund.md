@@ -3,6 +3,7 @@
 # LineItemRefund
 
 This type contains refund information for a line item.
+
 ## Properties
 
 Name | Type | Description | Notes

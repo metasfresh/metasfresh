@@ -3,6 +3,7 @@
 # Address
 
 This type contains the details of a geographical address.
+
 ## Properties
 
 Name | Type | Description | Notes

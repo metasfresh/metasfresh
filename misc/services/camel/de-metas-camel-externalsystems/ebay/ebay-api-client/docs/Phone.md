@@ -3,6 +3,7 @@
 # Phone
 
 This type is used by the returnAddress
+
 ## Properties
 
 Name | Type | Description | Notes

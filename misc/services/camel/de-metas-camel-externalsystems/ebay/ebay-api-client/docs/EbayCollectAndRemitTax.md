@@ -3,6 +3,7 @@
 # EbayCollectAndRemitTax
 
 This type contains information about the type and amount of tax that eBay will collect and remit to the state, province, country, or other taxing authority in the buyer's location, as required by that taxing authority. 'Collect and Remit' tax includes US state-mandated sales tax and 'Goods and Services' tax that is applicable to Australian and New Zealand sellers.
+
 ## Properties
 
 Name | Type | Description | Notes

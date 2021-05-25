@@ -3,6 +3,7 @@
 # CancelRequest
 
 This type contains information about a buyer request to cancel an order.
+
 ## Properties
 
 Name | Type | Description | Notes

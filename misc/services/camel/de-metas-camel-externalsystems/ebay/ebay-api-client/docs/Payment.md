@@ -3,6 +3,7 @@
 # Payment
 
 This type is used to provide details about the seller payments for an order.
+
 ## Properties
 
 Name | Type | Description | Notes

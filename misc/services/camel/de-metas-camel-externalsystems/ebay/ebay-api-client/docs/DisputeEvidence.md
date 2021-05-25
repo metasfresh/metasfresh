@@ -3,6 +3,7 @@
 # DisputeEvidence
 
 This type is used by the evidence array that is returned in the getPaymentDispute response if one or more evidential documents are associated with the payment dispute.
+
 ## Properties
 
 Name | Type | Description | Notes

@@ -3,6 +3,7 @@
 # PaymentDisputeSummary
 
 This type is used by each payment dispute that is returned with the getPaymentDisputeSummaries method.
+
 ## Properties
 
 Name | Type | Description | Notes

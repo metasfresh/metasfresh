@@ -3,6 +3,7 @@
 # Refund
 
 This is the base type of the issueRefund response payload. As long as the issueRefund method does not trigger an error, a response payload will be returned.
+
 ## Properties
 
 Name | Type | Description | Notes

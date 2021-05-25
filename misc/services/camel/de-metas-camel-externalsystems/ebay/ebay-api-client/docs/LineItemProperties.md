@@ -3,6 +3,7 @@
 # LineItemProperties
 
 This type contains information about the eBay programs under which a line item was listed and sold.
+
 ## Properties
 
 Name | Type | Description | Notes

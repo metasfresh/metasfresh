@@ -3,6 +3,7 @@
 # GiftDetails
 
 This type contains information about a digital gift card line item that was purchased as a gift, and sent to the recipient by email.
+
 ## Properties
 
 Name | Type | Description | Notes

@@ -3,6 +3,7 @@
 # PaymentSummary
 
 This type contains information about the various monetary exchanges that apply to the net balance due for the order.
+
 ## Properties
 
 Name | Type | Description | Notes

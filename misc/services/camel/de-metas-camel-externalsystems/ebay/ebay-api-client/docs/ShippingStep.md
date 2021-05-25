@@ -3,6 +3,7 @@
 # ShippingStep
 
 This type contains shipping information for a fulfillment, including the shipping carrier, the shipping service option, the shipment destination, and the Global Shipping Program reference ID.
+
 ## Properties
 
 Name | Type | Description | Notes

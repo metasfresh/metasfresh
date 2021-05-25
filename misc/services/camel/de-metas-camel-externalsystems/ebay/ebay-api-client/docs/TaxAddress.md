@@ -3,6 +3,7 @@
 # TaxAddress
 
 This container consists of address information that can be used by sellers for tax purpose.
+
 ## Properties
 
 Name | Type | Description | Notes

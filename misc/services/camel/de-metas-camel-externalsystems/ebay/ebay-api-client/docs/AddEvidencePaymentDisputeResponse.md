@@ -3,6 +3,7 @@
 # AddEvidencePaymentDisputeResponse
 
 This type is used by the response payload of the addEvidence method. Its only field is an unique identifier of an evidence set.
+
 ## Properties
 
 Name | Type | Description | Notes

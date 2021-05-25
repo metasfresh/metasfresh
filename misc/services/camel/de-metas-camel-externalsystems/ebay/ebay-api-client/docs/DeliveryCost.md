@@ -3,6 +3,7 @@
 # DeliveryCost
 
 This type contains a breakdown of all costs associated with the fulfillment of a line item.
+
 ## Properties
 
 Name | Type | Description | Notes

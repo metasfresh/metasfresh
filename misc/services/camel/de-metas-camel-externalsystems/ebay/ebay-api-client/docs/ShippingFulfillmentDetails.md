@@ -3,6 +3,7 @@
 # ShippingFulfillmentDetails
 
 This type contains the details for creating a fulfillment for an order.
+
 ## Properties
 
 Name | Type | Description | Notes

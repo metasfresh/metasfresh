@@ -3,6 +3,7 @@
 # CancelStatus
 
 This type contains information about any requests that have been made to cancel an order.
+
 ## Properties
 
 Name | Type | Description | Notes

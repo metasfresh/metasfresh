@@ -3,6 +3,7 @@
 # PaymentDisputeOutcomeDetail
 
 This type is used by the resolution container that is returned for payment disputes that have been resolved.
+
 ## Properties
 
 Name | Type | Description | Notes

@@ -11,7 +11,7 @@
     <artifactId>ebay-fulfillment-api-client</artifactId>
     <packaging>jar</packaging>
     <name>ebay-fulfillment-api-client</name>
-    <version>1.19.3</version>
+    <version>1.19.4</version>
     <url>https://github.com/openapitools/openapi-generator</url>
     <description>OpenAPI Java</description>
     <scm>

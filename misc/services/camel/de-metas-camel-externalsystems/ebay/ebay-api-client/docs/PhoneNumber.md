@@ -3,6 +3,7 @@
 # PhoneNumber
 
 This type contains a string field representing a telephone number.
+
 ## Properties
 
 Name | Type | Description | Notes

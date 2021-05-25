@@ -3,6 +3,7 @@
 # LineItemReference
 
 This type identifies the line item and quantity of that line item that comprises one fulfillment, such as a shipping package.
+
 ## Properties
 
 Name | Type | Description | Notes

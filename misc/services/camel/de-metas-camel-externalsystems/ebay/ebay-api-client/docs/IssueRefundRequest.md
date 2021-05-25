@@ -3,6 +3,7 @@
 # IssueRefundRequest
 
 The base type used by the request payload of the issueRefund method.
+
 ## Properties
 
 Name | Type | Description | Notes

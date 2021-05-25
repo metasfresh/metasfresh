@@ -3,6 +3,7 @@
 # OrderRefund
 
 This type contains information about a refund issued for an order. This does not include line item level refunds.
+
 ## Properties
 
 Name | Type | Description | Notes

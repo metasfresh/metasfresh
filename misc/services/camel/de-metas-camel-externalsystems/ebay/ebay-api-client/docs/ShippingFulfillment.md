@@ -3,6 +3,7 @@
 # ShippingFulfillment
 
 This type contains the complete details of an existing fulfillment for an order.
+
 ## Properties
 
 Name | Type | Description | Notes

@@ -3,6 +3,7 @@
 # FileInfo
 
 This type is used by the files array, which shows the name, ID, file type, and upload date for each provided evidential file.
+
 ## Properties
 
 Name | Type | Description | Notes

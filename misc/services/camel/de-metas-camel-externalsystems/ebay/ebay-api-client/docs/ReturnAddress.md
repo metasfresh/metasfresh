@@ -3,6 +3,7 @@
 # ReturnAddress
 
 This type is used by the payment dispute methods, and is relevant if the buyer will be returning the item to the seller.
+
 ## Properties
 
 Name | Type | Description | Notes

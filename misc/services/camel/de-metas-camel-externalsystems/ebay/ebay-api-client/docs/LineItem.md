@@ -3,6 +3,7 @@
 # LineItem
 
 This type contains the details of each line item in an order.
+
 ## Properties
 
 Name | Type | Description | Notes

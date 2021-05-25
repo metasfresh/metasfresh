@@ -3,6 +3,7 @@
 # Error
 
 This type contains a error or warning related to a call request.
+
 ## Properties
 
 Name | Type | Description | Notes

@@ -3,6 +3,7 @@
 # ExtendedContact
 
 This type contains shipping and contact information for a buyer or an eBay shipping partner.
+
 ## Properties
 
 Name | Type | Description | Notes

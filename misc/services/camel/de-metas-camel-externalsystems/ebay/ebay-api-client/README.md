@@ -1,8 +1,14 @@
-# openapi-java-client
+# Preamble
+
+	openapi-generator generate -i https://developer.ebay.com/api-docs/master/sell/fulfillment/openapi/3/sell_fulfillment_v1_oas3.yaml --api-package de.metas.camel.externalsystems.ebay.api --model-package de.metas.camel.externalsystems.ebay.api.model --invoker-package de.metas.camel.externalsystems.ebay.api.invoker  --group-id de.metas.camel.externalsystems  --artifact-id ebay-fulfillment-api-client -g java 	--library okhttp-gson -o /Users/werner/Dev/tmp/gen2 
+	
+
+
+# ebay-fulfillment-api-client
 
 Fulfillment API
-- API version: v1.19.3
-  - Build date: 2021-03-15T16:21:23.844609+01:00[Europe/Berlin]
+- API version: v1.19.4
+  - Build date: 2021-05-25T10:27:35.061216+02:00[Europe/Berlin]
 
 Use the Fulfillment API to complete the process of packaging, addressing, handling, and shipping each order on behalf of the seller, in accordance with the payment method and timing specified at checkout.
 
@@ -38,9 +44,9 @@ Add this dependency to your project's POM:
 
 ```xml
 <dependency>
-  <groupId>org.openapitools</groupId>
-  <artifactId>openapi-java-client</artifactId>
-  <version>v1.19.3</version>
+  <groupId>de.metas.camel.externalsystems</groupId>
+  <artifactId>ebay-fulfillment-api-client</artifactId>
+  <version>v1.19.4</version>
   <scope>compile</scope>
 </dependency>
 ```
@@ -50,7 +56,7 @@ Add this dependency to your project's POM:
 Add this dependency to your project's build file:
 
 ```groovy
-compile "org.openapitools:openapi-java-client:v1.19.3"
+compile "de.metas.camel.externalsystems:ebay-fulfillment-api-client:v1.19.4"
 ```
 
 ### Others
@@ -63,7 +69,7 @@ mvn clean package
 
 Then manually install the following JARs:
 
-* `target/openapi-java-client-v1.19.3.jar`
+* `target/ebay-fulfillment-api-client-v1.19.4.jar`
 * `target/lib/*.jar`
 
 ## Getting Started
@@ -73,12 +79,12 @@ Please follow the [installation](#installation) instruction and execute the foll
 ```java
 
 // Import classes:
-import org.openapitools.client.ApiClient;
-import org.openapitools.client.ApiException;
-import org.openapitools.client.Configuration;
-import org.openapitools.client.auth.*;
-import org.openapitools.client.models.*;
-import org.openapitools.client.api.OrderApi;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiException;
+import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
+import de.metas.camel.externalsystems.ebay.api.invoker.auth.*;
+import de.metas.camel.externalsystems.ebay.api.invoker.models.*;
+import de.metas.camel.externalsystems.ebay.api.OrderApi;
 
 public class Example {
   public static void main(String[] args) {
@@ -218,6 +224,5 @@ Authentication schemes defined for the API:
 It's recommended to create an instance of `ApiClient` per thread in a multithreaded environment to avoid any potential issues.
 
 ## Author
-
 
 

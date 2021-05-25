@@ -3,6 +3,7 @@
 # AppliedPromotion
 
 This type contains information about a sales promotion that is applied to a line item.
+
 ## Properties
 
 Name | Type | Description | Notes
