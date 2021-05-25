@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1075502256L;
+	private static final long serialVersionUID = -1787048966L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -607,6 +607,27 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isInPayroll() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInPayroll);
+	}
+
+	/** 
+	 * IsInvoiceEmailEnabled AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISINVOICEEMAILENABLED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISINVOICEEMAILENABLED_Yes = "Y";
+	/** No = N */
+	public static final String ISINVOICEEMAILENABLED_No = "N";
+	@Override
+	public void setIsInvoiceEmailEnabled (final @Nullable java.lang.String IsInvoiceEmailEnabled)
+	{
+		set_Value (COLUMNNAME_IsInvoiceEmailEnabled, IsInvoiceEmailEnabled);
+	}
+
+	@Override
+	public java.lang.String getIsInvoiceEmailEnabled() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsInvoiceEmailEnabled);
 	}
 
 	@Override

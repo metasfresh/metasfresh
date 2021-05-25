@@ -3,6 +3,7 @@
     {
       "description": "this one will be ignored due to sw6PaymentMethod &&  sw6CustomerGroup not matching",
       "docTypeOrder": "ON",
+      "isInvoiceEmailEnabled": true,
       "paymentRule": "L",
       "paymentTermValue": "paymentTermValue",
       "seqNo": 10,
@@ -20,6 +21,7 @@
     {
       "description": "this one should be considered",
       "docTypeOrder": "SO",
+      "isInvoiceEmailEnabled": true,
       "paymentRule": "L",
       "paymentTermValue": "paymentTermValue",
       "seqNo": 20,

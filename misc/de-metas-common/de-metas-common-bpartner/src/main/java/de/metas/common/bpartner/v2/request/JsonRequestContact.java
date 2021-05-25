@@ -178,7 +178,14 @@ public class JsonRequestContact
 	@ApiModelProperty(hidden = true)
 	private boolean subjectMatterSet;
 
-	@ApiModelProperty(position = 220, // shall be last
+	@ApiModelProperty(position = 220, //
+			value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	private Boolean invoiceEmailEnabled;
+
+	@ApiModelProperty(hidden = true)
+	private boolean invoiceEmailEnabledSet;
+
+	@ApiModelProperty(position = 230, // shall be last
 			value = "Sync advise about this contact's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
@@ -310,5 +317,11 @@ public class JsonRequestContact
 	{
 		this.metasfreshBPartnerId = metasfreshBPartnerId;
 		this.metasfreshBPartnerIdSet = true;
+	}
+
+	public void setInvoiceEmailEnabled(final Boolean invoiceEmailEnabled)
+	{
+		this.invoiceEmailEnabled = invoiceEmailEnabled;
+		invoiceEmailEnabledSet = true;
 	}
 }

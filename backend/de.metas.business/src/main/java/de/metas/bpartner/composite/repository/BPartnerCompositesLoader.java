@@ -54,6 +54,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static de.metas.util.StringUtils.trimBlankToNull;
+import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_Yes;
 
 /*
  * #%L
@@ -352,6 +353,7 @@ final class BPartnerCompositesLoader
 				.lastName(trimBlankToNull(contactRecord.getLastname()))
 				.name(trimBlankToNull(contactRecord.getName()))
 				.newsletter(contactRecord.isNewsletter())
+				.invoiceEmailEnabled(ISINVOICEEMAILENABLED_Yes.equals(contactRecord.getIsInvoiceEmailEnabled()))
 				.phone(trimBlankToNull(contactRecord.getPhone()))
 				.mobilePhone(trimBlankToNull(contactRecord.getMobilePhone()))
 				.description(trimBlankToNull(contactRecord.getDescription()))

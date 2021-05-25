@@ -185,6 +185,7 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 						.sw6CustomerGroup(externalSystemShopware6ConfigMapping.getSw6CustomerGroup())
 						.description(externalSystemShopware6ConfigMapping.getDescription())
 						.seqNo(externalSystemShopware6ConfigMapping.getSeqNo())
+						.isInvoiceEmailEnabled(externalSystemShopware6ConfigMapping.getIsInvoiceEmailEnabled())
 						.bPartnerSyncAdvice(bPartnerSyncAdvice)
 						.bPartnerLocationSyncAdvice(bpartnerLocationSyncAdvice);
 

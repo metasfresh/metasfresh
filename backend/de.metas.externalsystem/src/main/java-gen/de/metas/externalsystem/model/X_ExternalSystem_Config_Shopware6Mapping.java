@@ -6,13 +6,13 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for ExternalSystem_Config_Shopware6Mapping
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
 public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model.PO implements I_ExternalSystem_Config_Shopware6Mapping, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = -2055510967L;
+	private static final long serialVersionUID = 1859622999L;
 
 	/** Standard Constructor */
 	public X_ExternalSystem_Config_Shopware6Mapping (final Properties ctx, final int ExternalSystem_Config_Shopware6Mapping_ID, @Nullable final String trxName)
@@ -200,6 +200,18 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	public int getExternalSystem_Config_Shopware6Mapping_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_Shopware6Mapping_ID);
+	}
+
+	@Override
+	public void setIsInvoiceEmailEnabled (final boolean IsInvoiceEmailEnabled)
+	{
+		set_Value (COLUMNNAME_IsInvoiceEmailEnabled, IsInvoiceEmailEnabled);
+	}
+
+	@Override
+	public boolean isInvoiceEmailEnabled()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInvoiceEmailEnabled);
 	}
 
 	/**

@@ -56,6 +56,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_No;
+import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_Yes;
 
 /*
  * #%L
@@ -423,6 +425,8 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setPhone(bpartnerContact.getPhone());
 			bpartnerContactRecord.setFax(bpartnerContact.getFax());
 			bpartnerContactRecord.setMobilePhone(bpartnerContact.getMobilePhone());
+			bpartnerContactRecord.setIsInvoiceEmailEnabled(bpartnerContact.isInvoiceEmailEnabled() ?
+																   ISINVOICEEMAILENABLED_Yes : ISINVOICEEMAILENABLED_No);
 
 			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
 

@@ -50,6 +50,9 @@ public class JsonExternalSystemShopware6ConfigMapping
 	@NonNull
 	SyncAdvise bPartnerLocationSyncAdvice;
 
+	@NonNull
+	Boolean isInvoiceEmailEnabled;
+
 	@Nullable
 	String paymentTermValue;
 
@@ -70,6 +73,7 @@ public class JsonExternalSystemShopware6ConfigMapping
 			@JsonProperty("paymentRule") @NonNull final String paymentRule,
 			@JsonProperty("bpartnerSyncAdvice") @NonNull final SyncAdvise bPartnerSyncAdvice,
 			@JsonProperty("bpartnerLocationSyncAdvice") @NonNull final SyncAdvise bPartnerLocationSyncAdvice,
+			@JsonProperty("isInvoiceEmailEnabled") final @NonNull Boolean isInvoiceEmailEnabled,
 			@JsonProperty("paymentTerm") @Nullable final String paymentTermValue,
 			@JsonProperty("sw6CustomerGroup") @Nullable final String sw6CustomerGroup,
 			@JsonProperty("sw6PaymentMethod") @Nullable final String sw6PaymentMethod,
@@ -80,6 +84,7 @@ public class JsonExternalSystemShopware6ConfigMapping
 		this.paymentRule = paymentRule;
 		this.bPartnerSyncAdvice = bPartnerSyncAdvice;
 		this.bPartnerLocationSyncAdvice = bPartnerLocationSyncAdvice;
+		this.isInvoiceEmailEnabled = isInvoiceEmailEnabled;
 		this.paymentTermValue = paymentTermValue;
 		this.sw6CustomerGroup = sw6CustomerGroup;
 		this.sw6PaymentMethod = sw6PaymentMethod;

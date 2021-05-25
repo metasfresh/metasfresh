@@ -255,6 +255,7 @@ public class ExternalSystemConfigRepo
 				.sw6PaymentMethod(record.getSW6_Payment_Method())
 				.description(record.getDescription())
 				.seqNo(record.getSeqNo())
+				.isInvoiceEmailEnabled(record.isInvoiceEmailEnabled())
 				.bpartnerIfExists(record.getBPartner_IfExists())
 				.bpartnerIfNotExists(record.getBPartner_IfNotExists())
 				.bpartnerLocationIfExists(record.getBPartnerLocation_IfExists())

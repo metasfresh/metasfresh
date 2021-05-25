@@ -54,6 +54,9 @@ public class ExternalSystemShopware6ConfigMapping
 	@NonNull
 	String bpartnerLocationIfNotExists;
 
+	@NonNull
+	Boolean isInvoiceEmailEnabled;
+
 	@Nullable
 	PaymentTermId paymentTermId;
 
@@ -76,6 +79,7 @@ public class ExternalSystemShopware6ConfigMapping
 			@NonNull final String bpartnerIfNotExists,
 			@NonNull final String bpartnerLocationIfExists,
 			@NonNull final String bpartnerLocationIfNotExists,
+			@NonNull final Boolean isInvoiceEmailEnabled,
 			@Nullable final String sw6CustomerGroup,
 			@Nullable final String sw6PaymentMethod,
 			@Nullable final String description)
@@ -91,6 +95,7 @@ public class ExternalSystemShopware6ConfigMapping
 		this.bpartnerIfNotExists = bpartnerIfNotExists;
 		this.bpartnerLocationIfExists = bpartnerLocationIfExists;
 		this.bpartnerLocationIfNotExists = bpartnerLocationIfNotExists;
+		this.isInvoiceEmailEnabled = isInvoiceEmailEnabled;
 	}
 
 }

@@ -134,6 +134,7 @@ public class CreateBPartnerV2_StepDef
 			final String name = DataTableUtil.extractStringForColumnName(dataTableRow, "Name");
 			final String email = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Email");
 			final String fax = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Fax");
+			final Boolean isInvoiceEmailEnabled = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT.InvoiceEmailEnabled", false);
 
 			// persisted value
 			final Optional<JsonResponseContact> persistedResult = bpartnerEndpointService.retrieveBPartnerContact(
@@ -143,6 +144,7 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedContact.getEmail()).isEqualTo(email);
 			assertThat(persistedContact.getName()).isEqualTo(name);
 			assertThat(persistedContact.getFax()).isEqualTo(fax);
+			assertThat(persistedContact.isInvoiceEmailEnabled()).isEqualTo(isInvoiceEmailEnabled);
 		}
 	}
 }
