@@ -241,7 +241,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				() -> DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
 		final I_C_DocType orderDocType = Services.get(IDocTypeBL.class).getById(orderDocTypeId);
 		final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(orderDocType.getC_DocTypeInvoice_ID());
-		if(invoiceDocTypeId != null)
+		if (invoiceDocTypeId != null)
 		{
 			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
 		}
