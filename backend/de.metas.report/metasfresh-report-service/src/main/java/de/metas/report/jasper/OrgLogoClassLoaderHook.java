@@ -65,7 +65,7 @@ final class OrgLogoClassLoaderHook
 	//
 	// Org Logo resource matchers
 	private static final String SYSCONFIG_ResourceNameEndsWith = "de.metas.adempiere.report.jasper.OrgLogoClassLoaderHook.ResourceNameEndsWith";
-	private static final String DEFAULT_ResourceNameEndsWith = "de/metas/generics/logo.png; de/metas/generics/ReportBottom_Logo_ID.png";
+	private static final String DEFAULT_ResourceNameEndsWith = "de/metas/generics/logo.png;";
 	private final ImmutableSet<String> resourceNameEndsWithMatchers;
 	
 	private static final String otherResourceNameEndsWith = "de/metas/generics/ReportBottom_Logo_ID.png";
