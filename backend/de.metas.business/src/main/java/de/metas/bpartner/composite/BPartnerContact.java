@@ -1,22 +1,13 @@
 package de.metas.bpartner.composite;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import de.metas.bpartner.OrgMappingId;
-import org.adempiere.ad.table.RecordChangeLog;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.OrgMappingId;
 import de.metas.greeting.GreetingId;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
@@ -24,6 +15,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.ad.table.RecordChangeLog;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -108,6 +107,10 @@ public class BPartnerContact
 
 	private OrgMappingId orgMappingId;
 
+	private LocalDate birthday;
+
+	private BPartnerLocationId bPartnerLocationId;
+
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
 	 */
@@ -137,7 +140,9 @@ public class BPartnerContact
 			@Nullable final String phone,
 			@Nullable final BPartnerContactType contactType,
 			@Nullable final RecordChangeLog changeLog,
-			@Nullable final OrgMappingId orgMappingId)
+			@Nullable final OrgMappingId orgMappingId,
+			@Nullable final LocalDate birthday,
+			@Nullable final BPartnerLocationId bPartnerLocationId)
 	{
 		setId(id);
 
@@ -161,6 +166,8 @@ public class BPartnerContact
 		this.changeLog = changeLog;
 
 		this.orgMappingId = orgMappingId;
+		this.bPartnerLocationId = bPartnerLocationId;
+		this.birthday = birthday;
 	}
 
 	public BPartnerContact deepCopy()

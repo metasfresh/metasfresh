@@ -35,7 +35,7 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.standard.FacetFilterViewCacheMap;
-import de.metas.ui.web.document.references.DocumentReferenceId;
+import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.view.event.ViewChangesCollector;
@@ -121,7 +121,7 @@ public final class DefaultView implements IEditableView
 
 	@Getter
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
-	private final DocumentReferenceId documentReferenceId;
+	private final WebuiDocumentReferenceId documentReferenceId;
 
 	@Getter
 	private final ViewEvaluationCtx viewEvaluationCtx;
@@ -748,7 +748,7 @@ public final class DefaultView implements IEditableView
 		private ViewProfileId profileId;
 		private ViewHeaderPropertiesProvider headerPropertiesProvider;
 		private Set<DocumentPath> referencingDocumentPaths;
-		private DocumentReferenceId documentReferenceId;
+		private WebuiDocumentReferenceId documentReferenceId;
 		private ViewId parentViewId;
 		private DocumentId parentRowId;
 		private final SqlViewDataRepository viewDataRepository;
@@ -840,13 +840,13 @@ public final class DefaultView implements IEditableView
 			return referencingDocumentPaths == null ? ImmutableSet.of() : ImmutableSet.copyOf(referencingDocumentPaths);
 		}
 
-		public Builder setDocumentReferenceId(final DocumentReferenceId documentReferenceId)
+		public Builder setDocumentReferenceId(final WebuiDocumentReferenceId documentReferenceId)
 		{
 			this.documentReferenceId = documentReferenceId;
 			return this;
 		}
 
-		private DocumentReferenceId getDocumentReferenceId()
+		private WebuiDocumentReferenceId getDocumentReferenceId()
 		{
 			return documentReferenceId;
 		}

@@ -53,6 +53,7 @@ import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
+import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.MockLogEntriesRepository;
@@ -71,6 +72,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -140,7 +142,8 @@ class ContactRestControllerTest
 				new BPGroupRepository(),
 				new GreetingRepository(),
 				new CurrencyRepository(),
-				externalReferenceRestControllerService);
+				externalReferenceRestControllerService,
+				Mockito.mock(AlbertaBPartnerCompositeService.class));
 
 		contactRestController = new ContactRestController(
 				new BPartnerEndpointService(jsonServiceFactory),

@@ -61,7 +61,7 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 					exchange.getIn().setHeader(HEADER_ORG_CODE, ((BPUpsertCamelRequest)lookupRequest).getOrgCode());
 					final var jsonRequestBPartnerUpsert = ((BPUpsertCamelRequest)lookupRequest).getJsonRequestBPartnerUpsert();
 
-					log.info("Route invoked with " + jsonRequestBPartnerUpsert.getRequestItems().size() + " requestItems");
+					log.info("BPartner upsert route invoked with " + jsonRequestBPartnerUpsert.getRequestItems().size() + " requestItems");
 					exchange.getIn().setBody(jsonRequestBPartnerUpsert);
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestBPartnerUpsert.class))

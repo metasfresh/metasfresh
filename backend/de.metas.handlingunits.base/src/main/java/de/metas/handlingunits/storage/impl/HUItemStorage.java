@@ -23,12 +23,14 @@ package de.metas.handlingunits.storage.impl;
  */
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.metas.uom.UOMPrecision;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUCapacityBL;
@@ -158,9 +160,12 @@ public class HUItemStorage implements IHUItemStorage
 
 		final I_C_UOM uomStorage = extractUOM(storageLine);
 		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qtyToAdd, uom, uomStorage);
-		//
+		
+		// Avoid failing if we have qtyOld=15.3035 (despite uomStorage-precision=3) and qtyConv=15.304
+		final UOMPrecision uomPrecision = UOMPrecision.ofInt(uomStorage.getStdPrecision());
+		final BigDecimal qtyOld = storageLine.getQty().setScale(uomPrecision.toInt(), uomPrecision.getRoundingMode());
+		
 		// Update storage line
-		final BigDecimal qtyOld = storageLine.getQty();
 		final BigDecimal qtyNew = qtyOld.add(qtyConv);
 
 		Check.errorIf(qtyNew.signum() < 0, "Attempt to set negative qty on storageLine; qtyOld={}; qtyToAdd={}; qtyNew={}; this={}; storageLine={}", qtyOld, qtyToAdd, qtyNew, this, storageLine);

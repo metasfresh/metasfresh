@@ -1,25 +1,11 @@
-Updated Mappings for the overhaul of out existing external-system components
-
-
-# Tables, Columns and Fields
-
-## Tables to extends
-
-`AD_User`
-* `Gender` 
-  * :speaking_head: name `Gender` => `Geschlecht`
-  * 
-
-
 # Mappings
 note: I've marked with `?????` the alberta fields we didn't map yet
 
 
-Checking current version of API-Spec 
 
 ## Patients and Instances (Alberta) => BPartners (metasfresh)
 
-### Meanings withing the "Metasfresh" columns
+### Meanings within the "Metasfresh" columns
 
 * `bpartner` means `requestItems/bpartnerComposite/bpartner` (i.e. `de.metas.common.bpartner.v2.request.JsonRequestBPartner`)
 * `contact` means `requestItems/bpartnerComposite/contacts` (i.e. `de.metas.common.bpartner.v2.request.JsonRequestContactUpsert`)
@@ -27,235 +13,266 @@ Checking current version of API-Spec
 * `contact/albertaInfo` means the new alberta-info object that is backed by table `AD_User_Alberta`
 * `<type>`-ESR means an `S_ExternalReference` record with `Type=<type>`
 
+:zap: **NEW**: add a new ExternalReferenceType `Contact`. Although both contacts and users are stored in `AD_User` there is a big different between them
+
 ### Patient
 
 Metasfresh | Alberta | Note
 --- | --- | ---
 `BPartner`-ESR | `_id` |
-`UserID`-ESR | `_id` |
+`Contact`-ESR | `_id` |
 `BPartnerLocation`-ESR | `_id` |
-????? | `customerId` |
-????? | `customerContactId` |
-contact/gender | `gender` | :exclamation: need new column `AD_User.Gender` and extend the API accordingly
-????? | `title` |
-contact/firstName | `firstName` |
-contact/lastName | `lastName` |
-bpartner/name | `firstName` + " " + `lastName` |
-contact/birthday | `birthday` | :exclamation: column `AD_User.BirthDay` exists, but API needs to be extended
-location/address1 | `address` |
-location/address2 | `additionalAddress` |
-location/address3 | `additionalAddress2` |
-location/postal | `postalCode` |
-location/City | `city` |
-location/CountryCode | (always `DE`) |
-location/billToDefault | true, if `billingAddress == null` |
-location/billTo | true, if `billingAddress == null` |
-location/shipToDefault | true, if `deliveryAddress == null` |
-location/shipTo | true, if `deliveryAddress == null` |
-contact/Phone| `phone` |
-contact/Fax | `fax` |
-contact/MobilePhone| `mobilePhone` |
-contact/email | `patient/email` |
-contact/DefaultContact | always true |
-C_BPartner.isCustomer | always true |
+????? | `customerId` | TODO :question: to IT-Labs
+????? | `customerContactId` | TODO :question: to IT-Labs
+`contact/albertaContact/gender` | `gender` | :zap: **NEW**: needs new table `AD_User_Alberta` and according API-extension
+`bpartner/albertaContact/title` | `title` | :zap: **NEW**: needs new table `AD_User_Alberta` and according API-extension
+`contact/firstName` | `firstName` |
+`contact/lastName` | `lastName` |
+`bpartner/name` | `firstName` + " " + `lastName` |
+`contact/birthday` | `birthday` | :zap: **NEW**: column `AD_User.BirthDay` exists, but API needs to be extended
+`location/address1` | `address` |
+`location/address2` | `additionalAddress` |
+`location/address3` | `additionalAddress2` |
+`location/postal` | `postalCode` |
+`location/city` | `city` |
+`contact/phone`| `phone` |
+`contact/fax` | `fax` |
+`contact/mobilePhone` | `mobilePhone` |
+`contact/email` | `patient/email` |
 (lookup, sync and connect via `C_BP_Relation`) | `primaryDoctorId` | also see `doctor` mappings
 (lookup, sync and connect via `C_BP_Relation`) | `nursingHomeId` | also see `nursingHome` mappings
 (lookup, sync and connect via `C_BP_Relation`) | `nursingServiceId` | also see `nursingServiceId` mappings
 (lookup, sync and connect via `C_BP_Relation`) | `hostpital/hostpitalId` | also see `hostpital` mappings
-????? | `hostpital/dischargeDate` |
+`bpartner/albertaPatient/hospitalId` | `hostpital/hospitalId` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+`bpartner/albertaPatient/hospitalDischargeDate` | `hostpital/dischargeDate` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
 (lookup, sync and connect via `C_BP_Relation`) | `payer/payerId` | also see `payer` mappings
-????? | `payer/payerType` |
-????? | `payer/numberOfInsured` | new
-????? | `payer/copaymentFromDate` | new
-????? | `payer/copaymentToDate` | new
-????? | `changeInSupplier` | new
-????? | `ivTherapy` | new
+`bpartner/albertaPatient/payerId` | `hostpital/payerId` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+`bpartner/albertaPatient/payerType` | `payer/payerType` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+`bpartner/albertaPatient/insuranceNumber` | `payer/numberOfInsured` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+`bpartner/albertaPatient/copaymentFrom` | `payer/copaymentFromDate` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+`bpartner/albertaPatient/copaymentTo` | `payer/copaymentToDate` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+`bpartner/albertaPatient/transferPatient` | `changeInSupplier` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+`bpartner/albertaPatient/ivTherapy` | `ivTherapy` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
 (lookup, sync and connect via `C_BP_Relation`) | `pharmacyId` | also see `pharmacy` mappings
-????? | `comment` |
- | `billingAddress` | see `patient/billingAddress` mappings
- | `deliveryAddress` | see `patient/deliveryAddress` mappings
-????? | `regionId` |   also see `region` mappings
-????? | `fieldNurseId` | also see `user` mappings ?
-????? | `deactivationReason` | 
-????? | `deactivationReason` | 
-????? | `deactivationComment` |
- | `careGivers` | see `careGivers` mappings
-????? | `archived` |
-????? | `createdAt` |
-????? | `createdBy` | see `user` mappings
-????? | `updatedAt` |
-????? | `updatedBy` | see `user` mappings
-????? | `timestamp` |
+`bpartner/memo` | `comment` | :zap: **NEW**: column `bpartner/Memo` exists, but API needs to be extended
+(additional address) | `billingAddress` | see `patient/billingAddress` mappings
+(additional address) | `deliveryAddress` | see `patient/deliveryAddress` mappings
+????? | `regionId` | column `C_BPartner_Location.C_Region_ID` exists, but don't map it now
+`bpartner/albertaPatient/fieldNurseIdentifier` | `fieldNurseId` | also see `user` mappings ?
+`bpartner/albertaPatient/deactivationReason` | `deactivationReason` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+`bpartner/albertaPatient/deactivationDate` | `deactivationDate` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+`bpartner/albertaPatient/deactivationComment` | `deactivationComment` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+(lookup, sync and connect via `C_BP_Relation`) | `careGivers` | see `careGivers` mappings
+`bpartner/albertaCaregivers/identifier` | `careGivers/_id` |  :zap: **NEW**: needs new table `C_BPartner_AlbertaCareGiver` and according API-extension
+`bpartner/albertaCaregivers/type` | `careGivers/type` |  :zap: **NEW**: needs new table `C_BPartner_AlbertaCareGiver` and according API-extension
+`bpartner/albertaCaregivers/legalCarer` | `careGivers/isLegalCarer` | :zap: **NEW**: needs new table `C_BPartner_AlbertaCareGiver` and according API-extension
+`bpartner/albertaBPartner/archived` | `archived`  | :zap: **NEW**: needs new table `C_BPartner_Alberta` and according API-extension
+`bpartner/albertaPatient/createdAt` | `createdAt` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+`bpartner/albertaPatient/createdByIndentifier` | `createdBy` | see `user` mappings;  :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+`bpartner/albertaPatient/updatedAt` | `updatedAt` | :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+`bpartner/albertaPatient/updatedByIdentifier` | `updatedBy` | see `user` mappings; :zap: **NEW**: needs new table `C_BPartner_AlbertaPatient` and according API-extension
+`bpartner/albertaBPartner/timestamp` | `timestamp` | :zap: **NEW**: needs new table `C_BPartner_Alberta` and according API-extension
+`bpartner/albertaBPartner/role` | always `Patient` | :zap: **NEW**: needs new table `C_BPartner_AlbertaRole` and according API-extension
+`location/countryCode` | (always `DE`) |
+`location/billToDefault` | true, if `billingAddress == null` |
+`location/billTo` | true, if `billingAddress == null` |
+`location/shipToDefault` | true, if `deliveryAddress == null` |
+`location/shipTo` | true, if `deliveryAddress == null` |
+`contact/DefaultContact` | always true |
+`bpartner/isCustomer` | always true |
 
 ### `doctor` mappings
 
-Metasfresh | Alberta |
--- | -- |
+Metasfresh | Alberta | Note
+-- | -- | --
 `BPartner`-ESR | `_id` |
-`UserID`-ESR | `_id` |
 `BPartnerLocation`-ESR | `_id` |
-????? | `gender` |
-???? | `titleShort` |
-???? | `title` |
-contact/firstName | `firstName` |
-contact/lastName | `lastName` |
-C_BPartner.Name | `firstName` + " " + `lastName` |
-location/address1 | `address` |
-location/postal | `postalCode` |
-location/city | `city` |
-C_BPartner.phone | `phone`|
-contact/Phone | `phone` |
-contact/Fax | `fax` |
-????? | `timestamp` |
-C_BPartner.isCustomer | always true |
-location/countryCode | always DE |
-location/billToDefault | true |
-location/billTo | true |
-location/shipToDefault | true |
-location/shipTo | true |
+`Contact`-ESR | `_id` |
+`contact/locationIdentifier` | `_id` | :zap: **NEW**: needs an API extension so that we can set `AD_User.C_BPartner_Location_ID`
+`contact/albertaContact/gender` | `gender` | :zap: **NEW**: needs new table `AD_User_Alberta` and according API-extension
+`bpartner/albertaBPartner/title` | `title` | :zap: **NEW**: needs new table `C_BPartner_Alberta` and according API-extension
+`bpartner/albertaBPartner/titleShort` | `titleShort` | :zap: **NEW**: needs new table `C_BPartner_Alberta` and according API-extension
+`contact/firstName` | `firstName` |
+`contact/lastName` | `lastName` |
+`bpartner/name` | `firstName` + " " + `lastName` |
+`location/address1` | `address` |
+`location/postal` | `postalCode` |
+`location/city` | `city` |
+`bpartner/phone` | `phone`|
+`contact/phone` | `phone` |
+`contact/fax` | `fax` |
+`bpartner/albertaBPartner/timestamp` | `timestamp` | :zap: **NEW**: needs new table `C_BPartner_Alberta` and according API-extension
+`bpartner/albertaBPartner/role` | always `Doctor` | :zap: **NEW**: needs new table `C_BPartner_AlbertaRole` and according API-extension
+`bpartner/isCustomer` | always true |
+`location/countryCode` | always DE |
+`location/billToDefault` | true |
+`location/billTo` | true |
+`location/shipToDefault` | true |
+`location/shipTo` | true |
 
 ### `nursingHome` mappings
 
-Metasfresh | Alberta |
--- | -- |
+Metasfresh | Alberta | Note
+-- | -- | --
 `BPartner`-ESR | `_id` |
 `BPartnerLocation`-ESR | `_id` |
-C_BPartner.Name | `name` |
-location/address1 | `address` |
-location/postal | `postalCode` |
-location/city | `city` |
-C_BPartner.phone | `phone` |
-????? | `fax` |
-????? | `email` |
-????? | `timestamp` |
-C_BPartner.isCustomer | always true |
-location/countryCode | always DE |
-location/billToDefault | true |
-location/billTo | true |
-location/shipToDefault | true |
-location/shipTo | true |
+`Contact`-ESR | `_id` | :zap: **NEW**: need to create a default-contact
+`contact/locationIdentifier` | `_id` | :zap: **NEW**: needs an API extension so that we can set `AD_User.C_BPartner_Location_ID`
+`bpartner/name` | `name` |
+`location/address1` | `address` |
+`location/postal` | `postalCode` |
+`location/city` | `city` |
+`bpartner/phone` | `phone` |
+`contact/fax` | `fax` | :zap: **NEW**: need to create a default-contact
+`contact/email` | `email` | :zap: **NEW**: need to create a default-contact
+`bpartner/albertaBPartner/timestamp` | `timestamp` | :zap: **NEW**: needs new table `C_BPartner_Alberta` and according API-extension
+`bpartner/albertaBPartner/role` | always `NursingHome` | :zap: **NEW**: needs new table `C_BPartner_AlbertaRole` and according API-extension
+`bpartner/isCustomer` | always true |
+`location/countryCode` | always DE |
+`location/billToDefaul` | true |
+`location/billTo` | true |
+`location/shipToDefault` | true |
+`location/shipTo` | true |
 
 
 ### `nursingService` mappings
 
-Metasfresh | Alberta |
--- | -- |
+Metasfresh | Alberta | Note
+-- | -- | --
 `BPartner`-ESR | `_id` |
 `BPartnerLocation`-ESR | `_id` |
-C_BPartner.Name | `name` |
-location/address1 | `address` |
-location/postal | `postalCode` |
-location/city | `city` |
-C_BPartner.phone | `phone`|
-????? | `fax` |
-????? | `email` |
-????? | `website` |
-????? | `timestamp` |
-C_BPartner.isCustomer | always true |
-location/countryCode | always DE |
-location/billToDefault | true |
-location/billTo | true |
-location/shipToDefault | true |
-location/shipTo | true |
+`Contact`-ESR | `_id` | :zap: **NEW**: need to create a default-contact
+`contact/locationIdentifier` | `_id` | :zap: **NEW**: needs an API extension so that we can set `AD_User.C_BPartner_Location_ID`
+`bpartner/name` | `name` |
+`location/address1` | `address` |
+`location/postal` | `postalCode` |
+`location/city` | `city` |
+`bpartner/phone` | `phone`|
+`contact/fax` | `fax` | :zap: **NEW**: need to create a default-contact
+`contact/email` | `email` | :zap: **NEW**: need to create a default-contact
+`bpartner/url` | `website` |  :zap: **NEW**: column `C_BPartner.URL` exists, but API needs to be extended
+`bpartner/albertaBPartner/timestamp` | `timestamp` | :zap: **NEW**: needs new table `C_BPartner_Alberta` and according API-extension
+`bpartner/albertaBPartner/role` | always `NursingService` | :zap: **NEW**: needs new table `C_BPartner_AlbertaRole` and according API-extension
+`bpartner/isCustomer` | always true |
+`location/countryCode` | always DE |
+`location/billToDefault` | true |
+`location/billTo` | true |
+`location/shipToDefault` | true |
+`location/shipTo` | true |
 
 
 ### `hospital` mappings
 
-Metasfresh | Alberta |
--- | -- |
+Metasfresh | Alberta | Note
+-- | -- | --
 `BPartner`-ESR | `_id` |
 `BPartnerLocation`-ESR | `_id` |
-C_BPartner.Name2  | `company` |
-C_BPartner.Name | `name` |
-C_BPartner.companyName | `companyName` |
-C_BPartner.Name3 | `additionalCompanyName` |
-location/address1 | `address` |
-location/postal | `postalCode` |
-location/city | `city` |
-C_BPartner.phone | `phone` |
-????? | `fax` |
-????? | `email` |
-????? | `website` |
-????? | `timestamp` |
-C_BPartner.isCustomer | always true |
-location/countryCode | always DE |
-location/billToDefault | true |
-location/billTo | true |
-location/shipToDefault | true |
-location/shipTo | true |
+`Contact`-ESR | `_id` | :zap: **NEW**: need to create a default-contact
+`contact/locationIdentifier` | `_id` | :zap: **NEW**: needs an API extension so that we can set `AD_User.C_BPartner_Location_ID`
+`bpartner/name2`  | `company` |
+`bpartner/name` | `name` |
+`bpartner/companyName` | `companyName` |
+`bpartner/name3` | `additionalCompanyName` |
+`location/address1` | `address` |
+`location/postal` | `postalCode` |
+`location/city` | `city` |
+`bpartner/phone` | `phone` |
+`contact/fax` | `fax` | :zap: **NEW**: need to create a default-contact
+`contact/email` | `email` | :zap: **NEW**: need to create a default-contact
+`bpartner/url` | `website` |  :zap: **NEW**: column `C_BPartner.URL` exists, but API needs to be extended
+`bpartner/albertaBPartner/timestamp` | `timestamp` | :zap: **NEW**: needs new table `C_BPartner_Alberta` and according API-extension
+`bpartner/albertaBPartner/role` | always `Hostpital` | :zap: **NEW**: needs new table `C_BPartner_AlbertaRole` and according API-extension
+`bpartner/isCustomer` | always true |
+`location/countryCode` | always DE |
+`location/billToDefault` | true |
+`location/billTo` | true |
+`location/shipToDefault` | true |
+`location/shipTo` | true |
 
 ### `payer` mappings
 
-Metasfresh | Alberta |
--- | -- |
+Metasfresh | Alberta | Note
+-- | -- | --
 `BPartner`-ESR | `_id` |
 `BPartnerLocation`-ESR | `_id` |
-C_BPartner.Name | `name` |
-????? | `type` |
-C_BPartner.code| `iKNumber` |
-????? | `timestamp` |
-C_BPartner.isCustomer | always true |
-location/countryCode | always DE |
-location/billToDefault | true |
-location/billTo | true |
-location/shipToDefault | true |
-location/shipTo | true |
+`bpartner/name` | `name` |
+(nothing) | `type` | we don't sync this to the payer-`C_BPartner`, because it would be a new Alberta-table just for this field, and also we have this info in the patient window already.
+`bpartner/code`| `iKNumber` |
+`bpartner/albertaBPartner/timestamp` | `timestamp` | :zap: **NEW**: needs new table `C_BPartner_Alberta` and according API-extension
+`bpartner/albertaBPartner/role` | always `Payer` | :zap: **NEW**: needs new table `C_BPartner_AlbertaRole` and according API-extension
+`bpartner/isCustomer` | always true |
+`location/countryCode` | always DE |
+`location/billToDefault` | true |
+`location/billTo` | true |
+`location/shipToDefault` | true |
+`location/shipTo` | true |
 
 ### `pharmacy` mappings
 
-Metasfresh | Alberta |
--- | -- |
+Metasfresh | Alberta | Note
+-- | -- | --
 `BPartner`-ESR | `_id` |
 `BPartnerLocation`-ESR | `_id` |
-C_BPartner.Name | `name` |
-location/address1 | `address` |
-location/postal | `postalCode` |
-location/city | `city` |
-C_BPartner.phone | `phone` |
-????? | `fax` |
-????? | `email` |
-????? | `website` |
-????? | `timestamp` |
-C_BPartner.isCustomer | always true |
-location/countryCode | always DE |
-location/billToDefault | true |
-location/billTo | true |
-location/shipToDefault | true |
-location/shipTo | true |
+`Contact`-ESR | `_id` | :zap: **NEW**: need to create a default-contact
+`contact/locationIdentifier` | `_id` | :zap: **NEW**: needs an API extension so that we can set `AD_User.C_BPartner_Location_ID`
+`bpartner/mame` | `name` |
+`location/address1` | `address` |
+`location/postal` | `postalCode` |
+`location/city` | `city` |
+`bpartner/phone` | `phone` |
+`contact/fax` | `fax` | :zap: **NEW**: need to create a default-contact
+`contact/email` | `email` | :zap: **NEW**: need to create a default-contact
+`bpartner/url` | `website` |  :zap: **NEW**: column `C_BPartner.URL` exists, but API needs to be extended
+`bpartner/albertaBPartner/timestamp` | `timestamp` | :zap: **NEW**: needs new table `C_BPartner_Alberta` and according API-extension
+`bpartner/albertaBPartner/role` | always `Pharmacy` | :zap: **NEW**: needs new table `C_BPartner_AlbertaRole` and according API-extension
+`bpartner/isCustomer` | always true |
+`location/countryCode` | always DE |
+`location/billToDefault` | true |
+`location/billTo` | true |
+`location/shipToDefault` | true |
+`location/shipTo` | true |
 
 ### `patient/billingAddress` mappings
 
-Metasfresh | Alberta |
--- | -- |
-`BPartnerLocation`-ESR | 'billingAddress_' + Patient.Id |
-????? | `gender` | 
-????? | `title` | 
-location/bPartnerName | `name` | 
-location/address1 | `address` |
-location/postal | `postalCode` |
-location/City | `city` |
-location/CountryCode | always DE |
-location/billToDefault | true |
-location/billTo | true |
+Metasfresh | Alberta | Note
+-- | -- | --
+`BPartnerLocation`-ESR | `billingAddress_` + `/patient/_id` |
+`Contact`-ESR | `billingAddress_` + `/patient/_id` |
+`contact/locationIdentifier` | `billingAddress_` + `/patient/_id` | :zap: **NEW**: needs an API extension so that we can set `AD_User.C_BPartner_Location_ID`
+`contact/albertaContact/gender` | `gender` | :zap: **NEW**: needs new table `AD_User_Alberta` and according API-extension
+`contact/albertaContact/title` | `title` | :zap: **NEW**: needs new table `AD_User_Alberta` and according API-extension
+`location/bPartnerName` | `name` |
+`location/address1` | `address` |
+`location/postal` | `postalCode` |
+`location/city` | `city` |
+`location/countryCode` | always DE |
+`location/billToDefault` | true |
+`location/billTo` | true |
 
 ### `patient/deliveryAddress` mappings
 
-Metasfresh | Alberta |
--- | -- |
-`BPartnerLocation`-ESR | 'shippingAddress_' + Patient.Id |
-location/address1 | Patient.deliveryAddress.address |
-location/postal | Patient.deliveryAddress.postalCode |
-location/City | Patient.deliveryAddress.city |
-location/CountryCode | always DE |
-location/bPartnerName | Patient.deliveryAddress.name |
-location/shipToDefault | true |
-location/shipTo | true |
-???? | Patient.deliveryAddress.title |
+Metasfresh | Alberta | Note
+-- | -- | --
+`BPartnerLocation`-ESR | `shippingAddress_` + `/patient/_id` |
+`Contact`-ESR | `shippingAddress_` + `/patient/_id` |
+`contact/locationIdentifier` | `shippingAddress_` + `/patient/_id` | :zap: **NEW**: needs an API extension so that we can set `AD_User.C_BPartner_Location_ID`
+`contact/albertaContact/gender` | `gender` | :zap: **NEW**: needs new table `AD_User_Alberta` and according API-extension
+`contact/albertaContact/title` | `title` | :zap: **NEW**: needs new table `AD_User_Alberta` and according API-extension
+`location/address1` | Patient.deliveryAddress.address |
+`location/postal` | Patient.deliveryAddress.postalCode |
+`location/city` | Patient.deliveryAddress.city |
+`location/countryCode` | always DE |
+`location/bPartnerName` | Patient.deliveryAddress.name |
+`location/shipToDefault` | true |
+`location/shipTo` | true |
 
 ### `region` mappings
 
-Metasfresh | Alberta |
--- | -- |
+Not sure: shall we add a dedicated EP for regions??
+I believe that would be the cleanest solution..
+
+Metasfresh | Alberta | Note
+-- | -- | --
 ????? | `_id` |
 ????? | `label` |
 ????? | `parent` |
@@ -263,44 +280,53 @@ Metasfresh | Alberta |
 
 ### `careGivers` mappings
 
-Metasfresh | Alberta |
--- | -- |
+Metasfresh | Alberta | Note
+-- | -- | --
 `BPartner`-ESR | `_id` |
-`UserID`-ESR | `_id` |
-`BPartnerLocation`-ESR | _id` |
-????? | `customerId` |
-????? | `type` |
-????? | `isLegalCarer` |
-????? | gender |
-????? | title |
-contact/firstName | firstName |
-contact/lastName | lastName |
-C_BPartner.Name | firstName + " " + lastName |
-location/address1 | address |
-location/postal | postalCode |
-location/city | city |
-location/countryCode | always DE |
-C_BPartner.phone | phone |
-contact/phone | phone |
-contact/mobilePhone | mobilePhone |
-contact/fax| fax |
-contact/email | email |
-????? | archived |
-????? | timestamp |
-C_BPartner.isCustomer | always true |
-contact/defaultContact | always true |
+`Contact`-ESR | `_id` |
+`BPartnerLocation`-ESR | `_id` |
+`contact/locationIdentifier` | `_id` | :zap: **NEW**: needs an API extension so that we can set `AD_User.C_BPartner_Location_ID`
+????? | `customerId` | TODO :question: to IT-Labs
+(nothing) | `type` | :zap: **NEW**: see `patient` mappings (`careGivers/type`)
+(nothing) | `isLegalCarer` | :zap: **NEW**: see `patient` mappings (`careGivers/isLegalCarer`)
+`contact/albertaContact/gender` | `gender` | :zap: **NEW**: needs new table `AD_User_Alberta` and according API-extension
+`contact/albertaContact/title` | `title` | :zap: **NEW**: needs new table `AD_User_Alberta` and according API-extension
+`contact/firstName` | firstName |
+`contact/lastName` | lastName |
+`bpartner/name` | firstName + " " + lastName |
+`location/address1` | address |
+`location/postal` | postalCode |
+`location/city` | city |
+`location/countryCode` | always DE |
+`bpartner/phone` | phone |
+`contact/phone` | phone |
+`contact/mobilePhone` | mobilePhone |
+`contact/fax` | fax |
+`contact/email` | email |
+`bpartner/albertaBPartner/archived` | `archived`  | :zap: **NEW**: needs new table `C_BPartner_Alberta` and according API-extension
+`bpartner/albertaBPartner/timestamp` | `timestamp` | :zap: **NEW**: needs new table `C_BPartner_Alberta` and according API-extension
+`bpartner/isCustomer` | always true |
+`contact/defaultContact` | always true |
+`location/countryCode` | always DE |
+`location/billToDefault` | true |
+`location/billTo` | true |
+`location/shipToDefault` | true |
+`location/shipTo` | true |
 
-❗ ❓  I didn't set the isBillToDefault and isShippingToDefault flags here, should I do it know?
 
 ### `user` mappings
 
-Metasfresh | Alberta |
--- | -- |
+* :zap: **NEW**: needs new alberta-config parameter
+  * Create an alberta-external-systems-parameter for the C_BPartner_ID under which these a contacts shall be synched
+* :zap: **NEW**: needs an additional Alberta-API-Call AFAIK
+  
+Metasfresh | Alberta | Note
+-- | -- | --
 `UserID`-ESR | `_id` |
-contact/firstName | `firstName` |
-contact/lastName | `lastName` |
-contact/email | `email` |
-contact/albertaInfo/lastUpdated | `timestamp` |
+`contact/firstName` | `firstName` |
+`contact/lastName` | `lastName` |
+`contact/email` | `email` |
+`contact/albertaContact/timestamp` | `timestamp` |
 
 ## Products (metasfresh) => Articles (Alberta)
 

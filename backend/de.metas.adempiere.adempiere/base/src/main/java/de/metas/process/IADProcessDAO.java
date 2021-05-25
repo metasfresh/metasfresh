@@ -5,6 +5,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Process;
@@ -27,7 +28,7 @@ public interface IADProcessDAO extends ISingletonService
 		return getById(AdProcessId.ofRepoId(processId));
 	}
 
-	List<RelatedProcessDescriptor> retrieveRelatedProcessDescriptors(int adTableId, @Nullable AdWindowId adWindowId, @Nullable AdTabId adTabId);
+	List<RelatedProcessDescriptor> retrieveRelatedProcessDescriptors(@Nullable AdTableId adTableId, @Nullable AdWindowId adWindowId, @Nullable AdTabId adTabId);
 
 	/**
 	 * Retrieves the {@link I_AD_Process} which references the given <code>AD_Form_ID</code>. If there is no such process, the method returns <code>null</code>. If there are multiple such records,
@@ -40,9 +41,9 @@ public interface IADProcessDAO extends ISingletonService
 	/**
 	 * Registers a process for a certain table without the need of an <code>AD_Table_Process</code> record in the database.
 	 */
-	void registerTableProcess(int adTableId, @Nullable AdWindowId adWindowId, AdProcessId adProcessId);
+	void registerTableProcess(@Nullable AdTableId adTableId, @Nullable AdWindowId adWindowId, AdProcessId adProcessId);
 
-	default void registerTableProcess(final int adTableId, final AdProcessId adProcessId)
+	default void registerTableProcess(final AdTableId adTableId, final AdProcessId adProcessId)
 	{
 		registerTableProcess(adTableId, null, adProcessId);
 	}

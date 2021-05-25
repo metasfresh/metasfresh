@@ -44,6 +44,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
@@ -169,6 +170,7 @@ final class BPartnerCompositeSaver
 			bpartnerRecord.setValue(bpartner.getValue());
 		}
 		bpartnerRecord.setGlobalId(bpartner.getGlobalId());
+		bpartnerRecord.setMemo(bpartner.getMemo());
 
 		assertCanCreateOrUpdate(bpartnerRecord);
 		saveRecord(bpartnerRecord);
@@ -427,6 +429,9 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
 
 			bpartnerContactRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerContact.getOrgMappingId()));
+
+			bpartnerContactRecord.setBirthday(TimeUtil.asTimestamp(bpartnerContact.getBirthday()));
+			bpartnerContactRecord.setC_BPartner_Location_ID(bpartnerContact.getBPartnerLocationId() != null ? bpartnerContact.getBPartnerLocationId().getRepoId() : -1);
 
 			assertCanCreateOrUpdate(bpartnerContactRecord);
 			saveRecord(bpartnerContactRecord);

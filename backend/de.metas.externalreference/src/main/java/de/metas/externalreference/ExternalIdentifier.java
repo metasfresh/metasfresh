@@ -26,13 +26,13 @@ import de.metas.bpartner.GLN;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -78,6 +78,24 @@ public class ExternalIdentifier
 	}
 
 	@NonNull
+	public static Optional<ExternalIdentifier> ofOptional(@Nullable final String identifier)
+	{
+		if (Check.isBlank(identifier))
+		{
+			return Optional.empty();
+		}
+
+		try
+		{
+			return Optional.of(of(identifier));
+		}
+		catch (final Exception exception)
+		{
+			return Optional.empty();
+		}
+	}
+
+	@NonNull
 	public static ExternalIdentifier of(@NonNull final String identifier)
 	{
 		if (Type.METASFRESH_ID.pattern.matcher(identifier).matches())
@@ -102,6 +120,12 @@ public class ExternalIdentifier
 		if (glnMatcher.matches())
 		{
 			return new ExternalIdentifier(Type.GLN, identifier, null);
+		}
+
+		final Matcher valMatcher = Type.VALUE.pattern.matcher(identifier);
+		if (valMatcher.matches())
+		{
+			return new ExternalIdentifier(Type.VALUE, identifier, null);
 		}
 
 		throw new AdempiereException("Unknown externalId type!")
@@ -146,13 +170,30 @@ public class ExternalIdentifier
 
 	}
 
+	@NonNull
+	public String asValue()
+	{
+		Check.assume(Type.VALUE.equals(type),
+					 "The type of this instance needs to be {}; this={}", Type.VALUE, this);
+
+		final Matcher valueMatcher = Type.VALUE.pattern.matcher(rawValue);
+
+		if (!valueMatcher.matches())
+		{
+			throw new AdempiereException("External identifier of Value parsing failed. External Identifier:" + rawValue);
+		}
+
+		return valueMatcher.group(1);
+	}
+
 	@AllArgsConstructor
 	@Getter
 	public enum Type
 	{
 		METASFRESH_ID(Pattern.compile("^\\d+$")),
 		EXTERNAL_REFERENCE(Pattern.compile("(?:^ext-)([a-zA-Z0-9]+)-(.+)")),
-		GLN(Pattern.compile("(?:^gln)-(.+)"));
+		GLN(Pattern.compile("(?:^gln)-(.+)")),
+		VALUE(Pattern.compile("(?:^val)-(.+)"));
 
 		private final Pattern pattern;
 	}

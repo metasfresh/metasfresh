@@ -345,7 +345,8 @@ public class ShipmentService
 
 		final ImmutableList<ShipmentScheduleWithHU> scheduleWithHUS = shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
 				shipmentSchedules,
-				request.getQuantityTypeToUse());
+				request.getQuantityTypeToUse(),
+				ImmutableMap.of());
 
 		return huShipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
