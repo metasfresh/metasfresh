@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ebay.api.client.auth.oauth2.OAuth2Api;
+import com.ebay.api.client.auth.oauth2.model.AccessToken;
 import com.ebay.api.client.auth.oauth2.model.Environment;
 import com.ebay.api.client.auth.oauth2.model.OAuthResponse;
 
@@ -54,25 +55,40 @@ public class GetEbayOrdersProcessor implements Processor {
 		final String apiMode = request.getParameters().get(EbayConstants.PARAM_API_MODE);
 
 		// env default to sandbox.
-		Environment EXECUTION_ENV;
+		Environment ebayExecutionEnv;
 		if (Environment.PRODUCTION.toString().equalsIgnoreCase(apiMode)) {
-			EXECUTION_ENV = Environment.PRODUCTION;
+			ebayExecutionEnv = Environment.PRODUCTION;
 		} else {
-			EXECUTION_ENV = Environment.SANDBOX;
+			ebayExecutionEnv = Environment.SANDBOX;
+			
 		}
 
-		OAuth2Api auth2Api = new OAuth2Api();
-		OAuthResponse oauth2Response = auth2Api.exchangeCodeForAccessToken(EXECUTION_ENV, authCode);
-
+		//get api auth token
+		final OAuthResponse oauth2Response;
+		if( exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT) == null) {
+			
+			log.debug("Getting ebay access token");
+			OAuth2Api auth2Api = new OAuth2Api();
+		    oauth2Response = auth2Api.exchangeCodeForAccessToken(ebayExecutionEnv, authCode);
+			
+		} else {
+			
+			log.debug("Using provided ebay auth client");
+			OAuth2Api auth2Api =(OAuth2Api) exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT);;
+		    oauth2Response = auth2Api.exchangeCodeForAccessToken(ebayExecutionEnv, authCode);
+		}
+		
+		//execut api call 
 		if (oauth2Response.getAccessToken().isPresent()) {
 			
 			// construct api client or use provided one.
 			final OrderApi orderApi;
-			if( exchange.getProperty(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT) == null) {
+			if( exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT) == null) {
 				log.debug("Constructing ebay api client");
 				
 				ApiClient defaultClient = Configuration.getDefaultApiClient();
-				defaultClient.setBasePath("https://api.sandbox.ebay.com/sell/fulfillment/v1");
+//				defaultClient.setBasePath("https://api.sandbox.ebay.com/sell/fulfillment/v1");
+				defaultClient.setBasePath(ebayExecutionEnv.getApiEndpoint());
 
 				// Configure OAuth2 access token for authorization: api_auth
 				OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
@@ -82,11 +98,11 @@ public class GetEbayOrdersProcessor implements Processor {
 				
 			} else {
 				
-				log.debug("Using preconstructed ebay api client");
-				orderApi = (OrderApi) exchange.getProperty(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT);
+				log.debug("Using provided ebay api client");
+				orderApi = (OrderApi) exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT);
 			}
 			
-			//prepare call TODO: configureable? 
+			//prepare call TODO: config parameters
 			String fieldGroups = null;
 			String filter = "lastmodifieddate:".concat(updatedAfter);
 			String limit = "50";
