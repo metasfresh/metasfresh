@@ -42,6 +42,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -116,6 +117,8 @@ public interface IPaymentBL extends ISingletonService
 	void testAllocation(PaymentId paymentId);
 
 	boolean isCashTrx(final I_C_Payment payment);
+
+	void fullyWriteOffPayments(Iterator<I_C_Payment> payments);
 
 	/**
 	 * WriteOff given payment.

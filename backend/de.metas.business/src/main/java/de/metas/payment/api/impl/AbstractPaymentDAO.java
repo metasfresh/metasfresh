@@ -27,6 +27,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -39,7 +41,10 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
@@ -60,6 +65,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 
@@ -88,7 +94,8 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 	@Override
 	@Nullable
-	public ExternalId getExternalOrderId(@NonNull final PaymentId paymentId){
+	public ExternalId getExternalOrderId(@NonNull final PaymentId paymentId)
+	{
 		final List<String> externalIDs = queryBL
 				.createQueryBuilder(I_C_Payment.class)
 				.addEqualsFilter(I_C_Payment.COLUMN_C_Payment_ID, paymentId)
@@ -260,4 +267,28 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	{
 		InterfaceWrapperHelper.save(payment);
 	}
+
+	@Override
+	public Iterator<I_C_Payment> retrieveEmployeePaymentsForTimeframe(@NonNull final Instant startDate,
+			@NonNull final Instant endDate)
+	{
+		final IQuery<I_C_BPartner> employeePartnerQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsEmployee, true)
+				.create();
+
+		final Iterator<I_C_Payment> paymentsForEmployees = queryBL.createQueryBuilder(I_C_Payment.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsAllocated, false)
+				.addBetweenFilter(I_C_Payment.COLUMNNAME_DateTrx, startDate, endDate)
+				.addInSubQueryFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID,
+									 I_C_BPartner.COLUMNNAME_C_BPartner_ID,
+									 employeePartnerQuery)
+				.create()
+				.iterate(I_C_Payment.class);
+
+		return paymentsForEmployees;
+	}
+
 }
