@@ -90,6 +90,7 @@ import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
