@@ -3,7 +3,7 @@ package de.metas.document.archive.spi.impl;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.document.archive.model.I_AD_User;
+import org.compiere.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.engine.DocStatus;

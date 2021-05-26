@@ -3,9 +3,9 @@
  */
 package de.metas.document.archive.api;
 
-import de.metas.document.archive.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_AD_User;
 
 /*
  * #%L

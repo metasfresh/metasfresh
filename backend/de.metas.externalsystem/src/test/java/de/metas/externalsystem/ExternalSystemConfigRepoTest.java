@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
+import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6Mapping.ISINVOICEEMAILENABLED_Yes;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -275,6 +276,7 @@ class ExternalSystemConfigRepoTest
 		childMappingRecord.setSW6_Payment_Method("test");
 		childMappingRecord.setDescription("test");
 		childMappingRecord.setExternalSystem_Config_Shopware6_ID(childRecord.getExternalSystem_Config_Shopware6_ID());
+		childMappingRecord.setIsInvoiceEmailEnabled(ISINVOICEEMAILENABLED_Yes);
 		childMappingRecord.setBPartner_IfExists("UPDATE_MERGE");
 		childMappingRecord.setBPartner_IfNotExists("FAIL");
 		childMappingRecord.setBPartnerLocation_IfExists("DONT_UPDATE");
