@@ -65,9 +65,9 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "value" : 4
           }
         },
+        "baseLanguage" : true,
         "leftToRight" : true,
-        "decimalPoint" : false,
-        "baseLanguage" : true
+        "decimalPoint" : false
       },
       "url" : "bPartner.url",
       "groupId" : 15,
@@ -165,6 +165,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "bpartnerId" : 100012,
           "userId" : 100017
         },
+        "invoiceEmailEnabled" : false,
         "name" : "c1_name",
         "newsletter" : false,
         "phone" : "c1_phone"
@@ -234,6 +235,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "bpartnerId" : 100012,
           "userId" : 100018
         },
+        "invoiceEmailEnabled" : false,
         "name" : "c2_name",
         "newsletter" : false,
         "phone" : "c2_phone"
@@ -497,6 +499,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "bpartnerId" : 20,
           "userId" : 30
         },
+        "invoiceEmailEnabled" : false,
         "lastName" : "contactRecord.lastName",
         "name" : "contactRecord.name",
         "newsletter" : false,
@@ -568,6 +571,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "bpartnerId" : 20,
           "userId" : 100010
         },
+        "invoiceEmailEnabled" : false,
         "name" : "newContact-_name",
         "newsletter" : false,
         "phone" : "newContact-_phone"
@@ -775,6 +779,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "bpartnerId" : 20,
           "userId" : 30
         },
+        "invoiceEmailEnabled" : false,
         "lastName" : "contactRecord.lastName",
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
@@ -984,6 +989,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "bpartnerId" : 20,
           "userId" : 30
         },
+        "invoiceEmailEnabled" : false,
         "lastName" : "contactRecord.lastName",
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
@@ -1193,6 +1199,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "bpartnerId" : 20,
           "userId" : 30
         },
+        "invoiceEmailEnabled" : false,
         "lastName" : "contactRecord.lastName",
         "name" : "contactRecord.name",
         "newsletter" : false,
