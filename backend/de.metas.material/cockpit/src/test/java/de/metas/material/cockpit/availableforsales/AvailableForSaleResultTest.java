@@ -33,6 +33,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 public class AvailableForSaleResultTest
 {
@@ -78,6 +79,43 @@ public class AvailableForSaleResultTest
 		assertThat(groups.get(1).getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("2"));
 		assertThat(groups.get(1).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("4");
 		assertThat(groups.get(1).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("2");
+	}
+
+	@Test
+	public void three_buckets()
+	{
+		final AvailableForSaleResultBuilder resultBuilder;
+		{
+			final AvailableForSaleResultBucket emptyBucket1 = AvailableForSaleResultBucket.builder()
+					.product(ProductClassifier.specific(100001))
+					.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(AttributesKeyPatternsUtil.parseCommaSeparatedString("1*").stream().findFirst().get()))
+					.build();
+
+			final AvailableForSaleResultBucket emptyBucket2 = AvailableForSaleResultBucket.builder()
+					.product(ProductClassifier.specific(100001))
+					.storageAttributesKeyMatcher(AttributesKeyPatternsUtil.matching(AttributesKey.ofString("2")))
+					.build();
+
+			resultBuilder = new AvailableForSaleResultBuilder(ImmutableList.of(emptyBucket1, emptyBucket2));
+		}
+
+		final BigDecimal TWO = BigDecimal.valueOf(2);
+		final AddToResultGroupRequest.AddToResultGroupRequestBuilder requestBuilder = AddToResultGroupRequest.builder()
+				.productId(ProductId.ofRepoId(100001))
+				.qtyOnHandStock(TWO)
+				.qtyToBeShipped(BigDecimal.valueOf(1))
+				.queryNo(0);
+
+		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1=")).build());
+		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1=11" + delim + "2")).build());
+		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("2")).build());
+
+		final List<AvailableForSalesLookupBucketResult> groups = resultBuilder.build().getAvailableForSalesResults();
+		assertThat(groups).hasSize(3);
+		assertThat(groups).extracting("storageAttributesKey", "quantities.qtyOnHandStock", "quantities.qtyToBeShipped")
+				.containsExactlyInAnyOrder(tuple(AttributesKey.ofString("1="), TWO, BigDecimal.ONE),
+						tuple(AttributesKey.ofString("1=11"), TWO, BigDecimal.ONE),
+						tuple(AttributesKey.ofString("2"), BigDecimal.valueOf(4), TWO));
 	}
 
 }
