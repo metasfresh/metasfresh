@@ -331,7 +331,7 @@ public class CustomerRetentionRepositoryTest
 
 		final I_C_Invoice_Candidate cand1 = createInvoiceCandidate(term1.getC_Flatrate_Term_ID());
 
-		final I_C_Invoice invoice1 = createInvoice(partner.getC_BPartner_ID(), "documentNo1", masterEndDate1);
+		final I_C_Invoice invoice1 = createInvoice(partner.getC_BPartner_ID(), "documentNo1", masterStartDate1);
 
 		final I_C_InvoiceLine invoiceLine1 = createInvoiceLine(invoice1.getC_Invoice_ID());
 
