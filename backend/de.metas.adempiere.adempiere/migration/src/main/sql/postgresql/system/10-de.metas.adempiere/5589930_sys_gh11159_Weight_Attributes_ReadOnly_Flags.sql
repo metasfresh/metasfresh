@@ -23,10 +23,10 @@ WHERE M_HU_PI_Attribute_ID=1000020 -- Gewicht Brutto kg
 -- 2021-05-25T11:49:28.076Z
 -- URL zum Konzept
 UPDATE M_HU_PI_Attribute
-SET IsReadOnly='N', 
+SET IsReadOnly='Y', 
 isonlyifinproductattributeset = 'N',
 Updated=TO_TIMESTAMP('2021-05-25 13:49:28', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
-WHERE M_HU_PI_Attribute_ID=1000021 -- Gewicht Tara
+WHERE M_HU_PI_Attribute_ID=1000021 -- Gewicht Tara on the M_HU_PI_Version 101 (no package-item) - shall be read-only
 ;
 
 
@@ -121,3 +121,4 @@ WHERE m_attribute_id IN (540005,--WeightGross
                          540016--WeightTareAdjust
     )
   AND useinasi = 'N';
+
