@@ -285,9 +285,6 @@ final class AttributeStorageWeightableWrapper implements IWeightable
 
 	/**
 	 * Set the given weight directly, avoiding attribute propagation.
-	 *
-	 * @param weightAttribute
-	 * @param weight
 	 */
 	private void setWeightNoPropagate(final AttributeCode weightAttribute, final BigDecimal weight)
 	{
@@ -307,8 +304,7 @@ final class AttributeStorageWeightableWrapper implements IWeightable
 			return null;
 		}
 
-		final I_C_UOM uom = attributeValue.getC_UOM();
-		return uom;
+		return attributeValue.getC_UOM();
 	}
 
 	/**

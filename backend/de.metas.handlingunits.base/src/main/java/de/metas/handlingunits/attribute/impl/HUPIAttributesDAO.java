@@ -89,7 +89,7 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 		PIAttributes piAttributes = retrieveDirectPIAttributes(Env.getCtx(), piVersionId);
 
 		//
-		// Retrieve an add template attributes (from NoPI)
+		// Retrieve and add template attributes (from NoPI)
 		// only if given version is not of NoPI
 		if (!piVersionId.isTemplate())
 		{
