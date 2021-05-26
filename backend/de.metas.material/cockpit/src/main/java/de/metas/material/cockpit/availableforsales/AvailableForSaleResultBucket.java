@@ -83,7 +83,14 @@ final class AvailableForSaleResultBucket
 			return false;
 		}
 
-		return isGroupAttributesKeyMatching(group, request.getStorageAttributesKey());
+		return isGroupAttributesKeyMatching(group, request.getStorageAttributesKey()) && isExactGroupMatch(group, request);
+	}
+
+	private boolean isExactGroupMatch(final @NonNull AvailableForSaleResultGroupBuilder group, final @NonNull AddToResultGroupRequest request)
+	{
+		final AttributesKey storageAttributesKey = group.getStorageAttributesKey();
+		return storageAttributesKey.isAll() || storageAttributesKey.isOther() ||
+				storageAttributesKeyMatcher.toAttributeKeys(request.getStorageAttributesKey()).getAsString().equals(storageAttributesKey.getAsString());
 	}
 
 	@VisibleForTesting
