@@ -71,6 +71,5 @@ public interface IContractsDAO extends ISingletonService
 
 	I_C_Flatrate_Term retrieveLatestFlatrateTermForBPartnerId(BPartnerId bpartnerId);
 
-	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#BPartnerId")
-	I_C_Flatrate_Term retrieveFirstFlatrateTermForBPartnerId(@NonNull BPartnerId bpartnerId);
+	I_C_Flatrate_Term retrieveFirstFlatrateTermForBPartnerId(BPartnerId bpartnerId);
 }
