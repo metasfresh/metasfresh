@@ -205,7 +205,7 @@ public class ContractsDAO implements IContractsDAO
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bpartnerId.getRepoId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bpartnerId)
 				.orderBy()
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_MasterStartDate, Direction.Ascending, Nulls.Last)
 				.addColumn(I_C_Flatrate_Term.COLUMNNAME_StartDate, Direction.Ascending, Nulls.Last)
