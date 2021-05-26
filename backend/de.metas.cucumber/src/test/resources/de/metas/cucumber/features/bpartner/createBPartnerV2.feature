@@ -181,9 +181,9 @@ Feature: create or update BPartner v2
                      "contactIdentifier":"ext-ALBERTA-c11",
                      "contact":{
                         "code":"c11",
-                        "name":"test_name_c11_updated",
-                        "email":"test_email_updated",
-                        "fax":"fax_updated",
+                        "name":"test_name_c11_updated_again",
+                        "email":"test_email_updated_again",
+                        "fax":"fax_updated_again",
                         "invoiceEmailEnabled" : false
                      }
                   },
@@ -197,20 +197,24 @@ Feature: create or update BPartner v2
                         "invoiceEmailEnabled" : true
                      }
                   }
-               ]
+               ],
+               "syncAdvise":{
+      "ifNotExists":"CREATE",
+      "ifExists":"DONT_UPDATE"
+   }
             }
          }
       }
    ],
    "syncAdvise":{
       "ifNotExists":"CREATE",
-      "ifExists":"UPDATE_MERGE"
+      "ifExists":"DONT_UPDATE"
    }
 }
 """
-    Then verify that contact was updated for bpartner
+    Then verify that contact was not modified for bpartner
       | bpartnerIdentifier | contactIdentifier | Name                  | OPT.Email          | OPT.Fax     | Code | OPT.InvoiceEmailEnabled |
-      | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11_updated | test_email_updated | fax_updated | c11  | false                   |
+      | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11_updated | test_email_updated | fax_updated | c11  | true                    |
 
     And verify that contact was created for bpartner
       | bpartnerIdentifier | contactIdentifier | Name                  | OPT.Email          | OPT.Fax     | Code | OPT.InvoiceEmailEnabled |

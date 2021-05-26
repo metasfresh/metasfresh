@@ -123,7 +123,7 @@ public class CreateBPartnerV2_StepDef
 		}
 	}
 
-	@And("^verify that contact was (updated|created) for bpartner$")
+	@And("^verify that contact was (updated|created|not modified) for bpartner$")
 	public void verify_contact_is_created_for_bpartner_v2(@NonNull final String action, @NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> contactsTableList = dataTable.asMaps();

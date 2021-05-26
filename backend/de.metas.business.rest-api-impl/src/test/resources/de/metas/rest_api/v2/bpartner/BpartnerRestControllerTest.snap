@@ -160,7 +160,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "bpartnerId" : 100016,
           "userId" : 100021
         },
-        "invoiceEmailEnabled" : false,
+        "invoiceEmailEnabled" : true,
         "name" : "c1_name",
         "newsletter" : false,
         "phone" : "c1_phone"
@@ -229,7 +229,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "bpartnerId" : 100016,
           "userId" : 100022
         },
-        "invoiceEmailEnabled" : false,
+        "invoiceEmailEnabled" : true,
         "name" : "c2_name",
         "newsletter" : false,
         "phone" : "c2_phone"
@@ -561,7 +561,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "bpartnerId" : 20,
           "userId" : 100014
         },
-        "invoiceEmailEnabled" : false,
+        "invoiceEmailEnabled" : true,
         "name" : "newContact_name",
         "newsletter" : false,
         "phone" : "newContact_phone"
