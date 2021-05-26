@@ -41,6 +41,8 @@ import InlineTabWrapper from '../components/widget/InlineTabWrapper';
 class WidgetWrapper extends PureComponent {
   constructor(props) {
     super(props);
+
+    // this will be referenced by the top level components
     this.childRef = React.createRef();
   }
 

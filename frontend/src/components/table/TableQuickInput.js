@@ -35,9 +35,9 @@ class TableQuickInput extends Component {
     const { data, layout, inProgress } = this.props;
     const { editedField } = this.state;
 
+    // refocus the first widget after update
     if (data && layout && !inProgress && editedField === 0) {
-      const i = 0;
-      const item = layout[i].fields.map((elem) => data[elem.field] || -1);
+      const item = layout[0].fields.map((elem) => data[elem.field] || -1);
 
       if (!item[0].value) {
         if (this.rawWidgets) {
@@ -47,6 +47,12 @@ class TableQuickInput extends Component {
     }
   }
 
+  /**
+   * @method focusWidgetField
+   * @summary function to manually focus a widget
+   *
+   * @param {number} fieldNo - index of the widget to select
+   */
   focusWidgetField = (fieldNo) => {
     fieldNo = fieldNo || 0;
     let curWidget = this.rawWidgets[fieldNo];
@@ -185,15 +191,15 @@ class TableQuickInput extends Component {
     }
   }
 
-  setRef = (ref) => {
-    this.form = ref;
+  setRef = (refNode) => {
+    this.form = refNode;
   };
 
-  setWidgetsRef = (c) => {
-    c &&
-      c.childRef &&
-      c.childRef.current &&
-      this.rawWidgets.push(c.childRef.current);
+  setWidgetsRef = (refNode) => {
+    refNode &&
+      refNode.childRef &&
+      refNode.childRef.current &&
+      this.rawWidgets.push(refNode.childRef.current);
   };
 
   renderFields = () => {

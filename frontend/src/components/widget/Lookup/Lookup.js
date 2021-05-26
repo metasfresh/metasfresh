@@ -286,8 +286,8 @@ class Lookup extends Component {
     );
   };
 
-  setRef = (c) => {
-    this.dropdown = c;
+  setRef = (refNode) => {
+    this.dropdown = refNode;
   };
 
   render() {

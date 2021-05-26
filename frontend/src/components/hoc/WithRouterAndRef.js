@@ -1,6 +1,11 @@
 import React, { forwardRef } from 'react';
 import { withRouter } from 'react-router';
 
+/**
+ * @method withRouterAndRef
+ * @summary HOC to pass ref over the parent to a child component and wrap it
+ * in a `withRouter` HOC
+ */
 const withRouterAndRef = (Wrapped) => {
   const WithRouter = withRouter(({ forwardRef, ...otherProps }) => (
     <Wrapped ref={forwardRef} {...otherProps} />
@@ -16,6 +21,10 @@ const withRouterAndRef = (Wrapped) => {
   return WithRouterAndRef;
 };
 
+/**
+ * @method withForwardedRef
+ * @summary HOC to pass ref over the parent to a child component
+ */
 const withForwardedRef = (Wrapped) => {
   const handle = (props, forwardedRef) => {
     return <Wrapped {...props} forwardedRef={forwardedRef} />;

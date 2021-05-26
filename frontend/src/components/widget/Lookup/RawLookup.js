@@ -482,6 +482,10 @@ export class RawLookup extends Component {
     this.setState({ selected });
   };
 
+  /**
+   * @method focus
+   * @summary this is a method called from a top level component to focus the widget field
+   */
   focus = () => {
     this.inputSearch && this.inputSearch.focus();
   };
@@ -635,4 +639,9 @@ RawLookup.propTypes = {
   advSearchWindowId: PropTypes.string,
 };
 
-export default connect(mapStateToProps, null, null, { forwardRef: true })(RawLookup);
+export default connect(
+  mapStateToProps,
+  null,
+  null,
+  { forwardRef: true }
+)(RawLookup);
