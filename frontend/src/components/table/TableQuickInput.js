@@ -81,17 +81,19 @@ class TableQuickInput extends Component {
       windowId: docType,
       docId,
       tabId,
-    }).catch((err) => {
-      if (err.response.status === 404) {
-        addNotification(
-          'Batch entry error',
-          'Batch entry is not available.',
-          5000,
-          'error'
-        );
-        this.closeBatchEntry();
-      }
-    });
+    })
+      .then(() => this.resetWidgetValues())
+      .catch((err) => {
+        if (err.response.status === 404) {
+          addNotification(
+            'Batch entry error',
+            'Batch entry is not available.',
+            5000,
+            'error'
+          );
+          this.closeBatchEntry();
+        }
+      });
 
     await fetchQuickInputLayout({
       windowId: docType,
@@ -137,6 +139,10 @@ class TableQuickInput extends Component {
           if (callback) {
             callback();
           }
+
+          // otherwise this promise will stay resolved until we won't get another patch
+          // which potentially can lead to unwanted behaviour
+          this.patchPromise = null;
           resolve();
         }
       );
@@ -190,6 +196,16 @@ class TableQuickInput extends Component {
       closeBatchEntry();
     }
   }
+
+  /**
+   * @method resetWidgetValues
+   * @summary resets cachedValue for widgets after getting new data
+   */
+  resetWidgetValues = () => {
+    this.rawWidgets.forEach((widget) => {
+      widget.resetCachedValue();
+    });
+  };
 
   setRef = (refNode) => {
     this.form = refNode;
