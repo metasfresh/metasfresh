@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_BPartner
  *  @author metasfresh (generated) 
@@ -170,6 +171,50 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_Address1 = new ModelColumn<>(I_C_BPartner.class, "Address1", null);
 	String COLUMNNAME_Address1 = "Address1";
+
+	/**
+	 * Set Role.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAlbertaRole (@Nullable java.lang.String AlbertaRole);
+
+	/**
+	 * Get Role.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAlbertaRole();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_AlbertaRole = new ModelColumn<>(I_C_BPartner.class, "AlbertaRole", null);
+	String COLUMNNAME_AlbertaRole = "AlbertaRole";
+
+	/**
+	 * Set Title.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setAlbertaTitle (@Nullable java.lang.String AlbertaTitle);
+
+	/**
+	 * Get Title.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getAlbertaTitle();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_AlbertaTitle = new ModelColumn<>(I_C_BPartner.class, "AlbertaTitle", null);
+	String COLUMNNAME_AlbertaTitle = "AlbertaTitle";
 
 	/**
 	 * Set Consolidate Shipments allowed.
@@ -1194,6 +1239,29 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsAggregatePO = "IsAggregatePO";
 
 	/**
+	 * Set Is Alberta doctor.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsAlbertaDoctor (boolean IsAlbertaDoctor);
+
+	/**
+	 * Get Is Alberta doctor.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isAlbertaDoctor();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsAlbertaDoctor = new ModelColumn<>(I_C_BPartner.class, "IsAlbertaDoctor", null);
+	String COLUMNNAME_IsAlbertaDoctor = "IsAlbertaDoctor";
+
+	/**
 	 * Set Allow campaign prices.
 	 * Wenn auf "ja" gesetzt, dann werden bei der Preisberechnung auch Aktionspreise berücksichtigt.
 	 *
@@ -1238,6 +1306,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_IsAllowPriceMutation = new ModelColumn<>(I_C_BPartner.class, "IsAllowPriceMutation", null);
 	String COLUMNNAME_IsAllowPriceMutation = "IsAllowPriceMutation";
+
+	/**
+	 * Set Archived.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsArchived (boolean IsArchived);
+
+	/**
+	 * Get Archived.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isArchived();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsArchived = new ModelColumn<>(I_C_BPartner.class, "IsArchived", null);
+	String COLUMNNAME_IsArchived = "IsArchived";
 
 	/**
 	 * Set Company.
@@ -2889,6 +2980,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_TaxID = new ModelColumn<>(I_C_BPartner.class, "TaxID", null);
 	String COLUMNNAME_TaxID = "TaxID";
+
+	/**
+	 * Set Short title.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setTitleShort (@Nullable java.lang.String TitleShort);
+
+	/**
+	 * Get Short title.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getTitleShort();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_TitleShort = new ModelColumn<>(I_C_BPartner.class, "TitleShort", null);
+	String COLUMNNAME_TitleShort = "TitleShort";
 
 	/**
 	 * Get Updated.

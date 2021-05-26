@@ -522,6 +522,7 @@ public class PurchaseCandidateRepository
 				.isManualDiscount(record.isManualDiscount())
 				.isManualPrice(record.isManualPrice())
 				.isTaxIncluded(record.isTaxIncluded())
+				.prepared(record.isPrepared())
 				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(record.getC_TaxCategory_ID()))
 				.currencyId(CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID()))
 				//

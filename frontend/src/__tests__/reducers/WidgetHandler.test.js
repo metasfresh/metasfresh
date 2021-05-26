@@ -1,4 +1,4 @@
-import merge from 'merge';
+import { merge } from 'merge-anything';
 
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import reducer, {
@@ -9,8 +9,7 @@ import { parseToDisplay } from '../../utils/documentListHelper';
 import fixtures from '../../../test_setup/fixtures/independent_widgets/reducers.json';
 
 const createState = function(state = {}) {
-  return merge.recursive(
-    true,
+  return merge(
     {
       ...initialState,
     },

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1075502256L;
+	private static final long serialVersionUID = 259687044L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -121,6 +121,50 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public int getAD_User_InCharge_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_InCharge_ID);
+	}
+
+	/** 
+	 * AlbertaTitle AD_Reference_ID=541318
+	 * Reference name: Title_List
+	 */
+	public static final int ALBERTATITLE_AD_Reference_ID=541318;
+	/** Unbekannt = 0 */
+	public static final String ALBERTATITLE_Unbekannt = "0";
+	/** Dr. = 1 */
+	public static final String ALBERTATITLE_Dr = "1";
+	/** Prof. Dr. = 2 */
+	public static final String ALBERTATITLE_ProfDr = "2";
+	/** Dipl. Ing. = 3 */
+	public static final String ALBERTATITLE_DiplIng = "3";
+	/** Dipl. Med. = 4 */
+	public static final String ALBERTATITLE_DiplMed = "4";
+	/** Dipl. Psych. = 5 */
+	public static final String ALBERTATITLE_DiplPsych = "5";
+	/** Dr. Dr. = 6 */
+	public static final String ALBERTATITLE_DrDr = "6";
+	/** Dr. med. = 7 */
+	public static final String ALBERTATITLE_DrMed = "7";
+	/** Prof. Dr. Dr. = 8 */
+	public static final String ALBERTATITLE_ProfDrDr = "8";
+	/** Prof. = 9 */
+	public static final String ALBERTATITLE_Prof = "9";
+	/** Prof. Dr. med. = 10 */
+	public static final String ALBERTATITLE_ProfDrMed = "10";
+	/** Rechtsanwalt = 11 */
+	public static final String ALBERTATITLE_Rechtsanwalt = "11";
+	/** Rechtsanwältin = 12 */
+	public static final String ALBERTATITLE_Rechtsanwaeltin = "12";
+	/** Schwester (Orden) = 13 */
+	public static final String ALBERTATITLE_SchwesterOrden = "13";
+	@Override
+	public void setAlbertaTitle (final @Nullable java.lang.String AlbertaTitle)
+	{
+		throw new IllegalArgumentException ("AlbertaTitle is virtual column");	}
+
+	@Override
+	public java.lang.String getAlbertaTitle() 
+	{
+		return get_ValueAsString(COLUMNNAME_AlbertaTitle);
 	}
 
 	@Override
@@ -262,6 +306,33 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+	public org.compiere.model.I_C_Title getC_Title()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
+	}
+
+	@Override
+	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
+	}
+
+	@Override
+	public void setC_Title_ID (final int C_Title_ID)
+	{
+		if (C_Title_ID < 1) 
+			set_Value (COLUMNNAME_C_Title_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
+	}
+
+	@Override
+	public int getC_Title_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
+	}
+
+	@Override
 	public void setComments (final @Nullable java.lang.String Comments)
 	{
 		set_Value (COLUMNNAME_Comments, Comments);
@@ -344,33 +415,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getContactLimitationReason() 
 	{
 		return get_ValueAsString(COLUMNNAME_ContactLimitationReason);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Title getC_Title()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
-	}
-
-	@Override
-	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
-	}
-
-	@Override
-	public void setC_Title_ID (final int C_Title_ID)
-	{
-		if (C_Title_ID < 1) 
-			set_Value (COLUMNNAME_C_Title_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
-	}
-
-	@Override
-	public int getC_Title_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
 	}
 
 	@Override
@@ -512,6 +556,30 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getFresh_xmas_Gift() 
 	{
 		return get_ValueAsString(COLUMNNAME_Fresh_xmas_Gift);
+	}
+
+	/** 
+	 * Gender AD_Reference_ID=541317
+	 * Reference name: Gender_List
+	 */
+	public static final int GENDER_AD_Reference_ID=541317;
+	/** Unbekannt = 0 */
+	public static final String GENDER_Unbekannt = "0";
+	/** Weiblich = 1 */
+	public static final String GENDER_Weiblich = "1";
+	/** Männlich = 2 */
+	public static final String GENDER_Maennlich = "2";
+	/** Divers = 3 */
+	public static final String GENDER_Divers = "3";
+	@Override
+	public void setGender (final @Nullable java.lang.String Gender)
+	{
+		throw new IllegalArgumentException ("Gender is virtual column");	}
+
+	@Override
+	public java.lang.String getGender() 
+	{
+		return get_ValueAsString(COLUMNNAME_Gender);
 	}
 
 	@Override
@@ -937,6 +1005,17 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public int getSupervisor_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Supervisor_ID);
+	}
+
+	@Override
+	public void setTimestamp (final @Nullable java.sql.Timestamp Timestamp)
+	{
+		throw new IllegalArgumentException ("Timestamp is virtual column");	}
+
+	@Override
+	public java.sql.Timestamp getTimestamp() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_Timestamp);
 	}
 
 	@Override

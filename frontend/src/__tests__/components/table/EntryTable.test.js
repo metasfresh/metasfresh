@@ -2,7 +2,7 @@ import React from 'react';
 import { shallow, mount } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
@@ -15,8 +15,7 @@ import EntryTable from '../../../components/table/EntryTable';
 
 const mockStore = configureStore([]);
 const createStore = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       appHandler: {
         ...appHandlerState,

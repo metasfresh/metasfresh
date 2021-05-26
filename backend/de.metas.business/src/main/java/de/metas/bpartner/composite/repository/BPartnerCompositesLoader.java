@@ -22,6 +22,7 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocation.BPartnerLocationBuilder;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.common.util.time.SystemTime;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
@@ -47,6 +48,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -240,6 +242,7 @@ final class BPartnerCompositesLoader
 				.vatId(trimBlankToNull(bpartnerRecord.getVATaxID()))
 				.shipmentAllocationBestBeforePolicy(bpartnerRecord.getShipmentAllocation_BestBefore_Policy())
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bpartnerRecord.getAD_Org_Mapping_ID()))
+				.memo(bpartnerRecord.getMemo())
 				//
 				.changeLog(recordChangeLog)
 				//
@@ -359,6 +362,8 @@ final class BPartnerCompositesLoader
 				.greetingId(GreetingId.ofRepoIdOrNull(contactRecord.getC_Greeting_ID()))
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(contactRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
+				.birthday(TimeUtil.asLocalDate(contactRecord.getBirthday(), SystemTime.zoneId()))
+				.bPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID(), contactRecord.getC_BPartner_Location_ID()))
 				.build();
 	}
 

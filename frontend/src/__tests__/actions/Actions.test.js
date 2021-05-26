@@ -1,7 +1,7 @@
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import nock from 'nock';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 
 import actionsHandler, {
   initialSingleActionsState,
@@ -29,8 +29,7 @@ const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
 const createState = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       viewHandler: initialViewsState,
       actionsHandler: { ...actionsHandler(undefined, {}) },

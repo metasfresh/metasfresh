@@ -115,6 +115,8 @@ public class BPartner
 
 	private final RecordChangeLog changeLog;
 
+	private String memo;
+
 	/**
 	 * Can be {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First} or {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First}.
 	 */
@@ -155,7 +157,8 @@ public class BPartner
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final String shipmentAllocationBestBeforePolicy,
 			@Nullable final Boolean identifiedByExternalReference,
-			@Nullable final OrgMappingId orgMappingId)
+			@Nullable final OrgMappingId orgMappingId,
+			@Nullable final String memo)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -183,6 +186,7 @@ public class BPartner
 		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
 		this.orgMappingId = orgMappingId;
 		this.identifiedByExternalReference = coalesce(identifiedByExternalReference, false);
+		this.memo = memo;
 	}
 
 	/**
