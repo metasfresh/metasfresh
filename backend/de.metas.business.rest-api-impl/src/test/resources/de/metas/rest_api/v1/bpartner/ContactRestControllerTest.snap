@@ -63,7 +63,6 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_cr
       "bpartnerId" : 20,
       "userId" : 100010
     },
-    "invoiceEmailEnabled" : false,
     "name" : "jsonContact.name",
     "newsletter" : false
   }
@@ -137,7 +136,6 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
       "bpartnerId" : 20,
       "userId" : 30
     },
-    "invoiceEmailEnabled" : false,
     "lastName" : "contactRecord.lastName",
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
@@ -214,7 +212,6 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
       "bpartnerId" : 20,
       "userId" : 30
     },
-    "invoiceEmailEnabled" : false,
     "lastName" : "contactRecord.lastName",
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
@@ -291,7 +288,6 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_up
       "bpartnerId" : 20,
       "userId" : 30
     },
-    "invoiceEmailEnabled" : false,
     "lastName" : "contactRecord.lastName",
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,

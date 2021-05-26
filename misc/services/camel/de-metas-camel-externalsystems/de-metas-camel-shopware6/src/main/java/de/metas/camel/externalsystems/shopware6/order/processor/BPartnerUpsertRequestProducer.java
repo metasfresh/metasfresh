@@ -161,7 +161,7 @@ public class BPartnerUpsertRequestProducer
 		contactRequest.setEmail(orderCustomer.getEmail());
 
 		final Boolean isInvoiceEmailEnabled = matchingShopware6Mapping != null
-				? matchingShopware6Mapping.isInvoiceEmailEnabled()
+				? matchingShopware6Mapping.getInvoiceEmailEnabled()
 				: null;
 
 		contactRequest.setInvoiceEmailEnabled(isInvoiceEmailEnabled);

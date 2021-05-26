@@ -135,7 +135,6 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
           "bpartnerId" : 20,
           "userId" : 30
         },
-        "invoiceEmailEnabled" : false,
         "lastName" : "contactRecord.lastName",
         "name" : "contactRecord.name",
         "newsletter" : false,

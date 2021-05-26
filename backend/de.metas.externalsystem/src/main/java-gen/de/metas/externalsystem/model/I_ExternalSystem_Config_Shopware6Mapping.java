@@ -304,20 +304,20 @@ public interface I_ExternalSystem_Config_Shopware6Mapping
 	/**
 	 * Set Invoice Email Enabled.
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsInvoiceEmailEnabled (boolean IsInvoiceEmailEnabled);
+	void setIsInvoiceEmailEnabled (@Nullable java.lang.String IsInvoiceEmailEnabled);
 
 	/**
 	 * Get Invoice Email Enabled.
 	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
+	 * <br>Type: List
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isInvoiceEmailEnabled();
+	@Nullable java.lang.String getIsInvoiceEmailEnabled();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6Mapping, Object> COLUMN_IsInvoiceEmailEnabled = new ModelColumn<>(I_ExternalSystem_Config_Shopware6Mapping.class, "IsInvoiceEmailEnabled", null);
 	String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";

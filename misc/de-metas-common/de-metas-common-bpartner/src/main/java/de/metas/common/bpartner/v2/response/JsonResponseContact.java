@@ -106,7 +106,7 @@ public class JsonResponseContact
 	boolean newsletter;
 
 	@ApiModelProperty(allowEmptyValue = false)
-	boolean invoiceEmailEnabled;
+	Boolean invoiceEmailEnabled;
 
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean shipToDefault;
@@ -164,7 +164,7 @@ public class JsonResponseContact
 			@JsonProperty(PURCHASE) final boolean purchase,
 			@JsonProperty(PURCHASE_DEFAULT) final boolean purchaseDefault,
 			@JsonProperty(SUBJECT_MATTER) final boolean subjectMatter,
-			@JsonProperty(INVOICE_EMAIL_ENABLED) final boolean invoiceEmailEnabled,
+			@JsonProperty(INVOICE_EMAIL_ENABLED) final Boolean invoiceEmailEnabled,
 
 
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)

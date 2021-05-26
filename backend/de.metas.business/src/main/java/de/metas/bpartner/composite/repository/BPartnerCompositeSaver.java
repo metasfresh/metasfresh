@@ -425,8 +425,15 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setPhone(bpartnerContact.getPhone());
 			bpartnerContactRecord.setFax(bpartnerContact.getFax());
 			bpartnerContactRecord.setMobilePhone(bpartnerContact.getMobilePhone());
-			bpartnerContactRecord.setIsInvoiceEmailEnabled(bpartnerContact.isInvoiceEmailEnabled() ?
-																   ISINVOICEEMAILENABLED_Yes : ISINVOICEEMAILENABLED_No);
+
+			String invoiceEmailEnabled = null;
+
+			if(bpartnerContact.getInvoiceEmailEnabled() != null)
+			{
+				invoiceEmailEnabled = bpartnerContact.getInvoiceEmailEnabled() ? ISINVOICEEMAILENABLED_Yes : ISINVOICEEMAILENABLED_No;
+			}
+
+			bpartnerContactRecord.setIsInvoiceEmailEnabled(invoiceEmailEnabled);
 
 			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
 

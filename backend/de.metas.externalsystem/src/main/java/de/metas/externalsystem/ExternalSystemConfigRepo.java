@@ -44,6 +44,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_Yes;
+
 @Repository
 public class ExternalSystemConfigRepo
 {
@@ -247,6 +249,14 @@ public class ExternalSystemConfigRepo
 	@NonNull
 	private ExternalSystemShopware6ConfigMapping toExternalSystemShopware6ConfigMapping(@NonNull final I_ExternalSystem_Config_Shopware6Mapping record)
 	{
+
+		Boolean invoiceEmailEnabled = null;
+
+		if(record.getIsInvoiceEmailEnabled() != null)
+		{
+			invoiceEmailEnabled = ISINVOICEEMAILENABLED_Yes.equals(record.getIsInvoiceEmailEnabled());
+		}
+
 		return ExternalSystemShopware6ConfigMapping.builder()
 				.docTypeOrderId(record.getC_DocTypeOrder_ID())
 				.paymentRule(record.getPaymentRule())
@@ -255,7 +265,7 @@ public class ExternalSystemConfigRepo
 				.sw6PaymentMethod(record.getSW6_Payment_Method())
 				.description(record.getDescription())
 				.seqNo(record.getSeqNo())
-				.isInvoiceEmailEnabled(record.isInvoiceEmailEnabled())
+				.isInvoiceEmailEnabled(invoiceEmailEnabled)
 				.bpartnerIfExists(record.getBPartner_IfExists())
 				.bpartnerIfNotExists(record.getBPartner_IfNotExists())
 				.bpartnerLocationIfExists(record.getBPartnerLocation_IfExists())

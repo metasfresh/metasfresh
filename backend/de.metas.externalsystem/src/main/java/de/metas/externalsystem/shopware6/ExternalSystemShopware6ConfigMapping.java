@@ -54,7 +54,8 @@ public class ExternalSystemShopware6ConfigMapping
 	@NonNull
 	String bpartnerLocationIfNotExists;
 
-	boolean isInvoiceEmailEnabled;
+	@Nullable
+	Boolean isInvoiceEmailEnabled;
 
 	@Nullable
 	PaymentTermId paymentTermId;
@@ -78,7 +79,7 @@ public class ExternalSystemShopware6ConfigMapping
 			@NonNull final String bpartnerIfNotExists,
 			@NonNull final String bpartnerLocationIfExists,
 			@NonNull final String bpartnerLocationIfNotExists,
-			final boolean isInvoiceEmailEnabled,
+			@Nullable final Boolean isInvoiceEmailEnabled,
 			@Nullable final String sw6CustomerGroup,
 			@Nullable final String sw6PaymentMethod,
 			@Nullable final String description)

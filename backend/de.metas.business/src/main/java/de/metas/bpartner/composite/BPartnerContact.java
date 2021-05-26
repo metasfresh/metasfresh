@@ -94,7 +94,7 @@ public class BPartnerContact
 
 	private boolean newsletter;
 
-	private boolean invoiceEmailEnabled;
+	private Boolean invoiceEmailEnabled;
 
 	private String fax;
 
@@ -148,7 +148,7 @@ public class BPartnerContact
 		this.value = value;
 
 		this.newsletter = coalesce(newsletter, false);
-		this.invoiceEmailEnabled =  coalesce(invoiceEmailEnabled, false);
+		this.invoiceEmailEnabled = invoiceEmailEnabled;
 		this.fax = fax;
 		this.mobilePhone = mobilePhone;
 		this.description = description;

@@ -62,7 +62,6 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_cr
       "bpartnerId" : 20,
       "userId" : 100014
     },
-    "invoiceEmailEnabled" : false,
     "name" : "jsonContact.name",
     "newsletter" : false
   }
@@ -136,7 +135,6 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_up
       "bpartnerId" : 20,
       "userId" : 30
     },
-    "invoiceEmailEnabled" : false,
     "lastName" : "contactRecord.lastName",
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
@@ -213,7 +211,6 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_up
       "bpartnerId" : 20,
       "userId" : 30
     },
-    "invoiceEmailEnabled" : false,
     "lastName" : "contactRecord.lastName",
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
@@ -242,7 +239,6 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContact_ext=[
     "purchase" : false,
     "purchaseDefault" : false,
     "subjectMatter" : false,
-    "invoiceEmailEnabled" : false,
     "changeInfo" : {
       "createdMillis" : 1561133544,
       "createdBy" : 30,
@@ -272,7 +268,6 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContact_id=[
     "purchase" : false,
     "purchaseDefault" : false,
     "subjectMatter" : false,
-    "invoiceEmailEnabled" : false,
     "changeInfo" : {
       "createdMillis" : 1561133544,
       "createdBy" : 30,
@@ -302,7 +297,6 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContact_id_unspe
     "purchase" : false,
     "purchaseDefault" : false,
     "subjectMatter" : false,
-    "invoiceEmailEnabled" : false,
     "changeInfo" : {
       "createdMillis" : 1561133544,
       "lastUpdatedMillis" : 1561133544,
@@ -344,7 +338,6 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContactsSince=[
         "purchase" : false,
         "purchaseDefault" : false,
         "subjectMatter" : false,
-        "invoiceEmailEnabled" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 30,
@@ -370,7 +363,6 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContactsSince=[
         "purchase" : false,
         "purchaseDefault" : false,
         "subjectMatter" : false,
-        "invoiceEmailEnabled" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "lastUpdatedMillis" : 1561133544,
@@ -403,7 +395,6 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContactsSince=[
         "purchase" : false,
         "purchaseDefault" : false,
         "subjectMatter" : false,
-        "invoiceEmailEnabled" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 32,
@@ -429,7 +420,6 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContactsSince=[
         "purchase" : false,
         "purchaseDefault" : false,
         "subjectMatter" : false,
-        "invoiceEmailEnabled" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "lastUpdatedMillis" : 1561133544,
@@ -461,7 +451,6 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.retrieveContactsSince=[
         "purchase" : false,
         "purchaseDefault" : false,
         "subjectMatter" : false,
-        "invoiceEmailEnabled" : false,
         "changeInfo" : {
           "createdMillis" : 1561133544,
           "createdBy" : 34,

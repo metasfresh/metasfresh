@@ -369,6 +369,7 @@ public class JsonRetrieverService
 				final Greeting greeting = greetingRepository.getByIdAndLang(contact.getGreetingId(), language);
 				greetingTrl = greeting.getGreeting();
 			}
+
 			return JsonResponseContact.builder()
 					.active(contact.isActive())
 					.email(contact.getEmail())
@@ -379,7 +380,7 @@ public class JsonRetrieverService
 					.name(contact.getName())
 					.greeting(greetingTrl)
 					.newsletter(contact.isNewsletter())
-					.invoiceEmailEnabled(contact.isInvoiceEmailEnabled())
+					.invoiceEmailEnabled(contact.getInvoiceEmailEnabled())
 					.phone(contact.getPhone())
 					.mobilePhone(contact.getMobilePhone())
 					.fax(contact.getFax())

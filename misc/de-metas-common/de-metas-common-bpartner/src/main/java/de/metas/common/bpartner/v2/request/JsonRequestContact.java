@@ -178,8 +178,7 @@ public class JsonRequestContact
 	@ApiModelProperty(hidden = true)
 	private boolean subjectMatterSet;
 
-	@ApiModelProperty(position = 220, //
-			value = "If not specified but required (e.g. because a new contact is created), then `false` is assumed")
+	@ApiModelProperty(position = 220)
 	private Boolean invoiceEmailEnabled;
 
 	@ApiModelProperty(hidden = true)

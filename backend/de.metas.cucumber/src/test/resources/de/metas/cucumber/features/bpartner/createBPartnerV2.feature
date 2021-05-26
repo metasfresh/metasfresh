@@ -64,7 +64,8 @@ Feature: create or update BPartner v2
                         "code":"c11",
                         "name":"test_name_c11",
                         "email":"test_email",
-                        "fax":"fax"
+                        "fax":"fax",
+                        "invoiceEmailEnabled" : false
                      }
                   },
                   {
