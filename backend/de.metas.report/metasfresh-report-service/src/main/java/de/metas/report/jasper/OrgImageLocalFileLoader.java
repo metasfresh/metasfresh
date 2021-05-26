@@ -10,70 +10,62 @@ package de.metas.report.jasper;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.io.File;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
+import com.google.common.base.MoreObjects;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.image.AdImageId;
+import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.model.I_AD_Image;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.MImage;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Splitter;
-
-import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfo;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Builds and returns the local organization logo {@link File}.
- * 
- * @author tsa
  *
+ * @author tsa
  */
-final class OrgLogoLocalFileLoader
+final class OrgImageLocalFileLoader
 {
-	final static ImageFileLoader imgFileLoader = ImageFileLoader.newInstance();
-	
-	public static OrgLogoLocalFileLoader newInstance()
-	{
-		return new OrgLogoLocalFileLoader();
-	}
-
-	private static final transient Logger logger = LogManager.getLogger(OrgLogoLocalFileLoader.class);
+	private static final transient Logger logger = LogManager.getLogger(OrgImageLocalFileLoader.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IClientDAO clientsRepo = Services.get(IClientDAO.class);
 
-	private OrgLogoLocalFileLoader()
+	private final static ImageFileLoader imgFileLoader = ImageFileLoader.newInstance();
+	private final OrgLogoResourceNameMatcher orgLogoResourceNameMatcher;
+
+	public OrgImageLocalFileLoader()
 	{
+		this.orgLogoResourceNameMatcher = new OrgLogoResourceNameMatcher(sysConfigBL);
 	}
 
 	@Override
@@ -86,9 +78,9 @@ final class OrgLogoLocalFileLoader
 	}
 
 	// @Override
-	public Optional<File> loadLogoForOrg(@NonNull final ResourceNameContext rsc)
+	public Optional<File> getImageLocalFile(@NonNull final OrgResourceNameContext context)
 	{
-		final File logoFile = createAndGetLocalLogoFile(rsc);
+		final File logoFile = createAndGetLocalImageFile(context);
 		if (logoFile != null)
 		{
 			return Optional.of(logoFile);
@@ -100,81 +92,57 @@ final class OrgLogoLocalFileLoader
 		}
 	}
 
-	private File createAndGetLocalLogoFile(@NonNull final ResourceNameContext rsc)
+	@Nullable
+	private File createAndGetLocalImageFile(@NonNull final OrgResourceNameContext context)
 	{
 		//
-		// Retrieve the logo image
-		final I_AD_Image logo = retrieveImage(rsc);
-		if (logo == null || logo.getAD_Image_ID() <= 0)
+		// Retrieve the image
+		final I_AD_Image image = retrieveImage(context);
+		if (image == null || image.getAD_Image_ID() <= 0)
 		{
 			return null;
 		}
 
 		//
-		// Save the logo in a temporary file, to be locally available
-		File logoFile = createTempLogoFile(logo);
-		return logoFile;
+		// Save the image in a temporary file, to be locally available
+		return createTempImageFile(image);
 	}
 
-	private I_AD_Image retrieveImage(@NonNull final ResourceNameContext rsc)
+	@Nullable
+	private I_AD_Image retrieveImage(@NonNull final OrgResourceNameContext context)
 	{
-		final OrgId adOrgId = rsc.getOrgId();
+		final OrgId adOrgId = context.getOrgId();
 		if (adOrgId.isAny())
 		{
 			return null;
 		}
 
-		if (rsc.isLogo())
+		if (orgLogoResourceNameMatcher.matches(context.getResourceName()))
 		{
 			return retrieveLogoImage(adOrgId);
 		}
-		else
+
+		final String imageColumnName = OrgImageResourceNameMatcher.instance.getImageColumnName(context.getResourceName()).orElse(null);
+		if (imageColumnName == null)
 		{
-			return retrieveOtherImage(rsc);
-		}
-	}
-
-	private I_AD_Image retrieveOtherImage(@NonNull final ResourceNameContext rsc)
-	{
-		final OrgId adOrgId = rsc.getOrgId();
-		final String resourceName = rsc.getResourceName();
-
-		final List<String> listResourceName = Splitter.on('/')
-				.trimResults()
-				.omitEmptyStrings()
-				.splitToList(resourceName);
-
-		if (listResourceName.size() > 0)
-		{
-			final String resource = listResourceName.get(listResourceName.size() - 1);
-			final int indexOf = resource.indexOf(".");
-			if (indexOf < 0)
-			{
-				return null;
-			}
-
-			final String columnName = resource.substring(0, indexOf);
-
-			//
-			// Get image
-			final I_AD_OrgInfo orgInfo = orgsRepo.retrieveOrgInfoRecordOrNull(adOrgId, ITrx.TRXNAME_None);
-
-			final Object imageIdObj = InterfaceWrapperHelper.getValue(orgInfo, columnName).orElse(null);
-			if (imageIdObj == null)
-			{
-				return null;
-			}
-
-			final int imageIdObjInt = NumberUtils.asInt(imageIdObj, -1);
-			if (imageIdObjInt > 0)
-			{
-				return MImage.get(Env.getCtx(), imageIdObjInt);
-			}
+			return null;
 		}
 
-		return null;
+		//
+		// Get image
+		final AdImageId imageId = orgsRepo.getOrgInfoById(adOrgId)
+				.getImagesMap()
+				.getImageId(imageColumnName)
+				.orElse(null);
+		if (imageId == null)
+		{
+			return null;
+		}
+
+		return MImage.get(Env.getCtx(), imageId.getRepoId());
 	}
 
+	@Nullable
 	private I_AD_Image retrieveLogoImage(@NonNull final OrgId adOrgId)
 	{
 		//
@@ -198,10 +166,10 @@ final class OrgLogoLocalFileLoader
 		//
 		// Get Org Logo
 		final OrgInfo orgInfo = orgsRepo.getOrgInfoById(adOrgId);
-		final int logoImageId = orgInfo.getLogoImageId();
-		if (logoImageId > 0)
+		final AdImageId logoImageId = orgInfo.getImagesMap().getLogoId().orElse(null);
+		if (logoImageId != null)
 		{
-			return MImage.get(ctx, logoImageId);
+			return MImage.get(ctx, logoImageId.getRepoId());
 		}
 
 		//
@@ -221,19 +189,20 @@ final class OrgLogoLocalFileLoader
 
 	}
 
-	private static File createTempLogoFile(final I_AD_Image logo)
+	@Nullable
+	private static File createTempImageFile(final I_AD_Image image)
 	{
-		if (logo == null)
+		if (image == null)
 		{
 			return null;
 		}
 
-		final byte[] logoData = logo.getBinaryData();
-		if (logoData == null || logoData.length <= 0)
+		final byte[] data = image.getBinaryData();
+		if (data == null || data.length <= 0)
 		{
 			return null;
 		}
 
-		return imgFileLoader.createTempPNGFile("logo", logoData);
+		return imgFileLoader.createTempPNGFile("image", data);
 	}
 }

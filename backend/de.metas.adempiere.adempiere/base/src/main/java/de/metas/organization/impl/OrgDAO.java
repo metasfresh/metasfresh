@@ -1,13 +1,16 @@
 package de.metas.organization.impl;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.calendar.CalendarId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.image.AdImageId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgIdNotFoundException;
+import de.metas.organization.OrgImagesMap;
 import de.metas.organization.OrgInfo;
 import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.organization.OrgQuery;
@@ -29,11 +32,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.POInfo;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -43,7 +50,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class OrgDAO implements IOrgDAO
 {
-	private final CCache<OrgId, OrgInfo> orgInfosCache = CCache.<OrgId, OrgInfo> builder()
+	private final CCache<OrgId, OrgInfo> orgInfosCache = CCache.<OrgId, OrgInfo>builder()
 			.tableName(I_AD_OrgInfo.Table_Name)
 			.build();
 
@@ -143,8 +150,7 @@ public class OrgDAO implements IOrgDAO
 		return toOrgInfo(record);
 	}
 
-	@Override
-	public I_AD_OrgInfo retrieveOrgInfoRecordOrNull(final OrgId adOrgId, final String trxName)
+	private I_AD_OrgInfo retrieveOrgInfoRecordOrNull(final OrgId adOrgId, final String trxName)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_OrgInfo.class, Env.getCtx(), trxName)
@@ -180,13 +186,54 @@ public class OrgDAO implements IOrgDAO
 				//
 				.storeCreditCardNumberMode(StoreCreditCardNumberMode.ofCode(record.getStoreCreditCardData()))
 				//
-				.logoImageId(record.getLogo_ID())
+				.imagesMap(extractImagesMap(record))
 				.workflowResponsibleId(WFResponsibleId.ofRepoIdOrNull(record.getAD_WF_Responsible_ID()))
 				.orgBPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getOrg_BPartner_ID(), record.getOrgBP_Location_ID()))
 				.reportsPathPrefix(record.getReportPrefix())
 				.timeZone(timeZone)
 				//
 				.build();
+	}
+
+	private static OrgImagesMap extractImagesMap(@NonNull final I_AD_OrgInfo orgInfo)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			final HashMap<String, AdImageId> result = new HashMap<>();
+			final AdImageId logoId = AdImageId.ofRepoIdOrNull(orgInfo.getLogo_ID());
+			if(logoId != null)
+			{
+				result.put(I_AD_OrgInfo.COLUMNNAME_Logo_ID, logoId);
+			}
+
+			final AdImageId reportBottomLogoId = AdImageId.ofRepoIdOrNull(orgInfo.getReportBottom_Logo_ID());
+			if(reportBottomLogoId != null)
+			{
+				result.put(I_AD_OrgInfo.COLUMNNAME_ReportBottom_Logo_ID, reportBottomLogoId);
+			}
+
+			return OrgImagesMap.ofImageIdsByColumnName(result);
+		}
+		else
+		{
+			final ImmutableMap.Builder<String, AdImageId> result = ImmutableMap.builder();
+			final POInfo poInfo = POInfo.getPOInfo(I_AD_OrgInfo.Table_Name);
+			for (final String columnName : poInfo.getColumnNames())
+			{
+				if (poInfo.getColumnDisplayType(columnName) == DisplayType.Image)
+				{
+					final AdImageId imageId = InterfaceWrapperHelper.getValue(orgInfo, columnName)
+							.map(AdImageId::ofNullableObject)
+							.orElse(null);
+					if(imageId != null)
+					{
+						result.put(columnName, imageId);
+					}
+				}
+			}
+
+			return OrgImagesMap.ofImageIdsByColumnName(result.build());
+		}
 	}
 
 	@Override
