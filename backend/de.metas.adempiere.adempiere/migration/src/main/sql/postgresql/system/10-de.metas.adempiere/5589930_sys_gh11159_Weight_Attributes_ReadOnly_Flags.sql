@@ -122,3 +122,105 @@ WHERE m_attribute_id IN (540005,--WeightGross
     )
   AND useinasi = 'N';
 
+
+-- 2021-05-26T19:19:22.145Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='!! Important to set to Y for attributes that can be set on material receipt !! (If yes, new attributes will be created in ASI (copied from the M_HU_PI_Attribute) - i.e on Transfer)',Updated=TO_TIMESTAMP('2021-05-26 21:19:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542574 AND AD_Language='en_US'
+;
+
+-- 2021-05-26T19:19:22.305Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542574,'en_US')
+;
+
+
+
+-- 2021-05-26T19:20:04.593Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-05-26 21:20:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542574 AND AD_Language='en_US'
+;
+
+-- 2021-05-26T19:20:04.595Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542574,'en_US')
+;
+
+-- 2021-05-26T19:20:17.951Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='!! Important to set to Y for attributes that can be set on material receipt !! (If yes, new attributes will be created in ASI (copied from the M_HU_PI_Attribute) - i.e on Transfer)',Updated=TO_TIMESTAMP('2021-05-26 21:20:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542574 AND AD_Language='en_GB'
+;
+
+-- 2021-05-26T19:20:17.952Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542574,'en_GB')
+;
+
+-- 2021-05-26T19:20:18.088Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-05-26 21:20:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542574 AND AD_Language='en_GB'
+;
+
+-- 2021-05-26T19:20:18.088Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542574,'en_GB')
+;
+
+-- 2021-05-26T19:20:44.517Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='!! Important to set to Y for attributes that can be set on material receipt !! (If yes, new attributes will be created in ASI (copied from the M_HU_PI_Attribute) - i.e on Transfer)',Updated=TO_TIMESTAMP('2021-05-26 21:20:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542574 AND AD_Language='de_DE'
+;
+
+-- 2021-05-26T19:20:44.518Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542574,'de_DE')
+;
+
+-- 2021-05-26T19:20:44.527Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(542574,'de_DE')
+;
+
+-- 2021-05-26T19:20:44.530Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='UseInASI', Name='Use in ASI', Description='!! Important to set to Y for attributes that can be set on material receipt !! (If yes, new attributes will be created in ASI (copied from the M_HU_PI_Attribute) - i.e on Transfer)', Help=NULL WHERE AD_Element_ID=542574
+;
+
+-- 2021-05-26T19:20:44.532Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='UseInASI', Name='Use in ASI', Description='!! Important to set to Y for attributes that can be set on material receipt !! (If yes, new attributes will be created in ASI (copied from the M_HU_PI_Attribute) - i.e on Transfer)', Help=NULL, AD_Element_ID=542574 WHERE UPPER(ColumnName)='USEINASI' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-05-26T19:20:44.534Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='UseInASI', Name='Use in ASI', Description='!! Important to set to Y for attributes that can be set on material receipt !! (If yes, new attributes will be created in ASI (copied from the M_HU_PI_Attribute) - i.e on Transfer)', Help=NULL WHERE AD_Element_ID=542574 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-05-26T19:20:44.535Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Use in ASI', Description='!! Important to set to Y for attributes that can be set on material receipt !! (If yes, new attributes will be created in ASI (copied from the M_HU_PI_Attribute) - i.e on Transfer)', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=542574) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 542574)
+;
+
+-- 2021-05-26T19:20:44.563Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Use in ASI', Description='!! Important to set to Y for attributes that can be set on material receipt !! (If yes, new attributes will be created in ASI (copied from the M_HU_PI_Attribute) - i.e on Transfer)', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 542574
+;
+
+-- 2021-05-26T19:20:44.564Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Use in ASI', Description='!! Important to set to Y for attributes that can be set on material receipt !! (If yes, new attributes will be created in ASI (copied from the M_HU_PI_Attribute) - i.e on Transfer)', Help=NULL WHERE AD_Element_ID = 542574
+;
+
+-- 2021-05-26T19:20:44.565Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Use in ASI', Description = '!! Important to set to Y for attributes that can be set on material receipt !! (If yes, new attributes will be created in ASI (copied from the M_HU_PI_Attribute) - i.e on Transfer)', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 542574
+;
+
+-- 2021-05-26T19:20:51.030Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='!! Important to set to Y for attributes that can be set on material receipt !! (If yes, new attributes will be created in ASI (copied from the M_HU_PI_Attribute) - i.e on Transfer)',Updated=TO_TIMESTAMP('2021-05-26 21:20:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=542574 AND AD_Language='de_CH'
+;
+
+-- 2021-05-26T19:20:51.030Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(542574,'de_CH')
+;
