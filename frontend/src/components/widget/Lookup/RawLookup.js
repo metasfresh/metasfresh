@@ -6,6 +6,7 @@ import ReactDOM from 'react-dom';
 import classnames from 'classnames';
 import { debounce } from 'throttle-debounce';
 import counterpart from 'counterpart';
+import { LOOKUP_SHOW_MORE_PIXEL_NO } from '../../../constants/Constants';
 
 import {
   autocompleteRequest,
@@ -509,6 +510,10 @@ export class RawLookup extends Component {
       showDropdown = true;
     }
 
+    const adaptiveWidth = this.props.forcedWidth
+      ? this.props.forcedWidth
+      : this.wrapper && this.wrapper.offsetWidth;
+
     return (
       <TetherComponent
         attachment="top left"
@@ -581,9 +586,11 @@ export class RawLookup extends Component {
                 <div
                   className="input-dropdown-hasmore"
                   style={{
-                    width: this.props.forcedWidth
-                      ? this.props.forcedWidth
-                      : this.wrapper && this.wrapper.offsetWidth,
+                    width: adaptiveWidth,
+                    left:
+                      parseInt(adaptiveWidth) < LOOKUP_SHOW_MORE_PIXEL_NO
+                        ? '-2px'
+                        : '0px',
                   }}
                 >
                   {` ${counterpart.translate('widget.lookup.hasMoreResults')}`}
