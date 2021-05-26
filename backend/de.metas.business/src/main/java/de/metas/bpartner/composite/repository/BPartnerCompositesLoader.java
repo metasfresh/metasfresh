@@ -22,6 +22,7 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocation.BPartnerLocationBuilder;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.common.util.StringUtils;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
@@ -332,14 +333,6 @@ final class BPartnerCompositesLoader
 	{
 		final RecordChangeLog changeLog = ChangeLogUtil.createContactChangeLog(contactRecord, relatedRecords);
 
-		Boolean invoiceEmailEnabled = null;
-
-		if(contactRecord.getIsInvoiceEmailEnabled() != null)
-		{
-			invoiceEmailEnabled = ISINVOICEEMAILENABLED_Yes.equals(contactRecord.getIsInvoiceEmailEnabled());
-		}
-
-
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(contactRecord.getC_BPartner_ID());
 		return BPartnerContact.builder()
 				.active(contactRecord.isActive())
@@ -361,7 +354,7 @@ final class BPartnerCompositesLoader
 				.lastName(trimBlankToNull(contactRecord.getLastname()))
 				.name(trimBlankToNull(contactRecord.getName()))
 				.newsletter(contactRecord.isNewsletter())
-				.invoiceEmailEnabled(invoiceEmailEnabled)
+				.invoiceEmailEnabled(StringUtils.toBoolean(contactRecord.getIsInvoiceEmailEnabled(), null))
 				.phone(trimBlankToNull(contactRecord.getPhone()))
 				.mobilePhone(trimBlankToNull(contactRecord.getMobilePhone()))
 				.description(trimBlankToNull(contactRecord.getDescription()))

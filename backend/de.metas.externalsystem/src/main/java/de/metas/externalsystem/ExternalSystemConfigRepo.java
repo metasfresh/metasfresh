@@ -23,6 +23,7 @@
 package de.metas.externalsystem;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.StringUtils;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
@@ -249,14 +250,6 @@ public class ExternalSystemConfigRepo
 	@NonNull
 	private ExternalSystemShopware6ConfigMapping toExternalSystemShopware6ConfigMapping(@NonNull final I_ExternalSystem_Config_Shopware6Mapping record)
 	{
-
-		Boolean invoiceEmailEnabled = null;
-
-		if(record.getIsInvoiceEmailEnabled() != null)
-		{
-			invoiceEmailEnabled = ISINVOICEEMAILENABLED_Yes.equals(record.getIsInvoiceEmailEnabled());
-		}
-
 		return ExternalSystemShopware6ConfigMapping.builder()
 				.docTypeOrderId(record.getC_DocTypeOrder_ID())
 				.paymentRule(record.getPaymentRule())
@@ -265,7 +258,7 @@ public class ExternalSystemConfigRepo
 				.sw6PaymentMethod(record.getSW6_Payment_Method())
 				.description(record.getDescription())
 				.seqNo(record.getSeqNo())
-				.isInvoiceEmailEnabled(invoiceEmailEnabled)
+				.isInvoiceEmailEnabled(StringUtils.toBoolean(record.getIsInvoiceEmailEnabled(), null))
 				.bpartnerIfExists(record.getBPartner_IfExists())
 				.bpartnerIfNotExists(record.getBPartner_IfNotExists())
 				.bpartnerLocationIfExists(record.getBPartnerLocation_IfExists())
