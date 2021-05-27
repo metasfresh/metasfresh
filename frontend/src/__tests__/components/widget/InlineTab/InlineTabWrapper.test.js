@@ -54,6 +54,14 @@ describe('InlineTabWrapper component', () => {
             visible: true,
           },
           inlineTab: inlineTabStore,
+          master: {
+            includedTabsInfo: {
+              "AD_Tab-222": {
+                allowCreateNew: true,
+                allowDelete: true,
+              }
+            }
+          }
         },
       });
       const store = mockStore(initialState);

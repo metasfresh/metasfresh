@@ -124,6 +124,7 @@ class InlineTab extends PureComponent {
       fieldsOrder,
       promptOpen,
       isOpen,
+      allowDelete,
     } = this.props;
     const valid = validStatus ? validStatus.valid : true;
 
@@ -180,17 +181,19 @@ class InlineTab extends PureComponent {
                     disconnected={`inlineTab`} // This has to match the windowHandler.inlineTab path in the redux store
                   />
                   {/* Delete button */}
-                  <div className="row">
-                    <div className="col-lg-12">
-                      <button
-                        className="btn btn-meta-outline-secondary btn-sm btn-pull-right"
-                        onClick={() => this.handleDelete(rowId)}
-                      >
-                        {counterpart.translate('window.Delete.caption')}
-                      </button>
-                      <div className="clearfix" />
+                  {allowDelete && (
+                    <div className="row">
+                      <div className="col-lg-12">
+                        <button
+                          className="btn btn-meta-outline-secondary btn-sm btn-pull-right"
+                          onClick={() => this.handleDelete(rowId)}
+                        >
+                          {counterpart.translate('window.Delete.caption')}
+                        </button>
+                        <div className="clearfix" />
+                      </div>
                     </div>
-                  </div>
+                  )}
                   {/* These prompt strings are hardcoded because they need to be provided by the BE */}
                   {promptOpen && (
                     <Prompt
@@ -232,6 +235,7 @@ InlineTab.propTypes = {
   setInlineTabItemProp: PropTypes.func.isRequired,
   isOpen: PropTypes.bool,
   isGerman: PropTypes.bool,
+  allowDelete: PropTypes.bool,
 };
 
 /**
