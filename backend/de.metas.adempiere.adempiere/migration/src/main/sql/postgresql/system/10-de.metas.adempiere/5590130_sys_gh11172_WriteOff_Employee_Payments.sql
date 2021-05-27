@@ -146,3 +146,80 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 
 
 
+
+-- 2021-05-27T11:28:34.297Z
+-- URL zum Konzept
+UPDATE AD_Process SET Name='Offene MA-Zahlungseingänge abschreiben',Updated=TO_TIMESTAMP('2021-05-27 14:28:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584833
+;
+
+-- 2021-05-27T11:28:41.125Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET Name='Offene MA-Zahlungseingänge abschreiben',Updated=TO_TIMESTAMP('2021-05-27 14:28:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584833
+;
+
+-- 2021-05-27T11:28:43.575Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-05-27 14:28:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584833
+;
+
+-- 2021-05-27T11:28:48.997Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Offene MA-Zahlungseingänge abschreiben',Updated=TO_TIMESTAMP('2021-05-27 14:28:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584833
+;
+
+-- 2021-05-27T11:29:09.995Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Write off open inbound employee payments',Updated=TO_TIMESTAMP('2021-05-27 14:29:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584833
+;
+
+-- 2021-05-27T11:29:15.926Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Write off open inbound employee payments',Updated=TO_TIMESTAMP('2021-05-27 14:29:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584833
+;
+
+-- 2021-05-27T11:29:18.187Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET IsTranslated='N',Updated=TO_TIMESTAMP('2021-05-27 14:29:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584833
+;
+
+-- 2021-05-27T11:30:15.947Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET Description='Writes off all incoming payments that are not yet allocated and have an employee as business partner.', Help='Writes off all incoming payments that are not yet allocated and have an employee as business partner.',Updated=TO_TIMESTAMP('2021-05-27 14:30:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584833
+;
+
+-- 2021-05-27T11:56:15.455Z
+-- URL zum Konzept
+UPDATE AD_Process SET Description='Erstellt Abschreibungen zu allen noch nicht zugeordneten Zahlungseingängen von als Mitarbeiter markierten Geschäftspartnern.',Updated=TO_TIMESTAMP('2021-05-27 14:56:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584833
+;
+
+-- 2021-05-27T11:56:24.754Z
+-- URL zum Konzept
+UPDATE AD_Process SET Help='Erstellt Abschreibungen zu allen noch nicht zugeordneten Zahlungseingängen von als Mitarbeiter markierten Geschäftspartnern.',Updated=TO_TIMESTAMP('2021-05-27 14:56:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584833
+;
+
+-- 2021-05-27T11:56:38.561Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET Description='Writes off all incoming payments that are not yet allocated and have an employee as business partner.', Help='Writes off all incoming payments that are not yet allocated and have an employee as business partner.',Updated=TO_TIMESTAMP('2021-05-27 14:56:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584833
+;
+
+-- 2021-05-27T11:57:02.984Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET Description='Erstellt Abschreibungen zu allen noch nicht zugeordneten Zahlungseingängen von als Mitarbeiter markierten Geschäftspartnern.', Help='Erstellt Abschreibungen zu allen noch nicht zugeordneten Zahlungseingängen von als Mitarbeiter markierten Geschäftspartnern.',Updated=TO_TIMESTAMP('2021-05-27 14:57:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584833
+;
+
+-- 2021-05-27T11:57:09.702Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET Description='Erstellt Abschreibungen zu allen noch nicht zugeordneten Zahlungseingängen von als Mitarbeiter markierten Geschäftspartnern.', Help='Erstellt Abschreibungen zu allen noch nicht zugeordneten Zahlungseingängen von als Mitarbeiter markierten Geschäftspartnern.',Updated=TO_TIMESTAMP('2021-05-27 14:57:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584833
+;
+
+
+
+
+
+
+
+
+
+
+
+
