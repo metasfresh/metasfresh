@@ -34,13 +34,13 @@ import java.util.Iterator;
 
 public class C_Payment_Employee_WriteOff extends JavaProcess
 {
-	public static final String PARAM_DATE_START = "DateStart";
-	public static final String PARAM_DATE_END = "DateEnd";
+	public static final String PARAM_START_DATE = "StartDate";
+	public static final String PARAM_END_DATE = "EndDate";
 
-	@Param(parameterName = PARAM_DATE_START, mandatory = true)
+	@Param(parameterName = PARAM_START_DATE, mandatory = true)
 	private Instant p_startDate;
 
-	@Param(parameterName = PARAM_DATE_END, mandatory = true)
+	@Param(parameterName = PARAM_END_DATE, mandatory = true)
 	private Instant p_endDate;
 
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
