@@ -1,18 +1,18 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_Shopware6Mapping
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
 public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model.PO implements I_ExternalSystem_Config_Shopware6Mapping, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = -2055510967L;
+	private static final long serialVersionUID = -494228431L;
 
 	/** Standard Constructor */
 	public X_ExternalSystem_Config_Shopware6Mapping (final Properties ctx, final int ExternalSystem_Config_Shopware6Mapping_ID, @Nullable final String trxName)
@@ -200,6 +200,27 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	public int getExternalSystem_Config_Shopware6Mapping_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_Shopware6Mapping_ID);
+	}
+
+	/**
+	 * IsInvoiceEmailEnabled AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISINVOICEEMAILENABLED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISINVOICEEMAILENABLED_Yes = "Y";
+	/** No = N */
+	public static final String ISINVOICEEMAILENABLED_No = "N";
+	@Override
+	public void setIsInvoiceEmailEnabled (final @Nullable java.lang.String IsInvoiceEmailEnabled)
+	{
+		set_Value (COLUMNNAME_IsInvoiceEmailEnabled, IsInvoiceEmailEnabled);
+	}
+
+	@Override
+	public java.lang.String getIsInvoiceEmailEnabled()
+	{
+		return get_ValueAsString(COLUMNNAME_IsInvoiceEmailEnabled);
 	}
 
 	/**
