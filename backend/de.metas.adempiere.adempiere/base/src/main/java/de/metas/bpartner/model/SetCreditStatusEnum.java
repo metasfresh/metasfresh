@@ -22,16 +22,38 @@
 
 package de.metas.bpartner.model;
 
-import lombok.AllArgsConstructor;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
+import lombok.NonNull;
 
-@AllArgsConstructor
-@Getter
-public enum CreditStatusEnum
+import javax.annotation.Nullable;
+
+public enum SetCreditStatusEnum implements ReferenceListAwareEnum
 {
+
 	CreditStop("S"),
 	CreditOK("O"),
 	Calculate("U");
 
-	private final String value;
+	@Getter
+	private final String code;
+
+	SetCreditStatusEnum(@NonNull final String code)
+	{
+		this.code = code;
+	}
+
+	public static SetCreditStatusEnum ofCode(@NonNull final String code)
+	{
+		return index.ofCode(code);
+	}
+
+	@Nullable
+	public static SetCreditStatusEnum ofNullableCode(@Nullable final String code)
+	{
+		return index.ofNullableCode(code);
+	}
+
+	private static final ReferenceListAwareEnums.ValuesIndex<SetCreditStatusEnum> index = ReferenceListAwareEnums.index(values());
 }

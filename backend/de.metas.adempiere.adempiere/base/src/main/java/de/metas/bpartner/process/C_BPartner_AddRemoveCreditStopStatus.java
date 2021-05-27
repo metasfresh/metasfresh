@@ -1,7 +1,7 @@
 package de.metas.bpartner.process;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.model.CreditStatusEnum;
+import de.metas.bpartner.model.SetCreditStatusEnum;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
@@ -31,7 +31,7 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Param(parameterName = "setCreditStatus", mandatory = true)
-	private String setCreditStatus;
+	private SetCreditStatusEnum setCreditStatus;
 
 	@Override
 	protected String doIt()
@@ -41,10 +41,10 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bPartner);
 		final String creditStatus;
 
-		if (CreditStatusEnum.CreditOK.getValue().equals(setCreditStatus)) {
+		if (SetCreditStatusEnum.CreditOK.equals(setCreditStatus)) {
 			creditStatus = X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
 		}
-		else if (CreditStatusEnum.CreditStop.getValue().equals(setCreditStatus))
+		else if (SetCreditStatusEnum.CreditStop.equals(setCreditStatus))
 		{
 			creditStatus = X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop;
 		}
