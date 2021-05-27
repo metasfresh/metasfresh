@@ -316,3 +316,28 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Kreditstatus', PrintName='Kred
 UPDATE AD_Process_Para SET AD_Element_ID=579260, ColumnName='setCreditStatus',Updated=TO_TIMESTAMP('2021-05-27 08:52:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542011
 ;
 
+
+-- 2021-05-27T07:11:25.361Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET Name='Berechnen lassen',Updated=TO_TIMESTAMP('2021-05-27 09:11:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542618
+;
+
+-- 2021-05-27T07:11:35.836Z
+-- URL zum Konzept
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Berechnen lassen',Updated=TO_TIMESTAMP('2021-05-27 09:11:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=542618
+;
+
+-- 2021-05-27T07:11:40.590Z
+-- URL zum Konzept
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Berechnen lassen',Updated=TO_TIMESTAMP('2021-05-27 09:11:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=542618
+;
+
+-- 2021-05-27T07:11:47.095Z
+-- URL zum Konzept
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-05-27 09:11:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=542618
+;
+
+-- 2021-05-27T07:11:52.057Z
+-- URL zum Konzept
+UPDATE AD_Ref_List_Trl SET Name='Berechnen lassen',Updated=TO_TIMESTAMP('2021-05-27 09:11:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=542618
+;
