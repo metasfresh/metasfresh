@@ -108,6 +108,7 @@ describe('InlineTab component', () => {
             fieldsOrder={fieldsOrder}
             fieldsByName={fieldsByName}
             {...props}
+            allowDelete={true}
           />
         </Provider>
       </ShortcutProvider>
@@ -146,6 +147,7 @@ describe('InlineTab component', () => {
             fieldsOrder={fieldsOrder}
             fieldsByName={fieldsByName}
             {...props}
+            allowDelete={true}
           />
         </Provider>
       </ShortcutProvider>
@@ -183,6 +185,7 @@ describe('InlineTab component', () => {
             fieldsOrder={fieldsOrder}
             fieldsByName={fieldsByName}
             {...props}
+            allowDelete={true}
           />
         </Provider>
       </ShortcutProvider>
