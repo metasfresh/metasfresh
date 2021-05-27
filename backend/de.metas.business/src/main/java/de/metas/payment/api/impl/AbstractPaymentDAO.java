@@ -269,19 +269,22 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	}
 
 	@Override
-	public Iterator<I_C_Payment> retrieveEmployeePaymentsForTimeframe(@NonNull final Instant startDate,
+	public Iterator<I_C_Payment> retrieveEmployeePaymentsForTimeframe(
+			@NonNull final OrgId orgId,
+			@NonNull final Instant startDate,
 			@NonNull final Instant endDate)
 	{
 		final IQuery<I_C_BPartner> employeePartnerQuery = queryBL.createQueryBuilder(I_C_BPartner.class)
-				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsEmployee, true)
 				.create();
 
 		final Iterator<I_C_Payment> paymentsForEmployees = queryBL.createQueryBuilder(I_C_Payment.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Org_ID, orgId)
 				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsAllocated, false)
 				.addBetweenFilter(I_C_Payment.COLUMNNAME_DateTrx, startDate, endDate)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, true)
 				.addInSubQueryFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID,
 									 I_C_BPartner.COLUMNNAME_C_BPartner_ID,
 									 employeePartnerQuery)
@@ -290,5 +293,4 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		return paymentsForEmployees;
 	}
-
 }

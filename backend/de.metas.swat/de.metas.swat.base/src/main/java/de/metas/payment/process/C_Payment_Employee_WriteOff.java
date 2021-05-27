@@ -23,6 +23,7 @@
 package de.metas.payment.process;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.OrgId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.process.JavaProcess;
@@ -36,8 +37,12 @@ import java.util.Iterator;
 
 public class C_Payment_Employee_WriteOff extends JavaProcess
 {
+	public static final String PARAM_AD_ORG_ID = "Parameter_AD_Org_ID";
 	public static final String PARAM_START_DATE = "StartDate";
 	public static final String PARAM_END_DATE = "EndDate";
+
+	@Param(parameterName = PARAM_AD_ORG_ID, mandatory = true)
+	private OrgId p_OrgId;
 
 	@Param(parameterName = PARAM_START_DATE, mandatory = true)
 	private Instant p_startDate;
@@ -51,7 +56,10 @@ public class C_Payment_Employee_WriteOff extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Iterator<I_C_Payment> paymentsForEmployees = paymentDAO.retrieveEmployeePaymentsForTimeframe(p_startDate, p_endDate);
+		final Iterator<I_C_Payment> paymentsForEmployees = paymentDAO.retrieveEmployeePaymentsForTimeframe
+				(p_OrgId,
+				 p_startDate,
+				 p_endDate);
 		final Date today = SystemTime.asDate();
 
 		paymentBL.fullyWriteOffPayments(paymentsForEmployees, today);

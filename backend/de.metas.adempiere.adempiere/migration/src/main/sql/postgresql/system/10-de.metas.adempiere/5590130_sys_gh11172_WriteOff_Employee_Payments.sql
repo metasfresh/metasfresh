@@ -221,5 +221,43 @@ UPDATE AD_Process_Trl SET Description='Erstellt Abschreibungen zu allen noch nic
 
 
 
+-- 2021-05-27T12:32:38.980Z
+-- URL zum Konzept
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,AD_Reference_Value_ID,ColumnName,Created,CreatedBy,DefaultValue,Description,EntityType,FieldLength,Help,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,579198,0,584833,542017,30,276,'Parameter_AD_Org_ID',TO_TIMESTAMP('2021-05-27 15:32:38','YYYY-MM-DD HH24:MI:SS'),100,'@#AD_Org_ID@','Organisatorische Einheit des Mandanten','D',0,'Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','Y','N','Y','N','Organisation',30,TO_TIMESTAMP('2021-05-27 15:32:38','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-05-27T12:32:39.016Z
+-- URL zum Konzept
+INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542017 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
+;
+
+
+
+
+-- 2021-05-27T12:33:38.782Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET SeqNo=40,Updated=TO_TIMESTAMP('2021-05-27 15:33:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542015
+;
+
+-- 2021-05-27T12:33:42.836Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET SeqNo=10,Updated=TO_TIMESTAMP('2021-05-27 15:33:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542017
+;
+
+-- 2021-05-27T12:33:46.898Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET SeqNo=30,Updated=TO_TIMESTAMP('2021-05-27 15:33:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542016
+;
+
+-- 2021-05-27T12:33:51.226Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET SeqNo=20,Updated=TO_TIMESTAMP('2021-05-27 15:33:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542015
+;
+
+
+
+
+
+
 
 

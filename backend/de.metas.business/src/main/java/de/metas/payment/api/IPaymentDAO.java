@@ -111,5 +111,5 @@ public interface IPaymentDAO extends ISingletonService
 
 	void save(@NonNull final I_C_Payment payment);
 
-	Iterator<I_C_Payment> retrieveEmployeePaymentsForTimeframe(Instant startDate, Instant endDate);
+	Iterator<I_C_Payment> retrieveEmployeePaymentsForTimeframe(OrgId orgId, Instant startDate, Instant endDate);
 }
