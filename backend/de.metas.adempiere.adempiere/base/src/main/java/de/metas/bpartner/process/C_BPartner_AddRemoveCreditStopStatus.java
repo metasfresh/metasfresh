@@ -1,6 +1,7 @@
 package de.metas.bpartner.process;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.model.CreditStatusEnum;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
@@ -13,9 +14,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.X_C_BPartner_Stats;
 
 /**
@@ -31,8 +30,8 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 	private  final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-	@Param(parameterName = "IsSetCreditStop", mandatory = true)
-	private boolean isSetCreditStop;
+	@Param(parameterName = "setCreditStatus", mandatory = true)
+	private String setCreditStatus;
 
 	@Override
 	protected String doIt()
@@ -41,17 +40,21 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 
 		final BPartnerStats stats = bpartnerStatsDAO.getCreateBPartnerStats(bPartner);
 		final String creditStatus;
-		if (isSetCreditStop)
+
+		if (CreditStatusEnum.CreditOK.getValue().equals(setCreditStatus)) {
+			creditStatus = X_C_BPartner_Stats.SOCREDITSTATUS_CreditOK;
+		}
+		else if (CreditStatusEnum.CreditStop.getValue().equals(setCreditStatus))
 		{
 			creditStatus = X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop;
 		}
 		else
 		{
 			final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
-					.stat(stats)
-					.forceCheckCreditStatus(true)
-					.date(SystemTime.asDayTimestamp())
-					.build();
+						.stat(stats)
+						.forceCheckCreditStatus(true)
+						.date(SystemTime.asDayTimestamp())
+						.build();
 			creditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
 		}
 
