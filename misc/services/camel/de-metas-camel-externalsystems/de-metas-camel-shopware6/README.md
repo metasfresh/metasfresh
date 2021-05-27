@@ -1,22 +1,24 @@
 ## Current data mapping
 ****
 Values computed in Metasfresh 
-* `Order` - computed from the following parameters set on window `541116 - ExternalSystem_Config_Shopware6` 
+* `Order` - pulled via the search endpoint `api/v3/search/order/`
+
+computed from the following parameters set on window `541116 - ExternalSystem_Config_Shopware6`
   * `JsonExternalSystemRequest.parameters.JSONPathConstantBPartnerID`
   * `JsonExternalSystemRequest.parameters.JSONPathConstantSalesRepID`
   * `JsonExternalSystemRequest.parameters.ClientId`  
   * `JsonExternalSystemRequest.parameters.ClientSecret`  
-  * `JsonExternalSystemRequest.parameters.BasePath`  
-  * `JsonExternalSystemRequest.parameters.UpdatedAfterOverride`  
-  * `JsonExternalSystemRequest.parameters.UpdatedAfter`  
+  * `JsonExternalSystemRequest.parameters.BasePath`
+  * `JsonExternalSystemRequest.parameters.UpdatedAfterOverride` 
+  * `JsonExternalSystemRequest.parameters.UpdatedAfter`
+    
 * `JsonExternalSystemShopware6ConfigMappings` - computed from mappings set on window `541116 - ExternalSystem_Config_Shopware6` send on `JsonExternalSystemRequest.parameters.ConfigMappings`
-
 
 **Shopware6 => metasfresh BPartners**
 
 we need to invoke the endpoint `api/v2-pre/bpartner`
 
-1. BPartner - all columns are from `C_BPartner`
+1. BPartner - all `metasfresh-column` values refer to `C_BPartner` columns
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
@@ -29,7 +31,7 @@ JsonExternalSystemRequest.orgCode | `ad_org_id` | N | JsonRequestComposite.orgCo
 Order.effectiveCustomerId | `C_BPartner_ID` | Y | JsonRequestBPartnerUpsertItem.bpartnerIdentifier | computed from Order.OrderCustomer.CustomerId or Order.customBPartnerId |
 --- | ---- | N | JsonRequestBPartnerUpsert.syncAdvise | default value CREATE_OR_MERGE |
 
-2. Contact - all columns are from `AD_User`
+2. Contact - all `metasfresh-column` values refer to `AD_User` columns
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
@@ -49,7 +51,7 @@ Order.effectiveCustomerId | `AD_User_ID` | N | JsonRequestContactUpsertItem.cont
 3.2. For *billing*, the information is pulled from the endpoint: `api/v3/order-address/{{Order.billingAddressId}}` using the `Order.billingAddressId`
 
 3.3 `JsonOrderAddressAndCustomId` - computed for both delivery and shipping address and mapped to metas POJOs
-* `JsonOrderAddress` mapping for the last delivery address of the order (should always be just one, if more found, a warning message is computed)
+* `JsonOrderAddress` mapping for a shopware address (billing or shipping) 
 * `customId` custom identifier of the shopware resource
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
@@ -71,7 +73,7 @@ we need to invoke the endpoint `api/v2-pre/orders/sales/candidates/bulk`
 
 OLCandRequestProcessor - JsonOLCandCreateBulkRequest
 
-1. OrderCandidate - all columns are from `C_OLCand`
+1. OrderCandidate - all `metasfresh-column` values refer to `C_OLCand` columns
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
@@ -97,9 +99,9 @@ JsonExternalSystemShopware6ConfigMappings.mappings.docTypeOrder |  `c_doctypeord
 JsonExternalSystemShopware6ConfigMappings.mappings.paymentRule |  `paymentrule` | Y | JsonOLCandCreateRequest.paymentRule | sets the JSONPaymentRule from paymentRule code |
 JsonExternalSystemShopware6ConfigMappings.mappings.paymentTermValue |  `c_paymentterm_id` | N | JsonOLCandCreateRequest.paymentTerm | is paymentTermValue is defined then value "val-{{paymentTermValue}} is set" |
 
-2. JsonOrderLine - all columns are from `C_OLCand`
-
-* `JsonOrderLine` - computed on metasfresh, represents each line from an order identified by `Order.OrderCustomer.Id` for a shopwareClient identified by `JsonExternalSystemRequest.parameters.ClientId`, `JsonExternalSystemRequest.parameters.ClientSecret`, `JsonExternalSystemRequest.parameters.BasePath`
+2. JsonOrderLine
+  * represents a shopware order line, pulled via `api/v3/order/{Order.Id}/line-items`
+  * all `metasfresh-column` values refer to `C_OLCand` columns
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
@@ -111,15 +113,14 @@ JsonOrderLine.description |  `description` | N | JsonOLCandCreateRequest.descrip
 JsonOrderLine.position |  `line` | N | JsonOLCandCreateRequest.line | |
 JsonOrderLine.JsonOrderLinePayload.isBundle |  `compensationgroupkey`,  `isgroupcompensationline` | N | JsonOLCandCreateRequest.orderLineGroup | it is set only if JsonOrderLine.JsonOrderLinePayload is defined and JsonOrderLine.JsonOrderLinePayload.isBundle is true|
 
-3. JsonTax - all columns are from `C_OLCand`
+3. JsonTax
+   * shopware resource found at path: `delivery/shippingCosts/calculatedTaxes`
+   * all `metasfresh-column` values refer to `C_OLCand` columns
 
 * TaxProductIdProvider 
     * maps the VAT rate for a product, reduced and normal VAT rates
     * computed from variables set on window `541116 - ExternalSystem_Config_Shopware6`
     * parameters: `FreightCost_Reduced_VAT_Rates`, `M_FreightCost_ReducedVAT_Product_ID`, `FreightCost_NormalVAT_Rates`, `M_FreightCost_NormalVAT_Product_ID`
-
-* `JsonTax` 
-  * represents the `calculatedTaxes` computed from shipping cost from delivery Address from the last order with `Order.OrderCustomer.Id` for a specific bpartner
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
@@ -138,11 +139,10 @@ we need to invoke the endpoint `api/v2-pre/orders/sales/payment`
 
 PaymentRequestProcessor
 
-* `JsonOrderTransaction`
-    * computed by metasfresh, represents the transaction status done for an `Order.OrderCustomer.Id` for the shopwareClient
-    
-1. OrderPayment -- all columns are from `C_Payment`, except for `orderIdentifier`
-
+1. `JsonOrderTransaction` - OrderPayment
+  * pulled via endpoint: `api/v3/order/{{Order.Id}}/transactions`
+  * all `metasfresh-column` values refer to `C_Payment` columns except from `C_Order_ID.c_payment_id`
+   
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
 JsonExternalSystemRequest.orgCode |  `ad_org_id` | Y | JsonOrderPaymentCreateRequest.orgCode | |
