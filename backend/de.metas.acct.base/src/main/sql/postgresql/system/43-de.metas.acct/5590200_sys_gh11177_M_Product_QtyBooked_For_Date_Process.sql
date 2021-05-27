@@ -579,4 +579,122 @@ UPDATE AD_Process SET SQLStatement='SELECT * FROM "de_metas_acct".report_M_Produ
 
 
 
+-- 2021-05-27T16:30:27.270Z
+-- URL zum Konzept
+UPDATE AD_Process SET Name='Buchbestand (Excel)',Updated=TO_TIMESTAMP('2021-05-27 19:30:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584834
+;
+
+-- 2021-05-27T16:30:27.730Z
+-- URL zum Konzept
+UPDATE AD_Menu SET Description=NULL, IsActive='Y', Name='Buchbestand (Excel)',Updated=TO_TIMESTAMP('2021-05-27 19:30:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Menu_ID=541717
+;
+
+-- 2021-05-27T16:30:37.901Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Buchbestand (Excel)',Updated=TO_TIMESTAMP('2021-05-27 19:30:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584834
+;
+
+-- 2021-05-27T16:31:27.412Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Name='Buchbestand (Excel)', PrintName='Buchbestand (Excel)',Updated=TO_TIMESTAMP('2021-05-27 19:31:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579258 AND AD_Language='de_CH'
+;
+
+-- 2021-05-27T16:31:27.549Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579258,'de_CH') 
+;
+
+-- 2021-05-27T16:31:31.001Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Buchbestand (Excel)', PrintName='Buchbestand (Excel)',Updated=TO_TIMESTAMP('2021-05-27 19:31:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579258 AND AD_Language='de_DE'
+;
+
+-- 2021-05-27T16:31:31.147Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579258,'de_DE') 
+;
+
+-- 2021-05-27T16:31:31.220Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579258,'de_DE') 
+;
+
+-- 2021-05-27T16:31:31.257Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName=NULL, Name='Buchbestand (Excel)', Description=NULL, Help=NULL WHERE AD_Element_ID=579258
+;
+
+-- 2021-05-27T16:31:31.291Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Buchbestand (Excel)', Description=NULL, Help=NULL WHERE AD_Element_ID=579258 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-05-27T16:31:31.323Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Buchbestand (Excel)', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579258) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579258)
+;
+
+-- 2021-05-27T16:31:31.589Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem pi SET PrintName='Buchbestand (Excel)', Name='Buchbestand (Excel)' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579258)
+;
+
+-- 2021-05-27T16:31:31.621Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Buchbestand (Excel)', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579258
+;
+
+-- 2021-05-27T16:31:31.656Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Buchbestand (Excel)', Description=NULL, Help=NULL WHERE AD_Element_ID = 579258
+;
+
+-- 2021-05-27T16:31:31.691Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Buchbestand (Excel)', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579258
+;
+
+-- 2021-05-27T16:31:40.109Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Products With Booked Quantity', PrintName='Products With Booked Quantity',Updated=TO_TIMESTAMP('2021-05-27 19:31:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579258 AND AD_Language='en_US'
+;
+
+-- 2021-05-27T16:31:40.235Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579258,'en_US') 
+;
+
+-- 2021-05-27T16:31:45.789Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Name='Products With Booked Quantity', PrintName='Products With Booked Quantity',Updated=TO_TIMESTAMP('2021-05-27 19:31:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579258 AND AD_Language='nl_NL'
+;
+
+-- 2021-05-27T16:31:45.914Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579258,'nl_NL') 
+;
+
+-- 2021-05-27T16:31:49.299Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-05-27 19:31:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579258 AND AD_Language='de_CH'
+;
+
+-- 2021-05-27T16:31:49.446Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579258,'de_CH') 
+;
+
+-- 2021-05-27T16:32:01.510Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Products With Booked Quantity',Updated=TO_TIMESTAMP('2021-05-27 19:32:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584834
+;
+
+-- 2021-05-27T16:32:06.444Z
+-- URL zum Konzept
+UPDATE AD_Process_Trl SET Name='Products With Booked Quantity',Updated=TO_TIMESTAMP('2021-05-27 19:32:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584834
+;
+
+
+
+
 
