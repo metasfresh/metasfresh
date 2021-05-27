@@ -17,15 +17,8 @@ import WidgetWrapper from '../../containers/WidgetWrapper';
 class TableQuickInput extends Component {
   // promise with patching for queuing form submission after patch is done
   patchPromise;
-
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      editedField: 0,
-    };
-    this.rawWidgets = [];
-  }
+  // widgets refs
+  rawWidgets = [];
 
   componentDidMount() {
     this.initQuickInput();
@@ -33,10 +26,9 @@ class TableQuickInput extends Component {
 
   componentDidUpdate() {
     const { data, layout, inProgress } = this.props;
-    const { editedField } = this.state;
 
     // refocus the first widget after update
-    if (data && layout && !inProgress && editedField === 0) {
+    if (data && layout && !inProgress) {
       const item = layout[0].fields.map((elem) => data[elem.field] || -1);
 
       if (!item[0].value) {
@@ -50,12 +42,9 @@ class TableQuickInput extends Component {
   /**
    * @method focusWidgetField
    * @summary function to manually focus a widget
-   *
-   * @param {number} fieldNo - index of the widget to select
    */
-  focusWidgetField = (fieldNo) => {
-    fieldNo = fieldNo || 0;
-    let curWidget = this.rawWidgets[fieldNo];
+  focusWidgetField = () => {
+    let curWidget = this.rawWidgets[0];
 
     if (
       curWidget &&
@@ -107,8 +96,6 @@ class TableQuickInput extends Component {
       console.error(error);
       this.closeBatchEntry();
     });
-
-    this.setState({ editedField: 0 });
   };
 
   handleChange = (field, value) => {
@@ -120,22 +107,11 @@ class TableQuickInput extends Component {
   };
 
   handlePatch = (prop, value, callback) => {
-    const { docType, docId, tabId, patchQuickInput, layout } = this.props;
-    const { editedField } = this.state;
-    let newEditedField = null;
-
-    if (editedField < layout.length) {
-      newEditedField = editedField + 1;
-    }
-    this.setState({ editedField: newEditedField });
+    const { docType, docId, tabId, patchQuickInput } = this.props;
 
     this.patchPromise = new Promise((resolve) => {
       patchQuickInput({ windowId: docType, docId, tabId, prop, value }).then(
         () => {
-          if (newEditedField !== null) {
-            this.focusWidgetField(newEditedField);
-          }
-
           if (callback) {
             callback();
           }
@@ -164,8 +140,6 @@ class TableQuickInput extends Component {
         'error'
       );
     }
-
-    this.setState({ editedField: null });
 
     return this.patchPromise
       .then(() => {
