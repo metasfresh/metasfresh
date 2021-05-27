@@ -2,6 +2,8 @@ package de.metas.payment.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -108,4 +110,6 @@ public interface IPaymentDAO extends ISingletonService
 	ImmutableSet<PaymentId> retrievePaymentIds(PaymentQuery query);
 
 	void save(@NonNull final I_C_Payment payment);
+
+	Iterator<I_C_Payment> retrieveEmployeePaymentsForTimeframe(OrgId orgId, Instant startDate, Instant endDate);
 }
