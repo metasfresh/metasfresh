@@ -40,6 +40,7 @@ import org.compiere.model.I_C_Payment;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -118,7 +119,7 @@ public interface IPaymentBL extends ISingletonService
 
 	boolean isCashTrx(final I_C_Payment payment);
 
-	void fullyWriteOffPayments(Iterator<I_C_Payment> payments, Date writeOffDate);
+	void fullyWriteOffPayments(Iterator<I_C_Payment> payments, Instant writeOffDate);
 
 	/**
 	 * WriteOff given payment.

@@ -38,11 +38,15 @@ import java.util.Iterator;
 public class C_Payment_Employee_WriteOff extends JavaProcess
 {
 	public static final String PARAM_AD_ORG_ID = "Parameter_AD_Org_ID";
+	public static final String PARAM_WRITEOFF_DATE = "WriteOffDate";
 	public static final String PARAM_START_DATE = "StartDate";
 	public static final String PARAM_END_DATE = "EndDate";
 
 	@Param(parameterName = PARAM_AD_ORG_ID, mandatory = true)
 	private OrgId p_OrgId;
+
+	@Param(parameterName = PARAM_WRITEOFF_DATE, mandatory = true)
+	private Instant p_WriteOffDate;
 
 	@Param(parameterName = PARAM_START_DATE, mandatory = true)
 	private Instant p_startDate;
@@ -60,9 +64,8 @@ public class C_Payment_Employee_WriteOff extends JavaProcess
 				(p_OrgId,
 				 p_startDate,
 				 p_endDate);
-		final Date today = SystemTime.asDate();
 
-		paymentBL.fullyWriteOffPayments(paymentsForEmployees, today);
+		paymentBL.fullyWriteOffPayments(paymentsForEmployees, p_WriteOffDate);
 
 		return MSG_OK;
 	}

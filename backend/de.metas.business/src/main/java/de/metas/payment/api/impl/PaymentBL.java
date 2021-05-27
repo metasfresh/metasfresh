@@ -83,6 +83,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -580,7 +581,7 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public void fullyWriteOffPayments(@NonNull final Iterator<I_C_Payment> payments, @NonNull Date writeOffDate)
+	public void fullyWriteOffPayments(@NonNull final Iterator<I_C_Payment> payments, @NonNull Instant writeOffDate)
 	{
 		while (payments.hasNext())
 		{
@@ -589,7 +590,7 @@ public class PaymentBL implements IPaymentBL
 		}
 	}
 
-	private void fullyWriteOffPayment(@NonNull final I_C_Payment payment, final @NonNull Date writeOffDate)
+	private void fullyWriteOffPayment(@NonNull final I_C_Payment payment, final @NonNull Instant writeOffDate)
 	{
 		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
 
@@ -600,7 +601,7 @@ public class PaymentBL implements IPaymentBL
 					 moneyToWriteOff,
 					 payment);
 
-		final I_C_AllocationHdr allocationHdr = paymentWriteOff(payment, moneyToWriteOff.toBigDecimal(), writeOffDate);
+		final I_C_AllocationHdr allocationHdr = paymentWriteOff(payment, moneyToWriteOff.toBigDecimal(), TimeUtil.asDate(writeOffDate) );
 
 		logger.debug("C_AllocationHdr {} created for the payment {}", allocationHdr, payment);
 	}
