@@ -38,6 +38,7 @@ Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 Order.firstName | `firstName` | N | JsonRequestContact.firstName | |
 Order.lastName | `lastName` | N | JsonRequestContact.lastName | |
 Order.email | `email` | N | JsonRequestContact.email | |
+JsonExternalSystemShopware6ConfigMappings.mappings.invoiceEmailEnabled | `IsInvoiceEmailEnabled` | N | JsonRequestContact.invoiceEmailEnabled | |
 JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerSyncAdvice | ---- | N | JsonRequestContact.syncAdvise | |
 JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerSyncAdvice | ---- | N | JsonRequestContactUpsert.syncAdvise | |
 Order.effectiveCustomerId | `AD_User_ID` | N | JsonRequestContactUpsertItem.contactIdentifier | computed from Order.OrderCustomer.CustomerId or Order.customBPartnerId|
