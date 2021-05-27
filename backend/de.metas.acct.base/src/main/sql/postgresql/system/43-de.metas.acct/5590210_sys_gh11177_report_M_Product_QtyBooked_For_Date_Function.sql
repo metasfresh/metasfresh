@@ -35,7 +35,6 @@ WITH tmp_costdetails AS
                                      io.m_warehouse_id,
                                      (CASE WHEN cd.issotrx = 'Y' THEN ml_locFrom.m_warehouse_id ELSE ml_locTo.m_warehouse_id END)
                                  )                                                       AS m_warehouse_id,
-                             --
                              iol.m_inout_id,
                              cd.m_inoutline_id,
                              cd.m_movementline_id,
@@ -79,6 +78,8 @@ $$
 ;
 
 /*
+--How to run:
+
 SELECT *
 FROM "de_metas_acct".report_M_Product_QtyBooked_For_Date(1000002,
                                                          -1,
