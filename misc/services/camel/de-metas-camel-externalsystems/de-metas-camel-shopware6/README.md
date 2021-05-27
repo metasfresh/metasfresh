@@ -5,6 +5,7 @@ Values computed in Metasfresh
 
 computed from the following parameters set on window `541116 - ExternalSystem_Config_Shopware6`
   * `JsonExternalSystemRequest.parameters.JSONPathConstantBPartnerID`
+  * `JsonExternalSystemRequest.parameters.JSONPathConstantBPartnerLocationID`
   * `JsonExternalSystemRequest.parameters.JSONPathConstantSalesRepID`
   * `JsonExternalSystemRequest.parameters.ClientId`  
   * `JsonExternalSystemRequest.parameters.ClientSecret`  
