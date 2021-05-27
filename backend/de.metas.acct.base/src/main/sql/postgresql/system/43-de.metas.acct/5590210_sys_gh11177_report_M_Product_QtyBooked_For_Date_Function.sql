@@ -1,13 +1,14 @@
 DROP FUNCTION IF EXISTS "de_metas_acct".report_M_Product_QtyBooked_For_Date
-(p_M_Product_ID NUMERIC,
+(p_M_Product_ID   NUMERIC,
  p_m_warehouse_ID NUMERIC,
- p_date DATE);
+ p_date           DATE)
+;
 
 CREATE OR REPLACE FUNCTION "de_metas_acct".report_M_Product_QtyBooked_For_Date(
     p_M_CostElement_ID NUMERIC,
-    p_M_Product_ID NUMERIC,
-    p_m_warehouse_ID NUMERIC,
-    p_date DATE)
+    p_M_Product_ID     NUMERIC,
+    p_m_warehouse_ID   NUMERIC,
+    p_date             DATE)
     RETURNS table
             (
                 WarehouseName Text,
@@ -17,7 +18,6 @@ CREATE OR REPLACE FUNCTION "de_metas_acct".report_M_Product_QtyBooked_For_Date(
             )
 AS
 $$
-
 
 WITH tmp_costdetails AS
          (
@@ -31,7 +31,6 @@ WITH tmp_costdetails AS
                             io.m_warehouse_id,
                             (CASE WHEN cd.issotrx = 'Y' THEN ml_locFrom.m_warehouse_id ELSE ml_locTo.m_warehouse_id END)
                         )                                                       AS m_warehouse_id,
-                    --
                     iol.m_inout_id,
                     cd.m_inoutline_id,
                     cd.m_movementline_id,
@@ -50,30 +49,37 @@ WITH tmp_costdetails AS
              WHERE TRUE
                AND cd.m_costelement_id = p_M_CostElement_ID
                AND COALESCE(cd.m_inoutline_id, cd.m_movementline_id, cd.m_inventoryline_id) IS NOT NULL
+               AND (p_M_Product_ID <= 0 OR p_M_Product_ID = cd.m_product_id)
+               AND (
+                     (p_date IS NULL AND COALESCE(inv.movementdate, io.MovementDate, m.movementdate) <= NOW())
+                     OR
+                     COALESCE(inv.movementdate, io.MovementDate, m.movementdate) <= p_date
+                 )
+               AND (P_m_warehouse_id <= 0 OR
+                    P_m_warehouse_id = COALESCE(
+                            inv.m_warehouse_id,
+                            io.m_warehouse_id,
+                            (CASE WHEN cd.issotrx = 'Y' THEN ml_locFrom.m_warehouse_id ELSE ml_locTo.m_warehouse_id END)
+                        )
+                 )
          )
 
-
-SELECT wh.name  as WarehouseName,
-       p.value  as ProductValue,
-       p.name   as ProductName,
-
-       sum(qty) as qtyBook
-from m_product p
-         LEFT JOIN tmp_costdetails cd
-                   on p.m_product_id = cd.m_product_id
-                       AND (p_m_warehouse_ID <= 0 OR cd.m_warehouse_id = p_m_warehouse_ID)
-                       AND ((p_date IS NULL AND cd.movementDate <= now()) OR cd.movementDate <= p_date)
---
-         LEFT JOIN M_Warehouse wh on cd.M_Warehouse_ID = wh.M_Warehouse_ID
-WHERE (p_M_Product_ID <= 0 OR p.m_product_id = p_M_Product_ID)
-group by wh.name, p.value, p.name
-order by p.value
+SELECT wh.name  AS WarehouseName,
+       p.value  AS ProductValue,
+       p.name   AS ProductName,
+       SUM(qty) AS qtyBook
+FROM m_product p
+         JOIN tmp_costdetails cd
+              ON p.m_product_id = cd.m_product_id
+         JOIN M_Warehouse wh ON cd.M_Warehouse_ID = wh.M_Warehouse_ID
+GROUP BY wh.name, p.value, p.name
+ORDER BY p.value
     ;
-
 
 $$
     LANGUAGE sql
-    STABLE;
+    STABLE
+;
 
 /*
 How to run:
@@ -85,4 +91,3 @@ FROM "de_metas_acct".report_M_Product_QtyBooked_For_Date(  1000002,
     now()::date)
 ;
  */
-
