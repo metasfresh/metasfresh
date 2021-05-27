@@ -367,8 +367,8 @@ public class JsonRetrieverService
 			String greetingTrl = null;
 			if (contact.getGreetingId() != null)
 			{
-				final Greeting greeting = greetingRepository.getByIdAndLang(contact.getGreetingId(), language);
-				greetingTrl = greeting.getGreeting();
+				final Greeting greeting = greetingRepository.getById(contact.getGreetingId());
+				greetingTrl = greeting.getGreeting(language.getAD_Language());
 			}
 			return JsonResponseContact.builder()
 					.active(contact.isActive())

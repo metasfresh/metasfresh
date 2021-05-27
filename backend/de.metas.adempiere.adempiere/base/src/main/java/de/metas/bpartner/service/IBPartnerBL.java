@@ -172,6 +172,8 @@ public interface IBPartnerBL extends ISingletonService
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
 
+	void updateNameAndGreetingFromContacts(@NonNull BPartnerId bpartnerId);
+
 	@Value
 	@Builder
 	class RetrieveContactRequest

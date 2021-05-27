@@ -1,15 +1,8 @@
-package de.metas.greeting;
-
-import de.metas.i18n.ITranslatableString;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,16 +20,22 @@ import lombok.Value;
  * #L%
  */
 
-@Value
-@Builder
-public class Greeting
-{
-	@NonNull GreetingId id;
-	@NonNull String name;
-	@NonNull ITranslatableString greeting;
+package de.metas.bpartner.service.impl;
 
-	public String getGreeting(@NonNull final String adLanguage)
+import de.metas.bpartner.service.IBPartnerDAO;
+import lombok.Builder;
+import org.compiere.model.I_C_BPartner;
+
+class UpdateBPNameAndGreetingCommand
+{
+	private final IBPartnerDAO bpartnerDAO;
+
+	@Builder
+	private UpdateBPNameAndGreetingCommand(
+			final IBPartnerDAO bpartnerDAO,
+			final I_C_BPartner bpartner)
 	{
-		return getGreeting().translate(adLanguage);
+
+		this.bpartnerDAO = bpartnerDAO;
 	}
 }

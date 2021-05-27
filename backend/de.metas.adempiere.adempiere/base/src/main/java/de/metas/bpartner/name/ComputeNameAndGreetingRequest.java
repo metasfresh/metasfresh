@@ -1,15 +1,8 @@
-package de.metas.greeting;
-
-import de.metas.i18n.ITranslatableString;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,16 +20,28 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.bpartner.name;
+
+import com.google.common.collect.ImmutableList;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+
 @Value
 @Builder
-public class Greeting
+public class ComputeNameAndGreetingRequest
 {
-	@NonNull GreetingId id;
-	@NonNull String name;
-	@NonNull ITranslatableString greeting;
-
-	public String getGreeting(@NonNull final String adLanguage)
+	@Value
+	@Builder
+	public static class Contact
 	{
-		return getGreeting().translate(adLanguage);
+		String firstName;
+		String lastName;
+		int seqNo;
+		boolean isDefaultContact;
+		boolean isMembershipContact;
 	}
+
+	@Singular @NonNull ImmutableList<Contact> contacts;
 }

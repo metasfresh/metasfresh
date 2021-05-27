@@ -2,16 +2,23 @@ package de.metas.bpartner.service.impl;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.bpartner.name.BPartnerNameAndGreetingStrategies;
+import de.metas.bpartner.name.BPartnerNameAndGreetingStrategyId;
+import de.metas.bpartner.name.ComputeNameAndGreetingRequest;
+import de.metas.bpartner.name.DoNothingBPartnerNameAndGreetingStrategy;
+import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.greeting.GreetingId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
 import de.metas.lang.SOTrx;
@@ -32,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -56,11 +64,13 @@ public class BPartnerBL implements IBPartnerBL
 
 	private final IBPartnerDAO bpartnersRepo;
 	private final UserRepository userRepository;
+	private final IBPGroupDAO bpGroupDAO;
 
 	public BPartnerBL(@NonNull final UserRepository userRepository)
 	{
 		this.bpartnersRepo = Services.get(IBPartnerDAO.class);
 		this.userRepository = userRepository;
+		this.bpGroupDAO = Services.get(IBPGroupDAO.class);
 	}
 
 	@Override
@@ -706,4 +716,49 @@ public class BPartnerBL implements IBPartnerBL
 			throw new AdempiereException(MSG_SALES_REP_EQUALS_BPARTNER);
 		}
 	}
+
+	@Override
+	public void updateNameAndGreetingFromContacts(@NonNull final BPartnerId bpartnerId)
+	{
+		final I_C_BPartner bpartner = bpartnersRepo.getByIdInTrx(bpartnerId);
+		if (bpartner.isCompany())
+		{
+			return;
+		}
+
+		final BPGroupId bpGroupId = BPGroupId.ofRepoId(bpartner.getC_BP_Group_ID());
+		final BPartnerNameAndGreetingStrategyId strategyId = bpGroupDAO.getBPartnerNameAndGreetingStrategyId(bpGroupId);
+		if (DoNothingBPartnerNameAndGreetingStrategy.ID.equals(strategyId))
+		{
+			return;
+		}
+
+		final BPartnerNameAndGreetingStrategies partnerNameAndGreetingStrategies = SpringContextHolder.instance.getBean(BPartnerNameAndGreetingStrategies.class);
+
+		final NameAndGreeting nameAndGreeting = partnerNameAndGreetingStrategies.compute(
+				strategyId,
+				ComputeNameAndGreetingRequest.builder()
+						.contacts(bpartnersRepo.retrieveContacts(bpartner)
+								.stream()
+								.map(contact -> ComputeNameAndGreetingRequest.Contact.builder()
+										.firstName(contact.getFirstname())
+										.lastName(contact.getLastname())
+										.seqNo(contact.getAD_User_ID()) // TODO: introduce AD_User.SeqNo
+										.isDefaultContact(contact.isDefaultContact())
+										// .isMembershipContact(contact.isMembershipContact()) // TODO introduce AD_User.IsMembershipContact
+										.build())
+								.collect(ImmutableList.toImmutableList()))
+						.build())
+				.orElse(null);
+
+		if (nameAndGreeting == null)
+		{
+			return;
+		}
+
+		bpartner.setName(nameAndGreeting.getName());
+		bpartner.setC_Greeting_ID(GreetingId.toRepoId(nameAndGreeting.getGreetingId()));
+		bpartnersRepo.save(bpartner);
+	}
+
 }

@@ -1,25 +1,21 @@
 package de.metas.greeting;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.translate;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.cache.CCache;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Greeting;
 import org.springframework.stereotype.Repository;
 
-import de.metas.i18n.IModelTranslation;
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.Language;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.Value;
+import java.util.List;
 
 /*
  * #%L
@@ -46,92 +42,65 @@ import lombok.Value;
 @Repository
 public class GreetingRepository
 {
-	private static final Map<CacheKey, Greeting> cache = new HashMap<>();
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@Value
-	private static class CacheKey
+	private final CCache<Integer, GreetingsMap> cache = CCache.<Integer, GreetingsMap>builder()
+			.tableName(I_C_Greeting.Table_Name)
+			.build();
+
+	public Greeting getById(@NonNull final GreetingId id)
 	{
-		GreetingId greetingId;
-		Language language;
+		return getGreetingsMap().getById(id);
 	}
 
-	public Greeting getByIdAndLang(@NonNull final GreetingId id, @Nullable final Language language)
+	private GreetingsMap getGreetingsMap()
 	{
-		final I_C_Greeting greetingRecord = loadOutOfTrx(id, I_C_Greeting.class);
-
-		final I_C_Greeting greetingTrlRecord;
-		if (language == null)
-		{
-			greetingTrlRecord = translate(greetingRecord, I_C_Greeting.class);
-		}
-		else
-		{
-			greetingTrlRecord = translate(greetingRecord, I_C_Greeting.class, language.getAD_Language());
-		}
-
-		return Greeting.builder()
-				.id(id)
-				.language(language)
-				.greeting(greetingTrlRecord.getGreeting())
-				.build();
+		return cache.getOrLoad(0, this::retrieveGreetingsMap);
 	}
 
-	private void loadAll()
+	private GreetingsMap retrieveGreetingsMap()
 	{
-		final List<I_C_Greeting> greetingRecords = Services.get(IQueryBL.class)
+		final ImmutableList<Greeting> list = queryBL
 				.createQueryBuilder(I_C_Greeting.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.list(I_C_Greeting.class);
+				.stream(I_C_Greeting.class)
+				.map(GreetingRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 
-		final Language baseLanguage = Language.getBaseLanguage();
+		return new GreetingsMap(list);
+	}
 
-		for (final I_C_Greeting greetingRecord : greetingRecords)
+	private static Greeting fromRecord(@NonNull final I_C_Greeting record)
+	{
+		final IModelTranslationMap trlsMap = InterfaceWrapperHelper.getModelTranslationMap(record);
+
+		return Greeting.builder()
+				.id(GreetingId.ofRepoId(record.getC_Greeting_ID()))
+				.name(record.getName())
+				.greeting(trlsMap.getColumnTrl(I_C_Greeting.COLUMNNAME_Greeting, record.getGreeting()))
+				.build();
+	}
+
+	@EqualsAndHashCode
+	@ToString
+	private static class GreetingsMap
+	{
+		private final ImmutableMap<GreetingId, Greeting> greetingsById;
+
+		public GreetingsMap(@NonNull final List<Greeting> greetings)
 		{
-			final GreetingId greetingId = addGreetingRecordToCache(greetingRecord, baseLanguage);
-
-			final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(greetingRecord);
-			final Map<String, IModelTranslation> allTranslations = modelTranslationMap.getAllTranslations();
-
-			final Collection<IModelTranslation> values = allTranslations.values();
-
-			for (final IModelTranslation value : values)
-			{
-				addGreetingTrlToCache(greetingId, value);
-			}
+			greetingsById = Maps.uniqueIndex(greetings, Greeting::getId);
 		}
-	}
 
-	private GreetingId addGreetingRecordToCache(
-			@NonNull final I_C_Greeting greetingRecord,
-			@NonNull final Language baseLanguage)
-	{
-		final GreetingId greetingId = GreetingId.ofRepoId(greetingRecord.getC_Greeting_ID());
-
-		final CacheKey baseLangKey = new CacheKey(greetingId, baseLanguage);
-
-		final Greeting baseLangGreeting = Greeting.builder()
-				.id(greetingId)
-				.language(baseLanguage)
-				.greeting(greetingRecord.getGreeting())
-				.build();
-		cache.put(baseLangKey, baseLangGreeting);
-		return greetingId;
-	}
-
-	private void addGreetingTrlToCache(
-			@NonNull final GreetingId greetingId,
-			@NonNull final IModelTranslation value)
-	{
-		final Language language = Language.asLanguage(value.getAD_Language());
-
-		final CacheKey key = new CacheKey(greetingId, language);
-
-		final Greeting greeting = Greeting.builder()
-				.id(greetingId)
-				.language(language)
-				.greeting(value.getTranslation(I_C_Greeting.COLUMNNAME_Greeting))
-				.build();
-		cache.put(key, greeting);
+		public Greeting getById(@NonNull final GreetingId id)
+		{
+			final Greeting greeting = greetingsById.get(id);
+			if (greeting == null)
+			{
+				throw new AdempiereException("No greeting found for " + id);
+			}
+			return greeting;
+		}
 	}
 }

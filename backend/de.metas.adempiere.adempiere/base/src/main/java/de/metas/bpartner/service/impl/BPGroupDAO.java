@@ -2,6 +2,8 @@ package de.metas.bpartner.service.impl;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.name.BPartnerNameAndGreetingStrategyId;
+import de.metas.bpartner.name.DoNothingBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.logging.LogManager;
@@ -87,4 +89,13 @@ public class BPGroupDAO implements IBPGroupDAO
 		return getById(bpGroupId);
 	}
 
+	@Override
+	public BPartnerNameAndGreetingStrategyId getBPartnerNameAndGreetingStrategyId(@NonNull final BPGroupId bpGroupId)
+	{
+		final I_C_BP_Group bpGroup = getById(bpGroupId);
+
+		// TODO: introduce C_BP_Group.NameAndGreetingComputeStrategy dropdown list
+
+		return DoNothingBPartnerNameAndGreetingStrategy.ID;
+	}
 }
