@@ -13,6 +13,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_C_BPartner_Stats;
 
@@ -47,14 +48,18 @@ public class C_BPartner_AddRemoveCreditStopStatus extends JavaProcess implements
 		{
 			creditStatus = X_C_BPartner_Stats.SOCREDITSTATUS_CreditStop;
 		}
-		else
+		else if (SetCreditStatusEnum.Calculate.equals(setCreditStatus))
 		{
 			final CalculateSOCreditStatusRequest request = CalculateSOCreditStatusRequest.builder()
-						.stat(stats)
-						.forceCheckCreditStatus(true)
-						.date(SystemTime.asDayTimestamp())
-						.build();
+					.stat(stats)
+					.forceCheckCreditStatus(true)
+					.date(SystemTime.asDayTimestamp())
+					.build();
 			creditStatus = bpartnerStatsBL.calculateProjectedSOCreditStatus(request);
+		}
+		else
+		{
+			throw new AdempiereException("Invalid setCreditStatus value: " + setCreditStatus);
 		}
 
 		bpartnerStatsDAO.setSOCreditStatus(stats, creditStatus);
