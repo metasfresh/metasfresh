@@ -3343,4 +3343,12 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+
+	// FIXME: proper column names shall added
+	default void setIsInvoicingError(final boolean IsInvoicingError) {}
+	default boolean isInvoicingError() { return false; }
+
+	default void setInvoicingErrorMsg(final String InvoicingErrorMsg) {}
+	default String getInvoicingErrorMsg() { return null; }
 }

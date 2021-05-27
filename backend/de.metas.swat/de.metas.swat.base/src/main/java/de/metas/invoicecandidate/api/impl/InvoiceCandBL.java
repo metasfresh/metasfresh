@@ -1832,7 +1832,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void setError(
 			@NonNull final I_C_Invoice_Candidate ic,
-			final String errorMsg, final I_AD_Note note, final boolean askForDeleteRegeneration)
+			final String errorMsg,
+			final I_AD_Note note,
+			final boolean askForDeleteRegeneration)
 	{
 		final String errorMessageToUse;
 		if (!askForDeleteRegeneration)
@@ -1858,6 +1860,29 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			amendSchedulerResult(ic, errorMessageToUse);
 		}
+	}
+
+	@Override
+	public void setInvoicingErrorAndSave(
+			@NonNull final I_C_Invoice_Candidate ic,
+			final String errorMsg,
+			final I_AD_Note note)
+	{
+		setError(ic, errorMsg, note);
+
+		ic.setIsInvoicingError(true);
+		ic.setInvoicingErrorMsg(errorMsg);
+
+		invoiceCandDAO.save(ic);
+	}
+
+	@Override
+	public void clearInvoicingErrorAndSave(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		ic.setIsInvoicingError(false);
+		ic.setInvoicingErrorMsg(null);
+
+		invoiceCandDAO.save(ic);
 	}
 
 	// package-visible for testing
