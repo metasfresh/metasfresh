@@ -42,10 +42,15 @@ Order.effectiveCustomerId | `AD_User_ID` | N | JsonRequestContactUpsertItem.cont
 
 3. BPartnerLocation
 
-* `JsonOrderAddressAndCustomId`
-    * computed on Metasfresh based on `Order.OrderCustomer.Id` and `JsonExternalSystemRequest.parameters.JSONPathConstantBPartnerID`
-    * `JsonOrderAddress` mapping for a delivery Address from the last order with `Order.OrderCustomer.Id` for a specific bpartner
-    * `customId` for a specific bpartner location where an order was delivered
+3.1. For *delivery*, the information is pulled via the deliveries endpoint `api/v3/order/{{Order.id}}/deliveries`
+  * if more than one delivery is returned, the address is pulled from the last one, and a warning message is sent in metas
+  * note: path to shipping address: `data/shippingOrderAddress`
+
+3.2. For *billing*, the information is pulled from the endpoint: `api/v3/order-address/{{Order.billingAddressId}}` using the `Order.billingAddressId`
+
+3.3 `JsonOrderAddressAndCustomId` - computed for both delivery and shipping address and mapped to metas POJOs
+* `JsonOrderAddress` mapping for the last delivery address of the order (should always be just one, if more found, a warning message is computed)
+* `customId` custom identifier of the shopware resource
 
 Shopware | metasfresh-column | mandatory in mf | metasfresh-json | note |
 ---- | ---- | ---- | ---- | ---- |
@@ -75,7 +80,7 @@ Order.OrderCustomer.currencyId | `c_currency_id` | Y | JsonOLCandCreateRequest.c
 Order.OrderCustomer.id | `externalHeaderId` | Y | JsonOLCandCreateRequest.externalHeaderId | |
 Order.OrderCustomer.orderNumber |  `poreference` | Y | JsonOLCandCreateRequest.poReference | |
 ---- |  `C_BPartner_ID` | Y | JsonOLCandCreateRequest.bpartner | bpartner details computed from shippingBPartnerLocationExternalId based on address customId for a bpartner location |
----- |  `Bill_BPartner_ID` | Y | JsonOLCandCreateRequest.billBPartner | bpartner details computed from billingBPLocationExternalId based on address customId for a bpartner location |
+---- |  `Bill_BPartner_ID` | Y | JsonOLCandCreateRequest.billBPartner | bpartner details computed from billingBPLocationExternalId based on address customId from `JsonExternalSystemRequest.parameters.JSONPathConstantBPartnerLocationID` |
 Order.OrderCustomer.orderDate |  `DateOrdered` | N | JsonOLCandCreateRequest.dateOrdered | |
 ---- |  `datePromised` | Y | JsonOLCandCreateRequest.dateRequired | computed based on `Order.OrderCustomer.Id` last delivered date to a bpartner location |
 Order.OrderCustomer.updatedAt |  `dateCandidate` | N | JsonOLCandCreateRequest.dateCandidate | if Order.OrderCustomer.updatedAt is null it will be populated from Order.OrderCustomer.createdAt |
@@ -87,7 +92,7 @@ Order.OrderCustomer.updatedAt |  `dateCandidate` | N | JsonOLCandCreateRequest.d
 ---- |  `DeliveryRule` | N | JsonOLCandCreateRequest.deliveryRule | default value `A` |
 ---- |  `importWarningMessage` | N | JsonOLCandCreateRequest.importWarningMessage | set based on isMultipleShippingAddresses, if there are multiple shipping addresses for`Order.OrderCustomer.Id` for a bpartner location, if true the default value is set `MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE`, otherwise is `null` |
 ---- |  `m_shipper_id` | N | JsonOLCandCreateRequest.shipper | shippingMethodId computed from delivery address for `Order.OrderCustomer.Id` for a bpartner location |
-Order.salesRepId | ---- | N | JsonOLCandCreateRequest.salesPartner | based on `JsonExternalSystemRequest.parameters.JSONPathConstantSalesRepID` it provides a JsonSalesPartner with salesPartnerCode from Order.salesRepId |
+Order.salesRepId | `C_BPartner_SalesRep_ID` | N | JsonOLCandCreateRequest.salesPartner | based on `JsonExternalSystemRequest.parameters.JSONPathConstantSalesRepID` it provides a JsonSalesPartner with salesPartnerCode from Order.salesRepId |
 JsonExternalSystemShopware6ConfigMappings.mappings.docTypeOrder |  `c_doctypeorder_id` | Y | JsonOLCandCreateRequest.orderDocType | sets the JsonOrderDocType from docTypeOrder code |
 JsonExternalSystemShopware6ConfigMappings.mappings.paymentRule |  `paymentrule` | Y | JsonOLCandCreateRequest.paymentRule | sets the JSONPaymentRule from paymentRule code |
 JsonExternalSystemShopware6ConfigMappings.mappings.paymentTermValue |  `c_paymentterm_id` | N | JsonOLCandCreateRequest.paymentTerm | is paymentTermValue is defined then value "val-{{paymentTermValue}} is set" |
@@ -122,7 +127,7 @@ JsonTax.taxRate |  `externalLineId` | Y | JsonOLCandCreateRequest.externalLineId
 ---- |  `line` | N | JsonOLCandCreateRequest.line | default `null` |
 ---- | ---- | N | JsonOLCandCreateRequest.orderLineGroup | default `null` |
 ---- |  `description` | N | JsonOLCandCreateRequest.description | default `null` |
-ImportOrdersRouteContext.taxProductIdProvider |  `M_Product_ID` | N | JsonOLCandCreateRequest.productIdentifier | get productId by the given VAT rate|
+---- |  `M_Product_ID` | N | JsonOLCandCreateRequest.productIdentifier | Identifier of the product in question and the given VAT rate|
 JsonTax.price |  `m_productprice_id` | N | JsonOLCandCreateRequest.price | |
 ---- | `qtyentered` | Y | JsonOLCandCreateRequest.qty | default value `1` |
 
