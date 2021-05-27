@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.bpartner.model;
+package de.metas.bpartner.process;
 
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;

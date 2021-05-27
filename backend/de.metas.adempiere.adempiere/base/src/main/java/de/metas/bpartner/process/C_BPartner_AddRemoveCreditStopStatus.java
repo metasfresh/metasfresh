@@ -1,7 +1,6 @@
 package de.metas.bpartner.process;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.model.SetCreditStatusEnum;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
