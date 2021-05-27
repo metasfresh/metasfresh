@@ -118,7 +118,7 @@ public interface IPaymentBL extends ISingletonService
 
 	boolean isCashTrx(final I_C_Payment payment);
 
-	void fullyWriteOffPayments(Iterator<I_C_Payment> payments);
+	void fullyWriteOffPayments(Iterator<I_C_Payment> payments, Date writeOffDate);
 
 	/**
 	 * WriteOff given payment.

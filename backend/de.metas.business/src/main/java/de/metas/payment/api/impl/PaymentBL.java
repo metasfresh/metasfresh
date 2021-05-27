@@ -31,7 +31,6 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.api.BankAccountService;
-import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.FixedConversionRate;
@@ -67,7 +66,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.Mutable;
@@ -582,27 +580,29 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public void fullyWriteOffPayments(@NonNull final Iterator<I_C_Payment> payments)
+	public void fullyWriteOffPayments(@NonNull final Iterator<I_C_Payment> payments, @NonNull Date writeOffDate)
 	{
 		while (payments.hasNext())
 		{
 			final I_C_Payment payment = payments.next();
-
-			final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
-
-			final Money moneyToWriteOff = Money.of(paymentDAO.getAvailableAmount(paymentId),
-												   CurrencyId.ofRepoId(payment.getC_Currency_ID()));
-
-			logger.info("Writing off {} for the payment{}",
-						moneyToWriteOff,
-						payment);
-
-			final Date today = SystemTime.asDate();
-
-			final I_C_AllocationHdr allocationHdr = paymentWriteOff(payment, moneyToWriteOff.toBigDecimal(), today);
-
-			logger.info("C_AllocationHdr {} created for the payment {}", allocationHdr, payment);
+			fullyWriteOffPayment(payment, writeOffDate);
 		}
+	}
+
+	private void fullyWriteOffPayment(@NonNull final I_C_Payment payment, final @NonNull Date writeOffDate)
+	{
+		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+
+		final Money moneyToWriteOff = Money.of(paymentDAO.getAvailableAmount(paymentId),
+											   CurrencyId.ofRepoId(payment.getC_Currency_ID()));
+
+		logger.debug("Writing off {} for the payment{}",
+					 moneyToWriteOff,
+					 payment);
+
+		final I_C_AllocationHdr allocationHdr = paymentWriteOff(payment, moneyToWriteOff.toBigDecimal(), writeOffDate);
+
+		logger.debug("C_AllocationHdr {} created for the payment {}", allocationHdr, payment);
 	}
 
 	@Override

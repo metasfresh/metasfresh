@@ -22,6 +22,7 @@
 
 package de.metas.payment.process;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.process.JavaProcess;
@@ -30,6 +31,7 @@ import de.metas.util.Services;
 import org.compiere.model.I_C_Payment;
 
 import java.time.Instant;
+import java.util.Date;
 import java.util.Iterator;
 
 public class C_Payment_Employee_WriteOff extends JavaProcess
@@ -50,7 +52,9 @@ public class C_Payment_Employee_WriteOff extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final Iterator<I_C_Payment> paymentsForEmployees = paymentDAO.retrieveEmployeePaymentsForTimeframe(p_startDate, p_endDate);
-		paymentBL.fullyWriteOffPayments(paymentsForEmployees);
+		final Date today = SystemTime.asDate();
+
+		paymentBL.fullyWriteOffPayments(paymentsForEmployees, today);
 
 		return MSG_OK;
 	}
