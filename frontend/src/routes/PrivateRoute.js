@@ -42,8 +42,6 @@ const PrivateRoute = (props) => {
     }
   }, [location]);
 
-  useWhyDidYouUpdate('PrivateRoute', props);
-
   if (!isLoggedIn || authRequestPending()) {
     return null;
   }
