@@ -1,7 +1,5 @@
 package de.metas.bpartner.service.impl;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
@@ -35,7 +33,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -44,7 +41,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -422,109 +418,6 @@ public class BPartnerBL implements IBPartnerBL
 		return Check.isNotBlank(adLanguage)
 				? Optional.ofNullable(Language.getLanguage(adLanguage))
 				: Optional.empty();
-	}
-
-	@Override
-	public I_C_BPartner createFromTemplate(final I_C_BPartner_QuickInput template)
-	{
-		Check.assumeNotNull(template, "Parameter template is not null");
-		Check.assume(!template.isProcessed(), "{} not already processed", template);
-		Check.assume(template.getC_Location_ID() > 0, "{} > 0", template); // just to make sure&explicit
-
-		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
-
-		//
-		// BPartner
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
-		bpartner.setAD_Org_ID(template.getAD_Org_ID());
-		// bpartner.setValue(Value);
-		bpartner.setName(extractName(template));
-		bpartner.setName2(template.getName2());
-		bpartner.setIsCompany(template.isCompany());
-		bpartner.setCompanyName(template.getCompanyname());
-		bpartner.setC_BP_Group_ID(template.getC_BP_Group_ID());
-		bpartner.setAD_Language(template.getAD_Language());
-		// Customer
-		bpartner.setIsCustomer(template.isCustomer());
-		bpartner.setC_PaymentTerm_ID(template.getC_PaymentTerm_ID());
-		bpartner.setM_PricingSystem_ID(template.getM_PricingSystem_ID());
-		// Vendor
-		bpartner.setIsVendor(template.isVendor());
-		bpartner.setPO_PaymentTerm_ID(template.getPO_PaymentTerm_ID());
-		bpartner.setPO_PricingSystem_ID(template.getPO_PricingSystem_ID());
-		//
-		bpartnersRepo.save(bpartner);
-
-		template.setC_BPartner(bpartner);
-
-		//
-		// BPartner location
-		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
-		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		bpLocation.setC_Location_ID(template.getC_Location_ID());
-		bpLocation.setIsBillTo(true);
-		bpLocation.setIsBillToDefault(true);
-		bpLocation.setIsShipTo(true);
-		bpLocation.setIsShipToDefault(true);
-		bpartnersRepo.save(bpLocation);
-
-		template.setC_BPartner_Location(bpLocation);
-
-		final boolean isContactInfoProvided = !Check.isEmpty(template.getFirstname()) || !Check.isEmpty(template.getLastname());
-
-		if (isContactInfoProvided)
-		{
-			//
-			// BPartner contact
-			final I_AD_User bpContact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
-			bpContact.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-			bpContact.setC_Greeting(template.getC_Greeting());
-			bpContact.setFirstname(template.getFirstname());
-			bpContact.setLastname(template.getLastname());
-			bpContact.setPhone(template.getPhone());
-			bpContact.setEMail(template.getEMail());
-			bpContact.setIsNewsletter(template.isNewsletter());
-			bpContact.setC_BPartner_Location_ID(bpLocation.getC_BPartner_Location_ID());
-			if (template.isCustomer())
-			{
-				bpContact.setIsSalesContact(true);
-				bpContact.setIsSalesContact_Default(true);
-			}
-			if (template.isVendor())
-			{
-				bpContact.setIsPurchaseContact(true);
-				bpContact.setIsPurchaseContact_Default(true);
-			}
-			bpartnersRepo.save(bpContact);
-
-			template.setAD_User(bpContact);
-		}
-
-		template.setProcessed(true);
-		save(template);
-
-		return bpartner;
-	}
-
-	private void save(final I_C_BPartner_QuickInput template)
-	{
-		InterfaceWrapperHelper.saveRecord(template);
-	}
-
-	private final String extractName(final I_C_BPartner_QuickInput template)
-	{
-		if (template.isCompany())
-		{
-			return template.getCompanyname();
-		}
-		else
-		{
-			final String firstname = Strings.emptyToNull(template.getFirstname());
-			final String lastname = Strings.emptyToNull(template.getLastname());
-			return Joiner.on(" ")
-					.skipNulls()
-					.join(firstname, lastname);
-		}
 	}
 
 	@Override
