@@ -1,7 +1,6 @@
 import React from 'react';
 import { Redirect } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import qs from 'qs';
 import _ from 'lodash';
 
 import { useAuth } from '../hooks/useAuth';
@@ -11,16 +10,13 @@ const LoginRoute = (props) => {
   const auth = useAuth();
   const { isLoggedIn } = auth;
   const { location, splatPath, token } = props;
-  const query = qs.parse(location.search, { ignoreQueryPrefix: true });
   const splat = splatPath ? location.pathname.replace('/', '') : null;
-
-  console.log('<LoginRoute> params: ', isLoggedIn);
 
   if (isLoggedIn) {
     return <Redirect to="/" />;
   }
 
-  return <Login redirect={query.redirect} {...{ auth, splat, token }} />;
+  return <Login {...{ auth, splat, token }} />;
 };
 
 function propsAreEqual(prevProps, nextProps) {

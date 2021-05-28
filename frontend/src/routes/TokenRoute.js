@@ -12,14 +12,17 @@ import history from '../services/History';
  *
  * @param {string} - tokenId prop given as match.param to the /token path i.e  /token/xxxxxxx   (`xxxxxxx` will be the value of the tokenId )
  */
-const TokenRoute = (props) => {
-  const { tokenId } = props.match.params;
+const TokenRoute = ({ match }) => {
+  const { tokenId } = match.params;
   const auth = useAuth();
 
   auth
     .tokenLogin(tokenId)
     .then(() => history.push('/'))
-    .catch(() => history.push('/login?redirect=true'));
+    .catch(() => {
+      auth.clearRedirectRoute();
+      history.push('/login');
+    });
 
   return null;
 };

@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useContext, createContext } from 'react';
+import React, { useState, useContext, createContext } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { loginWithToken, localLoginRequest } from '../api';
+import { loginWithToken, localLoginRequest, logoutRequest } from '../api';
 import Auth from '../services/Auth';
 import { loginSuccess as loginAction } from '../actions/AppActions';
+import useSynchronousState from './useSynchronousState';
 
 const authContext = createContext();
 
@@ -25,57 +26,43 @@ function useProvideAuth() {
   const auth = new Auth();
   const dispatch = useDispatch();
   const [isLoggedIn, setLoggedIn] = useState(localStorage.isLogged);
-  const [authRequestPending, setAuthRequestPending] = useState(false);
+  const [authRequestPending, setAuthRequestPending] = useSynchronousState(
+    false
+  );
+  const [redirectRoute, set] = useState(null);
 
-  // in case we still have `isLoggedIn`
-  // useEffect(() => {
-  //   if (isLoggedIn) {
-  //     checkAuthentication();
-  //   }
-  // }, []);
+  const clearRedirectRoute = () => {
+    setRedirectRoute(null);
+  };
 
-  /*
-  if (!isLoggedIn) { //&& !authRequest) {
-  } else {
-    // if (!authRequest) {
-      // if (hasTutorial) {
-      //   dispatch(enableTutorial());
-      // }
-      console.log('PrivateRoute logged: ', props.location, pathname, loggedIn, authRequest)
+  const setRedirectRoute = (url) => {
+    set(url);
+  };
 
-      if (props.location.pathname !== '/logout') {
-        console.log('PrivateRoute clearNotifications')
-        // dispatch(clearNotifications());
-        // auth.loginSuccess();
-      } else {
-        console.log('PrivateRoute pathname equal logout: ', props.location.pathname, pathname)
-      }
-    // }
-  }
-  */
   const checkAuthentication = () => {
-    // if (!authRequestPending) {
-      setAuthRequestPending(true);
+    setAuthRequestPending(true);
 
-      return localLoginRequest().then((resp) => {
-        console.log('auth.checkAuthentication: ', resp.data)
-        setAuthRequestPending(false);
+    return localLoginRequest().then((resp) => {
+      setAuthRequestPending(false);
 
-        if (resp.data) {
-          _loginSuccess();
-        } else {
-          _logoutSuccess();
-        }
-      });
-    // }
+      if (resp.data) {
+        _loginSuccess();
+      } else {
+        _logoutSuccess();
+      }
 
-    // return Promise.resolve(false);
+      return Promise.resolve(resp.data);
+    });
   };
 
   const tokenLogin = (token) => {
-    setAuthRequestPending(true);
+    if (!authRequestPending()) {
+      setAuthRequestPending(true);
 
-    return loginWithToken(token).then(() => login());
+      return loginWithToken(token).then(async () => await login());
+    }
+
+    return Promise.resolve(false);
   };
 
   const _loginSuccess = () => {
@@ -100,17 +87,30 @@ function useProvideAuth() {
   };
 
   const logout = () => {
+    if (isLoggedIn) {
+      setAuthRequestPending(true);
+
+      return logoutRequest().finally(() => {
+        auth.close();
+        _logoutSuccess();
+        setAuthRequestPending(false);
+      });
+    }
+
     auth.close();
     _logoutSuccess();
   };
 
   return {
     isLoggedIn,
+    redirectRoute,
     auth,
     login,
     logout,
     tokenLogin,
     checkAuthentication,
     authRequestPending,
+    setRedirectRoute,
+    clearRedirectRoute,
   };
 }

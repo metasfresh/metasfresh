@@ -29,9 +29,9 @@ class Login extends Component {
   };
 
   render() {
-    const { redirect, auth, splat, token } = this.props;
+    const { auth, splat, token } = this.props;
     const isYourBrowserSupported = this.browserSupport('chrome');
-    const component = <LoginForm {...{ redirect, auth, token }} path={splat} />;
+    const component = <LoginForm {...{ auth, token }} path={splat} />;
 
     return (
       <div className="fullscreen">
@@ -51,12 +51,10 @@ class Login extends Component {
 
 /**
  * @typedef {object} Props Component props
- * @prop {string} redirect
  * @prop {string} splat
  * @prop {string} token
  */
 Login.propTypes = {
-  redirect: PropTypes.string,
   splat: PropTypes.string,
   token: PropTypes.string,
   auth: PropTypes.object,

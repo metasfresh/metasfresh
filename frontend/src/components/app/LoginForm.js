@@ -86,17 +86,17 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    */
   handleSuccess = () => {
-    const { redirect, history } = this.props;
+    const { auth, history } = this.props;
 
     getUserLang().then((response) => {
       //GET language shall always return a result
       Moment.locale(response.data['key']);
 
-      console.log('LoginForm: ', redirect, history.get);
+      const redirect = auth.redirectRoute;
 
       if (redirect) {
-        // history.goBack();
-        history.go(-2);
+        auth.clearRedirectRoute();
+        history.push(redirect);
       } else {
         history.push('/');
       }
@@ -109,11 +109,8 @@ class LoginForm extends Component {
    * @param {*} err
    */
   checkIfAlreadyLogged(err) {
-    console.log('LoginForm.checkIfAlreadyLogged')
     return localLoginRequest().then((response) => {
       if (response.data) {
-        // debugger;
-        console.log('LoginForm.checkIfAlreadyLogged...response: ', response.data)
         return history.push('/');
       }
 

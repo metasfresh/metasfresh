@@ -1,8 +1,7 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useDispatch } from 'react-redux';
-// import { useLocation } from 'react-router-dom';
 
 import '../assets/css/styles.css';
 import {
@@ -18,7 +17,7 @@ import {
 } from '../actions/AppActions';
 import { getAvailableLang } from '../api';
 import { noConnection } from '../actions/WindowActions';
-import PluginsRegistry from '../services/PluginsRegistry';
+// import PluginsRegistry from '../services/PluginsRegistry';
 import { useAuth } from '../hooks/useAuth';
 import useConstructor from '../hooks/useConstructor';
 import useWhyDidYouUpdate from '../hooks/useWhyDidYouUpdate';
@@ -35,24 +34,20 @@ import configureStore from '../store/configureStore';
 const hotkeys = generateHotkeys({ keymap, blacklist });
 
 const store = configureStore();
-const APP_PLUGINS = PLUGINS ? PLUGINS : [];
+// const APP_PLUGINS = PLUGINS ? PLUGINS : [];
 
 if (window.Cypress) {
   window.store = store;
 }
 
 const App = (props) => {
-  const [pluginsLoading, setPluginsLoading] = useState(!!APP_PLUGINS.length);
+  // const [pluginsLoading, setPluginsLoading] = useState(!!APP_PLUGINS.length);
   const auth = useAuth();
   const dispatch = useDispatch();
 
   useWhyDidYouUpdate('App', props);
 
   useConstructor(() => {
-    console.log('App.THIS: ', this);
-
-    // auth.checkAuthentication();
-
     // this.pluginsRegistry = new PluginsRegistry(this);
     // const pluginsRegistry = new PluginsRegistry(this);
     // window.META_HOST_APP = this;
@@ -68,8 +63,6 @@ const App = (props) => {
       },
       function(error) {
         const errorPrototype = Object.getPrototypeOf(error);
-
-        console.log('ERROR');
 
         // This is a canceled request error
         if (
@@ -89,20 +82,29 @@ const App = (props) => {
          * Authorization error
          */
         if (error.response.status == 401) {
-          dispatch(setProcessSaved());
-
-          console.log('401')
-
           if (
             !location.pathname.includes('login') &&
-            !auth.authRequestPending
+            !auth.authRequestPending()
           ) {
-            console.log('App.js error 401 logout i redirect: ', location.pathname, auth.authRequestPending);
+            dispatch(setProcessSaved());
 
+            auth.setRedirectRoute(location.pathname);
             auth.logout();
 
-            history.push('/login?redirect=true');
+            history.push('/login');
           }
+        } else if (
+          error.response.status === 500 &&
+          error.response.data.path.includes('/authenticate')
+        ) {
+          /*
+           * User already logged in
+           */
+          auth.checkAuthentication().then((authenticated) => {
+            if (authenticated) {
+              history.push(location.pathname);
+            }
+          });
         } else if (error.response.status == 503) {
           dispatch(noConnection(true));
         } else if (error.response.status != 404) {
@@ -228,18 +230,15 @@ const App = (props) => {
     //     });
     //   });
     // }
+
+    // const getRegistry = () => {
+    //   return pluginsRegistry;
+    // }
   }, []);
 
-  // dispatch(initKeymap(keymap));
-  // dispatch(initHotkeys(hotkeys));
-
-  // const getRegistry = () => {
-  //   return pluginsRegistry;
+  // if (APP_PLUGINS.length && pluginsLoading) {
+  //   return null;
   // }
-
-  if (APP_PLUGINS.length && pluginsLoading) {
-    return null;
-  }
 
   return (
     <ShortcutProvider>
