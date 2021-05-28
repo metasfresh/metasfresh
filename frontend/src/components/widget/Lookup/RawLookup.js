@@ -513,6 +513,10 @@ export class RawLookup extends Component {
     const adaptiveWidth = this.props.forcedWidth
       ? this.props.forcedWidth
       : this.wrapper && this.wrapper.offsetWidth;
+    const adaptiveHeight =
+      showDropdown && isOpen && !isInputEmpty && this.props.forceHeight
+        ? this.props.forceHeight - this.wrapper.offsetHeight
+        : undefined;
 
     return (
       <TetherComponent
@@ -588,9 +592,14 @@ export class RawLookup extends Component {
                   style={{
                     width: adaptiveWidth,
                     left:
-                      parseInt(adaptiveWidth) < LOOKUP_SHOW_MORE_PIXEL_NO
+                      parseInt(adaptiveWidth) > LOOKUP_SHOW_MORE_PIXEL_NO &&
+                      !(
+                        parseInt(adaptiveWidth) > 900 && this.inputSearch.value
+                      ) &&
+                      (this.inputSearch || !this.inputSearch.value)
                         ? '-2px'
                         : '0px',
+                    top: parseInt(adaptiveHeight) + 28 + 'px',
                   }}
                 >
                   {` ${counterpart.translate('widget.lookup.hasMoreResults')}`}
