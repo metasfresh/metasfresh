@@ -1,114 +1,67 @@
 import React, { useEffect } from 'react';
-import { Route, Redirect, useHistory } from 'react-router-dom';
+import { Route, useHistory } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import PropTypes from 'prop-types';
 import _ from 'lodash';
+import qs from 'qs';
 
-// import { localLoginRequest } from '../api';
-// import { clearNotifications, enableTutorial } from './actions/AppActions';
+import { clearNotifications, enableTutorial } from '../actions/AppActions';
+import { setBreadcrumb } from '../actions/MenuActions';
 import { useAuth } from '../hooks/useAuth';
+import useConstructor from '../hooks/useConstructor';
 import useWhyDidYouUpdate from '../hooks/useWhyDidYouUpdate';
 import ChildRoutes from './ChildRoutes';
 
-// let hasTutorial = false;
+let hasTutorial = false;
 
 const PrivateRoute = (props) => {
   const auth = useAuth();
+  const dispatch = useDispatch();
+  const history = useHistory();
   const { isLoggedIn, authRequestPending } = auth;
   const { location } = props;
+  const query = qs.parse(location.search, { ignoreQueryPrefix: true });
+  hasTutorial = query && typeof query.tutorial !== 'undefined';
 
-  const history = useHistory();
+  useConstructor(() => {
+    if (!isLoggedIn && !authRequestPending()) {
+      const url = location.pathname;
+      auth.checkAuthentication().then((authenticated) => {
+        if (!authenticated) {
+          auth.setRedirectRoute(url);
+          history.push('/login');
+        }
+      });
+    }
+  });
 
   useEffect(() => {
-    return history.listen((location) => {
-      console.log(`You changed the page to: ${location.pathname}`);
-    });
-  }, [history]);
+    if (location.pathname === '/') {
+      // make sure we clear the breadcrumbs once we are on the dashboard
+      dispatch(setBreadcrumb([]));
+    }
+  }, [location]);
 
   useWhyDidYouUpdate('PrivateRoute', props);
-  // const authRequired = (nextState, replace, callback) => {
-  //   hasTutorial =
-  //     nextState &&
-  //     nextState.location &&
-  //     nextState.location.query &&
-  //     typeof nextState.location.query.tutorial !== 'undefined';
 
-  // let pathname = location.pathname; //'/login';
-
-  if (authRequestPending) {
+  if (!isLoggedIn || authRequestPending()) {
     return null;
-    // return <Redirect to="/login?redirect=true" />;
   }
 
-  if (!isLoggedIn) {
-    auth.checkAuthentication((resp) => {
-      if (!resp.data) {
-        console.log('PrivateRoute.checkAuthentication redirect')
-        // return <Redirect to="/login?redirect=true" />;
-        history.push('/login?redirect=true');
-        // return null;
-      }
-    });
-  //   localLoginRequest().then((resp) => {
-  //     console.log('logindata: ', resp.data)
-  //     setAuthRequest(false);
+  if (isLoggedIn) {
+    if (hasTutorial) {
+      dispatch(enableTutorial());
+    }
 
-  //     if (resp.data) {
-  //       auth.loginSuccess();
-  //       console.log('logged in: ', props.location.pathname);
-  //       // callback(null, nextState.location.pathname);
-  //     } else {
-  //       console.log('no logindata, redirect to login ')
-  //       //redirect tells that there should be
-  //       //step back in history after login
-  //       pathname = '/login?redirect=true';
-  //     }
-  //   });
-  // }
-    // return null;
-  } else {
-  //   // if (!authRequest) {
-  //     // if (hasTutorial) {
-  //     //   dispatch(enableTutorial());
-  //     // }
-  //     console.log('PrivateRoute logged: ', props.location, pathname, loggedIn, authRequest)
-
-      if (location.pathname !== '/logout') {
-        console.log('PrivateRoute clearNotifications')
-        // dispatch(clearNotifications());
-  //       // auth.loginSuccess();
-      } else {
-        console.log('PrivateRoute pathname equal logout: ', location.pathname)
-      }
-  //   // }
+    if (location.pathname !== '/logout') {
+      dispatch(clearNotifications());
+    }
   }
 
-  console.log('<PrivateRoute> render: ', props, isLoggedIn, authRequestPending);
-
-  // return (
-  //   <Route
-  //     {...props}
-  //     render={() =>
-  //       loggedIn ? (
-  //         <ChildRoutes />
-  //       ) : (
-  //         <Redirect
-  //           to="/login"
-  //         />
-  //       )
-  //     }
-  //   />
-  // );
-  return (
-    <Route
-      {...props}
-      render={() =>
-        <ChildRoutes />
-      }
-    />
-  );
+  return <Route {...props} render={() => <ChildRoutes />} />;
 };
 
 function propsAreEqual(prevProps, nextProps) {
-  // console.log('PA propsAreEqual: ', prevProps, nextProps)
   const {
     computedMatch,
     location: { key },
@@ -119,21 +72,14 @@ function propsAreEqual(prevProps, nextProps) {
   } = nextProps;
 
   if (_.isEqual(computedMatch, nextComputedMatch) && key === nextKey) {
-    // console.log('Y1')
     return true;
   }
-  // if (prevProps.location.pathname === nextProps.location.pathname) {
-  //   console.log('Y2')
-  //   return true;
-  // }
-  console.log('PA N');
+
   return false;
 }
 
-const dupa = React.memo(PrivateRoute, propsAreEqual);
-
-PrivateRoute.whyDidYouRender = {
-  customName: 'PrivateRoute'
+PrivateRoute.propTypes = {
+  location: PropTypes.object.isRequired,
 };
 
-export default dupa;
+export default React.memo(PrivateRoute, propsAreEqual);
