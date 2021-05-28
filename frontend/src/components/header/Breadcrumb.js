@@ -27,11 +27,13 @@ class Breadcrumb extends Component {
   /**
    * @method linkToPage
    * @summary ToDo: Describe the method.
+   * @todo TODO: use history
+   *
    * @param {*} page
    */
   linkToPage = (page) => {
-    window.location = '/window/' + page;
-    console.log('2')
+    // history.push(`/window/${page}`);
+    window.location = `/window/${page}`;
   };
 
   /**
