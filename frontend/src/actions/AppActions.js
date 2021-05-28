@@ -1,7 +1,6 @@
 import axios from 'axios';
 import MomentTZ from 'moment-timezone';
 import numeral from 'numeral';
-import queryString from 'query-string';
 
 import history from '../services/History';
 import * as types from '../constants/ActionTypes';
@@ -75,23 +74,6 @@ function initNumeralLocales(lang, locale) {
       numeral.defaultFormat(LOCAL_NUMERAL_FORMAT.defaultFormat);
     }
   }
-}
-
-/**
- * @method updateUri
- * @summary Prepends viewId/page/sorting to the url
- * TODO: Move outside of action as it's not an action anymore
- */
-export function updateUri(pathname, query, updatedQuery) {
-  const fullPath = window.location.href;
-  const queryObject = {
-    ...query,
-    ...updatedQuery,
-  };
-  const queryUrl = queryString.stringify(queryObject);
-  const url = `${pathname}?${queryUrl}`;
-
-  !fullPath.includes('viewId') ? history.replace(url) : history.push(url);
 }
 
 // REDUX ACTIONS
@@ -176,8 +158,6 @@ export function loginSuccess(auth) {
           if (e.response) {
             let { status } = e.response;
             if (status === 401) {
-              console.log('redirect to main ?: ', e)
-              // window.location.href = '/';
               history.push('/');
             }
           }

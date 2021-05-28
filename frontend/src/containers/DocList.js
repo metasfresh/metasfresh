@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom';
 import qs from 'qs';
 import classnames from 'classnames';
 
-import { updateUri } from '../actions/AppActions';
+import { updateUri } from '../utils';
 import { getWindowBreadcrumb } from '../actions/MenuActions';
 import Container from '../components/Container';
 import DocumentList from './DocumentList';
@@ -21,17 +21,6 @@ const EMPTY_OBJECT = {};
  */
 class DocList extends PureComponent {
   state = {};
-
-  // shouldComponentUpdate(nextProps) {
-  //   const { query } = this.props;
-  //   const { query: nextQuery } = nextProps;
-
-  //   if (_.isEqual(query, nextQuery)) {
-  //     return false;
-  //   }
-
-  //   return true;
-  // }
 
   /**
    * getDerivedStateFromProps lifecycle - hold in the state of the component the last page
@@ -176,6 +165,7 @@ class DocList extends PureComponent {
  * @prop {object} query - routing query
  * @prop {object} rawModal
  * @prop {string} windowId
+ * @prop {object} location
  */
 DocList.propTypes = {
   includedView: PropTypes.object,
@@ -185,15 +175,14 @@ DocList.propTypes = {
   rawModal: PropTypes.object.isRequired,
   windowId: PropTypes.string,
   getWindowBreadcrumb: PropTypes.func.isRequired,
+  location: PropTypes.object.isRequired,
+  query: PropTypes.object.isRequired,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method.
- * @param {object} state
- */
-const mapStateToProps = (state) => {
+const mapStateToProps = (state, { location }) => {
+  const query = qs.parse(location.search);
   return {
+    query,
     modal: state.windowHandler.modal,
     rawModal: state.windowHandler.rawModal,
     overlay: state.windowHandler.overlay,

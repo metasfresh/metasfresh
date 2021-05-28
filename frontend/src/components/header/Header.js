@@ -86,7 +86,6 @@ class Header extends PureComponent {
     ) {
       // Need to reload page completely when current locale gets changed
       window.location.reload(false);
-      console.log('1')
     } else if (
       this.state.isUDOpen &&
       !prevState.isUDOpen &&
@@ -554,15 +553,11 @@ class Header extends PureComponent {
 
   /**
    * @method redirect
-   * @summary ToDo: Describe the method
-   * @param {*} where
+   * @summary Redirect to a page
+   * @param {string} where
    */
   redirect = (where) => {
-    const { history } = this.props;
-
-    console.log('HEADER REHIRECGT: ', history, where);
-
-    history.push(where);
+    this.props.history.push(where);
   };
 
   /**
@@ -942,6 +937,7 @@ class Header extends PureComponent {
  * @prop {*} siteName
  * @prop {*} windowId
  * @prop {bool} hasComments - used to indicate comments available for the details view
+ * @prop {object} history
  */
 Header.propTypes = {
   activeTab: PropTypes.any,
@@ -969,44 +965,9 @@ Header.propTypes = {
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   indicator: PropTypes.string,
   hasComments: PropTypes.bool,
+  history: PropTypes.object.isRequired,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method
- * @param {object} state
- */
-// const mapStateToProps = (state) => {
-//   const { master } = state.windowHandler;
-//   const { docActionElement, documentSummaryElement } = master.layout;
-//   const docSummaryData =
-//     documentSummaryElement &&
-//     master.data[documentSummaryElement.fields[0].field];
-
-//   return {
-//     inbox: state.appHandler.inbox,
-//     me: state.appHandler.me,
-//     pathname: state.routing.locationBeforeTransitions.pathname,
-//     plugins: state.pluginsHandler.files,
-//     indicator: state.windowHandler.indicator,
-//     docStatus: docActionElement,
-//     docSummaryData,
-//   };
-// };
-// =======
-// const mapStateToProps = (state) => ({
-//   inbox: state.appHandler.inbox,
-//   me: state.appHandler.me,
-//   pathname: state.router.location.pathname,
-//   plugins: state.pluginsHandler.files,
-// });
-// >>>>>>> 76ce88db54... - tmp move to react-router v5
-
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method
- * @param {object} state
- */
 const mapStateToProps = (state, ownProps) => {
   const { location } = ownProps;
   const { master } = state.windowHandler;
