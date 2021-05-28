@@ -93,7 +93,7 @@ BEGIN
 				UNION ALL
                  SELECT --
                         0                          beginningBalance,
-                        -1 * al.paymentwriteoffamt amount,
+                        al.paymentwriteoffamt      amount,
                         0                          endingBalance,
                         hal.dateacct               dateacct,
                         hal.description            description,
@@ -107,11 +107,11 @@ BEGIN
 						  join c_allocationhdr hal on al.c_allocationhdr_id= hal.c_allocationhdr_id
                  WHERE TRUE
                    AND p.c_bpartner_id = p_c_bpartner_id
-                   AND p.dateacct >= p_dateFrom
-                   AND p.dateacct <= p_dateTo
+                   AND hal.dateacct >= p_dateFrom
+                   AND hal.dateacct <= p_dateTo
                    AND p.isreceipt = p_isSoTrx
                    AND p.docstatus IN ('CO', 'CL')
-                   AND (COALESCE(p_ad_org_id, 0) <= 0 OR p.ad_org_id = p_ad_org_id)
+                   AND (COALESCE(p_ad_org_id, 0) <= 0 OR hal.ad_org_id = p_ad_org_id)
 		 )
     INSERT
     INTO temp_BusinessPartnerAccountSheetReport(beginningBalance,
@@ -187,7 +187,7 @@ BEGIN
                                                                    ELSE t.amount
                             END) amount
                  FROM temp_BusinessPartnerAccountSheetReport t
-                 INNER JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
+                 LEFT JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
              )
     UPDATE temp_BusinessPartnerAccountSheetReport t
     SET amount = c.amount
@@ -237,7 +237,7 @@ BEGIN
 					   t.amount                                                                                                     currentAmount,
 					   dt.docbasetype
 				FROM temp_BusinessPartnerAccountSheetReport t
-				INNER JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
+				LEFT JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
              ),
 
          finalData AS
