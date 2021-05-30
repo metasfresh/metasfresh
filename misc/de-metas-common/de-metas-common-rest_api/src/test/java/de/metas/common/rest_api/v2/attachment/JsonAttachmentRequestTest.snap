@@ -1,0 +1,21 @@
+de.metas.common.rest_api.v2.attachment.JsonAttachmentRequestTest.serializeDeserialize=[
+  {
+    "targets" : [
+      {
+        "externalReferenceType" : "type",
+        "externalReferenceIdentifier" : "identifier"
+      }
+    ],
+    "attachment" : {
+      "fileName" : "fileName",
+      "data" : "data",
+      "mimeType" : "mimeType",
+      "tags" : [
+        {
+          "name" : "name",
+          "value" : "value"
+        }
+      ]
+    }
+  }
+]
