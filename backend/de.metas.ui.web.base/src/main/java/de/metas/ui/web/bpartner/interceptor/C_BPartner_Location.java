@@ -22,9 +22,10 @@
 
 package de.metas.ui.web.bpartner.interceptor;
 
-import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
+import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_PostalChange;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
+import de.metas.location.PostalId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.ui.web.process.ProcessId;
@@ -33,9 +34,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONTriggerAction;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
-import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -44,10 +43,9 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Postal;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import java.util.Objects;
 
 @Interceptor(I_C_BPartner_Location.class)
 @Component
@@ -74,14 +72,30 @@ public class C_BPartner_Location
 		{
 			final LocationId newLocationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
 			final I_C_Location newLocation = locationDAO.getById(newLocationId);
-			final String newRegionName = newLocation.getRegionName();
+			final PostalId newPostalId = PostalId.ofRepoIdOrNull(newLocation.getC_Postal_ID());
+
+			if (newPostalId == null)
+			{
+				// nothing to do
+				return;
+			}
 
 			final I_C_BPartner_Location bpLocationOld = InterfaceWrapperHelper.createOld(bpLocation, I_C_BPartner_Location.class);
 			final LocationId oldLocationId = LocationId.ofRepoIdOrNull(bpLocationOld.getC_Location_ID());
 			final I_C_Location oldLocation = oldLocationId != null ? locationDAO.getById(oldLocationId) : null;
-			final String oldRegionName = oldLocation != null ? oldLocation.getRegionName() : null;
+			final PostalId oldPostalId = oldLocationId == null ? null : PostalId.ofRepoIdOrNull(oldLocation.getC_Postal_ID());
 
-			if (!Objects.equals(StringUtils.trimBlankToNull(oldRegionName), StringUtils.trimBlankToNull(newRegionName)))
+			if (newPostalId.equals(oldPostalId))
+			{
+				// nothing to do
+				return;
+			}
+
+			final I_C_Postal newPostalRecord = locationDAO.getPostalById(newPostalId);
+			final I_C_Postal oldPostalRecord = oldPostalId == null ? null : locationDAO.getPostalById(oldPostalId);
+
+			if (oldPostalRecord == null ||
+					newPostalRecord.getAD_Org_InCharge_ID() != oldPostalRecord.getAD_Org_InCharge_ID())
 			{
 				Execution.getCurrent().requestFrontendToTriggerAction(moveToAnotherOrgTriggerAction(bpLocation));
 			}
@@ -102,7 +116,7 @@ public class C_BPartner_Location
 
 	private ProcessId getMoveToAnotherOrgProcessId()
 	{
-		final AdProcessId adProcessId = adProcessDAO.retrieveProcessIdByClass(C_BPartner_MoveToAnotherOrg.class);
+		final AdProcessId adProcessId = adProcessDAO.retrieveProcessIdByClass(C_BPartner_MoveToAnotherOrg_PostalChange.class);
 		return ProcessId.ofAD_Process_ID(adProcessId);
 	}
 

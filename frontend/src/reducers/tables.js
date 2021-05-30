@@ -1,7 +1,7 @@
 import { produce, original } from 'immer';
 import { get, difference, forEach } from 'lodash';
 import { createSelector } from 'reselect';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 
 import * as types from '../constants/ActionTypes';
 import { doesSelectionExist } from '../utils/documentListHelper';
@@ -198,7 +198,7 @@ const reducer = produce((draftState, action) => {
 
       const newRows = rows.map((row) => {
         if (row[keyProperty] === rowId) {
-          return merge.recursive(true, row, change);
+          return merge(row, change);
         }
         return row;
       });

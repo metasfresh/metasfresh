@@ -3,7 +3,7 @@ package de.metas.ordercandidate.api;
 import com.google.common.base.MoreObjects;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
-import de.metas.document.references.related_documents.RelationTypeZoomProvidersFactory;
+import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvidersFactory;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.DeliveryRule;
@@ -91,9 +91,9 @@ final class RelationTypeOLCandSource implements OLCandSource
 		// FIXME: get rid of it
 		final PO processorPO = InterfaceWrapperHelper.getPO(InterfaceWrapperHelper.loadOutOfTrx(olCandProcessorId, I_C_OLCandProcessor.class));
 
-		final RelationTypeZoomProvidersFactory relationTypeZoomProvidersFactory = SpringContextHolder.instance.getBean(RelationTypeZoomProvidersFactory.class);
-		return relationTypeZoomProvidersFactory
-				.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
+		final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory = SpringContextHolder.instance.getBean(RelationTypeRelatedDocumentsProvidersFactory.class);
+		return relationTypeRelatedDocumentsProvidersFactory
+				.getRelatedDocumentsProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
 				.retrieveDestinations(Env.getCtx(), processorPO, I_C_OLCand.class, ITrx.TRXNAME_ThreadInherited)
 				.stream()
 				.map(this::toOLCand);

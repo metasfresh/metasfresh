@@ -163,8 +163,8 @@ class JsonSerializeDeserializeTests
 				.quantity(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build())
 				.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
 				.attributeSetInstance(JsonAttributeSetInstance.builder()
-						.attributeInstance(JsonAttributeInstance.builder().attributeName("attributeName_1").attributeCode("attributeCode_1").valueNumber(BigDecimal.TEN).build())
-						.attributeInstance(JsonAttributeInstance.builder().attributeName("attributeName_2").attributeCode("attributeCode_2").valueStr("valueStr").build())
+						.attributeInstance(JsonAttributeInstance.builder().attributeCode("attributeCode_1").valueNumber(BigDecimal.TEN).build())
+						.attributeInstance(JsonAttributeInstance.builder().attributeCode("attributeCode_2").valueStr("valueStr").build())
 						.build())
 				.shipperInternalSearchKey("shipperInternalSearchKey")
 				.deliveredQtyNetPrice(BigDecimal.ZERO)
@@ -284,7 +284,6 @@ class JsonSerializeDeserializeTests
 	public JsonAttributeInstance mockAttributeInstance()
 	{
 		return JsonAttributeInstance.builder()
-				.attributeName("name")
 				.valueStr("valueStr")
 				.valueNumber(BigDecimal.ONE)
 				.valueDate(LocalDate.of(2020, 7, 24))

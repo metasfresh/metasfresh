@@ -845,7 +845,6 @@ public class HUTransformService
 	 * @param sourceTuHU            the source TU line to process. Can be an aggregated HU and therefore represent many homogeneous TUs.
 	 * @param qtyTU                 the number of TUs to join or split onto the destination LU(s).
 	 * @param luPIItem              the LU's PI item (with type "HU") that specifies both the LUs' PI and the number of TUs that fit on one LU.
-	 * @param isOwnPackingMaterials
 	 */
 	public List<I_M_HU> tuToNewLUs(
 			@NonNull final I_M_HU sourceTuHU,

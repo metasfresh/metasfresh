@@ -31,8 +31,8 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v2.JsonPrice;
 import de.metas.common.rest_api.v2.JsonQuantity;
-import de.metas.common.rest_api.v2.JsonRequestAttributeInstance;
-import de.metas.common.rest_api.v2.JsonRequestAttributeSetInstance;
+import de.metas.common.rest_api.v2.JsonAttributeInstance;
+import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.APIResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -168,7 +168,7 @@ public class CreatePurchaseCandidate_StepDef
 	}
 
 	@Nullable
-	private JsonRequestAttributeInstance mapAttribute(final Map<String, String> map)
+	private JsonAttributeInstance mapAttribute(final Map<String, String> map)
 	{
 		final String attributeCode = DataTableUtil.extractStringOrNullForColumnName(map, "attributeCode");
 		final String valueStr = DataTableUtil.extractStringOrNullForColumnName(map, "valueStr");
@@ -178,7 +178,7 @@ public class CreatePurchaseCandidate_StepDef
 		{
 			return null;
 		}
-		return JsonRequestAttributeInstance.builder()
+		return JsonAttributeInstance.builder()
 				.attributeCode(attributeCode)
 				.valueStr(valueStr)
 				.valueDate(TimeUtil.asLocalDate(valueDate))
@@ -266,14 +266,14 @@ public class CreatePurchaseCandidate_StepDef
 				.collect(Collectors.toList());
 	}
 
-	private JsonRequestAttributeSetInstance mapAttributes(final List<Map<String, String>> asMaps)
+	private JsonAttributeSetInstance mapAttributes(final List<Map<String, String>> asMaps)
 	{
-		final List<JsonRequestAttributeInstance> attributes = asMaps.stream()
+		final List<JsonAttributeInstance> attributes = asMaps.stream()
 				.map(this::mapAttribute)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 
-		return JsonRequestAttributeSetInstance.builder()
+		return JsonAttributeSetInstance.builder()
 				.attributeInstances(attributes)
 				.build();
 	}

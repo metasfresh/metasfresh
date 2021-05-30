@@ -360,13 +360,13 @@ class NavigationTree extends Component {
 
         {/* sitemap items are listed using this */}
         <div className="column-wrapper">
-          <div className="sitemap-column">
+          <div className="sitemap-column-left">
             {sitemapLeftColItems &&
               sitemapLeftColItems.map((subitem, subindex) =>
                 this.renderMenuOverlayContainer(subitem, subindex)
               )}
           </div>
-          <div className="sitemap-column">
+          <div className="sitemap-column-right">
             {sitemapRightColItems &&
               sitemapRightColItems.map((subitem, subindex) =>
                 this.renderMenuOverlayContainer(subitem, subindex)

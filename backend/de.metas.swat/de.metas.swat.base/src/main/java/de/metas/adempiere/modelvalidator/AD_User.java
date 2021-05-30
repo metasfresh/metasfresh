@@ -68,7 +68,7 @@ public class AD_User
 	{
 		if (user.getC_Title_ID() > 0)
 		{
-			String title = extractTitle(user);
+			final String title = extractTitle(user);
 			user.setTitle(title);
 		}
 		else

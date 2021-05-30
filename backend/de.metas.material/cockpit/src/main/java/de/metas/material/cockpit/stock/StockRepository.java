@@ -1,11 +1,17 @@
 package de.metas.material.cockpit.stock;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Stream;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.cockpit.model.I_MD_Stock_WarehouseAndProduct_v;
+import de.metas.material.cockpit.model.I_T_MD_Stock_WarehouseAndProduct;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -19,19 +25,11 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_MD_Stock_WarehouseAndProduct_v;
-import de.metas.material.cockpit.model.I_T_MD_Stock_WarehouseAndProduct;
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
-import de.metas.material.commons.attributes.AttributesKeyQueryHelper;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -252,7 +250,7 @@ public class StockRepository
 		// Storage Attributes Key
 		{
 			final AttributesKeyQueryHelper<I_MD_Stock> helper = AttributesKeyQueryHelper.createFor(I_MD_Stock.COLUMN_AttributesKey);
-			final IQueryFilter<I_MD_Stock> attributesKeysFilter = helper.createFilter(ImmutableList.of(AttributesKeyPatterns.ofAttributeKey(query.getStorageAttributesKey())));
+			final IQueryFilter<I_MD_Stock> attributesKeysFilter = helper.createFilter(ImmutableList.of(AttributesKeyPatternsUtil.ofAttributeKey(query.getStorageAttributesKey())));
 			queryBuilder.filter(attributesKeysFilter);
 		}
 

@@ -88,6 +88,7 @@ public class ProductDAO implements IProductDAO
 	final static int ONE_YEAR_DAYS = 365;
 	final static int TWO_YEAR_DAYS = 730;
 	final static int THREE_YEAR_DAYS = 1095;
+	final static int FIVE_YEAR_DAYS = 1825;
 
 	private final CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId>builder()
 			.tableName(I_M_Product_Category.Table_Name)
@@ -545,6 +546,7 @@ public class ProductDAO implements IProductDAO
 				case X_M_Product.GUARANTEEMONTHS_12: return ONE_YEAR_DAYS;
 				case X_M_Product.GUARANTEEMONTHS_24: return TWO_YEAR_DAYS;
 				case X_M_Product.GUARANTEEMONTHS_36: return THREE_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_60: return FIVE_YEAR_DAYS;
 				default: return 0;
 			}
 		}

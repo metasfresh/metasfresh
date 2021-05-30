@@ -1106,9 +1106,9 @@ public class HUTransformServiceTests
 		final LUTUProducerDestinationTestSupport data = testsBase.getData();
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final I_M_HU realTu1 = handlingUnitsDAO.retrieveParent(testsBase.getData().mkRealCUWithTUandQtyCU("8"));
-		final I_M_HU realTu2 = handlingUnitsDAO.retrieveParent(testsBase.getData().mkRealCUWithTUandQtyCU("8"));
-		final I_M_HU realTu3 = handlingUnitsDAO.retrieveParent(testsBase.getData().mkRealCUWithTUandQtyCU("8"));
+		final I_M_HU realTu1 = handlingUnitsDAO.retrieveParent(data.mkRealCUWithTUandQtyCU("8"));
+		final I_M_HU realTu2 = handlingUnitsDAO.retrieveParent(data.mkRealCUWithTUandQtyCU("8"));
+		final I_M_HU realTu3 = handlingUnitsDAO.retrieveParent(data.mkRealCUWithTUandQtyCU("8"));
 
 		assertThat(ImmutableList.of(realTu1, realTu2, realTu3))
 				.allSatisfy(tu -> assertThat(tu.isHUPlanningReceiptOwnerPM()).isFalse());

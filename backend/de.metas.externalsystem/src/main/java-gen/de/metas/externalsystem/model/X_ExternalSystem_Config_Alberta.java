@@ -12,19 +12,19 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_Alberta extends org.compiere.model.PO implements I_ExternalSystem_Config_Alberta, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -563079533L;
+	private static final long serialVersionUID = -40681645L;
 
-	/** Standard Constructor */
-	public X_ExternalSystem_Config_Alberta (final Properties ctx, final int ExternalSystem_Config_Alberta_ID, @Nullable final String trxName)
-	{
-		super (ctx, ExternalSystem_Config_Alberta_ID, trxName);
-	}
+    /** Standard Constructor */
+    public X_ExternalSystem_Config_Alberta (final Properties ctx, final int ExternalSystem_Config_Alberta_ID, @Nullable final String trxName)
+    {
+      super (ctx, ExternalSystem_Config_Alberta_ID, trxName);
+    }
 
-	/** Load Constructor */
-	public X_ExternalSystem_Config_Alberta (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-	{
-		super (ctx, rs, trxName);
-	}
+    /** Load Constructor */
+    public X_ExternalSystem_Config_Alberta (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    {
+      super (ctx, rs, trxName);
+    }
 
 
 	/** Load Meta Data */
@@ -56,6 +56,21 @@ public class X_ExternalSystem_Config_Alberta extends org.compiere.model.PO imple
 	public String getBaseURL()
 	{
 		return get_ValueAsString(COLUMNNAME_BaseURL);
+	}
+
+	@Override
+	public void setC_Root_BPartner_ID (final int C_Root_BPartner_ID)
+	{
+		if (C_Root_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_Root_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Root_BPartner_ID, C_Root_BPartner_ID);
+	}
+
+	@Override
+	public int getC_Root_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Root_BPartner_ID);
 	}
 
 	@Override
@@ -101,7 +116,7 @@ public class X_ExternalSystem_Config_Alberta extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public void setExternalSystemValue (final @Nullable String ExternalSystemValue)
+	public void setExternalSystemValue (final String ExternalSystemValue)
 	{
 		set_Value (COLUMNNAME_ExternalSystemValue, ExternalSystemValue);
 	}

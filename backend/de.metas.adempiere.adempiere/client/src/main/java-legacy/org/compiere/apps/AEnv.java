@@ -597,16 +597,16 @@ public final class AEnv
 		zoom(RecordWindowFinder.newInstance(tableName, Record_ID));
 	}
 
-	private static void zoom(final RecordWindowFinder zoomInfo)
+	private static void zoom(final RecordWindowFinder recordWindowFinder)
 	{
-		final AdWindowId windowIdToUse = zoomInfo.findAdWindowId().orElse(null);
+		final AdWindowId windowIdToUse = recordWindowFinder.findAdWindowId().orElse(null);
 		if (windowIdToUse == null)
 		{
-			log.warn("No AD_Window_ID found to zoom for {}", zoomInfo);
+			log.warn("No AD_Window_ID found to zoom for {}", recordWindowFinder);
 			return;
 		}
 
-		final MQuery query = zoomInfo.createZoomQuery();
+		final MQuery query = recordWindowFinder.createZoomQuery();
 
 		// task #797 Make sure the window is displayed by the AWT event dispatching thread. The current thread might not be able to do it right.
 		SwingUtilities.invokeLater(() -> {

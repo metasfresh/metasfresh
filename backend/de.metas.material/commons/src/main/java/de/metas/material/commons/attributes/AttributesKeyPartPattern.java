@@ -378,7 +378,7 @@ final class AttributesKeyPartPattern implements Comparable<AttributesKeyPartPatt
 		}
 		else
 		{
-			throw new AdempiereException("Unknow type: " + type);
+			throw new AdempiereException("Unknown type: " + type);
 		}
 	}
 

@@ -1,13 +1,21 @@
 {
   "mappings": [
     {
-      "description": "this one will be ignored due to sw6PaymentMethod not matching",
+      "description": "this one will be ignored due to sw6PaymentMethod &&  sw6CustomerGroup not matching",
       "docTypeOrder": "ON",
       "paymentRule": "L",
       "paymentTermValue": "paymentTermValue",
       "seqNo": 10,
-      "sw6CustomerGroup": "test_group",
-      "sw6PaymentMethod": "sw6PaymentMethod"
+      "sw6CustomerGroup": "test_group1",
+      "sw6PaymentMethod": "sw6PaymentMethod",
+      "bpartnerSyncAdvice": {
+        "ifNotExists": "FAIL",
+        "ifExists": "UPDATE_MERGE"
+      },
+      "bpartnerLocationSyncAdvice": {
+        "ifNotExists": "FAIL",
+        "ifExists": "UPDATE_MERGE"
+      }
     },
     {
       "description": "this one should be considered",
@@ -16,7 +24,15 @@
       "paymentTermValue": "paymentTermValue",
       "seqNo": 20,
       "sw6CustomerGroup": "test_group",
-      "sw6PaymentMethod": "pay_pal_payment_handler"
+      "sw6PaymentMethod": "pay_pal_payment_handler",
+      "bpartnerSyncAdvice": {
+        "ifNotExists": "CREATE",
+        "ifExists": "DONT_UPDATE"
+      },
+      "bpartnerLocationSyncAdvice": {
+        "ifNotExists": "FAIL",
+        "ifExists": "DONT_UPDATE"
+      }
     }
   ]
 }

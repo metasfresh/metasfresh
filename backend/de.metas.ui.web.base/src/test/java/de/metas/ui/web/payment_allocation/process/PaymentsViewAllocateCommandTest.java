@@ -178,10 +178,10 @@ public class PaymentsViewAllocateCommandTest
 				.documentNo("paymentNo_" + paymentId.getRepoId())
 				.dateTrx(paymentDateTrx != null ? LocalDate.parse(paymentDateTrx) : this.paymentDateTrx)
 				.bpartner(IntegerLookupValue.of(bpartnerIdEffective.getRepoId(), "BPartner"))
-			.payAmt(payAmt)
-			.openAmt(payAmt)
-			.paymentDirection(direction)
-			.build();
+				.payAmt(payAmt)
+				.openAmt(payAmt)
+				.paymentDirection(direction)
+				.build();
 	}
 
 	@Builder(builderMethodName = "invoiceRow", builderClassName = "$InvoiceRowBuilder")
@@ -241,7 +241,8 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(payableDocument.isCreditMemo()).isEqualTo(false);
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(100, euroCurrencyId));
 			assertThat(payableDocument.getAmountsToAllocate())
-					.isEqualToComparingFieldByField(AllocationAmounts.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationAmounts.builder()
 							.payAmt(Money.of(100 - 20, euroCurrencyId))
 							.discountAmt(Money.of(20, euroCurrencyId))
 							.build());
@@ -257,7 +258,8 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(payableDocument.isCreditMemo()).isEqualTo(true);
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(-100, euroCurrencyId));
 			assertThat(payableDocument.getAmountsToAllocate())
-					.isEqualToComparingFieldByField(AllocationAmounts.ofPayAmt(Money.of(-100, euroCurrencyId)));
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(-100, euroCurrencyId)));
 		}
 
 		@Test
@@ -273,7 +275,8 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(payableDocument.isCreditMemo()).isEqualTo(false);
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(-100, euroCurrencyId));
 			assertThat(payableDocument.getAmountsToAllocate())
-					.isEqualToComparingFieldByField(AllocationAmounts.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationAmounts.builder()
 							.payAmt(Money.of(-100 + 20, euroCurrencyId))
 							.discountAmt(Money.of(-20, euroCurrencyId))
 							.build());
@@ -289,7 +292,8 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(payableDocument.isCreditMemo()).isEqualTo(true);
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(100, euroCurrencyId));
 			assertThat(payableDocument.getAmountsToAllocate())
-					.isEqualToComparingFieldByField(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationAmounts.ofPayAmt(Money.of(100, euroCurrencyId)));
 		}
 
 		@Nested
@@ -483,7 +487,8 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.isOK()).isTrue();
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
-					.isEqualToComparingFieldByField(AllocationLineCandidate.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToPayment)
 							.orgId(orgId)
 							.bpartnerId(bpartnerId)
@@ -517,7 +522,9 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.isOK()).isTrue();
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
-					.isEqualToComparingFieldByField(AllocationLineCandidate.builder()
+					.usingRecursiveComparison()
+					.ignoringFields("payableDocumentRef.modelRef", "paymentDocumentRef.modelRef")
+					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToCreditMemo)
 							.orgId(orgId)
 							.bpartnerId(bpartnerId)
@@ -555,7 +562,8 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.isOK()).isTrue();
 			assertThat(result.getCandidates()).hasSize(1);
 			assertThat(result.getCandidates().get(0))
-					.isEqualToComparingFieldByField(AllocationLineCandidate.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToCreditMemo)
 							.orgId(orgId)
 							.bpartnerId(bpartnerId)
@@ -595,7 +603,8 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.isOK()).isTrue();
 			assertThat(result.getCandidates()).hasSize(2);
 			assertThat(result.getCandidates().get(0))
-					.isEqualToComparingFieldByField(AllocationLineCandidate.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToCreditMemo)
 							.orgId(orgId)
 							.bpartnerId(bpartnerId)
@@ -609,7 +618,8 @@ public class PaymentsViewAllocateCommandTest
 							.payableOverUnderAmt(Money.of("80", euroCurrencyId))
 							.build());
 			assertThat(result.getCandidates().get(1))
-					.isEqualToComparingFieldByField(AllocationLineCandidate.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToPayment)
 							.orgId(orgId)
 							.bpartnerId(bpartnerId)
@@ -645,7 +655,8 @@ public class PaymentsViewAllocateCommandTest
 			assertThat(result.isOK()).isTrue();
 			assertThat(result.getCandidates()).hasSize(2);
 			assertThat(result.getCandidates().get(0))
-					.isEqualToComparingFieldByField(AllocationLineCandidate.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToCreditMemo)
 							.orgId(orgId)
 							.bpartnerId(bpartnerId)
@@ -659,7 +670,8 @@ public class PaymentsViewAllocateCommandTest
 							.payableOverUnderAmt(Money.of("80", euroCurrencyId))
 							.build());
 			assertThat(result.getCandidates().get(1))
-					.isEqualToComparingFieldByField(AllocationLineCandidate.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationLineCandidate.builder()
 							.type(AllocationLineCandidateType.InvoiceToPayment)
 							.orgId(orgId)
 							.bpartnerId(bpartnerId)
@@ -671,6 +683,42 @@ public class PaymentsViewAllocateCommandTest
 									.payAmt(Money.of("80", euroCurrencyId))
 									.build())
 							.paymentOverUnderAmt(Money.of("120", euroCurrencyId))
+							.build());
+		}
+
+		@Test
+		public void inboundPayment_outboundPayment()
+		{
+			final PaymentRow inboundPaymentRow = paymentRow().direction(PaymentDirection.INBOUND).payAmt(euro(100)).paymentDateTrx("2020-04-22").build();
+			final PaymentRow outboundPaymentRow = paymentRow().direction(PaymentDirection.OUTBOUND).payAmt(euro(100)).paymentDateTrx("2020-04-22").build();
+
+			final PaymentAllocationResult result = PaymentsViewAllocateCommand.builder()
+					.moneyService(moneyService)
+					.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+					.paymentRow(inboundPaymentRow)
+					.paymentRow(outboundPaymentRow)
+					.allowPurchaseSalesInvoiceCompensation(false) // not relevant
+					.build()
+					.run();
+
+			System.out.println(result);
+
+			assertThat(result.isOK()).isTrue();
+			assertThat(result.getCandidates()).hasSize(1);
+			assertThat(result.getCandidates().get(0))
+					.usingRecursiveComparison()
+					.isEqualTo(AllocationLineCandidate.builder()
+							.type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
+							.orgId(orgId)
+							.bpartnerId(bpartnerId)
+							.payableDocumentRef(toRecordRef(outboundPaymentRow))
+							.paymentDocumentRef(toRecordRef(inboundPaymentRow))
+							.dateTrx(LocalDate.parse("2020-04-22"))
+							.dateAcct(LocalDate.parse("2020-04-22"))
+							.amounts(AllocationAmounts.builder()
+									.payAmt(Money.of("-100", euroCurrencyId))
+									.build())
+							.payableOverUnderAmt(Money.of("0", euroCurrencyId))
 							.build());
 		}
 	}

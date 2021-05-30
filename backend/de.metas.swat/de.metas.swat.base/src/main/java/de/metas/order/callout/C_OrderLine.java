@@ -48,6 +48,12 @@ public class C_OrderLine
 		Services.get(IOrderLineBL.class).updatePrices(orderLineRecord); // see task 06727
 	}
 
+	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_Discount }, skipIfCopying = true, skipIfIndirectlyCalled = true)
+	public void SetIsManualDiscount(final I_C_OrderLine orderLine)
+	{
+		orderLine.setIsManualDiscount(true);
+	}
+
 	/**
 	 * Sets {@code C_OrderLine.IsManualPrice='Y'}, but only if the user "manually" edited the price.
 	 */
