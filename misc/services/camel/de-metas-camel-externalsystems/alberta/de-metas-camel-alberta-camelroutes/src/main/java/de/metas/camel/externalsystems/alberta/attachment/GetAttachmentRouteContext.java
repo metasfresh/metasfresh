@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de-metas-camel-alberta-camelroutes
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,35 +20,30 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2.attachment;
+package de.metas.camel.externalsystems.alberta.attachment;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.swagger.client.api.AttachmentApi;
+import io.swagger.client.api.DocumentApi;
+import io.swagger.client.model.Document;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NonNull;
-import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
-@Value
+@Data
 @Builder
-@JsonDeserialize(builder = JsonAttachment.JsonAttachmentBuilder.class)
-public class JsonAttachment
+public class GetAttachmentRouteContext
 {
 	@NonNull
-	@JsonProperty("fileName")
-	String fileName;
+	private final List<Document> documents;
 
 	@NonNull
-	@JsonProperty("data")
-	String data;
-
-	@Nullable
-	@JsonProperty("mimeType")
-	String mimeType;
+	private final String apiKey;
 
 	@NonNull
-	@JsonProperty("tags")
-	List<JsonTag> tags;
+	private final DocumentApi documentApi;
+
+	@NonNull
+	private final AttachmentApi attachmentApi;
 }
