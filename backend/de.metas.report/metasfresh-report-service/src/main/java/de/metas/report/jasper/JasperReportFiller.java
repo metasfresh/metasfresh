@@ -30,9 +30,12 @@ import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.metas.util.Services;
 import lombok.NonNull;
+import net.sf.jasperreports.engine.fill.JRSwapFileVirtualizer;
 import net.sf.jasperreports.engine.util.JRSwapFile;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -50,12 +53,18 @@ import net.sf.jasperreports.engine.JasperReport;
 	private static final transient Logger logger = LogManager.getLogger(JasperReportFiller.class);
 
 	private static final JasperReportFiller instance = new JasperReportFiller();
+	
+	private static final String SYSCONFIG_JRSWAP_FILE_VIRTUALIZER_ACTIVE = "de.metas.report.jasper.JRSwapFileVirtualizer.active";
+	private static final String SYSCONFIG_JRSWAP_FILE_VIRTUALIZER_MAX_SIZE = "de.metas.report.jasper.JRSwapFileVirtualizer.maxSize";
+	private static final String SYSCONFIG_JRSWAP_FILE_BLOCK_SIZE = "de.metas.report.jasper.JRSwapFile.blockSize";
+	private static final String SYSCONFIG_JRSWAP_FILE_MIN_GROW_COUNT = "de.metas.report.jasper.JRSwapFile.minGrowCount";
+	private static final String SYSCONFIG_JRSWAP_FILE_TEMP_DIR_PREFIX = "de.metas.report.jasper.JRSwapFile.tempDirPrefix";
 
 	public static JasperReportFiller getInstance()
 	{
 		return instance;
 	}
-
+	
 	private JasperReportFiller()
 	{
 	}
@@ -90,7 +99,7 @@ import net.sf.jasperreports.engine.JasperReport;
 				return JasperFillManager.fillReport(jasperReport, paramsFixed, connection);
 			}
 		}
-		catch (RuntimeException e)
+		catch (final RuntimeException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
 					.setParameter("jasperReport.name", jasperReport.getName());
@@ -105,13 +114,26 @@ import net.sf.jasperreports.engine.JasperReport;
 	// thx to https://piotrminkowski.wordpress.com/2017/06/12/generating-large-pdf-files-using-jasperreports/
 	private void setupAndPutVirtualizer(@NonNull final Map<String, Object> paramsFixed)
 	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		
+		final boolean useSwap = sysConfigBL.getBooleanValue(SYSCONFIG_JRSWAP_FILE_VIRTUALIZER_ACTIVE, true);
+		if (!useSwap)
+		{
+			return;
+		}
+
 		try
 		{
-			final Path tempDirWithPrefix = Files.createTempDirectory("jasperSwapFiles");
+			final Path tempDirWithPrefix = Files.createTempDirectory(sysConfigBL.getValue(SYSCONFIG_JRSWAP_FILE_TEMP_DIR_PREFIX));
 			final String directory = tempDirWithPrefix.toString();
-			paramsFixed.put(JRParameter.REPORT_VIRTUALIZER, new JRSwapFile(directory, 1024, 100));
+
+			final int maxSize = sysConfigBL.getIntValue(SYSCONFIG_JRSWAP_FILE_VIRTUALIZER_MAX_SIZE, 200);
+			final int blockSize = sysConfigBL.getIntValue(SYSCONFIG_JRSWAP_FILE_BLOCK_SIZE, 1024);
+			final int minGrowCount = sysConfigBL.getIntValue(SYSCONFIG_JRSWAP_FILE_MIN_GROW_COUNT, 100);
+			final boolean swapOwner = true;
+			paramsFixed.put(JRParameter.REPORT_VIRTUALIZER, new JRSwapFileVirtualizer(maxSize, new JRSwapFile(directory, blockSize, minGrowCount), swapOwner));
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
 					.setParameter("paramsFixed", paramsFixed);
@@ -123,7 +145,7 @@ import net.sf.jasperreports.engine.JasperReport;
 			final Map<String, Object> parameters,
 			final ClassLoader jasperLoader) throws JRException
 	{
-		Connection connection = null;
+		final Connection connection = null;
 		return fillReport(jasperReport, parameters, connection, jasperLoader);
 	}
 
