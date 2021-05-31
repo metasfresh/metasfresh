@@ -152,7 +152,7 @@ $F{org_bank_name}.equals("") ? ("" + (($F{org_bank_swift}==null || $F{org_bank_s
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<imageExpression><![CDATA["de/metas/generics/ReportBottom_Logo_ID.png"]]></imageExpression>
+				<imageExpression><![CDATA["de/metas/org/images/ReportBottom_Logo_ID.png"]]></imageExpression>
 			</image>
 		</band>
 	</title>
