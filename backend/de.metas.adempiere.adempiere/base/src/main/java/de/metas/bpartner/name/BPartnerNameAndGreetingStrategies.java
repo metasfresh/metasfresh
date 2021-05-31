@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -24,6 +24,7 @@ package de.metas.bpartner.name;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -49,7 +50,7 @@ public class BPartnerNameAndGreetingStrategies
 		logger.info("Strategies: {}", this.strategiesById);
 	}
 
-	public Optional<NameAndGreeting> compute(
+	public ExplainedOptional<NameAndGreeting> compute(
 			@NonNull final BPartnerNameAndGreetingStrategyId strategyId,
 			@NonNull final ComputeNameAndGreetingRequest request)
 	{

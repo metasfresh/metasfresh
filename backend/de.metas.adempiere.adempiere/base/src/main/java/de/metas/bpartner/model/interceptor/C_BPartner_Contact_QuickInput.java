@@ -42,16 +42,16 @@ public class C_BPartner_Contact_QuickInput
 		this.bpartnerQuickInputService = bpartnerQuickInputService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = {
-					I_C_BPartner_Contact_QuickInput.COLUMNNAME_Firstname,
-					I_C_BPartner_Contact_QuickInput.COLUMNNAME_Lastname,
-					I_C_BPartner_Contact_QuickInput.COLUMNNAME_IsMembershipContact,
-			})
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterSave(@NonNull final I_C_BPartner_Contact_QuickInput record)
 	{
-		final int bpartnerQuickInputId = record.getC_BPartner_QuickInput_ID();
-		bpartnerQuickInputService.updateFromContacts(bpartnerQuickInputId);
+		bpartnerQuickInputService.updateNameAndGreeting(record.getC_BPartner_QuickInput_ID());
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+	public void afterDelete(@NonNull final I_C_BPartner_Contact_QuickInput record)
+	{
+		bpartnerQuickInputService.updateNameAndGreeting(record.getC_BPartner_QuickInput_ID());
 	}
 
 }

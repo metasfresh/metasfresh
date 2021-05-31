@@ -24,6 +24,7 @@ package de.metas.bpartner.service;
 
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Contact_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
@@ -39,6 +40,16 @@ public class BPartnerQuickInputRepository
 	public void save(final I_C_BPartner_QuickInput template)
 	{
 		InterfaceWrapperHelper.saveRecord(template);
+	}
+
+	public I_C_BPartner_QuickInput getById(final int bpartnerQuickInputId)
+	{
+		final I_C_BPartner_QuickInput bpartnerQuickInput = InterfaceWrapperHelper.load(bpartnerQuickInputId, I_C_BPartner_QuickInput.class);
+		if (bpartnerQuickInput == null)
+		{
+			throw new AdempiereException("Not found " + I_C_BPartner_QuickInput.class.getSimpleName() + " for ID=" + bpartnerQuickInputId);
+		}
+		return bpartnerQuickInput;
 	}
 
 	public List<I_C_BPartner_Contact_QuickInput> retrieveContactsByQuickInputId(final int bpartnerQuickInputId)

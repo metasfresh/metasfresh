@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -22,13 +22,15 @@
 
 package de.metas.bpartner.name;
 
-import java.util.Optional;
+import de.metas.i18n.ExplainedOptional;
 
 // @Component // IMPORTANT: don't make it a Spring component
 public final class DoNothingBPartnerNameAndGreetingStrategy implements BPartnerNameAndGreetingStrategy
 {
 	public static final DoNothingBPartnerNameAndGreetingStrategy instance = new DoNothingBPartnerNameAndGreetingStrategy();
 	public static final BPartnerNameAndGreetingStrategyId ID = BPartnerNameAndGreetingStrategyId.ofString("DO_NOTHING");
+
+	public static ExplainedOptional<NameAndGreeting> EMPTY_RESULT = ExplainedOptional.emptyBecause("using DO_NOTHING strategy");
 
 	private DoNothingBPartnerNameAndGreetingStrategy() {}
 
@@ -39,8 +41,8 @@ public final class DoNothingBPartnerNameAndGreetingStrategy implements BPartnerN
 	}
 
 	@Override
-	public Optional<NameAndGreeting> compute(final ComputeNameAndGreetingRequest request)
+	public ExplainedOptional<NameAndGreeting> compute(final ComputeNameAndGreetingRequest request)
 	{
-		return Optional.empty();
+		return EMPTY_RESULT;
 	}
 }

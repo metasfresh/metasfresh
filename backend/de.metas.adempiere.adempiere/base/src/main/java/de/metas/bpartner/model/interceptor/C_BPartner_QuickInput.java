@@ -22,13 +22,30 @@
 
 package de.metas.bpartner.model.interceptor;
 
+import de.metas.bpartner.service.BPartnerQuickInputService;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_BPartner_Contact_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
+import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 @Component
 @Interceptor(I_C_BPartner_QuickInput.class)
 public class C_BPartner_QuickInput
 {
+	private final BPartnerQuickInputService bpartnerQuickInputService;
+
+	public C_BPartner_QuickInput(
+			@NonNull final BPartnerQuickInputService bpartnerQuickInputService)
+	{
+		this.bpartnerQuickInputService = bpartnerQuickInputService;
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	public void afterSave(@NonNull final I_C_BPartner_QuickInput record)
+	{
+		bpartnerQuickInputService.updateNameAndGreeting(record.getC_BPartner_QuickInput_ID());
+	}
 }

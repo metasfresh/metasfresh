@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -22,11 +22,13 @@
 
 package de.metas.bpartner.name;
 
+import de.metas.i18n.ExplainedOptional;
+
 import java.util.Optional;
 
 public interface BPartnerNameAndGreetingStrategy
 {
 	BPartnerNameAndGreetingStrategyId getId();
 
-	Optional<NameAndGreeting> compute(ComputeNameAndGreetingRequest request);
+	ExplainedOptional<NameAndGreeting> compute(ComputeNameAndGreetingRequest request);
 }

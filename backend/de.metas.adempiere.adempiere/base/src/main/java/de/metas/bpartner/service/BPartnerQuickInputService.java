@@ -22,8 +22,15 @@
 
 package de.metas.bpartner.service;
 
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.name.BPartnerNameAndGreetingStrategies;
+import de.metas.bpartner.name.BPartnerNameAndGreetingStrategyId;
 import de.metas.bpartner.name.ComputeNameAndGreetingRequest;
+import de.metas.bpartner.name.DoNothingBPartnerNameAndGreetingStrategy;
+import de.metas.bpartner.name.NameAndGreeting;
+import de.metas.greeting.GreetingId;
+import de.metas.i18n.ExplainedOptional;
+import de.metas.logging.LogManager;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -37,6 +44,7 @@ import org.compiere.model.I_C_BPartner_Contact_QuickInput;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -44,10 +52,12 @@ import java.util.List;
 @Service
 public class BPartnerQuickInputService
 {
+	private static final Logger logger = LogManager.getLogger(BPartnerQuickInputService.class);
 	private final BPartnerQuickInputRepository bpartnerQuickInputRepository;
 	private final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IUserBL userBL = Services.get(IUserBL.class);
+	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 
 	public BPartnerQuickInputService(
 			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository, final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies)
@@ -56,33 +66,63 @@ public class BPartnerQuickInputService
 		this.bpartnerNameAndGreetingStrategies = bpartnerNameAndGreetingStrategies;
 	}
 
-	public void updateFromContacts(final int bpartnerQuickInputId)
+	public void updateNameAndGreeting(final int bpartnerQuickInputId)
 	{
-		final List<I_C_BPartner_Contact_QuickInput> contacts = bpartnerQuickInputRepository.retrieveContactsByQuickInputId(bpartnerQuickInputId);
-		if (contacts.isEmpty())
+		final I_C_BPartner_QuickInput bpartner = bpartnerQuickInputRepository.getById(bpartnerQuickInputId);
+		computeBPartnerNameAndGreeting(bpartner)
+				.ifPresent(nameAndGreeting -> {
+					bpartner.setName(nameAndGreeting.getName());
+					bpartner.setC_Greeting_ID(GreetingId.toRepoId(nameAndGreeting.getGreetingId()));
+					bpartnerQuickInputRepository.save(bpartner);
+				})
+				.ifAbsent(reason -> logger.debug("Skip updating {} because: {}", bpartner, reason.getDefaultValue()));
+	}
+
+	public ExplainedOptional<NameAndGreeting> computeBPartnerNameAndGreeting(final I_C_BPartner_QuickInput bpartner)
+	{
+		if (bpartner.isCompany())
 		{
-			return;
+			return ExplainedOptional.of(NameAndGreeting.builder()
+					.name(bpartner.getCompanyname())
+					.greetingId(GreetingId.ofRepoIdOrNull(bpartner.getC_Greeting_ID())) // preserve current greeting
+					.build());
 		}
-
-		final ComputeNameAndGreetingRequest.ComputeNameAndGreetingRequestBuilder requestBuilder = ComputeNameAndGreetingRequest.builder();
-		for (int i = 0; i < contacts.size(); i++)
+		else
 		{
-			final I_C_BPartner_Contact_QuickInput contact = contacts.get(0);
-			requestBuilder.contact(
-					ComputeNameAndGreetingRequest.Contact.builder()
-							.firstName(contact.getFirstname())
-							.lastName(contact.getLastname())
-							.seqNo(i + 1)
-							.isDefaultContact(i == 0)
-							.isMembershipContact(contact.isMembershipContact())
-							.build());
+			final BPGroupId bpGroupId = BPGroupId.ofRepoIdOrNull(bpartner.getC_BP_Group_ID());
+			if (bpGroupId == null)
+			{
+				return ExplainedOptional.emptyBecause("C_BP_Group_ID was not set");
+			}
+
+			final BPartnerNameAndGreetingStrategyId strategyId = bpGroupDAO.getBPartnerNameAndGreetingStrategyId(bpGroupId);
+			if (DoNothingBPartnerNameAndGreetingStrategy.ID.equals(strategyId))
+			{
+				return DoNothingBPartnerNameAndGreetingStrategy.EMPTY_RESULT;
+			}
+
+			final List<I_C_BPartner_Contact_QuickInput> contacts = bpartnerQuickInputRepository.retrieveContactsByQuickInputId(bpartner.getC_BPartner_QuickInput_ID());
+			if (contacts.isEmpty())
+			{
+				return ExplainedOptional.emptyBecause("no contacts");
+			}
+
+			final ComputeNameAndGreetingRequest.ComputeNameAndGreetingRequestBuilder requestBuilder = ComputeNameAndGreetingRequest.builder();
+			for (int i = 0; i < contacts.size(); i++)
+			{
+				final I_C_BPartner_Contact_QuickInput contact = contacts.get(0);
+				requestBuilder.contact(
+						ComputeNameAndGreetingRequest.Contact.builder()
+								.firstName(contact.getFirstname())
+								.lastName(contact.getLastname())
+								.seqNo(i + 1)
+								.isDefaultContact(i == 0)
+								.isMembershipContact(contact.isMembershipContact())
+								.build());
+			}
+
+			return bpartnerNameAndGreetingStrategies.compute(strategyId, requestBuilder.build());
 		}
-
-		bpartnerNameAndGreetingStrategies.compute(
-				strategyId,
-				requestBuilder.build());
-
-
 	}
 
 	/**
