@@ -22,6 +22,7 @@
 
 package de.metas.audit.request.log;
 
+import de.metas.audit.request.ApiRequestAuditId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -96,6 +97,32 @@ public class ApiAuditRequestLogDAO
 			}
 
 			pstmt.executeBatch();
+		}
+		catch (final SQLException ex)
+		{
+			throw new DBException(ex, sql);
+		}
+		finally
+		{
+			DB.close(pstmt);
+		}
+	}
+
+	public void deleteLogsByApiRequestId(@NonNull final ApiRequestAuditId apiRequestAuditId)
+	{
+
+		final String sql =
+				"DELETE FROM " + I_API_Request_Audit_Log.Table_Name
+				+ " WHERE " + I_API_Request_Audit_Log.COLUMNNAME_API_Request_Audit_ID + " = ?";
+
+		PreparedStatement pstmt = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+
+			DB.setParameters(pstmt,apiRequestAuditId.getRepoId());
+
+			pstmt.execute();
 		}
 		catch (final SQLException ex)
 		{

@@ -165,6 +165,27 @@ public interface I_API_Response_Audit
 	String COLUMNNAME_HttpCode = "HttpCode";
 
 	/**
+	 * Set Http headers.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHttpHeaders (@Nullable java.lang.String HttpHeaders);
+
+	/**
+	 * Get Http headers.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHttpHeaders();
+
+	ModelColumn<I_API_Response_Audit, Object> COLUMN_HttpHeaders = new ModelColumn<>(I_API_Response_Audit.class, "HttpHeaders", null);
+	String COLUMNNAME_HttpHeaders = "HttpHeaders";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

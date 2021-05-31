@@ -29,9 +29,9 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_API_Audit_Config;
 import org.springframework.stereotype.Repository;
-
 
 @Repository
 public class ApiAuditConfigRepository
@@ -48,6 +48,14 @@ public class ApiAuditConfigRepository
 				.stream()
 				.map(this::buildConfigFromRecord)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ApiAuditConfig getConfigById(@NonNull final ApiAuditConfigId apiAuditConfigId)
+	{
+		final I_API_Audit_Config config = InterfaceWrapperHelper.load(apiAuditConfigId, I_API_Audit_Config.class);
+
+		return buildConfigFromRecord(config);
 	}
 
 	@NonNull

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.audit.request;
+package de.metas.audit.common;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -31,13 +31,13 @@ import org.springframework.util.LinkedMultiValueMap;
 
 @Value
 @Builder
-@JsonDeserialize(builder = RequestHeaders.RequestHeadersBuilder.class)
-public class RequestHeaders
+@JsonDeserialize(builder = HttpHeadersWrapper.HttpHeadersWrapperBuilder.class)
+public class HttpHeadersWrapper
 {
 	@NonNull
-	public static RequestHeaders of(final @NonNull LinkedMultiValueMap<String, String> keyValueHeaders)
+	public static HttpHeadersWrapper of(final @NonNull LinkedMultiValueMap<String, String> keyValueHeaders)
 	{
-		return new RequestHeaders(keyValueHeaders);
+		return new HttpHeadersWrapper(keyValueHeaders);
 	}
 
 	@JsonProperty("keyValueHeaders")

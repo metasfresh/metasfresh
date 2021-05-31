@@ -54,6 +54,9 @@ public class ApiResponseAudit
 	@Nullable
 	Instant time;
 
+	@Nullable
+	String httpHeaders;
+
 	@NonNull
 	public ApiResponseAuditId getIdNotNull()
 	{

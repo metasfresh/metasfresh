@@ -22,8 +22,12 @@
 
 package de.metas.util.web.filter;
 
+import de.metas.audit.ApiAuditLoggable;
 import de.metas.audit.config.ApiAuditConfig;
+import de.metas.audit.request.ApiRequestAuditId;
+import de.metas.util.Loggables;
 import de.metas.util.web.audit.ApiAuditService;
+import org.adempiere.util.lang.IAutoCloseable;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -58,10 +62,23 @@ public class ApiAuditFilter implements Filter
 
 		try
 		{
+			final Optional<ApiRequestAuditId> requestAuditIdOpt = apiAuditService.extractApiRequestAuditId(httpServletRequest);
+
+			// dev-note: this means the request was already filtered once
+			if (requestAuditIdOpt.isPresent())
+			{
+				final ApiAuditLoggable apiAuditLoggable = apiAuditService.createLogger(requestAuditIdOpt.get());
+
+				try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(apiAuditLoggable))
+				{
+					chain.doFilter(request, response);
+					return;
+				}
+			}
+
 			final Optional<ApiAuditConfig> matchingAuditConfig = apiAuditService.getMatchingAuditConfig(httpServletRequest);
 
-			if (apiAuditService.wasAlreadyFiltered(httpServletRequest)
-					|| !matchingAuditConfig.isPresent())
+			if (!matchingAuditConfig.isPresent())
 			{
 				chain.doFilter(request, response);
 				return;

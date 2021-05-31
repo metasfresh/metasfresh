@@ -22,19 +22,26 @@
 
 package de.metas.audit.response;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.audit.request.ApiRequestAuditId;
 import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_API_Response_Audit;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class ApiResponseAuditRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@NonNull
 	public ApiResponseAudit save(@NonNull final ApiResponseAudit apiResponseAudit)
 	{
@@ -45,6 +52,7 @@ public class ApiResponseAuditRepository
 		record.setBody(apiResponseAudit.getBody());
 		record.setHttpCode(apiResponseAudit.getHttpCode());
 		record.setTime(TimeUtil.asTimestamp(apiResponseAudit.getTime()));
+		record.setHttpHeaders(apiResponseAudit.getHttpHeaders());
 
 		saveRecord(record);
 
@@ -57,6 +65,24 @@ public class ApiResponseAuditRepository
 		final I_API_Response_Audit record = InterfaceWrapperHelper.load(apiResponseAuditId, I_API_Response_Audit.class);
 
 		return recordToResponseAudit(record);
+	}
+
+	@NonNull
+	public List<ApiResponseAudit> getByRequestId(@NonNull final ApiRequestAuditId apiRequestAuditId)
+	{
+		return queryBL.createQueryBuilder(I_API_Response_Audit.class)
+				.addEqualsFilter(I_API_Response_Audit.COLUMNNAME_API_Request_Audit_ID, apiRequestAuditId.getRepoId())
+				.create()
+				.stream()
+				.map(this::recordToResponseAudit)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void delete(@NonNull final ApiResponseAuditId apiResponseAuditId)
+	{
+		final I_API_Response_Audit record = InterfaceWrapperHelper.load(apiResponseAuditId, I_API_Response_Audit.class);
+
+		InterfaceWrapperHelper.deleteRecord(record);
 	}
 
 	@NonNull

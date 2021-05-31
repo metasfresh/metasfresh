@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_API_Request_Audit extends org.compiere.model.PO implements I_API_Request_Audit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1252483475L;
+	private static final long serialVersionUID = 896569292L;
 
     /** Standard Constructor */
     public X_API_Request_Audit (final Properties ctx, final int API_Request_Audit_ID, @Nullable final String trxName)
@@ -239,7 +239,7 @@ public class X_API_Request_Audit extends org.compiere.model.PO implements I_API_
 	}
 
 	@Override
-	public void setTime (final @Nullable java.sql.Timestamp Time)
+	public void setTime (final java.sql.Timestamp Time)
 	{
 		set_Value (COLUMNNAME_Time, Time);
 	}

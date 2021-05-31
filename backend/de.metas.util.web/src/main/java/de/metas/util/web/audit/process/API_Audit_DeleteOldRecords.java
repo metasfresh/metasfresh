@@ -20,28 +20,19 @@
  * #L%
  */
 
-package de.metas.util.web.audit;
+package de.metas.util.web.audit.process;
 
-import lombok.NonNull;
-import lombok.Value;
-import org.springframework.http.HttpHeaders;
+import de.metas.audit.ApiAuditCleanUpService;
+import de.metas.process.JavaProcess;
+import org.compiere.SpringContextHolder;
 
-import javax.annotation.Nullable;
-
-@Value
-public class ApiResponse
+public class API_Audit_DeleteOldRecords extends JavaProcess
 {
-	int statusCode;
-
-	@Nullable
-	HttpHeaders httpHeaders;
-
-	@Nullable
-	Object body;
-
-	@NonNull
-	public static ApiResponse of(final int statusCode, @Nullable final HttpHeaders httpHeaders, @Nullable final Object body)
+	@Override
+	protected String doIt() throws Exception
 	{
-		return new ApiResponse(statusCode, httpHeaders, body);
+		SpringContextHolder.instance.getBean(ApiAuditCleanUpService.class).deleteProcessedRequests();
+
+		return MSG_OK;
 	}
 }

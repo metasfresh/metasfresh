@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_API_Response_Audit extends org.compiere.model.PO implements I_API_Response_Audit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -79991166L;
+	private static final long serialVersionUID = 1611110786L;
 
     /** Standard Constructor */
     public X_API_Response_Audit (final Properties ctx, final int API_Response_Audit_ID, @Nullable final String trxName)
@@ -98,6 +98,18 @@ public class X_API_Response_Audit extends org.compiere.model.PO implements I_API
 	public java.lang.String getHttpCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_HttpCode);
+	}
+
+	@Override
+	public void setHttpHeaders (final @Nullable java.lang.String HttpHeaders)
+	{
+		set_Value (COLUMNNAME_HttpHeaders, HttpHeaders);
+	}
+
+	@Override
+	public java.lang.String getHttpHeaders() 
+	{
+		return get_ValueAsString(COLUMNNAME_HttpHeaders);
 	}
 
 	@Override

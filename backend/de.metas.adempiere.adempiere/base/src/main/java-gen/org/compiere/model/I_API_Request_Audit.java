@@ -370,19 +370,19 @@ public interface I_API_Request_Audit
 	 * Set Time.
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setTime (@Nullable java.sql.Timestamp Time);
+	void setTime (java.sql.Timestamp Time);
 
 	/**
 	 * Get Time.
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getTime();
+	java.sql.Timestamp getTime();
 
 	ModelColumn<I_API_Request_Audit, Object> COLUMN_Time = new ModelColumn<>(I_API_Request_Audit.class, "Time", null);
 	String COLUMNNAME_Time = "Time";

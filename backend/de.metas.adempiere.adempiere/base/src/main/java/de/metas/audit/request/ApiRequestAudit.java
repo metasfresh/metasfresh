@@ -25,6 +25,7 @@ package de.metas.audit.request;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.audit.HttpMethod;
+import de.metas.audit.common.HttpHeadersWrapper;
 import de.metas.audit.config.ApiAuditConfigId;
 import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
@@ -40,7 +41,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class ApiRequestAudit
 {
 	@Nullable // null, when the entity was not persisted yet
@@ -78,7 +79,7 @@ public class ApiRequestAudit
 	@Nullable
 	String remoteHost;
 
-	@Nullable
+	@NonNull
 	Instant time;
 
 	@Nullable
@@ -98,7 +99,7 @@ public class ApiRequestAudit
 	}
 
 	@NonNull
-	public Optional<RequestHeaders> getRequestHeaders(@NonNull final ObjectMapper objectMapper)
+	public Optional<HttpHeadersWrapper> getRequestHeaders(@NonNull final ObjectMapper objectMapper)
 	{
 		if (Check.isBlank(httpHeaders))
 		{
@@ -107,7 +108,7 @@ public class ApiRequestAudit
 
 		try
 		{
-			return Optional.of(objectMapper.readValue(httpHeaders, RequestHeaders.class));
+			return Optional.of(objectMapper.readValue(httpHeaders, HttpHeadersWrapper.class));
 		}
 		catch (final JsonProcessingException e)
 		{
