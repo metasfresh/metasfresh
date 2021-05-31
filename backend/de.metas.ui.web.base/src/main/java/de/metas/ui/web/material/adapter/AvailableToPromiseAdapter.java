@@ -8,7 +8,6 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.adapter.AvailabilityInfoResultForWebui.AvailabilityInfoResultForWebuiBuilder;
 import de.metas.util.Services;
@@ -121,7 +120,7 @@ public class AvailableToPromiseAdapter
 				: ImmutableAttributeSet.EMPTY;
 
 		return AvailabilityInfoResultForWebui.Group.builder()
-				.productId(ProductId.ofRepoId(commonsResultGroup.getProductId()))
+				.productId(commonsResultGroup.getProductId())
 				.qty(quantity)
 				.type(type)
 				.attributes(attributes)

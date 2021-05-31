@@ -47,9 +47,6 @@ class UpdateShipmentScheduleRequest
 	ZonedDateTime deliveryDate;
 
 	@Nullable
-	BigDecimal qtyToDeliverInStockingUOM;
-
-	@Nullable
 	LocationBasicInfo bPartnerLocation;
 
 	@Nullable
@@ -68,7 +65,6 @@ class UpdateShipmentScheduleRequest
 	public UpdateShipmentScheduleRequest(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final ZonedDateTime deliveryDate,
-			@Nullable final BigDecimal qtyToDeliverInStockingUOM,
 			@Nullable final LocationBasicInfo bPartnerLocation,
 			@Nullable final String bPartnerCode,
 			@Nullable final DeliveryRule deliveryRule,
@@ -81,7 +77,6 @@ class UpdateShipmentScheduleRequest
 		}
 
 		if (deliveryDate == null
-				&& qtyToDeliverInStockingUOM == null
 				&& bPartnerLocation == null
 				&& Check.isBlank(bPartnerCode)
 				&& Check.isEmpty(attributes)
@@ -93,7 +88,6 @@ class UpdateShipmentScheduleRequest
 
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.deliveryDate = deliveryDate;
-		this.qtyToDeliverInStockingUOM = qtyToDeliverInStockingUOM;
 		this.bPartnerLocation = bPartnerLocation;
 		this.bPartnerCode = bPartnerCode;
 		this.attributes = attributes;

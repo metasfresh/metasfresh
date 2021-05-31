@@ -4,7 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.archive.api.IBPartnerBL;
 import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.model.I_AD_User;
+import org.compiere.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.util.Services;

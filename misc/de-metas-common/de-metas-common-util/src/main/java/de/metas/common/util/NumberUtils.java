@@ -67,9 +67,13 @@ public class NumberUtils
 		else
 		{
 			final String valueStr = value.toString();
+			if(EmptyUtil.isBlank(valueStr))
+			{
+				return null;
+			}
 			try
 			{
-				return new BigDecimal(valueStr);
+				return new BigDecimal(valueStr.trim());
 			}
 			catch (final NumberFormatException numberFormatException)
 			{

@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipmentschedule.async;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 
@@ -57,15 +58,18 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage_NOTUSED, final String localTrxName_NOTUSED)
 	{
+		final IParams parameters = getParameters();
+		
 		// Create candidates
-		final List<ShipmentScheduleWithHU> shipmentSchedulesWithHU = retrieveCandidates();
+		final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride = extractScheduleId2QtyToDeliverOverride(parameters);
+		
+		final List<ShipmentScheduleWithHU> shipmentSchedulesWithHU = retrieveCandidates(scheduleId2QtyToDeliverOverride);
 		if (shipmentSchedulesWithHU.isEmpty())
 		{
 			// this is a frequent case and we received no complaints so far. So don't throw an exception, just log it
 			Loggables.withLogger(logger, Level.DEBUG).addLog("No unprocessed candidates were found");
 		}
-
-		final IParams parameters = getParameters();
+		
 		final boolean isCompleteShipments = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsCompleteShipments);
 		final boolean isShipmentDateToday = parameters.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsShipmentDateToday);
 
@@ -75,18 +79,18 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final boolean onlyUsePicked = quantityTypeToUse.isOnlyUsePicked();
 
-		final boolean isCreatPackingLines = !onlyUsePicked;
+		final boolean isCreatePackingLines = !onlyUsePicked;
 
 		final CalculateShippingDateRule calculateShippingDateRule = isShipmentDateToday
 				? CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY
 				: CalculateShippingDateRule.NONE;
 
 		final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = extractScheduleId2ExternalInfo(parameters);
-
+		
 		final InOutGenerateResult result = shipmentScheduleBL
 				.createInOutProducerFromShipmentSchedule()
 				.setProcessShipments(isCompleteShipments)
-				.setCreatePackingLines(isCreatPackingLines)
+				.setCreatePackingLines(isCreatePackingLines)
 				.computeShipmentDate(calculateShippingDateRule)
 				.setScheduleIdToExternalInfo(scheduleId2ExternalInfo)
 				// Fail on any exception, because we cannot create just a part of those shipments.
@@ -113,7 +117,25 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 						ShipmentScheduleExternalInfo.builder().documentNo(advisedDocumentNo).build());
 			}
 		}
+		return result.build();
+	}
 
+	@NonNull
+	private ImmutableMap<ShipmentScheduleId, BigDecimal> extractScheduleId2QtyToDeliverOverride(@NonNull final IParams parameters)
+	{
+		final ImmutableMap.Builder<ShipmentScheduleId, BigDecimal> result = ImmutableMap.builder();
+		final Collection<String> parameterNames = parameters.getParameterNames();
+		for (final String parameterName : parameterNames)
+		{
+			if (parameterName.startsWith(ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override))
+			{
+				final BigDecimal qtyToDeliverOverride = parameters.getParameterAsBigDecimal(parameterName);
+				final String shipmentScheduleIdStr = parameterName.substring(ShipmentScheduleWorkPackageParameters.PARAM_PREFIX_QtyToDeliver_Override.length());
+				result.put(
+						ShipmentScheduleId.ofRepoId(Integer.parseInt(shipmentScheduleIdStr)),
+						qtyToDeliverOverride);
+			}
+		}
 		return result.build();
 	}
 
@@ -133,7 +155,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	 * <p>
 	 * Note that required and missing handling units can be "picked" on the fly.
 	 */
-	private List<ShipmentScheduleWithHU> retrieveCandidates()
+	private List<ShipmentScheduleWithHU> retrieveCandidates(@NonNull final ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleId2QtyToDeliverOverride)
 	{
 		final List<I_M_ShipmentSchedule> shipmentSchedules = retrieveShipmentSchedules();
 		if (shipmentSchedules.isEmpty())
@@ -145,7 +167,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
 				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
-		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(shipmentSchedules, quantityTypeToUse);
+		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(shipmentSchedules, quantityTypeToUse, scheduleId2QtyToDeliverOverride);
 	}
 
 	private List<I_M_ShipmentSchedule> retrieveShipmentSchedules()

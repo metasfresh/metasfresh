@@ -1,19 +1,6 @@
 package de.metas.ui.web.document.filter.provider.standard;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DisplayType;
-
-import java.util.Objects;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.view.DefaultView;
@@ -24,6 +11,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -35,6 +23,15 @@ import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DisplayType;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -121,7 +118,7 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 	}
 
 	@Override
-	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
+	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
 		return fieldLookupDescriptor.getLookupDataSourceFetcher().retrieveLookupValueById(evalCtx);
 	}
@@ -139,13 +136,16 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 	}
 
 	@Override
-	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		final DefaultView view = getView(evalCtx);
 
 		return view.getFacetFiltersCacheMap()
 				.computeIfAbsent(filterId, () -> createFacetFilterViewCache(view))
-				.getAvailableValues();
+				.getAvailableValues()
+				.pageByOffsetAndLimit(
+						evalCtx.getOffset(0),
+						evalCtx.getLimit(Integer.MAX_VALUE));
 	}
 
 	private FacetFilterViewCache createFacetFilterViewCache(final DefaultView view)

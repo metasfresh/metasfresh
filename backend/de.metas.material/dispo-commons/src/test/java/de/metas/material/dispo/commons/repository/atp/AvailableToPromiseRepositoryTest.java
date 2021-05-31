@@ -1,5 +1,28 @@
 package de.metas.material.dispo.commons.repository.atp;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
+import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
+import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
+import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.event.EventTestHelper;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
 import static de.metas.material.event.EventTestHelper.BEFORE_BEFORE_NOW;
 import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
@@ -9,29 +32,6 @@ import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.material.commons.attributes.AttributesKeyPattern;
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
-import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
-import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.model.I_MD_Candidate_ATP_QueryResult;
-import de.metas.material.dispo.model.X_MD_Candidate;
-import de.metas.material.event.EventTestHelper;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 
 /*
  * #%L
@@ -181,7 +181,7 @@ public class AvailableToPromiseRepositoryTest
 		final AvailableToPromiseQuery query1 = AvailableToPromiseQuery
 				.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
+				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
 				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_1))
 				.build();
 		multiQueryBuilder.query(query1);
@@ -189,7 +189,7 @@ public class AvailableToPromiseRepositoryTest
 		final AvailableToPromiseQuery query2 = AvailableToPromiseQuery
 				.builder()
 				.productId(PRODUCT_ID)
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
+				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(STORAGE_ATTRIBUTES_KEY))
 				.bpartner(BPartnerClassifier.specific(BPARTNER_ID_2))
 				.build();
 		multiQueryBuilder.query(query2);
@@ -204,7 +204,7 @@ public class AvailableToPromiseRepositoryTest
 		assertThat(resultGroups).hasSize(2);
 
 		assertThat(resultGroups)
-				.allSatisfy(group -> assertThat(group.getProductId()).isEqualTo(PRODUCT_ID));
+				.allSatisfy(group -> assertThat(group.getProductId().getRepoId()).isEqualTo(PRODUCT_ID));
 
 		assertThat(resultGroups)
 				.filteredOn(group -> group.getBpartner().equals(BPartnerClassifier.specific(BPARTNER_ID_1)))

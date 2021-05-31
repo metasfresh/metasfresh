@@ -22,6 +22,7 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocation.BPartnerLocationBuilder;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.common.util.StringUtils;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_BPartner;
@@ -54,6 +55,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static de.metas.util.StringUtils.trimBlankToNull;
+import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_Yes;
 
 /*
  * #%L
@@ -352,6 +354,7 @@ final class BPartnerCompositesLoader
 				.lastName(trimBlankToNull(contactRecord.getLastname()))
 				.name(trimBlankToNull(contactRecord.getName()))
 				.newsletter(contactRecord.isNewsletter())
+				.invoiceEmailEnabled(StringUtils.toBoolean(contactRecord.getIsInvoiceEmailEnabled(), null))
 				.phone(trimBlankToNull(contactRecord.getPhone()))
 				.mobilePhone(trimBlankToNull(contactRecord.getMobilePhone()))
 				.description(trimBlankToNull(contactRecord.getDescription()))

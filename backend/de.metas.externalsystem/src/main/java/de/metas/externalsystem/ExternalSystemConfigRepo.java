@@ -23,6 +23,7 @@
 package de.metas.externalsystem;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.StringUtils;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
@@ -43,6 +44,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
+
+import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_Yes;
 
 @Repository
 public class ExternalSystemConfigRepo
@@ -255,6 +258,11 @@ public class ExternalSystemConfigRepo
 				.sw6PaymentMethod(record.getSW6_Payment_Method())
 				.description(record.getDescription())
 				.seqNo(record.getSeqNo())
+				.isInvoiceEmailEnabled(StringUtils.toBoolean(record.getIsInvoiceEmailEnabled(), null))
+				.bpartnerIfExists(record.getBPartner_IfExists())
+				.bpartnerIfNotExists(record.getBPartner_IfNotExists())
+				.bpartnerLocationIfExists(record.getBPartnerLocation_IfExists())
+				.bpartnerLocationIfNotExists(record.getBPartnerLocation_IfNotExists())
 				.build();
 	}
 

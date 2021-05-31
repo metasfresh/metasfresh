@@ -282,6 +282,13 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void setError(I_C_Invoice_Candidate ic, Throwable e);
 
+	void setInvoicingErrorAndSave(
+			I_C_Invoice_Candidate ic,
+			String errorMsg,
+			I_AD_Note note);
+
+	void clearInvoicingErrorAndSave(@NonNull I_C_Invoice_Candidate ic);
+
 	/**
 	 * Retrieve tax override if set, C_Tax otherwise
 	 *
