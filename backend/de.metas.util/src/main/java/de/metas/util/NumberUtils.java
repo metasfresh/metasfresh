@@ -148,7 +148,7 @@ public final class NumberUtils
 		{
 			return defaultValue;
 		}
-		else if (value instanceof BigDecimal)
+		if (value instanceof BigDecimal)
 		{
 			return (BigDecimal)value;
 		}

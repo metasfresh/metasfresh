@@ -9,6 +9,49 @@ Additional notes:
 
 Here come the actual release notes:
 
+
+
+# metasfresh 5.169
+## Features
+* metasfresh
+  * [#11024](https://github.com/metasfresh/metasfresh/issues/11024) Add EDI fields to Bpartner window
+  * [#11069](https://github.com/metasfresh/metasfresh/issues/11069) Budget Window adjustmenst (invoiceable effort)
+  * [#11079](https://github.com/metasfresh/metasfresh/issues/11079) Shopware: BPartner sync advice
+  * [#11084](https://github.com/metasfresh/metasfresh/issues/11084) BPartner Rest V2: support external reference version
+  * [#11088](https://github.com/metasfresh/metasfresh/issues/11088) Garantiezeit 60 Monate hinzufügen
+  * [#11094](https://github.com/metasfresh/metasfresh/issues/11094) Funktion für Erfassung Initial-CostPrice
+  * [#11098](https://github.com/metasfresh/metasfresh/issues/11098) Product Rest V2: support external reference version
+  * [#11067](https://github.com/metasfresh/metasfresh/issues/11067) Shopware: shipper & shipping costs
+  * [#11107](https://github.com/metasfresh/metasfresh/issues/11107) Geschäftspartner: Dropdown Menü für Incoterms
+  * [#11112](https://github.com/metasfresh/metasfresh/issues/11112) Update the packages flagged as highly vulnerable
+  * [#11119](https://github.com/metasfresh/metasfresh/issues/11119) Create Sales/Purchase Price List action
+  * [#11126](https://github.com/metasfresh/metasfresh/issues/11126) When creating a counter document, the original document needs to also reference it
+  * [#11164](https://github.com/metasfresh/metasfresh/issues/11164) Add Customer Retention Initial Threshold
+  * [#11169](https://github.com/metasfresh/metasfresh/issues/11169) Frontend should follow IncludedTabsInfo allowCreateNew and allowDelete props
+  * [#11101](https://github.com/metasfresh/metasfresh/issues/11101) Use EAN128/GS1-128 barcode in sscc label
+  * [#11134](https://github.com/metasfresh/metasfresh/issues/11134) Extend Alberta Masterdata Sync
+  * [#11077](https://github.com/metasfresh/metasfresh/pull/11077) working on a cucumber sales order and commission test
+  * [#11090](https://github.com/metasfresh/metasfresh/pull/11090) BankStatementDocumentHandler.completeIt: consider already assigned payments first
+  * [#11093](https://github.com/metasfresh/metasfresh/pull/11093) add field to display the child-issues's invoicable effort
+  * [#11103](https://github.com/metasfresh/metasfresh/pull/11103) inherit related processes from base window
+  * [#11113](https://github.com/metasfresh/metasfresh/pull/11113) AD_Column.isexcludefromzoomtargets initialize
+  * [#11114](https://github.com/metasfresh/metasfresh/pull/11114) modernize C_OrderMFGWarehouse MIs
+  * [#11122](https://github.com/metasfresh/metasfresh/pull/11122) WebuiDocumentPrintService: consider document's doc outbound recipient when determining the flavor
+
+## Fixes
+* metasfresh
+  * [#11070](https://github.com/metasfresh/metasfresh/issues/11070) Investigate build issue introduced by prettier
+  * [#11082](https://github.com/metasfresh/metasfresh/issues/11082) Umsatzreport Geschäftspartner Woche
+  * [#11091](https://github.com/metasfresh/metasfresh/issues/11091) Leergut-Rücknahme ergibt Fehlermeldung
+  * [#11096](https://github.com/metasfresh/metasfresh/issues/11096) Organisation window is not working properly
+  * [#11118](https://github.com/metasfresh/metasfresh/issues/11118) "Qty shall be greather than zero" error when creating orderline with batch entry
+  * [#11171](https://github.com/metasfresh/metasfresh/issues/11171) sync M_warehouse.c_bpartner_location_id to c_bpartner_location.c_bpartner_location_id
+  * [#11032](https://github.com/metasfresh/metasfresh/pull/11032) Fix two inventory related problems
+  * [#11092](https://github.com/metasfresh/metasfresh/pull/11092) related documents fixes
+  * [#11111](https://github.com/metasfresh/metasfresh/pull/11111) Shipment-REST-API - avoid QtyToDeliver_Override race condition
+  * [#11157](https://github.com/metasfresh/metasfresh/pull/11157) Fix sitemap alignment
+  * [#11144](https://github.com/metasfresh/metasfresh/issues/11144) Debug & fix manual discount not working in sales order line
+
 # metasfresh 5.168
 ## Features
 * metasfresh
