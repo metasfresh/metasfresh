@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.alberta.patient;
 
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.client.api.DoctorApi;
 import io.swagger.client.api.HospitalApi;
@@ -44,6 +45,9 @@ import java.util.List;
 @Builder
 public class GetPatientsRouteContext
 {
+	@NonNull
+	private final JsonExternalSystemRequest request;
+
 	@NonNull
 	private final PatientApi patientApi;
 

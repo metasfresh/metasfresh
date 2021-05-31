@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
+import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.client.ApiException;
@@ -63,6 +64,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
+import static de.metas.camel.externalsystems.alberta.attachment.GetAlbertaAttachmentRoute.GET_DOCUMENTS_ROUTE_ID;
 import static de.metas.camel.externalsystems.alberta.patient.GetAlbertaPatientsRoute.CREATE_UPSERT_BPARTNER_RELATION_REQUEST_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.alberta.patient.GetAlbertaPatientsRoute.CREATE_UPSERT_BPARTNER_REQUEST_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.alberta.patient.GetAlbertaPatientsRoute.GET_PATIENTS_ROUTE_ID;
@@ -128,8 +130,9 @@ public class GetPatientsRouteTests extends CamelTestSupport
 	{
 		final MockBPartnerUpsertResponse mockBPartnerUpsertResponse = new MockBPartnerUpsertResponse();
 		final MockBPartnerRelationUpsertResponse mockBPartnerRelationUpsertResponse = new MockBPartnerRelationUpsertResponse();
+		final MockGetDocumentsProcessor mockGetDocumentsProcessor = new MockGetDocumentsProcessor();
 
-		prepareRouteForTesting(mockBPartnerUpsertResponse, mockBPartnerRelationUpsertResponse);
+		prepareRouteForTesting(mockBPartnerUpsertResponse, mockBPartnerRelationUpsertResponse, mockGetDocumentsProcessor);
 
 		context.start();
 
@@ -161,17 +164,25 @@ public class GetPatientsRouteTests extends CamelTestSupport
 		assertMockEndpointsSatisfied();
 		assertThat(mockBPartnerUpsertResponse.called).isEqualTo(7);
 		assertThat(mockBPartnerRelationUpsertResponse.called).isEqualTo(1);
+		assertThat(mockGetDocumentsProcessor.called).isEqualTo(1);
 	}
 
 	private void prepareRouteForTesting(
 			final MockBPartnerUpsertResponse mockBPartnerUpsertResponse,
-			final MockBPartnerRelationUpsertResponse mockBPartnerRelationUpsertResponse) throws Exception
+			final MockBPartnerRelationUpsertResponse mockBPartnerRelationUpsertResponse,
+			final MockGetDocumentsProcessor mockGetDocumentsProcessor) throws Exception
 	{
 		// inject our mock processor that returns the patient-JSON from alberta
 		AdviceWith.adviceWith(context, GET_PATIENTS_ROUTE_ID,
-				advice -> advice.weaveById(PREPARE_PATIENTS_API_PROCESSOR_ID)
-						.replace()
-						.process(new MockPreparePatientsApiProcessor()));
+				advice -> {
+					advice.weaveById(PREPARE_PATIENTS_API_PROCESSOR_ID)
+							.replace()
+							.process(new MockPreparePatientsApiProcessor());
+
+					advice.interceptSendToEndpoint("direct:" + GET_DOCUMENTS_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.process(mockGetDocumentsProcessor);
+		});
 
 		AdviceWith.adviceWith(context, PROCESS_PATIENT_ROUTE_ID,
 				advice -> {
@@ -207,6 +218,13 @@ public class GetPatientsRouteTests extends CamelTestSupport
 					.tenant("tenant")
 					.build();
 
+			final JsonExternalSystemRequest externalSystemRequest = JsonExternalSystemRequest.builder()
+					.externalSystemName(JsonExternalSystemName.of("externalSystem"))
+					.externalSystemConfigId(JsonMetasfreshId.of(1))
+					.orgCode("orgCode")
+					.command("command")
+					.build();
+
 			final GetPatientsRouteContext context = GetPatientsRouteContext.builder()
 					.doctorApi(prepareDoctorApiClient(json))
 					.hospitalApi(prepareHospitalApiClient(json))
@@ -218,6 +236,7 @@ public class GetPatientsRouteTests extends CamelTestSupport
 					.userApi(prepareUserApi(json))
 					.albertaConnectionDetails(albertaConnectionDetails)
 					.rootBPartnerIdForUsers(JsonMetasfreshId.of(200))
+					.request(externalSystemRequest)
 					.build();
 
 			exchange.setProperty(ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, context);
@@ -359,6 +378,17 @@ public class GetPatientsRouteTests extends CamelTestSupport
 	}
 
 	private static class MockBPartnerRelationUpsertResponse implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
+
+	private static class MockGetDocumentsProcessor implements Processor
 	{
 		private int called = 0;
 
