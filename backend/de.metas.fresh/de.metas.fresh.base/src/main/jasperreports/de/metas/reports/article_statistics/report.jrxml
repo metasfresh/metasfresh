@@ -15,7 +15,6 @@
 	<parameter name="C_Period_ID" class="java.math.BigDecimal"/>
 	<parameter name="IsSOTrx" class="java.lang.String"/>
 	<parameter name="C_BPartner_ID" class="java.math.BigDecimal"/>
-	<parameter name="C_BP_Group_ID" class="java.math.BigDecimal"/>
 	<parameter name="C_Activity_ID" class="java.math.BigDecimal"/>
 	<parameter name="M_Product_ID" class="java.math.BigDecimal"/>
 	<parameter name="M_Product_Category_ID" class="java.math.BigDecimal"/>
@@ -25,11 +24,10 @@
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM report.fresh_product_statistics_non0_report(
+		<![CDATA[SELECT * FROM report.fresh_product_statistics_report(
 	$P{C_Period_ID},
 	$P{IsSOTrx},
 	$P{C_BPartner_ID},
-	$P{C_BP_Group_ID},
 	$P{C_Activity_ID},
 	$P{M_Product_ID},
 	$P{M_Product_Category_ID},
