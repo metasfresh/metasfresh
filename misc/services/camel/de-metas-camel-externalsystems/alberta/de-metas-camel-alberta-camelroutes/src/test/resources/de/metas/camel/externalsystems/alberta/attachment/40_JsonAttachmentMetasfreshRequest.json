@@ -1,0 +1,36 @@
+{
+  "orgCode": "orgCode",
+  "targets": [
+    {
+      "externalReferenceType": "UserID",
+      "externalReferenceIdentifier": "ext-ALBERTA-a4adecb6-126a-4fa6-8fac-e80165ac8980"
+    }
+  ],
+  "attachment": {
+    "fileName": "test.txt",
+    "mimeType": null,
+    "tags": [
+      {
+        "name": "alberta_attachment_id",
+        "value": "a4adecb6-126a-4fa6-8fac-e80165ac8980"
+      },
+      {
+        "name": "alberta_attachment_timestamp",
+        "value": "2020-11-18T10:33:08.995Z"
+      },
+      {
+        "name": "alberta_attachment_type",
+        "value": "1.5"
+      },
+      {
+        "name": "alberta_attachment_createdAt",
+        "value": "2015-07-20T15:49:04-07:00"
+      },
+      {
+        "name": "alberta_attachment_endpoint",
+        "value": "/attachment"
+      }
+    ],
+    "data": "dGhpcyBpcyBhIGR1bW15IHRlc3QgZmlsZQ=="
+  }
+}
