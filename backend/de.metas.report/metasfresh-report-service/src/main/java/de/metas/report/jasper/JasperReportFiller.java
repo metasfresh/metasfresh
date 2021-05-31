@@ -22,17 +22,11 @@ package de.metas.report.jasper;
  * #L%
  */
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
-import lombok.NonNull;
-import net.sf.jasperreports.engine.util.JRSwapFile;
-import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -66,21 +60,20 @@ import net.sf.jasperreports.engine.JasperReport;
 			final Connection connection,
 			final ClassLoader jasperLoader) throws JRException
 	{
+		final Map<String, Object> paramsFixed = new HashMap<>(parameters);
+		fixParameterTypes(jasperReport, paramsFixed);
+
 		final Thread currentThread = Thread.currentThread();
 		final ClassLoader classLoaderOld = currentThread.getContextClassLoader();
 
+		// Set the jasper loader as thread context classloader.
+		// We do this to workaround the issue from net.sf.jasperreports.engine.fill.JRFillDataset.loadResourceBundle(),
+		// which is not fetching the right classloader.
+		// More, that method is executed a separate thread for sub-reports, so fetching resource bundles will fail.
+		currentThread.setContextClassLoader(jasperLoader);
+
 		try
 		{
-			final Map<String, Object> paramsFixed = new HashMap<>(parameters);
-			fixParameterTypes(jasperReport, paramsFixed);
-			setupAndPutVirtualizer(paramsFixed);
-
-			// Set the jasper loader as thread context classloader.
-			// We do this to workaround the issue from net.sf.jasperreports.engine.fill.JRFillDataset.loadResourceBundle(),
-			// which is not fetching the right classloader.
-			// More, that method is executed a separate thread for sub-reports, so fetching resource bundles will fail.
-			currentThread.setContextClassLoader(jasperLoader);
-
 			if (connection == null)
 			{
 				return JasperFillManager.fillReport(jasperReport, paramsFixed);
@@ -90,31 +83,10 @@ import net.sf.jasperreports.engine.JasperReport;
 				return JasperFillManager.fillReport(jasperReport, paramsFixed, connection);
 			}
 		}
-		catch (RuntimeException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
-					.setParameter("jasperReport.name", jasperReport.getName());
-		}
 		finally
 		{
 			// restore the original class loader
 			currentThread.setContextClassLoader(classLoaderOld);
-		}
-	}
-
-	// thx to https://piotrminkowski.wordpress.com/2017/06/12/generating-large-pdf-files-using-jasperreports/
-	private void setupAndPutVirtualizer(@NonNull final Map<String, Object> paramsFixed)
-	{
-		try
-		{
-			final Path tempDirWithPrefix = Files.createTempDirectory("jasperSwapFiles");
-			final String directory = tempDirWithPrefix.toString();
-			paramsFixed.put(JRParameter.REPORT_VIRTUALIZER, new JRSwapFile(directory, 1024, 100));
-		}
-		catch (IOException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage()
-					.setParameter("paramsFixed", paramsFixed);
 		}
 	}
 
@@ -127,9 +99,7 @@ import net.sf.jasperreports.engine.JasperReport;
 		return fillReport(jasperReport, parameters, connection, jasperLoader);
 	}
 
-	protected void fixParameterTypes(
-			@NonNull final JasperReport jasperReport,
-			@NonNull final Map<String, Object> params)
+	protected void fixParameterTypes(final JasperReport jasperReport, final Map<String, Object> params)
 	{
 		final JRParameter[] jrParameters = jasperReport.getParameters();
 		if (jrParameters == null || jrParameters.length == 0)
@@ -141,7 +111,7 @@ import net.sf.jasperreports.engine.JasperReport;
 		for (final JRParameter jrParam : jrParameters)
 		{
 			//
-			// Search for metasfresh Parameter name
+			// Search for Adempiere Parameter name
 			final String jrParamName = jrParam.getName();
 			String adParamName = null;
 			if (params.containsKey(jrParamName))
@@ -151,7 +121,7 @@ import net.sf.jasperreports.engine.JasperReport;
 			}
 			else
 			{
-				// indirect: parameter name in Jasper report differs from metasfresh by upper/lower case
+				// indirect: parameter name in Jasper report differs from Adempiere by upper/lower case
 				for (final String name : params.keySet())
 				{
 					if (jrParamName.equalsIgnoreCase(name))
