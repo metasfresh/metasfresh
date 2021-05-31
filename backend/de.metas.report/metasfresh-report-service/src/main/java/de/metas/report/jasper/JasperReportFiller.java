@@ -124,7 +124,7 @@ import net.sf.jasperreports.engine.JasperReport;
 
 		try
 		{
-			final Path tempDirWithPrefix = Files.createTempDirectory(sysConfigBL.getValue(SYSCONFIG_JRSWAP_FILE_TEMP_DIR_PREFIX));
+			final Path tempDirWithPrefix = Files.createTempDirectory(sysConfigBL.getValue(SYSCONFIG_JRSWAP_FILE_TEMP_DIR_PREFIX, "jasperSwapFiles"));
 			final String directory = tempDirWithPrefix.toString();
 
 			final int maxSize = sysConfigBL.getIntValue(SYSCONFIG_JRSWAP_FILE_VIRTUALIZER_MAX_SIZE, 200);
