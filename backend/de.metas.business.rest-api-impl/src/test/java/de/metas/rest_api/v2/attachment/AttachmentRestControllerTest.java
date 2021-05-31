@@ -35,7 +35,6 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -77,7 +76,6 @@ public class AttachmentRestControllerTest
 		queryBL = Services.get(IQueryBL.class);
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
-		SpringContextHolder.registerJUnitBean(attachmentEntryService);
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
