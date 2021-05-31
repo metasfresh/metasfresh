@@ -274,4 +274,172 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=646829
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,646829,0,282,585287,540820,'F',TO_TIMESTAMP('2021-05-28 15:46:34','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Greeting Standard Type',20,0,0,TO_TIMESTAMP('2021-05-28 15:46:34','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- ADD Trls
+-- 2021-05-31T09:01:07.148Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET Name='Herr',Updated=TO_TIMESTAMP('2021-05-31 11:01:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542619
+;
+
+-- 2021-05-31T09:01:37.114Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET Name='Frau',Updated=TO_TIMESTAMP('2021-05-31 11:01:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542620
+;
+
+-- 2021-05-31T09:01:55.441Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET Name='Herr und Frau',Updated=TO_TIMESTAMP('2021-05-31 11:01:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542621
+;
+
+-- 2021-05-31T09:02:08.613Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET Name='Frau und Herr',Updated=TO_TIMESTAMP('2021-05-31 11:02:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542622
+;
+
+-- 2021-05-31T09:17:39.943Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Standard Anrede', PrintName='Standard Anrede',Updated=TO_TIMESTAMP('2021-05-31 11:17:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579265 AND AD_Language='de_CH'
+;
+
+-- 2021-05-31T09:17:39.971Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579265,'de_CH')
+;
+
+-- 2021-05-31T09:17:46.793Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Standard Anrede', PrintName='Standard Anrede',Updated=TO_TIMESTAMP('2021-05-31 11:17:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579265 AND AD_Language='de_DE'
+;
+
+-- 2021-05-31T09:17:46.794Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579265,'de_DE')
+;
+
+-- 2021-05-31T09:17:46.799Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579265,'de_DE')
+;
+
+-- 2021-05-31T09:17:46.803Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='GreetingStandardType', Name='Standard Anrede', Description=NULL, Help=NULL WHERE AD_Element_ID=579265
+;
+
+-- 2021-05-31T09:17:46.803Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='GreetingStandardType', Name='Standard Anrede', Description=NULL, Help=NULL, AD_Element_ID=579265 WHERE UPPER(ColumnName)='GREETINGSTANDARDTYPE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-05-31T09:17:46.804Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='GreetingStandardType', Name='Standard Anrede', Description=NULL, Help=NULL WHERE AD_Element_ID=579265 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-05-31T09:17:46.804Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Standard Anrede', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579265) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579265)
+;
+
+-- 2021-05-31T09:17:46.814Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem pi SET PrintName='Standard Anrede', Name='Standard Anrede' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579265)
+;
+
+-- 2021-05-31T09:17:46.815Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Standard Anrede', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579265
+;
+
+-- 2021-05-31T09:17:46.815Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Standard Anrede', Description=NULL, Help=NULL WHERE AD_Element_ID = 579265
+;
+
+-- 2021-05-31T09:17:46.816Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Standard Anrede', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579265
+;
+
+-- 2021-05-31T09:20:21.775Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Dieses Feld definiert die Anrede im Brief / Dokument basierend auf der Art der Mitgliederkontakte.', Name='Standard Anrede', PrintName='Standard Anrede',Updated=TO_TIMESTAMP('2021-05-31 11:20:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579265 AND AD_Language='nl_NL'
+;
+
+-- 2021-05-31T09:20:21.776Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579265,'nl_NL')
+;
+
+-- 2021-05-31T09:20:27.591Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Dieses Feld definiert die Anrede im Brief / Dokument basierend auf der Art der Mitgliederkontakte.',Updated=TO_TIMESTAMP('2021-05-31 11:20:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579265 AND AD_Language='de_DE'
+;
+
+-- 2021-05-31T09:20:27.593Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579265,'de_DE')
+;
+
+-- 2021-05-31T09:20:27.619Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579265,'de_DE')
+;
+
+-- 2021-05-31T09:20:27.622Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='GreetingStandardType', Name='Standard Anrede', Description='Dieses Feld definiert die Anrede im Brief / Dokument basierend auf der Art der Mitgliederkontakte.', Help=NULL WHERE AD_Element_ID=579265
+;
+
+-- 2021-05-31T09:20:27.625Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='GreetingStandardType', Name='Standard Anrede', Description='Dieses Feld definiert die Anrede im Brief / Dokument basierend auf der Art der Mitgliederkontakte.', Help=NULL, AD_Element_ID=579265 WHERE UPPER(ColumnName)='GREETINGSTANDARDTYPE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-05-31T09:20:27.628Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='GreetingStandardType', Name='Standard Anrede', Description='Dieses Feld definiert die Anrede im Brief / Dokument basierend auf der Art der Mitgliederkontakte.', Help=NULL WHERE AD_Element_ID=579265 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-05-31T09:20:27.629Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Standard Anrede', Description='Dieses Feld definiert die Anrede im Brief / Dokument basierend auf der Art der Mitgliederkontakte.', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579265) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579265)
+;
+
+-- 2021-05-31T09:20:27.651Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Standard Anrede', Description='Dieses Feld definiert die Anrede im Brief / Dokument basierend auf der Art der Mitgliederkontakte.', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579265
+;
+
+-- 2021-05-31T09:20:27.652Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Standard Anrede', Description='Dieses Feld definiert die Anrede im Brief / Dokument basierend auf der Art der Mitgliederkontakte.', Help=NULL WHERE AD_Element_ID = 579265
+;
+
+-- 2021-05-31T09:20:27.653Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Standard Anrede', Description = 'Dieses Feld definiert die Anrede im Brief / Dokument basierend auf der Art der Mitgliederkontakte.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579265
+;
+
+-- 2021-05-31T09:20:31.235Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Dieses Feld definiert die Anrede im Brief / Dokument basierend auf der Art der Mitgliederkontakte.',Updated=TO_TIMESTAMP('2021-05-31 11:20:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579265 AND AD_Language='de_CH'
+;
+
+-- 2021-05-31T09:20:31.235Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579265,'de_CH')
+;
+
+-- 2021-05-31T09:21:17.181Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='This field defines the salutation in the letter / document based on the type of member contacts.',Updated=TO_TIMESTAMP('2021-05-31 11:21:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579265 AND AD_Language='en_US'
+;
+
+-- 2021-05-31T09:21:17.182Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579265,'en_US')
+;
+
+
+
 
