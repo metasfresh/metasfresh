@@ -219,14 +219,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(579265)
 ;
 
--- Generate Column
-
--- 2021-05-28T12:38:39.335Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Greeting','ALTER TABLE public.C_Greeting ADD COLUMN GreetingStandardType VARCHAR(20)')
-;
-
-
 -- Create index
 
 -- 2021-05-28T12:42:52.637Z
