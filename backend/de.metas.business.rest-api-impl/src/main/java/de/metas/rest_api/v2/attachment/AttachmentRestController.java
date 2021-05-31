@@ -26,7 +26,6 @@ import de.metas.Profiles;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentResponse;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
@@ -49,7 +48,6 @@ public class AttachmentRestController
 		this.attachmentRestService = attachmentRestService;
 	}
 
-	@ApiOperation("Create attachment")
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "Attachment successfully created"),
 			@ApiResponse(code = 401, message = "You are not authorized to invoke attachment endpoint"),

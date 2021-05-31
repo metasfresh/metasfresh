@@ -36,6 +36,10 @@ import java.util.List;
 public class JsonAttachmentRequest
 {
 	@NonNull
+	@JsonProperty("orgCode")
+	String orgCode;
+
+	@NonNull
 	@JsonProperty("targets")
 	List<JsonExternalReferenceTarget> targets;
 

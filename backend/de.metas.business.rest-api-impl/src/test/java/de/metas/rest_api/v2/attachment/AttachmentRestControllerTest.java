@@ -113,6 +113,7 @@ public class AttachmentRestControllerTest
 				.build();
 
 		final JsonAttachmentRequest attachmentRequest = JsonAttachmentRequest.builder()
+				.orgCode("orgCode")
 				.targets(targets.build())
 				.attachment(attachment)
 				.build();

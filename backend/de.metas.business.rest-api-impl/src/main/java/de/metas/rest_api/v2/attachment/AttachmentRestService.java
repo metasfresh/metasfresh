@@ -37,7 +37,6 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
-import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -81,6 +80,8 @@ public class AttachmentRestService
 	@NonNull
 	private JsonAttachmentResponse createAttachmentWithTrx(@NonNull final JsonAttachmentRequest jsonAttachmentRequest)
 	{
+		final String orgCode = jsonAttachmentRequest.getOrgCode();
+
 		final JsonAttachment attachment = jsonAttachmentRequest.getAttachment();
 
 		final AttachmentTags attachmentTags = extractAttachmentTags(attachment.getTags());
@@ -101,7 +102,7 @@ public class AttachmentRestService
 
 		final List<TableRecordReference> references = jsonAttachmentRequest.getTargets()
 				.stream()
-				.map(this::extractTableRecordReference)
+				.map(target -> extractTableRecordReference(orgCode, target))
 				.collect(ImmutableList.toImmutableList());
 
 		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(references, request);
@@ -115,15 +116,18 @@ public class AttachmentRestService
 	}
 
 	@NonNull
-	private TableRecordReference extractTableRecordReference(@NonNull final JsonExternalReferenceTarget target)
+	private TableRecordReference extractTableRecordReference(
+			@NonNull final String orgCode,
+			@NonNull final JsonExternalReferenceTarget target)
 	{
 		final IExternalReferenceType targetType = extractTargetType(target.getExternalReferenceType());
-		final MetasfreshId metasfreshId = extractTargetIdentifier(target.getExternalReferenceIdentifier(), targetType);
+		final MetasfreshId metasfreshId = extractTargetIdentifier(orgCode, target.getExternalReferenceIdentifier(), targetType);
 
 		return TableRecordReference.of(targetType.getTableName(), metasfreshId.getValue());
 	}
 
 	private MetasfreshId extractTargetIdentifier(
+			@NonNull final String orgCode,
 			@NonNull final String externalTargetIdentifier,
 			@NonNull final IExternalReferenceType externalReferenceType)
 	{
@@ -136,7 +140,7 @@ public class AttachmentRestService
 				return targetIdentifier.asMetasfreshId();
 			case EXTERNAL_REFERENCE:
 				return externalReferenceService
-						.getJsonMetasfreshIdFromExternalReference((OrgId)null, targetIdentifier, externalReferenceType)
+						.getJsonMetasfreshIdFromExternalReference(orgCode, targetIdentifier, externalReferenceType)
 						.map(MetasfreshId::of)
 						.orElseThrow(() -> MissingResourceException.builder()
 								.resourceIdentifier(targetIdentifier.getRawValue())

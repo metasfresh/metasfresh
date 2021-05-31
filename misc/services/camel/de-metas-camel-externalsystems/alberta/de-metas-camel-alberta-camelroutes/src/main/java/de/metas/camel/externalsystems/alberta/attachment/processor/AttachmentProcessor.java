@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteConstants;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteContext;
+import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
@@ -69,9 +70,15 @@ public class AttachmentProcessor implements Processor
 				.build();
 
 		final JsonAttachmentRequest jsonRequest = JsonAttachmentRequest.builder()
+				.orgCode(routeContext.getOrgCode())
 				.targets(computeTargets(attachment))
 				.attachment(jsonAttachment)
 				.build();
+
+		if(attachment.getCreatedAt() != null)
+		{
+			routeContext.setNextAttachmentImportStartDate(AlbertaUtil.asInstant(attachment.getCreatedAt()));
+		}
 
 		exchange.getIn().setBody(jsonRequest);
 	}

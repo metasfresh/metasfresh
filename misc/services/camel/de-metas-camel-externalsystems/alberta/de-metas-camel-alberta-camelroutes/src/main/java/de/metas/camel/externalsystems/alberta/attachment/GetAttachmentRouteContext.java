@@ -22,16 +22,22 @@
 
 package de.metas.camel.externalsystems.alberta.attachment;
 
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import io.swagger.client.api.AttachmentApi;
 import io.swagger.client.api.DocumentApi;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
+import java.time.Instant;
+
 @Data
 @Builder
 public class GetAttachmentRouteContext
 {
+	@NonNull
+	private String orgCode;
+
 	@NonNull
 	private final String apiKey;
 
@@ -43,4 +49,17 @@ public class GetAttachmentRouteContext
 
 	@NonNull
 	private final String createdAfter;
+
+	@NonNull
+	private Instant nextAttachmentImportStartDate;
+
+	@NonNull
+	private JsonExternalSystemRequest request;
+
+	public void setNextAttachmentImportStartDate(@NonNull final Instant nextAttachmentImportStartDate)
+	{
+		if(nextAttachmentImportStartDate.compareTo(this.nextAttachmentImportStartDate) >= 0) {
+			this.nextAttachmentImportStartDate = nextAttachmentImportStartDate;
+		}
+	}
 }

@@ -26,6 +26,7 @@ import de.metas.camel.externalsystems.alberta.attachment.processor.AttachmentPro
 import de.metas.camel.externalsystems.alberta.attachment.processor.DocumentProcessor;
 import de.metas.camel.externalsystems.alberta.attachment.processor.GetAttachmentProcessor;
 import de.metas.camel.externalsystems.alberta.attachment.processor.GetDocumentsProcessor;
+import de.metas.camel.externalsystems.alberta.attachment.processor.RuntimeParametersProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -49,11 +50,13 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 {
 	public static final String GET_DOCUMENTS_ROUTE_ID = "Alberta-getDocuments";
 	public static final String GET_ATTACHMENTS_ROUTE_ID = "Alberta-getAttachments";
+	public static final String UPSERT_RUNTIME_PARAMS_ROUTE_ID = "Alberta-upsertRuntimeParams";
 
 	public static final String RETRIEVE_DOCUMENTS_PROCESSOR_ID = "Alberta-GetDocumentsFromAlbertaProcessorId";
 	public static final String RETRIEVE_ATTACHMENTS_PROCESSOR_ID = "Alberta-GetAttachmentsFromAlbertaProcessorId";
 	public static final String PREPARE_DOCUMENT_API_PROCESSOR_ID = "Alberta-CreateDocumentRequestProcessorId";
 	public static final String PREPARE_ATTACHMENT_API_PROCESSOR_ID = "Alberta-CreateAttachmentRequestProcessorId";
+	public static final String RUNTIME_PARAMS_PROCESSOR_ID = "Alberta-RuntimeParamsProcessorId";
 
 	public static final String DOCUMENT_PROCESSOR_ID = "Alberta-DocumentProcessor";
 	public static final String ATTACHMENT_PROCESSOR_ID = "Alberta-AttachmentProcessor";
@@ -81,7 +84,8 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 							.to(direct(DOCUMENT_PROCESSOR_ID))
 						.end()
 				.endChoice()
-				.to(direct(GET_ATTACHMENTS_ROUTE_ID));
+				.to(direct(GET_ATTACHMENTS_ROUTE_ID))
+				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID));
 
 		from(direct(DOCUMENT_PROCESSOR_ID))
 				.routeId(DOCUMENT_PROCESSOR_ID)
@@ -115,6 +119,19 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 					.stopOnException()
 					.log(LoggingLevel.DEBUG, "Calling metasfresh-api to save attachment: ${body}")
 					.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID))
+				.end()
+				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID));
+
+		from(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
+				.routeId(UPSERT_RUNTIME_PARAMS_ROUTE_ID)
+				.log("Route invoked")
+				.process(new RuntimeParametersProcessor()).id(RUNTIME_PARAMS_PROCESSOR_ID)
+				.choice()
+					.when(body().isNull())
+						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert runtime parameters: ${body}")
+					.otherwise()
+						.to(direct(ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID))
+				.endChoice()
 				.end();
 		//@formatter:on
 	}
@@ -123,6 +140,7 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 	{
 		final var request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
+		final var orgCode = request.getOrgCode();
 		final var basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 		final var apiKey = request.getParameters().get(ExternalSystemConstants.PARAM_API_KEY);
 
@@ -133,10 +151,13 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 				Instant.ofEpochMilli(0).toString());
 
 		final GetAttachmentRouteContext context = GetAttachmentRouteContext.builder()
+				.orgCode(orgCode)
 				.apiKey(apiKey)
 				.attachmentApi(new AttachmentApi(apiClient))
 				.documentApi(new DocumentApi(apiClient))
 				.createdAfter(createdAfter)
+				.nextAttachmentImportStartDate(Instant.parse(createdAfter))
+				.request(request)
 				.build();
 
 		exchange.setProperty(GetAttachmentRouteConstants.ROUTE_PROPERTY_GET_ATTACHMENT_CONTEXT, context);

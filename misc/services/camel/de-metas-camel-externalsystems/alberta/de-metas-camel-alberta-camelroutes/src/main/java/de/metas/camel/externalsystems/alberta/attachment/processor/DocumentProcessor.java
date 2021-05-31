@@ -70,10 +70,15 @@ public class DocumentProcessor implements Processor
 				.build();
 
 		final JsonAttachmentRequest jsonRequest = JsonAttachmentRequest.builder()
+				.orgCode(routeContext.getOrgCode())
 				.targets(computeTargets(document))
 				.attachment(jsonAttachment)
 				.build();
 
+		if(document.getCreatedAt() != null)
+		{
+			routeContext.setNextAttachmentImportStartDate(AlbertaUtil.asInstant(document.getCreatedAt()));
+		}
 		exchange.getIn().setBody(jsonRequest);
 	}
 

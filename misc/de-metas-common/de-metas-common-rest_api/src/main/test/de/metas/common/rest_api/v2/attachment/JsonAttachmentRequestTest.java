@@ -66,6 +66,7 @@ public class JsonAttachmentRequestTest
 				.build();
 
 		final JsonAttachmentRequest attachmentRequest = JsonAttachmentRequest.builder()
+				.orgCode("orgCode")
 				.targets(targets)
 				.attachment(attachment)
 				.build();
