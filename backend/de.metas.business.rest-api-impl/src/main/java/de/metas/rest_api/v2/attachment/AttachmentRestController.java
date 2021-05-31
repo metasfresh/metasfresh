@@ -37,8 +37,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/attachment" })
 @Profile(Profiles.PROFILE_App)
@@ -59,7 +57,7 @@ public class AttachmentRestController
 			@ApiResponse(code = 422, message = "The request could not be processed")
 	})
 	@PostMapping()
-	public ResponseEntity<List<JsonAttachmentResponse>> createAttachment(@RequestBody @NonNull final JsonAttachmentRequest jsonAttachmentRequest)
+	public ResponseEntity<JsonAttachmentResponse> createAttachment(@RequestBody @NonNull final JsonAttachmentRequest jsonAttachmentRequest)
 	{
 		return ResponseEntity.ok(attachmentRestService.createAttachment(jsonAttachmentRequest));
 	}

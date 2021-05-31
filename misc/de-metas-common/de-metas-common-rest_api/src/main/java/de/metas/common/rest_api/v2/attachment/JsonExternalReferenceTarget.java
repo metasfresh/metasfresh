@@ -40,4 +40,10 @@ public class JsonExternalReferenceTarget
 	@NonNull
 	@JsonProperty("externalReferenceIdentifier")
 	String externalReferenceIdentifier;
+
+	@NonNull
+	public static JsonExternalReferenceTarget ofTypeAndId(@NonNull final String externalReferenceType, @NonNull final String externalReferenceIdentifier)
+	{
+		return new JsonExternalReferenceTarget(externalReferenceType, externalReferenceIdentifier);
+	}
 }

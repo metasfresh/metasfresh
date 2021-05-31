@@ -29,11 +29,8 @@ import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentResponse;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
 import de.metas.common.rest_api.v2.attachment.JsonTag;
-import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
-import de.metas.greeting.GreetingRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -45,10 +42,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
-import java.util.List;
 
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
@@ -58,7 +54,7 @@ import static org.assertj.core.api.Assertions.*;
 @ExtendWith(AdempiereTestWatcher.class)
 public class AttachmentRestControllerTest
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private IQueryBL queryBL;
 	private AttachmentRestController attachmentRestController;
 
 	@BeforeAll
@@ -78,22 +74,16 @@ public class AttachmentRestControllerTest
 	{
 		AdempiereTestHelper.get().init();
 
-		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+		queryBL = Services.get(IQueryBL.class);
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 		SpringContextHolder.registerJUnitBean(attachmentEntryService);
 
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
-		final ExternalSystems externalSystems = new ExternalSystems();
+		final ExternalReferenceRestControllerService externalReferenceRestControllerService = Mockito.mock(ExternalReferenceRestControllerService.class);
 
-		final ExternalReferenceRepository externalReferenceRepository =
-				new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
-
-		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
-				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
-
-		final AttachmentRestService attachmentRestService = new AttachmentRestService(externalReferenceRestControllerService, externalReferenceTypes);
+		final AttachmentRestService attachmentRestService = new AttachmentRestService(attachmentEntryService, externalReferenceRestControllerService, externalReferenceTypes);
 
 		attachmentRestController = new AttachmentRestController(attachmentRestService);
 	}
@@ -129,17 +119,17 @@ public class AttachmentRestControllerTest
 				.attachment(attachment)
 				.build();
 
-		final ResponseEntity<List<JsonAttachmentResponse>> responseEntity = attachmentRestController.createAttachment(attachmentRequest);
+		final ResponseEntity<JsonAttachmentResponse> responseEntity = attachmentRestController.createAttachment(attachmentRequest);
 
 		assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
-		final List<JsonAttachmentResponse> resultBody = responseEntity.getBody();
+		final JsonAttachmentResponse resultBody = responseEntity.getBody();
 
 		expect(resultBody).toMatchSnapshot();
 
 		assertThat(resultBody).isNotNull();
 
-		final String attachmentId = resultBody.get(0).getAttachmentId();
-		final String fileName = resultBody.get(0).getFilename();
+		final String attachmentId = resultBody.getAttachmentId();
+		final String fileName = resultBody.getFilename();
 
 		final I_AD_AttachmentEntry entry = queryBL.createQueryBuilder(I_AD_AttachmentEntry.class)
 				.addOnlyActiveRecordsFilter()

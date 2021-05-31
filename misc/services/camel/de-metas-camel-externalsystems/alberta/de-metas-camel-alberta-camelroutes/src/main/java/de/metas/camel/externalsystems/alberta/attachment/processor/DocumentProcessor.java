@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteConstants;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteContext;
+import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
 import de.metas.common.rest_api.v2.attachment.JsonAttachment;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
@@ -39,12 +40,14 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.threeten.bp.OffsetDateTime;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.math.BigDecimal;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.time.Instant;
+import java.util.Base64;
 import java.util.List;
+
+import static de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat.formatExternalId;
 
 public class DocumentProcessor implements Processor
 {
@@ -54,19 +57,15 @@ public class DocumentProcessor implements Processor
 		final GetAttachmentRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, GetAttachmentRouteConstants.ROUTE_PROPERTY_GET_ATTACHMENT_CONTEXT, GetAttachmentRouteContext.class);
 		final Document document = exchange.getIn().getBody(Document.class);
 
-		final File file = getDataOrNull(routeContext, document.getId());
+		final File file = getFile(routeContext, document.getId());
 
-		if (EmptyUtil.isEmpty(file))
-		{
-			throw new RuntimeException("No data received for document id" + document.getId());
-		}
+		final byte[] fileData = Files.readAllBytes(file.toPath());
 
-		final String data = new String(Files.readAllBytes(file.toPath()));  //todo florina
+		final String base64FileData = Base64.getEncoder().encodeToString(fileData);
 
 		final JsonAttachment jsonAttachment = JsonAttachment.builder()
 				.fileName(document.getName())
-				.mimeType(Files.probeContentType(Path.of(document.getName())))
-				.data(data)
+				.data(base64FileData)
 				.tags(computeTags(document))
 				.build();
 
@@ -78,15 +77,22 @@ public class DocumentProcessor implements Processor
 		exchange.getIn().setBody(jsonRequest);
 	}
 
-	@Nullable
-	final File getDataOrNull(
+	@NonNull
+	final File getFile(
 			@NonNull final GetAttachmentRouteContext context,
 			@NonNull final String id) throws ApiException
 	{
 		final String apiKey = context.getApiKey();
 		final DocumentApi documentApi = context.getDocumentApi();
 
-		return documentApi.getSingleDocument(apiKey, id);
+		final File file = documentApi.getSingleDocument(apiKey, id);
+
+		if (file == null)
+		{
+			throw new RuntimeException("No data received for document id" + id);
+		}
+
+		return file;
 	}
 
 	@NonNull
@@ -97,19 +103,19 @@ public class DocumentProcessor implements Processor
 		final String patientId = document.getPatientId();
 		if (!EmptyUtil.isBlank(patientId))
 		{
-			targets.add(mapJsonExternalReferenceTarget(patientId, GetAttachmentRouteConstants.ESR_TYPE_BPARTNER));
+			targets.add(JsonExternalReferenceTarget.ofTypeAndId(GetAttachmentRouteConstants.ESR_TYPE_BPARTNER, formatExternalId(patientId)));
 		}
 
 		final String createdBy = document.getCreatedBy();
 		if (!EmptyUtil.isBlank(createdBy))
 		{
-			targets.add(mapJsonExternalReferenceTarget(createdBy, GetAttachmentRouteConstants.ESR_TYPE_USERID));
+			targets.add(JsonExternalReferenceTarget.ofTypeAndId(GetAttachmentRouteConstants.ESR_TYPE_USERID, formatExternalId(createdBy)));
 		}
 
 		final String updatedBy = document.getUpdatedBy();
 		if (!EmptyUtil.isBlank(updatedBy))
 		{
-			targets.add(mapJsonExternalReferenceTarget(updatedBy, GetAttachmentRouteConstants.ESR_TYPE_USERID));
+			targets.add(JsonExternalReferenceTarget.ofTypeAndId(GetAttachmentRouteConstants.ESR_TYPE_USERID, formatExternalId(updatedBy)));
 		}
 
 		return targets.build();
@@ -120,64 +126,41 @@ public class DocumentProcessor implements Processor
 	{
 		final ImmutableList.Builder<JsonTag> tags = ImmutableList.builder();
 
-		final String id = document.getId();
-		if (!EmptyUtil.isEmpty(id))
-		{
-			tags.add(mapJsonTag(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_ID, id));
-		}
+		tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_ID, document.getId()));
 
-		final Boolean archived = document.isArchived();
-		if (!EmptyUtil.isEmpty(archived))
+		if (document.isArchived() != null)
 		{
-			tags.add(mapJsonTag(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_ARCHIVED, String.valueOf(archived)));
+			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_ARCHIVED, String.valueOf(document.isArchived())));
 		}
 
 		final BigDecimal therapyId = document.getTherapyId();
-		if (!EmptyUtil.isEmpty(therapyId))
+		if (therapyId != null)
 		{
-			tags.add(mapJsonTag(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_THERAPYID, String.valueOf(therapyId)));
+			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_THERAPYID, String.valueOf(therapyId)));
 		}
 
 		final BigDecimal therapyTypeId = document.getTherapyTypeId();
-		if (!EmptyUtil.isEmpty(therapyTypeId))
+		if (therapyTypeId != null)
 		{
-			tags.add(mapJsonTag(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_THERAPYTYPEID, String.valueOf(therapyTypeId)));
+			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_THERAPYTYPEID, String.valueOf(therapyTypeId)));
 		}
 
 		final OffsetDateTime createdAt = document.getCreatedAt();
-		if (!EmptyUtil.isEmpty(createdAt))
+		if (createdAt != null)
 		{
-			tags.add(mapJsonTag(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_CREATEDAT, String.valueOf(createdAt)));
+			final Instant createdAtInstant = AlbertaUtil.asInstant(createdAt);
+			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_CREATEDAT, String.valueOf(createdAtInstant)));
 		}
 
 		final OffsetDateTime updatedAt = document.getUpdatedAt();
-		if (!EmptyUtil.isEmpty(updatedAt))
+		if (updatedAt != null)
 		{
-			tags.add(mapJsonTag(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_UPDATEDAT, String.valueOf(updatedAt)));
+			final Instant updatedAtInstant = AlbertaUtil.asInstant(updatedAt);
+			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_UPDATEDAT, String.valueOf(updatedAtInstant)));
 		}
 
-		tags.add(mapJsonTag(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_ENDPOINT, GetAttachmentRouteConstants.ALBERTA_DOCUMENT_ENDPOINT_VALUE));
+		tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_DOCUMENT_ENDPOINT, GetAttachmentRouteConstants.ALBERTA_DOCUMENT_ENDPOINT_VALUE));
 
 		return tags.build();
-	}
-
-	@NonNull
-	final JsonExternalReferenceTarget mapJsonExternalReferenceTarget(
-			@NonNull final String identifier,
-			@NonNull final String type)
-	{
-		return JsonExternalReferenceTarget.builder()
-				.externalReferenceIdentifier(identifier)
-				.externalReferenceType(type)
-				.build();
-	}
-
-	@NonNull
-	final JsonTag mapJsonTag(@NonNull final String name, @NonNull final String value)
-	{
-		return JsonTag.builder()
-				.name(name)
-				.value(value)
-				.build();
 	}
 }

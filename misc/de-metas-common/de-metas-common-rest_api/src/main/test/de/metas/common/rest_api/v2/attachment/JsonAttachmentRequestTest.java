@@ -22,26 +22,24 @@
 
 package de.metas.common.rest_api.v2.attachment;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static org.assertj.core.api.Assertions.*;
 
 public class JsonAttachmentRequestTest
 {
-	private final ObjectMapper mapper = new ObjectMapper();
-
-	@BeforeClass
-	public static void beforeAll()
-	{
-		start();
-	}
+	private final ObjectMapper mapper = new ObjectMapper()
+			.findAndRegisterModules()
+			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+			.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+			.enable(MapperFeature.USE_ANNOTATIONS);
 
 	@Test
 	public void serializeDeserialize() throws IOException
@@ -51,35 +49,31 @@ public class JsonAttachmentRequestTest
 				.externalReferenceIdentifier("identifier")
 				.build();
 
-		final ImmutableList.Builder<JsonExternalReferenceTarget> targets = ImmutableList.builder();
-		targets.add(referenceTarget);
+		final ImmutableList<JsonExternalReferenceTarget> targets = ImmutableList.of(referenceTarget);
 
 		final JsonTag tag = JsonTag.builder()
 				.name("name")
 				.value("value")
 				.build();
 
-		final ImmutableList.Builder<JsonTag> tags = ImmutableList.builder();
-		tags.add(tag);
+		final ImmutableList<JsonTag> tags = ImmutableList.of(tag);
 
 		final JsonAttachment attachment = JsonAttachment.builder()
 				.fileName("fileName")
 				.mimeType("mimeType")
-				.tags(tags.build())
+				.tags(tags)
 				.data("data")
 				.build();
 
 		final JsonAttachmentRequest attachmentRequest = JsonAttachmentRequest.builder()
-				.targets(targets.build())
+				.targets(targets)
 				.attachment(attachment)
 				.build();
 
 		final String string = mapper.writeValueAsString(attachmentRequest);
-		assertThat(string).isNotEmpty();
 
 		final JsonAttachmentRequest result = mapper.readValue(string, JsonAttachmentRequest.class);
 
 		assertThat(result).isEqualTo(attachmentRequest);
-		expect(result).toMatchSnapshot();
 	}
 }

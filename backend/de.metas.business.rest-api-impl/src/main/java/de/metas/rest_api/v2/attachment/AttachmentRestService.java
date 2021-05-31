@@ -39,6 +39,7 @@ import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
@@ -46,47 +47,54 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.apache.commons.codec.binary.Base64;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.MimeType;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Base64;
 import java.util.List;
 
 @Service
 public class AttachmentRestService
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+	private final AttachmentEntryService attachmentEntryService;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final ExternalReferenceTypes externalReferenceTypes;
 
-	public AttachmentRestService(final ExternalReferenceRestControllerService externalReferenceService, final ExternalReferenceTypes externalReferenceTypes)
+	public AttachmentRestService(
+			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
+			@NonNull final ExternalReferenceTypes externalReferenceTypes)
 	{
+		this.attachmentEntryService = attachmentEntryService;
 		this.externalReferenceService = externalReferenceService;
 		this.externalReferenceTypes = externalReferenceTypes;
 	}
 
 	@NonNull
-	public List<JsonAttachmentResponse> createAttachment(@NonNull final JsonAttachmentRequest jsonAttachmentRequest)
+	public JsonAttachmentResponse createAttachment(@NonNull final JsonAttachmentRequest jsonAttachmentRequest)
 	{
 		return trxManager.callInNewTrx(() -> createAttachmentWithTrx(jsonAttachmentRequest));
 	}
 
 	@NonNull
-	private List<JsonAttachmentResponse> createAttachmentWithTrx(@NonNull final JsonAttachmentRequest jsonAttachmentRequest)
+	private JsonAttachmentResponse createAttachmentWithTrx(@NonNull final JsonAttachmentRequest jsonAttachmentRequest)
 	{
 		final JsonAttachment attachment = jsonAttachmentRequest.getAttachment();
 
 		final AttachmentTags attachmentTags = extractAttachmentTags(attachment.getTags());
 
-		final byte[] data = Base64.decodeBase64(attachment.getData().getBytes());
+		final byte[] data = Base64.getDecoder().decode(attachment.getData().getBytes());
+
+		final String contentType = attachment.getMimeType() != null
+				? MimeType.getExtensionByType(attachment.getMimeType())
+				: MimeType.getMimeType(attachment.getFileName());
 
 		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.builder()
 				.type(AttachmentEntry.Type.Data)
 				.filename(attachment.getFileName())
-				.contentType(MimeType.getExtensionByType(attachment.getMimeType()))
+				.contentType(contentType)
 				.tags(attachmentTags)
 				.data(data)
 				.build();
@@ -98,22 +106,11 @@ public class AttachmentRestService
 
 		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(references, request);
 
-		return jsonAttachmentRequest.getTargets()
-				.stream()
-				.map(target -> this.createJsonAttachmentResponse(target, entry))
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	private JsonAttachmentResponse createJsonAttachmentResponse(
-			@NonNull final JsonExternalReferenceTarget target,
-			@NonNull final AttachmentEntry attachmentEntry)
-	{
 		return JsonAttachmentResponse.builder()
-				.target(target)
-				.attachmentId(String.valueOf(attachmentEntry.getId().getRepoId()))
-				.filename(attachmentEntry.getFilename())
-				.mimeType(attachmentEntry.getMimeType())
+				.target(jsonAttachmentRequest.getTargets())
+				.attachmentId(String.valueOf(entry.getId().getRepoId()))
+				.filename(entry.getFilename())
+				.mimeType(entry.getMimeType())
 				.build();
 	}
 
@@ -162,9 +159,14 @@ public class AttachmentRestService
 	@NonNull
 	private AttachmentTags extractAttachmentTags(@Nullable final List<JsonTag> tags)
 	{
-		final ImmutableMap<String, String> mappedTags = tags != null ?
-				tags.stream().collect(ImmutableMap.toImmutableMap(JsonTag::getName, JsonTag::getValue)) : ImmutableMap.of();
+		if (tags == null || Check.isEmpty(tags))
+		{
+			return AttachmentTags.EMPTY;
+		}
 
-		return AttachmentTags.ofMap(mappedTags);
+		final ImmutableMap<String, String> tagName2Value = tags.stream()
+				.collect(ImmutableMap.toImmutableMap(JsonTag::getName, JsonTag::getValue));
+
+		return AttachmentTags.ofMap(tagName2Value);
 	}
 }

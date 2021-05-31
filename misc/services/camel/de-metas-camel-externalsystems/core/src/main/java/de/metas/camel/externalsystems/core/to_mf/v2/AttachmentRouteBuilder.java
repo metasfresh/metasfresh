@@ -58,6 +58,6 @@ public class AttachmentRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("http://{{metasfresh.api.v2.baseurl}}/attachment");
+				.toD("{{metasfresh.attachments.v2.api.uri}}");
 	}
 }

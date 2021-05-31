@@ -22,12 +22,14 @@
 
 package de.metas.common.rest_api.v2.attachment;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 @Builder
@@ -35,14 +37,18 @@ import javax.annotation.Nullable;
 public class JsonAttachmentResponse
 {
 	@NonNull
-	JsonExternalReferenceTarget target;
+	@JsonProperty("target")
+	List<JsonExternalReferenceTarget> target;
 
 	@NonNull
+	@JsonProperty("attachmentId")
 	String attachmentId;
 
 	@NonNull
+	@JsonProperty("filename")
 	String filename;
 
 	@Nullable
+	@JsonProperty("mimeType")
 	String mimeType;
 }

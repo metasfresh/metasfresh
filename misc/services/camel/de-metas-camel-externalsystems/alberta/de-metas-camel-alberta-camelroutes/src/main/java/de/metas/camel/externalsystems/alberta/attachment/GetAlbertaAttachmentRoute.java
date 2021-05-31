@@ -29,6 +29,7 @@ import de.metas.camel.externalsystems.alberta.attachment.processor.GetDocumentsP
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.util.CoalesceUtil;
 import io.swagger.client.ApiClient;
 import io.swagger.client.api.AttachmentApi;
 import io.swagger.client.api.DocumentApi;
@@ -37,6 +38,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
+
+import java.time.Instant;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -66,6 +69,7 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 		from(direct(GET_DOCUMENTS_ROUTE_ID))
 				.routeId(GET_DOCUMENTS_ROUTE_ID)
 				.streamCaching()
+				.log("Route invoked!")
 				.process(this::prepareContext)
 				.process(new GetDocumentsProcessor()).id(RETRIEVE_DOCUMENTS_PROCESSOR_ID)
 				.choice()
@@ -73,42 +77,44 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 						.log(LoggingLevel.DEBUG, "No documents received")
 					.otherwise()
 						.split(body())
-							.log(LoggingLevel.DEBUG, "Invoking Document Processor !!")
+							.stopOnException()
 							.to(direct(DOCUMENT_PROCESSOR_ID))
 						.end()
-				.endChoice();
+				.endChoice()
+				.to(direct(GET_ATTACHMENTS_ROUTE_ID));
 
 		from(direct(DOCUMENT_PROCESSOR_ID))
 				.routeId(DOCUMENT_PROCESSOR_ID)
-				.streamCaching()
+				.log("Route invoked!")
 				.process(new DocumentProcessor()).id(PREPARE_DOCUMENT_API_PROCESSOR_ID)
 				.split(body())
+					.stopOnException()
 					.log(LoggingLevel.DEBUG, "Calling metasfresh-api to save attachment: ${body}")
-					.to("{{" + ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID + "}}")
-					.to(direct(GET_ATTACHMENTS_ROUTE_ID))
+					.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID))
 				.end();
 
 		from(direct(GET_ATTACHMENTS_ROUTE_ID))
 				.routeId(GET_ATTACHMENTS_ROUTE_ID)
-				.streamCaching()
+				.log("Route invoked!")
 				.process(new GetAttachmentProcessor()).id(RETRIEVE_ATTACHMENTS_PROCESSOR_ID)
 				.choice()
 					.when(body().isNull())
 						.log(LoggingLevel.DEBUG, "No attachments received")
 					.otherwise()
 						.split(body())
-							.log(LoggingLevel.DEBUG, "Invoking Attachment Processor !!")
+							.stopOnException()
 							.to(direct(ATTACHMENT_PROCESSOR_ID))
 						.end()
 				.endChoice();
 
 		from(direct(ATTACHMENT_PROCESSOR_ID))
 				.routeId(ATTACHMENT_PROCESSOR_ID)
-				.streamCaching()
+				.log("Route invoked!")
 				.process(new AttachmentProcessor()).id(PREPARE_ATTACHMENT_API_PROCESSOR_ID)
 				.split(body())
+					.stopOnException()
 					.log(LoggingLevel.DEBUG, "Calling metasfresh-api to save attachment: ${body}")
-					.to("{{" + ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID + "}}")
+					.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID))
 				.end();
 		//@formatter:on
 	}
@@ -122,10 +128,15 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 
 		final var apiClient = new ApiClient().setBasePath(basePath);
 
+		final String createdAfter = CoalesceUtil.coalesceNotNull(
+				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
+				Instant.ofEpochMilli(0).toString());
+
 		final GetAttachmentRouteContext context = GetAttachmentRouteContext.builder()
 				.apiKey(apiKey)
 				.attachmentApi(new AttachmentApi(apiClient))
 				.documentApi(new DocumentApi(apiClient))
+				.createdAfter(createdAfter)
 				.build();
 
 		exchange.setProperty(GetAttachmentRouteConstants.ROUTE_PROPERTY_GET_ATTACHMENT_CONTEXT, context);

@@ -24,20 +24,14 @@ package de.metas.camel.externalsystems.alberta.attachment;
 
 import io.swagger.client.api.AttachmentApi;
 import io.swagger.client.api.DocumentApi;
-import io.swagger.client.model.Document;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-
-import java.util.List;
 
 @Data
 @Builder
 public class GetAttachmentRouteContext
 {
-	@NonNull
-	private final List<Document> documents;
-
 	@NonNull
 	private final String apiKey;
 
@@ -46,4 +40,7 @@ public class GetAttachmentRouteContext
 
 	@NonNull
 	private final AttachmentApi attachmentApi;
+
+	@NonNull
+	private final String createdAfter;
 }

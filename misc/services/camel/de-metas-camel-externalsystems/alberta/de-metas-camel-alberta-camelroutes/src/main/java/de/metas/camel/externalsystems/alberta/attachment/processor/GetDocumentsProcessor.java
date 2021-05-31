@@ -25,9 +25,6 @@ package de.metas.camel.externalsystems.alberta.attachment.processor;
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteConstants;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteContext;
-import de.metas.common.externalsystem.ExternalSystemConstants;
-import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.util.EmptyUtil;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.DocumentApi;
 import io.swagger.client.model.Document;
@@ -43,32 +40,22 @@ public class GetDocumentsProcessor implements Processor
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
-		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
-		final String createdAfter = request.getParameters().get(ExternalSystemConstants.PARAM_CREATED_AFTER);
+		final GetAttachmentRouteContext routeContext = ProcessorHelper
+				.getPropertyOrThrowError(exchange, GetAttachmentRouteConstants.ROUTE_PROPERTY_GET_ATTACHMENT_CONTEXT, GetAttachmentRouteContext.class);
 
-		final GetAttachmentRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, GetAttachmentRouteConstants.ROUTE_PROPERTY_GET_ATTACHMENT_CONTEXT, GetAttachmentRouteContext.class);
-
-		if (EmptyUtil.isBlank(createdAfter))
-		{
-			throw new RuntimeException("Missing route property: " + createdAfter + " !");
-		}
-
-		final List<Document> documents = getDocumentsOrNull(routeContext, createdAfter);
-
-		GetAttachmentRouteContext.builder().documents(documents).build();
+		final List<Document> documents = getDocumentsOrNull(routeContext);
 
 		exchange.getIn().setBody(documents);
 	}
 
 	@Nullable
 	final List<Document> getDocumentsOrNull(
-			@NonNull final GetAttachmentRouteContext context,
-			@NonNull final String createdAfter) throws ApiException
+			@NonNull final GetAttachmentRouteContext context) throws ApiException
 	{
 		final String apiKey = context.getApiKey();
 		final DocumentApi documentApi = context.getDocumentApi();
 
-		final var documents = documentApi.getAllDocuments(apiKey, createdAfter);
+		final var documents = documentApi.getAllDocuments(apiKey, context.getCreatedAfter());
 
 		return documents == null || documents.isEmpty()
 				? null

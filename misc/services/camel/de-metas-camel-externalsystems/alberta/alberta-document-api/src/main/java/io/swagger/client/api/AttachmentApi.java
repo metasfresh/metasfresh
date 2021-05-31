@@ -83,7 +83,7 @@ public class AttachmentApi
 
 		Map<String, String> localVarHeaderParams = new HashMap<String, String>();
 		if (apiKey != null)
-			localVarHeaderParams.put("api_key", apiClient.parameterToString(apiKey));
+			localVarHeaderParams.put("alberta-api-key", apiClient.parameterToString(apiKey));
 
 		Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 
@@ -242,7 +242,7 @@ public class AttachmentApi
 
 		Map<String, String> localVarHeaderParams = new HashMap<String, String>();
 		if (apiKey != null)
-			localVarHeaderParams.put("api_key", apiClient.parameterToString(apiKey));
+			localVarHeaderParams.put("alberta-api-key", apiClient.parameterToString(apiKey));
 
 		Map<String, Object> localVarFormParams = new HashMap<String, Object>();
 

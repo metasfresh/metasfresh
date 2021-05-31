@@ -48,7 +48,7 @@ public class JsonAttachment
 	@JsonProperty("mimeType")
 	String mimeType;
 
-	@NonNull
+	@Nullable
 	@JsonProperty("tags")
 	List<JsonTag> tags;
 }

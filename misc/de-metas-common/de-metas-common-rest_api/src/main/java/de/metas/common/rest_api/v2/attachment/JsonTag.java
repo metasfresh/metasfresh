@@ -40,4 +40,10 @@ public class JsonTag
 	@NonNull
 	@JsonProperty("value")
 	String value;
+
+	@NonNull
+	public static JsonTag of(@NonNull final String name, @NonNull final String value)
+	{
+		return new JsonTag(name, value);
+	}
 }

@@ -39,12 +39,13 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.threeten.bp.OffsetDateTime;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.math.BigDecimal;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Base64;
 import java.util.List;
+
+import static de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat.formatExternalId;
 
 public class AttachmentProcessor implements Processor
 {
@@ -55,20 +56,15 @@ public class AttachmentProcessor implements Processor
 
 		final Attachment attachment = exchange.getIn().getBody(Attachment.class);
 
-		final File file = getDataOrNull(routeContext, attachment.getId());
+		final File file = getFile(routeContext, attachment.getId());
 
-		//todo florina here
-		if (EmptyUtil.isEmpty(file))
-		{
-			throw new RuntimeException("No data received for attachment id" + attachment.getId());
-		}
+		final byte[] fileData = Files.readAllBytes(file.toPath());
 
-		final String data = new String(Files.readAllBytes(file.toPath()));  //todo florina
+		final String base64FileData = Base64.getEncoder().encodeToString(fileData);
 
 		final JsonAttachment jsonAttachment = JsonAttachment.builder()
 				.fileName(file.getName())
-				.mimeType(Files.probeContentType(Path.of(file.getName())))
-				.data(data)
+				.data(base64FileData)
 				.tags(computeTags(attachment))
 				.build();
 
@@ -80,15 +76,22 @@ public class AttachmentProcessor implements Processor
 		exchange.getIn().setBody(jsonRequest);
 	}
 
-	@Nullable
-	final File getDataOrNull(
+	@NonNull
+	final File getFile(
 			@NonNull final GetAttachmentRouteContext context,
 			@NonNull final String id) throws ApiException
 	{
 		final String apiKey = context.getApiKey();
 		final AttachmentApi attachmentApi = context.getAttachmentApi();
 
-		return attachmentApi.getSingleAttachment(apiKey, id);
+		final File file = attachmentApi.getSingleAttachment(apiKey, id);
+
+		if (file == null)
+		{
+			throw new RuntimeException("No data received for attachment id" + id);
+		}
+
+		return file;
 	}
 
 	@NonNull
@@ -96,8 +99,7 @@ public class AttachmentProcessor implements Processor
 	{
 		final ImmutableList.Builder<JsonExternalReferenceTarget> targets = ImmutableList.builder();
 
-		final String id = attachment.getId();
-		targets.add(mapJsonExternalReferenceTarget(id));
+		targets.add(JsonExternalReferenceTarget.ofTypeAndId(GetAttachmentRouteConstants.ESR_TYPE_USERID, formatExternalId(attachment.getId())));
 
 		return targets.build();
 	}
@@ -110,48 +112,29 @@ public class AttachmentProcessor implements Processor
 		final String id = attachment.getId();
 		if (!EmptyUtil.isEmpty(id))
 		{
-			tags.add(mapJsonTag(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_ID, id));
+			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_ID, id));
 		}
 
 		final String timestamp = attachment.getTimestamp();
 		if (!EmptyUtil.isEmpty(timestamp))
 		{
-			tags.add(mapJsonTag(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_TIMESTAMP, timestamp));
+			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_TIMESTAMP, timestamp));
 		}
 
 		final BigDecimal type = attachment.getType();
 		if (!EmptyUtil.isEmpty(type))
 		{
-			tags.add(mapJsonTag(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_TYPE, String.valueOf(type)));
+			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_TYPE, String.valueOf(type)));
 		}
 
 		final OffsetDateTime createdAt = attachment.getCreatedAt();
 		if (!EmptyUtil.isEmpty(createdAt))
 		{
-			tags.add(mapJsonTag(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_CREATEDAT, String.valueOf(createdAt)));
+			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_CREATEDAT, String.valueOf(createdAt)));
 		}
 
-		tags.add(mapJsonTag(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_ENDPOINT, GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_ENDPOINT_VALUE));
+		tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_ENDPOINT, GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_ENDPOINT_VALUE));
 
 		return tags.build();
-	}
-
-	@NonNull
-	final JsonExternalReferenceTarget mapJsonExternalReferenceTarget(
-			@NonNull final String identifier)
-	{
-		return JsonExternalReferenceTarget.builder()
-				.externalReferenceIdentifier(identifier)
-				.externalReferenceType(GetAttachmentRouteConstants.ESR_TYPE_USERID)
-				.build();
-	}
-
-	@NonNull
-	final JsonTag mapJsonTag(@NonNull final String name, @NonNull final String value)
-	{
-		return JsonTag.builder()
-				.name(name)
-				.value(value)
-				.build();
 	}
 }

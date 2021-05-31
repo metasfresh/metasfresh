@@ -32,7 +32,6 @@ public class ExternalSystemConstants
 	public static final String PARAM_TENANT = "Tenant";
 	public static final String PARAM_BPARTNER_GROUP = "BPartnerGroup";
 	public static final String PARAM_UPDATED_AFTER = "UpdatedAfter";
-	public static final String PARAM_CREATED_AFTER = "CreatedAfter";
 	public static final String PARAM_CLIENT_ID = "ClientId";
 	public static final String PARAM_CLIENT_SECRET = "ClientSecret";
 	public static final String PARAM_CHILD_CONFIG_VALUE = "ChildConfigValue";
