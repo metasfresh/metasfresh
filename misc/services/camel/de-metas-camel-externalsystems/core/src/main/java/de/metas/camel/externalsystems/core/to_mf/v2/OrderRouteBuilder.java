@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.core.to_mf.v2;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
+import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
@@ -58,6 +59,10 @@ public class OrderRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("http://{{metasfresh.api.v2.baseurl}}/orders/sales/payment");
+				.toD("{{metasfresh.salesorder.v2.api.uri}}/payment")
+
+				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonApiResponse.class))
+				.process(CamelRouteHelper::extractResponseContent)
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), Object.class));
 	}
 }

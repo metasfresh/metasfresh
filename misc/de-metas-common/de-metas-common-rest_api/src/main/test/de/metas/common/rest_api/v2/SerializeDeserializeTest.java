@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-core
+ * de-metas-common-rest_api
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,48 +20,56 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core;
+package de.metas.common.rest_api.v2;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import de.metas.common.rest_api.v2.JsonApiResponse;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.RuntimeCamelException;
-import org.apache.camel.component.jackson.JacksonDataFormat;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-public class CamelRouteHelper
+import java.io.IOException;
+
+import static org.assertj.core.api.Assertions.*;
+
+public class SerializeDeserializeTest
 {
-	@NonNull
-	public static JacksonDataFormat setupJacksonDataFormatFor(
-			@NonNull final CamelContext context,
-			@NonNull final Class<?> unmarshalType)
+	private ObjectMapper jsonObjectMapper;
+
+	@BeforeEach
+	public void beforeEach()
 	{
-		final ObjectMapper objectMapper = (new ObjectMapper())
+		jsonObjectMapper = new ObjectMapper()
 				.findAndRegisterModules()
 				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
 				.enable(MapperFeature.USE_ANNOTATIONS);
-
-		final JacksonDataFormat jacksonDataFormat = new JacksonDataFormat();
-		jacksonDataFormat.setCamelContext(context);
-		jacksonDataFormat.setObjectMapper(objectMapper);
-		jacksonDataFormat.setUnmarshalType(unmarshalType);
-		return jacksonDataFormat;
 	}
 
-	public static void extractResponseContent(@NonNull final Exchange exchange)
+	@Test
+	public void jsonApiResponse() throws Exception
 	{
-		final JsonApiResponse jsonApiResponse = exchange.getIn().getBody(JsonApiResponse.class);
+		JsonApiResponse apiResponse = JsonApiResponse.builder()
+				.requestId(JsonMetasfreshId.of(123))
+				.build();
 
-		if (jsonApiResponse == null)
-		{
-			throw new RuntimeCamelException("Empty exchange body! No JsonApiResponse present!");
-		}
+		testSerializeDeserialize(apiResponse, JsonApiResponse.class);
 
-		exchange.getIn().setBody(jsonApiResponse.getEndpointResponse());
+		apiResponse = JsonApiResponse.builder()
+				.requestId(JsonMetasfreshId.of(123))
+				.endpointResponse("some string")
+				.build();
+
+		testSerializeDeserialize(apiResponse, JsonApiResponse.class);
+	}
+
+	private <T> void testSerializeDeserialize(@NonNull final T json, final Class<T> clazz) throws IOException
+	{
+		final String jsonString = jsonObjectMapper.writeValueAsString(json);
+		final T jsonDeserialized = jsonObjectMapper.readValue(jsonString, clazz);
+		assertThat(jsonDeserialized).isEqualTo(json);
 	}
 }

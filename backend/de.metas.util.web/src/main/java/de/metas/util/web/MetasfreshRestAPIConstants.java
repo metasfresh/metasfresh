@@ -32,7 +32,7 @@ public class MetasfreshRestAPIConstants
 	 */
 	public static final String URL_PATTERN_API = "/api/*";
 
-	public static final String URL_PATTERN_API_V2 = "/api/v2/*"; //FIXME: temporary
+	public static final String URL_PATTERN_API_V2_PRE = "/api/v2-pre/*";
 	
 	/**
 	 * @deprecated please invoke endpoints with either {@link #ENDPOINT_API_V1} or {@link #ENDPOINT_API_V2}.
