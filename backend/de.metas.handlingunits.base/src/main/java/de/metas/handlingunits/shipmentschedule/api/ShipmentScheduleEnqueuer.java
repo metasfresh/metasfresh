@@ -132,7 +132,7 @@ public class ShipmentScheduleEnqueuer
 			public void run(final String localTrxName)
 			{
 				final ILock mainLock = acquireLock(adPInstanceId, queryFilters);
-				try (final ILockAutoCloseable ignore = mainLock.asAutocloseableOnTrxClose(localTrxName))
+				try (final ILockAutoCloseable ignore = mainLock.asAutoCloseable())
 				{
 					final Result result0 = createWorkpackages0(
 							PlainContextAware.newWithTrxName(_ctx, localTrxName),
