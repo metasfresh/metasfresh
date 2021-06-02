@@ -158,10 +158,10 @@ Card.propTypes = {
   connectDropTarget: PropTypes.func,
   onDelete: PropTypes.func,
   cardId: PropTypes.number,
-  documentPath: PropTypes.string,
+  documentPath: PropTypes.object, // this has the form { documentId: xxx, windowId: yyy }
   onCaptionClick: PropTypes.func,
   targetIndicator: PropTypes.any,
-  placeholder: PropTypes.string,
+  placeholder: PropTypes.bool,
 };
 
 export default DragSource(ItemTypes.CARD, cardSource, collect)(

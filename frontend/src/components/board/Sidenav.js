@@ -146,7 +146,7 @@ class Sidenav extends Component {
 
 Sidenav.propTypes = {
   boardId: PropTypes.number,
-  viewId: PropTypes.number,
+  viewId: PropTypes.string,
   setViewId: PropTypes.func,
   onClickOutside: PropTypes.func,
 };
