@@ -605,10 +605,10 @@ UPDATE AD_Process_Trl SET Name='Artikelstatistik (Excel)',Updated=TO_TIMESTAMP('
 UPDATE AD_Process_Trl SET Name='Artikelstatistik (Excel)',Updated=TO_TIMESTAMP('2021-05-21 15:39:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584831
 ;
 
--- 2021-05-21T12:41:31.579Z
--- URL zum Konzept
-UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-05-21 15:41:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=540692
-;
+-- -- 2021-05-21T12:41:31.579Z
+-- -- URL zum Konzept
+-- UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-05-21 15:41:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=540692
+-- ;
 
 
 -- 2021-05-21T14:02:01.072Z
