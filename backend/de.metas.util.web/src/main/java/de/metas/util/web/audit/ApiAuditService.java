@@ -60,7 +60,6 @@ import org.compiere.model.I_API_Request_Audit;
 import org.compiere.util.Env;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -82,6 +81,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
+
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Service
 public class ApiAuditService
@@ -339,6 +340,18 @@ public class ApiAuditService
 									.build());
 	}
 
+	public boolean bypassFilter(@NonNull final HttpServletRequest request)
+	{
+		final String contentType = request.getContentType();
+
+		if (Check.isBlank(contentType))
+		{
+			return false;
+		}
+
+		return !contentType.contains(APPLICATION_JSON_VALUE);
+	}
+
 	private ApiRequestAudit logRequest(
 			@NonNull final CustomHttpRequestWrapper customHttpRequest,
 			@NonNull final ApiAuditConfigId apiAuditConfigId,
@@ -366,6 +379,7 @@ public class ApiAuditService
 					.remoteHost(customHttpRequest.getRemoteHost())
 					.time(Instant.now())
 					.httpHeaders(requestHeaders)
+					.requestURI(customHttpRequest.getRequestURI())
 					.build();
 
 			return apiRequestAuditRepository.save(apiRequestAudit);
@@ -444,7 +458,7 @@ public class ApiAuditService
 	private ApiResponse getGenericNoWaitResponse()
 	{
 		final HttpHeaders httpHeaders = new HttpHeaders();
-		httpHeaders.add(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+		httpHeaders.add(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_VALUE);
 
 		return ApiResponse.of(HttpStatus.ACCEPTED.value(), httpHeaders, null);
 	}
