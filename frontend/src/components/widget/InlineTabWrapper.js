@@ -21,6 +21,7 @@ import { connect } from 'react-redux';
 import {
   createWindow,
   updateDataValidStatus,
+  updateDataIncludedTabsInfo,
 } from '../../actions/WindowActions';
 import {
   fetchInlineTabWrapperData,
@@ -31,7 +32,7 @@ import SectionGroup from '../SectionGroup';
 import counterpart from 'counterpart';
 import classnames from 'classnames';
 import { INLINE_TAB_SHOW_MORE_FROM } from '../../constants/Constants';
-import { deleteRequest } from '../../api';
+import { deleteRequest, getData } from '../../api';
 import onClickOutside from 'react-onclickoutside';
 
 class InlineTabWrapper extends PureComponent {
@@ -97,6 +98,7 @@ class InlineTabWrapper extends PureComponent {
       inlineTabBranch,
       updateDataValidStatus,
       isDocumentValid,
+      updateDataIncludedTabsInfo,
     } = this.props;
     // if item is invalid we will remove it
     const newEntry = inlineTabBranch[`${windowId}_${tabId}_${rowId}`];
@@ -108,6 +110,17 @@ class InlineTabWrapper extends PureComponent {
       } = newEntry;
       setInlineTabAddNew({ visible: false, windowId, docId, tabId, rowId });
       if (!valid && !isDocumentValid) {
+        // calling getData to have the updated included tabs before the deletion of the window
+        getData({
+          entity: 'window',
+          docType: windowId,
+          docId: docId,
+        }).then(({ data }) => {
+          const response = data[0];
+          response.includedTabsInfo &&
+            updateDataIncludedTabsInfo('master', response.includedTabsInfo);
+        });
+
         // perform deletion
         deleteRequest('window', windowId, docId, tabId, rowId).then(
           (deleteResponse) => {
@@ -321,6 +334,7 @@ InlineTabWrapper.propTypes = {
   updateDataValidStatus: PropTypes.func.isRequired,
   isDocumentValid: PropTypes.bool.isRequired,
   includedTabsInfo: PropTypes.object,
+  updateDataIncludedTabsInfo: PropTypes.func,
 };
 
 /**
@@ -376,5 +390,6 @@ export default connect(
     setInlineTabAddNew,
     setInlineTabShowMore,
     updateDataValidStatus,
+    updateDataIncludedTabsInfo,
   }
 )(onClickOutside(InlineTabWrapper));
