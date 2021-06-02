@@ -93,3 +93,142 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='CIF - Cost Insurance and Frei
 UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='CIF - Cost Insurance and Freight',Updated=TO_TIMESTAMP('2021-05-26 17:48:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Ref_List_ID=501605
 ;
 
+-- 2021-06-02T09:42:04.406Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,542623,501599,TO_TIMESTAMP('2021-06-02 12:42:04','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Delivered at Place',TO_TIMESTAMP('2021-06-02 12:42:04','YYYY-MM-DD HH24:MI:SS'),100,'DAP','DAP')
+;
+
+-- 2021-06-02T09:42:04.411Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Ref_List_ID=542623 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- 2021-06-02T09:42:31.070Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Name='DAP - Delivered at Place', ValueName='DAP - Delivered at Place',Updated=TO_TIMESTAMP('2021-06-02 12:42:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542623
+;
+
+-- 2021-06-02T09:42:55.899Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DAP - geliefert benannter Ort',Updated=TO_TIMESTAMP('2021-06-02 12:42:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=542623
+;
+
+-- 2021-06-02T09:43:00.090Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DAP - geliefert benannter Ort',Updated=TO_TIMESTAMP('2021-06-02 12:43:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=542623
+;
+
+-- 2021-06-02T09:44:07.208Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,542624,501599,TO_TIMESTAMP('2021-06-02 12:44:07','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','DPU - Delivered at Place Unloaded',TO_TIMESTAMP('2021-06-02 12:44:07','YYYY-MM-DD HH24:MI:SS'),100,'DPU','DPU - Delivered at Place Unloaded')
+;
+
+-- 2021-06-02T09:44:07.210Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Ref_List_ID=542624 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- 2021-06-02T09:45:57.033Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DPU - geliefert benannter Ort entladen',Updated=TO_TIMESTAMP('2021-06-02 12:45:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=542624
+;
+
+-- 2021-06-02T09:46:04.154Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DPU - geliefert benannter Ort entladen',Updated=TO_TIMESTAMP('2021-06-02 12:46:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=542624
+;
+
+-- 2021-06-02T09:46:15.752Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 12:46:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=542624
+;
+
+-- 2021-06-02T09:46:21.105Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DPU - geliefert benannter Ort entladen',Updated=TO_TIMESTAMP('2021-06-02 12:46:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=542624
+;
+
+-- 2021-06-02T09:46:54.032Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 12:46:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=501608
+;
+
+-- 2021-06-02T09:46:54.871Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 12:46:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=501608
+;
+
+-- 2021-06-02T09:46:58.318Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 12:46:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=501608
+;
+
+-- 2021-06-02T09:47:13.573Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DAF - Delivered At Frontier',Updated=TO_TIMESTAMP('2021-06-02 12:47:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=501608
+;
+
+-- 2021-06-02T09:47:22.545Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DAF - Delivered At Frontier',Updated=TO_TIMESTAMP('2021-06-02 12:47:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Ref_List_ID=501608
+;
+
+-- 2021-06-02T09:48:16.032Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DDU - Delivered Duty Unpaid',Updated=TO_TIMESTAMP('2021-06-02 12:48:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Ref_List_ID=501611
+;
+
+-- 2021-06-02T09:48:29.998Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 12:48:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=501611
+;
+
+-- 2021-06-02T09:48:34.747Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Name='DDU - Delivered Duty Unpaid',Updated=TO_TIMESTAMP('2021-06-02 12:48:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=501611
+;
+
+-- 2021-06-02T09:48:41.043Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 12:48:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=501611
+;
+
+-- 2021-06-02T09:48:46.673Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 12:48:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=501611
+;
+
+-- 2021-06-02T09:48:50.315Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 12:48:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=501611
+;
+
+-- 2021-06-02T09:49:11.929Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 12:49:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=501610
+;
+
+-- 2021-06-02T09:49:13.120Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 12:49:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=501610
+;
+
+-- 2021-06-02T09:49:14.437Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 12:49:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=501610
+;
+
+-- 2021-06-02T09:49:32.263Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DEQ - Delivered Ex Quay',Updated=TO_TIMESTAMP('2021-06-02 12:49:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Ref_List_ID=501610
+;
+
+-- 2021-06-02T09:49:42.558Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Name='DEQ - Delivered Ex Quay',Updated=TO_TIMESTAMP('2021-06-02 12:49:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=501610
+;
+
+-- 2021-06-02T09:49:44.878Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 12:49:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=501610
+;
