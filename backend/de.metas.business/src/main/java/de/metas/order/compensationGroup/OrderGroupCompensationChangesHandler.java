@@ -1,5 +1,6 @@
 package de.metas.order.compensationGroup;
 
+import de.metas.product.ProductId;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
@@ -158,6 +159,16 @@ public class OrderGroupCompensationChangesHandler
 		final OrderLinesStorage orderLinesStorage = groupsRepo.createNotSaveableSingleOrderLineStorage(orderLine);
 		groupsRepo.saveGroup(group, orderLinesStorage);
 
+	}
+
+	public boolean isProductExcludedFromFlatrateConditions(final ProductId productId,
+			final GroupId groupId)
+	{
+		final Group group = groupsRepo.retrieveGroup(groupId);
+
+		final GroupTemplateId groupTemplateId = group.getGroupTemplateId();
+
+		return groupTemplateRepo.isProductExcludedFromFlatrateConditions(productId, groupTemplateId);
 	}
 
 	public IQueryBuilder<I_C_OrderLine> retrieveGroupOrderLinesQuery(final GroupId groupId)

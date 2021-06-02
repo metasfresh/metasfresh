@@ -2,6 +2,7 @@ package de.metas.contracts.interceptor;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import de.metas.product.ProductId;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -36,6 +37,7 @@ public class C_OrderLine
 		}
 
 		final GroupId groupId = OrderGroupRepository.extractGroupId(orderLine);
+
 		final int flatrateConditionsId = retrieveFirstFlatrateConditionsIdForCompensationGroup(groupId);
 
 		orderLine.setC_Flatrate_Conditions_ID(flatrateConditionsId);
@@ -47,7 +49,7 @@ public class C_OrderLine
 	/**
 	 * In case the flatrate conditions for an order line is updated and that line is part of an compensation group,
 	 * then set the same flatrate conditions to all other lines from the same compensation group.
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/3150
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, skipIfCopying = true)
@@ -60,6 +62,14 @@ public class C_OrderLine
 
 		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(orderLine);
 		if (groupId == null)
+		{
+			return;
+		}
+
+		final boolean productExcludedFromFlatrateConditions = groupChangesHandler.
+				isProductExcludedFromFlatrateConditions(ProductId.ofRepoId(orderLine.getM_Product_ID()), groupId);
+
+		if (productExcludedFromFlatrateConditions)
 		{
 			return;
 		}

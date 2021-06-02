@@ -13,6 +13,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Product_Exclude_FlatrateConditions;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -46,7 +47,7 @@ import java.util.Optional;
 public class GroupTemplateRepository
 {
 	private final CCache<GroupTemplateId, GroupTemplate> //
-	groupTemplatesById = CCache.<GroupTemplateId, GroupTemplate> builder()
+			groupTemplatesById = CCache.<GroupTemplateId, GroupTemplate>builder()
 			.tableName(I_C_CompensationGroup_Schema.Table_Name)
 			.initialCapacity(10)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
@@ -125,4 +126,17 @@ public class GroupTemplateRepository
 
 		return groupMatcherFactory.createPredicate(schemaLinePO, allSchemaLinePOs);
 	}
+
+	public boolean isProductExcludedFromFlatrateConditions(final ProductId productId,
+			final GroupTemplateId groupTemplateId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_M_Product_Exclude_FlatrateConditions.class)
+				.addEqualsFilter(I_M_Product_Exclude_FlatrateConditions.COLUMNNAME_C_CompensationGroup_Schema_ID, groupTemplateId)
+				.addEqualsFilter(I_M_Product_Exclude_FlatrateConditions.COLUMNNAME_M_Product_ID, productId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+	}
+
 }
