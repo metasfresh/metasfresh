@@ -27,13 +27,13 @@ import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
-import de.metas.common.rest_api.v2.JsonApiResponse;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
+import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -62,9 +62,7 @@ public class OrderLineCandRouteBuilder extends RouteBuilder
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.toD("{{metasfresh.olcands.v2.api.uri}}/bulk")
 
-				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonApiResponse.class))
-				.process(CamelRouteHelper::extractResponseContent)
-				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), Object.class));
+				.to(direct(UNPACK_V2_API_RESPONSE));
 
 		from(direct(ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID))
 				.routeId(ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID)
@@ -84,8 +82,6 @@ public class OrderLineCandRouteBuilder extends RouteBuilder
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{metasfresh.olcands.v2.api.uri}}/clearToProcess")
 
-				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonApiResponse.class))
-				.process(CamelRouteHelper::extractResponseContent)
-				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), Object.class));
+				.to(direct(UNPACK_V2_API_RESPONSE));
 	}
 }

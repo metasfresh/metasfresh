@@ -26,11 +26,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import de.metas.common.rest_api.v2.JsonApiResponse;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 
 public class CamelRouteHelper
@@ -51,17 +48,5 @@ public class CamelRouteHelper
 		jacksonDataFormat.setObjectMapper(objectMapper);
 		jacksonDataFormat.setUnmarshalType(unmarshalType);
 		return jacksonDataFormat;
-	}
-
-	public static void extractResponseContent(@NonNull final Exchange exchange)
-	{
-		final JsonApiResponse jsonApiResponse = exchange.getIn().getBody(JsonApiResponse.class);
-
-		if (jsonApiResponse == null)
-		{
-			throw new RuntimeCamelException("Empty exchange body! No JsonApiResponse present!");
-		}
-
-		exchange.getIn().setBody(jsonApiResponse.getEndpointResponse());
 	}
 }
