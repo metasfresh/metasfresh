@@ -110,23 +110,22 @@ class InlineTabWrapper extends PureComponent {
       } = newEntry;
       setInlineTabAddNew({ visible: false, windowId, docId, tabId, rowId });
       if (!valid && !isDocumentValid) {
-        // calling getData to have the updated included tabs before the deletion of the window
-        getData({
-          entity: 'window',
-          docType: windowId,
-          docId: docId,
-        }).then(({ data }) => {
-          const response = data[0];
-          response.includedTabsInfo &&
-            updateDataIncludedTabsInfo('master', response.includedTabsInfo);
-        });
-
         // perform deletion
         deleteRequest('window', windowId, docId, tabId, rowId).then(
           (deleteResponse) => {
             let { validStatus } = deleteResponse.data[0];
             updateDataValidStatus('master', validStatus || { valid: true });
             this.updateTable(true);
+            // calling getData to have the updated included tabs
+            getData({
+              entity: 'window',
+              docType: windowId,
+              docId: docId,
+            }).then(({ data }) => {
+              const response = data[0];
+              response.includedTabsInfo &&
+                updateDataIncludedTabsInfo('master', response.includedTabsInfo);
+            });
           }
         );
       } else {
