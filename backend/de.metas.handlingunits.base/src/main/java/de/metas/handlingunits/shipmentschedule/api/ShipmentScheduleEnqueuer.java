@@ -245,7 +245,7 @@ public class ShipmentScheduleEnqueuer
 					final ILockCommand workpackageElementsLocker = mainLock
 							.split()
 							.setOwner(workpackageElementsLockOwner)
-							.setAutoCleanup(false); // from this point own we don't want to allow the system to auto clean the locks
+							.setAutoCleanup(false); // from this point on we don't want to allow the system to auto clean the locks
 					workpackageBuilder.setElementsLocker(workpackageElementsLocker);
 				}
 

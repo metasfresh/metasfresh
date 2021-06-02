@@ -7,12 +7,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
+import lombok.Builder;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -35,24 +39,23 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * {@link ILockDatabase} implementation which stores the locks in {@link I_T_Lock} table.
- *
+ * <p>
  * This is the default implementation.
  *
  * @author tsa
- *
  */
 public class SqlLockDatabase extends AbstractLockDatabase
 {
 	private static final String SQL_DeleteLock = "DELETE FROM " + I_T_Lock.Table_Name + " WHERE 1=1 ";
 
 	/**
-	 * @param lockOwner
-	 * @param sql
 	 * @param sqlParams sql parameters list or null
 	 */
-	private final void appendLockOwnerWhereClause(final LockOwner lockOwner, final StringBuilder sql, final List<Object> sqlParams)
+	private void appendLockOwnerWhereClause(final LockOwner lockOwner, final StringBuilder sql, final List<Object> sqlParams)
 	{
 		Check.assumeNotNull(lockOwner, "lockOwner not null");
 		if (lockOwner.isAnyOwner())
@@ -72,7 +75,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		}
 	}
 
-	private static final String toSqlParam(final Object param, final List<Object> sqlParams)
+	private static String toSqlParam(final Object param, final List<Object> sqlParams)
 	{
 		if (sqlParams != null)
 		{
@@ -85,7 +88,10 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		}
 	}
 
-	private final void appendTableRecordWhereClause(final TableRecordReference record, final StringBuilder sql, final List<Object> sqlParams)
+	private void appendTableRecordWhereClause(
+			@NonNull final TableRecordReference record,
+			@NonNull final StringBuilder sql,
+			@NonNull final List<Object> sqlParams)
 	{
 		final int adTableId = record.getAD_Table_ID();
 		final int recordId = record.getRecord_ID();
@@ -98,7 +104,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		sql.append(" AND ").append(I_T_Lock.COLUMNNAME_Record_ID).append("=").append(toSqlParam(recordId, sqlParams));
 	}
 
-	private final void appendTableSelectionWhereClause(final int adTableId, @NonNull final PInstanceId pinstanceId, final StringBuilder sql, final List<Object> sqlParams)
+	private void appendTableSelectionWhereClause(final int adTableId, @NonNull final PInstanceId pinstanceId, final StringBuilder sql, final List<Object> sqlParams)
 	{
 		Check.assume(adTableId > 0, "adTableId > 0");
 		sql.append(" AND ").append(I_T_Lock.COLUMNNAME_AD_Table_ID).append("=").append(toSqlParam(adTableId, sqlParams));
@@ -122,10 +128,10 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 		final List<Object> sqlParams = new ArrayList<>();
 		final StringBuilder sql = new StringBuilder(" SELECT count(1)"
-				+ " FROM " + I_T_Lock.Table_Name
-				+ " WHERE "
-				+ I_T_Lock.COLUMNNAME_AD_Table_ID + "=" + toSqlParam(adTableId, sqlParams)
-				+ " AND " + I_T_Lock.COLUMNNAME_Record_ID + "=" + toSqlParam(recordId, sqlParams));
+															+ " FROM " + I_T_Lock.Table_Name
+															+ " WHERE "
+															+ I_T_Lock.COLUMNNAME_AD_Table_ID + "=" + toSqlParam(adTableId, sqlParams)
+															+ " AND " + I_T_Lock.COLUMNNAME_Record_ID + "=" + toSqlParam(recordId, sqlParams));
 
 		if (lockOwner != null)
 		{
@@ -138,8 +144,8 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 	/**
 	 * Implements the method for ISqlQueryFilters. Throws an error for other IQueryFilters
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
+	 * <p>
+	 * task http://dewiki908/mediawiki/index.php/08756_EDI_Lieferdispo_Lieferschein_und_Complete_%28101564484292%29
 	 */
 	@Override
 	protected int lockByFilters(final ILockCommand lockCommand)
@@ -175,7 +181,14 @@ public class SqlLockDatabase extends AbstractLockDatabase
 					+ " FROM " + tableName
 					+ " WHERE (" + sqlFilter.getSql() + ")";
 			sqlParams.addAll(sqlFilter.getSqlParams(null));
-			return performLockSQLInsert(lockCommand, sqlParams, sql);
+			try
+			{
+				return performLockSQLInsert(lockCommand, sqlParams, sql);
+			}
+			catch (final LockFailedException e)
+			{
+				throw e.setExistingLocks(retrieveExistingLocksForFilter(adTableId, sqlFilter));
+			}
 		}
 
 		Check.errorIf(true, "Currently we just support ISqlQueryFilters. This filter is not supported: {}", selectionToLockFilters);
@@ -212,8 +225,14 @@ public class SqlLockDatabase extends AbstractLockDatabase
 				//
 				+ " FROM T_Selection"
 				+ " WHERE AD_PInstance_ID=" + toSqlParam(pinstanceId, sqlParams);
-
-		return performLockSQLInsert(lockCommand, sqlParams, sql);
+		try
+		{
+			return performLockSQLInsert(lockCommand, sqlParams, sql);
+		}
+		catch (final LockFailedException e)
+		{
+			throw e.setExistingLocks(retrieveExistingLocksForSelection(adTableId, pinstanceId));
+		}
 	}
 
 	protected int performLockSQLInsert(final ILockCommand lockCommand, final List<Object> sqlParams, final String sql)
@@ -231,7 +250,6 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		catch (final DBUniqueConstraintException e)
 		{
 			// TODO: implement for lockCommand.isFailIfAlreadyLocked() == false to allow partial locking
-
 			throw new LockFailedException("Some of the records were already locked", e)
 					.setLockCommand(lockCommand)
 					.setSql(sql, sqlParams.toArray());
@@ -245,11 +263,92 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		}
 	}
 
-	@Override
-	protected boolean lockRecord(final ILockCommand lockCommand, final TableRecordReference record)
+	private ImmutableList<ExistingLockInfo> retrieveExistingLocksForFilter(final int adTableId, @NonNull final ISqlQueryFilter filter)
 	{
-		Check.assumeNotNull(record, "record not null");
+		return retrieveExistingLocksForWhereClause(
+				adTableId,
+				filter.getSql(),
+				filter.getSqlParams(null));
+	}
 
+	private ImmutableList<ExistingLockInfo> retrieveExistingLocksForSelection(final int adTableId, @NonNull final PInstanceId pinstanceId)
+	{
+		return retrieveExistingLocksForWhereClause(
+				adTableId,
+				I_T_Lock.COLUMNNAME_Record_ID + " IN (select T_Selection_ID from T_Selection WHERE AD_PInstance_ID=" + pinstanceId.getRepoId() + ")",
+				null);
+	}
+
+	private ImmutableList<ExistingLockInfo> retrieveExistingLocksForWhereClause(
+			final int adTableId,
+			@NonNull final String whereSql,
+			@Nullable final List<Object> whereSqlParams)
+	{
+		final String sql =
+				"SELECT " + I_T_Lock.COLUMNNAME_AD_Table_ID + ", "
+						+ I_T_Lock.COLUMNNAME_T_Lock_ID + ", "
+						+ I_T_Lock.COLUMNNAME_Record_ID + ", "
+						+ I_T_Lock.COLUMNNAME_Owner + ", "
+						+ I_T_Lock.COLUMNNAME_IsAutoCleanup + ", "
+						+ I_T_Lock.COLUMNNAME_IsAllowMultipleOwners + ", "
+						+ " FROM " + I_T_Lock.Table_Name
+						+ " WHERE " + I_T_Lock.COLUMNNAME_AD_Table_ID + " = " + adTableId
+						+ " AND " + whereSql;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			DB.setParameters(pstmt, whereSqlParams);
+			rs = pstmt.executeQuery();
+
+			final ImmutableList.Builder<ExistingLockInfo> result = ImmutableList.builder();
+			while (rs.next())
+			{
+				final ExistingLockInfo lockInfo = extractExistingLockInfo(rs);
+				result.add(lockInfo);
+			}
+			return result.build();
+		}
+		catch (final SQLException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
+
+	private ExistingLockInfo extractExistingLockInfo(@NonNull final ResultSet rs) throws SQLException
+	{
+		return ExistingLockInfo
+				.builder()
+				.lockId(rs.getInt(I_T_Lock.COLUMNNAME_T_Lock_ID))
+				.ownerName(I_T_Lock.COLUMNNAME_Owner)
+				.lockedRecord(TableRecordReference.of(
+						rs.getInt(I_T_Lock.COLUMNNAME_AD_Table_ID),
+						rs.getInt(I_T_Lock.COLUMNNAME_Record_ID)
+				))
+				.allowMultipleOwners(rs.getBoolean(I_T_Lock.COLUMNNAME_IsAllowMultipleOwners))
+				.autoCleanup(rs.getBoolean(I_T_Lock.COLUMNNAME_IsAutoCleanup))
+				.build();
+	}
+
+	@Value
+	@Builder
+	public static class ExistingLockInfo
+	{
+		int lockId;
+		String ownerName;
+		TableRecordReference lockedRecord;
+		boolean autoCleanup;
+		boolean allowMultipleOwners;
+	}
+
+	@Override
+	protected boolean lockRecord(final ILockCommand lockCommand, @NonNull final TableRecordReference record)
+	{
 		final int adTableId = record.getAD_Table_ID();
 		Check.assume(adTableId > 0, "adTableId > 0");
 
@@ -538,7 +637,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 				+ " GROUP BY "
 				+ I_T_Lock.COLUMNNAME_IsAutoCleanup;
 
-		final List<Object> sqlParams = Arrays.<Object> asList(lockOwner.getOwnerName());
+		final List<Object> sqlParams = Arrays.<Object>asList(lockOwner.getOwnerName());
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;

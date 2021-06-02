@@ -24,6 +24,7 @@ package de.metas.lock.api.impl;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import lombok.Getter;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -49,9 +50,13 @@ import lombok.NonNull;
 	private static final transient Logger logger = LogManager.getLogger(Lock.class);
 
 	/* package */CloseableReentrantLock mutex = new CloseableReentrantLock();
-
+	
 	private final ILockDatabase lockDatabase;
+	
+	@Getter
 	private final LockOwner owner;
+
+	@Getter
 	private final boolean isAutoCleanup;
 	private int _countLocked = 0;
 
@@ -86,18 +91,6 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public LockOwner getOwner()
-	{
-		return owner;
-	}
-
-	@Override
-	public boolean isAutoCleanup()
-	{
-		return isAutoCleanup;
-	}
-
-	@Override
 	public int getCountLocked()
 	{
 		return _countLocked;
@@ -105,7 +98,7 @@ import lombok.NonNull;
 
 	/* package */final void subtractCountLocked(final int countLockedToSubtract)
 	{
-		try (CloseableReentrantLock l = mutex.open())
+		try (CloseableReentrantLock ignore = mutex.open())
 		{
 			if (_countLocked < countLockedToSubtract)
 			{
@@ -138,7 +131,7 @@ import lombok.NonNull;
 	{
 		assertHasRealOwner();
 
-		try (CloseableReentrantLock l = mutex.open())
+		try (CloseableReentrantLock ignore = mutex.open())
 		{
 			// Mark it as closed.
 			// If it was already closed, do nothing.
@@ -185,7 +178,7 @@ import lombok.NonNull;
 				.registerHandlingMethod(innerTrx -> close());
 	}
 
-	private final void assertHasRealOwner()
+	private void assertHasRealOwner()
 	{
 		final LockOwner owner = getOwner();
 		Check.assume(owner.isRealOwner(), "lock {} shall have an owner", this);
