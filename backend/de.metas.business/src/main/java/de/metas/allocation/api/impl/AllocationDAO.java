@@ -11,6 +11,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -155,6 +156,8 @@ public class AllocationDAO implements IAllocationDAO
 			@NonNull final SOTrx invoiceSOTrx,
 			@NonNull final ClientAndOrgId invoiceClientAndOrgId)
 	{
+		final PaymentDirection paymentDirection = PaymentDirection.ofSOTrx(invoiceSOTrx);
+
 		return queryBL.createQueryBuilder(I_C_Payment.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Client_ID, invoiceClientAndOrgId.getClientId())
@@ -162,7 +165,7 @@ public class AllocationDAO implements IAllocationDAO
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.Completed)
 				.addEqualsFilter(I_C_Payment.COLUMN_Processed, true)
-				.addEqualsFilter(I_C_Payment.COLUMN_IsReceipt, invoiceSOTrx.isSales())
+				.addEqualsFilter(I_C_Payment.COLUMN_IsReceipt, paymentDirection.isReceipt())
 				.addEqualsFilter(I_C_Payment.COLUMN_IsAutoAllocateAvailableAmt, true)
 				.addEqualsFilter(I_C_Payment.COLUMN_IsAllocated, false)
 				.orderBy(I_C_Payment.COLUMN_DateTrx)
@@ -210,8 +213,6 @@ public class AllocationDAO implements IAllocationDAO
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 		// log.debug("getAllocatedAmt - " + retValue);
 		// ? ROUND(COALESCE(v_AllocatedAmt,0), 2);
@@ -238,16 +239,16 @@ public class AllocationDAO implements IAllocationDAO
 	{
 		BigDecimal retValue = null;
 
-		String sql = "SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,"
-				+ "ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
-				+ "FROM C_AllocationLine al"
-				+ " INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID=ah.C_AllocationHdr_ID)"
-				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
-				+ "WHERE al.C_Invoice_ID=?"
-				+ " AND ah.IsActive='Y' AND al.IsActive='Y'";
+		StringBuilder sql = new StringBuilder("SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,"
+													  + "ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
+													  + "FROM C_AllocationLine al"
+													  + " INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID=ah.C_AllocationHdr_ID)"
+													  + " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
+													  + "WHERE al.C_Invoice_ID=?"
+													  + " AND ah.IsActive='Y' AND al.IsActive='Y'");
 		if (paymentIDsToIgnore != null && !paymentIDsToIgnore.isEmpty())                             // make sure that the set is not empty
 		{
-			sql += " AND (al.C_Payment_ID NOT IN (-1";
+			sql.append(" AND (al.C_Payment_ID NOT IN (-1");
 
 			for (final Integer paymentIdToExclude : paymentIDsToIgnore)
 			{
@@ -255,9 +256,9 @@ public class AllocationDAO implements IAllocationDAO
 				{
 					continue; // guard agains NPE
 				}
-				sql += ", " + paymentIdToExclude;
+				sql.append(", ").append(paymentIdToExclude);
 			}
-			sql += ") OR al.C_Payment_ID IS NULL )";
+			sql.append(") OR al.C_Payment_ID IS NULL )");
 		}
 
 		PreparedStatement pstmt = null;
@@ -267,7 +268,7 @@ public class AllocationDAO implements IAllocationDAO
 		{
 			final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
-			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt = DB.prepareStatement(sql.toString(), trxName);
 			pstmt.setInt(1, invoice.getC_Invoice_ID());
 			rs = pstmt.executeQuery();
 			if (rs.next())
@@ -282,8 +283,6 @@ public class AllocationDAO implements IAllocationDAO
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 		// log.debug("getAllocatedAmt - " + retValue);
 		// ? ROUND(NVL(v_AllocatedAmt,0), 2);
@@ -358,7 +357,7 @@ public class AllocationDAO implements IAllocationDAO
 				.addEqualsFilter(I_C_Payment.COLUMN_C_Invoice_ID, invoice.getC_Invoice_ID()) // add explicit invoice in payment
 				.addInSubQueryFilter(I_C_Payment.COLUMNNAME_C_Payment_ID, I_C_AllocationLine.COLUMNNAME_C_Payment_ID, invoiceAllocationLineFilter);
 
-		final List<I_C_Payment> availablePayments = queryBL.createQueryBuilder(I_C_Payment.class, invoice)
+		return queryBL.createQueryBuilder(I_C_Payment.class, invoice)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID, invoice.getC_BPartner_ID())
 				.addEqualsFilter(I_C_Payment.COLUMN_DocStatus, DocStatus.Completed)
@@ -369,8 +368,6 @@ public class AllocationDAO implements IAllocationDAO
 				.orderBy().addColumn(I_C_Payment.COLUMN_DateTrx).endOrderBy()
 				.create()
 				.list();
-
-		return availablePayments;
 	}
 
 	@Override
