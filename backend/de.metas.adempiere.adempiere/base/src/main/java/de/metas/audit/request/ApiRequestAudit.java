@@ -85,6 +85,9 @@ public class ApiRequestAudit
 	@Nullable
 	String httpHeaders;
 
+	@Nullable
+	String requestURI;
+
 	@NonNull
 	public ApiRequestAuditId getIdNotNull()
 	{

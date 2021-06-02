@@ -80,6 +80,7 @@ public class ApiRequestAuditRepositoryTest
 				.remoteHost("remoteHost")
 				.time(Instant.ofEpochMilli(0))
 				.httpHeaders("httpHeaders")
+				.requestURI("request/uri")
 				.build();
 
 		//when

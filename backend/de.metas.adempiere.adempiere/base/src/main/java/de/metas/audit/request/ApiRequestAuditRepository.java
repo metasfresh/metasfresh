@@ -63,6 +63,7 @@ public class ApiRequestAuditRepository
 		record.setRemoteHost(apiRequestAudit.getRemoteHost());
 		record.setTime(TimeUtil.asTimestamp(apiRequestAudit.getTime()));
 		record.setHttpHeaders(apiRequestAudit.getHttpHeaders());
+		record.setRequestURI(apiRequestAudit.getRequestURI());
 
 		saveRecord(record);
 
@@ -134,6 +135,7 @@ public class ApiRequestAuditRepository
 				.remoteHost(record.getRemoteHost())
 				.time(TimeUtil.asInstant(record.getTime()))
 				.httpHeaders(record.getHttpHeaders())
+				.requestURI(record.getRequestURI())
 				.build();
 	}
 
