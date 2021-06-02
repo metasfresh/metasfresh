@@ -32,7 +32,7 @@ import SectionGroup from '../SectionGroup';
 import counterpart from 'counterpart';
 import classnames from 'classnames';
 import { INLINE_TAB_SHOW_MORE_FROM } from '../../constants/Constants';
-import { deleteRequest, getData } from '../../api';
+import { deleteRequest } from '../../api';
 import onClickOutside from 'react-onclickoutside';
 
 class InlineTabWrapper extends PureComponent {
@@ -113,19 +113,10 @@ class InlineTabWrapper extends PureComponent {
         // perform deletion
         deleteRequest('window', windowId, docId, tabId, rowId).then(
           (deleteResponse) => {
-            let { validStatus } = deleteResponse.data[0];
+            let { validStatus, includedTabsInfo } = deleteResponse.data[0];
             updateDataValidStatus('master', validStatus || { valid: true });
             this.updateTable(true);
-            // calling getData to have the updated included tabs
-            getData({
-              entity: 'window',
-              docType: windowId,
-              docId: docId,
-            }).then(({ data }) => {
-              const response = data[0];
-              response.includedTabsInfo &&
-                updateDataIncludedTabsInfo('master', response.includedTabsInfo);
-            });
+            includedTabsInfo &&  updateDataIncludedTabsInfo('master', includedTabsInfo);
           }
         );
       } else {
