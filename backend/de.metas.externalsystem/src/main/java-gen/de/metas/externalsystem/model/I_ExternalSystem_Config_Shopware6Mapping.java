@@ -1,11 +1,10 @@
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-
 /** Generated Interface for ExternalSystem_Config_Shopware6Mapping
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
 public interface I_ExternalSystem_Config_Shopware6Mapping
@@ -301,6 +300,27 @@ public interface I_ExternalSystem_Config_Shopware6Mapping
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6Mapping, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_Shopware6Mapping.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Invoice Email Enabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoiceEmailEnabled (@Nullable java.lang.String IsInvoiceEmailEnabled);
+
+	/**
+	 * Get Invoice Email Enabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsInvoiceEmailEnabled();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6Mapping, Object> COLUMN_IsInvoiceEmailEnabled = new ModelColumn<>(I_ExternalSystem_Config_Shopware6Mapping.class, "IsInvoiceEmailEnabled", null);
+	String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
 
 	/**
 	 * Set Payment Rule.

@@ -12,6 +12,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -61,7 +62,7 @@ public final class ShipmentCandidatesView extends AbstractCustomView<ShipmentCan
 	}
 
 	@Override
-	public LookupValuesList getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
+	public LookupValuesPage getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
 	{
 		throw new UnsupportedOperationException();
 	}

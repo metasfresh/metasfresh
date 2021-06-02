@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
@@ -77,7 +78,7 @@ import java.util.Optional;
 
 	LookupValuesList getLookupValues();
 
-	LookupValuesList getLookupValuesForQuery(String query);
+	LookupValuesPage getLookupValuesForQuery(String query);
 
 	Optional<LookupValue> getLookupValueById(@NonNull RepoIdAware id);
 

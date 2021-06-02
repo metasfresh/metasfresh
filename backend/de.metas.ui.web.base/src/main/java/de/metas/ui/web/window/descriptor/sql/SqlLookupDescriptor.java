@@ -53,6 +53,7 @@ import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.NamePairPredicates;
 import org.adempiere.ad.validationRule.impl.CompositeValidationRule;
 import org.adempiere.ad.validationRule.impl.NullValidationRule;
 import org.adempiere.db.DBConstants;
@@ -73,6 +74,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @Immutable
 public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 {
@@ -188,7 +190,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 				.add("zoomIntoWindowId", zoomIntoWindowId.orElse(null))
 				.add("highVolume", highVolume ? highVolume : null)
 				.add("sqlForFetching", sqlForFetchingExpression.toOneLineString())
-				.add("postQueryPredicate", postQueryPredicate == null || postQueryPredicate == INamePairPredicate.NULL ? null : postQueryPredicate)
+				.add("postQueryPredicate", postQueryPredicate == null || postQueryPredicate == NamePairPredicates.ACCEPT_ALL ? null : postQueryPredicate)
 				.toString();
 	}
 
@@ -296,7 +298,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	}
 
 	@Override
-	public TooltipType getTooltipType()
+	public @NonNull TooltipType getTooltipType()
 	{
 		return tooltipType;
 	}
@@ -695,12 +697,12 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			final INamePairPredicate postQueryPredicate = validationRuleEffective.getPostQueryFilter();
 			if (postQueryPredicate == null)
 			{
-				return INamePairPredicate.NULL;
+				return NamePairPredicates.ACCEPT_ALL;
 			}
 
 			if (scope == LookupScope.DocumentFilter && !postQueryPredicate.getParameters().isEmpty())
 			{
-				return INamePairPredicate.NULL;
+				return NamePairPredicates.ACCEPT_ALL;
 			}
 
 			return postQueryPredicate;
@@ -808,7 +810,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return validationRuleEffective.getDependsOnTableNames();
 		}
 
-		public TooltipType getTooltipType()
+		public @NonNull TooltipType getTooltipType()
 		{
 			return tooltipType;
 		}

@@ -24,6 +24,7 @@ import java.util.List;
  * #L%
  */
 
+import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -65,7 +66,7 @@ public class Main extends AbstractModuleInterceptor
 
 	private static final Logger logger = LogManager.getLogger(Main.class);
 
-	private static final String SYSCONFIG_ASYNC_INIT_DELAY_MILLIS = "de.metas.async.Async_InitDelayMillis";
+	public static final String SYSCONFIG_ASYNC_INIT_DELAY_MILLIS = "de.metas.async.Async_InitDelayMillis";
 
 	private static final int THREE_MINUTES = 3 * 60 * 1000;
 
@@ -87,7 +88,6 @@ public class Main extends AbstractModuleInterceptor
 	{
 		// task 04585: start queue processors only if we are running on the backend server.
 		// =>why not always run them?
-		// if we have two metasfresh wars/ears (one backend, one webUI), JMX names will collide
 		// if we start it on clients without having a central monitoring-gathering point we never know what's going on
 		// => it can all be solved, but as of now isn't
 		if (!SpringContextHolder.instance.isSpringProfileActive(Profiles.PROFILE_App))
@@ -114,7 +114,7 @@ public class Main extends AbstractModuleInterceptor
 	 *
 	 * @return how many milliseconds to wait until to actually initialize the {@link IQueueProcessorExecutorService}.
 	 */
-	private final int getInitDelayMillis()
+	private int getInitDelayMillis()
 	{
 		// I will leave the default value of 3 minutes, which was the common time until #2894
 		final int delayTimeInMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, THREE_MINUTES);
@@ -124,7 +124,7 @@ public class Main extends AbstractModuleInterceptor
 	}
 
 	@Override
-	protected void registerInterceptors(IModelValidationEngine engine)
+	protected void registerInterceptors(@NonNull final  IModelValidationEngine engine)
 	{
 		engine.addModelValidator(new C_Queue_PackageProcessor());
 		engine.addModelValidator(new C_Queue_Processor());
@@ -146,7 +146,6 @@ public class Main extends AbstractModuleInterceptor
 
 		final int delayMillis = getInitDelayMillis();
 		Services.get(IQueueProcessorExecutorService.class).init(delayMillis);
-		return;
 	}
 
 	/**

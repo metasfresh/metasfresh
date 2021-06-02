@@ -175,3 +175,9 @@ export const INLINE_TAB_SHOW_MORE_FROM = 5;
  * @type {string} Used to identify the type of filter passed to checkClearedFilters
  */
 export const FILTERS_TYPE_NOT_INCLUDED = 'NotIncluded';
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the number of px until we apply left offset
+ */
+export const LOOKUP_SHOW_MORE_PIXEL_NO = 250;
