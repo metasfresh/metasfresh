@@ -749,3 +749,54 @@ UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMEST
 UPDATE AD_Ref_Table SET WhereClause='M_Shop_Category.M_Shop_Category_ID <> @M_Shop_Category_ID@',Updated=TO_TIMESTAMP('2021-06-02 12:10:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541327
 ;
 
+
+-- 2021-06-02T10:58:44.133Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET WEBUI_NameBrowse='Shop Kategorien',Updated=TO_TIMESTAMP('2021-06-02 12:58:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579273 AND AD_Language='de_CH'
+;
+
+-- 2021-06-02T10:58:44.153Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579273,'de_CH')
+;
+
+-- 2021-06-02T10:58:48.765Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET WEBUI_NameBrowse='Shop Kategorien',Updated=TO_TIMESTAMP('2021-06-02 12:58:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579273 AND AD_Language='de_DE'
+;
+
+-- 2021-06-02T10:58:48.768Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579273,'de_DE')
+;
+
+-- 2021-06-02T10:58:48.794Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579273,'de_DE')
+;
+
+-- 2021-06-02T10:58:48.795Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Shop Kategorien', Description = NULL, WEBUI_NameBrowse = 'Shop Kategorien', WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579273
+;
+
+-- 2021-06-02T10:58:53.374Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET WEBUI_NameBrowse='Shop Kategorien',Updated=TO_TIMESTAMP('2021-06-02 12:58:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579273 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-02T10:58:53.379Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579273,'nl_NL')
+;
+
+-- 2021-06-02T10:59:00.015Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET WEBUI_NameBrowse='Shop Category',Updated=TO_TIMESTAMP('2021-06-02 12:59:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579273 AND AD_Language='en_US'
+;
+
+-- 2021-06-02T10:59:00.017Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579273,'en_US')
+;
+
