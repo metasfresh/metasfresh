@@ -15,7 +15,7 @@ Feature: Create or update using prices API
       | Identifier  | OrgCode | M_PriceList_ID | OPT.Description                | ValidFrom            | OPT.IsActive |
       | ext-Other-3 | 001     | 2              | price_list_version_description | 2018-11-12T00:00:00Z | true         |
     And we create a JsonRequestPriceListVersionUpsert, set syncAdvise to 'CREATE_OR_MERGE' and store request payload it in the test context
-    And the metasfresh REST-API endpoint path '/api/v2-pre/prices/priceListVersions' receives a 'PUT' request with the payload from context and responds with '200' status code
+    And the metasfresh REST-API endpoint path 'api/v2/prices/priceListVersions' receives a 'PUT' request with the payload from context and responds with '200' status code
     Then price list version is persisted correctly
 
   Scenario: Update price list version
@@ -23,7 +23,7 @@ Feature: Create or update using prices API
       | Identifier  | OrgCode | M_PriceList_ID | OPT.Description            | ValidFrom            | OPT.IsActive |
       | ext-Other-3 | 001     | 2              | price_list_version_updated | 2017-01-17T00:00:00Z | false        |
     And we create a JsonRequestPriceListVersionUpsert, set syncAdvise to 'CREATE_OR_MERGE' and store request payload it in the test context
-    When the metasfresh REST-API endpoint path '/api/v2-pre/prices/priceListVersions' receives a 'PUT' request with the payload from context and responds with '200' status code
+    When the metasfresh REST-API endpoint path 'api/v2/prices/priceListVersions' receives a 'PUT' request with the payload from context and responds with '200' status code
     Then price list version is persisted correctly
 
   Scenario: Create product prices by price list version identifier
@@ -32,7 +32,7 @@ Feature: Create or update using prices API
       | Identifier  | OrgCode | M_Product_ID | PriceStd | OPT.PriceLimit | OPT.PriceList | SeqNo | OPT.IsActive | TaxCategory.InternalName |
       | ext-Other-4 | 001     | 123          | 10       | 20             | 30            | 10    | false        | NORMAL                   |
     And we create a JsonRequestProductPriceUpsert, set syncAdvise to 'CREATE_OR_MERGE' and store request payload it in the test context
-    When the metasfresh REST-API endpoint path '/api/v2-pre/prices/priceListVersions/ext-Other-3/productPrices' receives a 'PUT' request with the payload from context and responds with '200' status code
+    When the metasfresh REST-API endpoint path 'api/v2/prices/priceListVersions/ext-Other-3/productPrices' receives a 'PUT' request with the payload from context and responds with '200' status code
     Then product price is persisted correctly
 
   Scenario: Update product prices by price list version identifier
@@ -40,5 +40,5 @@ Feature: Create or update using prices API
       | Identifier  | OrgCode | M_Product_ID | PriceStd | OPT.PriceLimit | OPT.PriceList | SeqNo | OPT.IsActive | TaxCategory.InternalName |
       | ext-Other-4 | 001     | 123          | 22       | 20             | 30            | 10    | true         | NORMAL                   |
     And we create a JsonRequestProductPriceUpsert, set syncAdvise to 'CREATE_OR_MERGE' and store request payload it in the test context
-    When the metasfresh REST-API endpoint path '/api/v2-pre/prices/priceListVersions/ext-Other-3/productPrices' receives a 'PUT' request with the payload from context and responds with '200' status code
+    When the metasfresh REST-API endpoint path 'api/v2/prices/priceListVersions/ext-Other-3/productPrices' receives a 'PUT' request with the payload from context and responds with '200' status code
     Then product price is persisted correctly

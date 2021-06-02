@@ -28,6 +28,7 @@ import de.metas.audit.request.ApiRequestAuditId;
 import de.metas.util.Loggables;
 import de.metas.util.web.audit.ApiAuditService;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -67,7 +68,7 @@ public class ApiAuditFilter implements Filter
 			// dev-note: this means the request was already filtered once
 			if (requestAuditIdOpt.isPresent())
 			{
-				final ApiAuditLoggable apiAuditLoggable = apiAuditService.createLogger(requestAuditIdOpt.get());
+				final ApiAuditLoggable apiAuditLoggable = apiAuditService.createLogger(requestAuditIdOpt.get(), Env.getLoggedUserId());
 
 				try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(apiAuditLoggable))
 				{

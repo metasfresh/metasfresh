@@ -22,6 +22,9 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
@@ -52,13 +55,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import static de.metas.util.web.MetasfreshRestAPIConstants.ENDPOINT_API_V2;
 import static org.assertj.core.api.Assertions.*;
 
 @UtilityClass
 public class RESTUtil
 {
 
-	public String getAuthToken(@NonNull final String userLogin, @NonNull final String roleName) throws IOException
+	public String getAuthToken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
 		final IUserDAO userDAO = Services.get(IUserDAO.class);
 		final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
@@ -130,7 +134,20 @@ public class RESTUtil
 
 		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		response.getEntity().writeTo(stream);
-		final String content = stream.toString(StandardCharsets.UTF_8.name());
+		final String content;
+
+		if (endpointPath != null && endpointPath.contains(ENDPOINT_API_V2.substring(1)))
+		{
+			final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+
+			final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8.name()), JsonApiResponse.class);
+
+			content = objectMapper.writeValueAsString(jsonApiResponse.getEndpointResponse());
+		}
+		else
+		{
+			content = stream.toString(StandardCharsets.UTF_8.name());
+		}
 
 		return apiResponseBuilder
 				.content(content)
