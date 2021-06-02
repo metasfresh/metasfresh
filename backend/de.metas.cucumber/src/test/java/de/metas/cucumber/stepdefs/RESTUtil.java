@@ -62,7 +62,7 @@ import static org.assertj.core.api.Assertions.*;
 public class RESTUtil
 {
 
-	public String getAuthToken(@NonNull final String userLogin, @NonNull final String roleName) throws IOException
+	public String getAuthToken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
 		final IUserDAO userDAO = Services.get(IUserDAO.class);
 		final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
@@ -136,7 +136,7 @@ public class RESTUtil
 		response.getEntity().writeTo(stream);
 		final String content;
 
-		if (endpointPath != null && endpointPath.contains(ENDPOINT_API_V2))
+		if (endpointPath != null && endpointPath.contains(ENDPOINT_API_V2.substring(1)))
 		{
 			final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
@@ -146,7 +146,7 @@ public class RESTUtil
 		}
 		else
 		{
-			content = stream.toString(StandardCharsets.UTF_8.name());;
+			content = stream.toString(StandardCharsets.UTF_8.name());
 		}
 
 		return apiResponseBuilder
