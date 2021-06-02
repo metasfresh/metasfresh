@@ -3854,21 +3854,6 @@ UPDATE AD_WINDOW SET Name='Startdatum', Description=NULL, Help=NULL WHERE AD_Ele
 UPDATE AD_Menu SET   Name = 'Startdatum', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 53280
 ;
 
--- 2021-05-25T06:58:27.275Z
--- URL zum Konzept
-INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy) VALUES (0,540595,0,541665,TO_TIMESTAMP('2021-05-25 09:58:26','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','C_Invoice_Verification_Run_ID_Index','N',TO_TIMESTAMP('2021-05-25 09:58:26','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2021-05-25T06:58:27.322Z
--- URL zum Konzept
-INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Index_Table_ID=540595 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
-;
-
--- 2021-05-25T06:58:55.857Z
--- URL zum Konzept
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,574082,541106,540595,0,TO_TIMESTAMP('2021-05-25 09:58:55','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2021-05-25 09:58:55','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
 -- Start Creation of Table and Window C_Invoice_Verification_RunLine
 
 
@@ -4533,3 +4518,17 @@ UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-05-25 11:10:24','Y
 UPDATE AD_Tab SET IsInsertRecord='N',Updated=TO_TIMESTAMP('2021-05-25 11:10:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=543957
 ;
 
+-- 2021-05-25T06:58:27.275Z
+-- URL zum Konzept
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy) VALUES (0,540595,0,541665,TO_TIMESTAMP('2021-05-25 09:58:26','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','C_Invoice_Verification_Run_ID_Index','N',TO_TIMESTAMP('2021-05-25 09:58:26','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-05-25T06:58:27.322Z
+-- URL zum Konzept
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Index_Table_ID=540595 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 2021-05-25T06:58:55.857Z
+-- URL zum Konzept
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,574082,541106,540595,0,TO_TIMESTAMP('2021-05-25 09:58:55','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2021-05-25 09:58:55','YYYY-MM-DD HH24:MI:SS'),100)
+;
