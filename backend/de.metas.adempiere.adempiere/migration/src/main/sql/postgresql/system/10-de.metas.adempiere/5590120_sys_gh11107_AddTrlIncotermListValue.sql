@@ -23,6 +23,82 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='FCA - Free Carrier',Updated=T
 UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='FCA - Free Carrier',Updated=TO_TIMESTAMP('2021-05-26 17:42:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=501601
 ;
 
+-- 2021-06-02T11:30:10.558Z
+-- URL zum Konzept
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DAP - Delivered at Place',Updated=TO_TIMESTAMP('2021-06-02 13:30:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Ref_List_ID=542623
+;
+
+-- 2021-06-02T11:30:27.830Z
+-- URL zum Konzept
+UPDATE AD_Ref_List_Trl SET Name='DAP - Delivered at Place',Updated=TO_TIMESTAMP('2021-06-02 13:30:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=542623
+;
+
+-- 2021-06-02T11:30:30.719Z
+-- URL zum Konzept
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 13:30:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=542623
+;
+
+-- 2021-06-02T11:37:45.175Z
+-- URL zum Konzept
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DES - Delivery Ex Ship',Updated=TO_TIMESTAMP('2021-06-02 13:37:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=501609
+;
+
+-- 2021-06-02T11:37:52.594Z
+-- URL zum Konzept
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DES - Delivery Ex Ship',Updated=TO_TIMESTAMP('2021-06-02 13:37:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Ref_List_ID=501609
+;
+
+-- 2021-06-02T11:43:12.202Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET Name='DAP - geliefert benannter Ort',Updated=TO_TIMESTAMP('2021-06-02 13:43:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542623
+;
+
+-- 2021-06-02T11:43:41.950Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET Name='DPU - geliefert benannter Ort entladen', ValueName='DPU - geliefert benannter Ort entladen',Updated=TO_TIMESTAMP('2021-06-02 13:43:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542624
+;
+
+-- 2021-06-02T11:46:03.295Z
+-- URL zum Konzept
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,501599,542632,TO_TIMESTAMP('2021-06-02 13:46:03','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','DPU - geliefert benannter Ort entladen',TO_TIMESTAMP('2021-06-02 13:46:03','YYYY-MM-DD HH24:MI:SS'),100,'DPU1','DPU_geliefertBenannterOrtEntladen')
+;
+
+-- 2021-06-02T11:46:03.300Z
+-- URL zum Konzept
+INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Ref_List_ID=542632 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- 2021-06-02T11:46:30.355Z
+-- URL zum Konzept
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DPU - Delivered at Place Unloaded',Updated=TO_TIMESTAMP('2021-06-02 13:46:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_GB' AND AD_Ref_List_ID=542632
+;
+
+-- 2021-06-02T11:46:38.086Z
+-- URL zum Konzept
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='DPU - Delivered at Place Unloaded',Updated=TO_TIMESTAMP('2021-06-02 13:46:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=542632
+;
+
+-- 2021-06-02T11:46:48.589Z
+-- URL zum Konzept
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-02 13:46:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=542632
+;
+
+-- 2021-06-02T11:47:11.947Z
+-- URL zum Konzept
+DELETE FROM  AD_Ref_List_Trl WHERE AD_Ref_List_ID=542624
+;
+
+-- 2021-06-02T11:47:11.973Z
+-- URL zum Konzept
+DELETE FROM AD_Ref_List WHERE AD_Ref_List_ID=542624
+;
+
+-- 2021-06-02T11:47:16.989Z
+-- URL zum Konzept
+UPDATE AD_Ref_List SET Value='DPU',Updated=TO_TIMESTAMP('2021-06-02 13:47:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542632
+;
+
+
 -- 2021-05-26T14:42:46.541Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='CPT - Carriage Paid',Updated=TO_TIMESTAMP('2021-05-26 17:42:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=501606
