@@ -116,7 +116,8 @@ class InlineTabWrapper extends PureComponent {
             let { validStatus, includedTabsInfo } = deleteResponse.data[0];
             updateDataValidStatus('master', validStatus || { valid: true });
             this.updateTable(true);
-            includedTabsInfo &&  updateDataIncludedTabsInfo('master', includedTabsInfo);
+            includedTabsInfo &&
+              updateDataIncludedTabsInfo('master', includedTabsInfo);
           }
         );
       } else {
