@@ -1,28 +1,41 @@
 package de.metas.allocation.api.impl;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.C_AllocationHdr_Builder;
 import de.metas.allocation.api.C_AllocationLine_Builder;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.invoice_auto_allocation.BankAccountInvoiceAutoAllocRules;
+import de.metas.banking.invoice_auto_allocation.BankAccountInvoiceAutoAllocRulesRepository;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.lang.SOTrx;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 public class AllocationBL implements IAllocationBL
 {
+	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+
 	@Override
 	public C_AllocationHdr_Builder newBuilder()
 	{
@@ -46,11 +59,9 @@ public class AllocationBL implements IAllocationBL
 		}
 
 		final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
-		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
-		final List<I_C_Payment> availablePayments = allocationDAO.retrieveAvailablePayments(invoice);
-
+		final List<I_C_Payment> availablePayments = getAvailablePaymentsToAutoAllocate(invoice);
 		if (availablePayments.isEmpty())
 		{
 			return null; // nothing to do
@@ -105,7 +116,43 @@ public class AllocationBL implements IAllocationBL
 				.createAndComplete();
 	}
 
-	@Override
+	private List<I_C_Payment> getAvailablePaymentsToAutoAllocate(@NonNull final I_C_Invoice invoice)
+	{
+		final BPartnerId invoiceBPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+		final SOTrx invoiceSOTrx = SOTrx.ofBoolean(invoice.isSOTrx());
+		final ClientAndOrgId invoiceClientAndOrgId = ClientAndOrgId.ofClientAndOrg(invoice.getAD_Client_ID(), invoice.getAD_Org_ID());
+
+		//
+		// First all payments which have IsAutoAllocateAvailableAmt set, not already allocated and for invoice partner.
+		final ArrayList<I_C_Payment> eligiblePayments = new ArrayList<>(allocationDAO.retrieveAvailablePaymentsToAutoAllocate(
+				invoiceBPartnerId,
+				invoiceSOTrx,
+				invoiceClientAndOrgId));
+		if (eligiblePayments.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		//
+		// Iterate eligible payments and eliminate those which does not complain to BankAccount Invoice Auto Allocation rules
+		final BankAccountInvoiceAutoAllocRulesRepository bankAccountInvoiceAutoAllocRulesRepository = SpringContextHolder.instance.getBean(BankAccountInvoiceAutoAllocRulesRepository.class);
+		final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoId(invoice.getC_DocType_ID());
+		for (final Iterator<I_C_Payment> it = eligiblePayments.iterator(); it.hasNext(); )
+		{
+			final I_C_Payment payment = it.next();
+
+			final BankAccountId bankAccountId = BankAccountId.ofRepoId(payment.getC_BP_BankAccount_ID());
+			final BankAccountInvoiceAutoAllocRules rules = bankAccountInvoiceAutoAllocRulesRepository.getByBankAccountId(bankAccountId);
+			if (!rules.isMatching(invoiceDocTypeId))
+			{
+				it.remove();
+				continue;
+			}
+		}
+
+		return eligiblePayments;
+	}
+
 	public I_C_AllocationHdr autoAllocateSpecificPayment(
 			org.compiere.model.I_C_Invoice invoice,
 			org.compiere.model.I_C_Payment payment,
