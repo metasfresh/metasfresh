@@ -379,6 +379,7 @@ public class ApiAuditService
 					.remoteHost(customHttpRequest.getRemoteHost())
 					.time(Instant.now())
 					.httpHeaders(requestHeaders)
+					.requestURI(customHttpRequest.getRequestURI())
 					.build();
 
 			return apiRequestAuditRepository.save(apiRequestAudit);
