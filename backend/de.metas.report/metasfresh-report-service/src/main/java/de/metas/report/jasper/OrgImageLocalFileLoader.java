@@ -107,6 +107,19 @@ final class OrgImageLocalFileLoader
 		// Save the image in a temporary file, to be locally available
 		return createTempImageFile(image);
 	}
+	
+	public boolean isLogoOrImageResourceName(final OrgResourceNameContext context )
+	{
+		if (orgLogoResourceNameMatcher.matches(context.getResourceName()) 
+				|| OrgImageResourceNameMatcher.instance.matches(context.getResourceName()))
+		{
+			return true;
+		}
+
+		// Fallback: not a logo/image resource
+		return false;
+	}
+	
 
 	@Nullable
 	private I_AD_Image retrieveImage(@NonNull final OrgResourceNameContext context)

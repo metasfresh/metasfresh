@@ -76,12 +76,17 @@ final class OrgImageClassLoaderHook
 		{
 			return null;
 		}
-
+		
 		final OrgResourceNameContext context = OrgResourceNameContext.builder()
 				.orgId(adOrgId)
 				.resourceName(resourceName)
 				.build();
 
+		if (!orgImageLocalFileLoader.isLogoOrImageResourceName(context))
+		{
+			return null;
+		}
+		
 		//
 		// Get the local image file
 		final File imageFile = getLocalImageFile(context);
@@ -103,6 +108,7 @@ final class OrgImageClassLoaderHook
 		}
 	}
 
+	
 	@Nullable
 	private File getLocalImageFile(@NonNull final OrgResourceNameContext context)
 	{

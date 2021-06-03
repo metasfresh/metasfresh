@@ -49,4 +49,22 @@ class OrgImageResourceNameMatcher
 				? Optional.of(imageColumnName.trim())
 				: Optional.empty();
 	}
+	
+	
+	public boolean matches(@NonNull final String resourceName)
+	{
+		// Skip if no resourceName
+		if (resourceName == null || resourceName.isEmpty())
+		{
+			return false;
+		}
+
+		final int idx = resourceName.indexOf(RESOURCENAME_PREFIX);
+		if (idx < 0)
+		{
+			return false;
+		}
+
+		return true;
+	}
 }
