@@ -407,8 +407,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-06-02T13:54:38.639Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE M_Product ADD CONSTRAINT MShopCategory_MProduct FOREIGN KEY (M_Shop_Category_ID) REFERENCES public.M_Shop_Category DEFERRABLE INITIALLY DEFERRED
-;
+--ALTER TABLE M_Product ADD CONSTRAINT MShopCategory_MProduct FOREIGN KEY (M_Shop_Category_ID) REFERENCES public.M_Shop_Category DEFERRABLE INITIALLY DEFERRED
+--;
 
 -- 2021-06-02T13:55:44.639Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
