@@ -51,7 +51,7 @@ import java.util.List;
 public class SqlLockDatabase extends AbstractLockDatabase
 {
 	private static final String SQL_DeleteLock = "DELETE FROM " + I_T_Lock.Table_Name + " WHERE 1=1 ";
-	
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
@@ -298,7 +298,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 						+ I_T_Lock.COLUMNNAME_Record_ID + ", "
 						+ I_T_Lock.COLUMNNAME_Owner + ", "
 						+ I_T_Lock.COLUMNNAME_IsAutoCleanup + ", "
-						+ I_T_Lock.COLUMNNAME_IsAllowMultipleOwners + ", "
+						+ I_T_Lock.COLUMNNAME_IsAllowMultipleOwners
 						+ " FROM " + I_T_Lock.Table_Name
 						+ " WHERE " + I_T_Lock.COLUMNNAME_AD_Table_ID + " = " + adTableId.getRepoId()
 						+ " AND " + whereSql;
@@ -313,7 +313,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		return ExistingLockInfo
 				.builder()
 				.lockId(rs.getInt(I_T_Lock.COLUMNNAME_T_Lock_ID))
-				.ownerName(I_T_Lock.COLUMNNAME_Owner)
+				.ownerName(rs.getString(I_T_Lock.COLUMNNAME_Owner))
 				.lockedRecord(TableRecordReference.of(
 						rs.getInt(I_T_Lock.COLUMNNAME_AD_Table_ID),
 						rs.getInt(I_T_Lock.COLUMNNAME_Record_ID)
@@ -335,12 +335,11 @@ public class SqlLockDatabase extends AbstractLockDatabase
 	}
 
 	@Override
-	protected boolean lockRecord(final ILockCommand lockCommand, @NonNull final TableRecordReference record)
+	protected boolean lockRecord(@NonNull final ILockCommand lockCommand, @NonNull final TableRecordReference record)
 	{
-		final int adTableId = record.getAD_Table_ID();
-		Check.assume(adTableId > 0, "adTableId > 0");
-
+		final AdTableId adTableId = record.getAdTableId();
 		final int recordId = record.getRecord_ID();
+
 		if (recordId < 0)
 		{
 			return false;
@@ -378,10 +377,13 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 			if (lockCommand.isFailIfAlreadyLocked())
 			{
+				final String whereSql = I_T_Lock.COLUMNNAME_Record_ID + "=" + DB.TO_SQL(recordId); // note that AD_Table_ID=... will be added to the where-clause anyways
+
 				throw new LockFailedException("Record was already locked: " + record, e)
 						.setLockCommand(lockCommand)
 						.setSql(sql, sqlParams.toArray())
-						.setRecordToLock(record);
+						.setRecordToLock(record)
+						.setExistingLocks(retrieveExistingLocksForWhereClause(adTableId, whereSql, null));
 			}
 			return false;
 		}
@@ -396,7 +398,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 
 	@Override
 	protected boolean changeLockRecord(
-			@NonNull final ILockCommand lockCommand, 
+			@NonNull final ILockCommand lockCommand,
 			@NonNull final TableRecordReference record)
 	{
 		final List<Object> sqlParams = new ArrayList<>();
@@ -464,7 +466,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		try
 		{
 			final int countUnlocked = DB.executeUpdateEx(sql.toString(), sqlParams.toArray(), ITrx.TRXNAME_None);
-			return countUnlocked; 
+			return countUnlocked;
 		}
 		catch (final Exception e)
 		{
@@ -565,7 +567,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
 		final String joinColumnNameFQ = tableName + "." + keyColumnName;
 		final String sqlWhereClause = getNotLockedWhereClause(tableName, joinColumnNameFQ);
-		
+
 		return TypedSqlQueryFilter.of(sqlWhereClause);
 	}
 
@@ -576,7 +578,7 @@ public class SqlLockDatabase extends AbstractLockDatabase
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(tableName);
 		final String joinColumnNameFQ = tableName + "." + keyColumnName;
 		final String sqlWhereClause = getLockedWhereClause(modelClass, joinColumnNameFQ, lockOwner);
-		
+
 		return TypedSqlQueryFilter.of(sqlWhereClause);
 	}
 

@@ -960,7 +960,6 @@ public class DB
 		{
 			// Always close cursor
 			DB.close(cs);
-			cs = null;
 		}
 
 		return no;

@@ -29,6 +29,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.lock.spi.impl.SqlLockDatabase;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -53,6 +54,8 @@ public abstract class LockException extends AdempiereException
 
 	private String sql;
 	private Object[] sqlParams;
+	
+	@Getter
 	private ImmutableList<SqlLockDatabase.ExistingLockInfo> existingLocks;
 	
 	public LockException(final String message)

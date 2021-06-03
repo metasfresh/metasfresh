@@ -59,8 +59,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	protected static void assertValidLockOwner(@NonNull final LockOwner lockOwner)
 	{
 		// NOTE: LockOwner.ANY is not tolerated because that's a filter criteria and not a LockOwner that we could use for assigning
-
-		Check.assumeNotNull(lockOwner.isRealOwnerOrNoOwner(), "Lock owner shall be real owner or no owner but it was {}", lockOwner);
+		Check.assume(lockOwner.isRealOwnerOrNoOwner(), "Lock owner shall be real owner or no owner but it was {}", lockOwner);
 	}
 
 	@Override
@@ -137,7 +136,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	 *
 	 * @return how many records were locked
 	 */
-	private int lockByIterator(final ILockCommand lockCommand)
+	private int lockByIterator(@NonNull final ILockCommand lockCommand)
 	{
 		final Iterator<TableRecordReference> records = lockCommand.getRecordsToLockIterator();
 		Check.assumeNotNull(records, "records not null");
