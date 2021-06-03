@@ -36,7 +36,19 @@ public class C_OrderLine
 			return;
 		}
 
-		final GroupId groupId = OrderGroupRepository.extractGroupId(orderLine);
+		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(orderLine);
+		if (groupId == null)
+		{
+			return;
+		}
+
+		final boolean productExcludedFromFlatrateConditions = groupChangesHandler.
+				isProductExcludedFromFlatrateConditions(ProductId.ofRepoId(orderLine.getM_Product_ID()), groupId);
+
+		if (productExcludedFromFlatrateConditions)
+		{
+			return;
+		}
 
 		final int flatrateConditionsId = retrieveFirstFlatrateConditionsIdForCompensationGroup(groupId);
 
