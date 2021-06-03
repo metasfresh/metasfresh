@@ -22,15 +22,6 @@ package de.metas.lock.api.impl;
  * #L%
  */
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.concurrent.CloseableReentrantLock;
-import org.adempiere.util.lang.ObjectUtils;
-import org.slf4j.Logger;
-
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
 import de.metas.lock.api.ILockCommand;
@@ -42,18 +33,32 @@ import de.metas.lock.spi.ILockDatabase;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.concurrent.CloseableReentrantLock;
+import org.slf4j.Logger;
 
-/* package */class Lock implements ILock
+import java.util.concurrent.atomic.AtomicBoolean;
+
+@ToString
+		/* package */class Lock implements ILock
 {
 	private static final transient Logger logger = LogManager.getLogger(Lock.class);
 
-	/* package */CloseableReentrantLock mutex = new CloseableReentrantLock();
+	/* package */ final CloseableReentrantLock mutex = new CloseableReentrantLock();
 
 	private final ILockDatabase lockDatabase;
+
+	@Getter
 	private final LockOwner owner;
+
+	@Getter
 	private final boolean isAutoCleanup;
-	private int _countLocked = 0;
+	private int _countLocked;
 
 	// Status
 	private final AtomicBoolean closed = new AtomicBoolean(false);
@@ -74,27 +79,10 @@ import lombok.NonNull;
 	}
 
 	/** @return locks database; never return null */
-	/* package */final ILockDatabase getLockDatabase()
+	/* package */
+	final ILockDatabase getLockDatabase()
 	{
 		return lockDatabase;
-	}
-
-	@Override
-	public String toString()
-	{
-		return ObjectUtils.toString(this);
-	}
-
-	@Override
-	public LockOwner getOwner()
-	{
-		return owner;
-	}
-
-	@Override
-	public boolean isAutoCleanup()
-	{
-		return isAutoCleanup;
 	}
 
 	@Override
@@ -103,17 +91,18 @@ import lombok.NonNull;
 		return _countLocked;
 	}
 
-	/* package */final void subtractCountLocked(final int countLockedToSubtract)
+	/* package */
+	final void subtractCountLocked(final int countLockedToSubtract)
 	{
-		try (CloseableReentrantLock l = mutex.open())
+		try (final CloseableReentrantLock ignore = mutex.open())
 		{
 			if (_countLocked < countLockedToSubtract)
 			{
 				new UnlockFailedException("Unlocked more than counted"
-						+ "\n Current locked count: " + _countLocked
-						+ "\n Locked to subtract: " + countLockedToSubtract
-						+ "\n Lock: " + this)
-								.throwIfDeveloperModeOrLogWarningElse(logger);
+												  + "\n Current locked count: " + _countLocked
+												  + "\n Locked to subtract: " + countLockedToSubtract
+												  + "\n Lock: " + this)
+						.throwIfDeveloperModeOrLogWarningElse(logger);
 
 				_countLocked = 0;
 			}
@@ -138,7 +127,7 @@ import lombok.NonNull;
 	{
 		assertHasRealOwner();
 
-		try (CloseableReentrantLock l = mutex.open())
+		try (final CloseableReentrantLock ignore = mutex.open())
 		{
 			// Mark it as closed.
 			// If it was already closed, do nothing.
@@ -185,7 +174,7 @@ import lombok.NonNull;
 				.registerHandlingMethod(innerTrx -> close());
 	}
 
-	private final void assertHasRealOwner()
+	private void assertHasRealOwner()
 	{
 		final LockOwner owner = getOwner();
 		Check.assume(owner.isRealOwner(), "lock {} shall have an owner", this);
