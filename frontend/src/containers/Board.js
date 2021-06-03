@@ -124,7 +124,7 @@ class Board extends Component {
       addCard(board.boardId, targetLaneId, card.id, card.index);
 
       if (this.sideNav) {
-        this.sideNav.removeCard(card.id);
+        this.sideNav.instanceRef.refreshView(board.boardId);
       }
     } else {
       // Moving card
@@ -291,7 +291,7 @@ class Board extends Component {
       >
         {sidenav && (
           <Sidenav
-            ref={(c) => (this.sideNav = c && c.refs && c.refs.instance)}
+            ref={(c) => (this.sideNav = c)}
             boardId={board.boardId}
             viewId={sidenavViewId}
             onClickOutside={() => this.setState({ sidenav: false })}

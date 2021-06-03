@@ -20,7 +20,7 @@ class Sidenav extends Component {
   }
 
   UNSAFE_componentWillMount = () => {
-    const { boardId, viewId, setViewId } = this.props;
+    const { boardId, viewId } = this.props;
 
     this.setState({
       loading: true,
@@ -34,16 +34,26 @@ class Sidenav extends Component {
         })
       );
     } else {
-      createView(boardId).then((res) => {
-        setViewId(res.data.viewId);
-        getView(boardId, res.data.viewId, 0).then((res) =>
-          this.setState({
-            view: res.data,
-            loading: false,
-          })
-        );
-      });
+      this.refreshView(boardId);
     }
+  };
+
+  /**
+   * @method refreshView
+   * @summary Refreshes the view for the right Sidenav
+   * @param {string} boardId
+   */
+  refreshView = (boardId) => {
+    const { setViewId } = this.props;
+    createView(boardId).then((res) => {
+      setViewId(res.data.viewId);
+      getView(boardId, res.data.viewId, 0).then((res) =>
+        this.setState({
+          view: res.data,
+          loading: false,
+        })
+      );
+    });
   };
 
   getCardIndex = (cardId) => {
