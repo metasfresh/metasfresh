@@ -37,15 +37,7 @@ public class C_OrderLine
 		}
 
 		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(orderLine);
-		if (groupId == null)
-		{
-			return;
-		}
-
-		final boolean productExcludedFromFlatrateConditions = groupChangesHandler.
-				isProductExcludedFromFlatrateConditions(ProductId.ofRepoId(orderLine.getM_Product_ID()), groupId);
-
-		if (productExcludedFromFlatrateConditions)
+		if (isOrderLineExcludedFromGroupFlatrateConditions(orderLine, groupId))
 		{
 			return;
 		}
@@ -71,17 +63,9 @@ public class C_OrderLine
 		{
 			return;
 		}
-
 		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(orderLine);
-		if (groupId == null)
-		{
-			return;
-		}
 
-		final boolean productExcludedFromFlatrateConditions = groupChangesHandler.
-				isProductExcludedFromFlatrateConditions(ProductId.ofRepoId(orderLine.getM_Product_ID()), groupId);
-
-		if (productExcludedFromFlatrateConditions)
+		if (isOrderLineExcludedFromGroupFlatrateConditions(orderLine, groupId))
 		{
 			return;
 		}
@@ -91,6 +75,24 @@ public class C_OrderLine
 		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, excludeOrderLineId);
 
 		groupChangesHandler.recreateGroupOnOrderLineChanged(orderLine);
+	}
+
+	private boolean isOrderLineExcludedFromGroupFlatrateConditions(final I_C_OrderLine orderLine, final GroupId groupId)
+	{
+		if (groupId == null)
+		{
+			return true;
+		}
+
+		final boolean productExcludedFromFlatrateConditions = groupChangesHandler.
+				isProductExcludedFromFlatrateConditions(ProductId.ofRepoId(orderLine.getM_Product_ID()), groupId);
+
+		if (productExcludedFromFlatrateConditions)
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	private int retrieveFirstFlatrateConditionsIdForCompensationGroup(final GroupId groupId)
@@ -111,6 +113,8 @@ public class C_OrderLine
 				.addNotEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditionsId > 0 ? flatrateConditionsId : null)
 				.create()
 				.list(I_C_OrderLine.class)
+				.stream()
+				.filter(ol -> !isOrderLineExcludedFromGroupFlatrateConditions(ol, groupId))
 				.forEach(otherOrderLine -> {
 					otherOrderLine.setC_Flatrate_Conditions_ID(flatrateConditionsId);
 					DYNATTR_SkipUpdatingGroupFlatrateConditions.setValue(otherOrderLine, Boolean.TRUE);
