@@ -54,7 +54,7 @@ public class C_OrderLine
 		orderLine.setC_Flatrate_Conditions_ID(flatrateConditionsId);
 
 		int excludeOrderLineId = orderLine.getC_OrderLine_ID();
-		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, excludeOrderLineId);
+		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, groupTemplateId,excludeOrderLineId);
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class C_OrderLine
 
 		final int flatrateConditionsId = orderLine.getC_Flatrate_Conditions_ID();
 		final int excludeOrderLineId = orderLine.getC_OrderLine_ID();
-		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, excludeOrderLineId);
+		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, groupTemplateId, excludeOrderLineId);
 
 		groupChangesHandler.recreateGroupOnOrderLineChanged(orderLine);
 	}
