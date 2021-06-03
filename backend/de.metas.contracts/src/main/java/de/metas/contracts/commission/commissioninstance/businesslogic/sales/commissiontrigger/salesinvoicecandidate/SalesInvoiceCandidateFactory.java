@@ -60,6 +60,8 @@ public class SalesInvoiceCandidateFactory
 {
 	private static final Logger logger = LogManager.getLogger(SalesInvoiceCandidateFactory.class);
 
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
 	private final MoneyService moneyService;
 	private final CommissionProductService commissionProductService;
 
@@ -95,7 +97,7 @@ public class SalesInvoiceCandidateFactory
 		final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(icRecord.getC_DocTypeInvoice_ID());
 		if (invoiceDocTypeId != null)
 		{
-			final I_C_DocType invoiceDocType = Services.get(IDocTypeBL.class).getById(invoiceDocTypeId);
+			final I_C_DocType invoiceDocType = docTypeBL.getById(invoiceDocTypeId);
 			if (invoiceDocType.isExcludeFromCommission())
 			{
 				logger.debug("C_Invoice_Candidate has C_DocTypeInvoice_ID={} which has sExcludeFromCommission=true; -> return empty", invoiceDocType);
