@@ -20,8 +20,9 @@
  * #L%
  */
 
-package de.metas.bpartner.name;
+package de.metas.bpartner.name.strategy;
 
+import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.i18n.ExplainedOptional;
 
 // @Component // IMPORTANT: don't make it a Spring component

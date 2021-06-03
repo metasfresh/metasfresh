@@ -4,7 +4,10 @@ import javax.annotation.concurrent.Immutable;
 
 import com.google.common.base.MoreObjects;
 
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.Document;
+import lombok.Value;
+import org.adempiere.ad.element.api.AdWindowId;
 
 /*
  * #%L
@@ -31,55 +34,17 @@ import de.metas.ui.web.window.model.Document;
 /**
  * Describes which window to be used to capture the fields for quickly creating a record for a given BPartner.
  *
- * @author metas-dev <dev@metasfresh.com>
- * @task https://github.com/metasfresh/metasfresh/issues/1090
+ * task https://github.com/metasfresh/metasfresh/issues/1090
  */
-@Immutable
-public final class NewRecordDescriptor
+@Value(staticConstructor = "of")
+public class NewRecordDescriptor
 {
-	public static final NewRecordDescriptor of(final String tableName, final int newRecordWindowId, final NewRecordProcessor processor)
-	{
-		return new NewRecordDescriptor(tableName, newRecordWindowId, processor);
-	}
-
-	public static interface NewRecordProcessor
+	public interface NewRecordProcessor
 	{
 		int processNewRecordDocument(Document document);
 	}
 
-	private final String tableName;
-	private final int newRecordWindowId;
-	private final NewRecordProcessor processor;
-
-	private NewRecordDescriptor(final String tableName, final int newRecordWindowId, final NewRecordProcessor processor)
-	{
-		super();
-		this.tableName = tableName;
-		this.newRecordWindowId = newRecordWindowId;
-		this.processor = processor;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add(tableName, tableName)
-				.add("newRecordWindowId", newRecordWindowId)
-				.toString();
-	}
-
-	public String getTableName()
-	{
-		return tableName;
-	}
-
-	public int getNewRecordWindowId()
-	{
-		return newRecordWindowId;
-	}
-
-	public NewRecordProcessor getProcessor()
-	{
-		return processor;
-	}
+	String tableName;
+	WindowId newRecordWindowId;
+	NewRecordProcessor processor;
 }

@@ -5,10 +5,10 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.bpartner.name.BPartnerNameAndGreetingStrategies;
-import de.metas.bpartner.name.BPartnerNameAndGreetingStrategyId;
-import de.metas.bpartner.name.ComputeNameAndGreetingRequest;
-import de.metas.bpartner.name.DoNothingBPartnerNameAndGreetingStrategy;
+import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
+import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
+import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
+import de.metas.bpartner.name.strategy.DoNothingBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import de.metas.bpartner.service.IBPGroupDAO;
@@ -45,6 +45,7 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -145,7 +146,7 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public I_AD_User createDraftContact(final org.compiere.model.I_C_BPartner bpartner)
 	{
-		I_AD_User contact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
+		final I_AD_User contact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
 		contact.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		contact.setName(bpartner.getName());
 		return contact;
@@ -276,6 +277,7 @@ public class BPartnerBL implements IBPartnerBL
 		return retrieveUserForLoc(ctx, bPartnerId, bPartnerLocationId, trxName);
 	}
 
+	@Nullable
 	private I_AD_User retrieveUserForLoc(final Properties ctx, final int bPartnerId, final int bPartnerLocationId, final String trxName)
 	{
 		final List<I_AD_User> users = bpartnersRepo.retrieveContacts(ctx, bPartnerId, trxName);
@@ -297,9 +299,9 @@ public class BPartnerBL implements IBPartnerBL
 	/**
 	 * Selects the default contact from a list of BPartner users. Returns first user with IsDefaultContact=Y found or first contact.
 	 *
-	 * @param users
 	 * @return default user/contact.
 	 */
+	@Nullable
 	private I_AD_User getDefaultBPContact(final List<I_AD_User> users)
 	{
 		if (users == null || users.isEmpty())
@@ -352,7 +354,7 @@ public class BPartnerBL implements IBPartnerBL
 	@Override
 	public boolean isAllowConsolidateInOutEffective(@NonNull final BPartnerId bpartnerId, @NonNull final SOTrx soTrx)
 	{
-		I_C_BPartner bpartner = getById(bpartnerId);
+		final I_C_BPartner bpartner = getById(bpartnerId);
 		return isAllowConsolidateInOutEffective(bpartner, soTrx);
 	}
 
@@ -373,10 +375,9 @@ public class BPartnerBL implements IBPartnerBL
 		if (soTrx.isSales())
 		{
 			final boolean allowConsolidateInOutOverrideDefault = false; // default=false (preserve existing logic)
-			final boolean allowConsolidateInOutOverride = Services.get(ISysConfigBL.class).getBooleanValue(
+			return Services.get(ISysConfigBL.class).getBooleanValue(
 					SYSCONFIG_C_BPartner_SOTrx_AllowConsolidateInOut_Override,
 					allowConsolidateInOutOverrideDefault);
-			return allowConsolidateInOutOverride;
 		}
 		else
 		{
@@ -482,6 +483,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
+	@Nullable
 	public UserId getSalesRepIdOrNull(final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner bpartnerRecord = getById(bpartnerId);
@@ -495,6 +497,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
+	@Nullable
 	public BPartnerId getBPartnerSalesRepId(final BPartnerId bPartnerId)
 	{
 		final int salesRepRecordId = getById(bPartnerId).getC_BPartner_SalesRep_ID();
@@ -519,6 +522,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
+	@Nullable
 	public UserId setSalesRepId(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final UserId salesRepId)

@@ -20,14 +20,17 @@
  * #L%
  */
 
-package de.metas.bpartner.service;
+package de.metas.bpartner.quick_input.service;
 
 import de.metas.bpartner.BPGroupId;
-import de.metas.bpartner.name.BPartnerNameAndGreetingStrategies;
-import de.metas.bpartner.name.BPartnerNameAndGreetingStrategyId;
-import de.metas.bpartner.name.ComputeNameAndGreetingRequest;
-import de.metas.bpartner.name.DoNothingBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.name.NameAndGreeting;
+import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
+import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
+import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
+import de.metas.bpartner.name.strategy.DoNothingBPartnerNameAndGreetingStrategy;
+import de.metas.bpartner.quick_input.BPartnerQuickInputId;
+import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
@@ -66,14 +69,31 @@ public class BPartnerQuickInputService
 		this.bpartnerNameAndGreetingStrategies = bpartnerNameAndGreetingStrategies;
 	}
 
-	public void updateNameAndGreeting(final int bpartnerQuickInputId)
+	public void updateNameAndGreeting(@NonNull final BPartnerQuickInputId bpartnerQuickInputId)
 	{
 		final I_C_BPartner_QuickInput bpartner = bpartnerQuickInputRepository.getById(bpartnerQuickInputId);
+		final boolean doSave = true;
+		updateNameAndGreeting(bpartner, doSave);
+	}
+
+	public void updateNameAndGreetingNoSave(@NonNull final I_C_BPartner_QuickInput bpartner)
+	{
+		final boolean doSave = false;
+		updateNameAndGreeting(bpartner, doSave);
+	}
+
+	private void updateNameAndGreeting(
+			@NonNull final I_C_BPartner_QuickInput bpartner,
+			final boolean doSave)
+	{
 		computeBPartnerNameAndGreeting(bpartner)
 				.ifPresent(nameAndGreeting -> {
 					bpartner.setName(nameAndGreeting.getName());
 					bpartner.setC_Greeting_ID(GreetingId.toRepoId(nameAndGreeting.getGreetingId()));
-					bpartnerQuickInputRepository.save(bpartner);
+					if (doSave)
+					{
+						bpartnerQuickInputRepository.save(bpartner);
+					}
 				})
 				.ifAbsent(reason -> logger.debug("Skip updating {} because: {}", bpartner, reason.getDefaultValue()));
 	}
@@ -101,7 +121,7 @@ public class BPartnerQuickInputService
 				return DoNothingBPartnerNameAndGreetingStrategy.EMPTY_RESULT;
 			}
 
-			final List<I_C_BPartner_Contact_QuickInput> contacts = bpartnerQuickInputRepository.retrieveContactsByQuickInputId(bpartner.getC_BPartner_QuickInput_ID());
+			final List<I_C_BPartner_Contact_QuickInput> contacts = bpartnerQuickInputRepository.retrieveContactsByQuickInputId(BPartnerQuickInputId.ofRepoId(bpartner.getC_BPartner_QuickInput_ID()));
 			if (contacts.isEmpty())
 			{
 				return ExplainedOptional.emptyBecause("no contacts");

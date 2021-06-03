@@ -20,10 +20,11 @@
  * #L%
  */
 
-package de.metas.bpartner.name;
+package de.metas.bpartner.name.strategy;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import lombok.NonNull;

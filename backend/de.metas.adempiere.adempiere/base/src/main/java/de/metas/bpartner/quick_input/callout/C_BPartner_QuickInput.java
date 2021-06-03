@@ -20,46 +20,41 @@
  * #L%
  */
 
-package de.metas.bpartner.callout;
+package de.metas.bpartner.quick_input.callout;
 
-import de.metas.user.api.IUserBL;
+import de.metas.bpartner.quick_input.service.BPartnerQuickInputService;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.compiere.model.I_C_BPartner_Contact_QuickInput;
+import org.compiere.model.I_C_BPartner_QuickInput;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
 @Component
-@Callout(I_C_BPartner_Contact_QuickInput.class)
-public class C_BPartner_Contact_QuickInput
+@Callout(I_C_BPartner_QuickInput.class)
+public class C_BPartner_QuickInput
 {
-	private final IUserBL userBL = Services.get(IUserBL.class);
+	private final BPartnerQuickInputService bpartnerQuickInputService;
+
+	public C_BPartner_QuickInput(
+			@NonNull final BPartnerQuickInputService bpartnerQuickInputService)
+	{
+		this.bpartnerQuickInputService = bpartnerQuickInputService;
+	}
 
 	@PostConstruct
 	void postConstruct()
 	{
-		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
-		programaticCalloutProvider.registerAnnotatedCallout(this);
+		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
+		programmaticCalloutProvider.registerAnnotatedCallout(this);
 	}
 
-	@CalloutMethod(columnNames = I_C_BPartner_Contact_QuickInput.COLUMNNAME_Firstname)
-	public void onFirstNameChange(final I_C_BPartner_Contact_QuickInput record)
+	@CalloutMethod(columnNames = I_C_BPartner_QuickInput.COLUMNNAME_IsCompany)
+	public void onIsCompanyFlagChanged(@NonNull final I_C_BPartner_QuickInput record)
 	{
-		updateContactName(record);
-	}
-
-	@CalloutMethod(columnNames = I_C_BPartner_Contact_QuickInput.COLUMNNAME_Firstname)
-	public void onLastNameChange(final I_C_BPartner_Contact_QuickInput record)
-	{
-		updateContactName(record);
-	}
-
-	private void updateContactName(final I_C_BPartner_Contact_QuickInput record)
-	{
-		final String name = userBL.buildContactName(record.getFirstname(), record.getLastname());
-		record.setName(name);
+		bpartnerQuickInputService.updateNameAndGreetingNoSave(record);
 	}
 }

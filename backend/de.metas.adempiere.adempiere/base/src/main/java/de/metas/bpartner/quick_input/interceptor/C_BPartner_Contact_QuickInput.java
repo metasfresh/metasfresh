@@ -20,9 +20,10 @@
  * #L%
  */
 
-package de.metas.bpartner.model.interceptor;
+package de.metas.bpartner.quick_input.interceptor;
 
-import de.metas.bpartner.service.BPartnerQuickInputService;
+import de.metas.bpartner.quick_input.BPartnerQuickInputId;
+import de.metas.bpartner.quick_input.service.BPartnerQuickInputService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -45,13 +46,13 @@ public class C_BPartner_Contact_QuickInput
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterSave(@NonNull final I_C_BPartner_Contact_QuickInput record)
 	{
-		bpartnerQuickInputService.updateNameAndGreeting(record.getC_BPartner_QuickInput_ID());
+		bpartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(record.getC_BPartner_QuickInput_ID()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void afterDelete(@NonNull final I_C_BPartner_Contact_QuickInput record)
 	{
-		bpartnerQuickInputService.updateNameAndGreeting(record.getC_BPartner_QuickInput_ID());
+		bpartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(record.getC_BPartner_QuickInput_ID()));
 	}
 
 }

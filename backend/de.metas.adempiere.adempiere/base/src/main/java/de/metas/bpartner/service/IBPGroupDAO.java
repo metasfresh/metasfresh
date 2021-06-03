@@ -2,11 +2,13 @@ package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.name.BPartnerNameAndGreetingStrategyId;
+import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_Group;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -44,6 +46,7 @@ public interface IBPGroupDAO extends ISingletonService
 
 	BPGroupId getBPGroupByBPartnerId(BPartnerId bpartnerId);
 
+	@Nullable
 	I_C_BP_Group getDefaultByClientId(ClientId clientId);
 
 	BPartnerNameAndGreetingStrategyId getBPartnerNameAndGreetingStrategyId(@NonNull BPGroupId bpGroupId);

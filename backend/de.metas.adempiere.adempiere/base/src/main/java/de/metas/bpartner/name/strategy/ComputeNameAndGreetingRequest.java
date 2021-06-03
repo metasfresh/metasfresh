@@ -20,15 +20,28 @@
  * #L%
  */
 
-package de.metas.bpartner.name;
+package de.metas.bpartner.name.strategy;
 
-import de.metas.i18n.ExplainedOptional;
+import com.google.common.collect.ImmutableList;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
-import java.util.Optional;
-
-public interface BPartnerNameAndGreetingStrategy
+@Value
+@Builder
+public class ComputeNameAndGreetingRequest
 {
-	BPartnerNameAndGreetingStrategyId getId();
+	@Value
+	@Builder
+	public static class Contact
+	{
+		String firstName;
+		String lastName;
+		int seqNo;
+		boolean isDefaultContact;
+		boolean isMembershipContact;
+	}
 
-	ExplainedOptional<NameAndGreeting> compute(ComputeNameAndGreetingRequest request);
+	@Singular @NonNull ImmutableList<Contact> contacts;
 }

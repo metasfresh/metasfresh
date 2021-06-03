@@ -20,24 +20,14 @@
  * #L%
  */
 
-package de.metas.bpartner.callout;
+package de.metas.bpartner.name.strategy;
 
-import de.metas.util.Services;
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.compiere.model.I_C_BPartner_QuickInput;
-import org.springframework.stereotype.Component;
+import de.metas.bpartner.name.NameAndGreeting;
+import de.metas.i18n.ExplainedOptional;
 
-import javax.annotation.PostConstruct;
-
-@Component
-@Callout(I_C_BPartner_QuickInput.class)
-public class C_BPartner_QuickInput
+public interface BPartnerNameAndGreetingStrategy
 {
-	@PostConstruct
-	void postConstruct()
-	{
-		final IProgramaticCalloutProvider programaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
-		programaticCalloutProvider.registerAnnotatedCallout(this);
-	}
+	BPartnerNameAndGreetingStrategyId getId();
+
+	ExplainedOptional<NameAndGreeting> compute(ComputeNameAndGreetingRequest request);
 }

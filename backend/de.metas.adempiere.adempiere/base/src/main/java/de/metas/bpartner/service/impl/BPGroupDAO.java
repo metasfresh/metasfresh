@@ -2,8 +2,8 @@ package de.metas.bpartner.service.impl;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.name.BPartnerNameAndGreetingStrategyId;
-import de.metas.bpartner.name.DoNothingBPartnerNameAndGreetingStrategy;
+import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
+import de.metas.bpartner.name.strategy.DoNothingBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.logging.LogManager;
@@ -14,6 +14,8 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -51,7 +53,7 @@ public class BPGroupDAO implements IBPGroupDAO
 	}
 
 	@Override
-	public I_C_BP_Group getByIdInInheritedTrx(BPGroupId bpGroupId)
+	public I_C_BP_Group getByIdInInheritedTrx(@NonNull final BPGroupId bpGroupId)
 	{
 		return load(bpGroupId, I_C_BP_Group.class);
 	}
@@ -65,12 +67,13 @@ public class BPGroupDAO implements IBPGroupDAO
 	}
 
 	@Override
-	public BPGroupId getBPGroupByBPartnerId(BPartnerId bpartnerId)
+	public BPGroupId getBPGroupByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		return BPGroupId.ofRepoId(getByBPartnerId(bpartnerId).getC_BP_Group_ID());
 	}
 
 	@Override
+	@Nullable
 	public I_C_BP_Group getDefaultByClientId(@NonNull final ClientId clientId)
 	{
 		final BPGroupId bpGroupId = Services.get(IQueryBL.class)

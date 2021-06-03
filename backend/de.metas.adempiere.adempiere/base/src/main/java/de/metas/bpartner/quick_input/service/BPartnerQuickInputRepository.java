@@ -20,9 +20,11 @@
  * #L%
  */
 
-package de.metas.bpartner.service;
+package de.metas.bpartner.quick_input.service;
 
+import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,7 +44,7 @@ public class BPartnerQuickInputRepository
 		InterfaceWrapperHelper.saveRecord(template);
 	}
 
-	public I_C_BPartner_QuickInput getById(final int bpartnerQuickInputId)
+	public I_C_BPartner_QuickInput getById(@NonNull final BPartnerQuickInputId bpartnerQuickInputId)
 	{
 		final I_C_BPartner_QuickInput bpartnerQuickInput = InterfaceWrapperHelper.load(bpartnerQuickInputId, I_C_BPartner_QuickInput.class);
 		if (bpartnerQuickInput == null)
@@ -52,7 +54,7 @@ public class BPartnerQuickInputRepository
 		return bpartnerQuickInput;
 	}
 
-	public List<I_C_BPartner_Contact_QuickInput> retrieveContactsByQuickInputId(final int bpartnerQuickInputId)
+	public List<I_C_BPartner_Contact_QuickInput> retrieveContactsByQuickInputId(@NonNull final BPartnerQuickInputId bpartnerQuickInputId)
 	{
 		return queryBL
 				.createQueryBuilder(I_C_BPartner_Contact_QuickInput.class)
