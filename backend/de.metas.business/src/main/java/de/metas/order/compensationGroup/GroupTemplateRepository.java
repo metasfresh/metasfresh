@@ -18,6 +18,7 @@ import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_M_Product_Exclude_FlatrateConditions;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -74,14 +75,15 @@ public class GroupTemplateRepository
 				GroupMatcherFactory::getAppliesToLineType);
 	}
 
-	public Optional<GroupTemplateId> getGroupTemplateId(@NonNull final GroupId groupId)
+	@Nullable
+	public GroupTemplateId getGroupTemplateId(@NonNull final GroupId groupId)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order_CompensationGroup.class)
 				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, groupId)
 				.andCollect(I_C_Order_CompensationGroup.COLUMNNAME_C_CompensationGroup_Schema_ID, I_C_CompensationGroup_Schema.class)
 				.create()
-				.firstIdOnlyOptional(GroupTemplateId::ofRepoIdOrNull);
+				.firstIdOnly(GroupTemplateId::ofRepoIdOrNull);
 	}
 
 	public GroupTemplate getById(@NonNull final GroupTemplateId groupTemplateId)

@@ -9,6 +9,7 @@ import de.metas.order.OrderId;
 import de.metas.order.compensationGroup.OrderGroupRepository.OrderLinesStorage;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /*
@@ -163,19 +164,19 @@ public class OrderGroupCompensationChangesHandler
 
 	}
 
-	public Optional<GroupTemplateId> getGroupTemplateId(@NonNull final GroupId groupId)
+	public GroupTemplateId getGroupTemplateId(@NonNull final GroupId groupId)
 	{
 		return groupTemplateRepo.getGroupTemplateId(groupId);
 	}
 
-	public boolean isProductExcludedFromFlatrateConditions(final Optional<GroupTemplateId> groupTemplateId,	@NonNull final ProductId productId)
+	public boolean isProductExcludedFromFlatrateConditions(@Nullable final GroupTemplateId groupTemplateId,	@NonNull final ProductId productId)
 	{
 		if (groupTemplateId == null)
 		{
 			return false;
 		}
 
-		return groupTemplateRepo.isProductExcludedFromFlatrateConditions(groupTemplateId.get(), productId);
+		return groupTemplateRepo.isProductExcludedFromFlatrateConditions(groupTemplateId, productId);
 	}
 
 	public IQueryBuilder<I_C_OrderLine> retrieveGroupOrderLinesQuery(final GroupId groupId)
