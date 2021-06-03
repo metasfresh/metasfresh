@@ -160,6 +160,12 @@ public class BPartnerUpsertRequestProducer
 		contactRequest.setLastName(orderCustomer.getLastName());
 		contactRequest.setEmail(orderCustomer.getEmail());
 
+		final Boolean isInvoiceEmailEnabled = matchingShopware6Mapping != null
+				? matchingShopware6Mapping.getInvoiceEmailEnabled()
+				: null;
+
+		contactRequest.setInvoiceEmailEnabled(isInvoiceEmailEnabled);
+
 		final SyncAdvise customBPartnerSyncAdvice = matchingShopware6Mapping != null
 				? matchingShopware6Mapping.getBPartnerSyncAdvice()
 				: null;

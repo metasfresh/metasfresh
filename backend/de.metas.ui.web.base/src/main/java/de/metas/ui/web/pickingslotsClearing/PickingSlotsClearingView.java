@@ -8,6 +8,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 
@@ -211,17 +213,18 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
-				.get()
-				.findEntities(ctx);
+				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
+				.findEntities(ctx)
+				.getValues();
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
-				.get()
+				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
 				.findEntities(ctx, query);
 	}
 
@@ -303,7 +306,7 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 
 	public HUEditorView computePackingHUsViewIfAbsent(@NonNull final ViewId packingHUsViewId, @NonNull final PackingHUsViewSupplier packingHUsViewFactory)
 	{
-		return packingHUsViewsCollection.computeIfAbsent(PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId), packingHUsViewFactory::createPackingHUsView);
+		return packingHUsViewsCollection.computeIfAbsent(PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId), packingHUsViewFactory);
 	}
 
 	void closePackingHUsView(final ViewId packingHUsViewId, final ViewCloseAction closeAction)

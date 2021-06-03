@@ -1,22 +1,8 @@
 package de.metas.ui.web.view.template;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.document.filter.DocumentFilterList;
@@ -36,6 +22,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -43,6 +30,17 @@ import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+import org.compiere.util.Evaluatee;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -68,7 +66,7 @@ import lombok.NonNull;
 
 /**
  * Convenient template to be used for all other {@link IView} custom implementations.
- * 
+ *
  * @param <T> type of the {@link IViewRow}s that this instance deals with e.g. in {@link #getRows()}.
  */
 public abstract class AbstractCustomView<T extends IViewRow> implements IView
@@ -84,10 +82,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
 
 	/**
-	 *
-	 * @param viewId
-	 * @param description may not be {@code null} either; if you don't have one, please use {@link ITranslatableString#empty()}.
-	 * @param rowsListSupplier
+	 * @param description may not be {@code null} either; if you don't have one, please use {@link TranslatableStrings#empty()}
 	 */
 	protected AbstractCustomView(
 			@NonNull final ViewId viewId,
@@ -173,20 +168,18 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		return viewFilterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
-				.get()
-				.findEntities(ctx);
+				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
+				.findEntities(ctx)
+				.getValues();
 	}
 
-	/**
-	 * Just throws an {@link UnsupportedOperationException}.
-	 */
 	@Override
-	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
 		return viewFilterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
-				.get()
+				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
 				.findEntities(ctx, query);
 	}
 
@@ -300,7 +293,7 @@ public abstract class AbstractCustomView<T extends IViewRow> implements IView
 		if (!Objects.equals(getViewId(), selection.getViewId()))
 		{
 			throw new AdempiereException("Selection has invalid viewId: " + selection
-					+ "\nExpected viewId: " + getViewId());
+												 + "\nExpected viewId: " + getViewId());
 		}
 		return streamByIds(selection.getRowIds());
 	}

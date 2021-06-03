@@ -11,6 +11,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
@@ -215,7 +216,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public LookupValuesList getParameterLookupValuesForQuery(final String parameterName, final String query)
+	public LookupValuesPage getParameterLookupValuesForQuery(final String parameterName, final String query)
 	{
 		return parameters.getFieldLookupValuesForQuery(parameterName, query);
 	}

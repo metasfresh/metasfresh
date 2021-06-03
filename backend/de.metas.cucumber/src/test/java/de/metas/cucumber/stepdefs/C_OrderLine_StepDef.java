@@ -41,13 +41,16 @@ public class C_OrderLine_StepDef
 {
 	private final StepDefData<I_M_Product> productTable;
 	private final StepDefData<I_C_Order> orderTable;
-
+	private final StepDefData<I_C_OrderLine> orderLineTable;
+			
 	public C_OrderLine_StepDef(
 			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_Order> orderTable)
+			@NonNull final StepDefData<I_C_Order> orderTable,
+			@NonNull final StepDefData<I_C_OrderLine> orderLineTable)
 	{
 		this.productTable = productTable;
 		this.orderTable = orderTable;
+		this.orderLineTable = orderLineTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
@@ -62,13 +65,15 @@ public class C_OrderLine_StepDef
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
 			final I_M_Product product = productTable.get(productIdentifier);
 			orderLine.setM_Product_ID(product.getM_Product_ID());
-			orderLine.setQtyOrdered(DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyOrdered));
+			orderLine.setQtyEntered(DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyEntered));
 
 			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + ".Identifier");
 			final I_C_Order order = orderTable.get(orderIdentifier);
 			orderLine.setC_Order_ID(order.getC_Order_ID());
 			
 			saveRecord(orderLine);
+
+			orderLineTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID), orderLine);
 		}
 	}
 }

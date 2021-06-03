@@ -296,6 +296,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final List<I_AD_Note> notice = createNoticesAndMarkICs(allCandidates, throwable);
 				notifications.addAll(notice);
 			}
+			//
+			// If no error, clear previous errors if any.
+			// We had a successful invoicing of those candidates.
+			else
+			{
+				allCandidates.forEach(invoiceCandBL::clearInvoicingErrorAndSave);
+			}
 
 			//
 			// Make sure all candidates were saved
@@ -1050,8 +1057,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					final String candErrorMsg = error.getLocalizedMessage();
 
-					invoiceCandBL.setError(currentAffectedCand, candErrorMsg, note);
-					invoiceCandDAO.save(currentAffectedCand);
+					invoiceCandBL.setInvoicingErrorAndSave(currentAffectedCand, candErrorMsg, note);
 				}
 
 				if (note != null)

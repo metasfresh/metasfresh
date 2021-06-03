@@ -1,23 +1,21 @@
 package de.metas.ui.web.shipment_candidates_editor;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Evaluatee;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Evaluatee;
+
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -88,13 +86,13 @@ public class MockedLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public LookupValuesList findEntities(Evaluatee ctx, String filter, int firstRow, int pageLength)
+	public LookupValuesPage findEntities(Evaluatee ctx, String filter, int firstRow, int pageLength)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public LookupValuesList findEntities(Evaluatee ctx, int pageLength)
+	public LookupValuesPage findEntities(Evaluatee ctx, int pageLength)
 	{
 		throw new UnsupportedOperationException();
 	}

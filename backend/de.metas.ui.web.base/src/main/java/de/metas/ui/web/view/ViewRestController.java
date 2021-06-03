@@ -50,6 +50,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
@@ -181,7 +182,7 @@ public class ViewRestController
 		return JSONViewResult.of(result, rowOverrides, jsonOpts, viewRowCommentsSummary);
 	}
 
-	private static final WindowId extractWindowId(final String pathWindowIdStr, final WindowId requestWindowId)
+	private static WindowId extractWindowId(final String pathWindowIdStr, final WindowId requestWindowId)
 	{
 		final WindowId pathWindowId = WindowId.fromNullableJson(pathWindowIdStr);
 		WindowId windowIdEffective = requestWindowId;
@@ -252,12 +253,11 @@ public class ViewRestController
 
 	@GetMapping("/{viewId}")
 	public JSONViewResult getViewData(
-			@PathVariable(PARAM_WindowId) final String windowId //
-			, @PathVariable(PARAM_ViewId) final String viewIdStr//
-			, @RequestParam(name = PARAM_FirstRow, required = true) @ApiParam(PARAM_FirstRow_Description) final int firstRow //
-			, @RequestParam(name = PARAM_PageLength, required = true) final int pageLength //
-			, @RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr //
-	)
+			@PathVariable(PARAM_WindowId) final String windowId,
+			@PathVariable(PARAM_ViewId) final String viewIdStr,
+			@RequestParam(name = PARAM_FirstRow) @ApiParam(PARAM_FirstRow_Description) final int firstRow,
+			@RequestParam(name = PARAM_PageLength) final int pageLength,
+			@RequestParam(name = PARAM_OrderBy, required = false) @ApiParam(PARAM_OrderBy_Description) final String orderBysListStr)
 	{
 		userSession.assertLoggedIn();
 
@@ -279,7 +279,7 @@ public class ViewRestController
 	@GetMapping("/layout")
 	public ResponseEntity<JSONViewLayout> getViewLayout(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
-			@RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType,
+			@RequestParam(name = PARAM_ViewDataType) final JSONViewDataType viewDataType,
 			@RequestParam(name = "profileId", required = false) final String profileIdStr,
 			final WebRequest request)
 	{
@@ -291,14 +291,14 @@ public class ViewRestController
 		return ETagResponseEntityBuilder.ofETagAware(request, viewLayout)
 				.includeLanguageInETag()
 				.cacheMaxAge(userSession.getHttpCacheMaxAge())
-				.jsonLayoutOptions(() -> newJSONLayoutOptions())
+				.jsonLayoutOptions(this::newJSONLayoutOptions)
 				.toLayoutJson(JSONViewLayout::of);
 	}
 
 	@GetMapping("/availableProfiles")
 	public JSONViewProfilesList getAvailableViewProfiles(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
-			@RequestParam(name = PARAM_ViewDataType, required = true) final JSONViewDataType viewDataType)
+			@RequestParam(name = PARAM_ViewDataType) final JSONViewDataType viewDataType)
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final List<ViewProfile> availableProfiles = viewsRepo.getAvailableProfiles(windowId, viewDataType);
@@ -361,12 +361,12 @@ public class ViewRestController
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
-	public JSONLookupValuesList getFilterParameterTypeahead(
+	public JSONLookupValuesPage getFilterParameterTypeahead(
 			@PathVariable(PARAM_WindowId) final String windowId //
 			, @PathVariable(PARAM_ViewId) final String viewIdStr //
 			, @PathVariable(PARAM_FilterId) final String filterId //
 			, @PathVariable("parameterName") final String parameterName //
-			, @RequestParam(name = "query", required = true) final String query //
+			, @RequestParam(name = "query") final String query //
 	)
 	{
 		userSession.assertLoggedIn();
@@ -377,7 +377,7 @@ public class ViewRestController
 
 		return view
 				.getFilterParameterTypeahead(filterId, parameterName, query, ctx)
-				.transform(this::toJSONLookupValuesList);
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
@@ -540,7 +540,6 @@ public class ViewRestController
 		headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
 		headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
-		final ResponseEntity<Resource> response = new ResponseEntity<>(new InputStreamResource(new FileInputStream(tmpFile)), headers, HttpStatus.OK);
-		return response;
+		return new ResponseEntity<>(new InputStreamResource(new FileInputStream(tmpFile)), headers, HttpStatus.OK);
 	}
 }

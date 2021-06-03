@@ -986,6 +986,27 @@ public interface I_AD_User
 	String COLUMNNAME_IsInPayroll = "IsInPayroll";
 
 	/**
+	 * Set Invoice Email Enabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoiceEmailEnabled (@Nullable java.lang.String IsInvoiceEmailEnabled);
+
+	/**
+	 * Get Invoice Email Enabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsInvoiceEmailEnabled();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsInvoiceEmailEnabled = new ModelColumn<>(I_AD_User.class, "IsInvoiceEmailEnabled", null);
+	String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
+
+	/**
 	 * Set Use Login As Printing HostKey.
 	 * Wenn gesetzt und ein Nutzer meldet sich an, dann wird immer der jeweilige User-Login als Hostkey benutzt, egal von welchem Computer aus sich der Nutzer anmeldet
 	 *

@@ -88,6 +88,12 @@
 
         <dependency>
             <groupId>de.metas.camel.alberta</groupId>
+            <artifactId>alberta-document-api</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.camel.alberta</groupId>
             <artifactId>alberta-orders-api</artifactId>
             <version>10.0.0</version>
         </dependency>

@@ -3,6 +3,7 @@ package de.metas.ui.web.pattribute;
 import java.util.List;
 import java.util.function.Function;
 
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.util.ASIEditingInfo;
@@ -227,16 +228,16 @@ public class ASIRestController
 	}
 
 	@GetMapping("/{asiDocId}/field/{attributeName}/typeahead")
-	public JSONLookupValuesList getAttributeTypeahead(
+	public JSONLookupValuesPage getAttributeTypeahead(
 			@PathVariable("asiDocId") final String asiDocIdStr,
 			@PathVariable("attributeName") final String attributeName,
-			@RequestParam(name = "query", required = true) final String query)
+			@RequestParam(name = "query") final String query)
 	{
 		userSession.assertLoggedIn();
 
 		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 		return forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.getFieldLookupValuesForQuery(attributeName, query))
-				.transform(this::toJSONLookupValuesList);
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
 	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)

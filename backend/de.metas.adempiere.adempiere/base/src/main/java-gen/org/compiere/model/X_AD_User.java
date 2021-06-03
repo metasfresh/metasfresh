@@ -677,6 +677,27 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return get_ValueAsBoolean(COLUMNNAME_IsInPayroll);
 	}
 
+	/** 
+	 * IsInvoiceEmailEnabled AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISINVOICEEMAILENABLED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISINVOICEEMAILENABLED_Yes = "Y";
+	/** No = N */
+	public static final String ISINVOICEEMAILENABLED_No = "N";
+	@Override
+	public void setIsInvoiceEmailEnabled (final @Nullable java.lang.String IsInvoiceEmailEnabled)
+	{
+		set_Value (COLUMNNAME_IsInvoiceEmailEnabled, IsInvoiceEmailEnabled);
+	}
+
+	@Override
+	public java.lang.String getIsInvoiceEmailEnabled() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsInvoiceEmailEnabled);
+	}
+
 	@Override
 	public void setIsLoginAsHostKey (final boolean IsLoginAsHostKey)
 	{
