@@ -1,60 +1,14 @@
 package de.metas.allocation.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-// import static org.hamcrest.Matchers.comparesEqualTo;
-// import static org.hamcrest.Matchers.is;
-// import static org.junit.Assert.assertThat;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_DocType;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.invoice_auto_allocation.BankAccountInvoiceAutoAllocRulesRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -63,6 +17,31 @@ import de.metas.interfaces.I_C_DocType;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_BP_BankAccount_InvoiceAutoAllocateRule;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.X_C_DocType;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class AllocationBLTest
@@ -70,8 +49,8 @@ public class AllocationBLTest
 	private ITrxManager trxManager;
 	private IInvoiceDAO invoiceDAO;
 	private IAllocationDAO allocationDAO;
-	
 	private IAllocationBL allocationBL;
+	private BankAccountInvoiceAutoAllocRulesRepository bankAccountInvoiceAutoAllocRulesRepository;
 
 	@BeforeEach
 	public final void beforeTest()
@@ -79,7 +58,8 @@ public class AllocationBLTest
 		AdempiereTestHelper.get().init();
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
-		
+		SpringContextHolder.registerJUnitBean(bankAccountInvoiceAutoAllocRulesRepository = new BankAccountInvoiceAutoAllocRulesRepository());
+
 		trxManager = Services.get(ITrxManager.class);
 		invoiceDAO = Services.get(IInvoiceDAO.class);
 		allocationDAO = Services.get(IAllocationDAO.class);
@@ -164,7 +144,7 @@ public class AllocationBLTest
 		payment1.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(payment1);
 
-		Assert.assertTrue(invoice.getGrandTotal().compareTo(invoiceDAO.retrieveOpenAmt(invoice)) == 0);
+		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).isEqualByComparingTo(invoice.getGrandTotal());
 
 		final I_C_AllocationHdr alloc = allocationBL.autoAllocateAvailablePayments(invoice);
 		assertThat(alloc).isNotNull();
@@ -243,7 +223,7 @@ public class AllocationBLTest
 		payment3.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(payment3);
 
-		Assert.assertTrue(invoice.getGrandTotal().compareTo(invoiceDAO.retrieveOpenAmt(invoice)) == 0);
+		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).isEqualByComparingTo(invoice.getGrandTotal());
 
 		final I_C_AllocationHdr alloc = allocationBL.autoAllocateAvailablePayments(invoice);
 		assertThat(alloc).isNotNull();
@@ -263,7 +243,7 @@ public class AllocationBLTest
 		assertThat(lines.get(2).getC_Payment_ID()).isEqualTo(payment3.getC_Payment_ID());
 		assertThat(lines.get(2).getAmount()).isEqualByComparingTo("50"); // payAmt of payment2
 
-		Assert.assertTrue(BigDecimal.ZERO.compareTo(invoiceDAO.retrieveOpenAmt(invoice)) == 0);
+		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).isZero();
 	}
 
 	@Test
@@ -350,5 +330,120 @@ public class AllocationBLTest
 		assertThat(lines.get(2).getAmount()).isEqualByComparingTo("50"); // partial payAmt of payment2
 
 		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).isZero();
+	}
+
+	@Nested
+	class applyBankAccountInvoiceAutoAllocRules
+	{
+		private I_C_Payment payment(@NonNull BankAccountId bankAccountId)
+		{
+			final I_C_Payment payment = newInstance(I_C_Payment.class);
+			payment.setC_BP_BankAccount_ID(bankAccountId.getRepoId());
+			saveRecord(payment);
+			return payment;
+		}
+
+		private void bankAccountAndInvoiceDocTypeId(
+				@NonNull BankAccountId bankAccountId,
+				@NonNull DocTypeId invoiceDocTypeId)
+		{
+			final I_C_BP_BankAccount_InvoiceAutoAllocateRule record = newInstance(I_C_BP_BankAccount_InvoiceAutoAllocateRule.class);
+			record.setC_BP_BankAccount_ID(bankAccountId.getRepoId());
+			record.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
+			saveRecord(record);
+		}
+
+		@SafeVarargs
+		private final <T> ArrayList<T> arrayList(T... values)
+		{
+			return new ArrayList<>(Arrays.asList(values));
+		}
+
+		@Test
+		void emptyEligiblePaymentsList()
+		{
+			final ArrayList<I_C_Payment> eligiblePayments = new ArrayList<>();
+
+			AllocationBL.applyBankAccountInvoiceAutoAllocRules(
+					eligiblePayments,
+					DocTypeId.ofRepoId(1), //invoiceDocTypeId
+					bankAccountInvoiceAutoAllocRulesRepository
+			);
+
+			assertThat(eligiblePayments).isEmpty();
+		}
+
+		@Nested
+		class invoiceDocType1_restrictedTo_bankAccount1
+		{
+			final BankAccountId bankAccountId1 = BankAccountId.ofRepoId(11);
+			final BankAccountId bankAccountId2 = BankAccountId.ofRepoId(12);
+			final DocTypeId invoiceDocTypeId1 = DocTypeId.ofRepoId(21);
+			final DocTypeId invoiceDocTypeId2 = DocTypeId.ofRepoId(22);
+			private I_C_Payment bankAccountId1_payment1;
+			private I_C_Payment bankAccountId2_payment1;
+
+			@BeforeEach
+			void beforeEach()
+			{
+				bankAccountAndInvoiceDocTypeId(bankAccountId1, invoiceDocTypeId1);
+
+				bankAccountId1_payment1 = payment(bankAccountId1);
+				bankAccountId2_payment1 = payment(bankAccountId2);
+			}
+
+			@Test
+			void bankAccount1_invoiceDocType1()
+			{
+				final ArrayList<I_C_Payment> eligiblePayments = arrayList(bankAccountId1_payment1);
+				AllocationBL.applyBankAccountInvoiceAutoAllocRules(
+						eligiblePayments,
+						invoiceDocTypeId1,
+						bankAccountInvoiceAutoAllocRulesRepository
+				);
+
+				assertThat(eligiblePayments).containsExactly(bankAccountId1_payment1);
+			}
+
+			@Test
+			void bankAccount1_invoiceDocType2()
+			{
+				final ArrayList<I_C_Payment> eligiblePayments = arrayList(bankAccountId1_payment1);
+				AllocationBL.applyBankAccountInvoiceAutoAllocRules(
+						eligiblePayments,
+						invoiceDocTypeId2,
+						bankAccountInvoiceAutoAllocRulesRepository
+				);
+
+				assertThat(eligiblePayments).containsExactly(bankAccountId1_payment1);
+			}
+
+			@Test
+			void bankAccount2_invoiceDocType1()
+			{
+				final ArrayList<I_C_Payment> eligiblePayments = arrayList(bankAccountId2_payment1);
+				AllocationBL.applyBankAccountInvoiceAutoAllocRules(
+						eligiblePayments,
+						invoiceDocTypeId1,
+						bankAccountInvoiceAutoAllocRulesRepository
+				);
+
+				assertThat(eligiblePayments).isEmpty();
+			}
+
+			@Test
+			void bankAccount2_invoiceDocType2()
+			{
+				final ArrayList<I_C_Payment> eligiblePayments = arrayList(bankAccountId2_payment1);
+				AllocationBL.applyBankAccountInvoiceAutoAllocRules(
+						eligiblePayments,
+						invoiceDocTypeId2,
+						bankAccountInvoiceAutoAllocRulesRepository
+				);
+
+				assertThat(eligiblePayments).containsExactly(bankAccountId2_payment1);
+			}
+
+		}
 	}
 }

@@ -1,5 +1,6 @@
 package de.metas.allocation.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.allocation.api.C_AllocationHdr_Builder;
@@ -132,17 +133,44 @@ public class AllocationBL implements IAllocationBL
 			return ImmutableList.of();
 		}
 
-		//
-		// Iterate eligible payments and eliminate those which does not complain to BankAccount Invoice Auto Allocation rules
-		final BankAccountInvoiceAutoAllocRulesRepository bankAccountInvoiceAutoAllocRulesRepository = SpringContextHolder.instance.getBean(BankAccountInvoiceAutoAllocRulesRepository.class);
-		final BankAccountInvoiceAutoAllocRules rules = bankAccountInvoiceAutoAllocRulesRepository.getRules();
-		final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoId(invoice.getC_DocType_ID());
-		eligiblePayments.removeIf(payment -> {
-			final BankAccountId bankAccountId = BankAccountId.ofRepoId(payment.getC_BP_BankAccount_ID());
-			return !rules.isAutoAllocate(bankAccountId, invoiceDocTypeId);
-		});
+		applyBankAccountInvoiceAutoAllocRules(
+				eligiblePayments,
+				DocTypeId.ofRepoId(invoice.getC_DocType_ID()),
+				SpringContextHolder.instance.getBean(BankAccountInvoiceAutoAllocRulesRepository.class));
 
 		return eligiblePayments;
+	}
+
+	/**
+	 * Iterate eligible payments and eliminate those which does not complain to BankAccount Invoice Auto Allocation rules
+	 */
+	@VisibleForTesting
+	static void applyBankAccountInvoiceAutoAllocRules(
+			@NonNull final ArrayList<I_C_Payment> eligiblePayments,
+			@NonNull final DocTypeId invoiceDocTypeId,
+			@NonNull final BankAccountInvoiceAutoAllocRulesRepository bankAccountInvoiceAutoAllocRulesRepository)
+	{
+		if (eligiblePayments.isEmpty())
+		{
+			return;
+		}
+
+		final BankAccountInvoiceAutoAllocRules rules = bankAccountInvoiceAutoAllocRulesRepository.getRules();
+		switch (rules.isAutoAllocateInvoiceDocType(invoiceDocTypeId))
+		{
+			case TRUE:
+				// consider all eligible payments
+				break;
+			case FALSE:
+				eligiblePayments.clear();
+				break;
+			case UNKNOWN:
+				eligiblePayments.removeIf(payment -> {
+					final BankAccountId bankAccountId = BankAccountId.ofRepoId(payment.getC_BP_BankAccount_ID());
+					return !rules.isAutoAllocate(bankAccountId, invoiceDocTypeId);
+				});
+				break;
+		}
 	}
 
 	public I_C_AllocationHdr autoAllocateSpecificPayment(

@@ -24,7 +24,9 @@ package de.metas.banking.invoice_auto_allocation;
 
 import de.metas.banking.BankAccountId;
 import de.metas.document.DocTypeId;
+import de.metas.util.OptionalBoolean;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -32,54 +34,77 @@ import java.util.Collections;
 
 class BankAccountInvoiceAutoAllocRulesTest
 {
-	@Test
-	public void noRestrictions()
+	@Nested
+	class isAutoAllocateInvoiceDocType
 	{
-		Assertions.assertThat(BankAccountInvoiceAutoAllocRules.NO_RESTRICTIONS.isAutoAllocate(BankAccountId.ofRepoId(1), DocTypeId.ofRepoId(2)))
-				.isTrue();
+		@Test
+		public void noRestrictions()
+		{
+			Assertions.assertThat(BankAccountInvoiceAutoAllocRules.NO_RESTRICTIONS.isAutoAllocateInvoiceDocType(DocTypeId.ofRepoId(2)))
+					.isEqualTo(OptionalBoolean.TRUE);
+		}
+
+		@Test
+		public void withRestrictions()
+		{
+			final BankAccountInvoiceAutoAllocRules rules = BankAccountInvoiceAutoAllocRules.ofRulesList(Collections.singletonList(
+					BankAccountInvoiceAutoAllocRule.builder().bankAccountId(BankAccountId.ofRepoId(10)).invoiceDocTypeId(DocTypeId.ofRepoId(20)).build()
+			));
+			Assertions.assertThat(rules.isAutoAllocateInvoiceDocType(DocTypeId.ofRepoId(20))).isEqualTo(OptionalBoolean.UNKNOWN);
+			Assertions.assertThat(rules.isAutoAllocateInvoiceDocType(DocTypeId.ofRepoId(21))).isEqualTo(OptionalBoolean.TRUE);
+		}
 	}
 
-	@Test
-	public void invoiceDocType_restricted_to_one_BankAccount()
+	@Nested
+	class isAutoAllocate
 	{
-		final BankAccountInvoiceAutoAllocRules rules = BankAccountInvoiceAutoAllocRules.ofRulesList(Collections.singletonList(
-				BankAccountInvoiceAutoAllocRule.builder().bankAccountId(BankAccountId.ofRepoId(10)).invoiceDocTypeId(DocTypeId.ofRepoId(20)).build()
-		));
+		@Test
+		public void noRestrictions()
+		{
+			Assertions.assertThat(BankAccountInvoiceAutoAllocRules.NO_RESTRICTIONS.isAutoAllocate(BankAccountId.ofRepoId(1), DocTypeId.ofRepoId(2)))
+					.isTrue();
+		}
 
-		Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(10), DocTypeId.ofRepoId(20)))
-				.isTrue();
-		Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(10), DocTypeId.ofRepoId(21)))
-				.isTrue();
+		@Test
+		public void invoiceDocType_restricted_to_one_BankAccount()
+		{
+			final BankAccountInvoiceAutoAllocRules rules = BankAccountInvoiceAutoAllocRules.ofRulesList(Collections.singletonList(
+					BankAccountInvoiceAutoAllocRule.builder().bankAccountId(BankAccountId.ofRepoId(10)).invoiceDocTypeId(DocTypeId.ofRepoId(20)).build()
+			));
 
-		Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(11), DocTypeId.ofRepoId(20)))
-				.isFalse();
-		Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(11), DocTypeId.ofRepoId(21)))
-				.isTrue();
+			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(10), DocTypeId.ofRepoId(20)))
+					.isTrue();
+			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(10), DocTypeId.ofRepoId(21)))
+					.isTrue();
+
+			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(11), DocTypeId.ofRepoId(20)))
+					.isFalse();
+			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(11), DocTypeId.ofRepoId(21)))
+					.isTrue();
+		}
+
+		@Test
+		public void invoiceDocType_restricted_to_two_BankAccount()
+		{
+			final BankAccountInvoiceAutoAllocRules rules = BankAccountInvoiceAutoAllocRules.ofRulesList(Arrays.asList(
+					BankAccountInvoiceAutoAllocRule.builder().bankAccountId(BankAccountId.ofRepoId(10)).invoiceDocTypeId(DocTypeId.ofRepoId(20)).build(),
+					BankAccountInvoiceAutoAllocRule.builder().bankAccountId(BankAccountId.ofRepoId(11)).invoiceDocTypeId(DocTypeId.ofRepoId(20)).build()
+			));
+
+			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(10), DocTypeId.ofRepoId(20)))
+					.isTrue();
+			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(10), DocTypeId.ofRepoId(21)))
+					.isTrue();
+
+			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(11), DocTypeId.ofRepoId(20)))
+					.isTrue();
+			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(11), DocTypeId.ofRepoId(21)))
+					.isTrue();
+
+			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(12), DocTypeId.ofRepoId(20)))
+					.isFalse();
+			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(12), DocTypeId.ofRepoId(21)))
+					.isTrue();
+		}
 	}
-
-	@Test
-	public void invoiceDocType_restricted_to_two_BankAccount()
-	{
-		final BankAccountInvoiceAutoAllocRules rules = BankAccountInvoiceAutoAllocRules.ofRulesList(Arrays.asList(
-				BankAccountInvoiceAutoAllocRule.builder().bankAccountId(BankAccountId.ofRepoId(10)).invoiceDocTypeId(DocTypeId.ofRepoId(20)).build(),
-				BankAccountInvoiceAutoAllocRule.builder().bankAccountId(BankAccountId.ofRepoId(11)).invoiceDocTypeId(DocTypeId.ofRepoId(20)).build()
-		));
-
-		Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(10), DocTypeId.ofRepoId(20)))
-				.isTrue();
-		Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(10), DocTypeId.ofRepoId(21)))
-				.isTrue();
-
-		Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(11), DocTypeId.ofRepoId(20)))
-				.isTrue();
-		Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(11), DocTypeId.ofRepoId(21)))
-				.isTrue();
-
-		Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(12), DocTypeId.ofRepoId(20)))
-				.isFalse();
-		Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(12), DocTypeId.ofRepoId(21)))
-				.isTrue();
-	}
-
-
 }

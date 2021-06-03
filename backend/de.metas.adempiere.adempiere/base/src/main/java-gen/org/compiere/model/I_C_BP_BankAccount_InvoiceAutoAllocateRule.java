@@ -31,5 +31,9 @@ public interface I_C_BP_BankAccount_InvoiceAutoAllocateRule
 
 	int getC_BP_BankAccount_ID();
 
+	void setC_BP_BankAccount_ID(int id);
+
 	int getC_DocTypeInvoice_ID();
+
+	void setC_DocTypeInvoice_ID(int id);
 }

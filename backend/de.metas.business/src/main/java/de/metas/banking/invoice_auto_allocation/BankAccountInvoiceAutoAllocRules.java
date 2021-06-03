@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.banking.BankAccountId;
 import de.metas.document.DocTypeId;
+import de.metas.util.OptionalBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -51,6 +52,14 @@ public class BankAccountInvoiceAutoAllocRules
 		return !rules.isEmpty()
 				? new BankAccountInvoiceAutoAllocRules(rules)
 				: NO_RESTRICTIONS;
+	}
+
+	public OptionalBoolean isAutoAllocateInvoiceDocType(@NonNull final DocTypeId invoiceDocTypeId)
+	{
+		final ImmutableList<BankAccountInvoiceAutoAllocRule> rulesForInvoiceDocTypeId = rulesByInvoiceDocTypeId.get(invoiceDocTypeId);
+		return rulesForInvoiceDocTypeId.isEmpty()
+				? OptionalBoolean.TRUE
+				: OptionalBoolean.UNKNOWN;
 	}
 
 	public boolean isAutoAllocate(
