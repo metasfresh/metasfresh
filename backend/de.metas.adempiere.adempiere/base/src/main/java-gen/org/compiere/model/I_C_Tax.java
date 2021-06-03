@@ -19,10 +19,11 @@ public interface I_C_Tax
 	//	/** AD_Table_ID=261 */
 	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-	ModelColumn<I_C_Tax, Object> COLUMN_AD_BoilerPlate_ID = new ModelColumn<>(I_C_Tax.class, "AD_BoilerPlate_ID", null);
-	String COLUMNNAME_AD_BoilerPlate_ID = "AD_BoilerPlate_ID";
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	ModelColumn<I_C_Tax, Object> COLUMN_AD_BoilerPlate_ID = new ModelColumn<>(I_C_Tax.class, "AD_BoilerPlate_ID", null);
+	String COLUMNNAME_AD_BoilerPlate_ID = "AD_BoilerPlate_ID";
 
 	/**
 	 * Get Client.
@@ -36,55 +37,56 @@ public interface I_C_Tax
 
 	ModelColumn<I_C_Tax, org.compiere.model.I_AD_Rule> COLUMN_AD_Rule_ID = new ModelColumn<>(I_C_Tax.class, "AD_Rule_ID", org.compiere.model.I_AD_Rule.class);
 	String COLUMNNAME_AD_Rule_ID = "AD_Rule_ID";
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
+
 	ModelColumn<I_C_Tax, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new ModelColumn<>(I_C_Tax.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
 	String COLUMNNAME_C_Country_ID = "C_Country_ID";
+
+	/**
+	 * Get Regel.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Rule_ID();
+
 	ModelColumn<I_C_Tax, Object> COLUMN_Created = new ModelColumn<>(I_C_Tax.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	void setAD_Rule(@Nullable org.compiere.model.I_AD_Rule AD_Rule);
-
 	ModelColumn<I_C_Tax, org.compiere.model.I_C_Region> COLUMN_C_Region_ID = new ModelColumn<>(I_C_Tax.class, "C_Region_ID", org.compiere.model.I_C_Region.class);
 	String COLUMNNAME_C_Region_ID = "C_Region_ID";
+
+	/**
+	 * Get Country.
+	 * Country
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Country_ID();
+
 	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
 	ModelColumn<I_C_Tax, Object> COLUMN_C_Tax_ID = new ModelColumn<>(I_C_Tax.class, "C_Tax_ID", null);
 	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
-
-	void setC_Country(@Nullable org.compiere.model.I_C_Country C_Country);
-
 	ModelColumn<I_C_Tax, Object> COLUMN_Description = new ModelColumn<>(I_C_Tax.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
 	ModelColumn<I_C_Tax, Object> COLUMN_DuplicateTax = new ModelColumn<>(I_C_Tax.class, "DuplicateTax", null);
 	String COLUMNNAME_DuplicateTax = "DuplicateTax";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
 	ModelColumn<I_C_Tax, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Tax.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 	ModelColumn<I_C_Tax, Object> COLUMN_IsDefault = new ModelColumn<>(I_C_Tax.class, "IsDefault", null);
 	String COLUMNNAME_IsDefault = "IsDefault";
-
-	void setC_Region(@Nullable org.compiere.model.I_C_Region C_Region);
-
 	ModelColumn<I_C_Tax, Object> COLUMN_IsDocumentLevel = new ModelColumn<>(I_C_Tax.class, "IsDocumentLevel", null);
 	String COLUMNNAME_IsDocumentLevel = "IsDocumentLevel";
 	ModelColumn<I_C_Tax, Object> COLUMN_IsFiscalRepresentation = new ModelColumn<>(I_C_Tax.class, "IsFiscalRepresentation", null);
@@ -103,100 +105,24 @@ public interface I_C_Tax
 	String COLUMNNAME_Name = "Name";
 	String COLUMNNAME_Parent_Tax_ID = "Parent_Tax_ID";
 	ModelColumn<I_C_Tax, Object> COLUMN_Rate = new ModelColumn<>(I_C_Tax.class, "Rate", null);
-
-	/**
-	 * Get Active.
-	 * The record is active in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isActive();
-
 	String COLUMNNAME_Rate = "Rate";
 	ModelColumn<I_C_Tax, Object> COLUMN_RequiresTaxCertificate = new ModelColumn<>(I_C_Tax.class, "RequiresTaxCertificate", null);
 	String COLUMNNAME_RequiresTaxCertificate = "RequiresTaxCertificate";
-
-	/**
-	 * Get Default.
-	 * Default value
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isDefault();
-
 	ModelColumn<I_C_Tax, Object> COLUMN_SOPOType = new ModelColumn<>(I_C_Tax.class, "SOPOType", null);
 	String COLUMNNAME_SOPOType = "SOPOType";
 	ModelColumn<I_C_Tax, Object> COLUMN_TaxIndicator = new ModelColumn<>(I_C_Tax.class, "TaxIndicator", null);
-
-	/**
-	 * Get Dokumentbasiert.
-	 * Steuer wird dokumentbasiert berechnet (abweichend wäre zeilenweise)
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isDocumentLevel();
-
 	String COLUMNNAME_TaxIndicator = "TaxIndicator";
 	ModelColumn<I_C_Tax, org.compiere.model.I_C_Country> COLUMN_To_Country_ID = new ModelColumn<>(I_C_Tax.class, "To_Country_ID", org.compiere.model.I_C_Country.class);
 	String COLUMNNAME_To_Country_ID = "To_Country_ID";
-
-	/**
-	 * Get Fiscal representation.
-	 * Matches only if the respective org has a fiscal representation in the destination country.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isFiscalRepresentation();
-
 	ModelColumn<I_C_Tax, org.compiere.model.I_C_Region> COLUMN_To_Region_ID = new ModelColumn<>(I_C_Tax.class, "To_Region_ID", org.compiere.model.I_C_Region.class);
 	String COLUMNNAME_To_Region_ID = "To_Region_ID";
 	ModelColumn<I_C_Tax, Object> COLUMN_TypeOfDestCountry = new ModelColumn<>(I_C_Tax.class, "TypeOfDestCountry", null);
-
-	/**
-	 * Get VK Steuer.
-	 * Dies ist eine VK Steuer
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isSalesTax();
-
 	String COLUMNNAME_TypeOfDestCountry = "TypeOfDestCountry";
 	ModelColumn<I_C_Tax, Object> COLUMN_Updated = new ModelColumn<>(I_C_Tax.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
-
-	/**
-	 * Get Small business.
-	 * Matches only if the respective business partner has a small business tax exemption
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isSmallbusiness();
-
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 	ModelColumn<I_C_Tax, Object> COLUMN_ValidFrom = new ModelColumn<>(I_C_Tax.class, "ValidFrom", null);
 	String COLUMNNAME_ValidFrom = "ValidFrom";
-
-	/**
-	 * Get Zusammenfassungseintrag.
-	 * This is a summary entity
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isSummary();
 
 	/**
 	 * Get Boiler Plate.
@@ -217,26 +143,6 @@ public interface I_C_Tax
 	void setAD_BoilerPlate_ID(int AD_BoilerPlate_ID);
 
 	/**
-	 * Get Organisation.
-	 * Organisational entity within client
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Org_ID();
-
-	/**
-	 * Get steuerbefreit.
-	 * Steuersatz steuerbefreit
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isTaxExempt();
-
-	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -247,15 +153,6 @@ public interface I_C_Tax
 	void setAD_Org_ID(int AD_Org_ID);
 
 	/**
-	 * Get Regel.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_Rule_ID();
-
-	/**
 	 * Set Regel.
 	 *
 	 * <br>Type: TableDir
@@ -264,28 +161,10 @@ public interface I_C_Tax
 	 */
 	void setAD_Rule_ID(int AD_Rule_ID);
 
-	/**
-	 * Get Whole Tax.
-	 * If the flag is set, this tax can be used in documents where an entire line amount is a tax amount. Used, e.g., when a tax charge needs to be paid to a customs office.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isWholeTax();
-
 	@Nullable
 	org.compiere.model.I_AD_Rule getAD_Rule();
 
-	/**
-	 * Get Country.
-	 * Country
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Country_ID();
+	void setAD_Rule(@Nullable org.compiere.model.I_AD_Rule AD_Rule);
 
 	/**
 	 * Set Country.
@@ -299,6 +178,28 @@ public interface I_C_Tax
 
 	@Nullable
 	org.compiere.model.I_C_Country getC_Country();
+
+	void setC_Country(@Nullable org.compiere.model.I_C_Country C_Country);
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
 
 	/**
 	 * Get Region.
@@ -322,6 +223,18 @@ public interface I_C_Tax
 
 	@Nullable
 	org.compiere.model.I_C_Region getC_Region();
+
+	void setC_Region(@Nullable org.compiere.model.I_C_Region C_Region);
+
+	/**
+	 * Set Whole Tax.
+	 * If the flag is set, this tax can be used in documents where an entire line amount is a tax amount. Used, e.g., when a tax charge needs to be paid to a customs office.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWholeTax(boolean IsWholeTax);
 
 	/**
 	 * Get Tax Category.
@@ -414,6 +327,16 @@ public interface I_C_Tax
 	void setIsActive(boolean IsActive);
 
 	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
+
+	/**
 	 * Set Default.
 	 * Default value
 	 *
@@ -422,6 +345,16 @@ public interface I_C_Tax
 	 * <br>Virtual Column: false
 	 */
 	void setIsDefault(boolean IsDefault);
+
+	/**
+	 * Get Default.
+	 * Default value
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDefault();
 
 	/**
 	 * Set Dokumentbasiert.
@@ -434,6 +367,16 @@ public interface I_C_Tax
 	void setIsDocumentLevel(boolean IsDocumentLevel);
 
 	/**
+	 * Get Dokumentbasiert.
+	 * Steuer wird dokumentbasiert berechnet (abweichend wäre zeilenweise)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDocumentLevel();
+
+	/**
 	 * Set Fiscal representation.
 	 * Matches only if the respective org has a fiscal representation in the destination country.
 	 *
@@ -442,6 +385,16 @@ public interface I_C_Tax
 	 * <br>Virtual Column: false
 	 */
 	void setIsFiscalRepresentation(boolean IsFiscalRepresentation);
+
+	/**
+	 * Get Fiscal representation.
+	 * Matches only if the respective org has a fiscal representation in the destination country.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isFiscalRepresentation();
 
 	/**
 	 * Set VK Steuer.
@@ -454,6 +407,16 @@ public interface I_C_Tax
 	void setIsSalesTax(boolean IsSalesTax);
 
 	/**
+	 * Get VK Steuer.
+	 * Dies ist eine VK Steuer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSalesTax();
+
+	/**
 	 * Set Small business.
 	 * Matches only if the respective business partner has a small business tax exemption
 	 *
@@ -462,6 +425,16 @@ public interface I_C_Tax
 	 * <br>Virtual Column: false
 	 */
 	void setIsSmallbusiness(boolean IsSmallbusiness);
+
+	/**
+	 * Get Small business.
+	 * Matches only if the respective business partner has a small business tax exemption
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isSmallbusiness();
 
 	/**
 	 * Set Zusammenfassungseintrag.
@@ -474,6 +447,16 @@ public interface I_C_Tax
 	void setIsSummary(boolean IsSummary);
 
 	/**
+	 * Get Zusammenfassungseintrag.
+	 * This is a summary entity
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSummary();
+
+	/**
 	 * Set steuerbefreit.
 	 * Steuersatz steuerbefreit
 	 *
@@ -484,14 +467,24 @@ public interface I_C_Tax
 	void setIsTaxExempt(boolean IsTaxExempt);
 
 	/**
-	 * Set Whole Tax.
+	 * Get steuerbefreit.
+	 * Steuersatz steuerbefreit
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isTaxExempt();
+
+	/**
+	 * Get Whole Tax.
 	 * If the flag is set, this tax can be used in documents where an entire line amount is a tax amount. Used, e.g., when a tax charge needs to be paid to a customs office.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsWholeTax (boolean IsWholeTax);
+	boolean isWholeTax();
 
 	/**
 	 * Get Name.
@@ -509,7 +502,7 @@ public interface I_C_Tax
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName(java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Übergeordnete Steuer.
@@ -531,8 +524,6 @@ public interface I_C_Tax
 	 */
 	void setParent_Tax_ID(int Parent_Tax_ID);
 
-	void setTo_Country(@Nullable org.compiere.model.I_C_Country To_Country);
-
 	/**
 	 * Get Satz.
 	 * Rate or Tax or Exchange
@@ -551,7 +542,7 @@ public interface I_C_Tax
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setRate(BigDecimal Rate);
+	void setRate (BigDecimal Rate);
 
 	/**
 	 * Get erfordert Steuer-ID.
@@ -584,6 +575,18 @@ public interface I_C_Tax
 	java.lang.String getSOPOType();
 
 	/**
+	 * Set VK/ EK Typ.
+	 * Steuer für Einkauf und/ oder Verkauf Transaktionen.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSOPOType (java.lang.String SOPOType);
+
+	void setTo_Region(@Nullable org.compiere.model.I_C_Region To_Region);
+
+	/**
 	 * Get Steuer-Indikator.
 	 * Short form for Tax to be printed on documents
 	 *
@@ -593,26 +596,6 @@ public interface I_C_Tax
 	 */
 	@Nullable
 	java.lang.String getTaxIndicator();
-
-	/**
-	 * Set VK/ EK Typ.
-	 * Steuer für Einkauf und/ oder Verkauf Transaktionen.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSOPOType(java.lang.String SOPOType);
-
-	/**
-	 * Get Updated.
-	 * Date this record was updated
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getUpdated();
 
 	/**
 	 * Set Steuer-Indikator.
@@ -642,20 +625,11 @@ public interface I_C_Tax
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setTo_Country_ID(int To_Country_ID);
+	void setTo_Country_ID (int To_Country_ID);
 
-	@Nullable
-	org.compiere.model.I_C_Country getTo_Country();
+	@Nullable org.compiere.model.I_C_Country getTo_Country();
 
-	/**
-	 * Get Updated By.
-	 * User who updated this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getUpdatedBy();
+	void setTo_Country(@Nullable org.compiere.model.I_C_Country To_Country);
 
 	/**
 	 * Get An.
@@ -680,8 +654,6 @@ public interface I_C_Tax
 	@Nullable
 	org.compiere.model.I_C_Region getTo_Region();
 
-	void setTo_Region(@Nullable org.compiere.model.I_C_Region To_Region);
-
 	/**
 	 * Get Type dest. country.
 	 *
@@ -702,15 +674,6 @@ public interface I_C_Tax
 	void setTypeOfDestCountry (@Nullable java.lang.String TypeOfDestCountry);
 
 	/**
-	 * Get Valid From.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getValidFrom();
-
-	/**
 	 * Set Valid From.
 	 *
 	 * <br>Type: Date
@@ -718,4 +681,33 @@ public interface I_C_Tax
 	 * <br>Virtual Column: false
 	 */
 	void setValidFrom (java.sql.Timestamp ValidFrom);
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
+
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
+
+	/**
+	 * Get Valid From.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getValidFrom();
 }

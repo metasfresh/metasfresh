@@ -988,3 +988,24 @@ SET Code='EXISTS (SELECT * from C_TaxCategory c where @ProductType@=c.ProductTyp
 WHERE AD_Val_Rule_ID = 540542
 ;
 
+-- 2021-06-02T11:29:57.522Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List
+SET ValueName='Domestic', Updated=TO_TIMESTAMP('2021-06-02 14:29:57', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Ref_List_ID = 542610
+;
+
+-- 2021-06-02T11:30:15.918Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List
+SET ValueName='Non-EU country', Updated=TO_TIMESTAMP('2021-06-02 14:30:15', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Ref_List_ID = 542612
+;
+
+-- 2021-06-02T11:30:25.974Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List
+SET ValueName='EU-foreign', Updated=TO_TIMESTAMP('2021-06-02 14:30:25', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Ref_List_ID = 542611
+;
+

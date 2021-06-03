@@ -16,6 +16,7 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
+import de.metas.tax.api.TypeOfDestCountry;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -195,26 +196,19 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		if (toSameCountry)
 		{
 			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_To_Country_ID, countryToId);
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, X_C_Tax.TYPEOFDESTCOUNTRY_Domestic);
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, TypeOfDestCountry.DOMESTIC);
 		}
 		else if (toEULocation)
 		{
 			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, countryToId, null);
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, X_C_Tax.TYPEOFDESTCOUNTRY_EU_foreign);
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, TypeOfDestCountry.WITHIN_COUNTRY_AREA);
 
-			if (hasTaxCertificate)
-			{
-				queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, true);
-			}
-			else
-			{
-				queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, false);
-			}
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, hasTaxCertificate);
 		}
 		else
 		{
 			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, countryToId, null);
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, X_C_Tax.TYPEOFDESTCOUNTRY_Non_EU_country);
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, TypeOfDestCountry.OUTSIDE_COUNTRY_AREA);
 		}
 
 		if (isSOTrx)

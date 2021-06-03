@@ -1,48 +1,25 @@
 package de.metas.tax.api;
 
-import java.sql.Timestamp;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Optional;
-import java.util.Properties;
-
-import de.metas.util.lang.Percent;
-import org.adempiere.exceptions.ExemptTaxNotFoundException;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_C_TaxCategory;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.tax.model.I_C_VAT_SmallBusiness;
 import de.metas.util.ISingletonService;
+import de.metas.util.lang.Percent;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.ExemptTaxNotFoundException;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_TaxCategory;
+
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Properties;
 
 public interface ITaxDAO extends ISingletonService
 {
@@ -92,6 +69,10 @@ public interface ITaxDAO extends ISingletonService
 	Optional<TaxCategoryId> getTaxCategoryIdByName(@NonNull String name);
 
 	Percent getRateById(@NonNull TaxId taxId);
+
+	Collection<Tax> getBy(final TaxQuery taxQuery);
+
+	Collection<Tax> getBy(final TaxQuery taxQuery, final Properties ctx);
 
 	@Builder
 	@Value

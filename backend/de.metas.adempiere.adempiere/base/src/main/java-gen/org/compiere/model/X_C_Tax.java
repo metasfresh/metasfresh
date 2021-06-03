@@ -20,97 +20,42 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	 * Reference name: C_Tax SPPOType
 	 */
 	public static final int SOPOTYPE_AD_Reference_ID = 287;
-	/**
-	 * Sales Tax = S
-	 */
-	public static final String SOPOTYPE_SalesTax = "S";
-	/**
-	 * Both  = B
-	 */
+	/** Both  = B */
 	public static final String SOPOTYPE_Both = "B";
-	/**
-	 * Purchase Tax = P
-	 */
+	/** Sales Tax = S */
+	public static final String SOPOTYPE_SalesTax = "S";
+	/** Purchase Tax = P */
 	public static final String SOPOTYPE_PurchaseTax = "P";
-	/**
-	 * Inland = DOMESTIC
-	 */
-	public static final String TYPEOFDESTCOUNTRY_Domestic = "DOMESTIC";
-	/**
-	 * EU-Ausland = WITHIN_COUNTRY_AREA
-	 */
-	public static final String TYPEOFDESTCOUNTRY_EU_foreign = "WITHIN_COUNTRY_AREA";
-	/**
-	 * Nicht-EU-Ausland = OUTSIDE_COUNTRY_AREA
-	 */
-	public static final String TYPEOFDESTCOUNTRY_Non_EU_country = "OUTSIDE_COUNTRY_AREA";
-	private static final long serialVersionUID = -1151858783L;
-
 	/**
 	 * TypeOfDestCountry AD_Reference_ID=541323
 	 * Reference name: TypeDestCountry
 	 */
 	public static final int TYPEOFDESTCOUNTRY_AD_Reference_ID = 541323;
+	/** Domestic = DOMESTIC */
+	public static final String TYPEOFDESTCOUNTRY_Domestic = "DOMESTIC";
+	/** EU-foreign = WITHIN_COUNTRY_AREA */
+	public static final String TYPEOFDESTCOUNTRY_EU_Foreign = "WITHIN_COUNTRY_AREA";
+	/** Non-EU country = OUTSIDE_COUNTRY_AREA */
+	public static final String TYPEOFDESTCOUNTRY_Non_EUCountry = "OUTSIDE_COUNTRY_AREA";
+	private static final long serialVersionUID = -16743585L;
 
-	/**
-	 * Load Meta Data
-	 */
-	@Override
-	protected org.compiere.model.POInfo initPO(final Properties ctx)
-	{
-		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Rule getAD_Rule()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Rule_ID, org.compiere.model.I_AD_Rule.class);
-	}
-
-	@Override
-	public void setAD_Rule(final org.compiere.model.I_AD_Rule AD_Rule)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Rule_ID, org.compiere.model.I_AD_Rule.class, AD_Rule);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Country getC_Country()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class);
-	}
-
-	@Override
-	public void setC_Country(final org.compiere.model.I_C_Country C_Country)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class, C_Country);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Region getC_Region()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class);
-	}
-
-	@Override
-	public void setC_Region(final org.compiere.model.I_C_Region C_Region)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class, C_Region);
-	}
-
-	/**
-	 * Standard Constructor
-	 */
+	/** Standard Constructor */
 	public X_C_Tax(final Properties ctx, final int C_Tax_ID, @Nullable final String trxName)
 	{
 		super(ctx, C_Tax_ID, trxName);
 	}
 
-	/**
-	 * Load Constructor
-	 */
+	/** Load Constructor */
 	public X_C_Tax(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
 	{
 		super(ctx, rs, trxName);
+	}
+
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
@@ -129,6 +74,18 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
+	public org.compiere.model.I_AD_Rule getAD_Rule()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Rule_ID, org.compiere.model.I_AD_Rule.class);
+	}
+
+	@Override
+	public void setAD_Rule(final org.compiere.model.I_AD_Rule AD_Rule)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Rule_ID, org.compiere.model.I_AD_Rule.class, AD_Rule);
+	}
+
+	@Override
 	public int getAD_Rule_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Rule_ID);
@@ -144,6 +101,18 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
+	public org.compiere.model.I_C_Country getC_Country()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class);
+	}
+
+	@Override
+	public void setC_Country(final org.compiere.model.I_C_Country C_Country)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Country_ID, org.compiere.model.I_C_Country.class, C_Country);
+	}
+
+	@Override
 	public int getC_Country_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Country_ID);
@@ -156,6 +125,18 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 			set_Value(COLUMNNAME_C_Country_ID, null);
 		else
 			set_Value(COLUMNNAME_C_Country_ID, C_Country_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Region getC_Region()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class);
+	}
+
+	@Override
+	public void setC_Region(final org.compiere.model.I_C_Region C_Region)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Region_ID, org.compiere.model.I_C_Region.class, C_Region);
 	}
 
 	@Override
@@ -376,18 +357,6 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
-	public org.compiere.model.I_C_Country getTo_Country()
-	{
-		return get_ValueAsPO(COLUMNNAME_To_Country_ID, org.compiere.model.I_C_Country.class);
-	}
-
-	@Override
-	public void setTo_Country(final org.compiere.model.I_C_Country To_Country)
-	{
-		set_ValueFromPO(COLUMNNAME_To_Country_ID, org.compiere.model.I_C_Country.class, To_Country);
-	}
-
-	@Override
 	public java.lang.String getSOPOType()
 	{
 		return get_ValueAsString(COLUMNNAME_SOPOType);
@@ -397,18 +366,6 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	public void setSOPOType(final java.lang.String SOPOType)
 	{
 		set_Value(COLUMNNAME_SOPOType, SOPOType);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Region getTo_Region()
-	{
-		return get_ValueAsPO(COLUMNNAME_To_Region_ID, org.compiere.model.I_C_Region.class);
-	}
-
-	@Override
-	public void setTo_Region(final org.compiere.model.I_C_Region To_Region)
-	{
-		set_ValueFromPO(COLUMNNAME_To_Region_ID, org.compiere.model.I_C_Region.class, To_Region);
 	}
 
 	@Override
@@ -424,6 +381,18 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
+	public org.compiere.model.I_C_Country getTo_Country()
+	{
+		return get_ValueAsPO(COLUMNNAME_To_Country_ID, org.compiere.model.I_C_Country.class);
+	}
+
+	@Override
+	public void setTo_Country(final org.compiere.model.I_C_Country To_Country)
+	{
+		set_ValueFromPO(COLUMNNAME_To_Country_ID, org.compiere.model.I_C_Country.class, To_Country);
+	}
+
+	@Override
 	public int getTo_Country_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_To_Country_ID);
@@ -436,6 +405,18 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 			set_Value(COLUMNNAME_To_Country_ID, null);
 		else
 			set_Value(COLUMNNAME_To_Country_ID, To_Country_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Region getTo_Region()
+	{
+		return get_ValueAsPO(COLUMNNAME_To_Region_ID, org.compiere.model.I_C_Region.class);
+	}
+
+	@Override
+	public void setTo_Region(final org.compiere.model.I_C_Region To_Region)
+	{
+		set_ValueFromPO(COLUMNNAME_To_Region_ID, org.compiere.model.I_C_Region.class, To_Region);
 	}
 
 	@Override
