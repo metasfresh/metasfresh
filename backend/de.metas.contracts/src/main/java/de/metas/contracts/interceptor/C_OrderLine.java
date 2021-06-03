@@ -2,6 +2,8 @@ package de.metas.contracts.interceptor;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
+import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.product.ProductId;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -14,6 +16,9 @@ import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Interceptor(I_C_OrderLine.class)
 @Component
@@ -77,22 +82,12 @@ public class C_OrderLine
 		groupChangesHandler.recreateGroupOnOrderLineChanged(orderLine);
 	}
 
-	private boolean isOrderLineExcludedFromGroupFlatrateConditions(final I_C_OrderLine orderLine, final GroupId groupId)
+	private boolean isOrderLineExcludedFromGroupFlatrateConditions(@NonNull final I_C_OrderLine orderLine,
+			@Nullable final GroupId groupId)
 	{
-		if (groupId == null)
-		{
-			return true;
-		}
+		final Optional<GroupTemplateId> groupTemplateId = groupChangesHandler.getGroupTemplateId(groupId);
 
-		final boolean productExcludedFromFlatrateConditions = groupChangesHandler.
-				isProductExcludedFromFlatrateConditions(ProductId.ofRepoId(orderLine.getM_Product_ID()), groupId);
-
-		if (productExcludedFromFlatrateConditions)
-		{
-			return true;
-		}
-
-		return false;
+		return groupChangesHandler.isProductExcludedFromFlatrateConditions(ProductId.ofRepoId(orderLine.getM_Product_ID()), groupTemplateId);
 	}
 
 	private int retrieveFirstFlatrateConditionsIdForCompensationGroup(final GroupId groupId)
@@ -108,13 +103,16 @@ public class C_OrderLine
 
 	private void setFlatrateConditionsIdToCompensationGroup(final int flatrateConditionsId, final GroupId groupId, final int excludeOrderLineId)
 	{
+
+		final Optional<GroupTemplateId> groupTemplateId = groupChangesHandler.getGroupTemplateId(groupId);
+
 		groupChangesHandler.retrieveGroupOrderLinesQuery(groupId)
 				.addNotEqualsFilter(I_C_OrderLine.COLUMN_C_OrderLine_ID, excludeOrderLineId)
 				.addNotEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditionsId > 0 ? flatrateConditionsId : null)
 				.create()
 				.list(I_C_OrderLine.class)
 				.stream()
-				.filter(ol -> !isOrderLineExcludedFromGroupFlatrateConditions(ol, groupId))
+				.filter(ol -> !groupChangesHandler.isProductExcludedFromFlatrateConditions(ProductId.ofRepoId(ol.getM_Product_ID()), groupTemplateId))
 				.forEach(otherOrderLine -> {
 					otherOrderLine.setC_Flatrate_Conditions_ID(flatrateConditionsId);
 					DYNATTR_SkipUpdatingGroupFlatrateConditions.setValue(otherOrderLine, Boolean.TRUE);

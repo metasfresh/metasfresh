@@ -10,9 +10,11 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_M_Product_Exclude_FlatrateConditions;
 import org.springframework.stereotype.Component;
 
@@ -54,6 +56,14 @@ public class GroupTemplateRepository
 			.additionalTableNameToResetFor(I_C_CompensationGroup_SchemaLine.Table_Name)
 			.build();
 
+	private final CCache<GroupTemplateIdAndProductId, Optional<I_M_Product_Exclude_FlatrateConditions>> productsExcludedFromFlatrateConditions
+			= CCache.<GroupTemplateIdAndProductId, Optional<I_M_Product_Exclude_FlatrateConditions>>builder()
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.initialCapacity(100)
+			.expireMinutes(CCache.EXPIREMINUTES_Never)
+			.additionalTableNameToResetFor(I_M_Product_Exclude_FlatrateConditions.Table_Name)
+			.build();
+
 	private final Map<String, GroupMatcherFactory> groupMatcherFactoriesByType;
 
 	public GroupTemplateRepository(final Optional<List<GroupMatcherFactory>> groupMatcherFactories)
@@ -62,6 +72,16 @@ public class GroupTemplateRepository
 		this.groupMatcherFactoriesByType = Maps.uniqueIndex(
 				groupMatcherFactoriesToUse,
 				GroupMatcherFactory::getAppliesToLineType);
+	}
+
+	public Optional<GroupTemplateId> getGroupTemplateId(@NonNull final GroupId groupId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order_CompensationGroup.class)
+				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, groupId)
+				.andCollect(I_C_Order_CompensationGroup.COLUMNNAME_C_CompensationGroup_Schema_ID, I_C_CompensationGroup_Schema.class)
+				.create()
+				.firstIdOnlyOptional(GroupTemplateId::ofRepoIdOrNull);
 	}
 
 	public GroupTemplate getById(@NonNull final GroupTemplateId groupTemplateId)
@@ -127,16 +147,35 @@ public class GroupTemplateRepository
 		return groupMatcherFactory.createPredicate(schemaLinePO, allSchemaLinePOs);
 	}
 
-	public boolean isProductExcludedFromFlatrateConditions(final ProductId productId,
-			final GroupTemplateId groupTemplateId)
+	public boolean isProductExcludedFromFlatrateConditions(@NonNull final GroupTemplateId groupTemplateId, @NonNull final ProductId productId)
+	{
+		final Optional<I_M_Product_Exclude_FlatrateConditions> productExcludedFromFlatrateConditions =
+				productsExcludedFromFlatrateConditions.getOrLoad(
+						GroupTemplateIdAndProductId.of(groupTemplateId, productId),
+						this::retrieveProductExcludedFromFlatrateConditions);
+
+		return productExcludedFromFlatrateConditions.isPresent();
+	}
+
+	private Optional<I_M_Product_Exclude_FlatrateConditions> retrieveProductExcludedFromFlatrateConditions(@NonNull final GroupTemplateIdAndProductId key)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_Product_Exclude_FlatrateConditions.class)
-				.addEqualsFilter(I_M_Product_Exclude_FlatrateConditions.COLUMNNAME_C_CompensationGroup_Schema_ID, groupTemplateId)
-				.addEqualsFilter(I_M_Product_Exclude_FlatrateConditions.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_M_Product_Exclude_FlatrateConditions.COLUMNNAME_C_CompensationGroup_Schema_ID, key.getGroupTemplateId())
+				.addEqualsFilter(I_M_Product_Exclude_FlatrateConditions.COLUMNNAME_M_Product_ID, key.getProductId())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.anyMatch();
+				.firstOptional(I_M_Product_Exclude_FlatrateConditions.class);
+	}
+
+	@Value(staticConstructor = "of")
+	private static class GroupTemplateIdAndProductId
+	{
+		@NonNull
+		GroupTemplateId groupTemplateId;
+
+		@NonNull
+		ProductId productId;
 	}
 
 }
