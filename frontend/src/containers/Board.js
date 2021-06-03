@@ -69,8 +69,6 @@ class Board extends Component {
       const cards = res.map((item) => item.data);
       this.addCards(laneIndex, cards);
     });
-
-    // do the refresh of the side bar when the event was received via ws
   };
 
   /**
