@@ -150,8 +150,10 @@ public interface IBPartnerBL extends ISingletonService
 
 	String getAddressStringByBPartnerLocationId(BPartnerLocationId bpartnerLocationId);
 
+	@Nullable
 	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
 
+	@Nullable
 	BPartnerId getBPartnerSalesRepId(BPartnerId bpartnerId);
 
 	void setBPartnerSalesRepIdOutOfTrx(BPartnerId bPartnerId, BPartnerId salesRepBPartnerId);
@@ -159,6 +161,7 @@ public interface IBPartnerBL extends ISingletonService
 	/**
 	 * @return previous sales rep or null
 	 */
+	@Nullable
 	UserId setSalesRepId(BPartnerId bpartnerId, final UserId salesRepId);
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
