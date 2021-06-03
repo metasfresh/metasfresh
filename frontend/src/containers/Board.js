@@ -69,6 +69,9 @@ class Board extends Component {
       const cards = res.map((item) => item.data);
       this.addCards(laneIndex, cards);
     });
+
+    // refresh the view once the ws event is received
+    this.sideNav && this.sideNav.instanceRef.refreshView(board.boardId);
   };
 
   /**
@@ -120,10 +123,6 @@ class Board extends Component {
     if (card.initLaneId === 0) {
       // Adding card
       addCard(board.boardId, targetLaneId, card.id, card.index);
-
-      if (this.sideNav) {
-        this.sideNav.instanceRef.refreshView(board.boardId);
-      }
     } else {
       // Moving card
       if (card.initLaneId === targetLaneId) {
