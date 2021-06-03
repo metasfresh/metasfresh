@@ -912,4 +912,7 @@ public interface I_C_DocType
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	default void setIsExcludeFromCommission(final boolean flag) {}
+	default boolean isExcludeFromCommission() { return false; }
 }

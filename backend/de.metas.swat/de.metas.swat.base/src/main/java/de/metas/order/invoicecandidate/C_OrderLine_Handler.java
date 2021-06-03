@@ -92,6 +92,7 @@ import lombok.NonNull;
 public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
@@ -239,12 +240,14 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
 				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
 				() -> DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
-		final I_C_DocType orderDocType = Services.get(IDocTypeBL.class).getById(orderDocTypeId);
+		final I_C_DocType orderDocType = docTypeBL.getById(orderDocTypeId);
 		final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(orderDocType.getC_DocTypeInvoice_ID());
 		if (invoiceDocTypeId != null)
 		{
 			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
 		}
+
+		icRecord.setIsExcludeFromCommission(computeIsExcludeFromCommissionFromOrderDocType(orderDocType));
 
 		// set Quality Issue Percentage Override
 
@@ -259,6 +262,27 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		// InterfaceWrapperHelper.save(ic);
 
 		return icRecord;
+	}
+
+	private boolean computeIsExcludeFromCommissionFromOrderDocType(final I_C_DocType orderDocType)
+	{
+		if(orderDocType.isExcludeFromCommission())
+		{
+			return true;
+		}
+
+		final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(orderDocType.getC_DocTypeInvoice_ID());
+		if (invoiceDocTypeId != null)
+		{
+			final I_C_DocType invoiceDocType = docTypeBL.getById(invoiceDocTypeId);
+			if(invoiceDocType.isExcludeFromCommission())
+			{
+				return true;
+			}
+		}
+
+		// fallback
+		return false;
 	}
 
 	private Dimension extractDimension(final I_C_OrderLine orderLine)

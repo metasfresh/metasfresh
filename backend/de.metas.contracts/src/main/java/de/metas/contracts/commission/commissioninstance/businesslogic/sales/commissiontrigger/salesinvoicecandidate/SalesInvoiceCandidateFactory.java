@@ -71,6 +71,12 @@ public class SalesInvoiceCandidateFactory
 
 	public Optional<SalesInvoiceCandidate> forRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
+		if(icRecord.isExcludeFromCommission())
+		{
+			logger.debug("C_Invoice_Candidate has IsExcludeFromCommission=true; -> return empty");
+			return Optional.empty();
+		}
+
 		if (icRecord.getC_BPartner_SalesRep_ID() <= 0)
 		{
 			logger.debug("C_Invoice_Candidate has C_BPartner_SalesRep_ID={}; -> return empty", icRecord.getC_BPartner_SalesRep_ID());
