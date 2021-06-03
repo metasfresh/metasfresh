@@ -29,7 +29,6 @@ import org.compiere.util.TimeUtil;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class AllocationBL implements IAllocationBL
@@ -136,19 +135,12 @@ public class AllocationBL implements IAllocationBL
 		//
 		// Iterate eligible payments and eliminate those which does not complain to BankAccount Invoice Auto Allocation rules
 		final BankAccountInvoiceAutoAllocRulesRepository bankAccountInvoiceAutoAllocRulesRepository = SpringContextHolder.instance.getBean(BankAccountInvoiceAutoAllocRulesRepository.class);
+		final BankAccountInvoiceAutoAllocRules rules = bankAccountInvoiceAutoAllocRulesRepository.getRules();
 		final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoId(invoice.getC_DocType_ID());
-		for (final Iterator<I_C_Payment> it = eligiblePayments.iterator(); it.hasNext(); )
-		{
-			final I_C_Payment payment = it.next();
-
+		eligiblePayments.removeIf(payment -> {
 			final BankAccountId bankAccountId = BankAccountId.ofRepoId(payment.getC_BP_BankAccount_ID());
-			final BankAccountInvoiceAutoAllocRules rules = bankAccountInvoiceAutoAllocRulesRepository.getByBankAccountId(bankAccountId);
-			if (!rules.isMatching(invoiceDocTypeId))
-			{
-				it.remove();
-				continue;
-			}
-		}
+			return !rules.isAutoAllocate(bankAccountId, invoiceDocTypeId);
+		});
 
 		return eligiblePayments;
 	}

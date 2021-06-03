@@ -22,27 +22,19 @@
 
 package de.metas.banking.invoice_auto_allocation;
 
+import de.metas.banking.BankAccountId;
 import de.metas.document.DocTypeId;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.Value;
 
-@EqualsAndHashCode
-@ToString
+@Value
+@Builder
 public class BankAccountInvoiceAutoAllocRule
 {
-	private final DocTypeId invoiceDocTypeId;
+	@NonNull BankAccountId bankAccountId;
 
-	@Builder
-	public BankAccountInvoiceAutoAllocRule(
-			@NonNull final DocTypeId invoiceDocTypeId)
-	{
-		this.invoiceDocTypeId = invoiceDocTypeId;
-	}
-
-	public boolean isMatching(@NonNull final DocTypeId invoiceDocTypeId)
-	{
-		return DocTypeId.equals(this.invoiceDocTypeId, invoiceDocTypeId);
-	}
+	@NonNull DocTypeId invoiceDocTypeId;
 }

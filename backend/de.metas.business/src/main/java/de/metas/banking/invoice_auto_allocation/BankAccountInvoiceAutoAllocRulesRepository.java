@@ -37,16 +37,16 @@ public class BankAccountInvoiceAutoAllocRulesRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<BankAccountId, BankAccountInvoiceAutoAllocRules> cache = CCache.<BankAccountId, BankAccountInvoiceAutoAllocRules>builder()
+	private final CCache<Integer, BankAccountInvoiceAutoAllocRules> cache = CCache.<Integer, BankAccountInvoiceAutoAllocRules>builder()
 			.tableName(I_C_BP_BankAccount_InvoiceAutoAllocateRule.Table_Name)
 			.build();
 
-	public BankAccountInvoiceAutoAllocRules getByBankAccountId(@NonNull final BankAccountId bankAccountId)
+	public BankAccountInvoiceAutoAllocRules getRules()
 	{
-		return cache.getOrLoad(bankAccountId, this::retrieveByBankAccountId);
+		return cache.getOrLoad(0, this::retrieveRules);
 	}
 
-	private BankAccountInvoiceAutoAllocRules retrieveByBankAccountId(@NonNull final BankAccountId bankAccountId)
+	private BankAccountInvoiceAutoAllocRules retrieveRules()
 	{
 		final ImmutableList<BankAccountInvoiceAutoAllocRule> rules = queryBL
 				.createQueryBuilder(I_C_BP_BankAccount_InvoiceAutoAllocateRule.class)
@@ -56,21 +56,14 @@ public class BankAccountInvoiceAutoAllocRulesRepository
 				.map(BankAccountInvoiceAutoAllocRulesRepository::toBankAccountInvoiceAutoAllocRule)
 				.collect(ImmutableList.toImmutableList());
 
-		if (rules.isEmpty())
-		{
-			return BankAccountInvoiceAutoAllocRules.MATCH_ALL;
-		}
-
-		return BankAccountInvoiceAutoAllocRules.builder()
-				.includeRules(rules)
-				.matchByDefault(false)
-				.build();
+		return BankAccountInvoiceAutoAllocRules.ofRulesList(rules);
 	}
 
 	private static BankAccountInvoiceAutoAllocRule toBankAccountInvoiceAutoAllocRule(
 			@NonNull final I_C_BP_BankAccount_InvoiceAutoAllocateRule record)
 	{
 		return BankAccountInvoiceAutoAllocRule.builder()
+				.bankAccountId(BankAccountId.ofRepoId(record.getC_BP_BankAccount_ID()))
 				.invoiceDocTypeId(DocTypeId.ofRepoId(record.getC_DocTypeInvoice_ID()))
 				.build();
 	}
