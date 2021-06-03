@@ -247,10 +247,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
 		}
 
-		icRecord.setIsExcludeFromCommission(computeIsExcludeFromCommissionFromOrderDocType(orderDocType));
-
-		// set Quality Issue Percentage Override
-
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
 
@@ -262,27 +258,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		// InterfaceWrapperHelper.save(ic);
 
 		return icRecord;
-	}
-
-	private boolean computeIsExcludeFromCommissionFromOrderDocType(final I_C_DocType orderDocType)
-	{
-		if(orderDocType.isExcludeFromCommission())
-		{
-			return true;
-		}
-
-		final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(orderDocType.getC_DocTypeInvoice_ID());
-		if (invoiceDocTypeId != null)
-		{
-			final I_C_DocType invoiceDocType = docTypeBL.getById(invoiceDocTypeId);
-			if(invoiceDocType.isExcludeFromCommission())
-			{
-				return true;
-			}
-		}
-
-		// fallback
-		return false;
 	}
 
 	private Dimension extractDimension(final I_C_OrderLine orderLine)
@@ -503,10 +478,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setGroupCompensationPercentage(fromOrderLine.getGroupCompensationPercentage());
 	}
 
-	/**
-	 * Invalidates the candidate(s) referencing the given order line. If {@link IInvoiceCandBL#isChangedByUpdateProcess(I_C_Invoice_Candidate)} returns <code>false</code> for any given candidate, this
-	 * method additionally invalidates all candidates with the same header aggregation key and (depending on invoice schedule) even more dependent candidates.
-	 */
 	@Override
 	public final void invalidateCandidatesFor(final Object model)
 	{
