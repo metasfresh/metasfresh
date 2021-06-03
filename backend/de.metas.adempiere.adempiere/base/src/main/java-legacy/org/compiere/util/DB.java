@@ -2787,7 +2787,7 @@ public class DB
 		ResultSet rs = null;
 		try
 		{
-			pstmt = prepareStatement(sql.toString(), ITrx.TRXNAME_None);
+			pstmt = prepareStatement(sql.toString(), trxName);
 			setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 
