@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2048630144L;
+	private static final long serialVersionUID = -505276034L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -776,6 +776,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return get_ValueAsString(COLUMNNAME_ManufacturerArticleNumber);
 	}
 
+	@Override
+	public void setManufacturerProductDescription (final @Nullable java.lang.String ManufacturerProductDescription)
+	{
+		set_Value (COLUMNNAME_ManufacturerProductDescription, ManufacturerProductDescription);
+	}
+
+	@Override
+	public java.lang.String getManufacturerProductDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_ManufacturerProductDescription);
+	}
+
 	/** 
 	 * MRP_Exclude AD_Reference_ID=319
 	 * Reference name: _YesNo
@@ -999,6 +1011,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setSafetyInfo (final @Nullable java.lang.String SafetyInfo)
+	{
+		set_Value (COLUMNNAME_SafetyInfo, SafetyInfo);
+	}
+
+	@Override
+	public java.lang.String getSafetyInfo() 
+	{
+		return get_ValueAsString(COLUMNNAME_SafetyInfo);
+	}
+
+	@Override
 	public void setSalesRep_ID (final int SalesRep_ID)
 	{
 		if (SalesRep_ID < 1) 
@@ -1051,6 +1075,31 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setShopDescription (final @Nullable java.lang.String ShopDescription)
+	{
+		set_Value (COLUMNNAME_ShopDescription, ShopDescription);
+	}
+
+	@Override
+	public java.lang.String getShopDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_ShopDescription);
+	}
+
+	@Override
+	public void setShopInventoryQty (final @Nullable BigDecimal ShopInventoryQty)
+	{
+		set_Value (COLUMNNAME_ShopInventoryQty, ShopInventoryQty);
+	}
+
+	@Override
+	public BigDecimal getShopInventoryQty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ShopInventoryQty);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setSKU (final @Nullable java.lang.String SKU)
 	{
 		set_Value (COLUMNNAME_SKU, SKU);
@@ -1060,6 +1109,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getSKU() 
 	{
 		return get_ValueAsString(COLUMNNAME_SKU);
+	}
+
+	@Override
+	public void setTrademark (final @Nullable java.lang.String Trademark)
+	{
+		set_Value (COLUMNNAME_Trademark, Trademark);
+	}
+
+	@Override
+	public java.lang.String getTrademark() 
+	{
+		return get_ValueAsString(COLUMNNAME_Trademark);
 	}
 
 	@Override
