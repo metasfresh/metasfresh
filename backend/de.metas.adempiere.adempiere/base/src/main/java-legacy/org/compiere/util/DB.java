@@ -1828,9 +1828,8 @@ public class DB
 	}    // isRemoteProcess
 
 	/**
-	 * Converts given parameter object to SQL code.
+	 * Converts given parameter object to SQL code. Also supports {@link RepoIdAware}.
 	 *
-	 * @param param
 	 * @return parameter as SQL code
 	 */
 	public String TO_SQL(@Nullable final Object param)
