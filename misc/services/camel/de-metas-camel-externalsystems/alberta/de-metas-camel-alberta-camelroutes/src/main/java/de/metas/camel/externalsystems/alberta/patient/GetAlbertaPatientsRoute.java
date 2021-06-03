@@ -41,6 +41,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.alberta.CamelRouteUtil.setupJacksonDataFormatFor;
+import static de.metas.camel.externalsystems.alberta.attachment.GetAlbertaAttachmentRoute.GET_DOCUMENTS_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -73,8 +74,11 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 				.process(new PrepareApiClientsProcessor()).id(PREPARE_PATIENTS_API_PROCESSOR_ID)
 				.process(new RetrievePatientsProcessor()).id(RETRIEVE_PATIENTS_PROCESSOR_ID)
 				.split(body())
+					.stopOnException()
 					.to(direct(PROCESS_PATIENT_ROUTE_ID))
-				.end();
+				.end()
+				.process(this::resetBodyToJsonExternalRequest)
+				.to(direct(GET_DOCUMENTS_ROUTE_ID));
 
 		from(direct(PROCESS_PATIENT_ROUTE_ID))
 				.routeId(PROCESS_PATIENT_ROUTE_ID)
@@ -154,5 +158,13 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 				.getPropertyOrThrowError(exchange, GetPatientsRouteConstants.ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, GetPatientsRouteContext.class);
 
 		routeContext.removeAllResponseItems();
+	}
+
+	private void resetBodyToJsonExternalRequest(@NonNull final Exchange exchange)
+	{
+		final GetPatientsRouteContext routeContext = ProcessorHelper
+				.getPropertyOrThrowError(exchange, GetPatientsRouteConstants.ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, GetPatientsRouteContext.class);
+
+		exchange.getIn().setBody(routeContext.getRequest());
 	}
 }

@@ -1199,6 +1199,18 @@ public class JsonPersisterService
 			contact.setBirthday(jsonBPartnerContact.getBirthday());
 		}
 
+		if (jsonBPartnerContact.isInvoiceEmailEnabledSet())
+		{
+			if (jsonBPartnerContact.getInvoiceEmailEnabled() == null)
+			{
+				logger.debug("Ignoring boolean property \"isInvoiceEmailEnabled\" : null ");
+			}
+			else
+			{
+				contact.setInvoiceEmailEnabled(jsonBPartnerContact.getInvoiceEmailEnabled());
+			}
+		}
+
 		final BPartnerContactType bpartnerContactType = syncJsonToContactType(jsonBPartnerContact);
 		contact.setContactType(bpartnerContactType);
 	}

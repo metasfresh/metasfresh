@@ -1,18 +1,18 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import lombok.NonNull;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -89,7 +89,7 @@ public abstract class SimpleLookupDescriptorTemplate implements LookupDescriptor
 	}
 
 	@Override
-	public abstract LookupValue retrieveLookupValueById(LookupDataSourceContext evalCtx);
+	public abstract LookupValue retrieveLookupValueById(@NonNull LookupDataSourceContext evalCtx);
 
 	@Override
 	public LookupDataSourceContext.Builder newContextForFetchingList()
@@ -98,7 +98,7 @@ public abstract class SimpleLookupDescriptorTemplate implements LookupDescriptor
 	}
 
 	@Override
-	public abstract LookupValuesList retrieveEntities(LookupDataSourceContext evalCtx);
+	public abstract LookupValuesPage retrieveEntities(LookupDataSourceContext evalCtx);
 
 	@Override
 	public final String getCachePrefix()

@@ -67,4 +67,6 @@ public class ExternalSystemCamelConstants
 	public static String MF_CREATE_ORDER_PAYMENT_ROUTE_ID = "To-MF_CreateOrderPayment-Route";
 
 	public static String MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID = "To-MF_UpsertRuntimeParameters-Route";
+
+	public static String MF_ATTACHMENT_ROUTE_ID = "To-MF_GetAttachment-Route";
 }

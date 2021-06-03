@@ -3,6 +3,7 @@ package de.metas.ui.web.quickinput;
 import java.util.List;
 import java.util.function.Function;
 
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -199,12 +200,12 @@ public class WindowQuickInputRestController
 		}
 	}
 
-	private final <R> R forQuickInputReadonly(
+	private <R> R forQuickInputReadonly(
 			@NonNull final QuickInputPath quickInputPath,
 			@NonNull final Function<QuickInput, R> quickInputProcessor)
 	{
 		return documentsCollection.forDocumentReadonly(quickInputPath.getRootDocumentPath(), rootDocument -> {
-			try (final IAutoCloseable c = getQuickInputNoLock(quickInputPath).lockForReading())
+			try (final IAutoCloseable ignored = getQuickInputNoLock(quickInputPath).lockForReading())
 			{
 				final QuickInput quickInput = getQuickInputNoLock(quickInputPath).copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance)
 						.bindRootDocument(rootDocument)
@@ -214,7 +215,7 @@ public class WindowQuickInputRestController
 		});
 	}
 
-	private final <R> R forQuickInputWritable(
+	private <R> R forQuickInputWritable(
 			final QuickInputPath quickInputPath,
 			final IDocumentChangesCollector changesCollector,
 			final Function<QuickInput, R> quickInputProcessor)
@@ -249,7 +250,7 @@ public class WindowQuickInputRestController
 	}
 
 	@GetMapping("/{quickInputId}/field/{fieldName}/typeahead")
-	public JSONLookupValuesList getFieldTypeaheadValues(
+	public JSONLookupValuesPage getFieldTypeaheadValues(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@PathVariable("tabId") final String tabIdStr,
@@ -332,7 +333,7 @@ public class WindowQuickInputRestController
 		return JSONDocument.ofDocumentsList(documentLines, newJSONDocumentOptions());
 	}
 
-	private final QuickInput getQuickInputNoLock(final QuickInputPath quickInputPath)
+	private QuickInput getQuickInputNoLock(final QuickInputPath quickInputPath)
 	{
 		return _quickInputDocuments
 				.getOrElseThrow(quickInputPath.getQuickInputId(), () -> new EntityNotFoundException("No quick input document found for " + quickInputPath));

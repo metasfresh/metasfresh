@@ -123,7 +123,7 @@ public class CreateBPartnerV2_StepDef
 		}
 	}
 
-	@And("^verify that contact was (updated|created) for bpartner$")
+	@And("^verify that contact was (updated|created|not modified) for bpartner$")
 	public void verify_contact_is_created_for_bpartner_v2(@NonNull final String action, @NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> contactsTableList = dataTable.asMaps();
@@ -134,6 +134,7 @@ public class CreateBPartnerV2_StepDef
 			final String name = DataTableUtil.extractStringForColumnName(dataTableRow, "Name");
 			final String email = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Email");
 			final String fax = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Fax");
+			final Boolean isInvoiceEmailEnabled = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT.InvoiceEmailEnabled", null);
 
 			// persisted value
 			final Optional<JsonResponseContact> persistedResult = bpartnerEndpointService.retrieveBPartnerContact(
@@ -143,6 +144,7 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedContact.getEmail()).isEqualTo(email);
 			assertThat(persistedContact.getName()).isEqualTo(name);
 			assertThat(persistedContact.getFax()).isEqualTo(fax);
+			assertThat(persistedContact.getInvoiceEmailEnabled()).isEqualTo(isInvoiceEmailEnabled);
 		}
 	}
 }

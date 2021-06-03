@@ -28,6 +28,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -545,7 +546,7 @@ public class WindowRestController
 	 * Typeahead for root document's field
 	 */
 	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/typeahead")
-	public JSONLookupValuesList getDocumentFieldTypeahead(
+	public JSONLookupValuesPage getDocumentFieldTypeahead(
 			@PathVariable("windowId") final String windowIdStr
 			//
 			,
@@ -568,7 +569,7 @@ public class WindowRestController
 	 * Typeahead for included document's field
 	 */
 	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/typeahead")
-	public JSONLookupValuesList getDocumentFieldTypeahead(
+	public JSONLookupValuesPage getDocumentFieldTypeahead(
 			@PathVariable("windowId") final String windowIdStr
 			//
 			,
@@ -596,7 +597,7 @@ public class WindowRestController
 	/**
 	 * Typeahead: unified implementation
 	 */
-	private JSONLookupValuesList getDocumentFieldTypeahead(
+	private JSONLookupValuesPage getDocumentFieldTypeahead(
 			final DocumentPath documentPath,
 			final String fieldName,
 			final String query)
@@ -604,7 +605,7 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query))
-				.transform(this::toJSONLookupValuesList);
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
 	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
