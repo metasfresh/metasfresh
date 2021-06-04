@@ -25,9 +25,7 @@ package de.metas.bpartner.quick_input.service;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
-import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
 import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
-import de.metas.bpartner.name.strategy.DoNothingBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -115,34 +113,37 @@ public class BPartnerQuickInputService
 				return ExplainedOptional.emptyBecause("C_BP_Group_ID was not set");
 			}
 
-			final BPartnerNameAndGreetingStrategyId strategyId = bpGroupDAO.getBPartnerNameAndGreetingStrategyId(bpGroupId);
-			if (DoNothingBPartnerNameAndGreetingStrategy.ID.equals(strategyId))
-			{
-				return DoNothingBPartnerNameAndGreetingStrategy.EMPTY_RESULT;
-			}
-
 			final List<I_C_BPartner_Contact_QuickInput> contacts = bpartnerQuickInputRepository.retrieveContactsByQuickInputId(BPartnerQuickInputId.ofRepoId(bpartner.getC_BPartner_QuickInput_ID()));
 			if (contacts.isEmpty())
 			{
 				return ExplainedOptional.emptyBecause("no contacts");
 			}
 
-			final ComputeNameAndGreetingRequest.ComputeNameAndGreetingRequestBuilder requestBuilder = ComputeNameAndGreetingRequest.builder();
-			for (int i = 0; i < contacts.size(); i++)
-			{
-				final I_C_BPartner_Contact_QuickInput contact = contacts.get(0);
-				requestBuilder.contact(
-						ComputeNameAndGreetingRequest.Contact.builder()
-								.firstName(contact.getFirstname())
-								.lastName(contact.getLastname())
-								.seqNo(i + 1)
-								.isDefaultContact(i == 0)
-								.isMembershipContact(contact.isMembershipContact())
-								.build());
-			}
-
-			return bpartnerNameAndGreetingStrategies.compute(strategyId, requestBuilder.build());
+			return bpartnerNameAndGreetingStrategies.compute(
+					bpGroupDAO.getBPartnerNameAndGreetingStrategyId(bpGroupId),
+					toComputeNameAndGreetingRequest(contacts));
 		}
+	}
+
+	private static ComputeNameAndGreetingRequest toComputeNameAndGreetingRequest(
+			final List<I_C_BPartner_Contact_QuickInput> contacts)
+	{
+		final ComputeNameAndGreetingRequest.ComputeNameAndGreetingRequestBuilder requestBuilder = ComputeNameAndGreetingRequest.builder();
+		for (int i = 0; i < contacts.size(); i++)
+		{
+			final I_C_BPartner_Contact_QuickInput contact = contacts.get(0);
+			requestBuilder.contact(
+					ComputeNameAndGreetingRequest.Contact.builder()
+							.greetingId(GreetingId.ofRepoIdOrNull(contact.getC_Greeting_ID()))
+							.firstName(contact.getFirstname())
+							.lastName(contact.getLastname())
+							.seqNo(i + 1)
+							.isDefaultContact(i == 0)
+							.isMembershipContact(contact.isMembershipContact())
+							.build());
+		}
+
+		return requestBuilder.build();
 	}
 
 	/**

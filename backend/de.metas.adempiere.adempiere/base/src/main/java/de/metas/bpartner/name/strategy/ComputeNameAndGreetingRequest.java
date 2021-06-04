@@ -23,10 +23,16 @@
 package de.metas.bpartner.name.strategy;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.greeting.GreetingId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 @Value
 @Builder
@@ -36,12 +42,36 @@ public class ComputeNameAndGreetingRequest
 	@Builder
 	public static class Contact
 	{
+		@Nullable
+		GreetingId greetingId;
+
+		@Nullable
 		String firstName;
+
+		@Nullable
 		String lastName;
+
 		int seqNo;
+
 		boolean isDefaultContact;
 		boolean isMembershipContact;
 	}
 
 	@Singular @NonNull ImmutableList<Contact> contacts;
+
+	public Optional<Contact> getPrimaryContact()
+	{
+		final List<Contact> contactsOrderedPrimaryFirst = getContactsOrderedPrimaryFirst();
+		return !contactsOrderedPrimaryFirst.isEmpty()
+				? Optional.of(contactsOrderedPrimaryFirst.get(0))
+				: Optional.empty();
+	}
+
+	public List<Contact> getContactsOrderedPrimaryFirst()
+	{
+		return contacts.stream()
+				.sorted(Comparator.<Contact, Integer>comparing(contact -> contact.isDefaultContact() ? 0 : 1)
+						.thenComparing(Contact::getSeqNo))
+				.collect(ImmutableList.toImmutableList());
+	}
 }

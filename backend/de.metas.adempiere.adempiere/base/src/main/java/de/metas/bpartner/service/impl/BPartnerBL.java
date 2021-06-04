@@ -8,7 +8,7 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
 import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
-import de.metas.bpartner.name.strategy.DoNothingBPartnerNameAndGreetingStrategy;
+import de.metas.bpartner.name.strategy.FirstContactBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import de.metas.bpartner.service.IBPGroupDAO;
@@ -45,7 +45,6 @@ import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -625,10 +624,6 @@ public class BPartnerBL implements IBPartnerBL
 
 		final BPGroupId bpGroupId = BPGroupId.ofRepoId(bpartner.getC_BP_Group_ID());
 		final BPartnerNameAndGreetingStrategyId strategyId = bpGroupDAO.getBPartnerNameAndGreetingStrategyId(bpGroupId);
-		if (DoNothingBPartnerNameAndGreetingStrategy.ID.equals(strategyId))
-		{
-			return;
-		}
 
 		final BPartnerNameAndGreetingStrategies partnerNameAndGreetingStrategies = SpringContextHolder.instance.getBean(BPartnerNameAndGreetingStrategies.class);
 
@@ -638,6 +633,7 @@ public class BPartnerBL implements IBPartnerBL
 						.contacts(bpartnersRepo.retrieveContacts(bpartner)
 								.stream()
 								.map(contact -> ComputeNameAndGreetingRequest.Contact.builder()
+										.greetingId(GreetingId.ofRepoIdOrNull(contact.getC_Greeting_ID()))
 										.firstName(contact.getFirstname())
 										.lastName(contact.getLastname())
 										.seqNo(contact.getAD_User_ID()) // TODO: introduce AD_User.SeqNo
@@ -657,5 +653,4 @@ public class BPartnerBL implements IBPartnerBL
 		bpartner.setC_Greeting_ID(GreetingId.toRepoId(nameAndGreeting.getGreetingId()));
 		bpartnersRepo.save(bpartner);
 	}
-
 }

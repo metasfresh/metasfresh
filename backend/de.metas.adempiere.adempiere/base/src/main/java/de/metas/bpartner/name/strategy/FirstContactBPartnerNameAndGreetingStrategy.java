@@ -24,16 +24,16 @@ package de.metas.bpartner.name.strategy;
 
 import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.user.api.IUserBL;
+import de.metas.util.Services;
+import org.springframework.stereotype.Component;
 
-// @Component // IMPORTANT: don't make it a Spring component
-public final class DoNothingBPartnerNameAndGreetingStrategy implements BPartnerNameAndGreetingStrategy
+@Component
+public final class FirstContactBPartnerNameAndGreetingStrategy implements BPartnerNameAndGreetingStrategy
 {
-	public static final DoNothingBPartnerNameAndGreetingStrategy instance = new DoNothingBPartnerNameAndGreetingStrategy();
-	public static final BPartnerNameAndGreetingStrategyId ID = BPartnerNameAndGreetingStrategyId.ofString("DO_NOTHING");
+	public static final BPartnerNameAndGreetingStrategyId ID = BPartnerNameAndGreetingStrategyId.ofString("FIRST_CONTACT");
 
-	public static ExplainedOptional<NameAndGreeting> EMPTY_RESULT = ExplainedOptional.emptyBecause("using DO_NOTHING strategy");
-
-	private DoNothingBPartnerNameAndGreetingStrategy() {}
+	private final IUserBL userBL = Services.get(IUserBL.class);
 
 	@Override
 	public BPartnerNameAndGreetingStrategyId getId()
@@ -44,6 +44,17 @@ public final class DoNothingBPartnerNameAndGreetingStrategy implements BPartnerN
 	@Override
 	public ExplainedOptional<NameAndGreeting> compute(final ComputeNameAndGreetingRequest request)
 	{
-		return EMPTY_RESULT;
+		final ComputeNameAndGreetingRequest.Contact primaryContact = request.getPrimaryContact().orElse(null);
+		if (primaryContact == null)
+		{
+			return ExplainedOptional.emptyBecause("no primary contact");
+		}
+		else
+		{
+			return ExplainedOptional.of(NameAndGreeting.builder()
+					.name(userBL.buildContactName(primaryContact.getFirstName(), primaryContact.getLastName()))
+					.greetingId(primaryContact.getGreetingId())
+					.build());
+		}
 	}
 }
