@@ -1,6 +1,7 @@
 package de.metas.order.compensationGroup;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.order.model.I_C_CompensationGroup_Schema;
@@ -10,7 +11,6 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -19,6 +19,7 @@ import org.compiere.model.I_M_Product_Exclude_FlatrateConditions;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -47,137 +48,114 @@ import java.util.Optional;
  */
 
 @Component
-public class GroupTemplateRepository
-{
-	private final CCache<GroupTemplateId, GroupTemplate> //
-			groupTemplatesById = CCache.<GroupTemplateId, GroupTemplate>builder()
-			.tableName(I_C_CompensationGroup_Schema.Table_Name)
-			.initialCapacity(10)
-			.expireMinutes(CCache.EXPIREMINUTES_Never)
-			.additionalTableNameToResetFor(I_C_CompensationGroup_SchemaLine.Table_Name)
-			.build();
+public class GroupTemplateRepository {
+    private final CCache<GroupTemplateId, GroupTemplate> //
+            groupTemplatesById = CCache.<GroupTemplateId, GroupTemplate>builder()
+            .tableName(I_C_CompensationGroup_Schema.Table_Name)
+            .initialCapacity(10)
+            .expireMinutes(CCache.EXPIREMINUTES_Never)
+            .additionalTableNameToResetFor(I_C_CompensationGroup_SchemaLine.Table_Name)
+            .build();
 
-	private final CCache<GroupTemplateIdAndProductId, Optional<I_M_Product_Exclude_FlatrateConditions>> productsExcludedFromFlatrateConditions
-			= CCache.<GroupTemplateIdAndProductId, Optional<I_M_Product_Exclude_FlatrateConditions>>builder()
-			.cacheMapType(CCache.CacheMapType.LRU)
-			.initialCapacity(100)
-			.expireMinutes(CCache.EXPIREMINUTES_Never)
-			.additionalTableNameToResetFor(I_M_Product_Exclude_FlatrateConditions.Table_Name)
-			.build();
+    private final CCache<Integer, FlatrateConditionsExcludedProducts> excludedProductsCache = CCache.<Integer, FlatrateConditionsExcludedProducts>builder()
+            .tableName(I_M_Product_Exclude_FlatrateConditions.Table_Name)
+            .build();
 
-	private final Map<String, GroupMatcherFactory> groupMatcherFactoriesByType;
+    private final Map<String, GroupMatcherFactory> groupMatcherFactoriesByType;
 
-	public GroupTemplateRepository(final Optional<List<GroupMatcherFactory>> groupMatcherFactories)
-	{
-		final List<GroupMatcherFactory> groupMatcherFactoriesToUse = groupMatcherFactories.orElse(ImmutableList.of());
-		this.groupMatcherFactoriesByType = Maps.uniqueIndex(
-				groupMatcherFactoriesToUse,
-				GroupMatcherFactory::getAppliesToLineType);
+    public GroupTemplateRepository(final Optional<List<GroupMatcherFactory>> groupMatcherFactories) {
+        final List<GroupMatcherFactory> groupMatcherFactoriesToUse = groupMatcherFactories.orElse(ImmutableList.of());
+        this.groupMatcherFactoriesByType = Maps.uniqueIndex(
+                groupMatcherFactoriesToUse,
+                GroupMatcherFactory::getAppliesToLineType);
+    }
+
+    @Nullable
+    public GroupTemplateId getGroupTemplateId(@NonNull final GroupId groupId) {
+        return Services.get(IQueryBL.class)
+                .createQueryBuilder(I_C_Order_CompensationGroup.class)
+                .addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId())
+                .andCollect(I_C_Order_CompensationGroup.COLUMNNAME_C_CompensationGroup_Schema_ID, I_C_CompensationGroup_Schema.class)
+                .create()
+                .firstIdOnly(GroupTemplateId::ofRepoIdOrNull);
+    }
+
+    public GroupTemplate getById(@NonNull final GroupTemplateId groupTemplateId) {
+        return groupTemplatesById.getOrLoad(groupTemplateId, () -> retrieveById(groupTemplateId));
+    }
+
+    private GroupTemplate retrieveById(@NonNull final GroupTemplateId groupTemplateId) {
+        final I_C_CompensationGroup_Schema schemaPO = InterfaceWrapperHelper.load(groupTemplateId, I_C_CompensationGroup_Schema.class);
+
+        final List<I_C_CompensationGroup_SchemaLine> schemaLinePOs = retrieveSchemaLines(groupTemplateId);
+        final List<GroupTemplateLine> lines = schemaLinePOs.stream()
+                .map(schemaLinePO -> toGroupTemplateLine(schemaLinePO, schemaLinePOs))
+                .collect(ImmutableList.toImmutableList());
+        Check.assumeNotEmpty(lines, "lines is not empty");
+        return GroupTemplate.builder()
+                .id(GroupTemplateId.ofRepoId(schemaPO.getC_CompensationGroup_Schema_ID()))
+                .name(schemaPO.getName())
+                .activityId(ActivityId.ofRepoIdOrNull(schemaPO.getC_Activity_ID()))
+                .lines(lines)
+                .build();
+    }
+
+    private List<I_C_CompensationGroup_SchemaLine> retrieveSchemaLines(final GroupTemplateId groupTemplateId) {
+        return Services.get(IQueryBL.class)
+                .createQueryBuilderOutOfTrx(I_C_CompensationGroup_SchemaLine.class)
+                .addEqualsFilter(I_C_CompensationGroup_SchemaLine.COLUMN_C_CompensationGroup_Schema_ID, groupTemplateId)
+                .addOnlyActiveRecordsFilter()
+                .orderBy(I_C_CompensationGroup_SchemaLine.COLUMN_SeqNo)
+                .orderBy(I_C_CompensationGroup_SchemaLine.COLUMN_C_CompensationGroup_SchemaLine_ID)
+                .create()
+                .list(I_C_CompensationGroup_SchemaLine.class);
+    }
+
+    private GroupTemplateLine toGroupTemplateLine(final I_C_CompensationGroup_SchemaLine schemaLinePO, final List<I_C_CompensationGroup_SchemaLine> allSchemaLinePOs) {
+        final BigDecimal percentage = schemaLinePO.getCompleteOrderDiscount();
+        return GroupTemplateLine.builder()
+                .id(GroupTemplateLineId.ofRepoIdOrNull(schemaLinePO.getC_CompensationGroup_SchemaLine_ID()))
+                .groupMatcher(createGroupMatcher(schemaLinePO, allSchemaLinePOs))
+                .productId(ProductId.ofRepoId(schemaLinePO.getM_Product_ID()))
+                .percentage(percentage != null && percentage.signum() != 0 ? percentage : null)
+                .build();
+    }
+
+    private GroupMatcher createGroupMatcher(final I_C_CompensationGroup_SchemaLine schemaLinePO, final List<I_C_CompensationGroup_SchemaLine> allSchemaLinePOs) {
+        final String type = schemaLinePO.getType();
+        if (type == null) {
+            return GroupMatchers.ALWAYS;
+        }
+
+        final GroupMatcherFactory groupMatcherFactory = groupMatcherFactoriesByType.get(type);
+        if (groupMatcherFactory == null) {
+            throw new AdempiereException("No " + GroupMatcherFactory.class + " found for type=" + type)
+                    .setParameter("schemaLine", schemaLinePO);
+        }
+
+        return groupMatcherFactory.createPredicate(schemaLinePO, allSchemaLinePOs);
+    }
+
+    public boolean isProductExcludedFromFlatrateConditions(@NonNull final GroupTemplateId groupTemplateId, @NonNull final ProductId productId) {
+    	return getFlatrateConditionsExcludedProducts().isExcluded(groupTemplateId, productId);
+    }
+
+	private FlatrateConditionsExcludedProducts getFlatrateConditionsExcludedProducts() {
+    	return excludedProductsCache.getOrLoad(0, this::retrieveFlatrateConditionsExcludedProducts);
 	}
 
-	@Nullable
-	public GroupTemplateId getGroupTemplateId(@NonNull final GroupId groupId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order_CompensationGroup.class)
-				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId())
-				.andCollect(I_C_Order_CompensationGroup.COLUMNNAME_C_CompensationGroup_Schema_ID, I_C_CompensationGroup_Schema.class)
-				.create()
-				.firstIdOnly(GroupTemplateId::ofRepoIdOrNull);
-	}
-
-	public GroupTemplate getById(@NonNull final GroupTemplateId groupTemplateId)
-	{
-		return groupTemplatesById.getOrLoad(groupTemplateId, () -> retrieveById(groupTemplateId));
-	}
-
-	private GroupTemplate retrieveById(@NonNull final GroupTemplateId groupTemplateId)
-	{
-		final I_C_CompensationGroup_Schema schemaPO = InterfaceWrapperHelper.load(groupTemplateId, I_C_CompensationGroup_Schema.class);
-
-		final List<I_C_CompensationGroup_SchemaLine> schemaLinePOs = retrieveSchemaLines(groupTemplateId);
-		final List<GroupTemplateLine> lines = schemaLinePOs.stream()
-				.map(schemaLinePO -> toGroupTemplateLine(schemaLinePO, schemaLinePOs))
-				.collect(ImmutableList.toImmutableList());
-		Check.assumeNotEmpty(lines, "lines is not empty");
-		return GroupTemplate.builder()
-				.id(GroupTemplateId.ofRepoId(schemaPO.getC_CompensationGroup_Schema_ID()))
-				.name(schemaPO.getName())
-				.activityId(ActivityId.ofRepoIdOrNull(schemaPO.getC_Activity_ID()))
-				.lines(lines)
-				.build();
-	}
-
-	private List<I_C_CompensationGroup_SchemaLine> retrieveSchemaLines(final GroupTemplateId groupTemplateId)
-	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_CompensationGroup_SchemaLine.class)
-				.addEqualsFilter(I_C_CompensationGroup_SchemaLine.COLUMN_C_CompensationGroup_Schema_ID, groupTemplateId)
-				.addOnlyActiveRecordsFilter()
-				.orderBy(I_C_CompensationGroup_SchemaLine.COLUMN_SeqNo)
-				.orderBy(I_C_CompensationGroup_SchemaLine.COLUMN_C_CompensationGroup_SchemaLine_ID)
-				.create()
-				.list(I_C_CompensationGroup_SchemaLine.class);
-	}
-
-	private GroupTemplateLine toGroupTemplateLine(final I_C_CompensationGroup_SchemaLine schemaLinePO, final List<I_C_CompensationGroup_SchemaLine> allSchemaLinePOs)
-	{
-		final BigDecimal percentage = schemaLinePO.getCompleteOrderDiscount();
-		return GroupTemplateLine.builder()
-				.id(GroupTemplateLineId.ofRepoIdOrNull(schemaLinePO.getC_CompensationGroup_SchemaLine_ID()))
-				.groupMatcher(createGroupMatcher(schemaLinePO, allSchemaLinePOs))
-				.productId(ProductId.ofRepoId(schemaLinePO.getM_Product_ID()))
-				.percentage(percentage != null && percentage.signum() != 0 ? percentage : null)
-				.build();
-	}
-
-	private GroupMatcher createGroupMatcher(final I_C_CompensationGroup_SchemaLine schemaLinePO, final List<I_C_CompensationGroup_SchemaLine> allSchemaLinePOs)
-	{
-		final String type = schemaLinePO.getType();
-		if (type == null)
-		{
-			return GroupMatchers.ALWAYS;
-		}
-
-		final GroupMatcherFactory groupMatcherFactory = groupMatcherFactoriesByType.get(type);
-		if (groupMatcherFactory == null)
-		{
-			throw new AdempiereException("No " + GroupMatcherFactory.class + " found for type=" + type)
-					.setParameter("schemaLine", schemaLinePO);
-		}
-
-		return groupMatcherFactory.createPredicate(schemaLinePO, allSchemaLinePOs);
-	}
-
-	public boolean isProductExcludedFromFlatrateConditions(@NonNull final GroupTemplateId groupTemplateId, @NonNull final ProductId productId)
-	{
-		final Optional<I_M_Product_Exclude_FlatrateConditions> productExcludedFromFlatrateConditions =
-				productsExcludedFromFlatrateConditions.getOrLoad(
-						GroupTemplateIdAndProductId.of(groupTemplateId, productId),
-						this::retrieveProductExcludedFromFlatrateConditions);
-
-		return productExcludedFromFlatrateConditions.isPresent();
-	}
-
-	private Optional<I_M_Product_Exclude_FlatrateConditions> retrieveProductExcludedFromFlatrateConditions(@NonNull final GroupTemplateIdAndProductId key)
-	{
-		return Services.get(IQueryBL.class)
+	private FlatrateConditionsExcludedProducts retrieveFlatrateConditionsExcludedProducts() {
+		ImmutableSet<FlatrateConditionsExcludedProducts.GroupTemplateIdAndProductId> exclusions = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_Product_Exclude_FlatrateConditions.class)
-				.addEqualsFilter(I_M_Product_Exclude_FlatrateConditions.COLUMNNAME_C_CompensationGroup_Schema_ID, key.getGroupTemplateId())
-				.addEqualsFilter(I_M_Product_Exclude_FlatrateConditions.COLUMNNAME_M_Product_ID, key.getProductId())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstOnlyOptional(I_M_Product_Exclude_FlatrateConditions.class);
-	}
+				.stream()
+				.map(record -> FlatrateConditionsExcludedProducts.GroupTemplateIdAndProductId.of(
+						GroupTemplateId.ofRepoId(record.getC_CompensationGroup_Schema_ID()),
+						ProductId.ofRepoId(record.getM_Product_ID())
+				))
+				.collect(ImmutableSet.toImmutableSet());
 
-	@Value(staticConstructor = "of")
-	private static class GroupTemplateIdAndProductId
-	{
-		@NonNull
-		GroupTemplateId groupTemplateId;
-
-		@NonNull
-		ProductId productId;
-	}
-
+		return new FlatrateConditionsExcludedProducts(exclusions);
+    }
 }
