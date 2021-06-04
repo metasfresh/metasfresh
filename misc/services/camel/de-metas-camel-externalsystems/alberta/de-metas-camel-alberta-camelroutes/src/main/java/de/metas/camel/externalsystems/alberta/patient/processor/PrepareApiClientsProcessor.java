@@ -78,6 +78,7 @@ public class PrepareApiClientsProcessor implements Processor
 				.userApi(new UserApi(apiClient))
 				.albertaConnectionDetails(albertaConnectionDetails)
 				.rootBPartnerIdForUsers(rootBPartnerMFId)
+				.request(request)
 				.build();
 
 		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, context);

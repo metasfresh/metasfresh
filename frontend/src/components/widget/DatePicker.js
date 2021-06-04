@@ -37,8 +37,23 @@ class DatePicker extends Component {
    * @todo Write the documentation
    */
   componentDidMount() {
-    const { handleBackdropLock, isOpenDatePicker } = this.props;
+    const {
+      handleBackdropLock,
+      isOpenDatePicker,
+      isFilterActive,
+      defaultValue,
+      field,
+      updateItems,
+    } = this.props;
     handleBackdropLock && handleBackdropLock(true);
+
+    if (!isFilterActive && defaultValue) {
+      updateItems &&
+        updateItems({
+          widgetField: field,
+          value: defaultValue,
+        });
+    }
 
     if (isOpenDatePicker) {
       setTimeout(() => {
@@ -261,6 +276,9 @@ DatePicker.propTypes = {
   hasTimeZone: PropTypes.bool,
   dateFormat: PropTypes.oneOfType([PropTypes.bool, PropTypes.string]),
   timeZone: PropTypes.any,
+  defaultValue: PropTypes.string,
+  updateItems: PropTypes.func,
+  isFilterActive: PropTypes.bool,
 };
 
 export default connect()(onClickOutside(DatePicker));

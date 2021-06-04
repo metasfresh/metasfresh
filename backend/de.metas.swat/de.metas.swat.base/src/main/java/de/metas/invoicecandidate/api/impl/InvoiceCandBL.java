@@ -23,6 +23,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -40,8 +41,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.util.time.SystemTime;
 import de.metas.cache.CCache;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -216,7 +217,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private static final String SYS_Config_C_Invoice_Candidate_Close_PartiallyInvoiced = "C_Invoice_Candidate_Close_PartiallyInvoiced";
 
 	/**
-	 * Blueprint for a cache that is used by {@link #isAllCandidatesInHeaderAggregationGroupDelivered(I_C_Invoice_Candidate)}.
+	 * Blueprint for a cache that is used by {@link #isAllOtherICsInHeaderAggregationGroupDelivered(I_C_Invoice_Candidate)}.
 	 * It will be created and used per-transaction.
 	 */
 	private final static CCache.CCacheBuilder<String, Boolean> CACHE_BUILDER_IS_ALL_CANDIDATES_IN_GROUP_DELIVERED = CCache.<String, Boolean>builder().cacheName("isAllCandidatesInGroupDelivered")
@@ -258,6 +259,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public IInvoiceCandInvalidUpdater updateInvalid()
@@ -276,8 +278,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * <li>{@link X_C_Invoice_Candidate#INVOICERULE_Immediate} : <code>DateOrdered</code>
 	 * <li>else (which should not happen, unless a new invoice rule is introduced): <code>Created</code>
 	 * </ul>
-	 *
-	 * @task 08542
+	 * <p>
+	 * task 08542
 	 */
 	@Override
 	public void set_DateToInvoice_DefaultImpl(@NonNull final I_C_Invoice_Candidate icRecord)
@@ -286,7 +288,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		icRecord.setDateToInvoice(dateToInvoice);
 	}
 
-	private Timestamp computeDateToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
+	@VisibleForTesting
+	Timestamp computeDateToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final InvoiceRule invoiceRule = getInvoiceRule(icRecord);
 		switch (invoiceRule)
@@ -299,7 +302,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				return computeDateToInvoiceBasedOnDeliveryDate(icRecord);
 
 			case OrderCompletelyDelivered:
-				if (isCandidateDelivered(icRecord) && isAllCandidatesInHeaderAggregationGroupDelivered(icRecord))
+				final boolean currentICDelivered = isCandidateDelivered(icRecord) || !isCandidateProductTypeItem(icRecord);
+				if (currentICDelivered && isAllOtherICsInHeaderAggregationGroupDelivered(icRecord))
 				{
 					return computeDateToInvoiceBasedOnDeliveryDate(icRecord);
 				}
@@ -334,25 +338,42 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
-	private boolean isAllCandidatesInHeaderAggregationGroupDelivered(@NonNull final I_C_Invoice_Candidate ic)
+	private boolean isAllOtherICsInHeaderAggregationGroupDelivered(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final CCache<String, Boolean> isAllCandidatesInGroupDeliveredCache = Services.get(ITrxManager.class)
-				.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone)
-				.getProperty("InvoicecandBL#isAllCandidatesInGroupDeliveredCache",
-							 () -> CACHE_BUILDER_IS_ALL_CANDIDATES_IN_GROUP_DELIVERED.build());
-
+		final ITrx threadInheritedTrx = Services.get(ITrxManager.class).getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		final CCache<String, Boolean> isAllCandidatesInGroupDeliveredCache;
+		if (threadInheritedTrx == null) // can happen in unit tests
+		{
+			isAllCandidatesInGroupDeliveredCache = CACHE_BUILDER_IS_ALL_CANDIDATES_IN_GROUP_DELIVERED.build();
+		}
+		else
+		{
+			isAllCandidatesInGroupDeliveredCache = threadInheritedTrx
+					.getProperty("InvoicecandBL#isAllCandidatesInGroupDeliveredCache",
+								 () -> CACHE_BUILDER_IS_ALL_CANDIDATES_IN_GROUP_DELIVERED.build());
+		}
 		return isAllCandidatesInGroupDeliveredCache.getOrLoad(ic.getHeaderAggregationKey(), () -> isAllCandidatesInGroupDelivered0(ic));
 	}
 
 	private boolean isAllCandidatesInGroupDelivered0(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final Iterator<I_C_Invoice_Candidate> candidates = invoiceCandDAO.retrieveForHeaderAggregationKey(getCtx(ic), ic.getHeaderAggregationKey(), getTrxName(ic));
-		return IteratorUtils.stream(candidates).allMatch(candidate -> ic.equals(candidate) || isCandidateDelivered(candidate));
+		return IteratorUtils.stream(candidates)
+				.filter(this::isCandidateProductTypeItem)
+				.filter(currentStreamIc -> currentStreamIc.getC_Invoice_Candidate_ID() != ic.getC_Invoice_Candidate_ID())
+				.allMatch(this::isCandidateDelivered);
+	}
+
+	private boolean isCandidateProductTypeItem(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		return productBL.getProductType(ProductId.ofRepoId(icRecord.getM_Product_ID())).isItem();
 	}
 
 	private boolean isCandidateDelivered(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		return icRecord.getQtyOrdered().subtract(icRecord.getQtyDelivered()).compareTo(ZERO) <= 0;
+		return icRecord
+				.getQtyOrdered()
+				.subtract(icRecord.getQtyDelivered()).compareTo(ZERO) <= 0;
 	}
 
 	private Timestamp computeDateToInvoiceBasedOnDeliveryDate(@NonNull final I_C_Invoice_Candidate icRecord)
@@ -1821,7 +1842,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void setError(
 			@NonNull final I_C_Invoice_Candidate ic,
-			final String errorMsg, final I_AD_Note note, final boolean askForDeleteRegeneration)
+			final String errorMsg,
+			final I_AD_Note note,
+			final boolean askForDeleteRegeneration)
 	{
 		final String errorMessageToUse;
 		if (!askForDeleteRegeneration)
@@ -1847,6 +1870,29 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			amendSchedulerResult(ic, errorMessageToUse);
 		}
+	}
+
+	@Override
+	public void setInvoicingErrorAndSave(
+			@NonNull final I_C_Invoice_Candidate ic,
+			final String errorMsg,
+			final I_AD_Note note)
+	{
+		setError(ic, errorMsg, note);
+
+		ic.setIsInvoicingError(true);
+		ic.setInvoicingErrorMsg(errorMsg);
+
+		invoiceCandDAO.save(ic);
+	}
+
+	@Override
+	public void clearInvoicingErrorAndSave(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		ic.setIsInvoicingError(false);
+		ic.setInvoicingErrorMsg(null);
+
+		invoiceCandDAO.save(ic);
 	}
 
 	// package-visible for testing

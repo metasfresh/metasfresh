@@ -57,7 +57,8 @@
                 "contact": {
                   "firstName": "firstName",
                   "lastName": "lastName",
-                  "email": "someEamil@web.de"
+                  "email": "someEamil@web.de",
+                  "invoiceEmailEnabled":true
                 }
               }
             ],

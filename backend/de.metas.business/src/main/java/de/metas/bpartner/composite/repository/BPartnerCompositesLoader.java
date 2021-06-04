@@ -22,6 +22,7 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocation.BPartnerLocationBuilder;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
@@ -355,6 +356,7 @@ final class BPartnerCompositesLoader
 				.lastName(trimBlankToNull(contactRecord.getLastname()))
 				.name(trimBlankToNull(contactRecord.getName()))
 				.newsletter(contactRecord.isNewsletter())
+				.invoiceEmailEnabled(StringUtils.toBoolean(contactRecord.getIsInvoiceEmailEnabled(), null))
 				.phone(trimBlankToNull(contactRecord.getPhone()))
 				.mobilePhone(trimBlankToNull(contactRecord.getMobilePhone()))
 				.description(trimBlankToNull(contactRecord.getDescription()))

@@ -360,6 +360,7 @@ class FiltersItem extends PureComponent {
         if (filterItem.parameterName === toChange.widgetField) {
           filterItem.defaultValue = toChange.value;
           filterItem.value = toChange.value;
+          filterItem.valueTo = toChange.valueTo;
         }
         return filterItem;
       });

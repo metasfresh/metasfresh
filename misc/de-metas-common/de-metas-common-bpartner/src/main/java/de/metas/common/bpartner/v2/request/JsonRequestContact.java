@@ -181,8 +181,14 @@ public class JsonRequestContact
 	private boolean subjectMatterSet;
 
 
-	@ApiModelProperty(position = 220,  //
-			value = "This translates to `AD_User.Value`.")
+	@ApiModelProperty(position = 220)
+	private Boolean invoiceEmailEnabled;
+
+	@ApiModelProperty(hidden = true)
+	private boolean invoiceEmailEnabledSet;
+
+	@ApiModelProperty(position = 230,  //
+			value = "This translates to `AD_User.Birthday`.")
 	private LocalDate birthday;
 
 	@ApiModelProperty(hidden = true)
@@ -326,5 +332,11 @@ public class JsonRequestContact
 	{
 		this.birthday = birthday;
 		this.birthdaySet = true;
+	}
+
+	public void setInvoiceEmailEnabled(final Boolean invoiceEmailEnabled)
+	{
+		this.invoiceEmailEnabled = invoiceEmailEnabled;
+		invoiceEmailEnabledSet = true;
 	}
 }

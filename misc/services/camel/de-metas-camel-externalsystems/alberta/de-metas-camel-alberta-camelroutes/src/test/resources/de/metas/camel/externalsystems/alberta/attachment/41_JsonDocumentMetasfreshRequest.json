@@ -1,0 +1,52 @@
+{
+  "orgCode": "orgCode",
+  "targets": [
+    {
+      "externalReferenceType": "BPartner",
+      "externalReferenceIdentifier": "ext-ALBERTA-a4adecb6-126a-4fa6-8fac-e80165ac4264"
+    },
+    {
+      "externalReferenceType": "UserID",
+      "externalReferenceIdentifier": "ext-ALBERTA-5a6ca8b6456c14307cb9ae35"
+    },
+    {
+      "externalReferenceType": "UserID",
+      "externalReferenceIdentifier": "ext-ALBERTA-5a6ca8b6456c14307cb9ae35"
+    }
+  ],
+  "attachment": {
+    "fileName": "Anamnese WV",
+    "mimeType": null,
+    "tags": [
+      {
+        "name": "alberta_document_id",
+        "value": "a4adecb6-126a-4fa6-8fac-e80165ac8980"
+      },
+      {
+        "name": "alberta_document_archived",
+        "value": "false"
+      },
+      {
+        "name": "alberta_document_therapyId",
+        "value": "1"
+      },
+      {
+        "name": "alberta_document_therapyTypeId",
+        "value": "11"
+      },
+      {
+        "name": "alberta_document_createdAt",
+        "value": "2015-07-20T22:49:04Z"
+      },
+      {
+        "name": "alberta_document_updatedAt",
+        "value": "2015-07-20T22:49:04Z"
+      },
+      {
+        "name": "alberta_document_endpoint",
+        "value": "/document"
+      }
+    ],
+    "data": "dGhpcyBpcyBhIGR1bW15IHRlc3QgZmlsZQ=="
+  }
+}

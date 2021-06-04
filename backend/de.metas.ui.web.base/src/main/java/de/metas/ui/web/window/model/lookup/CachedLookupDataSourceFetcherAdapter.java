@@ -1,18 +1,18 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.util.List;
-import java.util.Optional;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.util.Check;
+import lombok.NonNull;
+
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -44,7 +44,7 @@ import de.metas.util.Check;
  */
 public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSourceFetcher
 {
-	public static final CachedLookupDataSourceFetcherAdapter of(final LookupDataSourceFetcher delegate)
+	public static CachedLookupDataSourceFetcherAdapter of(final LookupDataSourceFetcher delegate)
 	{
 		if (delegate instanceof CachedLookupDataSourceFetcherAdapter)
 		{
@@ -58,7 +58,7 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	private final LookupDataSourceFetcher delegate;
 	private final String cachePrefix;
 
-	private final transient CCache<LookupDataSourceContext, LookupValuesList> cache_retrieveEntities;
+	private final transient CCache<LookupDataSourceContext, LookupValuesPage> cache_retrieveEntities;
 	private final transient CCache<LookupDataSourceContext, LookupValue> cache_retrieveLookupValueById;
 
 	private CachedLookupDataSourceFetcherAdapter(final LookupDataSourceFetcher delegate)
@@ -132,7 +132,7 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	}
 
 	@Override
-	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
+	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
 		return cache_retrieveLookupValueById.getOrLoad(evalCtx, () -> delegate.retrieveLookupValueById(evalCtx));
 	}
@@ -144,7 +144,7 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	}
 
 	@Override
-	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		return cache_retrieveEntities.getOrLoad(evalCtx, delegate::retrieveEntities);
 	}

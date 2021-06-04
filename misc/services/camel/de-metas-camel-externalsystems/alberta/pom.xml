@@ -23,6 +23,7 @@
         <module>alberta-patient-api</module>
         <module>alberta-article-api</module>
         <module>alberta-orders-api</module>
+        <module>alberta-document-api</module>
     </modules>
    
 </project>
