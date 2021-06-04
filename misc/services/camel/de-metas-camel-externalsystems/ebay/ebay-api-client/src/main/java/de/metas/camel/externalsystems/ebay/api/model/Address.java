@@ -41,6 +41,10 @@ public class Address {
   public static final String SERIALIZED_NAME_COUNTRY = "country";
   @SerializedName(SERIALIZED_NAME_COUNTRY)
   private String country;
+  
+  public static final String SERIALIZED_NAME_COUNTRY_CODE = "countryCode";
+  @SerializedName(SERIALIZED_NAME_COUNTRY_CODE)
+  private String countryCode;
 
   public static final String SERIALIZED_NAME_COUNTY = "county";
   @SerializedName(SERIALIZED_NAME_COUNTY)
@@ -214,6 +218,15 @@ public class Address {
   public void setStateOrProvince(String stateOrProvince) {
     this.stateOrProvince = stateOrProvince;
   }
+  
+  @javax.annotation.Nullable
+  public String getCountryCode() {
+		return countryCode;
+	}
+	
+	public void setCountryCode(String countryCode) {
+		this.countryCode = countryCode;
+	}
 
 
   @Override
@@ -229,6 +242,7 @@ public class Address {
         Objects.equals(this.addressLine2, address.addressLine2) &&
         Objects.equals(this.city, address.city) &&
         Objects.equals(this.country, address.country) &&
+        Objects.equals(this.countryCode, address.countryCode) &&
         Objects.equals(this.county, address.county) &&
         Objects.equals(this.postalCode, address.postalCode) &&
         Objects.equals(this.stateOrProvince, address.stateOrProvince);
@@ -247,6 +261,7 @@ public class Address {
     sb.append("    addressLine2: ").append(toIndentedString(addressLine2)).append("\n");
     sb.append("    city: ").append(toIndentedString(city)).append("\n");
     sb.append("    country: ").append(toIndentedString(country)).append("\n");
+    sb.append("    countryCode: ").append(toIndentedString(countryCode)).append("\n");
     sb.append("    county: ").append(toIndentedString(county)).append("\n");
     sb.append("    postalCode: ").append(toIndentedString(postalCode)).append("\n");
     sb.append("    stateOrProvince: ").append(toIndentedString(stateOrProvince)).append("\n");
