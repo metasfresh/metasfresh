@@ -646,7 +646,13 @@ export function createWindow({
             disconnectedData = responseDocuments[0];
           } else {
             dispatch(
-              mapDataToState(response.data, false, 'NEW', docId, windowType)
+              mapDataToState({
+                data: response.data,
+                isModal: false,
+                rowId: 'NEW',
+                docId,
+                windowType,
+              })
             );
             dispatch(updateStatus(responseDocuments));
             dispatch(updateModal(data.rowId));
@@ -856,7 +862,7 @@ export function patch(
         delete data.documents.documents;
 
       await dispatch(
-        mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
+        mapDataToState({ data, isModal, rowId, id, windowType, isAdvanced })
       );
 
       if (
@@ -904,14 +910,14 @@ export function patch(
       });
 
       await dispatch(
-        mapDataToState(
-          response.data,
+        mapDataToState({
+          data: response.data,
           isModal,
           rowId,
           id,
           windowType,
-          isAdvanced
-        )
+          isAdvanced,
+        })
       );
     }
   };
@@ -965,7 +971,7 @@ function updateData(doc, scope) {
   };
 }
 
-function mapDataToState(data, isModal, rowId) {
+function mapDataToState({ data, isModal, rowId }) {
   return (dispatch) => {
     const dataArray = typeof data.splice === 'function' ? data : [data];
 
