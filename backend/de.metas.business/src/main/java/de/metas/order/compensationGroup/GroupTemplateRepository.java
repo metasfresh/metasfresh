@@ -80,7 +80,7 @@ public class GroupTemplateRepository
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order_CompensationGroup.class)
-				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, groupId)
+				.addEqualsFilter(I_C_Order_CompensationGroup.COLUMNNAME_C_Order_CompensationGroup_ID, groupId.getOrderCompensationGroupId())
 				.andCollect(I_C_Order_CompensationGroup.COLUMNNAME_C_CompensationGroup_Schema_ID, I_C_CompensationGroup_Schema.class)
 				.create()
 				.firstIdOnly(GroupTemplateId::ofRepoIdOrNull);
@@ -167,7 +167,7 @@ public class GroupTemplateRepository
 				.addEqualsFilter(I_M_Product_Exclude_FlatrateConditions.COLUMNNAME_M_Product_ID, key.getProductId())
 				.addOnlyActiveRecordsFilter()
 				.create()
-				.firstOptional(I_M_Product_Exclude_FlatrateConditions.class);
+				.firstOnlyOptional(I_M_Product_Exclude_FlatrateConditions.class);
 	}
 
 	@Value(staticConstructor = "of")
