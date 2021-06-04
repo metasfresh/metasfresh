@@ -156,21 +156,10 @@ public class AllocationBL implements IAllocationBL
 		}
 
 		final BankAccountInvoiceAutoAllocRules rules = bankAccountInvoiceAutoAllocRulesRepository.getRules();
-		switch (rules.isAutoAllocateInvoiceDocType(invoiceDocTypeId))
-		{
-			case TRUE:
-				// consider all eligible payments
-				break;
-			case FALSE:
-				eligiblePayments.clear();
-				break;
-			case UNKNOWN:
-				eligiblePayments.removeIf(payment -> {
-					final BankAccountId bankAccountId = BankAccountId.ofRepoId(payment.getC_BP_BankAccount_ID());
-					return !rules.isAutoAllocate(bankAccountId, invoiceDocTypeId);
-				});
-				break;
-		}
+		eligiblePayments.removeIf(payment -> {
+			final BankAccountId bankAccountId = BankAccountId.ofRepoId(payment.getC_BP_BankAccount_ID());
+			return !rules.isAutoAllocate(bankAccountId, invoiceDocTypeId);
+		});
 	}
 
 	public I_C_AllocationHdr autoAllocateSpecificPayment(

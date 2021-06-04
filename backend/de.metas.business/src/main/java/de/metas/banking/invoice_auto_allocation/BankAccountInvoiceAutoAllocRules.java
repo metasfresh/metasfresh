@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.banking.BankAccountId;
 import de.metas.document.DocTypeId;
-import de.metas.util.OptionalBoolean;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
@@ -41,10 +40,12 @@ public class BankAccountInvoiceAutoAllocRules
 	static final BankAccountInvoiceAutoAllocRules NO_RESTRICTIONS = new BankAccountInvoiceAutoAllocRules(ImmutableList.of());
 
 	private final ImmutableListMultimap<DocTypeId, BankAccountInvoiceAutoAllocRule> rulesByInvoiceDocTypeId;
+	private final ImmutableListMultimap<BankAccountId, BankAccountInvoiceAutoAllocRule> rulesByBankAccountId;
 
 	private BankAccountInvoiceAutoAllocRules(@NonNull final List<BankAccountInvoiceAutoAllocRule> rules)
 	{
 		rulesByInvoiceDocTypeId = Multimaps.index(rules, BankAccountInvoiceAutoAllocRule::getInvoiceDocTypeId);
+		rulesByBankAccountId = Multimaps.index(rules, BankAccountInvoiceAutoAllocRule::getBankAccountId);
 	}
 
 	public static BankAccountInvoiceAutoAllocRules ofRulesList(@NonNull final List<BankAccountInvoiceAutoAllocRule> rules)
@@ -54,14 +55,6 @@ public class BankAccountInvoiceAutoAllocRules
 				: NO_RESTRICTIONS;
 	}
 
-	public OptionalBoolean isAutoAllocateInvoiceDocType(@NonNull final DocTypeId invoiceDocTypeId)
-	{
-		final ImmutableList<BankAccountInvoiceAutoAllocRule> rulesForInvoiceDocTypeId = rulesByInvoiceDocTypeId.get(invoiceDocTypeId);
-		return rulesForInvoiceDocTypeId.isEmpty()
-				? OptionalBoolean.TRUE
-				: OptionalBoolean.UNKNOWN;
-	}
-
 	public boolean isAutoAllocate(
 			@NonNull final BankAccountId bankAccountId,
 			@NonNull final DocTypeId invoiceDocTypeId)
@@ -69,9 +62,12 @@ public class BankAccountInvoiceAutoAllocRules
 		final ImmutableList<BankAccountInvoiceAutoAllocRule> rulesForInvoiceDocTypeId = rulesByInvoiceDocTypeId.get(invoiceDocTypeId);
 		if (rulesForInvoiceDocTypeId.isEmpty())
 		{
-			return true;
+			final ImmutableList<BankAccountInvoiceAutoAllocRule> rulesForBankAccountId = rulesByBankAccountId.get(bankAccountId);
+			return rulesForBankAccountId.isEmpty();
 		}
-
-		return rulesForInvoiceDocTypeId.stream().anyMatch(rule -> BankAccountId.equals(rule.getBankAccountId(), bankAccountId));
+		else
+		{
+			return rulesForInvoiceDocTypeId.stream().anyMatch(rule -> BankAccountId.equals(rule.getBankAccountId(), bankAccountId));
+		}
 	}
 }

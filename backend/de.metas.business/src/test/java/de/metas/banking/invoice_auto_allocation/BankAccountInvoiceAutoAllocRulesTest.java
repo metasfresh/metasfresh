@@ -35,27 +35,6 @@ import java.util.Collections;
 class BankAccountInvoiceAutoAllocRulesTest
 {
 	@Nested
-	class isAutoAllocateInvoiceDocType
-	{
-		@Test
-		public void noRestrictions()
-		{
-			Assertions.assertThat(BankAccountInvoiceAutoAllocRules.NO_RESTRICTIONS.isAutoAllocateInvoiceDocType(DocTypeId.ofRepoId(2)))
-					.isEqualTo(OptionalBoolean.TRUE);
-		}
-
-		@Test
-		public void withRestrictions()
-		{
-			final BankAccountInvoiceAutoAllocRules rules = BankAccountInvoiceAutoAllocRules.ofRulesList(Collections.singletonList(
-					BankAccountInvoiceAutoAllocRule.builder().bankAccountId(BankAccountId.ofRepoId(10)).invoiceDocTypeId(DocTypeId.ofRepoId(20)).build()
-			));
-			Assertions.assertThat(rules.isAutoAllocateInvoiceDocType(DocTypeId.ofRepoId(20))).isEqualTo(OptionalBoolean.UNKNOWN);
-			Assertions.assertThat(rules.isAutoAllocateInvoiceDocType(DocTypeId.ofRepoId(21))).isEqualTo(OptionalBoolean.TRUE);
-		}
-	}
-
-	@Nested
 	class isAutoAllocate
 	{
 		@Test
