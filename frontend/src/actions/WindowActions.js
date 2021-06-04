@@ -646,7 +646,13 @@ export function createWindow({
             disconnectedData = responseDocuments[0];
           } else {
             dispatch(
-              mapDataToState(response.data, false, 'NEW', docId, windowType)
+              mapDataToState({
+                data: response.data,
+                isModal: false,
+                rowId: 'NEW',
+                docId,
+                windowType,
+              })
             );
             dispatch(updateStatus(responseDocuments));
             dispatch(updateModal(data.rowId));
@@ -820,7 +826,8 @@ export function patch(
   isModal,
   isAdvanced,
   viewId,
-  isEdit
+  isEdit,
+  disconnected
 ) {
   return async (dispatch) => {
     const symbol = Symbol();
@@ -856,7 +863,15 @@ export function patch(
         delete data.documents.documents;
 
       await dispatch(
-        mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
+        mapDataToState({
+          data,
+          isModal,
+          rowId,
+          id,
+          windowType,
+          isAdvanced,
+          disconnected,
+        })
       );
 
       if (
@@ -904,14 +919,14 @@ export function patch(
       });
 
       await dispatch(
-        mapDataToState(
-          response.data,
+        mapDataToState({
+          data: response.data,
           isModal,
           rowId,
           id,
           windowType,
-          isAdvanced
-        )
+          isAdvanced,
+        })
       );
     }
   };
@@ -935,14 +950,14 @@ export function fireUpdateData({
       fetchAdvancedFields: fetchAdvancedFields,
     }).then((response) => {
       dispatch(
-        mapDataToState(
-          response.data,
+        mapDataToState({
+          data: response.data,
           isModal,
           rowId,
           documentId,
           windowId,
-          fetchAdvancedFields
-        )
+          fetchAdvancedFields,
+        })
       );
     });
   };
@@ -965,7 +980,7 @@ function updateData(doc, scope) {
   };
 }
 
-function mapDataToState(data, isModal, rowId) {
+function mapDataToState({ data, isModal, rowId, disconnected }) {
   return (dispatch) => {
     const dataArray = typeof data.splice === 'function' ? data : [data];
 
@@ -981,7 +996,10 @@ function mapDataToState(data, isModal, rowId) {
         !(index === 0 && rowId === 'NEW') &&
         (!item.rowId || (isModal && item.rowId))
       ) {
-        dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
+        // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
+        // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
+        disconnected !== 'inlineTab' &&
+          dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
       }
     });
   };
