@@ -25,6 +25,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_BankAccount_InvoiceAutoAllocateRule;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
@@ -131,6 +132,9 @@ public class AllocationBLTest
 		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(invoice);
 
+		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
+		InterfaceWrapperHelper.save(bpBankAccount);
+
 		final I_C_Payment payment1 = newInstance(I_C_Payment.class);
 		payment1.setPayAmt(new BigDecimal("10"));
 		payment1.setDateTrx(firstDate);
@@ -142,6 +146,7 @@ public class AllocationBLTest
 		payment1.setIsReceipt(true);
 		payment1.setC_BPartner_ID(partner.getC_BPartner_ID());
 		payment1.setC_Currency_ID(currencyEUR.getRepoId());
+		payment1.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 		InterfaceWrapperHelper.save(payment1);
 
 		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).isEqualByComparingTo(invoice.getGrandTotal());
@@ -184,6 +189,9 @@ public class AllocationBLTest
 		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(invoice);
 
+		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
+		InterfaceWrapperHelper.save(bpBankAccount);
+
 		final I_C_Payment payment1 = newInstance(I_C_Payment.class);
 		payment1.setPayAmt(new BigDecimal("10"));
 		payment1.setDateTrx(firstDate);
@@ -195,6 +203,7 @@ public class AllocationBLTest
 		payment1.setIsReceipt(true);
 		payment1.setC_BPartner_ID(partner.getC_BPartner_ID());
 		payment1.setC_Currency_ID(currencyEUR.getRepoId());
+		payment1.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 		InterfaceWrapperHelper.save(payment1);
 
 		final I_C_Payment payment2 = newInstance(I_C_Payment.class);
@@ -208,6 +217,7 @@ public class AllocationBLTest
 		payment2.setIsReceipt(true);
 		payment2.setC_BPartner_ID(partner.getC_BPartner_ID());
 		payment2.setC_Currency_ID(currencyEUR.getRepoId());
+		payment2.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 		InterfaceWrapperHelper.save(payment2);
 
 		final I_C_Payment payment3 = newInstance(I_C_Payment.class);
@@ -221,6 +231,7 @@ public class AllocationBLTest
 		payment3.setIsReceipt(true);
 		payment3.setC_BPartner_ID(partner.getC_BPartner_ID());
 		payment3.setC_Currency_ID(currencyEUR.getRepoId());
+		payment3.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 		InterfaceWrapperHelper.save(payment3);
 
 		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).isEqualByComparingTo(invoice.getGrandTotal());
@@ -270,6 +281,9 @@ public class AllocationBLTest
 		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		InterfaceWrapperHelper.save(invoice);
 
+		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
+		InterfaceWrapperHelper.save(bpBankAccount);
+
 		final I_C_Payment payment1 = newInstance(I_C_Payment.class);
 		payment1.setPayAmt(new BigDecimal("10"));
 		payment1.setDateTrx(firstDate);
@@ -281,6 +295,7 @@ public class AllocationBLTest
 		payment1.setIsReceipt(true);
 		payment1.setC_BPartner_ID(partner.getC_BPartner_ID());
 		payment1.setC_Currency_ID(currencyEUR.getRepoId());
+		payment1.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 		InterfaceWrapperHelper.save(payment1);
 
 		final I_C_Payment payment2 = newInstance(I_C_Payment.class);
@@ -294,6 +309,7 @@ public class AllocationBLTest
 		payment2.setIsReceipt(true);
 		payment2.setC_BPartner_ID(partner.getC_BPartner_ID());
 		payment2.setC_Currency_ID(currencyEUR.getRepoId());
+		payment2.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 		InterfaceWrapperHelper.save(payment2);
 
 		final I_C_Payment payment3 = newInstance(I_C_Payment.class);
@@ -307,6 +323,7 @@ public class AllocationBLTest
 		payment3.setIsReceipt(true);
 		payment3.setC_BPartner_ID(partner.getC_BPartner_ID());
 		payment3.setC_Currency_ID(currencyEUR.getRepoId());
+		payment3.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 		InterfaceWrapperHelper.save(payment3);
 
 		assertThat(invoiceDAO.retrieveOpenAmt(invoice)).isEqualByComparingTo(invoice.getGrandTotal()); // guard
@@ -415,7 +432,7 @@ public class AllocationBLTest
 						bankAccountInvoiceAutoAllocRulesRepository
 				);
 
-				assertThat(eligiblePayments).containsExactly(bankAccountId1_payment1);
+				assertThat(eligiblePayments).isEmpty();
 			}
 
 			@Test
