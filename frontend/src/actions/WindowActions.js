@@ -624,30 +624,32 @@ export function createWindow({
 
       // TODO: Is `elem` ever different than 0 ?
       docId = responseDocuments[elem].id;
-      dispatch(
-        initDataSuccess({
-          data: parseToDisplay(responseDocuments[elem].fieldsByName),
-          docId,
-          saveStatus: data.saveStatus,
-          scope: getScope(isModal),
-          standardActions: data.standardActions,
-          validStatus: data.validStatus,
-          includedTabsInfo: data.includedTabsInfo,
-          websocket: data.websocketEndpoint,
-          hasComments: data.hasComments,
-        })
-      );
+      disconnected !== 'inlineTab' &&
+        dispatch(
+          initDataSuccess({
+            data: parseToDisplay(responseDocuments[elem].fieldsByName),
+            docId,
+            saveStatus: data.saveStatus,
+            scope: getScope(isModal),
+            standardActions: data.standardActions,
+            validStatus: data.validStatus,
+            includedTabsInfo: data.includedTabsInfo,
+            websocket: data.websocketEndpoint,
+            hasComments: data.hasComments,
+          })
+        );
 
       if (isModal) {
         if (rowId === 'NEW') {
-          dispatch(
-            mapDataToState(response.data, false, 'NEW', docId, windowType)
-          );
-          dispatch(updateStatus(responseDocuments));
-          dispatch(updateModal(data.rowId));
           /** special case of inlineTab - disconnectedData will be used for data feed */
           if (disconnected === 'inlineTab') {
             disconnectedData = responseDocuments[0];
+          } else {
+            dispatch(
+              mapDataToState(response.data, false, 'NEW', docId, windowType)
+            );
+            dispatch(updateStatus(responseDocuments));
+            dispatch(updateModal(data.rowId));
           }
         }
       } else {
@@ -678,9 +680,9 @@ export function createWindow({
           /** post get layout action triggered for the inlineTab case */
           if (disconnectedData && disconnected === 'inlineTab') {
             dispatch(inlineTabAfterGetLayout({ data, disconnectedData }));
+          } else {
+            dispatch(initLayoutSuccess(data, getScope(isModal)));
           }
-
-          dispatch(initLayoutSuccess(data, getScope(isModal)));
         })
         .catch((e) => Promise.reject(e));
     });
@@ -846,6 +848,7 @@ export function patch(
           ? response.data.documents
           : response.data;
       const dataItem = data[0];
+      const { includedTabsInfo } = dataItem;
 
       // prevent recursion in merge
       data.documents &&
@@ -878,7 +881,6 @@ export function patch(
         );
       } else {
         // update the inlineTabsInfo if such information is present
-        const { includedTabsInfo } = data[0];
         includedTabsInfo &&
           dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
 
