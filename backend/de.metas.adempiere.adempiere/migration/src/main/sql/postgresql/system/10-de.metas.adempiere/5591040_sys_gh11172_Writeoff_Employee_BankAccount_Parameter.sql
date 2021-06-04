@@ -22,3 +22,9 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 -- URL zum Konzept
 UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-06-04 12:43:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542021
 ;
+
+-- 2021-06-04T13:02:09.027Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET IsAutocomplete='Y',Updated=TO_TIMESTAMP('2021-06-04 16:02:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542021
+;
+
