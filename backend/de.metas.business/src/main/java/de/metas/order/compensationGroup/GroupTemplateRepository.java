@@ -19,7 +19,6 @@ import org.compiere.model.I_M_Product_Exclude_FlatrateConditions;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import javax.validation.constraints.Null;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;

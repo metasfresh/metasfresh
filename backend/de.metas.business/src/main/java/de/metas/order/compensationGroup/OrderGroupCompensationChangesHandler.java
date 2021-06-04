@@ -1,16 +1,14 @@
 package de.metas.order.compensationGroup;
 
+import de.metas.order.OrderId;
+import de.metas.order.compensationGroup.OrderGroupRepository.OrderLinesStorage;
 import de.metas.product.ProductId;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
-import de.metas.order.OrderId;
-import de.metas.order.compensationGroup.OrderGroupRepository.OrderLinesStorage;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 /*
  * #%L

@@ -1,24 +1,19 @@
 package de.metas.contracts.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import de.metas.order.compensationGroup.Group;
+import de.metas.contracts.order.model.I_C_OrderLine;
+import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupTemplateId;
+import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.ProductId;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.contracts.order.model.I_C_OrderLine;
-import de.metas.order.compensationGroup.GroupId;
-import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
-import de.metas.order.compensationGroup.OrderGroupRepository;
-import lombok.NonNull;
-
-import javax.annotation.Nullable;
-import java.util.Optional;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Interceptor(I_C_OrderLine.class)
 @Component
