@@ -543,3 +543,7 @@ UPDATE AD_WINDOW SET Name='Invoice auto allocation', Description=NULL, Help=NULL
 UPDATE AD_Menu SET   Name = 'Invoice auto allocation', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579286
 ;
 
+-- 2021-06-04T12:11:10.924Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Val_Rule_ID=124,Updated=TO_TIMESTAMP('2021-06-04 15:11:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574197
+;
