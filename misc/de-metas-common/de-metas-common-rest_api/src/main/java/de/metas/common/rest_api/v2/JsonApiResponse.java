@@ -20,10 +20,11 @@
  * #L%
  */
 
-package de.metas.util.web.audit;
+package de.metas.common.rest_api.v2;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -33,6 +34,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 @Value
 @Builder
+@JsonDeserialize(builder = JsonApiResponse.JsonApiResponseBuilder.class)
 public class JsonApiResponse
 {
 	@ApiModelProperty("The `API_Request_Audit_ID` of the request created by the invoker. Might be `null` if metasfresh was configured to not create an audit log at all.")

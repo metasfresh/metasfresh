@@ -6,7 +6,7 @@ Feature: create or update BPartner v2
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   Scenario: create a BPartner record
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2-pre/bpartner/001' and fulfills with '201' status code
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
    "requestItems":[
@@ -102,7 +102,7 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | ext-ALBERTA-c22   | test_name_c22 | null       | test_fax | c22  | true                    |
 
   Scenario: Update a BPartner record
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2-pre/bpartner/001' and fulfills with '201' status code
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
    "requestItems":[
@@ -134,7 +134,7 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_company    | null         | null      | de           | url_updated | test-group | null      |
 
   Scenario: Update a BPartner contact record
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2-pre/bpartner/001' and fulfills with '201' status code
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
    "requestItems":[
@@ -169,7 +169,7 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11_updated | test_email_updated | fax_updated | c11  | true                    |
 
   Scenario: Update a BPartner contact record and Create another contact record
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2-pre/bpartner/001' and fulfills with '201' status code
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
    "requestItems":[
