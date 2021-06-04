@@ -23,6 +23,8 @@
 package de.metas.bpartner.quick_input.service;
 
 import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
 import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
@@ -59,6 +61,7 @@ public class BPartnerQuickInputService
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public BPartnerQuickInputService(
 			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository, final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies)
@@ -147,55 +150,62 @@ public class BPartnerQuickInputService
 	}
 
 	/**
-	 * Creates BPartner, Location and contact from given template.
-	 *
-	 * @return created bpartner
+	 * Creates BPartner, Location and contacts from given template.
+	 * <p>
 	 * Task https://github.com/metasfresh/metasfresh/issues/1090
 	 */
-	public void createFromTemplate(final I_C_BPartner_QuickInput template)
+	public BPartnerId createBPartnerFromTemplate(@NonNull final I_C_BPartner_QuickInput template)
 	{
-		Check.assumeNotNull(template, "Parameter template is not null");
 		Check.assume(!template.isProcessed(), "{} not already processed", template);
 		Check.assume(template.getC_Location_ID() > 0, "{} > 0", template); // just to make sure&explicit
 
-		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+		trxManager.assertThreadInheritedTrxExists();
+
 
 		//
 		// BPartner
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_ThreadInherited);
-		bpartner.setAD_Org_ID(template.getAD_Org_ID());
-		// bpartner.setValue(Value);
-		bpartner.setName(extractName(template));
-		bpartner.setName2(template.getName2());
-		bpartner.setIsCompany(template.isCompany());
-		bpartner.setCompanyName(template.getCompanyname());
-		bpartner.setC_BP_Group_ID(template.getC_BP_Group_ID());
-		bpartner.setAD_Language(template.getAD_Language());
-		// Customer
-		bpartner.setIsCustomer(template.isCustomer());
-		bpartner.setC_PaymentTerm_ID(template.getC_PaymentTerm_ID());
-		bpartner.setM_PricingSystem_ID(template.getM_PricingSystem_ID());
-		// Vendor
-		bpartner.setIsVendor(template.isVendor());
-		bpartner.setPO_PaymentTerm_ID(template.getPO_PaymentTerm_ID());
-		bpartner.setPO_PricingSystem_ID(template.getPO_PricingSystem_ID());
-		//
-		bpartnerDAO.save(bpartner);
+		final BPartnerId bpartnerId;
+		{
+			final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+			bpartner.setAD_Org_ID(template.getAD_Org_ID());
+			// bpartner.setValue(Value); // will be generated
+			bpartner.setName(template.getName());
+			bpartner.setName2(template.getName2());
+			bpartner.setIsCompany(template.isCompany());
+			bpartner.setCompanyName(template.getCompanyname());
+			bpartner.setC_BP_Group_ID(template.getC_BP_Group_ID());
+			bpartner.setAD_Language(template.getAD_Language());
+			// Customer
+			bpartner.setIsCustomer(template.isCustomer());
+			bpartner.setC_PaymentTerm_ID(template.getC_PaymentTerm_ID());
+			bpartner.setM_PricingSystem_ID(template.getM_PricingSystem_ID());
+			// Vendor
+			bpartner.setIsVendor(template.isVendor());
+			bpartner.setPO_PaymentTerm_ID(template.getPO_PaymentTerm_ID());
+			bpartner.setPO_PricingSystem_ID(template.getPO_PricingSystem_ID());
 
-		template.setC_BPartner(bpartner);
+			bpartnerDAO.save(bpartner);
+			bpartnerId = BPartnerId.ofRepoId(template.getC_BPartner_ID());
+
+			template.setC_BPartner_ID(bpartnerId.getRepoId());
+		}
 
 		//
 		// BPartner location
-		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class, bpartner);
-		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		bpLocation.setC_Location_ID(template.getC_Location_ID());
-		bpLocation.setIsBillTo(true);
-		bpLocation.setIsBillToDefault(true);
-		bpLocation.setIsShipTo(true);
-		bpLocation.setIsShipToDefault(true);
-		bpartnerDAO.save(bpLocation);
+		final BPartnerLocationId bpartnerLocationId;
+		{
+			final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+			bpLocation.setC_BPartner_ID(bpartnerId.getRepoId());
+			bpLocation.setC_Location_ID(template.getC_Location_ID());
+			bpLocation.setIsBillTo(true);
+			bpLocation.setIsBillToDefault(true);
+			bpLocation.setIsShipTo(true);
+			bpLocation.setIsShipToDefault(true);
+			bpartnerDAO.save(bpLocation);
+			bpartnerLocationId = BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 
-		template.setC_BPartner_Location(bpLocation);
+			template.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId());
+		}
 
 		final boolean isContactInfoProvided = !Check.isEmpty(template.getFirstname()) || !Check.isEmpty(template.getLastname());
 
@@ -203,15 +213,15 @@ public class BPartnerQuickInputService
 		{
 			//
 			// BPartner contact
-			final I_AD_User bpContact = InterfaceWrapperHelper.newInstance(I_AD_User.class, bpartner);
-			bpContact.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+			final I_AD_User bpContact = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+			bpContact.setC_BPartner_ID(bpartnerId.getRepoId());
 			bpContact.setC_Greeting(template.getC_Greeting());
 			bpContact.setFirstname(template.getFirstname());
 			bpContact.setLastname(template.getLastname());
 			bpContact.setPhone(template.getPhone());
 			bpContact.setEMail(template.getEMail());
 			bpContact.setIsNewsletter(template.isNewsletter());
-			bpContact.setC_BPartner_Location_ID(bpLocation.getC_BPartner_Location_ID());
+			bpContact.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId());
 			if (template.isCustomer())
 			{
 				bpContact.setIsSalesContact(true);
@@ -229,6 +239,8 @@ public class BPartnerQuickInputService
 
 		template.setProcessed(true);
 		bpartnerQuickInputRepository.save(template);
+
+		return BPartnerId.ofRepoId(template.getC_BPartner_ID());
 	}
 
 	private String extractName(final I_C_BPartner_QuickInput template)

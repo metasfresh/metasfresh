@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor.factory;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.quick_input.service.BPartnerQuickInputService;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -64,8 +65,8 @@ public class NewRecordDescriptorsProvider
 				WindowId.of(540327),
 				document -> {
 					final I_C_BPartner_QuickInput template = InterfaceWrapperHelper.getPO(document);
-					bpartnerQuickInputService.createFromTemplate(template);
-					return template.getC_BPartner_ID();
+					final BPartnerId bpartnerId = bpartnerQuickInputService.createBPartnerFromTemplate(template);
+					return bpartnerId.getRepoId();
 				}));
 	}
 
