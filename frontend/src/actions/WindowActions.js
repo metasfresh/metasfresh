@@ -877,6 +877,11 @@ export function patch(
           )
         );
       } else {
+        // update the inlineTabsInfo if such information is present
+        const { includedTabsInfo } = data[0];
+        includedTabsInfo &&
+          dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
+
         await dispatch(indicatorState('saved'));
         await dispatch({ type: PATCH_SUCCESS, symbol });
 
