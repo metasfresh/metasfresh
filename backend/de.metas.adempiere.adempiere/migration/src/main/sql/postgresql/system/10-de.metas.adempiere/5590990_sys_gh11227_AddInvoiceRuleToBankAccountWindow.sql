@@ -458,3 +458,88 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=10,Updated=TO_TIMESTAMP('2021-06-03 17:09:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585646
 ;
 
+-- 2021-06-04T10:22:57.130Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Autom. Rechnungszuordnung', PrintName='Autom. Rechnungszuordnung',Updated=TO_TIMESTAMP('2021-06-04 13:22:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579286 AND AD_Language='de_CH'
+;
+
+-- 2021-06-04T10:22:57.141Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579286,'de_CH')
+;
+
+-- 2021-06-04T10:23:03.870Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Autom. Rechnungszuordnung', PrintName='Autom. Rechnungszuordnung',Updated=TO_TIMESTAMP('2021-06-04 13:23:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579286 AND AD_Language='de_DE'
+;
+
+-- 2021-06-04T10:23:03.871Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579286,'de_DE')
+;
+
+-- 2021-06-04T10:23:16.485Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Autom. Rechnungszuordnung', PrintName='Autom. Rechnungszuordnung',Updated=TO_TIMESTAMP('2021-06-04 13:23:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579286 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-04T10:23:16.485Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579286,'nl_NL')
+;
+
+-- 2021-06-04T10:23:32.563Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Invoice auto allocation', PrintName='Invoice auto allocation',Updated=TO_TIMESTAMP('2021-06-04 13:23:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579286 AND AD_Language='en_US'
+;
+
+-- 2021-06-04T10:23:32.565Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579286,'en_US')
+;
+
+-- 2021-06-04T10:23:32.577Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579286,'en_US')
+;
+
+-- 2021-06-04T10:23:32.580Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='C_BP_BankAccount_InvoiceAutoAllocateRule_ID', Name='Invoice auto allocation', Description=NULL, Help=NULL WHERE AD_Element_ID=579286
+;
+
+-- 2021-06-04T10:23:32.581Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_BP_BankAccount_InvoiceAutoAllocateRule_ID', Name='Invoice auto allocation', Description=NULL, Help=NULL, AD_Element_ID=579286 WHERE UPPER(ColumnName)='C_BP_BANKACCOUNT_INVOICEAUTOALLOCATERULE_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-06-04T10:23:32.583Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_BP_BankAccount_InvoiceAutoAllocateRule_ID', Name='Invoice auto allocation', Description=NULL, Help=NULL WHERE AD_Element_ID=579286 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-04T10:23:32.584Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Invoice auto allocation', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579286) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579286)
+;
+
+-- 2021-06-04T10:23:32.606Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Invoice auto allocation', Name='Invoice auto allocation' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579286)
+;
+
+-- 2021-06-04T10:23:32.607Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Invoice auto allocation', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579286
+;
+
+-- 2021-06-04T10:23:32.609Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Invoice auto allocation', Description=NULL, Help=NULL WHERE AD_Element_ID = 579286
+;
+
+-- 2021-06-04T10:23:32.609Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Invoice auto allocation', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579286
+;
+

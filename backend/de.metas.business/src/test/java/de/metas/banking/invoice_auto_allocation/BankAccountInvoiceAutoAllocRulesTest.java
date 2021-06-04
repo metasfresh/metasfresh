@@ -54,7 +54,7 @@ class BankAccountInvoiceAutoAllocRulesTest
 			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(10), DocTypeId.ofRepoId(20)))
 					.isTrue();
 			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(10), DocTypeId.ofRepoId(21)))
-					.isTrue();
+					.isFalse();
 
 			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(11), DocTypeId.ofRepoId(20)))
 					.isFalse();
@@ -73,12 +73,12 @@ class BankAccountInvoiceAutoAllocRulesTest
 			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(10), DocTypeId.ofRepoId(20)))
 					.isTrue();
 			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(10), DocTypeId.ofRepoId(21)))
-					.isTrue();
+					.isFalse();
 
 			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(11), DocTypeId.ofRepoId(20)))
 					.isTrue();
 			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(11), DocTypeId.ofRepoId(21)))
-					.isTrue();
+					.isFalse();
 
 			Assertions.assertThat(rules.isAutoAllocate(BankAccountId.ofRepoId(12), DocTypeId.ofRepoId(20)))
 					.isFalse();
