@@ -54,13 +54,13 @@ public class C_OrderLine
 		orderLine.setC_Flatrate_Conditions_ID(flatrateConditionsId);
 
 		int excludeOrderLineId = orderLine.getC_OrderLine_ID();
-		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, groupTemplateId,excludeOrderLineId);
+		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, groupTemplateId, excludeOrderLineId);
 	}
 
 	/**
 	 * In case the flatrate conditions for an order line is updated and that line is part of an compensation group,
 	 * then set the same flatrate conditions to all other lines from the same compensation group.
-	 * 
+	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/3150
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, skipIfCopying = true)

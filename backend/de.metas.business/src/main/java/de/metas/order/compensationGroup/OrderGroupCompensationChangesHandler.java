@@ -169,7 +169,7 @@ public class OrderGroupCompensationChangesHandler
 		return groupTemplateRepo.getGroupTemplateId(groupId);
 	}
 
-	public boolean isProductExcludedFromFlatrateConditions(@Nullable final GroupTemplateId groupTemplateId,	@NonNull final ProductId productId)
+	public boolean isProductExcludedFromFlatrateConditions(@Nullable final GroupTemplateId groupTemplateId, @NonNull final ProductId productId)
 	{
 		if (groupTemplateId == null)
 		{

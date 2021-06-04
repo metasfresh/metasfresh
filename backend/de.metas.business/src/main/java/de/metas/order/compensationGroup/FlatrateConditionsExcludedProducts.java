@@ -11,23 +11,27 @@ import java.util.Collection;
 
 @EqualsAndHashCode
 @ToString
-public class FlatrateConditionsExcludedProducts {
-    @Value(staticConstructor = "of")
-    public static class GroupTemplateIdAndProductId {
-        @NonNull
-        GroupTemplateId groupTemplateId;
+public class FlatrateConditionsExcludedProducts
+{
+	@Value(staticConstructor = "of")
+	public static class GroupTemplateIdAndProductId
+	{
+		@NonNull
+		GroupTemplateId groupTemplateId;
 
-        @NonNull
-        ProductId productId;
-    }
+		@NonNull
+		ProductId productId;
+	}
 
-    private final ImmutableSet<GroupTemplateIdAndProductId> exclusions;
+	private final ImmutableSet<GroupTemplateIdAndProductId> exclusions;
 
-    public FlatrateConditionsExcludedProducts(@NonNull final Collection<GroupTemplateIdAndProductId> exclusions) {
-        this.exclusions = ImmutableSet.copyOf(exclusions);
-    }
+	public FlatrateConditionsExcludedProducts(@NonNull final Collection<GroupTemplateIdAndProductId> exclusions)
+	{
+		this.exclusions = ImmutableSet.copyOf(exclusions);
+	}
 
-    public boolean isExcluded(@NonNull final GroupTemplateId groupTemplateId, @NonNull final ProductId productId) {
-        return exclusions.contains(GroupTemplateIdAndProductId.of(groupTemplateId, productId));
-    }
+	public boolean isExcluded(@NonNull final GroupTemplateId groupTemplateId, @NonNull final ProductId productId)
+	{
+		return exclusions.contains(GroupTemplateIdAndProductId.of(groupTemplateId, productId));
+	}
 }
