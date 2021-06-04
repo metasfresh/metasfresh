@@ -547,3 +547,83 @@ UPDATE AD_Menu SET   Name = 'Invoice auto allocation', Description = NULL, WEBUI
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET AD_Val_Rule_ID=124,Updated=TO_TIMESTAMP('2021-06-04 15:11:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574197
 ;
+
+-- 2021-06-04T13:59:05.389Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Für die hier aufgeführten Rechnungbelegarten wird bei einer automatischen Zahlungszuordnung ausschließlich dieses Bankkonto verwendet.', Help='Für die hier aufgeführten Rechnungbelegarten wird bei einer automatischen Zahlungszuordnung ausschließlich dieses Bankkonto verwendet.',Updated=TO_TIMESTAMP('2021-06-04 16:59:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579286 AND AD_Language='de_CH'
+;
+
+-- 2021-06-04T13:59:05.393Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579286,'de_CH')
+;
+
+-- 2021-06-04T13:59:11.812Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Für die hier aufgeführten Rechnungbelegarten wird bei einer automatischen Zahlungszuordnung ausschließlich dieses Bankkonto verwendet.', Help='Für die hier aufgeführten Rechnungbelegarten wird bei einer automatischen Zahlungszuordnung ausschließlich dieses Bankkonto verwendet.',Updated=TO_TIMESTAMP('2021-06-04 16:59:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579286 AND AD_Language='de_DE'
+;
+
+-- 2021-06-04T13:59:11.813Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579286,'de_DE')
+;
+
+-- 2021-06-04T13:59:17.310Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Für die hier aufgeführten Rechnungbelegarten wird bei einer automatischen Zahlungszuordnung ausschließlich dieses Bankkonto verwendet.', Help='Für die hier aufgeführten Rechnungbelegarten wird bei einer automatischen Zahlungszuordnung ausschließlich dieses Bankkonto verwendet.',Updated=TO_TIMESTAMP('2021-06-04 16:59:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579286 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-04T13:59:17.311Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579286,'nl_NL')
+;
+
+-- 2021-06-04T13:59:36.228Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.', Help='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.',Updated=TO_TIMESTAMP('2021-06-04 16:59:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579286 AND AD_Language='en_US'
+;
+
+-- 2021-06-04T13:59:36.229Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579286,'en_US')
+;
+
+-- 2021-06-04T13:59:36.235Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579286,'en_US')
+;
+
+-- 2021-06-04T13:59:36.236Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='C_BP_BankAccount_InvoiceAutoAllocateRule_ID', Name='Invoice auto allocation', Description='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.', Help='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.' WHERE AD_Element_ID=579286
+;
+
+-- 2021-06-04T13:59:36.237Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_BP_BankAccount_InvoiceAutoAllocateRule_ID', Name='Invoice auto allocation', Description='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.', Help='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.', AD_Element_ID=579286 WHERE UPPER(ColumnName)='C_BP_BANKACCOUNT_INVOICEAUTOALLOCATERULE_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-06-04T13:59:36.238Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_BP_BankAccount_InvoiceAutoAllocateRule_ID', Name='Invoice auto allocation', Description='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.', Help='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.' WHERE AD_Element_ID=579286 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-04T13:59:36.239Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Invoice auto allocation', Description='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.', Help='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579286) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579286)
+;
+
+-- 2021-06-04T13:59:36.259Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Invoice auto allocation', Description='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.', Help='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.', CommitWarning = NULL WHERE AD_Element_ID = 579286
+;
+
+-- 2021-06-04T13:59:36.260Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Invoice auto allocation', Description='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.', Help='Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.' WHERE AD_Element_ID = 579286
+;
+
+-- 2021-06-04T13:59:36.261Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Invoice auto allocation', Description = 'Invoice Document Types defined here are restricted to this bank account when considering payment auto allocation.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579286
+;
