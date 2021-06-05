@@ -38,7 +38,6 @@ import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
@@ -46,7 +45,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Contact_QuickInput;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -161,7 +159,6 @@ public class BPartnerQuickInputService
 
 		trxManager.assertThreadInheritedTrxExists();
 
-
 		//
 		// BPartner
 		final BPartnerId bpartnerId;
@@ -242,6 +239,44 @@ public class BPartnerQuickInputService
 
 		return BPartnerId.ofRepoId(template.getC_BPartner_ID());
 	}
+
+	// private BPartnerComposite toBPartnerComposite(final I_C_BPartner_QuickInput template)
+	// {
+	// 	final BPartner bpartner = BPartner.builder()
+	// 			.value(null) // to be generated
+	// 			.name(template.getName())
+	// 			.name2(template.getName2())
+	// 			.company(template.isCompany())
+	// 			.companyName(template.getCompanyname())
+	// 			.groupId(BPGroupId.ofRepoId(template.getC_BP_Group_ID()))
+	// 			.language(Language.asLanguage(template.getAD_Language()))
+	// 			// Customer:
+	// 			.customer(template.isCustomer())
+	// 			.customerPricingSystemId(PricingSystemId.ofRepoIdOrNull(template.getM_PricingSystem_ID()))
+	// 			.customerPaymentTermId(PaymentTermId.ofRepoIdOrNull(template.getC_PaymentTerm_ID()))
+	// 			// Vendor:
+	// 			.vendor(true)
+	// 			.vendorPricingSystemId(PricingSystemId.ofRepoIdOrNull(template.getPO_PricingSystem_ID()))
+	// 			.vendorPaymentTermId(PaymentTermId.ofRepoIdOrNull(template.getPO_PaymentTerm_ID()))
+	// 			//
+	// 			.build();
+	//
+	// 	final BPartnerLocation bpLocation = BPartnerLocation.builder()
+	// 			.locationType(BPartnerLocationType.builder()
+	// 					.billTo(true)
+	// 					.billToDefault(true)
+	// 					.shipTo(true)
+	// 					.shipToDefault(true)
+	// 					.build())
+	// 			.existingLocationId(LocationId.ofRepoId(template.getC_Location_ID()))
+	// 			.build();
+	//
+	// 	return BPartnerComposite.builder()
+	// 			.bpartner(bpartner)
+	// 			.location(bpLocation)
+	// 			// TODO: contact
+	// 			.build();
+	// }
 
 	private String extractName(final I_C_BPartner_QuickInput template)
 	{
