@@ -1,14 +1,13 @@
 package de.metas.location;
 
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Postal;
+
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
-
-import lombok.NonNull;
-import org.compiere.model.I_C_Location;
-
-import de.metas.util.ISingletonService;
-import org.compiere.model.I_C_Postal;
 
 /*
  * #%L
@@ -37,6 +36,8 @@ public interface ILocationDAO extends ISingletonService
 	I_C_Location getById(LocationId id);
 
 	I_C_Postal getPostalById(@NonNull PostalId postalId);
+
+	List<I_C_Postal> getPostalByIds(@NonNull Set<PostalId> postalIds);
 
 	List<I_C_Location> getByIds(Set<LocationId> ids);
 

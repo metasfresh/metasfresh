@@ -312,8 +312,7 @@ public final class BPartnerComposite
 
 	public Optional<BPartnerLocation> extractLocationByHandle(@NonNull final String handle)
 	{
-		final Predicate<BPartnerLocation> predicate = l -> l.getHandles().contains(handle);
-		return extractLocation(predicate);
+		return extractLocation(bpLocation -> bpLocation.containsHandle(handle));
 	}
 
 	public Optional<BPartnerLocation> extractLocation(@NonNull final Predicate<BPartnerLocation> filter)
