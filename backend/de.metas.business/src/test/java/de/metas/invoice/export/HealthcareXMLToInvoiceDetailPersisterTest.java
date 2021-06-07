@@ -35,7 +35,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.Invoi
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Invoice_Detail;2
+import org.compiere.model.I_C_Invoice_Detail;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
