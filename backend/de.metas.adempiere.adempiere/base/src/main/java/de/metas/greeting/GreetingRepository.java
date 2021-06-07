@@ -10,6 +10,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Greeting;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.business
@@ -74,5 +77,24 @@ public class GreetingRepository
 				.greeting(trlsMap.getColumnTrl(I_C_Greeting.COLUMNNAME_Greeting, record.getGreeting()))
 				.standardType(GreetingStandardType.ofNullableCode(record.getGreetingStandardType()))
 				.build();
+	}
+
+	public Greeting createGreeting(@NonNull final CreateGreetingRequest request)
+	{
+		final I_C_Greeting record = InterfaceWrapperHelper.newInstance(I_C_Greeting.class);
+		record.setName(request.getName());
+		record.setGreeting(request.getGreeting());
+		record.setGreetingStandardType(GreetingStandardType.toCode(request.getStandardType()));
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		InterfaceWrapperHelper.saveRecord(record);
+
+		return fromRecord(record);
+	}
+
+	public Optional<Greeting> getComposite(
+			@Nullable final GreetingId greetingId1,
+			@Nullable final GreetingId greetingId2)
+	{
+		return getGreetingsMap().getComposite(greetingId1, greetingId2);
 	}
 }

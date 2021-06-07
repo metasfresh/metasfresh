@@ -22,6 +22,8 @@
 
 package de.metas.greeting;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.EqualsAndHashCode;
@@ -38,10 +40,16 @@ import java.util.Optional;
 class GreetingsMap
 {
 	private final ImmutableMap<GreetingId, Greeting> greetingsById;
+	private final ImmutableListMultimap<GreetingStandardType, Greeting> greetingsByStandardType;
 
 	public GreetingsMap(@NonNull final List<Greeting> greetings)
 	{
 		greetingsById = Maps.uniqueIndex(greetings, Greeting::getId);
+		greetingsByStandardType = greetings.stream()
+				.filter(greeting -> greeting.getStandardType() != null)
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						Greeting::getStandardType,
+						greeting -> greeting));
 	}
 
 	public Greeting getById(@NonNull final GreetingId id)
@@ -55,32 +63,44 @@ class GreetingsMap
 	}
 
 	public Optional<Greeting> getComposite(
-			@Nullable GreetingId greetingId1,
-			@Nullable GreetingId greetingId2)
+			@Nullable final GreetingId greetingId1,
+			@Nullable final GreetingId greetingId2)
 	{
 		if (greetingId1 == null)
 		{
-			return Optional.of(getById(greetingId2));
+			return greetingId2 != null ? Optional.of(getById(greetingId2)) : Optional.empty();
 		}
 		else if (greetingId2 == null)
 		{
-			return Optional.of(getById(greetingId1))
+			return Optional.of(getById(greetingId1));
 		}
 		else
 		{
 			final Greeting greeting1 = getById(greetingId1);
 			final GreetingStandardType greetingStandardType1 = greeting1.getStandardType();
+			if (greetingStandardType1 == null)
+			{
+				return Optional.empty();
+			}
 
 			final Greeting greeting2 = getById(greetingId2);
 			final GreetingStandardType greetingStandardType2 = greeting2.getStandardType();
+			if (greetingStandardType2 == null)
+			{
+				return Optional.empty();
+			}
 
+			final GreetingStandardType composedStandardType = greetingStandardType1.composeWith(greetingStandardType2);
+
+			final ImmutableList<Greeting> composedGreetings = greetingsByStandardType.get(composedStandardType);
+			if (composedGreetings.isEmpty())
+			{
+				return Optional.empty();
+			}
+			else
+			{
+				return Optional.of(composedGreetings.get(0));
+			}
 		}
-	}
-
-	private Optional<Greeting> getComposite(
-			@Nullable final GreetingStandardType greetingStandardType1,
-			@Nullable final GreetingStandardType greetingStandardType2)
-	{
-		// TODO implement
 	}
 }

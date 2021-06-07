@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_User
  *  @author metasfresh (generated) 
@@ -145,8 +144,7 @@ public interface I_AD_User
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
-	 * Set Betreuer.
-	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 * Set Responsible.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -155,8 +153,7 @@ public interface I_AD_User
 	void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
 
 	/**
-	 * Get Betreuer.
-	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 * Get Responsible.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -299,7 +296,7 @@ public interface I_AD_User
 
 	/**
 	 * Set Greeting (ID).
-	 * Anrede zum Druck auf Korrespondenz
+	 * Greeting to print on correspondence
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -309,7 +306,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Greeting (ID).
-	 * Anrede zum Druck auf Korrespondenz
+	 * Greeting to print on correspondence
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -317,11 +314,6 @@ public interface I_AD_User
 	 */
 	int getC_Greeting_ID();
 
-	@Nullable org.compiere.model.I_C_Greeting getC_Greeting();
-
-	void setC_Greeting(@Nullable org.compiere.model.I_C_Greeting C_Greeting);
-
-	ModelColumn<I_AD_User, org.compiere.model.I_C_Greeting> COLUMN_C_Greeting_ID = new ModelColumn<>(I_AD_User.class, "C_Greeting_ID", org.compiere.model.I_C_Greeting.class);
 	String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
 
 	/**
@@ -917,6 +909,31 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsBillToContact_Default = new ModelColumn<>(I_AD_User.class, "IsBillToContact_Default", null);
 	String COLUMNNAME_IsBillToContact_Default = "IsBillToContact_Default";
+
+	/**
+	 * Set Customer.
+	 * Indicates if this Business Partner is a Customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsCustomer (boolean IsCustomer);
+
+	/**
+	 * Get Customer.
+	 * Indicates if this Business Partner is a Customer
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isCustomer();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsCustomer = new ModelColumn<>(I_AD_User.class, "IsCustomer", null);
+	String COLUMNNAME_IsCustomer = "IsCustomer";
 
 	/**
 	 * Set Default Contact.
@@ -1670,6 +1687,31 @@ public interface I_AD_User
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
+	 * Set URL.
+	 * Full URL address - e.g. https://www.metasfresh.com
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setURL (@Nullable java.lang.String URL);
+
+	/**
+	 * Get URL.
+	 * Full URL address - e.g. https://www.metasfresh.com
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getURL();
+
+	ModelColumn<I_AD_User, Object> COLUMN_URL = new ModelColumn<>(I_AD_User.class, "URL", null);
+	String COLUMNNAME_URL = "URL";
+
+	/**
 	 * Set User PIN.
 	 *
 	 * <br>Type: String
@@ -1712,9 +1754,4 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Value = new ModelColumn<>(I_AD_User.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
-
-	// TODO: introduce column
-	String COLUMNNAME_IsMembershipContact = "IsMembershipContact";
-	default boolean isMembershipContact() { return false; }
-	default void setIsMembershipContact(final boolean flag) {}
 }

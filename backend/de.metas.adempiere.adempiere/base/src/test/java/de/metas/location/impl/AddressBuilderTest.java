@@ -1,6 +1,16 @@
 package de.metas.location.impl;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.greeting.CreateGreetingRequest;
+import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingId;
+import de.metas.greeting.GreetingRepository;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.organization.OrgId;
+import de.metas.user.UserRepository;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -10,30 +20,23 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
-import org.compiere.model.I_C_Greeting;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.greeting.GreetingRepository;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.organization.OrgId;
-import de.metas.user.UserRepository;
-import lombok.Builder;
 
 import javax.annotation.Nullable;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AddressBuilderTest
 {
 	OrgId orgId;
 	private IBPartnerBL bpartnerBL;
+	private GreetingRepository greetingRepository;
 
 	@BeforeAll
 	public static void beforeAll()
@@ -45,8 +48,9 @@ public class AddressBuilderTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
-		
-		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+
+		this.greetingRepository = new GreetingRepository();
+		SpringContextHolder.registerJUnitBean(greetingRepository);
 
 		orgId = prepareOrgId();
 
@@ -719,7 +723,6 @@ public class AddressBuilderTest
 				"LOCAL:  \nFrau\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
 				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
-	
 
 	// prepraring methods
 	private I_C_Country prepareCountry(final String countryName, final String displaySequence)
@@ -808,15 +811,16 @@ public class AddressBuilderTest
 		return bpartner;
 	}
 
-	private GreetingId prepareGreeting(final String name)
+	private GreetingId prepareGreeting(@NonNull final String name)
 	{
-		final I_C_Greeting greeting = InterfaceWrapperHelper.newInstance(I_C_Greeting.class);
-		greeting.setName(name);
-		greeting.setGreeting(name);
-		greeting.setAD_Org_ID(orgId.getRepoId());
-		InterfaceWrapperHelper.save(greeting);
+		final Greeting greeting = greetingRepository.createGreeting(
+				CreateGreetingRequest.builder()
+						.name(name)
+						.greeting(name)
+						.orgId(orgId)
+						.build());
 
-		return GreetingId.ofRepoId(greeting.getC_Greeting_ID());
+		return greeting.getId();
 	}
 
 	@SuppressWarnings("SameParameterValue")

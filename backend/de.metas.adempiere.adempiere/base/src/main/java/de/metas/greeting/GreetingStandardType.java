@@ -27,6 +27,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_Greeting;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,21 +36,49 @@ import java.util.concurrent.ConcurrentHashMap;
 @EqualsAndHashCode
 public class GreetingStandardType
 {
-	@Nullable
-	@JsonCreator
-	public static GreetingStandardType ofNullableCode(@Nullable final String code)
-	{
-		final String codeNorm = StringUtils.trimBlankToNull(code);
-		return codeNorm != null
-				? cache.computeIfAbsent(codeNorm, GreetingStandardType::new)
-				: null;
-	}
+	public static final GreetingStandardType MR = new GreetingStandardType(X_C_Greeting.GREETINGSTANDARDTYPE_MR);
+	public static final GreetingStandardType MRS = new GreetingStandardType(X_C_Greeting.GREETINGSTANDARDTYPE_MRS);
+	public static final GreetingStandardType MR_AND_MRS = new GreetingStandardType(X_C_Greeting.GREETINGSTANDARDTYPE_MRPlusMRS);
+	public static final GreetingStandardType MRS_AND_MR = new GreetingStandardType(X_C_Greeting.GREETINGSTANDARDTYPE_MRSPlusMR);
 
 	private static final ConcurrentHashMap<String, GreetingStandardType> cache = new ConcurrentHashMap<>();
 
+	static
+	{
+		cache.put(MR.getCode(), MR);
+		cache.put(MRS.getCode(), MRS);
+		cache.put(MR_AND_MRS.getCode(), MR_AND_MRS);
+		cache.put(MRS_AND_MR.getCode(), MRS_AND_MR);
+	}
+
 	private final String code;
 
-	private GreetingStandardType(@NonNull final String code) {this.code = code;}
+	private GreetingStandardType(@NonNull final String code)
+	{
+		this.code = StringUtils.trimBlankToNull(code);
+		if (this.code == null)
+		{
+			throw new AdempiereException("Invalid code: " + code);
+		}
+	}
+
+	@Nullable
+	public static GreetingStandardType ofNullableCode(@Nullable final String code)
+	{
+		final String codeNorm = StringUtils.trimBlankToNull(code);
+		return codeNorm != null ? ofCode(codeNorm) : null;
+	}
+
+	@JsonCreator
+	public static GreetingStandardType ofCode(@NonNull final String code)
+	{
+		final String codeNorm = StringUtils.trimBlankToNull(code);
+		if (codeNorm == null)
+		{
+			throw new AdempiereException("Invalid code: `" + code + "`");
+		}
+		return cache.computeIfAbsent(codeNorm, GreetingStandardType::new);
+	}
 
 	@Override
 	@Deprecated
@@ -61,5 +91,16 @@ public class GreetingStandardType
 	public String getCode()
 	{
 		return code;
+	}
+
+	@Nullable
+	public static String toCode(@Nullable final GreetingStandardType type)
+	{
+		return type != null ? type.getCode() : null;
+	}
+
+	public GreetingStandardType composeWith(@NonNull final GreetingStandardType other)
+	{
+		return ofCode(code + "+" + other.code);
 	}
 }

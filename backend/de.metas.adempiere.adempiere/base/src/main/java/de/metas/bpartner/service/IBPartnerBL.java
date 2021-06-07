@@ -60,7 +60,7 @@ public interface IBPartnerBL extends ISingletonService
 	/**
 	 * make full address
 	 */
-	String mkFullAddress(I_C_BPartner bPartner, I_C_BPartner_Location location, I_AD_User user, String trxName);
+	String mkFullAddress(I_C_BPartner bPartner, I_C_BPartner_Location location, I_AD_User user, @Nullable String trxName);
 
 	/**
 	 * Retrieve user/contact assigned to default/first ship to address. If no user/contact found, the first default user contact will be returned.

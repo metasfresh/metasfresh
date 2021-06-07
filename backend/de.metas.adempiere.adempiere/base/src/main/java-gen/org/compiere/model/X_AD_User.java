@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 259687044L;
+	private static final long serialVersionUID = 1267622163L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -249,18 +249,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Greeting getC_Greeting()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class);
-	}
-
-	@Override
-	public void setC_Greeting(final org.compiere.model.I_C_Greeting C_Greeting)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class, C_Greeting);
 	}
 
 	@Override
@@ -639,6 +627,17 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isBillToContact_Default() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBillToContact_Default);
+	}
+
+	@Override
+	public void setIsCustomer (final boolean IsCustomer)
+	{
+		throw new IllegalArgumentException ("IsCustomer is virtual column");	}
+
+	@Override
+	public boolean isCustomer() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCustomer);
 	}
 
 	@Override
@@ -1061,6 +1060,17 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getUnlockAccount() 
 	{
 		return get_ValueAsString(COLUMNNAME_UnlockAccount);
+	}
+
+	@Override
+	public void setURL (final @Nullable java.lang.String URL)
+	{
+		throw new IllegalArgumentException ("URL is virtual column");	}
+
+	@Override
+	public java.lang.String getURL() 
+	{
+		return get_ValueAsString(COLUMNNAME_URL);
 	}
 
 	@Override
