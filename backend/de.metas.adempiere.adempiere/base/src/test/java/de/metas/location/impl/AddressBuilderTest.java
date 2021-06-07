@@ -1,5 +1,6 @@
 package de.metas.location.impl;
 
+import de.metas.greeting.GreetingId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -26,6 +27,8 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.organization.OrgId;
 import de.metas.user.UserRepository;
 import lombok.Builder;
+
+import javax.annotation.Nullable;
 
 public class AddressBuilderTest
 {
@@ -474,7 +477,7 @@ public class AddressBuilderTest
 				.isCompany(false)
 				.AD_Language("de_DE")
 				.build();
-		final I_C_Greeting greeting = prepareGreeting("Herr");
+		final GreetingId greeting = prepareGreeting("Herr");
 		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
@@ -494,7 +497,7 @@ public class AddressBuilderTest
 				.isCompany(false)
 				.AD_Language("de_DE")
 				.build();
-		final I_C_Greeting greeting = prepareGreeting("Herr");
+		final GreetingId greeting = prepareGreeting("Herr");
 		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "", "", greeting);
 
 		assertEquals(
@@ -514,7 +517,7 @@ public class AddressBuilderTest
 				.isCompany(false)
 				.AD_Language("de_DE")
 				.build();
-		final I_C_Greeting greeting = prepareGreeting("Herr");
+		final GreetingId greeting = prepareGreeting("Herr");
 		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
@@ -538,7 +541,7 @@ public class AddressBuilderTest
 				.isCompany(false)
 				.AD_Language("de_DE")
 				.build();
-		final I_C_Greeting greeting = prepareGreeting("");
+		final GreetingId greeting = prepareGreeting("");
 		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
@@ -563,7 +566,7 @@ public class AddressBuilderTest
 				.isCompany(false)
 				.AD_Language("de_DE")
 				.build();
-		final I_C_Greeting greeting = prepareGreeting("Frau");
+		final GreetingId greeting = prepareGreeting("Frau");
 		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
@@ -588,7 +591,7 @@ public class AddressBuilderTest
 				.isCompany(false)
 				.AD_Language("de_DE")
 				.build();
-		final I_C_Greeting greeting = prepareGreeting("Frau");
+		final GreetingId greeting = prepareGreeting("Frau");
 		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
@@ -613,7 +616,7 @@ public class AddressBuilderTest
 				.isCompany(true)
 				.AD_Language("de_DE")
 				.build();
-		final I_C_Greeting greeting = prepareGreeting("Frau");
+		final GreetingId greeting = prepareGreeting("Frau");
 		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
@@ -637,7 +640,7 @@ public class AddressBuilderTest
 				.name2("")
 				.isCompany(true)
 				.build();
-		final I_C_Greeting greeting = prepareGreeting("Frau");
+		final GreetingId greeting = prepareGreeting("Frau");
 		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
@@ -661,7 +664,7 @@ public class AddressBuilderTest
 				.name2("Name2")
 				.isCompany(false)
 				.build();
-		final I_C_Greeting greeting = prepareGreeting("Frau");
+		final GreetingId greeting = prepareGreeting("Frau");
 		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
@@ -685,7 +688,7 @@ public class AddressBuilderTest
 				.name2("Name2")
 				.isCompany(false)
 				.build();
-		final I_C_Greeting greeting = prepareGreeting("Frau");
+		final GreetingId greeting = prepareGreeting("Frau");
 		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
@@ -709,7 +712,7 @@ public class AddressBuilderTest
 				.name2("Name2")
 				.isCompany(false)
 				.build();
-		final I_C_Greeting greeting = prepareGreeting("Frau");
+		final GreetingId greeting = prepareGreeting("Frau");
 		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 		assertEquals(
@@ -730,6 +733,7 @@ public class AddressBuilderTest
 		return country;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void prepareCountrySequence(final I_C_Country country, final String displaySequence, final String language)
 	{
 		final I_C_Country_Sequence countrySeq = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_Country_Sequence.class);
@@ -752,13 +756,14 @@ public class AddressBuilderTest
 		return OrgId.ofRepoId(org.getAD_Org_ID());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_C_Location prepareLocation(
-			final String a1,
-			final String a2,
-			final String a3,
-			final String a4,
+			@Nullable final String a1,
+			@Nullable final String a2,
+			@Nullable final String a3,
+			@Nullable final String a4,
 			final String city,
-			final String regionName,
+			@Nullable final String regionName,
 			final String postal,
 			final String POBox,
 			final I_C_Country country)
@@ -803,25 +808,26 @@ public class AddressBuilderTest
 		return bpartner;
 	}
 
-	private I_C_Greeting prepareGreeting(final String name)
+	private GreetingId prepareGreeting(final String name)
 	{
-		final I_C_Greeting greeting = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Greeting.class, ITrx.TRXNAME_None);
+		final I_C_Greeting greeting = InterfaceWrapperHelper.newInstance(I_C_Greeting.class);
 		greeting.setName(name);
 		greeting.setGreeting(name);
 		greeting.setAD_Org_ID(orgId.getRepoId());
 		InterfaceWrapperHelper.save(greeting);
 
-		return greeting;
+		return GreetingId.ofRepoId(greeting.getC_Greeting_ID());
 	}
 
-	private org.compiere.model.I_AD_User prepareUser(final String firstName, final String lastName, final String title, final I_C_Greeting greeting)
+	@SuppressWarnings("SameParameterValue")
+	private org.compiere.model.I_AD_User prepareUser(final String firstName, final String lastName, final String title, final GreetingId greetingId)
 	{
 		final org.compiere.model.I_AD_User user = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_User.class, ITrx.TRXNAME_None);
 		user.setFirstname(firstName);
 		user.setLastname(lastName);
 		user.setTitle(title);
 		user.setAD_Org_ID(orgId.getRepoId());
-		user.setC_Greeting_ID(greeting.getC_Greeting_ID());
+		user.setC_Greeting_ID(GreetingId.toRepoId(greetingId));
 		InterfaceWrapperHelper.save(user);
 
 		return user;
