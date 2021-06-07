@@ -40,7 +40,7 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	{
 		if (Services.get(IShipmentScheduleBL.class).allMissingSchedsWillBeCreatedLater())
 		{
-			logger.debug("Not scheduling WP because", CreateMissingShipmentSchedulesWorkpackageProcessor.class);
+			logger.debug("Not scheduling WP because IShipmentScheduleBL.allMissingSchedsWillBeCreatedLater() returned true", CreateMissingShipmentSchedulesWorkpackageProcessor.class);
 			return;
 		}
 

@@ -960,7 +960,6 @@ public class DB
 		{
 			// Always close cursor
 			DB.close(cs);
-			cs = null;
 		}
 
 		return no;
@@ -1828,9 +1827,8 @@ public class DB
 	}    // isRemoteProcess
 
 	/**
-	 * Converts given parameter object to SQL code.
+	 * Converts given parameter object to SQL code. Also supports {@link RepoIdAware}.
 	 *
-	 * @param param
 	 * @return parameter as SQL code
 	 */
 	public String TO_SQL(@Nullable final Object param)
@@ -2789,7 +2787,7 @@ public class DB
 		ResultSet rs = null;
 		try
 		{
-			pstmt = prepareStatement(sql.toString(), ITrx.TRXNAME_None);
+			pstmt = prepareStatement(sql.toString(), trxName);
 			setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 

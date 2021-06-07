@@ -346,6 +346,27 @@ public interface I_API_Request_Audit
 	String COLUMNNAME_RemoteHost = "RemoteHost";
 
 	/**
+	 * Set URI.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRequestURI (@Nullable java.lang.String RequestURI);
+
+	/**
+	 * Get URI.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRequestURI();
+
+	ModelColumn<I_API_Request_Audit, Object> COLUMN_RequestURI = new ModelColumn<>(I_API_Request_Audit.class, "RequestURI", null);
+	String COLUMNNAME_RequestURI = "RequestURI";
+
+	/**
 	 * Set Status.
 	 *
 	 * <br>Type: List

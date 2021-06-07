@@ -17,6 +17,7 @@ de.metas.audit.request.ApiRequestAuditRepositoryTest.save=[
       "nanos" : 0
     },
     "httpHeaders" : "httpHeaders",
+    "requestURI" : "request/uri",
     "errorAcknowledged" : false
   }
 ]

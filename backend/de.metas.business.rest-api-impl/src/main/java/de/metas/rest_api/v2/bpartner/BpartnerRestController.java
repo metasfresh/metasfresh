@@ -72,7 +72,7 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIE
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.NEXT_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.SINCE_DOC;
 
-@RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bpartner", "/api/v2/bpartner" })
+@RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bpartner" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 // the spelling "Bpartner" is to avoid swagger from spelling it "b-partner-rest.."
