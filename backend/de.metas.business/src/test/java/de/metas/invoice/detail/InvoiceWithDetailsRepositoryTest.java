@@ -22,11 +22,9 @@
 
 package de.metas.invoice.detail;
 
-import de.metas.business.BusinessTestHelper;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.organization.OrgId;
-import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Invoice_Detail;
@@ -34,7 +32,6 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -44,7 +41,7 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class InvoiceWithDetailsRepositoryTest
 {
-	private ZoneId timeZone = ZoneId.of("Europe/Berlin");
+	private final ZoneId timeZone = ZoneId.of("Europe/Berlin");
 	private OrgId orgId;
 
 	@BeforeEach
