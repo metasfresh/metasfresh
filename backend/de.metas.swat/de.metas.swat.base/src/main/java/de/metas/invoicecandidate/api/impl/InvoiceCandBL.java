@@ -119,6 +119,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
@@ -157,7 +158,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.MInvoice;
@@ -747,7 +747,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// Services
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
 
-		final I_C_Tax tax = getTaxEffective(ic);
+		final Tax tax = getTaxEffective(ic);
 		final ProductPrice priceActual = getPriceActual(ic);
 		final boolean taxIncluded = isTaxIncluded(ic);
 		final CurrencyPrecision precision = getPrecisionFromCurrency(ic);
@@ -1913,11 +1913,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public I_C_Tax getTaxEffective(final I_C_Invoice_Candidate candidate)
+	public Tax getTaxEffective(final I_C_Invoice_Candidate candidate)
 	{
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
-		final I_C_Tax taxOverride = taxDAO.getTaxByIdOrNull(candidate.getC_Tax_Override_ID());
+		final Tax taxOverride = taxDAO.getTaxByIdOrNull(candidate.getC_Tax_Override_ID());
 
 		if (taxOverride != null)
 		{

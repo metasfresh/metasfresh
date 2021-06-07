@@ -29,11 +29,14 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Value
 public class Tax
 {
+	public static final int C_TAX_ID_NO_TAX_FOUND = 100;
+
 	@NonNull TaxId taxId;
 	@NonNull OrgId orgId;
 	@NonNull Timestamp validFrom;
@@ -48,6 +51,9 @@ public class Tax
 	boolean isTaxExempt;
 	boolean isFiscalRepresentation;
 	boolean isSmallBusiness;
+	boolean isWholeTax;
+	boolean isDocumentLevel;
+	BigDecimal rate;
 
 	@Builder
 	public Tax(final @NonNull TaxId taxId,
@@ -61,7 +67,10 @@ public class Tax
 			final SOPOType sopoType,
 			final boolean isTaxExempt,
 			final boolean isFiscalRepresentation,
-			final boolean isSmallBusiness)
+			final boolean isSmallBusiness,
+			final boolean isWholeTax,
+			final boolean isDocumentLevel,
+			final BigDecimal rate)
 	{
 		this.taxId = taxId;
 		this.orgId = orgId;
@@ -76,5 +85,13 @@ public class Tax
 		this.isTaxExempt = isTaxExempt;
 		this.isFiscalRepresentation = isFiscalRepresentation;
 		this.isSmallBusiness = isSmallBusiness;
+		this.isWholeTax = isWholeTax;
+		this.isDocumentLevel = isDocumentLevel;
+		this.rate = rate;
+	}
+
+	public boolean isTaxNotFound()
+	{
+		return C_TAX_ID_NO_TAX_FOUND == taxId.getRepoId();
 	}
 }

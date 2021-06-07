@@ -22,16 +22,16 @@
 
 package de.metas.tax.api;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
+import java.sql.Timestamp;
 
 @Value
 public class TaxQuery
@@ -42,12 +42,16 @@ public class TaxQuery
 	@Nullable
 	WarehouseId warehouseId;
 
-	@NonNull
-	Instant dateOfInterest;
+	@Nullable
+	Timestamp dateOfInterest;
 
-	@NonNull
+	@Nullable
+	BPartnerId bpartnerId;
+
+	@Nullable
 	BPartnerLocationId bPartnerLocationId;
 
+	@Nullable
 	Boolean isSoTrx;
 
 	@Nullable
@@ -56,16 +60,24 @@ public class TaxQuery
 	@Builder
 	public TaxQuery(@Nullable final OrgId orgId,
 			@Nullable final WarehouseId warehouseId,
-			final @NonNull Instant dateOfInterest,
-			final @NonNull BPartnerLocationId bPartnerLocationId,
-			final Boolean isSoTrx,
+			@Nullable final Timestamp dateOfInterest,
+			@Nullable final BPartnerId bpartnerId,
+			@Nullable final BPartnerLocationId bPartnerLocationId,
+			@Nullable final Boolean isSoTrx,
 			@Nullable final TaxCategoryId taxCategoryId)
 	{
 		this.orgId = orgId;
 		this.warehouseId = warehouseId;
 		this.dateOfInterest = dateOfInterest;
-
 		this.bPartnerLocationId = bPartnerLocationId;
+		if (bpartnerId == null && bPartnerLocationId != null)
+		{
+			this.bpartnerId = this.bPartnerLocationId.getBpartnerId();
+		}
+		else
+		{
+			this.bpartnerId = bpartnerId;
+		}
 		this.isSoTrx = isSoTrx;
 		this.taxCategoryId = taxCategoryId;
 

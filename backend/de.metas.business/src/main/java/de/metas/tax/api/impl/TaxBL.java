@@ -13,9 +13,11 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
+import de.metas.tax.api.TaxUtils;
 import de.metas.tax.api.TypeOfDestCountry;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -63,7 +65,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 	@Override
-	public I_C_Tax getTaxById(final TaxId taxId)
+	public Tax getTaxById(final TaxId taxId)
 	{
 		return taxDAO.getTaxById(taxId);
 	}
@@ -143,7 +145,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		// 07814
 		// If we got here, it means that no tax was found to satisfy the conditions
 		// In this case, the Tax_Not_Found placeholder will be returned
-		return TaxId.ofRepoId(TaxDAO.C_TAX_ID_NO_TAX_FOUND);
+		return TaxId.ofRepoId(Tax.C_TAX_ID_NO_TAX_FOUND);
 	}
 
 	/**
@@ -465,8 +467,13 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 	}
 
-	@Override
 	public BigDecimal calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
+	{
+		return calculateTax(TaxUtils.from(tax), amount, taxIncluded, scale);
+	}
+
+	@Override
+	public BigDecimal calculateTax(final Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
 	{
 		// Null Tax
 		if (tax.getRate().signum() == 0)
@@ -502,13 +509,15 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	}    // calculateTax
 
 	@Override
-	public BigDecimal calculateBaseAmt(
-			@NonNull final I_C_Tax tax,
-			@NonNull final BigDecimal amount,
-			final boolean taxIncluded,
-			final int scale)
+	public BigDecimal calculateBaseAmt(@NonNull final I_C_Tax tax, @NonNull final BigDecimal amount, final boolean taxIncluded, final int scale)
 	{
-		try(final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(tax))
+		return calculateBaseAmt(TaxUtils.from(tax), amount, taxIncluded, scale);
+	}
+
+	@Override
+	public BigDecimal calculateBaseAmt(@NonNull final Tax tax, @NonNull final BigDecimal amount, final boolean taxIncluded, final int scale)
+	{
+		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(tax))
 		{
 			if (tax.isWholeTax())
 			{

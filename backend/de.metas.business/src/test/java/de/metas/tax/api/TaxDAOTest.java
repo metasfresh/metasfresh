@@ -26,8 +26,10 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.ICountryAreaBL;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -36,13 +38,14 @@ import org.compiere.model.I_C_CountryArea;
 import org.compiere.model.I_C_CountryArea_Assign;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -55,96 +58,200 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-public class TaxDAOTest
+class TaxDAOTest
 {
 	private static final int C_TAX_CATEGORY_ID = 42;
-	private static final Instant DATE_OF_INTEREST = new Date().toInstant();
+	@NonNull
+	private static final Timestamp DATE_OF_INTEREST = TimeUtil.asTimestamp(new Date());
 	private static final Timestamp VALID_FROM = TimeUtil.addDays(new Date(), -1);
 	private static final Timestamp VALID_TO = TimeUtil.addDays(new Date(), 1);
+
 	private static final OrgId ORG_ID = OrgId.ofRepoId(10);
 	private static final int ORG_COUNTRY_ID = 1000;
-	private static final String ORG_COUNTRY_CODE = "XX";
-	private static final int EU_COUNTRY_ID = 1001;
-	private static final String EU_COUNTRY_CODE = "YY";
-	private static final int NON_EU_COUNTRY_ID = 2000;
-	private static final String NON_EU_COUNTRY_CODE = "ZZ";
+	private static final String ORG_COUNTRY_CODE = "AA";
+
+	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(100);
+	private static final int WAREHOUSE_COUNTRY_ID = 1001;
+	private static final String WAREHOUSE_COUNTRY_CODE = "BB";
+
+	private static final int EU_COUNTRY_ID = 1010;
+	private static final String EU_COUNTRY_CODE = "CC";
+
+	private static final int NON_EU_COUNTRY_ID = 1011;
+	private static final String NON_EU_COUNTRY_CODE = "DD";
 
 	private ITaxDAO taxDAO;
 	private final Map<TypeOfDestCountry, BPartnerLocationId> typeOfDestCountryBPartnerLocationIdMap = new HashMap<>();
-	private final Map<TypeOfDestCountry, TaxId> typeOfDestCountryTaxIdMap = new HashMap<>();
+	private final Map<TypeOfDestCountry, TaxId> typeOfDestCountryTaxIdByOrgIdMap = new HashMap<>();
+	private final Map<TypeOfDestCountry, TaxId> typeOfDestCountryTaxIdByWarehouseIdMap = new HashMap<>();
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
 		taxDAO = Services.get(ITaxDAO.class);
 		createTestData();
 	}
 
-	@Test
-	public void noOrgIdNoWarehouseId()
+	@Nested
+	@DisplayName("No Org Id & warehouse ID provided")
+	public class NoOrgIdNoWarehouseId
+	{
+		@Test
+		@DisplayName("Domestic")
+		public void domestic()
+		{
+			noOrgIdNoWarehouseIdTestByTypeOfDestCountry(DOMESTIC);
+		}
+
+		@Test
+		@DisplayName("Within EU")
+		public void eu()
+		{
+			noOrgIdNoWarehouseIdTestByTypeOfDestCountry(WITHIN_COUNTRY_AREA);
+		}
+
+		@Test
+		@DisplayName("Outside EU")
+		public void nonEu()
+		{
+			noOrgIdNoWarehouseIdTestByTypeOfDestCountry(OUTSIDE_COUNTRY_AREA);
+		}
+	}
+
+	private void noOrgIdNoWarehouseIdTestByTypeOfDestCountry(final TypeOfDestCountry type)
 	{
 		assertThatExceptionOfType(AdempiereException.class).isThrownBy(() ->
 				taxDAO.getBy(TaxQuery.builder()
-						.bPartnerLocationId(typeOfDestCountryBPartnerLocationIdMap.get(DOMESTIC))
+						.bPartnerLocationId(typeOfDestCountryBPartnerLocationIdMap.get(type))
 						.dateOfInterest(DATE_OF_INTEREST)
 						.build())
 		);
 	}
 
-	@Test
-	public void orgIdNoWarehouseIdDomestic()
+	@Nested
+	@DisplayName("Org Id provided, Warehouse Id NOT provided")
+	public class OrgIdNoWarehouseId
 	{
-		final Collection<Tax> taxes = taxDAO.getBy(TaxQuery.builder()
-				.orgId(ORG_ID)
-				.bPartnerLocationId(typeOfDestCountryBPartnerLocationIdMap.get(DOMESTIC))
-				.dateOfInterest(DATE_OF_INTEREST)
-				.build());
-		assertThat(taxes.size()).isEqualTo(1);
-		final Tax tax = taxes.stream().findFirst().get();
-		assertThat(tax.getTaxId()).isEqualTo(typeOfDestCountryTaxIdMap.get(DOMESTIC));
+		@Test
+		@DisplayName("Domestic")
+		public void domestic()
+		{
+			orgIdNoWarehouseIdTestByTypeOfDestCountry(DOMESTIC);
+		}
+
+		@Test
+		@DisplayName("Within EU")
+		public void eu()
+		{
+			orgIdNoWarehouseIdTestByTypeOfDestCountry(WITHIN_COUNTRY_AREA);
+		}
+
+		@Test
+		@DisplayName("Outside EU")
+		public void nonEu()
+		{
+			orgIdNoWarehouseIdTestByTypeOfDestCountry(OUTSIDE_COUNTRY_AREA);
+		}
 	}
 
-	@Test
-	public void orgIdNoWarehouseIdEU()
+	private void orgIdNoWarehouseIdTestByTypeOfDestCountry(final TypeOfDestCountry type)
 	{
-		final Collection<Tax> taxes = taxDAO.getBy(TaxQuery.builder()
+		final Tax tax = taxDAO.getBy(TaxQuery.builder()
 				.orgId(ORG_ID)
-				.bPartnerLocationId(typeOfDestCountryBPartnerLocationIdMap.get(WITHIN_COUNTRY_AREA))
+				.bPartnerLocationId(typeOfDestCountryBPartnerLocationIdMap.get(type))
 				.dateOfInterest(DATE_OF_INTEREST)
 				.build());
-		assertThat(taxes.size()).isEqualTo(1);
-		final Tax tax = taxes.stream().findFirst().get();
-		assertThat(tax.getTaxId()).isEqualTo(typeOfDestCountryTaxIdMap.get(WITHIN_COUNTRY_AREA));
+		assertThat(tax).isNotNull();
+		assertThat(tax.getTaxId()).isEqualTo(typeOfDestCountryTaxIdByOrgIdMap.get(type));
 	}
 
-	@Test
-	public void orgIdNoWarehouseIdNonEU()
+	@Nested
+	@DisplayName("Org Id provided, Warehouse Id provided")
+	public class OrgIdWarehouseId
 	{
-		final Collection<Tax> taxes = taxDAO.getBy(TaxQuery.builder()
+		@Test
+		@DisplayName("Domestic")
+		public void domestic()
+		{
+			orgIdWarehouseIdTestByTypeOfDestCountry(DOMESTIC);
+		}
+
+		@Test
+		@DisplayName("Within EU")
+		public void eu()
+		{
+			orgIdWarehouseIdTestByTypeOfDestCountry(WITHIN_COUNTRY_AREA);
+		}
+
+		@Test
+		@DisplayName("Outside EU")
+		public void nonEu()
+		{
+			orgIdWarehouseIdTestByTypeOfDestCountry(OUTSIDE_COUNTRY_AREA);
+		}
+	}
+
+	private void orgIdWarehouseIdTestByTypeOfDestCountry(final TypeOfDestCountry type)
+	{
+		final Tax tax = taxDAO.getBy(TaxQuery.builder()
 				.orgId(ORG_ID)
-				.bPartnerLocationId(typeOfDestCountryBPartnerLocationIdMap.get(OUTSIDE_COUNTRY_AREA))
+				.warehouseId(WAREHOUSE_ID)
+				.bPartnerLocationId(typeOfDestCountryBPartnerLocationIdMap.get(type))
 				.dateOfInterest(DATE_OF_INTEREST)
 				.build());
-		assertThat(taxes.size()).isEqualTo(1);
-		final Tax tax = taxes.stream().findFirst().get();
-		assertThat(tax.getTaxId()).isEqualTo(typeOfDestCountryTaxIdMap.get(OUTSIDE_COUNTRY_AREA));
+		assertThat(tax).isNotNull();
+		assertThat(tax.getTaxId()).isEqualTo(typeOfDestCountryTaxIdByWarehouseIdMap.get(type));
 	}
 
 	private void createTestData()
 	{
 		createOrgData();
+		createWarehouseData();
 		typeOfDestCountryBPartnerLocationIdMap.put(DOMESTIC, createBPartnerData(ORG_COUNTRY_ID, ORG_COUNTRY_CODE, false));
 		typeOfDestCountryBPartnerLocationIdMap.put(WITHIN_COUNTRY_AREA, createBPartnerData(EU_COUNTRY_ID, EU_COUNTRY_CODE, true));
 		typeOfDestCountryBPartnerLocationIdMap.put(OUTSIDE_COUNTRY_AREA, createBPartnerData(NON_EU_COUNTRY_ID, NON_EU_COUNTRY_CODE, false));
 
-		typeOfDestCountryTaxIdMap.put(DOMESTIC, createTaxData(DOMESTIC, ORG_COUNTRY_ID));
-		typeOfDestCountryTaxIdMap.put(WITHIN_COUNTRY_AREA, createTaxData(WITHIN_COUNTRY_AREA, EU_COUNTRY_ID));
-		typeOfDestCountryTaxIdMap.put(OUTSIDE_COUNTRY_AREA, createTaxData(OUTSIDE_COUNTRY_AREA, NON_EU_COUNTRY_ID));
+		typeOfDestCountryTaxIdByOrgIdMap.put(DOMESTIC, createTaxData(DOMESTIC, ORG_COUNTRY_ID, ORG_COUNTRY_ID));
+		typeOfDestCountryTaxIdByOrgIdMap.put(WITHIN_COUNTRY_AREA, createTaxData(WITHIN_COUNTRY_AREA, ORG_COUNTRY_ID, EU_COUNTRY_ID));
+		typeOfDestCountryTaxIdByOrgIdMap.put(OUTSIDE_COUNTRY_AREA, createTaxData(OUTSIDE_COUNTRY_AREA, ORG_COUNTRY_ID, NON_EU_COUNTRY_ID));
 	}
 
-	private BPartnerLocationId createBPartnerData(final int countryId, final String countryCode, boolean includeInEU)
+	private void createWarehouseData()
+	{
+		final I_C_Location location = createLocation(WAREHOUSE_COUNTRY_ID, WAREHOUSE_COUNTRY_CODE, true);
+
+		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
+		warehouse.setAD_Org_ID(ORG_ID.getRepoId());
+		warehouse.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
+		warehouse.setC_Location_ID(location.getC_Location_ID());
+		save(warehouse);
+
+		typeOfDestCountryTaxIdByWarehouseIdMap.put(DOMESTIC, createTaxData(DOMESTIC, WAREHOUSE_COUNTRY_ID, ORG_COUNTRY_ID));
+		typeOfDestCountryTaxIdByWarehouseIdMap.put(WITHIN_COUNTRY_AREA, createTaxData(WITHIN_COUNTRY_AREA, WAREHOUSE_COUNTRY_ID, EU_COUNTRY_ID));
+		typeOfDestCountryTaxIdByWarehouseIdMap.put(OUTSIDE_COUNTRY_AREA, createTaxData(OUTSIDE_COUNTRY_AREA, WAREHOUSE_COUNTRY_ID, NON_EU_COUNTRY_ID));
+	}
+
+	private BPartnerLocationId createBPartnerData(final int countryId, final String countryCode, final boolean includeInEU)
+	{
+		final I_C_Location location = createLocation(countryId, countryCode, includeInEU);
+
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setAD_Org_ID(ORG_ID.getRepoId());
+		save(bpartner);
+
+		final I_C_BPartner_Location bPartnerLocation = newInstance(I_C_BPartner_Location.class);
+		bPartnerLocation.setAD_Org_ID(ORG_ID.getRepoId());
+		bPartnerLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		bPartnerLocation.setC_Location_ID(location.getC_Location_ID());
+		bPartnerLocation.setIsBillTo(true);
+		save(bPartnerLocation);
+
+		return BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
+	}
+
+	@NonNull
+	private I_C_Location createLocation(final int countryId, final String countryCode, final boolean includeInEU)
 	{
 		final I_C_Country country = newInstance(I_C_Country.class);
 		country.setAD_Org_ID(ORG_ID.getRepoId());
@@ -169,23 +276,11 @@ public class TaxDAOTest
 
 		}
 
-		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
-		bpartner.setAD_Org_ID(ORG_ID.getRepoId());
-		save(bpartner);
-
 		final I_C_Location location = newInstance(I_C_Location.class);
 		location.setAD_Org_ID(ORG_ID.getRepoId());
 		location.setC_Country_ID(countryId);
 		save(location);
-
-		final I_C_BPartner_Location bPartnerLocation = newInstance(I_C_BPartner_Location.class);
-		bPartnerLocation.setAD_Org_ID(ORG_ID.getRepoId());
-		bPartnerLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		bPartnerLocation.setC_Location_ID(location.getC_Location_ID());
-		bPartnerLocation.setIsBillTo(true);
-		save(bPartnerLocation);
-
-		return BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
+		return location;
 	}
 
 	private void createOrgData()
@@ -212,11 +307,11 @@ public class TaxDAOTest
 		save(bPartnerLocation);
 	}
 
-	TaxId createTaxData(final TypeOfDestCountry typeOfDestCountry, final int toCountryId)
+	private TaxId createTaxData(final TypeOfDestCountry typeOfDestCountry, final int countryId, final int toCountryId)
 	{
 		final I_C_Tax tax = newInstance(I_C_Tax.class);
 		tax.setAD_Org_ID(ORG_ID.getRepoId());
-		tax.setC_Country_ID(ORG_COUNTRY_ID);
+		tax.setC_Country_ID(countryId);
 		tax.setTo_Country_ID(toCountryId);
 		tax.setTypeOfDestCountry(typeOfDestCountry.getCode());
 		tax.setRequiresTaxCertificate(false);

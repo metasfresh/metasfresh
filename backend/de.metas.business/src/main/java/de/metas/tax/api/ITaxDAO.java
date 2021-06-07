@@ -13,23 +13,21 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.ExemptTaxNotFoundException;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 
 import java.sql.Timestamp;
-import java.util.Collection;
 import java.util.Optional;
 import java.util.Properties;
 
 public interface ITaxDAO extends ISingletonService
 {
-	int C_TAX_ID_NO_TAX_FOUND = 100;
 
-	I_C_Tax getTaxById(int taxRepoId);
 
-	I_C_Tax getTaxById(TaxId taxRepoId);
+	Tax getTaxById(int taxRepoId);
 
-	I_C_Tax getTaxByIdOrNull(int taxRepoId);
+	Tax getTaxById(TaxId taxRepoId);
+
+	Tax getTaxByIdOrNull(int taxRepoId);
 
 	/**
 	 * @return true if the given bpartner currently has a {@link I_C_VAT_SmallBusiness} record.
@@ -44,14 +42,14 @@ public interface ITaxDAO extends ISingletonService
 	/**
 	 * getDefaultTax Get the default tax id associated with this tax category
 	 */
-	I_C_Tax getDefaultTax(I_C_TaxCategory taxCategory);
+	TaxId getDefaultTaxId(I_C_TaxCategory taxCategory);
 
 	/**
 	 * If the taxBL can't find a tax, it shall return this one instead
 	 *
 	 * @return placeholder tax that is used when no other tax was found
 	 */
-	I_C_Tax retrieveNoTaxFound(Properties ctx);
+	TaxId retrieveNoTaxFoundId(Properties ctx);
 
 	/**
 	 * If the taxBL can't find a tax category, it shall return this one instead
@@ -70,9 +68,9 @@ public interface ITaxDAO extends ISingletonService
 
 	Percent getRateById(@NonNull TaxId taxId);
 
-	Collection<Tax> getBy(final TaxQuery taxQuery);
+	Tax getBy(final TaxQuery taxQuery);
 
-	Collection<Tax> getBy(final TaxQuery taxQuery, final Properties ctx);
+	Tax getBy(final TaxQuery taxQuery, final Properties ctx);
 
 	@Builder
 	@Value

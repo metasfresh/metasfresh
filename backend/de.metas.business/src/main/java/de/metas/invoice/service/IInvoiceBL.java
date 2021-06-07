@@ -1,43 +1,5 @@
 package de.metas.invoice.service;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
-
-import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.X_C_DocType;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
@@ -55,9 +17,24 @@ import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.X_C_DocType;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 public interface IInvoiceBL extends ISingletonService
 {
@@ -363,7 +340,7 @@ public interface IInvoiceBL extends ISingletonService
 			IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> copyhandler);
 
 	/**
-	 * Calls {@link #isTaxIncluded(I_C_Invoice, I_C_Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
+	 * Calls {@link #isTaxIncluded(I_C_Invoice, Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
 	 *
 	 * @param invoiceLine
 	 * @return
@@ -377,7 +354,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param tax
 	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, the given invoice's
 	 */
-	boolean isTaxIncluded(I_C_Invoice invoice, I_C_Tax tax);
+	boolean isTaxIncluded(I_C_Invoice invoice, Tax tax);
 
 	/**
 	 * Supposed to be called if an invoice is reversed. Iterate the given invoice's lines, iterate each line's <code>M_MatchInv</code> and create a reversal M_Matchinv that references the respective

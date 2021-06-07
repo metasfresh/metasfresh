@@ -11,7 +11,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.product.ResourceId;
-import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
@@ -344,7 +344,7 @@ public class BusinessTestHelper
 		saveRecord(noTaxCategoryFound);
 
 		final I_C_Tax noTaxFound = newInstanceOutOfTrx(I_C_Tax.class);
-		noTaxFound.setC_Tax_ID(ITaxDAO.C_TAX_ID_NO_TAX_FOUND);
+		noTaxFound.setC_Tax_ID(Tax.C_TAX_ID_NO_TAX_FOUND);
 		noTaxFound.setC_TaxCategory_ID(TaxCategoryId.NOT_FOUND.getRepoId());
 		saveRecord(noTaxFound);
 	}

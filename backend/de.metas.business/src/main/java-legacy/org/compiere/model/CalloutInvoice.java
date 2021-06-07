@@ -16,24 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Properties;
-
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.currency.CurrencyPrecision;
@@ -54,6 +36,23 @@ import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /**
  * Invoice Callouts
@@ -735,7 +734,7 @@ public class CalloutInvoice extends CalloutEngine
 			else
 			{
 				final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-				final I_C_Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
+				final de.metas.tax.api.Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
 
 				if (tax != null)
 				{

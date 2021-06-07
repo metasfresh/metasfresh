@@ -6,7 +6,6 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.Dimension;
@@ -45,6 +44,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.Tax;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -62,14 +62,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
@@ -655,11 +652,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				// set activity, tax and tax category from the invoice candidate (07442)
 				invoiceLine.setC_Activity_ID(ilVO.getC_Activity_ID());
 
-				final I_C_Tax tax = ilVO.getC_Tax();
+				final Tax tax = ilVO.getC_Tax();
 				if (tax != null)  // guard against old ICs which might not have a tax..leave it to the MInvoiceLine BL in that case
 				{
-					invoiceLine.setC_Tax_ID(tax.getC_Tax_ID());
-					invoiceLine.setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+					invoiceLine.setC_Tax_ID(tax.getTaxId().getRepoId());
+					invoiceLine.setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
 				}
 
 				// Set Line Net Amount and Tax Amount

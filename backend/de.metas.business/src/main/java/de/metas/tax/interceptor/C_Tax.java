@@ -39,7 +39,6 @@ import org.springframework.stereotype.Component;
 import static de.metas.tax.api.TypeOfDestCountry.DOMESTIC;
 import static de.metas.tax.api.TypeOfDestCountry.OUTSIDE_COUNTRY_AREA;
 import static de.metas.tax.api.TypeOfDestCountry.WITHIN_COUNTRY_AREA;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Interceptor(I_C_Tax.class)
 @Component
@@ -48,7 +47,7 @@ public class C_Tax
 	private final ICountryAreaBL countryAreaBL = Services.get(ICountryAreaBL.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Tax.COLUMNNAME_To_Country_ID })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Tax.COLUMNNAME_To_Country_ID })
 	public void updateTypeOfDestCountry(@NonNull final I_C_Tax tax)
 	{
 		final CountryId toCountryId = CountryId.ofRepoIdOrNull(tax.getTo_Country_ID());
@@ -58,7 +57,6 @@ public class C_Tax
 			if (orgId.isAny())
 			{
 				tax.setTypeOfDestCountry(WITHIN_COUNTRY_AREA.getCode());
-				save(tax);
 			}
 		}
 		else
@@ -78,22 +76,22 @@ public class C_Tax
 				tax.setTypeOfDestCountry(typeOfDestCountry.getCode());
 
 			}
-			save(tax);
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Tax.COLUMNNAME_TypeOfDestCountry })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Tax.COLUMNNAME_TypeOfDestCountry })
 	public void updateToCountryId(@NonNull final I_C_Tax tax)
 	{
 		final TypeOfDestCountry typeOfDestCountry = TypeOfDestCountry.ofNullableCode(tax.getTypeOfDestCountry());
-		if (DOMESTIC.equals(typeOfDestCountry) && tax.getC_Country_ID() != tax.getTo_Country_ID())
+		final int countryId = tax.getC_Country_ID();
+		final int toCountryIdRepoId = tax.getTo_Country_ID();
+		if ((DOMESTIC.equals(typeOfDestCountry) && countryId != toCountryIdRepoId) || (countryId == toCountryIdRepoId && !DOMESTIC.equals(typeOfDestCountry)))
 		{
 			tax.setTo_Country_ID(0);
-			save(tax);
 		}
 		else
 		{
-			final CountryId toCountryId = CountryId.ofRepoIdOrNull(tax.getTo_Country_ID());
+			final CountryId toCountryId = CountryId.ofRepoIdOrNull(toCountryIdRepoId);
 			if (toCountryId != null)
 			{
 				final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(toCountryId);
@@ -104,7 +102,6 @@ public class C_Tax
 				if ((isEULocation && !WITHIN_COUNTRY_AREA.equals(typeOfDestCountry)) || (!isEULocation && OUTSIDE_COUNTRY_AREA.equals(typeOfDestCountry)))
 				{
 					tax.setTo_Country_ID(0);
-					save(tax);
 				}
 			}
 		}
