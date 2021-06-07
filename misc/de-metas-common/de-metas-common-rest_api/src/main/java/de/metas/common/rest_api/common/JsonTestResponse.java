@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.cucumber
+ * de-metas-common-rest_api
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,24 +20,28 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.common.rest_api.common;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
-@Builder
-public class APIResponse
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(builder = JsonTestResponse.JsonTestResponseBuilder.class)
+public class JsonTestResponse
 {
-	@Nullable
-	String content;
+	@NonNull
+	String messageBody;
 
-	@Nullable
-	String contentType;
-
-	@Nullable
-	JsonMetasfreshId requestId;
+	@Builder
+	@JsonCreator
+	private JsonTestResponse(@JsonProperty("messageBody") @NonNull final String messageBody)
+	{
+		this.messageBody = messageBody;
+	}
 }

@@ -186,7 +186,7 @@ public class ApiAuditService
 					.orgId(orgId)
 					.build();
 
-			actualRestApiResponseCF
+			final CompletableFuture<ApiResponse> whenCompleteFuture = actualRestApiResponseCF
 					.whenComplete((apiResponse, throwable) -> handleFutureCompletion(apiResponse, throwable, futureCompletionContext));
 
 			final Supplier<ApiResponse> callEndpointSupplier = () -> executeHttpCall(requestAudit);
@@ -199,7 +199,7 @@ public class ApiAuditService
 
 			httpCallScheduler.schedule(scheduleRequest);
 
-			handleSuccessfulResponse(apiAuditConfig, requestAudit, actualRestApiResponseCF, response);
+			handleSuccessfulResponse(apiAuditConfig, requestAudit, whenCompleteFuture, response);
 		}
 		catch (final Exception e)
 		{
@@ -431,11 +431,11 @@ public class ApiAuditService
 	private void handleSuccessfulResponse(
 			@NonNull final ApiAuditConfig apiAuditConfig,
 			@NonNull final ApiRequestAudit apiRequestAudit,
-			@NonNull final CompletableFuture<ApiResponse> actualRestApiResponseCF,
+			@NonNull final CompletableFuture<ApiResponse> whenCompleteFuture,
 			@NonNull final HttpServletResponse httpServletResponse) throws IOException, InterruptedException, ExecutionException, TimeoutException
 	{
 		final ApiResponse actualAPIResponse = apiAuditConfig.isInvokerWaitsForResponse()
-				? actualRestApiResponseCF.get(300, TimeUnit.SECONDS)
+				? whenCompleteFuture.get(300, TimeUnit.SECONDS)
 				: getGenericNoWaitResponse();
 
 		final JsonApiResponse apiResponse = JsonApiResponse.builder()
