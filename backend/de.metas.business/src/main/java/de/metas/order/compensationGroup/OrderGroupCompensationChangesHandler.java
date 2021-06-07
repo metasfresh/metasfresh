@@ -1,12 +1,14 @@
 package de.metas.order.compensationGroup;
 
+import de.metas.order.OrderId;
+import de.metas.order.compensationGroup.OrderGroupRepository.OrderLinesStorage;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_OrderLine;
 import org.springframework.stereotype.Component;
 
-import de.metas.order.OrderId;
-import de.metas.order.compensationGroup.OrderGroupRepository.OrderLinesStorage;
-import lombok.NonNull;
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -158,6 +160,21 @@ public class OrderGroupCompensationChangesHandler
 		final OrderLinesStorage orderLinesStorage = groupsRepo.createNotSaveableSingleOrderLineStorage(orderLine);
 		groupsRepo.saveGroup(group, orderLinesStorage);
 
+	}
+
+	public GroupTemplateId getGroupTemplateId(@NonNull final GroupId groupId)
+	{
+		return groupTemplateRepo.getGroupTemplateId(groupId);
+	}
+
+	public boolean isProductExcludedFromFlatrateConditions(@Nullable final GroupTemplateId groupTemplateId, @NonNull final ProductId productId)
+	{
+		if (groupTemplateId == null)
+		{
+			return false;
+		}
+
+		return groupTemplateRepo.isProductExcludedFromFlatrateConditions(groupTemplateId, productId);
 	}
 
 	public IQueryBuilder<I_C_OrderLine> retrieveGroupOrderLinesQuery(final GroupId groupId)
