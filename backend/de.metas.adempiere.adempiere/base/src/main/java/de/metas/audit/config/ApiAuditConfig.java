@@ -64,7 +64,7 @@ public class ApiAuditConfig
 
 	public boolean matchesRequest(@NonNull final String requestPath, @NonNull final String httpMethod)
 	{
-		final boolean isPathMatching = this.pathPrefix == null || requestPath.startsWith(this.pathPrefix);
+		final boolean isPathMatching = this.pathPrefix == null || requestPath.contains(this.pathPrefix);
 		final boolean isMethodMatching = this.method == null || httpMethod.equalsIgnoreCase(method.getCode());
 
 		return isMethodMatching && isPathMatching;

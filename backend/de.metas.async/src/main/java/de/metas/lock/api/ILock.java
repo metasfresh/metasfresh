@@ -79,8 +79,6 @@ public interface ILock
 
 	/**
 	 * This method is to {@link #close()} what {@link #asAutocloseableOnTrxClose(String)} is to {@link #asAutoCloseable()}.
-	 *
-	 * @param localTrxName
 	 */
 	void closeOnTrxClose(String localTrxName);
 
@@ -94,12 +92,9 @@ public interface ILock
 	/**
 	 * Gets a lock auto-closeable which when called, it will
 	 * <ul>
-	 * <li>if transaction is null or no longer exist, it will close the lock immediatelly
-	 * <li>if transaction exists, it will close the lock asynchronously when the transaction is commited or rolled back.
+	 * <li>if transaction is null or no longer exist, it will close the lock immediately
+	 * <li>if transaction exists, it will close the lock asynchronously when the transaction is committed or rolled back.
 	 * </ul>
-	 *
-	 * @param trxName
-	 * @return auto closable
 	 */
 	ILockAutoCloseable asAutocloseableOnTrxClose(String trxName);
 

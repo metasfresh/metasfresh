@@ -33,6 +33,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import static de.metas.util.web.MetasfreshRestAPIConstants.URL_PATTERN_API_V2;
+
 @Profile(Profiles.PROFILE_App)
 @Configuration
 public class FilterRegistrationConfig
@@ -43,7 +45,7 @@ public class FilterRegistrationConfig
 		final FilterRegistrationBean<ApiAuditFilter> registrationBean = new FilterRegistrationBean<>();
 
 		registrationBean.setFilter(new ApiAuditFilter(apiAuditService));
-		registrationBean.addUrlPatterns("/api/v2/*"); //FIXME temporary
+		registrationBean.addUrlPatterns(URL_PATTERN_API_V2);
 		registrationBean.setOrder(2);
 		return registrationBean;
 	}

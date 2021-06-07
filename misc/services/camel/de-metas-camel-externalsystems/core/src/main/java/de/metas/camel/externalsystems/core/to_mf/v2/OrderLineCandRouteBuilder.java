@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core.to_mf;
+package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
@@ -33,6 +33,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
+import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -59,7 +60,9 @@ public class OrderLineCandRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("http://{{metasfresh.api.v2.baseurl}}/orders/sales/candidates/bulk");
+				.toD("{{metasfresh.olcands.v2.api.uri}}/bulk")
+
+				.to(direct(UNPACK_V2_API_RESPONSE));
 
 		from(direct(ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID))
 				.routeId(ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID)
@@ -77,6 +80,8 @@ public class OrderLineCandRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("http://{{metasfresh.api.v2.baseurl}}/orders/sales/candidates/clearToProcess");
+				.toD("{{metasfresh.olcands.v2.api.uri}}/clearToProcess")
+
+				.to(direct(UNPACK_V2_API_RESPONSE));
 	}
 }
