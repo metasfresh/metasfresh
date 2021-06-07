@@ -60,57 +60,80 @@ public class BPartnerContact
 	public static final String FIRST_NAME = "firstName";
 	public static final String EMAIL = "email";
 	public static final String PHONE = "phone";
-	public static final String NEWSLETTER = "newsletter";
 	public static final String FAX = "fax";
 	public static final String MOBILE_PHONE = "mobilePhone";
 	public static final String DESCRIPTION = "description";
 	public static final String GREETING_ID = "greetingId";
 
+	public static final String SUBJECT_MATTER = "subjectMatter";
+	public static final String NEWSLETTER = "newsletter";
+	public static final String MEMBERSHIP = "membership";
+
+	@Nullable
 	private BPartnerContactId id;
 
 	/** A bit redundant because it's already part of the {@link BPartnerContactId}, but we use if for mapping purposes. */
 	@Setter(lombok.AccessLevel.NONE)
 	@JsonIgnore
+	@Nullable
 	private BPartnerId bpartnerId;
 
+	@Nullable
 	private ExternalId externalId;
 
+	@Nullable
 	private String value;
 
 	private boolean active;
 
+	@Nullable
 	private String name;
 
+	@Nullable
 	private String lastName;
 
+	@Nullable
 	private String firstName;
 
 	@JsonInclude(Include.NON_NULL)
+	@Nullable
 	private String email;
 
 	@JsonInclude(Include.NON_NULL)
+	@Nullable
 	private String phone;
 
 	private boolean newsletter;
+	private final boolean membershipContact;
+	private boolean subjectMatterContact;
 
+	@Nullable
 	private Boolean invoiceEmailEnabled;
 
+	@Nullable
 	private String fax;
 
+	@Nullable
 	private String mobilePhone;
 
+	@Nullable
 	private String description;
 
+	@Nullable
 	private GreetingId greetingId;
 
+	@Nullable
 	private BPartnerContactType contactType;
 
 	private final RecordChangeLog changeLog;
 
+	@Nullable
 	private OrgMappingId orgMappingId;
 
+	@Nullable
 	private LocalDate birthday;
 
+	@Nullable
 	private BPartnerLocationId bPartnerLocationId;
 
 	/**
@@ -135,6 +158,8 @@ public class BPartnerContact
 			@Nullable final String lastName,
 			@Nullable final String email,
 			@Nullable final Boolean newsletter,
+			@Nullable final Boolean membershipContact,
+			@Nullable final Boolean subjectMatterContact,
 			@Nullable final Boolean invoiceEmailEnabled,
 			@Nullable final String fax,
 			@Nullable final String mobilePhone,
@@ -152,7 +177,9 @@ public class BPartnerContact
 		this.externalId = externalId;
 		this.value = value;
 
-		this.newsletter = coalesce(newsletter, false);
+		this.newsletter = newsletter != null ? newsletter : false;
+		this.membershipContact = membershipContact != null ? membershipContact : false;
+		this.subjectMatterContact = subjectMatterContact != null ? subjectMatterContact : false;
 		this.invoiceEmailEnabled = invoiceEmailEnabled;
 		this.fax = fax;
 		this.mobilePhone = mobilePhone;
@@ -160,7 +187,7 @@ public class BPartnerContact
 		this.greetingId = greetingId;
 
 		this.contactType = contactType;
-		this.active = coalesce(active, true);
+		this.active = active != null ? active : true;
 		this.name = name;
 		this.firstName = firstName;
 		this.lastName = lastName;

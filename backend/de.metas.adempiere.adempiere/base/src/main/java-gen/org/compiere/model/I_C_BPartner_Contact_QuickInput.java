@@ -28,9 +28,11 @@ public interface I_C_BPartner_Contact_QuickInput
 	String Table_Name = "C_BPartner_Contact_QuickInput";
 
 	String COLUMNNAME_C_BPartner_Contact_QuickInput_ID = "C_BPartner_Contact_QuickInput_ID";
+
 	int getC_BPartner_Contact_QuickInput_ID();
 
 	String COLUMNNAME_C_BPartner_QuickInput_ID = "C_BPartner_QuickInput_ID";
+
 	int getC_BPartner_QuickInput_ID();
 
 	String COLUMNNAME_Name = "Name";
@@ -56,4 +58,8 @@ public interface I_C_BPartner_Contact_QuickInput
 	String COLUMNNAME_IsMembershipContact = "IsMembershipContact";
 
 	boolean isMembershipContact();
+
+	String COLUMNNAME_IsNewsletter = "IsNewsletter";
+
+	boolean isNewsletter();
 }

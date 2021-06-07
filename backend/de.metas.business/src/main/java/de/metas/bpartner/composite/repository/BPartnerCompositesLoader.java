@@ -432,6 +432,8 @@ final class BPartnerCompositesLoader
 				.lastName(trimBlankToNull(contactRecord.getLastname()))
 				.name(trimBlankToNull(contactRecord.getName()))
 				.newsletter(contactRecord.isNewsletter())
+				.membershipContact(contactRecord.isMembershipContact())
+				.subjectMatterContact(contactRecord.isSubjectMatterContact())
 				.invoiceEmailEnabled(StringUtils.toBoolean(contactRecord.getIsInvoiceEmailEnabled(), null))
 				.phone(trimBlankToNull(contactRecord.getPhone()))
 				.mobilePhone(trimBlankToNull(contactRecord.getMobilePhone()))
@@ -455,7 +457,6 @@ final class BPartnerCompositesLoader
 				.salesDefault(contactRecord.isSalesContact_Default())
 				.purchase(contactRecord.isPurchaseContact())
 				.purchaseDefault(contactRecord.isPurchaseContact_Default())
-				.subjectMatter(contactRecord.isSubjectMatterContact())
 				.build();
 	}
 

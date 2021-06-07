@@ -25,29 +25,37 @@ package de.metas.bpartner.quick_input.service;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.BPartnerContact;
+import de.metas.bpartner.composite.BPartnerContactType;
+import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
 import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.Language;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Contact_QuickInput;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -56,16 +64,19 @@ public class BPartnerQuickInputService
 	private static final Logger logger = LogManager.getLogger(BPartnerQuickInputService.class);
 	private final BPartnerQuickInputRepository bpartnerQuickInputRepository;
 	private final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies;
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	public BPartnerQuickInputService(
-			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository, final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies)
+			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository,
+			@NonNull final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies,
+			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository)
 	{
 		this.bpartnerQuickInputRepository = bpartnerQuickInputRepository;
 		this.bpartnerNameAndGreetingStrategies = bpartnerNameAndGreetingStrategies;
+		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 	}
 
 	public void updateNameAndGreeting(@NonNull final BPartnerQuickInputId bpartnerQuickInputId)
@@ -159,134 +170,102 @@ public class BPartnerQuickInputService
 
 		trxManager.assertThreadInheritedTrxExists();
 
-		//
-		// BPartner
-		final BPartnerId bpartnerId;
-		{
-			final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-			bpartner.setAD_Org_ID(template.getAD_Org_ID());
-			// bpartner.setValue(Value); // will be generated
-			bpartner.setName(template.getName());
-			bpartner.setName2(template.getName2());
-			bpartner.setIsCompany(template.isCompany());
-			bpartner.setCompanyName(template.getCompanyname());
-			bpartner.setC_BP_Group_ID(template.getC_BP_Group_ID());
-			bpartner.setAD_Language(template.getAD_Language());
-			// Customer
-			bpartner.setIsCustomer(template.isCustomer());
-			bpartner.setC_PaymentTerm_ID(template.getC_PaymentTerm_ID());
-			bpartner.setM_PricingSystem_ID(template.getM_PricingSystem_ID());
-			// Vendor
-			bpartner.setIsVendor(template.isVendor());
-			bpartner.setPO_PaymentTerm_ID(template.getPO_PaymentTerm_ID());
-			bpartner.setPO_PricingSystem_ID(template.getPO_PricingSystem_ID());
-
-			bpartnerDAO.save(bpartner);
-			bpartnerId = BPartnerId.ofRepoId(template.getC_BPartner_ID());
-
-			template.setC_BPartner_ID(bpartnerId.getRepoId());
-		}
+		final BPartnerComposite bpartnerComposite = toBPartnerComposite(template);
+		bpartnerCompositeRepository.save(bpartnerComposite);
 
 		//
-		// BPartner location
-		final BPartnerLocationId bpartnerLocationId;
-		{
-			final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
-			bpLocation.setC_BPartner_ID(bpartnerId.getRepoId());
-			bpLocation.setC_Location_ID(template.getC_Location_ID());
-			bpLocation.setIsBillTo(true);
-			bpLocation.setIsBillToDefault(true);
-			bpLocation.setIsShipTo(true);
-			bpLocation.setIsShipToDefault(true);
-			bpartnerDAO.save(bpLocation);
-			bpartnerLocationId = BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
+		// Update the location of all contacts
+		final BPartnerLocationId bpartnerLocationId = bpartnerComposite.getLocations().get(0).getId();
+		bpartnerComposite
+				.getContacts()
+				.forEach(contact -> contact.setBPartnerLocationId(bpartnerLocationId));
+		bpartnerCompositeRepository.save(bpartnerComposite);
 
-			template.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId());
-		}
-
-		final boolean isContactInfoProvided = !Check.isEmpty(template.getFirstname()) || !Check.isEmpty(template.getLastname());
-
-		if (isContactInfoProvided)
-		{
-			//
-			// BPartner contact
-			final I_AD_User bpContact = InterfaceWrapperHelper.newInstance(I_AD_User.class);
-			bpContact.setC_BPartner_ID(bpartnerId.getRepoId());
-			bpContact.setC_Greeting(template.getC_Greeting());
-			bpContact.setFirstname(template.getFirstname());
-			bpContact.setLastname(template.getLastname());
-			bpContact.setPhone(template.getPhone());
-			bpContact.setEMail(template.getEMail());
-			bpContact.setIsNewsletter(template.isNewsletter());
-			bpContact.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId());
-			if (template.isCustomer())
-			{
-				bpContact.setIsSalesContact(true);
-				bpContact.setIsSalesContact_Default(true);
-			}
-			if (template.isVendor())
-			{
-				bpContact.setIsPurchaseContact(true);
-				bpContact.setIsPurchaseContact_Default(true);
-			}
-			bpartnerDAO.save(bpContact);
-
-			template.setAD_User(bpContact);
-		}
-
+		//
+		// Update the template and mark it as processed
+		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
+		template.setC_BPartner_ID(bpartnerId.getRepoId());
+		template.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId());
 		template.setProcessed(true);
 		bpartnerQuickInputRepository.save(template);
 
-		return BPartnerId.ofRepoId(template.getC_BPartner_ID());
+		return bpartnerId;
 	}
 
-	// private BPartnerComposite toBPartnerComposite(final I_C_BPartner_QuickInput template)
-	// {
-	// 	final BPartner bpartner = BPartner.builder()
-	// 			.value(null) // to be generated
-	// 			.name(template.getName())
-	// 			.name2(template.getName2())
-	// 			.company(template.isCompany())
-	// 			.companyName(template.getCompanyname())
-	// 			.groupId(BPGroupId.ofRepoId(template.getC_BP_Group_ID()))
-	// 			.language(Language.asLanguage(template.getAD_Language()))
-	// 			// Customer:
-	// 			.customer(template.isCustomer())
-	// 			.customerPricingSystemId(PricingSystemId.ofRepoIdOrNull(template.getM_PricingSystem_ID()))
-	// 			.customerPaymentTermId(PaymentTermId.ofRepoIdOrNull(template.getC_PaymentTerm_ID()))
-	// 			// Vendor:
-	// 			.vendor(true)
-	// 			.vendorPricingSystemId(PricingSystemId.ofRepoIdOrNull(template.getPO_PricingSystem_ID()))
-	// 			.vendorPaymentTermId(PaymentTermId.ofRepoIdOrNull(template.getPO_PaymentTerm_ID()))
-	// 			//
-	// 			.build();
-	//
-	// 	final BPartnerLocation bpLocation = BPartnerLocation.builder()
-	// 			.locationType(BPartnerLocationType.builder()
-	// 					.billTo(true)
-	// 					.billToDefault(true)
-	// 					.shipTo(true)
-	// 					.shipToDefault(true)
-	// 					.build())
-	// 			.existingLocationId(LocationId.ofRepoId(template.getC_Location_ID()))
-	// 			.build();
-	//
-	// 	return BPartnerComposite.builder()
-	// 			.bpartner(bpartner)
-	// 			.location(bpLocation)
-	// 			// TODO: contact
-	// 			.build();
-	// }
-
-	private String extractName(final I_C_BPartner_QuickInput template)
+	private BPartnerComposite toBPartnerComposite(final I_C_BPartner_QuickInput template)
 	{
-		if (template.isCompany())
+		//
+		// BPartner (header)
+		final BPartner bpartner = BPartner.builder()
+				.value(null) // to be generated
+				.name(template.getName())
+				.name2(template.getName2())
+				.company(template.isCompany())
+				.companyName(template.getCompanyname())
+				.groupId(BPGroupId.ofRepoId(template.getC_BP_Group_ID()))
+				.language(Language.asLanguage(template.getAD_Language()))
+				// Customer:
+				.customer(template.isCustomer())
+				.customerPricingSystemId(PricingSystemId.ofRepoIdOrNull(template.getM_PricingSystem_ID()))
+				.customerPaymentTermId(PaymentTermId.ofRepoIdOrNull(template.getC_PaymentTerm_ID()))
+				// Vendor:
+				.vendor(true)
+				.vendorPricingSystemId(PricingSystemId.ofRepoIdOrNull(template.getPO_PricingSystem_ID()))
+				.vendorPaymentTermId(PaymentTermId.ofRepoIdOrNull(template.getPO_PaymentTerm_ID()))
+				//
+				.build();
+
+		//
+		// BPartner Location
+		final BPartnerLocation bpLocation = BPartnerLocation.builder()
+				.locationType(BPartnerLocationType.builder()
+						.billTo(true)
+						.billToDefault(true)
+						.shipTo(true)
+						.shipToDefault(true)
+						.build())
+				.existingLocationId(LocationId.ofRepoId(template.getC_Location_ID()))
+				.build();
+
+		//
+		// Contacts
+		final ArrayList<BPartnerContact> contacts = new ArrayList<>();
 		{
-			return template.getCompanyname();
+			final BPartnerQuickInputId bpartnerQuickInputId = BPartnerQuickInputId.ofRepoId(template.getC_BPartner_QuickInput_ID());
+			final List<I_C_BPartner_Contact_QuickInput> contactTemplates = bpartnerQuickInputRepository.retrieveContactsByQuickInputId(bpartnerQuickInputId);
+			for (final I_C_BPartner_Contact_QuickInput contactTemplate : contactTemplates)
+			{
+				final boolean isDefaultContact = contacts.isEmpty();
+				final boolean isSalesContact = template.isCustomer();
+				final boolean isPurchaseContact = template.isVendor();
+
+				contacts.add(BPartnerContact.builder()
+						.contactType(BPartnerContactType.builder()
+								.defaultContact(isDefaultContact)
+								.billToDefault(isDefaultContact)
+								.shipToDefault(isDefaultContact)
+								.sales(isSalesContact)
+								.salesDefault(isSalesContact && isDefaultContact)
+								.purchase(isPurchaseContact)
+								.purchaseDefault(isPurchaseContact && isDefaultContact)
+								.build())
+						.newsletter(contactTemplate.isNewsletter())
+						.membershipContact(contactTemplate.isMembershipContact())
+						.firstName(contactTemplate.getFirstname())
+						.lastName(contactTemplate.getLastname())
+						.name(userBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
+						.greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
+						.phone(StringUtils.trimBlankToNull(template.getPhone()))
+						.email(StringUtils.trimBlankToNull(template.getEMail()))
+						// TODO: contact seqNo
+						.build());
+			}
 		}
-		else
-		{
-			return userBL.buildContactName(template.getFirstname(), template.getLastname());
-		}
+
+		return BPartnerComposite.builder()
+				.bpartner(bpartner)
+				.location(bpLocation)
+				.contacts(contacts)
+				.build();
 	}
 }

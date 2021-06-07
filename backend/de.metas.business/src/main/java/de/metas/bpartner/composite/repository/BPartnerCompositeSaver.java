@@ -474,6 +474,8 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setLastname(bpartnerContact.getLastName());
 
 			bpartnerContactRecord.setIsNewsletter(bpartnerContact.isNewsletter());
+			bpartnerContactRecord.setIsMembershipContact(bpartnerContact.isMembershipContact());
+			bpartnerContactRecord.setIsSubjectMatterContact(bpartnerContact.isSubjectMatterContact());
 
 			final BPartnerContactType contactType = bpartnerContact.getContactType();
 			if (contactType != null)
@@ -485,7 +487,6 @@ final class BPartnerCompositeSaver
 				contactType.getSalesDefault().ifPresent(bpartnerContactRecord::setIsSalesContact_Default);
 				contactType.getPurchase().ifPresent(bpartnerContactRecord::setIsPurchaseContact);
 				contactType.getPurchaseDefault().ifPresent(bpartnerContactRecord::setIsPurchaseContact_Default);
-				contactType.getSubjectMatter().ifPresent(bpartnerContactRecord::setIsSubjectMatterContact);
 			}
 
 			bpartnerContactRecord.setDescription(bpartnerContact.getDescription());

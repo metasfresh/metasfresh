@@ -120,10 +120,6 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "contactRecord.email",
@@ -135,9 +131,11 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
           "userId" : 30
         },
         "lastName" : "contactRecord.lastName",
+        "membershipContact" : false,
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "subjectMatterContact" : false,
         "value" : "contactRecord.value"
       }
     ],

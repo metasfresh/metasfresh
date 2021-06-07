@@ -1712,4 +1712,9 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Value = new ModelColumn<>(I_AD_User.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
+
+	// TODO: introduce column
+	String COLUMNNAME_IsMembershipContact = "IsMembershipContact";
+	default boolean isMembershipContact() { return false; }
+	default void setIsMembershipContact(final boolean flag) {}
 }
