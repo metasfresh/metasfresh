@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -34,6 +36,8 @@ public class Greeting
 	@NonNull GreetingId id;
 	@NonNull String name;
 	@NonNull ITranslatableString greeting;
+
+	@Nullable GreetingStandardType standardType;
 
 	public String getGreeting(@NonNull final String adLanguage)
 	{

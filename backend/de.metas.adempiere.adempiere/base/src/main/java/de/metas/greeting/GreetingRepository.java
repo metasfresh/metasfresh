@@ -1,21 +1,14 @@
 package de.metas.greeting;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.util.Services;
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Greeting;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 /*
  * #%L
@@ -79,28 +72,7 @@ public class GreetingRepository
 				.id(GreetingId.ofRepoId(record.getC_Greeting_ID()))
 				.name(record.getName())
 				.greeting(trlsMap.getColumnTrl(I_C_Greeting.COLUMNNAME_Greeting, record.getGreeting()))
+				.standardType(GreetingStandardType.ofNullableCode(record.getGreetingStandardType()))
 				.build();
-	}
-
-	@EqualsAndHashCode
-	@ToString
-	private static class GreetingsMap
-	{
-		private final ImmutableMap<GreetingId, Greeting> greetingsById;
-
-		public GreetingsMap(@NonNull final List<Greeting> greetings)
-		{
-			greetingsById = Maps.uniqueIndex(greetings, Greeting::getId);
-		}
-
-		public Greeting getById(@NonNull final GreetingId id)
-		{
-			final Greeting greeting = greetingsById.get(id);
-			if (greeting == null)
-			{
-				throw new AdempiereException("No greeting found for " + id);
-			}
-			return greeting;
-		}
 	}
 }
