@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_API_Request_Audit extends org.compiere.model.PO implements I_API_Request_Audit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 896569292L;
+	private static final long serialVersionUID = 55268684L;
 
     /** Standard Constructor */
     public X_API_Request_Audit (final Properties ctx, final int API_Request_Audit_ID, @Nullable final String trxName)
@@ -213,6 +213,18 @@ public class X_API_Request_Audit extends org.compiere.model.PO implements I_API_
 	public java.lang.String getRemoteHost() 
 	{
 		return get_ValueAsString(COLUMNNAME_RemoteHost);
+	}
+
+	@Override
+	public void setRequestURI (final @Nullable java.lang.String RequestURI)
+	{
+		set_Value (COLUMNNAME_RequestURI, RequestURI);
+	}
+
+	@Override
+	public java.lang.String getRequestURI() 
+	{
+		return get_ValueAsString(COLUMNNAME_RequestURI);
 	}
 
 	/** 

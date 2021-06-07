@@ -1228,6 +1228,27 @@ public interface I_M_Product
 	String COLUMNNAME_ManufacturerArticleNumber = "ManufacturerArticleNumber";
 
 	/**
+	 * Set Product description of manufacturer.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManufacturerProductDescription (@Nullable java.lang.String ManufacturerProductDescription);
+
+	/**
+	 * Get Product description of manufacturer.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getManufacturerProductDescription();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ManufacturerProductDescription = new ModelColumn<>(I_M_Product.class, "ManufacturerProductDescription", null);
+	String COLUMNNAME_ManufacturerProductDescription = "ManufacturerProductDescription";
+
+	/**
 	 * Set Exclude from MRP.
 	 *
 	 * <br>Type: List
@@ -1486,6 +1507,27 @@ public interface I_M_Product
 	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
+	 * Set Product safety information.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSafetyInfo (@Nullable java.lang.String SafetyInfo);
+
+	/**
+	 * Get Product safety information.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSafetyInfo();
+
+	ModelColumn<I_M_Product, Object> COLUMN_SafetyInfo = new ModelColumn<>(I_M_Product.class, "SafetyInfo", null);
+	String COLUMNNAME_SafetyInfo = "SafetyInfo";
+
+	/**
 	 * Set Account manager.
 	 * Sales Representative or Company Agent
 	 *
@@ -1577,6 +1619,50 @@ public interface I_M_Product
 	String COLUMNNAME_ShelfWidth = "ShelfWidth";
 
 	/**
+	 * Set Shop Description.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShopDescription (@Nullable java.lang.String ShopDescription);
+
+	/**
+	 * Get Shop Description.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getShopDescription();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ShopDescription = new ModelColumn<>(I_M_Product.class, "ShopDescription", null);
+	String COLUMNNAME_ShopDescription = "ShopDescription";
+
+	/**
+	 * Set Shop inventory.
+	 * Shop invenntory qty
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShopInventoryQty (@Nullable BigDecimal ShopInventoryQty);
+
+	/**
+	 * Get Shop inventory.
+	 * Shop invenntory qty
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getShopInventoryQty();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ShopInventoryQty = new ModelColumn<>(I_M_Product.class, "ShopInventoryQty", null);
+	String COLUMNNAME_ShopInventoryQty = "ShopInventoryQty";
+
+	/**
 	 * Set SKU.
 	 * Stock Keeping Unit
 	 *
@@ -1598,6 +1684,27 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_SKU = new ModelColumn<>(I_M_Product.class, "SKU", null);
 	String COLUMNNAME_SKU = "SKU";
+
+	/**
+	 * Set Trademark.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTrademark (@Nullable java.lang.String Trademark);
+
+	/**
+	 * Get Trademark.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTrademark();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Trademark = new ModelColumn<>(I_M_Product.class, "Trademark", null);
+	String COLUMNNAME_Trademark = "Trademark";
 
 	/**
 	 * Set UnitsPerPack.

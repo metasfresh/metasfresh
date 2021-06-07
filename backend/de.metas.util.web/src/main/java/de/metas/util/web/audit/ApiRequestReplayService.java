@@ -49,7 +49,7 @@ public class ApiRequestReplayService
 
 	private void replayActionNoFailing(@NonNull final ApiRequestAudit apiRequestAudit)
 	{
-		final ApiAuditLoggable loggable = apiAuditService.createLogger(apiRequestAudit.getIdNotNull());
+		final ApiAuditLoggable loggable = apiAuditService.createLogger(apiRequestAudit.getIdNotNull(), apiRequestAudit.getUserId());
 
 		try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(loggable))
 		{

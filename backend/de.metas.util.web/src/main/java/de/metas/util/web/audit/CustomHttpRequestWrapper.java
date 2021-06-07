@@ -62,6 +62,12 @@ public class CustomHttpRequestWrapper
 		return fullPath;
 	}
 
+	@Nullable
+	public String getRequestURI()
+	{
+		return requestWrapper.getRequestURI();
+	}
+
 	@NonNull
 	public String getHttpMethodString()
 	{
