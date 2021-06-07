@@ -123,8 +123,8 @@ public class AddressBuilder
 	public String buildAddressString(
 			final I_C_Location location,
 			final boolean isLocalAddress,
-			final String bPartnerBlock,
-			final String userBlock)
+			@Nullable final String bPartnerBlock,
+			@Nullable final String userBlock)
 	{
 		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
 		final I_C_Country country = countriesRepo.getById(countryId);
@@ -422,7 +422,7 @@ public class AddressBuilder
 			@Nullable final org.compiere.model.I_C_BPartner bPartner,
 			@Nullable final org.compiere.model.I_C_BPartner_Location location,
 			final I_AD_User user,
-			final String trxName)
+			@Nullable final String trxName)
 	{
 		if (bPartner == null || location == null)
 		{
@@ -650,7 +650,8 @@ public class AddressBuilder
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final boolean isPartnerCompany = bPartner.isCompany();
-		final Language language = Language.asLanguage(bPartner.getAD_Language());
+		final Language language = Language.optionalOfNullable(bPartner.getAD_Language())
+				.orElseGet(Language::getBaseLanguage);
 
 		String userGreeting = "";
 		if (user != null)
