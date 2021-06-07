@@ -4,7 +4,7 @@ Feature: pInstanceLog store using metasfresh api
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And I_AD_PInstance with id '321321' is created
+    And I_AD_PInstance with id 321321 is created
 
   Scenario: The request is good and the pInstanceLog is stored
     When the metasfresh REST-API endpoint path 'api/externalsystem/321321/externalstatus/message' receives a 'POST' request with the payload

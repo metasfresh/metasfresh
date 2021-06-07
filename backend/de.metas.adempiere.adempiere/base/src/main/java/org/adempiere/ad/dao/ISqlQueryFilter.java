@@ -29,7 +29,7 @@ import lombok.NonNull;
 
 public interface ISqlQueryFilter
 {
-	public static ISqlQueryFilter cast(@NonNull final IQueryFilter<?> queryFilter)
+	static ISqlQueryFilter cast(@NonNull final IQueryFilter<?> queryFilter)
 	{
 		if (!(queryFilter instanceof ISqlQueryFilter))
 		{
@@ -39,7 +39,7 @@ public interface ISqlQueryFilter
 		return (ISqlQueryFilter)queryFilter;
 	}
 
-	public String getSql();
+	String getSql();
 
-	public List<Object> getSqlParams(final Properties ctx);
+	List<Object> getSqlParams(final Properties ctx);
 }

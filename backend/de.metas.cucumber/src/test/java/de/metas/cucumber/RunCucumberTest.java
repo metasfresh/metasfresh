@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
 @RunWith(Cucumber.class)
 @CucumberOptions(
 		glue = "de.metas.cucumber.stepdefs",
-		plugin = { "html:target/cucumber.html", "json:target/cucumber.json", "de.metas.cucumber.CucumberLifeCycleSupport" })
+		plugin = { "html:target/cucumber.html", "message:target/cucumber.message","de.metas.cucumber.CucumberLifeCycleSupport" })
 public class RunCucumberTest
 {
 }

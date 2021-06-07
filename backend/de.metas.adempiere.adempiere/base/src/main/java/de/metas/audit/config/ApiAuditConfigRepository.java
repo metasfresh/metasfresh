@@ -42,7 +42,7 @@ public class ApiAuditConfigRepository
 	{
 		return queryBL.createQueryBuilder(I_API_Audit_Config.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_API_Audit_Config.COLUMNNAME_AD_Org_ID, orgId)
+				.addInArrayFilter(I_API_Audit_Config.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
 				.create()
 				.list()
 				.stream()

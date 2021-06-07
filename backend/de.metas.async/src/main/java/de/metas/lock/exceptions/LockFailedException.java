@@ -1,23 +1,22 @@
 package de.metas.lock.exceptions;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.lock.spi.impl.SqlLockDatabase;
+import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.lock.api.ILockCommand;
 
 /**
- * Exception thrown when a lock aquiring failed.
- * 
- * @author tsa
+ * Exception thrown when a lock acquiring failed.
  *
+ * @author tsa
  */
 public class LockFailedException extends LockException
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -343950791566871398L;
 
-	public static final LockFailedException wrapIfNeeded(final Exception e)
+	public static LockFailedException wrapIfNeeded(final Exception e)
 	{
 		if (e instanceof LockFailedException)
 		{
@@ -55,6 +54,12 @@ public class LockFailedException extends LockException
 	public LockFailedException setRecordToLock(final TableRecordReference recordToLock)
 	{
 		super.setRecord(recordToLock);
+		return this;
+	}
+
+	public LockFailedException setExistingLocks(@NonNull final ImmutableList<SqlLockDatabase.ExistingLockInfo> existingLocks)
+	{
+		super.setExistingLocks(existingLocks);
 		return this;
 	}
 }

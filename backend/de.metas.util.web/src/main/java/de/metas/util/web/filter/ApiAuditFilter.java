@@ -25,9 +25,12 @@ package de.metas.util.web.filter;
 import de.metas.audit.ApiAuditLoggable;
 import de.metas.audit.config.ApiAuditConfig;
 import de.metas.audit.request.ApiRequestAuditId;
+import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.web.audit.ApiAuditService;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -42,6 +45,8 @@ import java.util.Optional;
 
 public class ApiAuditFilter implements Filter
 {
+	private final static Logger logger = LogManager.getLogger(ApiAuditFilter.class);
+
 	private final ApiAuditService apiAuditService;
 
 	public ApiAuditFilter(final ApiAuditService apiAuditService)
@@ -62,12 +67,18 @@ public class ApiAuditFilter implements Filter
 
 		try
 		{
+			if (apiAuditService.bypassFilter(httpServletRequest))
+			{
+				chain.doFilter(request, response);
+				return;
+			}
+
 			final Optional<ApiRequestAuditId> requestAuditIdOpt = apiAuditService.extractApiRequestAuditId(httpServletRequest);
 
 			// dev-note: this means the request was already filtered once
 			if (requestAuditIdOpt.isPresent())
 			{
-				final ApiAuditLoggable apiAuditLoggable = apiAuditService.createLogger(requestAuditIdOpt.get());
+				final ApiAuditLoggable apiAuditLoggable = apiAuditService.createLogger(requestAuditIdOpt.get(), Env.getLoggedUserId());
 
 				try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(apiAuditLoggable))
 				{
@@ -88,6 +99,8 @@ public class ApiAuditFilter implements Filter
 		}
 		catch (final Throwable t)
 		{
+			logger.error(t.getLocalizedMessage(), t);
+
 			httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, t.getLocalizedMessage());
 		}
 	}
