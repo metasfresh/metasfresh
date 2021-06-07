@@ -184,41 +184,6 @@ public final class JSONDocumentLayout
 		}
 	}
 
-	private List<JSONDocumentLayoutTab> createInlineTabElements(
-			@NonNull final DocumentLayoutDescriptor layout,
-			@NonNull final JSONDocumentLayoutOptions options)
-	{
-		final ImmutableListMultimap<DetailId, JSONDocumentLayoutElement> elementsByTabIdToInline = sections.stream()
-				.flatMap(JSONDocumentLayoutSection::streamInlineTabElements)
-				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						element -> element.getInlineTabId(),
-						element -> element
-				));
-
-		final ImmutableSet<DetailId> tabIdsToInline = elementsByTabIdToInline.keySet();
-
-		final ArrayList<JSONDocumentLayoutTab> jsonTabs = new ArrayList<>();
-		for (final DocumentLayoutDetailDescriptor tab : layout.getDetails())
-		{
-			final JSONDocumentLayoutTab jsonTab = JSONDocumentLayoutTab.ofOrNull(tab, options);
-			if (jsonTab == null)
-			{
-				continue;
-			}
-			else if (tabIdsToInline.contains(jsonTab.getTabId()))
-			{
-				final ImmutableList<JSONDocumentLayoutElement> elements = elementsByTabIdToInline.get(jsonTab.getTabId());
-				elements.forEach(element -> element.setInlineTab(jsonTab));
-				// NOTE: not adding the tab to the json tabs list because we don't want to render it as included tab
-			}
-			else
-			{
-				jsonTabs.add(jsonTab);
-			}
-		}
-
-		return ImmutableList.copyOf(jsonTabs);
-	}
 	/**
 	 * From detail tab constructor.
 	 */
