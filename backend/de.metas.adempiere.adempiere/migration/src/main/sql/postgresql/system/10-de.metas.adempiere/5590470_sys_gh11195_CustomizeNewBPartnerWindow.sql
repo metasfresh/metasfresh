@@ -984,3 +984,91 @@ UPDATE AD_UI_ElementGroup SET IsActive='Y',Updated=TO_TIMESTAMP('2021-05-31 13:5
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_UI_Element SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2021-05-31 13:53:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=549160
 ;
+
+
+-- Add TRL for Quick Input
+-- 2021-06-07T08:45:44.398Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Kontakt', PrintName='Kontakt',Updated=TO_TIMESTAMP('2021-06-07 11:45:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579266 AND AD_Language='de_CH'
+;
+
+-- 2021-06-07T08:45:44.445Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579266,'de_CH')
+;
+
+-- 2021-06-07T08:45:51.138Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Kontakt', PrintName='Kontakt',Updated=TO_TIMESTAMP('2021-06-07 11:45:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579266 AND AD_Language='de_DE'
+;
+
+-- 2021-06-07T08:45:51.139Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579266,'de_DE')
+;
+
+-- 2021-06-07T08:45:58.733Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Kontakt', PrintName='Kontakt',Updated=TO_TIMESTAMP('2021-06-07 11:45:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579266 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-07T08:45:58.735Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579266,'nl_NL')
+;
+
+-- 2021-06-07T08:46:12.372Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Contact', PrintName='Contact',Updated=TO_TIMESTAMP('2021-06-07 11:46:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579266 AND AD_Language='en_US'
+;
+
+-- 2021-06-07T08:46:12.373Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579266,'en_US')
+;
+
+-- 2021-06-07T08:46:12.387Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579266,'en_US')
+;
+
+-- 2021-06-07T08:46:12.394Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='C_BPartner_Contact_QuickInput_ID', Name='Contact', Description=NULL, Help=NULL WHERE AD_Element_ID=579266
+;
+
+-- 2021-06-07T08:46:12.397Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_BPartner_Contact_QuickInput_ID', Name='Contact', Description=NULL, Help=NULL, AD_Element_ID=579266 WHERE UPPER(ColumnName)='C_BPARTNER_CONTACT_QUICKINPUT_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-06-07T08:46:12.400Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='C_BPartner_Contact_QuickInput_ID', Name='Contact', Description=NULL, Help=NULL WHERE AD_Element_ID=579266 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-07T08:46:12.400Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Contact', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579266) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579266)
+;
+
+-- 2021-06-07T08:46:12.427Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Contact', Name='Contact' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579266)
+;
+
+-- 2021-06-07T08:46:12.428Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Contact', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579266
+;
+
+-- 2021-06-07T08:46:12.430Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Contact', Description=NULL, Help=NULL WHERE AD_Element_ID = 579266
+;
+
+-- 2021-06-07T08:46:12.430Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Contact', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579266
+;
+
