@@ -1313,3 +1313,700 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "orgId" : 10
   }
 ]
+
+
+de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnerContact=[
+  {
+    "metasfreshId" : 30,
+    "externalId" : "contactRecord.externalId",
+    "metasfreshBPartnerId" : 20,
+    "active" : true,
+    "name" : "contactRecord.name",
+    "firstName" : "contactRecord.firstName",
+    "lastName" : "contactRecord.lastName",
+    "email" : "contactRecord.email",
+    "phone" : "contactRecord.phone",
+    "newsletter" : false,
+    "shipToDefault" : false,
+    "billToDefault" : false,
+    "defaultContact" : false,
+    "sales" : false,
+    "salesDefault" : false,
+    "purchase" : false,
+    "purchaseDefault" : false,
+    "subjectMatter" : false,
+    "changeInfo" : {
+      "createdMillis" : 1561133544,
+      "createdBy" : 30,
+      "lastUpdatedMillis" : 1561133544,
+      "lastUpdatedBy" : 30
+    }
+  }
+]
+
+
+de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocation=[
+  {
+    "metasfreshId" : 40,
+    "externalId" : "bpartnerLocation.externalId",
+    "active" : true,
+    "address1" : "locationRecord.address1",
+    "address2" : "locationRecord.address2",
+    "postal" : "locationRecord.postal",
+    "poBox" : "locationRecord.poBox",
+    "district" : "postalRecord.district",
+    "region" : "locationRecord.regionName",
+    "city" : "locationRecord.city",
+    "gln" : "bpartnerLocationRecord.gln",
+    "countryCode" : "countryRecord.countryCode",
+    "shipTo" : false,
+    "shipToDefault" : false,
+    "billTo" : false,
+    "billToDefault" : false,
+    "changeInfo" : {
+      "createdMillis" : 1561133544,
+      "createdBy" : 30,
+      "lastUpdatedMillis" : 1561133544,
+      "lastUpdatedBy" : 30
+    }
+  }
+]
+
+
+de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[
+  {
+    "orgCode" : "<10>",
+    "bpartner" : {
+      "metasfreshId" : 20,
+      "externalId" : "fghij",
+      "code" : "bpartnerRecord.value",
+      "active" : true,
+      "name" : "bpartnerRecord.name",
+      "group" : "bpGroupRecord.name",
+      "vendor" : true,
+      "customer" : true,
+      "company" : false,
+      "vatId" : "VATaxID",
+      "changeInfo" : {
+        "createdMillis" : 1561133544,
+        "createdBy" : 30,
+        "lastUpdatedMillis" : 1561133544,
+        "lastUpdatedBy" : 30
+      }
+    },
+    "locations" : [
+      {
+        "metasfreshId" : 40,
+        "externalId" : "bpartnerLocation.externalId",
+        "active" : true,
+        "address1" : "locationRecord.address1",
+        "address2" : "locationRecord.address2",
+        "postal" : "locationRecord.postal",
+        "poBox" : "locationRecord.poBox",
+        "district" : "postalRecord.district",
+        "region" : "locationRecord.regionName",
+        "city" : "locationRecord.city",
+        "gln" : "bpartnerLocationRecord.gln",
+        "countryCode" : "countryRecord.countryCode",
+        "shipTo" : false,
+        "shipToDefault" : false,
+        "billTo" : false,
+        "billToDefault" : false,
+        "changeInfo" : {
+          "createdMillis" : 1561133544,
+          "createdBy" : 30,
+          "lastUpdatedMillis" : 1561133544,
+          "lastUpdatedBy" : 30
+        }
+      }
+    ],
+    "contacts" : [
+      {
+        "metasfreshId" : 30,
+        "externalId" : "contactRecord.externalId",
+        "metasfreshBPartnerId" : 20,
+        "active" : true,
+        "name" : "contactRecord.name",
+        "firstName" : "contactRecord.firstName",
+        "lastName" : "contactRecord.lastName",
+        "email" : "contactRecord.email",
+        "phone" : "contactRecord.phone",
+        "newsletter" : false,
+        "shipToDefault" : false,
+        "billToDefault" : false,
+        "defaultContact" : false,
+        "sales" : false,
+        "salesDefault" : false,
+        "purchase" : false,
+        "purchaseDefault" : false,
+        "subjectMatter" : false,
+        "changeInfo" : {
+          "createdMillis" : 1561133544,
+          "createdBy" : 30,
+          "lastUpdatedMillis" : 1561133544,
+          "lastUpdatedBy" : 30
+        }
+      }
+    ]
+  }
+]
+
+
+de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[
+  {
+    "orgCode" : "<10>",
+    "bpartner" : {
+      "metasfreshId" : 20,
+      "externalId" : "fghij",
+      "code" : "bpartnerRecord.value",
+      "active" : true,
+      "name" : "bpartnerRecord.name",
+      "group" : "bpGroupRecord.name",
+      "vendor" : true,
+      "customer" : true,
+      "company" : false,
+      "vatId" : "VATaxID",
+      "changeInfo" : {
+        "createdMillis" : 1561133544,
+        "createdBy" : 30,
+        "lastUpdatedMillis" : 1561133544,
+        "lastUpdatedBy" : 30
+      }
+    },
+    "locations" : [
+      {
+        "metasfreshId" : 40,
+        "externalId" : "bpartnerLocation.externalId",
+        "active" : true,
+        "address1" : "locationRecord.address1",
+        "address2" : "locationRecord.address2",
+        "postal" : "locationRecord.postal",
+        "poBox" : "locationRecord.poBox",
+        "district" : "postalRecord.district",
+        "region" : "locationRecord.regionName",
+        "city" : "locationRecord.city",
+        "gln" : "bpartnerLocationRecord.gln",
+        "countryCode" : "countryRecord.countryCode",
+        "shipTo" : false,
+        "shipToDefault" : false,
+        "billTo" : false,
+        "billToDefault" : false,
+        "changeInfo" : {
+          "createdMillis" : 1561133544,
+          "createdBy" : 30,
+          "lastUpdatedMillis" : 1561133544,
+          "lastUpdatedBy" : 30
+        }
+      }
+    ],
+    "contacts" : [
+      {
+        "metasfreshId" : 30,
+        "externalId" : "contactRecord.externalId",
+        "metasfreshBPartnerId" : 20,
+        "active" : true,
+        "name" : "contactRecord.name",
+        "firstName" : "contactRecord.firstName",
+        "lastName" : "contactRecord.lastName",
+        "email" : "contactRecord.email",
+        "phone" : "contactRecord.phone",
+        "newsletter" : false,
+        "shipToDefault" : false,
+        "billToDefault" : false,
+        "defaultContact" : false,
+        "sales" : false,
+        "salesDefault" : false,
+        "purchase" : false,
+        "purchaseDefault" : false,
+        "subjectMatter" : false,
+        "changeInfo" : {
+          "createdMillis" : 1561133544,
+          "createdBy" : 30,
+          "lastUpdatedMillis" : 1561133544,
+          "lastUpdatedBy" : 30
+        }
+      }
+    ]
+  }
+]
+
+
+de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[
+  {
+    "orgCode" : "<10>",
+    "bpartner" : {
+      "metasfreshId" : 20,
+      "externalId" : "fghij",
+      "code" : "bpartnerRecord.value",
+      "active" : true,
+      "name" : "bpartnerRecord.name",
+      "group" : "bpGroupRecord.name",
+      "vendor" : true,
+      "customer" : true,
+      "company" : false,
+      "vatId" : "VATaxID",
+      "changeInfo" : {
+        "createdMillis" : 1561133544,
+        "createdBy" : 30,
+        "lastUpdatedMillis" : 1561133544,
+        "lastUpdatedBy" : 30
+      }
+    },
+    "locations" : [
+      {
+        "metasfreshId" : 40,
+        "externalId" : "bpartnerLocation.externalId",
+        "active" : true,
+        "address1" : "locationRecord.address1",
+        "address2" : "locationRecord.address2",
+        "postal" : "locationRecord.postal",
+        "poBox" : "locationRecord.poBox",
+        "district" : "postalRecord.district",
+        "region" : "locationRecord.regionName",
+        "city" : "locationRecord.city",
+        "gln" : "bpartnerLocationRecord.gln",
+        "countryCode" : "countryRecord.countryCode",
+        "shipTo" : false,
+        "shipToDefault" : false,
+        "billTo" : false,
+        "billToDefault" : false,
+        "changeInfo" : {
+          "createdMillis" : 1561133544,
+          "createdBy" : 30,
+          "lastUpdatedMillis" : 1561133544,
+          "lastUpdatedBy" : 30
+        }
+      }
+    ],
+    "contacts" : [
+      {
+        "metasfreshId" : 30,
+        "externalId" : "contactRecord.externalId",
+        "metasfreshBPartnerId" : 20,
+        "active" : true,
+        "name" : "contactRecord.name",
+        "firstName" : "contactRecord.firstName",
+        "lastName" : "contactRecord.lastName",
+        "email" : "contactRecord.email",
+        "phone" : "contactRecord.phone",
+        "newsletter" : false,
+        "shipToDefault" : false,
+        "billToDefault" : false,
+        "defaultContact" : false,
+        "sales" : false,
+        "salesDefault" : false,
+        "purchase" : false,
+        "purchaseDefault" : false,
+        "subjectMatter" : false,
+        "changeInfo" : {
+          "createdMillis" : 1561133544,
+          "createdBy" : 30,
+          "lastUpdatedMillis" : 1561133544,
+          "lastUpdatedBy" : 30
+        }
+      }
+    ]
+  }
+]
+
+
+de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=[
+  {
+    "resultTimestamp" : 1561014385,
+    "totalSize" : 5,
+    "pageSize" : 2,
+    "nextPage" : "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_D",
+    "items" : [
+      {
+        "orgCode" : "<10>",
+        "bpartner" : {
+          "metasfreshId" : 20,
+          "externalId" : "fghij",
+          "code" : "bpartnerRecord.value",
+          "active" : true,
+          "name" : "bpartnerRecord.name",
+          "group" : "bpGroupRecord.name",
+          "vendor" : true,
+          "customer" : true,
+          "company" : false,
+          "vatId" : "VATaxID",
+          "changeInfo" : {
+            "createdMillis" : 1561133544,
+            "createdBy" : 30,
+            "lastUpdatedMillis" : 1561133544,
+            "lastUpdatedBy" : 30
+          }
+        },
+        "locations" : [
+          {
+            "metasfreshId" : 40,
+            "externalId" : "bpartnerLocation.externalId",
+            "active" : true,
+            "address1" : "locationRecord.address1",
+            "address2" : "locationRecord.address2",
+            "postal" : "locationRecord.postal",
+            "poBox" : "locationRecord.poBox",
+            "district" : "postalRecord.district",
+            "region" : "locationRecord.regionName",
+            "city" : "locationRecord.city",
+            "gln" : "bpartnerLocationRecord.gln",
+            "countryCode" : "countryRecord.countryCode",
+            "shipTo" : false,
+            "shipToDefault" : false,
+            "billTo" : false,
+            "billToDefault" : false,
+            "changeInfo" : {
+              "createdMillis" : 1561133544,
+              "createdBy" : 30,
+              "lastUpdatedMillis" : 1561133544,
+              "lastUpdatedBy" : 30
+            }
+          }
+        ],
+        "contacts" : [
+          {
+            "metasfreshId" : 30,
+            "externalId" : "contactRecord.externalId",
+            "metasfreshBPartnerId" : 20,
+            "active" : true,
+            "name" : "contactRecord.name",
+            "firstName" : "contactRecord.firstName",
+            "lastName" : "contactRecord.lastName",
+            "email" : "contactRecord.email",
+            "phone" : "contactRecord.phone",
+            "newsletter" : false,
+            "shipToDefault" : false,
+            "billToDefault" : false,
+            "defaultContact" : false,
+            "sales" : false,
+            "salesDefault" : false,
+            "purchase" : false,
+            "purchaseDefault" : false,
+            "subjectMatter" : false,
+            "changeInfo" : {
+              "createdMillis" : 1561133544,
+              "createdBy" : 30,
+              "lastUpdatedMillis" : 1561133544,
+              "lastUpdatedBy" : 30
+            }
+          }
+        ]
+      },
+      {
+        "orgCode" : "<10>",
+        "bpartner" : {
+          "metasfreshId" : 21,
+          "externalId" : "fghij_1",
+          "code" : "bpartnerRecord.value_1",
+          "active" : true,
+          "name" : "bpartnerRecord.name_1",
+          "group" : "bpGroupRecord.name",
+          "vendor" : true,
+          "customer" : true,
+          "company" : false,
+          "vatId" : "VATaxID_1",
+          "changeInfo" : {
+            "createdMillis" : 1561133544,
+            "createdBy" : 31,
+            "lastUpdatedMillis" : 1561133544,
+            "lastUpdatedBy" : 31
+          }
+        },
+        "locations" : [
+          {
+            "metasfreshId" : 41,
+            "externalId" : "bpartnerLocation.externalId_1",
+            "active" : true,
+            "address1" : "locationRecord.address1_1",
+            "address2" : "locationRecord.address2_1",
+            "postal" : "locationRecord.postal_1",
+            "poBox" : "locationRecord.poBox_1",
+            "district" : "postalRecord.district_1",
+            "region" : "locationRecord.regionName_1",
+            "city" : "locationRecord.city_1",
+            "gln" : "bpartnerLocationRecord.gln_1",
+            "countryCode" : "countryRecord.countryCode",
+            "shipTo" : false,
+            "shipToDefault" : false,
+            "billTo" : false,
+            "billToDefault" : false,
+            "changeInfo" : {
+              "createdMillis" : 1561133544,
+              "createdBy" : 31,
+              "lastUpdatedMillis" : 1561133544,
+              "lastUpdatedBy" : 31
+            }
+          }
+        ],
+        "contacts" : [
+          {
+            "metasfreshId" : 31,
+            "externalId" : "contactRecord.externalId_1",
+            "metasfreshBPartnerId" : 21,
+            "active" : true,
+            "name" : "contactRecord.name_1",
+            "firstName" : "contactRecord.firstName_1",
+            "lastName" : "contactRecord.lastName_1",
+            "email" : "contactRecord.email_1",
+            "phone" : "contactRecord.phone_1",
+            "newsletter" : false,
+            "shipToDefault" : false,
+            "billToDefault" : false,
+            "defaultContact" : false,
+            "sales" : false,
+            "salesDefault" : false,
+            "purchase" : false,
+            "purchaseDefault" : false,
+            "subjectMatter" : false,
+            "changeInfo" : {
+              "createdMillis" : 1561133544,
+              "createdBy" : 31,
+              "lastUpdatedMillis" : 1561133544,
+              "lastUpdatedBy" : 31
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "resultTimestamp" : 1561014385,
+    "totalSize" : 5,
+    "pageSize" : 2,
+    "nextPage" : "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_E",
+    "items" : [
+      {
+        "orgCode" : "<10>",
+        "bpartner" : {
+          "metasfreshId" : 22,
+          "externalId" : "fghij_2",
+          "code" : "bpartnerRecord.value_2",
+          "active" : true,
+          "name" : "bpartnerRecord.name_2",
+          "group" : "bpGroupRecord.name",
+          "vendor" : true,
+          "customer" : true,
+          "company" : false,
+          "vatId" : "VATaxID_2",
+          "changeInfo" : {
+            "createdMillis" : 1561133544,
+            "createdBy" : 32,
+            "lastUpdatedMillis" : 1561133544,
+            "lastUpdatedBy" : 32
+          }
+        },
+        "locations" : [
+          {
+            "metasfreshId" : 42,
+            "externalId" : "bpartnerLocation.externalId_2",
+            "active" : true,
+            "address1" : "locationRecord.address1_2",
+            "address2" : "locationRecord.address2_2",
+            "postal" : "locationRecord.postal_2",
+            "poBox" : "locationRecord.poBox_2",
+            "district" : "postalRecord.district_2",
+            "region" : "locationRecord.regionName_2",
+            "city" : "locationRecord.city_2",
+            "gln" : "bpartnerLocationRecord.gln_2",
+            "countryCode" : "countryRecord.countryCode",
+            "shipTo" : false,
+            "shipToDefault" : false,
+            "billTo" : false,
+            "billToDefault" : false,
+            "changeInfo" : {
+              "createdMillis" : 1561133544,
+              "createdBy" : 32,
+              "lastUpdatedMillis" : 1561133544,
+              "lastUpdatedBy" : 32
+            }
+          }
+        ],
+        "contacts" : [
+          {
+            "metasfreshId" : 32,
+            "externalId" : "contactRecord.externalId_2",
+            "metasfreshBPartnerId" : 22,
+            "active" : true,
+            "name" : "contactRecord.name_2",
+            "firstName" : "contactRecord.firstName_2",
+            "lastName" : "contactRecord.lastName_2",
+            "email" : "contactRecord.email_2",
+            "phone" : "contactRecord.phone_2",
+            "newsletter" : false,
+            "shipToDefault" : false,
+            "billToDefault" : false,
+            "defaultContact" : false,
+            "sales" : false,
+            "salesDefault" : false,
+            "purchase" : false,
+            "purchaseDefault" : false,
+            "subjectMatter" : false,
+            "changeInfo" : {
+              "createdMillis" : 1561133544,
+              "createdBy" : 32,
+              "lastUpdatedMillis" : 1561133544,
+              "lastUpdatedBy" : 32
+            }
+          }
+        ]
+      },
+      {
+        "orgCode" : "<10>",
+        "bpartner" : {
+          "metasfreshId" : 23,
+          "externalId" : "fghij_3",
+          "code" : "bpartnerRecord.value_3",
+          "active" : true,
+          "name" : "bpartnerRecord.name_3",
+          "group" : "bpGroupRecord.name",
+          "vendor" : true,
+          "customer" : true,
+          "company" : false,
+          "vatId" : "VATaxID_3",
+          "changeInfo" : {
+            "createdMillis" : 1561133544,
+            "createdBy" : 33,
+            "lastUpdatedMillis" : 1561133544,
+            "lastUpdatedBy" : 33
+          }
+        },
+        "locations" : [
+          {
+            "metasfreshId" : 43,
+            "externalId" : "bpartnerLocation.externalId_3",
+            "active" : true,
+            "address1" : "locationRecord.address1_3",
+            "address2" : "locationRecord.address2_3",
+            "postal" : "locationRecord.postal_3",
+            "poBox" : "locationRecord.poBox_3",
+            "district" : "postalRecord.district_3",
+            "region" : "locationRecord.regionName_3",
+            "city" : "locationRecord.city_3",
+            "gln" : "bpartnerLocationRecord.gln_3",
+            "countryCode" : "countryRecord.countryCode",
+            "shipTo" : false,
+            "shipToDefault" : false,
+            "billTo" : false,
+            "billToDefault" : false,
+            "changeInfo" : {
+              "createdMillis" : 1561133544,
+              "createdBy" : 33,
+              "lastUpdatedMillis" : 1561133544,
+              "lastUpdatedBy" : 33
+            }
+          }
+        ],
+        "contacts" : [
+          {
+            "metasfreshId" : 33,
+            "externalId" : "contactRecord.externalId_3",
+            "metasfreshBPartnerId" : 23,
+            "active" : true,
+            "name" : "contactRecord.name_3",
+            "firstName" : "contactRecord.firstName_3",
+            "lastName" : "contactRecord.lastName_3",
+            "email" : "contactRecord.email_3",
+            "phone" : "contactRecord.phone_3",
+            "newsletter" : false,
+            "shipToDefault" : false,
+            "billToDefault" : false,
+            "defaultContact" : false,
+            "sales" : false,
+            "salesDefault" : false,
+            "purchase" : false,
+            "purchaseDefault" : false,
+            "subjectMatter" : false,
+            "changeInfo" : {
+              "createdMillis" : 1561133544,
+              "createdBy" : 33,
+              "lastUpdatedMillis" : 1561133544,
+              "lastUpdatedBy" : 33
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "resultTimestamp" : 1561014385,
+    "totalSize" : 5,
+    "pageSize" : 1,
+    "items" : [
+      {
+        "orgCode" : "<10>",
+        "bpartner" : {
+          "metasfreshId" : 24,
+          "externalId" : "fghij_4",
+          "code" : "bpartnerRecord.value_4",
+          "active" : true,
+          "name" : "bpartnerRecord.name_4",
+          "group" : "bpGroupRecord.name",
+          "vendor" : true,
+          "customer" : true,
+          "company" : false,
+          "vatId" : "VATaxID_4",
+          "changeInfo" : {
+            "createdMillis" : 1561133544,
+            "createdBy" : 34,
+            "lastUpdatedMillis" : 1561133544,
+            "lastUpdatedBy" : 34
+          }
+        },
+        "locations" : [
+          {
+            "metasfreshId" : 44,
+            "externalId" : "bpartnerLocation.externalId_4",
+            "active" : true,
+            "address1" : "locationRecord.address1_4",
+            "address2" : "locationRecord.address2_4",
+            "postal" : "locationRecord.postal_4",
+            "poBox" : "locationRecord.poBox_4",
+            "district" : "postalRecord.district_4",
+            "region" : "locationRecord.regionName_4",
+            "city" : "locationRecord.city_4",
+            "gln" : "bpartnerLocationRecord.gln_4",
+            "countryCode" : "countryRecord.countryCode",
+            "shipTo" : false,
+            "shipToDefault" : false,
+            "billTo" : false,
+            "billToDefault" : false,
+            "changeInfo" : {
+              "createdMillis" : 1561133544,
+              "createdBy" : 34,
+              "lastUpdatedMillis" : 1561133544,
+              "lastUpdatedBy" : 34
+            }
+          }
+        ],
+        "contacts" : [
+          {
+            "metasfreshId" : 34,
+            "externalId" : "contactRecord.externalId_4",
+            "metasfreshBPartnerId" : 24,
+            "active" : true,
+            "name" : "contactRecord.name_4",
+            "firstName" : "contactRecord.firstName_4",
+            "lastName" : "contactRecord.lastName_4",
+            "email" : "contactRecord.email_4",
+            "phone" : "contactRecord.phone_4",
+            "newsletter" : false,
+            "shipToDefault" : false,
+            "billToDefault" : false,
+            "defaultContact" : false,
+            "sales" : false,
+            "salesDefault" : false,
+            "purchase" : false,
+            "purchaseDefault" : false,
+            "subjectMatter" : false,
+            "changeInfo" : {
+              "createdMillis" : 1561133544,
+              "createdBy" : 34,
+              "lastUpdatedMillis" : 1561133544,
+              "lastUpdatedBy" : 34
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
