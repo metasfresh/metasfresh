@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Contact_QuickInput extends org.compiere.model.PO implements I_C_BPartner_Contact_QuickInput, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -582016396L;
+	private static final long serialVersionUID = -724059472L;
 
     /** Standard Constructor */
     public X_C_BPartner_Contact_QuickInput (final Properties ctx, final int C_BPartner_Contact_QuickInput_ID, @Nullable final String trxName)
@@ -77,18 +77,6 @@ public class X_C_BPartner_Contact_QuickInput extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public org.compiere.model.I_C_Greeting getC_Greeting()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class);
-	}
-
-	@Override
-	public void setC_Greeting(final org.compiere.model.I_C_Greeting C_Greeting)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class, C_Greeting);
-	}
-
-	@Override
 	public void setC_Greeting_ID (final int C_Greeting_ID)
 	{
 		if (C_Greeting_ID < 1) 
@@ -137,6 +125,18 @@ public class X_C_BPartner_Contact_QuickInput extends org.compiere.model.PO imple
 	public boolean isMembershipContact() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsMembershipContact);
+	}
+
+	@Override
+	public void setIsNewsletter (final boolean IsNewsletter)
+	{
+		set_Value (COLUMNNAME_IsNewsletter, IsNewsletter);
+	}
+
+	@Override
+	public boolean isNewsletter() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNewsletter);
 	}
 
 	@Override

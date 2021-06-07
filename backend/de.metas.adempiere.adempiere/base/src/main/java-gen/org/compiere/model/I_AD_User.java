@@ -1047,6 +1047,27 @@ public interface I_AD_User
 	String COLUMNNAME_IsLoginAsHostKey = "IsLoginAsHostKey";
 
 	/**
+	 * Set Is Membership Contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsMembershipContact (boolean IsMembershipContact);
+
+	/**
+	 * Get Is Membership Contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isMembershipContact();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsMembershipContact = new ModelColumn<>(I_AD_User.class, "IsMembershipContact", null);
+	String COLUMNNAME_IsMembershipContact = "IsMembershipContact";
+
+	/**
 	 * Set Newsletter.
 	 *
 	 * <br>Type: YesNo

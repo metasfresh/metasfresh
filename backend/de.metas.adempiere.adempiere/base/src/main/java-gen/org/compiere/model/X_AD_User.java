@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1267622163L;
+	private static final long serialVersionUID = 172078929L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -707,6 +707,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isLoginAsHostKey() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsLoginAsHostKey);
+	}
+
+	@Override
+	public void setIsMembershipContact (final boolean IsMembershipContact)
+	{
+		set_Value (COLUMNNAME_IsMembershipContact, IsMembershipContact);
+	}
+
+	@Override
+	public boolean isMembershipContact() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsMembershipContact);
 	}
 
 	@Override

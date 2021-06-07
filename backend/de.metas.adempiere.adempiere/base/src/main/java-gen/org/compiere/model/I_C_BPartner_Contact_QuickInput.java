@@ -116,11 +116,6 @@ public interface I_C_BPartner_Contact_QuickInput
 	 */
 	int getC_Greeting_ID();
 
-	@Nullable org.compiere.model.I_C_Greeting getC_Greeting();
-
-	void setC_Greeting(@Nullable org.compiere.model.I_C_Greeting C_Greeting);
-
-	ModelColumn<I_C_BPartner_Contact_QuickInput, org.compiere.model.I_C_Greeting> COLUMN_C_Greeting_ID = new ModelColumn<>(I_C_BPartner_Contact_QuickInput.class, "C_Greeting_ID", org.compiere.model.I_C_Greeting.class);
 	String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
 
 	/**
@@ -235,6 +230,27 @@ public interface I_C_BPartner_Contact_QuickInput
 
 	ModelColumn<I_C_BPartner_Contact_QuickInput, Object> COLUMN_IsMembershipContact = new ModelColumn<>(I_C_BPartner_Contact_QuickInput.class, "IsMembershipContact", null);
 	String COLUMNNAME_IsMembershipContact = "IsMembershipContact";
+
+	/**
+	 * Set Newsletter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNewsletter (boolean IsNewsletter);
+
+	/**
+	 * Get Newsletter.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNewsletter();
+
+	ModelColumn<I_C_BPartner_Contact_QuickInput, Object> COLUMN_IsNewsletter = new ModelColumn<>(I_C_BPartner_Contact_QuickInput.class, "IsNewsletter", null);
+	String COLUMNNAME_IsNewsletter = "IsNewsletter";
 
 	/**
 	 * Set Lastname.

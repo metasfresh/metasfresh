@@ -43,9 +43,9 @@ public class C_BPartner_QuickInput
 		this.bpartnerQuickInputService = bpartnerQuickInputService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void afterSave(@NonNull final I_C_BPartner_QuickInput record)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeSave(@NonNull final I_C_BPartner_QuickInput record)
 	{
-		bpartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(record.getC_BPartner_QuickInput_ID()));
+		bpartnerQuickInputService.updateNameAndGreetingNoSave(record);
 	}
 }

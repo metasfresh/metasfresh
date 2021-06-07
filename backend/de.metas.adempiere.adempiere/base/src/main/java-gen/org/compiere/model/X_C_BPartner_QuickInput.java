@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_C_BPartner_QuickInput, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -810584006L;
+	private static final long serialVersionUID = 939428544L;
 
     /** Standard Constructor */
     public X_C_BPartner_QuickInput (final Properties ctx, final int C_BPartner_QuickInput_ID, @Nullable final String trxName)
@@ -64,6 +64,18 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	public int getAD_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
+	}
+
+	@Override
+	public void setBPartnerName (final @Nullable java.lang.String BPartnerName)
+	{
+		set_Value (COLUMNNAME_BPartnerName, BPartnerName);
+	}
+
+	@Override
+	public java.lang.String getBPartnerName() 
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerName);
 	}
 
 	@Override
@@ -220,18 +232,6 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setFirstname (final @Nullable java.lang.String Firstname)
-	{
-		set_Value (COLUMNNAME_Firstname, Firstname);
-	}
-
-	@Override
-	public java.lang.String getFirstname() 
-	{
-		return get_ValueAsString(COLUMNNAME_Firstname);
-	}
-
-	@Override
 	public void setIsCompany (final boolean IsCompany)
 	{
 		set_Value (COLUMNNAME_IsCompany, IsCompany);
@@ -280,18 +280,6 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setLastname (final @Nullable java.lang.String Lastname)
-	{
-		set_Value (COLUMNNAME_Lastname, Lastname);
-	}
-
-	@Override
-	public java.lang.String getLastname() 
-	{
-		return get_ValueAsString(COLUMNNAME_Lastname);
-	}
-
-	@Override
 	public void setM_PricingSystem_ID (final int M_PricingSystem_ID)
 	{
 		if (M_PricingSystem_ID < 1) 
@@ -304,18 +292,6 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	public int getM_PricingSystem_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_PricingSystem_ID);
-	}
-
-	@Override
-	public void setName (final @Nullable java.lang.String Name)
-	{
-		set_Value (COLUMNNAME_Name, Name);
-	}
-
-	@Override
-	public java.lang.String getName() 
-	{
-		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	@Override

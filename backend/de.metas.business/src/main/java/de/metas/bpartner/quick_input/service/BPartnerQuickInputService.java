@@ -49,7 +49,10 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_C_BPartner_Contact_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.slf4j.Logger;
@@ -68,6 +71,9 @@ public class BPartnerQuickInputService
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	private static final ModelDynAttributeAccessor<I_C_BPartner_QuickInput, Boolean>
+			DYNATTR_UPDATING_NAME_AND_GREETING = new ModelDynAttributeAccessor<>("UPDATING_NAME_AND_GREETING", Boolean.class);
 
 	public BPartnerQuickInputService(
 			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository,
@@ -96,13 +102,21 @@ public class BPartnerQuickInputService
 			@NonNull final I_C_BPartner_QuickInput bpartner,
 			final boolean doSave)
 	{
+		if (DYNATTR_UPDATING_NAME_AND_GREETING.is(bpartner, true))
+		{
+			return;
+		}
+
 		computeBPartnerNameAndGreeting(bpartner)
 				.ifPresent(nameAndGreeting -> {
-					bpartner.setName(nameAndGreeting.getName());
+					bpartner.setBPartnerName(nameAndGreeting.getName());
 					bpartner.setC_Greeting_ID(GreetingId.toRepoId(nameAndGreeting.getGreetingId()));
 					if (doSave)
 					{
-						bpartnerQuickInputRepository.save(bpartner);
+						try (final IAutoCloseable ignored = DYNATTR_UPDATING_NAME_AND_GREETING.temporarySetValue(bpartner, true))
+						{
+							bpartnerQuickInputRepository.save(bpartner);
+						}
 					}
 				})
 				.ifAbsent(reason -> logger.debug("Skip updating {} because: {}", bpartner, reason.getDefaultValue()));
@@ -112,10 +126,18 @@ public class BPartnerQuickInputService
 	{
 		if (bpartner.isCompany())
 		{
-			return ExplainedOptional.of(NameAndGreeting.builder()
-					.name(bpartner.getCompanyname())
-					.greetingId(GreetingId.ofRepoIdOrNull(bpartner.getC_Greeting_ID())) // preserve current greeting
-					.build());
+			final String companyname = bpartner.getCompanyname();
+			if (companyname == null || Check.isBlank(companyname))
+			{
+				return ExplainedOptional.emptyBecause("Companyname is not set");
+			}
+			else
+			{
+				return ExplainedOptional.of(NameAndGreeting.builder()
+						.name(companyname)
+						.greetingId(GreetingId.ofRepoIdOrNull(bpartner.getC_Greeting_ID())) // preserve current greeting
+						.build());
+			}
 		}
 		else
 		{
@@ -194,15 +216,21 @@ public class BPartnerQuickInputService
 
 	private BPartnerComposite toBPartnerComposite(final I_C_BPartner_QuickInput template)
 	{
+		final BPGroupId groupId = BPGroupId.ofRepoIdOrNull(template.getC_BP_Group_ID());
+		if (groupId == null)
+		{
+			throw new FillMandatoryException("C_BP_Group_ID");
+		}
+
 		//
 		// BPartner (header)
 		final BPartner bpartner = BPartner.builder()
 				.value(null) // to be generated
-				.name(template.getName())
+				.name(template.getBPartnerName())
 				.name2(template.getName2())
 				.company(template.isCompany())
 				.companyName(template.getCompanyname())
-				.groupId(BPGroupId.ofRepoId(template.getC_BP_Group_ID()))
+				.groupId(groupId)
 				.language(Language.asLanguage(template.getAD_Language()))
 				// Customer:
 				.customer(template.isCustomer())

@@ -96,11 +96,32 @@ public interface I_C_BPartner_QuickInput
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName (@Nullable java.lang.String BPartnerName);
+
+	/**
+	 * Get Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName();
+
+	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_BPartnerName = new ModelColumn<>(I_C_BPartner_QuickInput.class, "BPartnerName", null);
+	String COLUMNNAME_BPartnerName = "BPartnerName";
+
+	/**
 	 * Set Business Partner Group.
 	 * Business Partner Group
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_BP_Group_ID (int C_BP_Group_ID);
@@ -110,14 +131,14 @@ public interface I_C_BPartner_QuickInput
 	 * Business Partner Group
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_BP_Group_ID();
 
-	org.compiere.model.I_C_BP_Group getC_BP_Group();
+	@Nullable org.compiere.model.I_C_BP_Group getC_BP_Group();
 
-	void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group);
+	void setC_BP_Group(@Nullable org.compiere.model.I_C_BP_Group C_BP_Group);
 
 	ModelColumn<I_C_BPartner_QuickInput, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new ModelColumn<>(I_C_BPartner_QuickInput.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
 	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
@@ -210,7 +231,7 @@ public interface I_C_BPartner_QuickInput
 	 * Location or Address
 	 *
 	 * <br>Type: Location
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_Location_ID (int C_Location_ID);
@@ -220,14 +241,14 @@ public interface I_C_BPartner_QuickInput
 	 * Location or Address
 	 *
 	 * <br>Type: Location
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_Location_ID();
 
-	org.compiere.model.I_C_Location getC_Location();
+	@Nullable org.compiere.model.I_C_Location getC_Location();
 
-	void setC_Location(org.compiere.model.I_C_Location C_Location);
+	void setC_Location(@Nullable org.compiere.model.I_C_Location C_Location);
 
 	ModelColumn<I_C_BPartner_QuickInput, org.compiere.model.I_C_Location> COLUMN_C_Location_ID = new ModelColumn<>(I_C_BPartner_QuickInput.class, "C_Location_ID", org.compiere.model.I_C_Location.class);
 	String COLUMNNAME_C_Location_ID = "C_Location_ID";
@@ -320,29 +341,6 @@ public interface I_C_BPartner_QuickInput
 
 	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_EMail = new ModelColumn<>(I_C_BPartner_QuickInput.class, "EMail", null);
 	String COLUMNNAME_EMail = "EMail";
-
-	/**
-	 * Set Firstname.
-	 * Firstname
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setFirstname (@Nullable java.lang.String Firstname);
-
-	/**
-	 * Get Firstname.
-	 * Firstname
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getFirstname();
-
-	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_Firstname = new ModelColumn<>(I_C_BPartner_QuickInput.class, "Firstname", null);
-	String COLUMNNAME_Firstname = "Firstname";
 
 	/**
 	 * Set Active.
@@ -456,29 +454,6 @@ public interface I_C_BPartner_QuickInput
 	String COLUMNNAME_IsVendor = "IsVendor";
 
 	/**
-	 * Set Lastname.
-	 * Lastname
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setLastname (@Nullable java.lang.String Lastname);
-
-	/**
-	 * Get Lastname.
-	 * Lastname
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getLastname();
-
-	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_Lastname = new ModelColumn<>(I_C_BPartner_QuickInput.class, "Lastname", null);
-	String COLUMNNAME_Lastname = "Lastname";
-
-	/**
 	 * Set Pricing System.
 	 *
 	 * <br>Type: Search
@@ -497,27 +472,6 @@ public interface I_C_BPartner_QuickInput
 	int getM_PricingSystem_ID();
 
 	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
-
-	/**
-	 * Set Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setName (@Nullable java.lang.String Name);
-
-	/**
-	 * Get Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getName();
-
-	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_Name = new ModelColumn<>(I_C_BPartner_QuickInput.class, "Name", null);
-	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Name 2.
