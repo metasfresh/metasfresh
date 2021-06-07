@@ -17,13 +17,6 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
