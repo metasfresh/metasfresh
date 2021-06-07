@@ -114,7 +114,7 @@ public class BPartnerBL implements IBPartnerBL
 			@NonNull final org.compiere.model.I_C_BPartner bPartner,
 			final I_C_BPartner_Location location,
 			final I_AD_User user,
-			final String trxName)
+			@Nullable final String trxName)
 	{
 		final AddressBuilder addressBuilder = AddressBuilder.builder()
 				.orgId(OrgId.ofRepoId(bPartner.getAD_Org_ID()))
