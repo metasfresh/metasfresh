@@ -55,7 +55,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<BankAccountId, BankAccount> bankAccountsById = CCache.<BankAccountId, BankAccount> builder()
+	private final CCache<BankAccountId, BankAccount> bankAccountsById = CCache.<BankAccountId, BankAccount>builder()
 			.tableName(I_C_BP_BankAccount.Table_Name)
 			.cacheMapType(CacheMapType.LRU)
 			.initialCapacity(100)
@@ -108,7 +108,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	}
 
 	@Override
-	public List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(Properties ctx, int partnerID, int currencyID)
+	public List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(final Properties ctx, final int partnerID, final int currencyID)
 	{
 		final IQueryBuilder<I_C_BP_BankAccount> qb = queryBL
 				.createQueryBuilder(I_C_BP_BankAccount.class, ctx, ITrx.TRXNAME_None)
@@ -119,15 +119,13 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 			qb.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, currencyID);
 		}
 
-		final List<I_C_BP_BankAccount> bpBankAccounts = qb.addOnlyActiveRecordsFilter()
+		return qb.addOnlyActiveRecordsFilter()
 				.orderBy()
 				.addColumn(I_C_BP_BankAccount.COLUMNNAME_IsDefault, Direction.Descending, Nulls.Last) // DESC (Y, then N)
 				.addColumn(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID)
 				.endOrderBy()
 				.create()
 				.list();
-
-		return bpBankAccounts;
 	}
 
 	@Override
@@ -181,6 +179,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 		return getById(bankAccountId).getBankId();
 	}
 
+	@Override
 	@NonNull
 	public Optional<BankAccount> getDefaultBankAccount(@NonNull final BPartnerId bPartnerId)
 	{
