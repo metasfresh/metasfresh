@@ -80,6 +80,8 @@ class TaxDAOTest
 	private static final int NON_EU_COUNTRY_ID = 1011;
 	private static final String NON_EU_COUNTRY_CODE = "DD";
 
+	private static final int COUNTRY_AREA_ID = 10000;
+
 	private ITaxDAO taxDAO;
 	private final Map<TypeOfDestCountry, BPartnerLocationId> typeOfDestCountryBPartnerLocationIdMap = new HashMap<>();
 	private final Map<TypeOfDestCountry, TaxId> typeOfDestCountryTaxIdByOrgIdMap = new HashMap<>();
@@ -170,6 +172,12 @@ class TaxDAOTest
 	@DisplayName("Org Id provided, Warehouse Id provided")
 	public class OrgIdWarehouseId
 	{
+		@BeforeEach
+		public void warehouseSetup()
+		{
+			typeOfDestCountryBPartnerLocationIdMap.put(DOMESTIC, createBPartnerData(WAREHOUSE_COUNTRY_ID, WAREHOUSE_COUNTRY_CODE, true));
+		}
+
 		@Test
 		@DisplayName("Domestic")
 		public void domestic()
@@ -208,7 +216,7 @@ class TaxDAOTest
 	{
 		createOrgData();
 		createWarehouseData();
-		typeOfDestCountryBPartnerLocationIdMap.put(DOMESTIC, createBPartnerData(ORG_COUNTRY_ID, ORG_COUNTRY_CODE, false));
+		typeOfDestCountryBPartnerLocationIdMap.put(DOMESTIC, createBPartnerData(ORG_COUNTRY_ID, ORG_COUNTRY_CODE, true));
 		typeOfDestCountryBPartnerLocationIdMap.put(WITHIN_COUNTRY_AREA, createBPartnerData(EU_COUNTRY_ID, EU_COUNTRY_CODE, true));
 		typeOfDestCountryBPartnerLocationIdMap.put(OUTSIDE_COUNTRY_AREA, createBPartnerData(NON_EU_COUNTRY_ID, NON_EU_COUNTRY_CODE, false));
 
@@ -227,7 +235,7 @@ class TaxDAOTest
 		warehouse.setC_Location_ID(location.getC_Location_ID());
 		save(warehouse);
 
-		typeOfDestCountryTaxIdByWarehouseIdMap.put(DOMESTIC, createTaxData(DOMESTIC, WAREHOUSE_COUNTRY_ID, ORG_COUNTRY_ID));
+		typeOfDestCountryTaxIdByWarehouseIdMap.put(DOMESTIC, createTaxData(DOMESTIC, WAREHOUSE_COUNTRY_ID, WAREHOUSE_COUNTRY_ID));
 		typeOfDestCountryTaxIdByWarehouseIdMap.put(WITHIN_COUNTRY_AREA, createTaxData(WITHIN_COUNTRY_AREA, WAREHOUSE_COUNTRY_ID, EU_COUNTRY_ID));
 		typeOfDestCountryTaxIdByWarehouseIdMap.put(OUTSIDE_COUNTRY_AREA, createTaxData(OUTSIDE_COUNTRY_AREA, WAREHOUSE_COUNTRY_ID, NON_EU_COUNTRY_ID));
 	}
@@ -264,6 +272,7 @@ class TaxDAOTest
 			final I_C_CountryArea countryArea = newInstance(I_C_CountryArea.class);
 			countryArea.setAD_Org_ID(ORG_ID.getRepoId());
 			countryArea.setValue(ICountryAreaBL.COUNTRYAREAKEY_EU);
+			countryArea.setC_CountryArea_ID(COUNTRY_AREA_ID);
 			save(countryArea);
 
 			final I_C_CountryArea_Assign countryAreaAssign = newInstance(I_C_CountryArea_Assign.class);

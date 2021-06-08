@@ -303,10 +303,6 @@ public class TaxDAO implements ITaxDAO
 			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
 			countryId = getCountryIdFromOrgId(orgId);
 			loggable.addLog("Country ID based on organization: {}", countryId);
-			if (countryId != null)
-			{
-				queryBuilder.addEqualsFilter(I_C_Tax.COLUMN_C_Country_ID, countryId);
-			}
 		}
 
 		final WarehouseId warehouseId = taxQuery.getWarehouseId();
@@ -316,14 +312,16 @@ public class TaxDAO implements ITaxDAO
 			loggable.addLog("Location ID based on warehouse: {}", locationId);
 			if (locationId != null)
 			{
-				countryId = CoalesceUtil.coalesce(countryId, locationDAO.getCountryIdByLocationId(locationId));
+				countryId = CoalesceUtil.coalesce(locationDAO.getCountryIdByLocationId(locationId), countryId);
 				loggable.addLog("Country ID for warehouse: {}", countryId);
-				queryBuilder.addEqualsFilter(I_C_Tax.COLUMN_C_Country_ID, countryId);
 			}
 		}
 		if (countryId == null)
 		{
 			throw new AdempiereException("No country could be identified for the given orgId: " + orgId + " and warehouse: " + warehouseId);
+		}
+		else {
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMN_C_Country_ID, countryId);
 		}
 
 		final BPartnerLocationId bPartnerLocationId = taxQuery.getBPartnerLocationId();
