@@ -22,6 +22,7 @@
 
 package de.metas.payment.process;
 
+import de.metas.banking.BankAccountId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.organization.OrgId;
 import de.metas.payment.api.IPaymentBL;
@@ -39,6 +40,7 @@ public class C_Payment_Employee_WriteOff extends JavaProcess
 {
 	public static final String PARAM_AD_ORG_ID = "Parameter_AD_Org_ID";
 	public static final String PARAM_WRITEOFF_DATE = "WriteOffDate";
+	public static final String PARAM_C_BP_BankAccount_ID = I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID;
 	public static final String PARAM_START_DATE = "StartDate";
 	public static final String PARAM_END_DATE = "EndDate";
 
@@ -47,6 +49,9 @@ public class C_Payment_Employee_WriteOff extends JavaProcess
 
 	@Param(parameterName = PARAM_WRITEOFF_DATE, mandatory = true)
 	private Instant p_WriteOffDate;
+
+	@Param(parameterName = PARAM_C_BP_BankAccount_ID, mandatory = true)
+	private BankAccountId p_bankAccountId;
 
 	@Param(parameterName = PARAM_START_DATE, mandatory = true)
 	private Instant p_startDate;
@@ -62,6 +67,7 @@ public class C_Payment_Employee_WriteOff extends JavaProcess
 	{
 		final Iterator<I_C_Payment> paymentsForEmployees = paymentDAO.retrieveEmployeePaymentsForTimeframe
 				(p_OrgId,
+				 p_bankAccountId,
 				 p_startDate,
 				 p_endDate);
 
