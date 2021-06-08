@@ -6,9 +6,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nullable;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.jmx.JMXRegistry;
@@ -54,19 +58,23 @@ public class EventBusFactory implements IEventBusFactory
 			.build(new CacheLoader<Topic, EventBus>()
 			{
 				@Override
-				public EventBus load(final @NonNull Topic topic) throws Exception
+				public EventBus load(final @NonNull Topic topic)
 				{
-					return createEventBus(topic);
+					return createEventBus(topic, meterRegistry);
 				}
 			});
 
 	private final IEventBusRemoteEndpoint remoteEndpoint;
+	private final MeterRegistry meterRegistry;
 
 	private final Set<Topic> availableUserNotificationsTopic = ConcurrentHashMap.newKeySet(10);
 
-	public EventBusFactory(@NonNull final IEventBusRemoteEndpoint remoteEndpoint)
+	public EventBusFactory(
+			@NonNull final IEventBusRemoteEndpoint remoteEndpoint,
+			@NonNull final MeterRegistry meterRegistry)
 	{
 		this.remoteEndpoint = remoteEndpoint;
+		this.meterRegistry = meterRegistry;
 		logger.info("Using remote endpoint: {}", remoteEndpoint);
 
 		JMXRegistry.get().registerJMX(new JMXEventBusManager(remoteEndpoint), OnJMXAlreadyExistsPolicy.Replace);
@@ -135,10 +143,12 @@ public class EventBusFactory implements IEventBusFactory
 	 * then the event bus is also bound to a remote endpoint.
 	 * Otherwise the event bus will only be local.
 	 */
-	private EventBus createEventBus(@NonNull final Topic topic)
+	private EventBus createEventBus(@NonNull final Topic topic, @NonNull final MeterRegistry meterRegistry)
 	{
+		final MicrometerEventBusStatsCollector statsCollector = createMicrometerEventBusStatsCollector(topic, meterRegistry);
+
 		// Create the event bus
-		final EventBus eventBus = new EventBus(topic.getName(), createExecutorOrNull(topic));
+		final EventBus eventBus = new EventBus(topic.getName(), createExecutorOrNull(topic), statsCollector);
 
 		// Bind the EventBus to remote endpoint (only if the system is enabled).
 		// If is not enabled we will use only local event buses,
@@ -165,6 +175,21 @@ public class EventBusFactory implements IEventBusFactory
 		return eventBus;
 	}
 
+	static MicrometerEventBusStatsCollector createMicrometerEventBusStatsCollector(
+			@NonNull final Topic topic,
+			@NonNull final MeterRegistry meterRegistry)
+	{
+		final ImmutableList<Tag> tags = ImmutableList.of(
+				Tag.of("topic", topic.getName()),
+				Tag.of("type", topic.getType().toString()));
+		
+		final AtomicInteger queueLength = meterRegistry.gauge("eventBus.queueSize", tags, new AtomicInteger(0));
+		final Counter enqueued = meterRegistry.counter("eventBus.enqueued", tags);
+		final Counter dequeued = meterRegistry.counter("eventBus.dequeued", tags);
+
+		return MicrometerEventBusStatsCollector.builder().eventsEnqueued(enqueued).eventsDequeued(dequeued).queueLength(queueLength).build();
+	}
+
 	@Nullable
 	private ExecutorService createExecutorOrNull(@NonNull final Topic topic)
 	{
@@ -172,9 +197,9 @@ public class EventBusFactory implements IEventBusFactory
 		if (EventBusConfig.isEventBusPostAsync(topic))
 		{
 			return Executors.newSingleThreadExecutor(CustomizableThreadFactory.builder()
-					.setThreadNamePrefix(getClass().getName() + "-" + topic.getName() + "-AsyncExecutor")
-					.setDaemon(true)
-					.build());
+															 .setThreadNamePrefix(getClass().getName() + "-" + topic.getName() + "-AsyncExecutor")
+															 .setDaemon(true)
+															 .build());
 		}
 		else
 		{
