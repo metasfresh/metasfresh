@@ -42,7 +42,7 @@ public class TaxUtils
 				.typeOfDestCountry(TypeOfDestCountry.ofNullableCode(from.getTypeOfDestCountry()))
 				.taxCategoryId(TaxCategoryId.ofRepoId(from.getC_TaxCategory_ID()))
 				.requiresTaxCertificate(from.isRequiresTaxCertificate())
-				.sopoType(SOPOType.ofCode(from.getSOPOType()))
+				.sopoType(SOPOType.ofNullableCode(from.getSOPOType()))
 				.isTaxExempt(from.isTaxExempt())
 				.isSmallBusiness(from.isSmallbusiness())
 				.isFiscalRepresentation(from.isFiscalRepresentation())

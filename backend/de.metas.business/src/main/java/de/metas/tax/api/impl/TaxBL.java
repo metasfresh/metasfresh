@@ -517,7 +517,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	@Override
 	public BigDecimal calculateBaseAmt(@NonNull final Tax tax, @NonNull final BigDecimal amount, final boolean taxIncluded, final int scale)
 	{
-		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(tax))
+		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_Tax.Table_Name, tax.getTaxId()))
 		{
 			if (tax.isWholeTax())
 			{
