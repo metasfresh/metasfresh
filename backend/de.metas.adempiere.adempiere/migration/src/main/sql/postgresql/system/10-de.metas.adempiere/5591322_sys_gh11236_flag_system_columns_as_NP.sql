@@ -27,9 +27,18 @@ WHERE ad_table_id IN (SELECT ad_table_id
 
 UPDATE ad_column
 SET personaldatacategory='NP'
-WHERE columnname IN ('Value', 'Name')
-  AND ad_table_id = get_table_id('AD_Org')
+WHERE columnname = 'Name'
+  AND ad_table_id = get_table_id('AD_Archive')
 ;
+
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE ad_table_id = get_table_id('AD_Attribute_Value');
+
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE ad_table_id = get_table_id('AD_Attribute');
+
 
 UPDATE ad_column
 SET personaldatacategory='NP'
@@ -39,10 +48,35 @@ WHERE columnname = 'StackTrace'
 
 UPDATE ad_column
 SET personaldatacategory='NP'
+WHERE columnname IN ('Value', 'Name')
+  AND ad_table_id = get_table_id('AD_Org')
+;
+
+UPDATE ad_column
+SET personaldatacategory='NP'
 WHERE ad_table_id IN (SELECT ad_table_id
                       FROM ad_table
                       WHERE tableName LIKE 'AD_%'
-                        AND tablename NOT IN ('AD_Note', 'AD_Session', 'AD_PInstance_Log', 'AD_ChangeLog', 'AD_Replication_Log', 'AD_SchedulerLog', 'AD_Issue', 'AD_EventLog', 'AD_EventLog_Entry', 'AD_Org', 'AD_OrgInfo', 'AD_User', 'AD_User_Login'))
+                        AND tablename NOT IN ('AD_Note', 'AD_Session', 'AD_PInstance_Log', 'AD_ChangeLog', 'AD_Replication_Log', 'AD_SchedulerLog', 
+                                              'AD_Issue', 'AD_EventLog', 'AD_EventLog_Entry', 'AD_Org', 'AD_OrgInfo', 'AD_User', 'AD_User_Login'))
+;
+
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE columnname in ('Classname', 'MsgText')
+  AND ad_table_id = get_table_id('AD_EventLog_Entry')
+;
+
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE columnname in ('ViewId', 'WhereClause', 'Reference')
+  AND ad_table_id = get_table_id('AD_Note')
+;
+
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE columnname in ('EventTopicName','Event_UUID')
+  AND ad_table_id = get_table_id('AD_EventLog')
 ;
 
 UPDATE ad_column
@@ -53,9 +87,13 @@ WHERE ad_table_id IN (SELECT ad_table_id
                                           'C_AcctSchema',
                                           'C_AcctSchema_GL',
                                           'C_AcctSchema_Element',
-                                          'C_AcctSchema_Default'))
-;
+                                          'C_AcctSchema_Default'));
 
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE columnname IN ('ExternalId', 'Value')
+  AND ad_table_id = get_table_id('C_BPartner')
+;
 
 UPDATE ad_column
 SET personaldatacategory='NP'
@@ -131,6 +169,60 @@ UPDATE ad_column
 SET personaldatacategory='NP'
 WHERE ad_table_id IN (SELECT ad_table_id FROM ad_table WHERE tablename IN ('C_Tax', 'C_Tax_Trl', 'C_TaxCategory', 'C_TaxCategory_Trl'))
 ;
+
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE columnname = 'ExternalId'
+  AND ad_table_id IN (SELECT ad_table_id FROM ad_table WHERE tablename IN (
+'C_Order',
+'C_Tax',
+'C_BPartner',
+'C_BPartner_Location',
+'C_Invoice',
+'M_InOut',
+'C_PaymentTerm',
+'M_InventoryLine',
+'C_Payment',
+'I_Product',
+'C_BP_Relation',
+'M_Inventory',
+'AD_User',
+'M_Warehouse',
+'M_Product',
+'AD_InputDataSource',
+'I_DataEntry_Record',
+'PayPal_Order',
+'S_Milestone',
+'S_FailedTimeBooking'))
+;
+
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE columnname = 'ExternalHeaderId'
+  AND ad_table_id IN (SELECT ad_table_id FROM ad_table WHERE tablename IN (
+'I_Inventory',
+'C_Invoice_Candidate',
+'C_PurchaseCandidate',
+'C_OLCand'));
+
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE columnname = 'ExternalLineId'
+  AND ad_table_id IN (SELECT ad_table_id FROM ad_table WHERE tablename IN (
+'C_OLCand',
+'C_PurchaseCandidate',
+'C_Invoice_Candidate',
+'I_Inventory'));
+
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE columnname = 'ExternalOrderId'
+  AND ad_table_id IN (SELECT ad_table_id FROM ad_table WHERE tablename IN (
+'C_Payment'));
+
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE columnname = 'DocumentNo';
 
 UPDATE ad_column
 SET personaldatacategory='NP'
@@ -219,3 +311,8 @@ WHERE ad_table_id = get_table_id('AD_User')
   AND ColumnName = 'Login'
 ;
 
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE columnname IN ('ExternalId')
+  AND ad_table_id = get_table_id('AD_User')
+;
