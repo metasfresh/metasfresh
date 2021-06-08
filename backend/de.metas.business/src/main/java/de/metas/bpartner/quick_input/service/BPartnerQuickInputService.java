@@ -188,7 +188,6 @@ public class BPartnerQuickInputService
 	public BPartnerId createBPartnerFromTemplate(@NonNull final I_C_BPartner_QuickInput template)
 	{
 		Check.assume(!template.isProcessed(), "{} not already processed", template);
-		Check.assume(template.getC_Location_ID() > 0, "{} > 0", template); // just to make sure&explicit
 
 		trxManager.assertThreadInheritedTrxExists();
 
@@ -222,6 +221,12 @@ public class BPartnerQuickInputService
 			throw new FillMandatoryException("C_BP_Group_ID");
 		}
 
+		final LocationId existingLocationId = LocationId.ofRepoIdOrNull(template.getC_Location_ID());
+		if (existingLocationId == null)
+		{
+			throw new FillMandatoryException(I_C_BPartner_QuickInput.COLUMNNAME_C_Location_ID);
+		}
+
 		//
 		// BPartner (header)
 		final BPartner bpartner = BPartner.builder()
@@ -252,7 +257,7 @@ public class BPartnerQuickInputService
 						.shipTo(true)
 						.shipToDefault(true)
 						.build())
-				.existingLocationId(LocationId.ofRepoId(template.getC_Location_ID()))
+				.existingLocationId(existingLocationId)
 				.build();
 
 		//
