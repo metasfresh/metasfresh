@@ -929,6 +929,7 @@ export function patch(
           id,
           windowType,
           isAdvanced,
+          disconnected,
         })
       );
     }
