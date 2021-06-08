@@ -874,6 +874,10 @@ export function patch(
         })
       );
 
+      // update the inlineTabsInfo if such information is present
+      includedTabsInfo &&
+        dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
+
       if (
         dataItem &&
         dataItem.validStatus &&
@@ -895,10 +899,6 @@ export function patch(
           )
         );
       } else {
-        // update the inlineTabsInfo if such information is present
-        includedTabsInfo &&
-          dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
-
         await dispatch(indicatorState('saved'));
         await dispatch({ type: PATCH_SUCCESS, symbol });
 
