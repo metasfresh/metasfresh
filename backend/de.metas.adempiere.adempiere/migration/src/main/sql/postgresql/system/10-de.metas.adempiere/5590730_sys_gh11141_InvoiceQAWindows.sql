@@ -6574,3 +6574,14 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Rechnung-ÃœberprÃ¼fungsele
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579236,'nl_NL')
 ;
 
+-- 2021-06-08T12:03:04.578Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=336, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2021-06-08 14:03:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574245
+;
+
+-- 2021-06-08T12:06:46.499Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=30, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2021-06-08 14:06:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574052
+;
+
+
