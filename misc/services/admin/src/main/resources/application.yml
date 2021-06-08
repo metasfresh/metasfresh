@@ -18,8 +18,8 @@ spring:
             app:
               - uri: http://localhost:8181
                 metadata:
-                  management.context-path: /actuator
+                  management.context-path: /
             webapi:      
               - uri: http://localhost:8080
                 metadata:
-                  management.context-path: /actuator
+                  management.context-path: /
