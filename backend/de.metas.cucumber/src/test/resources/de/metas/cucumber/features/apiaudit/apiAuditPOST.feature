@@ -78,7 +78,8 @@ Feature: API Audit POST http method
 
     And there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary               |
-      | Endpoint invoked; returning httpCode: 404 | Endpoint invoked; log ad_issue |
+      | Endpoint invoked; returning httpCode: 404 | null                           |
+      | Endpoint invoked; log ad_issue            | Endpoint invoked; log ad_issue |
 
     And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
@@ -109,7 +110,8 @@ Feature: API Audit POST http method
 
     And there are added records in API_Request_Audit_Log
       | Logmessage                                | AD_Issue.Summary               |
-      | Endpoint invoked; returning httpCode: 404 | Endpoint invoked; log ad_issue |
+      | Endpoint invoked; returning httpCode: 404 | null                           |
+      | Endpoint invoked; log ad_issue            | Endpoint invoked; log ad_issue |
 
     And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
@@ -126,33 +128,29 @@ Feature: API Audit POST http method
       | Method | Path                                                                         | AD_User.Name | Status |
       | POST   | api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404 | metasfresh   | Fehler |
 
-    And there are added records in API_Request_Audit_Log
-      | Logmessage                                | AD_Issue.Summary               |
-      | Endpoint invoked; returning httpCode: 404 | Endpoint invoked; log ad_issue |
-
     And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
-    And the API_Request_Audit record is changed to
-      | Path                                                                         |
-      | api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 |
+    And on API_Request_Audit record we update the statusCode value from path
+      | statusCode |
+      | 200        |
 
     When invoke replay audit
 
     And there are added records in API_Request_Audit
-      | Method | Path                                                                         | AD_User.Name | Status |
-      | POST   | api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Fehler |
+      | Method | Path                                                                         | AD_User.Name | Status      |
+      | POST   | api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
 
     And there are added records in API_Request_Audit_Log
-      | Logmessage                                | AD_Issue.Summary               |
-      | Endpoint invoked; returning httpCode: 404 | Endpoint invoked; log ad_issue |
-#      | Endpoint invoked; returning httpCode: 200 | null                           |
+      | Logmessage                                | AD_Issue.Summary |
+      | Endpoint invoked; returning httpCode: 404 | null             |
+      | Endpoint invoked; returning httpCode: 200 | null             |
 
     And there are added records in API_Response_Audit
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
-#      | 200      | {"messageBody":"\"test-endpoint was called\""} |
+      | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
   Scenario: Testcase 200, reset to initial default data
     And all the data is reset to default

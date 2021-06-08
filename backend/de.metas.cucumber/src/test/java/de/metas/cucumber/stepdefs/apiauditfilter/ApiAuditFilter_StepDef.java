@@ -23,19 +23,13 @@
 package de.metas.cucumber.stepdefs.apiauditfilter;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.audit.HttpMethod;
-import de.metas.audit.config.ApiAuditConfigId;
 import de.metas.audit.request.ApiRequestAudit;
 import de.metas.audit.request.ApiRequestAuditId;
 import de.metas.audit.request.ApiRequestAuditRepository;
-import de.metas.audit.request.Status;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.organization.OrgId;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.web.audit.ApiRequestReplayService;
 import io.cucumber.datatable.DataTable;
@@ -53,9 +47,7 @@ import org.compiere.model.I_API_Request_Audit;
 import org.compiere.model.I_API_Request_Audit_Log;
 import org.compiere.model.I_API_Response_Audit;
 import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -93,9 +85,7 @@ public class ApiAuditFilter_StepDef
 			final int seqNo = DataTableUtil.extractIntForColumnName(row, "SeqNo");
 			final String method = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.Method");
 			final String pathPrefix = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.PathPrefix");
-			final String isInvokerWaitsForResult = DataTableUtil.extractStringForColumnName(row, "IsInvokerWaitsForResult");
-
-			final boolean isInvokerWaits = isInvokerWaitsForResult.equals("Y");//set Y as default value
+			final boolean isInvokerWaitsForResult = DataTableUtil.extractBooleanForColumnNameOr(row, "IsInvokerWaitsForResult", false);
 
 			final I_API_Audit_Config auditConfig = InterfaceWrapperHelper.newInstance(I_API_Audit_Config.class);
 
@@ -103,7 +93,7 @@ public class ApiAuditFilter_StepDef
 			auditConfig.setSeqNo(seqNo);
 			auditConfig.setMethod(method);
 			auditConfig.setPathPrefix(pathPrefix);
-			auditConfig.setIsInvokerWaitsForResult(isInvokerWaits);
+			auditConfig.setIsInvokerWaitsForResult(isInvokerWaitsForResult);
 
 			saveRecord(auditConfig);
 		}
@@ -166,22 +156,19 @@ public class ApiAuditFilter_StepDef
 				final String logmessage = DataTableUtil.extractStringForColumnName(row, "Logmessage");
 				final String adIssueSummary = DataTableUtil.extractStringOrNullForColumnName(row, "AD_Issue.Summary");
 
-				final I_API_Request_Audit_Log auditLogRecord = getLogRecordByLogmessage(auditLogRecords, logmessage);
+				final I_API_Request_Audit_Log auditLogRecord = auditLogRecords.stream()
+						.filter(log -> log.getLogmessage().contains(logmessage))
+						.findFirst().orElse(null);
 
 				assertThat(auditLogRecord).isNotNull();
-				assertThat(logmessage).isEqualTo(auditLogRecord.getLogmessage());
 
 				if (!EmptyUtil.isEmpty(adIssueSummary))
 				{
-					assertThat(adIssueSummary).isNotNull();
-
-					final I_API_Request_Audit_Log record = getLogRecordByLogmessage(auditLogRecords, adIssueSummary);
-
-					assertThat(record).isNotNull();
+					assertThat(auditLogRecord.getAD_Issue_ID()).isNotNull();
 
 					final I_AD_Issue adIssueRecord = queryBL
 							.createQueryBuilder(I_AD_Issue.class)
-							.addEqualsFilter(I_AD_Issue.COLUMN_AD_Issue_ID, record.getAD_Issue_ID())
+							.addEqualsFilter(I_AD_Issue.COLUMN_AD_Issue_ID, auditLogRecord.getAD_Issue_ID())
 							.create()
 							.firstOnly(I_AD_Issue.class);
 
@@ -236,7 +223,7 @@ public class ApiAuditFilter_StepDef
 		}
 	}
 
-	@And("the API_Request_Audit record is changed to")
+	@And("on API_Request_Audit record we update the statusCode value from path")
 	public void API_Request_Audit_update(@NonNull final DataTable table)
 	{
 		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
@@ -244,12 +231,18 @@ public class ApiAuditFilter_StepDef
 
 		final Map<String, String> row = table.asMaps().get(0);
 
-		final String path = DataTableUtil.extractStringForColumnName(row, "Path");
+		final String statusCode = DataTableUtil.extractStringForColumnName(row, "statusCode");
 
 		final ApiRequestAudit existingApiRequestAudit = apiRequestAuditRepository.getById(ApiRequestAuditId.ofRepoId(requestId.getValue()));
 
+		final String existingPath = existingApiRequestAudit.getPath();
+
+		assertThat(existingPath).isNotNull();
+
+		final String updatedPath = existingPath.replace("404", statusCode);
+
 		final ApiRequestAudit updatedApiRequestAudit = existingApiRequestAudit.toBuilder()
-				.path(path)
+				.path(updatedPath)
 				.build();
 
 		apiRequestAuditRepository.save(updatedApiRequestAudit);
@@ -261,45 +254,8 @@ public class ApiAuditFilter_StepDef
 		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
 		assertThat(requestId).isNotNull();
 
-		final ImmutableList<ApiRequestAudit> responseAuditRecords = queryBL.createQueryBuilder(I_API_Request_Audit.class)
-				.addEqualsFilter(I_API_Request_Audit.COLUMN_API_Request_Audit_ID, requestId.getValue())
-				.create()
-				.stream()
-				.map(this::recordToRequestAudit)
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<ApiRequestAudit> responseAuditRecords = ImmutableList.of(apiRequestAuditRepository.getById(ApiRequestAuditId.ofRepoId(requestId.getValue())));
 
 		apiRequestReplayService.replayApiRequests(responseAuditRecords);
-	}
-
-	@NonNull
-	public ApiRequestAudit recordToRequestAudit(@NonNull final I_API_Request_Audit record)
-	{
-		return ApiRequestAudit.builder()
-				.apiRequestAuditId(ApiRequestAuditId.ofRepoId(record.getAPI_Request_Audit_ID()))
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.roleId(RoleId.ofRepoId(record.getAD_Role_ID()))
-				.userId(UserId.ofRepoId(record.getAD_User_ID()))
-				.apiAuditConfigId(ApiAuditConfigId.ofRepoId(record.getAPI_Audit_Config_ID()))
-				.status(Status.ofCode(record.getStatus()))
-				.isErrorAcknowledged(record.isErrorAcknowledged())
-				.body(record.getBody())
-				.method(HttpMethod.ofNullableCode(record.getMethod()))
-				.path(record.getPath())
-				.remoteAddress(record.getRemoteAddr())
-				.remoteHost(record.getRemoteHost())
-				.time(TimeUtil.asInstant(record.getTime()))
-				.httpHeaders(record.getHttpHeaders())
-				.requestURI(record.getRequestURI())
-				.build();
-	}
-
-	@Nullable
-	private I_API_Request_Audit_Log getLogRecordByLogmessage(
-			@NonNull final List<I_API_Request_Audit_Log> records,
-			@NonNull final String logmessage)
-	{
-		return records.stream()
-				.filter(log -> log.getLogmessage().contains(logmessage))
-				.findFirst().orElse(null);
 	}
 }

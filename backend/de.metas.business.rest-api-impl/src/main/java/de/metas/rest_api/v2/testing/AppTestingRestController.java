@@ -32,6 +32,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
@@ -43,6 +44,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.Nullable;
 import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
@@ -81,24 +83,7 @@ public class AppTestingRestController
 			@ApiParam("Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
 	{
-		Loggables.get().addLog("Endpoint invoked; returning httpCode: " + responseCode);
-
-		if (!EmptyUtil.isEmpty(delaymillis))
-		{
-			Thread.sleep(delaymillis);
-		}
-
-		if (responseCode == 404)
-		{
-			final String errorString = "Endpoint invoked; log ad_issue";
-			Loggables.get().addLog(errorString, new AdempiereException(errorString));
-		}
-
-		final JsonTestResponse response = JsonTestResponse.builder()
-				.messageBody(responseBody)
-				.build();
-
-		return ResponseEntity.status(responseCode).body(response);
+		return executeMethod(responseCode, responseBody, delaymillis);
 	}
 
 	@GetMapping(produces = "application/json")
@@ -110,24 +95,7 @@ public class AppTestingRestController
 			@ApiParam("Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
 	{
-		Loggables.get().addLog("Endpoint invoked; returning httpCode: " + responseCode);
-
-		if (!EmptyUtil.isEmpty(delaymillis))
-		{
-			Thread.sleep(delaymillis);
-		}
-
-		if (responseCode == 404)
-		{
-			final String errorString = "Endpoint invoked; log ad_issue";
-			Loggables.get().addLog(errorString, new AdempiereException(errorString));
-		}
-
-		final JsonTestResponse response = JsonTestResponse.builder()
-				.messageBody(responseBody)
-				.build();
-
-		return ResponseEntity.status(responseCode).body(response);
+		return executeMethod(responseCode, responseBody, delaymillis);
 	}
 
 	@PostMapping(produces = "application/json")
@@ -139,24 +107,7 @@ public class AppTestingRestController
 			@ApiParam("Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
 	{
-		Loggables.get().addLog("Endpoint invoked; returning httpCode: " + responseCode);
-
-		if (!EmptyUtil.isEmpty(delaymillis))
-		{
-			Thread.sleep(delaymillis);
-		}
-
-		if (responseCode == 404)
-		{
-			final String errorString = "Endpoint invoked; log ad_issue";
-			Loggables.get().addLog(errorString, new AdempiereException(errorString));
-		}
-
-		final JsonTestResponse response = JsonTestResponse.builder()
-				.messageBody(responseBody)
-				.build();
-
-		return ResponseEntity.status(responseCode).body(response);
+		return executeMethod(responseCode, responseBody, delaymillis);
 	}
 
 	@DeleteMapping(produces = "application/json")
@@ -167,6 +118,15 @@ public class AppTestingRestController
 			@RequestParam(name = "responseBody") final String responseBody,
 			@ApiParam("Milliseconds to delay the response")
 			@RequestParam(name = "delaymillis", required = false) final Integer delaymillis) throws InterruptedException
+	{
+		return executeMethod(responseCode, responseBody, delaymillis);
+	}
+
+	private ResponseEntity<?> executeMethod(
+			final int responseCode,
+			@NonNull final String responseBody,
+			@Nullable final Integer delaymillis) throws InterruptedException
+
 	{
 		Loggables.get().addLog("Endpoint invoked; returning httpCode: " + responseCode);
 
