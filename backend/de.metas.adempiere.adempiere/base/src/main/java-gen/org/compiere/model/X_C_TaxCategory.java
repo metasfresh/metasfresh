@@ -5,32 +5,29 @@ import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/**
- * Generated Model for C_TaxCategory
- *
- * @author metasfresh (generated)
+/** Generated Model for C_TaxCategory
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCategory, org.compiere.model.I_Persistent
+public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCategory, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1076080462L;
+	private static final long serialVersionUID = 9354203L;
 
-	/** Standard Constructor */
-	public X_C_TaxCategory(final Properties ctx, final int C_TaxCategory_ID, @Nullable final String trxName)
-	{
-		super(ctx, C_TaxCategory_ID, trxName);
-	}
+    /** Standard Constructor */
+    public X_C_TaxCategory (final Properties ctx, final int C_TaxCategory_ID, @Nullable final String trxName)
+    {
+      super (ctx, C_TaxCategory_ID, trxName);
+    }
 
-	/** Load Constructor */
-	public X_C_TaxCategory(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-	{
+    /** Load Constructor */
+    public X_C_TaxCategory (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    {
       super (ctx, rs, trxName);
-	}
+    }
 
-	/**
-	 * Load Meta Data
-	 */
+
+	/** Load Meta Data */
 	@Override
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
@@ -38,24 +35,24 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	}
 
 	@Override
-	public java.lang.String getCommodityCode()
+	public void setCommodityCode (final @Nullable java.lang.String CommodityCode)
+	{
+		set_Value (COLUMNNAME_CommodityCode, CommodityCode);
+	}
+
+	@Override
+	public java.lang.String getCommodityCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_CommodityCode);
 	}
 
 	@Override
-	public void setCommodityCode(final @Nullable java.lang.String CommodityCode)
+	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
 	{
-		set_Value(COLUMNNAME_CommodityCode, CommodityCode);
-	}
-
-	@Override
-	public void setC_TaxCategory_ID(final int C_TaxCategory_ID)
-	{
-		if (C_TaxCategory_ID < 1)
-			set_ValueNoCheck(COLUMNNAME_C_TaxCategory_ID, null);
-		else
-			set_ValueNoCheck(COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
+		if (C_TaxCategory_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_TaxCategory_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
 	}
 
 	@Override
@@ -98,6 +95,35 @@ public class X_C_TaxCategory extends org.compiere.model.PO implements I_C_TaxCat
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * ProductType AD_Reference_ID=270
+	 * Reference name: M_Product_ProductType
+	 */
+	public static final int PRODUCTTYPE_AD_Reference_ID=270;
+	/** Item = I */
+	public static final String PRODUCTTYPE_Item = "I";
+	/** Service = S */
+	public static final String PRODUCTTYPE_Service = "S";
+	/** Resource = R */
+	public static final String PRODUCTTYPE_Resource = "R";
+	/** ExpenseType = E */
+	public static final String PRODUCTTYPE_ExpenseType = "E";
+	/** Online = O */
+	public static final String PRODUCTTYPE_Online = "O";
+	/** FreightCost = F */
+	public static final String PRODUCTTYPE_FreightCost = "F";
+	@Override
+	public void setProductType (final java.lang.String ProductType)
+	{
+		set_Value (COLUMNNAME_ProductType, ProductType);
+	}
+
+	@Override
+	public java.lang.String getProductType() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProductType);
 	}
 
 	/** 
