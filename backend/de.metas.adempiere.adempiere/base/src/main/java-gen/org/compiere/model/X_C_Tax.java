@@ -1,55 +1,32 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
-/**
- * Generated Model for C_Tax
- *
- * @author metasfresh (generated)
+/** Generated Model for C_Tax
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compiere.model.I_Persistent
+public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 * SOPOType AD_Reference_ID=287
-	 * Reference name: C_Tax SPPOType
-	 */
-	public static final int SOPOTYPE_AD_Reference_ID = 287;
-	/** Both  = B */
-	public static final String SOPOTYPE_Both = "B";
-	/** Sales Tax = S */
-	public static final String SOPOTYPE_SalesTax = "S";
-	/** Purchase Tax = P */
-	public static final String SOPOTYPE_PurchaseTax = "P";
-	/**
-	 * TypeOfDestCountry AD_Reference_ID=541323
-	 * Reference name: TypeDestCountry
-	 */
-	public static final int TYPEOFDESTCOUNTRY_AD_Reference_ID = 541323;
-	/** Domestic = DOMESTIC */
-	public static final String TYPEOFDESTCOUNTRY_Domestic = "DOMESTIC";
-	/** EU-foreign = WITHIN_COUNTRY_AREA */
-	public static final String TYPEOFDESTCOUNTRY_EU_Foreign = "WITHIN_COUNTRY_AREA";
-	/** Non-EU country = OUTSIDE_COUNTRY_AREA */
-	public static final String TYPEOFDESTCOUNTRY_Non_EUCountry = "OUTSIDE_COUNTRY_AREA";
-	private static final long serialVersionUID = -16743585L;
+	private static final long serialVersionUID = -1151858783L;
 
-	/** Standard Constructor */
-	public X_C_Tax(final Properties ctx, final int C_Tax_ID, @Nullable final String trxName)
-	{
-		super(ctx, C_Tax_ID, trxName);
-	}
+    /** Standard Constructor */
+    public X_C_Tax (final Properties ctx, final int C_Tax_ID, @Nullable final String trxName)
+    {
+      super (ctx, C_Tax_ID, trxName);
+    }
 
-	/** Load Constructor */
-	public X_C_Tax(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-	{
-		super(ctx, rs, trxName);
-	}
+    /** Load Constructor */
+    public X_C_Tax (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    {
+      super (ctx, rs, trxName);
+    }
+
 
 	/** Load Meta Data */
 	@Override
@@ -59,18 +36,18 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
-	public int getAD_BoilerPlate_ID()
+	public void setAD_BoilerPlate_ID (final int AD_BoilerPlate_ID)
 	{
-		return get_ValueAsInt(COLUMNNAME_AD_BoilerPlate_ID);
+		if (AD_BoilerPlate_ID < 1) 
+			set_Value (COLUMNNAME_AD_BoilerPlate_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_BoilerPlate_ID, AD_BoilerPlate_ID);
 	}
 
 	@Override
-	public void setAD_BoilerPlate_ID(final int AD_BoilerPlate_ID)
+	public int getAD_BoilerPlate_ID() 
 	{
-		if (AD_BoilerPlate_ID < 1)
-			set_Value(COLUMNNAME_AD_BoilerPlate_ID, null);
-		else
-			set_Value(COLUMNNAME_AD_BoilerPlate_ID, AD_BoilerPlate_ID);
+		return get_ValueAsInt(COLUMNNAME_AD_BoilerPlate_ID);
 	}
 
 	@Override
@@ -86,18 +63,18 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
-	public int getAD_Rule_ID()
+	public void setAD_Rule_ID (final int AD_Rule_ID)
 	{
-		return get_ValueAsInt(COLUMNNAME_AD_Rule_ID);
+		if (AD_Rule_ID < 1) 
+			set_Value (COLUMNNAME_AD_Rule_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Rule_ID, AD_Rule_ID);
 	}
 
 	@Override
-	public void setAD_Rule_ID(final int AD_Rule_ID)
+	public int getAD_Rule_ID() 
 	{
-		if (AD_Rule_ID < 1)
-			set_Value(COLUMNNAME_AD_Rule_ID, null);
-		else
-			set_Value(COLUMNNAME_AD_Rule_ID, AD_Rule_ID);
+		return get_ValueAsInt(COLUMNNAME_AD_Rule_ID);
 	}
 
 	@Override
@@ -113,18 +90,18 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
-	public int getC_Country_ID()
+	public void setC_Country_ID (final int C_Country_ID)
 	{
-		return get_ValueAsInt(COLUMNNAME_C_Country_ID);
+		if (C_Country_ID < 1) 
+			set_Value (COLUMNNAME_C_Country_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Country_ID, C_Country_ID);
 	}
 
 	@Override
-	public void setC_Country_ID(final int C_Country_ID)
+	public int getC_Country_ID() 
 	{
-		if (C_Country_ID < 1)
-			set_Value(COLUMNNAME_C_Country_ID, null);
-		else
-			set_Value(COLUMNNAME_C_Country_ID, C_Country_ID);
+		return get_ValueAsInt(COLUMNNAME_C_Country_ID);
 	}
 
 	@Override
@@ -140,244 +117,255 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
-	public int getC_Region_ID()
+	public void setC_Region_ID (final int C_Region_ID)
+	{
+		if (C_Region_ID < 1) 
+			set_Value (COLUMNNAME_C_Region_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Region_ID, C_Region_ID);
+	}
+
+	@Override
+	public int getC_Region_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Region_ID);
 	}
 
 	@Override
-	public void setC_Region_ID(final int C_Region_ID)
+	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
 	{
-		if (C_Region_ID < 1)
-			set_Value(COLUMNNAME_C_Region_ID, null);
-		else
-			set_Value(COLUMNNAME_C_Region_ID, C_Region_ID);
+		if (C_TaxCategory_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
 	}
 
 	@Override
-	public int getC_TaxCategory_ID()
+	public int getC_TaxCategory_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_TaxCategory_ID);
 	}
 
 	@Override
-	public void setC_TaxCategory_ID(final int C_TaxCategory_ID)
+	public void setC_Tax_ID (final int C_Tax_ID)
 	{
-		if (C_TaxCategory_ID < 1)
-			set_Value(COLUMNNAME_C_TaxCategory_ID, null);
-		else
-			set_Value(COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
+		if (C_Tax_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_Tax_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Tax_ID, C_Tax_ID);
 	}
 
 	@Override
-	public int getC_Tax_ID()
+	public int getC_Tax_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Tax_ID);
 	}
 
 	@Override
-	public void setC_Tax_ID(final int C_Tax_ID)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
-		if (C_Tax_ID < 1)
-			set_ValueNoCheck(COLUMNNAME_C_Tax_ID, null);
-		else
-			set_ValueNoCheck(COLUMNNAME_C_Tax_ID, C_Tax_ID);
+		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public java.lang.String getDescription()
+	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override
-	public void setDescription(final @Nullable java.lang.String Description)
+	public void setDuplicateTax (final @Nullable java.lang.String DuplicateTax)
 	{
-		set_Value(COLUMNNAME_Description, Description);
+		set_Value (COLUMNNAME_DuplicateTax, DuplicateTax);
 	}
 
 	@Override
-	public java.lang.String getDuplicateTax()
+	public java.lang.String getDuplicateTax() 
 	{
 		return get_ValueAsString(COLUMNNAME_DuplicateTax);
 	}
 
 	@Override
-	public void setDuplicateTax(final @Nullable java.lang.String DuplicateTax)
+	public void setIsDefault (final boolean IsDefault)
 	{
-		set_Value(COLUMNNAME_DuplicateTax, DuplicateTax);
+		set_Value (COLUMNNAME_IsDefault, IsDefault);
 	}
 
 	@Override
-	public void setIsDefault(final boolean IsDefault)
-	{
-		set_Value(COLUMNNAME_IsDefault, IsDefault);
-	}
-
-	@Override
-	public boolean isDefault()
+	public boolean isDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
 	}
 
 	@Override
-	public void setIsDocumentLevel(final boolean IsDocumentLevel)
+	public void setIsDocumentLevel (final boolean IsDocumentLevel)
 	{
-		set_Value(COLUMNNAME_IsDocumentLevel, IsDocumentLevel);
+		set_Value (COLUMNNAME_IsDocumentLevel, IsDocumentLevel);
 	}
 
 	@Override
-	public boolean isDocumentLevel()
+	public boolean isDocumentLevel() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDocumentLevel);
 	}
 
 	@Override
-	public void setIsFiscalRepresentation(final boolean IsFiscalRepresentation)
+	public void setIsFiscalRepresentation (final boolean IsFiscalRepresentation)
 	{
-		set_Value(COLUMNNAME_IsFiscalRepresentation, IsFiscalRepresentation);
+		set_Value (COLUMNNAME_IsFiscalRepresentation, IsFiscalRepresentation);
 	}
 
 	@Override
-	public boolean isFiscalRepresentation()
+	public boolean isFiscalRepresentation() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFiscalRepresentation);
 	}
 
 	@Override
-	public void setIsSalesTax(final boolean IsSalesTax)
+	public void setIsSalesTax (final boolean IsSalesTax)
 	{
-		set_Value(COLUMNNAME_IsSalesTax, IsSalesTax);
+		set_Value (COLUMNNAME_IsSalesTax, IsSalesTax);
 	}
 
 	@Override
-	public boolean isSalesTax()
+	public boolean isSalesTax() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSalesTax);
 	}
 
 	@Override
-	public void setIsSmallbusiness(final boolean IsSmallbusiness)
+	public void setIsSmallbusiness (final boolean IsSmallbusiness)
 	{
-		set_Value(COLUMNNAME_IsSmallbusiness, IsSmallbusiness);
+		set_Value (COLUMNNAME_IsSmallbusiness, IsSmallbusiness);
 	}
 
 	@Override
-	public boolean isSmallbusiness()
+	public boolean isSmallbusiness() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSmallbusiness);
 	}
 
 	@Override
-	public void setIsSummary(final boolean IsSummary)
+	public void setIsSummary (final boolean IsSummary)
 	{
-		set_Value(COLUMNNAME_IsSummary, IsSummary);
+		set_Value (COLUMNNAME_IsSummary, IsSummary);
 	}
 
 	@Override
-	public boolean isSummary()
+	public boolean isSummary() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsSummary);
 	}
 
 	@Override
-	public void setIsTaxExempt(final boolean IsTaxExempt)
+	public void setIsTaxExempt (final boolean IsTaxExempt)
 	{
-		set_Value(COLUMNNAME_IsTaxExempt, IsTaxExempt);
+		set_Value (COLUMNNAME_IsTaxExempt, IsTaxExempt);
 	}
 
 	@Override
-	public boolean isTaxExempt()
+	public boolean isTaxExempt() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsTaxExempt);
 	}
 
 	@Override
-	public void setIsWholeTax(final boolean IsWholeTax)
+	public void setIsWholeTax (final boolean IsWholeTax)
 	{
-		set_Value(COLUMNNAME_IsWholeTax, IsWholeTax);
+		set_Value (COLUMNNAME_IsWholeTax, IsWholeTax);
 	}
 
 	@Override
-	public boolean isWholeTax()
+	public boolean isWholeTax() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsWholeTax);
 	}
 
 	@Override
-	public java.lang.String getName()
+	public void setName (final java.lang.String Name)
+	{
+		set_Value (COLUMNNAME_Name, Name);
+	}
+
+	@Override
+	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	@Override
-	public void setName(final java.lang.String Name)
+	public void setParent_Tax_ID (final int Parent_Tax_ID)
 	{
-		set_Value(COLUMNNAME_Name, Name);
+		if (Parent_Tax_ID < 1) 
+			set_Value (COLUMNNAME_Parent_Tax_ID, null);
+		else 
+			set_Value (COLUMNNAME_Parent_Tax_ID, Parent_Tax_ID);
 	}
 
 	@Override
-	public int getParent_Tax_ID()
+	public int getParent_Tax_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Parent_Tax_ID);
 	}
 
 	@Override
-	public void setParent_Tax_ID(final int Parent_Tax_ID)
+	public void setRate (final BigDecimal Rate)
 	{
-		if (Parent_Tax_ID < 1)
-			set_Value(COLUMNNAME_Parent_Tax_ID, null);
-		else
-			set_Value(COLUMNNAME_Parent_Tax_ID, Parent_Tax_ID);
+		set_Value (COLUMNNAME_Rate, Rate);
 	}
 
 	@Override
-	public BigDecimal getRate()
+	public BigDecimal getRate() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Rate);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setRate(final BigDecimal Rate)
+	public void setRequiresTaxCertificate (final boolean RequiresTaxCertificate)
 	{
-		set_Value(COLUMNNAME_Rate, Rate);
+		set_Value (COLUMNNAME_RequiresTaxCertificate, RequiresTaxCertificate);
 	}
 
 	@Override
-	public boolean isRequiresTaxCertificate()
+	public boolean isRequiresTaxCertificate() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_RequiresTaxCertificate);
 	}
 
+	/** 
+	 * SOPOType AD_Reference_ID=287
+	 * Reference name: C_Tax SPPOType
+	 */
+	public static final int SOPOTYPE_AD_Reference_ID=287;
+	/** Both  = B */
+	public static final String SOPOTYPE_Both = "B";
+	/** Sales Tax = S */
+	public static final String SOPOTYPE_SalesTax = "S";
+	/** Purchase Tax = P */
+	public static final String SOPOTYPE_PurchaseTax = "P";
 	@Override
-	public void setRequiresTaxCertificate(final boolean RequiresTaxCertificate)
+	public void setSOPOType (final java.lang.String SOPOType)
 	{
-		set_Value(COLUMNNAME_RequiresTaxCertificate, RequiresTaxCertificate);
+		set_Value (COLUMNNAME_SOPOType, SOPOType);
 	}
 
 	@Override
-	public java.lang.String getSOPOType()
+	public java.lang.String getSOPOType() 
 	{
 		return get_ValueAsString(COLUMNNAME_SOPOType);
 	}
 
 	@Override
-	public void setSOPOType(final java.lang.String SOPOType)
+	public void setTaxIndicator (final @Nullable java.lang.String TaxIndicator)
 	{
-		set_Value(COLUMNNAME_SOPOType, SOPOType);
+		set_Value (COLUMNNAME_TaxIndicator, TaxIndicator);
 	}
 
 	@Override
-	public java.lang.String getTaxIndicator()
+	public java.lang.String getTaxIndicator() 
 	{
 		return get_ValueAsString(COLUMNNAME_TaxIndicator);
-	}
-
-	@Override
-	public void setTaxIndicator(final @Nullable java.lang.String TaxIndicator)
-	{
-		set_Value(COLUMNNAME_TaxIndicator, TaxIndicator);
 	}
 
 	@Override
@@ -393,18 +381,18 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
-	public int getTo_Country_ID()
+	public void setTo_Country_ID (final int To_Country_ID)
 	{
-		return get_ValueAsInt(COLUMNNAME_To_Country_ID);
+		if (To_Country_ID < 1) 
+			set_Value (COLUMNNAME_To_Country_ID, null);
+		else 
+			set_Value (COLUMNNAME_To_Country_ID, To_Country_ID);
 	}
 
 	@Override
-	public void setTo_Country_ID(final int To_Country_ID)
+	public int getTo_Country_ID() 
 	{
-		if (To_Country_ID < 1)
-			set_Value(COLUMNNAME_To_Country_ID, null);
-		else
-			set_Value(COLUMNNAME_To_Country_ID, To_Country_ID);
+		return get_ValueAsInt(COLUMNNAME_To_Country_ID);
 	}
 
 	@Override
@@ -420,41 +408,52 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
-	public int getTo_Region_ID()
+	public void setTo_Region_ID (final int To_Region_ID)
+	{
+		if (To_Region_ID < 1) 
+			set_Value (COLUMNNAME_To_Region_ID, null);
+		else 
+			set_Value (COLUMNNAME_To_Region_ID, To_Region_ID);
+	}
+
+	@Override
+	public int getTo_Region_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_To_Region_ID);
 	}
 
+	/** 
+	 * TypeOfDestCountry AD_Reference_ID=541323
+	 * Reference name: TypeDestCountry
+	 */
+	public static final int TYPEOFDESTCOUNTRY_AD_Reference_ID=541323;
+	/** Inland = DOMESTIC */
+	public static final String TYPEOFDESTCOUNTRY_Domestic = "DOMESTIC";
+	/** EU-Ausland = WITHIN_COUNTRY_AREA */
+	public static final String TYPEOFDESTCOUNTRY_EU_Foreign = "WITHIN_COUNTRY_AREA";
+	/** Nicht-EU-Ausland = OUTSIDE_COUNTRY_AREA */
+	public static final String TYPEOFDESTCOUNTRY_Non_EUCountry = "OUTSIDE_COUNTRY_AREA";
 	@Override
-	public void setTo_Region_ID(final int To_Region_ID)
+	public void setTypeOfDestCountry (final @Nullable java.lang.String TypeOfDestCountry)
 	{
-		if (To_Region_ID < 1)
-			set_Value(COLUMNNAME_To_Region_ID, null);
-		else
-			set_Value(COLUMNNAME_To_Region_ID, To_Region_ID);
+		set_Value (COLUMNNAME_TypeOfDestCountry, TypeOfDestCountry);
 	}
 
 	@Override
-	public java.lang.String getTypeOfDestCountry()
+	public java.lang.String getTypeOfDestCountry() 
 	{
 		return get_ValueAsString(COLUMNNAME_TypeOfDestCountry);
 	}
 
 	@Override
-	public void setTypeOfDestCountry(final @Nullable java.lang.String TypeOfDestCountry)
+	public void setValidFrom (final java.sql.Timestamp ValidFrom)
 	{
-		set_Value(COLUMNNAME_TypeOfDestCountry, TypeOfDestCountry);
+		set_Value (COLUMNNAME_ValidFrom, ValidFrom);
 	}
 
 	@Override
-	public java.sql.Timestamp getValidFrom()
+	public java.sql.Timestamp getValidFrom() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ValidFrom);
-	}
-
-	@Override
-	public void setValidFrom(final java.sql.Timestamp ValidFrom)
-	{
-		set_Value(COLUMNNAME_ValidFrom, ValidFrom);
 	}
 }
