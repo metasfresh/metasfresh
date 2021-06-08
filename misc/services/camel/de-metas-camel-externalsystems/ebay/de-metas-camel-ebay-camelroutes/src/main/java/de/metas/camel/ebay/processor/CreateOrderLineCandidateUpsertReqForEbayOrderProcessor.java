@@ -15,6 +15,8 @@ import javax.annotation.Nullable;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
@@ -33,12 +35,16 @@ import de.metas.common.util.Check;
 import lombok.NonNull;
 
 public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements Processor {
+	
+	protected Logger log = LoggerFactory.getLogger(getClass());
 
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
 		final EbayImportOrdersRouteContext importOrdersRouteContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, EbayImportOrdersRouteContext.class);
-
+		log.debug("Create OrderLineCandidates for ebay order {}", importOrdersRouteContext.getOrder().getOrderId());
+		
+		
 		final JsonResponseBPartnerCompositeUpsert bPartnerUpsertResponseList = exchange.getIn().getBody(JsonResponseBPartnerCompositeUpsert.class);
 		final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse = Check.singleElement(bPartnerUpsertResponseList.getResponseItems());
 

@@ -1,12 +1,10 @@
 package de.metas.camel.ebay;
 
-import static org.mockito.Mockito.when;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,11 +18,9 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.spring.javaconfig.SingleRouteCamelConfiguration;
 import org.apache.camel.test.spring.junit5.CamelSpringTest;
-import org.assertj.core.util.Arrays;
-import org.junit.jupiter.api.BeforeAll;
+import org.apache.camel.test.spring.junit5.MockEndpointsAndSkip;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,11 +31,7 @@ import com.ebay.api.client.auth.oauth2.OAuth2Api;
 import com.ebay.api.client.auth.oauth2.model.AccessToken;
 import com.ebay.api.client.auth.oauth2.model.OAuthResponse;
 import com.ebay.api.client.auth.oauth2.model.RefreshToken;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.CollectionType;
-import com.fasterxml.jackson.databind.type.TypeFactory;
 
 import de.metas.camel.externalsystems.ebay.api.OrderApi;
 import de.metas.camel.externalsystems.ebay.api.model.Order;
@@ -49,8 +41,17 @@ import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 
+/**
+ * Unit test which instantiates the complete ebay order processing route and feeds a
+ * mocked json result to process and check, whether all route components are called.
+ * 
+ * 
+ * @author Werner Gaulke
+ *
+ */
 @CamelSpringTest
 @ContextConfiguration(classes = EbayOrderProcessingRouteTest.ContextConfig.class)
+@MockEndpointsAndSkip("direct:metasfresh.upsert-bpartner-v2.camel.uri")
 public class EbayOrderProcessingRouteTest {
 	
 	@Autowired
@@ -59,6 +60,12 @@ public class EbayOrderProcessingRouteTest {
 	//@EndpointInject("metasfresh.upsert-bpartner.camel.uri") 
 	@EndpointInject("mock:result")
 	protected MockEndpoint resultEndpoint;
+	
+	@EndpointInject("mock:direct:metasfresh.upsert-bpartner-v2.camel.uri")
+	protected MockEndpoint resultBParnters;
+	
+	@EndpointInject("mock:direct:To-MF_PushOLCandidates-Route")
+	protected MockEndpoint resultOLCs;
 	
 	@Produce("direct:start")
     protected ProducerTemplate template;
@@ -76,6 +83,12 @@ public class EbayOrderProcessingRouteTest {
 	@DirtiesContext
 	public void testRouteSetup() throws Exception {
 		
+		//our assertions for the example json
+		resultBParnters.expectedMessageCount(1);
+		
+		
+		
+		//prepare api call
         Map<String,String> parameters = new HashMap<>();
         parameters.put(ExternalSystemConstants.PARAM_API_KEY, "key");
         parameters.put(ExternalSystemConstants.PARAM_TENANT, "tenant");
@@ -83,7 +96,6 @@ public class EbayOrderProcessingRouteTest {
         parameters.put(ExternalSystemConstants.PARAM_BASE_PATH, "bp");
         parameters.put(EbayConstants.PARAM_API_MODE, "sandbox");
         parameters.put(EbayConstants.PARAM_API_AUTH_CODE, "");
-        
         parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, "%5B2016-03-21T08:25:43.511Z%5D");
         
         JsonExternalSystemRequest jesr = new JsonExternalSystemRequest(
@@ -95,26 +107,18 @@ public class EbayOrderProcessingRouteTest {
         		parameters);						//params
         
         
-        
+        //put mock clients into body
         Map<String,Object> body = new HashMap<>();
         body.put(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT, orderApi);
         body.put(EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT, authApi);
 
-        
         //prepare order api
     	ObjectMapper mapper = new ObjectMapper();
-        InputStream is = EbayOrderProcessingRouteTest.class.getResourceAsStream("/examples/ebay-order-single.json");
-        
-        //CollectionType typeReference = TypeFactory.defaultInstance().constructCollectionType(List.class, Order.class);
-        
+        InputStream is = EbayOrderProcessingRouteTest.class.getResourceAsStream("/examples/ebay-order-new-of-consumer.json");
         OrderSearchPagedCollection mockResult = mapper.readValue(is, OrderSearchPagedCollection.class);
-       
         
-        OrderSearchPagedCollection ebayResponse = new OrderSearchPagedCollection();
-        ebayResponse.setOrders(null);
-        when(orderApi.getOrders(anyString(), anyString(), anyString(), anyString(), anyString())).thenReturn(ebayResponse);
+        when(orderApi.getOrders(any(), any(), any(), any(), any())).thenReturn(mockResult);
         
-         
         //prepare auth api
         Optional<AccessToken> token = Optional.of(new AccessToken());
         Optional<RefreshToken> rtoken = Optional.of(new RefreshToken());
@@ -122,11 +126,14 @@ public class EbayOrderProcessingRouteTest {
         OAuthResponse res = new OAuthResponse(token, rtoken);
         when(authApi.exchangeCodeForAccessToken(any(),anyString())).thenReturn(res);
         
+        
+        //send message
         template.sendBodyAndHeaders("direct:" + GetEbayOrdersRouteBuilder.GET_ORDERS_ROUTE_ID, jesr, body);
         
         
-        Thread.sleep(2000);
-        resultEndpoint.assertIsSatisfied();
+        
+        //check assertions
+        resultBParnters.assertIsSatisfied();
 	}
 	
 	

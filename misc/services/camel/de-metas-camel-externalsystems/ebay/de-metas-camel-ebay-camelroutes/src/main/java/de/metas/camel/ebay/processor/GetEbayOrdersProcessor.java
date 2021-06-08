@@ -2,6 +2,7 @@ package de.metas.camel.ebay.processor;
 
 import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT;
 import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_ORG_CODE;
+import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 
@@ -15,11 +16,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.ebay.api.client.auth.oauth2.OAuth2Api;
-import com.ebay.api.client.auth.oauth2.model.AccessToken;
 import com.ebay.api.client.auth.oauth2.model.Environment;
 import com.ebay.api.client.auth.oauth2.model.OAuthResponse;
 
 import de.metas.camel.ebay.EbayConstants;
+import de.metas.camel.ebay.EbayImportOrdersRouteContext;
 import de.metas.camel.externalsystems.ebay.api.OrderApi;
 import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
 import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
@@ -112,9 +113,19 @@ public class GetEbayOrdersProcessor implements Processor {
 
 			List<Order> orders = response.getOrders();
 
+
+			
+			//add orders to exchange
 			exchange.getIn().setBody(orders);
-			exchange.setProperty(ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
-			exchange.setProperty(ROUTE_PROPERTY_EBAY_CLIENT, orderApi);
+			
+			//add order context to exchange.
+			final EbayImportOrdersRouteContext ordersContext = EbayImportOrdersRouteContext.builder()
+					.orgCode(request.getOrgCode())
+					.build();
+
+			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
+			
+			
 		} else {
 
 			ProcessorHelper.logProcessMessage(exchange, "Ebay:Failed to aquire access token!" + Instant.now(), request.getAdPInstanceId().getValue());

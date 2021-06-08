@@ -14,6 +14,13 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
+/**
+ * Context to store all properties of a single eBay order and processed meta-data 
+ * from various stages of the {@link GetEbayOrdersRouteBuilder} camel pipeline.
+ * 
+ * @author Werner Gaulke
+ *
+ */
 @Data
 @Builder
 public class EbayImportOrdersRouteContext {

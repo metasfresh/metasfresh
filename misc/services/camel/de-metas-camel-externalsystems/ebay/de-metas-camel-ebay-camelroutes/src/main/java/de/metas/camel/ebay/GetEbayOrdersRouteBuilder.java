@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import de.metas.camel.ebay.processor.CreateBPartnerUpsertReqForEbayOrderProcessor;
 import de.metas.camel.ebay.processor.CreateOrderLineCandidateUpsertReqForEbayOrderProcessor;
 import de.metas.camel.ebay.processor.GetEbayOrdersProcessor;
+import de.metas.camel.ebay.processor.OrderFilterProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 
 /**
@@ -27,6 +28,7 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder{
 	public static final String PROCESS_ORDERS_ROUTE_ID = "Ebay-processOrders";
 	public static final String PROCESS_ORDER_BPARTNER_ROUTE_ID = "Ebay-processOrderBPartner";
 	public static final String PROCESS_ORDER_OLC_ROUTE_ID = "Ebay-processOrderOLC";
+	public static final String FILTER_ORDER_ROUTE_ID = "Ebay-filterOrder";
 	
 	@Override
 	public void configure() {
@@ -52,12 +54,17 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder{
 			.routeId(PROCESS_ORDERS_ROUTE_ID)
 			.log("Ebay process orders route invoked")
 			.doTry()
+				.process(new OrderFilterProcessor()).id(FILTER_ORDER_ROUTE_ID)
 			
-				//create bpartners and usert them.
+				//create bparners and put them in bparner import pipeline.
 				.process(new CreateBPartnerUpsertReqForEbayOrderProcessor()).id(PROCESS_ORDER_BPARTNER_ROUTE_ID)
 				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to store business partners!")
 				.to( direct(ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI) )
-
+				
+				//unmarshal bparner upsert requests and then
+//				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
+				
+				//create order line candidates.
 				.process(new CreateOrderLineCandidateUpsertReqForEbayOrderProcessor()).id(PROCESS_ORDER_OLC_ROUTE_ID)
 				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to store order candidates!")
 				.to( direct(ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID) )
