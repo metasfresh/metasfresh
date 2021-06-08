@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
 import org.adempiere.util.jmx.JMXRegistry;
@@ -183,11 +184,17 @@ public class EventBusFactory implements IEventBusFactory
 				Tag.of("topic", topic.getName()),
 				Tag.of("type", topic.getType().toString()));
 		
-		final AtomicInteger queueLength = meterRegistry.gauge("eventBus.queueSize", tags, new AtomicInteger(0));
-		final Counter enqueued = meterRegistry.counter("eventBus.enqueued", tags);
-		final Counter dequeued = meterRegistry.counter("eventBus.dequeued", tags);
+		final Timer eventProcessing = meterRegistry.timer("mf.eventBus.processor", tags);
+		
+		final AtomicInteger queueLength = meterRegistry.gauge("mf.eventBus.queueSize", tags, new AtomicInteger(0));
+		final Counter enqueued = meterRegistry.counter("mf.eventBus.enqueued", tags);
+		final Counter dequeued = meterRegistry.counter("mf.eventBus.dequeued", tags);
 
-		return MicrometerEventBusStatsCollector.builder().eventsEnqueued(enqueued).eventsDequeued(dequeued).queueLength(queueLength).build();
+		return MicrometerEventBusStatsCollector.builder()
+				.eventsEnqueued(enqueued)
+				.eventsDequeued(dequeued)
+				.eventProcessingTimer(eventProcessing)
+				.queueLength(queueLength).build();
 	}
 
 	@Nullable

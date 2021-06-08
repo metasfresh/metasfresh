@@ -66,8 +66,7 @@ final class EventBus implements IEventBus
 
 	private final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector;
 	private final EventBusStatsCollector eventBusStatsCollector;
-	
-	
+
 	/**
 	 * @param executor if not null, the system creates an {@link AsyncEventBus}; also, it shuts down this executor on {@link #destroy()}
 	 */
@@ -192,9 +191,9 @@ final class EventBus implements IEventBus
 	{
 		final String json = sharedJsonSerializer.writeValueAsString(obj);
 		postEvent(Event.builder()
-				.putProperty(PROP_Body, json)
-				.shallBeLogged()
-				.build());
+						  .putProperty(PROP_Body, json)
+						  .shallBeLogged()
+						  .build());
 	}
 
 	@Override
@@ -278,11 +277,16 @@ final class EventBus implements IEventBus
 			eventBusStatsCollector.incrementEventsDequeued();
 			micrometerEventBusStatsCollector.incrementEventsDequeued();
 			
-			try (final MDCCloseable ignored = EventMDC.putEvent(event))
-			{
-				logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
-				invokeEventListener(this.eventListener, event);
-			}
+			micrometerEventBusStatsCollector
+					.getEventProcessingTimer()
+					.record(() ->
+							{
+								try (final MDCCloseable ignored = EventMDC.putEvent(event))
+								{
+									logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
+									invokeEventListener(this.eventListener, event);
+								}
+							});
 		}
 	}
 

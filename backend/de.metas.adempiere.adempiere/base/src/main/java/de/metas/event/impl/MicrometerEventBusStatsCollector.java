@@ -23,11 +23,11 @@
 package de.metas.event.impl;
 
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Timer;
 import lombok.Builder;
 import lombok.Value;
 
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 
 @Value
 @Builder
@@ -36,6 +36,8 @@ public class MicrometerEventBusStatsCollector
 	Counter eventsEnqueued;
 	Counter eventsDequeued;
 	AtomicInteger queueLength;
+
+	Timer eventProcessingTimer;
 
 	public void incrementEventsEnqueued()
 	{
