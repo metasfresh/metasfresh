@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-camel-ebay-camelroutes
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -23,8 +23,6 @@
 package de.metas.camel.ebay.processor;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
-
-import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
